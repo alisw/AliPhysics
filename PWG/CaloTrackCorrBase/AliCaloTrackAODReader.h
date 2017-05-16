@@ -32,9 +32,10 @@ public:
     
   TClonesArray   * GetAODMCParticles() const ;
   AliAODMCHeader * GetAODMCHeader   () const ;
-  
+  AliGenEventHeader* GetGenEventHeader() const ;
+
   TList *     GetCreateControlHistograms() ;
-  
+    
   TObjString *GetListOfParameters() ;
   
   AliVEvent * GetOriginalInputEvent()            const { return fOrgInputEvent        ; }

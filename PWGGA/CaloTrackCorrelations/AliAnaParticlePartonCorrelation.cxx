@@ -15,13 +15,13 @@
 
 // --- ROOT system ---
 #include "TH2F.h"
-#include "TParticle.h"
 #include "TClass.h"
 
 //---- ANALYSIS system ----
 #include "AliAnaParticlePartonCorrelation.h" 
 #include "AliMCEvent.h"  
 #include "AliAODPWG4ParticleCorrelation.h"
+#include "AliVParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaParticlePartonCorrelation) ;
@@ -171,11 +171,14 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     TObjArray * objarray  = NULL;
     Int_t nrefs = 0;
     
-    TParticle * parton    = NULL ;
-    for(Int_t ipr = 0;ipr < 8; ipr ++ ){
-      parton = GetMC()->Particle(ipr) ;
+    AliVParticle * parton    = NULL ;
+    for(Int_t ipr = 0;ipr < 8; ipr ++ )
+    {
+      parton = GetMC()->GetTrack(ipr) ;
       nrefs++;
-      if(nrefs==1){
+      
+      if(nrefs==1)
+      {
         objarray = new TObjArray(0);
         objarray->SetName(GetAODObjArrayName());
         objarray->SetOwner(kFALSE);
@@ -212,7 +215,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
   
   // Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  TParticle *  mom = NULL ;
+  AliVParticle *  mom = NULL ;
   
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
@@ -236,18 +239,18 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       iparent = imom ;   //mother is already a parton
     else if (imom <  GetMC()->GetNumberOfTracks()) 
     {
-      mom =  GetMC()->Particle(imom);
+      mom =  GetMC()->GetTrack(imom);
       if(mom)
       {
-        iparent=mom->GetFirstMother();
+        iparent=mom->GetMother();
         //cout<<" iparent "<<iparent<<endl;
         while(iparent > 7 )
         {
-          mom = GetMC()->Particle(iparent);
+          mom = GetMC()->GetTrack(iparent);
           if (mom)
           {
             imom = iparent ; //Mother label is of the inmediate parton daughter
-            iparent = mom->GetFirstMother();
+            iparent = mom->GetMother();
           }
           else iparent = -1;
           //cout<<" while iparent "<<iparent<<endl;
@@ -264,7 +267,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
     
     // Near parton is the parton that fragmented and created the mother
-    TParticle * nearParton = (TParticle*) objarray->At(iparent);
+    AliVParticle * nearParton = (AliVParticle*) objarray->At(iparent);
     Float_t  ptNearParton    = nearParton->Pt();
     Float_t  phiNearParton   = nearParton->Phi() ;
     Float_t  etaNearParton   = nearParton->Eta() ;
@@ -283,7 +286,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
     
     // Away parton is the other final parton.
-    TParticle * awayParton = (TParticle*) objarray->At(iawayparent);
+    AliVParticle * awayParton = (AliVParticle*) objarray->At(iawayparent);
     Float_t  ptAwayParton    = awayParton->Pt();
     Float_t  phiAwayParton   = awayParton->Phi() ;
     Float_t  etaAwayParton   = awayParton->Eta() ;

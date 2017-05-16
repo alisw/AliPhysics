@@ -50,7 +50,7 @@ fMuons(new TClonesArray("AliLMRMuon",20)),
   fNMuons(0),   
   fNVtxContributors(0),
   fTriggerString(0),
-  IsPileupFromSPD(0)
+  fPileupFromSPD(0)
  {
    for(Int_t i=0;i<3;i++)
      fVertex[i]=0.0;
@@ -80,7 +80,7 @@ AliLMREvent::AliLMREvent(Int_t run, Double_t evtPlane, Double_t Vert[3],Double_t
   fNMuons(0), 
   fNVtxContributors(0),
   fTriggerString(0),
-  IsPileupFromSPD(0)
+  fPileupFromSPD(0)
 {
   for(Int_t i=0;i<3;i++)
     fVertex[i]=Vert[i];
@@ -108,7 +108,7 @@ AliLMREvent::AliLMREvent(const AliLMREvent& evt):
   fNMuons(evt.fNMuons), 
   fNVtxContributors(evt.fNVtxContributors),
   fTriggerString(evt.fTriggerString),
-  IsPileupFromSPD(evt.IsPileupFromSPD)
+  fPileupFromSPD(evt.fPileupFromSPD)
 {
   ///copy constructor
   // 
@@ -182,7 +182,7 @@ AliLMREvent& AliLMREvent::operator=(const AliLMREvent&evt)
    	fVertex[i] = evt.fVertex[i];
       fNVtxContributors = evt.fNVtxContributors;
       fTriggerString = evt.fTriggerString;
-      IsPileupFromSPD = evt.IsPileupFromSPD;
+      fPileupFromSPD = evt.fPileupFromSPD;
     }
     return *this;
 }

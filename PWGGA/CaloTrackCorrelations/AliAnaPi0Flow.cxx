@@ -23,7 +23,6 @@
 #include "TClonesArray.h"
 #include "TObjString.h"
 #include "TDatabasePDG.h"
-#include <TParticle.h>
 #include <TRefArray.h>
 #include <TCanvas.h>
 #include <TChain.h>
@@ -45,14 +44,12 @@
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliMixedEvent.h"
-#include "AliAODMCParticle.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRunLoader.h"

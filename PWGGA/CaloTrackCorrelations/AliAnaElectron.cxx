@@ -19,7 +19,6 @@
 #include <TClonesArray.h>
 #include <TObjString.h>
 //#include <Riostream.h>
-#include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "AliVTrack.h"
 
@@ -31,7 +30,7 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
 #include "AliVCluster.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliMixedEvent.h"
 
 /// \cond CLASSIMP
@@ -352,7 +351,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
         Int_t noverlaps = 1;      
         for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
         {
-          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),
+          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetMC(),
                                                                ancPDG,ancStatus,fMomentumMC,fProdVertex);
           if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
         }
@@ -1204,7 +1203,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t tag = -1 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC());
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          
@@ -1380,8 +1379,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 {
   // Access MC information in stack if requested, check that it exists.
 
-  TParticle        * primary     = 0x0;   
-  AliAODMCParticle * aodprimary  = 0x0; 
+  AliVParticle * primary     = 0x0;   
   
   if( IsDataMC() && !GetMC() )
   {
@@ -1452,31 +1450,16 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
       Float_t eprim   = 0;
       //Float_t ptprim  = 0;
-      if( GetReader()->ReadStack() )
+      primary = GetMC()->GetTrack(label);
+      
+      if(!primary)
       {
-        primary = GetMC()->Particle(label);
-        if(!primary)
-        {
-          AliWarning(Form("*** no primary ***:  label %d", label));
-          continue ;
-        }
-        
-        eprim   = primary->Energy();
-        //ptprim  = primary->Pt();
+        AliWarning(Form("*** no primary ***:  label %d", label));
+        continue;
       }
-      else if( GetReader()->ReadAODMCParticles() )
-      {
-        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
-        
-        if(!aodprimary)
-        {
-          AliWarning(Form("*** no primary ***:  label %d", label));
-          continue;
-        }
-        
-        eprim   = aodprimary->E();
-        //ptprim  = aodprimary->Pt();
-      }
+      
+      eprim   = primary->E();
+      //ptprim  = aodprimary->Pt();
       
       Int_t tag =ph->GetTag();
       

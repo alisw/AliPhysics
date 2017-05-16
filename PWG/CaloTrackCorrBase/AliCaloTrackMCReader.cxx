@@ -99,8 +99,6 @@ void AliCaloTrackMCReader::InitParameters()
   fIndex2ndPhoton     = -1;
   
   fDataType           = kMC;  
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE; //This class only works with Kinematics.root input.
   
   //For this reader we own the objects of the arrays
   fCTSTracks    ->SetOwner(kTRUE); 
@@ -124,14 +122,14 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
   
   if(pdg!=22) return;
   
-  TParticle *meson = GetMC()->Particle(imom);
-  Int_t mepdg  = meson->GetPdgCode();
+  AliVParticle *meson = GetMC()->GetTrack(imom);
+  Int_t mepdg  = meson->PdgCode();
   Int_t idaug1 = meson->GetFirstDaughter();
   if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2)
   { //Check only decay in 2 photons
-    TParticle * d1 = GetMC()->Particle(idaug1  );
-    TParticle * d2 = GetMC()->Particle(idaug1+1);
-    if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 )
+    AliVParticle * d1 = GetMC()->GetTrack(idaug1  );
+    AliVParticle * d2 = GetMC()->GetTrack(idaug1+1);
+    if(d1->PdgCode() == 22 && d2->PdgCode() == 22 )
     {
       d1->Momentum(fGamDecayMom1);
       d2->Momentum(fGamDecayMom2);
@@ -160,34 +158,31 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
 }
 
 //__________________________________________________________________________________
-/// Fill CaloClusters or TParticles lists of PHOS or EMCAL.
+/// Fill CaloClusters or AliVParticles lists of PHOS or EMCAL.
 //__________________________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle)
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, Int_t motherIndex, Int_t pdg)
 {
   Char_t  ttype          = 0;
   Float_t overAngleLimit = 100;
   
   if     (fFillPHOS)
   {
-    if( particle->Pt() < fPHOSPtMin ) return;
-    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(particle->Eta(),particle->Phi(),kPHOS )) return;
+    if( fMomentum.Pt() < fPHOSPtMin ) return;
+    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kPHOS )) return;
     ttype = AliVCluster::kPHOSNeutral;
     overAngleLimit = fPHOSOverlapAngle;
   }
   else if(fFillEMCAL)
   {
-    if( particle->Pt() < fEMCALPtMin ) return;
-    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(particle->Eta(),particle->Phi(),kEMCAL)) return;
+    if( fMomentum.Pt() < fEMCALPtMin ) return;
+    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) return;
     ttype= AliVCluster::kEMCALClusterv1;
     overAngleLimit = fEMCALOverlapAngle;
   }
-  
-  particle->Momentum(fMomentum);
-  
+    
   Int_t index = iParticle ;
-  Int_t pdg = TMath::Abs(particle->GetPdgCode());
   if(fCheckOverlap)
-    CheckOverlap(overAngleLimit,particle->GetFirstMother(),index, iParticle, pdg);
+    CheckOverlap(overAngleLimit,motherIndex,index, iParticle, pdg);
   
   Int_t labels[] = {index};
   Double_t x[] = {fMomentum.X(), fMomentum.Y(), fMomentum.Z()};
@@ -230,30 +225,34 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   FillVertexArray();
   
   Int_t iParticle  = 0 ;
-  Double_t charge  = 0.;
   Int_t nparticles = GetMC()->GetNumberOfTracks() ;
   
   if(fOnlyGeneratorParticles) nparticles=GetMC()->GetNumberOfPrimaries();
   
   for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) 
   {
-    TParticle * particle = GetMC()->Particle(iParticle);
+    AliVParticle * particle = GetMC()->GetTrack(iParticle);
     Float_t p[3];
     Float_t x[3];
-    Int_t pdg = particle->GetPdgCode();						
     
     //Keep particles with a given status 
-    if(KeepParticleWithStatus(particle->GetStatusCode()) && (particle->Pt() > 0) )
+    if(KeepParticleWithStatus(particle->MCStatusCode()) && (particle->Pt() > 0) )
     {
       //Skip bizarre particles, they crash when charge is calculated
       //	if(TMath::Abs(pdg) == 3124 || TMath::Abs(pdg) > 10000000) continue ;
       
-      charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+      //charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+      Int_t charge   = particle->Charge();
+      Int_t momIndex = particle->GetMother();
+      Int_t pdg      = particle->PdgCode();						
+
+      particle->Momentum(fMomentum);
       
-      Float_t en  = particle->Energy();
+      Float_t en  = particle->E();
       Float_t pt  = particle->Pt();
       Float_t eta = particle->Eta();
       Float_t phi = particle->Phi();
+      
       //---------- Charged particles ----------------------
       if(charge != 0)
       {
@@ -277,12 +276,12 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           
           if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(eta,phi,kCTS)) continue;
           
-          if(TMath::Abs(pdg) == 11 && (GetMC()->Particle(particle->GetFirstMother()))->GetPdgCode()==22) continue ;
+          if(TMath::Abs(pdg) == 11 && (GetMC()->GetTrack(particle->GetMother()))->PdgCode()==22) continue ;
           
           AliDebug(2,Form("CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
                           en,pt,phi*TMath::RadToDeg(),eta));
           
-          x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
+          x[0] = particle->Xv(); x[1] = particle->Yv(); x[2] = particle->Zv();
           p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
           //Create object and write it to file
           AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
@@ -295,8 +294,10 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           SetTrackChargeAndPID(pdg, aodTrack);
           fCTSTracks->Add(aodTrack);//reference the selected object to the list
         }
-        //Keep some charged particles in calorimeters lists
-        if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle);
+        
+        // Keep some charged particles in calorimeters lists
+        if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) 
+          FillCalorimeters(iParticle, momIndex, pdg);
         
       }//Charged
       
@@ -311,7 +312,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
         {
           AliDebug(2,Form("Calo : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
                           en,pt,phi*TMath::RadToDeg(),eta));
-          FillCalorimeters(iParticle, particle);
+          FillCalorimeters(iParticle, momIndex, pdg);
         }
         else 
         {
@@ -326,21 +327,20 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
 
               MakePi0Decay();//,angle);
               
-              //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
-              TParticle * pPhoton1 = new TParticle(22,1,iParticle,0,0,0,fGamDecayMom1.Px(),fGamDecayMom1.Py(),
-                                                   fGamDecayMom1.Pz(),fGamDecayMom1.E(),0,0,0,0);
-              TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,fGamDecayMom2.Px(),fGamDecayMom2.Py(),
-                                                   fGamDecayMom2.Pz(),fGamDecayMom2.E(),0,0,0,0);
-              //Fill particle/calocluster arrays
-              FillCalorimeters(iParticle,pPhoton1);
-              FillCalorimeters(iParticle,pPhoton2);
+              // Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
+              // and fill particle/calocluster arrays
+              fMomentum.SetPxPyPzE(fGamDecayMom1.Px(),fGamDecayMom1.Py(), fGamDecayMom1.Pz(),fGamDecayMom1.E());
+              FillCalorimeters(iParticle,iParticle,22);
+              
+              fMomentum.SetPxPyPzE(fGamDecayMom2.Px(),fGamDecayMom2.Py(), fGamDecayMom2.Pz(),fGamDecayMom2.E());
+              FillCalorimeters(iParticle,iParticle,22);
             }//pt cut
           }//pi0
           else
           {
             AliDebug(2,Form("Calo : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
                             en,pt,phi*TMath::RadToDeg(),eta));
-            FillCalorimeters(iParticle,particle); //Add the rest
+            FillCalorimeters(iParticle,momIndex,pdg); //Add the rest
           }
         }
       }//neutral particles

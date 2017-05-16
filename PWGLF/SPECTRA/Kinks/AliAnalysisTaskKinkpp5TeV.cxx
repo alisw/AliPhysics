@@ -1,5 +1,6 @@
 //Date:11/05/2017
-//Author :: Nur Hussain, Gauhati University 
+
+//Author :: Nur Hussain and Buddhadeb Bhattacharjee, Gauhati University 
 // Thanks to Martha Spyropoulou-Stassinaki for her suggestions for the modification
 //purpose::Charged kaon identification using "Kink topology" for pp-5.02 TeV
 
@@ -39,11 +40,6 @@
 #include "AliMultiplicity.h"
 #include "AliMultSelection.h"
 //#include "AliMultSelectionCuts.h"
-using namespace std;
-
-ofstream myfile("input.txt");
-
-
 
 ClassImp(AliAnalysisTaskKinkpp5TeV)
 
@@ -122,9 +118,6 @@ void AliAnalysisTaskKinkpp5TeV::UserCreateOutputObjects()
 	const Float_t kDcaBinsTPConlyFactor = 5; //need to change binning of DCA plot for tpconly
 	// sort pT-bins ..
 
-
-
-
 	 Double_t binsPt2[77] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 	 Double_t binsPt[77] = { 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 
@@ -140,8 +133,6 @@ void AliAnalysisTaskKinkpp5TeV::UserCreateOutputObjects()
 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4,
 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0,5.5, 6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0
  };
-
-
 
   	Double_t gPt13K0PKal[45]=    { 0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,//  9bins 
                                  0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.,       //12 bins
@@ -404,21 +395,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 //	 fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
      	fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
-// V0 trigger
-/*
-
- // Physics selection
-  AliAnalysisManager *mgr= AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *hdr=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  UInt_t maskIsSelected = hdr->IsEventSelected();
-  Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
-  if (!isSelected) return;
-*/
-//fESD = dynamic_cast<AliESDEvent *>(InputEvent());
-//...
-//Float_t cent = -999;
-//AliMultSelection *fMultSel = (AliMultSelection *) fESD->FindListObject("MultSelection");
-//Float_t cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE); //fEvtMult is initialized to -999
 
 
 //centrality for Pb-Pb 
@@ -471,7 +447,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
     	}
 //	
         Int_t indexKinkDau=trackD->GetKinkIndex(0);
-//if (myfile.is_open()) myfile<<indexKinkDau<<endl;
 // daughter kink 
 //        AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkDau)-1);
       	if ( indexKinkDau > 0 )    {
@@ -616,7 +591,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 
 	fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
            Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
-//if (myfile.is_open()) 	myfile<<kinkAngle<<endl;
 
  	if(  (TMath::Abs(rapiditK )) > 0.5 ) continue;  
         if ( (track->Pt())<.200)continue;  
@@ -784,107 +758,6 @@ Float_t AliAnalysisTaskKinkPbPb::GetVertex(AliESDEvent* aod) const
 void AliAnalysisTaskKinkpp5TeV::Terminate(Option_t *) 
 {
   // Draw result to the screen
-  // Called once at the end of the query
-
-  fOutputList = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutputList) {
-    printf("ERROR: Output list not available\n");
-    return;
-  }
-  
-  	fHistPt = dynamic_cast<TH1F*> (fOutputList->At(0));
-  	if (!fHistPt) {
-    	printf("ERROR: fHistPt not available\n");
-    	return;
-  	}
-  	fMultiplicity = dynamic_cast<TH1F*> (fOutputList->At(1));
-  	fIncompletEvent = dynamic_cast<TH1F*> (fOutputList->At(2));
-  	fMultpileup = dynamic_cast<TH1F*> (fOutputList->At(3));
-  	fMultV0trigger = dynamic_cast<TH1F*> (fOutputList->At(4));
-  	 fZvertex = dynamic_cast<TH1F*> (fOutputList->At(5));
-  	 fEventVertex = dynamic_cast<TH1F*> (fOutputList->At(6));
-  	 fRatioCrossedRows = dynamic_cast<TH1F*> (fOutputList->At(7));
-  	 fZvXv = dynamic_cast<TH2F*> (fOutputList->At(8));
-  	 fZvYv = dynamic_cast<TH2F*> (fOutputList->At(9));
-  	 fXvYv = dynamic_cast<TH2F*> (fOutputList->At(10));
-  	 fRpr = dynamic_cast<TH1D*> (fOutputList->At(11));
-  	 fdcaToVertexXY = dynamic_cast<TH1D*> (fOutputList->At(12));
-  	 fdcaToVertexXYafterCut = dynamic_cast<TH1D*> (fOutputList->At(13));
-  	 fptAllKink = dynamic_cast<TH1F*> (fOutputList->At(14));
-  	 fRatioCrossedRowsKink = dynamic_cast<TH1F*> (fOutputList->At(15));
-  	 fPosiKink = dynamic_cast<TH2F*> (fOutputList->At(16));
-  	 fQtAll = dynamic_cast<TH1F*> (fOutputList->At(17));
-  	 fptKink = dynamic_cast<TH1F*> (fOutputList->At(18));
-  	 fQtMothP = dynamic_cast<TH2F*> (fOutputList->At(19));
-  	 fqT1 = dynamic_cast<TH1F*> (fOutputList->At(20));
-  	 fEta = dynamic_cast<TH1F*> (fOutputList->At(21));
-  	 fqT2 = dynamic_cast<TH1F*> (fOutputList->At(22));
-  	 fKinkKaonBackg = dynamic_cast<TH1F*> (fOutputList->At(23));
-  	 fPtCut1 = dynamic_cast<TH1F*> (fOutputList->At(24));
-  	 fAngMotherPi = dynamic_cast<TH2F*> (fOutputList->At(25));
-  	 fQtInvM = dynamic_cast<TH2F*> (fOutputList->At(26));
-  	 fInvMuNuAll = dynamic_cast<TH1F*> (fOutputList->At(27));
-  	 fInvMassMuNuPtAll = dynamic_cast<TH2F*> (fOutputList->At(28));
-  	 fRadiusPt = dynamic_cast<TH2F*> (fOutputList->At(29));
-  	 fAngMotherKC = dynamic_cast<TH2F*> (fOutputList->At(30));
-  	 fkaonInvaiant = dynamic_cast<TH1F*> (fOutputList->At(31));
-  	 fRadiusNcl = dynamic_cast<TH2F*> (fOutputList->At(32));
-  	 fPtKPDG = dynamic_cast<TH1F*> (fOutputList->At(33));
-  	 fAngMotherKKinks = dynamic_cast<TH2F*> (fOutputList->At(34));
-  	 fPtCut2 = dynamic_cast<TH1F*> (fOutputList->At(35));
-  	 fPtCut3 = dynamic_cast<TH1F*> (fOutputList->At(36));
-  	 fTPCSignlMotherK = dynamic_cast<TH2F*> (fOutputList->At(37));
-  	 fPtKaon = dynamic_cast<TH1F*> (fOutputList->At(38));
-  	 fPtKaonP = dynamic_cast<TH1F*> (fOutputList->At(39));
-  	 fPtKaonN = dynamic_cast<TH1F*> (fOutputList->At(40));
-  	 fTPCSignalP = dynamic_cast<TH2F*> (fOutputList->At(41));
-  	 fRadiusNclCln = dynamic_cast<TH2F*> (fOutputList->At(42));
-  	  fRadiusPtcln= dynamic_cast<TH2F*> (fOutputList->At(43));
-  	  fInvMassMuNuPt= dynamic_cast<TH2F*> (fOutputList->At(44));
-  	  fTPCSignlPtpc= dynamic_cast<TH2F*> (fOutputList->At(45));
-  	  fMothKinkMomSignl= dynamic_cast<TH2F*> (fOutputList->At(46));
-  	  fTPCSignlKinkDau= dynamic_cast<TH2F*> (fOutputList->At(47));
-  	  fTPCMomNSigmaAllKaon= dynamic_cast<TH2F*> (fOutputList->At(48));
-  	  fnSigmaTPC= dynamic_cast<TH1F*> (fOutputList->At(49));
- 	  fradiurKink= dynamic_cast<TH1F*> (fOutputList->At(50));
- 	  fLenthKink= dynamic_cast<TH1F*> (fOutputList->At(51));
- 	  fEtaK= dynamic_cast<TH1F*> (fOutputList->At(52));
- 	  frapiKESD = dynamic_cast<TH1F*> (fOutputList->At(53));
- 	  fzVertexPositionKinKvsKinkRad = dynamic_cast<TH2F*>(fOutputList->At(54));
- 	  fSignPtNcl = dynamic_cast<TH2F*>(fOutputList->At(55));
- 	  fSignPtrapiK = dynamic_cast<TH2F*>(fOutputList->At(56));
- 	  frapiKNcl = dynamic_cast<TH2F*>(fOutputList->At(57));
- 	  fSignPt = dynamic_cast<TH1F*>(fOutputList->At(58));
- 	  fChi2NclTPC = dynamic_cast<TH2F*>(fOutputList->At(59));
- 	  fRatioChi2Ncl = dynamic_cast<TH1F*>(fOutputList->At(60));
- 	  flifetime = dynamic_cast<TH1F*>(fOutputList->At(61));
- 	  fPtKinkKaon = dynamic_cast<TH1F*>(fOutputList->At(62));
- 	  fDCAkink = dynamic_cast<TH1F*>(fOutputList->At(63));
- 	  fPtKink = dynamic_cast<TH1F*>(fOutputList->At(64));
- 	  fPtKinkPos = dynamic_cast<TH1F*>(fOutputList->At(65));
- 	  fPtKinkNeg = dynamic_cast<TH1F*>(fOutputList->At(66));
- 	  fPtKinkK0 = dynamic_cast<TH1F*>(fOutputList->At(67));
- 	  fPtKinkK0P = dynamic_cast<TH1F*>(fOutputList->At(68));
- 	  fPtKinkK0N = dynamic_cast<TH1F*>(fOutputList->At(69));
- 	  fPtKinkGyu = dynamic_cast<TH1F*>(fOutputList->At(70));
- 	  fPtKinkGyuP = dynamic_cast<TH1F*>(fOutputList->At(71));
- 	  fPtKinkGyuN = dynamic_cast<TH1F*>(fOutputList->At(72));
- 	  fKinKRbn = dynamic_cast<TH1F*>(fOutputList->At(73));
- 	  fradPtRpDt = dynamic_cast<TH3F*>(fOutputList->At(74));
- 	  fAngMomK = dynamic_cast<TH2F*>(fOutputList->At(75));
- 	  fPosiKinkK = dynamic_cast<TH2F*>(fOutputList->At(76));
- 	  fPosiKinKXZ = dynamic_cast<TH2F*>(fOutputList->At(77));
- 	  fPosiKinKYZ = dynamic_cast<TH2F*>(fOutputList->At(78));
- 	  fNumberOfEvent= dynamic_cast<TH1F*>(fOutputList->At(79));
- 	  fNumberOfEvent_cent= dynamic_cast<TH1F*>(fOutputList->At(80));
- 	  f1= dynamic_cast<TF1*>(fOutputList->At(81));
- 	  fbgCleaningHigh= dynamic_cast<TH1F*>(fOutputList->At(82));
- 	  f2= dynamic_cast<TF1*>(fOutputList->At(83));
-	fTPCSignalPt=dynamic_cast<TH2F*>(fOutputList->At(84));
-          fqTvsPt=dynamic_cast<TH2F*>(fOutputList->At(85));
-          fInvMassPt=dynamic_cast<TH2F*>(fOutputList->At(86));
-          fCent=dynamic_cast<TH1F*>(fOutputList->At(87));
-          fEventVsCentrality=dynamic_cast<TH2F*>(fOutputList->At(88));
 }
 
 

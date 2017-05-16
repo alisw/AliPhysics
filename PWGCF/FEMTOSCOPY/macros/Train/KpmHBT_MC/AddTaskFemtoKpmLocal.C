@@ -63,6 +63,9 @@ AliAnalysisTaskFemto *AddTaskFemtoKpmLocal/*(const char *configMacroName="Config
       <<tVerbose<<" )"
       <<endl;
   
+  TString tContainerName = tConfigParams;
+  tConfigParams = '"' + tConfigParams + '"';
+
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto
     (
      tTaskName,

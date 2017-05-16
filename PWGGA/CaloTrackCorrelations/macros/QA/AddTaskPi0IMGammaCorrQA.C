@@ -280,21 +280,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
            inputDataType.Data());
   
   reader->SetDebug(debugLevel);//10 for lots of messages
-
-  // MC settings
-  if(simulation)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();
-      reader->SwitchOffAODMCParticles();
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();
-      reader->SwitchOnAODMCParticles();
-    }
-  }
   
   //------------------------
   // Detector input filling
@@ -459,18 +444,22 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
 
   if(calorimeter=="PHOS")
   {
-    cu->SetNumberOfSuperModulesUsed(3);
+    if(year < 2014) cu->SetNumberOfSuperModulesUsed(3);
+    else            cu->SetNumberOfSuperModulesUsed(4);
   }
   else
   {
-    if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); // EMCAL first year
-    else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
-    else                   cu->SetNumberOfSuperModulesUsed(20);
+    Int_t nSM     = 20;
+    Int_t lastEMC = 11;
+    if      (year == 2010) { nSM =  4; lastEMC = 3; }// EMCAL first year
+    else if (year <  2014) { nSM = 10; lastEMC = 9; }// EMCAL active 2011-2013
+    
+    cu->SetNumberOfSuperModulesUsed(nSM);
     
     if      (trigger.Contains("EMCAL"))
     {
       cu->SetFirstSuperModuleUsed( 0);
-      cu->SetLastSuperModuleUsed (11);
+      cu->SetLastSuperModuleUsed (lastEMC);
     }
     else if (trigger.Contains("DCAL"))
     {
@@ -482,6 +471,9 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
       cu->SetFirstSuperModuleUsed(0);
       cu->SetLastSuperModuleUsed (cu->GetNumberOfSuperModulesUsed()-1);
     }
+    
+    printf("AddTaskPi0IMGammaCorrQA - CalorimeterUtils: nSM %d, first %d, last %d\n",
+           cu->GetNumberOfSuperModulesUsed(),cu->GetFirstSuperModuleUsed(), cu->GetLastSuperModuleUsed());
   }
 
   // PHOS 
@@ -627,8 +619,16 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, Bool_t caloType, TString co
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
   // Cuts 
-  if(calorimeter=="EMCAL") ana->SetPairTimeCut(100);
+  if(calorimeter=="EMCAL") 
+  {
+    ana->SetPairTimeCut(100);
     
+    // Angle cut, avoid pairs with too large angle
+    ana->SwitchOnAngleSelection(); 
+    ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
+    ana->SetAngleCut(0.016); // Minimum angle open, ~cell size
+  }
+  
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
   // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.

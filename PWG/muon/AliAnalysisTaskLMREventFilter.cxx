@@ -517,19 +517,18 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	{
 	  fhTriggers->Fill(fTriggerClasses[13].Data(),1);
 	  tmpMask|=fTriggerMask[13];
-	}
-      Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
-      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
-      //WARNING it is done without PS
-      if(is0MLLfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[21].Data(),1);
-	  tmpMask|=fTriggerMask[21];
-	}
-      if(is0MULfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[22].Data(),1);
-	  tmpMask|=fTriggerMask[22];
+	  Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
+	  Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+	  if(is0MLLfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[21].Data(),1);
+	      tmpMask|=fTriggerMask[21];
+	    }
+	  if(is0MULfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[22].Data(),1);
+	      tmpMask|=fTriggerMask[22];
+	    }
 	}
     }
   if(trigStr.Contains("CMSL8"))
@@ -538,19 +537,18 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	{
 	  fhTriggers->Fill(fTriggerClasses[9].Data(),1);
 	  tmpMask|=fTriggerMask[9];
-	}
-      Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
-      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
-      //WARNING it is done without PS
-      if(is0MLLfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[23].Data(),1);
-	  tmpMask|=fTriggerMask[23];
-	}
-      if(is0MULfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[24].Data(),1);
-	  tmpMask|=fTriggerMask[24];
+	  Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
+	  Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+	  if(is0MLLfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[23].Data(),1);
+	      tmpMask|=fTriggerMask[23];
+	    }
+	  if(is0MULfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[24].Data(),1);
+	      tmpMask|=fTriggerMask[24];
+	    }
 	}
     }
   for(Int_t i=3;i<=5;i++)
@@ -576,19 +574,18 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	{
 	  fhTriggers->Fill(fTriggerClasses[11].Data(),1);
 	  tmpMask|=fTriggerMask[11];
-	}
-      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
-      Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
-      //WARNING it is done without PS
-      if(is0MULfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[25].Data(),1);
-	  tmpMask|=fTriggerMask[25];
-	}
-      if(is0MSLfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[27].Data(),1);
-	  tmpMask|=fTriggerMask[27];
+	  Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+	  Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
+	  if(is0MULfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[25].Data(),1);
+	      tmpMask|=fTriggerMask[25];
+	    }
+	  if(is0MSLfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[27].Data(),1);
+	      tmpMask|=fTriggerMask[27];
+	    }
 	}
     }
   if(trigStr.Contains("C0TVX"))
@@ -597,19 +594,18 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	{
 	  fhTriggers->Fill(fTriggerClasses[12].Data(),1);
 	  tmpMask|=fTriggerMask[12];
-	}
-      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
-      Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
-      //WARNING it is done without PS
-      if(is0MULfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[26].Data(),1);
-	  tmpMask|=fTriggerMask[26];
-	}
-      if(is0MSLfired)
-	{
-	  fhTriggers->Fill(fTriggerClasses[28].Data(),1);
-	  tmpMask|=fTriggerMask[28];
+	  Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+	  Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
+	  if(is0MULfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[26].Data(),1);
+	      tmpMask|=fTriggerMask[26];
+	    }
+	  if(is0MSLfired)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[28].Data(),1);
+	      tmpMask|=fTriggerMask[28];
+	    }
 	}
     }
 

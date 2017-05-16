@@ -27,11 +27,10 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliMCEvent.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaPi0EbE) ;
@@ -2703,45 +2702,23 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
     Int_t pdg1    = -1;//, pdg2    = -1;
     Int_t ndaugh1 = -1, ndaugh2 = -1;
     //Check if pi0/eta mother is the same
-    if(GetReader()->ReadStack())
+    if ( label1 >= 0 )
     {
-      if ( label1 >= 0 )
-      {
-        TParticle * mother1 = GetMC()->Particle(label1);//photon in kine tree
-        label1 = mother1->GetFirstMother();
-        mother1 = GetMC()->Particle(label1);//pi0
-        pdg1=mother1->GetPdgCode();
-        ndaugh1 = mother1->GetNDaughters();
-      }
-      if ( label2 >= 0 )
-      {
-        TParticle * mother2 = GetMC()->Particle(label2);//photon in kine tree
-        label2 = mother2->GetFirstMother();
-        mother2 = GetMC()->Particle(label2);//pi0
-        //pdg2=mother2->GetPdgCode();
-        ndaugh2 = mother2->GetNDaughters();
-      }
-    } // STACK
-    else if(GetReader()->ReadAODMCParticles())
-    {//&& (input > -1)){
-      if ( label1 >= 0 )
-      {
-        AliAODMCParticle * mother1 = (AliAODMCParticle *) GetMC()->GetTrack(label1);//photon in kine tree
-        label1 = mother1->GetMother();
-        mother1 = (AliAODMCParticle *) GetMC()->GetTrack(label1);//pi0
-        pdg1=mother1->GetPdgCode();
-        ndaugh1 = mother1->GetNDaughters();
-      }
-      
-      if ( label2 >= 0 )
-      {
-        AliAODMCParticle * mother2 = (AliAODMCParticle *) GetMC()->GetTrack(label2);//photon in kine tree
-        label2 = mother2->GetMother();
-        mother2 = (AliAODMCParticle *) GetMC()->GetTrack(label2);//pi0
-        //pdg2=mother2->GetPdgCode();
-        ndaugh2 = mother2->GetNDaughters();
-      }
-    } // AOD
+      AliVParticle * mother1 =  GetMC()->GetTrack(label1);//photon in kine tree
+      label1  = mother1->GetMother();
+      mother1 = GetMC()->GetTrack(label1);//pi0
+      pdg1    = mother1->PdgCode();
+      ndaugh1 = mother1->GetNDaughters();
+    }
+    
+    if ( label2 >= 0 )
+    {
+      AliVParticle * mother2 = GetMC()->GetTrack(label2);//photon in kine tree
+      label2  = mother2->GetMother();
+      mother2 = GetMC()->GetTrack(label2);//pi0
+    //pdg2    = mother2->PdgCode();
+      ndaugh2 = mother2->GetNDaughters();
+    }
     
 //  printf("mother1 %d, mother2 %d\n",label1,label2);
     if ( label1 == label2 && label1 >= 0  && ndaugh1 == ndaugh2 && ndaugh1 == 2 )
@@ -3309,7 +3286,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC())
       {
         Int_t	label2 = photon2->GetLabel();
-        if(label2 >= 0 )photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(),kCTS));
+        if ( label2 >= 0 ) photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetMC()));
         
         HasPairSameMCMother(photon1->GetLabel(), photon2->GetLabel(),
                             photon1->GetTag()  , photon2->GetTag(),
@@ -3501,8 +3478,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
-      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC());
       AliDebug(1,Form("Origin of candidate %d",tag));
     }
     
@@ -3635,19 +3611,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       Bool_t ok      = kFALSE;
       Int_t  mcLabel = calo->GetLabel();
       
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetMC(),ok);
       
       
       if(mcIndex == kmcPi0 || mcIndex == kmcEta)
       {
         if(mcIndex == kmcPi0)
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetMC(),ok,mesonLabel);
           if(fGrandMotherMom.E() > 0 && ok) ptprim =  fGrandMotherMom.Pt();
         }
         else
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetMC(),ok,mesonLabel);
           if(fGrandMotherMom.E() > 0 && ok) ptprim = fGrandMotherMom.Pt();
         }
       }
@@ -3655,7 +3631,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       const UInt_t nlabels = calo->GetNLabels();
       Int_t overpdg[nlabels];
       Int_t overlab[nlabels];
-      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetReader(), overpdg, overlab);
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetMC(), overpdg, overlab);
       
       fhMCMassPt     [mcIndex]->Fill(fMomentum.Pt(), mass, GetEventWeight());
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit       , mass, GetEventWeight());
@@ -3933,12 +3909,12 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         Int_t   momlabel  = -1;
         Bool_t  ok        = kFALSE;
         
-        fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+        fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetMC(),ok);
         if(!ok) continue;
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetMC(),ok,momlabel);
           if(fGrandMotherMom.E() > 0 && ok)
           {
             efracMC =  fGrandMotherMom.E()/ener;
@@ -3948,7 +3924,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhMCPi0DecayPt->Fill(pt, GetEventWeight());
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetMC(),ok,momlabel);
             
           if(fGrandMotherMom.E() > 0 && ok)
           {
@@ -3958,7 +3934,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetMC(),ok,momlabel);
           if(fGrandMotherMom.E() > 0 && ok)
           {
             efracMC =  fGrandMotherMom.E()/ener;
@@ -3968,7 +3944,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
         {
           fhMCEtaDecayPt->Fill(pt, GetEventWeight());
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetMC(),ok,momlabel);
             
           if(fGrandMotherMom.E() > 0 && ok)
           {
@@ -3984,35 +3960,16 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       
       if( mcIndex==kmcPi0 || mcIndex==kmcEta )
       {
-        Float_t prodR     = -1;
-        Int_t   momindex  = -1;
-        Int_t   mompdg    = -1;
-        Int_t   momstatus = -1;
-        Int_t status      = -1;
-        if(GetReader()->ReadStack())
-        {
-          TParticle* ancestor = GetMC()->Particle(label);
-          status = ancestor->GetStatusCode();
-          momindex  = ancestor->GetFirstMother();
-          if(momindex < 0) return;
-          TParticle* mother = GetMC()->Particle(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatusCode();
-          prodR = mother->R();
-        }
-        else
-        {
-          AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(label);
-          status    = ancestor->GetStatus();
-          momindex  = ancestor->GetMother();
-          
-          if(momindex < 0) return;
-            
-          AliAODMCParticle* mother   = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatus();
-          prodR     = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-        }
+        AliVParticle* ancestor = GetMC()->GetTrack(label);
+        Int_t status    = ancestor->MCStatusCode();
+        Int_t momindex  = ancestor->GetMother();
+        
+        if(momindex < 0) return;
+        
+        AliVParticle* mother =  GetMC()->GetTrack(momindex);
+        Int_t mompdg    = TMath::Abs(mother->PdgCode());
+        Int_t momstatus = mother->MCStatusCode();
+        Float_t prodR   = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
         
         if( mcIndex==kmcPi0 )
         {

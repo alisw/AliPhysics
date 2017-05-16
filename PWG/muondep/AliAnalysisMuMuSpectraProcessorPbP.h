@@ -1,6 +1,6 @@
 
-#ifndef ALINANALYSISMUMUSPECTRACAPSULEPBP_H
-#define ALINANALYSISMUMUSPECTRACAPSULEPBP_H
+#ifndef ALINANALYSISMUMUSPECTRAPROCESSORPBP_H
+#define ALINANALYSISMUMUSPECTRAPROCESSORPBP_H
 
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -9,7 +9,7 @@
 // $Id$
 
 /// @ingroup pwg_muondep_mumu
-/// @class AliAnalysisMuMuSpectraCapsulePbP
+/// @class AliAnalysisMuMuSpectraProcessorPbP
 /// @brief helper class to deal with results stored in a spectra with pPb methods.
 ///
 /// author : Benjamin Audurier (Subatech)
@@ -21,22 +21,22 @@
 #include "AliAnalysisMuMuSpectra.h"
 #include "AliCounterCollection.h"
 #include "AliMergeableCollection.h"
-#include "AliAnalysisMuMuSpectraCapsule.h"
+#include "AliAnalysisMuMuSpectraProcessor.h"
 
 class TGraphErrors;
 class AliAnalysisMuMuSpectra;
-class AliAnalysisMuMuSpectraCapsulePbP : public AliAnalysisMuMuSpectraCapsule
+class AliAnalysisMuMuSpectraProcessorPbP : public AliAnalysisMuMuSpectraProcessor
 {
 
 public:
   //ctor
-  AliAnalysisMuMuSpectraCapsulePbP(
+  AliAnalysisMuMuSpectraProcessorPbP(
                              const AliAnalysisMuMuSpectra            *  spectra=0x0,
                              const TString                           spectraPath ="",
                              const char                              * externFile="",
                              const char                              * externFile2="");
   // dtor
-  virtual ~AliAnalysisMuMuSpectraCapsulePbP();
+  virtual ~AliAnalysisMuMuSpectraProcessorPbP();
   // Compute Yield
   TGraphErrors* ComputeYield(const char* what="", const TH1* histo=0x0, const char* sResName="");
   // Draw fit results and save them if wanted
@@ -60,8 +60,8 @@ private:
   // Set global constants according to centrality
   Bool_t SetConstantFromExternFile(const char* file);
   // Equality operator
-  AliAnalysisMuMuSpectraCapsulePbP(const AliAnalysisMuMuSpectraCapsulePbP& rhs);// not implemented on purpose
-  AliAnalysisMuMuSpectraCapsulePbP& operator=(const AliAnalysisMuMuSpectraCapsulePbP& rhs);// not implemented on purpose
+  AliAnalysisMuMuSpectraProcessorPbP(const AliAnalysisMuMuSpectraProcessorPbP& rhs);// not implemented on purpose
+  AliAnalysisMuMuSpectraProcessorPbP& operator=(const AliAnalysisMuMuSpectraProcessorPbP& rhs);// not implemented on purpose
 
 
 private:
@@ -69,7 +69,7 @@ private:
   Double_t fConstArray[13]; // Array to store constant according to centrality bins
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisMuMuSpectraCapsulePbP,2);
+ ClassDef(AliAnalysisMuMuSpectraProcessorPbP,1);
  /// \endcond
 };
 

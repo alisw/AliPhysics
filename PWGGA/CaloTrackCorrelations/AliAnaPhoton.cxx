@@ -17,7 +17,7 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include "TParticle.h"
+#include "AliVParticle.h"
 #include "TDatabasePDG.h"
 
 // --- Analysis system ---
@@ -28,7 +28,6 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
 #include "AliVCluster.h"
-#include "AliAODMCParticle.h"
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -691,7 +690,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   Int_t pdg = 0, status = 0, momLabel = -1;
   
   //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
-  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetMC(), pdg, status, ok, momLabel);     
   
   if(ok)
   {
@@ -834,8 +833,9 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \return kTRUE of cluster is accepted
 /// \param calo: cluster pointer.
 /// \param nMaxima: number of local maxima.
+/// \param mctag: tag containing MC origin of cluster.
 //_____________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima, Int_t mctag)
 {
   Float_t ptcluster  = fMomentum.Pt();
   Float_t ecluster   = fMomentum.E();
@@ -914,7 +914,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   //Skip matched clusters with tracks
   
   // Fill matching residual histograms before PID cuts
-  if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,0);
+  if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,0,mctag);
   
   if(fRejectTrackMatch)
   {
@@ -979,61 +979,37 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   Int_t    nprim     =  GetMC()->GetNumberOfTracks();
   Bool_t   inacceptance = kFALSE ;
   
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle * primary = 0;
   
   for(Int_t i=0 ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
-    if(GetReader()->ReadStack())
+    primary = GetMC()->GetTrack(i);
+    if(!primary)
     {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
-      
-      pdg    = primStack->GetPdgCode();
-      status = primStack->GetStatusCode();
-      
-      // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
-      
-      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       prim->GetName(), prim->GetPdgCode());
-      
-      // Photon kinematics
-      primStack->Momentum(fMomentum);
-      
-      photonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
+      AliWarning("ESD primaries pointer not available!!");
+      continue;
     }
-    else
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-      
-      pdg    = primAOD->GetPdgCode();
-      status = primAOD->GetStatus();
-      
-      // Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-      
-      // Photon kinematics
-      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-      
-      photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
-    }
-
+    
+    pdg    = primary->PdgCode();
+    status = primary->MCStatusCode();
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
+    //       prim->GetName(), prim->GetPdgCode());
+    
+    // Photon kinematics
+    primary->Momentum(fMomentum);
+    
+    photonY = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->E()-primary->Pz())) ;
+    
+    //printf("particle %d, pdg %d, status %d, phys prim %d, pT %2.2f\n",i,pdg,status,primary->IsPhysicalPrimary(),primary->Pt());
+    
     // Select only photons in the final state
     if(pdg != 22 ) continue ;
     
@@ -1057,15 +1033,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn()) // defined on base class
     {
-      if(GetReader()->ReadStack()          &&
-         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primStack)) inacceptance = kFALSE ;
-      if(GetReader()->ReadAODMCParticles() &&
-         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
+      if(!GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primary)) inacceptance = kFALSE ;
     }
   
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),GetCalorimeter());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -1188,13 +1161,10 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    
 //  Int_t pdgMomOrg = 0, statusMomOrg = -1, momLabelOrg = -1;
 //  Bool_t okMomOrg = kFALSE;
-//  GetMCAnalysisUtils()->GetMother(label,GetReader(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
+//  GetMCAnalysisUtils()->GetMother(label,GetMC(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
 //  
-//  TParticle        * primStack = 0;
-//  AliAODMCParticle * primAOD   = 0;
-//
-//  TParticle        * primStackMom = 0;
-//  AliAODMCParticle * primAODMom   = 0;
+//  AliVParticle        * primary = 0;
+//  AliVParticle        * primaryMom = 0;
 //
 //  TString genName;
 //  (GetMC())->GetCocktailGenerator(label,genName);
@@ -1209,72 +1179,40 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    
 //    Int_t pdgMom = 0, statusMom = -1, momLabel = -1;
 //    Bool_t okMom = kFALSE;
-//    GetMCAnalysisUtils()->GetMother(i,GetReader(), pdgMom, statusMom, okMom, momLabel);    
+//    GetMCAnalysisUtils()->GetMother(i,GetMC(), pdgMom, statusMom, okMom, momLabel);    
 //    //printf("\t mom label %d\n",momLabel);
 //
 //    if(momLabel < 0) continue;
 //    
 //    Int_t grandMomLabel = -1;
-//    if(GetReader()->ReadStack())
-//    {
-//      primStack = GetMC()->Particle(i) ;
-//      if(!primStack)
+//      primary = GetMC()->Particle(i) ;
+//      if(!primary)
 //      {
 //        AliWarning("ESD primaries pointer not available!!");
 //        continue;
 //      }
 //      
-//      //pdg    = primStack->GetPdgCode();
-//      status = primStack->GetStatusCode();
+//      //pdg    = primary->GetPdgCode();
+//      status = primary->GetStatusCode();
 //      
 //      // Protection against floating point exception
-//      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-//          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-//          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
+//      if ( primary->E() == TMath::Abs(primary->Pz()) || 
+//          (primary->E() - primary->Pz()) < 1e-3      ||
+//          (primary->E() + primary->Pz()) < 0           )  continue ; 
 //      
 //      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
 //      //       prim->GetName(), prim->GetPdgCode());
 //      
 //      // Photon kinematics
-//      primStack->Momentum(fMomentum);
+//      primary->Momentum(fMomentum);
 //      
-//      //addedY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
-//      
-//      if(momLabel >= 0)
-//      {
-//        primStackMom = GetMC()->Particle(momLabel) ;
-//        grandMomLabel = primStackMom->GetFirstMother();      
-//      }
-//    }
-//    else
-//    {
-//      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-//      if(!primAOD)
-//      {
-//        AliWarning("AOD primaries pointer not available!!");
-//        continue;
-//      }
-//      //pdg    = primAOD->GetPdgCode();
-//      status = primAOD->GetStatus();
-//      
-//      //printf("\t pdg %d, status %d, E %f, pz %f\n",pdg,status,primAOD->E(),primAOD->Pz());
-//
-//      // Protection against floating point exception
-//      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-//          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-//          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-//      
-//      // Photon kinematics
-//      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-//
-//      //addedY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
+//      //addedY = 0.5*TMath::Log((primary->E+primary->Pz())/(primary->E-primary->Pz())) ;
 //      
 //      if(momLabel >= 0)
 //      {
-//        primAODMom = (AliAODMCParticle *) GetMC()->GetTrack(momLabel);
-//        grandMomLabel = primAODMom->GetMother();
+//        primaryMom = GetMC()->Particle(momLabel) ;
+//        grandMomLabel = primaryMom->GetFirstMother();      
 //      }
-//    }
 //    //printf("\t grandmom %d\n",grandMomLabel);
 //   
 //    // Select only photons in the final state
@@ -1300,10 +1238,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    // Check if photons hit the Calorimeter acceptance
 //    if(IsRealCaloAcceptanceOn()) // defined on base class
 //    {
-//      if(GetReader()->ReadStack()          &&
-//         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primStack)) inacceptance = kFALSE ;
-//      if(GetReader()->ReadAODMCParticles() &&
-//         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
+//      if(!GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primary)) inacceptance = kFALSE ;
 //    }
 //    //printf("\t in acceptance %d", inacceptance);
 //    if(!inacceptance) continue;
@@ -1817,7 +1752,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     Int_t overlab[nlabels];
     Int_t noverlaps = 0;
       if(!GetReader()->IsEmbeddedClusterSelectionOn())
-        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetMC(),overpdg,overlab);
     
     //printf("N overlaps %d \n",noverlaps);
 
@@ -1914,7 +1849,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     {
       mcIndex = kmcssPi0 ;
       
-      //Fill histograms to check shape of embedded clusters
+      // Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
         if     (fraction > 0.9)
@@ -2020,9 +1955,10 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
 /// Residual filled for different cuts:
 /// \param cluster: pointer to cluster info.
 /// \param cut: 0, No cut, 1, after cluster selection cuts.
+/// \param tag: tag containing MC origin of cluster.
 //__________________________________________________________________________
 void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
-                                                       Int_t cut)
+                                                       Int_t cut, Int_t tag)
 {
   Float_t dEta = cluster->GetTrackDz();
   Float_t dPhi = cluster->GetTrackDx();
@@ -2114,9 +2050,6 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
       
       if(IsDataMC())
       {
-        
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader(),GetCalorimeter());
-        
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
@@ -2797,7 +2730,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
       fhTrackMatchedDEtaDPhiNeg[i]->SetYTitle("#Delta #varphi (rad)");
       fhTrackMatchedDEtaDPhiNeg[i]->SetXTitle("#Delta #eta");
-      
+
       fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster #it{E}, %s",cutTM[i].Data()),
                              nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhdEdx[i]->SetXTitle("#it{E}^{cluster} (GeV)");
@@ -2884,7 +2817,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetYTitle("#Delta #varphi (rad)");
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetXTitle("#Delta #eta");
-                
+        
         fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <dE/dx> vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                       nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
         fhdEdxTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
@@ -4636,11 +4569,25 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       calo->GetMomentum(fMomentum,vertex) ;
     }
     
+    //-------------------------------------
+    // Play with the MC stack if available
+    //-------------------------------------
+    
+    // Check origin of the candidates
+    Int_t tag = -1;
+    
+    if ( IsDataMC() )
+    {
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
+          
+      AliDebug(1,Form("Origin of candidate, bit map %d",tag));
+    }// Work with stack also
+    
     //-----------------------------
     // Cluster selection
     //-----------------------------
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
-    if(!ClusterSelected(calo,nMaxima)) continue;
+    if(!ClusterSelected(calo,nMaxima,tag)) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -4652,6 +4599,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t label = calo->GetLabel();
     aodph.SetLabel(label);
     aodph.SetCaloLabel(calo->GetID(),-1);
+    aodph.SetTag(tag);
     aodph.SetDetectorTag(GetCalorimeter());
     //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
     
@@ -4662,21 +4610,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else if(distBad > fMinDist2) aodph.SetDistToBad(1) ;
     else                         aodph.SetDistToBad(0) ;
     //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
-    
-    //-------------------------------------
-    // Play with the MC stack if available
-    //-------------------------------------
-    
-    // Check origin of the candidates
-    Int_t tag = -1;
-    
-    if(IsDataMC())
-    {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
-      aodph.SetTag(tag);
-      
-      AliDebug(1,Form("Origin of candidate, bit map %d",aodph.GetTag()));
-    }//Work with stack also
     
     //--------------------------------------------------------
     // Fill some shower shape histograms before PID is applied
@@ -4810,7 +4743,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     // Matching after cuts
-    if( fFillTMHisto )         FillTrackMatchingResidualHistograms(calo,1);
+    if( fFillTMHisto )         FillTrackMatchingResidualHistograms(calo,1,tag);
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
@@ -4933,7 +4866,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Int_t pdg = 0, status = 0, momLabel = -1;
       
       //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(), pdg, status, ok, momLabel);     
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetMC(), pdg, status, ok, momLabel);     
       
       if(ok)
       {
@@ -4976,7 +4909,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           Bool_t okD = kFALSE;
           
           //fMomentum = 
-          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetReader(),pdgD, statusD, okD, daugLabel, fProdVertex);
+          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
           
           if(okD)
           {
