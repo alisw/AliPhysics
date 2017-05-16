@@ -61,7 +61,8 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false),
     fStudyEMCALgeo(false),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fRequireTOFBunchCrossing(false)
 {
 }
 
@@ -76,7 +77,8 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false),
     fStudyEMCALgeo(false),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fRequireTOFBunchCrossing(false)
 {
   SetNeedEmcalGeom(true);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -127,6 +129,8 @@ void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
 Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   Bool_t hasPIDresponse = fInputHandler->GetPIDResponse() != nullptr;
   if(fStudyPID && !hasPIDresponse) AliErrorStream() << "PID requested but PID response not available" << std::endl;
+  double bunchSpacing = fRunNumber >= 195389 && fRunNumber <= 197388 ? 200. : 25.;  // hard code bunch spacing as it is not available from OCDB (ideally would be taken from the filling scheme)
+  int bunchSpacingCorrection = int(bunchSpacing / 25.); // Corrects for the hard coded 25 ns bunch separation in GetTOFBunchCrossing
 
   // Loop over tracks, fill select particles
   // Histograms
@@ -147,6 +151,14 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
     if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
     if(TMath::Abs(checktrack->Pt()) < fMinPt) continue;
+
+    // Check TOF bunch crossing
+    if(fRequireTOFBunchCrossing) {
+      int tofCrossingRaw = checktrack->GetTOFBunchCrossing();
+      if(tofCrossingRaw == AliVTrack::kTOFBCNA) continue;  // No TOF hit assigned to track
+      int tofCrossingCorrected = TMath::Nint(tofCrossingRaw/bunchSpacingCorrection);
+      if(tofCrossingCorrected != fInputEvent->GetHeader()->GetBunchCrossNumber()) continue;
+    }
 
     if(fStudyEMCALgeo){
       if(checktrack->IsA() == AliESDtrack::Class()){

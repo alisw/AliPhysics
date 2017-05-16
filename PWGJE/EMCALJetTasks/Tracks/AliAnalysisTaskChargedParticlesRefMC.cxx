@@ -77,6 +77,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -102,6 +103,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -346,6 +348,15 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
     // Find associated particle
     assocMC = fMCEvent->GetTrack(TMath::Abs(checktrack->GetLabel()));
     if(!assocMC) continue;        // Fake track
+
+    // Require bunch crossing informaiton per track from TOF
+    // As this criterion cannot be checked in simulation
+    // the requirement reduces to the simple presence of a
+    // TOF hit as this is mandatory in order to determine
+    // a bunch crossing ID in data
+    if(fRequireTOFBunchCrossing){
+      if(!checktrack->IsOn(AliVTrack::kTOFout)) continue;
+    }
 
     // Select only particles within ALICE acceptance
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
