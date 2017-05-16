@@ -134,6 +134,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
   void                        SetTrackExtractionPercentagePower(Double_t val)   { fTrackExtractionPercentagePower = val; }
 
+  void                        SetNumRandomConesPerEvent(Int_t val)   { fNumRandomConesPerEvent = val; }
 
  protected:
   void                        ExecOnce();
@@ -182,6 +183,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAODPid*                  fTreeBufferPID;                           //!<! Tree of extracted jets (buffer)
   Int_t                       fTreeBufferPDG;                           //!<! Tree of extracted jets (buffer)
   Double_t                    fTrackExtractionPercentagePower;          ///< Extraction percentage for tracks
+  Int_t                       fNumRandomConesPerEvent;                  ///< Number of random cones thrown in one event
 
 
   // Criteria for the selection of jets that are passed to the correlation task

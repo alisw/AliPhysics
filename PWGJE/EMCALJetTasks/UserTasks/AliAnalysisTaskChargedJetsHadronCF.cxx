@@ -90,6 +90,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTreeBufferPID(0),
   fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
+  fNumRandomConesPerEvent(10),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -137,6 +138,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTreeBufferPID(0),
   fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
+  fNumRandomConesPerEvent(10),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -759,12 +761,6 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   }
 
   // ####### Particle loop
-  // Throw random cone
-  Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
-  Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
-  Double_t tmpRandConePt  = 0; // to be determined
-  Double_t tmpRandConePt3GeV = 0; // to be determined
-
   fAcceptedTracks = 0;
   fTracksCont->ResetCurrentID();
   Int_t trackcount = 0;
@@ -772,14 +768,6 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   {
     // Track plots
     FillHistogramsTracks(track);
-
-    if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
-    {
-      tmpRandConePt += track->Pt();
-      if (track->Pt() > 3.0)
-        tmpRandConePt3GeV += track->Pt();
-    }
-
     // Add track to output array
     trackcount++;
     AddTrackToOutputArray(track);
@@ -791,12 +779,31 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   if(fEventExtractionPercentage)
     AddEventToTree();
 
-  // ####### Event properties
-  FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
-  FillHistogram("hRandomConePtCut3GeV", tmpRandConePt3GeV - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
-  FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
-  FillHistogram("hRandomConeRawPtCut3GeV", tmpRandConePt3GeV, fCent);
+  // ######### Random cone sampling
+  for(Int_t iCone=0; iCone<fNumRandomConesPerEvent; iCone++)
+  {
+    // Throw random cone
+    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
+    Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+    Double_t tmpRandConePt  = 0;
+    Double_t tmpRandConePt3GeV = 0;
+    // Fill pT that is in cone
+    fTracksCont->ResetCurrentID();
+    while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+      if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
+      {
+        tmpRandConePt += track->Pt();
+        if (track->Pt() > 3.0)
+          tmpRandConePt3GeV += track->Pt();
+      }
+    // Fill histograms
+    FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+    FillHistogram("hRandomConePtCut3GeV", tmpRandConePt3GeV - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+    FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
+    FillHistogram("hRandomConeRawPtCut3GeV", tmpRandConePt3GeV, fCent);
+  }
 
+  // ####### Event properties
   FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
   FillHistogram("hJetCount", fAcceptedJets, fCent);
   FillHistogram("hTrackCount", trackcount, fCent);
