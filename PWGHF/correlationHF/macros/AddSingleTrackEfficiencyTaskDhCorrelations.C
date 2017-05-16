@@ -71,7 +71,9 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
                                                                            Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID,
                                                                            TString effName="",
                                                                            TString cutObjName="",
-									   TString centralityEstimator="ZNA")
+									   TString centralityEstimator="ZNA",
+                                                                           Double_t maxRadiusForPrimaries=999.
+                                                                           )
 {
     
     Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -218,6 +220,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
     cuts->SetTriggerMask(triggerMask);
     cuts->SetIsAOD(readAOD);
+    cuts->SetMaxRadiusOfParticleOrigin(maxRadiusForPrimaries);
     //
     // Pid selection here
     //

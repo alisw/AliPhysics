@@ -105,7 +105,7 @@ fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE),
 //Trigger rejection
-fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(1),
+fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
@@ -433,25 +433,7 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
 /// goodness of the EMCal trigger ...
 //_____________________________________________
 Bool_t AliCaloTrackReader::CheckEventTriggers()
-{  
-  //-----------------------------------------------------------
-  // Reject events depending on the trigger name 
-  //-----------------------------------------------------------
-  
-  AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
-                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
-                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
-  
-  if ( fFiredTriggerClassName != "" )
-  {
-    if ( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) 
-      return kFALSE;
-    
-    AliDebug(1,"Accepted triggered event");
-   
-    fhNEventsAfterCut->Fill(1.5);
-  }
-  
+{    
   //-----------------------------------------------------------
   // Reject events depending on the event species type
   //-----------------------------------------------------------
@@ -487,7 +469,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   AliDebug(1,"Pass event species selection");
 
-  fhNEventsAfterCut->Fill(2.5);
+  fhNEventsAfterCut->Fill(1.5);
   
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
@@ -513,11 +495,31 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if(!isTrigger && !isMB) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
-    AliDebug(0,"Pass uninteresting triggered events rejection in case of mixing analysis");  
+    AliDebug(1,"Pass uninteresting triggered events rejection in case of mixing analysis");  
+    
+    fhNEventsAfterCut->Fill(2.5);
+  }
+
+  //-----------------------------------------------------------
+  // Reject events depending on the trigger name 
+  // Careful!, if a special MB event string is selected but the option
+  // to select events via the mask in the reader is done, it will not 
+  // be taken into account.
+  //-----------------------------------------------------------
+  
+  AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
+                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
+                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
+  
+  if ( fFiredTriggerClassName != "" && !isMB )
+  {
+    if ( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) 
+      return kFALSE;
+    
+    AliDebug(1,"Accepted triggered event");
     
     fhNEventsAfterCut->Fill(3.5);
   }
-
   
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
@@ -700,9 +702,9 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(2 ,"2=Trigger string");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Event Type");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Mixing Event");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(2 ,"2=Event Type");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Mixing Event");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Trigger string");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(5 ,"5=Trigger Bit");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=Good EMC Trigger");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=!Fast Cluster");
