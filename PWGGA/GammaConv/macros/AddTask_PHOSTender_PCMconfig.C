@@ -4,7 +4,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
                     const char* options         = "",
                     Int_t pass                  = 1,
                     Bool_t isMC                 = kFALSE,
-                    Bool_t forceBadChannelMap   = kFALSE,
+                    Int_t forceBadChannelMap    = 0, //0: no forced map, 1: forced OADB map, 2: forced single map file
                     TString specificBCMap       = "",
                     Bool_t useStandardPHOSNL    = kTRUE
 )
@@ -37,7 +37,9 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
-  if (forceBadChannelMap)
+  if (forceBadChannelMap==1)
+      PHOSSupply->ForceUsingBadMap(specificBCMap.Data(),kTRUE);
+  if (forceBadChannelMap==2)
       PHOSSupply->ForceUsingBadMap(specificBCMap.Data());
 
   //Need MagFeild

@@ -51,6 +51,7 @@
 #include "AliEMCALTenderSupply.h"
 #include "AliEmcalTenderTask.h"
 #include "AliPHOSTenderSupply.h"
+#include "AliPHOSTenderTask.h"
 #include "AliOADBContainer.h"
 #include "AliESDtrackCuts.h"
 #include "AliCaloTrackMatcher.h"
@@ -1240,20 +1241,20 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
       //cout << nModules << endl;
 
       fPHOSBadChannelsMap = new TH2I*[nModules];
+      AliPHOSTenderTask* aliphostender = (AliPHOSTenderTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("PHOSTenderTask");
+      AliPHOSTenderSupply *PHOSSupply  =((AliPHOSTenderSupply*) aliphostender->GetPHOSTenderSupply()) ;
 
-      AliOADBContainer badmapContainer(Form("phosBadMap"));
-      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
-      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(event->GetRunNumber(),"phosBadMap");
-
-      if(!maps){
-        AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",event->GetRunNumber())) ;
+      if(!PHOSSupply){
+        AliError(Form("Can not find PHOSTenderSupply in run %d. No bad channel map could be found for QA!\n",event->GetRunNumber())) ;
         for(Int_t mod=0;mod<nModules;mod++) fPHOSBadChannelsMap[mod] = NULL;
       }else{
-        AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
+        AliInfo("Setting PHOS bad map from PHOSSupply \n") ;
         for(Int_t mod=0;mod<nModules;mod++){
-          TH2I * h = (TH2I*)maps->At(mod);
-          //cout << mod << ", " << h << ", " << __LINE__ << endl;
-          if(h) fPHOSBadChannelsMap[mod] = new TH2I(*h);
+          TH2I * h = (TH2I*)PHOSSupply->GetPHOSBadChannelStatusMap(mod);
+          if(h){
+              fPHOSBadChannelsMap[mod] = new TH2I(*h);
+              AliInfo(Form("using bad map for module %d with nch=%f\n",mod,h->Integral()));
+          }
           else fPHOSBadChannelsMap[mod] = NULL;
         }
 
