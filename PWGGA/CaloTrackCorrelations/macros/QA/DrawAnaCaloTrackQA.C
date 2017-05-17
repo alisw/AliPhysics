@@ -6,20 +6,20 @@
 /// to QA data productions at 0th order
 /// Analysis performed with the wagon
 /// AddTaskPi0IMGammaCorrQA.C
-/// It generates 7 plots, each containing 2 to 4 pads
+/// It generates 8 plots, each containing 2 to 4 pads
 ///
 /// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
 /// The trigger name might change depending on the wagon / data type
 /// In simulations only the "default" case is available
 /// On data, there can be different triggers, depending on the period
-/// * default: min bias like triggers, kINT7, kINT1, kMB
+/// * default : min bias like triggers, kINT7, kINT1, kMB
 /// * EMCAL_L0: kEMC7 L0 EMCal
-/// * DCAL_L0: kEMC7 L0 DCal
+/// * DCAL_L0 : kEMC7 L0 DCal
 /// * EMCAL_L1: kEMCEGA L1 EG1 EMCal
-/// * DCAL_L1: kEMCEGA L1 EG1 DCal 
+/// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
-/// * DCAL_L2: kEMCEGA L1 EG2 DCal
+/// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
@@ -107,6 +107,8 @@ void DrawAnaCaloTrackQA
   printf("Open <%s>; Get Trigger List : <%s>; Export list? <%d>; format %s\n",
          fileName.Data(),listName.Data(),exportToFile, format.Data());
  
+  // Get file and list container, global variables
+  //
   file  = new TFile(fileName,"read");
   if ( !file ) 
   { 
@@ -121,6 +123,8 @@ void DrawAnaCaloTrackQA
     return; 
   }
   
+  // Process each of the triggers
+  //
   ProcessTrigger("default" ,exportToFile);
   ProcessTrigger("EMCAL_L0",exportToFile);
   ProcessTrigger("EMCAL_L1",exportToFile);
@@ -134,12 +138,13 @@ void DrawAnaCaloTrackQA
 
 /// 
 /// Produce the plots per trigger, options are:
+/// * default : min bias like triggers, kINT7, kINT1, kMB
 /// * EMCAL_L0: kEMC7 L0 EMCal
-/// * DCAL_L0: kEMC7 L0 DCal
+/// * DCAL_L0 : kEMC7 L0 DCal
 /// * EMCAL_L1: kEMCEGA L1 EG1 EMCal
-/// * DCAL_L1: kEMCEGA L1 EG1 DCal 
+/// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
-/// * DCAL_L2: kEMCEGA L1 EG2 DCal
+/// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 ///
 /// Input:
 /// \param trigName: File name
@@ -152,6 +157,7 @@ void DrawAnaCaloTrackQA
 void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
 {
   // Access the list of histograms, global variables
+  //
   if(checkList)
   {
     Bool_t ok = GetList(trigName, exportToFile);
@@ -203,13 +209,20 @@ void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
 
 ///
 /// Plot basic calorimeter QA histograms.
+/// 3 canvases with 4 pads
+/// * cluster/cell pT spectra, ratio of cluster spectra after matching and PID cuts, and track matching residuals
+/// * cell and cluster hit maps: cell hit, cell energy mean, cluster hit low energy, cluster hit high energy
+/// * cluster time vs pT, cluster long axis vs E, number of cells in cluster vs E, cells in cluster E vs cluster E
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
 ///
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
-  TCanvas * ccalo = new TCanvas(Form("CaloHisto_%s",histoTag.Data()),
+  //-----------------------------
+  // Cluster spectra and track match residuals
+  //
+  TCanvas * ccalo = new TCanvas(Form("CaloHisto_SpectraTM_%s",histoTag.Data()),
                                 "Cluster spectra and track match residuals",1000,1000);
   ccalo->Divide(2,2);
   
@@ -300,7 +313,6 @@ void CaloQA(Int_t icalo)
   l2.SetFillColor(0);
   l2.Draw();
   
-  
   // Plot track-matching residuals
   TH1F* hTrackMatchResEtaNeg;
   TH1F* hTrackMatchResEtaPos;
@@ -377,7 +389,7 @@ void CaloQA(Int_t icalo)
     l3.Draw();
   }
   
-  ccalo->Print(Form("%s_CaloHisto.%s",histoTag.Data(),format.Data()));
+  ccalo->Print(Form("%s_CaloHisto_ClusterSpectraAndTrackResiduals.%s",histoTag.Data(),format.Data()));
   
   // cleanup
   //
@@ -389,33 +401,13 @@ void CaloQA(Int_t icalo)
 
   delete ccalo;
   
+  //-----------------------------
+  // Cell and cluster hit maps
   //
-  //
-  //
-  
-  TCanvas * ccalo2 = new TCanvas(Form("CaloHisto2_%s",histoTag.Data()),"",500,500);
+  TCanvas * ccalo2 = new TCanvas(Form("CaloHisto_CellClusterHit_%s",histoTag.Data()),
+                                 "Cell and cluster hit maps",500,500);
   ccalo2->Divide(2,2);
-  
-  ccalo2->cd(3);
-//  gPad->SetLogz();
-//  TH2F* hCellAmpId   = (TH2F*) GetHisto("QA_hAmpId");
-//  hCellAmpId->SetTitle("Cell Id vs energy");
-//  hCellAmpId->SetYTitle("Cell Id");
-//  //hCellAmpId->SetAxisRange(300.,900.,"Y");
-//  hCellAmpId->SetAxisRange(0.,30.,"X");
-//  hCellAmpId->SetTitleOffset(1.5,"Y");
-//  hCellAmpId->Draw("colz");
-
-  gPad->SetLogz();
-  
-  TH2F* hClusterTime   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTimePt",icalo));
-  hClusterTime->SetTitle("Cluster energy vs time");
-  hClusterTime->SetYTitle("time (ns)");
-  //hClusterTime->SetAxisRange(300.,900.,"Y");
-  hClusterTime->SetAxisRange(0.,30.,"X");
-  hClusterTime->SetTitleOffset(1.5,"Y");
-  hClusterTime->Draw("colz");
-  
+    
   ccalo2->cd(1);
   gPad->SetLogz();
 
@@ -441,25 +433,91 @@ void CaloQA(Int_t icalo)
   hCellActivityE->SetTitleOffset(1.5,"Y");
   hCellActivityE->Draw("colz");
   
-  ccalo2->cd(4);
+  ccalo2->cd(3);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
-  if(histoTag.Contains("default"))
-        hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
-  
+  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
+    
   if(histoTag.Contains("default")) hClusterActivity->SetTitle("Clusters per col-row 0.5<#it{E}<3 GeV");
-  else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row #it{E} > 5 GeV");
-  else                             hClusterActivity->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row 2<#it{E}<5 GeV");
+  else                             hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
   
   hClusterActivity->SetTitleOffset(1.5,"Y");
   hClusterActivity->Draw("colz");
+
+  ccalo2->cd(4);
+  gPad->SetLogz();
   
-  ccalo2->Print(Form("%s_CaloHisto2.%s",histoTag.Data(),format.Data()));
+  TH2F* hClusterActivity2  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
+   
+  if(histoTag.Contains("default")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 3 GeV");
+  else if(histoTag.Contains("L0")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 5 GeV");
+  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  
+  hClusterActivity2->SetTitleOffset(1.5,"Y");
+  hClusterActivity2->Draw("colz");
+
+  ccalo2->Print(Form("%s_CaloHisto_CellClusterHit.%s",histoTag.Data(),format.Data()));
 
   // cleanup
   //
   delete ccalo2;
+
+  //-----------------------------
+  // Cluster time, shape, ncells
+  //
+  TCanvas * ccalo3 = new TCanvas(Form("CaloHisto_ClusterTimeShape_%s",histoTag.Data()),
+                                 "Cluster time, shape, ncells",500,500);
+  ccalo3->Divide(2,2);
+  
+  ccalo3->cd(1);
+   
+  gPad->SetLogz();
+  
+  TH2F* hClusterTime   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTimePt",icalo));
+  hClusterTime->SetTitle("Cluster #it{E} vs #it{time}");
+  hClusterTime->SetYTitle("time (ns)");
+  //hClusterTime->SetAxisRange(300.,900.,"Y");
+  hClusterTime->SetAxisRange(0.,30.,"X");
+  hClusterTime->SetTitleOffset(1.5,"Y");
+  hClusterTime->Draw("colz");
+  
+  ccalo3->cd(2);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterL0   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hLam0E",icalo));
+  hClusterL0->SetTitle("Cluster #sigma_{long}");
+  hClusterL0->SetAxisRange(0.,30.,"X");
+  hClusterL0->SetTitleOffset(1.5,"Y");
+  hClusterL0->Draw("colz");
+
+  ccalo3->cd(3);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterNCell   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hNCellsE",icalo));
+  hClusterNCell->SetTitle("Number of cells in cluster");
+  hClusterNCell->SetAxisRange(0.,30.,"X");
+  hClusterNCell->SetTitleOffset(1.5,"Y");
+  hClusterNCell->Draw("colz");
+ 
+  ccalo3->cd(4);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterECell   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hCellsE",icalo));
+  hClusterECell->SetTitle("cells in cluster #it{E} vs cluster #it{E}");
+  hClusterECell->SetAxisRange(0.,30.,"X");
+  hClusterECell->SetAxisRange(0.,20.,"Y");
+  hClusterECell->SetTitleOffset(1.5,"Y");
+  hClusterECell->Draw("colz");
+  
+  ccalo3->Print(Form("%s_CaloHisto_TimeShapeNCells.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete ccalo3;
 }
 
 ///
