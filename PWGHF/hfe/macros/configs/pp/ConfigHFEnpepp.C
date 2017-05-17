@@ -1,18 +1,18 @@
-AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix,
-                                    UChar_t TPCcl=70, UChar_t TPCclPID = 80,
-                                    UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
-                                    Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL,
-                                    Double_t TOFs=3., Int_t TOFmis=0,
-                                    Int_t itshitpixel = 0, Int_t ikink = 0,
-                                    Double_t etami=-0.8, Double_t etama=0.8,
-                                    Double_t assETAm=-0.8, Double_t assETAp=0.8,
-                                    Double_t assMinPt=0.2, Int_t assITS=2,
-                                    Int_t assTPCcl=100, Int_t assTPCPIDcl=80,
-                                    Double_t assDCAr=1.0, Double_t assDCAz=2.0,
-                                    Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
-                                    Double_t assITSpid=-3., Double_t assTOFs=3.,
-                                    Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1,
-                                    Int_t HadronContFunc=0 , Int_t Chi2perTPCcluster=4)
+AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
+                                   UChar_t TPCcl=70, UChar_t TPCclPID = 80,
+                                   UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
+                                   Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL,
+                                   Double_t TOFs=3., Int_t TOFmis=0,
+                                   Int_t itshitpixel = 0, Int_t ikink = 0,
+                                   Double_t etami=-0.8, Double_t etama=0.8,
+                                   Double_t assETAm=-0.8, Double_t assETAp=0.8,
+                                   Double_t assMinPt=0.2, Int_t assITS=2,
+                                   Int_t assTPCcl=100, Int_t assTPCPIDcl=80,
+                                   Double_t assDCAr=1.0, Double_t assDCAz=2.0,
+                                   Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
+                                   Double_t assITSpid=-3., Double_t assTOFs=3.,
+                                   Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
+                                   Int_t weightlevelback = -1)
 {
 
    //***************************************//
@@ -104,46 +104,14 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
 
    if(!useMC){
 
-      enum HadronContaminationFunctionChoice
-      {
-         kHadronDown = 1,
-         kHadronUp= 2,
-         kHadronLandau = 3
-      };
-
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
       // relative to the case of a TPC PID cut at -1 sigma
 
-      TF1 *hBackground;
-      switch (HadronContFunc) {
-         case kHadronDown:
-            hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-            hBackground->SetParameter(0, 4.99955e-01);
-            hBackground->SetParameter(1, 4.99957e-01);
-            hBackground->SetParameter(2, 4.12237e-01);
-            hBackground->SetParameter(3,-3.30029e+00);
-            break;
-         case kHadronUp:
-            hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-            hBackground->SetParameter(0, 4.99953e-01);
-            hBackground->SetParameter(1, 4.99959e-01);
-            hBackground->SetParameter(2, 4.13081e-01);
-            hBackground->SetParameter(3,-3.08637e+00);
-            break;
-         case kHadronLandau:
-            hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])", 0. ,60.);
-            hBackground->SetParameter(0, 5.21257e+00);
-            hBackground->SetParameter(1, 1.33108e+01);
-            hBackground->SetParameter(2, 3.41284e+00);
-            break;
-         default:
-            hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-            hBackground->SetParameter(0, 4.99954e-01);
-            hBackground->SetParameter(1, 4.99958e-01);
-            hBackground->SetParameter(2, 4.07713e-01);
-            hBackground->SetParameter(3,-3.15409e+00);
-            break;
-      }
+      TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
+      hBackground->SetParameter(0, 4.99954e-01);
+      hBackground->SetParameter(1, 4.99958e-01);
+      hBackground->SetParameter(2, 4.07713e-01);
+      hBackground->SetParameter(3,-3.15409e+00);
 
 
       //error function
@@ -307,19 +275,19 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
    //hfecuts->SetSigmaToVertex(10);
    //v0trackCuts->SetTOFPIDStep(kTRUE);
    v0trackCuts->SetQAOn();
-   
+
    task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
    task->SetTaggedTrackCuts(v0trackCuts);
    task->SetCleanTaggedTrack(kTRUE);
    // end tagged tracks
-   
+
    // QA
    printf("task %p\n", task);
    task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
    task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
    task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
    task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectron);
-   
+
    printf("*************************************\n");
    printf("Configuring standard Task:\n");
    task->PrintStatus();
