@@ -90,6 +90,9 @@ AliPerformanceTPC::AliPerformanceTPC(TRootIOCtor*):
   // histogram folder
   fAnalysisFolder(0),
   fUseHLT(kFALSE),
+  fMult(0),
+  fMultP(0),
+  fMultN(0),
   h_tpc_clust_0_1_2(NULL),
   h_tpc_event_recvertex_0(NULL),
   h_tpc_event_recvertex_1(NULL),
@@ -118,9 +121,6 @@ AliPerformanceTPC::AliPerformanceTPC(TRootIOCtor*):
   h_tpc_track_neg_recvertex_4_5_6(NULL)
 {
   // io ctor
-    fMult = 0;
-    fMultP = 0;
-    fMultN = 0;
 }
 
 //_____________________________________________________________________________
@@ -134,6 +134,9 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   // histogram folder 
   fAnalysisFolder(0),
   fUseHLT(kFALSE),
+  fMult(0),
+  fMultP(0),
+  fMultN(0),
   h_tpc_clust_0_1_2(NULL),
   h_tpc_event_recvertex_0(NULL),
   h_tpc_event_recvertex_1(NULL),
