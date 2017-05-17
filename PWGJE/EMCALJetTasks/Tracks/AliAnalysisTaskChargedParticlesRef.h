@@ -139,6 +139,14 @@ public:
   void SetStudyEMCALgeo(Bool_t doStudy) { fStudyEMCALgeo = doStudy; }
 
   /**
+   * @brief Require bunch crossing information of track obtained from TOF (if available)
+   * matches the bunch crossing ID of the event
+   *
+   * @param[in] doRequire If true the track is only selected if it is from the right bunch crossing according to TOF information
+   */
+  void SetRequireTOFBunchCrossing(Bool_t doRequire) { fRequireTOFBunchCrossing = doRequire; }
+
+  /**
    * @brief Pre-configure task so that it can be used in subwagons
    * @param[in] suffix Suffix of the subwagon
    * @return Preconfigured task
@@ -211,6 +219,16 @@ protected:
    */
   void FillPIDHistos(const TString &eventclass, const AliVTrack &track);
 
+  /**
+   * Converted from AliESDtrack::GetTOFBunchCrossing, allowing for differnt values of bunch spacing
+   * @param trk Track to checke
+   * @param b
+   * @param spacing Bunch spacing (default: 25 ns - corresponding to pp)
+   * @param pidTPConly
+   * @return
+   */
+  Int_t GetTOFBunchCrossing(const AliVTrack *trk, Double_t b = 0, Double_t spacing = 25, Bool_t pidTPConly = kTRUE) const;
+
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
 
   Double_t                        fYshift;                    ///< Rapidity shift
@@ -224,6 +242,7 @@ protected:
   Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms
   Bool_t                          fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
   Bool_t                          fEnableSumw2;               ///< Enable sumw2 during histogram creation
+  Bool_t                          fRequireTOFBunchCrossing;   ///< Require that the bunch crossing ID determined by TOF matches the bunch crossing ID of the event
 
 private:
 
