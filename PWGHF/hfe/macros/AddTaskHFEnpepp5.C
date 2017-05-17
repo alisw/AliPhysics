@@ -808,9 +808,28 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
     }
   }
 
-  TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
-				   tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
-				   iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
+   if (Chi2perTPCcluster!=4) {
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dChi%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,Chi2perTPCcluster,assTPCcl,assTPCPIDcl,assITS,
+                                       iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
+   } else if (assMinPt!=0.1) {
+      Int_t iMinPt = assMinPt*100;
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dChi%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,Chi2perTPCcluster,assTPCcl,assTPCPIDcl,assITS,
+                                       iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
+   } else if (tpchigh[1]!=3200) {
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTPCtop%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+                                       iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
+   }else if(HadronContFunc!=0){
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dHadFunc%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,HadronContFunc,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+                                       iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
+   } else {
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+                                       iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
+   }
 
   printf("Add macro appendix %s\n", appendix.Data());
 
