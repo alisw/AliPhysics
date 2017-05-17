@@ -467,7 +467,7 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
       InvMasses[i] = V0KFs[i].GetMass()-myMasses[i];
       if(i!=0) //For all but gammas
 	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.06);
-      else TrashTracks = (InvMasses[0]==0)||(TMath::Abs(InvMasses[0])>0.06); //For gammas, also throw away if exacly 0 (= error code)
+      else TrashTracks = (InvMasses[0]==0)||(TMath::Abs(InvMasses[0])>0.03); //For gammas, also throw away if exacly 0 (= error code)
     };
     if(TrashTracks) continue;
     fAnalysisV0Track->Update(pTrack,nTrack,InvMasses,IV0Radius,V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle());
