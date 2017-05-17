@@ -794,7 +794,6 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
 	systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
 	systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
-	cout<<"dataPPUp = "<<dataPPUp<<"\tdataPPLow = "<<dataPPLow<<"\tsystPPUp = "<<systPPUp<<"\tsystPPLow = "<<systPPLow<<endl;
       }
       if (isRaavsEP>0.) {
 	dataPPUp = dataPPUp*0.5;
