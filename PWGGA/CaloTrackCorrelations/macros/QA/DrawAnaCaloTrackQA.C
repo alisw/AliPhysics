@@ -27,7 +27,6 @@
 ///
 
 
-// Uncomment for compilation
 // Set includes for compilation
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -52,6 +51,9 @@
 
 #endif
 
+void ProcessTrigger(TString trigName    = "default", 
+                    Bool_t exportToFile = kFALSE, 
+                    Bool_t checkList    = kTRUE);
 void CaloQA    (Int_t icalo);
 void TrackQA   ();
 void Pi0QA     (Int_t icalo);
@@ -61,10 +63,10 @@ void MCQA      (Int_t icalo);
 void ScaleAxis (TAxis *a, Double_t scale);
 void ScaleXaxis(TH1   *h, Double_t scale);
 TObject * GetHisto(TString histoName);
-Bool_t GetFileAndList(TString fileName, TString listName, 
-                      TString trigName, Bool_t  exportToFile);
+Bool_t    GetList (TString trigName, Bool_t  exportToFile);
 
 // Some global variables
+TDirectoryFile *dir = 0;
 TList *list = 0;
 TFile *file = 0;
 TString histoTag = "";
@@ -72,29 +74,78 @@ Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kM
 
 ///
 /// Main method, produce the plots for the 6 different types of analysis:
+///
 /// * Calorimeter QA in CaloQA method
 /// * Track QA in TrackQA method
 /// * Invariant mass plots in Pi0QA method
+/// * Cluster isolation in IsolQA method
 /// * Cluster-track correlation plots in CorrelQA method
 /// * Dedicated generated particles QA in MCQA method
+///
 /// Input:
 /// \param listName: Name of list with histograms in file
-/// \param trigName: Name of trigger list folder with histograms for a given trigger
 /// \param fileName: File name
 /// \param exportToFile: export list with histograms to separate file, intereting in case of big output file.
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA
 (
  TString listName = "Pi0IM_GammaTrackCorr_EMCAL",
- TString trigName = "default", // "EMCAL_L0", "DCAL_L0", ...
  TString fileName = "AnalysisResults.root",
- Bool_t  exportToFile   = kFALSE
+ Bool_t  exportToFile = kFALSE
 )
 {
   printf("Open <%s>; Get Trigger List : <%s>; Export list? <%d>\n",
          fileName.Data(),listName.Data(),exportToFile);
+ 
+  file  = new TFile(fileName,"read");
+  if ( !file ) 
+  { 
+    printf("File not found, do nothing\n");
+    return; 
+  }
   
+  dir = (TDirectoryFile*) file->Get(listName);
+  if ( !dir ) 
+  { 
+    printf("DirectoryFile not found, do nothing\n");
+    return; 
+  }
   
+  ProcessTrigger("default" ,exportToFile);
+  ProcessTrigger("EMCAL_L0",exportToFile);
+  ProcessTrigger("EMCAL_L1",exportToFile);
+  ProcessTrigger("EMCAL_L2",exportToFile);
+  ProcessTrigger("DCAL_L0" ,exportToFile);
+  ProcessTrigger("DCAL_L1" ,exportToFile);
+  ProcessTrigger("DCAL_L2" ,exportToFile);
+}
+
+/// 
+/// Produce the plots per trigger, options are:
+/// * EMCAL_L0: kEMC7 L0 EMCal
+/// * DCAL_L0: kEMC7 L0 DCal
+/// * EMCAL_L1: kEMCEGA L1 EG1 EMCal
+/// * DCAL_L1: kEMCEGA L1 EG1 DCal 
+/// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
+/// * DCAL_L2: kEMCEGA L1 EG2 DCal
+///
+/// \param trigName: File name
+/// \param checklist: get the list from file, in case not exported
+///
+/// This method can be executed directly instead od DrawAnaCaloTrackQA if the
+/// list with histograms where exported previously into a separate file and checkList is set to false.
+//_______________________________________________________________________
+void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
+{
+  // Access the list of histograms, global variables
+  if(checkList)
+  {
+    Bool_t ok = GetList(trigName, exportToFile);
+    printf("\t -- Process trigger %s, ok %d\n",trigName.Data(), ok);
+    
+    if ( !ok ) return;
+  }
+
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(000000);
@@ -102,10 +153,6 @@ void DrawAnaCaloTrackQA
   //gStyle->SetPadTopMargin(0.02);
   //gStyle->SetPadLeftMargin(0.15);
   gStyle->SetTitleFontSize(0.05);
-    
-  //Access the file and list of histograms, global variables
-  Bool_t ok = GetFileAndList(fileName, listName, trigName, exportToFile);  
-  if ( !ok ) return;
 
   Int_t nCalo = 2;
   Int_t calo  = 0;
@@ -1433,23 +1480,8 @@ void MCQA(Int_t icalo)
 /// Open the file and list containing the histograms
 ///
 //____________________________________________________________________
-Bool_t GetFileAndList(TString fileName, TString listName, 
-                      TString trigName, Bool_t  exportToFile)
-{
-  file  = new TFile(fileName,"read");
-  if ( !file ) 
-  { 
-    printf("File not found, do nothing\n");
-    return kFALSE; 
-  }
-  
-  TDirectory * dir = (TDirectory*) file->Get(listName);
-  if ( !dir ) 
-  { 
-    printf("DirectoryFile not found, do nothing\n");
-    return kFALSE; 
-  }
-  
+Bool_t GetList(TString trigName, Bool_t  exportToFile)
+{  
   list = (TList*) dir->Get(trigName);
   if ( !list ) 
   { 
