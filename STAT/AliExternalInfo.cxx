@@ -954,12 +954,25 @@ bool operator< (const anchprod & otheranchprod) const
 TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     
     TFile *MCFile;
-    TTree *RDTree;
     TTree *MCTree;
+        
+    TFile *RDFile;
+    TTree *RDTree;
+
     
-    TFile *RDFile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","READ");
-    if(RDFile!=NULL) RDTree = dynamic_cast<TTree*>(RDFile->Get("dumptree_RD"));
-    else RDTree = GetTreeAliVersRD();
+    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_RD.root"),TString::Format("QA.TPC"));
+    if(!downloadNeeded){
+        AliInfo("found dumptree_RD.root -> getting dumptree_RD and make guesses");
+        RDFile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","UPDATE");
+        RDTree = dynamic_cast<TTree*>(RDFile->Get("dumptree_RD"));
+    }
+    else{
+        AliInfo("dumptree_RD.root not available -> run GetTreeAliVersRD()...");
+        GetTreeAliVersRD();
+        AliInfo("Got tree from GetTreeAliVersRD()");
+        RDFile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","UPDATE");
+        RDTree = dynamic_cast<TTree*>(RDFile->Get("dumptree_RD"));
+    }
 
     char RDaliroot[1000];
     char RDaliphysics[1000];
@@ -972,7 +985,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     RDTree->GetBranch("passName")->SetAddress((void*)RDpassname); 
     
     
-    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC.root"),TString::Format("QA.TPC"));
+    downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC.root"),TString::Format("QA.TPC"));
     if(!downloadNeeded){
         MCFile= TFile::Open(fLocalStorageDirectory+"/dumptree_MC.root","UPDATE");
         if(MCFile->GetListOfKeys()->Contains("dumptree_MC_guess")){
@@ -1061,8 +1074,6 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
             srdaliphys = TString(RDaliphysics);
             srdaliroot = TString(RDaliroot);
 
-
-
             if(sanchprod==srdprod){           //if RDprodname is right then save the prod infos to be later eventually able to look up what was closest in terms of aliphys/aliroot
                 prfound=kTRUE;                                 //found at least the corresponding prod - could look for closeset ali versions
 
@@ -1073,7 +1084,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                 list.insert(tempprod);
 
             }            
-            if(sanchprod==srdprod && (( smcaliphys!="" && smcaliphys==srdaliphys)  || (smcaliphys=="" && srdaliroot==smcaliroot)  ) && !srdpass.Contains("cpass")){      //check for perfect match, i.e. prodname and aliphys/aliroot match
+            if(sanchprod==srdprod && (( smcaliphys!="" && smcaliphys==srdaliphys)  || (smcaliphys=="" && srdaliroot==smcaliroot)  ) && !srdpass.Contains("cpass")  && !srdpass.Contains("cosmic")){      //check for perfect match, i.e. prodname and aliphys/aliroot match
                  for(int k=0;k<(int)srdpass.Sizeof();k++)   MCanchpassname[k] = srdpass[k];
                  for(int k=0;k<(int)srdaliroot.Sizeof();k++)   MCanchaliroot[k] = srdaliroot[k];
                  for(int k=0;k<(int)srdaliphys.Sizeof();k++)   MCanchaliphys[k] = srdaliphys[k];
@@ -1088,9 +1099,8 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                              tempprod.aliroot=smcaliroot;
                              tempprod.anchprodname=MCprodname;
                              tempprod.anchpass="MCPass";
-                             it=list.insert(tempprod);
-//                             list.insert(tempprod);             //insert hypothetical perfect match 
-                             it=list.find(tempprod);         //get iterator to pointer before insertion
+                             list.insert(tempprod);     //insert MC prod 
+                             it=list.find(tempprod);         //get iterator to pointer before MC prod
                              if (it == list.begin()){
                                  prfound =kFALSE;       //no interesting ones found
                                  break;
@@ -1103,15 +1113,16 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
               cout<<l<<" RDprodname: "<<(*iter).anchprodname<<" AliPhys: "<<(*iter).aliphys<<" AliRoot: "<<" "<<(*iter).aliroot<<" RDpass: "<<(*iter).anchpass<<endl;
             }
 
-            for (multiset<anchprod>::iterator iter=it; iter!=list.begin(); --iter){       //go backwards through list and take first pass guess that is not a cpass
+            for (multiset<anchprod>::iterator iter=it; ; --iter){       //go backwards through list and take first pass guess that is not a cpass
                 cout<<"Looking for MC aliphys: "<<tempprod.aliphys<<" MC aliroot: "<<tempprod.aliroot<<endl;
-                if(!((*iter).anchpass).Contains("cpass")){
+                if(!((*iter).anchpass).Contains("cpass") && !((*iter).anchpass).Contains("cosmic")){
                 cout<<"Used for guess: RDphys:"<<(*iter).aliphys<<" RDroot: "<<(*iter).aliroot<<" RDpass: "<<(*iter).anchpass<<endl;
                 for(int k=0;k<(int)(*iter).anchpass.Sizeof();k++)  MCanchpassname[k] = (*iter).anchpass.Data()[k];
                 for(int k=0;k<(int)(*iter).aliroot.Sizeof();k++)   MCanchaliroot[k] = (*iter).aliroot.Data()[k];
                 for(int k=0;k<(int)(*iter).aliphys.Sizeof();k++)   MCanchaliphys[k] = (*iter).aliphys.Data()[k];
                 break;
                     }
+                if(iter==list.begin()) break;
                 }
 
             }
@@ -1149,7 +1160,10 @@ TString  AliExternalInfo::GetMCPassGuess(TString sMCprodname){
         AliInfo("dumptree_MC_guess not available - get it vai GetTreeMCPassGuess()");
         guesstree = GetTreeMCPassGuess();
      }
-     else   guesstree = dynamic_cast<TTree*>(MCFile->Get("dumptree_MC_guess"));
+     else{
+         AliInfo("dumptree_MC_guess available");
+         guesstree = dynamic_cast<TTree*>(MCFile->Get("dumptree_MC_guess"));
+     }
  }
  
  else{
