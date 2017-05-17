@@ -310,7 +310,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	systematicsAB->SetRunNumber(15);
 	systematicsAB->SetCentrality("3050");
       }
-    }
+    
     //
     else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
       systematicsAB->SetCollisionType(2);
@@ -353,12 +353,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	}
       }
     }
+		}
     else { 
       cout << " Systematics not yet implemented " << endl;
       return;
     }
     if(analysisSpeciality==kLowPt){
       systematicsAB->SetIsLowPtAnalysis(true);
+    }
+		else if(analysisSpeciality==kBDT){
+      systematicsAB->SetIsBDTAnalysis(true);
     }
     //
     systematicsAB->Init(decay);
@@ -790,6 +794,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
 	systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
 	systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+	cout<<"dataPPUp = "<<dataPPUp<<"\tdataPPLow = "<<dataPPLow<<"\tsystPPUp = "<<systPPUp<<"\tsystPPLow = "<<systPPLow<<endl;
       }
       if (isRaavsEP>0.) {
 	dataPPUp = dataPPUp*0.5;
