@@ -762,16 +762,18 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
 
 //===============================================================================
 AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
-               Int_t tpcCls=120, Int_t tpcClsPID=80, 
-               Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, 
-               Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL, 
-               Double_t tofs=3., Int_t itshitpixel =AliHFEextraCuts::kBoth, 
-	       Int_t iKink = 0, Int_t assITS=2, Int_t assTPCcl=100,
-               Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
-               Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
-               Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0,
-               Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
-	       Int_t weightlevelback = -1, Int_t WhichWei = 0,  Double_t assMinPt = 0.1)
+                                   Int_t tpcCls=120, Int_t tpcClsPID=80,
+                                   Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0,
+                                   Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL,
+                                   Double_t tofs=3., Int_t itshitpixel =AliHFEextraCuts::kBoth,
+                                   Int_t iKink = 0, Int_t assITS=2, Int_t assTPCcl=100,
+                                   Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
+                                   Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
+                                   Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0,
+                                   Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
+                                   Int_t weightlevelback = -1, Int_t WhichWei = 0,
+                                   Int_t HadronContFunc=0, Double_t assMinPt = 0.1, Int_t Chi2perTPCcluster=4 )
+)
 {
   // Fixed values
   Double_t etaIncMin = -0.8; Double_t etaIncMax = 0.8;
