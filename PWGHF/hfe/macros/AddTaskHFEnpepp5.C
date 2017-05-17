@@ -56,13 +56,6 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
    Double_t tpcl14[12]  = {-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3};  // 90%
    Double_t tpcl15[12] = {-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0};
 
-   Double_t tpcl20[12]  = {0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002};  //
-   Double_t tpcl21[12]  = {0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};  //
-   Double_t tpcl22[12]  = {-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03};  //
-   Double_t tpcl23[12]  = {-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02};  //
-   Double_t tpcl24[12]  = {-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01};  //
-   Double_t tpcl25[12]  = {-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04};  //
-
    // Default setting for the associated electron for the NonPhotonic Analysis
    const int	kassITS		=    2;
    const int	kassTPCcl	=   60;
@@ -833,43 +826,44 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                        tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
                                        iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
    }
-   
+
    printf("Add macro appendix %s\n", appendix.Data());
-   
-   if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
+
+   if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors"))
       gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigWeightFactors.C");
-   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp5")) 
+   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp5"))
       gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigHFEnpepp5.C");
-   
+
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
    //mgr->AddClassDebug("AliHFENonPhotonicElectron", 1);
-   AliAnalysisTaskHFE *task = ConfigHFEnpepp5(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
+   AliAnalysisTaskHFE *task = ConfigHFEnpepp5(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
                                               tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, iKink,etaIncMin, etaIncMax,
-                                              assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, 
-                                              assTPCSplus,assITSpid,assTOFpid, useCat1Tracks, useCat2Tracks, weightlevelback);
-   
+                                              assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus,
+                                              assTPCSplus,assITSpid,assTOFpid, useCat1Tracks, useCat2Tracks, weightlevelback,
+                                              HadronContFunc, Chi2perTPCcluster);
+
    if(isAOD)
       task->SetAODAnalysis();
    else
       task->SetESDAnalysis();
-   
+
    if (useMC)	task->SetHasMCData(kTRUE);
    else		task->SetHasMCData(kFALSE);
-   
+
    task->SelectCollisionCandidates(AliVEvent::kINT7);
-   
+
    if(useMC && weightlevelback>=0) {
       ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5.root");
    }
-   
+
    //create data containers
    TString containerName = mgr->GetCommonFileName();
    containerName += ":HFEtask";
    containerName += appendix.Data();
    printf("container name: %s\n", containerName.Data());
-   
-   
+
+
    task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(),
                                                AliAnalysisManager::kOutputContainer, containerName.Data()));
    task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(),
