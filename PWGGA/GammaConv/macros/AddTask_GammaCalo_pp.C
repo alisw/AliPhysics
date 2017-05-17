@@ -243,16 +243,16 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111115053032220000","0163103100000050"); // NonLinearity LHC11a kSDM ConvCalo
     cuts.AddCut("00003113","1111116053032220000","0163103100000050"); // NonLinearity LHC11a kSDM Calo
   } else if (trainConfig == 6 ){ // EMCAL clusters open angle variation
-    cuts.AddCut("00003113","1111121053032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00003113","1111121053032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00003113","1111121053032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00003113","1111121053032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00003113","1111121053032220000","0163103100000060"); // min open angle - 0.0404
+    cuts.AddCut("00003113","1111121053032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00003113","1111121053032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00003113","1111121053032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 7){  // EMCAL clusters, MB (INT1) trigger
     cuts.AddCut("00003113","1111121053031220000","0163103100000050"); // MB,                     NCells >=1
     cuts.AddCut("00003113","1111121053033220000","0163103100000050"); // MB,                     NCells >=3
-    cuts.AddCut("00003113","1111121053032220000","0163103100000030"); // MB,                                                               0.01 opening
-    cuts.AddCut("00003113","1111121053032220000","0163103100000040"); // MB,                                                               0.75 cell diagonal
-    cuts.AddCut("00003113","1111121053032220000","0163103100000060"); // MB,                                                               2 cell diagonals
+    cuts.AddCut("00003113","1111121053032220000","0163103100000040"); // MB,                                                               0.0152 opening
+    cuts.AddCut("00003113","1111121053032220000","0163103100000070"); // MB,                                                               0.018 cell diagonals
   } else if (trainConfig == 8){  // trackMatching variations
     cuts.AddCut("00003113","1111121051032220000","0163103100000050"); // MB
     cuts.AddCut("00003113","1111121052032220000","0163103100000050"); //
@@ -426,10 +426,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111115063032220000","0163103100000050"); //               kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
     cuts.AddCut("00052013","1111116063032220000","0163103100000050"); //               kPi0MC+Calo (replay of Jasons with Calo)
   } else if (trainConfig == 74 ){ // EMCAL clusters open angle variation
-    cuts.AddCut("00052013","1111121063032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00052013","1111121063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00052013","1111121063032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00052013","1111121063032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00052013","1111121063032220000","0163103100000060"); // min open angle - 0.0404
+    cuts.AddCut("00052013","1111121063032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00052013","1111121063032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00052013","1111121063032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 75){  // trackMatching variations
     cuts.AddCut("00052013","1111121061032220000","0163103100000050"); 
     cuts.AddCut("00052013","1111121062032220000","0163103100000050"); //
@@ -470,10 +471,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00085013","1111115063032220000","0163103100000050"); //               kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
     cuts.AddCut("00085013","1111116063032220000","0163103100000050"); //               kPi0MC+Calo (replay of Jasons with Calo)
   } else if (trainConfig == 84 ){ // EMCAL clusters open angle variation
-    cuts.AddCut("00085013","1111121063032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00085013","1111121063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00085013","1111121063032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00085013","1111121063032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00085013","1111121063032220000","0163103100000060"); // min open angle - 0.0404
+    cuts.AddCut("00085013","1111121063032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00085013","1111121063032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00085013","1111121063032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 85){  // trackMatching variations
     cuts.AddCut("00085013","1111121061032220000","0163103100000050"); 
     cuts.AddCut("00085013","1111121062032220000","0163103100000050"); //
@@ -514,10 +516,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00083013","1111115063032220000","0163103100000050"); //               kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
     cuts.AddCut("00083013","1111116063032220000","0163103100000050"); //               kPi0MC+Calo (replay of Jasons with Calo)
   } else if (trainConfig == 95 ){ // EMCAL clusters open angle variation
-    cuts.AddCut("00083013","1111121063032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00083013","1111121063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00083013","1111121063032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00083013","1111121063032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00083013","1111121063032220000","0163103100000060"); // min open angle - 0.0404
+    cuts.AddCut("00083013","1111121063032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00083013","1111121063032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00083013","1111121063032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 96){  // trackMatching variations
     cuts.AddCut("00083013","1111121061032220000","0163103100000050"); 
     cuts.AddCut("00083013","1111121062032220000","0163103100000050"); //
@@ -583,11 +586,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 106){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
     cuts.AddCut("00010113","1111111007032220000","0163103100000050"); //
   } else if (trainConfig == 107){ // EMCAL clusters open angle variation
-    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00010113","1111111067032220000","0163103100000080"); // min open angle - 0.02525
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00010113","1111111067032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00010113","1111111067032220000","0163103100000030"); // min open angle - 0.01
-    cuts.AddCut("00010113","1111111067032220000","0163103100000010"); // min open angle - 0.005
+    cuts.AddCut("00010113","1111111067032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00010113","1111111067032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00010113","1111111067032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 108){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
     cuts.AddCut("00010113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111167032220000","0163103100000050"); //
@@ -687,11 +690,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 125){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
     cuts.AddCut("00052113","1111111007032220000","0163103100000050"); //
   } else if (trainConfig == 126){ // EMCAL clusters open angle variation
-    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00052113","1111111067032220000","0163103100000080"); // min open angle - 0.02525
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00052113","1111111067032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00052113","1111111067032220000","0163103100000030"); // min open angle - 0.01
-    cuts.AddCut("00052113","1111111067032220000","0163103100000010"); // min open angle - 0.005
+    cuts.AddCut("00052113","1111111067032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00052113","1111111067032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00052113","1111111067032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 127){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
     cuts.AddCut("00052113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00052113","1111111167032220000","0163103100000050"); //
@@ -758,11 +761,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 145){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
     cuts.AddCut("00081113","1111111007032220000","0163103100000050"); //
   } else if (trainConfig == 146){ // EMCAL clusters open angle variation
-    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00081113","1111111067032220000","0163103100000080"); // min open angle - 0.02525
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00081113","1111111067032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00081113","1111111067032220000","0163103100000030"); // min open angle - 0.01
-    cuts.AddCut("00081113","1111111067032220000","0163103100000010"); // min open angle - 0.005
+    cuts.AddCut("00081113","1111111067032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00081113","1111111067032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00081113","1111111067032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 147){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
     cuts.AddCut("00081113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00081113","1111111167032220000","0163103100000050"); //
@@ -950,11 +953,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 206){ // EMCAL clusters pp 7 TeV, combining cluster within time window and without
     cuts.AddCut("00000113","1111111007032220000","0163103100000050"); //
   } else if (trainConfig == 207){ // EMCAL clusters open angle variation
-    cuts.AddCut("00000113","1111111067032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00000113","1111111067032220000","0163103100000080"); // min open angle - 0.02525
+    cuts.AddCut("00000113","1111111067032220000","0163103100000050"); // min open angle - 0.017 - std
     cuts.AddCut("00000113","1111111067032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00000113","1111111067032220000","0163103100000030"); // min open angle - 0.01
-    cuts.AddCut("00000113","1111111067032220000","0163103100000010"); // min open angle - 0.005
+    cuts.AddCut("00000113","1111111067032220000","0163103100000060"); // min open angle - 0.016
+    cuts.AddCut("00000113","1111111067032220000","0163103100000070"); // min open angle - 0.018
+    cuts.AddCut("00000113","1111111067032220000","0163103100000080"); // min open angle - 0.019
   } else if (trainConfig == 208){ // EMCAL clusters pp 7 TeV, Different DistanceToBadChannels
     cuts.AddCut("00000113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111167032220000","0163103100000050"); //
@@ -1302,7 +1305,6 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
-    if(trainConfig>160 && trainConfig<170) analysisMesonCuts[i]->SetRunningMode(4); //specify certain opening angle cuts
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
