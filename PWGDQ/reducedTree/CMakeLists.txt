@@ -39,6 +39,7 @@ set(SRCS
       AliHistogramManager.cxx
       AliMixingHandler.cxx
       AliReducedAnalysisJpsi2ee.cxx
+      AliReducedAnalysisJpsi2eeMult.cxx
       AliReducedAnalysisTaskSE.cxx
       AliReducedAnalysisTest.cxx
       AliReducedBaseEvent.cxx
