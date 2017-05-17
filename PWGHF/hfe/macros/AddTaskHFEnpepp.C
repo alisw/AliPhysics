@@ -43,13 +43,6 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
    Double_t tpcl14[12]  = {-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3,-1.3};  // 90%
    Double_t tpcl15[12] = {-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0};
 
-   Double_t tpcl20[12]  = {0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002,0.002};  //
-   Double_t tpcl21[12]  = {0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};  //
-   Double_t tpcl22[12]  = {-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03,-1.03};  //
-   Double_t tpcl23[12]  = {-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02,-1.02};  //
-   Double_t tpcl24[12]  = {-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01,-1.01};  //
-   Double_t tpcl25[12]  = {-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04,-1.04};  //
-
    // Default setting for the associated electron for the NonPhotonic Analysis
    const int	kassITS		=    2;
    const int	kassTPCcl	=   60;
@@ -207,21 +200,21 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
                                                  tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, iKink,etaIncMin, etaIncMax,
                                                  assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus,
                                                  assTPCSplus,assITSpid,assTOFpid, useCat1Tracks, useCat2Tracks, weightlevelback);
-      
+
       if(isAOD)
          task->SetAODAnalysis();
       else
          task->SetESDAnalysis();
-      
+
       if (useMC)	task->SetHasMCData(kTRUE);
       else		task->SetHasMCData(kFALSE);
-      
+
       task->SelectCollisionCandidates(AliVEvent::kINT7);
-      
+
       if(useMC && weightlevelback>=0) {
          ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5.root");
       }
-      
+
       //create data containers
       TString containerName = mgr->GetCommonFileName();
       containerName += ":HFEtask";
@@ -233,7 +226,7 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
                                                   AliAnalysisManager::kOutputContainer, containerName.Data()));
       task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(),
                                                   AliAnalysisManager::kOutputContainer, containerName.Data()));
-
+      
       mgr->ConnectInput(task,  0, cinput );
       
       mgr->AddTask(task);
