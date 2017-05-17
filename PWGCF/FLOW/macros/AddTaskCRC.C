@@ -661,9 +661,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       if(bUsePtWeights) {
         if(AODfilterBit==32)  QVecWeightsFileName += "15oHI_FB32_TPCQVecReCen.root";
         if(AODfilterBit==96)  QVecWeightsFileName += "15oHI_FB96_TPCQVecReCen.root";
-        if(AODfilterBit==128) QVecWeightsFileName += "15oHI_FB128_TPCQVecReCen.root";
-        if(AODfilterBit==768 && !bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_TPCQVecReCen.root";
-        if(AODfilterBit==768 &&  bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_DCAcut_TPCQVecReCen.root";
+//        if(AODfilterBit==128) QVecWeightsFileName += "15oHI_FB128_TPCQVecReCen.root";
+//        if(AODfilterBit==768 && !bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_TPCQVecReCen.root";
+//        if(AODfilterBit==768 &&  bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_DCAcut_TPCQVecReCen.root";
+        if(AODfilterBit==128) QVecWeightsFileName += "15oHI_FB128_TPCQVecReCen_MagPolRefMul.root";
+        if(AODfilterBit==768) QVecWeightsFileName += "15oHI_FB768_TPCQVecReCen_MagPolRefMul.root";
       }
     }
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");

@@ -1581,6 +1581,9 @@ private:
 //  TProfile2D *fCRCTPCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
   TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
+  TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile3D *fCRCTPCQVecCenEtaRefMulTot[2][4]; //!
+  TProfile2D *fCRCTPCQVecCenRefMulTotCheck[2][4]; //!
   
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
@@ -1794,7 +1797,7 @@ private:
   TProfile2D *fCRCZDCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
-  TProfile3D *fTPCQVecProTemp[2][2]; //!
+  TProfile2D *fTPCQVecProTemp[2][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
   
