@@ -96,6 +96,9 @@ class Gammaavectormeson : public eventChannel
   int    _bslopeDef;
   double _bslopeVal;
   double _pEnergy;
+  // used when _bslopeDef==3
+  double _bslope0;
+  double _bslope_alphaprime;
   nBodyPhaseSpaceGen* _phaseSpaceGen;
   
 };
