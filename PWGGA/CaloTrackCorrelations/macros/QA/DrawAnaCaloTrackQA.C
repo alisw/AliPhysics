@@ -6,9 +6,9 @@
 /// to QA data productions at 0th order
 /// Analysis performed with the wagon
 /// AddTaskPi0IMGammaCorrQA.C
-/// It generates 5 eps plots, each containing 2 to 4 canvases
+/// It generates 7 plots, each containing 2 to 4 pads
 ///
-/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","default","AnalysisResults.root")'
+/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
 /// The trigger name might change depending on the wagon / data type
 /// In simulations only the "default" case is available
@@ -26,8 +26,8 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-
-// Set includes for compilation
+//---------------------------------------------------------
+// Set includes and declare methods for compilation
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -62,40 +62,50 @@ void CorrelQA  (Int_t icalo);
 void MCQA      (Int_t icalo);
 void ScaleAxis (TAxis *a, Double_t scale);
 void ScaleXaxis(TH1   *h, Double_t scale);
+
 TObject * GetHisto(TString histoName);
 Bool_t    GetList (TString trigName, Bool_t  exportToFile);
+//
+//---------------------------------------------------------
 
+//-----------------------
 // Some global variables
 TDirectoryFile *dir = 0;
-TList *list = 0;
-TFile *file = 0;
+TList  *list = 0;
+TFile  *file = 0;
 TString histoTag = "";
-Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
+TString format = "eps";
+Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
+//
+//-----------------------
 
 ///
-/// Main method, produce the plots for the 6 different types of analysis:
+/// Main method, produce the plots for the 7 different types of triggers:
 ///
-/// * Calorimeter QA in CaloQA method
+/// * Calorimeter QA: cluster/cell spectra, acceptance, track matching residuals in CaloQA method
 /// * Track QA in TrackQA method
 /// * Invariant mass plots in Pi0QA method
-/// * Cluster isolation in IsolQA method
-/// * Cluster-track correlation plots in CorrelQA method
+/// * Cluster isolation, tracks and clusters pT and sum pT in cone, in IsolQA method
+/// * Cluster-track correlation plots, azimuthal and xE, in CorrelQA method
 /// * Dedicated generated particles QA in MCQA method
 ///
 /// Input:
 /// \param listName: Name of list with histograms in file
 /// \param fileName: File name
 /// \param exportToFile: export list with histograms to separate file, intereting in case of big output file.
+/// \param fileFormat: define the type of figures: eps, pdf, etc.
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA
 (
- TString listName = "Pi0IM_GammaTrackCorr_EMCAL",
- TString fileName = "AnalysisResults.root",
- Bool_t  exportToFile = kFALSE
+ TString listName     = "Pi0IM_GammaTrackCorr_EMCAL",
+ TString fileName     = "AnalysisResults.root",
+ Bool_t  exportToFile = kFALSE,
+ TString fileFormat   = "eps"
 )
 {
-  printf("Open <%s>; Get Trigger List : <%s>; Export list? <%d>\n",
-         fileName.Data(),listName.Data(),exportToFile);
+  format = fileFormat;
+  printf("Open <%s>; Get Trigger List : <%s>; Export list? <%d>; format %s\n",
+         fileName.Data(),listName.Data(),exportToFile, format.Data());
  
   file  = new TFile(fileName,"read");
   if ( !file ) 
@@ -118,6 +128,8 @@ void DrawAnaCaloTrackQA
   ProcessTrigger("DCAL_L0" ,exportToFile);
   ProcessTrigger("DCAL_L1" ,exportToFile);
   ProcessTrigger("DCAL_L2" ,exportToFile);
+  
+  file->Close();
 }
 
 /// 
@@ -129,11 +141,13 @@ void DrawAnaCaloTrackQA
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2: kEMCEGA L1 EG2 DCal
 ///
+/// Input:
 /// \param trigName: File name
 /// \param checklist: get the list from file, in case not exported
 ///
 /// This method can be executed directly instead od DrawAnaCaloTrackQA if the
-/// list with histograms where exported previously into a separate file and checkList is set to false.
+/// list with histograms were exported previously into a separate file 
+/// and checkList is set to false.
 //_______________________________________________________________________
 void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
 {
@@ -164,7 +178,7 @@ void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
   histoTag = trigName;
   
   // Plot basic Track QA
-  //TrackQA();
+  TrackQA();
   
   for(Int_t icalo = calo; icalo < nCalo; icalo++)
   {
@@ -185,11 +199,12 @@ void ProcessTrigger( TString trigName, Bool_t exportToFile, Bool_t checkList)
     // MC basic QA plots, cluster origins (only if it run on MC)
     MCQA(icalo);
   }
-
 }
 
 ///
 /// Plot basic calorimeter QA histograms.
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //______________________________________
 void CaloQA(Int_t icalo)
@@ -221,7 +236,7 @@ void CaloQA(Int_t icalo)
     else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("CellAmp%s",histoTag.Data()),12,20);
   }
   else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("CellAmp%s",histoTag.Data()),0,100);
-    
+      
   hCellAmplitude->Sumw2();
   hCellAmplitude->SetMarkerColor(4);
   hCellAmplitude->SetMarkerStyle(25);
@@ -287,6 +302,11 @@ void CaloQA(Int_t icalo)
   
   
   // Plot track-matching residuals
+  TH1F* hTrackMatchResEtaNeg;
+  TH1F* hTrackMatchResEtaPos;
+  TH1F* hTrackMatchResPhiNeg;
+  TH1F* hTrackMatchResPhiPos;
+
   // first test did not have this histogram, add protection
   TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaDPhiPosNoCut",icalo));
   if(hTrackMatchResEtaPhi)
@@ -314,11 +334,11 @@ void CaloQA(Int_t icalo)
     TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo));
     
     Float_t binMin = hRaw->FindBin(0.5);
-    TH1F* hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("TMProjEtaNeg%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResEtaPos = (TH1F*) h2TrackMatchResEtaPos->ProjectionY(Form("TMProjEtaPos%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResPhiNeg = (TH1F*) h2TrackMatchResPhiNeg->ProjectionY(Form("TMProjPhiNeg%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResPhiPos = (TH1F*) h2TrackMatchResPhiPos->ProjectionY(Form("TMProjPhiPos%s",histoTag.Data()),binMin, 1000);
-    
+    hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("TMProjEtaNeg%s",histoTag.Data()),binMin, 1000);
+    hTrackMatchResEtaPos = (TH1F*) h2TrackMatchResEtaPos->ProjectionY(Form("TMProjEtaPos%s",histoTag.Data()),binMin, 1000);
+    hTrackMatchResPhiNeg = (TH1F*) h2TrackMatchResPhiNeg->ProjectionY(Form("TMProjPhiNeg%s",histoTag.Data()),binMin, 1000);
+    hTrackMatchResPhiPos = (TH1F*) h2TrackMatchResPhiPos->ProjectionY(Form("TMProjPhiPos%s",histoTag.Data()),binMin, 1000);
+        
     hTrackMatchResEtaNeg->SetXTitle("#Delta #eta, #Delta #varphi");
     hTrackMatchResEtaNeg->SetYTitle("entries");
     hTrackMatchResEtaNeg->SetTitle("Track-cluster residuals, #it{E} > 1 GeV");
@@ -357,7 +377,21 @@ void CaloQA(Int_t icalo)
     l3.Draw();
   }
   
-  ccalo->Print(Form("%s_CaloHisto.eps",histoTag.Data()));
+  ccalo->Print(Form("%s_CaloHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete hCellAmplitude;
+  delete hTrackMatchResEtaNeg;
+  delete hTrackMatchResEtaPos;
+  delete hTrackMatchResPhiNeg;
+  delete hTrackMatchResPhiPos;
+
+  delete ccalo;
+  
+  //
+  //
+  //
   
   TCanvas * ccalo2 = new TCanvas(Form("CaloHisto2_%s",histoTag.Data()),"",500,500);
   ccalo2->Divide(2,2);
@@ -421,11 +455,19 @@ void CaloQA(Int_t icalo)
   hClusterActivity->SetTitleOffset(1.5,"Y");
   hClusterActivity->Draw("colz");
   
-  ccalo2->Print(Form("%s_CaloHisto2.eps",histoTag.Data()));
+  ccalo2->Print(Form("%s_CaloHisto2.%s",histoTag.Data(),format.Data()));
+
+  // cleanup
+  //
+  delete ccalo2;
 }
 
 ///
-/// Plot basic hybrid tracks histograms.
+/// Plot basic hybrid tracks histograms in 4 pads:
+/// * tracks eta vs phi
+/// * track phi distribution per hybrid track component
+/// * track TOF
+/// * track pT per hybrid track component
 ///
 //______________________________________
 void TrackQA()
@@ -516,11 +558,25 @@ void TrackQA()
 //  hPtDCAz->SetAxisRange(0,30,"X");
 //  hPtDCAz->Draw("colz");
   
-  ctrack->Print(Form("%s_TrackHisto.eps",histoTag.Data()));
+  ctrack->Print(Form("%s_TrackHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete hPhi;
+  delete hPhiSPD;
+  delete hPhiNoSPD;
+  
+  delete ctrack;
 }
 
 ///
-/// Plot basic invariant mass QA
+/// Plot basic invariant mass QA in 4 pads:
+/// * Invariant mass vs pT
+/// * Invariant mass real/mixed pairs, in pi0 region
+/// * Invariant mass real/mixed pairs, in pi0 region per super module
+/// * Invariant mass real/mixed pairs, in eta region
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //_____________________________
 void Pi0QA(Int_t icalo)
@@ -554,7 +610,7 @@ void Pi0QA(Int_t icalo)
     h2DMass = (TH2F*) hMassE[0]->Clone("hMassProj");
     h2DMass->SetTitle("Inv. mass vs #it{p}_{T,pair}");
   }
-    
+  
   h2DMass->SetTitleOffset(1.6,"Y");
   h2DMass->SetAxisRange(0.0,0.7,"Y");
   h2DMass->SetAxisRange(0,30,"X");
@@ -575,7 +631,7 @@ void Pi0QA(Int_t icalo)
     hMassEta[icen] = 0;
     hMassPi0[icen] = 0;
   }
-  
+    
   TH1F * hX = (TH1F*) hMassE[0]->ProjectionX("hEPairCen0",0,10000);
   Int_t binmin = hX->FindBin(2);  // Project histo from 2 GeV pairs
   Int_t binmax = hX->FindBin(10); // Project histo up to 10 GeV pairs
@@ -682,6 +738,14 @@ void Pi0QA(Int_t icalo)
   
   TH1F* hSM   [20];
   TH1F* hMixSM[20];
+  
+  //Init to 0
+  for(Int_t ism = 0; ism < 20; ism++)
+  {
+    hSM   [ism] = 0;
+    hMixSM[ism] = 0;
+  }
+  
   binmin = hX->FindBin(4);  // Project histo from 3 GeV pairs
   binmax = hX->FindBin(20); // Project histo up to 20 GeV pairs
   Float_t maxSM = 0;
@@ -785,11 +849,36 @@ void Pi0QA(Int_t icalo)
     l2.Draw();
   }
 
-  cpi0->Print(Form("%s_Pi0Histo.eps",histoTag.Data()));
+  cpi0->Print(Form("%s_Pi0Histo.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete h2DMass;
+  delete hX;
+  
+  for(Int_t icen=0; icen<10; icen++ )
+  {
+    if ( hMass   [icen] ) delete hMass   [icen];
+    if ( hMix    [icen] ) delete hMix    [icen];
+    if ( hMassPi0[icen] ) delete hMassPi0[icen];
+    if ( hMassEta[icen] ) delete hMassEta[icen];
+  }
+  
+  for(Int_t ism = first; ism < 20; ism++)
+  {
+    if ( hSM   [ism] ) delete hSM   [ism];
+    if ( hMixSM[ism] ) delete hMixSM[ism];
+  }
+  
+  delete cpi0;
 }
 
 ///
-/// Plot basic cluster-track correlation histograms.
+/// Plot basic candidate cluster isolation histograms in 2 pads:
+/// * Cluster spectra, isolated and not isolated
+/// * pT distribution of tracks or clusters or both in the isolation cone, or perpendicular cones or eta-band out of cone
+/// * sum pT distribution of tracks or clusters or both in the isolation cone, or perpendicular cones or eta-band out of cone
+/// * sum pT distribution of tracks or clusters or both in the isolation cone whith subtracted eta-band sum pT
 ///
 //__________________________________________________
 void IsolQA(Int_t icalo)
@@ -1106,12 +1195,37 @@ void IsolQA(Int_t icalo)
 
   l3.Draw("same");
 
-  cIsolation->Print(Form("%s_IsolationHisto.eps",histoTag.Data()));
+  cIsolation->Print(Form("%s_IsolationHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete hPtInCone            ;
+  delete hPtInConeCluster     ;
+  delete hPtInConeTrack       ;
+  delete hPtInConeTrackPerp   ;
+  delete hPtInEtaBandTrack    ;
+  delete hPtInEtaBandCluster  ;
+
+  delete hSumPtCone           ;
+  delete hSumPtConeCluster    ;
+  delete hSumPtConeTrack      ;
+  delete hSumPtConeTrackPerp  ;
+  delete hSumPtEtaBandTrack   ;
+  delete hSumPtEtaBandCluster ;
+
+  delete hSumPtConeSub        ;
+  delete hSumPtConeSubCluster ;
+  delete hSumPtConeSubTrack   ;
+  
+  delete cIsolation           ;
 }
 
-
 ///
-/// Plot basic cluster-track correlation histograms.
+/// Plot basic cluster-track correlation histograms in 2 pads:
+/// * Azimuthal correlation of high pT trigger cluster and tracks in 4 associated pT bins
+/// * xE distribution of tracks correlated to a high pT cluster, in the opposite side or in perpendicular region (UE)
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //__________________________________________________
 void CorrelQA(Int_t icalo)
@@ -1142,6 +1256,7 @@ void CorrelQA(Int_t icalo)
   cCorrelation->cd(1);
   gPad->SetLogy();
   TH1F* hDeltaPhi[4];
+  for(Int_t i = 0; i < 4; i++) hDeltaPhi[i] = 0; 
   
   TLegend l(0.35,0.6,0.83,0.85);
   l.SetHeader(Form("p_{T,T} > %2.1f GeV/c",minClusterE));
@@ -1160,6 +1275,7 @@ void CorrelQA(Int_t icalo)
     hDeltaPhi[ibin]->Scale(1./nTrig);
     
     hDeltaPhi[ibin]->Fit("pol0","Q","",1,2);
+    
     Float_t scale = 1;
     if(hDeltaPhi[ibin]->GetFunction("pol0"))
     {
@@ -1231,11 +1347,26 @@ void CorrelQA(Int_t icalo)
   
   l2.Draw("same");
 
-  cCorrelation->Print(Form("%s_CorrelationHisto.eps",histoTag.Data()));
+  cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //  
+  for(Int_t i = 0; i < 4; i++) delete hDeltaPhi[i]; 
+  
+  delete hXE  ;
+  delete hXEUE;
+  
+  delete cCorrelation;
 }
 
 ///
-/// Plot basic generated particle distribution histograms.
+/// Plot basic generated particle distribution histograms in 4 pads:
+/// * pT spectra of generated and reconstructed clusters from photon, photon from pi0, photon from eta, eta and pi0  
+/// * ratio of pT spectra of reconstructed over generated
+/// * azimuthal distribution of generated particles
+/// * pseudorapidity distribution of generated particles
+///
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //________________________________________________________
 void MCQA(Int_t icalo)
@@ -1473,16 +1604,33 @@ void MCQA(Int_t icalo)
   hPrimEtaEtaP->SetMarkerStyle(22);
   hPrimEtaEtaP->Draw("same");
   
-  cmc->Print(Form("%s_MCHisto.eps",histoTag.Data()));
+  cmc->Print(Form("%s_MCHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup
+  //
+  delete hPrimPhoPhi  ;
+  delete hPrimPi0Phi  ;
+  delete hPrimEtaPhi  ;
+  delete hPrimPhoEtaP ;
+  delete hPrimPi0EtaP ;
+  delete hPrimEtaEtaP ;
+
+  delete cmc ;
 }
 
 ///
 /// Open the file and list containing the histograms
+/// 
+/// \param trigName: name of list of histograms for a particular trigger
+/// \param exportToFile: put the list of histograms in a separate file if true
 ///
 //____________________________________________________________________
 Bool_t GetList(TString trigName, Bool_t  exportToFile)
 {  
+  if(list) delete list;
+  
   list = (TList*) dir->Get(trigName);
+  
   if ( !list ) 
   { 
     printf("List not found, do nothing\n");
@@ -1508,6 +1656,10 @@ Bool_t GetList(TString trigName, Bool_t  exportToFile)
 ///
 /// Check if the list is available,
 /// if not get the histo directly from file
+///
+/// \return the histogram with the provided name
+///
+/// \param histoName: histogram name
 ///
 //___________________________________
 TObject * GetHisto(TString histoName)
