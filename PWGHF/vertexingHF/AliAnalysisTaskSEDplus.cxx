@@ -68,7 +68,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fPtpi2Hist(0x0),
   fDCAHist(0x0),
   fDLxy(0x0),
-  fCosxy(0x0), 
+  fCosxy(0x0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
@@ -155,7 +155,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fPtpi2Hist(0x0),
   fDCAHist(0x0),
   fDLxy(0x0),
-  fCosxy(0x0), 
+  fCosxy(0x0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
@@ -911,7 +911,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(6);fHistCentrality[2]->Fill(ntracks,evCentr);}
   if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(7);
   if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(8);
-  
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
   // load MC particles
@@ -949,7 +949,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // printf("ntracklet===%d\n",tracklets);
   if(fCutOnTrckl && (tracklets<fNtrcklMin || tracklets>fNtrcklMax)) {return;}
   fSPDMult->Fill(tracklets);
-  
+
   fHistCentrality[1]->Fill(ntracks,evCentr);
   fHistNEvents->Fill(9);
 
@@ -1145,10 +1145,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fSystem==1) dd0max = TMath::Abs(dd0max);
 
 	//for all THnSparses except for FD
-	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,(Double_t)tracklets};
 	//for THnSparses for FD
-	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
-        
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,(Double_t)tracklets,ptB};
+
 	//for imppar THnSparses
 	Double_t arrayForImpPar[kVarForImpPar]={invMass,ptCand,impparXY};
 	//for imppar THnSparse with true FD imppar
@@ -1528,13 +1528,15 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Int_t nnormdlbins=30;
   Double_t minnormdl=0.;
   Double_t maxnormdl=30.;
-  
+
+  Int_t nmultbins;
   Double_t maxmult;
-  
+  Double_t minmult=-0.5;
+
   Int_t nd0bins;
   Double_t d0min;
   Double_t d0max;
-  
+
   Int_t nptmindaubins;
   Double_t minptmindau;
   Double_t maxptmindau;
@@ -1542,15 +1544,15 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Int_t nsigvertbins;
   Double_t minsigvert;
   Double_t maxsigvert;
- 
+
   Int_t ndeclbins;
   Double_t mindecl;
   Double_t maxdecl;
-    
+
   Int_t ndeclxybins;
   Double_t mindeclxy;
   Double_t maxdeclxy;
-    
+
   Int_t ncospbins;
   Double_t mincosp;
   Double_t maxcosp;
@@ -1564,24 +1566,22 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Double_t maxd0d0;
 
   if(fSystem==1) {
-    maxmult=5000;
-
     nd0bins=18;
     d0min=0.;
     d0max=180;
-    
-    nptmindaubins=1;
+
+    nptmindaubins=1;//dummy axis
     minptmindau=0.2;
     maxptmindau=1.2;
-      
+
     nsigvertbins=10;
     minsigvert=0.012;
     maxsigvert=0.032;
-      
+
     ndeclbins=35;
     mindecl=0.;
     maxdecl=0.35;
-      
+
     ndeclxybins=35;
     mindeclxy=0.;
     maxdeclxy=0.35;
@@ -1597,14 +1597,15 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     nd0d0expbins=12;
     mind0d0=0.;
     maxd0d0=6.;
+
+    maxmult=5000.5;//dummy axis
+    nmultbins=1;
   }
   else {
-    maxmult=200;
-
     nd0bins=60;
     d0min=0.;
     d0max=300;
-    
+
     nptmindaubins=10;
     minptmindau=0.2;
     maxptmindau=1.2;
@@ -1612,15 +1613,15 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     nsigvertbins=25;
     minsigvert=0.010;
     maxsigvert=0.035;
-      
+
     ndeclbins=70;
     mindecl=0.;
     maxdecl=0.70;
-      
+
     ndeclxybins=70;
     mindeclxy=0.;
     maxdeclxy=0.70;
-      
+
     ncospbins=100;
     mincosp=0.90;
     maxcosp=1.;
@@ -1632,20 +1633,23 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     nd0d0expbins=40;
     mind0d0=-10.;
     maxd0d0=10.;
+    
+    maxmult=200.5;
+    nmultbins = maxmult-minmult;
   }
+  
   //dimensions for THnSparse which are NOT for BFeed
-  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
+  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp","N_{trkls}"};
 
-  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
+  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins,nmultbins};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,minmult};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,maxmult};
 
   //dimensions for THnSparse for BFeed
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,nmultbins,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,minmult,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,maxmult,40};
 
-  //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   fSparseCutVars[0]=new THnSparseF("hMassPtCutVarsAll",
 					"Mass vs. pt vs. cut vars - All",
