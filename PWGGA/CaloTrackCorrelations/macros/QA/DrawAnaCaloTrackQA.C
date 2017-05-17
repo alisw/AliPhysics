@@ -6,29 +6,28 @@
 /// to QA data productions at 0th order
 /// Analysis performed with the wagon
 /// AddTaskPi0IMGammaCorrQA.C
-/// It generates 5 eps plots, each containing 2 to 4 canvases
+/// It generates 8 plots, each containing 2 to 4 pads
 ///
-/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","default","AnalysisResults.root")'
+/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
 /// The trigger name might change depending on the wagon / data type
 /// In simulations only the "default" case is available
 /// On data, there can be different triggers, depending on the period
-/// * default: min bias like triggers, kINT7, kINT1, kMB
+/// * default : min bias like triggers, kINT7, kINT1, kMB
 /// * EMCAL_L0: kEMC7 L0 EMCal
-/// * DCAL_L0: kEMC7 L0 DCal
+/// * DCAL_L0 : kEMC7 L0 DCal
 /// * EMCAL_L1: kEMCEGA L1 EG1 EMCal
-/// * DCAL_L1: kEMCEGA L1 EG1 DCal 
+/// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
-/// * DCAL_L2: kEMCEGA L1 EG2 DCal
+/// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-
-// Uncomment for compilation
-// Set includes for compilation
+//---------------------------------------------------------
+// Set includes and declare methods for compilation
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -52,6 +51,8 @@
 
 #endif
 
+void ProcessTrigger(TString trigName = "default", 
+                    Bool_t checkList = kTRUE);
 void CaloQA    (Int_t icalo);
 void TrackQA   ();
 void Pi0QA     (Int_t icalo);
@@ -60,41 +61,146 @@ void CorrelQA  (Int_t icalo);
 void MCQA      (Int_t icalo);
 void ScaleAxis (TAxis *a, Double_t scale);
 void ScaleXaxis(TH1   *h, Double_t scale);
-TObject * GetHisto(TString histoName);
-Bool_t GetFileAndList(TString fileName, TString listName, 
-                      TString trigName, Bool_t  exportToFile);
 
+TObject * GetHisto  (TString histoName);
+void      SaveHisto (TObject* histo, Bool_t tag = kTRUE);
+void      SaveCanvas(TCanvas* canvas  );
+Bool_t    GetList   (TString trigName );
+//
+//---------------------------------------------------------
+
+//-----------------------
 // Some global variables
-TList *list = 0;
-TFile *file = 0;
-TString histoTag = "";
-Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
+TDirectoryFile *dir = 0;  /// TDirectory file where lists per trigger are stored in train ouput
+TList  *list = 0;         /// TList with histograms for a given trigger
+TFile  *file = 0;         /// input train file
+TFile  *fout = 0;         /// output file with plots or extracted histograms
+TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
+TString format = "eps";   /// plots format: eps, pdf, etc.
+Int_t   exportToFile = 0; /// option to what and if export to output file
+
+/// pre defined colors list 
+Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
+//
+//-----------------------
 
 ///
-/// Main method, produce the plots for the 6 different types of analysis:
-/// * Calorimeter QA in CaloQA method
+/// Main method, produce the plots for the 7 different types of triggers:
+///
+/// * Calorimeter QA: cluster/cell spectra, acceptance, track matching residuals in CaloQA method
 /// * Track QA in TrackQA method
 /// * Invariant mass plots in Pi0QA method
-/// * Cluster-track correlation plots in CorrelQA method
+/// * Cluster isolation, tracks and clusters pT and sum pT in cone, in IsolQA method
+/// * Cluster-track correlation plots, azimuthal and xE, in CorrelQA method
 /// * Dedicated generated particles QA in MCQA method
+///
 /// Input:
 /// \param listName: Name of list with histograms in file
-/// \param trigName: Name of trigger list folder with histograms for a given trigger
 /// \param fileName: File name
-/// \param exportToFile: export list with histograms to separate file, intereting in case of big output file.
+/// \param exportTo: 0 - do not export; 1 - export generated plots to file; 2 - export extracted lists to file
+/// \param fileFormat: define the type of figures: eps, pdf, etc.
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA
 (
- TString listName = "Pi0IM_GammaTrackCorr_EMCAL",
- TString trigName = "default", // "EMCAL_L0", "DCAL_L0", ...
- TString fileName = "AnalysisResults.root",
- Bool_t  exportToFile   = kFALSE
+ TString listName     = "Pi0IM_GammaTrackCorr_EMCAL",
+ TString fileName     = "AnalysisResults.root",
+ Int_t   exportTo     = 1,
+ TString fileFormat   = "eps",
+ TString outFileName  = "CaloTrackCorrQA_output"
 )
 {
-  printf("Open <%s>; Get Trigger List : <%s>; Export list? <%d>\n",
-         fileName.Data(),listName.Data(),exportToFile);
+  format       = fileFormat;
+  exportToFile = exportTo;
   
+  printf("Open <%s>; Get Trigger List : <%s>; Export option <%d>; format %s; outputFileName %s.root\n",
+         fileName.Data(),listName.Data(),exportToFile, format.Data(),outFileName.Data());
+ 
+  // Get file and list container, global variables
+  //
+  file  = new TFile(fileName,"read");
+  if ( !file ) 
+  { 
+    printf("File not found, do nothing\n");
+    return; 
+  }
   
+  dir = (TDirectoryFile*) file->Get(listName);
+  if ( !dir ) 
+  { 
+    printf("DirectoryFile not found, do nothing\n");
+    return; 
+  }
+  
+  //---------------
+  // output file with plots
+  if(exportToFile == 1)
+  {
+    fout = TFile::Open(Form("%s.root",outFileName.Data()),"UPDATE");
+    if(!fout) 
+      fout = new TFile(Form("%s.root",outFileName.Data()),"RECREATE");
+    
+    //fout->ls();
+    
+    TDirectoryFile *cdd = (TDirectoryFile*)fout->Get("GA");
+    if(!cdd) 
+    {
+      printf("Warning: GA <dir> doesn't exist, creating a new one");
+      cdd = (TDirectoryFile*)fout->mkdir("GA");
+    }
+    cdd->cd();
+    cdd->ls();
+  }
+  //---------------
+  
+  // Process each of the triggers
+  //
+  ProcessTrigger("default" );
+  ProcessTrigger("EMCAL_L0");
+  ProcessTrigger("EMCAL_L1");
+  ProcessTrigger("EMCAL_L2");
+  ProcessTrigger("DCAL_L0" );
+  ProcessTrigger("DCAL_L1" );
+  ProcessTrigger("DCAL_L2" );
+  
+  if(exportToFile == 1)
+  {
+    fout->cd();
+    fout->Close();
+   }
+  
+  file->Close();
+}
+
+/// 
+/// Produce the plots per trigger, options are:
+/// * default : min bias like triggers, kINT7, kINT1, kMB
+/// * EMCAL_L0: kEMC7 L0 EMCal
+/// * DCAL_L0 : kEMC7 L0 DCal
+/// * EMCAL_L1: kEMCEGA L1 EG1 EMCal
+/// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
+/// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
+/// * DCAL_L2 : kEMCEGA L1 EG2 DCal
+///
+/// Input:
+/// \param trigName: File name
+/// \param checklist: get the list from file, in case not exported
+///
+/// This method can be executed directly instead od DrawAnaCaloTrackQA if the
+/// list with histograms were exported previously into a separate file 
+/// and checkList is set to false.
+//_______________________________________________________________________
+void ProcessTrigger( TString trigName, Bool_t checkList)
+{
+  // Access the list of histograms, global variables
+  //
+  if(checkList)
+  {
+    Bool_t ok = GetList(trigName);
+    printf("\t -- Process trigger %s, ok %d\n",trigName.Data(), ok);
+    
+    if ( !ok ) return;
+  }
+
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(000000);
@@ -102,10 +208,6 @@ void DrawAnaCaloTrackQA
   //gStyle->SetPadTopMargin(0.02);
   //gStyle->SetPadLeftMargin(0.15);
   gStyle->SetTitleFontSize(0.05);
-    
-  //Access the file and list of histograms, global variables
-  Bool_t ok = GetFileAndList(fileName, listName, trigName, exportToFile);  
-  if ( !ok ) return;
 
   Int_t nCalo = 2;
   Int_t calo  = 0;
@@ -117,7 +219,7 @@ void DrawAnaCaloTrackQA
   histoTag = trigName;
   
   // Plot basic Track QA
-  //TrackQA();
+  TrackQA();
   
   for(Int_t icalo = calo; icalo < nCalo; icalo++)
   {
@@ -138,17 +240,26 @@ void DrawAnaCaloTrackQA
     // MC basic QA plots, cluster origins (only if it run on MC)
     MCQA(icalo);
   }
-
 }
 
 ///
 /// Plot basic calorimeter QA histograms.
+/// 3 canvases with 4 pads
+/// * cluster/cell pT spectra, ratio of cluster spectra after matching and PID cuts, and track matching residuals
+/// * cell and cluster hit maps: cell hit, cell energy mean, cluster hit low energy, cluster hit high energy
+/// * cluster time vs pT, cluster long axis vs E, number of cells in cluster vs E, cells in cluster E vs cluster E
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
-  TCanvas * ccalo = new TCanvas(Form("CaloHisto_%s",histoTag.Data()),
-                                "Cluster spectra and track match residuals",1000,1000);
+  //-----------------------------
+  // Cluster spectra and track match residuals
+  //
+  TCanvas * ccalo = new TCanvas(Form("%s_CaloHisto_SpectraTM"                          ,histoTag.Data()),
+                                Form("Cluster spectra and track match residuals for %s",histoTag.Data()),
+                                1000,1000);
   ccalo->Divide(2,2);
   
   ccalo->cd(1);
@@ -157,7 +268,7 @@ void CaloQA(Int_t icalo)
       
   TH1F* hClusterEnergy = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_6_Fidutial",icalo));
   if(!hClusterEnergy) return;
-  hClusterEnergy->SetYTitle("entries");
+  hClusterEnergy->SetYTitle("Entries");
   hClusterEnergy->SetTitle("Cluster-cell energy spectra");
   hClusterEnergy->SetTitleOffset(1.5,"Y");
   hClusterEnergy->Sumw2();
@@ -170,11 +281,11 @@ void CaloQA(Int_t icalo)
   TH1F* hCellAmplitude  = 0;
   if(histoTag.Contains("default"))
   {
-    if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("CellAmp%s",histoTag.Data()), 1,12);
-    else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("CellAmp%s",histoTag.Data()),12,20);
+    if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()), 1,12);
+    else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),12,20);
   }
-  else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("CellAmp%s",histoTag.Data()),0,100);
-    
+  else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),0,100);
+      
   hCellAmplitude->Sumw2();
   hCellAmplitude->SetMarkerColor(4);
   hCellAmplitude->SetMarkerStyle(25);
@@ -192,7 +303,7 @@ void CaloQA(Int_t icalo)
   //gPad->SetLogy();
   gPad->SetLogx();
 
-  TH1F* hRaw  = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_6_Fidutial",icalo));
+  //TH1F* hRaw  = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_6_Fidutial",icalo));
   //TH1F* hCorr = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_4_NCells"  ,icalo));
   TH1F* hTM   = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_7_Matching",icalo));
   TH1F* hShSh = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_9_PID"     ,icalo));
@@ -220,13 +331,13 @@ void CaloQA(Int_t icalo)
   hTM  ->SetMarkerStyle(21);
   hTM  ->SetMaximum(1.1);
   hTM  ->SetMinimum(0);
-  hTM  ->Divide(hRaw);
+  hTM  ->Divide(hClusterEnergy);
   hTM  ->Draw("");
   
   hShSh->Sumw2();
   hShSh->SetMarkerColor(4);
   hShSh->SetMarkerStyle(22);
-  hShSh->Divide(hRaw);
+  hShSh->Divide(hClusterEnergy);
   hShSh->Draw("same");
   
   TLegend l2(0.45,0.8,0.95,0.93);
@@ -238,8 +349,12 @@ void CaloQA(Int_t icalo)
   l2.SetFillColor(0);
   l2.Draw();
   
-  
   // Plot track-matching residuals
+  TH1F* hTrackMatchResEtaNeg;
+  TH1F* hTrackMatchResEtaPos;
+  TH1F* hTrackMatchResPhiNeg;
+  TH1F* hTrackMatchResPhiPos;
+
   // first test did not have this histogram, add protection
   TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaDPhiPosNoCut",icalo));
   if(hTrackMatchResEtaPhi)
@@ -255,7 +370,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPhi->SetTitle("Track-cluster residual #Delta#varphi vs #Delta#eta, #it{E}>0.5 GeV");
     hTrackMatchResEtaPhi->SetXTitle("#Delta #eta");
     hTrackMatchResEtaPhi->SetYTitle("#Delta #varphi");
-    hTrackMatchResEtaPhi->SetZTitle("entries");
+    hTrackMatchResEtaPhi->SetZTitle("Entries");
     hTrackMatchResEtaPhi->Draw("colz");
     
     ccalo->cd(4);
@@ -266,14 +381,14 @@ void CaloQA(Int_t icalo)
     TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo));
     TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo));
     
-    Float_t binMin = hRaw->FindBin(0.5);
-    TH1F* hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("TMProjEtaNeg%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResEtaPos = (TH1F*) h2TrackMatchResEtaPos->ProjectionY(Form("TMProjEtaPos%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResPhiNeg = (TH1F*) h2TrackMatchResPhiNeg->ProjectionY(Form("TMProjPhiNeg%s",histoTag.Data()),binMin, 1000);
-    TH1F* hTrackMatchResPhiPos = (TH1F*) h2TrackMatchResPhiPos->ProjectionY(Form("TMProjPhiPos%s",histoTag.Data()),binMin, 1000);
-    
+    Float_t binMin = hClusterEnergy->FindBin(0.5);
+    hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("%s_hTrackMatchProjClusEnEtaNeg",histoTag.Data()),binMin, 1000);
+    hTrackMatchResEtaPos = (TH1F*) h2TrackMatchResEtaPos->ProjectionY(Form("%s_hTrackMatchProjClusEnEtaPos",histoTag.Data()),binMin, 1000);
+    hTrackMatchResPhiNeg = (TH1F*) h2TrackMatchResPhiNeg->ProjectionY(Form("%s_hTrackMatchProjClusEnPhiNeg",histoTag.Data()),binMin, 1000);
+    hTrackMatchResPhiPos = (TH1F*) h2TrackMatchResPhiPos->ProjectionY(Form("%s_hTrackMatchProjClusEnPhiPos",histoTag.Data()),binMin, 1000);
+        
     hTrackMatchResEtaNeg->SetXTitle("#Delta #eta, #Delta #varphi");
-    hTrackMatchResEtaNeg->SetYTitle("entries");
+    hTrackMatchResEtaNeg->SetYTitle("Entries");
     hTrackMatchResEtaNeg->SetTitle("Track-cluster residuals, #it{E} > 1 GeV");
     hTrackMatchResEtaNeg->SetAxisRange(-0.05,0.05,"X");
     hTrackMatchResEtaNeg->Sumw2();
@@ -310,31 +425,39 @@ void CaloQA(Int_t icalo)
     l3.Draw();
   }
   
-  ccalo->Print(Form("%s_CaloHisto.eps",histoTag.Data()));
+  ccalo->Print(Form("%s_CaloHisto_ClusterSpectraAndTrackResiduals.%s",histoTag.Data(),format.Data()));
   
-  TCanvas * ccalo2 = new TCanvas(Form("CaloHisto2_%s",histoTag.Data()),"",500,500);
+  // cleanup or save
+  //
+  if(exportToFile!=1)
+  {
+    delete hCellAmplitude;
+    delete hTrackMatchResEtaNeg;
+    delete hTrackMatchResEtaPos;
+    delete hTrackMatchResPhiNeg;
+    delete hTrackMatchResPhiPos;
+    
+    delete ccalo;
+  }
+  else
+  {
+    SaveHisto(hCellAmplitude      ,kFALSE);
+    SaveHisto(hTrackMatchResEtaNeg,kFALSE);
+    SaveHisto(hTrackMatchResEtaPos,kFALSE);
+    SaveHisto(hTrackMatchResPhiNeg,kFALSE);
+    SaveHisto(hTrackMatchResPhiPos,kFALSE);
+    
+    SaveCanvas(ccalo);
+  }
+  
+  //-----------------------------
+  // Cell and cluster hit maps
+  //
+  TCanvas * ccalo2 = new TCanvas(Form("%s_CaloHisto_CellClusterHit"     ,histoTag.Data()),
+                                 Form("Cell and cluster hit maps for %s",histoTag.Data()),
+                                 1000,1000);
   ccalo2->Divide(2,2);
-  
-  ccalo2->cd(3);
-//  gPad->SetLogz();
-//  TH2F* hCellAmpId   = (TH2F*) GetHisto("QA_hAmpId");
-//  hCellAmpId->SetTitle("Cell Id vs energy");
-//  hCellAmpId->SetYTitle("Cell Id");
-//  //hCellAmpId->SetAxisRange(300.,900.,"Y");
-//  hCellAmpId->SetAxisRange(0.,30.,"X");
-//  hCellAmpId->SetTitleOffset(1.5,"Y");
-//  hCellAmpId->Draw("colz");
-
-  gPad->SetLogz();
-  
-  TH2F* hClusterTime   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTimePt",icalo));
-  hClusterTime->SetTitle("Cluster energy vs time");
-  hClusterTime->SetYTitle("time (ns)");
-  //hClusterTime->SetAxisRange(300.,900.,"Y");
-  hClusterTime->SetAxisRange(0.,30.,"X");
-  hClusterTime->SetTitleOffset(1.5,"Y");
-  hClusterTime->Draw("colz");
-  
+    
   ccalo2->cd(1);
   gPad->SetLogz();
 
@@ -343,6 +466,8 @@ void CaloQA(Int_t icalo)
   else            hCellActivity->SetAxisRange(128,220,"Y");
   hCellActivity->SetTitle("Hits per cell (#it{E} > 0.2 GeV)");
   hCellActivity->SetTitleOffset(1.5,"Y");
+  hCellActivity->SetZTitle("Entries");
+  hCellActivity->SetTitleOffset(1.5,"Z");
   hCellActivity->Draw("colz");
   
   ccalo2->cd(2);
@@ -358,42 +483,144 @@ void CaloQA(Int_t icalo)
     hCellActivityE->Divide(hCellActivity);
   
   hCellActivityE->SetTitleOffset(1.5,"Y");
+  hCellActivityE->SetZTitle("#Sigma #it{E}_{cell} / Entries_{per cell}");
+  hCellActivityE->SetTitleOffset(1.5,"Z");
+  
   hCellActivityE->Draw("colz");
   
+  ccalo2->cd(3);
+  gPad->SetLogz();
+  
+  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
+    
+  if(histoTag.Contains("default")) hClusterActivity->SetTitle("Clusters per col-row 0.5<#it{E}<3 GeV");
+  else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row 2<#it{E}<5 GeV");
+  else                             hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
+  
+  hClusterActivity->SetTitleOffset(1.5,"Y");
+  hClusterActivity->SetZTitle("Entries");
+  hClusterActivity->SetTitleOffset(1.5,"Z");
+  
+  hClusterActivity->Draw("colz");
+
   ccalo2->cd(4);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
-  if(histoTag.Contains("default"))
-        hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
+  TH2F* hClusterActivity2  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
+   
+  if(histoTag.Contains("default")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 3 GeV");
+  else if(histoTag.Contains("L0")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 5 GeV");
+  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
   
-  if(histoTag.Contains("default")) hClusterActivity->SetTitle("Clusters per col-row 0.5<#it{E}<3 GeV");
-  else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row #it{E} > 5 GeV");
-  else                             hClusterActivity->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  hClusterActivity2->SetTitleOffset(1.5,"Y");
+  hClusterActivity2->SetZTitle("Entries");
+  hClusterActivity2->SetTitleOffset(1.5,"Z");
   
-  hClusterActivity->SetTitleOffset(1.5,"Y");
-  hClusterActivity->Draw("colz");
+  hClusterActivity2->Draw("colz");
+
+  ccalo2->Print(Form("%s_CaloHisto_CellClusterHit.%s",histoTag.Data(),format.Data()));
+
+  // cleanup or save
+  //
+  if(exportToFile!=1) delete ccalo2;
+  else                SaveCanvas(ccalo2);
+
+  //-----------------------------
+  // Cluster time, shape, ncells
+  //
+  TCanvas * ccalo3 = new TCanvas(Form("%s_CaloHisto_ClusterTimeShape"     ,histoTag.Data()),
+                                 Form("Cluster time, shape, ncells for %s",histoTag.Data()),
+                                 1000,1000);
+  ccalo3->Divide(2,2);
   
-  ccalo2->Print(Form("%s_CaloHisto2.eps",histoTag.Data()));
+  ccalo3->cd(1);
+   
+  gPad->SetLogz();
+  
+  TH2F* hClusterTime   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTimePt",icalo));
+  hClusterTime->SetTitle("Cluster #it{E} vs #it{time}");
+  hClusterTime->SetYTitle("#it{time} (ns)");
+  //hClusterTime->SetAxisRange(300.,900.,"Y");
+  hClusterTime->SetAxisRange(0.,30.,"X");
+  hClusterTime->SetTitleOffset(1.5,"Y");
+  hClusterTime->SetZTitle("Entries");
+  hClusterTime->SetTitleOffset(1.5,"Z");
+  hClusterTime->Draw("colz");
+  
+  ccalo3->cd(2);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterL0   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hLam0E",icalo));
+  hClusterL0->SetTitle("Cluster #sigma_{long}");
+  hClusterL0->SetAxisRange(0.,30.,"X");
+  hClusterL0->SetTitleOffset(1.5,"Y");
+  hClusterL0->SetZTitle("Entries");
+  hClusterL0->SetTitleOffset(1.5,"Z");
+  
+  hClusterL0->Draw("colz");
+
+  ccalo3->cd(3);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterNCell   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hNCellsE",icalo));
+  hClusterNCell->SetTitle("Number of cells in cluster");
+  hClusterNCell->SetAxisRange(0.,30.,"X");
+  hClusterNCell->SetTitleOffset(1.5,"Y");
+  hClusterNCell->SetZTitle("Entries");
+  hClusterNCell->SetTitleOffset(1.5,"Z");
+
+  hClusterNCell->Draw("colz");
+ 
+  ccalo3->cd(4);
+  
+  gPad->SetLogz();
+  
+  TH2F* hClusterECell   = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hCellsE",icalo));
+  hClusterECell->SetTitle("cells in cluster #it{E} vs cluster #it{E}");
+  hClusterECell->SetAxisRange(0.,30.,"X");
+  hClusterECell->SetAxisRange(0.,20.,"Y");
+  hClusterECell->SetTitleOffset(1.5,"Y");
+  hClusterECell->SetZTitle("Entries");
+  hClusterECell->SetTitleOffset(1.5,"Z");
+
+  hClusterECell->Draw("colz");
+  
+  ccalo3->Print(Form("%s_CaloHisto_TimeShapeNCells.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //
+  if(exportToFile!=1) delete ccalo3;
+  else                SaveCanvas(ccalo3);
+
 }
 
 ///
-/// Plot basic hybrid tracks histograms.
+/// Plot basic hybrid tracks histograms in 4 pads:
+/// * tracks eta vs phi
+/// * track phi distribution per hybrid track component
+/// * track TOF
+/// * track pT per hybrid track component
 ///
 //______________________________________
 void TrackQA()
 {
-  TCanvas * ctrack = new TCanvas(Form("TrackHisto_%s",histoTag.Data()),
-                                 "Hybrid tracks",500,500);
+  TCanvas * ctrack = new TCanvas(Form("%s_TrackHisto"       ,histoTag.Data()),
+                                 Form("Hybrid tracks for %s",histoTag.Data()),
+                                 1000,1000);
   ctrack->Divide(2,2);
   
   ctrack->cd(1);
   //gPad->SetLogz();
   TH2F * hTrackEtaPhi = (TH2F*) GetHisto("AnaHadrons_hEtaPhiNegative");
-  hTrackEtaPhi ->Add((TH2F*) GetHisto("AnaHadrons_hEtaPhiNegative"));
+  hTrackEtaPhi ->Add(   (TH2F*) GetHisto("AnaHadrons_hEtaPhiPositive"));
   hTrackEtaPhi ->SetAxisRange(-0.9,0.9,"X");
   hTrackEtaPhi ->SetTitleOffset(1.5,"Y");
   hTrackEtaPhi ->SetTitle("Hybrid tracks #eta vs #varphi #it{p}_{T} > 0.2 GeV/#it{c}");
+  hTrackEtaPhi->SetZTitle("Entries");
+  hTrackEtaPhi->SetTitleOffset(1.5,"Z");
+
   hTrackEtaPhi ->Draw("colz");
   
   ctrack->cd(2);
@@ -401,11 +628,11 @@ void TrackQA()
   TH2F * hTrackEtaPhiSPD   = (TH2F*) GetHisto("AnaHadrons_hEtaPhiSPDRefitPt02");
   TH2F * hTrackEtaPhiNoSPD = (TH2F*) GetHisto("AnaHadrons_hEtaPhiNoSPDRefitPt02");
   
-  TH1F* hPhiSPD   = (TH1F*)hTrackEtaPhiSPD  ->ProjectionY("hTrackPhiSPD"  ,0,1000);
-  TH1F* hPhiNoSPD = (TH1F*)hTrackEtaPhiNoSPD->ProjectionY("hTrackPhiNoSPD",0,1000);
-  //TH1F* hPhi      = (TH1F*)hTrackEtaPhi     ->ProjectionY("hTrackPhi"     ,0,1000);
-  TH1F* hPhi      = (TH1F*)hPhiSPD->Clone("hTrackPhi");
+  TH1F* hPhiSPD   = (TH1F*)hTrackEtaPhiSPD  ->ProjectionY(Form("%s_hTrackPhiSPD"  ,histoTag.Data()),0,1000);
+  TH1F* hPhiNoSPD = (TH1F*)hTrackEtaPhiNoSPD->ProjectionY(Form("%s_hTrackPhiNoSPD",histoTag.Data()),0,1000);
+  TH1F* hPhi      = (TH1F*)hPhiSPD->Clone(                Form("%s_hTrackPhi"     ,histoTag.Data()));
   hPhi->Add(hPhiNoSPD);
+  
   hPhi     ->SetTitle("Hybrid track type #varphi, 0.2<#it{p}_{T}<2 GeV/#it{c}");
   hPhi     ->SetLineColor(1);
   hPhiSPD  ->SetLineColor(2);
@@ -414,7 +641,9 @@ void TrackQA()
   hPhi     ->SetMinimum(1);
   hPhi     ->SetMaximum(hPhi->GetMaximum()*1.3);
   hPhi     ->SetTitleOffset(1.5,"Y");
-  
+  hPhi     ->SetYTitle("Entries");
+  TGaxis::SetMaxDigits(3);
+
   hPhi     ->Draw("H");
   hPhiSPD  ->Draw("Hsame");
   hPhiNoSPD->Draw("Hsame");
@@ -432,9 +661,11 @@ void TrackQA()
   gPad->SetLogy();
   
   TH1F* hTOF = (TH1F*) GetHisto("AnaHadrons_hTOFSignalPtCut");
-  hTOF->Draw("colz");
+  hTOF->SetYTitle("Entries");
   hTOF->SetTitleOffset(1.5,"Y");
 
+  hTOF->Draw("");
+  
   ctrack->cd(4);
   gPad->SetLogy();
   gPad->SetLogx();
@@ -447,6 +678,7 @@ void TrackQA()
   hPtNoSPD->SetLineColor(4);
   
   hPt     ->SetTitle("Hybrid track type #it{p}_{T}");
+  hPt     ->SetYTitle("Entries");
   hPt     ->SetTitleOffset(1.5,"Y");
 
   hPt     ->Draw("");
@@ -469,17 +701,43 @@ void TrackQA()
 //  hPtDCAz->SetAxisRange(0,30,"X");
 //  hPtDCAz->Draw("colz");
   
-  ctrack->Print(Form("%s_TrackHisto.eps",histoTag.Data()));
+  ctrack->Print(Form("%s_TrackHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //
+  if(exportToFile!=1)
+  {
+    delete hPhi;
+    delete hPhiSPD;
+    delete hPhiNoSPD;
+    
+    delete ctrack;
+  }
+  else
+  {
+    SaveHisto(hPhi     ,kFALSE);
+    SaveHisto(hPhiSPD  ,kFALSE);
+    SaveHisto(hPhiNoSPD,kFALSE);
+    
+    SaveCanvas(ctrack);
+  }
 }
 
 ///
-/// Plot basic invariant mass QA
+/// Plot basic invariant mass QA in 4 pads:
+/// * Invariant mass vs pT
+/// * Invariant mass real/mixed pairs, in pi0 region
+/// * Invariant mass real/mixed pairs, in pi0 region per super module
+/// * Invariant mass real/mixed pairs, in eta region
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //_____________________________
 void Pi0QA(Int_t icalo)
 {
-  TCanvas * cpi0 = new TCanvas(Form("Pi0Histo_%s",histoTag.Data()),
-                               "Neutral mesons",500,500);
+  TCanvas * cpi0 = new TCanvas(Form("%s_InvariantMassHisto"          ,histoTag.Data()),
+                               Form("Neutral mesons inv. mass for %s",histoTag.Data()),
+                               1000,1000);
   cpi0->Divide(2,2);
   
   TH2F* hMassE[10];
@@ -498,17 +756,17 @@ void Pi0QA(Int_t icalo)
   
   if(hMassE[1]) // Plot centrality from 60 to 100%
   {
-    h2DMass = (TH2F*) hMassE[6]->Clone("h2DMass");
+    h2DMass = (TH2F*) hMassE[6]->Clone(Form("%s_h2DMass",histoTag.Data()));
     for(Int_t icen = 7; icen < 10; icen++) h2DMass->Add(hMassE[icen]);
     h2DMass->SetTitle("Inv. mass vs #it{p}_{T,pair}, Cen: 60-100%");
   }
   else
   {
-    h2DMass = (TH2F*) hMassE[0]->Clone("hMassProj");
+    h2DMass = (TH2F*) hMassE[0]->Clone(Form("%s_h2DMass",histoTag.Data()));
     h2DMass->SetTitle("Inv. mass vs #it{p}_{T,pair}");
   }
-    
-  h2DMass->SetTitleOffset(1.6,"Y");
+  
+  h2DMass->SetTitleOffset(1.5,"Y");
   h2DMass->SetAxisRange(0.0,0.7,"Y");
   h2DMass->SetAxisRange(0,30,"X");
   h2DMass->Draw("colz");
@@ -528,8 +786,8 @@ void Pi0QA(Int_t icalo)
     hMassEta[icen] = 0;
     hMassPi0[icen] = 0;
   }
-  
-  TH1F * hX = (TH1F*) hMassE[0]->ProjectionX("hEPairCen0",0,10000);
+    
+  TH1F * hX = (TH1F*) hMassE[0]->ProjectionX(Form("%s_hEPairCen0",histoTag.Data()),0,10000);
   Int_t binmin = hX->FindBin(2);  // Project histo from 2 GeV pairs
   Int_t binmax = hX->FindBin(10); // Project histo up to 10 GeV pairs
   if(histoTag.Contains("L0"))
@@ -544,7 +802,7 @@ void Pi0QA(Int_t icalo)
   }
   else if(histoTag.Contains("L1"))
   {
-    binmin = hX->FindBin(10);  // Project histo from 10 GeV pairs
+    binmin = hX->FindBin(10); // Project histo from 10 GeV pairs
     binmax = hX->FindBin(15); // Project histo up to 15 GeV pairs
   }
   
@@ -554,13 +812,13 @@ void Pi0QA(Int_t icalo)
   {
     if(!hMassE[icen]) continue;
 
-    hMass[icen] = (TH1F*) hMassE   [icen]->ProjectionY(Form("hMassCen%d%s",icen,histoTag.Data()),binmin,binmax);
-    hMix [icen] = (TH1F*) hMixMassE[icen]->ProjectionY(Form("hMixCen%d%s" ,icen,histoTag.Data()),binmin,binmax);
+    hMass[icen] = (TH1F*) hMassE   [icen]->ProjectionY(Form("%s_hMassCen%d",histoTag.Data(),icen),binmin,binmax);
+    hMix [icen] = (TH1F*) hMixMassE[icen]->ProjectionY(Form("%s_hMixCen%d" ,histoTag.Data(),icen),binmin,binmax);
     hMass[icen]->Sumw2();
     hMix [icen]->Sumw2();
     
-    hMassPi0[icen] = (TH1F*) hMass[icen]->Clone(Form("hMassPi0Cen%d%s",icen,histoTag.Data()));
-    hMassEta[icen] = (TH1F*) hMass[icen]->Clone(Form("hMassEtaCen%d%s",icen,histoTag.Data()));
+    hMassPi0[icen] = (TH1F*) hMass[icen]->Clone(Form("%s_hMassPi0Cen%d",histoTag.Data(),icen));
+    hMassEta[icen] = (TH1F*) hMass[icen]->Clone(Form("%s_hMassEtaCen%d",histoTag.Data(),icen));
     
     hMassPi0[icen]->Divide(hMix[icen]);
     hMassPi0[icen]->Fit("pol0","Q","",0.25,0.35);
@@ -572,7 +830,7 @@ void Pi0QA(Int_t icalo)
     hMassPi0[icen]->SetMarkerColor(color[icen]);
     hMassPi0[icen]->SetLineColor(color[icen]);
     hMassPi0[icen]->SetAxisRange(0.04,0.24);
-    hMassPi0[icen]->SetMarkerSize(0.5);
+    //hMassPi0[icen]->SetMarkerSize(0.5);
     
     hMassEta[icen]->Rebin(4);
     hMix    [icen]->Rebin(4);
@@ -581,7 +839,7 @@ void Pi0QA(Int_t icalo)
     hMassEta[icen]->SetMarkerColor(color[icen]);
     hMassEta[icen]->SetLineColor(color[icen]);
     hMassEta[icen]->SetAxisRange(0.4,0.9);
-    hMassEta[icen]->SetMarkerSize(0.5);
+    //hMassEta[icen]->SetMarkerSize(0.5);
     hMassEta[icen]->Scale(1./scale);
     
     if(maxEta < hMassEta[icen]->GetMaximum()) maxEta = hMassEta[icen]->GetMaximum();
@@ -591,7 +849,7 @@ void Pi0QA(Int_t icalo)
   //gPad->SetLogy();
   //gPad->SetGridy();
   hMassPi0[0]->SetMinimum(0.8);
-  hMassPi0[0]->SetTitleOffset(1.6,"Y");
+  hMassPi0[0]->SetTitleOffset(1.5,"Y");
   hMassPi0[0]->SetYTitle("Real / Mixed");
   hMassPi0[0]->SetTitle("#pi^{0} peak, 2 < #it{E}_{pair}< 10 GeV");
   if     (histoTag.Contains("L0")) hMassPi0[0]->SetTitle("#pi^{0} peak, 5 < #it{E}_{pair}< 10 GeV");
@@ -635,6 +893,14 @@ void Pi0QA(Int_t icalo)
   
   TH1F* hSM   [20];
   TH1F* hMixSM[20];
+  
+  //Init to 0
+  for(Int_t ism = 0; ism < 20; ism++)
+  {
+    hSM   [ism] = 0;
+    hMixSM[ism] = 0;
+  }
+  
   binmin = hX->FindBin(4);  // Project histo from 3 GeV pairs
   binmax = hX->FindBin(20); // Project histo up to 20 GeV pairs
   Float_t maxSM = 0;
@@ -647,19 +913,19 @@ void Pi0QA(Int_t icalo)
     TH2F* hTmpSM = (TH2F*) GetHisto(Form("AnaPi0_Calo%d_hReMod_%d",icalo,ism));    
     if(!hTmpSM) continue;
     
-    hSM[ism] = (TH1F*) hTmpSM->ProjectionY(Form("hMassSM%d%s",ism,histoTag.Data()),binmin,binmax);
+    hSM[ism] = (TH1F*) hTmpSM->ProjectionY(Form("%s_hMassSM%d",histoTag.Data(),ism),binmin,binmax);
     hSM[ism]->Sumw2();
     hSM[ism]->SetMarkerStyle(26);
     hSM[ism]->Rebin(2);
     //hSM[ism]->Scale(1./hSM[ism]->Integral(0,10000));
     hSM[ism]->SetMarkerColor(color[ism-first]);
     hSM[ism]->SetLineColor(color[ism-first]);
-    hSM[ism]->SetMarkerSize(0.5);
+    //hSM[ism]->SetMarkerSize(0.5);
 
     TH2F* hTmpMixSM = (TH2F*) GetHisto(Form("AnaPi0_hMiMod_%d",ism));
     if(hTmpMixSM)
     {
-      hMixSM[ism] = (TH1F*) hTmpMixSM->ProjectionY(Form("hMassMixSM%d%s",ism,histoTag.Data()),binmin,binmax);
+      hMixSM[ism] = (TH1F*) hTmpMixSM->ProjectionY(Form("%s_hMassMixSM%d",histoTag.Data(),ism),binmin,binmax);
       hMixSM[ism]->Sumw2();
       hMixSM[ism]->Rebin(2);
       hSM[ism]->Divide(hMixSM[ism]);
@@ -668,17 +934,17 @@ void Pi0QA(Int_t icalo)
       if(hSM[ism]->GetFunction("pol0")) scale = hSM[ism]->GetFunction("pol0")->GetParameter(0);
       //printf("Scale factor %f for cen %d\n",scale,icen);
       hSM[ism]->Scale(1./scale);
-      hSM[ism]->SetYTitle("Real / Mixed");
     }
     
     if(maxSM < hSM[ism]->GetMaximum()) maxSM = hSM[ism]->GetMaximum();
   }
   
   hSM[first]->SetTitle("#pi^{0} peak in SM, 4 < #it{E}_{pair}< 10 GeV");
-  hSM[first]->SetTitleOffset(1.6,"Y");
+  hSM[first]->SetTitleOffset(1.5,"Y");
   hSM[first]->SetAxisRange(0.04,0.24);
   hSM[first]->SetMaximum(maxSM*1.2);
   hSM[first]->SetMinimum(0.8);
+  hSM[first]->SetYTitle("Real / Mixed");
 
   hSM[first]->Draw("H");
   TLegend lsm(0.12,0.5,0.35,0.85);
@@ -705,7 +971,7 @@ void Pi0QA(Int_t icalo)
   //gPad->SetLogy();
   //gPad->SetGridy();
   hMassEta[0]->SetMinimum(0.8);
-  hMassEta[0]->SetTitleOffset(1.6,"Y");
+  hMassEta[0]->SetTitleOffset(1.5,"Y");
   hMassEta[0]->SetYTitle("Real / Mixed");
   hMassEta[0]->SetTitle("#eta peak, 2 <#it{E}_{pair}< 10 GeV");
   if     (histoTag.Contains("L0")) hMassEta[0]->SetTitle("#eta peak, 5 < #it{E}_{pair}< 10 GeV");
@@ -738,18 +1004,68 @@ void Pi0QA(Int_t icalo)
     l2.Draw();
   }
 
-  cpi0->Print(Form("%s_Pi0Histo.eps",histoTag.Data()));
+  cpi0->Print(Form("%s_Pi0Histo.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //
+  if(exportToFile!=1)
+  {
+    delete h2DMass;
+    delete hX;
+    
+    for(Int_t icen=0; icen<10; icen++ )
+    {
+      if ( hMass   [icen] ) delete hMass   [icen];
+      if ( hMix    [icen] ) delete hMix    [icen];
+      if ( hMassPi0[icen] ) delete hMassPi0[icen];
+      if ( hMassEta[icen] ) delete hMassEta[icen];
+    }
+    
+    for(Int_t ism = first; ism < 20; ism++)
+    {
+      if ( hSM   [ism] ) delete hSM   [ism];
+      if ( hMixSM[ism] ) delete hMixSM[ism];
+    }
+    
+    delete cpi0;
+  }
+  else
+  {
+    SaveHisto(h2DMass,kFALSE);
+    
+    for(Int_t icen=0; icen<10; icen++ )
+    {
+      SaveHisto(hMass   [icen],kFALSE);
+      SaveHisto(hMix    [icen],kFALSE);
+      SaveHisto(hMassPi0[icen],kFALSE);
+      SaveHisto(hMassEta[icen],kFALSE);
+    }
+    
+    for(Int_t ism = first; ism < 20; ism++)
+    {
+      SaveHisto(hSM   [ism],kFALSE);
+      SaveHisto(hMixSM[ism],kFALSE);
+    }
+    
+    SaveCanvas(cpi0);
+  }
 }
 
 ///
-/// Plot basic cluster-track correlation histograms.
+/// Plot basic candidate cluster isolation histograms in 2 pads:
+/// * Cluster spectra, isolated and not isolated
+/// * pT distribution of tracks or clusters or both in the isolation cone, or perpendicular cones or eta-band out of cone
+/// * sum pT distribution of tracks or clusters or both in the isolation cone, or perpendicular cones or eta-band out of cone
+/// * sum pT distribution of tracks or clusters or both in the isolation cone whith subtracted eta-band sum pT
 ///
 //__________________________________________________
 void IsolQA(Int_t icalo)
 {
   gStyle->SetPadRightMargin(0.02);
 
-  TCanvas * cIsolation = new TCanvas(Form("IsolationHisto_%s",histoTag.Data()),"Isolation cone",1000,1000);
+  TCanvas * cIsolation = new TCanvas(Form("%s_IsolationHisto"    ,histoTag.Data()),
+                                     Form("Isolation cone for %s",histoTag.Data()),
+                                     1000,1000);
   cIsolation->Divide(2,2);
   
   Float_t minClusterE = 5;
@@ -771,6 +1087,7 @@ void IsolQA(Int_t icalo)
   // Pt in cone
   //
   cIsolation->cd(1);
+  gPad->SetLogy();
 
   hIsolated   ->Sumw2();
   hNotIsolated->Sumw2();
@@ -782,11 +1099,12 @@ void IsolQA(Int_t icalo)
   hNotIsolated->SetMarkerStyle(20);
 
   hNotIsolated->SetTitle("(non) isolated cluster spectra, #it{R}=0.4, #Sigma #it{p}_{T}<2 GeV/#it{c}");
-
+  hNotIsolated->SetYTitle("Entries");
+  
   hNotIsolated->Draw();  
   hIsolated   ->Draw("same");
   
-  TLegend lI(0.4,0.5,0.8,0.88);
+  TLegend lI(0.4,0.7,0.88,0.88);
   lI.SetTextSize(0.04);
   lI.SetBorderSize(0);
   lI.SetFillColor(0);
@@ -800,7 +1118,7 @@ void IsolQA(Int_t icalo)
   cIsolation->cd(2);
   gPad->SetLogy();
   
-  TLegend l(0.4,0.5,0.8,0.88);
+  TLegend l(0.55,0.55,0.88,0.88);
   l.SetTextSize(0.04);
   l.SetBorderSize(0);
   l.SetFillColor(0);
@@ -809,15 +1127,15 @@ void IsolQA(Int_t icalo)
   TH2F* h2PtInConeCluster    = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hPtClusterInCone" ,icalo));
   TH2F* h2PtInConeTrack      = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hPtTrackInCone"   ,icalo));
   TH2F* h2PtInConeTrackPerp  = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hPtInPerpCone"    ,icalo));
-  TH2F* h2PtInEtaBandTrack   = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hEtaBandClusterPt",icalo));
+  TH2F* h2PtInEtaBandTrack   = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hEtaBandTrackPt"  ,icalo));
   TH2F* h2PtInEtaBandCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hEtaBandClusterPt",icalo));
   
-  TH1F* hPtInCone            = (TH1F*) h2PtInCone          ->ProjectionY(Form("PtInCone%2.1fGeV%s"  ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hPtInConeCluster     = (TH1F*) h2PtInConeCluster   ->ProjectionY(Form("PtInConeCl%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hPtInConeTrack       = (TH1F*) h2PtInConeTrack     ->ProjectionY(Form("PtInConeTr%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hPtInConeTrackPerp   = (TH1F*) h2PtInConeTrackPerp ->ProjectionY(Form("PtInConePe%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hPtInEtaBandTrack    = (TH1F*) h2PtInEtaBandTrack  ->ProjectionY(Form("PtInConeET%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hPtInEtaBandCluster  = (TH1F*) h2PtInEtaBandCluster->ProjectionY(Form("PtInConeEC%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
+  TH1F* hPtInCone            = (TH1F*) h2PtInCone          ->ProjectionY(Form("%s_hPtInCone_TrigEnMin%2.0fGeV"              ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hPtInConeCluster     = (TH1F*) h2PtInConeCluster   ->ProjectionY(Form("%s_hPtInConeCluster_TrigEnMin%2.0fGeV"       ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hPtInConeTrack       = (TH1F*) h2PtInConeTrack     ->ProjectionY(Form("%s_hPtInConeTrack_TrigEnMin%2.0fGeV"         ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hPtInConeTrackPerp   = (TH1F*) h2PtInConeTrackPerp ->ProjectionY(Form("%s_hPtInConePerp_TrigEnMin%2.0fGeV"          ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hPtInEtaBandTrack    = (TH1F*) h2PtInEtaBandTrack  ->ProjectionY(Form("%s_hPtInConeEtaBandTrack_TrigEnMin%2.0fGeV"  ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hPtInEtaBandCluster  = (TH1F*) h2PtInEtaBandCluster->ProjectionY(Form("%s_hPtInConeEtaBandCluster_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
 
   hPtInCone          ->Sumw2();
   hPtInConeCluster   ->Sumw2();
@@ -841,12 +1159,12 @@ void IsolQA(Int_t icalo)
   hPtInEtaBandCluster->Scale(1./nTrig);
   hPtInEtaBandTrack  ->Scale(1./nTrig);
 
-  hPtInCone          ->SetAxisRange(0,10);
-  hPtInConeCluster   ->SetAxisRange(0,10);
-  hPtInConeTrack     ->SetAxisRange(0,10);
-  hPtInConeTrackPerp ->SetAxisRange(0,10);
-  hPtInEtaBandCluster->SetAxisRange(0,10);
-  hPtInEtaBandTrack  ->SetAxisRange(0,10);
+  hPtInCone          ->SetAxisRange(0,20);
+  hPtInConeCluster   ->SetAxisRange(0,20);
+  hPtInConeTrack     ->SetAxisRange(0,20);
+  hPtInConeTrackPerp ->SetAxisRange(0,20);
+  hPtInEtaBandCluster->SetAxisRange(0,20);
+  hPtInEtaBandTrack  ->SetAxisRange(0,20);
   
   hPtInCone          ->SetMarkerStyle(24);
   hPtInConeCluster   ->SetMarkerStyle(20);
@@ -903,7 +1221,7 @@ void IsolQA(Int_t icalo)
   cIsolation->cd(3);
   gPad->SetLogy();
   
-  TLegend l2(0.4,0.5,0.8,0.88);
+  TLegend l2(0.55,0.55,0.88,0.88);
   l2.SetTextSize(0.04);
   l2.SetBorderSize(0);
   l2.SetFillColor(0);
@@ -918,15 +1236,15 @@ void IsolQA(Int_t icalo)
   TH2F* h2SumPtConeSubCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESubCluster" ,icalo));
   TH2F* h2SumPtConeSub        = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESub"        ,icalo));
   
-  TH1F* hSumPtCone            = (TH1F*) h2SumPtCone          ->ProjectionY(Form("SumPtCone%2.1fGeV%s"   ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeCluster     = (TH1F*) h2SumPtConeCluster   ->ProjectionY(Form("SumPtConeCl%2.1fGeV%s" ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeTrack       = (TH1F*) h2SumPtConeTrack     ->ProjectionY(Form("SumPtConeTr%2.1fGeV%s" ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeTrackPerp   = (TH1F*) h2SumPtConeTrackPerp ->ProjectionY(Form("SumPtConePe%2.1fGeV%s" ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandTrack    = (TH1F*) h2SumPtEtaBandTrack  ->ProjectionY(Form("SumPtConeET%2.1fGeV%s" ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandCluster  = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("SumPtConeEC%2.1fGeV%s" ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeSub         = (TH1F*) h2SumPtConeSub       ->ProjectionY(Form("SumPtConeS%2.1fGeV%s"  ,minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeSubCluster  = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("SumPtConeSCl%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
-  TH1F* hSumPtConeSubTrack    = (TH1F*) h2SumPtConeSubTrack  ->ProjectionY(Form("SumPtConeSTr%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
+  TH1F* hSumPtCone            = (TH1F*) h2SumPtCone          ->ProjectionY(Form("%s_hSumPtCone_TrigEnMin%2.0fGeV"              ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeCluster     = (TH1F*) h2SumPtConeCluster   ->ProjectionY(Form("%s_hSumPtConeCluster_TrigEnMin%2.0fGeV"       ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeTrack       = (TH1F*) h2SumPtConeTrack     ->ProjectionY(Form("%s_hSumPtConeTrack_TrigEnMin%2.0fGeV"         ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeTrackPerp   = (TH1F*) h2SumPtConeTrackPerp ->ProjectionY(Form("%s_hSumPtConePerp_TrigEnMin%2.0fGeV"          ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandTrack    = (TH1F*) h2SumPtEtaBandTrack  ->ProjectionY(Form("%s_hSumPtConeEtaBandTrack_TrigEnMin%2.0fGeV"  ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandCluster  = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("%s_hSumPtConeEtaBandCluster_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSub         = (TH1F*) h2SumPtConeSub       ->ProjectionY(Form("%s_hSumPtConeSub_TrigEnMin%2.0fGeV"           ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubCluster  = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("%s_hSumPtConeSubCluster_TrigEnMin%2.0fGeV"    ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubTrack    = (TH1F*) h2SumPtConeSubTrack  ->ProjectionY(Form("%s_hSumPtConeSubTrack_TrigEnMin%2.0fGeV"      ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   
   hSumPtCone          ->Sumw2();
   hSumPtConeCluster   ->Sumw2();
@@ -959,15 +1277,15 @@ void IsolQA(Int_t icalo)
   hSumPtEtaBandCluster->Scale(1./nTrig);
   hSumPtEtaBandTrack  ->Scale(1./nTrig);
   
-  hSumPtCone          ->SetAxisRange(0,30);
-  hSumPtConeCluster   ->SetAxisRange(0,30);
-  hSumPtConeTrack     ->SetAxisRange(0,30);
-  hSumPtConeSub       ->SetAxisRange(-5,30);
-  hSumPtConeSubCluster->SetAxisRange(-5,30);
-  hSumPtConeSubTrack  ->SetAxisRange(-5,30);
-  hSumPtConeTrackPerp ->SetAxisRange(0,30);
-  hSumPtEtaBandCluster->SetAxisRange(0,30);
-  hSumPtEtaBandTrack  ->SetAxisRange(0,30);
+  hSumPtCone          ->SetAxisRange(0,500);
+  hSumPtConeCluster   ->SetAxisRange(0,500);
+  hSumPtConeTrack     ->SetAxisRange(0,500);
+  hSumPtConeSub       ->SetAxisRange(-5,500);
+  hSumPtConeSubCluster->SetAxisRange(-5,500);
+  hSumPtConeSubTrack  ->SetAxisRange(-5,500);
+  hSumPtConeTrackPerp ->SetAxisRange(0,500);
+  hSumPtEtaBandCluster->SetAxisRange(0,500);
+  hSumPtEtaBandTrack  ->SetAxisRange(0,500);
   
   hSumPtCone          ->SetMarkerStyle(24);
   hSumPtConeCluster   ->SetMarkerStyle(20);
@@ -1042,12 +1360,14 @@ void IsolQA(Int_t icalo)
   cIsolation->cd(4);
   gPad->SetLogy();
   
-  TLegend l3(0.4,0.7,0.8,0.88);
+  TLegend l3(0.4,0.75,0.8,0.88);
   l3.SetTextSize(0.04);
   l3.SetBorderSize(0);
   l3.SetFillColor(0);
 
   hSumPtConeSub->SetTitle(Form("Track/Cluster #Sigma #it{p}_{T}-#Sigma #eta band, p_{T,cand}>%2.0f GeV/#it{c}, #it{R}=0.4",minClusterE));
+  hSumPtConeSub->SetYTitle("Entries / #it{N}_{candidates}");
+  hSumPtConeSub->SetMaximum(max*2);
 
   hSumPtConeSub       ->Draw("");
   hSumPtConeSubCluster->Draw("same");
@@ -1059,19 +1379,71 @@ void IsolQA(Int_t icalo)
 
   l3.Draw("same");
 
-  cIsolation->Print(Form("%s_IsolationHisto.eps",histoTag.Data()));
+  cIsolation->Print(Form("%s_IsolationHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //
+  if(exportToFile!=1)
+  {
+    delete hPtInCone            ;
+    delete hPtInConeCluster     ;
+    delete hPtInConeTrack       ;
+    delete hPtInConeTrackPerp   ;
+    delete hPtInEtaBandTrack    ;
+    delete hPtInEtaBandCluster  ;
+    
+    delete hSumPtCone           ;
+    delete hSumPtConeCluster    ;
+    delete hSumPtConeTrack      ;
+    delete hSumPtConeTrackPerp  ;
+    delete hSumPtEtaBandTrack   ;
+    delete hSumPtEtaBandCluster ;
+    
+    delete hSumPtConeSub        ;
+    delete hSumPtConeSubCluster ;
+    delete hSumPtConeSubTrack   ;
+    
+    delete cIsolation           ;
+  }
+  else
+  {
+    SaveHisto(hPtInCone           ,kFALSE);
+    SaveHisto(hPtInConeCluster    ,kFALSE);
+    SaveHisto(hPtInConeTrack      ,kFALSE);
+    SaveHisto(hPtInConeTrackPerp  ,kFALSE);
+    SaveHisto(hPtInEtaBandTrack   ,kFALSE);
+    SaveHisto(hPtInEtaBandCluster ,kFALSE);
+    
+    SaveHisto(hSumPtCone          ,kFALSE);
+    SaveHisto(hSumPtConeCluster   ,kFALSE);
+    SaveHisto(hSumPtConeTrack     ,kFALSE);
+    SaveHisto(hSumPtConeTrackPerp ,kFALSE);
+    SaveHisto(hSumPtEtaBandTrack  ,kFALSE);
+    SaveHisto(hSumPtEtaBandCluster,kFALSE);
+    
+    SaveHisto(hSumPtConeSub       ,kFALSE);
+    SaveHisto(hSumPtConeSubCluster,kFALSE);
+    SaveHisto(hSumPtConeSubTrack  ,kFALSE);
+    
+    SaveCanvas(cIsolation);
+  }
 }
 
-
 ///
-/// Plot basic cluster-track correlation histograms.
+/// Plot basic cluster-track correlation histograms in 2 pads:
+/// * Azimuthal correlation of high pT trigger cluster and tracks in 4 associated pT bins
+/// * xE distribution of tracks correlated to a high pT cluster, in the opposite side or in perpendicular region (UE)
+/// 
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
   gStyle->SetPadRightMargin(0.02);
 
-  TCanvas * cCorrelation = new TCanvas(Form("CorrelationHisto_%s",histoTag.Data()),"Trigger cluster - associated track correlation ",1000,500);
+  TCanvas * cCorrelation = new TCanvas(Form("%s_CorrelationHisto"                                  ,histoTag.Data()),
+                                       Form("Trigger cluster - associated track correlation for %s",histoTag.Data()),
+                                       1000,500);
   cCorrelation->Divide(2,1);
   
   Float_t minClusterE = 5;
@@ -1095,6 +1467,7 @@ void CorrelQA(Int_t icalo)
   cCorrelation->cd(1);
   gPad->SetLogy();
   TH1F* hDeltaPhi[4];
+  for(Int_t i = 0; i < 4; i++) hDeltaPhi[i] = 0; 
   
   TLegend l(0.35,0.6,0.83,0.85);
   l.SetHeader(Form("p_{T,T} > %2.1f GeV/c",minClusterE));
@@ -1107,12 +1480,13 @@ void CorrelQA(Int_t icalo)
     TH2F* hDeltaPhiE = 
     (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hDeltaPhiPtAssocPt%2.1f_%2.1f",icalo,assocBins[ibin],assocBins[ibin+1]));
     hDeltaPhi[ibin]  = 
-    (TH1F*) hDeltaPhiE->ProjectionY(Form("DeltaPhi%2.1f%s",assocBins[ibin],histoTag.Data()),minClusterEBin,10000);
+    (TH1F*) hDeltaPhiE->ProjectionY(Form("%s_hDeltaPhi_TrackMinPt%2.1fGeV_TrigEnMin%2.0f",histoTag.Data(),assocBins[ibin],minClusterE),minClusterEBin,10000);
     hDeltaPhi[ibin]->Sumw2();
     hDeltaPhi[ibin]->Rebin(2);
     hDeltaPhi[ibin]->Scale(1./nTrig);
     
     hDeltaPhi[ibin]->Fit("pol0","Q","",1,2);
+    
     Float_t scale = 1;
     if(hDeltaPhi[ibin]->GetFunction("pol0"))
     {
@@ -1157,7 +1531,7 @@ void CorrelQA(Int_t icalo)
   TH2F* hEXE   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXECharged"  ,icalo));
   TH2F* hEXEUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXEUeCharged",icalo));
   
-  TH1F* hXE  = (TH1F*) hEXE->ProjectionY(Form("XE%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
+  TH1F* hXE  = (TH1F*) hEXE->ProjectionY(Form("%s_hXE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXE->Sumw2();
   hXE->Rebin(2);
   hXE->Scale(1./nTrig);
@@ -1171,7 +1545,7 @@ void CorrelQA(Int_t icalo)
   l2.AddEntry(hXE,"raw x_{E}","P");
   hXE->Draw();
 
-  TH1F* hXEUE  = (TH1F*) hEXEUE->ProjectionY(Form("XEUE%2.1fGeV%s",minClusterE,histoTag.Data()),minClusterEBin,10000);
+  TH1F* hXEUE  = (TH1F*) hEXEUE->ProjectionY(Form("%s_hXEUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXEUE->Sumw2();
   hXEUE->Rebin(2);
   hXEUE->Scale(1./nTrig);
@@ -1184,11 +1558,39 @@ void CorrelQA(Int_t icalo)
   
   l2.Draw("same");
 
-  cCorrelation->Print(Form("%s_CorrelationHisto.eps",histoTag.Data()));
+  cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //  
+  if(exportToFile!=1)
+  {
+    for(Int_t i = 0; i < 4; i++) delete hDeltaPhi[i]; 
+    
+    delete hXE  ;
+    delete hXEUE;
+    
+    delete cCorrelation;
+  }
+  else
+  {
+    for(Int_t i = 0; i < 4; i++) SaveHisto(hDeltaPhi[i],kFALSE); 
+    
+    SaveHisto(hXE  ,kFALSE)  ;
+    SaveHisto(hXEUE,kFALSE);
+    
+    SaveCanvas(cCorrelation);
+  }
+    
 }
 
 ///
-/// Plot basic generated particle distribution histograms.
+/// Plot basic generated particle distribution histograms in 4 pads:
+/// * pT spectra of generated and reconstructed clusters from photon, photon from pi0, photon from eta, eta and pi0  
+/// * ratio of pT spectra of reconstructed over generated
+/// * azimuthal distribution of generated particles
+/// * pseudorapidity distribution of generated particles
+///
+/// \param icalo: 0 EMCal, 1 DCal
 ///
 //________________________________________________________
 void MCQA(Int_t icalo)
@@ -1207,7 +1609,9 @@ void MCQA(Int_t icalo)
   TH1F* hPrimPi0    = (TH1F*) GetHisto(Form("AnaPi0_Calo%d_hPrimPi0Pt",icalo));
   TH1F* hPrimEta    = (TH1F*) GetHisto(Form("AnaPi0_Calo%d_hPrimEtaPt",icalo));
   
-  TCanvas * cmc = new TCanvas(Form("MCHisto_%s",histoTag.Data()),"Cluster origin",1000,1000);
+  TCanvas * cmc = new TCanvas(Form("%s_MCHisto"              ,histoTag.Data()),
+                              Form("Cluster MC origin for %s",histoTag.Data()),
+                              1000,1000);
   cmc->Divide(2,2);
   
   cmc->cd(1);
@@ -1219,7 +1623,8 @@ void MCQA(Int_t icalo)
   hClusterPho->SetMarkerStyle(20);
   hClusterPho->SetAxisRange(0.,50.,"X");
   //hClusterPho->SetXTitle("E_{rec,gen} (GeV)");
-  hClusterPho->SetXTitle("E_{rec}, p_{T,gen} (GeV)");
+  hClusterPho->SetXTitle("#it{E}_{rec}, #it{p}_{T,gen} (GeV)");
+  hClusterPho->SetYTitle("Entries");
   hClusterPho->Draw("");
 
   hClusterPhoPi0->Sumw2();
@@ -1293,11 +1698,11 @@ void MCQA(Int_t icalo)
 
   cmc->cd(2);
   gPad->SetLogy();
-  TH1F* hRatPho    = (TH1F*) hClusterPho   ->Clone(Form("hGenRecoPho%s"   ,histoTag.Data()));
-  TH1F* hRatPi0    = (TH1F*) hClusterPi0   ->Clone(Form("hGenRecoPi0%s"   ,histoTag.Data()));
-  TH1F* hRatEta    = (TH1F*) hClusterEta   ->Clone(Form("hGenRecoEta%s"   ,histoTag.Data()));
-  TH1F* hRatPhoPi0 = (TH1F*) hClusterPhoPi0->Clone(Form("hGenRecoPhoPi0%s",histoTag.Data()));
-  TH1F* hRatPhoEta = (TH1F*) hClusterPhoEta->Clone(Form("hGenRecoPhoEta%s",histoTag.Data()));
+  TH1F* hRatPho    = (TH1F*) hClusterPho   ->Clone(Form("%s_hGenRecoRatPho"   ,histoTag.Data()));
+  TH1F* hRatPi0    = (TH1F*) hClusterPi0   ->Clone(Form("%s_hGenRecoRatPi0"   ,histoTag.Data()));
+  TH1F* hRatEta    = (TH1F*) hClusterEta   ->Clone(Form("%s_hGenRecoRatEta"   ,histoTag.Data()));
+  TH1F* hRatPhoPi0 = (TH1F*) hClusterPhoPi0->Clone(Form("%s_hGenRecoRatPhoPi0",histoTag.Data()));
+  TH1F* hRatPhoEta = (TH1F*) hClusterPhoEta->Clone(Form("%s_hGenRecoRatPhoEta",histoTag.Data()));
 
   hRatPho   ->Divide(hPrimPho);
   hRatPhoPi0->Divide(hPrimPhoPi0);
@@ -1306,8 +1711,8 @@ void MCQA(Int_t icalo)
   hRatEta   ->Divide(hPrimEta);
   
   hRatPho->SetTitle("Reconstructed cluster / Generated particle in Calo acc.");
-  hRatPho->SetYTitle("Ratio");
-  hRatPho->SetXTitle("E(GeV)");
+  hRatPho->SetYTitle("#it{Ratio reco / gener}");
+  hRatPho->SetXTitle("#it{E} (GeV)");
   hRatPho->SetMinimum(1e-3);
   hRatPho->SetMaximum(20);
   hRatPho->Draw("");
@@ -1336,9 +1741,9 @@ void MCQA(Int_t icalo)
   
   Int_t binMin = hPrimPho->FindBin(3);
   
-  TH1F* hPrimPhoPhi = (TH1F*) h2PrimPhoPhi->ProjectionY(Form("PrimPhoPhi%s",histoTag.Data()),binMin,1000);
-  TH1F* hPrimPi0Phi = (TH1F*) h2PrimPi0Phi->ProjectionY(Form("PrimPi0Phi%s",histoTag.Data()),binMin,1000);
-  TH1F* hPrimEtaPhi = (TH1F*) h2PrimEtaPhi->ProjectionY(Form("PrimEtaPhi%s",histoTag.Data()),binMin,1000);
+  TH1F* hPrimPhoPhi = (TH1F*) h2PrimPhoPhi->ProjectionY(Form("%s_hPrimPhoPhi",histoTag.Data()),binMin,1000);
+  TH1F* hPrimPi0Phi = (TH1F*) h2PrimPi0Phi->ProjectionY(Form("%s_hPrimPi0Phi",histoTag.Data()),binMin,1000);
+  TH1F* hPrimEtaPhi = (TH1F*) h2PrimEtaPhi->ProjectionY(Form("%s_hPrimEtaPhi",histoTag.Data()),binMin,1000);
 
   hPrimPhoPhi->Sumw2();
   hPrimPi0Phi->Sumw2();
@@ -1360,9 +1765,9 @@ void MCQA(Int_t icalo)
   hPrimPi0Phi->SetMinimum(minPhi);
   TGaxis::SetMaxDigits(3);
 
-  hPrimPi0Phi->SetYTitle("1/total entries dN/d#varphi");
-  hPrimPi0Phi->SetTitle("Generated particles #varphi for E > 3 GeV");
-  hPrimPi0Phi->SetTitleOffset(1.6,"Y");
+  hPrimPi0Phi->SetYTitle("1/total entries d#it{N}/d#varphi");
+  hPrimPi0Phi->SetTitle("Generated particles #varphi for #it{E} > 3 GeV");
+  hPrimPi0Phi->SetTitleOffset(1.5,"Y");
   hPrimPi0Phi->SetMarkerColor(4);
   hPrimPi0Phi->SetMarkerStyle(21);
   hPrimPi0Phi->Draw("");
@@ -1390,9 +1795,9 @@ void MCQA(Int_t icalo)
   
   binMin = hPrimPho->FindBin(3);
   
-  TH1F* hPrimPhoEtaP = (TH1F*) h2PrimPhoEtaP->ProjectionY(Form("PrimPhoEtaP%s",histoTag.Data()),binMin,1000);
-  TH1F* hPrimPi0EtaP = (TH1F*) h2PrimPi0EtaP->ProjectionY(Form("PrimPi0EtaP%s",histoTag.Data()),binMin,1000);
-  TH1F* hPrimEtaEtaP = (TH1F*) h2PrimEtaEtaP->ProjectionY(Form("PrimEtaEtaP%s",histoTag.Data()),binMin,1000);
+  TH1F* hPrimPhoEtaP = (TH1F*) h2PrimPhoEtaP->ProjectionY(Form("%s_hPrimPhoEtaP",histoTag.Data()),binMin,1000);
+  TH1F* hPrimPi0EtaP = (TH1F*) h2PrimPi0EtaP->ProjectionY(Form("%s_hPrimPi0EtaP",histoTag.Data()),binMin,1000);
+  TH1F* hPrimEtaEtaP = (TH1F*) h2PrimEtaEtaP->ProjectionY(Form("%s_hPrimEtaEtaP",histoTag.Data()),binMin,1000);
   
   hPrimPhoEtaP->Scale(1./hPrimPhoEtaP->Integral(0,1000));
   hPrimPi0EtaP->Scale(1./hPrimPi0EtaP->Integral(0,1000));
@@ -1410,9 +1815,9 @@ void MCQA(Int_t icalo)
   hPrimPi0EtaP->SetMinimum(minEta);
   TGaxis::SetMaxDigits(3);
   
-  hPrimPi0EtaP->SetYTitle("1/total entries dN/d#eta");
-  hPrimPi0EtaP->SetTitle("Generated particles #eta for E > 3 GeV");
-  hPrimPi0EtaP->SetTitleOffset(1.6,"Y");
+  hPrimPi0EtaP->SetYTitle("1/total entries d#it{N}/d#eta");
+  hPrimPi0EtaP->SetTitle("Generated particles #eta for #it{E} > 3 GeV");
+  hPrimPi0EtaP->SetTitleOffset(1.5,"Y");
   hPrimPi0EtaP->SetMarkerColor(4);
   hPrimPi0EtaP->SetMarkerStyle(21);
   hPrimPi0EtaP->Draw("");
@@ -1426,31 +1831,47 @@ void MCQA(Int_t icalo)
   hPrimEtaEtaP->SetMarkerStyle(22);
   hPrimEtaEtaP->Draw("same");
   
-  cmc->Print(Form("%s_MCHisto.eps",histoTag.Data()));
+  cmc->Print(Form("%s_MCHisto.%s",histoTag.Data(),format.Data()));
+  
+  // cleanup or save
+  //
+  if(exportToFile!=1)
+  {
+    delete hPrimPhoPhi  ;
+    delete hPrimPi0Phi  ;
+    delete hPrimEtaPhi  ;
+    delete hPrimPhoEtaP ;
+    delete hPrimPi0EtaP ;
+    delete hPrimEtaEtaP ;
+    
+    delete cmc ;
+  }
+  else
+  {
+    SaveHisto(hPrimPhoPhi ,kFALSE);
+    SaveHisto(hPrimPi0Phi ,kFALSE);
+    SaveHisto(hPrimEtaPhi ,kFALSE);
+    SaveHisto(hPrimPhoEtaP,kFALSE);
+    SaveHisto(hPrimPi0EtaP,kFALSE);
+    SaveHisto(hPrimEtaEtaP,kFALSE);
+    
+    SaveCanvas(cmc) ;
+  }
 }
 
 ///
 /// Open the file and list containing the histograms
+/// 
+/// \param trigName: name of list of histograms for a particular trigger
+/// \param exportToFile: put the list of histograms in a separate file if true
 ///
 //____________________________________________________________________
-Bool_t GetFileAndList(TString fileName, TString listName, 
-                      TString trigName, Bool_t  exportToFile)
-{
-  file  = new TFile(fileName,"read");
-  if ( !file ) 
-  { 
-    printf("File not found, do nothing\n");
-    return kFALSE; 
-  }
-  
-  TDirectory * dir = (TDirectory*) file->Get(listName);
-  if ( !dir ) 
-  { 
-    printf("DirectoryFile not found, do nothing\n");
-    return kFALSE; 
-  }
+Bool_t GetList(TString trigName)
+{  
+  if(list) delete list;
   
   list = (TList*) dir->Get(trigName);
+  
   if ( !list ) 
   { 
     printf("List not found, do nothing\n");
@@ -1463,11 +1884,11 @@ Bool_t GetFileAndList(TString fileName, TString listName,
     return kFALSE; 
   }
 
-  if ( exportToFile )
+  if ( exportToFile == 2 )
   {
-    TFile * outputFile = new TFile("AnalysisResultsList.root","RECREATE");
+    fout = new TFile(Form("AnalysisResults%s.root",histoTag.Data()),"RECREATE");
     list->Write();
-    outputFile->Close();
+    fout->Close();
   }
   
   return kTRUE ;
@@ -1477,11 +1898,50 @@ Bool_t GetFileAndList(TString fileName, TString listName,
 /// Check if the list is available,
 /// if not get the histo directly from file
 ///
+/// \return the histogram with the provided name
+///
+/// \param histoName: histogram name
+///
 //___________________________________
 TObject * GetHisto(TString histoName)
 {
-  if(list) return list->FindObject(histoName);
-  else     return file->Get       (histoName);
+  TObject *histo = 0x0;
+  
+  if ( list ) histo = list->FindObject(histoName);
+  else        histo = file->Get       (histoName);
+  
+  SaveHisto(histo);
+  
+  return histo;
+}
+
+///
+/// Save recovered histogram in new file.
+/// Add a tag name if needed to differenciate different triggers.
+///
+/// \param histo: histogram TObject
+/// \param tag: add to the histogram name when saving the trigger/calo tag or not.
+///
+//_________________________________________
+void  SaveHisto(TObject* histo, Bool_t tag)
+{
+  if(histo)
+  {
+    if(tag) histo->Write(Form("fig_ga_%s_%s",histoTag.Data(), histo->GetName()));
+    else    histo->Write(Form("fig_ga_%s"   ,histo->GetName()));
+  }
+//  else 
+//    printf("Object not Available");
+}
+
+///
+/// Save canvas in new file.
+/// Name should have been differenciated for the different triggers
+///
+//_______________________________
+void  SaveCanvas(TCanvas* canvas)
+{
+  if(canvas) canvas->Write(Form("canvas_ga_%s",canvas->GetName()));
 }
 
 ///
