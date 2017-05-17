@@ -65,7 +65,8 @@ Gammaavectormeson::Gammaavectormeson(const inputParameters& inputParametersInsta
 	_VMptmax=inputParametersInstance.maxPtInterference();
 	_VMdpt=inputParametersInstance.ptBinWidthInterference();
         _ProductionMode=inputParametersInstance.productionMode();
-
+        _bslope0=inputParametersInstance.bslope0();
+        _bslope_alphaprime=inputParametersInstance.bslope_alphaprime();
         N0 = 0; N1 = 0; N2 = 0; 
 	  if (_VMpidtest == starlightConstants::FOURPRONG){
 		// create n-body phase-spage generator
@@ -468,9 +469,15 @@ void Gammaavectormeson::momenta(double W,double Y,double &E,double &px,double &p
                     break; 
 		  case 2:
                     //This is Wgammap dependence of b from H1 (Eur. Phys. J. C 46 (2006) 585)
-		    Wgammap = sqrt(4.*Egam*_pEnergy); 
+		    Wgammap = sqrt(4.*Egam*_pEnergy);
 		    bslope_tdist = 4.63 + 4.*0.164*log(Wgammap/90.0);
-		    if( N0 <= 1 )cout<<" ATTENTION: Using energy dependent value of bslope!"<<endl; 
+		    if( N0 <= 1 )cout<<" ATTENTION: Using energy dependent value of bslope! (H1 parameterization)"<<endl; 
+                    break;
+                  case 3:
+                    // Wgammap dependence of b with user settable parameters (b0, alpha')
+		    Wgammap = sqrt(4.*Egam*_pEnergy);
+		    bslope_tdist = _bslope0 + 4.*_bslope_alphaprime*log(Wgammap/90.0);
+		    if( N0 <= 1 )cout<<" ATTENTION: Using energy dependent value of bslope! (b0="<<_bslope0<<" alphaprime="<<_bslope_alphaprime<<")"<<endl; 
 		    break;
 		  default:
 		    cout<<" Undefined setting for BSLOPE_DEFINITION "<<endl;
