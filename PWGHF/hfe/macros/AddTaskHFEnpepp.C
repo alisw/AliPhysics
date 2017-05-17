@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
+AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
                                   Bool_t isAOD,
                                   Bool_t kNPERef = kTRUE,
                                   Bool_t kNPERefTPConly = kFALSE
@@ -196,7 +196,7 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
       //mgr->AddClassDebug("AliHFENonPhotonicElectron", 1);
-      AliAnalysisTaskHFE *task = ConfigHFEnpepp5(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
+      AliAnalysisTaskHFE *task = ConfigHFEnpepp(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
                                                  tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, iKink,etaIncMin, etaIncMax,
                                                  assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus,
                                                  assTPCSplus,assITSpid,assTOFpid, useCat1Tracks, useCat2Tracks, weightlevelback);
