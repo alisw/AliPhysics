@@ -223,10 +223,17 @@ AliAnalysisTask *AddTaskHFEnpepp5(Bool_t MCthere,
       }
       
       //create data containers
-      task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(), 
-                                                  AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
-      task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), 
-                                                  AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
+      TString containerName = mgr->GetCommonFileName();
+      containerName += ":HFEtask";
+      containerName += appendix.Data();
+      printf("container name: %s\n", containerName.Data());
+
+
+      task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(),
+                                                  AliAnalysisManager::kOutputContainer, containerName.Data()));
+      task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(),
+                                                  AliAnalysisManager::kOutputContainer, containerName.Data()));
+
       mgr->ConnectInput(task,  0, cinput );
       
       mgr->AddTask(task);
