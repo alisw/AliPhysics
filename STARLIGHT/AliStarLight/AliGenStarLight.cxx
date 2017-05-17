@@ -53,11 +53,8 @@ AliGenStarLight::AliGenStarLight(Int_t npart)
 }
 //----------------------------------------------------------------------
 AliGenStarLight::~AliGenStarLight() {
-  if (NULL != fSLgenerator) delete fSLgenerator;
-  fSLgenerator = NULL;
-  if (fHeader)
-    delete fHeader;
-  fHeader = NULL;
+  SafeDelete(fSLgenerator);
+  SafeDelete(fHeader);
 }
 void AliGenStarLight::ImportConfigurationFromFile(const char* filename) {
   if (NULL == fSLgenerator) {
@@ -170,8 +167,7 @@ void AliGenStarLight::Generate() {
   if (kFALSE == genOK)
     AliFatal("Maximum number of trials reached");
 
-  if (fHeader)
-    delete fHeader;
+  SafeDelete(fHeader);
 
   fHeader = new AliSLEventHeader();
   const TArrayF vertexPosition(3, vpos);

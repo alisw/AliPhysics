@@ -78,9 +78,7 @@ TStarLight::TStarLight(const char* name,         // The name of this object in t
 //----------------------------------------------------------------------
 TStarLight::~TStarLight()
 {
-  if (fStarLight)
-    delete fStarLight;
-  fStarLight = NULL;
+  SafeDelete(fStarLight);
 }
 
 //----------------------------------------------------------------------
