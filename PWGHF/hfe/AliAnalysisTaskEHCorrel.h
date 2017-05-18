@@ -93,6 +93,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
     
+    void    SetEMCClsTimeCut(Bool_t EMCtimeCut) {fEMCClsTimeCut = EMCtimeCut;};
+    
     void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
     
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
@@ -147,6 +149,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fCentBin;//!
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
+    Bool_t              fEMCClsTimeCut;//
 
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
