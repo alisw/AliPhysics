@@ -21,7 +21,7 @@ using std::vector;
 
 class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
   public:
-    AliAnalysisCODEXtask(const char *name = "FilterTree");
+    AliAnalysisCODEXtask(const char *name = "AliCODEX");
     virtual ~AliAnalysisCODEXtask();
 
     virtual void   UserCreateOutputObjects();
@@ -39,6 +39,9 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     UInt_t          mCentralityMode;
     AliESDtrackCuts Cuts;
     AliEventCuts    mEventCuts;
+    double          mPtCut;                 /// Minimum pt stored in the output trees
+    unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
+    double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
   private:
     // Private methods
     AliAnalysisCODEXtask(const AliAnalysisCODEXtask&);            //! Not implemented
