@@ -285,52 +285,8 @@ Double_t AliGenEMlibV2::V2Pizero( const Double_t *px, const Double_t */*dummy*/ 
   if(fV2Parametrization[kPizero])
     return fV2Parametrization[kPizero]->Eval(px[0]) ;
   
-  //else use build-in parameterizations  
-  double n1,n2,n3,n4,n5;
-  double v1,v2,v3,v4,v5;
-  switch(fgSelectedCollisionsSystem|fgSelectedCentrality) {
-    case kPbPb|k0010:
-      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-      v1=V2Param(px,fgkV2param[k0005]);
-      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-      v2=V2Param(px,fgkV2param[k0510]);
-      return (n1*v1+n2*v2)/(n1+n2);
-      break;
-    case kPbPb|k0020:
-      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-      v1=V2Param(px,fgkV2param[k0005]);
-      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-      v2=V2Param(px,fgkV2param[k0510]);
-      n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
-      v3=V2Param(px,fgkV2param[k1020]);
-      // raw yeilds are not normalized per event
-      return (n1*v1+n2*v2+n3*v3)/(n1+n2+n3);
-      break;
-    case kPbPb|k2040:
-      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
-      v1=V2Param(px,fgkV2param[k2030]);
-      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
-      v2=V2Param(px,fgkV2param[k3040]);
-      return (n1*v1+n2*v2)/(n1+n2);
-      break;
-    case kPbPb|k0040:
-      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-      v1=V2Param(px,fgkV2param[k0005]);
-      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-      v2=V2Param(px,fgkV2param[k0510]);
-      n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
-      v3=V2Param(px,fgkV2param[k1020]);
-      n4=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
-      v4=V2Param(px,fgkV2param[k2030]);
-      n5=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
-      v5=V2Param(px,fgkV2param[k3040]);
-      // raw yeilds are not normalized per event
-      return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
-      break;
-      
-    default:
-      return V2Param(px,fgkV2param[fgSelectedCentrality]);
-  }
+  //else use flat parameterizations  
+  return 0 ;
 }
 
 
@@ -362,8 +318,9 @@ Double_t AliGenEMlibV2::V2Eta( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kEta])
     return fV2Parametrization[kEta]->Eval(EtScalingV2(px[0], kEta,fV2RefParameterization[kEta]) ) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kEta); //V2Param(px,fgkV2param[1][fgSelectedV2Param]);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kEta); //V2Param(px,fgkV2param[1][fgSelectedV2Param]);
 }
 
 
@@ -395,8 +352,9 @@ Double_t AliGenEMlibV2::V2Rho0( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kRho0])
     return fV2Parametrization[kRho0]->Eval(EtScalingV2(px[0], kRho0,fV2RefParameterization[kRho0]) ) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kRho0);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kRho0);
 }
 
 
@@ -428,8 +386,9 @@ Double_t AliGenEMlibV2::V2Omega( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kOmega])
     return fV2Parametrization[kOmega]->Eval(EtScalingV2(px[0], kOmega,fV2RefParameterization[kOmega])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kOmega);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kOmega);
   
 }
 
@@ -463,8 +422,9 @@ Double_t AliGenEMlibV2::V2Etaprime( const Double_t *px, const Double_t */*dummy*
   if(fV2Parametrization[kEtaprime])
     return fV2Parametrization[kEtaprime]->Eval(EtScalingV2(px[0], kEtaprime,fV2RefParameterization[kEtaprime])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kEtaprime);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kEtaprime);
 }
 
 
@@ -496,8 +456,9 @@ Double_t AliGenEMlibV2::V2Phi( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kPhi])
     return fV2Parametrization[kPhi]->Eval(EtScalingV2(px[0], kPhi,fV2RefParameterization[kPhi])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kPhi);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kPhi);
 }
 
 
@@ -573,8 +534,9 @@ Double_t AliGenEMlibV2::V2Sigma0( const Double_t *px, const Double_t */*dummy*/ 
   if(fV2Parametrization[kSigma0])
     return fV2Parametrization[kSigma0]->Eval(EtScalingV2(px[0], kSigma0,fV2RefParameterization[kSigma0])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kSigma0,3);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kSigma0,3);
 }
 
 
@@ -607,8 +569,9 @@ Double_t AliGenEMlibV2::V2K0short( const Double_t *px, const Double_t */*dummy*/
   if(fV2Parametrization[kK0s])
     return fV2Parametrization[kK0s]->Eval(EtScalingV2(px[0], kK0s,fV2RefParameterization[kK0s])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kK0s);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kK0s);
 }
 
 
@@ -641,8 +604,9 @@ Double_t AliGenEMlibV2::V2K0long( const Double_t *px, const Double_t */*dummy*/ 
   if(fV2Parametrization[kK0l])
     return fV2Parametrization[kK0l]->Eval(EtScalingV2(px[0], kK0l,fV2RefParameterization[kK0l])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kK0l);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kK0l);
 }
 
 
@@ -675,8 +639,9 @@ Double_t AliGenEMlibV2::V2Lambda( const Double_t *px, const Double_t */*dummy*/ 
   if(fV2Parametrization[kLambda])
     return fV2Parametrization[kLambda]->Eval(EtScalingV2(px[0], kLambda,fV2RefParameterization[kLambda])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kLambda);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kLambda);
 }
 
 
@@ -709,8 +674,9 @@ Double_t AliGenEMlibV2::V2DeltaPlPl( const Double_t *px, const Double_t */*dummy
   if(fV2Parametrization[kDeltaPlPl])
     return fV2Parametrization[kDeltaPlPl]->Eval(EtScalingV2(px[0], kDeltaPlPl,fV2RefParameterization[kDeltaPlPl])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kDeltaPlPl,3);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kDeltaPlPl,3);
 }
 
 
@@ -743,8 +709,9 @@ Double_t AliGenEMlibV2::V2DeltaPl( const Double_t *px, const Double_t */*dummy*/
   if(fV2Parametrization[kDeltaPl])
     return fV2Parametrization[kDeltaPl]->Eval(EtScalingV2(px[0], kDeltaPl,fV2RefParameterization[kDeltaPl])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kDeltaPl,3);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kDeltaPl,3);
 }
 
 
@@ -777,8 +744,9 @@ Double_t AliGenEMlibV2::V2DeltaMi( const Double_t *px, const Double_t */*dummy*/
   if(fV2Parametrization[kDeltaMi])
     return fV2Parametrization[kDeltaMi]->Eval(EtScalingV2(px[0], kDeltaMi,fV2RefParameterization[kDeltaMi])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kDeltaMi,3);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kDeltaMi,3);
 }
 
 
@@ -811,8 +779,9 @@ Double_t AliGenEMlibV2::V2DeltaZero( const Double_t *px, const Double_t */*dummy
   if(fV2Parametrization[kDeltaZero])
     return fV2Parametrization[kDeltaZero]->Eval(EtScalingV2(px[0], kDeltaZero,fV2RefParameterization[kDeltaZero])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kDeltaZero,3);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kDeltaZero,3);
 }
 
 
@@ -845,8 +814,9 @@ Double_t AliGenEMlibV2::V2RhoPl( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kRhoPl])
     return fV2Parametrization[kRhoPl]->Eval(EtScalingV2(px[0], kRhoPl,fV2RefParameterization[kRhoPl])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kRhoPl);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kRhoPl);
 }
 
 
@@ -879,8 +849,9 @@ Double_t AliGenEMlibV2::V2RhoMi( const Double_t *px, const Double_t */*dummy*/ )
   if(fV2Parametrization[kRhoMi])
     return fV2Parametrization[kRhoMi]->Eval(EtScalingV2(px[0], kRhoMi,fV2RefParameterization[kRhoMi])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kRhoMi);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kRhoMi);
 }
 
 
@@ -913,8 +884,9 @@ Double_t AliGenEMlibV2::V2K0star( const Double_t *px, const Double_t */*dummy*/ 
   if(fV2Parametrization[kK0star])
     return fV2Parametrization[kK0star]->Eval(EtScalingV2(px[0], kK0star,fV2RefParameterization[kK0star])) ;
   
-  //else use build-in parameterizations  
-  return KEtScal(*px,kK0star);
+  //else use flat parameterizations  
+  return 0 ;
+//   return KEtScal(*px,kK0star); 
 }
 
 
