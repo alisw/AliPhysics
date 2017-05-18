@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliAnalysisHelperJetTasks.cxx
   AliBasicParticle.cxx
+  AliCaloNonLinearity.cxx
   AliTHn.cxx
   AliPWGHistoTools.cxx
   AliPWGFunc.cxx
