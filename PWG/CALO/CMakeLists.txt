@@ -14,50 +14,26 @@
 # **************************************************************************/
 
 #Module
-set(MODULE PWGTools)
+set(MODULE PWGCALO)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWG/Tools)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/CALO)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisHelperJetTasks.cxx
-  AliBasicParticle.cxx
-  AliTHn.cxx
-  AliPWGHistoTools.cxx
-  AliPWGFunc.cxx
-  AliLatexTable.cxx
-  AliFigure.cxx
-  AliCanvas.cxx
-  AliHelperPID.cxx
-  AliNamedArrayI.cxx
-  AliNamedString.cxx
-  TCustomBinning.cxx
-  TLinearBinning.cxx
-  TVariableBinning.cxx
-  THistManager.cxx
-  AliJSONReader.cxx
-  AliJSONData.cxx
-  AliAnalysisTaskDummy.cxx
-  AliTLorentzVector.cxx
+  AliCaloNonLinearity.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS
   "${HDRS}"
-  TBinning.h
   )
-
-# Statically build YAML
-set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
-add_subdirectory(yaml-cpp)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -69,7 +45,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS AOD CORRFW ESD STEERBase ASImage)
+set(LIBDEPS ANALYSISalice ANALYSIS AOD ESD STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -92,23 +68,3 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-# Installing the macros
-install (DIRECTORY macros DESTINATION PWG/Tools)
-
-# Tests
-install (DIRECTORY test DESTINATION PWG/Tools)
-
-# Histmanager test
-set(HISTMGRTESTS 
-    build_simple
-    build_grouped
-    fill_simple
-    fill_grouped
-    )
-foreach(TEST_HMGR ${HISTMGRTESTS})
-    add_test (histmgr_${TEST_HMGR}
-        env 
-        LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-        DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-        root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")
-endforeach()

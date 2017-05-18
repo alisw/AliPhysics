@@ -28,8 +28,6 @@
 
 class iostream;
 
-using namespace std;
-
 ClassImp(AliCaloNonLinearity)
 
 
