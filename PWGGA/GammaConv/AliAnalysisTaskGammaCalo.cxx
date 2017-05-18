@@ -312,7 +312,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL)
 {
   
 }
@@ -569,7 +570,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1184,8 +1186,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueK0lWithPi0DaughterMCPt                = new TH1F*[fnCuts];
           fHistoTrueEtaWithPi0DaughterMCPt                = new TH1F*[fnCuts];
           fHistoTrueLambdaWithPi0DaughterMCPt             = new TH1F*[fnCuts];
-          fHistoTrueBckGGInvMassPt                        = new TH2F*[fnCuts];
-          fHistoTrueBckContInvMassPt                      = new TH2F*[fnCuts];
         }
         fHistoTruePi0PtY                  = new TH2F*[fnCuts];
         fHistoTrueEtaPtY                  = new TH2F*[fnCuts];
@@ -1193,6 +1193,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueEtaPtAlpha              = new TH2F*[fnCuts];
         fHistoTruePi0PtOpenAngle          = new TH2F*[fnCuts];
         fHistoTrueEtaPtOpenAngle          = new TH2F*[fnCuts];
+        fHistoTrueBckGGInvMassPt          = new TH2F*[fnCuts];
+        fHistoTrueBckContInvMassPt        = new TH2F*[fnCuts];
       }
       if (fDoMesonQA==2){
         fHistoTruePi0Category1            = new TH2F*[fnCuts];
@@ -1568,7 +1570,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueClusShowerPt[iCut]->Sumw2();
             fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
             fHistoTrueClusNParticles[iCut]->Sumw2();
-          fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
+            fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
         }
       }
 
@@ -1686,10 +1688,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTruePrimaryEtaMCPtResolPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
             fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
-            fHistoTrueBckGGInvMassPt[iCut]              = new TH2F("ESD_TrueBckGG_InvMass_Pt","ESD_TrueBckGG_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
-            fHistoTrueBckContInvMassPt[iCut]            = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fTrueList[iCut]->Add(fHistoTrueBckContInvMassPt[iCut]);
             fHistoTrueK0sWithPi0DaughterMCPt[iCut]      = new TH1F("ESD_TrueK0sWithPi0Daughter_MCPt","ESD_TrueK0sWithPi0Daughter_MCPt",nBinsPt, minPt, maxPt);
             fTrueList[iCut]->Add(fHistoTrueK0sWithPi0DaughterMCPt[iCut]);
             fHistoTrueK0lWithPi0DaughterMCPt[iCut]      = new TH1F("ESD_TrueK0lWithPi0Daughter_MCPt","ESD_TrueK0lWithPi0Daughter_MCPt",nBinsPt, minPt, maxPt);
@@ -1719,6 +1717,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueEtaPtOpenAngle[iCut]  = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",nBinsQAPt, minQAPt, maxQAPt,180,0,1.8);
           SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
           fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
+
+          fHistoTrueBckGGInvMassPt[iCut]              = new TH2F("ESD_TrueBckGG_InvMass_Pt","ESD_TrueBckGG_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
+          fHistoTrueBckContInvMassPt[iCut]            = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckContInvMassPt[iCut]);
           
           if (fIsMC > 1){
             fHistoTruePi0PtY[iCut]->Sumw2();
@@ -1727,6 +1730,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueEtaPtAlpha[iCut]->Sumw2();
             fHistoTruePi0PtOpenAngle[iCut]->Sumw2();
             fHistoTrueEtaPtOpenAngle[iCut]->Sumw2();
+            fHistoTrueBckGGInvMassPt[iCut]->Sumw2();
+            fHistoTrueBckContInvMassPt[iCut]->Sumw2();
           }
           
         }
@@ -1825,9 +1830,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   }
   
-  if (fIsMC > 0){
+  if (fIsMC > 0 || fDoClusterQA > 0){
     tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    tBrokenFiles->Branch("closeHighPtClusters",&fCloseHighPtClusters);
     fOutputContainer->Add(tBrokenFiles);
   }
   
@@ -3149,6 +3155,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             if(fInputEvent->IsA()==AliAODEvent::Class())
               ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1);
           }          
+
+          if((pi0cand->GetOpeningAngle() < 0.017) && (pi0cand->Pt() > 15.) && fDoClusterQA > 0){
+            fCloseHighPtClusters = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+            if (tBrokenFiles) tBrokenFiles->Fill();
+            delete fCloseHighPtClusters;
+          }
         }        
         delete pi0cand;
         pi0cand=0x0;
@@ -3538,7 +3550,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       }
     }
   } else if(!isTruePi0 && !isTrueEta){ // Background
-    if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
+    if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       } else { // No photon or without mother
