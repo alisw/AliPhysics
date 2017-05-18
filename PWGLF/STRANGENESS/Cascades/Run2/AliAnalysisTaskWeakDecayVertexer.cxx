@@ -356,7 +356,11 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         lESDevent->ResetCascades();
         //Only regenerate candidates if within interesting interval
         if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ){
-            V0sTracks2CascadeVertices(lESDevent);
+            if(!fkUseUncheckedChargeCascadeVertexer){
+                V0sTracks2CascadeVertices(lESDevent);
+            }else{
+                V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
+            }
         }
     }
     
