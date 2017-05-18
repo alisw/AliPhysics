@@ -325,6 +325,7 @@ install(FILES ITS/QA/MakeTrendingITSQA.C
 	      DESTINATION PWGPP/ITS/QA)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
+              TOF/AddTOFAnalysisTaskCalibTree.C
               DESTINATION PWGPP/TOF)
 install(FILES TOF/trending/MakeTrendingTOFQA.C
 	      TOF/trending/DrawTrendingTOFQA.C
