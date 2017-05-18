@@ -24,7 +24,7 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   }   
   
   TString str,containername;
-  if(fileout=="standard"){
+  if(fileout.Contains("standard")){
     fileout=AliAnalysisManager::GetCommonFileName();
     fileout+=":PWG3_D2H_";
     fileout+="d0D0";

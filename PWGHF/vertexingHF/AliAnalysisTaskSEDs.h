@@ -51,6 +51,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
+  void SetFillTracklets(Bool_t flag) {fUseTrkl=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
@@ -81,7 +82,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
     
-  enum {kMaxPtBins=20,knVarForSparse=12,knVarForSparseAcc=2,knVarForSparseIP=6};
+  enum {kMaxPtBins=20,knVarForSparse=13,knVarForSparseAcc=2,knVarForSparseIP=6};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -156,6 +157,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
   Bool_t fUseWeight;                  /// flag to decide whether to use pt-weights != 1 when filling the container or not
+  Bool_t fUseTrkl;                    /// flag to fill sparse with Ntracklets 
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
