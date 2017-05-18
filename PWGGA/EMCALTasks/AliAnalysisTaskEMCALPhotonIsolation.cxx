@@ -1386,7 +1386,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
     // Check if the cluster matches to a track
   
-  AliTrackContainer* tracks = GetTrackContainer(0);
+  AliTrackContainer* tracks = GetTrackContainer("tpconlyMatch");
   AliVTrack* mt = 0;
   TLorentzVector vecClust;
   clust->GetMomentum(vecClust,fVertex);
@@ -2410,21 +2410,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
   if(phiCone1 < 0.)
     phiCone1 += 2*TMath::Pi();
   
-  AliTrackContainer *tracks = GetTrackContainer(0);
-  if(!tracks){
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
-  tracks->ResetCurrentID();
+  tracksAna->ResetCurrentID();
 
   AliVTrack *eTrack = 0x0;
   AliAODTrack *aodEtrack=0x0;
   Double_t phiTrack,etaTrack,dist2Clust,dist2Cone1,dist2Cone2;
   Int_t iTracksCone = 0;
   
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
@@ -2486,21 +2486,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
   
   Double_t sumpTConeCharged=0., sumpTTPCexceptB2B=0.;
   
-  AliTrackContainer *tracks = GetTrackContainer(0);  
-  if(!tracks){
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");  
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
-  tracks->ResetCurrentID();
+  tracksAna->ResetCurrentID();
 
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius, dphiUp, dphiDown;
   Int_t iTracksCone = 0;
   AliAODTrack *aodEtrack=0x0;
 
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
