@@ -38,6 +38,7 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TF1.h>
+#include <TRegexp.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
@@ -64,6 +65,7 @@ AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
   fNPart(1000),
   fParametrizationFile(""),
   fParametrizationDir(""),
+  fV2ParametrizationDir(""),
   fYieldArray(),
   fCollisionSystem(AliGenEMlibV2::kpp7TeV),
   fCentrality(AliGenEMlibV2::kpp),
@@ -81,7 +83,6 @@ TF1*  AliGenEMCocktailV2::fPtParametrization[]    = {0x0};
 TF1*  AliGenEMCocktailV2::fParametrizationProton  = NULL;
 TH1D* AliGenEMCocktailV2::fMtScalingFactorHisto   = NULL;
 TH2F* AliGenEMCocktailV2::fPtYDistribution[]      = {0x0};
-
 //_________________________________________________________________________
 AliGenEMCocktailV2::~AliGenEMCocktailV2()
 {
@@ -187,6 +188,16 @@ void AliGenEMCocktailV2::CreateCocktail()
   SetMtScalingFactors();
   AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
+  //Check consistency of pT and flow parameterizations: same centrality?
+  if(fV2ParametrizationDir.Length()>0){ //flow specified
+    TRegexp cent("[0-9][0-9]-[0-9][0-9]") ;
+    if(fParametrizationDir(cent)!=fV2ParametrizationDir(cent)){
+      AliWarning(Form("Centrality for pT parameterization %s differs from centrality for flow parameterization: %s\n",fParametrizationDir.Data(),fV2ParametrizationDir.Data())) ;   
+    }
+    AliGenEMlibV2::SetFlowParametrizations(fParametrizationFile, fV2ParametrizationDir);
+  }    
+  
+  
 
   if (fDynPtRange)
     AliInfo("Dynamical adaption of pT range was chosen, the number of generated particles will also be adapted");
