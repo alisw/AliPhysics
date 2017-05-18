@@ -1,18 +1,36 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+
 /*
   AliDrawStyle - Class to access drawing styles
-       * Several drawing styles can be regeistered and used in the same moment
-       * Styles are identified using strings as identifiets
-         * TStyle
-	 * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
-         * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
-         * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index); 
-       * Default styles are created  AliDrawStyle::SetDefaults()
-         * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
-	 * users should be able to regiester their oun styles (e.g in macros)
-       * Usage (work in progress)
-         * perfromance reports -  with styles as a parameter 
-	 * QA reports
-         * AliTreePlayer, and TStatToolkit  
+  * Several drawing styles can be regeistered and used in the same moment
+    * Styles are identified using strings as identifiets
+      * TStyle
+      * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
+      * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
+      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index); 
+  * Default styles are created  AliDrawStyle::SetDefaults()
+    * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
+    * users should be able to regiester their oun styles (e.g in macros)
+  * Usage (work in progress)
+    * performance reports -  with styles as a parameter 
+    * QA reports
+    * AliTreePlayer, and TStatToolkit  
 
   Example usage:
   //
@@ -44,6 +62,7 @@
 #include "TStyle.h"
 #include "TError.h"
 #include "TPRegexp.h"
+#include "TColor.h"
 #include <iostream>
 //
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
