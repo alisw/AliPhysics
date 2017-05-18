@@ -312,7 +312,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL)
 {
   
 }
@@ -569,7 +570,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1568,7 +1570,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueClusShowerPt[iCut]->Sumw2();
             fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
             fHistoTrueClusNParticles[iCut]->Sumw2();
-          fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
+            fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
         }
       }
 
@@ -1828,9 +1830,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   }
   
-  if (fIsMC > 0){
+  if (fIsMC > 0 || fDoClusterQA > 0){
     tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    tBrokenFiles->Branch("closeHighPtClusters",&fCloseHighPtClusters);
     fOutputContainer->Add(tBrokenFiles);
   }
   
@@ -3152,6 +3155,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             if(fInputEvent->IsA()==AliAODEvent::Class())
               ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1);
           }          
+
+          if((pi0cand->GetOpeningAngle() < 0.017) && (pi0cand->Pt() > 15.) && fDoClusterQA > 0){
+            fCloseHighPtClusters = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+            if (tBrokenFiles) tBrokenFiles->Fill();
+            delete fCloseHighPtClusters;
+          }
         }        
         delete pi0cand;
         pi0cand=0x0;
