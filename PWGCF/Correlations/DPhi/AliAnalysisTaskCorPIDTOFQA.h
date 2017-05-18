@@ -54,9 +54,6 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                   dedx_vs_deltat_neg;
 	TH3F*                   dedx_mom_deltat_pos;
 	TH3F*                   dedx_mom_deltat_neg;
-
-//	TH3F*                   dedx_mom_m2_pos;
-//	TH3F*                   dedx_mom_m2_neg;
 	
 	TH2F*                   m_squared_pos_cut;
 	TH2F*                   m_squared_neg_cut;	
@@ -72,9 +69,30 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH3F*                   dedx_mom_deltat_pos_cut;
 	TH3F*                   dedx_mom_deltat_neg_cut;
 
-//	TH3F*                   dedx_mom_m2_pos_cut;
-//	TH3F*                   dedx_mom_m2_neg_cut;
+	TH2F*                   dphi_ket_deut_T;
+	TH2F*                   dphi_ket_deut_A;
+	TH2F*                   dphi_ket_deut_B;
 
+	
+	TH2F*                   m_squared_pos_cut_T;
+	TH2F*                   m_squared_pos_cut_A;
+	TH2F*                   m_squared_pos_cut_B;
+	TH2F*                   m_squared_neg_cut_T;
+	TH2F*                   m_squared_neg_cut_A;
+	TH2F*                   m_squared_neg_cut_B;
+	TH2F*                   deut_dphi_T;
+	TH2F*                   deut_dphi_A;
+	TH2F*                   deut_dphi_B;
+	TH2F*                   deut_dphi_pos_T;
+	TH2F*                   deut_dphi_pos_A;
+	TH2F*                   deut_dphi_pos_B;
+	TH2F*                   deut_dphi_neg_T;
+	TH2F*                   deut_dphi_neg_A;
+	TH2F*                   deut_dphi_neg_B;
+	
+	TH1I*                   deuterons_per_event;
+	TH1I*                   deuterons_per_event_pos;
+	TH1I*                   deuterons_per_event_neg;
 	
 //	TH2F*                   mom_compare_pos;
 //	TH2F*                   mom_compare_neg;
