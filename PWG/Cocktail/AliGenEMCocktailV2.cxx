@@ -190,7 +190,7 @@ void AliGenEMCocktailV2::CreateCocktail()
   SetPtParametrizations();
   //Check consistency of pT and flow parameterizations: same centrality?
   if(fV2ParametrizationDir.Length()>0){ //flow specified
-    TRegexp cent("[0-9][0-9]-[0-9][0-9]") ;
+    TRegexp cent("_[0-9][0-9][0-9][0-9]_") ;
     if(fParametrizationDir(cent)!=fV2ParametrizationDir(cent)){
       AliWarning(Form("Centrality for pT parameterization %s differs from centrality for flow parameterization: %s\n",fParametrizationDir.Data(),fV2ParametrizationDir.Data())) ;   
     }

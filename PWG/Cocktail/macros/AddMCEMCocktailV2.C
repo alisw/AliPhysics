@@ -52,7 +52,8 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   gener->SelectMotherParticles(selectedMothers);
   gener->SetCollisionSystem(collisionsSystem);                //pp 7 TeV
   gener->SetCentrality(centrality);                           // kpp
-  gener->SetParametrizationFileV2Directory(paramV2FileDir);
+  if(paramV2FileDir.Length()>0)
+    gener->SetParametrizationFileV2Directory(paramV2FileDir);
   (AliPythia::Instance())->SetMSTU(22, pythiaErrorTolerance);   // tolerance for error due to rhos
   
   if (decayMode == 1){
