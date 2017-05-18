@@ -194,7 +194,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
    hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
    hfeBackgroundCuts->SetMinNClustersTPCPID(assTPCPIDcl);
    hfeBackgroundCuts->SetMaxImpactParam(assDCAr,assDCAz);
-   if(isAOD) hfeBackgroundCuts->SetAODFilterBit(4);
+   if(isAOD) hfeBackgroundCuts->SetAODFilterBit(0); // Standard TPC only tracks
    hfeBackgroundCuts->SetQAOn();			        // QA
 
    AliHFEpid *pidbackground = backe->GetPIDBackground();
