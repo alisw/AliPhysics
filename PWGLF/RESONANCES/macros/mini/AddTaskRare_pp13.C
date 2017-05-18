@@ -363,7 +363,7 @@ AliRsnMiniAnalysisTask *AddTask_pik0
   Int_t       aodN = 68;
   TString     outNameSuffix = lname;
   Int_t       centr = 0;
-  Bool_t      ptDep = kTRUE;
+  Bool_t      ptDep = kFALSE;//kTRUE;
    
   //-------------------------------------------                                                                                          
   // event cuts                                                                                                                             
@@ -597,7 +597,7 @@ Bool_t Config_pik0
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     }else
-   esdTrackCuts->SetMinDCAToVertexXY("0.06"); //Use one of the two - pt dependent or fixed value cut.
+   esdTrackCuts->SetMinDCAToVertexXY("0.0"); //Use one of the two - pt dependent or fixed value cut.  0.06
   
    //
    /////////////////////////////////////////////////
