@@ -150,13 +150,23 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   (fMarkerStyles["figTemplate"])=std::vector<int>(10);
   (fMarkerColors["figTemplate"])=std::vector<int>(10);
   (fFillColors["figTemplate"])=std::vector<int>(10);
+  (fMarkerStyles["figTemplatePair"])=std::vector<int>(10);
+  (fMarkerColors["figTemplatePair"])=std::vector<int>(10);
+  (fFillColors["figTemplatePair"])=std::vector<int>(10);
   for (Int_t i=0;i<10; i++){
     (fMarkerStyles["figTemplate"])[i]=markers[i];
     (fMarkerColors["figTemplate"])[i]=colors[i];
     (fFillColors["figTemplate"])[i]=fillColors[i];
+    (fMarkerStyles["figTemplatePair"])[i]=markers[i];
+    (fMarkerColors["figTemplatePair"])[i]=colors[i/2];
+    (fFillColors["figTemplatePair"])[i]=fillColors[i/2];
+    //
+    (fMarkerStyles["figTemplateDark"])[i]=TColor::GetColorDark(markers[i]);
+    (fMarkerColors["figTemplateDark"])[i]=TColor::GetColorDark(colors[i]);
+    (fFillColors["figTemplateDark"])[i]=TColor::GetColorDark(fillColors[i/2]);
   }
-  // TRD color/marker styles:
-  
+ 
+
 }
 
 TStyle*  RegisterDefaultStyleFigTemplate(Bool_t graypalette) {
