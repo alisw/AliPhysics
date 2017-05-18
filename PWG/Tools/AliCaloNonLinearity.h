@@ -9,10 +9,6 @@
 #include <vector>
 
 
-// class AliAnalysisCuts;
-
-using namespace std;
-
 class AliCaloNonLinearity : public AliAnalysisCuts {
 
   public:

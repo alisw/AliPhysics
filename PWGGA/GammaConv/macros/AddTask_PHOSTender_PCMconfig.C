@@ -38,7 +38,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
   if (forceBadChannelMap==1)
-      PHOSSupply->ForceUsingBadMap(specificBCMap.Data(),kTRUE);
+      PHOSSupply->SetPrivateOADBBadMap(specificBCMap.Data());
   if (forceBadChannelMap==2)
       PHOSSupply->ForceUsingBadMap(specificBCMap.Data());
 

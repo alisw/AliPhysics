@@ -47,7 +47,7 @@ public:
   void SetMCProduction(const char * name ="LHC13_b2"){fIsMC=kTRUE ; fMCProduction=name ;}
   
   //If you want to override automatic choise of bad maps and calibration
-  void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root", Bool_t isOADBfile=kFALSE) ;
+  void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
   void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
   void ApplyZeroSuppression(Double_t zsCut=0.020){fApplyZS=kTRUE; fZScut=zsCut;} //Apply Zero Suppression cut (in GeV)
@@ -55,6 +55,7 @@ public:
   void UseLGForTime(Bool_t toUse=kFALSE){fUseLGForTime=toUse;} //Switch off LowGain digits from time calculation
   void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
   TH2I * GetPHOSBadChannelStatusMap(Int_t iModule) const { return (TH2I*)fPHOSBadMap[iModule] ; }
+  void SetPrivateOADBBadMap(char * filename){fPrivateOADBBadMap = filename;}
   
   void   InitTender();
 
@@ -89,8 +90,7 @@ private:
   Int_t fRecoPass ;                          // Reconstruction pass
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
-  Bool_t fPrivateBadMapIsOADBfile ;
-  TString fBadChannelMapFile ;               //Name of force loaded OADB bad channel map
+  TString fPrivateOADBBadMap ;               //Name of force loaded OADB bad channel map
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)

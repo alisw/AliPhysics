@@ -57,7 +57,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
-  ,fPrivateBadMapIsOADBfile(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -69,7 +69,6 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
-  ,fBadChannelMapFile("")
 {
 	//
 	// default ctor
@@ -89,7 +88,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
-  ,fPrivateBadMapIsOADBfile(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -101,7 +100,6 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
-  ,fBadChannelMapFile("")
 {
 	//
 	// named ctor
@@ -230,16 +228,16 @@ void AliPHOSTenderSupply::InitTender()
   }
   
   //Init Bad channels map
-  if(!fUsePrivateBadMap || fPrivateBadMapIsOADBfile){
+  if(!fUsePrivateBadMap){
     AliOADBContainer badmapContainer(Form("phosBadMap"));
-    if(!fPrivateBadMapIsOADBfile){
+    if(fPrivateOADBBadMap.Length()!=0){
       //Load standard bad maps file if no OADB file is force loaded
-      AliInfo("using standard bad channel map from $ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root\n");
-      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+      AliInfo(Form("using custom bad channel map from %s\n",fPrivateOADBBadMap.Data()));
+       badmapContainer.InitFromFile(fPrivateOADBBadMap.Data(),"phosBadMap");
     } else {
       //Load force loaded OADB file
-      AliInfo(Form("using custom bad channel map from %s\n",fBadChannelMapFile.Data()));
-      badmapContainer.InitFromFile(fBadChannelMapFile,"phosBadMap");
+      AliInfo("using standard bad channel map from $ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root\n");
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
     }
     TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
     if(!maps){
@@ -952,34 +950,25 @@ Bool_t AliPHOSTenderSupply::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
     return kTRUE ;
 }
 //________________________________________________________________________
-void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename, Bool_t isOADBfile){
-  //Check if bad map file is available
+void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
+  //Read TH2I histograms with bad maps from local or alien file 
   TFile * fbm = TFile::Open(filename) ;
   if(!fbm || !fbm->IsOpen()){
     AliError(Form("Can not open BadMaps file %s",filename)) ;
     return ;
   }
-  //Maps for each module are loaded if the file is no OADB object
-  if(!isOADBfile){
-    //Read TH2I histograms with bad maps from local or alien file
-    gROOT->cd() ;
-    char key[55] ;
-    for(Int_t mod=1;mod<6; mod++){
-      snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
-      TH2I * h = (TH2I*)fbm->Get(key) ;
-      if(h){
-        fPHOSBadMap[mod] = new TH2I(*h) ;
-        AliInfo(Form("Force using bad map: Added bad map %s, nch=%f \n",h->GetName(),h->Integral())) ;
-      }
+  gROOT->cd() ;
+  char key[55] ;
+  for(Int_t mod=1;mod<6; mod++){
+    snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
+    TH2I * h = (TH2I*)fbm->Get(key) ;
+    if(h){
+       fPHOSBadMap[mod] = new TH2I(*h) ;
+       AliInfo(Form("Force using bad map: Added bad map %s, nch=%f \n",h->GetName(),h->Integral())) ;
     }
-  } else {
-    // If the file is an OADB object, set flags for loading at InitTender()
-    fPrivateBadMapIsOADBfile = isOADBfile;
-    fBadChannelMapFile = filename;
-    AliInfo("ForceUsingBadMap: found OADB object for force loading\n");
   }
-  fbm->Close();
-  fUsePrivateBadMap=kTRUE;
+  fbm->Close() ;
+  fUsePrivateBadMap=kTRUE ;
 }
 //________________________________________________________________________
 void AliPHOSTenderSupply::ForceUsingCalibration(const char * filename){
