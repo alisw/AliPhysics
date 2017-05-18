@@ -379,8 +379,10 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     ev1->SetPeriodNumber(1);
   }
 
-  // set pid correction function to var manager
+  // set qn vector normalisation to var manager 
+  AliDielectronVarManager::SetQnVectorNormalisation(fQnVectorNorm);
 
+  // set pid correction function to var manager
   // from an array of objects for run-wise differences
   if(fPostPIDCntrdCorrArr){
     TString key;
@@ -475,7 +477,6 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0))
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
   // QnFramework est. 2016 auto-correlation removal
-  AliDielectronVarManager::SetQnVectorNormalisation(fQnVectorNorm);
   if(fACremovalIsSetted){
     AliDielectronVarManager::SetTPCEventPlaneACremoval(fQnTPCACcuts);
   }
