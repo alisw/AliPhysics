@@ -80,18 +80,31 @@ void AliDrawStyle::SetDefaults(){
 
 TStyle* RegisterDefaultStyleFigTemplate(Bool_t grayScale);
 
-// Latex symbol section
+/// Latex symbol section
 
+/// \param symbol  -id name of latex symbol
+/// \return latex symbol to be used in ROOT latex
 TString AliDrawStyle::GetLatexAlice(const char * symbol){
   return  fLatexAlice[symbol];
 }
 
+/// \param  style - name of style used 
+/// \param index  - marker index
+/// \return marker style for given stylename, index
 Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
   return  AliDrawStyle::fMarkerStyles[style][index];
 }
+
+/// \param  style - name of style used 
+/// \param index  - marker index
+/// \return marker color for given stylename, index
 Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
   return  AliDrawStyle::fMarkerColors[style][index];
 }
+
+/// \param  style - name of style used 
+/// \param index  - marker index
+/// \return fill color for given stylename, index
 Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
   return  AliDrawStyle::fFillColors[style][index];  
 }
