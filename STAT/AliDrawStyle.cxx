@@ -13,50 +13,44 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-
-/*
-  AliDrawStyle - Class to access drawing styles
-  * Several drawing styles can be regeistered and used in the same moment
-    * Styles are identified using strings as identifiets
-      * TStyle
-      * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
-      * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
-      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index); 
-  * Default styles are created  AliDrawStyle::SetDefaults()
-    * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
-    * users should be able to regiester their oun styles (e.g in macros)
-  * Usage (work in progress)
-    * performance reports -  with styles as a parameter 
-    * QA reports
-    * AliTreePlayer, and TStatToolkit  
-
-  Example usage:
-  //
-  // 
-  AliDrawStyle::SetDefaults()
-  // Style example
-  //
-  AliDrawStyle::PrintStyles(0,TPRegexp("."));
-  AliDrawStyle::ApplyStyle("figTemplate");
-  //
-  // Standard ALICE latex symbols
-  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
-  AliDrawStyle::GetLatexAlice("qPt")
-  AliDrawStyle::AddLatexSymbol("dphi", "#Delta#it#phi (unit)")
-  AliDrawStyle::GetLatexAlice("dphi")
-  //
-  // Standard ALICE marker/colors arrays
-  AliDrawStyle::GetMarkerStyle("figTemplate",0)
-  AliDrawStyle::GetMarkerColor("figTemplate",0)
-  //
+///  ### AliDrawStyle - Class to access drawing styles
+///  * Several drawing styles can be regeistered and used in the same moment
+///    * Styles are identified using strings as identifiets
+///      * TStyle
+///      * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
+///      * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
+///      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index); 
+///  * Default styles are created  AliDrawStyle::SetDefaults()
+///    * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
+///    * users should be able to regiester their oun styles (e.g in macros)
+///  * Usage (work in progress)
+///    * performance reports -  with styles as a parameter 
+///    * QA reports
+///    * AliTreePlayer, and TStatToolkit  
+/// \author marian  Ivanov marian.ivanov@cen.ch
+///
+///  ## Example usage
+///  
+///  \code
+///  AliDrawStyle::SetDefaults()
+///  // Style example
+///  //
+///  AliDrawStyle::PrintStyles(0,TPRegexp("."));
+///  AliDrawStyle::ApplyStyle("figTemplate");
+///  //
+///  // Standard ALICE latex symbols
+///  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
+///  AliDrawStyle::GetLatexAlice("qPt")
+///  AliDrawStyle::AddLatexSymbol("dphi", "#Delta#it#phi (unit)")
+///  AliDrawStyle::GetLatexAlice("dphi")
+///  //
+///  // Standard ALICE marker/colors arrays
+///  AliDrawStyle::GetMarkerStyle("figTemplate",0)
+///  AliDrawStyle::GetMarkerColor("figTemplate",0)
+///  \endcode  
 
   
-
-  author marian.ivanov@cent.ch
-
-*/
 
 #include "AliDrawStyle.h"
 #include "TStyle.h"
