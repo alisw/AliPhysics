@@ -275,24 +275,30 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-      AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
-      if(!inf1 || !inf2)
-      {
-//          cout<<"Warning! AliFemtoModelCorrFctn::GetQinvTrue - Could not find requested tracks."<<endl;
+      
+      AliFemtoParticle *first = (AliFemtoParticle*)aPair->Track1();
+      AliFemtoParticle *second = (AliFemtoParticle*)aPair->Track2();
+      
+      if(!first || !second) return -1;
+      
+      AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
+      AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+      
+      if(!inf1 || !inf2){
+//          cout<<"no hidden info"<<endl;
           return -1;
       }
       
       AliFemtoLorentzVector fm1;
-      AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
+      AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
       fm1.SetVect(*temp);
-      Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
-      Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+      Double_t am1 = inf1->GetMass();
+      Double_t am2 = inf2->GetMass();
       double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
       fm1.SetE(ener);
       
       AliFemtoLorentzVector fm2;
-      AliFemtoThreeVector* temp2 =  ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
+      AliFemtoThreeVector* temp2 =  inf2->GetTrueMomentum();
       fm2.SetVect(*temp2);
       ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
       fm2.SetE(ener);
