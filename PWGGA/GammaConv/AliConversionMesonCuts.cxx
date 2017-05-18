@@ -1655,6 +1655,68 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
 { // Set Cut
+ if(fMode == 4){
+   switch(alphaMesonCut){
+   case 0:  // 0- 0.7
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 0.7;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 1:  // Updated 15 May 2015
+     if (fIsMergedClusterCut == 0){
+       if( fFAlphaCut ) delete fFAlphaCut;
+       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+       fFAlphaCut->SetParameter(0,0.65);
+       fFAlphaCut->SetParameter(1,1.8);
+       fAlphaMinCutMeson =  0.0;
+       fAlphaCutMeson    = -1.0;
+       fAlphaPtDepCut    = kTRUE;
+     } else {
+       fAlphaPtDepCut    = kFALSE;
+       fAlphaMinCutMeson = 0.5;
+       fAlphaCutMeson    = 1;
+     }
+     break;
+   case 2:  // Updated 31 October 2013 before 0.5-1
+     if (fIsMergedClusterCut == 0){
+       if( fFAlphaCut ) delete fFAlphaCut;
+       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+       fFAlphaCut->SetParameter(0,0.8);
+       fFAlphaCut->SetParameter(1,1.2);
+       fAlphaMinCutMeson =  0.0;
+       fAlphaCutMeson    = -1.0;
+       fAlphaPtDepCut    = kTRUE;
+     } else {
+       fAlphaPtDepCut    = kFALSE;
+       fAlphaMinCutMeson = 0.6;
+       fAlphaCutMeson    = 1;
+     }
+     break;
+   case 3:  // 0.0-1
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 1.;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 4:  // 0-0.2
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 0.2;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 5:  // 0.2-0.6
+     fAlphaMinCutMeson   = 0.2;
+     fAlphaCutMeson      = 0.6;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 6:  // 0.6-1.0
+     fAlphaMinCutMeson   = 0.6;
+     fAlphaCutMeson      = 1.0;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   default:
+     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
+     return kFALSE;
+   }
+ }else{
   switch(alphaMesonCut){
   case 0:  // 0- 0.7
     fAlphaMinCutMeson   = 0.0;
@@ -1740,6 +1802,7 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
   }
+ }
   return kTRUE;
 }
 
