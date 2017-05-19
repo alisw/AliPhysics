@@ -60,6 +60,8 @@ public AliAnalysisTaskSE
   void SetUseLHCClockPhase(Bool_t value = kTRUE) {fUseLHCClockPhase = value;}; // setter
   void SetSpecificStorageParOffline(Char_t *value) {fSpecificStorageParOffline = value;}; // set specific storage ParOffline
   void SetSpecificStorageRunParams(Char_t *value) {fSpecificStorageRunParams = value;}; // set specific storage RunParams
+  void SetSaveCoordinates(Bool_t value = kTRUE) {fSaveCoordinates = value;}; // set flag to save hit coordinates in tree
+  void SetLightMode(Bool_t value = kTRUE) {fLightMode = value;}; // set flag to use "light mode" (don't save track parameters)
 
  protected:
 
@@ -123,7 +125,15 @@ public AliAnalysisTaskSE
   Float_t ftime[MAXHITS];
   Float_t ftot[MAXHITS];
   Float_t ftexp[MAXHITS];
+  
+  //NEW task related stuff
+  Float_t fDeltax[MAXHITS];
+  Float_t fDeltaz[MAXHITS];
 
+  Bool_t fLightMode;
+  Bool_t fSaveCoordinates;
+   
+ 
   TTree* fOutputTree;                 // output tree
 
   ClassDef(AliTOFAnalysisTaskCalibTree, 2);

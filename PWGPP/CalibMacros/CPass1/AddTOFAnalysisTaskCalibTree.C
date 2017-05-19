@@ -1,4 +1,4 @@
-AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree() {
+AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree(Bool_t lightmode = kFALSE, Bool_t savecoords = kFALSE) {
 
   /* check analysis manager */
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -54,6 +54,10 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree() {
   task->SetComputeT0TOF(kTRUE);
   task->SetUseT0TOF(kFALSE);
   task->SetUseLHCClockPhase(kFALSE);
+  task->SetSaveCoordinates(savecoords);
+  task->SetLightMode(lightmode);
+ 
+
   //  task->SetSpecificStorageParOffline("alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB");
   //  task->SetSpecificStorageRunParams("alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB");
 

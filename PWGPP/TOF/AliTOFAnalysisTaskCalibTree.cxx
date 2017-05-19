@@ -67,6 +67,8 @@ AliAnalysisTaskSE(name),
       ftime[i] = 999999;
       ftot[i] = 999999;
       ftexp[i] = 999999;
+      fDeltax[i] = 999999;
+      fDeltaz[i] = 999999;
   }
 
   DefineOutput(1, TTree::Class());  
@@ -98,6 +100,7 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
 void
 AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
 {
+  AliTuple[2]='root=v5-34-08 geant3=v1-15 aliroot=v5-05-68-AN '
   /*
    * user create output objects
    */
@@ -116,6 +119,8 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
   fOutputTree->Branch("time", &ftime, "time[nhits]/F");
   fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
   fOutputTree->Branch("texp", &ftexp, "texp[nhits]/F");
+  fOutputTree->Branch("deltax", &fDeltax, "deltax[nhits]/F");
+  fOutputTree->Branch("deltaz", &fDeltaz, "deltaz[nhits]/F");
 
   PostData(1, fOutputTree);
 
@@ -159,7 +164,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
   AliESDtrack *track;
   Int_t index;
-  Double_t momentum, length, time, tot, timei[AliPID::kSPECIES];
+  Double_t momentum, length, time, tot, timei[AliPID::kSPECIES], deltax, deltaz;
   for (Int_t itrk = 0; itrk < nTracks; itrk++) {
     // get track
     track = fESDEvent->GetTrack(itrk);
@@ -180,6 +185,8 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     time = track->GetTOFsignal();
     tot = track->GetTOFsignalToT();
     track->GetIntegratedTimes(timei);
+    deltax = track->GetTOFsignalDx();
+    deltaz = track->GetTOFsignalDz();
 
     // add hit to array (if there is room)
     if (fnhits > MAXHITS) continue;
@@ -189,6 +196,8 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     ftime[fnhits] = time;
     ftot[fnhits] = tot;
     ftexp[fnhits] = timei[AliPID::kPion];
+    fDeltax[fnhits] = deltax;
+    fDeltaz[fnhits] = deltaz;
     fnhits++;
 
   } /* end of loop over ESD tracks */
