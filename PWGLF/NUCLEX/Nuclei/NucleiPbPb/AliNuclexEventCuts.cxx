@@ -40,10 +40,10 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
   fMaxVtz{1000.f},
-  fMaxDeltaSpdTrackAbsolute{1000.f},
-  fMaxDeltaSpdTrackNsigmaSPD{1000.f},
-  fMaxDeltaSpdTrackNsigmaTrack{20000.f},
-  fMaxResolutionSPDvertex{1000.f},
+  fMaxDeltaSpdTrackAbsolute{1.e14},
+  fMaxDeltaSpdTrackNsigmaSPD{1.e14},
+  fMaxDeltaSpdTrackNsigmaTrack{1.e14},
+  fMaxResolutionSPDvertex{1.e14f},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
   fUseMultiplicityDependentPileUpCuts{false},
@@ -130,28 +130,33 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   if ((selected_trigger == fTriggerMask && fRequireExactTriggerMask) || (selected_trigger && !fRequireExactTriggerMask))
     fFlag |= BIT(kTrigger);
 
-  /// Vertex selection
+  /// Vertex existance
   const AliVVertex* vtTrc = ev->GetPrimaryVertex();
   const AliVVertex* vtSPD = ev->GetPrimaryVertexSPD();
+  if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
+  if (vtTrc->GetNContributors() > 1) fFlag |= BIT(kVertexTracks);
+  if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
   const AliVVertex* &vtx = (vtTrc->GetNContributors() < 2) ? vtSPD : vtTrc;
+  fPrimaryVertex = const_cast<AliVVertex*>(vtx);
+
+  /// Vertex position cut
+  if (vtSPD->GetZ() >= fMinVtz && vtSPD->GetZ() <= fMaxVtz) fFlag |= BIT(kVertexPositionSPD);
+  if (vtTrc->GetZ() >= fMinVtz && vtTrc->GetZ() <= fMaxVtz) fFlag |= BIT(kVertexPositionTracks);
+  if (vtx->GetZ()   >= fMinVtz && vtx->GetZ()   <= fMaxVtz) fFlag |= BIT(kVertexPosition);
+
+  /// Vertex quality cuts
   double covTrc[6],covSPD[6];
   vtTrc->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
-  double dz = vtTrc->GetZ() - vtSPD->GetZ();
+  double dz = (fFlag & kVertexSPD) && (fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : -999.;
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
-
-  /// Vertex position cut
-  if (vtx->GetZ() >= fMinVtz && vtx->GetZ() <= fMaxVtz) fFlag |= BIT(kVertexPosition);
-
-  /// Vertex quality cuts
-  if (((vtTrc->GetNContributors() >= 2 ||  !fRequireTrackVertex) && vtSPD->GetNContributors() >= 1) && // Check if SPD vertex is there and (if required) check if Track vertex is present.
+  if (
       (TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute && nsigTot <= fMaxDeltaSpdTrackNsigmaSPD && nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) && // discrepancy track-SPD vertex
       (!vtSPD->IsFromVertexerZ() || TMath::Sqrt(covSPD[5]) <= fMaxResolutionSPDvertex)
      ) // quality cut on vertexer SPD z
     fFlag |= BIT(kVertexQuality);
-  fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// Pile-up rejection
   AliVMultiplicity* mult = ev->GetMultiplicity();
@@ -161,7 +166,6 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     else if (ntrkl < 50) fSPDpileupMinContributors = 4;
     else fSPDpileupMinContributors = 5;
   }
-  fUtils.SetMinPlpContribMV(fSPDpileupMinContributors);
   if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
       (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
@@ -206,7 +210,9 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
-  bool allcuts = (fFlag == (BIT(kAllCuts) - 1));
+  /// Ignore the vertex position and vertex 
+  int allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
+  bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
   if (allcuts) fFlag |= BIT(kAllCuts);
   if (fCutStats) {
     for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
@@ -242,7 +248,23 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlot
   }
   static_cast<TList*>(this)->Delete();
 
-  vector<string> bin_labels = {"No cuts","DAQ Incomplete","Magnetic field choice","Trigger selection","Vertex position","Vertex quality","Pile-up","Centrality selection","Correlations","All cuts"};
+  vector<string> bin_labels = {
+    "No cuts",
+    "DAQ Incomplete",
+    "Magnetic field choice",
+    "Trigger selection",
+    "SPD vertex reconstruction",
+    "Track vertex reconstruction",
+    "Vertex reconstruction",
+    "SPD vertex position",
+    "Track vertex position",
+    "Vertex position",
+    "Vertex quality",
+    "Pile-up",
+    "Centrality selection",
+    "Correlations",
+    "All cuts"
+  };
   fCutStats = new TH1I("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
   for (int iB = 1; iB <= bin_labels.size(); ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
   qaList->Add(fCutStats);
@@ -420,8 +442,8 @@ void AliNuclexEventCuts::SetupRun2pp() {
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
   fMaxDeltaSpdTrackAbsolute = 0.5f;
-  fMaxDeltaSpdTrackNsigmaSPD = 2000.f;
-  fMaxDeltaSpdTrackNsigmaTrack = 2000.f;
+  fMaxDeltaSpdTrackNsigmaSPD = 1.e14f;
+  fMaxDeltaSpdTrackNsigmaTrack = 1.e14;
   fMaxResolutionSPDvertex = 0.25f;
 
   fRejectDAQincomplete = true;
