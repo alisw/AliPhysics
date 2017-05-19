@@ -97,7 +97,6 @@ fZVertexCut(10.0), fhJetPt(0x0), fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(
       fhInvPtQVsPhiCSide[i] = NULL; 
       fhSigmaPtOverPtVsPt[i] = NULL; 
    }
-//   cout<<"1KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"<<endl;
 }
 
 //________________________________________________________________________
@@ -120,7 +119,6 @@ fZVertexCut(10.0),fhJetPt(0x0),fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x
       fhSigmaPtOverPtVsPt[i] = NULL; 
    }
 
-  // cout<<"2KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"<<endl;
 
    DefineOutput(1, AliEmcalList::Class());
 }
@@ -142,7 +140,7 @@ Bool_t AliAnalysisTaskJetPP::IsEventInAcceptance(AliVEvent* event){
 
    //___________________________________________________
    //BEFORE VERTEX CUT
-   //Jak vypada z vertz , x,y
+
    fhZVertexBC->Fill(event->GetPrimaryVertex()->GetZ()); 
    if(fUseDefaultVertexCut){
       if(!fHelperClass || !fHelperClass->IsVertexSelected2013pA(event)){
@@ -216,21 +214,15 @@ void AliAnalysisTaskJetPP::ExecOnceLocal(){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetPP::FillHistograms(){ 
-//	cout << "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz FillHistograms called"<<endl;
    // executed in each event 
    //called in AliAnalysisTaskEmcal::UserExec(Option_t *)
    //   Analyze the event and Fill histograms
-/*   static int evt=0;
-   if(evt % 100 == 0){
-      cout<<"PP No.: " << evt<<endl;
-   }
-   evt++;*/
+
    if(!InputEvent()){
       AliError("??? Event pointer == 0 ???");
       return kFALSE;
    }
   
- //<<<<<<<<<Pocitadlo na eventy, pileup cut a vertex cut
    fhCuts->Fill(0.5);
    //Execute only once:  Get tracks, jets from arrays if not already given 
    if(!fInitializedLocal) ExecOnceLocal(); 
@@ -241,11 +233,11 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
    //Select events (vertex, pile-up,...) 
    if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
 
-   fhCuts->Fill(3.5); // to co prezilo
+   fhCuts->Fill(3.5); 
 
    // END EVENT SELECTION
 
-   //cout<<"//________________________________________________________________"<<endl;
+  
    // JET+TRACK CONTAINERS
    AliJetContainer *jetContRecAKT = NULL; //AKTjet container from reconstruced tracks
    AliJetContainer *jetContRecKT = NULL; //KTjet container from reconstruced tracks
@@ -291,7 +283,6 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
          if(!IsTrackInAcceptance(constTrackRecAod)) continue;
             Double_t phi = Convert(constTrackRecAod->Phi());        
 	    fhTrackPt->Fill(constTrackRecAod->Pt());
-            //cout << "Track pT: "<<constTrackRecAod->Pt()<<" Eta: "<<constTrackRecAod->Eta()<<" phi: "<<  constTrackRecAod->Phi()<<endl;
             fhTrackEtaPt->Fill(constTrackRecAod->Eta(),constTrackRecAod->Pt()); 
             fhTrackPhiPt->Fill(phi,constTrackRecAod->Pt()); 
             fhTrackEtaPhi->Fill(constTrackRecAod->Eta(),phi);            
@@ -322,7 +313,6 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
             AliExternalTrackParam  par(xyz, pxpypz, cv, constTrackRecAod->Charge());
             fhSigmaPtOverPtVsPt[itrkq]->Fill(constTrackRecAod->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
             fMultCounter++;
-		//cout<<"Track P="<<constTrackRec->Pt()<<" P="<<constTrackRec->Phi()<<" E="<<constTrackRec->Eta()<<endl;
       }
       fhMult->Fill(fMultCounter);
    }
@@ -351,13 +341,11 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
          fhJetPhiPt->Fill(phi,jetRec->Pt());
          fhJetAreaPt->Fill(jetRec->Area(),jetRec->Pt());
          fhAtimesRho->Fill(rho*jetRec->Area());
-	//cout<<"JET PT="<< jetRec->Pt()<<"   P="<<jetRec->Phi()<<"  E="<<jetRec->Eta() <<"_________________________"<<endl;
-         //how to loop over jet constituents
+	//loop over jet constituents
          for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++){
             constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq, trkContRec->GetArray())); //matched rec and emb tracks
             if(!constTrackRec) continue;
 	       fhJetConstituentPt->Fill(constTrackRec->Pt());
-          //  cout<<"JET COSNT PT="<<constTrackRec->Pt()<<" P="<<constTrackRec->Phi()<<" E="<<constTrackRec->Eta()<<endl;
  
          }
       }
@@ -436,13 +424,10 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
          if(!jetRec) continue;
          if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue; //cuts on eta, pT ,area
 
-         //if(fDebug>20) Printf("REC JET phi=%f  eta=%f  pt=%f",jetRec->Phi(), jetRec->Eta(), jetRec->Pt());
-
          jetGen = 0x0;
          jetGen = jetRec->ClosestJet();  //z taggeru
 
          if(!jetGen){ //did not find matching generator level jet
-               //if(fDebug>20)  Printf("NO MATCH (NO SUCH GEN JET)");
 
             continue;     
          }
@@ -481,9 +466,6 @@ AliAnalysisTaskJetPP::~AliAnalysisTaskJetPP(){
 //________________________________________________________________________
 void AliAnalysisTaskJetPP::UserCreateOutputObjects(){
   // called once to create user defined output objects like histograms, plots etc. 
-
-   //cout<<"2KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"<<endl;
-
   // and to put it on the output list.
   // Note: Saving to file with e.g. OpenFile(0) is must be before creating other objects.
   //fOutput TList defined in the mother class
@@ -632,7 +614,6 @@ Double_t AliAnalysisTaskJetPP::EstimateBgKT(AliJetContainer *jetCont){
       if(!IsSignalJetInAcceptance(jet,kFALSE)) continue; //check jet eta and pt
 
       jetpt = jet->Pt(); 
-//cout<<"JET KT PT "<<jetpt<<endl;
       if(jetpt <0.005) jetpt = 0.; //set pt of ghost jets identical to zero
       rhovec[nJetAcc] = jetpt/jet->Area();
       nJetAcc++;
