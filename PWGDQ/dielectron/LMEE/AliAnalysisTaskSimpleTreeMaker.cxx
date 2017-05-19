@@ -281,7 +281,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             fQAhist->Fill("Tracks_all",1);
             //Apply global track filter
             if(!fIsAOD){
-                if(!(fESDtrackCuts->AcceptTrack(static_cast<AliESDtrack*>(track)))){ 
+                if(!(fESDtrackCuts->AcceptTrack(static_cast< const AliESDtrack*>(track)))){ 
                     continue; 
                 }
             }
@@ -352,10 +352,26 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Double_t chi2TPC = track->GetTPCchi2();
 
             //DCA values
-            Float_t DCAxy = 0.;
-            Float_t DCAz = 0.;
-            track->GetImpactParameters( &DCAxy, &DCAz);
-          
+            Float_t DCAesd[2] = {0.0,0.0};
+            Double_t DCAaod[2] = {0.0,0.0};
+            Double_t DCAcov[2] = {0.0, 0.0};
+            if(!fIsAOD){
+                track->GetImpactParameters( &DCAesd[0], &DCAesd[1]);
+            }
+            else{
+                GetDCA(const_cast<const AliVEvent*>(event), static_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
+            }
+            //Final DCA values stored here 
+            Double_t DCA[2];
+            if(!fIsAOD){
+                DCA[0] = static_cast<Double_t>(DCAesd[0]);
+                DCA[1] = static_cast<Double_t>(DCAesd[1]);
+            }
+            else{
+                DCA[0] = static_cast<Double_t>(DCAaod[0]);
+                DCA[1] = static_cast<Double_t>(DCAaod[1]);
+            }
+
             Int_t nITS = 0;
             Double_t fITS_shared = 0;
             Double_t chi2ITS = 0;
@@ -457,8 +473,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "fITSshared=" << fITS_shared << 
                 "chi2ITS="    << chi2ITS <<
 
-                "DCAxy="      << DCAxy <<
-                "DCAz="       << DCAz <<
+                "DCAxy="      << DCA[0] <<
+                "DCAz="       << DCA[1] <<
                 "goldenChi2=" << goldenChi2 <<
                 "multiplicity=" << nMultiplicity << 
 
@@ -505,8 +521,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "fITSshared=" << fITS_shared << 
                 "chi2ITS="    << chi2ITS <<
 
-                "DCAxy="      << DCAxy <<
-                "DCAz="       << DCAz <<
+                "DCAxy="      << DCA[0] <<
+                "DCAz="       << DCA[1] <<
                 "goldenChi2=" << goldenChi2 <<
                 "multiplicity=" << nMultiplicity << 
 
@@ -858,4 +874,34 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
     return answer;
 }
 
+Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0)
+// this is a copy of the AliDielectronVarManager
+{
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    d0z0[0]=track->DCA();
+    d0z0[1]=track->ZAtDCA();
+    // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
+    return kTRUE;
+  }
 
+  Bool_t ok=kFALSE;
+  if(event) {
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+      d0z0[0]=-999.;
+      d0z0[1]=-999.;
+      return kFALSE;
+    }
+
+    AliAODVertex *vtx =(AliAODVertex*)(event->GetPrimaryVertex());
+    Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
+  if(!ok){
+    d0z0[0]=-999.;
+    d0z0[1]=-999.;
+  }
+  return ok;
+}
