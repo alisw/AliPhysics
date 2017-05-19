@@ -20,18 +20,18 @@
 ///      * TStyle
 ///      * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
 ///      * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
-///      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index); 
+///      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index);
 ///  * Default styles are created  AliDrawStyle::SetDefaults()
 ///    * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
 ///    * users should be able to regiester their oun styles (e.g in macros)
 ///  * Usage (work in progress)
-///    * performance reports -  with styles as a parameter 
+///    * performance reports -  with styles as a parameter
 ///    * QA reports
-///    * AliTreePlayer, and TStatToolkit  
+///    * AliTreePlayer, and TStatToolkit
 /// \author marian  Ivanov marian.ivanov@cen.ch
 ///
 ///  ## Example usage
-///  
+///
 ///  \code
 ///  AliDrawStyle::SetDefaults()
 ///  // Style example
@@ -48,9 +48,9 @@
 ///  // Standard ALICE marker/colors arrays
 ///  AliDrawStyle::GetMarkerStyle("figTemplate",0)
 ///  AliDrawStyle::GetMarkerColor("figTemplate",0)
-///  \endcode  
+///  \endcode
 
-  
+
 
 #include "AliDrawStyle.h"
 #include "TStyle.h"
@@ -61,9 +61,9 @@
 //
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
 std::map<TString, TStyle*>  AliDrawStyle::fStyleAlice;
-std::map<TString, std::vector<int>> AliDrawStyle::fMarkerStyles;
-std::map<TString, std::vector<int>> AliDrawStyle::fMarkerColors;
-std::map<TString, std::vector<int>> AliDrawStyle::fFillColors;
+std::map<TString, std::vector<int> > AliDrawStyle::fMarkerStyles;
+std::map<TString, std::vector<int> > AliDrawStyle::fMarkerColors;
+std::map<TString, std::vector<int> > AliDrawStyle::fFillColors;
 
 void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultLatexSymbols();
@@ -82,25 +82,25 @@ TString AliDrawStyle::GetLatexAlice(const char * symbol){
   return  fLatexAlice[symbol];
 }
 
-/// \param  style - name of style used 
+/// \param  style - name of style used
 /// \param index  - marker index
 /// \return marker style for given stylename, index
 Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
   return  AliDrawStyle::fMarkerStyles[style][index];
 }
 
-/// \param  style - name of style used 
+/// \param  style - name of style used
 /// \param index  - marker index
 /// \return marker color for given stylename, index
 Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
   return  AliDrawStyle::fMarkerColors[style][index];
 }
 
-/// \param  style - name of style used 
+/// \param  style - name of style used
 /// \param index  - marker index
 /// \return fill color for given stylename, index
 Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
-  return  AliDrawStyle::fFillColors[style][index];  
+  return  AliDrawStyle::fFillColors[style][index];
 }
 
 
@@ -147,7 +147,7 @@ void  AliDrawStyle::AddLatexSymbol(const char * symbolName, const char * symbolT
 }
 void  AliDrawStyle::RegisterDefaultLatexSymbols(){
   //
-  // Set default AliRoot/Latex/root shortcuts 
+  // Set default AliRoot/Latex/root shortcuts
   //
   fLatexAlice["qPt"]="#it{p}_{T} (GeV/#it{c})";
   fLatexAlice["Pt"]="#it{p}_{T}";
@@ -167,7 +167,7 @@ void   AliDrawStyle::RegisterDefaultStyle(){
 
 void  AliDrawStyle::RegisterDefaultMarkers(){
   //
-  // Style source: 
+  // Style source:
   // https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
   const Int_t fillColors[] = {kGray+1,  kRed-10, kBlue-9, kGreen-8, kMagenta-9, kOrange-9,kCyan-8,kYellow-7, kBlack, kRed+1 }; // for syst bands
   const Int_t colors[]     = {kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2,kGray+1,  kRed-10 };
@@ -191,12 +191,12 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
     (fMarkerColors["figTemplateDark"])[i]=TColor::GetColorDark(colors[i]);
     (fFillColors["figTemplateDark"])[i]=TColor::GetColorDark(fillColors[i/2]);
   }
- 
+
 
 }
 
 TStyle*  RegisterDefaultStyleFigTemplate(Bool_t graypalette) {
-  // Style source: 
+  // Style source:
   // https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
   //
   TStyle * figStyle = new TStyle;
