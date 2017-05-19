@@ -190,6 +190,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  Eop010Corr(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -323,6 +324,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  Eop010Corr(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -705,6 +707,10 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fOutputList->Add(fHistIncITSchi2);
 
   PostData(1,fOutputList);
+
+  Eop010Corr = new TF1("Eop010Corr","pol3");
+  Eop010Corr->SetParameters(0.0485569,0.00274734,4.17124e-05,-1.13117e-05);
+
 }
 
 //________________________________________________________________________
@@ -725,6 +731,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (fESD) {
     //   printf("fESD available\n");
+  PostData(1,fOutputList);
     //return;
   }
 
@@ -1325,7 +1332,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         {
          if(centrality>=0 && centrality<10)
            { 
-            eop += 0.096; 
+            //cout << "eop = " << eop << endl;
+            eop += Eop010Corr->Eval(track->Pt()); 
+            //cout << "eop corr = " << eop << endl;
            }
          else
            {
