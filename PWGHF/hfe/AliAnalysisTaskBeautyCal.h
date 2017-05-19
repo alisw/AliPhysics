@@ -230,6 +230,7 @@ private:
     TH1F        *fCheckEtaMC;    
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
+    TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
 
