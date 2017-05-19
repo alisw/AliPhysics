@@ -21,7 +21,7 @@ if (!mgr->GetInputEventHandler()) {
 TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
  if (analysisType!="ESD"){
-   ::Error("AddTaskMLTreeMaker",  "analysis type NOT ESD --> some variables might not be filled");
+   ::Warning("AddTaskMLTreeMaker",  "analysis type NOT ESD --> some variables might not be filled");
  }
       
 

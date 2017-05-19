@@ -10,6 +10,11 @@ class AliESDtrackCuts;
 
 
 #include "AliAnalysisTaskSE.h"
+#include "AliDielectronVarCuts.h"
+#include "AliDielectronTrackCuts.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronPID.h"
+#include "AliAnalysisFilter.h"
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
@@ -24,14 +29,23 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
 
   AliDielectronVarCuts* evcuts;
+  
   AliDielectronVarCuts* trcuts;
+  AliDielectronTrackCuts *trfilter;
+  AliDielectronPID *pidcuts;
+  AliDielectronCutGroup* cuts;
+  
+  AliAnalysisFilter* filter;
+  
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
 //~ 
-
+  
+  void SetupTrackCuts();
+  
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
