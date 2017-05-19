@@ -30,28 +30,38 @@ class CutHandlerConv{
   public:
     CutHandlerConv(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
 
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
       if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
+      nCuts++;
+      return;
+    }
+
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* mesonCutArray;
+    TString* clusterCutArray;
 };
 
 void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,                              // change different set of cuts
@@ -587,6 +597,15 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("80047113", "00200009297302001280004000", "0152103500000000"); // TRD trigger HQU for 8TeV
     cuts.AddCut("80043113", "00200009297302001280004000", "0152103500000000"); // TRD trigger HSE for 8TeV
 
+  // Calo triggers
+  } else if (trainConfig == 302) {  // EMC triggers
+    cuts.AddCut("80000113", "00200009217000008250404000", "0162103500900000", "1111100007032230000"); // Min Bias
+    cuts.AddCut("80052113", "00200009217000008250404000", "0162103500900000", "1111100007032230000"); // EMC7
+    cuts.AddCut("80085113", "00200009217000008250404000", "0162103500900000", "1111100007032230000"); // EG2
+    cuts.AddCut("80083113", "00200009217000008250404000", "0162103500900000", "1111100007032230000"); // EG1
+  } else if (trainConfig == 303) {  // PHOS triggers
+    cuts.AddCut("80000113", "00200009217000008250404000", "0162103500900000", "2444400041013200000"); // MinBias
+    cuts.AddCut("80052113", "00200009217000008250404000", "0162103500900000", "2444400041013200000"); // PHI7    
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -604,6 +623,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
+  TList *ClusterCutList = new TList();
   
   TList *HeaderList = new TList();
   if (doWeightingPart==1) {
@@ -631,6 +651,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  ClusterCutList->SetOwner(kTRUE);
+  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
+  Bool_t enableClustersForTrigger             = kFALSE;
   Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   if (doWeighting) Printf("weighting has been switched on");
@@ -709,6 +732,27 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     cout << "initialized event cut: " << (cuts.GetEventCut(i)).Data() << endl;
     
+    if ( trainConfig == 302 || trainConfig == 303  ){
+        TString caloCutPos = cuts.GetClusterCut(i);
+        caloCutPos.Resize(1);
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          fTrackMatcher->SetV0ReaderName(V0ReaderName);
+          mgr->AddTask(fTrackMatcher);
+          mgr->ConnectInput(fTrackMatcher,0,cinput);
+        }
+
+        enableClustersForTrigger  = kTRUE;
+        analysisClusterCuts[i]    = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
+        ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetFillCutHistograms("");   
+    }  
+
+    
     analysisCuts[i] = new AliConversionPhotonCuts();
     if ( trainConfig == 131 || trainConfig == 120 || trainConfig == 121 || trainConfig == 122 || trainConfig == 123){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
@@ -751,6 +795,11 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(enablePlotVsCentrality);
+  if (enableClustersForTrigger){
+    task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
+    task->SetClusterCutList(numberOfCuts,ClusterCutList);
+  }  
+
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
