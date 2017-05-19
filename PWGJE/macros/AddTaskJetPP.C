@@ -80,9 +80,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    //MC Tagger match jets
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetTagger.C");
    AliAnalysisTaskEmcalJetTagger* tagr = NULL;
-   //cout<<"jetfinderAkt="  <<jetfinderAkt<<endl;
    if(ismc){
-      //cout <<"jetfinderAktmc =" <<jetfinderAktmc<<endl;
       tagr = AddTaskEmcalJetTagger(jetfinderAkt,jetfinderAktmc,jetAKTRadius,
                                                                "","", //nrhoBase, nrhoTa
                                                                 hybridtracks, //ntracks
@@ -100,8 +98,6 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
       tagr->SetDebugLevel(0);
       AliJetContainer *cont  = tagr->GetJetContainer(kContainerOne); //0
       AliJetContainer *cont2 = tagr->GetJetContainer(kContainerTwo);//1
-      if(!cont) cout <<"AddTaskPP: Missing cont1"<<endl;
-      if(!cont2) cout <<"AddTaskPP: Missing cont2"<<endl;
       cont->SetMinPt(0.150);
       cont2->SetMinPt(0.150);
       cont->SetMaxTrackPt(1000);
