@@ -4728,6 +4728,19 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16k3b2") == 0 )     return k16k3b;
   else if ( namePeriod.CompareTo("LHC16k5a") == 0  )     return k16k5a;
   else if ( namePeriod.CompareTo("LHC16k5b") == 0  )     return k16k5b;
+  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2a;
+  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2b;
+  else if ( namePeriod.CompareTo("LHC17a3a") == 0  )     return k17a3a;
+  else if ( namePeriod.CompareTo("LHC17a3b") == 0  )     return k17a3b;
+  else if ( namePeriod.CompareTo("LHC17a4a") == 0  )     return k17a4a;
+  else if ( namePeriod.CompareTo("LHC17a4b") == 0  )     return k17a4b;
+  else if ( namePeriod.CompareTo("LHC17e2") == 0  )      return k17e2;
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )     return k17f2a;
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )     return k17f2b;
+  else if ( namePeriod.CompareTo("LHC17f3a") == 0  )     return k17f3a;
+  else if ( namePeriod.CompareTo("LHC17f3b") == 0  )     return k17f3b;
+  else if ( namePeriod.CompareTo("LHC17f4a") == 0  )     return k17f4a;
+  else if ( namePeriod.CompareTo("LHC17f4b") == 0  )     return k17f4b;
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
             namePeriod.CompareTo("LHC10c") == 0 ||
             namePeriod.CompareTo("LHC10d") == 0 ||

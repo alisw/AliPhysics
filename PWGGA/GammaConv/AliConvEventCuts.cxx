@@ -4333,6 +4333,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16k3a2") == 0){
     fPeriodEnum = kLHC16k3a2;
     fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC17e2") == 0){
+    fPeriodEnum = kLHC17e2;
+    fEnergyEnum = k5TeV;
   } else if (periodName.Contains("LHC15k1a1")){
     fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
@@ -4394,7 +4397,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16j2b2") == 0){
     fPeriodEnum = kLHC16j2b2;
     fEnergyEnum = k13TeV;
-  // LHC17x anchored MCs
+  // LHC16qt anchored MCs
   } else if (periodName.CompareTo("LHC17a2a") == 0){
     fPeriodEnum = kLHC17a2a;
     fEnergyEnum = kpPb5TeV;
@@ -4419,6 +4422,128 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17a2b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a2b_cent_woSDD;
     fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a") == 0){
+    fPeriodEnum = kLHC17f2a;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_fast") == 0){
+    fPeriodEnum = kLHC17f2a_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_cent") == 0){
+    fPeriodEnum = kLHC17f2a_cent;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f2a_cent_woSDD;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b") == 0){
+    fPeriodEnum = kLHC17f2b;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_fast") == 0){
+    fPeriodEnum = kLHC17f2b_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_cent") == 0){
+    fPeriodEnum = kLHC17f2b_cent;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f2b_cent_woSDD;
+    fEnergyEnum = kpPb5TeV;
+  // LHC16r anchored MCs
+  } else if (periodName.CompareTo("LHC17a3a") == 0){
+    fPeriodEnum = kLHC17a3a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_fast") == 0){
+    fPeriodEnum = kLHC17a3a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_cent") == 0){
+    fPeriodEnum = kLHC17a3a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a3a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b") == 0){
+    fPeriodEnum = kLHC17a3b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_fast") == 0){
+    fPeriodEnum = kLHC17a3b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_cent") == 0){
+    fPeriodEnum = kLHC17a3b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a3b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a") == 0){
+    fPeriodEnum = kLHC17f3a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_fast") == 0){
+    fPeriodEnum = kLHC17f3a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_cent") == 0){
+    fPeriodEnum = kLHC17f3a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f3a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b") == 0){
+    fPeriodEnum = kLHC17f3b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_fast") == 0){
+    fPeriodEnum = kLHC17f3b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_cent") == 0){
+    fPeriodEnum = kLHC17f3b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f3b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  // LHC16s anchored MCs
+  } else if (periodName.CompareTo("LHC17a4a") == 0){
+    fPeriodEnum = kLHC17a4a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_fast") == 0){
+    fPeriodEnum = kLHC17a4a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_cent") == 0){
+    fPeriodEnum = kLHC17a4a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a4a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b") == 0){
+    fPeriodEnum = kLHC17a4b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_fast") == 0){
+    fPeriodEnum = kLHC17a4b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_cent") == 0){
+    fPeriodEnum = kLHC17a4b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a4b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a") == 0){
+    fPeriodEnum = kLHC17f4a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_fast") == 0){
+    fPeriodEnum = kLHC17f4a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_cent") == 0){
+    fPeriodEnum = kLHC17f4a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f4a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b") == 0){
+    fPeriodEnum = kLHC17f4b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_fast") == 0){
+    fPeriodEnum = kLHC17f4b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_cent") == 0){
+    fPeriodEnum = kLHC17f4b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f4b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
 
 
   // MC upgrade 
