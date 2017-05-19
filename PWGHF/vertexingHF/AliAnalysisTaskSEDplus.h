@@ -86,7 +86,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void CreateMCAcceptanceHistos();
 
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets);
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
