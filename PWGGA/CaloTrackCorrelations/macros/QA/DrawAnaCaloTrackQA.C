@@ -231,6 +231,7 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     // Plot basic Pi0 QA
     Pi0QA(icalo);
     
+    gStyle->SetPadRightMargin(0.02);
     // Plot basic isolation QA
     IsolQA(icalo);
     
@@ -239,6 +240,9 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     
     // MC basic QA plots, cluster origins (only if it run on MC)
     MCQA(icalo);
+    
+    // Re-set default setting
+    gStyle->SetPadRightMargin(0.15);
   }
 }
 
@@ -265,7 +269,7 @@ void CaloQA(Int_t icalo)
   ccalo->cd(1);
   gPad->SetLogy();
   gPad->SetLogx();
-      
+
   TH1F* hClusterEnergy = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_6_Fidutial",icalo));
   if(!hClusterEnergy) return;
   hClusterEnergy->SetYTitle("Entries");
@@ -291,7 +295,7 @@ void CaloQA(Int_t icalo)
   hCellAmplitude->SetMarkerStyle(25);
   hCellAmplitude->Draw("same");
   
-  TLegend l(0.4,0.79,0.83,0.89);
+  TLegend l(0.15,0.15,0.3,0.3);
   l.SetTextSize(0.04);
   l.AddEntry(hClusterEnergy,"Good Cluster","P");
   l.AddEntry(hCellAmplitude,"Cell","P");
@@ -340,7 +344,7 @@ void CaloQA(Int_t icalo)
   hShSh->Divide(hClusterEnergy);
   hShSh->Draw("same");
   
-  TLegend l2(0.45,0.8,0.95,0.93);
+  TLegend l2(0.15,0.15,0.3,0.3);
   l2.SetTextSize(0.04);
   //l2.AddEntry(hCorr,"No Exotics + non lin.","P");
   l2.AddEntry(hTM,  "+ Track matching","P");
@@ -363,10 +367,11 @@ void CaloQA(Int_t icalo)
     
     ccalo->cd(3);
     gPad->SetLogz();
-    
+
     hTrackMatchResEtaPhi->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaPhi->SetAxisRange(-0.025,0.025,"Y");
     hTrackMatchResEtaPhi->SetTitleOffset(1.5,"Y");
+    hTrackMatchResEtaPhi->SetTitleOffset(1.5,"Z");
     hTrackMatchResEtaPhi->SetTitle("Track-cluster residual #Delta#varphi vs #Delta#eta, #it{E}>0.5 GeV");
     hTrackMatchResEtaPhi->SetXTitle("#Delta #eta");
     hTrackMatchResEtaPhi->SetYTitle("#Delta #varphi");
@@ -374,8 +379,9 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPhi->Draw("colz");
     
     ccalo->cd(4);
-    gPad->SetLogy();
-    
+    //gPad->SetLogy();
+    TGaxis::SetMaxDigits(3);
+
     TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNeg",icalo));
     TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPos",icalo));
     TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo));
@@ -390,7 +396,8 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaNeg->SetXTitle("#Delta #eta, #Delta #varphi");
     hTrackMatchResEtaNeg->SetYTitle("Entries");
     hTrackMatchResEtaNeg->SetTitle("Track-cluster residuals, #it{E} > 1 GeV");
-    hTrackMatchResEtaNeg->SetAxisRange(-0.05,0.05,"X");
+    hTrackMatchResEtaNeg->SetTitleOffset(1.5,"Y");
+    hTrackMatchResEtaNeg->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaNeg->Sumw2();
     hTrackMatchResEtaNeg->SetMarkerStyle(25);
     hTrackMatchResEtaNeg->SetMarkerColor(2);
@@ -411,7 +418,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiPos->SetMarkerColor(4);
     hTrackMatchResPhiPos->Draw("same");
     
-    TLine l0(0,hTrackMatchResEtaNeg->GetMinimum(),0,hTrackMatchResEtaNeg->GetMaximum()*1.2);
+    TLine l0(0,hTrackMatchResEtaNeg->GetMinimum(),0,hTrackMatchResEtaNeg->GetMaximum()*1.);
     l0.Draw("same");
     
     TLegend l3(0.55,0.7,0.83,0.85);
@@ -642,6 +649,7 @@ void TrackQA()
   hPhi     ->SetMaximum(hPhi->GetMaximum()*1.3);
   hPhi     ->SetTitleOffset(1.5,"Y");
   hPhi     ->SetYTitle("Entries");
+  
   TGaxis::SetMaxDigits(3);
 
   hPhi     ->Draw("H");
@@ -808,6 +816,8 @@ void Pi0QA(Int_t icalo)
   
   Float_t maxPi0 = 0;
   Float_t maxEta = 0;
+  Float_t minPi0 = 1e6;
+  Float_t minEta = 1e6;
   for(Int_t icen = 0; icen < 6; icen++)
   {
     if(!hMassE[icen]) continue;
@@ -843,12 +853,15 @@ void Pi0QA(Int_t icalo)
     hMassEta[icen]->Scale(1./scale);
     
     if(maxEta < hMassEta[icen]->GetMaximum()) maxEta = hMassEta[icen]->GetMaximum();
-    if(maxPi0 < hMassPi0[icen]->GetMaximum()) maxPi0 = hMassPi0[icen]->GetMaximum();
+    if(maxPi0 < hMassPi0[icen]->GetMaximum()) maxPi0 = hMassPi0[icen]->GetMaximum();   
+    
+    if(minEta > hMassEta[icen]->GetMinimum()) minEta = hMassEta[icen]->GetMinimum();
+    if(minPi0 > hMassPi0[icen]->GetMinimum()) minPi0 = hMassPi0[icen]->GetMinimum();
   }
 
   //gPad->SetLogy();
   //gPad->SetGridy();
-  hMassPi0[0]->SetMinimum(0.8);
+  hMassPi0[0]->SetMinimum(minPi0);
   hMassPi0[0]->SetTitleOffset(1.5,"Y");
   hMassPi0[0]->SetYTitle("Real / Mixed");
   hMassPi0[0]->SetTitle("#pi^{0} peak, 2 < #it{E}_{pair}< 10 GeV");
@@ -949,7 +962,7 @@ void Pi0QA(Int_t icalo)
   hSM[first]->Draw("H");
   TLegend lsm(0.12,0.5,0.35,0.85);
   lsm.SetTextSize(0.04);
-  lsm.AddEntry(hSM[0],Form("Mod %d",0),"P");
+  lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
   
   for(Int_t ism = first+1; ism < 20; ism++)
   {
@@ -970,7 +983,7 @@ void Pi0QA(Int_t icalo)
   
   //gPad->SetLogy();
   //gPad->SetGridy();
-  hMassEta[0]->SetMinimum(0.8);
+  hMassEta[0]->SetMinimum(minEta);
   hMassEta[0]->SetTitleOffset(1.5,"Y");
   hMassEta[0]->SetYTitle("Real / Mixed");
   hMassEta[0]->SetTitle("#eta peak, 2 <#it{E}_{pair}< 10 GeV");
@@ -989,7 +1002,6 @@ void Pi0QA(Int_t icalo)
     hMassEta[2]->Draw("Hsame");
     hMassEta[1]->Draw("Hsame");
     hMassEta[0]->Draw("Hsame");
-    
     
     TLegend l2(0.12,0.6,0.4,0.85);
     l2.SetTextSize(0.04);
@@ -1061,8 +1073,6 @@ void Pi0QA(Int_t icalo)
 //__________________________________________________
 void IsolQA(Int_t icalo)
 {
-  gStyle->SetPadRightMargin(0.02);
-
   TCanvas * cIsolation = new TCanvas(Form("%s_IsolationHisto"    ,histoTag.Data()),
                                      Form("Isolation cone for %s",histoTag.Data()),
                                      1000,1000);
@@ -1439,8 +1449,6 @@ void IsolQA(Int_t icalo)
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
-  gStyle->SetPadRightMargin(0.02);
-
   TCanvas * cCorrelation = new TCanvas(Form("%s_CorrelationHisto"                                  ,histoTag.Data()),
                                        Form("Trigger cluster - associated track correlation for %s",histoTag.Data()),
                                        1000,500);
