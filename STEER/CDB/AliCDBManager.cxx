@@ -443,16 +443,20 @@ void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
 
     if ( entryKey.Contains("folder", TString::kIgnoreCase) )
     {
-
       TRegexp re_RawFolder("^/alice/data/20[0-9]+/OCDB");
       TRegexp re_MCFolder("^/alice/simulation/2008/v4-15-Release");
       TString rawFolder = entryValue(re_RawFolder);
       TString mcFolder = entryValue(re_MCFolder);
+      TString cvmfsUri(fCvmfsOcdb);
+      gSystem->ExpandPathName(cvmfsUri);
+      cvmfsUri = cvmfsUri.Strip(TString::kTrailing, '/');
+      cvmfsUri.Append("/calibration");
       if ( !rawFolder.IsNull() ){
-        entryValue.Replace(0, 6, "/cvmfs/alice-ocdb.cern.ch/calibration");
+        entryValue.Replace(0, 6, cvmfsUri);
         //entryValue.Replace(entryValue.Length()-4, entryValue.Length(), "");
       } else if ( !mcFolder.IsNull() ){
-        entryValue.Replace(0,36,"/cvmfs/alice-ocdb.cern.ch/calibration/MC");
+        cvmfsUri.Append("/MC");
+        entryValue.Replace(0, 36, cvmfsUri);
       } else {
         AliFatal(Form("Environment variable for cvmfs OCDB folder set for an invalid OCDB storage:\n   %s", entryValue.Data()));
       }
@@ -479,7 +483,12 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
     } else {
       TString lhcPeriod("");
       Int_t startRun = -1, endRun = -1;
-      GetLHCPeriodAgainstAlienFile(fRun, lhcPeriod, startRun, endRun);
+      TString cvmfsOcdb(gSystem->Getenv("OCDB_PATH"));
+      if (! cvmfsOcdb.IsNull()){
+        GetLHCPeriodAgainstCvmfsFile(fRun, lhcPeriod, startRun, endRun);
+      } else {
+        GetLHCPeriodAgainstAlienFile(fRun, lhcPeriod, startRun, endRun);
+      }
       return GetStorage(lhcPeriod.Data());
     }
   }
@@ -608,8 +617,8 @@ Bool_t AliCDBManager::SetOCDBUploadMode() {
 void AliCDBManager::SetDefaultStorage(const char* storageUri) {
 // sets default storage from URI string
 
-  // if in the cvmfs case (triggered by environment variable) check for path validity
-  // and modify Uri if it is "raw://"
+  // If in the CVMFS case (triggered by environment variable) check for path
+  // validity and modify URI dynamically if it is "raw://"
   TString cvmfsOcdb(gSystem->Getenv("OCDB_PATH"));
   if (! cvmfsOcdb.IsNull()){
     fCvmfsOcdb = cvmfsOcdb;
@@ -729,29 +738,16 @@ void AliCDBManager::SetDefaultStorage(const char* mcString, const char* simType)
 
 //_____________________________________________________________________________
 void AliCDBManager::ValidateCvmfsCase() const {
-  // The OCDB_PATH variable contains the path to the directory in /cvmfs/ which is
-  // an AliRoot tag based snapshot of the AliEn file catalogue (e.g. 
-  // /cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages/OCDB/v5-05-76-AN).
-  // The directory has to contain:
-  // 1) <data|MC>/20??.list.gz gzipped text files listing the OCDB files (seen by that AliRoot tag)
-  // 2) bin/getOCDBFilesPerRun.sh   (shell+awk) script extracting from 1) the list
-  //    of valid files for the given run.
-
-    if (! fCvmfsOcdb.BeginsWith("/cvmfs"))  //!!!! to be commented out for testing
-      AliFatal(Form("OCDB_PATH set to an invalid path: %s", fCvmfsOcdb.Data()));
-
-    TString cvmfsUri(fCvmfsOcdb);
-    gSystem->ExpandPathName(cvmfsUri);
-    if (gSystem->AccessPathName(cvmfsUri))
-      AliFatal(Form("OCDB_PATH set to an invalid path: %s", cvmfsUri.Data()));
-    
-    // check that we find the two scripts we need
+    TString cvmfsPath(fCvmfsOcdb);
+    gSystem->ExpandPathName(cvmfsPath);
+    if (gSystem->AccessPathName(cvmfsPath))
+      AliFatal(Form("OCDB_PATH set to an invalid path: %s", cvmfsPath.Data()));
 
     AliDebug(3, "OCDB_PATH envvar is set. Changing OCDB storage from alien:// to local:///cvmfs type.");
-    cvmfsUri = cvmfsUri.Strip(TString::kTrailing, '/');
-    cvmfsUri.Append("/bin/getOCDBFilesPerRun.sh");
-    if (gSystem->AccessPathName(cvmfsUri))
-      AliFatal(Form("Cannot find valid script: %s", cvmfsUri.Data()));
+    cvmfsPath = cvmfsPath.Strip(TString::kTrailing, '/');
+    cvmfsPath.Append("/calibration/data/OCDBFoldervsRunRange.xml");
+    if (gSystem->AccessPathName(cvmfsPath))
+      AliFatal(Form("Cannot find valid file OCDBFoldervsRunRange.xml in: %s", cvmfsPath.Data()));
 }
 
 //_____________________________________________________________________________
@@ -821,48 +817,22 @@ void AliCDBManager::GetLHCPeriodAgainstAlienFile(Int_t run, TString& lhcPeriod, 
 //_____________________________________________________________________________
 void AliCDBManager::GetLHCPeriodAgainstCvmfsFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun) {
 // set LHC period (year + first, last run) comparing run number and CVMFS file
-// We don't want to connect to AliEn just to set the uri from the runnumber
-// for that we use the script getUriFromYear.sh in the cvmfs AliRoot package
 
-  TString getYearScript(fCvmfsOcdb);
-  getYearScript = getYearScript.Strip(TString::kTrailing, '/');
-  getYearScript.Append("/bin/getUriFromYear.sh");
-  if (gSystem->AccessPathName(getYearScript))
-    AliFatal(Form("Cannot find valid script: %s", getYearScript.Data()));
-  TString inoutFile(gSystem->WorkingDirectory());
-  inoutFile += "/uri_range_";
-  inoutFile += TString::Itoa(run,10);
-  TString command(getYearScript);
-  command += ' ';
-  command += TString::Itoa(run,10);
-  command += Form(" > %s", inoutFile.Data());
-  AliDebug(3, Form("Running command: \"%s\"",command.Data()));
-  Int_t result = gSystem->Exec(command.Data());
-  if(result != 0) {
-    AliFatal(Form("Was not able to execute \"%s\"", command.Data()));
-  }
-
-  // now read the file with the uri and first and last run
-  std::ifstream file(inoutFile.Data());
-  if (!file.is_open()) {
-    AliFatal(Form("Error opening file \"%s\"!", inoutFile.Data()));
-  }
-  TString line;
-  TObjArray* oStringsArray = 0;
-  while (line.ReadLine(file)){
-    oStringsArray = line.Tokenize(' ');
-  }
-  TObjString *oStrUri = dynamic_cast<TObjString*> (oStringsArray->At(0));
-  TObjString *oStrFirst = dynamic_cast<TObjString*> (oStringsArray->At(1));
-  TString firstRun = oStrFirst->GetString();
-  TObjString *oStrLast = dynamic_cast<TObjString*> (oStringsArray->At(2));
-  TString lastRun = oStrLast->GetString();
-
-  lhcPeriod = oStrUri->GetString();
-  startRun = firstRun.Atoi();
-  endRun = lastRun.Atoi();
-
-  file.close();
+  AliCDBHandler* saxcdb = new AliCDBHandler();
+  saxcdb->SetRun(run);
+  TSAXParser *saxParser = new TSAXParser();
+  saxParser->ConnectToHandler("AliCDBHandler", saxcdb);
+  TString cvmfsUri(fCvmfsOcdb);
+  gSystem->ExpandPathName(cvmfsUri);
+  cvmfsUri = cvmfsUri.Strip(TString::kTrailing, '/');
+  cvmfsUri.Append("/calibration/data/OCDBFoldervsRunRange.xml");
+  saxParser->ParseFile(cvmfsUri);
+  AliInfo(Form(" LHC folder = %s", saxcdb->GetOCDBFolder().Data()));
+  AliInfo(Form(" LHC period start run = %d", saxcdb->GetStartRunRange()));
+  AliInfo(Form(" LHC period end run = %d", saxcdb->GetEndRunRange()));
+  lhcPeriod = saxcdb->GetOCDBFolder();
+  startRun = saxcdb->GetStartRunRange();
+  endRun = saxcdb->GetEndRunRange();
 }
 
 //_____________________________________________________________________________
