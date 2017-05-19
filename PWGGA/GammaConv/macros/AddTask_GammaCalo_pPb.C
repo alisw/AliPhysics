@@ -218,6 +218,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111100057032230000","0163103100000050");
   } else if (trainConfig == 2){ // no non lin
     cuts.AddCut("80000013","1111100057032230000","0163103100000050");
+  } else if (trainConfig == 3){ // no non lin, no time cut
+    cuts.AddCut("80000013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80052013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80085013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80083013","1111100007032230000","0163103100000060");
 
       
   } else if(trainConfig == 39){ // default cutstring and first set of variations nonlinearity, smaller openangle 17 mrad
