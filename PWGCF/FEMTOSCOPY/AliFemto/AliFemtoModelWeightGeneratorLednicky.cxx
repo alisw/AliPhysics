@@ -495,6 +495,7 @@ void AliFemtoModelWeightGeneratorLednicky::FsiInit(){
    cout <<"mIqs dans FsiInit() = " << fIqs << endl;
    cout <<"mIsi dans FsiInit() = " << fIsi << endl;
    cout <<"mI3c dans FsiInit() = " << fI3c << endl;
+   
   fsiin(fItest,fIch,fIqs,fIsi,fI3c);
 }
 
@@ -521,6 +522,12 @@ void AliFemtoModelWeightGeneratorLednicky::FsiSetLL(){
     if (fT0App) { tNS=4;} 
     else {tNS=2;}
   } else { tNS=1;}
+  //cout<<"*********************** AliFemtoModelWeightGeneratorLednicky::FsiSetLL() *********************"<<endl;
+  if(fNS_4==4) tNS=4;//K+K- analisys
+  //cout <<"fLL dans FsiSetLL() = "<< fLL << endl;
+  //cout <<"tNS dans FsiSetLL() = "<< tNS << endl;
+  //cout <<"fItest dans FsiSetLL() = "<< fItest << endl;
+  
   //cout <<"fLL dans FsiSetLL() = "<< fLL << endl;
    //cout <<"tNS dans FsiSetLL() = "<< tNS << endl;
   // cout <<"fItest dans FsiSetLL() = "<< fItest << endl;
@@ -713,7 +720,7 @@ void     AliFemtoModelWeightGeneratorLednicky::SetPairTypeFromPair(AliFemtoPair 
 }
 
 //K+K- model type
-void AliFemtoModelWeightGeneratorLednicky::SetKpKmModelType(const int aModelType, const int aPhi_OffOn) {fKpKmModel=aModelType; fPhi_OffOn=aPhi_OffOn; FsiSetKpKmModelType();}
+void AliFemtoModelWeightGeneratorLednicky::SetKpKmModelType(const int aModelType, const int aPhi_OffOn) {fKpKmModel=aModelType; fPhi_OffOn=aPhi_OffOn; fNS_4=4; FsiSetKpKmModelType();}
 
 void AliFemtoModelWeightGeneratorLednicky::SetNuclCharge(const double aNuclCharge) {fNuclCharge=aNuclCharge;FsiNucl();}
 void AliFemtoModelWeightGeneratorLednicky::SetNuclMass(const double aNuclMass){fNuclMass=aNuclMass;FsiNucl();}
