@@ -2419,26 +2419,25 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 5:      //
-      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 6:      //
-      fMinOpanCutMeson  = 0.016;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 7:      //
-      fMinOpanCutMeson  = 0.018;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 8:      //
-      fMinOpanCutMeson  = 0.019;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 9:      //
       fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
       fMinOpanPtDepCut  = kFALSE;
       break;
-
+    case 6:      //
+      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 7:      //
+      fMinOpanCutMeson  = 0.016;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 8:      //
+      fMinOpanCutMeson  = 0.018;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 9:      //
+      fMinOpanCutMeson  = 0.019;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //
 //      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal

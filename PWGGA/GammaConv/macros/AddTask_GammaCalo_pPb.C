@@ -246,8 +246,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80000013","1111141055032230000","0163103100000050"); // tm variation
     cuts.AddCut("80000013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // min opening angle 0.017
-    cuts.AddCut("80000013","1111141053032230000","0163103100000080"); // min opening angle 0.019
+    cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80000013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 45){ // fourth set of variations
     cuts.AddCut("80000013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80000013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -299,8 +299,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80052013","1111141055032230000","0163103100000050"); // tm variation
     cuts.AddCut("80052013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // min opening angle 0.017
-    cuts.AddCut("80052013","1111141053032230000","0163103100000080"); // min opening angle 0.019
+    cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80052013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 55){ // fourth set of variations
     cuts.AddCut("80052013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80052013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -343,8 +343,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80083013","1111141055032230000","0163103100000050"); // tm variation
     cuts.AddCut("80083013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // min opening angle 0.017
-    cuts.AddCut("80083013","1111141053032230000","0163103100000080"); // min opening angle 0.019
+    cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80083013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 65){ // fourth set of variations
     cuts.AddCut("80083013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80083013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -386,8 +386,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80085013","1111141055032230000","0163103100000050"); // tm variation
     cuts.AddCut("80085013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // min opening angle 0.017
-    cuts.AddCut("80085013","1111141053032230000","0163103100000080"); // min opening angle 0.019
+    cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80085013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 75){ // fourth set of variations
     cuts.AddCut("80085013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80085013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
