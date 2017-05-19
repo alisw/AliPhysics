@@ -235,6 +235,14 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
     cuts.AddCut("80083013","00200009327000008250400000","1111100057032230000","0163103100000010"); //standard cut, kEMCEG1 based on INT7
     cuts.AddCut("80085013","00200009327000008250400000","1111100057032230000","0163103100000010"); //standard cut, kEMCEG2 based on INT7
 
+  } else if (trainConfig == 5){ // min energy = 0.4 GeV/c w/o time cut
+    cuts.AddCut("80000013","00200009327000008250400000","1111100007032230000","0163103100000010"); //standart cut, kINT7
+  } else if (trainConfig == 6){ // min energy = 0.4 GeV/ w/o time cut
+    cuts.AddCut("80052013","00200009327000008250400000","1111100007032230000","0163103100000010"); //standard cut, kEMC7
+    cuts.AddCut("80083013","00200009327000008250400000","1111100007032230000","0163103100000010"); //standard cut, kEMCEG1 based on INT7
+    cuts.AddCut("80085013","00200009327000008250400000","1111100007032230000","0163103100000010"); //standard cut, kEMCEG2 based on INT7
+    
+    
   } else if (trainConfig == 18){ // EMCAL clusters standard cuts, fixed with TM
     cuts.AddCut("80000013","00200009327000008250400000","1111141053032230000","0163103100000010"); // INT7
     cuts.AddCut("80052013","00200009327000008250400000","1111141053032230000","0163103100000010"); // EMC7
