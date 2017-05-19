@@ -144,7 +144,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         fIsAOD = answer;
     }
 
-  
+    Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
+
     private:
  
     Int_t IsEventAccepted(AliVEvent *event);
