@@ -902,6 +902,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   //Event selection
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
   Float_t ntracks=aod->GetNumberOfTracks();
+  Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
   Float_t evCentr=0;
   if(fRDCutsAnalysis->GetUseCentrality()>0) evCentr=fRDCutsAnalysis->GetCentrality(aod);
   fHistCentrality[0]->Fill(ntracks,evCentr);
@@ -938,14 +939,13 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     if(fRDCutsAnalysis->GetUseCentrality()>0 && fRDCutsAnalysis->IsEventSelectedInCentrality(aod)!=0) return;
     // events not passing the centrality selection can be removed immediately.
 
-    FillMCAcceptanceHistos(arrayMC, mcHeader);
+    FillMCAcceptanceHistos(arrayMC, mcHeader, tracklets);
   }
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   //TString trigclass=aod->GetFiredTriggerClasses();
   // Post the data already here
   PostData(1,fOutput);
   if(!isEvSel)return;
-  Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
   // printf("ntracklet===%d\n",tracklets);
   if(fCutOnTrckl && (tracklets<fNtrcklMin || tracklets>fNtrcklMax)) {return;}
   fSPDMult->Fill(tracklets);
@@ -1696,35 +1696,49 @@ void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
 void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   /// Histos for MC Acceptance histos
 
-  const Int_t nVarPrompt = 2;
-  const Int_t nVarFD = 3;
+  const Int_t nVarPrompt = 3;
+  const Int_t nVarFD = 4;
 
-  Int_t nbinsPrompt[nVarPrompt]={200,100};
-  Int_t nbinsFD[nVarFD]={200,100,200};
+  Double_t multmin=-0.5;
+  Double_t multmax;
+  Int_t nmultbins;
+  if(fSystem==0) {
+    multmax=200.5;
+    nmultbins=multmax-multmin;
+  }
+  else {
+    multmax=5000.5;
+    nmultbins=1;
+  }
+  
+  Int_t nbinsPrompt[nVarPrompt]={200,100,nmultbins};
+  Int_t nbinsFD[nVarFD]={200,100,nmultbins,200};
 
-  Double_t xminPrompt[nVarPrompt] = {0.,-1.};
-  Double_t xmaxPrompt[nVarPrompt] = {40.,1.};
+  Double_t xminPrompt[nVarPrompt] = {0.,-1.,multmin};
+  Double_t xmaxPrompt[nVarPrompt] = {40.,1.,multmax};
 
-  Double_t xminFD[nVarFD] = {0.,-1.,0.};
-  Double_t xmaxFD[nVarFD] = {40.,1.,40.};
+  Double_t xminFD[nVarFD] = {0.,-1.,multmin,0.};
+  Double_t xmaxFD[nVarFD] = {40.,1.,multmax,40.};
 
   //pt, y
-  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
+  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y vs. Ntracklets - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
+  fMCAccPrompt->GetAxis(2)->SetTitle("N_{trklts}");
 
   //pt,y,ptB
-  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",nVarFD,nbinsFD,xminFD,xmaxFD);
+  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. Ntracklets vs. ptB - DfromB",nVarFD,nbinsFD,xminFD,xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
-  fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
+  fMCAccBFeed->GetAxis(2)->SetTitle("N_{trklts}");
+  fMCAccBFeed->GetAxis(3)->SetTitle("p_{T}^{B} (GeV/c)");
 
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader){
+void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets){
   /// Fill MC acceptance histos for cuts study
 
   const Int_t nProng = 3;
@@ -1757,14 +1771,14 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
 	//for prompt
 	if(orig == 4){
 	  //fill histo for prompt
-	  Double_t arrayMCprompt[2] = {mcPart->Pt(),mcPart->Y()};
+	  Double_t arrayMCprompt[3] = {mcPart->Pt(),mcPart->Y(),(Double_t)tracklets};
 	  fMCAccPrompt->Fill(arrayMCprompt);
 	}
 	//for FD
 	else if(orig == 5){
 	  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
 	  //fill histo for FD
-	  Double_t arrayMCFD[3] = {mcPart->Pt(),mcPart->Y(),ptB};
+	  Double_t arrayMCFD[4] = {mcPart->Pt(),mcPart->Y(),(Double_t)tracklets,ptB};
 	  fMCAccBFeed->Fill(arrayMCFD);
 	}
 	else
