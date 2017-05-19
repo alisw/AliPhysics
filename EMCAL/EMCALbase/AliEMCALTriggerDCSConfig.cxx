@@ -40,6 +40,7 @@ AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfig::~AliEMCALTriggerDCSConfig()
 {	
-  delete fTRUArr; fTRUArr = 0x0;
-  delete fSTUObj; fSTUObj = 0x0;
+  delete fTRUArr;
+  delete fSTUObj;
+  delete fSTUDCAL;
 }
