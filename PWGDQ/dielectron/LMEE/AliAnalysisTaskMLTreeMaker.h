@@ -21,6 +21,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliAnalysisTaskMLTreeMaker(const char *name);
   AliAnalysisTaskMLTreeMaker();
   virtual ~AliAnalysisTaskMLTreeMaker(){} 
+  
+
+  AliDielectronVarCuts* evcuts;
+  AliDielectronVarCuts* trcuts;
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);

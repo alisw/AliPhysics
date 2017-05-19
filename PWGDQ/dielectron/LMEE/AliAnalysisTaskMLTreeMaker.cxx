@@ -51,6 +51,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
+#include "AliDielectronVarCuts.h"
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
@@ -132,7 +133,10 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
   loCuts(kTRUE),
-  enh(0)      
+  enh(0),
+  cuts(0),
+  evcuts(0),
+  trcuts(0)          
 {
 
 }
@@ -208,43 +212,40 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
   loCuts(kTRUE),
-  enh(0)          
+  enh(0),
+  cuts(0),
+  evcuts(0),
+  trcuts(0)      
 {
 
-  if(loCuts){
-  AliInfo(Form("Loose cuts!!"));
-  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
-  cutonTPCsignalN = kFALSE; 
-  }
-    else{  
-  //Alberto Style ESD track cuts - according to analysis note v.6   
-  AliInfo(Form("Alberto cuts!!"));
-  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-  fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
-  fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
-  fESDTrackCuts->SetMinNClustersITS(4);
-  fESDTrackCuts->SetMinNCrossedRowsTPC(100);
-  fESDTrackCuts->SetMinNClustersTPC(70);
-  fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
-  cutonTPCsignalN = kTRUE;
-  }
-  
-  DefineOutput(1, TList::Class());
+//  if(loCuts){
+//  AliInfo(Form("Loose cuts!!"));
+//  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
+//  cutonTPCsignalN = kFALSE; 
+//  }
+//    else{  
+//  //Alberto Style ESD track cuts - according to analysis note v.6   
+//  AliInfo(Form("Alberto cuts!!"));
+//  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+//  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+//  fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
+//  fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
+//  fESDTrackCuts->SetMinNClustersITS(4);
+//  fESDTrackCuts->SetMinNCrossedRowsTPC(100);
+//  fESDTrackCuts->SetMinNClustersTPC(70);
+//  fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+//  cutonTPCsignalN = kTRUE;
+//  }
+    
+
+
+ AliDielectronVarCuts *trcuts   = new AliDielectronVarCuts("TrCuts","TrCuts");
+// AliDielectronVarCuts *evcuts   = new AliDielectronVarCuts("EvCuts","EvCuts");
+
+ SetupTrackCuts();  
+   
+ DefineOutput(1, TList::Class());
 }
-
-//________________________________________________________________________
-
-//~ AliAnalysisTaskMLTreeMaker::~AliAnalysisTaskMLTreeMaker() {
-
-  //~ // Destructor
-
-  //~ // ... not implemented
-
-//~ }
-
-
-//________________________________________________________________________
 
 void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     
@@ -549,37 +550,36 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
 
       // track cuts have to be done separately
-      if(isAOD){
-	if(!((AliAODTrack*)track)->TestFilterBit(fFilterBit))
-	  continue;
-      }
-      else{
-       	if(!fESDTrackCuts->AcceptTrack((AliESDtrack*)track))
-	  continue;
-      }
+//      if(isAOD){
+//	if(!((AliAODTrack*)track)->TestFilterBit(fFilterBit))
+//	  continue;
+//      }
+//      else{
+//       	if(!fESDTrackCuts->AcceptTrack((AliESDtrack*)track))
+//	  continue;
+//      }
       
-//      Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
-      if(cutonTPCsignalN && track->GetTPCsignalN()<50) continue; 
+      if(!trcuts->IsEventSelected((AliAODTrack*)track) continue;
       
       
-      // Kinematic cuts
-      Double_t pttemp = track->Pt();
-      Double_t etatemp = track->Eta();
-      
-      if( pttemp > fPtMax || pttemp < fPtMin ) continue;
-      if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
- 
-      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
-      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
-      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
-      
-      if(fUsePionPIDTPC){
-        if (fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
-      }
-
-      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
-      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
-      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
+//      // Kinematic cuts
+//      Double_t pttemp = track->Pt();
+//      Double_t etatemp = track->Eta();
+//      
+//      if( pttemp > fPtMax || pttemp < fPtMin ) continue;
+//      if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
+// 
+//      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
+//      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
+//      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
+//      
+//      if(fUsePionPIDTPC){
+//        if (fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
+//      }
+//
+//      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
+//      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
+//      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
       
       
       fQAHist->Fill("Selected tracks",1); 
@@ -751,4 +751,48 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
     d0z0[1]=-999.;
   }
   return ok;
+}
+
+
+void SetupTrackCuts()
+{
+
+  trcuts->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
+  trcuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  trcuts->SetRequireITSRefit(kTRUE);
+  trcuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
+  
+  trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+  trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+  trcuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
+  trcuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+  trcuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
+  trcuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+  trcuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
+  trcuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
+  trcuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  trcuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  trcuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
+
+  trcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
+  trcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+  trcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
+
+  trcuts->Print();
+}
+
+
+void SetupEventCuts()
+{
+  evcuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  evcuts->SetRequireVertex();
+  evcuts->SetMinVtxContributors(1);
+  evcuts->SetVertexZ(-10.,+10.);
+  // evcuts->SetCentralityRange(10., 50., kTRUE);
+  evcuts->Print();
+
+//  AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
+//  eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
+//  eventplaneCuts->Print();
+
 }
