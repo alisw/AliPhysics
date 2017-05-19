@@ -430,8 +430,8 @@ void AliAnalysisTaskMLTreeMaker::Terminate(Option_t *) {
 
 Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliVEvent *event){
 
-  if(event->GetPrimaryVertexSPD()){
-    if (TMath::Abs(event->GetPrimaryVertexSPD()->GetZ()) < 10){
+  if(event->GetPrimaryVertex()){
+    if (TMath::Abs(event->GetPrimaryVertex()->GetZ()) < 10){
       if (event->GetPrimaryVertexSPD()->GetNContributors() > 0)
 	return 1;
     }

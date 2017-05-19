@@ -173,7 +173,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Bool_t fPionSigmas; 
   Bool_t fKaonSigmas;
 
-  Int_t fFilterBit;// track cut bit from track selection (default = 96)
+  Int_t fFilterBit;// track cut bit from track selection (default = kTPCqualSPDany)
 
   AliESDtrackCuts* fESDTrackCuts;
   
