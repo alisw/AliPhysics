@@ -68,6 +68,7 @@ private:
     bool fFillkT;
     int fNbbPairs = 21;
     TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
+    double GetParentsKt(AliFemtoPair *pair);
     int GetPairNumber(AliFemtoPair *pair); // returns pair code
     
 #ifdef __ROOT__
