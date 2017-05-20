@@ -282,7 +282,7 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
           
           if(pairNumber >= 0){
               if(fkTdists[pairNumber]){
-                  fkTdists[pairNumber]->Fill(aPair->KT());
+                  fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
               }
           }
       }
@@ -457,6 +457,29 @@ TList* AliFemtoModelCorrFctn::GetOutputList()
 void AliFemtoModelCorrFctn::SetKaonPDG(Bool_t aSetKaonAna)
 {
   fKaonPDG = aSetKaonAna;
+}
+
+double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
+{
+    AliFemtoParticle *first = (AliFemtoParticle*)pair->Track1();
+    AliFemtoParticle *second = (AliFemtoParticle*)pair->Track2();
+    
+    if(!first || !second) return -1;
+    
+    AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
+    AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+    
+    if(!info1 || !info2) return -1;
+    
+    AliFemtoThreeVector* p1 = info1->GetMotherMomentum();
+    AliFemtoThreeVector* p2 = info2->GetMotherMomentum();
+    
+    if(!p1 || !p2) return -1;
+    
+    double px = p1->x() + p2->x();
+    double py = p1->y() + p2->y();
+    double pT = sqrt(px*px + py*py);
+    return pT/2.;
 }
 
 int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
