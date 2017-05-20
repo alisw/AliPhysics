@@ -480,7 +480,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if ((status&AliESDtrack::kTPCrefit)==0) continue;
         
         //Track pre-selection: clusters
-        if (esdTrack->GetTPCNcls() < 70 && fkExtraCleanup ) continue;
+        Float_t lThisTrackLength = -1;
+        if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
 
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
@@ -507,9 +509,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                 if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue; 
             }
              */
-            
-            //Track pre-selection: clusters
-            if (ptrk->GetTPCNcls() < 70 &&fkExtraCleanup ) continue;
             
             if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
                 if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
@@ -646,8 +645,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         
-        //6) 70 clusters
-        if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+        //6) 70 clusters or length not smaller than 80
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        
+        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -678,8 +686,10 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         if ((status&AliESDtrack::kITSrefit)==0)
             if ((status&AliESDtrack::kTPCrefit)==0) continue;
         
-        //Track pre-selection: clusters
-        if (esdtr->GetTPCNcls() < 70 ) continue;
+        //Track pre-selection: Track Quality
+        Float_t lThisTrackLength = -1;
+        if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
@@ -902,8 +912,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
         if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         
-        //6) 70 clusters
-        if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+        //6) 70 clusters or length not smaller than 80
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        
+        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -936,8 +955,10 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
         if ((status&AliESDtrack::kITSrefit)==0)
             if ((status&AliESDtrack::kTPCrefit)==0) continue;
         
-        //Track pre-selection: clusters
-        if (esdtr->GetTPCNcls() < 70 ) continue;
+        //Track pre-selection: Track Quality
+        Float_t lThisTrackLength = -1;
+        if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         
