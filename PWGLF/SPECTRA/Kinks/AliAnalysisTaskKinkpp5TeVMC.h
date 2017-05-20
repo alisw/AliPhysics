@@ -16,29 +16,8 @@ class AliESDtrackCuts;
 
 class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
  public:
- AliAnalysisTaskKinkpp5TeVMC() : AliAnalysisTaskSE(), fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0),fMultV0trigger(0),fZvertex(0),
-	fEventVertex(0),fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
-	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0), fqT2(0),fKinkKaonBackg(0),f1(0),f2(0),fPtCut1(0),fAngMotherPi(0),
-	fQtInvM(0),fInvMuNuAll(0),fInvMassMuNuPtAll(0),fRadiusPt(0), fKinkRadUp(200.), fKinkRadLow(130.), fLowCluster(30), fLowQt(.12), fRapiK(0.5),
-	fAngMotherKC(0),fkaonInvaiant(0),fRadiusNcl(0),fPtKPDG(0),fAngMotherKKinks(0),fPtCut2(0),fPtCut3(0),fTPCSignlMotherK(0),fPtKaon(0), fPtKaonP(0), fPtKaonN(0),
-	fTPCSignalP(0),fRadiusNclCln(0),fRadiusPtcln(0),fInvMassMuNuPt(0),fTPCSignlPtpc(0), fMothKinkMomSignl(0),fTPCSignlKinkDau(0),fTPCMomNSigmaAllKaon(0),
-	fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
-	fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(0),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
-	fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-	fMultMC_wo_any_cut(0),fMultMC_incompleteDAQ(0),fMultMC_AfterPileUp(0),fMultTriggerMCAfterV0(0),fTrigSel(AliVEvent::kINT7),
-	frapidKMC(0), fptKMC(0),fSignPtGen(0),fPtKPlMC(0),fPtKMnMC(0),flengthTrackRef(0),flifetimeMC(0),flifeSmallMC(0),flifeInt(0),flifeYuri(0),flifetiMCK(0),
-	flenYuri(0),flengthMCK(0),flifetime_MCprocess4(0),fradPtRapMC(0),flifetime_kaonpionPDG(0),flifetime_kaonmuonPDG(0),fmaxAngMomKmuMC(0),fradPtRapDC(0),
-	fradMC(0),fQtKMuMC(0),fgenPtEtR(0),fgenPtEtRP(0),fMCEtaKaon(0),fSignPtEtaMC(0),fSignPtMC(0),fgenPtEtRN(0),fQtKElMC(0),fQtKPiMC(0),fESDMult(0),
-	fFakepipi(0),fFakeKPi(0),fRadiusPtPion(0),fRadiusPtKaon(0),fQtKMu(0),fQtKPi(0),fQtKEl(0),fQtK3PiP(0),fQtK3PiM(0),fHistPtKPDG(0), fHiPtKPDGP(0), fHiPtKPDGN(0),
-        fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
-	fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
-	fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0)
-
-
-
-  {}
-  	AliAnalysisTaskKinkpp5TeVMC(const char *name);
+  	AliAnalysisTaskKinkpp5TeVMC();
+	AliAnalysisTaskKinkpp5TeVMC(const char *name);
   	virtual ~AliAnalysisTaskKinkpp5TeVMC() {}
   
   	virtual void   UserCreateOutputObjects();
