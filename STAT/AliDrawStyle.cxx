@@ -41,7 +41,7 @@
 ///  //
 ///  // Standard ALICE latex symbols
 ///  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
-///  AliDrawStyle::GetLatexAlice("qPt")
+///  AliDrawStyle::GetLatexAlice("qpt")
 ///  AliDrawStyle::AddLatexSymbol("dphi", "#Delta#it#phi (unit)")
 ///  AliDrawStyle::GetLatexAlice("dphi")
 ///  //
@@ -61,9 +61,11 @@
 //
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
 std::map<TString, TStyle*>  AliDrawStyle::fStyleAlice;
-std::map<TString, std::vector<int> > AliDrawStyle::fMarkerStyles;
-std::map<TString, std::vector<int> > AliDrawStyle::fMarkerColors;
-std::map<TString, std::vector<int> > AliDrawStyle::fFillColors;
+std::map<TString, std::vector<int>> AliDrawStyle::fMarkerStyles;
+std::map<TString, std::vector<int>> AliDrawStyle::fMarkerColors;
+std::map<TString, std::vector<float>> AliDrawStyle::fMarkerSize;
+std::map<TString, std::vector<int>> AliDrawStyle::fFillColors;
+std::map<TString, std::vector<float>> AliDrawStyle::fLineWidth;
 
 void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultLatexSymbols();
@@ -86,6 +88,7 @@ TString AliDrawStyle::GetLatexAlice(const char * symbol){
 /// \param index  - marker index
 /// \return marker style for given stylename, index
 Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
+
   return  AliDrawStyle::fMarkerStyles[style][index];
 }
 
@@ -95,12 +98,24 @@ Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
 Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
   return  AliDrawStyle::fMarkerColors[style][index];
 }
+/// \param  style - name of style used
+/// \param index  - marker index
+/// \return marker color for given stylename, index
+Float_t AliDrawStyle::GetMarkerSize(const char *style, Int_t index){
+  return  AliDrawStyle::fMarkerSize[style][index];
+}
 
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return fill color for given stylename, index
 Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
   return  AliDrawStyle::fFillColors[style][index];
+}
+/// \param  style - name of style used
+/// \param index  - marker index
+/// \return fill color for given stylename, index
+Float_t AliDrawStyle::GetLineWidth(const char *style, Int_t index){
+  return  AliDrawStyle::fLineWidth[style][index];
 }
 
 
@@ -149,10 +164,13 @@ void  AliDrawStyle::RegisterDefaultLatexSymbols(){
   //
   // Set default AliRoot/Latex/root shortcuts
   //
-  fLatexAlice["qPt"]="#it{p}_{T} (GeV/#it{c})";
-  fLatexAlice["Pt"]="#it{p}_{T}";
-  fLatexAlice["sqPtMev"]="#sigma_{#it{q}/#it{p}_{T}}/#it{p}_{T}^{2} (MeV/#it{c})^{-1}";
-  fLatexAlice["PbPb502"]="Pb#font[122]{-}Pb #sqrt{#it{s}_{NN}} =5.02 TeV";
+  fLatexAlice["qpt"]="#it{q}/#it{p}_{T} (GeV/#it{c})^{-1}";
+  fLatexAlice["qpt0"]="#it{q}/#it{p}_{T}";
+  fLatexAlice["pt"]="#it{p}_{T}  (GeV/#it{c}) ";
+  fLatexAlice["pt0"]="#it{p}_{T} ";
+  //  fLatexAlice["sqptmev"]="#sigma_{#it{q}/#it{p}_{T}}/#it{p}_{T}^{2} (MeV/#it{c})^{-1}";
+  fLatexAlice["sqptmev"]="#sigma_{#it{q}/#it{p}_{T}} (MeV/#it{c})^{-1}";
+  fLatexAlice["pbpb502"]="Pb#font[122]{-}Pb #sqrt{#it{s}_{NN}} =5.02 TeV";
   fLatexAlice["pp13"]="pp #sqrt{#it{s}} = 13 TeV ";
   fLatexAlice["drphi"]="#Delta_{#it{r#phi}} (cm)";
   fLatexAlice["srphi"]="#sigma_{#it{r#phi}} (cm)";
@@ -175,23 +193,56 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   //
   (fMarkerStyles["figTemplate"])=std::vector<int>(10);
   (fMarkerColors["figTemplate"])=std::vector<int>(10);
+  (fMarkerSize["figTemplate"])=std::vector<float>(10);
   (fFillColors["figTemplate"])=std::vector<int>(10);
-  (fMarkerStyles["figTemplatePair"])=std::vector<int>(10);
-  (fMarkerColors["figTemplatePair"])=std::vector<int>(10);
-  (fFillColors["figTemplatePair"])=std::vector<int>(10);
+  (fLineWidth["figTemplate"])=std::vector<float>(10);
   for (Int_t i=0;i<10; i++){
     (fMarkerStyles["figTemplate"])[i]=markers[i];
     (fMarkerColors["figTemplate"])[i]=colors[i];
+    (fMarkerSize["figTemplate"])[i]=1;
     (fFillColors["figTemplate"])[i]=fillColors[i];
-    (fMarkerStyles["figTemplatePair"])[i]=markers[i];
-    (fMarkerColors["figTemplatePair"])[i]=colors[i/2];
-    (fFillColors["figTemplatePair"])[i]=fillColors[i/2];
-    //
-    (fMarkerStyles["figTemplateDark"])[i]=TColor::GetColorDark(markers[i]);
-    (fMarkerColors["figTemplateDark"])[i]=TColor::GetColorDark(colors[i]);
-    (fFillColors["figTemplateDark"])[i]=TColor::GetColorDark(fillColors[i/2]);
+    (fLineWidth["figTemplate"])[i]=0.5;
   }
+  // style inspired by TRD performance paper
+  Int_t colorsTRD[12]={0};
+  const Int_t markersTRD[]    = {kOpenCircle,kFullCircle, kOpenSquare,kFullSquare, kOpenStar,kFullStar, kOpenDiamond,kFullDiamond, kOpenCross,kFullCross };
+  const Float_t markerTRDSize[]    = {1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2 };
+  colorsTRD[0]=TColor::GetColor("#0000DD");
+  colorsTRD[1]=TColor::GetColor("#00EE00");
+  colorsTRD[2]=TColor::GetColor("#FF0000");
+  colorsTRD[3]=TColor::GetColor("#00EEDD");
+  colorsTRD[4]=TColor::GetColor("#FFEE00");
+  colorsTRD[5]=TColor::GetColor("#FF00DD");
+  colorsTRD[6]=TColor::GetColor("#9999DD");
+  colorsTRD[7]=TColor::GetColor("#99EE99");
+  colorsTRD[8]=TColor::GetColor("#FF9999");
+  colorsTRD[9]=TColor::GetColor("#66AADD");
+  colorsTRD[10]=TColor::GetColor("#AAEE66");
+  colorsTRD[11]=TColor::GetColor("#FF66AA");
+  (fMarkerStyles["figTemplateTRD"])=std::vector<int>(10);
+  (fMarkerColors["figTemplateTRD"])=std::vector<int>(10);
+  (fMarkerSize["figTemplateTRD"])=std::vector<float>(10);
+  (fFillColors["figTemplateTRD"])=std::vector<int>(10);
+  (fLineWidth["figTemplateTRD"])=std::vector<float>(10);
+  (fMarkerStyles["figTemplateTRDPair"])=std::vector<int>(10);
+  (fMarkerColors["figTemplateTRDPair"])=std::vector<int>(10);
+  (fMarkerSize["figTemplateTRDPair"])=std::vector<float>(10);
+  (fFillColors["figTemplateTRDPair"])=std::vector<int>(10);
+  (fLineWidth["figTemplateTRDPair"])=std::vector<float>(10);
 
+  for (Int_t i=0; i<10; i++){
+    (fMarkerStyles["figTemplateTRD"])[i]=markersTRD[i];
+    (fMarkerColors["figTemplateTRD"])[i]=TColor::GetColorDark(colorsTRD[i]);
+    (fMarkerSize["figTemplateTRD"])[i]=markerTRDSize[i];
+    (fFillColors["figTemplateTRD"])[i]=fillColors[i];
+    (fLineWidth["figTemplateTRD"])[i]=0.5;
+    //
+    (fMarkerStyles["figTemplateTRDPair"])[i]=markersTRD[i];
+    (fMarkerColors["figTemplateTRDPair"])[i]=TColor::GetColorDark(colorsTRD[i/2]);
+    (fMarkerSize["figTemplateTRDPair"])[i]=markerTRDSize[i];
+    (fFillColors["figTemplateTRDPair"])[i]=fillColors[i/2];
+    (fLineWidth["figTemplateTRDPair"])[i]=0.5;
+  }
 
 }
 
