@@ -38,6 +38,7 @@
 ///  //
 ///  AliDrawStyle::PrintStyles(0,TPRegexp("."));
 ///  AliDrawStyle::ApplyStyle("figTemplate");
+///  gPad->UseCurrentStyle();  // force current style for current data    
 ///  //
 ///  // Standard ALICE latex symbols
 ///  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
