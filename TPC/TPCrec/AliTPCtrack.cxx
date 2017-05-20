@@ -33,6 +33,15 @@
 #include  "AliTPCReconstructor.h"
 ClassImp(AliTPCtrack)
 
+double AliTPCtrack::fgMatLarge[16]={
+  25.,
+  0.,25.,
+  0.,0.,0.5,
+  0.,0.,0.,0.5,
+  0.,0.,0.,0.,1.0,
+  0};
+
+
 //_________________________________________________________________________
 AliTPCtrack::AliTPCtrack(): 
   AliKalmanTrack(),
@@ -140,12 +149,6 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   // Conversion AliESDtrack -> AliTPCtrack.
   //-----------------------------------------------------------------
   const Double_t kmaxC[4]={10,10,0.1,0.1};  // cuts on the rms /fP0,fP1,fP2,fP3
-  const double kMatLarge[15]={
-    25.,
-    0.,25.,
-    0.,0.,0.5,
-    0.,0.,0.,0.5,
-    0.,0.,0.,0.,1.0};
   SetNumberOfClusters(t.GetTPCclusters(fIndex));
   SetLabel(t.GetLabel());
   SetMass(t.GetMassForTracking());
@@ -222,9 +225,10 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   if (reject>0){
     //    param.ResetCovariance(4.);  // reset covariance if start from backup param
     double *cov = (double*)param.GetCovariance(); // reset matrix
-    memcpy(cov,kMatLarge,15*sizeof(double));
-    double ep4 = param.GetParameter()[4]*kMatLarge[14];
-    cov[14] = ep4*ep4;
+    memcpy(cov,fgMatLarge,14*sizeof(double));
+    double ep4 = param.GetParameter()[4]*fgMatLarge[14];
+    cov[14] = ep4*ep4;                               // q/pT error is relative
+    if (fgMatLarge[15]>0) cov[14] += fgMatLarge[15]; // ensure minimum error on q/pt
   }
   //
  
