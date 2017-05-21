@@ -45,11 +45,11 @@ public:
 protected:
   static std::map<TString, TString> fLatexAlice;              // map of prefdefiend latex symbols - fomatted according ALICE rules
   static std::map<TString, TStyle*>  fStyleAlice;             // map of Alice predefined styles (+user defined)
-  static std::map<TString, std::vector<int>> fMarkerStyles;   // map of predefined marker styles arrays
-  static std::map<TString, std::vector<int>> fMarkerColors;   // map of predefined colors  arrays
-  static std::map<TString, std::vector<float>> fMarkerSize;     // map of predefined marker sizes ()
-  static std::map<TString, std::vector<int>> fFillColors;     // map of predefined fill colors arrays
-  static std::map<TString, std::vector<float>> fLineWidth;      // map of predefined line width
+  static std::map<TString, std::vector<int> > fMarkerStyles;  // map of predefined marker styles arrays
+  static std::map<TString, std::vector<int> > fMarkerColors;  // map of predefined colors  arrays
+  static std::map<TString, std::vector<float> > fMarkerSize;  // map of predefined marker sizes ()
+  static std::map<TString, std::vector<int> > fFillColors;    // map of predefined fill colors arrays
+  static std::map<TString, std::vector<float> > fLineWidth;   // map of predefined line width
   //
   static void  RegisterDefaultLatexSymbols();                 // initialize default LatexSymbols
   static void  RegisterDefaultStyle();                        // initialize default TStyles

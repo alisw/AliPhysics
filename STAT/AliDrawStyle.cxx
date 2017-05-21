@@ -61,11 +61,11 @@
 //
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
 std::map<TString, TStyle*>  AliDrawStyle::fStyleAlice;
-std::map<TString, std::vector<int>> AliDrawStyle::fMarkerStyles;
-std::map<TString, std::vector<int>> AliDrawStyle::fMarkerColors;
-std::map<TString, std::vector<float>> AliDrawStyle::fMarkerSize;
-std::map<TString, std::vector<int>> AliDrawStyle::fFillColors;
-std::map<TString, std::vector<float>> AliDrawStyle::fLineWidth;
+std::map<TString, std::vector<int> > AliDrawStyle::fMarkerStyles;  // PLEASE LEAVE THE UNAESTHETIC SPACE
+std::map<TString, std::vector<int> > AliDrawStyle::fMarkerColors;  // IN ORDER TO MAKE IT WORK WITH THE
+std::map<TString, std::vector<float> > AliDrawStyle::fMarkerSize;  // NATIVE SLC6 COMPILER!!!
+std::map<TString, std::vector<int> > AliDrawStyle::fFillColors;
+std::map<TString, std::vector<float> > AliDrawStyle::fLineWidth;
 
 void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultLatexSymbols();
