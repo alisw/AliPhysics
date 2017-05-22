@@ -123,20 +123,23 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
   fOutputTree = new TTree("aodTree", "Tree with TOF calib output"); 
 
   /* setup output tree */
-  fOutputTree->Branch("run", &fRunNumber, "run/I");
-  fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
-  fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
-  fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
-  fOutputTree->Branch("nhits", &fnhits, "nhits/I");
-  fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
-  fOutputTree->Branch("length", &flength, "length[nhits]/F");
+  if (!fLightMode) { // skip some track parameters if flag on
+     fOutputTree->Branch("run", &fRunNumber, "run/I");
+     fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
+     fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
+     fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
+     fOutputTree->Branch("nhits", &fnhits, "nhits/I");
+     fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
+     fOutputTree->Branch("length", &flength, "length[nhits]/F");
+   }
   fOutputTree->Branch("index", &findex, "index[nhits]/I");
   fOutputTree->Branch("time", &ftime, "time[nhits]/F");
   fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
   fOutputTree->Branch("texp", &ftexp, "texp[nhits]/F");
-  fOutputTree->Branch("deltax", &fDeltax, "deltax[nhits]/F");
-  fOutputTree->Branch("deltaz", &fDeltaz, "deltaz[nhits]/F");
-
+  if (fSaveCoordinates) { //save pad hit coordinates if flag on
+     fOutputTree->Branch("deltax", &fDeltax, "deltax[nhits]/F");
+     fOutputTree->Branch("deltaz", &fDeltaz, "deltaz[nhits]/F");
+  }
   PostData(1, fOutputTree);
 
 }
@@ -206,21 +209,14 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     // add hit to array (if there is room)
     if (fnhits > MAXHITS) continue;
 
-    if (!fLightMode) {  // skip track parameters if flag on
-      fmomentum[fnhits] = momentum;
-      flength[fnhits] = length;
-      ftexp[fnhits] = timei[AliPID::kPion];
-    }
-    
-    if (fSaveCoordinates) { //save pad hit coordinates if flag on
-      fDeltax[fnhits] = deltax;
-      fDeltaz[fnhits] = deltaz;
-    }
-    
-    //  save following always
+    fmomentum[fnhits] = momentum;
+    flength[fnhits] = length;
+    ftexp[fnhits] = timei[AliPID::kPion];
     findex[fnhits] = index;
     ftime[fnhits] = time;
     ftot[fnhits] = tot;
+    fDeltax[fnhits] = deltax;
+    fDeltaz[fnhits] = deltaz;
     
     fnhits++;
 
