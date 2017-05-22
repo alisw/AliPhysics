@@ -719,7 +719,8 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   PostData(1,fOutputList);
 
   Eop010Corr = new TF1("Eop010Corr","pol3");
-  Eop010Corr->SetParameters(0.0485569,0.00274734,4.17124e-05,-1.13117e-05);
+  //Eop010Corr->SetParameters(0.0485569,0.00274734,4.17124e-05,-1.13117e-05);
+  Eop010Corr->SetParameters(0.034,0.0086,-0.00059,8.87525e-06);
 
 }
 
