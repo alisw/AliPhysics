@@ -1,5 +1,3 @@
-
-
 #ifndef ALIANALYSISTASKMLTREEMAKER_H
 #define ALIANALYSISTASKMLTREEMAKER_H
 class TH1F;
@@ -34,6 +32,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliDielectronTrackCuts *trfilter;
   AliDielectronPID *pidcuts;
   AliDielectronCutGroup* cuts;
+  
+  // need this to use PID in dielectron framework
+  AliDielectronVarManager* varManager;
   
   AliAnalysisFilter* filter;
   
@@ -257,4 +258,3 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
 
 #endif
-
