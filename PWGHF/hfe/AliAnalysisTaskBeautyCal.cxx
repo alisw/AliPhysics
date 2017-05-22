@@ -109,6 +109,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCent(0),
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustE_etapos(0),
+  fHistClustE_etaneg(0),
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
@@ -243,6 +245,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCent(0), 
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustE_etapos(0),
+  fHistClustE_etaneg(0),
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
@@ -440,6 +444,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
+
+  fHistClustE_etapos = new TH1F("fHistClustE_etapos", "EMCAL cluster energy distribution (y>0); Cluster E;counts", 500, 0.0, 50.0);
+  fOutputList->Add(fHistClustE_etapos);
+
+  fHistClustE_etaneg = new TH1F("fHistClustE_etaneg", "EMCAL cluster energy distribution (y<0); Cluster E;counts", 500, 0.0, 50.0);
+  fOutputList->Add(fHistClustE_etaneg);
 
   fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEtime);
@@ -980,7 +990,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi2->Fill(emceta,emcphi);
-
+      if(emceta>0)
+         {
+          fHistClustE_etapos->Fill(clustE);
+         }
+      else
+        {
+         fHistClustE_etaneg->Fill(clustE);
+        }
       /*
       //-----Plots for EMC trigger
       Bool_t hasfiredEG1=0;
