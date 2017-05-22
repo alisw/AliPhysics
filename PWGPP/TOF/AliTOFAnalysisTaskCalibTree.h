@@ -91,52 +91,53 @@ public AliAnalysisTaskSE
 
   // ESD related stuff
   Int_t fRunNumber;                   // run number
-  AliESDEvent *fESDEvent;             // ESD event
-  AliPhysicsSelection *fEventCuts;    // event cuts
-  AliESDtrackCuts *fTrackCuts;        // track cuts
-  AliESDpid *fESDpid;                 // ESD PID
+  AliESDEvent *fESDEvent;             //!<! ESD event
+  AliPhysicsSelection *fEventCuts;    //!<! event cuts
+  AliESDtrackCuts *fTrackCuts;        //!<! track cuts
+  AliESDpid *fESDpid;                 //!<! ESD PID
   UInt_t fStartTime;                  // start time
   UInt_t fEndTime;                    // end time
   UInt_t fElapsedTime;                // event time since start
   Bool_t fIsCollisionCandidate;       // is collision candidate
   Bool_t fHasVertex;                  // has vertex
-  const AliESDVertex *fVertex;        // vertex
+  const AliESDVertex *fVertex;        //!<! vertex
 
   // GRP related stuff
-  AliGRPManager *fGRPManager;         // GRP manager
-  const AliGRPObject *fGRPObject;     // GRP object
+  AliGRPManager *fGRPManager;         //!<! GRP manager
+  const AliGRPObject *fGRPObject;     //!<! GRP object
 
   // TOF related stuff
   TString fSpecificStorageParOffline; // specific storage ParOffline
   TString fSpecificStorageRunParams;  // specific storage RunParams
   Float_t fTimeResolution;            // time resolution
-  AliTOFcalib *fTOFcalib;             // TOF calib
-  AliTOFT0maker *fTOFT0maker;         // TOF-T0 maker
-  AliTOFT0v1 *fTOFT0v1;               // TOF-T0 v1
+  AliTOFcalib *fTOFcalib;             //!<! TOF calib
+  AliTOFT0maker *fTOFT0maker;         //!<! TOF-T0 maker
+  AliTOFT0v1 *fTOFT0v1;               //!<! TOF-T0 v1
 
   // task related stuff
   UInt_t ftimestamp;
   Float_t fVertexZ;
   Float_t ftimezero;
   Int_t fnhits;
-  Float_t fmomentum[MAXHITS];
-  Float_t flength[MAXHITS];
-  Int_t findex[MAXHITS];
-  Float_t ftime[MAXHITS];
-  Float_t ftot[MAXHITS];
-  Float_t ftexp[MAXHITS];
+  Float_t* fmomentum;       //[MAXHITS] momentum
+  Float_t* flength;         //[MAXHITS] length
+  Int_t* findex;            //[MAXHITS] index
+  Float_t* ftime;           //[MAXHITS] time
+  Float_t* ftot;            //[MAXHITS] time over threshold
+  Float_t* ftexp;           //[MAXHITS] texp
+
   
   //NEW task related stuff
-  Float_t fDeltax[MAXHITS];
-  Float_t fDeltaz[MAXHITS];
+  Float_t* fDeltax; //[MAXHITS]  delta-x
+  Float_t* fDeltaz; //[MAXHITS]  delta-z
 
   Bool_t fLightMode;
   Bool_t fSaveCoordinates;
    
  
-  TTree* fOutputTree;                 // output tree
+  TTree* fOutputTree;                 //!<! output tree
 
-  ClassDef(AliTOFAnalysisTaskCalibTree, 2);
+  ClassDef(AliTOFAnalysisTaskCalibTree, 3);
 };
 
 #endif /* ALIANALYSISTASKTOFCOMPACTCALIB_H */
