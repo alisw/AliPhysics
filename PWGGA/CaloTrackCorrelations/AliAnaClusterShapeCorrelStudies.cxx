@@ -1440,10 +1440,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
 void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *caloClusters,
                                                 AliVCaloCells* cells)
 {  
-  Int_t  nLabel                = 0  ;
-  Int_t *labels                = 0x0;
   Int_t  nCaloClusters         = caloClusters->GetEntriesFast() ;
-  Int_t  nCaloClustersAccepted = 0  ;
   Int_t  nCaloCellsPerCluster  = 0  ;
   Bool_t matched               = kFALSE;
   Int_t  nModule               =-1  ;
@@ -1497,10 +1494,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     Float_t phi = GetPhi(fClusterMomentum.Phi());
     
     AliDebug(1,Form("cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f",e,pt,eta,phi*TMath::RadToDeg()));
-    
-    // MC labels
-    nLabel = clus->GetNLabels();
-    labels = clus->GetLabels();
     
     // Cells per cluster
     nCaloCellsPerCluster = clus->GetNCells();
@@ -1605,36 +1598,19 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
   
-  Int_t totalSM = fLastModule-fFirstModule+1;
-
+  //Int_t totalSM = fLastModule-fFirstModule+1;
   //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
   
   // Histogram binning and ranges
   // 
   Int_t nptbins     = GetHistogramRanges()->GetHistoPtBins(); 	        Float_t ptmax     = GetHistogramRanges()->GetHistoPtMax();           Float_t ptmin     = GetHistogramRanges()->GetHistoPtMin();
-  Int_t nfineptbins = GetHistogramRanges()->GetHistoFinePtBins(); 	    Float_t ptfinemax = GetHistogramRanges()->GetHistoFinePtMax();       Float_t ptfinemin = GetHistogramRanges()->GetHistoFinePtMin();
-  Int_t nphibins    = GetHistogramRanges()->GetHistoPhiBins();     	    Float_t phimax    = GetHistogramRanges()->GetHistoPhiMax();          Float_t phimin    = GetHistogramRanges()->GetHistoPhiMin();
-  Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
-  Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
-  Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
-  Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
+ 
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
-  Int_t nclbins     = GetHistogramRanges()->GetHistoNClustersBins();    Int_t   nclmax    = GetHistogramRanges()->GetHistoNClustersMax();    Int_t   nclmin    = GetHistogramRanges()->GetHistoNClustersMin(); 
-  Int_t ncebins     = GetHistogramRanges()->GetHistoNCellsBins();       Int_t   ncemax    = GetHistogramRanges()->GetHistoNCellsMax();       Int_t   ncemin    = GetHistogramRanges()->GetHistoNCellsMin(); 
-  Int_t nceclbins   = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nceclmax  = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nceclmin  = GetHistogramRanges()->GetHistoNClusterCellMin(); 
-  Int_t nvdistbins  = GetHistogramRanges()->GetHistoVertexDistBins();   Float_t vdistmax  = GetHistogramRanges()->GetHistoVertexDistMax();   Float_t vdistmin  = GetHistogramRanges()->GetHistoVertexDistMin();
-  Int_t rbins       = GetHistogramRanges()->GetHistoRBins();            Float_t rmax      = GetHistogramRanges()->GetHistoRMax();            Float_t rmin      = GetHistogramRanges()->GetHistoRMin(); 
-  Int_t xbins       = GetHistogramRanges()->GetHistoXBins();            Float_t xmax      = GetHistogramRanges()->GetHistoXMax();            Float_t xmin      = GetHistogramRanges()->GetHistoXMin(); 
-  Int_t ybins       = GetHistogramRanges()->GetHistoYBins();            Float_t ymax      = GetHistogramRanges()->GetHistoYMax();            Float_t ymin      = GetHistogramRanges()->GetHistoYMin(); 
-  Int_t zbins       = GetHistogramRanges()->GetHistoZBins();            Float_t zmax      = GetHistogramRanges()->GetHistoZMax();            Float_t zmin      = GetHistogramRanges()->GetHistoZMin(); 
-  Int_t ssbins      = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax     = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin     = GetHistogramRanges()->GetHistoShowerShapeMin();
   Int_t tdbins      = GetHistogramRanges()->GetHistoDiffTimeBins() ;    Float_t tdmax     = GetHistogramRanges()->GetHistoDiffTimeMax();     Float_t tdmin     = GetHistogramRanges()->GetHistoDiffTimeMin();
-  
-  Int_t nv0sbins    = GetHistogramRanges()->GetHistoV0SignalBins();          Int_t nv0smax = GetHistogramRanges()->GetHistoV0SignalMax();          Int_t nv0smin = GetHistogramRanges()->GetHistoV0SignalMin(); 
-  Int_t nv0mbins    = GetHistogramRanges()->GetHistoV0MultiplicityBins();    Int_t nv0mmax = GetHistogramRanges()->GetHistoV0MultiplicityMax();    Int_t nv0mmin = GetHistogramRanges()->GetHistoV0MultiplicityMin(); 
-  Int_t ntrmbins    = GetHistogramRanges()->GetHistoTrackMultiplicityBins(); Int_t ntrmmax = GetHistogramRanges()->GetHistoTrackMultiplicityMax(); Int_t ntrmmin = GetHistogramRanges()->GetHistoTrackMultiplicityMin(); 
+
+  Int_t nceclbins   = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nceclmax  = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nceclmin  = GetHistogramRanges()->GetHistoNClusterCellMin(); 
+  Int_t ssbins      = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax     = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin     = GetHistogramRanges()->GetHistoShowerShapeMin();
   
   // TM residuals
   Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();
@@ -2144,7 +2120,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterE%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster} %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-100,100); 
+       nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]); 
@@ -2160,7 +2136,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxE%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max} %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-100,100); 
+       nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]); 
@@ -2170,7 +2146,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhEnergyTime1Cell[tm]  = new TH2F 
         (Form("hEnergyTime1Cell%s",add[tm].Data()),
          Form("#it{t} vs #it{E}, 1 cells cluster %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,300,-150,150); 
+         nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
         fhEnergyTime1Cell[tm]->SetXTitle("#it{E} (GeV)");
         fhEnergyTime1Cell[tm]->SetYTitle("#it{t} (ns)");
         outputContainer->Add(fhEnergyTime1Cell[tm]); 
@@ -2178,7 +2154,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhEnergyTimeExotic[tm]  = new TH2F 
         (Form("hEnergyTimeExotic%s",add[tm].Data()),
          Form("#it{t} vs #it{E},  exo > 0.97, %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,300,-150,150); 
+         nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
         fhEnergyTimeExotic[tm]->SetXTitle("#it{E} (GeV)");
         fhEnergyTimeExotic[tm]->SetYTitle("#it{t} (ns)");
         outputContainer->Add(fhEnergyTimeExotic[tm]); 
@@ -2186,7 +2162,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhEnergyTimeTCardCorrNoSelection1Cell[tm]  = new TH2F 
         (Form("hEnergyTimeTCardCorrNoSelection1Cell%s",add[tm].Data()),
          Form("#it{t} vs #it{E}, 1 cells cluster %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,300,-150,150); 
+         nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
         fhEnergyTimeTCardCorrNoSelection1Cell[tm]->SetXTitle("#it{E} (GeV)");
         fhEnergyTimeTCardCorrNoSelection1Cell[tm]->SetYTitle("#it{t} (ns)");
         outputContainer->Add(fhEnergyTimeTCardCorrNoSelection1Cell[tm]); 
@@ -2194,7 +2170,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhEnergyTimeTCardCorrNoSelectionExotic[tm]  = new TH2F 
         (Form("hEnergyTimeTCardCorrNoSelectionExotic%s",add[tm].Data()),
          Form("#it{t} vs #it{E},  exo > 0.97, %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,300,-150,150); 
+         nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
         fhEnergyTimeTCardCorrNoSelectionExotic[tm]->SetXTitle("#it{E} (GeV)");
         fhEnergyTimeTCardCorrNoSelectionExotic[tm]->SetYTitle("#it{t} (ns)");
         outputContainer->Add(fhEnergyTimeTCardCorrNoSelectionExotic[tm]); 
@@ -2362,7 +2338,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm] = new TH2F 
         (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterEExo%s",add[tm].Data()),
          Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,200,-100,100); 
+         nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
         fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
         fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
         outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]); 
@@ -2378,7 +2354,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm] = new TH2F 
         (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo%s",add[tm].Data()),
          Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
-         nptbins,ptmin,ptmax,200,-100,100); 
+         nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
         fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
         fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
         outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]); 
@@ -2617,7 +2593,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
           fhTimeDiffTCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hTimeDiffTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,300,-150,150); 
+           nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
           fhTimeDiffTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
           fhTimeDiffTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
           outputContainer->Add(fhTimeDiffTCardCorrelNCell[i][j][tm]); 
@@ -2651,7 +2627,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
             fhTimeDiffExoTCardCorrelNCell[i][j][tm]  = new TH2F 
             (Form("hTimeDiffExoTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
              Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, exoticity > 0.97, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-             nptbins,ptmin,ptmax,300,-150,150); 
+             nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
             fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
             fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
             outputContainer->Add(fhTimeDiffExoTCardCorrelNCell[i][j][tm]); 
