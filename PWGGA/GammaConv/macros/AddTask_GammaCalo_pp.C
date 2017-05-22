@@ -80,6 +80,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  Int_t localDebugFlag = 0;
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -104,6 +105,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("LOCALDEBUGFLAG")){
+        cout << "INFO: AddTask_GammaCalo_pp activating 'LOCALDEBUGFLAG'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,14,"");
+        localDebugFlag = tempType.Atoi();
+        cout << "INFO: debug flag set to '" << localDebugFlag << "'" << endl;
       }
     }
   }
@@ -1363,6 +1370,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145 || trainConfig == 206){
     task->SetInOutTimingCluster(-30e-9,35e-9);
   }
+  task->SetLocalDebugFlag(localDebugFlag);
   
   //connect containers
   AliAnalysisDataContainer *coutput =
