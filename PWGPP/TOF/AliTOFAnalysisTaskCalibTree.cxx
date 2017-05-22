@@ -53,6 +53,8 @@ AliAnalysisTaskSE(name),
   fVertexZ(99999),
   ftimezero(9999999),
   fnhits(-1),
+  fLightMode(kFALSE),
+  fSaveCoordinates(kFALSE),
   fOutputTree(0x0)             
 
 {
@@ -88,6 +90,20 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
   delete fTOFcalib;
   delete fTOFT0maker;
   delete fTOFT0v1;
+  delete fGRPManager;
+  delete fGRPObject;
+  delete fESDEvent;
+  delete fVertex;
+
+  delete fmomentum;
+  delete flength;
+  delete findex;
+  delete ftime;
+  delete ftot;
+  delete ftexp;
+  delete fDeltax;
+  delete fDeltaz;
+
   if (fOutputTree) {
     delete fOutputTree;
     fOutputTree = 0x0;
@@ -100,7 +116,6 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
 void
 AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
 {
-  AliTuple[2]='root=v5-34-08 geant3=v1-15 aliroot=v5-05-68-AN '
   /*
    * user create output objects
    */
@@ -190,14 +205,23 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
 
     // add hit to array (if there is room)
     if (fnhits > MAXHITS) continue;
-    fmomentum[fnhits] = momentum;
-    flength[fnhits] = length;
+
+    if (!fLightMode) {  // skip track parameters if flag on
+      fmomentum[fnhits] = momentum;
+      flength[fnhits] = length;
+      ftexp[fnhits] = timei[AliPID::kPion];
+    }
+    
+    if (fSaveCoordinates) { //save pad hit coordinates if flag on
+      fDeltax[fnhits] = deltax;
+      fDeltaz[fnhits] = deltaz;
+    }
+    
+    //  save following always
     findex[fnhits] = index;
     ftime[fnhits] = time;
     ftot[fnhits] = tot;
-    ftexp[fnhits] = timei[AliPID::kPion];
-    fDeltax[fnhits] = deltax;
-    fDeltaz[fnhits] = deltaz;
+    
     fnhits++;
 
   } /* end of loop over ESD tracks */
