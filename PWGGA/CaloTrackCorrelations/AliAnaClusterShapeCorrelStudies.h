@@ -58,8 +58,9 @@ public:
           
   void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster );
   
-  void         ClusterM02DependentHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                             Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
+  void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
+                                             Int_t absIdMax, Double_t maxCellFraction, 
+                                             Float_t eCrossFrac, Double_t tmax, Bool_t matched);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
     
@@ -77,7 +78,10 @@ public:
     
   Float_t      GetM02Min()               const  { return fM02Min   ; }
   void         SetM02Min(Float_t m02)           { fM02Min = m02    ; }
-  
+
+  Float_t      GetDistToBadMin()         const  { return fMinDistToBad ; }
+  void         SetDistToBadMin(Float_t di)      { fMinDistToBad = di   ; }
+
   Int_t        GetNCellsPerClusterMin()  const  { return fNCellMin ; }
   void         SetNCellsPerClusterMin(Int_t n)  { fNCellMin = n    ; }
 
@@ -102,7 +106,6 @@ public:
   void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
   void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
 
-  
   // Analysis switchs
   
   void SwitchOnStudyClustersAsymmetry()         { fStudyClustersAsymmetry = kTRUE  ; }
@@ -134,7 +137,8 @@ public:
   // Cuts
   Float_t  fM02Min;                             ///<  Minimum M02 on clusters
   Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
-
+  Float_t  fMinDistToBad;                       ///<  Minimum distance to bad channel
+  
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
   Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
 
@@ -423,13 +427,15 @@ public:
   TH2F **  fhECellTotalRatioMod;                //!<! e cell / e total vs e total, per SM
   TH2F **  fhECellTotalLogRatioMod;             //!<! log (e cell / e total)  vs e total, per SM
 
-  TH3F *   fhClusterTimeEnergyM02;                 //!<! Cluster Time vs Energy
-//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;    //!<! Difference of the time of cell with maximum dep energy and the rest of cells
-  TH3F *   fhClusterMaxCellCloseCellRatioM02;      //!<! Ratio between max cell energy and cell energy of the same cluster
-//TH3F *   fhClusterMaxCellCloseCellDiffM02;       //!<! Difference between max cell energy and cell energy of the same cluster
-//TH3F *   fhClusterMaxCellDiffM02;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters onl
-  TH3F *   fhClusterMaxCellECrossM02;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
-  TH3F *   fhNCellsPerClusterM02;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
+//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
+//TH3F *   fhClusterMaxCellCloseCellDiffM02;     //!<! Difference between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellCloseCellRatioM02;    //!<! Ratio between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellECrossM02;            //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy
+ 
+  //for neutral, electrons and hadrons
+  TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
+  TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
+  TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   
   /// Copy constructor not implemented.
   AliAnaClusterShapeCorrelStudies & operator = (const AliAnaClusterShapeCorrelStudies & qa) ;
