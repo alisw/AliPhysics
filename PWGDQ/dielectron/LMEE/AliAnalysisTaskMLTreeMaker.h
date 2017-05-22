@@ -229,8 +229,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
   std::vector<Double_t> chi2ITS;
-  std::vector<Double_t> chi2TPC;
-  std::vector<Double_t> chi2Global;
+//  std::vector<Double_t> chi2TPC;
+  std::vector<Double_t> chi2GlobalPerNDF;
   std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
