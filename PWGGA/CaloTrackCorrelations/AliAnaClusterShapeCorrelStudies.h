@@ -59,7 +59,8 @@ public:
   void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster );
   
   void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
-                                             Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
+                                             Int_t absIdMax, Double_t maxCellFraction, 
+                                             Float_t eCrossFrac, Double_t tmax, Bool_t matched);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
     
@@ -426,13 +427,15 @@ public:
   TH2F **  fhECellTotalRatioMod;                //!<! e cell / e total vs e total, per SM
   TH2F **  fhECellTotalLogRatioMod;             //!<! log (e cell / e total)  vs e total, per SM
 
-  TH3F *   fhClusterTimeEnergyM02;                 //!<! Cluster Time vs Energy
-//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;    //!<! Difference of the time of cell with maximum dep energy and the rest of cells
-  TH3F *   fhClusterMaxCellCloseCellRatioM02;      //!<! Ratio between max cell energy and cell energy of the same cluster
-//TH3F *   fhClusterMaxCellCloseCellDiffM02;       //!<! Difference between max cell energy and cell energy of the same cluster
-  TH3F *   fhClusterMaxCellDiffM02;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters onl
-  TH3F *   fhClusterMaxCellECrossM02;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
-  TH3F *   fhNCellsPerClusterM02;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
+//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
+//TH3F *   fhClusterMaxCellCloseCellDiffM02;     //!<! Difference between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellCloseCellRatioM02;    //!<! Ratio between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellECrossM02;            //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy
+ 
+  //for neutral, electrons and hadrons
+  TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
+  TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
+  TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   
   /// Copy constructor not implemented.
   AliAnaClusterShapeCorrelStudies & operator = (const AliAnaClusterShapeCorrelStudies & qa) ;

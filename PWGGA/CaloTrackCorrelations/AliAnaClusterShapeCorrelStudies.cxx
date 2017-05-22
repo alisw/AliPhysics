@@ -81,13 +81,17 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0),
 
 //fhExoL0ECross(0),                      fhExoL1ECross(0),
 
-fhClusterTimeEnergyM02(0),             
 //fhCellTimeSpreadRespectToCellMaxM02(0), 
-fhClusterMaxCellCloseCellRatioM02(0),  
 //fhClusterMaxCellCloseCellDiffM02(0),  
-fhClusterMaxCellDiffM02(0),            
-fhClusterMaxCellECrossM02(0),           fhNCellsPerClusterM02(0) 
+fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)       
 {
+  for(Int_t i=0; i < 3; i++)
+  {
+    fhClusterTimeEnergyM02 [i] = 0;  
+    fhClusterMaxCellDiffM02[i] = 0;
+    fhNCellsPerClusterM02  [i] = 0;
+  }
+  
   // Weight studies
   for(Int_t i =0; i < 12; i++)
   {
@@ -1388,7 +1392,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms(AliVCluster* cl
 //__________________________________________________________________________________________________________________
 void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
 (AliVCluster* clus, AliVCaloCells * cells, Int_t absIdMax, 
- Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax)
+ Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax, Bool_t matched)
 {
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
@@ -1429,11 +1433,33 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
   
   if ( nCellWithWeight < 1 ) return; 
 
-  fhClusterMaxCellDiffM02  ->Fill(energy, maxCellFraction, m02, GetEventWeight());
   fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac     , m02, GetEventWeight());
-  fhClusterTimeEnergyM02   ->Fill(energy, tmax           , m02, GetEventWeight());
-  fhNCellsPerClusterM02    ->Fill(energy, nCellWithWeight, m02, GetEventWeight());
-
+  
+  if(!matched) // neutral clusters
+  {
+    fhClusterMaxCellDiffM02[0]->Fill(energy, maxCellFraction, m02, GetEventWeight());
+    fhClusterTimeEnergyM02 [0]->Fill(energy, tmax           , m02, GetEventWeight());
+    fhNCellsPerClusterM02  [0]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+  }
+  else
+  {
+    Bool_t electron = kFALSE;
+    
+    // Do here electrons/hadron selection
+    
+    if(electron)
+    {
+      fhClusterMaxCellDiffM02[1]->Fill(energy, maxCellFraction, m02, GetEventWeight());
+      fhClusterTimeEnergyM02 [1]->Fill(energy, tmax           , m02, GetEventWeight());
+      fhNCellsPerClusterM02  [1]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+    }
+    else // hadron
+    {
+      fhClusterMaxCellDiffM02[2]->Fill(energy, maxCellFraction, m02, GetEventWeight());
+      fhClusterTimeEnergyM02 [2]->Fill(energy, tmax           , m02, GetEventWeight());
+      fhNCellsPerClusterM02  [2]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+    }
+  }
 }
 
 //____________________________________________________________________________
@@ -1484,7 +1510,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     
     // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
     Float_t maxCellFraction = 0.;
-    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus,maxCellFraction);
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus, maxCellFraction);
     
     // Cut on time of clusters
     Double_t tof = clus->GetTOF()*1.e9;
@@ -1493,20 +1519,19 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     // Get cluster kinematics
     clus->GetMomentum(fClusterMomentum,v);
     
+    Float_t e   = fClusterMomentum.E();
+    Float_t pt  = fClusterMomentum.Pt();
+    Float_t eta = fClusterMomentum.Eta();
+    Float_t phi = GetPhi(fClusterMomentum.Phi());
+    
     // Check only certain regions
     Bool_t in = kTRUE;
     if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum.Eta(),fClusterMomentum.Phi(),GetCalorimeter()) ;
     if(!in)
     {
-      AliDebug(1,Form("Remove cluster with phi %2.2f and eta %2.2f",
-                      GetPhi(fClusterMomentum.Phi())*TMath::RadToDeg(),fClusterMomentum.Eta()));
+      AliDebug(1,Form("Remove cluster with phi %2.2f and eta %2.2f", phi*TMath::RadToDeg(), eta));
       continue;
     }
-    
-    Float_t e   = fClusterMomentum.E();
-    Float_t pt  = fClusterMomentum.Pt();
-    Float_t eta = fClusterMomentum.Eta();
-    Float_t phi = GetPhi(fClusterMomentum.Phi());
     
     AliDebug(1,Form("cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f",e,pt,eta,phi*TMath::RadToDeg()));
     
@@ -1543,28 +1568,31 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     
     if(!goodCluster) 
     {
-      if(fStudyClustersAsymmetry) ClusterAsymmetryHistograms(clus,absIdMax,kFALSE);
+      if(fStudyClustersAsymmetry) 
+        ClusterAsymmetryHistograms(clus,absIdMax,kFALSE);
       
       continue;
     }
     
     //
     if(fStudyM02Dependence)
-      ClusterM02DependentHistograms(clus, cells, absIdMax,maxCellFraction, eCrossFrac, tmax);
-    
-    if(fStudyClustersAsymmetry) ClusterAsymmetryHistograms(clus,absIdMax,kTRUE);
+      ClusterM02DependentHistograms(clus, cells, absIdMax, maxCellFraction, eCrossFrac, tmax, matched);
     
     //
-    if(fStudyTCardCorrelation) ChannelCorrelationInTCard(clus, cells, matched, absIdMax, eCrossFrac);
+    if(fStudyClustersAsymmetry) 
+      ClusterAsymmetryHistograms(clus,absIdMax,kTRUE);
+    
+    //
+    if(fStudyTCardCorrelation) 
+      ChannelCorrelationInTCard(clus, cells, matched, absIdMax, eCrossFrac);
     
     // Cluster weights
-    if(fStudyWeight) WeightHistograms(clus, cells);
+    if(fStudyWeight) 
+      WeightHistograms(clus, cells);
     
   } // Cluster loop
   
 }
-
-
 
 //_________________________________________________
 /// Save parameters used for analysis in a string.
@@ -3538,57 +3566,73 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   
   if(fStudyM02Dependence)
   {
-    fhClusterTimeEnergyM02  = new TH3F ("hClusterTimeEnergyM02","energy vs TOF vs M02, reconstructed clusters",
-                                        16,2.5,18.5,45,-25,20,200,0.,2); 
-    fhClusterTimeEnergyM02->SetXTitle("#it{E} (GeV) ");
-    fhClusterTimeEnergyM02->SetYTitle("TOF (ns)");
-    fhClusterTimeEnergyM02->SetZTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhClusterTimeEnergyM02);    
     
-//    fhCellTimeSpreadRespectToCellMaxM02 = new TH3F ("hCellTimeSpreadRespectToCellMaxM02","t_{cell max}-t_{cell i} vs E vs M02", 
-//                                                    16,2.5,18.5,100,-100,100,200,0.,2); 
+//    fhCellTimeSpreadRespectToCellMaxM02 = new TH3F 
+//    ("hCellTimeSpreadRespectToCellMaxM02",
+//     "#it{E} vs t_{cell max}-t_{cell i} vs #lambda_{0}^{2}", 
+//     16,2.5,18.5,100,-100,100,200,0.,2); 
 //    fhCellTimeSpreadRespectToCellMaxM02->SetXTitle("#it{E} (GeV)");
 //    fhCellTimeSpreadRespectToCellMaxM02->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
 //    fhCellTimeSpreadRespectToCellMaxM02->SetZTitle("#lambda_{0}^{2}");
 //    outputContainer->Add(fhCellTimeSpreadRespectToCellMaxM02);
     
-    fhClusterMaxCellCloseCellRatioM02  = new TH3F ("hClusterMaxCellCloseCellRatioM02","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
-                                                   16,2.5,18.5, 100,0,1.,200,0.,2); 
+    fhClusterMaxCellCloseCellRatioM02  = new TH3F 
+    ("hClusterMaxCellCloseCellRatioM02","#it{E} vs #it{E}_{cell-i}/#it{E}_{cell max}) vs #lambda_{0}^{2}",
+     16,2.5,18.5, 100,0,1.,200,0.,2); 
     fhClusterMaxCellCloseCellRatioM02->SetXTitle("#it{E}_{cluster} (GeV) ");
     fhClusterMaxCellCloseCellRatioM02->SetYTitle("#it{E}_{cell i}/#it{E}_{cell max}");
     fhClusterMaxCellCloseCellRatioM02->SetZTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhClusterMaxCellCloseCellRatioM02);
     
-//    fhClusterMaxCellCloseCellDiffM02  = new TH3F ("hClusterMaxCellCloseCellDiffM02","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
-//                                                  16,2.5,18.5, 40,0,20,200,0.,2); 
+//    fhClusterMaxCellCloseCellDiffM02  = new TH3F 
+//    ("hClusterMaxCellCloseCellDiffM02",
+//     "#it{E} vs #it{E}_{cell max}-#it{E}_{cell i} vs #lambda_{0}^{2}",
+//     16,2.5,18.5, 40,0,20,200,0.,2); 
 //    fhClusterMaxCellCloseCellDiffM02->SetXTitle("#it{E}_{cluster} (GeV) ");
 //    fhClusterMaxCellCloseCellDiffM02->SetYTitle("#it{E}_{cell max}-#it{E}_{cell i} (GeV)");
 //    fhClusterMaxCellCloseCellDiffM02->SetZTitle("#lambda_{0}^{2}");
-//    outputContainer->Add(fhClusterMaxCellCloseCellDiffM02);
+//    outputContainer->Add(fhClusterMaxCellCloseCellDiffM02);   
     
-    fhClusterMaxCellDiffM02  = new TH3F ("hClusterMaxCellDiffM02","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
-                                         16,2.5,18.5, 100,0,1.,200,0.,2); 
-    fhClusterMaxCellDiffM02->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhClusterMaxCellDiffM02->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
-    fhClusterMaxCellDiffM02->SetZTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhClusterMaxCellDiffM02);  
-    
-    fhClusterMaxCellECrossM02  = new TH3F ("hClusterMaxCellECrossM02",
-                                           "1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters",
-                                           16,2.5,18.5, 40,0.6,1.,200,0.,2); 
+    fhClusterMaxCellECrossM02  = new TH3F 
+    ("hClusterMaxCellECrossM02",
+     "#it{E} vs exoticity vs #lambda_{0}^{2}",
+     16,2.5,18.5, 40,0.6,1.,200,0.,2); 
     fhClusterMaxCellECrossM02->SetXTitle("#it{E}_{cluster} (GeV) ");
     fhClusterMaxCellECrossM02->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
     fhClusterMaxCellECrossM02->SetZTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhClusterMaxCellECrossM02);
-    
-    fhNCellsPerClusterM02  = new TH3F ("hNCellsPerClusterM02","# cells per cluster vs energy",
-                                       16,2.5,18.5, 20,0.5,20.5,200,0.,2); 
-    fhNCellsPerClusterM02->SetXTitle("#it{E} (GeV)");
-    fhNCellsPerClusterM02->SetYTitle("#it{n}_{cells}");
-    fhNCellsPerClusterM02->SetZTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhNCellsPerClusterM02);    
+
+    TString matchCase[] = {"Neutral","Electron","Hadron"};
+    for(Int_t imatch = 0; imatch < 3; imatch++)
+    {
+      fhClusterMaxCellDiffM02[imatch]  = new TH3F 
+      (Form("hClusterMaxCellDiffM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{E}_{cluster} - #it{E}_{cell max})/#it{E}_{cluster} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       16,2.5,18.5, 100,0,1.,200,0.,2); 
+      fhClusterMaxCellDiffM02[imatch]->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhClusterMaxCellDiffM02[imatch]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
+      fhClusterMaxCellDiffM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhClusterMaxCellDiffM02[imatch]);  
+      
+      fhClusterTimeEnergyM02[imatch]  = new TH3F 
+      (Form("hClusterTimeEnergyM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs TOF vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       16,2.5,18.5,45,-25,20,200,0.,2); 
+      fhClusterTimeEnergyM02[imatch]->SetXTitle("#it{E} (GeV) ");
+      fhClusterTimeEnergyM02[imatch]->SetYTitle("TOF (ns)");
+      fhClusterTimeEnergyM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhClusterTimeEnergyM02[imatch]);    
+      
+      fhNCellsPerClusterM02[imatch]  = new TH3F 
+      (Form("hNCellsPerClusterM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       16,2.5,18.5, 20,0.5,20.5,200,0.,2); 
+      fhNCellsPerClusterM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}");
+      fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhNCellsPerClusterM02[imatch]); 
+    }
   }
-  
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
