@@ -253,6 +253,8 @@ AliEMCALGeometry::~AliEMCALGeometry(void)
 ///
 /// \return the pointer of the unique instance of the geometry
 ///
+/// It should have been set before.
+///
 //______________________________________________________________________
 AliEMCALGeometry *  AliEMCALGeometry::GetInstance()
 {   
@@ -265,7 +267,7 @@ AliEMCALGeometry *  AliEMCALGeometry::GetInstance()
 ///
 /// \param name: geometry name, EMCAL_COMPLETEV1, EMCAL_COMPLETE12SMV1, EMCAL_COMPLETE12SMV1_DCAL, EMCAL_COMPLETE12SMV1_DCAL_8SM, EMCAL_COMPLETE12SMV1_DCAL_DEV (see main class description for definition)
 /// \param title
-/// \param mcname: Geant3/4, Flukla, needed for settings of transport (check)
+/// \param mcname: Geant3/4, Fluka, needed for settings of transport (check)
 /// \param mctitle: Geant4 physics list (check)
 ///
 //______________________________________________________________________
@@ -317,7 +319,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text
 ///
 /// \param runNumber: as indicated
 /// \param geoName: geometry name, EMCAL_COMPLETEV1, etc. Not really needed to be specified.
-/// \param mcname: Geant3/4, Flukla, needed for settings of transport (check). Not really needed to be specified.
+/// \param mcname: Geant3/4, Fluka, needed for settings of transport (check). Not really needed to be specified.
 /// \param mctitle:  Geant4 physics list (check). Not really needed to be specified.
 ///
 //___________________________________________________________________________

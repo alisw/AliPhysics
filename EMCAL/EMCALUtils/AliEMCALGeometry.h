@@ -36,11 +36,11 @@
 ///
 ///   * EMCAL_COMPLETE12SMV1: contains 12 SM for runs from year 2012 and on
 ///
-///   * EMCAL_COMPLETE12SMV1_DCAL: contains 12 SM and 6 DCAL SM
+///   * EMCAL_COMPLETE12SMV1_DCAL: contains 12 SM and 6 DCAL SM -- not for standard user mode
 ///
 ///   * EMCAL_COMPLETE12SMV1_DCAL_8SM: contains 12 SM and 8 DCAL SM including the DCAL extention (2 SM)
 ///
-///   * EMCAL_COMPLETE12SMV1_DCAL_DEV: contains 12 SM shifted and 10 DCAL SM
+///   * EMCAL_COMPLETE12SMV1_DCAL_DEV: contains 12 SM shifted and 10 DCAL SM -- not for stardard user mode
 ///
 ///   * EMCAL_WSUC (Wayne State test stand)
 ///      * = no definite equivalent in old notation, was only used by
@@ -52,12 +52,17 @@
 ///         You have to use just the correct name of geometry. If name is empty string the
 ///         default name of geometry will be used.
 ///
-///  AliEMCALGeometry* g = AliEMCALGeometry::GetInstance(name,title); // first time
+///    AliEMCALGeometry* g = AliEMCALGeometry::GetInstance(name,title); // first time
 ///  ..
-///  g = AliEMCALGeometry::GetInstance();                             // after first time
+///    g = AliEMCALGeometry::GetInstance();                             // after first time
 ///
-///  MC:   If you work with MC data you have to get geometry the next way:
-///  ==                                      =============================
+/// where name is one of the above names.
+///
+/// If you do now know what name to assign you can rely on the run number via:
+///   AliEMCALGeometry* g = AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
+/// specially interesting at the analysis level, and used also when anchoring simulations to data.
+///
+///  MC:   If you work with MC data you can get geometry the next way (kind of expert mode):
 ///  AliRunLoader    *rl   = AliRunLoader::Instance();
 ///  AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 ///  TGeoManager::Import("geometry.root");
@@ -73,21 +78,6 @@
 /// \author Magali Estienne (magali.estienne@subatech.in2p3.fr)
 /// \author M.L. Wang CCNU & Subatech Adapted for DCAL Oct-18-2012
 ///
-///
-/// Usage:
-///        You can create the AliEMCALGeometry object independently from anything.
-///        You have to use just the correct name of geometry. If name is empty string the
-///        default name of geometry will be used.
-///
-///  AliEMCALGeometry* geom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1","EMCAL");
-///  TGeoManager::Import("geometry.root");
-///
-///  MC:   If you work with MC data you have to get geometry the next way:
-///  ==                                      =============================
-/// !!!!!!!!! This part has to be modified
-///  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
-///  AliEMCALEMCGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-///  TGeoManager::Import("geometry.root");
 //_________________________________________________________________________
 
 // --- ROOT system ---
