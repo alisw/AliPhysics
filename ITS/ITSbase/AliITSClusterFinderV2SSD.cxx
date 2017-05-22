@@ -563,6 +563,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, UInt_t
 	  for( int istr = 0; istr<n+1; istr++ ){
 	    
 	    bool stripOK = 1;
+	    Bool_t isBad = 0;
 	    Int_t strip=0, rwID = 0;
 	    Float_t signal=0.0, noise=0.0, gain=0.0;
 	    
@@ -575,7 +576,9 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, UInt_t
 	      if( cal ){
 		noise = side ?cal->GetNoiseN(strip) :cal->GetNoiseP(strip); 
 		gain = side ?cal->GetGainN(strip) :cal->GetGainP(strip);	 
+		isBad = side ?cal->IsNChannelBad(strip) : cal->IsPChannelBad(strip);
 		stripOK = ( noise>=1. && signal>=3.0*noise 
+			    && !isBad
 			    //&& !cal->IsPChannelBad(strip) 
 			    );
 	      }
