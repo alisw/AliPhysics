@@ -284,8 +284,13 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       if(trecal)
       {
+        // pass number should be pass1 except on Run1 and special cases
         TString passM = pass;
-        if(pass=="spc_calo") passM = "pass3";
+        if ( pass=="spc_calo"    ) passM = "pass3";
+        if ( fRunNumber > 209121 ) passM = "pass1";//run2 periods
+        if ( pass == "muon_calo_pass1" && fRunNumber > 209121 && fRunNumber < 244284 ) 
+          passM = "pass0";//period LHC15a-m
+        
         TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
         
         if(trecalpass)
