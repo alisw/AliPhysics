@@ -281,6 +281,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
+
+    AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
+    AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
     
   protected:
     TList      *fHistograms;
