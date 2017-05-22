@@ -853,8 +853,7 @@ void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, dou
   }
   commComb += commentAdd;
   mdnew->SetComment(commComb.Data());
-  //
-  man->SetSpecificStorage(url,"local://");
+  //man->SetSpecificStorage(url,"local://");
   AliCDBId id(url,firstRun,lastRun);
   man->Put(vtx,id,mdnew);
 }
