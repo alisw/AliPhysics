@@ -81,7 +81,6 @@ public:
   Int_t        GetNCellsPerClusterMin()  const  { return fNCellMin ; }
   void         SetNCellsPerClusterMin(Int_t n)  { fNCellMin = n    ; }
 
-  
   Float_t      GetInvMassMinECut()       const  { return fInvMassMinECut     ; }
   void         SetInvMassMinECut(Float_t cut)   { fInvMassMinECut = cut      ; }
 
@@ -126,12 +125,6 @@ public:
  private:
   
   // Switches
-  
-  Float_t  fM02Min;                             ///<  Minimum M02 on clusters
-  Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
-  
-  // Analysis not to be used in QA
-  
   Bool_t   fStudyClustersAsymmetry;             ///<  Study asymmetry of clusters, not QA related
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, not QA related
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
@@ -139,7 +132,9 @@ public:
   Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
     
   // Cuts
-  
+  Float_t  fM02Min;                             ///<  Minimum M02 on clusters
+  Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
+
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
   Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
 
@@ -155,7 +150,7 @@ public:
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, inv mass loop, temporary container
   
-  Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+  Float_t  fConstantTimeShift;                  ///<  Apply a 615 ns time shift in case of simulation, shift in ns.
 
   // Calorimeter Clusters
       
