@@ -22,6 +22,7 @@ using std::vector;
 #include <AliMultSelection.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
+#include <AliVVZERO.h>
 
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
@@ -60,6 +61,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fMultSelectionEvCuts{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
+  fUseStrongVarCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
   fDeltaEstimatorNsigma{1.,1.},
@@ -69,6 +71,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fESDvsTPConlyLinearCut{1.e8,0.},
   fMultiplicityV0McorrCut{nullptr},
   fFB128vsTrklLinearCut{1.e8,0.},
+  fVZEROvsTPCoutPolCut{1.e8,0.,0.,0.,0.},
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
   fContainer{},
@@ -92,7 +95,8 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fTOFvsFB32{nullptr},
   fTPCvsAll{nullptr},
   fMultvsV0M{nullptr},
-  fTPCvsTrkl{nullptr}
+  fTPCvsTrkl{nullptr},
+  fVZEROvsTPCout{nullptr}
 {
   SetName("AliNuclexEventCuts");
   SetOwner(true);
@@ -202,11 +206,14 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     const double esd = fContainer.fMultESD;
     const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
     const double sigma32tof = PolN(fb32,fTOFvsFB32sigmaPars, 5);
+    const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
     const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
     if ((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
         multV0Mcut &&
-        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl))
+        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
+        (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit)
+        )
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
@@ -233,6 +240,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
     if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
     if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
+    if (fVZEROvsTPCout[befaft]) fVZEROvsTPCout[befaft]->Fill(fContainer.fMultTrkTPCout,fContainer.fMultVZERO);
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
@@ -288,10 +296,12 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlot
       fTPCvsAll[iS] = new TH2F(Form("fTPCvsAll_%s",fkLabels[iS].data()),Form("%s;Multiplicity TPC;Multiplicity ESD - a_{0} #times Multiplicity TPC",titles[iS].data()),300,0.,3000.,3000,-200.,28800.);
       fMultvsV0M[iS] = new TH2F(Form("fMultvsV0M_%s",fkLabels[iS].data()),Form("%s;Centrality (V0M);FB32",titles[iS].data()),100,0.,100.,500,0.,3000.);
       fTPCvsTrkl[iS] = new TH2F(Form("fTPCvsTrkl_%s",fkLabels[iS].data()),Form("%s;SPD tracklets;FB128",titles[iS].data()),2500,0.,5000.,2500,0.,5000.);
+      fVZEROvsTPCout[iS] = new TH2F(Form("fVZEROvsTPCout_%s",fkLabels[iS].data()),Form("%s;Tracks with kTPCout on;VZERO multiplicity",titles[iS].data()),2000,0.,20000.,2000,0.,40000.);
       qaList->Add(fTOFvsFB32[iS]);
       qaList->Add(fTPCvsAll[iS]);
       qaList->Add(fMultvsV0M[iS]);
       qaList->Add(fTPCvsTrkl[iS]);
+      qaList->Add(fVZEROvsTPCout[iS]);
     }
   }
 
@@ -389,10 +399,13 @@ void AliNuclexEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
   tmp_cont->fMultTrkFB32Acc = 0;
   tmp_cont->fMultTrkFB32TOF = 0;
   tmp_cont->fMultTrkTPC = 0;
+  tmp_cont->fMultTrkTPCout = 0;
   for (int it = 0; it < nTracks; it++) {
     if (isAOD) {
       AliAODTrack* trk = (AliAODTrack*)ev->GetTrack(it);
       if (!trk) continue;
+      if ((trk->GetStatus() & AliESDtrack::kTPCout) &&
+          trk->GetID() > 0) tmp_cont->fMultTrkTPCout++;
       if (trk->TestFilterBit(32)) {
         tmp_cont->fMultTrkFB32++;
         if ( TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
@@ -405,6 +418,8 @@ void AliNuclexEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
     } else {
       AliESDtrack* esdTrack = (AliESDtrack*)ev->GetTrack(it);
       if (!esdTrack) continue;
+
+      if (esdTrack->GetStatus() & AliESDtrack::kTPCout) tmp_cont->fMultTrkTPCout++;
 
       if (FB32cuts->AcceptTrack(esdTrack)) {
         tmp_cont->fMultTrkFB32++;
@@ -429,6 +444,12 @@ void AliNuclexEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
       }
       tmp_cont->fMultTrkTPC++;
     }
+  }
+  AliVVZERO *vzero = (AliVVZERO*)ev->GetVZEROData();
+  if(vzero) {
+    tmp_cont->fMultVZERO = 0.;
+    for(int ich=0; ich < 64; ich++)
+      tmp_cont->fMultVZERO += vzero->GetMultiplicity(ich);
   }
   ev->AddObject(tmp_cont);
   fContainer = *tmp_cont;
@@ -528,6 +549,10 @@ void AliNuclexEventCuts::SetupLHC15o() {
 
   fESDvsTPConlyLinearCut[0] = 15000.;
   fESDvsTPConlyLinearCut[1] = 3.38;
+
+  array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
+  std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
+  fUseStrongVarCorrelationCut = false;
 
   if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
   fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
