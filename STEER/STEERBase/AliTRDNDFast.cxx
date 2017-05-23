@@ -4,6 +4,9 @@
 #include "AliLog.h"
 #include "TCanvas.h"
 #include "TMath.h"
+#include "TFitResult.h"
+#include <iostream>
+#include <fstream>
 
 extern Double_t langaufunc(Double_t *x, Double_t *par) {
 
@@ -55,11 +58,11 @@ extern Double_t langaufunc(Double_t *x, Double_t *par) {
     for(i=1.0; i<=np/2; i++) {
 	xx = xlow + (i-.5) * step;
 	fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
-	sum += fland * TMath::Gaus(x[0],xx,par[3]);
+    sum += fland * TMath::Gaus(x[0],xx,par[3]);
 
 	xx = xupp - (i-.5) * step;
 	fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
-	sum += fland * TMath::Gaus(x[0],xx,par[3]);
+    sum += fland * TMath::Gaus(x[0],xx,par[3]);
     }
 
     return (par[2] * step * sum * invsq2pi / par[3]);
@@ -212,14 +215,18 @@ TF1 *AliTRDNDFast::GetLangauFun(TString funcname,Double_t range[2],Double_t scal
     for (int i=0; i<kNpar; i++) {
 	hlandauE->SetParLimits(i, low[i], high[i]);
     }
-
+    //hlandauE->FixParameter(4,0);
     if(scalefactor!=1){ScaleLangauFun(hlandauE,scalefactor*start[1]);}
 
     return hlandauE;
 }
 
 TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString option){
-
+    //cout<<"Started Fit Landau routine of name: "<<name.Data()<<endl;
+    ofstream FileToDebugFit;
+    //cout<<"Debug File declared"<<endl;
+    FileToDebugFit.open("FileToDebugFit.txt",std::ios::app);
+    //cout<<"Debug File opened"<<endl;
     TF1 *fitlandau1D=GetLangauFun(name,range);
     TF1 fit("land","landau");
     Double_t max=htemp->GetXaxis()->GetBinCenter(htemp->GetMaximumBin());
@@ -228,7 +235,21 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     fit.SetParameter(2,0.3*max); // MPV may never become negative!!!!!
     htemp->Fit("land",option.Data(),"",range[0],range[1]);
     ScaleLangauFun(fitlandau1D,fit.GetParameter(1));
-    htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
+    //cout<<"LanDau Fit performed and LanGau scaled"<<endl;
+    //htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
+    TFitResultPtr FitRes=htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
+    cout<<"got Fit result"<<endl;
+    FitRes->GetCovarianceMatrix();
+    //cout<<"got Covariance Matrix"<<endl;
+    double dChi2=FitRes->Chi2();
+    double dNDF=FitRes->Ndf();
+    double dChiDivNdf=dChi2/dNDF;
+    //cout<<"got Chi2()"<<endl;
+    FileToDebugFit<<" "<<dChiDivNdf;//<<endl;
+    //cout<<"Printed Chi2() to File"<<endl;
+    //FitRes->Print("V");
+    FileToDebugFit.close();
+    //cout<<"closed File"<<endl;
     return fitlandau1D;
 }
 
@@ -280,7 +301,7 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
 
 	if(hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width")!=0) hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
         // Fit Histogram
-	fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0");
+    fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0S");
 	// Norm Landau
 	if(fFunc[idim]->Integral(range[0],range[1])!=0.0) fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
 	else {
