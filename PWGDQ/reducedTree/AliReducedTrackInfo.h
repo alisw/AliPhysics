@@ -82,7 +82,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
-  Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<22 ? fCovMatrix[iCov] : 0.0);}
+  Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
   
   Float_t MCmom(Int_t dim) {return (dim>=0 && dim<3 ? fMCMom[dim] : 0.0);}
   Float_t PtMC() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
