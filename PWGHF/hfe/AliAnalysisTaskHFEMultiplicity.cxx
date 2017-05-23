@@ -127,7 +127,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fSparseMulti(0),
   fvalueMulti(0)
   
-{   fvalueElectron = new Double_t[6];
+{   fvalueElectron = new Double_t[8];
   fvalueMulti = new Double_t[4];
   
   // default constructor, don't allocate memory here!
@@ -184,7 +184,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fvalueMulti(0)								 
 {
   // constructor
-  fvalueElectron = new Double_t[6];
+  fvalueElectron = new Double_t[8];
   fvalueMulti = new Double_t[4];
   DefineInput(0, TChain::Class());   
   DefineOutput(1, TList::Class());    
@@ -216,11 +216,13 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   
   // example of a histogram
   
-  fNevents 		= new TH1F ("fNevents","Number of events",3,-0.5,2.5);
+  fNevents 		= new TH1F ("fNevents","Number of events",4,-0.5,3.5);
   fNevents->GetYaxis()->SetTitle("counts");
   fNevents->GetXaxis()->SetBinLabel(1,"All");
   fNevents->GetXaxis()->SetBinLabel(2,"With >2 Trks");
   fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
+  fNevents->GetXaxis()->SetBinLabel(4,"Vtx_{z}<10cm with Trigger");
+	
   
   fHistCent		= new TH1F("fHistCent", "centrality distribution ; centrality(%) ; counts", 100, 0, 100);
   fClusPhi    		= new TH1F("fClusPhi", "Cluster Phi distribution; #phi ; counts",100,0.,7);
@@ -248,10 +250,10 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fMatchClusEnergy	= new TH1F("fMatchClusEnergy","Cluster Energy after matching to tracks",200,0,100);
   fEMCTrkMatch 		= new TH2F("fEMCTrkMatch","Distance of EMCAL cluster to its closest track Method 1",100,-0.3,0.3,100,-0.3,0.3);
   
-  Int_t bins[6]		=      	{280, 160, 100, 100, 100, 10};
-  Double_t xmin[6]	=	{  2,  -8,   0,   0,   0, 0};
-  Double_t xmax[6]	=	{  30,   8,   2,   2,  2, 100};
-  fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;",6,bins,xmin,xmax);
+  Int_t bins[8]		=      	{280, 160, 100, 100, 100, 10, 10, 200};
+  Double_t xmin[8]	=	{  2,  -8,   0,   0,   0, 0, 0, 0 };
+  Double_t xmax[8]	=	{  30,   8,   2,   2,  2, 100, 100, 100};
+  fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;SPDTracklets;Cluster Energy;",8 ,bins,xmin,xmax);
   
   Int_t binsm[4]	=      	{ 10, 10, 10, 10};
   Double_t xminm[4]	=	{     0, 0, 0, 0};
@@ -317,7 +319,28 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   }
 	
  
-  Float_t lPercentiles[4];
+ //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
+  TString firedTrigger;
+  TString TriggerEG1("EG1");
+  TString TriggerEG2("EG2");
+  TString TriggerDG1("DG1");
+  TString TriggerDG2("DG2");
+    
+  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+    
+  Bool_t EG1tr = kFALSE;
+  Bool_t EG2tr = kFALSE;
+  if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
+  if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+    
+  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+  if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+
+  fNevents->Fill(3);
+
+ Float_t lPercentiles[4];
   TString lNames[4] = {"V0M", "V0A", "V0C", "SPDTracklets"};
   for(Int_t iEst=0; iEst<4; iEst++) lPercentiles[iEst] = 200;	
   AliMultSelection *MultSelection = 0x0;
@@ -345,24 +368,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   fpidResponse = fInputHandler->GetPIDResponse();
   if(!fpidResponse) return;
 
-  //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
-  TString firedTrigger;
-  TString TriggerEG1("EG1");
-  TString TriggerEG2("EG2");
-  TString TriggerDG1("DG1");
-  TString TriggerDG2("DG2");
-    
-  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
-    
-  Bool_t EG1tr = kFALSE;
-  Bool_t EG2tr = kFALSE;
-  if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-    
-  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
-  if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
-  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+
   //-----------cluster information---------------------------------------------------------------------------		
   Double_t cluphi = -999.0;
   Double_t clueta =-999.0 ;
@@ -491,7 +497,9 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	fvalueElectron[2] = Eop;
 	fvalueElectron[3] = M02match;
 	fvalueElectron[4] = M20match;
-	fvalueElectron[5] = lPercentiles[0] ; //V0M, Multiplicity information
+	fvalueElectron[5] = lPercentiles[0]; //V0M, Multiplicity information
+	fvalueElectron[6] = lPercentiles[3]; 
+	fvalueElectron[7] = clustMatchE; 
 								
 	fSparseElectron->Fill(fvalueElectron);   //Electron information sparse         
 						    
