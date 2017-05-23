@@ -47,6 +47,8 @@ public:
   
   void         InitParameters();
     
+  void         InitdEdXParameters();
+  
   void         MakeAnalysisFillHistograms() ;
   
   void         Print(const Option_t * opt) const;
@@ -60,7 +62,9 @@ public:
   
   void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
                                              Int_t absIdMax, Double_t maxCellFraction, 
-                                             Float_t eCrossFrac, Double_t tmax, Bool_t matched);
+                                             Float_t eCrossFrac, Double_t tmax, Int_t matchedPID);
+  
+  void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
     
@@ -138,6 +142,11 @@ public:
   Float_t  fM02Min;                             ///<  Minimum M02 on clusters
   Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
   Float_t  fMinDistToBad;                       ///<  Minimum distance to bad channel
+  
+  Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
+  Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
+  Int_t    fdEdXMinHad;                         ///<  dEdX min cut for hadrons
+  Int_t    fdEdXMaxHad;                         ///<  dEdX max cut for hadrons
   
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
   Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
