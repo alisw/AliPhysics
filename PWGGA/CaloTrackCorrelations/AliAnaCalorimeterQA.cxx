@@ -43,6 +43,7 @@ ClassImp(AliAnaCalorimeterQA) ;
 
 //__________________________________________
 /// Default Constructor. Initialize parameters.
+/// Init histogram arrays to 0.
 //__________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA() :
 AliAnaCaloTrackCorrBaseClass(),  
@@ -236,7 +237,6 @@ fhTrackMatchedDEtaPosMod(0),           fhTrackMatchedDPhiPosMod(0)
 /// \param maxCellFraction: ratio E_cell_max/ E_cluster.
 /// \param eCrossFrac: exoticity fraction.
 /// \param tmax: time of highest energy cell in cluster.
-///
 //______________________________________________________________________________________________________________________
 void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells,
                                                Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
@@ -397,6 +397,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
 
 //____________________________________________________________
 /// Fill histograms related to cells only.
+/// \param cells: cells info list container
 //____________________________________________________________
 void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 {
@@ -652,7 +653,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 }
 
 //__________________________________________________________________________
-/// Fill histograms releated to cluster cell position.
+/// Fill histograms related to cluster cell position.
+/// \param clus: pointer to cluster information
 //__________________________________________________________________________
 void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
 {
@@ -1094,6 +1096,12 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
 //__________________________________________________________________________________
 /// Fill histograms depending on the MC origin information.
 /// Only possible for simulations.
+/// \return true if primary particle found
+///
+/// \param matched: true if matched to a track
+/// \param labels: list of mc label indexes
+/// \param nLabels: number of mc labels 
+/// \param pdg: id of primary particle originating the cluster
 //__________________________________________________________________________________
 Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
                                                 Int_t nLabels, Int_t & pdg )
@@ -3403,7 +3411,7 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
 }
 
 //______________________________
-// Check if the calorimeter setting is ok, if not abort.
+/// Check if the calorimeter setting is ok, if not abort.
 //______________________________
 void AliAnaCalorimeterQA::Init()
 {
@@ -3460,6 +3468,12 @@ void AliAnaCalorimeterQA::InitParameters()
 
 //_____________________________________________________________________________
 /// Identify cluster as exotic or not.
+/// \return true if good
+///
+/// \param absIdMax: absolute ID of main cell in clusrter 
+/// \param m02: shower shape main axis of cluster
+/// \param nCellsPerCluster: number of cells in cluster
+/// \param cells: list of cells
 //_____________________________________________________________________________
 Bool_t AliAnaCalorimeterQA::IsGoodCluster(Int_t absIdMax, Float_t m02, 
                                           Int_t nCellsPerCluster, AliVCaloCells* cells)
