@@ -93,6 +93,10 @@ AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
 void AliAnalysisTaskChargedParticlesRef::CreateUserObjects(){
   if(!fTrackCuts) InitializeTrackCuts("standard", fInputHandler->IsA() == AliAODInputHandler::Class());
   fTrackCuts->SaveQAObjects(fOutput);
+
+  if(fStudyExoticTriggers) {
+    this->AddClusterContainer(fNameClusterContainer);
+  }
 }
 
 void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
@@ -225,9 +229,11 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
       FillTrackHistos(t, "", posCharge, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), isEMCAL);
       if(fStudyExoticTriggers) {
         if(std::find(exoticTriggers.begin(), exoticTriggers.end(), t) != exoticTriggers.end()){
-          FillTrackHistos(t, "Exotics", posCharge, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), isEMCAL);
+          // trigger is an "exotic" trigger
+          FillTrackHistos(t, "Exotic", posCharge, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), isEMCAL);
         } else {
-
+          // not an exotic trigger
+          FillTrackHistos(t, "NoExotic", posCharge, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), isEMCAL);
         }
       }
       if(fStudyPID && hasPIDresponse)
@@ -256,12 +262,15 @@ void AliAnalysisTaskChargedParticlesRef::UserFillHistosAfterEventSelection(){
 
 bool AliAnalysisTaskChargedParticlesRef::IsExoticsTrigger(const TString &trg){
   std::vector<const AliVCluster *> exoticClusters;
+
+  AliDebugStream(1) << GetName() << ": Reading clusters from container" << fNameClusterContainer << std::endl;
   for(auto c : this->GetClusterContainer(fNameClusterContainer)->all()) {
     if(c->GetIsExotic()) exoticClusters.push_back(c);
   }
-  AliDebugStream(1) << GetName() << ": Found " << exoticClusters.size() << "exotic clusters" << std::endl;
+  AliDebugStream(1) << GetName() << ": Found " << exoticClusters.size() << " exotic clusters" << std::endl;
   if(!exoticClusters.size()) {
     // event has no exotic clusters, therefore the firing trigger patch must be without overlap of an exotic clusters
+    AliDebugStream(1) << GetName() << ": No exotic clusters in event - event declared as non-exotic" << std::endl;
     return false;
   }
 
@@ -271,7 +280,7 @@ bool AliAnalysisTaskChargedParticlesRef::IsExoticsTrigger(const TString &trg){
       return patch->IsGammaLowRecalc() && patch->GetADCAmp() >= threshold;
     } else if (trg.Contains("J")) {
       return patch->IsJetLowRecalc() && patch->GetADCAmp() >= threshold;
-    } else {
+    } else if (trg.Contains("MC")) { // EMC/DMC7/8 triggers
       return patch->IsLevel0() && patch->GetADCAmp() >= threshold;
     }
     return false;
@@ -289,11 +298,15 @@ bool AliAnalysisTaskChargedParticlesRef::IsExoticsTrigger(const TString &trg){
         if(etacut.IsInRange(clustervec.Eta()) && phicut.IsInRange(clustervec.Phi())) {
           // cluster is matched
           // patch can be considered as "exotic"
+          AliDebugStream(1) << GetName() << ", Trigger " << trg << ": Found match of triggering patch to exotic cluster: Type "
+              << ((patch->IsJetHighRecalc() || patch->IsJetLowRecalc()) ? "JetRecalc" : ((patch->IsGammaHighRecalc() || patch->IsGammaLowRecalc()) ? "GammaRecalc" : "L0"))
+              << ", ADC" << patch->GetADCAmp() << std::endl;
           hasMatch = true;
           break;
         }
       }
       if(!hasMatch){
+        AliDebugStream(1) << GetName() << ": Found at least 1 non-exotic patch firing trigger " << trg << std::endl;
         hasNonExoticTriggerPatch = true;
         break;
       }
