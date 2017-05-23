@@ -19351,14 +19351,12 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //  }
   
   Double_t recRefMul = fReferenceMultiplicityEBE-fMultCutAv->GetBinContent(fMultCutAv->FindBin(fCentralityEBE));
-  
   if(fVtxRbR) {
     if(fZDCBinsCenRefMultRbRProj[fCenBin][0]) {
       QCReR -= fZDCBinsCenRefMultRbRProj[fCenBin][0]->Interpolate(recRefMul);
       QCImR -= fZDCBinsCenRefMultRbRProj[fCenBin][1]->Interpolate(recRefMul);
       QAReR -= fZDCBinsCenRefMultRbRProj[fCenBin][2]->Interpolate(recRefMul);
       QAImR -= fZDCBinsCenRefMultRbRProj[fCenBin][3]->Interpolate(recRefMul);
-      printf("doing it rbr boy: %e %e %e %e \n",fZDCBinsCenRefMultRbRProj[fCenBin][0]->Interpolate(recRefMul),fZDCBinsCenRefMultRbRProj[fCenBin][1]->Interpolate(recRefMul),fZDCBinsCenRefMultRbRProj[fCenBin][2]->Interpolate(recRefMul),fZDCBinsCenRefMultRbRProj[fCenBin][3]->Interpolate(recRefMul));
       fZDCFlowVect[0].Set(QCReR,QCImR);
       fZDCFlowVect[1].Set(QAReR,QAImR);
     }
@@ -19368,7 +19366,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
       QCImR -= fZDCBinsCenRefMultTotProj[fCenBin][1]->Interpolate(recRefMul);
       QAReR -= fZDCBinsCenRefMultTotProj[fCenBin][2]->Interpolate(recRefMul);
       QAImR -= fZDCBinsCenRefMultTotProj[fCenBin][3]->Interpolate(recRefMul);
-      printf("doing it tot boy: %e %e %e %e \n",fZDCBinsCenRefMultTotProj[fCenBin][0]->Interpolate(recRefMul),fZDCBinsCenRefMultTotProj[fCenBin][1]->Interpolate(recRefMul),fZDCBinsCenRefMultTotProj[fCenBin][2]->Interpolate(recRefMul),fZDCBinsCenRefMultTotProj[fCenBin][3]->Interpolate(recRefMul));
       fZDCFlowVect[0].Set(QCReR,QCImR);
       fZDCFlowVect[1].Set(QAReR,QAImR);
     }
