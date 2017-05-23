@@ -28,6 +28,7 @@
 
 class TString;
 class TList;
+class TProfile2D;
 class AliFlowEventSimple;
 class AliFlowEvent;
 class AliFlowAnalysisCRC;
@@ -231,6 +232,7 @@ public:
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -353,6 +355,7 @@ private:
   TList *fCRCZDCResList; // ZDC rescaling
   TList *fZDCESEList;       // list with weights
   TH1D* fCenWeightsHist;
+  TProfile2D *fRefMultRbRPro;
   TH1D* fPtWeightsHist[10];
   TH1D* fEtaWeightsHist[10][21][2];
   TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts

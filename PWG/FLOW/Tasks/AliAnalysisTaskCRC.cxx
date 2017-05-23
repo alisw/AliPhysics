@@ -31,6 +31,7 @@ class AliAnalysisTaskSE;
 #include "AliCentrality.h"
 #include "AliFlowVector.h"
 #include "AliFlowEvent.h"
+#include "TProfile2D.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCRC.h"
 #include "AliFlowAnalysisCRC.h"
@@ -132,6 +133,7 @@ fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
+fRefMultRbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -287,6 +289,7 @@ fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
+fRefMultRbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -455,6 +458,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fZDCESEList) fQC->SetZDCESEList(fZDCESEList);
   }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
+  if(fRefMultRbRPro) fQC->SetRefMultRbRPro(fRefMultRbRPro);
   if(fPhiExclZoneHist) fQC->SetPhiExclZoneHist(fPhiExclZoneHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {

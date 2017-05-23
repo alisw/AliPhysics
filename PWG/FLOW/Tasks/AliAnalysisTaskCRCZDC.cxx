@@ -943,6 +943,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     }
     fFlowEvent->SetNITSCL1(SumV0);
     
+    // set absolute orbit number
+    UInt_t period = aod->GetPeriodNumber();
+    UInt_t orbit24 = aod->GetOrbitNumber(); // wrapped down to 24 bits
+    if (period > 255) { // 8 bits
+      period = 255;
+      orbit24 = (1<<24) - 1;
+    }
+    if (orbit24 >= (1<<24)) { // 24 bits
+      period = 255;
+      orbit24 = (1<<24) - 1;
+    }
+    UInt_t orbit  = period * (1<<24) + orbit24;
+    fFlowEvent->SetAbsOrbit(orbit);
+    
     Double_t vtxpos[3]={0.,0.,0.};
     vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
     vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
