@@ -38,6 +38,7 @@
 ///  //
 ///  AliDrawStyle::PrintStyles(0,TPRegexp("."));
 ///  AliDrawStyle::ApplyStyle("figTemplate");
+///  gPad->UseCurrentStyle();  // force current style for current data    
 ///  //
 ///  // Standard ALICE latex symbols
 ///  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
@@ -57,6 +58,7 @@
 #include "TError.h"
 #include "TPRegexp.h"
 #include "TColor.h"
+#include "TMath.h"
 #include <iostream>
 //
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
@@ -180,6 +182,26 @@ void   AliDrawStyle::RegisterDefaultStyle(){
   //
   fStyleAlice["figTemplate"]=RegisterDefaultStyleFigTemplate(kFALSE);
   fStyleAlice["figTemplateGrey"]=RegisterDefaultStyleFigTemplate(kFALSE);
+  //
+  TStyle *style=RegisterDefaultStyleFigTemplate(kFALSE);
+  style->SetName("figTemplate2"); 
+  style->SetTitleXSize(TMath::Power(2,0.5)*style->GetTitleXSize());
+  style->SetTitleYSize(TMath::Power(2,0.5)*style->GetTitleYSize());
+  style->SetLabelSize(TMath::Power(2,0.5)*style->GetLabelSize("X"),"X");
+  style->SetLabelSize(TMath::Power(2,0.5)*style->GetLabelSize("Y"),"Y");
+  style->SetLabelSize(TMath::Power(2,0.5)*style->GetLabelSize("Z"),"Z");  
+  fStyleAlice["figTemplate2"]=style;
+  //
+  style=RegisterDefaultStyleFigTemplate(kFALSE);
+  style->SetName("figTemplate3"); 
+  style->SetTitleXSize(TMath::Power(3,0.5)*style->GetTitleXSize());
+  style->SetTitleYSize(TMath::Power(3,0.5)*style->GetTitleYSize());
+  style->SetLabelSize(TMath::Power(3,0.5)*style->GetLabelSize("X"),"X");
+  style->SetLabelSize(TMath::Power(3,0.5)*style->GetLabelSize("Y"),"Y");
+  style->SetLabelSize(TMath::Power(3,0.5)*style->GetLabelSize("Z"),"Z");  
+  fStyleAlice["figTemplate3"]=style;
+
+
 
 }
 
