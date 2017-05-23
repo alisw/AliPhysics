@@ -36,6 +36,7 @@ ClassImp(AliAnaClusterShapeCorrelStudies) ;
 
 //__________________________________________
 /// Default Constructor. Initialize parameters.
+/// Init all the histogram arrays to 0.
 //__________________________________________
 AliAnaClusterShapeCorrelStudies::AliAnaClusterShapeCorrelStudies() :
 AliAnaCaloTrackCorrBaseClass(),  
@@ -86,13 +87,15 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0),
 
 //fhCellTimeSpreadRespectToCellMaxM02(0), 
 //fhClusterMaxCellCloseCellDiffM02(0),  
-fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)       
+fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)
 {
   for(Int_t i=0; i < 3; i++)
   {
     fhClusterTimeEnergyM02 [i] = 0;  
     fhClusterMaxCellDiffM02[i] = 0;
     fhNCellsPerClusterM02  [i] = 0;
+    fhOriginE              [i] = 0;
+    fhOriginM02            [i] = 0;
   }
   
   // Weight studies
@@ -1288,10 +1291,16 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard(AliVCluster* clu
 
 
 //_____________________________________________________________________________________
-// Study the shape of the cluster in cell units terms.
+/// Study the shape of the cluster in cell units terms.
+///
+/// \param clus: calorimeter cluster pointer.
+/// \param absIdMax: id number of cell with highest energy in the cluster.
+/// \param goodCluster: bool for good or bad (see IsGoodCluster())
+/// \param mcTag: mc origin map
+///
 //_____________________________________________________________________________________
 void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax,
-                                                     Bool_t goodCluster)
+                                                                 Bool_t goodCluster, Int_t mcTag)
 {
   // No use to study clusters with less than 4 cells
   if( clus->GetNCells() <= 3 ) return;
@@ -1350,24 +1359,22 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms(AliVCluster* cl
     Int_t* labels = clus->GetLabels();
     
     if(IsDataMC())
-    {
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabel, GetMC());
-      
-      if(   GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
-           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)    &&
-           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)    &&
-           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)        ){
+    {      
+      if(   GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton) && 
+           !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0)    &&
+           !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta)    &&
+           !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)        ){
         fhDeltaIAMC[0]->Fill(clus->E(), dIA, GetEventWeight()); // Pure Photon
       }
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron) &&
-               !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)  ){
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCElectron) &&
+               !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)  ){
         fhDeltaIAMC[1]->Fill(clus->E(), dIA, GetEventWeight()); // Pure electron
       }
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
-                GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)  ){
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton) && 
+                GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)  ){
         fhDeltaIAMC[2]->Fill(clus->E(), dIA, GetEventWeight()); // Converted cluster
       }
-      else if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)){ 
+      else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton)){ 
         fhDeltaIAMC[3]->Fill(clus->E(), dIA, GetEventWeight()); // Hadrons
       }
       
@@ -1384,18 +1391,22 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms(AliVCluster* cl
 }
 
 //__________________________________________________________________________________________________________________
-/// Fill calorimeter cluster related histograms. Only good clusters, excluded bad previously.
+/// Fill TH3 histograms with cluster energy vs shower shape vs another parameter.
+///
 /// \param clus: calorimeter cluster pointer.
-/// \param caloClusters: full list of clusters, used for comparison of bad and good clusters timing.
 /// \param cells: list of cells, needed to get the cell with highest energy in cluster.
 /// \param absIdMax: id number of cell with highest energy in the cluster.
 /// \param maxCellFraction: ratio E_cell_max/ E_cluster.
 /// \param eCrossFrac: exoticity fraction.
 /// \param tmax: time of highest energy cell in cluster.
+/// \param matchedPID: 0-neutral, 1-matched to electron track, 2-matched to hadronic track.
+/// \param mcIndex: index of origin tagging as photon, pion, etc.
 //__________________________________________________________________________________________________________________
 void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
-(AliVCluster* clus, AliVCaloCells * cells, Int_t absIdMax, 
- Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax, Int_t matchedPID)
+(AliVCluster* clus , AliVCaloCells * cells, 
+ Int_t   absIdMax  , Double_t maxCellFraction, 
+ Float_t eCrossFrac, Double_t tmax, 
+ Int_t   matchedPID, Int_t    mcIndex)
 {
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
@@ -1443,6 +1454,13 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
     fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxCellFraction, m02, GetEventWeight());
     fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax           , m02, GetEventWeight());
     fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+    
+    // Check the origin.
+    if ( IsDataMC() )
+    {
+      fhOriginE  [matchedPID]->Fill(clus->E(), mcIndex,      GetEventWeight());
+      fhOriginM02[matchedPID]->Fill(clus->E(), mcIndex, m02, GetEventWeight());
+    }
   }
 }
 
@@ -1454,12 +1472,17 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
 /// \param clus: AliVCluster pointer
 /// \param matchedPID: 0-neutral, 1-electron, 2-hadron
 //____________________________________________________________________________
-void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID)
+void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID
+(AliVCluster *clus, Int_t & matchedPID)
 {
   
   AliVTrack *track = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
   
-  if(!track) return ;
+  if(!track) 
+  {
+    matchedPID = -1;
+    return ;
+  }
   
 //  Double_t tpt   = track->Pt();
 //  Double_t tmom  = track->P();
@@ -1483,7 +1506,11 @@ void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID(AliVCluster *clu
   
   if      ( dedx >= fdEdXMinEle && dedx < fdEdXMaxEle ) matchedPID = 1; 
   else if ( dedx >= fdEdXMinHad && dedx < fdEdXMaxHad ) matchedPID = 2;  
-  else                                                  matchedPID =-1;
+  else
+  {
+    AliDebug(1,Form("dEdX out of range %2.2f",dedx));
+    matchedPID = -1;
+  }
 }
 
 //____________________________________________________________________________
@@ -1492,7 +1519,7 @@ void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID(AliVCluster *clu
 /// and the call to the different methods
 /// filling different type of histograms:
 /// * Cluster Asymmetry
-/// * Depence of m02 and energy on different parameters
+/// * Dependence of m02 and energy on different parameters
 /// * Effect of different weight in clusters
 /// * Cluster shape vs ncells, in same or different T-Card 
 ///
@@ -1550,7 +1577,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     
     // Check only certain regions
     Bool_t in = kTRUE;
-    if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum.Eta(),fClusterMomentum.Phi(),GetCalorimeter()) ;
+    if(IsFiducialCutOn()) in = GetFiducialCut()->IsInFiducialCut(fClusterMomentum.Eta(),fClusterMomentum.Phi(),GetCalorimeter()) ;
     if(!in)
     {
       AliDebug(1,Form("Remove cluster with phi %2.2f and eta %2.2f", phi*TMath::RadToDeg(), eta));
@@ -1562,12 +1589,34 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     // Cells per cluster
     nCaloCellsPerCluster = clus->GetNCells();
     
+    // MC
+    Int_t mcTag   =  0;
+    Int_t mcIndex = -1;
+    if ( IsDataMC() && fStudyM02Dependence )
+    {
+      mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
+      
+      if      ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0        ) ||
+                GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta        ) ) mcIndex = 0;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0Decay   ) ||
+                GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEtaDecay   ) ||
+                GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCOtherDecay ) ) mcIndex = 1;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton     ) ) mcIndex = 2;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCElectron   ) ) mcIndex = 3;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPion       ) ) mcIndex = 4;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCKaon       ) ) mcIndex = 5;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCProton     ) ) mcIndex = 6;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiProton ) ) mcIndex = 7;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCNeutron    ) ) mcIndex = 8;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiNeutron) ) mcIndex = 9;
+    }
+
     // Cluster mathed with track? and what kind?
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
  
     Int_t matchedPID = 0;
     if ( matched && fStudyM02Dependence )
-      ClusterMatchedToTrackPID(clus,matchedPID);
+      ClusterMatchedToTrackPID(clus, matchedPID);
     
     // Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
@@ -1597,18 +1646,18 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     if(!goodCluster) 
     {
       if(fStudyClustersAsymmetry) 
-        ClusterAsymmetryHistograms(clus,absIdMax,kFALSE);
+        ClusterAsymmetryHistograms(clus, absIdMax, kFALSE, mcTag);
       
       continue;
     }
     
     //
     if(fStudyM02Dependence)
-      ClusterM02DependentHistograms(clus, cells, absIdMax, maxCellFraction, eCrossFrac, tmax, matchedPID);
+      ClusterM02DependentHistograms(clus, cells, absIdMax, maxCellFraction, eCrossFrac, tmax, matchedPID, mcIndex);
     
     //
     if(fStudyClustersAsymmetry) 
-      ClusterAsymmetryHistograms(clus,absIdMax,kTRUE);
+      ClusterAsymmetryHistograms(clus,absIdMax,kTRUE,mcTag);
     
     //
     if(fStudyTCardCorrelation) 
@@ -1616,7 +1665,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     
     // Cluster weights
     if(fStudyWeight) 
-      WeightHistograms(clus, cells);
+      WeightHistograms(clus, cells, mcTag);
     
   } // Cluster loop
   
@@ -1662,7 +1711,7 @@ TObjString * AliAnaClusterShapeCorrelStudies::GetAnalysisCuts()
 TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 {
   TList * outputContainer = new TList() ; 
-  outputContainer->SetName("QAHistos") ; 
+  outputContainer->SetName("ClusterShapeStudies") ; 
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
@@ -1670,6 +1719,11 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   
   //Int_t totalSM = fLastModule-fFirstModule+1;
   //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
+
+  
+  // MC origin
+  TString mcParticleStringLabel[] = {"Merged #gamma#gamma","Decay #gamma","Direct #gamma","e^{#pm}","#pi^{#pm}","k^{#pm}","p","#bar{p}","n","#bar{n}"};
+  //TString mcParticleStringTitle[] = {"MergedPhoton","DecayPhoton","DirectPhoton","Electron","Pion","Kaon","Proton","AntiProton","Neutron","AntiNeutron"};
   
   // Histogram binning and ranges
   // 
@@ -3658,6 +3712,30 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}");
       fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsPerClusterM02[imatch]); 
+      
+      if ( IsDataMC() )
+      {
+        fhOriginE[imatch]  = new TH2F 
+        (Form("hOrigin_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin for ID %s",matchCase[imatch].Data()),
+         16,2.5,18.5, 10,-0.5,9.5); 
+        fhOriginE[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginE[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginE[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginE[imatch]); 
+        
+        fhOriginM02[imatch]  = new TH3F 
+        (Form("hOriginM02_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+         16,2.5,18.5, 10,-0.5,9.5,200,0.,2); 
+        fhOriginM02[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02[imatch]->SetYTitle("particle");
+        fhOriginM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02[imatch]); 
+      }
     }
   }
   
@@ -3668,7 +3746,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 }
 
 //______________________________
-// Check if the calorimeter setting is ok, if not abort.
+/// Check if the calorimeter setting is ok, if not abort.
 //______________________________
 void AliAnaClusterShapeCorrelStudies::Init()
 {
@@ -3718,7 +3796,7 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
 }
 
 //________________________________________
-/// Initialize the dedx range 
+/// Initialize the dedx range depending on run number or MC
 //________________________________________
 void AliAnaClusterShapeCorrelStudies::InitdEdXParameters()
 {
@@ -3773,6 +3851,12 @@ void AliAnaClusterShapeCorrelStudies::InitdEdXParameters()
 
 //_____________________________________________________________________________
 /// Identify cluster as exotic or not.
+/// \return true if good
+///
+/// \param absIdMax: absolute ID of main cell in clusrter 
+/// \param m02: shower shape main axis of cluster
+/// \param nCellsPerCluster: number of cells in cluster
+/// \param cells: list of cells
 //_____________________________________________________________________________
 Bool_t AliAnaClusterShapeCorrelStudies::IsGoodCluster(Int_t absIdMax, Float_t m02, 
                                                       Int_t nCellsPerCluster, AliVCaloCells* cells)
@@ -3824,7 +3908,10 @@ void AliAnaClusterShapeCorrelStudies::Print(const Option_t * opt) const
 }
 
 //_____________________________________________________
-/// Main task method, call all the methods filling QA histograms.
+/// Main task method.
+/// It just recovers the list of clusters or cells depending
+/// on the calorimeter and passes it to the method doing the
+/// loop on the clusters and doing the different analysis.
 //_____________________________________________________
 void  AliAnaClusterShapeCorrelStudies::MakeAnalysisFillHistograms()
 {
@@ -3867,8 +3954,12 @@ void  AliAnaClusterShapeCorrelStudies::MakeAnalysisFillHistograms()
 //_________________________________________________________________________________
 /// Check cluster weights, check the effect of different w0 parameter on shower shape
 /// Check effect of time and energy cuts at cell level on the shower shape
+///
+/// \param clus: cluster pointer
+/// \param cells: list with all cells
+/// \param mcTag: mc origin map
 //_________________________________________________________________________________
-void AliAnaClusterShapeCorrelStudies::WeightHistograms(AliVCluster *clus, AliVCaloCells* cells)
+void AliAnaClusterShapeCorrelStudies::WeightHistograms(AliVCluster *clus, AliVCaloCells* cells, Int_t mcTag)
 {
   // First recalculate energy in case non linearity was applied
   Float_t  energy = 0;
@@ -3929,30 +4020,28 @@ void AliAnaClusterShapeCorrelStudies::WeightHistograms(AliVCluster *clus, AliVCa
     Float_t dorg  = clus->GetDispersion();
     Float_t w0org = GetCaloUtils()->GetEMCALRecoUtils()->GetW0();
     
-    Int_t tagMC = -1;
+    Int_t mcIndex = -1;
     if(IsDataMC() && clus->GetNLabels() > 0)
-    {
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
-      
-      if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)   &&
-         !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)      &&
-         !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)      &&
-         !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)        ){
-        tagMC = 0;
+    {      
+      if( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton)   &&
+         !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0)      &&
+         !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta)      &&
+         !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)        ){
+        mcIndex = 0;
       } // Pure Photon
-      else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron) &&
-              !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)        ){
-        tagMC = 1;
+      else if( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCElectron) &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)        ){
+        mcIndex = 1;
       } // Electron
-      else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)        ){
-        tagMC = 2;
+      else if( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCConversion)        ){
+        mcIndex = 2;
       } // Conversion
-      else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) ){
-        tagMC = 3;
+      else if( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0) ){
+        mcIndex = 3;
       }// Pi0
-      else if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta) &&
-              !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) ){
-        tagMC = 4;
+      else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta) &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPhoton) ){
+        mcIndex = 4;
       } // Hadron
     } // Is MC
     
@@ -3990,10 +4079,10 @@ void AliAnaClusterShapeCorrelStudies::WeightHistograms(AliVCluster *clus, AliVCa
         } // E cell loop
       } // Time loop
       
-      if(IsDataMC() && tagMC >= 0)
+      if(IsDataMC() && mcIndex >= 0)
       {
-        fhLambda0ForW0MC[iw][tagMC]->Fill(energy, clus->GetM02(), GetEventWeight());
-//      fhLambda1ForW0MC[iw][tagMC]->Fill(energy, clus->GetM20(), GetEventWeight());
+        fhLambda0ForW0MC[iw][mcIndex]->Fill(energy, clus->GetM02(), GetEventWeight());
+//      fhLambda1ForW0MC[iw][mcIndex]->Fill(energy, clus->GetM20(), GetEventWeight());
       }
     } // w0 loop
     

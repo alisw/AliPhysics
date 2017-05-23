@@ -58,11 +58,12 @@ public:
   void         BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters,  AliVCaloCells * cells,
                                     Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
           
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster );
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster, Int_t mcTag);
   
   void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
-                                             Int_t absIdMax, Double_t maxCellFraction, 
-                                             Float_t eCrossFrac, Double_t tmax, Int_t matchedPID);
+                                             Int_t   absIdMax    , Double_t maxCellFraction, 
+                                             Float_t eCrossFrac  , Double_t tmax, 
+                                             Int_t   matchedPID  , Int_t    mcIndex);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
@@ -75,7 +76,7 @@ public:
     
   Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster, AliVCaloCells *cells);
 
-  void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
+  void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells, Int_t mcTag);
 
   
   // Setters and getters
@@ -436,6 +437,8 @@ public:
   TH2F **  fhECellTotalRatioMod;                //!<! e cell / e total vs e total, per SM
   TH2F **  fhECellTotalLogRatioMod;             //!<! log (e cell / e total)  vs e total, per SM
 
+  // Shower shape dependence 
+  
 //TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
 //TH3F *   fhClusterMaxCellCloseCellDiffM02;     //!<! Difference between max cell energy and cell energy of the same cluster
   TH3F *   fhClusterMaxCellCloseCellRatioM02;    //!<! Ratio between max cell energy and cell energy of the same cluster
@@ -445,6 +448,9 @@ public:
   TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
+  
+  TH2F *   fhOriginE  [3];                       //!<! check origin of selected clusters
+  TH3F *   fhOriginM02[3];                       //!<! check origin of selected clusters, vs E vs M02
   
   /// Copy constructor not implemented.
   AliAnaClusterShapeCorrelStudies & operator = (const AliAnaClusterShapeCorrelStudies & qa) ;
