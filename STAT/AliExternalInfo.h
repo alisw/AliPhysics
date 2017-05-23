@@ -90,8 +90,13 @@ public:
   TTree* GetTreeProdCycle()                                             {return GetTree("MonALISA.ProductionCycle", "", "");}
   TTree* GetTreeCPass()                                                 {return GetTree("MonALISA.ProductionCPass", "", "");}
   TTree* GetTreeProdCycleByID(TString ID)                               {return GetTree("MonALISA.ProductionCycleID", ID, "");}
-  TTree*  GetCPassTree(const char * period, const  char *pass); 
-
+  TTree* GetCPassTree(const char * period, const  char *pass); 
+  
+  TTree*  GetTreeAliVersRD();
+  TTree*  GetTreeAliVersMC();
+  TTree*  GetTreeMCPassGuess();
+  TString GetMCPassGuess(TString MCprodname);
+  
   TChain* GetChain(TString type, TString period, TString pass);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}
   TChain* GetChainRCT(TString period, TString pass)                     {return GetChain("MonALISA.RCT", period, pass);}
