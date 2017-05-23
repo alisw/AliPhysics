@@ -55,28 +55,28 @@ public:
     
   // Main methods
   
-  void         BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters,  AliVCaloCells * cells,
-                                    Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
+  void         BadClusterHistograms(AliVCluster* clus, Int_t absIdMax,  
+                                    Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
           
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster, Int_t mcTag);
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster, 
+                                          Int_t mcIndex, Int_t matchedPID);
   
-  void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
+  void         ClusterM02DependentHistograms(AliVCluster* cluster,  
                                              Int_t   absIdMax    , Double_t maxCellFraction, 
                                              Float_t eCrossFrac  , Double_t tmax, 
                                              Int_t   matchedPID  , Int_t    mcIndex);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
-  void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
+  void         ClusterLoopHistograms();
     
-//  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-//                                AliVCluster *clus, AliVCaloCells* cells);
+//void         ExoticHistograms(Int_t absIdMax, Float_t ampMax, AliVCluster *clus);
   
-  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
+  void         ChannelCorrelationInTCard(AliVCluster* clus, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
     
-  Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster, AliVCaloCells *cells);
+  Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster);
 
-  void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells, Int_t mcTag);
+  void         WeightHistograms(AliVCluster *clus, Int_t mcTag);
 
   
   // Setters and getters
@@ -166,6 +166,9 @@ public:
   
   Float_t  fConstantTimeShift;                  ///<  Apply a 615 ns time shift in case of simulation, shift in ns.
 
+  AliVCaloCells * fCaloCellList;                //!<! cells temporary container                     
+  TObjArray     * fCaloClusList;                //!<! clusters temporary container                     
+  
   // Calorimeter Clusters
       
   // T-Card correlation
@@ -403,19 +406,17 @@ public:
   TH2F *   fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[2]; //!<! Secondary cell energy difference vs leading cell energy, one in same TCard as cell max, the other not, both in same row and 1 column, exo > 0.97
   TH2F *   fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo  [2]; //!<! Secondary cell energy difference vs leading cell energy, one in same TCard as cell max, the other not, both in same row and 1 column, exo > 0.97
   
-  // Cluster cell size
+  // Cluster asymmetry in cell terms
     
-  TH2F *   fhDeltaIEtaDeltaIPhiE0[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching;
-  TH2F *   fhDeltaIEtaDeltaIPhiE2[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching;
-  TH2F *   fhDeltaIEtaDeltaIPhiE6[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching;
-  TH2F *   fhDeltaIA[2];                        //!<! Cluster "asymmetry" in cell terms vs E, with and without matching
-  TH2F *   fhDeltaIAL0[2];                      //!<! Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
-  TH2F *   fhDeltaIAL1[2];                      //!<! Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
-  TH2F *   fhDeltaIANCells[2] ;                 //!<! Cluster "asymmetry" in cell units vs number of cells in cluster for E > 0.5, with and without matching
-  TH2F *   fhDeltaIAMC[4];                      //!<! Cluster "asymmetry" in cell terms vs E, from MC photon, electron, conversion or hadron.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE0;    //!<! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching; bad clusters.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE2;    //!<! Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching; bad clusters.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE6;    //!<! Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching; bad clusters.
+  //for neutral, electrons and hadrons
+  TH3F *   fhDeltaIEtaDeltaIPhi[3];             //!<! Difference between max cell index and farthest cell, eta vs phi vs E
+  TH2F *   fhDeltaIA[3];                        //!<! Cluster "asymmetry" vs E
+  TH3F *   fhDeltaIAL0[3];                      //!<! Cluster "asymmetry" vs Lambda0 vs E 
+  TH3F *   fhDeltaIAL1[3];                      //!<! Cluster "asymmetry" vs Lambda0 vs E 
+  TH3F *   fhDeltaIANCells[3] ;                 //!<! Cluster "asymmetry" vs n cells vs E 
+  TH3F *   fhDeltaIAMC[3];                      //!<! Cluster "asymmetry" vs E vs origin
+  
+  TH3F *   fhBadClusterDeltaIEtaDeltaIPhi;      //!<! Difference between max cell index and farthest cell, eta vs phi vs E, with and without matching; bad clusters.
   TH2F *   fhBadClusterDeltaIA;                 //!<! Cluster "asymmetry" in cell terms vs E, with and without matching; bad clusters.
   	
   // Weight studies
