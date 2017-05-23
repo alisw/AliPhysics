@@ -54,29 +54,21 @@ public:
   void         Print(const Option_t * opt) const;
     
   // Main methods
-  
-  void         BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters,  AliVCaloCells * cells,
-                                    Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
-          
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster, Int_t mcTag);
-  
-  void         ClusterM02DependentHistograms(AliVCluster* cluster, AliVCaloCells * cells, 
-                                             Int_t   absIdMax    , Double_t maxCellFraction, 
-                                             Float_t eCrossFrac  , Double_t tmax, 
-                                             Int_t   matchedPID  , Int_t    mcIndex);
+            
+  void         ClusterShapeHistograms(AliVCluster* cluster,  
+                                      Int_t   absIdMax    , Double_t maxCellFraction, 
+                                      Float_t eCrossFrac  , Double_t tmax, 
+                                      Int_t   matchedPID  , Int_t    mcIndex);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
-  void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
+  void         ClusterLoopHistograms();
+      
+  void         ChannelCorrelationInTCard(AliVCluster* clus, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
     
-//  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-//                                AliVCluster *clus, AliVCaloCells* cells);
-  
-  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
-    
-  Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster, AliVCaloCells *cells);
+  Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster);
 
-  void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells, Int_t mcTag);
+  void         WeightHistograms(AliVCluster *clus, Int_t mcTag);
 
   
   // Setters and getters
@@ -113,44 +105,46 @@ public:
 
   // Analysis switchs
   
-  void SwitchOnStudyClustersAsymmetry()         { fStudyClustersAsymmetry = kTRUE  ; }
-  void SwitchOffStudyClustersAsymmetry()        { fStudyClustersAsymmetry = kFALSE ; }
+  void SwitchOnStudyClusterShape()              { fStudyShape            = kTRUE  ; }
+  void SwitchOffStudyClusterShape()             { fStudyShape            = kFALSE ; }
 
-  void SwitchOnStudyWeight()                    { fStudyWeight      = kTRUE  ; }
-  void SwitchOffStudyWeight()                   { fStudyWeight      = kFALSE ; }
+  void SwitchOnStudyWeight()                    { fStudyWeight           = kTRUE  ; }
+  void SwitchOffStudyWeight()                   { fStudyWeight           = kFALSE ; }
   
   void SwitchOnStudyTCardCorrelation()          { fStudyTCardCorrelation = kTRUE  ; }
   void SwitchOffStudyTCardCorrelation()         { fStudyTCardCorrelation = kFALSE ; }
-  
-  void SwitchOnStudyM02Dependence()             { fStudyM02Dependence = kTRUE  ; }
-  void SwitchOffStudyM02Dependence()            { fStudyM02Dependence = kFALSE ; }
-  
-  void SwitchOnStudyExotic()                    { fStudyExotic      = kTRUE  ; }
-  void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
+
+  void SwitchOnStudyExotic()                    { fStudyExotic           = kTRUE  ; }
+  void SwitchOffStudyExotic()                   { fStudyExotic           = kFALSE ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
  private:
   
+  //
   // Switches
-  Bool_t   fStudyClustersAsymmetry;             ///<  Study asymmetry of clusters, not QA related
-  Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, not QA related
-  Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
+  //
+  Bool_t   fStudyShape;                         ///<  Study asymmetry and shower shape of clusters
+  
+  Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
+ 
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
-  Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
-    
+  Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, for TCard correl studies
+
+  //
   // Cuts
+  //
   Float_t  fM02Min;                             ///<  Minimum M02 on clusters
   Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
   Float_t  fMinDistToBad;                       ///<  Minimum distance to bad channel
+
+  Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
+  Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
   
   Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
   Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
   Int_t    fdEdXMinHad;                         ///<  dEdX min cut for hadrons
   Int_t    fdEdXMaxHad;                         ///<  dEdX max cut for hadrons
-  
-  Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
-  Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
 
   // Invariant mass analysis
   
@@ -161,14 +155,18 @@ public:
   Float_t  fInvMassMaxOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them. In radians.
   Float_t  fInvMassMaxTimeDifference;           ///<  Maximum difference between the time of the 2 clusters to be considered in invariant mass. In ns.
   
+  Float_t  fConstantTimeShift;                  ///<  Apply a 615 ns time shift in case of simulation, shift in ns.
+  
+  // Temporal containers
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, inv mass loop, temporary container
   
-  Float_t  fConstantTimeShift;                  ///<  Apply a 615 ns time shift in case of simulation, shift in ns.
-
-  // Calorimeter Clusters
-      
+  AliVCaloCells * fCaloCellList;                //!<! cells temporary container                     
+  TObjArray     * fCaloClusList;                //!<! clusters temporary container                     
+        
+  //
   // T-Card correlation
+  //
   
   TH2F *   fhEnergyTime1Cell[2];                            //!<! 1 cell cluster energy vs time
   TH2F *   fhEnergyTMEtaResidual1Cell;                      //!<! 1 cell cluster energy vs eta track-cluster residual
@@ -403,22 +401,37 @@ public:
   TH2F *   fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[2]; //!<! Secondary cell energy difference vs leading cell energy, one in same TCard as cell max, the other not, both in same row and 1 column, exo > 0.97
   TH2F *   fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo  [2]; //!<! Secondary cell energy difference vs leading cell energy, one in same TCard as cell max, the other not, both in same row and 1 column, exo > 0.97
   
-  // Cluster cell size
-    
-  TH2F *   fhDeltaIEtaDeltaIPhiE0[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching;
-  TH2F *   fhDeltaIEtaDeltaIPhiE2[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching;
-  TH2F *   fhDeltaIEtaDeltaIPhiE6[2];           //!<! Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching;
-  TH2F *   fhDeltaIA[2];                        //!<! Cluster "asymmetry" in cell terms vs E, with and without matching
-  TH2F *   fhDeltaIAL0[2];                      //!<! Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
-  TH2F *   fhDeltaIAL1[2];                      //!<! Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
-  TH2F *   fhDeltaIANCells[2] ;                 //!<! Cluster "asymmetry" in cell units vs number of cells in cluster for E > 0.5, with and without matching
-  TH2F *   fhDeltaIAMC[4];                      //!<! Cluster "asymmetry" in cell terms vs E, from MC photon, electron, conversion or hadron.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE0;    //!<! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching; bad clusters.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE2;    //!<! Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching; bad clusters.
-  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE6;    //!<! Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching; bad clusters.
-  TH2F *   fhBadClusterDeltaIA;                 //!<! Cluster "asymmetry" in cell terms vs E, with and without matching; bad clusters.
-  	
+  //
+  // Cluster shape studies
+  //
+  
+  // Asymmetry
+  // for neutral, electrons and hadrons
+  TH3F *   fhDeltaIEtaDeltaIPhi[3];             //!<! Difference between max cell index and farthest cell, eta vs phi vs E
+  TH2F *   fhDeltaIA[3];                        //!<! Cluster "asymmetry" vs E
+  TH3F *   fhDeltaIAM02[3];                     //!<! Cluster "asymmetry" vs Lambda0 vs E 
+  TH3F *   fhDeltaIAM20[3];                     //!<! Cluster "asymmetry" vs Lambda1 vs E 
+  TH3F *   fhDeltaIANCells[3] ;                 //!<! Cluster "asymmetry" vs n cells vs E 
+  TH3F *   fhDeltaIAMC[3];                      //!<! Cluster "asymmetry" vs E vs origin
+  
+  // Shower shape dependence 
+  //
+//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
+//TH3F *   fhClusterMaxCellCloseCellDiffM02;     //!<! Difference between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellCloseCellRatioM02;    //!<! Ratio between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellECrossM02;            //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy
+ 
+  // for neutral, electrons and hadrons
+  TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
+  TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
+  TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
+  
+  TH2F *   fhOriginE  [3];                       //!<! check origin of selected clusters
+  TH3F *   fhOriginM02[3];                       //!<! check origin of selected clusters, vs E vs M02
+  
+  //
   // Weight studies
+  //
   
   TH2F *   fhECellClusterRatio;                 //!<! e cell / e cluster vs e cluster
   TH2F *   fhECellClusterLogRatio;              //!<! log (e cell / e cluster)  vs e cluster
@@ -428,7 +441,7 @@ public:
   TH2F *   fhLambda0ForW0AndCellCuts    [12][4][3]; //!<! L0 for different w0 and cell cuts
   TH2F *   fhLambda0ForW0AndCellCutsEta0[12][4][3]; //!<! L0 for different w0 and cell cuts, |eta| < 0.15
 //TH2F *   fhLambda1ForW0AndCellCuts    [12][4][3]; //!<! L1 for different w0 and cell cuts
-
+  
   TH2F *   fhLambda0ForW0MC[12][5];             //!<! L0 for different w0, depending on the particle of origin
 //TH2F *   fhLambda1ForW0MC[12][5];             //!<! L1 for different w0, depending on the particle of origin
   
@@ -436,21 +449,6 @@ public:
   TH2F *   fhECellTotalLogRatio;                //!<! log (e cell / e total)  vs e total
   TH2F **  fhECellTotalRatioMod;                //!<! e cell / e total vs e total, per SM
   TH2F **  fhECellTotalLogRatioMod;             //!<! log (e cell / e total)  vs e total, per SM
-
-  // Shower shape dependence 
-  
-//TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
-//TH3F *   fhClusterMaxCellCloseCellDiffM02;     //!<! Difference between max cell energy and cell energy of the same cluster
-  TH3F *   fhClusterMaxCellCloseCellRatioM02;    //!<! Ratio between max cell energy and cell energy of the same cluster
-  TH3F *   fhClusterMaxCellECrossM02;            //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy
- 
-  //for neutral, electrons and hadrons
-  TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
-  TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
-  TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
-  
-  TH2F *   fhOriginE  [3];                       //!<! check origin of selected clusters
-  TH3F *   fhOriginM02[3];                       //!<! check origin of selected clusters, vs E vs M02
   
   /// Copy constructor not implemented.
   AliAnaClusterShapeCorrelStudies & operator = (const AliAnaClusterShapeCorrelStudies & qa) ;
