@@ -664,6 +664,28 @@ AliMUONRecoParam::Create(const char* settings)
     // set parameters for cosmic runs
     param = AliMUONRecoParam::GetCosmicParam();
     defaultParam = AliRecoParam::kCosmic;
+    param->SetHVLimit(0,1550);
+    param->SetManuOccupancyLimits(-1.,0.015);
+    param->DiscardMonoCathodClusters(kTRUE, 10., 10.);
+    param->SetPadGoodnessMask(0x408BE9B);
+    //param->SetHVLimit(-1,1250);
+    //param->SetMaxTriggerTracks(1000000);
+    //param->SetMaxTrackCandidates(1000000);
+    //param->ChargeSigmaCut(800.);
+    //for (Int_t iCh=0; iCh<10; iCh++)
+    //{
+    //  param->SetDefaultNonBendingReso(iCh,0.2);
+    //  param->SetDefaultBendingReso(iCh,0.2);
+    //}
+    //param->SetSigmaCutForTracking(5.);
+    //param->ImproveTracks(kTRUE, 4.);
+    //param->SetClusteringMode("MLEMV4");
+    //param->SetMaxNonBendingSlope(0.01);
+    //param->SetMaxBendingSlope(0.01);
+    param->SetMaxNonBendingSlope(0.9);
+    param->SetMaxBendingSlope(0.9);
+    param->RequestStation(0, kFALSE);
+    param->RequestStation(1, kFALSE);
   }
   else if ( stype == "ppideal" ) 
   {
@@ -690,14 +712,15 @@ AliMUONRecoParam::Create(const char* settings)
     param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
     param->SetEventSizeLimits(45., 65.);
     param->SetHVLimit(0,1550);
-    param->SetHVLimit(1,1550);
-    param->SetHVLimit(2,1550);
-    param->SetHVLimit(3,1550);
+    //param->SetHVLimit(1,1550);
+    //param->SetHVLimit(2,1550);
+    //param->SetHVLimit(3,1550);
+    param->DiscardMonoCathodClusters(kTRUE, 10., 10.);
     
     // specific parameters for p-p data or realistic p-p simu
     if ( stype == "ppreal" || stype == "pprealnofield" )
     {
-      param->SetPadGoodnessMask(0x400BE9B);
+      param->SetPadGoodnessMask(0x408BE9B);
     }
     else
     {
@@ -735,7 +758,7 @@ AliMUONRecoParam::Create(const char* settings)
     // specific parameters for Pb-Pb data or realistic Pb-Pb simu
     if ( stype == "pbpbreal" )
     {
-      param->SetPadGoodnessMask(0x400BE9B);
+      param->SetPadGoodnessMask(0x408BE9B);
     }
     else
     {
