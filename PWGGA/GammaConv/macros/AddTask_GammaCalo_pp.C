@@ -80,6 +80,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  Int_t localDebugFlag = 0;
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -104,6 +105,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("LOCALDEBUGFLAG")){
+        cout << "INFO: AddTask_GammaCalo_pp activating 'LOCALDEBUGFLAG'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,14,"");
+        localDebugFlag = tempType.Atoi();
+        cout << "INFO: debug flag set to '" << localDebugFlag << "'" << endl;
       }
     }
   }
@@ -337,13 +344,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111100010032220000","0163103100000050"); // wo TM
     cuts.AddCut("00000113","1111100013032220000","0163103100000050"); // w TM
   } else if (trainConfig == 45){  // EMCAL clusters, 8TeV LHC12 with TM
-    cuts.AddCut("00010113","1111100063032230000","0163103100000050"); 
-    cuts.AddCut("00052013","1111100063032230000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111100063032230000","0163103100000050"); // EMCEGA
+    cuts.AddCut("00010113","1111100067032230000","0163103100000060");
+    cuts.AddCut("00052013","1111100067032230000","0163103100000060"); // EMC7
+    cuts.AddCut("00081013","1111100067032230000","0163103100000060"); // EMCEGA
   } else if (trainConfig == 46){  // EMCAL clusters, 8TeV LHC12 without TM
-    cuts.AddCut("00010113","1111100060032230000","0163103100000050"); 
-    cuts.AddCut("00052013","1111100060032230000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111100060032230000","0163103100000050"); // EMCEGA
+    cuts.AddCut("00010113","1111100060032230000","0163103100000060");
+    cuts.AddCut("00052013","1111100060032230000","0163103100000060"); // EMC7
+    cuts.AddCut("00081013","1111100060032230000","0163103100000060"); // EMCEGA
     
         
   // LHC13g  
@@ -1363,6 +1370,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145 || trainConfig == 206){
     task->SetInOutTimingCluster(-30e-9,35e-9);
   }
+  task->SetLocalDebugFlag(localDebugFlag);
   
   //connect containers
   AliAnalysisDataContainer *coutput =

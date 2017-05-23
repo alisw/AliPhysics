@@ -58,6 +58,7 @@
 #include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
+#include <fstream>
 
 ClassImp(AliAnalysisTaskGammaCalo)
 
@@ -313,7 +314,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fCloseHighPtClusters(NULL)
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0),
+  fOutputLocalDebug()
 {
   
 }
@@ -571,7 +574,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fCloseHighPtClusters(NULL)
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0),
+  fOutputLocalDebug()
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -587,6 +592,8 @@ AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
     delete[] fBGHandler;
     fBGHandler = 0x0;
   }
+
+  if(fLocalDebugFlag) fOutputLocalDebug.close();
 }
 //___________________________________________________________
 void AliAnalysisTaskGammaCalo::InitBack(){
@@ -1836,6 +1843,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     tBrokenFiles->Branch("closeHighPtClusters",&fCloseHighPtClusters);
     fOutputContainer->Add(tBrokenFiles);
   }
+
+  if(fLocalDebugFlag) fOutputLocalDebug.open("debugOutput.txt",ios::out);
   
   PostData(1, fOutputContainer);
 }
@@ -3097,6 +3106,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
                 
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if(fLocalDebugFlag) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1)
@@ -3847,7 +3857,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
       }
     }
   } else if(!isTruePi0 && !isTrueEta) { // Background
-    if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
+    if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       } else { // No photon or without mother
@@ -4149,5 +4159,76 @@ void AliAnalysisTaskGammaCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_t> &
     hist->Fill(it->second, fWeightJetJetMC);
   }
   ma.clear();
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(fLocalDebugFlag < 1) return;
+  if(pi0cand->GetOpeningAngle() < 0.02) DebugMethod(pi0cand,gamma0,gamma1);
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(fLocalDebugFlag == 0) return;
+  if(!fOutputLocalDebug.is_open()) return;
+
+  fOutputLocalDebug << "---------------------------------------" << endl;
+
+  //    const Int_t nEmcalEtaBins             = 96;
+  //    const Int_t nEmcalPhiBins             = 124;
+  //    Float_t EmcalEtaBins[nEmcalEtaBins+1] = {-0.66687,-0.653,-0.63913,-0.62526,-0.61139,-0.59752,-0.58365,-0.56978,-0.55591,-0.54204,-0.52817,-0.5143,-0.50043,-0.48656,-0.47269,-0.45882,-0.44495,-0.43108,-0.41721,-0.40334,-0.38947,-0.3756,-0.36173,-0.34786,-0.33399,-0.32012,-0.30625,-0.29238,-0.27851,-0.26464,-0.25077,-0.2369,-0.22303,-0.20916,-0.19529,-0.18142,-0.16755,-0.15368,-0.13981,-0.12594,-0.11207,-0.0982,-0.08433,-0.07046,-0.05659,-0.04272,-0.02885,-0.01498,-0.00111,0.01276,0.02663,0.0405,0.05437,0.06824,0.08211,0.09598,0.10985,0.12372,0.13759,0.15146,0.16533,0.1792,0.19307,0.20694,0.22081,0.23468,0.24855,0.26242,0.27629,0.29016,0.30403,0.3179,0.33177,0.34564,0.35951,0.37338,0.38725,0.40112,0.41499,0.42886,0.44273,0.4566,0.47047,0.48434,0.49821,0.51208,0.52595,0.53982,0.55369,0.56756,0.58143,0.5953,0.60917,0.62304,0.63691,0.65078,0.66465};
+  //    Float_t EmcalPhiBins[nEmcalPhiBins+1] = {1.408,1.4215,1.435,1.4485,1.462,1.4755,1.489,1.5025,1.516,1.5295,1.543,1.5565,1.57,1.5835,1.597,1.6105,1.624,1.6375,1.651,1.6645,1.678,1.6915,1.705,1.7185,1.732,1.758,1.7715,1.785,1.7985,1.812,1.8255,1.839,1.8525,1.866,1.8795,1.893,1.9065,1.92,1.9335,1.947,1.9605,1.974,1.9875,2.001,2.0145,2.028,2.0415,2.055,2.0685,2.082,2.108,2.1215,2.135,2.1485,2.162,2.1755,2.189,2.2025,2.216,2.2295,2.243,2.2565,2.27,2.2835,2.297,2.3105,2.324,2.3375,2.351,2.3645,2.378,2.3915,2.405,2.4185,2.432,2.456,2.4695,2.483,2.4965,2.51,2.5235,2.537,2.5505,2.564,2.5775,2.591,2.6045,2.618,2.6315,2.645,2.6585,2.672,2.6855,2.699,2.7125,2.726,2.7395,2.753,2.7665,2.78,2.804,2.8175,2.831,2.8445,2.858,2.8715,2.885,2.8985,2.912,2.9255,2.939,2.9525,2.966,2.9795,2.993,3.0065,3.02,3.0335,3.047,3.0605,3.074,3.0875,3.101,3.1145,3.128};
+
+  //TH2F* fHistClusterEtavsPhiAfterQA     = new TH2F(Form("clusters: %.04f", pi0cand->GetOpeningAngle()),"EtaPhi_afterClusterQA",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+
+  fOutputLocalDebug << "--cluster1--" << endl;
+  Float_t clusPos[3]={0,0,0};
+  fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster = clusterVector.Eta();
+  Double_t phiCluster = clusterVector.Phi();
+
+  Int_t nCellCluster = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell) << " - " << nIphi << " - " << nIeta << " - " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+    //fHistClusterEtavsPhiAfterQA->Fill(nIeta,nIphi);
+  }
+  fOutputLocalDebug << "phi: " << phiCluster << endl;
+  fOutputLocalDebug << "eta: " << etaCluster << endl;
+
+  fOutputLocalDebug << "--cluster2--" << endl;
+  fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector2(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster2 = clusterVector2.Eta();
+  Double_t phiCluster2 = clusterVector2.Phi();
+  nCellCluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell) << " - " << nIphi << " - " << nIeta << " - " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+    //fHistClusterEtavsPhiAfterQA->Fill(nIeta,nIphi);
+    //fHistClusterEtavsPhiAfterQA->Fill(nIeta,nIphi);
+  }
+  fOutputLocalDebug << "phi: " << phiCluster2 << endl;
+  fOutputLocalDebug << "eta: " << etaCluster2 << endl;
+
+  fOutputLocalDebug << "--pi0cand--" << endl;
+  fOutputLocalDebug << "openingAngle: " << pi0cand->GetOpeningAngle() << endl;
+  fOutputLocalDebug << "pT: " << pi0cand->Pt() << endl;
+  fOutputLocalDebug << "dist: " << TMath::Sqrt(TMath::Power(phiCluster-phiCluster2,2)+TMath::Power(etaCluster-etaCluster2,2)) << endl;
+  fOutputLocalDebug << "---------------------------------------" << endl;
+
   return;
 }
