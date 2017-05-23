@@ -594,7 +594,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutClustMC->Sumw2();
           fOutput->Add(fOutClustMC);
           
-          fTrackResolutionPtMC= new TH2F("hsigmaPTvsPT","track resolution",100.,0.,25., 100, 0.,0.2);
+          fTrackResolutionPtMC= new TH2F("hsigmaPTvsPT","track resolution",100.,0.,25., 200, -0.2,0.2);
           fTrackResolutionPtMC->GetXaxis()->SetTitle("p_{T} GeV/c");
           fTrackResolutionPtMC->GetYaxis()->SetTitle("Abs( p_{T}^{gen}-p_{T}^{reco} )");
           fTrackResolutionPtMC->Sumw2();
