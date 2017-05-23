@@ -315,20 +315,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010"); // EMC7
     cuts.AddCut("00081113","00200009327000008250400000","1111100067032230000","0163103100000010"); // EMCEG1,
   } else if (trainConfig == 32){  // LHC10 without non linearity
-<<<<<<< 82e7004cf2c925daed0dd9c6b942541a4054f1d1
-    cuts.AddCut("00000113","00200009327000008250400000","1111100067032230000","0163103100000010"); // MB
-  } else if (trainConfig == 33){  // EMCal, all triggers without non linearity
-    cuts.AddCut("00010113","00200009327000008250400000","1111100063032230000","0163103100000010"); // INT7
-    cuts.AddCut("00052013","00200009327000008250400000","1111100063032230000","0163103100000010"); // EMC7
-    cuts.AddCut("00083013","00200009327000008250400000","1111100063032230000","0163103100000010"); // EMCEG1,
-    cuts.AddCut("00085013","00200009327000008250400000","1111100063032230000","0163103100000010"); // EMCEG2,
-  //LHC11a EMCal no non linearity internally  
-  } else if (trainConfig == 34){ 
-    cuts.AddCut("00003113","00200009327000008250400000","1111100053032230000","0163103100000010"); // 700 MeV cluster min energy
-    cuts.AddCut("00051013","00200009327000008250400000","1111100053032230000","0163103100000010"); // 700 MeV cluster min energy
-=======
     cuts.AddCut("00000113","00200009327000008250400000","1111100017032230000","0163103100000010"); // MB
->>>>>>> PWGGA/GammaConv/macros: major cleanup of PCM-EMC configurations for pp 2.76TeV, only absolutely necessary left over
 
     
   // Multiplicity dependent cuts
