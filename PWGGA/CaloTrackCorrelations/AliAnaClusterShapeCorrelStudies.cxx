@@ -42,9 +42,8 @@ AliAnaClusterShapeCorrelStudies::AliAnaClusterShapeCorrelStudies() :
 AliAnaCaloTrackCorrBaseClass(),  
 
 // Switches
-fStudyClustersAsymmetry(kFALSE),       fStudyExotic(kFALSE),
-fStudyWeight(kFALSE),                  fStudyTCardCorrelation(kFALSE), 
-fStudyM02Dependence (kFALSE),
+fStudyShape(kFALSE),                   fStudyWeight(kFALSE),               
+fStudyTCardCorrelation(kFALSE),        fStudyExotic(kFALSE),
 
 // Parameters and cuts
 fM02Min(0),                            fNCellMin(0),            
@@ -58,11 +57,9 @@ fInvMassMinECut(0),                    fInvMassMaxECut(0),
 fInvMassMinM02Cut(0),                  fInvMassMaxM02Cut(0),                    
 fInvMassMaxOpenAngle(0),               fInvMassMaxTimeDifference(0),
 
-//// Exotic
-//fExoNECrossCuts(0),                    fExoECrossCuts(),
-//fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
+fConstantTimeShift(0),
 
-fClusterMomentum(),                    fConstantTimeShift(0),
+fClusterMomentum(),                    fClusterMomentum2(),                    
 fCaloCellList(NULL),                   fCaloClusList(NULL),
 
 // Histograms
@@ -76,21 +73,16 @@ fhColRowHighEPosTime(0),               fhColRowHighENegTime(0),                f
 fhEnergyTMEtaResidualTCardCorrNoSelection1Cell(0),  fhEnergyTMPhiResidualTCardCorrNoSelection1Cell(0),
 fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCorrNoSelectionExotic(0),
 
-// Asymmetry studies
-fhBadClusterDeltaIEtaDeltaIPhi(0),     fhBadClusterDeltaIA(0), 
+// M02 dependence studies
+//fhCellTimeSpreadRespectToCellMaxM02(0), 
+//fhClusterMaxCellCloseCellDiffM02(0),  
+fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
 fhEMaxCellClusterRatio(0),             fhEMaxCellClusterLogRatio(0),                
 fhECellTotalRatio(0),                  fhECellTotalLogRatio(0),
-fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0),
-
-//fhExoL0ECross(0),                      fhExoL1ECross(0),
-
-// M02 dependece studies
-//fhCellTimeSpreadRespectToCellMaxM02(0), 
-//fhClusterMaxCellCloseCellDiffM02(0),  
-fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)
+fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
 {
   for(Int_t i=0; i < 3; i++)
   {
@@ -104,8 +96,8 @@ fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)
     // Cluster asymmetry
     fhDeltaIEtaDeltaIPhi   [i] = 0;
     fhDeltaIA              [i] = 0;
-    fhDeltaIAL0            [i] = 0;         
-    fhDeltaIAL1            [i] = 0;
+    fhDeltaIAM02           [i] = 0;         
+    fhDeltaIAM20           [i] = 0;
     fhDeltaIANCells        [i] = 0;
   }
   
@@ -127,22 +119,6 @@ fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0)
 //    fhLambda1ForW0MC[i][j] = 0;
     }
   }
-
-//  // Exotic
-//  for (Int_t ie = 0; ie < 10 ; ie++) 
-//  {
-//    fhExoDTime[ie] = 0;
-//    for (Int_t idt = 0; idt < 5 ; idt++) 
-//    {
-//      fhExoNCell    [ie][idt] = 0;
-//      fhExoL0       [ie][idt] = 0;
-//      fhExoL1       [ie][idt] = 0;
-//      fhExoECross   [ie][idt] = 0;
-//      fhExoTime     [ie][idt] = 0;
-//      fhExoL0NCell  [ie][idt] = 0;
-//      fhExoL1NCell  [ie][idt] = 0;
-//    } 
-//  }
   
   // TCard correl studies
   for(Int_t tm = 0; tm < 2;  tm++)
@@ -1290,35 +1266,38 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard(AliVCluster* clu
 //  } 
 }
 
-
-//_____________________________________________________________________________________
-/// Study the shape of the cluster in cell units terms.
+//__________________________________________________________________________________________________________________
+/// Fill mostly TH3 histograms with cluster energy vs shower shape or cluster asymmetry vs another parameter.
 ///
 /// \param clus: calorimeter cluster pointer.
 /// \param absIdMax: id number of cell with highest energy in the cluster.
-/// \param goodCluster: bool for good or bad (see IsGoodCluster())
-/// \param mcTag: mc origin map
-///
-//_____________________________________________________________________________________
-void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms
-(AliVCluster* clus, Int_t absIdMax,Bool_t goodCluster, 
- Int_t mcIndex, Int_t matchedPID)
+/// \param maxFrac: ratio E_cell_max/ E_cluster.
+/// \param eCrossFrac: exoticity fraction.
+/// \param tmax: time of highest energy cell in cluster.
+/// \param matchedPID: 0-neutral, 1-matched to electron track, 2-matched to hadronic track.
+/// \param mcIndex: index of origin tagging as photon, pion, etc.
+//__________________________________________________________________________________________________________________
+void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
+(AliVCluster* clus ,  
+ Int_t   absIdMax  , Double_t maxFrac, 
+ Float_t eCrossFrac, Double_t tmax, 
+ Int_t   matchedPID, Int_t    mcIndex)
 {
-  // No use to study clusters with less than 4 cells
-  if( clus->GetNCells() <= 3 ) return;
-  
-  if ( goodCluster && (matchedPID < 0 || matchedPID > 2) ) return;
-  
-  Int_t dIeta = 0;
-  Int_t dIphi = 0;
-  
+  Int_t nCaloCellsPerCluster = clus->GetNCells();
+  if ( nCaloCellsPerCluster < 1 ) return; 
+
+  Float_t energy = clus->E();
+  Float_t m02    = clus->GetM02();
+  Float_t m20    = clus->GetM20();
+  Int_t   dIeta  = 0;
+  Int_t   dIphi  = 0;
+  Int_t   nCell  = 0;
+
   Int_t ietaMax=-1; Int_t iphiMax = 0; Int_t rcuMax = 0;
   Int_t smMax = GetModuleNumberCellIndexes(absIdMax,GetCalorimeter(), ietaMax, iphiMax, rcuMax);
   
-  Int_t ncellsWeight = 0;
-  Float_t energy = clus->E();
-
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
+  // Check time of cells respect to max energy cell
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
   {
     Int_t   absId = clus ->GetCellsAbsId()[ipos];
     Float_t eCell = fCaloCellList->GetCellAmplitude(absId) ;
@@ -1330,9 +1309,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms
     Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
     
     if( weight < 0.01 ) continue;
-
-    ncellsWeight++;
     
+    nCell++;
+    
+    //////
+    // Cluster asymmetry in cell units
+    //////
     Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
     Int_t sm = GetModuleNumberCellIndexes(absId,GetCalorimeter(), ieta, iphi, rcu);
     
@@ -1350,74 +1332,9 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms
       else                 ietaShift   +=48;
       if(dIeta < TMath::Abs(ietaShift-ietaMaxShift)) dIeta = TMath::Abs(ietaShift-ietaMaxShift);
     }
-  }// Fill cell-cluster histogram loop
-
-  if(ncellsWeight < 1) return ;
-  
-  Float_t dIA = 1.*(dIphi-dIeta)/(dIeta+dIphi);
-  
-  AliDebug(1,Form("E %2.2f, dPhi %d, dEta %d, dIA %2.2f, match %d",energy,dIphi,dIeta,dIA,matchedPID));
-  
-  if ( goodCluster )
-  {
-    fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
-    fhDeltaIA           [matchedPID]->Fill(energy, dIA, GetEventWeight());
-    fhDeltaIAL0         [matchedPID]->Fill(energy, clus->GetM02()   , dIA, GetEventWeight());
-    fhDeltaIAL1         [matchedPID]->Fill(energy, clus->GetM20()   , dIA, GetEventWeight());
-    fhDeltaIANCells     [matchedPID]->Fill(energy, clus->GetNCells(), dIA, GetEventWeight());
-    
-    // Origin of  clusters
-    if(IsDataMC() && mcIndex > -1 && mcIndex < 10)
-      fhDeltaIAMC[matchedPID]->Fill(energy, mcIndex, dIA, GetEventWeight()); // Pure Photon
-
-  } // good cluster
-  else
-  {
-    fhBadClusterDeltaIEtaDeltaIPhi->Fill(energy, dIeta, dIphi, GetEventWeight());
-    fhBadClusterDeltaIA           ->Fill(energy, dIA, GetEventWeight());
-  }
-}
-
-//__________________________________________________________________________________________________________________
-/// Fill TH3 histograms with cluster energy vs shower shape vs another parameter.
-///
-/// \param clus: calorimeter cluster pointer.
-/// \param absIdMax: id number of cell with highest energy in the cluster.
-/// \param maxCellFraction: ratio E_cell_max/ E_cluster.
-/// \param eCrossFrac: exoticity fraction.
-/// \param tmax: time of highest energy cell in cluster.
-/// \param matchedPID: 0-neutral, 1-matched to electron track, 2-matched to hadronic track.
-/// \param mcIndex: index of origin tagging as photon, pion, etc.
-//__________________________________________________________________________________________________________________
-void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
-(AliVCluster* clus ,  
- Int_t   absIdMax  , Double_t maxCellFraction, 
- Float_t eCrossFrac, Double_t tmax, 
- Int_t   matchedPID, Int_t    mcIndex)
-{
-  Float_t energy = clus->E();
-  Float_t m02    = clus->GetM02();
-  
-  Int_t nCaloCellsPerCluster = clus->GetNCells();
-  if ( nCaloCellsPerCluster < 1 ) return; 
-  
-  Int_t nCellWithWeight = 0;
-  
-  // Check time of cells respect to max energy cell
-  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
-  {
-    Int_t   absId = clus ->GetCellsAbsId()[ipos];
-    Float_t eCell = fCaloCellList->GetCellAmplitude(absId) ;
-    
-    GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
-
-    if( absId == absIdMax || eCell < 0.01 ) continue;
-    
-    Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
-    
-    if( weight < 0.01 ) continue;
-    
-    nCellWithWeight ++;
+    //////
+    // End calculate cluster asymmetry in cell units
+    //////
     
     Float_t frac = fCaloCellList->GetCellAmplitude(absId)/fCaloCellList->GetCellAmplitude(absIdMax);            
     fhClusterMaxCellCloseCellRatioM02->Fill(energy, frac, m02, GetEventWeight());
@@ -1432,23 +1349,41 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
     //fhCellTimeSpreadRespectToCellMaxM02->Fill(energy, tdiff, m02, GetEventWeight());        
   } // Fill cell-cluster histogram loop
   
-  if ( nCellWithWeight < 1 ) return; 
+  if ( nCell < 1 ) return; 
 
-  fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac     , m02, GetEventWeight());
+  // cluster asymmetry
+  Float_t dIA = 1.*(dIphi-dIeta)/(dIeta+dIphi);
+  
+  AliDebug(1,Form("E %2.2f, nCell %d, dPhi %d, dEta %d, dIA %2.2f, match %d",energy,nCell, dIphi,dIeta,dIA,matchedPID));
+  
+  if(fStudyExotic)
+    fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac, m02, GetEventWeight());
   
   if(matchedPID >= 0 && matchedPID < 3)
   {
-    fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxCellFraction, m02, GetEventWeight());
-    fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax           , m02, GetEventWeight());
-    fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+    fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxFrac, m02, GetEventWeight());
+    fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
+    fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
+   
+    if ( clus->GetNCells() > 4 ) // it makes sense only for significant size histograms
+    {
+      fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
+      fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
+      fhDeltaIAM02        [matchedPID]->Fill(energy, m02  , dIA  , GetEventWeight());
+      fhDeltaIAM20        [matchedPID]->Fill(energy, m20  , dIA  , GetEventWeight());
+      fhDeltaIANCells     [matchedPID]->Fill(energy, nCell, dIA  , GetEventWeight());
+    }
     
     // Check the origin.
-    if ( IsDataMC() )
+    if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
     {
-      fhOriginE  [matchedPID]->Fill(clus->E(), mcIndex,      GetEventWeight());
-      fhOriginM02[matchedPID]->Fill(clus->E(), mcIndex, m02, GetEventWeight());
-    }
-  }
+      fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+      fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+      
+      if ( clus->GetNCells() > 4 )
+       fhDeltaIAMC[matchedPID]->Fill(energy, mcIndex, dIA, GetEventWeight()); 
+    } // MC
+  } // match PID ok
 }
 
 //____________________________________________________________________________
@@ -1542,6 +1477,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     }
     
     // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+    //
     Float_t maxCellFraction = 0.;
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fCaloCellList, clus, maxCellFraction);
     
@@ -1570,13 +1506,21 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     
     AliDebug(1,Form("cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f",e,pt,eta,phi*TMath::RadToDeg()));
     
-    // Cells per cluster
+    // Select the cluster
+    //
     nCaloCellsPerCluster = clus->GetNCells();
+
+    Bool_t goodCluster = IsGoodCluster(absIdMax, clus->GetM02(), nCaloCellsPerCluster);
     
-    // MC
+    AliDebug(1,Form("Accept cluster? %d",goodCluster));
+    
+    if(!goodCluster) continue;
+
+    // MC origin finding
+    //
     Int_t mcTag   =  0;
     Int_t mcIndex = -1;
-    if ( IsDataMC() && ( fStudyM02Dependence || fStudyClustersAsymmetry ) )
+    if ( IsDataMC() && fStudyShape )
     {
       mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
       
@@ -1596,59 +1540,43 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     }
 
     // Cluster mathed with track? and what kind?
+    //
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
  
     Int_t matchedPID = 0;
-    if ( matched && ( fStudyM02Dependence || fStudyClustersAsymmetry ) )
+    if ( matched && fStudyShape )
       ClusterMatchedToTrackPID(clus, matchedPID);
     
-    // Get time of max cell
-    Double_t tmax  = fCaloCellList->GetCellTime(absIdMax);
-    GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    // Get amp and time of max cell, recalibrate and calculate things
+    //
+    Int_t    bc     = (GetReader()->GetInputEvent())->GetBunchCrossNumber();
+    Double_t tmax   = fCaloCellList->GetCellTime(absIdMax);
+    Float_t  ampMax = fCaloCellList->GetCellAmplitude(absIdMax);
+
+    GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax, bc);
     tmax*=1.e9;
     tmax-=fConstantTimeShift;
     
-    Float_t ampMax = fCaloCellList->GetCellAmplitude(absIdMax);
-    GetCaloUtils()->RecalibrateCellAmplitude(ampMax,GetCalorimeter(), absIdMax);
-    
-    //
-    // Fill histograms related to single cluster 
-    //
-    
-    //if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, fCaloCellList);
-    
-    // Check bad clusters if requested and rejection was not on
-    Bool_t goodCluster = IsGoodCluster(absIdMax, clus->GetM02(), nCaloCellsPerCluster);
-    
-    Int_t bc = (GetReader()->GetInputEvent())->GetBunchCrossNumber();
+    GetCaloUtils()->RecalibrateCellAmplitude(ampMax, GetCalorimeter(), absIdMax);
     
     Float_t eCrossFrac = 0;
-    if(ampMax > 0.01) eCrossFrac = 1-GetCaloUtils()->GetECross(absIdMax,fCaloCellList,bc)/ampMax;
+    if ( ampMax > 0.01 ) 
+      eCrossFrac = 1-GetCaloUtils()->GetECross(absIdMax,fCaloCellList,bc)/ampMax;
     
-    AliDebug(1,Form("Accept cluster? %d",goodCluster));
     
-    if(!goodCluster) 
-    {
-      if(fStudyClustersAsymmetry) 
-        ClusterAsymmetryHistograms(clus, absIdMax, kFALSE, mcIndex, matchedPID);
-      
-      continue;
-    }
+    // Call analysis method filling histograms
+    //
+  
+    //
+    if ( fStudyShape )
+      ClusterShapeHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, tmax, matchedPID, mcIndex);
     
     //
-    if(fStudyM02Dependence)
-      ClusterM02DependentHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, tmax, matchedPID, mcIndex);
-    
-    //
-    if(fStudyClustersAsymmetry) 
-      ClusterAsymmetryHistograms(clus, absIdMax, kTRUE, mcIndex, matchedPID);
-
-    //
-    if(fStudyTCardCorrelation) 
+    if ( fStudyTCardCorrelation ) 
       ChannelCorrelationInTCard(clus, matched, absIdMax, eCrossFrac);
     
-    // Cluster weights
-    if(fStudyWeight) 
+    // 
+    if ( fStudyWeight ) 
       WeightHistograms(clus, mcTag);
     
   } // Cluster loop
@@ -3407,8 +3335,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     }
   } // TCard correlation studies
   
-  // Cluster size in terms of cells
-  if(fStudyClustersAsymmetry)
+  // Cluster size in terms of cells and shape TH3
+  if(fStudyShape)
   {
     for(Int_t imatch = 0; imatch < 3; imatch++)
     {
@@ -3429,23 +3357,23 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhDeltaIA[imatch]->SetYTitle("#it{A}_{cell in cluster}");
       outputContainer->Add(fhDeltaIA[imatch]); 
       
-      fhDeltaIAL0[imatch]  = new TH3F 
-      (Form("hDeltaIAL0_%s",matchCase[imatch].Data()),
+      fhDeltaIAM02[imatch]  = new TH3F 
+      (Form("hDeltaIAM02_%s",matchCase[imatch].Data()),
        Form("Cluster *asymmetry* in cell units vs #lambda^{2}_{0} for %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,nShShBins,minShSh,maxShSh,asyBins,asyMin,asyMax); 
-      fhDeltaIAL0[imatch]->SetXTitle("#it{E}_{cluster}");
-      fhDeltaIAL0[imatch]->SetYTitle("#lambda^{2}_{0}");
-      fhDeltaIAL0[imatch]->SetZTitle("#it{A}_{cell in cluster}");
-      outputContainer->Add(fhDeltaIAL0[imatch]); 
+      fhDeltaIAM02[imatch]->SetXTitle("#it{E}_{cluster}");
+      fhDeltaIAM02[imatch]->SetYTitle("#lambda^{2}_{0}");
+      fhDeltaIAM02[imatch]->SetZTitle("#it{A}_{cell in cluster}");
+      outputContainer->Add(fhDeltaIAM02[imatch]); 
       
-      fhDeltaIAL1[imatch]  = new TH3F 
-      (Form("hDeltaIAL1_%s",matchCase[imatch].Data()),
+      fhDeltaIAM20[imatch]  = new TH3F 
+      (Form("hDeltaIAM20_%s",matchCase[imatch].Data()),
        Form("Cluster *asymmetry* in cell units vs #lambda^{2}_{1} for %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,nShShBins/1.5,minShSh,maxShSh/1.5,asyBins,asyMin,asyMax); 
-      fhDeltaIAL1[imatch]->SetXTitle("#it{E}_{cluster}");
-      fhDeltaIAL1[imatch]->SetYTitle("#lambda^{2}_{1}");
-      fhDeltaIAL1[imatch]->SetZTitle("#it{A}_{cell in cluster}");
-      outputContainer->Add(fhDeltaIAL1[imatch]); 
+      fhDeltaIAM20[imatch]->SetXTitle("#it{E}_{cluster}");
+      fhDeltaIAM20[imatch]->SetYTitle("#lambda^{2}_{1}");
+      fhDeltaIAM20[imatch]->SetZTitle("#it{A}_{cell in cluster}");
+      outputContainer->Add(fhDeltaIAM20[imatch]); 
       
       fhDeltaIANCells[imatch]  = new TH3F 
       (Form("hDeltaIANCells_%s",matchCase[imatch].Data()),
@@ -3456,8 +3384,56 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhDeltaIANCells[imatch]->SetZTitle("#it{A}_{cell in cluster}");
       outputContainer->Add(fhDeltaIANCells[imatch]); 
       
-      if(IsDataMC())
+      fhClusterMaxCellDiffM02[imatch]  = new TH3F 
+      (Form("hClusterMaxCellDiffM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs (#it{E}_{cluster} - #it{E}_{cell max})/#it{E}_{cluster} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE, 20,0,1.,nShShBins,minShSh,maxShSh); 
+      fhClusterMaxCellDiffM02[imatch]->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhClusterMaxCellDiffM02[imatch]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
+      fhClusterMaxCellDiffM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhClusterMaxCellDiffM02[imatch]);  
+      
+      fhClusterTimeEnergyM02[imatch]  = new TH3F 
+      (Form("hClusterTimeEnergyM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs TOF vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,45,-25.5,20.5,nShShBins,minShSh,maxShSh); 
+      fhClusterTimeEnergyM02[imatch]->SetXTitle("#it{E} (GeV) ");
+      fhClusterTimeEnergyM02[imatch]->SetYTitle("TOF (ns)");
+      fhClusterTimeEnergyM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhClusterTimeEnergyM02[imatch]);    
+      
+      fhNCellsPerClusterM02[imatch]  = new TH3F 
+      (Form("hNCellsPerClusterM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhNCellsPerClusterM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}");
+      fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhNCellsPerClusterM02[imatch]); 
+      
+      if ( IsDataMC() )
       {
+        fhOriginE[imatch]  = new TH2F 
+        (Form("hOrigin_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginE[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginE[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginE[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginE[imatch]); 
+        
+        fhOriginM02[imatch]  = new TH3F 
+        (Form("hOriginM02_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02[imatch]->SetYTitle("particle");
+        fhOriginM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02[imatch]); 
+        
         fhDeltaIAMC[imatch]  = new TH3F 
         (Form("hDeltaIA_MC_%s",matchCase[imatch].Data()),
          Form("Cluster *asymmetry* in cell units vs E vs primary, for ID %s",matchCase[imatch].Data()),
@@ -3468,26 +3444,46 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         for(Int_t ilabel = 1; ilabel <=10; ilabel++)
           fhDeltaIAMC[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
         outputContainer->Add(fhDeltaIAMC[imatch]);    
-      }
-    } // good clusters match pid loop
+      } // MC
+    } // match loop
     
-    // bad clusters
-    fhBadClusterDeltaIEtaDeltaIPhi  = new TH3F 
-    ("hBadClusterDeltaIEtaDeltaIPhi",
-     "Cluster size in columns vs rows vs E, #it{n}_{cells} > 3",
-     nEbins,minE,maxE,cellBins,cellMin,cellMax,cellBins,cellMin,cellMax); 
-    fhBadClusterDeltaIEtaDeltaIPhi->SetXTitle("#it{E}_{cluster}");
-    fhBadClusterDeltaIEtaDeltaIPhi->SetYTitle("#Delta Column");
-    fhBadClusterDeltaIEtaDeltaIPhi->SetZTitle("#Delta Row");
-    outputContainer->Add(fhBadClusterDeltaIEtaDeltaIPhi); 
+    //    fhCellTimeSpreadRespectToCellMaxM02 = new TH3F 
+    //    ("hCellTimeSpreadRespectToCellMaxM02",
+    //     "#it{E} vs t_{cell max}-t_{cell i} vs #lambda_{0}^{2}", 
+    //     nEbins,minE,maxE,100,-100,100,nShShBins,minShSh,maxShSh); 
+    //    fhCellTimeSpreadRespectToCellMaxM02->SetXTitle("#it{E} (GeV)");
+    //    fhCellTimeSpreadRespectToCellMaxM02->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
+    //    fhCellTimeSpreadRespectToCellMaxM02->SetZTitle("#lambda_{0}^{2}");
+    //    outputContainer->Add(fhCellTimeSpreadRespectToCellMaxM02);
     
-    fhBadClusterDeltaIA  = new TH2F 
-    ("hBadClusterDeltaIA",
-     "Cluster *asymmetry* in cell units vs E",
-     nptbins,ptmin,ptmax,asyBins,asyMin,asyMax); 
-    fhBadClusterDeltaIA->SetXTitle("#it{E}_{cluster}");
-    fhBadClusterDeltaIA->SetYTitle("#it{A}_{cell in cluster}");
-    outputContainer->Add(fhBadClusterDeltaIA); 
+    fhClusterMaxCellCloseCellRatioM02  = new TH3F 
+    ("hClusterMaxCellCloseCellRatioM02","#it{E} vs #it{E}_{cell-i}/#it{E}_{cell max} vs #lambda_{0}^{2}",
+     nEbins,minE,maxE, 20,0,1.,nShShBins,minShSh,maxShSh); 
+    fhClusterMaxCellCloseCellRatioM02->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhClusterMaxCellCloseCellRatioM02->SetYTitle("#it{E}_{cell i}/#it{E}_{cell max}");
+    fhClusterMaxCellCloseCellRatioM02->SetZTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhClusterMaxCellCloseCellRatioM02);
+    
+    //    fhClusterMaxCellCloseCellDiffM02  = new TH3F 
+    //    ("hClusterMaxCellCloseCellDiffM02",
+    //     "#it{E} vs #it{E}_{cell max}-#it{E}_{cell i} vs #lambda_{0}^{2}",
+    //     nEbins,minE,maxE, 40,0,20,nShShBins,minShSh,maxShSh); 
+    //    fhClusterMaxCellCloseCellDiffM02->SetXTitle("#it{E}_{cluster} (GeV) ");
+    //    fhClusterMaxCellCloseCellDiffM02->SetYTitle("#it{E}_{cell max}-#it{E}_{cell i} (GeV)");
+    //    fhClusterMaxCellCloseCellDiffM02->SetZTitle("#lambda_{0}^{2}");
+    //    outputContainer->Add(fhClusterMaxCellCloseCellDiffM02);   
+    
+    if(fStudyExotic)
+    {
+      fhClusterMaxCellECrossM02  = new TH3F 
+      ("hClusterMaxCellECrossM02",
+       "#it{E} vs exoticity vs #lambda_{0}^{2}",
+       nEbins,minE,maxE, 40,0.6,1.,nShShBins,minShSh,maxShSh); 
+      fhClusterMaxCellECrossM02->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhClusterMaxCellECrossM02->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
+      fhClusterMaxCellECrossM02->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhClusterMaxCellECrossM02);
+    }
   }
   
   if(fStudyWeight)
@@ -3610,99 +3606,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       }
     }     
   }
-  
-  if(fStudyM02Dependence)
-  {
-//    fhCellTimeSpreadRespectToCellMaxM02 = new TH3F 
-//    ("hCellTimeSpreadRespectToCellMaxM02",
-//     "#it{E} vs t_{cell max}-t_{cell i} vs #lambda_{0}^{2}", 
-//     nEbins,minE,maxE,100,-100,100,nShShBins,minShSh,maxShSh); 
-//    fhCellTimeSpreadRespectToCellMaxM02->SetXTitle("#it{E} (GeV)");
-//    fhCellTimeSpreadRespectToCellMaxM02->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
-//    fhCellTimeSpreadRespectToCellMaxM02->SetZTitle("#lambda_{0}^{2}");
-//    outputContainer->Add(fhCellTimeSpreadRespectToCellMaxM02);
-    
-    fhClusterMaxCellCloseCellRatioM02  = new TH3F 
-    ("hClusterMaxCellCloseCellRatioM02","#it{E} vs #it{E}_{cell-i}/#it{E}_{cell max}) vs #lambda_{0}^{2}",
-     nEbins,minE,maxE, 20,0,1.,nShShBins,minShSh,maxShSh); 
-    fhClusterMaxCellCloseCellRatioM02->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhClusterMaxCellCloseCellRatioM02->SetYTitle("#it{E}_{cell i}/#it{E}_{cell max}");
-    fhClusterMaxCellCloseCellRatioM02->SetZTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhClusterMaxCellCloseCellRatioM02);
-    
-//    fhClusterMaxCellCloseCellDiffM02  = new TH3F 
-//    ("hClusterMaxCellCloseCellDiffM02",
-//     "#it{E} vs #it{E}_{cell max}-#it{E}_{cell i} vs #lambda_{0}^{2}",
-//     nEbins,minE,maxE, 40,0,20,nShShBins,minShSh,maxShSh); 
-//    fhClusterMaxCellCloseCellDiffM02->SetXTitle("#it{E}_{cluster} (GeV) ");
-//    fhClusterMaxCellCloseCellDiffM02->SetYTitle("#it{E}_{cell max}-#it{E}_{cell i} (GeV)");
-//    fhClusterMaxCellCloseCellDiffM02->SetZTitle("#lambda_{0}^{2}");
-//    outputContainer->Add(fhClusterMaxCellCloseCellDiffM02);   
-    
-    fhClusterMaxCellECrossM02  = new TH3F 
-    ("hClusterMaxCellECrossM02",
-     "#it{E} vs exoticity vs #lambda_{0}^{2}",
-     nEbins,minE,maxE, 40,0.6,1.,nShShBins,minShSh,maxShSh); 
-    fhClusterMaxCellECrossM02->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhClusterMaxCellECrossM02->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
-    fhClusterMaxCellECrossM02->SetZTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhClusterMaxCellECrossM02);
 
-    for(Int_t imatch = 0; imatch < 3; imatch++)
-    {
-      fhClusterMaxCellDiffM02[imatch]  = new TH3F 
-      (Form("hClusterMaxCellDiffM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs #it{E}_{cluster} - #it{E}_{cell max})/#it{E}_{cluster} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE, 20,0,1.,nShShBins,minShSh,maxShSh); 
-      fhClusterMaxCellDiffM02[imatch]->SetXTitle("#it{E}_{cluster} (GeV) ");
-      fhClusterMaxCellDiffM02[imatch]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
-      fhClusterMaxCellDiffM02[imatch]->SetZTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhClusterMaxCellDiffM02[imatch]);  
-      
-      fhClusterTimeEnergyM02[imatch]  = new TH3F 
-      (Form("hClusterTimeEnergyM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs TOF vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,45,-25.5,20.5,nShShBins,minShSh,maxShSh); 
-      fhClusterTimeEnergyM02[imatch]->SetXTitle("#it{E} (GeV) ");
-      fhClusterTimeEnergyM02[imatch]->SetYTitle("TOF (ns)");
-      fhClusterTimeEnergyM02[imatch]->SetZTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhClusterTimeEnergyM02[imatch]);    
-      
-      fhNCellsPerClusterM02[imatch]  = new TH3F 
-      (Form("hNCellsPerClusterM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
-      fhNCellsPerClusterM02[imatch]->SetXTitle("#it{E} (GeV)");
-      fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}");
-      fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhNCellsPerClusterM02[imatch]); 
-      
-      if ( IsDataMC() )
-      {
-        fhOriginE[imatch]  = new TH2F 
-        (Form("hOrigin_%s",matchCase[imatch].Data()),
-         Form("#it{E} vs origin for ID %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE, 10,-0.5,9.5); 
-        fhOriginE[imatch]->SetXTitle("#it{E} (GeV)");
-        fhOriginE[imatch]->SetYTitle("particle");
-        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
-          fhOriginE[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
-        outputContainer->Add(fhOriginE[imatch]); 
-        
-        fhOriginM02[imatch]  = new TH3F 
-        (Form("hOriginM02_%s",matchCase[imatch].Data()),
-         Form("#it{E} vs origin vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
-        fhOriginM02[imatch]->SetXTitle("#it{E} (GeV)");
-        fhOriginM02[imatch]->SetYTitle("particle");
-        fhOriginM02[imatch]->SetZTitle("#lambda_{0}^{2}");
-        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
-          fhOriginM02[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
-        outputContainer->Add(fhOriginM02[imatch]); 
-      }
-    }
-  }
-  
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
@@ -3749,14 +3653,6 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
   fEBinCuts[3] = 8. ; fEBinCuts[4] = 10.;  fEBinCuts[5] = 12.;
   fEBinCuts[6] = 16.; fEBinCuts[7] = 20.;  
   for(Int_t i = fNEBinCuts+1; i < 15; i++) fEBinCuts[i] = 1000.;
-  
-//  // Exotic studies
-//  fExoNECrossCuts  = 10 ;
-//  fExoNDTimeCuts   = 4  ;
-//  
-//  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
-//  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
-//  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
 }
 
 //________________________________________
