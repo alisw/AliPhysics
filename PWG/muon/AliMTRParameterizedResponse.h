@@ -48,6 +48,7 @@ class AliMTRParameterizedResponse : public TObject {
   Bool_t ShowResponses ( Int_t itype, Bool_t isMC, Bool_t perBoard ) const;
   Bool_t CompareResponses ( Int_t itype, Bool_t perBoard ) const;
 
+  static void ZoomPad();
 
  private:
 
