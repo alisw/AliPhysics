@@ -109,6 +109,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCent(0),
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustE_etapos(0),
+  fHistClustE_etaneg(0),
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
@@ -190,6 +192,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  Eop010Corr(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -242,6 +245,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCent(0), 
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustE_etapos(0),
+  fHistClustE_etaneg(0),
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
@@ -323,6 +328,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  Eop010Corr(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -438,6 +444,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
+
+  fHistClustE_etapos = new TH1F("fHistClustE_etapos", "EMCAL cluster energy distribution (y>0); Cluster E;counts", 500, 0.0, 50.0);
+  fOutputList->Add(fHistClustE_etapos);
+
+  fHistClustE_etaneg = new TH1F("fHistClustE_etaneg", "EMCAL cluster energy distribution (y<0); Cluster E;counts", 500, 0.0, 50.0);
+  fOutputList->Add(fHistClustE_etaneg);
 
   fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEtime);
@@ -705,6 +717,11 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fOutputList->Add(fHistIncITSchi2);
 
   PostData(1,fOutputList);
+
+  Eop010Corr = new TF1("Eop010Corr","pol3");
+  //Eop010Corr->SetParameters(0.0485569,0.00274734,4.17124e-05,-1.13117e-05);
+  Eop010Corr->SetParameters(0.034,0.0086,-0.00059,8.87525e-06);
+
 }
 
 //________________________________________________________________________
@@ -725,6 +742,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (fESD) {
     //   printf("fESD available\n");
+  PostData(1,fOutputList);
     //return;
   }
 
@@ -973,7 +991,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi2->Fill(emceta,emcphi);
-
+      if(emceta>0)
+         {
+          fHistClustE_etapos->Fill(clustE);
+         }
+      else
+        {
+         fHistClustE_etaneg->Fill(clustE);
+        }
       /*
       //-----Plots for EMC trigger
       Bool_t hasfiredEG1=0;
@@ -1325,7 +1350,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         {
          if(centrality>=0 && centrality<10)
            { 
-            eop += 0.096; 
+            //cout << "eop = " << eop << endl;
+            eop += Eop010Corr->Eval(track->Pt()); 
+            //cout << "eop corr = " << eop << endl;
            }
          else
            {

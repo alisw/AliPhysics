@@ -555,6 +555,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
             } else { //particle's mother exists and the information about it can be added to hiddeninfo:
               tInfo->SetMotherPdgCode(mother->GetPdgCode());
+              tInfo->SetMotherMomentum(mother->Px(),mother->Py(),mother->Pz());
             }
           }
         }

@@ -1,4 +1,4 @@
-AliAnalysisTaskKinkpp5TeV* AddTaskKinkpp5TeV(TString lCustomName="",TString dirName="",Float_t yRange=.5, Float_t lRadiusKLow= 130., Float_t lRadiusKUp=200., Int_t lNCluster=30., Float_t lLowQtValue=0.12)
+AliAnalysisTaskKinkpp5TeV* AddTaskKinkpp5TeV(TString lCustomName="", Float_t lRadiusKUp=200.0,  Float_t lRadiusKLow= 130.0, Int_t lNCluster=30, Float_t lLowQtValue=0.12, Float_t yRange=0.5)
    {
      //pp settings         
       	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,14 +25,13 @@ AliAnalysisTaskKinkpp5TeV* AddTaskKinkpp5TeV(TString lCustomName="",TString dirN
      //TString outputFileName = AliAnalysisManager::GetCommonFileName();
      //outputFileName += ":PWG2SpectraTOF";
    
-    	AliAnalysisTaskKinkpp5TeV  *task = new AliAnalysisTaskKinkpp5TeV(Form("TaskKink_%s",dirName.Data()));
+    	AliAnalysisTaskKinkpp5TeV  *task = new AliAnalysisTaskKinkpp5TeV("AliAnalysisTaskKinkpp5TeV");
    
     //task->SetMC("kFALSE"); // 26/11/12
-   
-   	task->SetYRange(yRange);
-   	task->SetKinkRadius(lRadiusKLow, lRadiusKUp);
+        task->SetKinkRadius(lRadiusKLow, lRadiusKUp);
    	task->SetNCluster(lNCluster);
-   	task->SetLowQtValue(lLowQtValue);
+	task->SetLowQtValue(lLowQtValue);
+	task->SetYRange(yRange);
 	   
 	mgr->AddTask(task);
    

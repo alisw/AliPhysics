@@ -62,6 +62,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
                                                  AliVCluster* cluster);
   
+  Float_t       GetECross(Int_t absId, AliVCaloCells* cells, Int_t bc);
+  
   Bool_t        GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const ;
   
   Bool_t        IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
@@ -248,9 +250,9 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
-  void          RecalibrateCellTime     (Double_t & time, Int_t calo, Int_t absId, Int_t bunchCrossNumber) const ;
-  void          RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber) const;
-  void          RecalibrateCellAmplitude(Float_t  & amp,  Int_t calo, Int_t absId) const ;
+  void          RecalibrateCellTime       (Double_t & time, Int_t calo, Int_t absId, Int_t bunchCrossNumber) const ;
+  void          RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM  , Int_t bunchCrossNumber) const;
+  void          RecalibrateCellAmplitude  (Float_t  & amp , Int_t calo, Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
   Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
 

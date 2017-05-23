@@ -137,6 +137,8 @@ private:
     TH1F        *fCent;//! centrality
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fHistClustE;//!cluster energy
+    TH1F        *fHistClustE_etapos;//!cluster energy
+    TH1F        *fHistClustE_etaneg;//!cluster energy
     TH1F        *fHistClustEtime;//!cluster energy
     TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
@@ -230,6 +232,7 @@ private:
     TH1F        *fCheckEtaMC;    
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
+    TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
 

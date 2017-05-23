@@ -25,30 +25,39 @@ TPRegexp regTreeK0Qpt("hisK0.*proj_0_1");
 TPRegexp regTreeNotK0Qpt("hisK0.*(Alpha|DSec)");
 TPRegexp regTreeK0QptDSec("hisK0.*QPtTglDSec_1_1_5_1Dist");
 TPRegexp regTreeK0Alpha("hisK0.*AlphaDist");
-//TPRegexp regTreeDelta("(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
-TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*_tglDist$");  // regular expression for standard trees
+//TPRegexp regTreeDelta("(his|qahis|matchhis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
+TPRegexp regTreeDelta("(his|qahis|matchhis).*_tglDist$");  // regular expression for standard trees
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*alphaVDist$");
-TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covarr|ncl|Chi2|covar|delta|pull).*_dalphaQDist$");
+TPRegexp regTreeDeltaAlpha("(his|qahis|matchhis).*alphaVDist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis).*_dalphaQDist$");
 
 TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha;
-TCanvas *canvasDraw=0;
+TCanvas *canvasDrawRec=0;
+TCanvas *canvasDrawSquare=0;
 
 
 void makeCanvas(){
-  canvasDraw = new TCanvas("xxx","xxx",1100,500);
-  canvasDraw->SetRightMargin(0.15);
-  canvasDraw->SetBottomMargin(0.15);
-  canvasDraw->SetLeftMargin(0.1);
   gStyle->SetTitleOffset(0.8,"Z");
-  gStyle->SetTitleOffset(1.0,"X");
-  gStyle->SetTitleOffset(0.6,"Y");
+  gStyle->SetTitleOffset(1.3,"X");
+  gStyle->SetTitleOffset(1.0,"Y");
+
+  canvasDrawRec = new TCanvas("canvasDrawRec","canvasDrawRec",1100,500);
+  canvasDrawRec->SetRightMargin(0.03);
+  canvasDrawRec->SetTopMargin(0.03);
+  canvasDrawRec->SetBottomMargin(0.15);
+  canvasDrawRec->SetLeftMargin(0.1);
+  canvasDrawSquare = new TCanvas("canvasDrawSquare","canvasDrawSquare",700,700);  
+  canvasDrawSquare->SetTopMargin(0.03);
+  canvasDrawSquare->SetRightMargin(0.03);
+  canvasDrawSquare->SetBottomMargin(0.15);
+  canvasDrawSquare->SetLeftMargin(0.15);
+
 }
 
 void InitTrees(){
-  treeDelta0= InitMapTree(regTreeDelta,regTreeNotDeltaInt,"qPt:tgl","q/p_{t}(1/GeV):unit");
+  treeDelta0= InitMapTree(regTreeDelta,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit");
   treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)");
   treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec");
   treeCovar= InitMapTree(regCovar,dummy , "qPt:tgl","q/p_{t} (1/GeV): tan(#lambda)");
@@ -68,6 +77,12 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
   TObjArray *arrayAxisTitle=axisTitle.Tokenize(":");
   for (Int_t iFile=0; iFile<nFiles; iFile++){
     TString name0=residualMapList->At(iFile*2)->GetName();
+    TString description="";
+    if (name0.Contains(":")){
+      TObjArray *array = name0.Tokenize(":");
+      name0=array->At(0)->GetName();
+      description=array->At(1)->GetName();
+    }
     samples->AddAt(new TObjString(name0),iFile);
     TFile * finput = TFile::Open(residualMapList->At(iFile*2+1)->GetName());
     if (finput==NULL){
@@ -75,6 +90,7 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
       continue;
     }
     TList * keys = finput->GetListOfKeys();
+    Int_t isLegend=kFALSE;
     for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){   
       if (regExp.Match(keys->At(iKey)->GetName())==0) continue;
       if (notReg.Match(keys->At(iKey)->GetName())!=0) continue;
@@ -84,6 +100,11 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
 	treeBase= (TTree*)finput2->Get(keys->At(iKey)->GetName());
       }
       treeBase->AddFriend(tree,TString::Format("%s.%s",name0.Data(),keys->At(iKey)->GetName()).Data());
+      if (isLegend==kFALSE&&description.Length()>0){
+	TStatToolkit::AddMetadata(treeBase,TString::Format("%s.Legend",name0.Data()), description.Data());
+	::Info("InitMapTree.Legend","%s\t%s",name0.Data(), description.Data());
+	isLegend=kTRUE;
+      }
       Int_t entriesF=tree->GetEntries();
       Int_t entriesB=treeBase->GetEntries();
       if (entriesB==entriesF){
@@ -100,6 +121,7 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
     }
     treeBase->SetMarkerStyle(25);
     treeBase->SetMarkerSize(0.5);
+    treeBase->SetAlias("fsector","9*alphaVCenter/pi+18*(alphaVCenter<0)");
   }
   return treeBase;
 }

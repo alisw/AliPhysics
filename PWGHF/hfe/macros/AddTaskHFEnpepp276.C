@@ -539,7 +539,7 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 85, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
-               
+
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 90, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
@@ -574,7 +574,7 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
 
                break;
 
-            // Some systematics on the associated leg
+               // Some systematics on the associated leg
             case kSystAsociatedMultiple:
                // Number of ITS hits
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
@@ -636,7 +636,7 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, 1, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
-               
+
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, 0.5, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
@@ -669,7 +669,7 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 60,50,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
-               
+
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 50,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
@@ -720,7 +720,7 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC12e6_td, 0, 0.05);
-               
+
                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC12e6_td, 0, 0.15);
@@ -756,9 +756,9 @@ AliAnalysisTask *AddTaskHFEnpepp276(Bool_t MCthere,
       // **************************************************************
 
       //TPC-only task: TPC PID cuts: 0 sigma
-       RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
-       dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-       kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+      RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                        dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                        kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
 
       if (MCthere){
          RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
@@ -803,7 +803,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
    if(tpcdEdxcuthigh) tpchigh = (Int_t) (tpcdEdxcuthigh[0]*1000.);
    Int_t itofs = (Int_t)(tofs*10.);
    Int_t ipixelany = itshitpixel;
-   
+
    //
    // Cuts on the associated leg
    //
@@ -815,7 +815,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
    Int_t phoTrack = 0;
    if (useCat1Tracks) phoTrack = 1;
    if (useCat2Tracks) phoTrack = 2;
-   
+
    TString cweightsback("");
    if(weightlevelback>=0) {
       cweightsback += "Wa";
@@ -831,9 +831,9 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                        iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
    } else if (assMinPt!=0.1) {
       Int_t iMinPt = assMinPt*100;
-         TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dChi%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
-                                          tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,Chi2perTPCcluster,assTPCcl,assTPCPIDcl,assITS,
-                                          iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
+      TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dChi%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
+                                       tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,Chi2perTPCcluster,assTPCcl,assTPCPIDcl,assITS,
+                                       iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
    } else if (tpchigh[1]!=3200) {
       TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTPCtop%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
                                        tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
@@ -847,14 +847,14 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                        tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
                                        iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
    }
-   
+
    printf("Add macro appendix %s\n", appendix.Data());
-   
-   if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
+
+   if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors"))
       gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigWeightFactors.C");
-   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp276")) 
+   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp276"))
       gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigHFEnpepp276.C");
-   
+
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
    //mgr->AddClassDebug("AliHFENonPhotonicElectron", 1);
@@ -879,10 +879,17 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
    }
    
    //create data containers
-   task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(), 
-                                               AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
-   task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), 
-                                               AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
+   TString containerName = mgr->GetCommonFileName();
+   containerName += ":HFEtask";
+   containerName += appendix.Data();
+   printf("container name: %s\n", containerName.Data());
+   
+   
+   task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(),
+                                               AliAnalysisManager::kOutputContainer, containerName.Data()));
+   task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(),
+                                               AliAnalysisManager::kOutputContainer, containerName.Data()));
+   
    mgr->ConnectInput(task,  0, cinput );
    
    mgr->AddTask(task);

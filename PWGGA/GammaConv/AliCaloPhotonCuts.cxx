@@ -51,6 +51,7 @@
 #include "AliEMCALTenderSupply.h"
 #include "AliEmcalTenderTask.h"
 #include "AliPHOSTenderSupply.h"
+#include "AliPHOSTenderTask.h"
 #include "AliOADBContainer.h"
 #include "AliESDtrackCuts.h"
 #include "AliCaloTrackMatcher.h"
@@ -1240,20 +1241,20 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
       //cout << nModules << endl;
 
       fPHOSBadChannelsMap = new TH2I*[nModules];
+      AliPHOSTenderTask* aliphostender = (AliPHOSTenderTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("PHOSTenderTask");
+      AliPHOSTenderSupply *PHOSSupply  =((AliPHOSTenderSupply*) aliphostender->GetPHOSTenderSupply()) ;
 
-      AliOADBContainer badmapContainer(Form("phosBadMap"));
-      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
-      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(event->GetRunNumber(),"phosBadMap");
-
-      if(!maps){
-        AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",event->GetRunNumber())) ;
+      if(!PHOSSupply){
+        AliError(Form("Can not find PHOSTenderSupply in run %d. No bad channel map could be found for QA!\n",event->GetRunNumber())) ;
         for(Int_t mod=0;mod<nModules;mod++) fPHOSBadChannelsMap[mod] = NULL;
       }else{
-        AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
+        AliInfo("Setting PHOS bad map from PHOSSupply \n") ;
         for(Int_t mod=0;mod<nModules;mod++){
-          TH2I * h = (TH2I*)maps->At(mod);
-          //cout << mod << ", " << h << ", " << __LINE__ << endl;
-          if(h) fPHOSBadChannelsMap[mod] = new TH2I(*h);
+          TH2I * h = (TH2I*)PHOSSupply->GetPHOSBadChannelStatusMap(mod);
+          if(h){
+              fPHOSBadChannelsMap[mod] = new TH2I(*h);
+              AliInfo(Form("using bad map for module %d with nch=%f\n",mod,h->Integral()));
+          }
           else fPHOSBadChannelsMap[mod] = NULL;
         }
 
@@ -4125,7 +4126,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         energy *= FunctionNL_kPi0MCv5(energy);
         if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
       } else if ( fClusterType == 2 ){
-        // NonLinearity correction from PHOS group 
+        // NonLinearity correction from PHOS group, should only be used without non lin corr in MC for PHOS tender
         if(isMC>0)
           // for LHC10b-f
           if( fCurrentMC==k14j4 ){
@@ -4466,7 +4467,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         goto label_case_22;// goto previous case for shifting MC
       }  
       break;
-
       
 // *************** 30 + x **** modified tender Settings 2 - pp
       
@@ -4482,9 +4482,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }  
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
-            energy /= ( FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) * 
-                        FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746) * 
-                        FunctionNL_kSDM(energy, 0.991767, -4.5811, -0.402986) ) ;//with TM pt dep
+            energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ; 
+            energy /=  (FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746)*0.9953479301) ;//with TM pt dep
           }                                
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -4499,13 +4498,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.973301, -3.66136, -1.20116) ; //with TM pt dep
-            energy /= FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541);
+            energy /= (FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541) * 1.0036264536 );
           }  
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
-            energy /= ( FunctionNL_kSDM(energy, 0.962047, -3.18433, -0.586904) * 
-                        FunctionNL_kSDM(energy, 0.990771, -4.29086, -0.27403) * 
-                        FunctionNL_kSDM(energy, 0.996929, -5.01383, -0.524089));//with TM pt dep
+            energy /= FunctionNL_kSDM(energy, 0.962047, -3.18433, -0.586904); //with TM pt dep
+            energy /= FunctionNL_kSDM(energy, 0.990771, -4.29086, -0.27403); 
           }  
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -4537,14 +4535,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
           } else if(fClusterType==2){
-            energy /= ( 0.997*0.9965200155 );
+            energy = (0.0241+1.0504*energy+0.000249*energy*energy); // default MC PHOS correction
+            energy /= ( 0.997*0.9965200155 ); // additional factors
+            
           }  
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
-            energy /= ( FunctionNL_DExp(energy, 0.9978241421, 0.2054669115, -3.7888984452, 1.0255088817, 0.3070452373, -2.9149185308) * 
-                        FunctionNL_kSDM(energy, 0.986673, -4.14594, -0.450765) * 
-                        FunctionNL_kSDM(energy, 0.991953, -4.60017, -0.412618));//with TM pt dep
+            energy /= FunctionNL_DExp(energy, 0.9978241421, 0.2054669115, -3.7888984452, 1.0255088817, 0.3070452373, -2.9149185308) ; //with TM pt dep
+            energy /= (FunctionNL_kSDM(energy, 0.986673, -4.14594, -0.450765)* 0.9953727823);
           } else if(fClusterType==2){
+            energy = (0.0241+1.0504*energy+0.000249*energy*energy); // default MC PHOS correction            
             energy /= ( 0.993485*0.9971126333 );
           }  
         } else fPeriodNameAvailable = kFALSE;
@@ -4558,16 +4558,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9795532189, 0.8578583955, -2.3447892540, 1.0165873637, 0.6999387334, -2.1324782465) ;//with TM pt dep 
-            energy /= FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) ;
+            energy /= (FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) * 1.0040232773) ;
           } else if(fClusterType==2) {
+            energy = (0.0241+1.0504*energy+0.000249*energy*energy); // default MC PHOS correction            
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }  
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
-            energy /= ( FunctionNL_DExp(energy, 0.9746342307, 0.9576270870, -2.5098585110, 1.0165871862, 0.6999571530, -2.1324658480) * 
-                        FunctionNL_kSDM(energy, 0.993562, -4.52817, -0.366368) * 
-                        FunctionNL_kSDM(energy, 0.997505, -4.87335, -0.798161) ); //with TM pt dep
+            energy /= FunctionNL_DExp(energy, 0.9746342307, 0.9576270870, -2.5098585110, 1.0165871862, 0.6999571530, -2.1324658480) ; //with TM pt dep
+            energy /= FunctionNL_kSDM(energy, 0.993562, -4.52817, -0.366368) ;
           } else if(fClusterType==2){
+            energy = (0.0241+1.0504*energy+0.000249*energy*energy); // default MC PHOS correction            
             energy /= (FunctionNL_DPOW(energy, 1.0154784875, -0.0161589457, -0.4999999976, 1.0086650887, -0.0010000001, -0.0800000139 ) * 0.9983468115 );
           }  
         } else fPeriodNameAvailable = kFALSE;
@@ -4750,6 +4751,19 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16k3b2") == 0 )     return k16k3b;
   else if ( namePeriod.CompareTo("LHC16k5a") == 0  )     return k16k5a;
   else if ( namePeriod.CompareTo("LHC16k5b") == 0  )     return k16k5b;
+  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2a;
+  else if ( namePeriod.CompareTo("LHC17a2a") == 0  )     return k17a2b;
+  else if ( namePeriod.CompareTo("LHC17a3a") == 0  )     return k17a3a;
+  else if ( namePeriod.CompareTo("LHC17a3b") == 0  )     return k17a3b;
+  else if ( namePeriod.CompareTo("LHC17a4a") == 0  )     return k17a4a;
+  else if ( namePeriod.CompareTo("LHC17a4b") == 0  )     return k17a4b;
+  else if ( namePeriod.CompareTo("LHC17e2") == 0  )      return k17e2;
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )     return k17f2a;
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )     return k17f2b;
+  else if ( namePeriod.CompareTo("LHC17f3a") == 0  )     return k17f3a;
+  else if ( namePeriod.CompareTo("LHC17f3b") == 0  )     return k17f3b;
+  else if ( namePeriod.CompareTo("LHC17f4a") == 0  )     return k17f4a;
+  else if ( namePeriod.CompareTo("LHC17f4b") == 0  )     return k17f4b;
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
             namePeriod.CompareTo("LHC10c") == 0 ||
             namePeriod.CompareTo("LHC10d") == 0 ||

@@ -66,6 +66,9 @@ public:
     void SetRunCascadeVertexer ( Bool_t lRunVertexer = kTRUE) {
         fkRunCascadeVertexer = lRunVertexer;
     }
+    void SetUseUncheckedChargeCascadeVertexer ( Bool_t lOpt = kTRUE) {
+        fkUseUncheckedChargeCascadeVertexer = lOpt;
+    }
     void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
         fkDoV0Refit = lDoV0Refit;
     }
@@ -149,6 +152,8 @@ public:
     Long_t Tracks2V0vertices(AliESDEvent *event);
     //Re-vertex Cascades
     Long_t V0sTracks2CascadeVertices(AliESDEvent *event);
+    //Re-vertex Cascades without checking bachelor charge - V0 Mass hypo correspondence
+    Long_t V0sTracks2CascadeVerticesUncheckedCharges(AliESDEvent *event);
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
@@ -178,6 +183,7 @@ private:
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunV0Vertexer;           // if true, re-run V0 vertexer
     Bool_t    fkRunCascadeVertexer;      // if true, re-run cascade vertexer
+    Bool_t    fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
 

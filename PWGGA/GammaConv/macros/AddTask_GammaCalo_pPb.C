@@ -218,6 +218,18 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111100057032230000","0163103100000050");
   } else if (trainConfig == 2){ // no non lin
     cuts.AddCut("80000013","1111100057032230000","0163103100000050");
+  } else if (trainConfig == 3){ // no non lin, no time cut
+    cuts.AddCut("80000013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80052013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80085013","1111100007032230000","0163103100000060");
+    cuts.AddCut("80083013","1111100007032230000","0163103100000060");
+
+      
+  } else if(trainConfig == 39){ // default cutstring and first set of variations nonlinearity, smaller openangle 17 mrad
+    cuts.AddCut("80000013","1111141057032230000","0163103100000060"); // default
+    cuts.AddCut("80000013","1111142057032230000","0163103100000060"); // calo nonlinearity variation
+    cuts.AddCut("80000013","1111151057032230000","0163103100000060"); // calo nonlinearity variation
+    cuts.AddCut("80000013","1111152057032230000","0163103100000060"); // calo nonlinearity variation
     
   // SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 26-04-2017
   } else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
@@ -245,9 +257,9 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 44){ // fourth set of variations
     cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80000013","1111141055032230000","0163103100000050"); // tm variation
-    cuts.AddCut("80000013","1111141053032230000","0163103100000040"); // min opening angle 0.75 cell diag
-    cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // min opening angle 1 cell diag
-    cuts.AddCut("80000013","1111141053032230000","0163103100000060"); // min opening angle 2 cell diag
+    cuts.AddCut("80000013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80000013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80000013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 45){ // fourth set of variations
     cuts.AddCut("80000013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80000013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -298,9 +310,9 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 54){ // fourth set of variations
     cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80052013","1111141055032230000","0163103100000050"); // tm variation
-    cuts.AddCut("80052013","1111141053032230000","0163103100000040"); // min opening angle 0.75 cell diag
-    cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // min opening angle 1 cell diag
-    cuts.AddCut("80052013","1111141053032230000","0163103100000060"); // min opening angle 2 cell diag
+    cuts.AddCut("80052013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80052013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80052013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 55){ // fourth set of variations
     cuts.AddCut("80052013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80052013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -342,9 +354,9 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 64){ // fourth set of variations
     cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80083013","1111141055032230000","0163103100000050"); // tm variation
-    cuts.AddCut("80083013","1111141053032230000","0163103100000040"); // min opening angle 0.75 cell diag
-    cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // min opening angle 1 cell diag
-    cuts.AddCut("80083013","1111141053032230000","0163103100000060"); // min opening angle 2 cell diag
+    cuts.AddCut("80083013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80083013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80083013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 65){ // fourth set of variations
     cuts.AddCut("80083013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80083013","1111141056032230000","0163103100000050"); // tm pt dependent var 1
@@ -385,9 +397,9 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 74){ // fourth set of variations
     cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // tm variation
     cuts.AddCut("80085013","1111141055032230000","0163103100000050"); // tm variation
-    cuts.AddCut("80085013","1111141053032230000","0163103100000040"); // min opening angle 0.75 cell diag
-    cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // min opening angle 1 cell diag
-    cuts.AddCut("80085013","1111141053032230000","0163103100000060"); // min opening angle 2 cell diag
+    cuts.AddCut("80085013","1111141053032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80085013","1111141053032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80085013","1111141053032230000","0163103100000060"); // min opening angle 0.017
   } else if(trainConfig == 75){ // fourth set of variations
     cuts.AddCut("80085013","1111141057032230000","0163103100000050"); // default cut tm pt dependent
     cuts.AddCut("80085013","1111141056032230000","0163103100000050"); // tm pt dependent var 1

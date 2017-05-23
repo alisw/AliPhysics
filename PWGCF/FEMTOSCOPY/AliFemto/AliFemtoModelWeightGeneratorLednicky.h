@@ -101,6 +101,7 @@ protected:
   //K+K- model type
   int       fKpKmModel;      //ij (i=1..4, j=1..4; see AliFemtoFsiWeightLednicky.F)
   int       fPhi_OffOn;      //0->Phi Off,1->Phi On
+  int       fNS_4;           //set NS is equal to 4
 
   // Interface to the fortran functions
   void FsiSetKpKmModelType();  //// initialize K+K- model type

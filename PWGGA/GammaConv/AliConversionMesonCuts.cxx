@@ -1655,6 +1655,68 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
 { // Set Cut
+ if(fMode == 4){
+   switch(alphaMesonCut){
+   case 0:  // 0- 0.7
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 0.7;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 1:  // Updated 15 May 2015
+     if (fIsMergedClusterCut == 0){
+       if( fFAlphaCut ) delete fFAlphaCut;
+       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+       fFAlphaCut->SetParameter(0,0.65);
+       fFAlphaCut->SetParameter(1,1.8);
+       fAlphaMinCutMeson =  0.0;
+       fAlphaCutMeson    = -1.0;
+       fAlphaPtDepCut    = kTRUE;
+     } else {
+       fAlphaPtDepCut    = kFALSE;
+       fAlphaMinCutMeson = 0.5;
+       fAlphaCutMeson    = 1;
+     }
+     break;
+   case 2:  // Updated 31 October 2013 before 0.5-1
+     if (fIsMergedClusterCut == 0){
+       if( fFAlphaCut ) delete fFAlphaCut;
+       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+       fFAlphaCut->SetParameter(0,0.8);
+       fFAlphaCut->SetParameter(1,1.2);
+       fAlphaMinCutMeson =  0.0;
+       fAlphaCutMeson    = -1.0;
+       fAlphaPtDepCut    = kTRUE;
+     } else {
+       fAlphaPtDepCut    = kFALSE;
+       fAlphaMinCutMeson = 0.6;
+       fAlphaCutMeson    = 1;
+     }
+     break;
+   case 3:  // 0.0-1
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 1.;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 4:  // 0-0.2
+     fAlphaMinCutMeson   = 0.0;
+     fAlphaCutMeson      = 0.2;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 5:  // 0.2-0.6
+     fAlphaMinCutMeson   = 0.2;
+     fAlphaCutMeson      = 0.6;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   case 6:  // 0.6-1.0
+     fAlphaMinCutMeson   = 0.6;
+     fAlphaCutMeson      = 1.0;
+     fAlphaPtDepCut      = kFALSE;
+     break;
+   default:
+     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
+     return kFALSE;
+   }
+ }else{
   switch(alphaMesonCut){
   case 0:  // 0- 0.7
     fAlphaMinCutMeson   = 0.0;
@@ -1740,6 +1802,7 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
   }
+ }
   return kTRUE;
 }
 
@@ -2328,53 +2391,7 @@ Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
   // Set Cut
-  if(fMode == 4){
-    switch(minOpanMesonCut){
-    case 0:      //
-      fMinOpanCutMeson  = 0;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 1:      //
-      fMinOpanCutMeson  = 0.0152;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 2:
-      fMinOpanCutMeson  = 0.016;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 3:      //
-      fMinOpanCutMeson  = 0.0165;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 4:      //
-      fMinOpanCutMeson  = 0.017;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 5:      //
-      fMinOpanCutMeson  = 0.0175;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 6:      //
-      fMinOpanCutMeson  = 0.018;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 7:      //
-      fMinOpanCutMeson  = 0.0185;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 8:      //
-      fMinOpanCutMeson  = 0.019;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 9:      //
-      fMinOpanCutMeson  = 0.0202;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    default:
-      cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
-      return kFALSE;
-    }
-  }else{
+
     switch(minOpanMesonCut){
     case 0:      //
       fMinOpanCutMeson  = 0;
@@ -2406,26 +2423,46 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 6:      //
-      fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
+      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 7:      //
-      fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+      fMinOpanCutMeson  = 0.016;
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 8:      //
-      fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+      fMinOpanCutMeson  = 0.018;
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 9:      //
-      fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
+      fMinOpanCutMeson  = 0.019;
       fMinOpanPtDepCut  = kFALSE;
       break;
+    // opening angle cut variations for EMCal related analyses up to 17. May 2017
+//    case 5:      //
+//      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 6:      //
+//      fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 7:      //
+//      fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 8:      //
+//      fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 9:      //
+//      fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
     default:
       cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
       return kFALSE;
     }
-  }
 
   return kTRUE;
 }

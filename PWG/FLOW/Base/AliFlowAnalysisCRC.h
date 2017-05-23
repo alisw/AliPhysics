@@ -1581,6 +1581,9 @@ private:
 //  TProfile2D *fCRCTPCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
   TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
+  TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile3D *fCRCTPCQVecCenEtaRefMulTot[2][4]; //!
+  TProfile2D *fCRCTPCQVecCenRefMulTotCheck[2][4]; //!
   
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
@@ -1592,6 +1595,7 @@ private:
   TH3D *fZDCBinsRunVtx[10][4]; //!
   TH1D *fZDCBinsRunVtxProjHist[10][4][3]; //!
   TH3D *fZDCBinsCenRefMult[10]; //!
+  TH2D *fZDCBinsCenRefMultFine[4]; //!
   
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1793,7 +1797,7 @@ private:
   TProfile2D *fCRCZDCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
-  TProfile3D *fTPCQVecProTemp[2][2]; //!
+  TProfile2D *fTPCQVecProTemp[2][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
   
@@ -1926,6 +1930,7 @@ private:
   TH2F* fhZNvsMul; //! cen vs mul
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
+  TH1F* fMultCutAv; //!
   TH1F* fEZNCutMin; //!
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
@@ -1955,7 +1960,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,52);
+  ClassDef(AliFlowAnalysisCRC,53);
   
 };
 

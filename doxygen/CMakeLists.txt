@@ -31,7 +31,7 @@ if(CAN_GENERATE_DOC)
 
   # Install documentation in the installation directory if requested
   add_custom_target(install-doxygen
-    rsync -a --delete @CMAKE_CURRENT_BINARY_DIR@/html/ @CMAKE_INSTALL_PREFIX@/doxygen/
+    rsync -a --delete "${CMAKE_CURRENT_BINARY_DIR}/html/" "${CMAKE_INSTALL_PREFIX}/doxygen/"
     DEPENDS doxygen
     COMMENT "Installing AliPhysics reference manual"
   )

@@ -326,9 +326,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhPtNotSharedClusterCut);
   }
   
-  fhPhiNeg  = new TH2F ("hPhiNegative","#phi of negative charges distribution",
+  fhPhiNeg  = new TH2F ("hPhiNegative","#varphi of negative charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-  fhPhiNeg->SetYTitle("#phi (rad)");
+  fhPhiNeg->SetYTitle("#varphi (rad)");
   fhPhiNeg->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPhiNeg);
   
@@ -338,9 +338,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaNeg->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhEtaNeg);
   
-  fhPhiPos  = new TH2F ("hPhiPositive","#phi of positive charges distribution",
+  fhPhiPos  = new TH2F ("hPhiPositive","#varphi of positive charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-  fhPhiPos->SetYTitle("#phi (rad)");
+  fhPhiPos->SetYTitle("#varphi (rad)");
   fhPhiPos->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPhiPos);
   
@@ -350,14 +350,14 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPos->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhEtaPos);
   
-  fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","#eta vs #varphi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiPos->SetXTitle("#eta ");
-  fhEtaPhiPos->SetYTitle("#phi (rad)");  
+  fhEtaPhiPos->SetYTitle("#varphi (rad)");  
   outputContainer->Add(fhEtaPhiPos);
   
-  fhEtaPhiNeg  = new TH2F ("hEtaPhiNegative","#eta vs #phi of negative charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhiNeg  = new TH2F ("hEtaPhiNegative","#eta vs #varphi of negative charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
   fhEtaPhiNeg->SetXTitle("#eta ");
-  fhEtaPhiNeg->SetYTitle("#phi (rad)");  
+  fhEtaPhiNeg->SetYTitle("#varphi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
   
   if( GetReader()->GetDataType() == AliCaloTrackReader::kESD )
@@ -375,18 +375,18 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtVtxOutBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtVtxOutBC0);
     
-    fhEtaPhiVtxOutBC0  = new TH2F ("hEtaPhiVtxOutBC0","#eta vs #phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiVtxOutBC0  = new TH2F ("hEtaPhiVtxOutBC0","#eta vs #varphi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
     fhEtaPhiVtxOutBC0->SetXTitle("#eta ");
-    fhEtaPhiVtxOutBC0->SetYTitle("#phi (rad)");
+    fhEtaPhiVtxOutBC0->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhiVtxOutBC0);
     
     fhPtVtxInBC0  = new TH1F ("hPtVtxInBC0","#it{p}_{T} distribution, vertex in BC=0", nptbins,ptmin,ptmax);
     fhPtVtxInBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtVtxInBC0);
     
-    fhEtaPhiVtxInBC0  = new TH2F ("hEtaPhiVtxInBC0","#eta vs #phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiVtxInBC0  = new TH2F ("hEtaPhiVtxInBC0","#eta vs #varphi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
     fhEtaPhiVtxInBC0->SetXTitle("#eta ");
-    fhEtaPhiVtxInBC0->SetYTitle("#phi (rad)");
+    fhEtaPhiVtxInBC0->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhiVtxInBC0);
   }
   
@@ -394,16 +394,16 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtSPDRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtSPDRefit);
 
-  fhEtaPhiSPDRefitPt02  = new TH2F ("hEtaPhiSPDRefitPt02","#eta vs #phi of tracks with SPD and ITS refit, #it{p}_{T}< 2 GeV/#it{c}",
+  fhEtaPhiSPDRefitPt02  = new TH2F ("hEtaPhiSPDRefitPt02","#eta vs #varphi of tracks with SPD and ITS refit, #it{p}_{T}< 2 GeV/#it{c}",
                                     netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiSPDRefitPt02->SetXTitle("#eta ");
-  fhEtaPhiSPDRefitPt02->SetYTitle("#phi (rad)");
+  fhEtaPhiSPDRefitPt02->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiSPDRefitPt02);
   
-  fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","#eta vs #phi of tracks with SPD and ITS refit, #it{p}_{T}> 3 GeV/#it{c}",
+  fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","#eta vs #varphi of tracks with SPD and ITS refit, #it{p}_{T}> 3 GeV/#it{c}",
                                    netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiSPDRefitPt3->SetXTitle("#eta ");
-  fhEtaPhiSPDRefitPt3->SetYTitle("#phi (rad)");
+  fhEtaPhiSPDRefitPt3->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiSPDRefitPt3);
 
   fhPtNoSPDRefit  = new TH1F ("hPtNoSPDRefit","#it{p}_{T} distribution of constrained tracks no SPD and with ITSRefit",
@@ -411,16 +411,16 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtNoSPDRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoSPDRefit);
   
-  fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","#eta vs #phi of constrained tracks no SPD and with ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
+  fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","#eta vs #varphi of constrained tracks no SPD and with ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
                                       netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDRefitPt02->SetXTitle("#eta ");
-  fhEtaPhiNoSPDRefitPt02->SetYTitle("#phi (rad)");
+  fhEtaPhiNoSPDRefitPt02->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDRefitPt02);
   
-  fhEtaPhiNoSPDRefitPt3  = new TH2F ("hEtaPhiNoSPDRefitPt3","#eta vs #phi of of constrained tracks no SPD and with ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
+  fhEtaPhiNoSPDRefitPt3  = new TH2F ("hEtaPhiNoSPDRefitPt3","#eta vs #varphi of of constrained tracks no SPD and with ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
                                      netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDRefitPt3->SetXTitle("#eta ");
-  fhEtaPhiNoSPDRefitPt3->SetYTitle("#phi (rad)");
+  fhEtaPhiNoSPDRefitPt3->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDRefitPt3);
   
   fhPtNoSPDNoRefit  = new TH1F ("hPtNoSPDNoRefit","#it{p}_{T} distribution of constrained tracks with no SPD requierement and without ITSRefit",
@@ -429,17 +429,17 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   outputContainer->Add(fhPtNoSPDNoRefit);
   
   fhEtaPhiNoSPDNoRefitPt02  = new TH2F ("hEtaPhiNoSPDNoRefitPt02",
-                                        "#eta vs #phi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
+                                        "#eta vs #varphi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
                                         netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDNoRefitPt02->SetXTitle("#eta ");
-  fhEtaPhiNoSPDNoRefitPt02->SetYTitle("#phi (rad)");
+  fhEtaPhiNoSPDNoRefitPt02->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDNoRefitPt02);
   
   fhEtaPhiNoSPDNoRefitPt3  = new TH2F ("hEtaPhiNoSPDNoRefitPt3",
-                                       "#eta vs #phi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
+                                       "#eta vs #varphi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
                                        netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDNoRefitPt3->SetXTitle("#eta ");
-  fhEtaPhiNoSPDNoRefitPt3->SetYTitle("#phi (rad)");
+  fhEtaPhiNoSPDNoRefitPt3->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDNoRefitPt3);
 
   if(fFillVertexBC0Histograms)
@@ -540,36 +540,36 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
  
     if(fFillTrackBCHistograms)
     {
-      fhEtaPhiTOFBC0  = new TH2F ("hEtaPhiTOFBC0","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBC0  = new TH2F ("hEtaPhiTOFBC0","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
       fhEtaPhiTOFBC0->SetXTitle("#eta ");
-      fhEtaPhiTOFBC0->SetYTitle("#phi (rad)");
+      fhEtaPhiTOFBC0->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhiTOFBC0);
       
-      fhEtaPhiTOFBCPlus  = new TH2F ("hEtaPhiTOFBCPlus","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBCPlus  = new TH2F ("hEtaPhiTOFBCPlus","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
       fhEtaPhiTOFBCPlus->SetXTitle("#eta ");
-      fhEtaPhiTOFBCPlus->SetYTitle("#phi (rad)");
+      fhEtaPhiTOFBCPlus->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhiTOFBCPlus);
       
-      fhEtaPhiTOFBCMinus  = new TH2F ("hEtaPhiTOFBCMinus","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBCMinus  = new TH2F ("hEtaPhiTOFBCMinus","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
       fhEtaPhiTOFBCMinus->SetXTitle("#eta ");
-      fhEtaPhiTOFBCMinus->SetYTitle("#phi (rad)");
+      fhEtaPhiTOFBCMinus->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhiTOFBCMinus);
       
       if(IsPileUpAnalysisOn())
       {
-        fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
         fhEtaPhiTOFBC0PileUpSPD->SetXTitle("#eta ");
-        fhEtaPhiTOFBC0PileUpSPD->SetYTitle("#phi (rad)");
+        fhEtaPhiTOFBC0PileUpSPD->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTOFBC0PileUpSPD);
         
-        fhEtaPhiTOFBCPlusPileUpSPD  = new TH2F ("hEtaPhiTOFBCPlusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBCPlusPileUpSPD  = new TH2F ("hEtaPhiTOFBCPlusPileUpSPD","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
         fhEtaPhiTOFBCPlusPileUpSPD->SetXTitle("#eta ");
-        fhEtaPhiTOFBCPlusPileUpSPD->SetYTitle("#phi (rad)");
+        fhEtaPhiTOFBCPlusPileUpSPD->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTOFBCPlusPileUpSPD);
         
-        fhEtaPhiTOFBCMinusPileUpSPD  = new TH2F ("hEtaPhiTOFBCMinusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBCMinusPileUpSPD  = new TH2F ("hEtaPhiTOFBCMinusPileUpSPD","#eta vs #varphi for tracks with hit on TOF, and tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
         fhEtaPhiTOFBCMinusPileUpSPD->SetXTitle("#eta ");
-        fhEtaPhiTOFBCMinusPileUpSPD->SetYTitle("#phi (rad)");
+        fhEtaPhiTOFBCMinusPileUpSPD->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTOFBCMinusPileUpSPD);
       }
     }
@@ -579,9 +579,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtTOFStatus0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtTOFStatus0);
   
-  fhEtaPhiTOFStatus0  = new TH2F ("hEtaPhiTOFStatus0","eta-phi for tracks without hit on TOF",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiTOFStatus0  = new TH2F ("hEtaPhiTOFStatus0","#eta vs #varphi for tracks without hit on TOF",netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiTOFStatus0->SetXTitle("#eta ");
-  fhEtaPhiTOFStatus0->SetYTitle("#phi (rad)");
+  fhEtaPhiTOFStatus0->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiTOFStatus0);
 
   TString dcaName[] = {"xy","z","Cons"} ;
@@ -752,9 +752,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       outputContainer->Add(fhPtMCPart[imcPart]);
       
       fhPhiMCPart[imcPart]  = new TH2F (Form("hPhiMC%s",histoName[imcPart].Data()),
-                                        Form("reconstructed #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                        Form("reconstructed #varphi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
                                         nptbins,ptmin,ptmax, nphibins,phimin,phimax);
-      fhPhiMCPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPart[imcPart]->SetYTitle("#varphi (rad)");
       fhPhiMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPhiMCPart[imcPart]);
       
@@ -772,9 +772,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       outputContainer->Add(fhPtMCPrimPart[imcPart]);
       
       fhPhiMCPrimPart[imcPart]  = new TH2F (Form("hPhiMCPrimary%s",histoName[imcPart].Data()),
-                                            Form("generated #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                            Form("generated #varphi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
                                             nptbins,ptmin,ptmax, nphibins,phimin,phimax);
-      fhPhiMCPrimPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPrimPart[imcPart]->SetYTitle("#varphi (rad)");
       fhPhiMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPhiMCPrimPart[imcPart]);
       
