@@ -49,6 +49,9 @@ fStudyM02Dependence (kFALSE),
 fM02Min(0),                            fNCellMin(0),            
 fMinDistToBad(0),                      fNEBinCuts(0),
 
+fdEdXMinEle(0),                        fdEdXMaxEle(0),
+fdEdXMinHad(0),                        fdEdXMaxHad(0),
+
 // Invariant mass
 fInvMassMinECut(0),                    fInvMassMaxECut(0),                    
 fInvMassMinM02Cut(0),                  fInvMassMaxM02Cut(0),                    
@@ -1392,7 +1395,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterAsymmetryHistograms(AliVCluster* cl
 //__________________________________________________________________________________________________________________
 void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
 (AliVCluster* clus, AliVCaloCells * cells, Int_t absIdMax, 
- Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax, Bool_t matched)
+ Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax, Int_t matchedPID)
 {
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
@@ -1435,31 +1438,52 @@ void AliAnaClusterShapeCorrelStudies::ClusterM02DependentHistograms
 
   fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac     , m02, GetEventWeight());
   
-  if(!matched) // neutral clusters
+  if(matchedPID >= 0 && matchedPID < 3)
   {
-    fhClusterMaxCellDiffM02[0]->Fill(energy, maxCellFraction, m02, GetEventWeight());
-    fhClusterTimeEnergyM02 [0]->Fill(energy, tmax           , m02, GetEventWeight());
-    fhNCellsPerClusterM02  [0]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
+    fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxCellFraction, m02, GetEventWeight());
+    fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax           , m02, GetEventWeight());
+    fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
   }
-  else
-  {
-    Bool_t electron = kFALSE;
-    
-    // Do here electrons/hadron selection
-    
-    if(electron)
-    {
-      fhClusterMaxCellDiffM02[1]->Fill(energy, maxCellFraction, m02, GetEventWeight());
-      fhClusterTimeEnergyM02 [1]->Fill(energy, tmax           , m02, GetEventWeight());
-      fhNCellsPerClusterM02  [1]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
-    }
-    else // hadron
-    {
-      fhClusterMaxCellDiffM02[2]->Fill(energy, maxCellFraction, m02, GetEventWeight());
-      fhClusterTimeEnergyM02 [2]->Fill(energy, tmax           , m02, GetEventWeight());
-      fhNCellsPerClusterM02  [2]->Fill(energy, nCellWithWeight, m02, GetEventWeight());
-    }
-  }
+}
+
+//____________________________________________________________________________
+/// Check if cluster is matched to a track and do a track ID
+/// either electrons or hadrons. 
+/// filling different type of histograms:
+///
+/// \param clus: AliVCluster pointer
+/// \param matchedPID: 0-neutral, 1-electron, 2-hadron
+//____________________________________________________________________________
+void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID)
+{
+  
+  AliVTrack *track = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
+  
+  if(!track) return ;
+  
+//  Double_t tpt   = track->Pt();
+//  Double_t tmom  = track->P();
+  Double_t dedx  = track->GetTPCsignal();
+//  Int_t    nITS  = track->GetNcls(0);
+//  Int_t    nTPC  = track->GetNcls(1);
+//  Bool_t positive = kFALSE;
+//  if(track) positive = (track->Charge()>0);
+  
+  // Residuals
+//  Float_t deta  = clus->GetTrackDz();
+//  Float_t dphi  = clus->GetTrackDx();
+//  Double_t  dR  = TMath::Sqrt(dphi*dphi + deta*deta);
+//  Int_t nModule = GetModuleNumber(clus);
+
+  // Electron or else?
+  
+  // Init at least once
+  if(fdEdXMinEle == 0 || fdEdXMaxEle == 0 || fdEdXMinHad == 0 || fdEdXMaxHad == 0) 
+    InitdEdXParameters();
+  
+  if      ( dedx >= fdEdXMinEle && dedx < fdEdXMaxEle ) matchedPID = 1; 
+  else if ( dedx >= fdEdXMinHad && dedx < fdEdXMaxHad ) matchedPID = 2;  
+  else                                                  matchedPID =-1;
 }
 
 //____________________________________________________________________________
@@ -1538,8 +1562,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     // Cells per cluster
     nCaloCellsPerCluster = clus->GetNCells();
     
-    // Cluster mathed with track?
+    // Cluster mathed with track? and what kind?
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
+ 
+    Int_t matchedPID = 0;
+    if ( matched && fStudyM02Dependence )
+      ClusterMatchedToTrackPID(clus,matchedPID);
     
     // Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
@@ -1576,7 +1604,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms(const TObjArray *cal
     
     //
     if(fStudyM02Dependence)
-      ClusterM02DependentHistograms(clus, cells, absIdMax, maxCellFraction, eCrossFrac, tmax, matched);
+      ClusterM02DependentHistograms(clus, cells, absIdMax, maxCellFraction, eCrossFrac, tmax, matchedPID);
     
     //
     if(fStudyClustersAsymmetry) 
@@ -1607,7 +1635,7 @@ TObjString * AliAnaClusterShapeCorrelStudies::GetAnalysisCuts()
   parList+=onePar ;	
   snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Cluster M02: > %2.2f ; n cells > %d",fM02Min, fNCellMin) ;
+  snprintf(onePar,buffersize,"Cluster M02: > %2.2f ; n cells > %d;  dist to bad>%2.1f;",fM02Min, fNCellMin, fMinDistToBad) ;
   parList+=onePar ;
    snprintf(onePar,buffersize,"Inv. Mass   %2.1f < E_cl < %2.1f GeV;",fInvMassMinECut, fInvMassMaxECut) ;
   parList+=onePar ;    
@@ -3566,7 +3594,6 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   
   if(fStudyM02Dependence)
   {
-    
 //    fhCellTimeSpreadRespectToCellMaxM02 = new TH3F 
 //    ("hCellTimeSpreadRespectToCellMaxM02",
 //     "#it{E} vs t_{cell max}-t_{cell i} vs #lambda_{0}^{2}", 
@@ -3675,6 +3702,12 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
   
   fInvMassMaxOpenAngle = 100*TMath::DegToRad(); // 100 degrees
   
+  fNEBinCuts = 7;
+  fEBinCuts[0] = 2. ; fEBinCuts[1] = 4. ;  fEBinCuts[2] = 6. ;
+  fEBinCuts[3] = 8. ; fEBinCuts[4] = 10.;  fEBinCuts[5] = 12.;
+  fEBinCuts[6] = 16.; fEBinCuts[7] = 20.;  
+  for(Int_t i = fNEBinCuts+1; i < 15; i++) fEBinCuts[i] = 1000.;
+  
 //  // Exotic studies
 //  fExoNECrossCuts  = 10 ;
 //  fExoNDTimeCuts   = 4  ;
@@ -3684,11 +3717,65 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
 //  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
 }
 
+//________________________________________
+/// Initialize the dedx range 
+//________________________________________
+void AliAnaClusterShapeCorrelStudies::InitdEdXParameters()
+{
+  if(IsDataMC())
+  {
+    fdEdXMinEle = 80;
+    fdEdXMaxEle =100;
+    fdEdXMinHad = 45;
+    fdEdXMaxHad = 78;
+    
+    AliInfo(Form("dEdX cuts init for MC: %d<dedx_ele<%d; %d<dedx_had<%d",
+                 fdEdXMinEle,fdEdXMaxEle,fdEdXMinHad,fdEdXMaxHad));
+  } // MC
+  else
+  {
+    Int_t  runNumber = GetReader()->GetInputEvent()->GetRunNumber();
+
+    // data
+    if      ( runNumber < 146861 ) // LHC11a, LHC10 check for both
+    { 
+      fdEdXMinEle = 72;
+      fdEdXMaxEle = 90;
+      fdEdXMinHad = 40;
+      fdEdXMaxHad = 70;
+    }
+    else if ( runNumber < 156000 ) // LHC11c, LHC11b, check for b
+    {
+      fdEdXMinEle = 60;
+      fdEdXMaxEle = 72;
+      fdEdXMinHad = 35;
+      fdEdXMaxHad = 56;
+    }
+    else if ( runNumber < 165000 ) // LHC11d and other, check for other
+    {
+      fdEdXMinEle = 74;
+      fdEdXMaxEle = 90;
+      fdEdXMinHad = 40;
+      fdEdXMaxHad = 70;
+    }
+    else    // LHC12cdfhi and beyond, check for >=LHC13!
+    {
+      fdEdXMinEle = 78;
+      fdEdXMaxEle = 95;
+      fdEdXMinHad = 40;
+      fdEdXMaxHad = 74;
+    }
+    
+    AliInfo(Form("dEdX cuts init for run %d: %d<dedx_ele<%d; %d<dedx_had<%d",
+                 runNumber,fdEdXMinEle,fdEdXMaxEle,fdEdXMinHad,fdEdXMaxHad));
+  } // data
+}
+
 //_____________________________________________________________________________
 /// Identify cluster as exotic or not.
 //_____________________________________________________________________________
 Bool_t AliAnaClusterShapeCorrelStudies::IsGoodCluster(Int_t absIdMax, Float_t m02, 
-                                          Int_t nCellsPerCluster, AliVCaloCells* cells)
+                                                      Int_t nCellsPerCluster, AliVCaloCells* cells)
 {    
   if(  m02 < fM02Min || nCellsPerCluster < fNCellMin ) return kFALSE ; // mild shower shape cut for exotics
   
@@ -3726,7 +3813,9 @@ void AliAnaClusterShapeCorrelStudies::Print(const Option_t * opt) const
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",GetCalorimeterString().Data());
-  printf("Min n cells   : %d\n"         , fNCellMin) ;
+  printf("Min n cells    : %d\n"   , fNCellMin) ;
+  printf("Min dist to bad: %2.1f\n", fMinDistToBad) ;
+  printf("Min M02        : %1.2f\n", fM02Min) ;
   
   printf("Inv. Mass %2.1f < E_clus < %2.1f GeV/c\n"  , fInvMassMinECut  , fInvMassMaxECut  ) ;
   printf("Inv. Mass %2.1f < M02_clus < %2.1f GeV/c\n", fInvMassMinM02Cut, fInvMassMaxM02Cut) ;
