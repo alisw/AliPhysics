@@ -53,3 +53,9 @@ install(DIRECTORY TunedOnPbPb
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.C"
   )
+
+# install Herwig configurations
+install(DIRECTORY Herwig
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.in"
+  )

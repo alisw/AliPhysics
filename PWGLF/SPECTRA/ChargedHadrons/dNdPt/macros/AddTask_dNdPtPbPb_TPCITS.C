@@ -60,6 +60,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   if(stControlString.Contains("TOFBunchCrossing")){fdNdPtAnalysisPbPb->SetUseTOFBunchCrossing(kTRUE);}
   if(stControlString.Contains("TOFExpectedTimeDiff")){fdNdPtAnalysisPbPb->SetUseTOFExpectedTimeDiff(kTRUE);}
 
+  if(stControlString.Contains("SPDClusterVsTracklets")){fdNdPtAnalysisPbPb->SetUseSPDClusterVsTrackletRejection(kTRUE);}
   
   // SetParticleMode
   if(stControlString.Contains("Pion")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCPion);}

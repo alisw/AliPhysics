@@ -80,6 +80,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  Int_t localDebugFlag = 0;
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -104,6 +105,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
+      }else if(tempStr.BeginsWith("LOCALDEBUGFLAG")){
+        cout << "INFO: AddTask_GammaCalo_pp activating 'LOCALDEBUGFLAG'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,14,"");
+        localDebugFlag = tempType.Atoi();
+        cout << "INFO: debug flag set to '" << localDebugFlag << "'" << endl;
       }
     }
   }
@@ -233,8 +240,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111122053032220000","0163103100000050"); // NonLinearity LHC11a Calo
     cuts.AddCut("00003113","1111101053032220000","0163103100000050"); // NonLinearity kSDMv5
     cuts.AddCut("00003113","1111100053032220000","0163103100000050"); // NonLinearity none
-    cuts.AddCut("00003113","1111132053032220000","0163103100000050"); // 700 MeV cluster min energy
-    cuts.AddCut("00003113","1111131053032220000","0163103100000050");
+    cuts.AddCut("00003113","1111111053032220000","0163103100000050"); // 700 MeV cluster min energy
+    cuts.AddCut("00003113","1111112053032220000","0163103100000050");
   } else if (trainConfig == 5){  // EMCAL clusters, MB (INT1) trigger
     cuts.AddCut("00003113","1111111053032220000","0163103100000050");
     cuts.AddCut("00003113","1111112053032220000","0163103100000050"); // MB
@@ -290,8 +297,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00051013","1111100053032220000","0163103100000050"); // NonLinearity none
     cuts.AddCut("00051013","1111101053032220000","0163103100000050"); // NonLinearity kSDMv5
     cuts.AddCut("00051013","1111122053032220000","0163103100000050"); // NonLinearity LHC11a Calo
-    cuts.AddCut("00051013","1111131053032220000","0163103100000050");    
-    cuts.AddCut("00051013","1111132053032220000","0163103100000050"); 
+    cuts.AddCut("00051013","1111111053032220000","0163103100000050");
+    cuts.AddCut("00051013","1111112053032220000","0163103100000050");
   } else if (trainConfig == 23){  // EMCAL clusters, Non Lin
     cuts.AddCut("00051013","1111111053032220000","0163103100000050");
     cuts.AddCut("00051013","1111112053032220000","0163103100000050"); //
@@ -337,13 +344,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111100010032220000","0163103100000050"); // wo TM
     cuts.AddCut("00000113","1111100013032220000","0163103100000050"); // w TM
   } else if (trainConfig == 45){  // EMCAL clusters, 8TeV LHC12 with TM
-    cuts.AddCut("00010113","1111100063032230000","0163103100000050"); 
-    cuts.AddCut("00052013","1111100063032230000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111100063032230000","0163103100000050"); // EMCEGA
+    cuts.AddCut("00010113","1111100067032230000","0163103100000060");
+    cuts.AddCut("00052013","1111100067032230000","0163103100000060"); // EMC7
+    cuts.AddCut("00081013","1111100067032230000","0163103100000060"); // EMCEGA
   } else if (trainConfig == 46){  // EMCAL clusters, 8TeV LHC12 without TM
-    cuts.AddCut("00010113","1111100060032230000","0163103100000050"); 
-    cuts.AddCut("00052013","1111100060032230000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111100060032230000","0163103100000050"); // EMCEGA
+    cuts.AddCut("00010113","1111100060032230000","0163103100000060");
+    cuts.AddCut("00052013","1111100060032230000","0163103100000060"); // EMC7
+    cuts.AddCut("00081013","1111100060032230000","0163103100000060"); // EMCEGA
     
         
   // LHC13g  
@@ -372,8 +379,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111100063032220000","0163103100000050"); //  NonLinearity none
     cuts.AddCut("00010113","1111101063032220000","0163103100000050"); //  standard kSDMv5
     cuts.AddCut("00010113","1111122063032220000","0163103100000050"); //  NonLinearity LHC11a Calo
-    cuts.AddCut("00010113","1111131063032220000","0163103100000050"); 
-    cuts.AddCut("00010113","1111132063032220000","0163103100000050"); 
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050");
+    cuts.AddCut("00010113","1111112063032220000","0163103100000050");
   } else if (trainConfig == 64){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00010113","1111111063032220000","0163103100000050"); 
     cuts.AddCut("00010113","1111112063032220000","0163103100000050"); 
@@ -416,8 +423,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111100063032220000","0163103100000050"); //  NonLinearity none
     cuts.AddCut("00052013","1111101063032220000","0163103100000050"); //  standard kSDMv5
     cuts.AddCut("00052013","1111122063032220000","0163103100000050"); //  NonLinearity LHC11a Calo
-    cuts.AddCut("00052013","1111131063032220000","0163103100000050"); 
-    cuts.AddCut("00052013","1111132063032220000","0163103100000050"); 
+    cuts.AddCut("00052013","1111111063032220000","0163103100000050");
+    cuts.AddCut("00052013","1111112063032220000","0163103100000050");
   } else if (trainConfig == 73){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00052013","1111111063032220000","0163103100000050"); 
     cuts.AddCut("00052013","1111112063032220000","0163103100000050"); 
@@ -461,8 +468,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00085013","1111100063032220000","0163103100000050"); //  NonLinearity none
     cuts.AddCut("00085013","1111101063032220000","0163103100000050"); //  standard kSDMv5
     cuts.AddCut("00085013","1111122063032220000","0163103100000050"); //  NonLinearity LHC11a Calo
-    cuts.AddCut("00085013","1111131063032220000","0163103100000050"); 
-    cuts.AddCut("00085013","1111132063032220000","0163103100000050"); 
+    cuts.AddCut("00085013","1111111063032220000","0163103100000050");
+    cuts.AddCut("00085013","1111112063032220000","0163103100000050");
   } else if (trainConfig == 83){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00085013","1111111063032220000","0163103100000050"); 
     cuts.AddCut("00085013","1111112063032220000","0163103100000050"); 
@@ -506,8 +513,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00083013","1111100063032220000","0163103100000050"); //  NonLinearity none
     cuts.AddCut("00083013","1111101063032220000","0163103100000050"); //  standard kSDMv5
     cuts.AddCut("00083013","1111122063032220000","0163103100000050"); //  NonLinearity LHC11a Calo
-    cuts.AddCut("00083013","1111131063032220000","0163103100000050"); 
-    cuts.AddCut("00083013","1111132063032220000","0163103100000050"); 
+    cuts.AddCut("00083013","1111111063032220000","0163103100000050");
+    cuts.AddCut("00083013","1111112063032220000","0163103100000050");
   } else if (trainConfig == 94){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00083013","1111111063032220000","0163103100000050"); 
     cuts.AddCut("00083013","1111112063032220000","0163103100000050"); 
@@ -1363,6 +1370,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145 || trainConfig == 206){
     task->SetInOutTimingCluster(-30e-9,35e-9);
   }
+  task->SetLocalDebugFlag(localDebugFlag);
   
   //connect containers
   AliAnalysisDataContainer *coutput =

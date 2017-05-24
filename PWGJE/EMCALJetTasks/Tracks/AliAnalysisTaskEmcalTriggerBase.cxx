@@ -121,7 +121,7 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   if(fRequireAnalysisUtils && !fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
 
-  if(!fNameClusterContainer.Length()) fNameClusterContainer = AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class());
+  if((!fNameClusterContainer.Length()) || fNameClusterContainer == "usedefault") fNameClusterContainer = AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class());
   if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
     fTriggerSelection->SetClusterContainer(fNameClusterContainer);
   }

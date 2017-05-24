@@ -52,6 +52,7 @@ set(SRCS
     AliAnaPi0EbE.cxx
     AliAnaPi0Flow.cxx
     AliAnaRandomTrigger.cxx
+    AliAnaClusterShapeCorrelStudies.cxx
    )
 
 # Headers from sources

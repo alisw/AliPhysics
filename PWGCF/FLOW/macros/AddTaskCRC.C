@@ -555,6 +555,22 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
  } // end of if(bCenFlattening)
   
+  TFile* RefMultRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvRefMult_HIR.root","READ");
+  if(!CenWeightsFile) {
+    cout << "ERROR: RefMultRbRFile not found!" << endl;
+    exit(1);
+  }
+  TCanvas* cav = (TCanvas*)(RefMultRbRFile->Get("Canvas_1"));
+  TProfile2D* RefMultPro = (TProfile2D*)(cav->GetPrimitive("fhAvRefMulRbR"));
+  if(CenHist) {
+    taskQC->SetRefMultRbRPro(RefMultPro);
+    cout << "RefMultRbR set (15o_AvRefMult_HIR.root)" << endl;
+  }
+  else {
+    cout << "ERROR: RefMultRbRPro not found!" << endl;
+    exit(1);
+  }
+  
   if(bPhiExclZone) {
     TString PhiExclFileName = "alien:///alice/cern.ch/user/j/jmargutt/PhiExclZone_15o.root";
     TFile* PhiExclFile = TFile::Open(PhiExclFileName,"READ");

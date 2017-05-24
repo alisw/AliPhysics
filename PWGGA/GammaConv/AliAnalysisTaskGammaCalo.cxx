@@ -58,6 +58,7 @@
 #include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
+#include <fstream>
 
 ClassImp(AliAnalysisTaskGammaCalo)
 
@@ -313,7 +314,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fCloseHighPtClusters(NULL)
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0)
 {
   
 }
@@ -571,7 +573,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fCloseHighPtClusters(NULL)
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1837,6 +1840,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fOutputContainer->Add(tBrokenFiles);
   }
   
+  if(fLocalDebugFlag > 0){
+    fstream fOutputLocalDebug;
+    fOutputLocalDebug.open("debugOutput.txt",ios::out);
+    fOutputLocalDebug.close();
+  }
+
   PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
@@ -2333,6 +2342,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   }
 
   if(fProduceCellIDPlots || fProduceTreeEOverP) mapIsClusterAccepted.clear();
+
+  if(fLocalDebugFlag == 2) EventDebugMethod();
   return;
 }
 
@@ -3097,6 +3108,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
                 
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1)
@@ -3847,7 +3859,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
       }
     }
   } else if(!isTruePi0 && !isTrueEta) { // Background
-    if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
+    if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       } else { // No photon or without mother
@@ -4149,5 +4161,130 @@ void AliAnalysisTaskGammaCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_t> &
     hist->Fill(it->second, fWeightJetJetMC);
   }
   ma.clear();
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(pi0cand->GetOpeningAngle() < 0.02) DebugMethod(pi0cand,gamma0,gamma1);
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(fLocalDebugFlag != 1) return;
+  fstream fOutputLocalDebug;
+  fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
+  if(!fOutputLocalDebug.is_open()) return;
+
+  fOutputLocalDebug << "---------------------------------------" << endl;
+
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  fOutputLocalDebug << "--pi0cand--" << endl;
+  fOutputLocalDebug << "openingAngle " << pi0cand->GetOpeningAngle() << endl;
+  fOutputLocalDebug << "pT " << pi0cand->Pt() << endl;
+  fOutputLocalDebug << "invMass " << pi0cand->M() << endl;
+  fOutputLocalDebug << "--cluster1--" << endl;
+  Float_t clusPos[3]={0,0,0};
+  fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster = clusterVector.Eta();
+  Double_t phiCluster = clusterVector.Phi();
+
+  Int_t nCellCluster = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+  }
+  fOutputLocalDebug << "phi " << phiCluster << endl;
+  fOutputLocalDebug << "eta " << etaCluster << endl;
+
+  fOutputLocalDebug << "--cluster2--" << endl;
+  fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector2(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster2 = clusterVector2.Eta();
+  Double_t phiCluster2 = clusterVector2.Phi();
+  nCellCluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+  }
+  fOutputLocalDebug << "phi " << phiCluster2 << endl;
+  fOutputLocalDebug << "eta " << etaCluster2 << endl;
+  fOutputLocalDebug << "---------------------------------------" << endl;
+  fOutputLocalDebug.close();
+
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::EventDebugMethod(){
+  if(fLocalDebugFlag != 2) return;
+  fstream fOutputLocalDebug;
+  fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
+  if(!fOutputLocalDebug.is_open()) return;
+
+  fOutputLocalDebug << "---------------------------------------" << endl;
+
+  Long_t nclus = fInputEvent->GetNumberOfCaloClusters();
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  fOutputLocalDebug << "--event--" << endl;
+  fOutputLocalDebug << "nclusters " << nclus << endl;
+
+  // vertex
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+  for(Long_t i = 0; i < nclus; i++){
+    AliVCluster* clus = NULL;
+    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
+    if(!clus) continue;
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+      delete clus;
+      continue;
+    }
+    // TLorentzvector with cluster
+    TLorentzVector clusterVector;
+    clus->GetMomentum(clusterVector,vertex);
+
+    TLorentzVector* tmpvec = new TLorentzVector();
+    tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+
+    // convert to AODConversionPhoton
+    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
+    if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
+
+    fOutputLocalDebug << "--cluster" << i << "--" << endl;
+
+    Double_t etaCluster = clusterVector.Eta();
+    Double_t phiCluster = clusterVector.Phi();
+    Int_t nCellCluster = clus->GetNCells();
+    for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+      Float_t nIphi, nIeta;
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+            clus->GetCellAbsId(iCell),
+            nIphi,
+            nIeta);
+      fOutputLocalDebug << clus->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(clus->GetCellAbsId(iCell)) << endl;
+    }
+    fOutputLocalDebug << "phi " << phiCluster << endl;
+    fOutputLocalDebug << "eta " << etaCluster << endl;
+
+    delete clus;
+    delete tmpvec;
+  }
+  fOutputLocalDebug << "---------------------------------------" << endl;
+  fOutputLocalDebug.close();
+
   return;
 }

@@ -658,7 +658,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    {
 			if(pt >= 0.995  &&  pt < 1.005)
 			{
-			    deltat_channel->Fill(channel, deltat);
+			    if(deltat >= -0.6  &&  deltat < 0.6)
+			    {
+				deltat_channel->Fill(channel, deltat);
+			    }
 			}
 		    }
 

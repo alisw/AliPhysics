@@ -41,6 +41,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fIsSPDPileup(kFALSE),
   fIsSPDPileupMultBins(kFALSE),
   fIRIntClosestIntMap(),
+  fVtxCovMatrix(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
   fVtxSPD(),
@@ -76,6 +77,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   // Constructor
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
+  for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0.;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;

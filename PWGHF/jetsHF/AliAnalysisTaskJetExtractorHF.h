@@ -331,9 +331,9 @@ class AliBasicJetSecondaryVertex
 class AliBasicJet
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fMotherInitialCollision(0), fMotherHadronMatching(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Int_t partidIC, Int_t partidHM, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fMotherInitialCollision(partidIC), fMotherHadronMatching(partidHM), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fMass(0), fRadius(0), fArea(0), fMotherInitialCollision(0), fMotherHadronMatching(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Int_t partidIC, Int_t partidHM, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent, Float_t mass)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fMass(mass), fRadius(radius), fArea(area), fMotherInitialCollision(partidIC), fMotherHadronMatching(partidHM), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
     {}
     ~AliBasicJet();
 
@@ -343,6 +343,7 @@ class AliBasicJet
     Double_t                  Phi()      { return fPhi; }
     Double_t                  Eta()      { return fEta; }
     Short_t                   Charge()   { return fCharge; }
+    Double_t                  Mass()     { return fMass; }
     Double_t                  Radius() { return fRadius; }
     Double_t                  Area() { return fArea; }
     Int_t                     MotherInitialCollision() { return fMotherInitialCollision; }
@@ -382,6 +383,7 @@ class AliBasicJet
     Float_t   fpT;       ///< pT
     Float_t   fTruepT;   ///< true pT (optional, e.g. from matching)
     Short_t   fCharge;   ///< charge
+    Float_t   fMass;     ///< jet mass
     Float_t   fRadius;   ///< jet radius
     Float_t   fArea;     ///< jet area
     Int_t     fMotherInitialCollision;  ///< PDG code of source particle (= initial collision quark/hadron)

@@ -24,5 +24,6 @@
 #pragma link C++ class AliAnaGeneratorKine+;
 #pragma link C++ class AliAnaEMCALTriggerClusters+;
 #pragma link C++ class AliAnaClusterPileUp+;
+#pragma link C++ class AliAnaClusterShapeCorrelStudies+;
 
 #endif

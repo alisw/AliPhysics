@@ -810,6 +810,51 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
   clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 }
 
+//______________________________________________________________________________________
+/// \return energy in cross axis around cell. For both calorimeters.
+/// For EMCal, same procedure as in AliEMCALRecoUtils.
+///
+/// \param absID: cell absolute ID naumber
+/// \param cells: total list of cells in calo
+/// \param bc: bunch crossing number
+///
+//______________________________________________________________________________________
+Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc)
+{
+  if ( cells->IsEMCAL() ) 
+  {
+    Double_t tcell = cells->GetCellTime(absID);
+ 
+    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc);
+  }
+  else // PHOS
+  { 
+    Int_t icol = -1, irow = -1,iRCU = -1;   
+    Int_t imod = GetModuleNumberCellIndexes(absID, AliFiducialCut::kPHOS, icol, irow, iRCU);
+   
+    Int_t absId1 = -1, absId2 = -1, absId3 = -1, absId4 = -1;
+    
+    Int_t relId1[] = { imod+1, 0, irow+1, icol   };
+    Int_t relId2[] = { imod+1, 0, irow-1, icol   };
+    Int_t relId3[] = { imod+1, 0, irow  , icol+1 };
+    Int_t relId4[] = { imod+1, 0, irow  , icol-1 };
+    
+    fPHOSGeo->RelToAbsNumbering(relId1, absId1);
+    fPHOSGeo->RelToAbsNumbering(relId2, absId2);
+    fPHOSGeo->RelToAbsNumbering(relId3, absId3);
+    fPHOSGeo->RelToAbsNumbering(relId4, absId4);
+    
+    Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+    
+    if(absId1 > 0 ) ecell1 = cells->GetCellAmplitude(absId1);
+    if(absId2 > 0 ) ecell2 = cells->GetCellAmplitude(absId2);
+    if(absId3 > 0 ) ecell3 = cells->GetCellAmplitude(absId3);
+    if(absId4 > 0 ) ecell4 = cells->GetCellAmplitude(absId4);
+    
+    return ecell1+ecell2+ecell3+ecell4;
+  }
+}
+
 //_______________________________________________________________
 /// Select EMCal SM regions, depending on its location in a SM, 
 /// behind frames, close to borders, etc.
@@ -1223,7 +1268,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
   
   if ( absId < 0 ) return -1 ;
   
-  if ( calo == AliFiducialCut::kEMCAL )
+  if ( calo == AliFiducialCut::kEMCAL || calo == AliFiducialCut::kDCAL)
   {
     Int_t iTower = -1, iIphi = -1, iIeta = -1;
     fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
