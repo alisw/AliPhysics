@@ -180,7 +180,7 @@ void ComputeAcceptanceFromHistogram()
     } else {
       funcPt = LoadPYTHIA13TeV_D0();
     }
-    outFileName.Append("promptFONLL13ptshape.root");
+    outFileName.Append("promptPYTHIA13ptshape.root");
 
   } else {
 
