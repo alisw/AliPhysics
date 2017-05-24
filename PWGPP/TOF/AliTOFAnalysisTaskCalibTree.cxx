@@ -53,15 +53,30 @@ AliAnalysisTaskSE(name),
   fVertexZ(99999),
   ftimezero(9999999),
   fnhits(-1),
+  fmomentum(0),
+  flength(0),
+  findex(0),
+  ftime(0),
+  ftot(0),
+  ftexp(0),
+  fDeltax(0),
+  fDeltaz(0),
   fLightMode(kFALSE),
   fSaveCoordinates(kFALSE),
-  fOutputTree(0x0)             
+  fOutputTree(0x0)
 
 {
   /* 
    * default constructor 
    */
-
+  fmomentum = new Float_t[MAXHITS];
+  flength = new Float_t[MAXHITS];
+  findex = new Int_t[MAXHITS];
+  ftime = new Float_t[MAXHITS];
+  ftot = new Float_t[MAXHITS];
+  ftexp = new Float_t[MAXHITS];
+  fDeltax = new Float_t[MAXHITS];
+  fDeltaz = new Float_t[MAXHITS];
   for (Int_t i = 0; i < MAXHITS; i++){
       fmomentum[i] = 999999;
       flength[i] = 999999;
@@ -128,10 +143,10 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
      fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
      fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
      fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
-     fOutputTree->Branch("nhits", &fnhits, "nhits/I");
      fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
      fOutputTree->Branch("length", &flength, "length[nhits]/F");
    }
+  fOutputTree->Branch("nhits", &fnhits, "nhits/I");
   fOutputTree->Branch("index", &findex, "index[nhits]/I");
   fOutputTree->Branch("time", &ftime, "time[nhits]/F");
   fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
