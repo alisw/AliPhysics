@@ -744,7 +744,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
     
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",13,-0.5,12.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -761,6 +761,9 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
