@@ -362,6 +362,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
+      Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -442,6 +444,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
+      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
       Bool_t    VertexZCut(AliVEvent *fInputEvent);
       Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
       Float_t   GetPtHard(AliVEvent *MCEvent);
@@ -499,6 +502,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fSpecialTrigger;                        // flag
       Int_t                       fSpecialSubTrigger;                     // flag
       Bool_t                      fRemovePileUp;                          // flag
+      Int_t                       fPastFutureRejectionLow;                // sets bunch crossing event rejection in past
+      Int_t                       fPastFutureRejectionHigh;               // sets bunch crossing event rejection in future
       Int_t                       fRejectExtraSignals;                    //
       UInt_t                      fOfflineTriggerMask;                    // Task processes collision candidates only
       Bool_t                      fHasV0AND;                              // V0AND Offline Trigger
@@ -530,6 +535,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameFitDataK0s;                        // Fit name for fit to spectrum of k0s in Data
       // Histograms
       TH1F*                       fHistoEventCuts;                        // bookkeeping for event selection cuts
+      TH1F*                       fHistoPastFutureBits;                   // bookkeeping for event selection cuts
       TH1F*                       hCentrality;                            // centrality distribution for selected events
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
@@ -584,7 +590,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,30)
+      ClassDef(AliConvEventCuts,31)
 };
 
 

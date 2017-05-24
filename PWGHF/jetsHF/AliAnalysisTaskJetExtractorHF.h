@@ -331,9 +331,9 @@ class AliBasicJetSecondaryVertex
 class AliBasicJet
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fMass(0), fRadius(0), fArea(0), fMotherInitialCollision(0), fMotherHadronMatching(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Int_t partidIC, Int_t partidHM, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent, Float_t mass)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fMass(mass), fRadius(radius), fArea(area), fMotherInitialCollision(partidIC), fMotherHadronMatching(partidHM), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fMass(0), fRadius(0), fArea(0), fMotherInitialCollision(0), fMotherHadronMatching(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fEventPtHard(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Int_t partidIC, Int_t partidHM, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent, Float_t mass, Float_t ptHard)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fMass(mass), fRadius(radius), fArea(area), fMotherInitialCollision(partidIC), fMotherHadronMatching(partidHM), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fEventPtHard(ptHard), fConstituents()
     {}
     ~AliBasicJet();
 
@@ -355,6 +355,7 @@ class AliBasicJet
     Double_t                  VertexZ() { return fVertexZ; }
     Long64_t                  EventID() { return fEventID; }
     Short_t                   Centrality() { return fCentrality; }
+    Double_t                  EventPtHard() { return fEventPtHard; }
     Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
     Int_t                     GetNumbersOfSecVertices() { return fSecondaryVertices.size(); }
     void                      SetTruePt(Double_t val)  {fTruepT = val;}
@@ -395,6 +396,7 @@ class AliBasicJet
     Float_t   fVertexZ; ///< event vertex Z
     Long64_t  fEventID;  ///< Unique event id
     Short_t   fCentrality; ///< centrality
+    Float_t   fEventPtHard; ///< pt hard of the corresponding event
 
     std::vector<AliBasicJetSecondaryVertex> fSecondaryVertices; ///< vector of sec. vertices
     std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents

@@ -584,12 +584,14 @@ void AliNuclexEventCuts::SetupRun2pA(int iPeriod) {
   fMaxDeltaSpdTrackNsigmaSPD = 20.f;
   fMaxDeltaSpdTrackNsigmaTrack = 40.f;
 
-  /// No centrality cuts by default
-  fCentralityFramework = 1;
-  fUseEstimatorsCorrelationCut = false;
+  /// p-Pb MC do not have the ZDC, the following line avoid any crashes.
+  if (!fMC) {
+    fCentralityFramework = 1;
+    fUseEstimatorsCorrelationCut = false;
 
-  fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
-  fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
+    fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
+    fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
+  }
 }
 
 void  AliNuclexEventCuts::OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov) {

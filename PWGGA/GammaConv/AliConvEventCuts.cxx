@@ -88,6 +88,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialTrigger(0),
   fSpecialSubTrigger(0),
   fRemovePileUp(kFALSE),
+  fPastFutureRejectionLow(0),
+  fPastFutureRejectionHigh(0),
   fRejectExtraSignals(0),
   fOfflineTriggerMask(0),
   fHasV0AND(kTRUE),
@@ -117,6 +119,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameFitDataEta(""),
   fNameFitDataK0s(""),
   fHistoEventCuts(NULL),
+  fHistoPastFutureBits(NULL),
   hCentrality(NULL),
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
@@ -195,6 +198,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialTrigger(ref.fSpecialTrigger),
   fSpecialSubTrigger(ref.fSpecialSubTrigger),
   fRemovePileUp(ref.fRemovePileUp),
+  fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
+  fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fRejectExtraSignals(ref.fRejectExtraSignals),
   fOfflineTriggerMask(ref.fOfflineTriggerMask),
   fHasV0AND(ref.fHasV0AND),
@@ -224,6 +229,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameFitDataEta(ref.fNameFitDataEta),
   fNameFitDataK0s(ref.fNameFitDataK0s),
   fHistoEventCuts(NULL),
+  fHistoPastFutureBits(NULL),
   hCentrality(ref.hCentrality),
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
@@ -385,18 +391,20 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
     fHistograms->Add(hEventPlaneAngle);
   }
-
+  fHistoPastFutureBits=new TH1F(Form("PastFutureBits %s",GetCutNumber().Data()),"Past Future Bits",180,-90*25,90*25);
+  fHistograms->Add(fHistoPastFutureBits);
 
   // Event Cuts and Info
   if(preCut){
-    fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
+    fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",8,-0.5,7.5);
     fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
     fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
     fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
     fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
     fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
-    fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
+    fHistoEventCuts->GetXaxis()->SetBinLabel(7,"OOB-pileup");
+    fHistoEventCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoEventCuts);
 
     hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
@@ -640,6 +648,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   }
   cutindex++;
 
+  if(fRemovePileUp && IsOutOfBunchPileupPastFuture(fInputEvent)){
+    if(fHistoEventCuts) fHistoEventCuts->Fill(cutindex);
+    fEventQuality = 12;
+    return kFALSE;
+  }
+  cutindex++;
   // Fill Event Histograms
   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
   if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
@@ -1549,10 +1563,30 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
 {// Set Cut
   switch(removePileUp){
   case 0:
-    fRemovePileUp=kFALSE;
+    fRemovePileUp           = kFALSE;
     break;
   case 1:
-    fRemovePileUp=kTRUE;
+    fRemovePileUp           = kTRUE;
+    break;
+  case 2:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow =-89;
+    fPastFutureRejectionHigh= 85;
+    break;
+  case 3:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -4;
+    fPastFutureRejectionHigh=  7;
+    break;
+  case 4:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -10;
+    fPastFutureRejectionHigh=  13;
+    break;
+  case 5:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -40;
+    fPastFutureRejectionHigh=  43;
     break;
   default:
     AliError("RemovePileUpCut not defined");
@@ -1891,6 +1925,34 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
   }
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *InputEvent)
+{
+  TBits fIR1 =  InputEvent->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
+  TBits fIR2 =  InputEvent->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information
+  UShort_t bunchCrossings = InputEvent->GetBunchCrossNumber();
+
+  if(fHistoPastFutureBits){
+    for(Int_t i = 0; i<180;i++){
+      if(fIR1.TestBitNumber(i))
+        fHistoPastFutureBits->Fill((i*25)-90*25);
+    }
+  }
+
+  Bool_t isOutOfBunchPileup = 0;
+  Int_t pf1 = fPastFutureRejectionLow+bunchCrossings%4;
+  Int_t pf2 = fPastFutureRejectionHigh+bunchCrossings%4;
+  Int_t pf2maxForT0 = pf2;
+  Int_t ir1skip = 0;
+  for (Int_t i=pf1;i<=pf2;i++) {
+    if (i==0) continue;
+    if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up 
+    if (i>0 && i<=ir1skip) continue; // skip next 2 for old IR definitions
+    isOutOfBunchPileup|=fIR1.TestBitNumber(90+i); // V0-based clean-up
+  }
+  return isOutOfBunchPileup;
 }
 
 //________________________________________________________________________
@@ -3279,6 +3341,10 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       }
       if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
     }  
+  }
+  if(GetPastFutureLowBC()!=0 && GetPastFutureHighBC()!=0 ){
+    if(IsOutOfBunchPileupPastFuture(InputEvent))
+      return 12;
   }
 
   if( isHeavyIon != 2 && GetIsFromPileup()){
