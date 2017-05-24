@@ -2285,3 +2285,45 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
   return spherocity;
 
 }
+
+//________________________________________________________________________
+TH1D* AliVertexingHFUtils::RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse){
+  /// Rebin histogram, from bin firstUse to lastUse
+  /// Use all bins if firstUse=-1
+  /// If ngroup is not an exact divider of the number of bins, 
+  ///  the bin width is kept as reb*original width 
+  ///  and the range of rebinned histogram is adapted
+
+  Int_t nBinOrig=hOrig->GetNbinsX();
+  Int_t firstBinOrig=1;
+  Int_t lastBinOrig=nBinOrig;
+  Int_t nBinOrigUsed=nBinOrig;
+  Int_t nBinFinal=nBinOrig/reb;
+  if(firstUse>=1){ 
+    firstBinOrig=firstUse;
+    nBinFinal=(nBinOrig-firstUse+1)/reb;
+    nBinOrigUsed=nBinFinal*reb;
+    lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+  }else{
+    Int_t exc=nBinOrigUsed%reb;
+    if(exc!=0){
+      nBinOrigUsed-=exc;
+      lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+    }
+  }
+
+  printf("Rebin from %d bins to %d bins -- Used bins=%d in range %d-%d\n",nBinOrig,nBinFinal,nBinOrigUsed,firstBinOrig,lastBinOrig);
+  Float_t lowLim=hOrig->GetXaxis()->GetBinLowEdge(firstBinOrig);
+  Float_t hiLim=hOrig->GetXaxis()->GetBinUpEdge(lastBinOrig);
+  TH1D* hRebin=new TH1D(Form("%s-rebin",hOrig->GetName()),hOrig->GetTitle(),nBinFinal,lowLim,hiLim);
+  Int_t lastSummed=firstBinOrig-1;
+  for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
+    Float_t sum=0.;
+    for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
+      sum+=hOrig->GetBinContent(lastSummed+1);
+      lastSummed++;
+    }
+    hRebin->SetBinContent(iBin,sum);
+  }
+  return hRebin;
+}
