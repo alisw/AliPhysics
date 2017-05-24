@@ -80,10 +80,15 @@ int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
 
-//ROOT streamers
+//ROOT streamers utilities
+//add streamers to a message
 int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQrootStreamerInfo* streamers);
+//initialize ROOT internals with the incoming streamers so the objects can be decoded
 int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it);
+//add new and unique streamers to the list based on the output of the ROOT serializer (newStreamers)
 void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TObjArray* newStreamers);
+//this one is slow, use only for init kind of stuff
+void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, TObject* object);
 
 //checking identity of the frame via iterator
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const DataTopic& topic);
@@ -116,6 +121,9 @@ const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
 bool Topicncmp(const char* topic, const char* reference, int topicSize=kDataTypeTopicSize, int referenceSize=kDataTypeTopicSize);
 ULong64_t CharArr2uint32(const char* str);
 ULong64_t CharArr2uint64(const char* str);
+
+//helper function to print a hex/ASCII dump of some memory
+void hexDump (const char* desc, const void* addr, int len);
 
 struct BaseDataTopic
 {
@@ -220,11 +228,11 @@ struct DataTopic : public BaseDataTopic
 };
 
 //common data type definitions, compatible with AliHLTDataTypes v25
-const DataTopic kDataTypeStreamerInfos("ROOTSTRI","***\n",0);
-const DataTopic kDataTypeInfo("INFO____","***\n",0);
-const DataTopic kDataTypeConfig("CONFIG__","***\n",0);
-const DataTopic kDataTypeTObject("ROOTTOBJ","***\n",0);
-const DataTopic kDataTypeTH1("ROOTHIST","***\n",0);
+extern const DataTopic kDataTypeStreamerInfos;
+extern const DataTopic kDataTypeInfo;
+extern const DataTopic kDataTypeConfig;
+extern const DataTopic kDataTypeTObject;
+extern const DataTopic kDataTypeTH1;
 
 extern const ULong64_t kSerializationROOT;
 
@@ -236,9 +244,6 @@ std::string GetParamString(const std::string param, const std::string paramstrin
 
 //load ROOT libraries specified in comma separated string
 int LoadROOTlibs(std::string libstring, bool verbose=false);
-
-//helper function to print a hex/ASCII dump of some memory
-void hexDump (const char* desc, void* addr, int len);
 
 //______________________________________________________________________________
 inline ULong64_t CharArr2uint64(const char* str)

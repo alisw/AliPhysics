@@ -53,6 +53,12 @@ const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n"
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0);
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0);
 
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",0);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0);
+
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()
 {
@@ -537,6 +543,7 @@ int AliZMQhelpers::alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQr
 
   //prepare data msg
   TObjArray listOfInfos;
+  listOfInfos.SetOwner(kTRUE);
   for (aliZMQrootStreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
     listOfInfos.Add(*i);
   }
