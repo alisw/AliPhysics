@@ -108,6 +108,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
 
+    void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
 
@@ -391,7 +392,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 35);
+    ClassDef(AliAnalysisTaskGammaCalo, 36);
 };
 
 #endif

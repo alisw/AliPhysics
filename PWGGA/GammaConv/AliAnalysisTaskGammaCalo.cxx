@@ -2342,6 +2342,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   }
 
   if(fProduceCellIDPlots || fProduceTreeEOverP) mapIsClusterAccepted.clear();
+
+  if(fLocalDebugFlag == 2) EventDebugMethod();
   return;
 }
 
@@ -3106,7 +3108,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
                 
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-          if(fLocalDebugFlag) DebugMethodPrint1(pi0cand,gamma0,gamma1);
+          if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1)
@@ -4164,14 +4166,13 @@ void AliAnalysisTaskGammaCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_t> &
 
 //_________________________________________________________________________________
 void AliAnalysisTaskGammaCalo::DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
-  if(fLocalDebugFlag < 1) return;
   if(pi0cand->GetOpeningAngle() < 0.02) DebugMethod(pi0cand,gamma0,gamma1);
   return;
 }
 
 //_________________________________________________________________________________
 void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
-  if(fLocalDebugFlag == 0) return;
+  if(fLocalDebugFlag != 1) return;
   fstream fOutputLocalDebug;
   fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
   if(!fOutputLocalDebug.is_open()) return;
@@ -4218,6 +4219,70 @@ void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliA
   }
   fOutputLocalDebug << "phi " << phiCluster2 << endl;
   fOutputLocalDebug << "eta " << etaCluster2 << endl;
+  fOutputLocalDebug << "---------------------------------------" << endl;
+  fOutputLocalDebug.close();
+
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::EventDebugMethod(){
+  if(fLocalDebugFlag != 2) return;
+  fstream fOutputLocalDebug;
+  fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
+  if(!fOutputLocalDebug.is_open()) return;
+
+  fOutputLocalDebug << "---------------------------------------" << endl;
+
+  Long_t nclus = fInputEvent->GetNumberOfCaloClusters();
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  fOutputLocalDebug << "--event--" << endl;
+  fOutputLocalDebug << "nclusters " << nclus << endl;
+
+  // vertex
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+  for(Long_t i = 0; i < nclus; i++){
+    AliVCluster* clus = NULL;
+    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
+    if(!clus) continue;
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+      delete clus;
+      continue;
+    }
+    // TLorentzvector with cluster
+    TLorentzVector clusterVector;
+    clus->GetMomentum(clusterVector,vertex);
+
+    TLorentzVector* tmpvec = new TLorentzVector();
+    tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+
+    // convert to AODConversionPhoton
+    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
+    if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
+
+    fOutputLocalDebug << "--cluster" << i << "--" << endl;
+
+    Double_t etaCluster = clusterVector.Eta();
+    Double_t phiCluster = clusterVector.Phi();
+    Int_t nCellCluster = clus->GetNCells();
+    for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+      Float_t nIphi, nIeta;
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+            clus->GetCellAbsId(iCell),
+            nIphi,
+            nIeta);
+      fOutputLocalDebug << clus->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(clus->GetCellAbsId(iCell)) << endl;
+    }
+    fOutputLocalDebug << "phi " << phiCluster << endl;
+    fOutputLocalDebug << "eta " << etaCluster << endl;
+
+    delete clus;
+    delete tmpvec;
+  }
   fOutputLocalDebug << "---------------------------------------" << endl;
   fOutputLocalDebug.close();
 
