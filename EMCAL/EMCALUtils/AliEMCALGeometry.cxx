@@ -1518,12 +1518,14 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
       printf("\t AliEMCALGeometry::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
       AliFatal("") ;
     }  
-  }//external matrices
+ } // external matrices
   
   // If gGeoManager exists, take matrix from it
-  if(gGeoManager) return GetMatrixForSuperModuleFromGeoManager(smod);
-  
-  return 0 ;
+  // only once to speed up things
+  if ( gGeoManager && !fkSModuleMatrix[smod] )
+    fkSModuleMatrix[smod] = GetMatrixForSuperModuleFromGeoManager(smod) ;
+
+  return fkSModuleMatrix[smod];
 }
 
 ///
@@ -1736,9 +1738,15 @@ void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod)
 {
   fUseExternalMatrices = kTRUE;
 
-  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
-    if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
-  } else AliFatal(Form("Wrong supermodule index -> %d",smod));
+  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules())
+  {
+   if ( !fkSModuleMatrix[smod] )
+      fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
+  }
+  else
+  {
+    AliFatal(Form("Wrong supermodule index -> %d",smod));
+  }
 }
 
 ///

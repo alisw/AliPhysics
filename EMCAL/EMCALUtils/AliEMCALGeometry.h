@@ -469,7 +469,7 @@ protected:
   Float_t  fZLength;		             ///< Total length in z direction
   Float_t  fSampling;		             ///< Sampling factor
 	
-  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
+  mutable const TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
   Bool_t   fUseExternalMatrices;     ///< Use the matrices set in fkSModuleMatrix and not those in the geoManager
 	
 private:
