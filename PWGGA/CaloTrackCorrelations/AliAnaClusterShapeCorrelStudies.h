@@ -412,8 +412,14 @@ public:
   TH3F *   fhDeltaIAM02[3];                     //!<! Cluster "asymmetry" vs Lambda0 vs E 
   TH3F *   fhDeltaIAM20[3];                     //!<! Cluster "asymmetry" vs Lambda1 vs E 
   TH3F *   fhDeltaIANCells[3] ;                 //!<! Cluster "asymmetry" vs n cells vs E 
-  TH3F *   fhDeltaIAMC[3];                      //!<! Cluster "asymmetry" vs E vs origin
+  TH3F *   fhDeltaIAOrigin[3];                  //!<! Cluster "asymmetry" vs E vs origin
   
+  TH3F *   fhDeltaIEtaDeltaIPhiTot[3];          //!<! Difference between max cell index and farthest cells left/up to right/down, eta vs phi vs E
+  TH2F *   fhDeltaIATot[3];                     //!<! Cluster "total asymmetry" vs E
+  TH3F *   fhDeltaIATotM02[3];                  //!<! Cluster "total asymmetry" vs Lambda0 vs E 
+  TH3F *   fhDeltaIATotM20[3];                  //!<! Cluster "total asymmetry" vs Lambda1 vs E 
+  TH3F *   fhDeltaIATotNCells[3] ;              //!<! Cluster "total asymmetry" vs n cells vs E 
+  TH3F *   fhDeltaIATotOrigin[3];               //!<! Cluster "total asymmetry" vs E vs origin
   // Shower shape dependence 
   //
 //TH3F *   fhCellTimeSpreadRespectToCellMaxM02;  //!<! Difference of the time of cell with maximum dep energy and the rest of cells
@@ -425,6 +431,7 @@ public:
   TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
+  TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20
   
   TH2F *   fhOriginE  [3];                       //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                       //!<! check origin of selected clusters, vs E vs M02
