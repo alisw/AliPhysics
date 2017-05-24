@@ -239,7 +239,7 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
   if(type<0 || type>8) return uncorrectedNacc;
   if(type == 0) refMult = 5.0;         // SPD tracklets in |eta|<0.5 
   if(type == 1 && period!=4) refMult = 9.5;         // SPD tracklets in |eta|<1.0
-  if(type == 1 && period==4) refMult = 11.0;        // SPD tracklets in |eta|<1.0 refMulti for period 4 (LHC16l) //CJ analysis
+  if(type == 1 && period==4) refMult = 12.0;        // SPD tracklets in |eta|<1.0 refMulti for period 4 (LHC16l) //CJ analysis
   if(type == 2) refMult = 13.0;        // SPD tracklets in |eta|<1.6
   if(type == 3) refMult = 6.0;         // ITSTPC+ in |eta|<0.5
   if(type == 4) refMult = 12.0;        // ITSTPC+ in |eta|<1.0
