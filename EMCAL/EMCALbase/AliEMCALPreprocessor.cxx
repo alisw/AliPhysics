@@ -509,7 +509,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
       // Currently a test procedure
       if(itru > 55 && !isEMCAL) continue;
       
-      snprintf(buf, bufsize, "%s_STU_ERROR_COUNT_TRU%0d", *idet, itru);
+      snprintf(buf, bufsize, "%s_STU_ERROR_COUNT_TRU%02d", *idet, itru);
       AliInfo(Form("Reading %s", buf));
       
       TObjArray *dcsvals = (TObjArray *)dcsAliasMap->GetValue(buf);
