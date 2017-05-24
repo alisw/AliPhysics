@@ -1596,8 +1596,10 @@ private:
   TH3D *fZDCVtxFitHist2[4]; //!
   TH1D *fZDCVtxFitCenProjHist2[4][3]; //!
   TH3D *fZDCBinsCenRefMult[10]; //!
-  TH2D *fZDCBinsCenRefMultRbR[4]; //!
-  TH2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile2D *fZDCBinsCenRefMultRbR[4]; //!
+  TProfile2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile *fZDCBinsCenRefMultRbRProf[10][4]; //!
+  TProfile *fZDCBinsCenRefMultTotProf[10][4]; //!
   TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   
@@ -1965,7 +1967,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,53);
+  ClassDef(AliFlowAnalysisCRC,54);
   
 };
 
