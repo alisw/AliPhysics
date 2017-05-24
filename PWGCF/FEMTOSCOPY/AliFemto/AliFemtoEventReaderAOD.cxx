@@ -1472,6 +1472,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetmomXiZ(tAODxi->MomXiZ());
   AliFemtoThreeVector momxi(tAODxi->MomXiX(), tAODxi->MomXiY(), tAODxi->MomXiZ());
   tFemtoXi->SetmomXi(momxi);
+  tFemtoXi->SetRadiusXi(TMath::Sqrt(tAODxi->DecayVertexXiX()*tAODxi->DecayVertexXiX()+tAODxi->DecayVertexXiY()*tAODxi->DecayVertexXiY()));
 
   tFemtoXi->SetidBac(tAODxi->GetBachID());
 
