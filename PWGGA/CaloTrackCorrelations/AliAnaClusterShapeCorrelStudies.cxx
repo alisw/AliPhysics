@@ -3399,7 +3399,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     {
       fhDeltaIEtaDeltaIPhi[imatch]  = new TH3F 
       (Form("hDeltaIEtaDeltaIPhi_%s",matchCase[imatch].Data()),
-       Form("Cluster max size  with respect main cell in columns vs rows vs E for %s, #it{n}_{cells} > 3",matchCase[imatch].Data()),
+       Form("Cluster max size  with respect main cell in columns vs rows vs E for %s, #it{n}_{cells}^{w>0.01}>4",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,cellBins,cellMin,cellMax); 
       fhDeltaIEtaDeltaIPhi[imatch]->SetXTitle("#it{E}_{cluster}");
       fhDeltaIEtaDeltaIPhi[imatch]->SetYTitle("#Delta Column");
@@ -3408,7 +3408,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 
       fhDeltaIEtaDeltaIPhiTot[imatch]  = new TH3F 
       (Form("hDeltaIEtaDeltaIPhiTot_%s",matchCase[imatch].Data()),
-       Form("Cluster size in columns vs rows, minus main cell, vs E for %s, #it{n}_{cells} > 3",matchCase[imatch].Data()),
+       Form("Cluster size in columns vs rows, minus main cell, vs E for %s, #it{n}_{cells}^{w>0.01}>4",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,cellBins,cellMin,cellMax); 
       fhDeltaIEtaDeltaIPhiTot[imatch]->SetXTitle("#it{E}_{cluster}");
       fhDeltaIEtaDeltaIPhiTot[imatch]->SetYTitle("#Delta Column");
@@ -3472,7 +3472,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
        Form("Cluster *asymmetry* in cell units vs N cells in cluster for %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,asyBins,asyMin,asyMax); 
       fhDeltaIANCells[imatch]->SetXTitle("#it{E}_{cluster}");
-      fhDeltaIANCells[imatch]->SetYTitle("#it{n}_{cell in cluster}");
+      fhDeltaIANCells[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhDeltaIANCells[imatch]->SetZTitle("#it{A}_{cell in cluster}");
       outputContainer->Add(fhDeltaIANCells[imatch]); 
 
@@ -3481,7 +3481,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
        Form("Cluster *total asymmetry* in cell units vs N cells in cluster for %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,asyBins,asyMin,asyMax); 
       fhDeltaIATotNCells[imatch]->SetXTitle("#it{E}_{cluster}");
-      fhDeltaIATotNCells[imatch]->SetYTitle("#it{n}_{cell in cluster}");
+      fhDeltaIATotNCells[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhDeltaIATotNCells[imatch]->SetZTitle("#it{A}_{cell in cluster}^{total}");
       outputContainer->Add(fhDeltaIATotNCells[imatch]); 
       
@@ -3508,7 +3508,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
       fhNCellsPerClusterM02[imatch]->SetXTitle("#it{E} (GeV)");
-      fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}");
+      fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01});
       fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsPerClusterM02[imatch]); 
 
@@ -3517,7 +3517,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2} for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
       fhNCellsPerClusterM20[imatch]->SetXTitle("#it{E} (GeV)");
-      fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}");
+      fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01});
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
       
