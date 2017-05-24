@@ -119,12 +119,16 @@ class AliVertexingHFUtils : public TObject{
   /// Functions for processing trigger information
   static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
 
+  /// Rebinning of invariant mass histograms
+  static TH1D* RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse=-1);
+
   /// Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
   static Double_t GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
 
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
+  /// Functions to check the decay tree
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Int_t CheckOrigin(AliMCEvent* mcEvent, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
