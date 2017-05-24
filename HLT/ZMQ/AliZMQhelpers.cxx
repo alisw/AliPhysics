@@ -543,7 +543,6 @@ int AliZMQhelpers::alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQr
 
   //prepare data msg
   TObjArray listOfInfos;
-  listOfInfos.SetOwner(kTRUE);
   for (aliZMQrootStreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
     listOfInfos.Add(*i);
   }
