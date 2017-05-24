@@ -30,7 +30,8 @@ AliFemtoXi::AliFemtoXi():
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
   fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
-  fTOFKaonTimeBac(0)
+  fTOFKaonTimeBac(0),
+  fRadiusXi(0.)
 {
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
@@ -65,7 +66,8 @@ AliFemtoXi::AliFemtoXi(const AliFemtoV0* aV0):
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
   fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
-  fTOFKaonTimeBac(0)
+  fTOFKaonTimeBac(0),
+  fRadiusXi(0.)
 {
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
@@ -96,7 +98,7 @@ AliFemtoXi::AliFemtoXi(const AliFemtoXi& aXi) :
   fTPCNclsBac(aXi.fTPCNclsBac), fNdofBac(aXi.fNdofBac), fStatusBac(aXi.fStatusBac), fEtaBac(aXi.fEtaBac), fIdBac(aXi.fIdBac), 
   fBacNSigmaTPCK(aXi.fBacNSigmaTPCK), fBacNSigmaTPCPi(aXi.fBacNSigmaTPCPi), fBacNSigmaTPCP(aXi.fBacNSigmaTPCP),
   fBacNSigmaTOFK(aXi.fBacNSigmaTOFK), fBacNSigmaTOFPi(aXi.fBacNSigmaTOFPi), fBacNSigmaTOFP(aXi.fBacNSigmaTOFP), fTPCMomentumBac(aXi.fTPCMomentumBac),
-  fTOFProtonTimeBac(aXi.fTOFProtonTimeBac), fTOFPionTimeBac(aXi.fTOFPionTimeBac), fTOFKaonTimeBac(aXi.fTOFKaonTimeBac)
+  fTOFProtonTimeBac(aXi.fTOFProtonTimeBac), fTOFPionTimeBac(aXi.fTOFPionTimeBac), fTOFKaonTimeBac(aXi.fTOFKaonTimeBac), fRadiusXi(aXi.fRadiusXi)
   
 {
   // copy constructor
@@ -179,6 +181,7 @@ AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
   fTOFProtonTimeBac = aXi.fTOFProtonTimeBac;
   fTOFPionTimeBac = aXi.fTOFPionTimeBac;
   fTOFKaonTimeBac = aXi.fTOFKaonTimeBac;
+  fRadiusXi = aXi.fRadiusXi;
 
 
   for (int i = 0; i < 9; i++) {

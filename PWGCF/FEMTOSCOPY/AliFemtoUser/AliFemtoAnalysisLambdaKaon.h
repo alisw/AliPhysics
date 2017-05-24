@@ -236,6 +236,9 @@ struct XiCutParams
   double minPtBac,
          maxPtBac;
 
+  double radiusXiMin,
+         radiusXiMax;
+
   int v0Type;
   double minDcaV0;
   double minInvMassV0,

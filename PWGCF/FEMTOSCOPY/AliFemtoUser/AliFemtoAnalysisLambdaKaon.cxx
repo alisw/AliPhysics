@@ -1048,6 +1048,8 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetMinCosPointingAngleXi(aCutParams.minCosPointingAngleXi);
   tXiCut->SetMinCosPointingAngleV0toXi(aCutParams.minCosPointingAngleV0toXi);
   tXiCut->SetMaxDcaXi(aCutParams.maxDcaXi);
+  tXiCut->SetRadiusXiMin(aCutParams.radiusXiMin);
+  tXiCut->SetRadiusXiMax(aCutParams.radiusXiMax);
     //XiDaughters
     tXiCut->SetMaxDcaXiDaughters(aCutParams.maxDcaXiDaughters);
 
@@ -1058,7 +1060,6 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetTPCnclsBac(aCutParams.minTPCnclsBac);
   tXiCut->SetPtBac(aCutParams.minPtBac,aCutParams.maxPtBac);
   tXiCut->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
-
 
   //Lambda cuts (regular V0)
   tXiCut->SetParticleType(aCutParams.v0Type); //0=lambda
@@ -1958,6 +1959,9 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
 
+  tReturnParams.radiusXiMin = 0.0;      //for now, these are default, wide open values
+  tReturnParams.radiusXiMax = 99999.0;
+
   tReturnParams.v0Type = 0;
   tReturnParams.minDcaV0 = 0.2;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
@@ -2022,6 +2026,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.minTPCnclsBac = 70;
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
+
+  tReturnParams.radiusXiMin = 0.0;      //for now, these are default, wide open values
+  tReturnParams.radiusXiMax = 99999.0;
 
   tReturnParams.v0Type = 1;
   tReturnParams.minDcaV0 = 0.2;
