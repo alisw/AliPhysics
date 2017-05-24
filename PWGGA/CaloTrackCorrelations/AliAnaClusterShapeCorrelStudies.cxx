@@ -1296,6 +1296,13 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Int_t nCaloCellsPerCluster = clus->GetNCells();
   if ( nCaloCellsPerCluster < 2 ) return; 
 
+  // Clean the sample with very strict cut on acceptance, select only
+  // in center of SM
+  Int_t etaRegion = -1, phiRegion = -1;
+  GetCaloUtils()->GetEMCALSubregion(clus,fCaloCellList,etaRegion,phiRegion);
+  // Region 0: center of SM ~0.18<|eta|<0.55
+  if ( etaRegion !=0 ) return ;
+  
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
   Float_t m20    = clus->GetM20();
