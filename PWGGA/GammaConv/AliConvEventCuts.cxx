@@ -829,16 +829,18 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
   if (fV0ReaderName.CompareTo("") == 0){
     fV0ReaderName = "V0ReaderV1";
   }
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -4624,4 +4626,4 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kUnset;
   }
   return;
-}  
+}

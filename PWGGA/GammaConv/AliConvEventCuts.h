@@ -273,7 +273,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    UpdateCutString();
       static const char * fgkCutNames[kNCuts];
 
-      // Seters
+      // Setters
       Bool_t    SetCutIds (TString cutString); 
       Bool_t    SetCut (cutIds cutID, Int_t cut);
       Bool_t    SetIsHeavyIon (Int_t isHeavyIon);
