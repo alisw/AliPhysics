@@ -63,12 +63,13 @@ AliAnalysisTaskSE(name),
   fDeltaz(0),
   fLightMode(kFALSE),
   fSaveCoordinates(kFALSE),
-  fOutputTree(0x0)
+  fOutputTree(0x0)             
 
 {
   /* 
    * default constructor 
    */
+
   fmomentum = new Float_t[MAXHITS];
   flength = new Float_t[MAXHITS];
   findex = new Int_t[MAXHITS];
@@ -118,7 +119,6 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
   delete ftexp;
   delete fDeltax;
   delete fDeltaz;
-
   if (fOutputTree) {
     delete fOutputTree;
     fOutputTree = 0x0;
@@ -138,19 +138,22 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
   fOutputTree = new TTree("aodTree", "Tree with TOF calib output"); 
 
   /* setup output tree */
-  if (!fLightMode) { // skip some track parameters if flag on
-     fOutputTree->Branch("run", &fRunNumber, "run/I");
-     fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
-     fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
-     fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
-     fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
-     fOutputTree->Branch("length", &flength, "length[nhits]/F");
-   }
   fOutputTree->Branch("nhits", &fnhits, "nhits/I");
   fOutputTree->Branch("index", &findex, "index[nhits]/I");
   fOutputTree->Branch("time", &ftime, "time[nhits]/F");
   fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
   fOutputTree->Branch("texp", &ftexp, "texp[nhits]/F");
+  if (!fLightMode) { // skip some track parameters if flag on
+  fOutputTree->Branch("run", &fRunNumber, "run/I");
+  fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
+  fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
+  fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
+  fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
+  fOutputTree->Branch("length", &flength, "length[nhits]/F");
+   }
+
+
+
   if (fSaveCoordinates) { //save pad hit coordinates if flag on
      fOutputTree->Branch("deltax", &fDeltax, "deltax[nhits]/F");
      fOutputTree->Branch("deltaz", &fDeltaz, "deltaz[nhits]/F");
@@ -223,7 +226,6 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
 
     // add hit to array (if there is room)
     if (fnhits > MAXHITS) continue;
-
     fmomentum[fnhits] = momentum;
     flength[fnhits] = length;
     ftexp[fnhits] = timei[AliPID::kPion];
@@ -232,7 +234,6 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     ftot[fnhits] = tot;
     fDeltax[fnhits] = deltax;
     fDeltaz[fnhits] = deltaz;
-    
     fnhits++;
 
   } /* end of loop over ESD tracks */

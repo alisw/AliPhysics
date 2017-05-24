@@ -130,8 +130,7 @@ public AliAnalysisTaskSE
 
   Bool_t fLightMode;
   Bool_t fSaveCoordinates;
-   
- 
+
   TTree* fOutputTree;                 //!<! output tree
 
   ClassDef(AliTOFAnalysisTaskCalibTree, 3);
