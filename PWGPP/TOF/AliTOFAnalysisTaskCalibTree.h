@@ -125,9 +125,6 @@ public AliAnalysisTaskSE
   Float_t* ftime;           //[MAXHITS] time
   Float_t* ftot;            //[MAXHITS] time over threshold
   Float_t* ftexp;           //[MAXHITS] texp
-
-  
-  //NEW task related stuff
   Float_t* fDeltax; //[MAXHITS]  delta-x
   Float_t* fDeltaz; //[MAXHITS]  delta-z
 
