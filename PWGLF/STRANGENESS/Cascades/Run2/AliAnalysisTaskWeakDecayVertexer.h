@@ -67,6 +67,8 @@ public:
         fkRunCascadeVertexer = lRunVertexer;
     }
     void SetUseUncheckedChargeCascadeVertexer ( Bool_t lOpt = kTRUE) {
+        //WARNING: Experimental vertexer which disregards bachelor charge when creating candidates!
+        //         The user has to take care... 
         fkUseUncheckedChargeCascadeVertexer = lOpt;
     }
     void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
