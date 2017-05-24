@@ -13,6 +13,6 @@ source /cvmfs/alice.cern.ch/etc/login.sh
 eval $(alienv printenv Herwig::v7.0.4-alice1-1)
 
 # run Herwig
-sed -e s#output.hepmc#"$1"# ${ALICE_PHYSICS}/PWG/MCLEGO/Herwig/LHC-Matchbox.in > LHC-Matchbox.in
-Herwig read --repo=$HERWIG_ROOT/share/Herwig/HerwigDefaults.rpo LHC-Matchbox.in
-Herwig run LHC-Matchbox.run -N 10000000
+sed -e s#output.hepmc#"$1"# ${ALICE_PHYSICS}/PWG/MCLEGO/Herwig/LHC-MB.in > Matchbox.in
+Herwig read --repo=$HERWIG_ROOT/share/Herwig/HerwigDefaults.rpo Matchbox.in
+Herwig run Matchbox.run -N 10000000
