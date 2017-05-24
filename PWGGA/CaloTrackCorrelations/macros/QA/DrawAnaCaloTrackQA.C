@@ -281,28 +281,33 @@ void CaloQA(Int_t icalo)
   hClusterEnergy->SetAxisRange(0.,50.,"X");
   hClusterEnergy->Draw();
   
-  TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
-  TH1F* hCellAmplitude  = 0;
-  if(histoTag.Contains("default"))
-  {
-    if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()), 1,12);
-    else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),12,20);
-  }
-  else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),0,100);
-      
-  hCellAmplitude->Sumw2();
-  hCellAmplitude->SetMarkerColor(4);
-  hCellAmplitude->SetMarkerStyle(25);
-  hCellAmplitude->Draw("same");
-  
   TLegend l(0.15,0.15,0.3,0.3);
   l.SetTextSize(0.04);
   l.AddEntry(hClusterEnergy,"Good Cluster","P");
-  l.AddEntry(hCellAmplitude,"Cell","P");
   l.SetBorderSize(0);
   l.SetFillColor(0);
-  l.Draw();
+
   
+  TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
+  TH1F* hCellAmplitude  = 0;
+  if(h2CellAmplitude)
+  {
+    if(histoTag.Contains("default"))
+    {
+      if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()), 1,12);
+      else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),12,20);
+    }
+    else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),0,100);
+    
+    hCellAmplitude->Sumw2();
+    hCellAmplitude->SetMarkerColor(4);
+    hCellAmplitude->SetMarkerStyle(25);
+    hCellAmplitude->Draw("same");
+    l.AddEntry(hCellAmplitude,"Cell","P");
+  }
+  
+  l.Draw();
+
   ccalo->cd(2);
   //gPad->SetLogy();
   gPad->SetLogx();
@@ -469,32 +474,35 @@ void CaloQA(Int_t icalo)
   gPad->SetLogz();
 
   TH2F* hCellActivity  = (TH2F*) GetHisto("QA_Cell_hGridCells");
-  if(icalo == 0)  hCellActivity->SetAxisRange(  0,127,"Y");
-  else            hCellActivity->SetAxisRange(128,220,"Y");
-  hCellActivity->SetTitle("Hits per cell (#it{E} > 0.2 GeV)");
-  hCellActivity->SetTitleOffset(1.5,"Y");
-  hCellActivity->SetZTitle("Entries");
-  hCellActivity->SetTitleOffset(1.5,"Z");
-  hCellActivity->Draw("colz");
-  
+  if(hCellActivity)
+  {
+    if(icalo == 0)  hCellActivity->SetAxisRange(  0,127,"Y");
+    else            hCellActivity->SetAxisRange(128,220,"Y");
+    hCellActivity->SetTitle("Hits per cell (#it{E} > 0.2 GeV)");
+    hCellActivity->SetTitleOffset(1.5,"Y");
+    hCellActivity->SetZTitle("Entries");
+    hCellActivity->SetTitleOffset(1.5,"Z");
+    hCellActivity->Draw("colz");
+  }
   ccalo2->cd(2);
   
   TH2F* hCellActivityE = (TH2F*) GetHisto("QA_Cell_hGridCellsE");
-  
-  if(icalo == 0)  hCellActivityE->SetAxisRange(  0,127,"Y");
-  else            hCellActivityE->SetAxisRange(128,220,"Y");
-  
-  hCellActivityE->SetTitle("Mean energy per cell (#it{E} > 0.2 GeV)");
-  
-  if(icalo != 1 && !histoTag.Contains("default")) // ratio already done for calo=0
-    hCellActivityE->Divide(hCellActivity);
-  
-  hCellActivityE->SetTitleOffset(1.5,"Y");
-  hCellActivityE->SetZTitle("#Sigma #it{E}_{cell} / Entries_{per cell}");
-  hCellActivityE->SetTitleOffset(1.5,"Z");
-  
-  hCellActivityE->Draw("colz");
-  
+  if(hCellActivityE)
+  {
+    if(icalo == 0)  hCellActivityE->SetAxisRange(  0,127,"Y");
+    else            hCellActivityE->SetAxisRange(128,220,"Y");
+    
+    hCellActivityE->SetTitle("Mean energy per cell (#it{E} > 0.2 GeV)");
+    
+    if(icalo != 1 && !histoTag.Contains("default")) // ratio already done for calo=0
+      hCellActivityE->Divide(hCellActivity);
+    
+    hCellActivityE->SetTitleOffset(1.5,"Y");
+    hCellActivityE->SetZTitle("#Sigma #it{E}_{cell} / Entries_{per cell}");
+    hCellActivityE->SetTitleOffset(1.5,"Z");
+    
+    hCellActivityE->Draw("colz");
+  }
   ccalo2->cd(3);
   gPad->SetLogz();
   
@@ -621,6 +629,7 @@ void TrackQA()
   ctrack->cd(1);
   //gPad->SetLogz();
   TH2F * hTrackEtaPhi = (TH2F*) GetHisto("AnaHadrons_hEtaPhiNegative");
+  if(!hTrackEtaPhi) return;
   hTrackEtaPhi ->Add(   (TH2F*) GetHisto("AnaHadrons_hEtaPhiPositive"));
   hTrackEtaPhi ->SetAxisRange(-0.9,0.9,"X");
   hTrackEtaPhi ->SetTitleOffset(1.5,"Y");
