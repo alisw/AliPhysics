@@ -13,9 +13,11 @@
 
 #include "AliMillePedeRecord.h"
 
+#include <TFile.h>
+#include <TGeoMatrix.h>
 #include <TObject.h>
 #include <TString.h>
-#include <TGeoMatrix.h>
+#include <TTree.h>
 
 class TClonesArray;
 class AliMillePede2;
@@ -23,6 +25,32 @@ class AliMUONGeometryTransformer;
 class AliMUONTrack;
 class AliMUONTrackParam;
 class AliMUONVCluster;
+
+/// local track parameters, for refit
+class LocalTrackParam: public TObject
+{
+
+  public:
+
+  //* construction
+  LocalTrackParam( void ):
+    fTrackX(0),
+    fTrackY(0),
+    fTrackZ(0),
+    fTrackSlopeX(0),
+    fTrackSlopeY(0)
+  {}
+
+  //* y and z
+  Double_t fTrackX;
+  Double_t fTrackY;
+  Double_t fTrackZ;
+  Double_t fTrackSlopeX;
+  Double_t fTrackSlopeY;
+
+  ClassDef(LocalTrackParam,1)
+
+};
 
 class AliMUONAlignment:public TObject
 {
@@ -33,7 +61,11 @@ class AliMUONAlignment:public TObject
 
   virtual ~AliMUONAlignment();
 
+  // initialize
   void Init( void );
+
+  // terminate
+  void Terminate( void );
 
   // array dimendions
   enum
@@ -44,8 +76,14 @@ class AliMUONAlignment:public TObject
     /// Number tracking chambers
     fgNCh = 10,
 
-    /// Number of tracking modules (4 ch + 6*2 half-ch)
+    /// Number of tracking modules
     fgNTrkMod = 16,
+
+    /// Number of half chambers
+    fgNHalfCh = 20,
+
+    /// max number of detector elements per half chamber
+    fgNDetHalfChMax = 13,
 
     /// Total number of detection elements
     /// (4*2 + 4*2 + 18*2 + 26*2 + 26*2)
@@ -66,6 +104,12 @@ class AliMUONAlignment:public TObject
 
   /// Sum of detection elements up to this chamber
   static const Int_t fgSNDetElemCh[fgNCh+1];
+
+  /// Number of detection element per tracking module
+  static const Int_t fgNDetElemHalfCh[fgNHalfCh];
+
+  /// list of detection elements per tracking module
+  static const Int_t fgDetElemHalfCh[fgNHalfCh][fgNDetHalfChMax];
 
   /// global parameter bit set, used for masks
   enum ParameterMask
@@ -109,6 +153,14 @@ class AliMUONAlignment:public TObject
   /// Set flag for Magnetic field On/Off
   void SetBFieldOn( Bool_t value )
   { fBFieldOn = value; }
+
+  /// set to true to do refit evaluation
+  void SetDoEvaluation( Bool_t value )
+  { fDoEvaluation = value; }
+
+  /// set to true to refit tracks
+  void SetRefitStraightTracks( Bool_t value )
+  { fRefitStraightTracks = value; }
 
   void SetAllowedVariation( Int_t iPar, Double_t value );
 
@@ -157,9 +209,11 @@ class AliMUONAlignment:public TObject
 
   void GroupChamber( Int_t iCh, UInt_t parameterMask = ParAll );
 
+  void GroupHalfChamber( Int_t iCh, Int_t iHalf, UInt_t parameterMask = ParAll );
+
   void GroupDetElems( Int_t detElemMin, Int_t detElemMax, UInt_t parameterMask = ParAll );
 
-  void GroupDetElems( Int_t *detElemList, Int_t nDetElem, UInt_t parameterMask = ParAll );
+  void GroupDetElems( const Int_t *detElemList, Int_t nDetElem, UInt_t parameterMask = ParAll );
 
   //@}
 
@@ -218,6 +272,9 @@ class AliMUONAlignment:public TObject
   void SetGlobalDerivative(Int_t index, Double_t value)
   { fGlobalDerivatives[index] = value; }
 
+  /// refit track using straight track model
+  LocalTrackParam RefitStraightTrack( AliMUONTrack*, Double_t ) const;
+
   void FillDetElemData( AliMUONVCluster* );
 
   void FillRecPointData( AliMUONVCluster* );
@@ -255,6 +312,9 @@ class AliMUONAlignment:public TObject
 
   /// Flag for Magnetic filed On/Off
   Bool_t fBFieldOn;
+
+  /// true if straight track refit is to be performed
+  Bool_t fRefitStraightTracks;
 
   /// "Encouraged" variation for degrees of freedom
   Double_t fAllowVar[fgNParCh];
@@ -326,6 +386,19 @@ class AliMUONAlignment:public TObject
   /// Geometry transformation
   AliMUONGeometryTransformer *fTransform;
   TGeoCombiTrans fGeoCombiTransInverse;
+
+  /// preform evaluation
+  Bool_t fDoEvaluation;
+
+  /// original local track params
+  LocalTrackParam* fTrackParamOrig;
+  LocalTrackParam* fTrackParamNew;
+
+  /// output TFile
+  TFile* fTFile;
+
+  /// output TTree
+  TTree* fTTree;
 
   ClassDef(AliMUONAlignment, 2)
 
