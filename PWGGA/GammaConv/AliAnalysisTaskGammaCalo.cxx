@@ -4177,8 +4177,6 @@ void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliA
   fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
   if(!fOutputLocalDebug.is_open()) return;
 
-  fOutputLocalDebug << "---------------------------------------" << endl;
-
   AliVCaloCells* cells = fInputEvent->GetEMCALCells();
   fOutputLocalDebug << "--pi0cand--" << endl;
   fOutputLocalDebug << "openingAngle " << pi0cand->GetOpeningAngle() << endl;
@@ -4231,8 +4229,6 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
   fstream fOutputLocalDebug;
   fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
   if(!fOutputLocalDebug.is_open()) return;
-
-  fOutputLocalDebug << "---------------------------------------" << endl;
 
   Long_t nclus = fInputEvent->GetNumberOfCaloClusters();
   AliVCaloCells* cells = fInputEvent->GetEMCALCells();
