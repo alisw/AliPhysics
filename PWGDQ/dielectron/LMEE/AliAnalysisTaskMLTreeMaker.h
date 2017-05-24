@@ -13,6 +13,7 @@ class AliESDtrackCuts;
 #include "AliDielectronCutGroup.h"
 #include "AliDielectronPID.h"
 #include "AliAnalysisFilter.h"
+#include "AliDielectronEventCuts.h"
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
@@ -26,19 +27,19 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskMLTreeMaker(){} 
   
 
-  AliDielectronVarCuts* evcuts;
+  AliDielectronEventCuts* eventCuts;
+  AliDielectronVarCuts *eventplaneCuts;
+  AliAnalysisFilter* evfilter;
   
   AliDielectronVarCuts* trcuts;
   AliDielectronTrackCuts *trfilter;
   AliDielectronPID *pidcuts;
   AliDielectronCutGroup* cuts;
+  AliAnalysisFilter* filter; 
   
   // need this to use PID in dielectron framework
   AliDielectronVarManager* varManager;
-  
-  AliAnalysisFilter* filter;
-  
-   
+     
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
@@ -46,6 +47,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 //~ 
   
   void SetupTrackCuts();
+  void SetupEventCuts();
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;

@@ -33,7 +33,7 @@ AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
 
 //  taskESD->SetEtaRange(etaMin, etaMax);
 //  taskESD->SetPtRange(ptMin, ptMax);
-//  taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
+  taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
 //  taskESD->SetLoCuts(kTRUE);
 //  taskESD->SetFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);// for AOD analyses: TPC cuts + any SPD hit
   // ==========================================================================

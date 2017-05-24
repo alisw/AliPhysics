@@ -51,7 +51,8 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
-#include "AliDielectronVarCuts.h"
+
+
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
@@ -112,8 +113,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   fESDTrackCuts(0),
   gMultiplicity(-999),
   chi2ITS(0),
-  chi2TPC(0),
-//  chi2GlobalPerNDF(0),
+//  chi2TPC(0),
+  chi2GlobalPerNDF(0),
   nITSshared(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
@@ -135,13 +136,15 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   NTPCSignal(0),
   loCuts(kTRUE),
   enh(0),
-  evcuts(0),
+  eventCuts(0),
   trcuts(0),
   trfilter(),
   cuts(0),
   pidcuts(0),
   filter(0),
-  varManager(0)
+  varManager(0),
+  eventplaneCuts(0),
+  evfilter(0)
 {
 
 }
@@ -197,7 +200,6 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   chi2ITS(0),
 //  chi2TPC(0),
   chi2GlobalPerNDF(0),      
-  chi2Global(0),
   nITSshared(0),
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
@@ -219,37 +221,22 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   NTPCSignal(0),
   loCuts(kTRUE),
   enh(0),
-  evcuts(0),
   trcuts(0),
   trfilter(),
   cuts(0),
   pidcuts(0),
   filter(0),
-  varManager(0)
+  varManager(0),
+  eventCuts(0),
+  eventplaneCuts(0),
+  evfilter(0)
 {
 
-//  if(loCuts){
-//  AliInfo(Form("Loose cuts!!"));
-//  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
-//  cutonTPCsignalN = kFALSE; 
-//  }
-//    else{  
-//  //Alberto Style ESD track cuts - according to analysis note v.6   
-//  AliInfo(Form("Alberto cuts!!"));
-//  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-//  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-//  fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
-//  fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
-//  fESDTrackCuts->SetMinNClustersITS(4);
-//  fESDTrackCuts->SetMinNCrossedRowsTPC(100);
-//  fESDTrackCuts->SetMinNClustersTPC(70);
-//  fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
-//  cutonTPCsignalN = kTRUE;
-//  }
     
 
  SetupTrackCuts(); 
-AliInfo("Track cuts were set"); 
+ SetupEventCuts(); 
+ AliInfo("Track & Event cuts were set"); 
    
  DefineOutput(1, TList::Class());
 }
@@ -365,10 +352,21 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
 
   // check event cuts
-  if( IsEventAccepted(event) == 0){ 
-    return;
-  }
-
+//  if( IsEventAccepted(event) == 0){ 
+//    return;
+//  }
+  
+  
+//  cout<<"new Event ";
+  UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
+  varManager->SetEvent(event);
+  if(selectedMask!=(evfilter->IsSelected(event))){
+          cout<<"Passed Event cut - not!!"<<endl;
+          return;
+      }
+  
+//  if(abs(event->GetPrimaryVertex()->GetZ())>10) cout<<selectedMask!=(evfilter->IsSelected(event))<<"Passed BAD Event!!"<<endl;
+   
   fQAHist->Fill("Events_accepted",1);
   
   if(hasMC){
@@ -500,9 +498,10 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   Int_t tempmpdg;
   AliMCParticle* mcMTrack;
 
+  
   // need this to use PID in dielectron framework
   varManager->SetPIDResponse(fPIDResponse);
-  varManager->SetEvent(event);
+
 
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliVTrack* track = dynamic_cast<AliVTrack *>(event->GetTrack(iTracks));
@@ -559,9 +558,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
 
-//      cout<<"Check cut"<<endl;
-      if(!(filter->IsSelected((AliVParticle*)track))){
-          cout<<"Passe cut - not!!"<<endl;
+      UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
+      if(selectedMask!=(filter->IsSelected((AliVParticle*)track))){
+//          cout<<"Passe cut - not!!"<<endl;
           continue;
       }
       
@@ -604,8 +603,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
         //Get vertex only for first track in event
         if(!acceptedTracks){     
-          Double_t vert[3] = {0};
 
+        Double_t vert[3] = {0};
           mcTrack->XvYvZv(vert);
           
           vertx= vert[0];
@@ -627,6 +626,15 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
       } //End if hasMC 
       
+      else{                          //if not MC use AOD vertex to get vertex xyz - like in dielectron framework                           
+        if(!acceptedTracks){   //Get vertex only for first track in event
+          Double_t vert[3] = {0};  
+          event->GetPrimaryVertex()->GetXYZ(vert); 
+          vertx= vert[0];
+          verty= vert[1];
+          vertz= vert[2];
+        }
+      }
 
       //Fill Tree with non MC data
       EsigTPC.push_back(tempEsigTPC);
@@ -693,7 +701,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       nITSshared.push_back(nitssharedtemp);
       
       chi2ITS.push_back(track->GetITSchi2());
-      chi2TPC.push_back(track->GetTPCchi2());//this variable will be always 0 for AODs (not yet in)
+//      chi2TPC.push_back(track->GetTPCchi2());//this variable will be always 0 for AODs (not yet in)
       
       if(isAOD) chi2GlobalPerNDF.push_back(((AliAODTrack*)track)->Chi2perNDF());
       else      chi2GlobalvsTPC.push_back(0.);       //to be implemented!
@@ -773,14 +781,14 @@ filter   = new AliAnalysisFilter("filter","filter");
 // need this to use PID in dielectron framework
 varManager = new AliDielectronVarManager;
  
-cout<<"Set up"<<endl;
+//cout<<"Set up"<<endl;
     
 trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
 trfilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 trfilter->SetRequireITSRefit(kTRUE);
 trfilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
 
-cout<<"Set up trcut"<<endl;
+//cout<<"Set up trcut"<<endl;
 trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
 trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
 trcuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
@@ -792,32 +800,38 @@ trcuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
 trcuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 trcuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
 trcuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-cout<<"Set up pidcut"<<endl;
+//cout<<"Set up pidcut"<<endl;
 pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
 pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
 pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-cout<<"Adding"<<endl;
+//cout<<"Adding"<<endl;
 cuts->AddCut(trcuts);
 cuts->AddCut(trfilter);
 cuts->AddCut(pidcuts);
-cout<<"Printing"<<endl;
+//cout<<"Printing"<<endl;
 cuts->Print();
 
 filter->AddCuts(cuts);
 }
 
 
-//AliAnalysisTaskMLTreeMaker::SetupEventCuts()
-//{
-//  evcuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-//  evcuts->SetRequireVertex();
-//  evcuts->SetMinVtxContributors(1);
-//  evcuts->SetVertexZ(-10.,+10.);
-//  // evcuts->SetCentralityRange(10., 50., kTRUE);
-//  evcuts->Print();
-//
-////  AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
-////  eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
-////  eventplaneCuts->Print();
-//
-//}
+void AliAnalysisTaskMLTreeMaker::SetupEventCuts()
+{
+  evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
+    
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
+  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,+10.);
+  // eventCuts->SetCentralityRange(10., 50., kTRUE);
+  eventCuts->Print();
+  evfilter->AddCuts(eventCuts);
+
+  AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
+  eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
+  eventplaneCuts->Print();
+
+  evfilter->AddCuts(eventplaneCuts);
+
+}
