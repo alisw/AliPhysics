@@ -90,7 +90,6 @@ class AliCaloNonLinearity : public AliAnalysisCuts {
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Bool_t      IsSelected(TList*   /* list */ ) { return kTRUE; }
 
-
   protected:
 
     MCSetEnum   fCurrentMC;                               // enum for current MC set being processed
