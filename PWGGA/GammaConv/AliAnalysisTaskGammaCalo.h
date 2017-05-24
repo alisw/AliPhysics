@@ -17,7 +17,6 @@
 #include "TH3F.h"
 #include <vector>
 #include <map>
-#include <fstream>
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   public:
@@ -109,6 +108,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
 
+    void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
 
@@ -387,13 +387,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
-    fstream               fOutputLocalDebug;                                    // debug output
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 35);
+    ClassDef(AliAnalysisTaskGammaCalo, 36);
 };
 
 #endif
