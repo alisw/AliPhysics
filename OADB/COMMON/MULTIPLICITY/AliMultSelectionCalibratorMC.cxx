@@ -748,7 +748,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                     cout<<"================================================================================"<<endl;
                     cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
                     cout<<lTempDef.Data()<<endl;
-                    cout<<"================================================================================"<<endl; 
+                    cout<<"================================================================================"<<endl;
                 }
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
             }
