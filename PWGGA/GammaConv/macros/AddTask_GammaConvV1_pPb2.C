@@ -179,6 +179,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   Bool_t doEtaShiftIndCuts = kFALSE;
   TString stringShift = "";
   
+  // standard configurations
   if(trainConfig == 1){
     cuts.AddCut("80000113", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
   } else if (trainConfig == 2) {
@@ -200,6 +201,28 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 10) {   
     cuts.AddCut("86000113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
 
+  // configurations with past future protection (2.25 \mus protected)  
+  } else if (trainConfig == 11){
+    cuts.AddCut("80000213", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
+  } else if (trainConfig == 12) {
+    cuts.AddCut("80000213", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
+  } else if (trainConfig == 13) {   
+    cuts.AddCut("80200213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 0-20
+  } else if (trainConfig == 14) {   
+    cuts.AddCut("80200213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
+  } else if (trainConfig == 15) {   
+    cuts.AddCut("82400213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 20-40
+  } else if (trainConfig == 16) {   
+    cuts.AddCut("82400213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
+  } else if (trainConfig == 17) {   
+    cuts.AddCut("84600213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 40-60
+  } else if (trainConfig == 18) {   
+    cuts.AddCut("84600213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
+  } else if (trainConfig == 19) {   
+    cuts.AddCut("86000213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 60-80
+  } else if (trainConfig == 20) {   
+    cuts.AddCut("86000213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
+  
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
