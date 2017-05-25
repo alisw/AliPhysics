@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -2352,7 +2351,7 @@ void AliDhCorrelationExtraction::SetD0Source(Int_t type, THnSparse* thn, Int_t d
 }
 
 //___________________________________________________________________________________________
-void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax) {
+void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect) {
 	
   Int_t colors[10] = {1,2,8,4,46,30,9,41};
 
@@ -2366,26 +2365,40 @@ void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t 
   if(!cInK || !cInR) {std::cout << "Cannot do MC closure ratio output plots! Input canvas missing!" << std::endl; return;}	  
   
   Double_t fitVal[nOrig], fitErr[nOrig];
-  TPaveText *pt = new TPaveText(2.2,1.3,4.6,1.78);
+  TPaveText *pt = new TPaveText(1.8,1.3,3,1.78);
   pt->SetFillColor(kWhite);
 
   for(Int_t iOrig=0; iOrig<nOrig; iOrig++) {  
-    TH1D *hInK = ((TH1D*)cInK->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
-    hInK->SetName("hKine");
-    TH1D *hInR = ((TH1D*)cInR->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
-    hInR->SetName("hReco");
-    if(!hInK || !hInR) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return;}	  
+    TH1D *hInKinp = ((TH1D*)cInK->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInKinp->SetName("hKineinp");
+    TH1D *hInRinp = ((TH1D*)cInR->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInRinp->SetName("hRecoinp");
+    if(!hInKinp || !hInRinp) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return;}	  
+    TH1D *hInK, *hInR;
+    if(reflect) {
+      hInK = AliHFCorrelationUtils::ReflectHisto(hInKinp,0.5);
+      hInR = AliHFCorrelationUtils::ReflectHisto(hInRinp,0.5);
+    }
+    else {
+      hInK = (TH1D*)hInKinp->Clone("hKine");
+      hInR = (TH1D*)hInKinp->Clone("hReco");
+    }
+
     TH1D *hDraw = (TH1D*)hInR->Clone(Form("h1D_MCClosure_Orig%d",iOrig));
     hDraw->Divide(hInK);
     
     cOut->cd();
     hDraw->GetYaxis()->SetRangeUser(0.2,1.8);
+    hDraw->SetLineColor(colors[iOrig]);
+    hDraw->SetMarkerColor(colors[iOrig]);
+    hDraw->SetMarkerStyle(20);
+    hDraw->SetLineStyle(1);
     hDraw->SetStats(kFALSE);
     hDraw->SetTitle("");
     if(!iOrig) hDraw->Draw();
     else hDraw->Draw("same");
     
-    TF1 *fitf = new TF1("fitf","[0]",-TMath::Pi()/2.,3*TMath::Pi()/2.);
+    TF1 *fitf = new TF1("fitf","[0]",0.,TMath::Pi()/2.);
     fitf->SetLineColor(colors[iOrig]);
     fitf->SetLineWidth(1);
     hDraw->Fit(fitf);
