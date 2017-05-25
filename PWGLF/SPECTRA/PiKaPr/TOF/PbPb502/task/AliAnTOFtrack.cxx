@@ -13,14 +13,15 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-//                                                                       //
-// Class container for identified charged hadron spectra: TOF            //
-//                                                                       //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Class container for identified charged hadron spectra: TOF            //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
 
 #define LOG_NO_INFO
 #define LOG_NO_DEBUG

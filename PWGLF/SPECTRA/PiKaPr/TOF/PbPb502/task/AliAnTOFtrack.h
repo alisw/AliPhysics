@@ -8,11 +8,14 @@ using namespace AliUtilTOFParams;
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-//               Class container for TOF analysis of Pi/K/p.                //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///                                                                          //
+///               Class container for TOF analysis of Pi/K/p.                //
+///                                                                          //
+///                                                                          //
+/// Authors:                                                                 //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                           //
+///////////////////////////////////////////////////////////////////////////////
 
 class TObject;
 
@@ -302,7 +305,7 @@ public:
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
   
-  ClassDef(AliAnTOFtrack, 6);
+  ClassDef(AliAnTOFtrack, 6);//AliAnTOFtrack : TOF analysis container class
 };
 
 #endif

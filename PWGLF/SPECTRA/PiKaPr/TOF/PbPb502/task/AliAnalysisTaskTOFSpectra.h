@@ -1,12 +1,15 @@
 #ifndef AliAnalysisTaskTOFSpectra_H
 #define AliAnalysisTaskTOFSpectra_H
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// This analysis extracts pT-spectra of charged kaons, protons, and pions.  //
-// It is based on particles identifation via the TOF signal.                //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///                                                                          //
+/// This analysis extracts pT-spectra of charged kaons, protons, and pions.  //
+/// It is based on particles identifation via the TOF signal.                //
+///                                                                          //
+///                                                                          //
+/// Authors:                                                                 //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                           //
+///////////////////////////////////////////////////////////////////////////////
 
 class TH1;
 class TH1F;
@@ -806,7 +809,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 7);
+  ClassDef(AliAnalysisTaskTOFSpectra, 7); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
