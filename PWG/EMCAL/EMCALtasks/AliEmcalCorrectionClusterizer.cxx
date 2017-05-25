@@ -51,12 +51,6 @@ ClassImp(AliEmcalCorrectionClusterizer);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> AliEmcalCorrectionClusterizer::reg("AliEmcalCorrectionClusterizer");
 
-const std::map <std::string, AliEmcalCorrectionClusterizer::EmbeddedCellEnergyType> AliEmcalCorrectionClusterizer::fgkEmbeddedCellEnergyTypeMap = {
-  {"kNonEmbedded", EmbeddedCellEnergyType::kNonEmbedded },
-  {"kEmbeddedDataMCOnly", EmbeddedCellEnergyType::kEmbeddedDataMCOnly },
-  {"kEmbeddedDataExcludeMC", EmbeddedCellEnergyType::kEmbeddedDataExcludeMC }
-};
-
 const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcalCorrectionClusterizer::fgkClusterizerTypeMap = {
   {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
   {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
@@ -89,7 +83,6 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fShiftPhi(2),
   fShiftEta(2),
   fTRUShift(0),
-  fEmbeddedCellEnergyType(kNonEmbedded),
   fTestPatternInput(kFALSE),
   fSetCellMCLabelFromCluster(0),
   fSetCellMCLabelFromEdepFrac(0),
@@ -191,11 +184,6 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
     }
   }
   
-  std::string embeddedCellEnergyTypeStr = "";
-  GetProperty("embeddedCellEnergyType", embeddedCellEnergyTypeStr);
-  fEmbeddedCellEnergyType = fgkEmbeddedCellEnergyTypeMap.at(embeddedCellEnergyTypeStr);
-  //Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
-
   // Only support one cluster container for the clusterizer!
   if (fClusterCollArray.GetEntries() > 1) {
     AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
@@ -404,23 +392,6 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
 
       if (cellAmplitude < 1e-6 || cellNumber < 0)
         continue;
-
-      if (fEmbeddedCellEnergyType == kEmbeddedDataMCOnly) {
-        if (cellMCLabel <= 0)
-          continue;
-        else {
-          cellAmplitude *= cellEFrac;
-          cellEFrac = 1;
-        }
-      }
-      else if (fEmbeddedCellEnergyType == kEmbeddedDataExcludeMC) {
-        if (cellMCLabel > 0)
-          continue;
-        else {
-          cellAmplitude *= 1 - cellEFrac;
-          cellEFrac = 0;
-        }
-      }
 
       // New way to set the cell MC labels,
       // valid only for MC productions with aliroot > v5-07-21
