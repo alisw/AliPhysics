@@ -192,6 +192,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  fTPCcls(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -328,6 +329,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCheckEtaMC(0),
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
+  fTPCcls(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -591,9 +593,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 */
   if(fFlagSparse)
     {
-     Int_t bins[11]=   {  60,  90, 110,   50, 110,   8,   24,  20, 50,  80,   25}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
+     Int_t bins[11]=   {  60,  90, 110,   50, 110,   8,   24, 200, 50,  80,   25}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
      Double_t xmin[11]={ -30,  -5, 0.3,  0.0,  70,   0, -0.6,   0,  0, 100,    0};
-     Double_t xmax[11]={  30,   4, 1.4,  0.5, 180,   8,  0.6,   5, 50, 180, 0.05};
+     Double_t xmax[11]={  30,   4, 1.4,  0.5, 180,   8,  0.6, 200, 50, 180, 0.05};
      fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;nTPC;nITS;eta;TPCchi2;ITSchi2;crossR;matchR",11,bins,xmin,xmax);
      fOutputList->Add(fSparseElectron);
     }
@@ -715,6 +717,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistIncITSchi2 = new TH2D("fHistIncITSchi2","ITS chi2 vs. electron",40,0,40,400,0,40);
   fOutputList->Add(fHistIncITSchi2);
+
+  fTPCcls = new TH2D("fTPCcls","TPC cluster correlations",200,0,200,200,0,200);
+  fOutputList->Add(fTPCcls);
 
   PostData(1,fOutputList);
 
@@ -1390,7 +1395,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          fvalueElectron[4] = atrack->GetTPCNcls();
          fvalueElectron[5] = atrack->GetITSNcls();
          fvalueElectron[6] = track->Eta();
-         fvalueElectron[7] = atrack->GetTPCchi2();
+         fvalueElectron[7] = atrack->GetTPCsignalN();
          fvalueElectron[8] = atrack->GetITSchi2();
          fvalueElectron[9] = atrack->GetTPCNCrossedRows();
          fvalueElectron[10] = MatchR;
@@ -1409,7 +1414,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          fmaxSig =  10.0;
         }
 
-    
+     
+
       // track cut + eID
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
@@ -1431,6 +1437,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           fHistTotalAccPhi->Fill(1.0/track->Pt(),TrkPhi);
           fHistTotalAccEta->Fill(1.0/track->Pt(),TrkEta);
           fHistNsigEopCheck->Fill(eop,fTPCnSigma);
+          fTPCcls->Fill(atrack->GetTPCNcls(),atrack->GetTPCsignalN());
      
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
