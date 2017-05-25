@@ -226,6 +226,21 @@ void CaloQA(Int_t icalo)
   TH1F* hRatTrackMatchResPhiNeg[nProd-1];
   TH1F* hRatTrackMatchResPhiPos[nProd-1];
   
+  TH2F* h2TrackMatchResEtaNegTrackPt[nProd];
+  TH2F* h2TrackMatchResEtaPosTrackPt[nProd];
+  TH2F* h2TrackMatchResPhiNegTrackPt[nProd];
+  TH2F* h2TrackMatchResPhiPosTrackPt[nProd];
+  
+  TH1F* hTrackMatchResEtaNegTrackPt[nProd];
+  TH1F* hTrackMatchResEtaPosTrackPt[nProd];
+  TH1F* hTrackMatchResPhiNegTrackPt[nProd];
+  TH1F* hTrackMatchResPhiPosTrackPt[nProd];
+  
+  TH1F* hRatTrackMatchResEtaNegTrackPt[nProd-1];
+  TH1F* hRatTrackMatchResEtaPosTrackPt[nProd-1];
+  TH1F* hRatTrackMatchResPhiNegTrackPt[nProd-1];
+  TH1F* hRatTrackMatchResPhiPosTrackPt[nProd-1];
+  
   //Legend for productions
   TLegend lprod(0.6,0.475,0.95,0.675);
   lprod.SetTextSize(0.04);
@@ -290,10 +305,11 @@ void CaloQA(Int_t icalo)
     
     // Cluster-Track Matching Residuals
     
-    h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNeg",icalo),iprod);
-    h2TrackMatchResEtaPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPos",icalo),iprod);
-    h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo),iprod);
-    h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo),iprod);
+    // E cluster bin
+    h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegNoCut",icalo),iprod);
+    h2TrackMatchResEtaPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosNoCut",icalo),iprod);
+    h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegNoCut",icalo),iprod);
+    h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosNoCut",icalo),iprod);
     
     Float_t emin = 0.5;
     Float_t emax = 2.5;
@@ -313,8 +329,9 @@ void CaloQA(Int_t icalo)
       emax = 15;
     }
     
-    Float_t binMin = hCorr[iprod]->FindBin(emin);
-    Float_t binMax = hCorr[iprod]->FindBin(emax);
+    Float_t binMin = h2TrackMatchResEtaNeg[iprod]->GetXaxis()->FindBin(emin);
+    Float_t binMax = h2TrackMatchResEtaNeg[iprod]->GetXaxis()->FindBin(emax);
+    
     hTrackMatchResEtaNeg[iprod] = 
     (TH1F*) h2TrackMatchResEtaNeg[iprod]->ProjectionY(Form("TMProjEtaNeg%s_%s",
                                                            prod[iprod].Data(),histoTag.Data()),binMin, binMax);
@@ -330,7 +347,7 @@ void CaloQA(Int_t icalo)
     
     hTrackMatchResEtaNeg[iprod]->SetXTitle("#Delta #eta");
     hTrackMatchResEtaNeg[iprod]->SetYTitle("Entries / N events");
-    hTrackMatchResEtaNeg[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < E < %2.1f GeV",emin,emax));
+    hTrackMatchResEtaNeg[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
     hTrackMatchResEtaNeg[iprod]->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaNeg[iprod]->Sumw2();
     hTrackMatchResEtaNeg[iprod]->SetMarkerStyle(24);
@@ -339,13 +356,13 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPos[iprod]->Sumw2();
     hTrackMatchResEtaPos[iprod]->SetYTitle("Entries / N events");
     hTrackMatchResEtaPos[iprod]->SetXTitle("#Delta #eta");
-    hTrackMatchResEtaPos[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < E < %2.1f GeV",emin,emax));
+    hTrackMatchResEtaPos[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
     hTrackMatchResEtaPos[iprod]->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaPos[iprod]->SetMarkerStyle(25);
     hTrackMatchResEtaPos[iprod]->SetMarkerColor(color[iprod]);
     
     hTrackMatchResPhiNeg[iprod]->SetXTitle("#Delta #varphi");
-    hTrackMatchResPhiNeg[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < E < %2.1f GeV",emin,emax));
+    hTrackMatchResPhiNeg[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
     hTrackMatchResPhiNeg[iprod]->SetYTitle("entries / N events");
     hTrackMatchResPhiNeg[iprod]->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResPhiNeg[iprod]->Sumw2();
@@ -355,7 +372,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiPos[iprod]->Sumw2();
     hTrackMatchResPhiPos[iprod]->SetYTitle("Entries / N events");
     hTrackMatchResPhiPos[iprod]->SetXTitle("#Delta #varphi");
-    hTrackMatchResPhiPos[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < E < %2.1f GeV",emin,emax));
+    hTrackMatchResPhiPos[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{E}^{cluster} < %2.1f GeV",emin,emax));
     hTrackMatchResPhiPos[iprod]->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResPhiPos[iprod]->SetMarkerStyle(25);
     hTrackMatchResPhiPos[iprod]->SetMarkerColor(color[iprod]);
@@ -386,7 +403,92 @@ void CaloQA(Int_t icalo)
       hRatTrackMatchResEtaPos[iprod-1]->Divide(hRatTrackMatchResEtaPos[iprod-1],hTrackMatchResEtaPos[0],1.000,1,"B");
       hRatTrackMatchResEtaNeg[iprod-1]->Divide(hRatTrackMatchResEtaNeg[iprod-1],hTrackMatchResEtaNeg[0],1.000,1,"B");
     }
-  }
+    
+    // pt track bin
+    h2TrackMatchResEtaNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResEtaPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResPhiNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResPhiPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosTrackPtNoCut",icalo),iprod);
+  
+    if ( !h2TrackMatchResEtaNegTrackPt[iprod] ) continue;
+    
+    binMin = h2TrackMatchResEtaNegTrackPt[iprod]->GetXaxis()->FindBin(emin);
+    binMax = h2TrackMatchResEtaNegTrackPt[iprod]->GetXaxis()->FindBin(emax);
+    
+    hTrackMatchResEtaNegTrackPt[iprod] = 
+    (TH1F*) h2TrackMatchResEtaNegTrackPt[iprod]->ProjectionY(Form("TMProjEtaNegTrackPt%s_%s",
+                                                           prod[iprod].Data(),histoTag.Data()),binMin, binMax);
+    hTrackMatchResEtaPosTrackPt[iprod] = 
+    (TH1F*) h2TrackMatchResEtaPosTrackPt[iprod]->ProjectionY(Form("TMProjEtaPosTrackPt%s_%s",
+                                                           prod[iprod].Data(),histoTag.Data()),binMin, binMax);
+    hTrackMatchResPhiNegTrackPt[iprod] = 
+    (TH1F*) h2TrackMatchResPhiNegTrackPt[iprod]->ProjectionY(Form("TMProjPhiNegTrackPt%s_%s",
+                                                           prod[iprod].Data(),histoTag.Data()),binMin, binMax);
+    hTrackMatchResPhiPosTrackPt[iprod] = 
+    (TH1F*) h2TrackMatchResPhiPosTrackPt[iprod]->ProjectionY(Form("TMProjPhiPosTrackPt%s_%s",
+                                                           prod[iprod].Data(),histoTag.Data()),binMin, binMax);
+    
+    hTrackMatchResEtaNegTrackPt[iprod]->SetXTitle("#Delta #eta");
+    hTrackMatchResEtaNegTrackPt[iprod]->SetYTitle("Entries / N events");
+    hTrackMatchResEtaNegTrackPt[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
+    hTrackMatchResEtaNegTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResEtaNegTrackPt[iprod]->Sumw2();
+    hTrackMatchResEtaNegTrackPt[iprod]->SetMarkerStyle(24);
+    hTrackMatchResEtaNegTrackPt[iprod]->SetMarkerColor(color[iprod]);
+    
+    hTrackMatchResEtaPosTrackPt[iprod]->Sumw2();
+    hTrackMatchResEtaPosTrackPt[iprod]->SetYTitle("Entries / N events");
+    hTrackMatchResEtaPosTrackPt[iprod]->SetXTitle("#Delta #eta");
+    hTrackMatchResEtaPosTrackPt[iprod]->SetTitle(Form("Track-cluster #eta residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
+    hTrackMatchResEtaPosTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResEtaPosTrackPt[iprod]->SetMarkerStyle(25);
+    hTrackMatchResEtaPosTrackPt[iprod]->SetMarkerColor(color[iprod]);
+    
+    hTrackMatchResPhiNegTrackPt[iprod]->SetXTitle("#Delta #varphi");
+    hTrackMatchResPhiNegTrackPt[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
+    hTrackMatchResPhiNegTrackPt[iprod]->SetYTitle("entries / N events");
+    hTrackMatchResPhiNegTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiNegTrackPt[iprod]->Sumw2();
+    hTrackMatchResPhiNegTrackPt[iprod]->SetMarkerStyle(24);
+    hTrackMatchResPhiNegTrackPt[iprod]->SetMarkerColor(color[iprod]);
+    
+    hTrackMatchResPhiPosTrackPt[iprod]->Sumw2();
+    hTrackMatchResPhiPosTrackPt[iprod]->SetYTitle("Entries / N events");
+    hTrackMatchResPhiPosTrackPt[iprod]->SetXTitle("#Delta #varphi");
+    hTrackMatchResPhiPosTrackPt[iprod]->SetTitle(Form("Track-cluster #varphi residuals, %2.1f < #it{p}_{T}^{track} < %2.1f GeV",emin,emax));
+    hTrackMatchResPhiPosTrackPt[iprod]->SetAxisRange(-0.025,0.025,"X");
+    hTrackMatchResPhiPosTrackPt[iprod]->SetMarkerStyle(25);
+    hTrackMatchResPhiPosTrackPt[iprod]->SetMarkerColor(color[iprod]);
+    
+    hTrackMatchResEtaNegTrackPt[iprod]->Scale(1./nEvents[iprod]);
+    hTrackMatchResEtaPosTrackPt[iprod]->Scale(1./nEvents[iprod]);
+    hTrackMatchResPhiNegTrackPt[iprod]->Scale(1./nEvents[iprod]);
+    hTrackMatchResPhiPosTrackPt[iprod]->Scale(1./nEvents[iprod]);
+    
+    hTrackMatchResEtaNegTrackPt[iprod]->SetTitleOffset(1.5,"Y");
+    hTrackMatchResEtaPosTrackPt[iprod]->SetTitleOffset(1.5,"Y");
+    hTrackMatchResPhiNegTrackPt[iprod]->SetTitleOffset(1.5,"Y");
+    hTrackMatchResPhiPosTrackPt[iprod]->SetTitleOffset(1.5,"Y");
+    
+    if(iprod > 0)
+    {
+      hRatTrackMatchResPhiPosTrackPt[iprod-1] = 
+      (TH1F*)hTrackMatchResPhiPosTrackPt[iprod]->Clone(Form("hRatPhiPos%s_%s",prod[iprod].Data(),histoTag.Data()));
+      hRatTrackMatchResPhiNegTrackPt[iprod-1] = 
+      (TH1F*)hTrackMatchResPhiNegTrackPt[iprod]->Clone(Form("hRatPhiNeg%s_%s",prod[iprod].Data(),histoTag.Data()));
+      hRatTrackMatchResEtaPosTrackPt[iprod-1] = 
+      (TH1F*)hTrackMatchResEtaPosTrackPt[iprod]->Clone(Form("hRatEtaPos%s_%s",prod[iprod].Data(),histoTag.Data()));
+      hRatTrackMatchResEtaNegTrackPt[iprod-1] = 
+      (TH1F*)hTrackMatchResEtaNegTrackPt[iprod]->Clone(Form("hRatEtaNeg%s_%s",prod[iprod].Data(),histoTag.Data()));
+      
+      hRatTrackMatchResPhiPosTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiPosTrackPt[iprod-1],hTrackMatchResPhiPosTrackPt[0],1.000,1,"B");
+      hRatTrackMatchResPhiNegTrackPt[iprod-1]->Divide(hRatTrackMatchResPhiNegTrackPt[iprod-1],hTrackMatchResPhiNegTrackPt[0],1.000,1,"B");
+      hRatTrackMatchResEtaPosTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaPosTrackPt[iprod-1],hTrackMatchResEtaPosTrackPt[0],1.000,1,"B");
+      hRatTrackMatchResEtaNegTrackPt[iprod-1]->Divide(hRatTrackMatchResEtaNegTrackPt[iprod-1],hTrackMatchResEtaNegTrackPt[0],1.000,1,"B");
+    }
+    
+  } // prod loop
+
   
   /////////////////
   // Make the plots
@@ -453,8 +555,10 @@ void CaloQA(Int_t icalo)
     ccalo->Print(Form("%s_ClusterSpectraComp.%s",histoTag.Data(),format.Data()));
   }
   
-  //Cluster-Track Matching Residual
+  // Cluster-Track Matching Residual
   {
+    TGaxis::SetMaxDigits(3);
+
     TLine l0Eta(0,hTrackMatchResEtaNeg[0]->GetMinimum(),0,hTrackMatchResEtaNeg[0]->GetMaximum());
     
     TLegend lres(0.6,0.75,0.84,0.89);
@@ -503,8 +607,8 @@ void CaloQA(Int_t icalo)
     ccalo2->cd(3);
     //gPad->SetLogy();
     
-    hRatTrackMatchResEtaPos[0]->SetMaximum(1.1);
-    hRatTrackMatchResEtaPos[0]->SetMinimum(0.6);
+    hRatTrackMatchResEtaPos[0]->SetMaximum(1.2);
+    hRatTrackMatchResEtaPos[0]->SetMinimum(0.8);
     hRatTrackMatchResEtaPos[0]->Draw("");
     hRatTrackMatchResEtaPos[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
@@ -530,6 +634,85 @@ void CaloQA(Int_t icalo)
     ccalo2->Print(Form("%s_MatchingResidualsComp.%s",histoTag.Data(),format.Data()));
   }
   
+  // Cluster-Track Matching Residual, pT track bin
+  if ( h2TrackMatchResEtaNegTrackPt[0] )
+  {
+    TGaxis::SetMaxDigits(3);
+    
+    TLine l0Eta(0,hTrackMatchResEtaNeg[0]->GetMinimum(),0,hTrackMatchResEtaNeg[0]->GetMaximum());
+    
+    TLegend lres(0.6,0.75,0.84,0.89);
+    lres.SetTextSize(0.04);
+    //lres.SetBorderSize(0);
+    lres.SetFillColor(0);
+    lres.AddEntry(hTrackMatchResEtaNeg[0],"Negative","P");
+    lres.AddEntry(hTrackMatchResEtaPos[0],"Positive","P");
+    lres.Draw();
+    
+    TCanvas * ccalo3 = new TCanvas(Form("MatchingResiduals_TrackPtBin_%s",histoTag.Data()),"",1000,1000);
+    ccalo3->Divide(2,2);
+    
+    ccalo3->cd(1);
+    //gPad->SetLogy();
+    
+    hTrackMatchResEtaPosTrackPt[0]->SetMaximum(hTrackMatchResEtaPosTrackPt[0]->GetMaximum()*1.3);
+    
+    hTrackMatchResEtaPosTrackPt[0]->Draw("");
+    for(Int_t iprod = 0; iprod < nProd; iprod++)
+    {
+      hTrackMatchResEtaNegTrackPt[iprod]->Draw("same");
+      hTrackMatchResEtaPosTrackPt[iprod]->Draw("same");
+    }
+    
+    l0Eta.SetLineColor(2);
+    l0Eta.SetLineWidth(2);
+    l0Eta.Draw("same");
+    
+    lres.Draw();
+    lprod.Draw();
+    ccalo3->cd(2);
+    
+    hTrackMatchResPhiPosTrackPt[0]->Draw("");
+    for(Int_t iprod = 0; iprod < nProd; iprod++)
+    {
+      hTrackMatchResPhiNegTrackPt[iprod]->Draw("same");
+      hTrackMatchResPhiPosTrackPt[iprod]->Draw("same");
+    }
+    
+    TLine l0Phi(0,hTrackMatchResPhiNegTrackPt[0]->GetMinimum(),0,hTrackMatchResPhiNegTrackPt[0]->GetMaximum());
+    l0Phi.SetLineColor(2);
+    l0Phi.SetLineWidth(2);
+    l0Phi.Draw("same");
+    
+    ccalo3->cd(3);
+    //gPad->SetLogy();
+    
+    hRatTrackMatchResEtaPosTrackPt[0]->SetMaximum(1.2);
+    hRatTrackMatchResEtaPosTrackPt[0]->SetMinimum(0.8);
+    hRatTrackMatchResEtaPosTrackPt[0]->Draw("");
+    hRatTrackMatchResEtaPosTrackPt[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    for(Int_t iprod = 0; iprod < nProd-1; iprod++)
+    {
+      hRatTrackMatchResEtaNegTrackPt[iprod]->Draw("same");
+      hRatTrackMatchResEtaPosTrackPt[iprod]->Draw("same");
+    }
+    
+    //l0.Draw("same");
+    
+    ccalo3->cd(4);
+    
+    hRatTrackMatchResPhiPosTrackPt[0]->SetMaximum(1.2);
+    hRatTrackMatchResPhiPosTrackPt[0]->SetMinimum(0.8);
+    hRatTrackMatchResPhiPosTrackPt[0]->Draw("");
+    hRatTrackMatchResPhiPosTrackPt[0]->SetYTitle(Form("Ratio data X / %s",prodLeg[0].Data()));
+    for(Int_t iprod = 0; iprod < nProd-1; iprod++)
+    {
+      hRatTrackMatchResPhiNegTrackPt[iprod]->Draw("same");
+      hRatTrackMatchResPhiPosTrackPt[iprod]->Draw("same");
+    }
+    
+    ccalo3->Print(Form("%s_MatchingResidualsTrackPtBinComp.%s",histoTag.Data(),format.Data()));
+  }
 }
 
 ///
