@@ -5,6 +5,7 @@
 // Authors: FK  
 
 class TH1F;
+class TH2F;
 class TObjArray; 
 class AliESDEvent;
 
@@ -30,6 +31,8 @@ class AliT0CalibOffsetChannelsTask : public AliAnalysisTaskSE {
   Float_t *GetT0Means() { return fCDBT0s;}
   void SetT0Means(Int_t ihist, Float_t mean ) {fCDBT0s[ihist]=mean;};
   void SetRefPMT(Int_t refPMTA = 12, Int_t refPMTC=0) {fRefPMTA = refPMTA; fRefPMTC = refPMTC;};
+
+
 private:
   AliESDEvent *fESD;          //! ESD object
   TObjArray   *fTzeroObject;  // array with CFDi-CFD1 and  CFDi
@@ -45,14 +48,13 @@ private:
   Float_t fCDBT0s[4];      //position T0AC, T0A, T0A, resolution
   Int_t fRefPMTA;           // ref. PMT A side 
   Int_t fRefPMTC;           // ref. PMT C side
- 
-
+  TH2F      *fT0s[4];
   
  
   AliT0CalibOffsetChannelsTask(const AliT0CalibOffsetChannelsTask&); // not implemented
   AliT0CalibOffsetChannelsTask& operator=(const AliT0CalibOffsetChannelsTask&); // not implemented
   
-  ClassDef(AliT0CalibOffsetChannelsTask, 2); // example of analysis
+  ClassDef(AliT0CalibOffsetChannelsTask, 3); // example of analysis
 };
 
 #endif

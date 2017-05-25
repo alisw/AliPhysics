@@ -164,13 +164,19 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
-  metaData.SetComment("Time equalizing result with slew");
+  metaData.SetComment("Collision time shift ");
   fStatusAdjust = writeok;
   if (writeok == 0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
+    offline->Print();
+    id1->Print();
+    ocdbStorage->Dump();
     ocdbStorage->Put(offline, (*id1), &metaData);
   }
+  else 
+    AliWarning(Form("writeok = %d data is not OK to be in OCDB",writeok));
+      		  
 
 }
 //_____________________________________________________________________________

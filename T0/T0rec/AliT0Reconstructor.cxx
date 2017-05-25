@@ -143,7 +143,7 @@ ClassImp(AliT0Reconstructor)
   fCalib = new AliT0Calibrator();
   fESDTZERO  = new AliESDTZERO();
   //LHC period
-   AliCDBEntry* entry6 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliCDBEntry* entry6 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry6->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
@@ -253,14 +253,14 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       //  printf(" ipmt %i QTC  %i , time in chann %i \n ",
       //		    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]));
       
-    Double_t ampMip = 0;
+      Double_t ampMip = 0;
       TGraph* ampGraph = (TGraph*)fAmpLED.At(ipmt);
       if (ampGraph) ampMip = ampGraph->Eval(sl);
       Double_t qtMip = 0;
       TGraph* qtGraph = (TGraph*)fQTC.At(ipmt);
       if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
       AliDebug(5,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
-       frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
+      frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
       frecpoints.SetAmpLED(ipmt, Float_t( ampMip)); 
       frecpoints.SetAmp(ipmt, Float_t(qtMip));
       adcmip[ipmt]=qtMip;
@@ -366,6 +366,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 {
   // T0 raw ->
   //
+  printf("@@@@  AliT0Reconstructor::Reconstruct(AliRawReader* rawReader\n");
   Float_t meanOrA=0, meanOrC=0, meanTVDC=0, meanQT1[24]={0};
   if (fMeanOrA==0)  meanOrA = fTime0vertex[0] + 587;
   else 
@@ -450,9 +451,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    alldata[i][iHit] = myrawreader.GetData(i,iHit);
 	  }
 	}
-	
+	UInt_t timestamp = rawReader->GetTimestamp();
 	Int_t fBCID=Int_t (rawReader->GetBCID());
 	Int_t trmbunch= myrawreader.GetTRMBunchID();
+	printf("@@@@ timestamp %i\n",timestamp);
 	AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
 	if( (trmbunch-fBCID)!=37  ) {
 	  AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
@@ -464,8 +466,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		if(alldata[in+1][iHit] > low[in] && 
 		   alldata[in+1][iHit] < high[in])
 		  {
-		    //		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-		    //		       in+1,iHit, alldata[in+1][iHit] ); 
+		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+			   in+1,iHit, alldata[in+1][iHit] ); 
 		    timeCFD[in] = alldata[in+1][iHit] ; 
  		    break;
 		  }
@@ -475,8 +477,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		if(alldata[in+1+56][iHit] > low[in+12] && 
 		   alldata[in+1+56][iHit] < high[in+12])
 		  {
-		    //		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-		    //		   in+12,iHit, alldata[in+1+56][iHit] ); 
+		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+			   in+12,iHit, alldata[in+1+56][iHit] ); 
 		    timeCFD[in+12] = alldata[in+56+1][iHit] ;
 		    break;
 		  }
@@ -495,7 +497,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    //	   adc[ipmt] = fAmplitude[ipmt];
 	   Int_t refAmp = Int_t (fTime0vertex[ipmt]);
 	   adc[ipmt]=amplitude[ipmt];
-	   time[ipmt] = fCalib-> WalkCorrection( refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
+	   time[ipmt] = fCalib-> WalkCorrection( refAmp, ipmt, adc[ipmt], timeCFD[ipmt],timestamp ) ;
 	   Double32_t qtMip = 0;
 	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
 	   if (qtGraph) {

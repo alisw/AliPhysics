@@ -125,8 +125,9 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   fResolution      = new TH1F("fResolution","fResolution",200,-2000,2000);// or A minus or C spectrum
   fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-4000,4000);// or A spectrum
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-4000,4000);// or C spectrum
-
-  
+  TString histname[4] = {"hT0AC","hT0A","hT0C","hResolution"};
+  for (int icase=0; icase<4; icase++) 
+    fT0s[icase] = new TH2F(histname[icase].Data(), histname[icase].Data(), 100, 0, 200, 200, -1000, 1000);
   fTzeroObject     = new TObjArray(0);
   fTzeroObject->SetOwner(kTRUE);
   
@@ -140,6 +141,8 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   fTzeroObject->AddAtAndExpand(fResolution, 49);
   fTzeroObject->AddAtAndExpand(fTzeroORA, 50);
   fTzeroObject->AddAtAndExpand(fTzeroORC, 51);
+  for (int icase=0; icase<4; icase++) 
+    fTzeroObject->AddAtAndExpand(fT0s[icase], 52+icase);
 
   PostData(1, fTzeroObject);
   // Called once
@@ -174,15 +177,15 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     for (Int_t i=0; i<24; i++) {
       if( time[i] > 0  && amp[i]>0.1 ){
 	if (eq)	{
-	fCFD[i]->Fill( time[i] );//////!!!!!
-	if(  time[fRefPMTC] > 0 && i<12)   {
-	  diff =  time[i]-time[fRefPMTC];
-	  fTimeDiff[i]->Fill( diff);
-	}
-	if(  time[fRefPMTA] >0  && i>11)  {
-	  diff =  time[i]-time[fRefPMTA] ;
-	  fTimeDiff[i]->Fill( diff);
-	}
+	  fCFD[i]->Fill( time[i] );//////!!!!!
+	  if(  time[fRefPMTC] > 0 && i<12)   {
+	    diff =  time[i]-time[fRefPMTC];
+	    fTimeDiff[i]->Fill( diff);
+	  }
+	  if(  time[fRefPMTA] >0  && i>11)  {
+	    diff =  time[i]-time[fRefPMTA] ;
+	    fTimeDiff[i]->Fill( diff);
+	  }
 	} //eq=1
 	else  {
 	  fCFD[i]->Fill( time[i] + fCDBdelays[i] );
@@ -202,11 +205,24 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     Double32_t meanTOF = mean[0]  +  fCDBT0s[0] ;
     Double32_t orA = mean[1]  +  fCDBT0s[1] ;
     Double32_t orC = mean[2] + fCDBT0s[2] ;
-
-    if(orA<99999) fTzeroORA->Fill(orA);
-    if(orC<99999) fTzeroORC->Fill(orC);
-    if(orA<99999 && orC<99999) fResolution->Fill((orA-orC)/2.);
-    if(orA<99999 && orC<99999) fTzeroORAplusORC->Fill(meanTOF); 
+    Int_t ncont = fESD->GetPrimaryVertexSPD()->GetNContributors();
+   
+    if(orA<99999) {
+      fTzeroORA->Fill(orA);
+       if (ncont>0) fT0s[1]->Fill(ncont, orA);
+    }
+    if(orC<99999) {
+      fTzeroORC->Fill(orC);
+       if (ncont>0) fT0s[2]->Fill(ncont, orC);
+    }
+    if(orA<99999 && orC<99999) {
+      fResolution->Fill((orA-orC)/2.);
+      fTzeroORAplusORC->Fill(meanTOF); 
+      if (ncont>0)  {
+	fT0s[0]->Fill(ncont,meanTOF );
+	fT0s[3]->Fill(ncont, (orA-orC)/2.);
+      }
+    }
   } //if TVDC on
   PostData(1, fTzeroObject);
 }      
