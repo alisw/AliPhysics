@@ -470,7 +470,6 @@ protected:
   Float_t  fSampling;		             ///< Sampling factor
 	
   mutable const TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
-  Bool_t   fUseExternalMatrices;     ///< Use the matrices set in fkSModuleMatrix and not those in the geoManager
 	
 private:
   
@@ -479,7 +478,7 @@ private:
   static const Char_t     *fgkDefaultGeometryName; ///< Default name of geometry
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALGeometry,17) ;       
+  ClassDef(AliEMCALGeometry,18) ;
   /// \endcond
 
 } ;
