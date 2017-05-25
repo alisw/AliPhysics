@@ -20,6 +20,7 @@
 /// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
+/// A plot will be produced for each of the triggers, if they existed in the data.
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
@@ -79,7 +80,7 @@ TString histoTag = "";    /// file names tag, basically the trigger and calorime
 TString format = "eps";   /// plots format: eps, pdf, etc.
 Int_t   exportToFile = 0; /// option to what and if export to output file
 
-/// pre defined colors list 
+/// pre-defined colors list 
 Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
 //
 //-----------------------
@@ -182,7 +183,7 @@ void DrawAnaCaloTrackQA
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 ///
 /// Input:
-/// \param trigName: File name
+/// \param trigName: trigger case name
 /// \param checklist: get the list from file, in case not exported
 ///
 /// This method can be executed directly instead od DrawAnaCaloTrackQA if the
@@ -254,7 +255,6 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
 /// * cluster time vs pT, cluster long axis vs E, number of cells in cluster vs E, cells in cluster E vs cluster E
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
@@ -617,7 +617,6 @@ void CaloQA(Int_t icalo)
 /// * track phi distribution per hybrid track component
 /// * track TOF
 /// * track pT per hybrid track component
-///
 //______________________________________
 void TrackQA()
 {
@@ -748,7 +747,6 @@ void TrackQA()
 /// * Invariant mass real/mixed pairs, in eta region
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //_____________________________
 void Pi0QA(Int_t icalo)
 {
@@ -1454,7 +1452,6 @@ void IsolQA(Int_t icalo)
 /// * xE distribution of tracks correlated to a high pT cluster, in the opposite side or in perpendicular region (UE)
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
@@ -1608,7 +1605,6 @@ void CorrelQA(Int_t icalo)
 /// * pseudorapidity distribution of generated particles
 ///
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //________________________________________________________
 void MCQA(Int_t icalo)
 {
@@ -1881,7 +1877,6 @@ void MCQA(Int_t icalo)
 /// 
 /// \param trigName: name of list of histograms for a particular trigger
 /// \param exportToFile: put the list of histograms in a separate file if true
-///
 //____________________________________________________________________
 Bool_t GetList(TString trigName)
 {  
@@ -1918,7 +1913,6 @@ Bool_t GetList(TString trigName)
 /// \return the histogram with the provided name
 ///
 /// \param histoName: histogram name
-///
 //___________________________________
 TObject * GetHisto(TString histoName)
 {
@@ -1938,7 +1932,6 @@ TObject * GetHisto(TString histoName)
 ///
 /// \param histo: histogram TObject
 /// \param tag: add to the histogram name when saving the trigger/calo tag or not.
-///
 //_________________________________________
 void  SaveHisto(TObject* histo, Bool_t tag)
 {
@@ -1954,7 +1947,6 @@ void  SaveHisto(TObject* histo, Bool_t tag)
 ///
 /// Save canvas in new file.
 /// Name should have been differenciated for the different triggers
-///
 //_______________________________
 void  SaveCanvas(TCanvas* canvas)
 {
@@ -1964,7 +1956,6 @@ void  SaveCanvas(TCanvas* canvas)
 ///
 /// Scale axis by a constant factor
 /// used just to scale degrees to rad in a single histogram in the MC case
-///
 //___________________________________________________
 void ScaleAxis(TAxis *a, Double_t scale)
 {
@@ -1993,7 +1984,6 @@ void ScaleAxis(TAxis *a, Double_t scale)
 ///
 /// Scale x axis by a constant factor
 /// used just to scale degrees to rad in a single histogram in the MC case
-///
 //___________________________________________________
 void ScaleXaxis(TH1 *h, Double_t scale)
 {
