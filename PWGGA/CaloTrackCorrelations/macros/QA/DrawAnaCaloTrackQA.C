@@ -387,10 +387,10 @@ void CaloQA(Int_t icalo)
     //gPad->SetLogy();
     TGaxis::SetMaxDigits(3);
 
-    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNeg",icalo));
-    TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPos",icalo));
-    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo));
-    TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo));
+    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegNoCut",icalo));
+    TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosNoCut",icalo));
+    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegNoCut",icalo));
+    TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosNoCut",icalo));
     
     Float_t binMin = hClusterEnergy->FindBin(0.5);
     hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("%s_hTrackMatchProjClusEnEtaNeg",histoTag.Data()),binMin, 1000);

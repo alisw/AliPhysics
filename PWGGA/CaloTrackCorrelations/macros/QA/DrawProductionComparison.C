@@ -290,10 +290,10 @@ void CaloQA(Int_t icalo)
     
     // Cluster-Track Matching Residuals
     
-    h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNeg",icalo),iprod);
-    h2TrackMatchResEtaPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPos",icalo),iprod);
-    h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo),iprod);
-    h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo),iprod);
+    h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegNoCut",icalo),iprod);
+    h2TrackMatchResEtaPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosNoCut",icalo),iprod);
+    h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegNoCut",icalo),iprod);
+    h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosNoCut",icalo),iprod);
     
     Float_t emin = 0.5;
     Float_t emax = 2.5;
@@ -455,6 +455,8 @@ void CaloQA(Int_t icalo)
   
   //Cluster-Track Matching Residual
   {
+    TGaxis::SetMaxDigits(3);
+
     TLine l0Eta(0,hTrackMatchResEtaNeg[0]->GetMinimum(),0,hTrackMatchResEtaNeg[0]->GetMaximum());
     
     TLegend lres(0.6,0.75,0.84,0.89);
