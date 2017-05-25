@@ -1584,6 +1584,8 @@ private:
   TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
   TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
   TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile2D *fhAvQMCRbR; //!
+  TProfile2D *fhAvQMARbR; //!
   TProfile *fhAvAbsOrbit; //!
   TProfile3D *fCRCTPCQVecCenEtaRefMulTot[2][4]; //!
   TProfile2D *fCRCTPCQVecCenRefMulTotCheck[2][4]; //!
@@ -1628,6 +1630,9 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
 //  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  const static Int_t fknRefMulCl = 6;
+  TProfile3D *fCRCZDCQVecVtxPosRefMul[fknRefMulCl][fkCRCnCQVecVtxPos]; //!
+  TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
@@ -1938,6 +1943,7 @@ private:
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
   TH1F* fMultCutAv; //!
+  TH1F* fRMSRefMulCenBins[10]; //!
   TH1F* fEZNCutMin; //!
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
@@ -1967,7 +1973,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,54);
+  ClassDef(AliFlowAnalysisCRC,55);
   
 };
 
