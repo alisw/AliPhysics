@@ -182,7 +182,7 @@ private:
     TH1F        *fMCcheckMother;
     //TH1F        *fCheckEta;    
     //TH1F        *fCheckEtaMC;    
-
+   
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
@@ -232,6 +232,7 @@ private:
     TH1F        *fCheckEtaMC;    
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
+    TH2D        *fTPCcls;
     TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
