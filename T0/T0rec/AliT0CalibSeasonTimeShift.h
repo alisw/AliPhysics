@@ -9,7 +9,10 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
+#include "TObjArray.h"
 class TH1F;
+//class TObjArray;
+class TGraph;
 class AliT0CalibSeasonTimeShift: public TNamed {
 
  public:
@@ -34,7 +37,13 @@ class AliT0CalibSeasonTimeShift: public TNamed {
   Bool_t SetT0Par(Float_t par[4],Float_t spar[4] );
   Int_t SetT0Par(const char* filePhys , Float_t *cdbtime);
   
-  void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma); 
+  void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
+ 
+  TGraph *GetT0s(Int_t icase )  const {return (TGraph*)fT0vsMult.At(icase);}
+  
+ // TObjArray* GetfT0s() {return &fT0vsMult;}    
+
+
 
  protected:
   Float_t  fMeanPar[4];     
@@ -47,9 +56,10 @@ class AliT0CalibSeasonTimeShift: public TNamed {
 // [1] sigma T0A corrected by primary vertex
 // [2]sigma T0A corrected by primary vertex
 // [3]sigma T0resolution
+  TObjArray fT0vsMult;     // T0A,T0C, T0AC, resolution vs SPD tracklets
 
 
-  ClassDef(AliT0CalibSeasonTimeShift,1)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibSeasonTimeShift,2)    // T0 Sensor Calibration data
 };
 
 
