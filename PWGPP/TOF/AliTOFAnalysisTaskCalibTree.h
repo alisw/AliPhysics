@@ -24,7 +24,7 @@ class AliGRPObject;
 
 class TH2F;
 
-#define MAXHITS 100000
+#define MAXHITS ((Int_t)100000)
 
 class AliTOFAnalysisTaskCalibTree :
 public AliAnalysisTaskSE
@@ -115,18 +115,19 @@ public AliAnalysisTaskSE
   AliTOFT0v1 *fTOFT0v1;               //!<! TOF-T0 v1
 
   // task related stuff
+  Int_t fMaxHits;       //array parameter
   UInt_t ftimestamp;
   Float_t fVertexZ;
   Float_t ftimezero;
   Int_t fnhits;
-  Float_t* fmomentum;       //[MAXHITS] momentum
-  Float_t* flength;         //[MAXHITS] length
-  Int_t* findex;            //[MAXHITS] index
-  Float_t* ftime;           //[MAXHITS] time
-  Float_t* ftot;            //[MAXHITS] time over threshold
-  Float_t* ftexp;           //[MAXHITS] texp
-  Float_t* fDeltax; //[MAXHITS]  delta-x
-  Float_t* fDeltaz; //[MAXHITS]  delta-z
+  Float_t* fmomentum;       //[fMaxHits] momentum
+  Float_t* flength;         //[fMaxHits] length
+  Int_t* findex;            //[fMaxHits] index
+  Float_t* ftime;           //[fMaxHits] time
+  Float_t* ftot;            //[fMaxHits] time over threshold
+  Float_t* ftexp;           //[fMaxHits] texp
+  Float_t* fDeltax;         //[fMaxHits]  delta-x
+  Float_t* fDeltaz;         //[fMaxHits]  delta-z
 
   Bool_t fLightMode;
   Bool_t fSaveCoordinates;
