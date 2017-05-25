@@ -357,23 +357,18 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
 //  }
   
   
-//  cout<<"new Event ";
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
   varManager->SetEvent(event);
   if(selectedMask!=(evfilter->IsSelected(event))){
-          cout<<"Passed Event cut - not!!"<<endl;
-          return;
-      }
+    return;
+  }
   
-//  if(abs(event->GetPrimaryVertex()->GetZ())>10) cout<<selectedMask!=(evfilter->IsSelected(event))<<"Passed BAD Event!!"<<endl;
-   
   fQAHist->Fill("Events_accepted",1);
   
   if(hasMC){
     AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     fMcArray = mchandler->MCEvent();
-  // get the accepted tracks in main event
-
+    // get the accepted tracks in main event
   }
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
@@ -393,7 +388,6 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
   
   else cent = MultSelection->GetMultiplicityPercentile("V0M");
-//  cout<<"cent: "<<cent<<endl; 
   
   
  runn = event->GetRunNumber();
@@ -560,7 +554,6 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
       UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
       if(selectedMask!=(filter->IsSelected((AliVParticle*)track))){
-//          cout<<"Passe cut - not!!"<<endl;
           continue;
       }
       
@@ -680,11 +673,6 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 	dcar.push_back(tempdca[0]);
 	dcaz.push_back(tempdca[1]);
       }
-      
-      //cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
-      //cout<<"  dcaxy: "<<tempdca[0]<<" "<<tempdca[1]<<" "<<endl;  
-
- 
 
       Int_t tempnits = track->GetNcls(0);    // 0 = ITS 
       nITS.push_back(tempnits);        
@@ -694,7 +682,6 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         for(int d = 0; d<6;d++){
           nitssharedtemp+= (Double_t) track->HasSharedPointOnITSLayer(d);
         }
-//              if(nitssharedtemp) cout<<"frac: "<<nitssharedtemp<<endl;
         nitssharedtemp/=tempnits;
       }
 
@@ -780,15 +767,12 @@ filter   = new AliAnalysisFilter("filter","filter");
  
 // need this to use PID in dielectron framework
 varManager = new AliDielectronVarManager;
- 
-//cout<<"Set up"<<endl;
-    
+     
 trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
 trfilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 trfilter->SetRequireITSRefit(kTRUE);
 trfilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
 
-//cout<<"Set up trcut"<<endl;
 trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
 trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
 trcuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
@@ -800,16 +784,16 @@ trcuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
 trcuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 trcuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
 trcuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-//cout<<"Set up pidcut"<<endl;
+
 pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
 pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
 pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-//cout<<"Adding"<<endl;
+
 cuts->AddCut(trcuts);
 cuts->AddCut(trfilter);
 cuts->AddCut(pidcuts);
-//cout<<"Printing"<<endl;
-cuts->Print();
+
+ cuts->Print();
 
 filter->AddCuts(cuts);
 }
