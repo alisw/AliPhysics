@@ -76,6 +76,10 @@ AliAnTOFtrack::~AliAnTOFtrack(){//Destructor
   
 }
 
+///////////////////
+///Cut functions///
+///////////////////
+
 //________________________________________________________________________
 Bool_t AliAnTOFtrack::PassStdCut(){
   for(Int_t i = 0; i < nCuts; i++) if(!GetMaskBit(fTrkCutMask, CutStdIndexInMask[i])) return kFALSE;
@@ -108,6 +112,10 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
   return kTRUE;
   
 }
+
+/////////////////////////
+//////PID functions//////
+/////////////////////////
 
 //________________________________________________________________________
 Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id){
@@ -148,6 +156,10 @@ Bool_t AliAnTOFtrack::ConsistentTPCTOF(){
   }
   return kFALSE;
 }
+
+///////////////////////
+////Track functions////
+///////////////////////
 
 //________________________________________________________________________
 Bool_t AliAnTOFtrack::IsNegative(){
