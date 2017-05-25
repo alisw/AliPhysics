@@ -1573,7 +1573,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
   case 2:
     fRemovePileUp           = kTRUE;
     fPastFutureRejectionLow =-89;
-    fPastFutureRejectionHigh= 85;
+    fPastFutureRejectionHigh= 89;
     break;
   case 3:
     fRemovePileUp           = kTRUE;
@@ -1944,10 +1944,12 @@ Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *InputEvent)
   }
 
   Bool_t isOutOfBunchPileup = 0;
-  Int_t pf1 = fPastFutureRejectionLow+bunchCrossings%4;
+  Int_t pf1 = fPastFutureRejectionLow +bunchCrossings%4;
   Int_t pf2 = fPastFutureRejectionHigh+bunchCrossings%4;
+  if(pf1 < -89) pf1 = -89;
+  if(pf2 > 89)  pf2 =  89;
   Int_t pf2maxForT0 = pf2;
-  Int_t ir1skip = 0;
+  Int_t ir1skip     = 0;
   for (Int_t i=pf1;i<=pf2;i++) {
     if (i==0) continue;
     if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up 
