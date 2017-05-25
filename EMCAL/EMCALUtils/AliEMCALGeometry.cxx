@@ -57,7 +57,7 @@ AliEMCALGeometry::AliEMCALGeometry():
   fDCALInnerExtandedEta(0),fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
   fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
   fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
-  fZLength(0.),fSampling(0.),fUseExternalMatrices(kFALSE)
+  fZLength(0.),fSampling(0.)
 {
   fEnvelop[0] = 0.;
   fEnvelop[1] = 0.;
@@ -86,7 +86,7 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
     fDCALInnerExtandedEta(geo.fDCALInnerExtandedEta),fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fPhiModuleSize(geo.fPhiModuleSize),
     fEtaModuleSize(geo.fEtaModuleSize),fPhiTileSize(geo.fPhiTileSize),fEtaTileSize(geo.fEtaTileSize),fNZ(geo.fNZ),
     fIPDistance(geo.fIPDistance),fLongModuleSize(geo.fLongModuleSize),fShellThickness(geo.fShellThickness),
-    fZLength(geo.fZLength),fSampling(geo.fSampling),fUseExternalMatrices(geo.fUseExternalMatrices)
+    fZLength(geo.fZLength),fSampling(geo.fSampling)
 {
   fEnvelop[0] = geo.fEnvelop[0];
   fEnvelop[1] = geo.fEnvelop[1];
@@ -123,7 +123,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
     fDCALInnerExtandedEta(0),fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
     fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
-    fZLength(0.),fSampling(0.), fUseExternalMatrices(kFALSE)
+    fZLength(0.),fSampling(0.)
 {   
   fEMCGeometry = new AliEMCALEMCGeometry(name,title,mcname,mctitle);
   fGeoName = fEMCGeometry->GetGeoName();
@@ -1503,7 +1503,7 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
     AliFatal(Form("Wrong supermodule index -> %d",smod));
 		
   // Use matrices set externally
-  if(!gGeoManager || (gGeoManager && fUseExternalMatrices))
+  if(!gGeoManager)
   {
     if(fkSModuleMatrix[smod])
     {
@@ -1518,12 +1518,14 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
       printf("\t AliEMCALGeometry::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
       AliFatal("") ;
     }  
-  }//external matrices
+ } // external matrices
   
   // If gGeoManager exists, take matrix from it
-  if(gGeoManager) return GetMatrixForSuperModuleFromGeoManager(smod);
-  
-  return 0 ;
+  // only once to speed up things
+  if ( gGeoManager && !fkSModuleMatrix[smod] )
+    fkSModuleMatrix[smod] = GetMatrixForSuperModuleFromGeoManager(smod) ;
+
+  return fkSModuleMatrix[smod];
 }
 
 ///
@@ -1734,11 +1736,15 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
 //__________________________________________________________________________________________________________________
 void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
 {
-  fUseExternalMatrices = kTRUE;
-
-  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
-    if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
-  } else AliFatal(Form("Wrong supermodule index -> %d",smod));
+  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules())
+  {
+   if ( !fkSModuleMatrix[smod] )
+      fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
+  }
+  else
+  {
+    AliFatal(Form("Wrong supermodule index -> %d",smod));
+  }
 }
 
 ///

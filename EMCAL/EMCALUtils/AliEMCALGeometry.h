@@ -469,8 +469,7 @@ protected:
   Float_t  fZLength;		             ///< Total length in z direction
   Float_t  fSampling;		             ///< Sampling factor
 	
-  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
-  Bool_t   fUseExternalMatrices;     ///< Use the matrices set in fkSModuleMatrix and not those in the geoManager
+  mutable const TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
 	
 private:
   
@@ -479,7 +478,7 @@ private:
   static const Char_t     *fgkDefaultGeometryName; ///< Default name of geometry
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALGeometry,17) ;       
+  ClassDef(AliEMCALGeometry,18) ;
   /// \endcond
 
 } ;
