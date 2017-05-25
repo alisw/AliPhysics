@@ -49,6 +49,7 @@ AliAnalysisTaskSE(name),
   fTOFcalib(new AliTOFcalib()),             
   fTOFT0maker(new AliTOFT0maker(fESDpid, fTOFcalib)),         
   fTOFT0v1(new AliTOFT0v1(fESDpid)),
+  fMaxHits(MAXHITS),
   ftimestamp(0),
   fVertexZ(99999),
   ftimezero(9999999),
@@ -70,15 +71,15 @@ AliAnalysisTaskSE(name),
    * default constructor 
    */
 
-  fmomentum = new Float_t[MAXHITS];
-  flength = new Float_t[MAXHITS];
-  findex = new Int_t[MAXHITS];
-  ftime = new Float_t[MAXHITS];
-  ftot = new Float_t[MAXHITS];
-  ftexp = new Float_t[MAXHITS];
-  fDeltax = new Float_t[MAXHITS];
-  fDeltaz = new Float_t[MAXHITS];
-  for (Int_t i = 0; i < MAXHITS; i++){
+  fmomentum = new Float_t[fMaxHits];
+  flength = new Float_t[fMaxHits];
+  findex = new Int_t[fMaxHits];
+  ftime = new Float_t[fMaxHits];
+  ftot = new Float_t[fMaxHits];
+  ftexp = new Float_t[fMaxHits];
+  fDeltax = new Float_t[fMaxHits];
+  fDeltaz = new Float_t[fMaxHits];
+  for (Int_t i = 0; i < fMaxHits; i++){
       fmomentum[i] = 999999;
       flength[i] = 999999;
       findex[i] = -1;
@@ -139,24 +140,24 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
 
   /* setup output tree */
   fOutputTree->Branch("nhits", &fnhits, "nhits/I");
-  fOutputTree->Branch("index", &findex, "index[nhits]/I");
-  fOutputTree->Branch("time", &ftime, "time[nhits]/F");
-  fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
-  fOutputTree->Branch("texp", &ftexp, "texp[nhits]/F");
+  fOutputTree->Branch("index", findex, "index[nhits]/I");
+  fOutputTree->Branch("time", ftime, "time[nhits]/F");
+  fOutputTree->Branch("tot", ftot, "tot[nhits]/F");
+  fOutputTree->Branch("texp", ftexp, "texp[nhits]/F");
   if (!fLightMode) { // skip some track parameters if flag on
   fOutputTree->Branch("run", &fRunNumber, "run/I");
   fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
   fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
   fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
-  fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
-  fOutputTree->Branch("length", &flength, "length[nhits]/F");
+  fOutputTree->Branch("momentum", fmomentum, "momentum[nhits]/F");
+  fOutputTree->Branch("length", flength, "length[nhits]/F");
    }
 
 
 
   if (fSaveCoordinates) { //save pad hit coordinates if flag on
-     fOutputTree->Branch("deltax", &fDeltax, "deltax[nhits]/F");
-     fOutputTree->Branch("deltaz", &fDeltaz, "deltaz[nhits]/F");
+     fOutputTree->Branch("deltax", fDeltax, "deltax[nhits]/F");
+     fOutputTree->Branch("deltaz", fDeltaz, "deltaz[nhits]/F");
   }
   PostData(1, fOutputTree);
 
@@ -225,7 +226,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     deltaz = track->GetTOFsignalDz();
 
     // add hit to array (if there is room)
-    if (fnhits > MAXHITS) continue;
+    if (fnhits > fMaxHits) continue;
     fmomentum[fnhits] = momentum;
     flength[fnhits] = length;
     ftexp[fnhits] = timei[AliPID::kPion];
