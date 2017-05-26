@@ -43,6 +43,7 @@ class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
+class AliExternalTrackParam; 
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -218,9 +219,16 @@ public:
     };
     typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhit> FMDhits;
 //---------------------------------------------------------------------------------------
-   AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
 //---------------------------------------------------------------------------------------
-
+    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b);
+    //Helper functions
+    Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
+    Double_t Det(Double_t a00,Double_t a01,Double_t a02,
+                 Double_t a10,Double_t a11,Double_t a12,
+                 Double_t a20,Double_t a21,Double_t a22) const;
+    Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
+//---------------------------------------------------------------------------------------
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -473,6 +481,18 @@ private:
     Float_t fTreeCascVarCascadeDecayXMC; //!
     Float_t fTreeCascVarCascadeDecayYMC; //!
     Float_t fTreeCascVarCascadeDecayZMC; //!
+
+    //Vars for studying cascade decay point calculations
+    Float_t fTreeCascVarBachelorDCAptX; //!
+    Float_t fTreeCascVarBachelorDCAptY; //!
+    Float_t fTreeCascVarBachelorDCAptZ; //!
+    Float_t fTreeCascVarV0DCAptX; //!
+    Float_t fTreeCascVarV0DCAptY; //!
+    Float_t fTreeCascVarV0DCAptZ; //!
+    
+    Float_t fTreeCascVarBachelorDCAptUncertainty; //
+    Float_t fTreeCascVarV0DCAptUncertainty_V0Pos; //
+    Float_t fTreeCascVarV0DCAptUncertainty_V0Ang; //
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
     //Track Labels (check for duplicates, etc)

@@ -604,26 +604,48 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
+            
+            //Check if anchored, disregard anchored range if the case
+            Double_t lLowestX=0.0;
+            if(fSelection->GetEstimator(iEst)->GetUseAnchor()){
+                lLowestX=fSelection->GetEstimator(iEst)->GetAnchorPoint(); //Remove lowest
+            }
+            
             cout<<"At Run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), estimator "<<fSelection->GetEstimator(iEst)->GetName()<<", fit range "<<lMaxEst[iEst][iRun]<<endl;
             profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileY(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
             profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileY(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
-            fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), 0.0, lMaxEst[iEst][iRun]);
-            fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), 0.0, lMaxEst[iEst][iRun]);
+            fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
+            fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
             
             //Adjust range if needed
             //fitdata[iRun][iEst] -> SetRange(0,15000);
             //fitmc  [iRun][iEst] -> SetRange(0,15000);
             
-            fitdata[iRun][iEst]->SetParameter(0,1.0);
-            fitmc[iRun][iEst]->SetParameter(0,1.0);
+            //Initial guess: y = a (x-b)^2 + c
+            //has to be such that
+            //
+            // || 0 = c
+            // || Y = a(X-b)^2
+            
+            //Die hard fitting
+            //TVirtualFitter::SetMaxIterations(1000000);
+            
+            fitdata[iRun][iEst]->SetParameter(0,-1e-3);
+            fitmc[iRun][iEst]->SetParameter(0,-1e-3);
+            fitdata[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            fitmc[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            fitdata[iRun][iEst]->SetParameter(2,0.0);
+            fitmc[iRun][iEst]->SetParameter(2,0.0);
             
             //remember to not be silly...
             TString lEstName = fSelection->GetEstimator(iEst)->GetName();
             if( !lEstName.Contains("SPD") &&
                !lEstName.Contains("CL0") &&
                !lEstName.Contains("CL1") ){
-                profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
-                profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
+                cout<<"Fit DATA: "<<endl;
+                profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "IREM0" );
+                cout<<"Fit MONTE CARLO: "<<endl;
+                profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "IREM0" );
             }
         }
     }
