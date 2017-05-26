@@ -2605,6 +2605,8 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             break;
         }
         
+        if(aodtrackassoc->GetType()==AliAODTrack::kPrimary&&MBtrg){fHistTestDPhiSpeNoSec->Fill(DPhi, PID);}
+        
         
         if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1&&aodtrackassoc->GetType()==AliAODTrack::kPrimary){
             aodtrackassoc->Print();
@@ -2649,9 +2651,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 else{cout<<"No EMCal cluster for this anamolous Peak\n";}
             
-             if(MBtrg){
-            fHistTestDPhiSpeNoSec->Fill(DPhi, PID);
-        }
+             
         
             
         }
