@@ -16,7 +16,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   const Bool_t showchi2 = kFALSE;//Flag to write the chi2 of the fit on each plot
   const Bool_t showratiomean = kFALSE;//Flag to write the mean and other parameters of the ratio between the fit and the data
   const Bool_t limitrange = kTRUE;//Flag to limit the plotting range of the th2 to the requested range
-  const Bool_t showtemplateusage = kFALSE;//Flag to show the template usage for each pt bin
+  const Bool_t showtemplateusage = kTRUE;//Flag to show the template usage for each pt bin
+  const Bool_t T0fillOnly = dataname.Contains("0T0") ? kTRUE : dataname.Contains("_T0") ? kTRUE : kFALSE;//Flag to check if the file has T0 fill only, in this case it should work as for peripheral Pb--Pb
   
   gROOT->SetStyle("Plain");
   gStyle->SetOptTitle(0);
@@ -116,6 +117,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   if(outputintolists) GetHistogram(linData, hname, fEntries);
   else GetHistogram(finData, hname, fEntries);
   fEntries->SetDirectory(0);
+  lHistograms->Add(fEntries);
   
   for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
     hname = Form("hTOF%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[iMult].Data());
@@ -1150,7 +1152,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //   evtnorm = 1./hEvtMult->GetEffectiveEntries()
   }
   
-  //Compute the normalization from the ist of analysed tracks
+  //Compute the normalization from the list of analysed tracks
   const Double_t norm = 1./fEntries->GetBinContent(1);
   
   if(geteventinfo && norm != evtnorm){
