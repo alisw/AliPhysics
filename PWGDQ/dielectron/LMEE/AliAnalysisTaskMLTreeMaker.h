@@ -4,7 +4,7 @@ class TH1F;
 class TList;
 class TH2D;
 class TH3D;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 
 
 #include "AliAnalysisTaskSE.h"
@@ -196,7 +196,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
   Int_t fFilterBit;// track cut bit from track selection (default = kTPCqualSPDany)
 
-  AliESDtrackCuts* fESDTrackCuts;
+//  AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
