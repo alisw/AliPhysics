@@ -20,7 +20,7 @@
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kPythia13TeVprompt};
+enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kPythia13TeVprompt,kPythia13TeVfeeddown};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -47,6 +47,10 @@ TH1D* LoadPYTHIA13TeV_promptD0();
 TH1D* LoadPYTHIA13TeV_promptDplus();
 TH1D* LoadPYTHIA13TeV_promptDstar();
 TH1D* LoadPYTHIA13TeV_promptDs();
+TH1D* LoadPYTHIA13TeV_feeddownD0();
+TH1D* LoadPYTHIA13TeV_feeddownDplus();
+TH1D* LoadPYTHIA13TeV_feeddownDstar();
+TH1D* LoadPYTHIA13TeV_feeddownDs();
 
 
 
@@ -179,6 +183,21 @@ void ComputeAcceptance(){
     }else{
       histPt = LoadPYTHIA13TeV_promptD0();
       outFileName.Append("promptD0");
+    }
+    outFileName.Append("PYTHIA13ptshape.root");
+  }else if (fPtShape==kPythia13TeVfeeddown){
+    if(fDDecay==kDplusKpipi){
+      histPt = LoadPYTHIA13TeV_feeddownDplus();
+      outFileName.Append("feeddownDplus");
+    }else if (fDDecay==kDstarD0pi){
+      histPt = LoadPYTHIA13TeV_feeddownDstar();
+      outFileName.Append("feeddownDstar");
+    }else if (fDDecay==kDsKKpi){
+      histPt = LoadPYTHIA13TeV_feeddownDs();
+      outFileName.Append("feeddownDs");
+    }else{
+      histPt = LoadPYTHIA13TeV_feeddownD0();
+      outFileName.Append("feeddownD0");
     }
     outFileName.Append("PYTHIA13ptshape.root");
   }else{
@@ -539,3 +558,70 @@ TH1D* LoadPYTHIA13TeV_promptDs()
   return hPYTHIA13;
 }
 
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownD0()
+{
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownD0", "", 40, 0., 40.);
+  Float_t val[40] = {
+    1814030, 2939561, 2059721, 1197596, 684753, 397435, 237432, 146442, 93029, 60222,
+    40940, 28861, 19992, 14344, 10602, 7742, 5781, 4395, 3421, 2732,
+    2216, 1763, 1395, 1208, 888, 735, 599, 509, 418, 374,
+    302, 281, 242, 200, 174, 158, 133, 104, 98, 88
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownDplus()
+{
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownDplus", "", 40, 0., 40.);
+  Float_t val[40] = {
+    779389, 1268000, 899979, 527442, 302782, 177610, 105677, 66601, 42008, 27618,
+    18802, 13024, 8975, 6530, 4773, 3495, 2708, 2020, 1634, 1212,
+    1017, 809, 665, 507, 389, 355, 285, 250, 218, 180,
+    143, 137, 106, 85, 71, 64, 57, 43, 50, 47
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownDstar()
+{
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownDstar", "", 40, 0., 40.);
+  Float_t val[40] = {
+    665735, 1144214, 856647, 523704, 309061, 183569, 111994, 70187, 45266, 29601,
+    20079, 14042, 10338, 7184, 5234, 4002, 2935, 2301, 1788, 1349,
+    1088, 895, 748, 591, 480, 378, 302, 263, 216, 182,
+    172, 122, 133, 100, 92, 87, 65, 50, 42, 45
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownDs()
+{
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownDs", "", 40, 0., 40.);
+  Float_t val[40] = {
+    377925, 686435, 518802, 318819, 189396, 113651, 68963, 43048, 27776, 18177,
+    12356, 8643, 6100, 4512, 3170, 2479, 1835, 1424, 1086, 825,
+    659, 490, 465, 361, 308, 246, 181, 170, 117, 111,
+    112, 91, 69, 66, 54, 57, 39, 33, 31, 25
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
