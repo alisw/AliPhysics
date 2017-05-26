@@ -128,7 +128,8 @@ public AliAnalysisTaskSE
   Float_t* ftexp;           //[fMaxHits] texp
   Float_t* fDeltax;         //[fMaxHits]  delta-x
   Float_t* fDeltaz;         //[fMaxHits]  delta-z
-
+  Float_t* fDeltat;         //[fMaxHits] delta-t
+  Float_t* fDeltaraw;       //[fMaxHits] delta-raw
   Bool_t fLightMode;
   Bool_t fSaveCoordinates;
 
