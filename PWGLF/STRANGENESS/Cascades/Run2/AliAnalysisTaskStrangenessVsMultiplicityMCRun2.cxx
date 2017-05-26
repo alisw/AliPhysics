@@ -2911,21 +2911,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                                                   //Xi Conditionals
                                                   (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075 &&
                                                    (!fkPreselectPID ||
-                                                    (
-                                                     ( fTreeCascVarPIDNegative==-211 && fTreeCascVarPIDPositive==+2212 && fTreeCascVarPIDBachelor==-211 ) ||
-                                                     ( fTreeCascVarPIDNegative==+211 && fTreeCascVarPIDPositive==-2212 && fTreeCascVarPIDBachelor==+211 ) ||
                                                      TMath::Abs(fTreeCascVarPID)==3312
                                                      )
-                                                    )) ||
+                                                    ) ||
                                                   //Omega Conditionals
                                                   (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075 &&
                                                    (!fkPreselectPID ||
-                                                    (
-                                                     ( fTreeCascVarPIDNegative==-211 && fTreeCascVarPIDPositive==+2212 && fTreeCascVarPIDBachelor==-321 ) ||
-                                                     ( fTreeCascVarPIDNegative==+211 && fTreeCascVarPIDPositive==-2212 && fTreeCascVarPIDBachelor==+321 ) ||
                                                      TMath::Abs(fTreeCascVarPID)==3334
                                                      )
-                                                    ))
+                                                    )
                                                   )
            )
         {
