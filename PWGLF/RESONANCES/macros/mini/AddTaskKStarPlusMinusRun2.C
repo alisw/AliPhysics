@@ -53,14 +53,14 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Bool_t      isPP,
  Float_t     cutV = 10.0,
  Bool_t      isGT = 0,
- Int_t       evtCutSetID = 2,
+ Int_t       evtCutSetID = 1,
  Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 0,
  Bool_t      enableMonitor=kTRUE,
  TString     monitorOpt="pp", 
  Float_t     piPIDCut = 3.0,
- Int_t       customQualityCutsID=12,
+ Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,    
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
@@ -172,7 +172,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
 
     
    
-    AliRsnCutEventUtils* cutEventUtils= 0;
+    AliRsnCutEventUtils* cutEventUtils=0;
     if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
         cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
         if(!MultBins){
@@ -193,11 +193,25 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    
    
    // define and fill cut set for event cut                                                                                          
-   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutEventUtils);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
-   task->SetEventCuts(eventCuts);
+    AliRsnCutSet* eventCuts=0;
+    if(cutEventUtils || cutVertex){
+        eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
+        
+        if(cutEventUtils && cutVertex){
+            eventCuts->AddCut(cutEventUtils);
+            eventCuts->AddCut(cutVertex);
+            eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+        }else if(cutEventUtils && !cutVertex){
+            eventCuts->AddCut(cutEventUtils);
+            eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+        }else if(!cutEventUtils && cutVertex){
+            eventCuts->AddCut(cutVertex);
+            eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
+        }
+        
+        task->SetEventCuts(eventCuts);
+    }
+
 
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                       
    //vertex                                                                                                                                
@@ -240,7 +254,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2.C");
-  // gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
+   //gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 
    } else 
