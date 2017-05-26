@@ -4,7 +4,7 @@ class TH1F;
 class TList;
 class TH2D;
 class TH3D;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 
 
 #include "AliAnalysisTaskSE.h"
@@ -24,7 +24,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskMLTreeMaker(const char *name);
   AliAnalysisTaskMLTreeMaker();
-  virtual ~AliAnalysisTaskMLTreeMaker(){} 
+  ~AliAnalysisTaskMLTreeMaker(); 
   
 
   AliDielectronEventCuts* eventCuts;
@@ -196,7 +196,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
   Int_t fFilterBit;// track cut bit from track selection (default = kTPCqualSPDany)
 
-  AliESDtrackCuts* fESDTrackCuts;
+//  AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
@@ -233,7 +233,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> chi2ITS;
 //  std::vector<Double_t> chi2TPC;
   std::vector<Double_t> chi2GlobalPerNDF;
-  std::vector<Double_t> chi2GlobalvsTPC;
+//  std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
   std::vector<Int_t> pdg;
