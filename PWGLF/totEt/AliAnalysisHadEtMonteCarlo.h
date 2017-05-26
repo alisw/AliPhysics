@@ -134,6 +134,7 @@ public:
     void DoTriggerChecksOnly(){kDoTriggerChecksOnly=kTRUE;}
     void SetIsOfflineV0AND(Bool_t val){kIsOfflineV0AND = val;}
     void SetIsOfflineMB(Bool_t val){kIsOfflineMB = val;}
+    void SetUseOldCentrality(Bool_t val){useOldCentrality = val;}
 
 
     void SetGeneratorMinMaxParticles(AliMCEvent *eventMC);
@@ -145,6 +146,7 @@ public:
     Bool_t checkLabelForHIJING;//Boolean - do we need to check this data set for HIJING labels?  We don't need to do this unless there were signals embedded
     Int_t            fNMCProducedMin;             // In case of cocktail, select particles in the list with label from this value
     Int_t            fNMCProducedMax;             // In case of cocktail, select particles in the list with label up to this value
+    Bool_t useOldCentrality;//Use AliCentrality or AliMultSelection
 
  private:
     //Declare it private to avoid compilation warning

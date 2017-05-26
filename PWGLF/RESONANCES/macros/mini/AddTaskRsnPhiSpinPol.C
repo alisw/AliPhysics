@@ -50,6 +50,8 @@ AliAnalysisTask *AddTaskRsnPhiSpinPol(
   // Creating Rsn Task
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(name.Data(), isMC);
 
+  mgr->AddTask(task);
+
   // Setting trigger
   task->SelectCollisionCandidates(triggerMask);
 
@@ -72,8 +74,7 @@ AliAnalysisTask *AddTaskRsnPhiSpinPol(
   // Configuring rsn output
   SetRsnOutput(task, pairCut, collisionType, isMC, qualityCutType, daughterCutType, nSigmaKaon, polarizationOpt);
 
-  // Contecting input container (ESD or AOD) from Analysis Manager
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+
 
   // Setting ouptut filename
   if (outputFileName.IsNull())
@@ -85,6 +86,9 @@ AliAnalysisTask *AddTaskRsnPhiSpinPol(
       outListName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       outputFileName.Data());
 
+
+  // Contecting input container (ESD or AOD) from Analysis Manager
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   // Connecting output
   mgr->ConnectOutput(task, 1, output);
 
@@ -258,7 +262,7 @@ void SetRsnOutput(AliRsnMiniAnalysisTask *task, AliRsnCutSet *cutsPair,
   // Char_t  charge1[11]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'      , '+'         ,'+'     ,'+'       ,'-'       };
   // Char_t  charge2[11]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'      , '-'         ,'-'     ,'+'       ,'-'       };
 
-  const n = 7;
+  const Int_t n = 7;
   Bool_t  use    [n]={        1,        1,        1,        1,    isMC,     isMC,     isMC};
   Int_t   useIM  [n]={        1,        1,        1,        1,       1,        1,        0};
   TString name   [n]={ "Unlike", "Mixing", "LikePP", "LikeMM", "Trues", "Mother",    "Res"};
@@ -268,22 +272,24 @@ void SetRsnOutput(AliRsnMiniAnalysisTask *task, AliRsnCutSet *cutsPair,
   Char_t  charge1[n]={      '+',      '+',      '+',      '-',     '+',      '+',      '+'};
   Char_t  charge2[n]={      '-',      '-',      '+',      '-',     '-',      '-',      '-'};
 
-  for(Int_t i=0;i<n;i++){
+  for(Int_t i=0;i<n-1;i++){
       if(!use[i]) continue;
       AliRsnMiniOutput* out=task->CreateOutput(TString::Format("phi_%s%s",name[i].Data(),suffix.Data()).Data(),output[i].Data(),comp[i].Data());
-      out->SetCutID(0,iCutK);
-      out->SetCutID(1,iCutK);
-      out->SetDaughter(0,AliRsnDaughter::kKaon);
-      out->SetDaughter(1,AliRsnDaughter::kKaon);
-      out->SetCharge(0,charge1[i]);
-      out->SetCharge(1,charge2[i]);
-      out->SetMotherPDG(pdgCode[i]);
+      out->SetDaughter(0, AliRsnDaughter::kKaon);
+      out->SetDaughter(1, AliRsnDaughter::kKaon);
+      if (comp[i].CompareTo("MOTHER")) {
+        out->SetCutID(0, iCutK);
+        out->SetCutID(1, iCutK);
+        out->SetCharge(0, charge1[i]);
+        out->SetCharge(1, charge2[i]);
+      }
+      // out->SetMotherPDG(pdgCode[i]);
+      out->SetMotherPDG(333);
       out->SetMotherMass(1.019461);
       out->SetPairCuts(cutsPair);
 
       //axis X: invmass (or resolution)
       if(useIM[i]==1) out->AddAxis(imID,215,0.985,1.2);
-      else if(useIM[i]==2) out->AddAxis(mmID,75,0.985,1.06);
       else out->AddAxis(diffID,200,-0.02,0.02);
 
       //axis Y: transverse momentum of pair as default
@@ -293,8 +299,18 @@ void SetRsnOutput(AliRsnMiniAnalysisTask *task, AliRsnCutSet *cutsPair,
       if(collisionType!=kPP) out->AddAxis(centID,100,0.,100.);
       else out->AddAxis(centID,160,0,160);
 
-      if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,20,-1.,1);
-      if (polarizationOpt.Contains("T")) out->AddAxis(cttID,20,-1.,1);
-      if (polarizationOpt.Contains("E")) out->AddAxis(cteID,20,-1.,1);
+      if (!isMC) {
+        if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,20,-1.,1);
+        if (polarizationOpt.Contains("T")) out->AddAxis(cttID,20,-1.,1);
+        if (polarizationOpt.Contains("E")) out->AddAxis(cteID,20,-1.,1);
+      } else {
+        if (polarizationOpt.Contains("J")) out->AddAxis(ctjmID,20,-1.,1);
+        if (polarizationOpt.Contains("T")) out->AddAxis(cttmID,20,-1.,1);
+        if (polarizationOpt.Contains("E")) out->AddAxis(ctemID,20,-1.,1);
+      }
     }
+
+
+
+
 }

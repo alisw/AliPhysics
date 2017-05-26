@@ -15,7 +15,7 @@
   //
   aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000\)
 //
-  aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000,1\)
+  aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000,1\) 
 
 */
 #include "TSystem.h"
@@ -122,6 +122,9 @@ void AnalyzeHistograms(){
 
 void SetMetadata(){
   //
+  chain->SetAlias("esdTrackPt","esdTrack.Pt()");
+  chain->SetAlias("esdTrackQPt","esdTrack.fP[4]");
+  chain->SetAlias("esdTrackfIpPt","esdTrack.fIp.Pt()");
   chain->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   chain->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
   chain->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
@@ -180,13 +183,17 @@ void InitAnalysis(){
   if (gSystem->Getenv("deltaT")!=NULL) deltaT=TString(gSystem->Getenv("deltaT")).Atof();
   //
   // get chain
-  chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40000);
-  chainV0 = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","V0s",0,40000);
+  chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40000,0,1);
+  chainV0 = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","V0s",0,40000,0,1);
   AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(chain);
   AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(chainV0);
   SetMetadata();
   //
   Int_t selected = chain->Draw("ntracks:mult:evtTimeStamp","","goff",100000);
+  if (selected<=0){
+    ::Error("performanceFiltered.InitAnalysis","Empty or corrupted input list");
+    return;
+  }
   ntracksEnd=TMath::KOrdStat(selected,chain->GetV1(),Int_t(selected*0.98))*1.02; // max Ntracks
   multEnd=TMath::KOrdStat(selected,chain->GetV2(),Int_t(selected*0.98))*1.02; // max Mult (primary)
   timeStart=TMath::KOrdStat(selected,chain->GetV3(),Int_t(selected*0.005)); 
@@ -273,10 +280,10 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
   TString hisString="";
   {
     // Standard kinematic histograms
-    hisString+="esdTrack.Pt():#esdTrack.fTPCncls>60>>hisPtAll(100,0,30);"; 
-    hisString+="esdTrack.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,30);";    
-    hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,30);";  
-    hisString+="esdTrack.fP[4]:tgl:secInner:#esdTrack.fTPCncls>60>>hisQptTglSecAll(40,-2,2,10,-1,1,90,0,18);"; 
+    hisString+="esdTrackPt:#esdTrack.fTPCncls>60>>hisPtAll(100,0,30);"; 
+    hisString+="esdTrackPt:#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,30);";    
+    hisString+="esdTrackfIpPt:#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,30);";  
+    hisString+="esdTrackQPt:tgl:secInner:#esdTrack.fTPCncls>60>>hisQptTglSecAll(40,-2,2,10,-1,1,90,0,18);"; 
   }
   // QA variables histograms
   for (Int_t iPar=0; iPar<nqaHistos; iPar++){
@@ -304,7 +311,7 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
 			       matchHistos[iPar],matchHistos[iPar]);
     hisMatch+=TString::Format("%s:qPt:tgl:alphaV:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_alphaV(2,-0.5,1.5,48,-3,3,10,-1,1,90,-3.145,3.145);", \
 			       matchHistos[iPar],matchHistos[iPar]);
-  }
+    }
   
 
 
@@ -473,6 +480,7 @@ void GetNclReport(TObjArray * hisArray,  TObjArray *keepArray ){
   ((TCanvas*)padClFrac)->SetWindowSize(1800,1000);
   padClFrac->SaveAs("tpcclFractionReport.pdf");
   padClFrac->SaveAs("tpcclfractionReport.png");
+  padClFrac->SaveAs("tpcclfractionReport.C");
   {(*pcstream)<<"perf"<<
       "grClFracASideTime.="<<keepArray->FindObject("hisTPCClFracSecTimeA(0,100,U0,U18,0,10000)(0,2)(f-mean p)")<<
       "grClFracCSideTime.="<<keepArray->FindObject("hisTPCClFracSecTimeC(0,100,U0,U18,0,10000)(0,2)(f-mean p)")<<
@@ -505,6 +513,7 @@ void GetDCAReport(TObjArray * hisArray,  TObjArray *keepArray ){
   ((TCanvas*)padTPCDCAR)->SetWindowSize(1600,1000);
   padTPCDCAR->SaveAs("tpcDCARReport.png");
   padTPCDCAR->SaveAs("tpcDCARReport.pdf");
+  padTPCDCAR->SaveAs("tpcDCARReport.C");
   {(*pcstream)<<"perf"<<    // export DCAR trending variables
       "grRMSTPCDCARSecA.="<<keepArray->FindObject("hisTPCDCARSecTimeA(0,100,0,180,0,10000)(0)(err)")<<
       "grRMSTPCDCARSecC.="<<keepArray->FindObject("hisTPCDCARSecTimeC(0,100,0,180,0,10000)(0)(err)")<<
@@ -554,6 +563,7 @@ void GetChi2Report(){
   ((TCanvas*)padChi2TPC)->SetWindowSize(1600,1000);
   padChi2TPC->SaveAs("tpcChi2Report.png");
   padChi2TPC->SaveAs("tpcChi2Report.pdf");
+  padChi2TPC->SaveAs("tpcChi2Report.C");
   // Run propertes
   TString drawExpressionChi2ITS="";
   drawExpressionChi2ITS="[2,2,1]:";
@@ -566,6 +576,7 @@ void GetChi2Report(){
   ((TCanvas*)padChi2ITS)->SetWindowSize(1600,1000);
   padChi2ITS->SaveAs("itsChi2Report.png");
   padChi2ITS->SaveAs("itsChi2Report.pdf");
+  padChi2ITS->SaveAs("itsChi2Report.C");
   // Time properties
   TString drawExpressionChi2TPCTime="";
   drawExpressionChi2TPCTime="[1,1,1]:";
@@ -579,6 +590,7 @@ void GetChi2Report(){
   ((TCanvas*)padChi2TPCTime)->SetWindowSize(1600,1000);
   padChi2TPC->SaveAs("tpcChi2TimeReport.png");
   padChi2TPC->SaveAs("tpcChi2TimeReport.pdf");
+  padChi2TPC->SaveAs("tpcChi2TimeReport.C");
   //
   Int_t hotSpots[8]={2,4,6,7,9, 20,30,35};
   TString drawExpressionChi2TPCSectorTime="[2,2,2,2]:";
@@ -601,12 +613,14 @@ void GetChi2Report(){
   ((TCanvas*)padChi2TPCSectorTime)->SetWindowSize(1600,1000);
   padChi2TPCSectorTime->SaveAs("tpcChi2SectorTimeReport.png");
   padChi2TPCSectorTime->SaveAs("tpcChi2SectorTimeReport.pdf");
+  padChi2TPCSectorTime->SaveAs("tpcChi2SectorTimeReport.C");
   //
   
   TPad * padChi2ITSSectorTime = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionChi2ITSSectorTime,keepArray, 1+2+4+8);
   ((TCanvas*)padChi2ITSSectorTime)->SetWindowSize(1600,1000);
   padChi2ITSSectorTime->SaveAs("itsChi2SectorTimeReport.png");
   padChi2ITSSectorTime->SaveAs("itsChi2SectorTimeReport.pdf");
+  padChi2ITSSectorTime->SaveAs("itsChi2SectorTimeReport.C");
 
 
 
@@ -623,6 +637,7 @@ void makeP2Report(){
   drawExpressionP2+="%Ogridx,gridy;hisPullP2CQPtTglTRD(10,90,100,101,0,10)(0)(err);:";
   TPad * padP2 = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionP2,keepArray, 1+2+4+8);
   padP2->SaveAs("deltaP2TPCtoFull.png");
+  padP2->SaveAs("deltaP2TPCtoFull.C");
 
   TString drawExpressionDeltaP2Const="";
   drawExpressionDeltaP2Const="[1,1,2]:";
@@ -634,6 +649,7 @@ void makeP2Report(){
   drawExpressionDeltaP2Const+="%Ogridx,gridy;hisPullP2ConstCQPtTglTRD(10,90,97,102,0,10)(0)(err);:";
   TPad * padDeltaP2const = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionDeltaP2Const,keepArray, 1+2+4+8);
   padDeltaP2const->SaveAs("deltaP2TPCConsttoFullConst.png");
+  padDeltaP2const->SaveAs("deltaP2TPCConsttoFullConst.C");
 }
 
 
@@ -648,6 +664,7 @@ void makeP4Report(){
   drawExpressionP4+="%Ogridx,gridy;hisPullP4CQPtTglTRD(10,90,99,102,0,10)(0)(err);:";
   TPad * padP4 = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionP4,keepArray, 1+2+4+8);
   padP4->SaveAs("deltaP4TPCtoFull.png");
+  padP4->SaveAs("deltaP4TPCtoFull.C");
 
   TString drawExpressionDeltaP4Const="";
   drawExpressionDeltaP4Const="[1,1,2]:";
@@ -659,6 +676,7 @@ void makeP4Report(){
   drawExpressionDeltaP4Const+="%Ogridx,gridy;hisPullP4ConstCQPtTglTRD(10,90,97,102,0,10)(0)(err);:";
   TPad * padDeltaP4const = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionDeltaP4Const,keepArray, 1+2+4+8);
   padDeltaP4const->SaveAs("deltaP4TPCConsttoFullConst.png");
+  padDeltaP4const->SaveAs("deltaP4TPCConsttoFullConst.C");
 }
 
 
@@ -671,8 +689,9 @@ void MakeResidualDistortionMaps(){
   hisArray=new TObjArray();
   TList * keys = finput->GetListOfKeys();
   for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){    
-    TObject * o = finput->Get(TString::Format("%s;%d",keys->At(iKey)->GetName(),((TKey*)keys->At(iKey))->GetCycle()).Data());
-    hisArray->AddLast(o);
+    TObject * object = finput->Get(TString::Format("%s;%d",keys->At(iKey)->GetName(),((TKey*)keys->At(iKey))->GetCycle()).Data());
+    THnBase * his  = dynamic_cast<THnBase*>(object);
+    if (his) hisArray->AddLast(his);
   }
   TTreeSRedirector * pcstream = new TTreeSRedirector("residualMap.root","recreate");
   // Residual histogram -> maps creation
@@ -687,14 +706,17 @@ void MakeResidualDistortionMaps(){
   projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;  
   projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;    
   for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
-    Int_t proj[5]={0,1,2,3,4,5};
+    Int_t proj[5]={0,1,2,3,4};
     THn * hisInput=(THn*)hisArray->At(iHis);    
+    if (hisInput->GetNdimensions()<2) continue;
     THnBase *hisProj=0;
+    ::Info("MakeResidualDistortionMaps","%s\t%d\t%d\t%d",hisInput->GetName(),hisInput->GetNdimensions(), hisInput->GetNbins(), Int_t(hisInput->GetEntries()));
     if (regexpHis.Match(TString(hisArray->At(iHis)->GetName())) && regexpK0.Match(TString(hisArray->At(iHis)->GetName()))==0){
       Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
       hisArray->At(iHis)->Print(); 
       TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,fraction);
-      Int_t nDim=hisInput->GetNdim();
+      Int_t nDim=hisInput->GetNdimensions();
+      if (nDim<2) continue;
       hisProj=hisInput->ProjectionND(nDim-1,proj);
       hisProj->SetName(TString::Format("%sProj%d",hisInput->GetName(),nDim).Data());
       TStatToolkit::MakeDistortionMapFast(hisProj,pcstream,projectionInfo,0,fraction);

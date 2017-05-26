@@ -14,5 +14,6 @@
 #pragma link C++ class AliEmcalTriggerSelection+;
 #pragma link C++ class AliEmcalTriggerQATask+;
 #pragma link C++ class AliEMCALTriggerOfflineQAPP+;
+#pragma link C++ class AliEMCALTriggerOfflineLightQAPP+;
 #pragma link C++ class AliEMCALTriggerPatchADCInfoAP+;
 #endif

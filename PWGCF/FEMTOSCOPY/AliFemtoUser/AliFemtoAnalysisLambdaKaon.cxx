@@ -749,6 +749,9 @@ AliFemtoV0TrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateV0Cut(V0CutPar
   tV0Cut->SetMaxDcaV0Daughters(aCutParams.maxDcaV0Daughters);
   tV0Cut->SetMinDaughtersToPrimVertex(aCutParams.minPosDaughterToPrimVertex,aCutParams.minNegDaughterToPrimVertex);
 
+  tV0Cut->SetRadiusV0Min(aCutParams.radiusV0Min);
+  tV0Cut->SetRadiusV0Max(aCutParams.radiusV0Max);
+
   tV0Cut->SetIgnoreOnFlyStatus(aCutParams.ignoreOnFlyStatus);
 
   if(aCutParams.useCustomFilter) AddCustomV0SelectionFilters(aCutParams.particlePDGType,tV0Cut);
@@ -1045,6 +1048,8 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetMinCosPointingAngleXi(aCutParams.minCosPointingAngleXi);
   tXiCut->SetMinCosPointingAngleV0toXi(aCutParams.minCosPointingAngleV0toXi);
   tXiCut->SetMaxDcaXi(aCutParams.maxDcaXi);
+  tXiCut->SetRadiusXiMin(aCutParams.radiusXiMin);
+  tXiCut->SetRadiusXiMax(aCutParams.radiusXiMax);
     //XiDaughters
     tXiCut->SetMaxDcaXiDaughters(aCutParams.maxDcaXiDaughters);
 
@@ -1055,7 +1060,6 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetTPCnclsBac(aCutParams.minTPCnclsBac);
   tXiCut->SetPtBac(aCutParams.minPtBac,aCutParams.maxPtBac);
   tXiCut->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
-
 
   //Lambda cuts (regular V0)
   tXiCut->SetParticleType(aCutParams.v0Type); //0=lambda
@@ -1074,6 +1078,8 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
     tXiCut->SetEtaDaughters(aCutParams.etaV0Daughters);
     tXiCut->SetPtPosDaughter(aCutParams.minPtPosV0Daughter,aCutParams.maxPtPosV0Daughter); //0.5 for protons
     tXiCut->SetPtNegDaughter(aCutParams.minPtNegV0Daughter,aCutParams.maxPtNegV0Daughter); //0.16 for pions
+    tXiCut->SetRadiusV0Min(aCutParams.radiusV0Min);
+    tXiCut->SetRadiusV0Max(aCutParams.radiusV0Max);
     tXiCut->SetTPCnclsDaughters(aCutParams.minTPCnclsV0Daughters);
     tXiCut->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
 
@@ -1703,6 +1709,9 @@ AliFemtoAnalysisLambdaKaon::DefaultLambdaCutParams()
   tReturnParams.minPosDaughterToPrimVertex = 0.1;
   tReturnParams.minNegDaughterToPrimVertex = 0.3;
 
+  tReturnParams.radiusV0Min = 0.0;     //for now, these are default, wide open values
+  tReturnParams.radiusV0Max = 99999.0;
+
   tReturnParams.ignoreOnFlyStatus = false;
 
   return tReturnParams;
@@ -1759,6 +1768,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
   tReturnParams.minPosDaughterToPrimVertex = 0.3;
   tReturnParams.minNegDaughterToPrimVertex = 0.1;
 
+  tReturnParams.radiusV0Min = 0.0;     //for now, these are default, wide open values
+  tReturnParams.radiusV0Max = 99999.0;
+
   tReturnParams.ignoreOnFlyStatus = false;
 
   return tReturnParams;
@@ -1814,6 +1826,9 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.maxDcaV0Daughters = 0.3;
   tReturnParams.minPosDaughterToPrimVertex = 0.3;
   tReturnParams.minNegDaughterToPrimVertex = 0.3;
+
+  tReturnParams.radiusV0Min = 0.0;     //for now, these are default, wide open values
+  tReturnParams.radiusV0Max = 99999.0;
 
   tReturnParams.ignoreOnFlyStatus = false;
 
@@ -1944,6 +1959,9 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
 
+  tReturnParams.radiusXiMin = 0.0;      //for now, these are default, wide open values
+  tReturnParams.radiusXiMax = 99999.0;
+
   tReturnParams.v0Type = 0;
   tReturnParams.minDcaV0 = 0.2;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
@@ -1963,6 +1981,9 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.maxPtPosV0Daughter = 99.;
   tReturnParams.minPtNegV0Daughter = 0.16;
   tReturnParams.maxPtNegV0Daughter = 99.;
+
+  tReturnParams.radiusV0Min = 0.0;     //probably leave wide open values
+  tReturnParams.radiusV0Max = 99999.0;
 
   tReturnParams.minTPCnclsV0Daughters = 70;
 
@@ -2006,6 +2027,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
 
+  tReturnParams.radiusXiMin = 0.0;      //for now, these are default, wide open values
+  tReturnParams.radiusXiMax = 99999.0;
+
   tReturnParams.v0Type = 1;
   tReturnParams.minDcaV0 = 0.2;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
@@ -2025,6 +2049,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.maxPtPosV0Daughter = 99.;
   tReturnParams.minPtNegV0Daughter = 0.3;
   tReturnParams.maxPtNegV0Daughter = 99.;
+
+  tReturnParams.radiusV0Min = 0.0;     //probably leave wide open values
+  tReturnParams.radiusV0Max = 99999.0;
 
   tReturnParams.minTPCnclsV0Daughters = 70;
 

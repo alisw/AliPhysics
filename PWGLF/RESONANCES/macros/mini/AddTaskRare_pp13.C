@@ -597,7 +597,7 @@ Bool_t Config_pik0
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     }else
-   esdTrackCuts->SetMinDCAToVertexXY("0.0"); //Use one of the two - pt dependent or fixed value cut.  0.06
+   esdTrackCuts->SetMinDCAToVertexXY(0.0); //Use one of the two - pt dependent or fixed value cut.  0.06
   
    //
    /////////////////////////////////////////////////

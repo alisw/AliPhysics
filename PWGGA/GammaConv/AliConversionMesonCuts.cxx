@@ -946,13 +946,15 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -2419,26 +2421,25 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fMinOpanPtDepCut  = kFALSE;
       break;
     case 5:      //
-      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 6:      //
-      fMinOpanCutMeson  = 0.016;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 7:      //
-      fMinOpanCutMeson  = 0.018;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 8:      //
-      fMinOpanCutMeson  = 0.019;
-      fMinOpanPtDepCut  = kFALSE;
-      break;
-    case 9:      //
       fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
       fMinOpanPtDepCut  = kFALSE;
       break;
-
+    case 6:      //
+      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 7:      //
+      fMinOpanCutMeson  = 0.016;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 8:      //
+      fMinOpanCutMeson  = 0.018;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 9:      //
+      fMinOpanCutMeson  = 0.019;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //
 //      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal

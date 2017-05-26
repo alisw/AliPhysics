@@ -23,6 +23,7 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
 						      Int_t TPCCrossRow = 80,
 						      Double_t Chi2NDF = 4.,
 						      const char* CentEstimator = "V0M",
+						      Int_t pidstrategy = 0,
 						      Float_t nSigmaITS = 2.,
 						      Float_t nSigmaTPC = 2.,
 						      Float_t nSigmaTOF = 3.,
@@ -83,6 +84,7 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
    
    //--------- PID -----
    task->SetPidType(pidtype);
+   task->SetPidStrategy(pidstrategy);
    task->SetNSigmaMaxITS(nSigmaITS);
    task->SetNSigmaMaxTPC(nSigmaTPC);
    task->SetNSigmaMaxTOF(nSigmaTOF);

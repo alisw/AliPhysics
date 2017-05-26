@@ -27,6 +27,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TProfile.h"
 #include "TMath.h"
 //#include "TGraphErrors.h"
 #include "TList.h"
@@ -94,54 +95,136 @@ Int_t NEvents            = 0;
 ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
-fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0),  cent_ntracks(0),
+fAOD(0), fOutputList(0), fPIDResponse(0),
+
+    fHistPt(0),                 //  1
+    cent_ntracks(0),            //  2
     
-    m_squared_pos(0),       beta_vs_mom_pos(0),        deltat_vs_mom_pos(0),
-    m_squared_neg(0),       beta_vs_mom_neg(0),        deltat_vs_mom_neg(0),
-    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),      //     dedx_mom_m2_pos(0),
-    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),      //     dedx_mom_m2_neg(0),
+    m2_pos(0),                  //  3
+    m2_neg(0),                  //  4
+    beta_p_pos(0),              //  5
+    beta_p_neg(0),              //  6
 
-    m_squared_pos_cut(0),   beta_vs_mom_pos_cut(0),    deltat_vs_mom_pos_cut(0),
-    m_squared_neg_cut(0),   beta_vs_mom_neg_cut(0),    deltat_vs_mom_neg_cut(0),
-    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),  //     dedx_mom_m2_pos_cut(0),
-    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0),   //     dedx_mom_m2_neg_cut(0),
+    deltat_p_pos(0),            //  7
+    deltat_p_neg(0),            //  8
+    dedx_p_pos(0),              //  9
+    dedx_p_neg(0),              // 10
+    dedx_deltat_pos(0),         // 11
+    dedx_deltat_neg(0),         // 12
+    dedx_p_deltat_pos(0),       // 13
+    dedx_p_deltat_neg(0),       // 14
 
-    deut_dphi_T(0), deut_dphi_pos_T(0), deut_dphi_neg_T(0),
-    deut_dphi_A(0), deut_dphi_pos_A(0), deut_dphi_neg_A(0),
-    deut_dphi_B(0), deut_dphi_pos_B(0), deut_dphi_neg_B(0),
+    m2_pos_cut(0),              // 15
+    m2_neg_cut(0),              // 16
+    beta_p_pos_cut(0),          // 17
+    beta_p_neg_cut(0),          // 18
+    deltat_p_pos_cut(0),        // 19
+    deltat_p_neg_cut(0),        // 20
 
-    deuterons_per_event(0), deuterons_per_event_pos(0), deuterons_per_event_neg(0),
+    dedx_p_pos_cut(0),          // 21
+    dedx_p_neg_cut(0),          // 22
+
+    dedx_deltat_pos_cut(0),     // 23
+    dedx_deltat_neg_cut(0),     // 24
+    dedx_p_deltat_pos_cut(0),   // 25
+    dedx_p_deltat_neg_cut(0),   // 26
+
+
+
+
+    deut_dphi_T(0),             // 27
+    deut_dphi_pos_T(0),         // 28
+    deut_dphi_neg_T(0),         // 29
+    deut_dphi_A(0),             // 30
+    deut_dphi_pos_A(0),         // 31
+    deut_dphi_neg_A(0),         // 32
+    deut_dphi_B(0),             // 33
+    deut_dphi_pos_B(0),         // 34
+    deut_dphi_neg_B(0),         // 35
+
+    deut_per_event(0),          // 36
+    deut_per_event_pos(0),      // 37
+    deut_per_event_neg(0),      // 38
     
-    m_squared_pos_cut_T(0), m_squared_pos_cut_A(0), m_squared_pos_cut_B(0),
-    m_squared_neg_cut_T(0), m_squared_neg_cut_A(0), m_squared_neg_cut_B(0)
-  
+    m2_pos_cut_T(0),            // 39
+    m2_pos_cut_A(0),            // 40
+    m2_pos_cut_B(0),            // 41
+    m2_neg_cut_T(0),            // 42
+    m2_neg_cut_A(0),            // 43
+    m2_neg_cut_B(0),            // 44
+
+    dphi_ket_deut_T(0),         // 45
+    dphi_ket_deut_A(0),         // 46
+    dphi_ket_deut_B(0),         // 47
+
+    deltat_channel(0)           // 48
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0),  cent_ntracks(0),
-
-    m_squared_pos(0),       beta_vs_mom_pos(0),        deltat_vs_mom_pos(0),
-    m_squared_neg(0),       beta_vs_mom_neg(0),        deltat_vs_mom_neg(0),
-    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),      //     dedx_mom_m2_pos(0),
-    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),      //     dedx_mom_m2_neg(0),
-
-    m_squared_pos_cut(0),   beta_vs_mom_pos_cut(0),    deltat_vs_mom_pos_cut(0),
-    m_squared_neg_cut(0),   beta_vs_mom_neg_cut(0),    deltat_vs_mom_neg_cut(0),
-    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),  //     dedx_mom_m2_pos_cut(0),
-    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0),   //     dedx_mom_m2_neg_cut(0),
-
-    deut_dphi_T(0), deut_dphi_pos_T(0), deut_dphi_neg_T(0),
-    deut_dphi_A(0), deut_dphi_pos_A(0), deut_dphi_neg_A(0),
-    deut_dphi_B(0), deut_dphi_pos_B(0), deut_dphi_neg_B(0),
-
-    deuterons_per_event(0), deuterons_per_event_pos(0), deuterons_per_event_neg(0),
+fAOD(0), fOutputList(0), fPIDResponse(0),
 									   
-    m_squared_pos_cut_T(0), m_squared_pos_cut_A(0), m_squared_pos_cut_B(0),
-    m_squared_neg_cut_T(0), m_squared_neg_cut_A(0), m_squared_neg_cut_B(0)
+    fHistPt(0),                 //  1
+    cent_ntracks(0),            //  2
     
+    m2_pos(0),                  //  3
+    m2_neg(0),                  //  4
+    beta_p_pos(0),              //  5
+    beta_p_neg(0),              //  6
+
+    deltat_p_pos(0),            //  7
+    deltat_p_neg(0),            //  8
+    dedx_p_pos(0),              //  9
+    dedx_p_neg(0),              // 10
+    dedx_deltat_pos(0),         // 11
+    dedx_deltat_neg(0),         // 12
+    dedx_p_deltat_pos(0),       // 13
+    dedx_p_deltat_neg(0),       // 14
+
+    m2_pos_cut(0),              // 15
+    m2_neg_cut(0),              // 16
+    beta_p_pos_cut(0),          // 17
+    beta_p_neg_cut(0),          // 18
+    deltat_p_pos_cut(0),        // 19
+    deltat_p_neg_cut(0),        // 20
+
+    dedx_p_pos_cut(0),          // 21
+    dedx_p_neg_cut(0),          // 22
+
+    dedx_deltat_pos_cut(0),     // 23
+    dedx_deltat_neg_cut(0),     // 24
+    dedx_p_deltat_pos_cut(0),   // 25
+    dedx_p_deltat_neg_cut(0),   // 26
+
+
+    deut_dphi_T(0),             // 27
+    deut_dphi_pos_T(0),         // 28
+    deut_dphi_neg_T(0),         // 29
+    deut_dphi_A(0),             // 30
+    deut_dphi_pos_A(0),         // 31
+    deut_dphi_neg_A(0),         // 32
+    deut_dphi_B(0),             // 33
+    deut_dphi_pos_B(0),         // 34
+    deut_dphi_neg_B(0),         // 35
+
+    deut_per_event(0),          // 36
+    deut_per_event_pos(0),      // 37
+    deut_per_event_neg(0),      // 38
+    
+    m2_pos_cut_T(0),            // 39
+    m2_pos_cut_A(0),            // 40
+    m2_pos_cut_B(0),            // 41
+    m2_neg_cut_T(0),            // 42
+    m2_neg_cut_A(0),            // 43
+    m2_neg_cut_B(0),            // 44
+
+    dphi_ket_deut_T(0),         // 45
+    dphi_ket_deut_A(0),         // 46
+    dphi_ket_deut_B(0),         // 47
+
+    deltat_channel(0)           // 48
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -197,66 +280,58 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
 
-    fHistPt                 = new TH1F("fHistPt",                   "Pt()",                   1000,     0,     10);
-    cent_ntracks            = new TH2F("cent_vs_ntracks",           "cent_vs_ntracks",         100,     0,    100,     100,      0,    800);
+    fHistPt               = new TH1F("fHistPt",               "Pt()",                 1000,     0,     10);                              //  1
+    cent_ntracks          = new TH2F("cent_ntracks",          "cent_ntracks",          100,     0,    100,     100,       0,     800);   //  2
     
-    m_squared_pos           = new TH2F("m_squared_pos",             "m_squared_pos",           320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_neg           = new TH2F("m_squared_neg",             "m_squared_neg",           320,   0.0,    8.0,    2400,   -1.0,    7.0);
+    m2_pos                = new TH2F("m2_pos",                "m2_pos",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  3
+    m2_neg                = new TH2F("m2_neg",                "m2_neg",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  4
+    beta_p_pos            = new TH2F("beta_p_pos",            "beta_p_pos",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  5
+    beta_p_neg            = new TH2F("beta_p_neg",            "beta_p_neg",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  6
+    deltat_p_pos          = new TH2F("deltat_p_pos",          "deltat_p_pos",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  7
+    deltat_p_neg          = new TH2F("deltat_p_neg",          "deltat_p_neg",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  8
+    dedx_p_pos            = new TH2F("dedx_p_pos",            "dedx_p_pos",            780,   0.2,    8.0,     250,     0.0,   500.0);   //  9
+    dedx_p_neg            = new TH2F("dedx_p_neg",            "dedx_p_neg",            780,   0.2,    8.0,     250,     0.0,   500.0);   // 10
+    dedx_deltat_pos       = new TH2F("dedx_deltat_pos",       "dedx_deltat_pos",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 11
+    dedx_deltat_neg       = new TH2F("dedx_deltat_neg",       "dedx_deltat_neg",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 12
+    dedx_p_deltat_pos     = new TH3F("dedx_p_deltat_pos",     "dedx_p_deltat_pos",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 13 //// (dedx, mom, deltat)
+    dedx_p_deltat_neg     = new TH3F("dedx_p_deltat_neg",     "dedx_p_deltat_neg",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 14 //// (dedx, mom, deltat)
+    m2_pos_cut            = new TH2F("m2_pos_cut",            "m2_pos_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 15
+    m2_neg_cut            = new TH2F("m2_neg_cut",            "m2_neg_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 16
+    beta_p_pos_cut        = new TH2F("beta_p_pos_cut",        "beta_p_pos_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 17
+    beta_p_neg_cut        = new TH2F("beta_p_neg_cut",        "beta_p_neg_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 18
+    deltat_p_pos_cut      = new TH2F("deltat_p_pos_cut",      "deltat_p_pos_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 19
+    deltat_p_neg_cut      = new TH2F("deltat_p_neg_cut",      "deltat_p_neg_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 20
+    dedx_p_pos_cut        = new TH2F("dedx_p_pos_cut",        "dedx_p_pos_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 21
+    dedx_p_neg_cut        = new TH2F("dedx_p_neg_cut",        "dedx_p_neg_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 22
+    dedx_deltat_pos_cut   = new TH2F("dedx_deltat_pos_cut",   "dedx_deltat_pos_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 23
+    dedx_deltat_neg_cut   = new TH2F("dedx_deltat_neg_cut",   "dedx_deltat_neg_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 24
+    dedx_p_deltat_pos_cut = new TH3F("dedx_p_deltat_pos_cut", "dedx_p_deltat_pos_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 25 //// (dedx, mom, deltat)
+    dedx_p_deltat_neg_cut = new TH3F("dedx_p_deltat_neg_cut", "dedx_p_deltat_neg_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 26 //// (dedx, mom, deltat)
 
-    m_squared_pos_cut_T     = new TH2F("m_squared_pos_cut_T",       "m_squared_pos_cut_T",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_pos_cut_A     = new TH2F("m_squared_pos_cut_A",       "m_squared_pos_cut_A",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_pos_cut_B     = new TH2F("m_squared_pos_cut_B",       "m_squared_pos_cut_B",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
+    deut_dphi_T           = new TH2F("deut_dphi_T",           "deut_dphi_T",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 27
+    deut_dphi_pos_T       = new TH2F("deut_dphi_pos_T",       "deut_dphi_pos_T",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 28
+    deut_dphi_neg_T       = new TH2F("deut_dphi_neg_T",       "deut_dphi_neg_T",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 29    
+    deut_dphi_A           = new TH2F("deut_dphi_A",           "deut_dphi_A",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 30
+    deut_dphi_pos_A       = new TH2F("deut_dphi_pos_A",       "deut_dphi_pos_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 31
+    deut_dphi_neg_A       = new TH2F("deut_dphi_neg_A",       "deut_dphi_neg_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 32    
+    deut_dphi_B           = new TH2F("deut_dphi_B",           "deut_dphi_B",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 33
+    deut_dphi_pos_B       = new TH2F("deut_dphi_pos_B",       "deut_dphi_pos_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 34
+    deut_dphi_neg_B       = new TH2F("deut_dphi_neg_B",       "deut_dphi_neg_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 35
+    deut_per_event        = new TH1I("deut_per_event",        "deut_per_event",          5,     0,     5);                               // 36
+    deut_per_event_pos    = new TH1I("deut_per_event_pos",    "deut_per_event_pos",      5,     0,     5);                               // 37
+    deut_per_event_neg    = new TH1I("deut_per_event_neg",    "deut_per_event_neg",      5,     0,     5);                               // 38
+    m2_pos_cut_T          = new TH2F("m2_pos_cut_T",          "m2_pos_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 39
+    m2_pos_cut_A          = new TH2F("m2_pos_cut_A",          "m2_pos_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 40
+    m2_pos_cut_B          = new TH2F("m2_pos_cut_B",          "m2_pos_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 41
+    m2_neg_cut_T          = new TH2F("m2_neg_cut_T",          "m2_neg_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 42
+    m2_neg_cut_A          = new TH2F("m2_neg_cut_A",          "m2_neg_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 43
+    m2_neg_cut_B          = new TH2F("m2_neg_cut_B",          "m2_neg_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 44
+    dphi_ket_deut_T       = new TH2F("dphi_ket_deut_T",       "dphi_ket_deut_T",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 45 // dphi, ket
+    dphi_ket_deut_A       = new TH2F("dphi_ket_deut_A",       "dphi_ket_deut_A",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 46 // dphi, ket
+    dphi_ket_deut_B       = new TH2F("dphi_ket_deut_B",       "dphi_ket_deut_B",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 47 // dphi, ket
 
-    m_squared_neg_cut_T     = new TH2F("m_squared_neg_cut_T",       "m_squared_neg_cut_T",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_neg_cut_A     = new TH2F("m_squared_neg_cut_A",       "m_squared_neg_cut_A",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_neg_cut_B     = new TH2F("m_squared_neg_cut_B",       "m_squared_neg_cut_B",     320,   0.0,    8.0,    2400,   -1.0,    7.0);
-  
-    beta_vs_mom_pos         = new TH2F("beta_vs_mom_pos",           "beta_vs_mom_pos",         780,   0.0,    8.0,    3000,    0.1,    1.1);
-    beta_vs_mom_neg         = new TH2F("beta_vs_mom_neg",           "beta_vs_mom_neg",         780,   0.0,    8.0,    3000,    0.1,    1.1);
-    deltat_vs_mom_pos       = new TH2F("deltat_vs_mom_pos",         "deltat_vs_mom_pos",     27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-    deltat_vs_mom_neg       = new TH2F("deltat_vs_mom_neg",         "deltat_vs_mom_neg",     27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-
-    dedx_vs_mom_pos         = new TH2F("dedx_vs_mom_pos",           "dedx_vs_mom_pos",         780,   0.2,    8.0,     250,    0.0,  500.0);
-    dedx_vs_mom_neg         = new TH2F("dedx_vs_mom_neg",           "dedx_vs_mom_neg",         780,   0.2,    8.0,     250,    0.0,  500.0);
-    dedx_vs_deltat_pos      = new TH2F("dedx_vs_deltat_pos",        "dedx_vs_deltat_pos",     2100,  -1.0,   20.0,     250,    0.0,  500.0);
-    dedx_vs_deltat_neg      = new TH2F("dedx_vs_deltat_neg",        "dedx_vs_deltat_neg",     2100,  -1.0,   20.0,     250,    0.0,  500.0);
-    dedx_mom_deltat_pos     = new TH3F("dedx_mom_deltat_pos",       "dedx_mom_deltat_pos",     250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
-    dedx_mom_deltat_neg     = new TH3F("dedx_mom_deltat_neg",       "dedx_mom_deltat_neg",     250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
-
-
-
-    deut_dphi_T             = new TH2F("deut_dphi_T",               "deut_dphi_T",            14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_A             = new TH2F("deut_dphi_A",               "deut_dphi_A",            14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_B             = new TH2F("deut_dphi_B",               "deut_dphi_B",            14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_pos_T         = new TH2F("deut_dphi_pos_T",           "deut_dphi_pos_T",        14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_pos_A         = new TH2F("deut_dphi_pos_A",           "deut_dphi_pos_A",        14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_pos_B         = new TH2F("deut_dphi_pos_B",           "deut_dphi_pos_B",        14,   1.0,   4.5, 300, -1.6708,  4.8124); 
-    deut_dphi_neg_T         = new TH2F("deut_dphi_neg_T",           "deut_dphi_neg_T",        14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_neg_A         = new TH2F("deut_dphi_neg_A",           "deut_dphi_neg_A",        14,   1.0,   4.5, 300, -1.6708,  4.8124);
-    deut_dphi_neg_B         = new TH2F("deut_dphi_neg_B",           "deut_dphi_neg_B",        14,   1.0,   4.5, 300, -1.6708,  4.8124);
-
-    deuterons_per_event     = new TH1I("deuterons_per_event",       "deuterons_per_event",     5,     0,     5);
-    deuterons_per_event_pos = new TH1I("deuterons_per_event_pos",   "deuterons_per_event_pos", 5,     0,     5);
-    deuterons_per_event_neg = new TH1I("deuterons_per_event_neg",   "deuterons_per_event_neg", 5,     0,     5);
-
+    deltat_channel        = new TProfile("deltat_channel",    "deltat_channel",       4800,     0,   4800,    -0.6,     0.6);            // 48 // tof channel and deltat
     
-    m_squared_pos_cut       = new TH2F("m_squared_pos_cut",         "m_squared_pos_cut",       320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    m_squared_neg_cut       = new TH2F("m_squared_neg_cut",         "m_squared_neg_cut",       320,   0.0,    8.0,    2400,   -1.0,    7.0);
-    beta_vs_mom_pos_cut     = new TH2F("beta_vs_mom_pos_cut",       "beta_vs_mom_pos_cut",     780,   0.0,    8.0,    3000,    0.1,    1.1);
-    beta_vs_mom_neg_cut     = new TH2F("beta_vs_mom_neg_cut",       "beta_vs_mom_neg_cut",     780,   0.0,    8.0,    3000,    0.1,    1.1);
-    deltat_vs_mom_pos_cut   = new TH2F("deltat_vs_mom_pos_cut",     "deltat_vs_mom_pos_cut", 27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-    deltat_vs_mom_neg_cut   = new TH2F("deltat_vs_mom_neg_cut",     "deltat_vs_mom_neg_cut", 27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-
-    dedx_vs_mom_pos_cut     = new TH2F("dedx_vs_mom_pos_cut",       "dedx_vs_mom_pos_cut",     780,   0.2,    8.0,     250,    0.0,  500.0);
-    dedx_vs_mom_neg_cut     = new TH2F("dedx_vs_mom_neg_cut",       "dedx_vs_mom_neg_cut",     780,   0.2,    8.0,     250,    0.0,  500.0);
-    dedx_vs_deltat_pos_cut  = new TH2F("dedx_vs_deltat_pos_cut",    "dedx_vs_deltat_pos_cut", 2100,  -1.0,   20.0,     250,    0.0,  500.0);
-    dedx_vs_deltat_neg_cut  = new TH2F("dedx_vs_deltat_neg_cut",    "dedx_vs_deltat_neg_cut", 2100,  -1.0,   20.0,     250,    0.0,  500.0);
-    dedx_mom_deltat_pos_cut = new TH3F("dedx_mom_deltat_pos_cut",   "dedx_mom_deltat_pos_cut", 250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
-    dedx_mom_deltat_neg_cut = new TH3F("dedx_mom_deltat_neg_cut",   "dedx_mom_deltat_neg_cut", 250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
-
-    dphi_ket_deut_T           = new TH2F("dphi_ket_deut_T",   "dphi_ket_deut_T",           46, 0.445, 2.745,   60, -1.6708, 4.8124);  // dphi, ket
-    dphi_ket_deut_A           = new TH2F("dphi_ket_deut_A",   "dphi_ket_deut_A",           46, 0.445, 2.745,   60, -1.6708, 4.8124);  // dphi, ket
-    dphi_ket_deut_B           = new TH2F("dphi_ket_deut_B",   "dphi_ket_deut_B",           46, 0.445, 2.745,   60, -1.6708, 4.8124);  // dphi, ket
 //    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
 //    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
 //    alpha                   = new TH1F("alpha",                     "alpha",                  1000,     0,    4.0);
@@ -267,70 +342,59 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
 
     
-//    fOutputList->Add(generic);
-//    fOutputList->Add(dca);
-//    fOutputList->Add(alpha);
-//    fOutputList->Add(theta);
-//    fOutputList->Add(path_length);
-//    fOutputList->Add(ttof);
-
-
     
-    fOutputList->Add(fHistPt);                                                                      // objects added to output file
-    fOutputList->Add(cent_ntracks);
-
-    fOutputList->Add(dphi_ket_deut_T);
-    fOutputList->Add(dphi_ket_deut_A);
-    fOutputList->Add(dphi_ket_deut_B);
+    fOutputList->Add(fHistPt);                //  1                                                             // objects added to output file
+    fOutputList->Add(cent_ntracks);           //  2
     
-    fOutputList->Add(m_squared_pos);
-    fOutputList->Add(m_squared_pos_cut);    
-    fOutputList->Add(m_squared_neg);
-    fOutputList->Add(m_squared_neg_cut);    
-    fOutputList->Add(beta_vs_mom_pos);
-    fOutputList->Add(beta_vs_mom_pos_cut);    
-    fOutputList->Add(beta_vs_mom_neg);
-    fOutputList->Add(beta_vs_mom_neg_cut);    
-    fOutputList->Add(deltat_vs_mom_pos);
-    fOutputList->Add(deltat_vs_mom_pos_cut);    
-    fOutputList->Add(deltat_vs_mom_neg);
-    fOutputList->Add(deltat_vs_mom_neg_cut);
-
-    fOutputList->Add(m_squared_pos_cut_T);
-    fOutputList->Add(m_squared_pos_cut_A);
-    fOutputList->Add(m_squared_pos_cut_B);	
-    fOutputList->Add(m_squared_neg_cut_T);
-    fOutputList->Add(m_squared_neg_cut_A);
-    fOutputList->Add(m_squared_neg_cut_B);    
-
-    fOutputList->Add(deuterons_per_event);
-    fOutputList->Add(deuterons_per_event_pos);
-    fOutputList->Add(deuterons_per_event_neg);
-
-    fOutputList->Add(dedx_vs_mom_pos);
-    fOutputList->Add(dedx_vs_mom_pos_cut);
-    fOutputList->Add(dedx_vs_mom_neg);
-    fOutputList->Add(dedx_vs_mom_neg_cut);    
-    fOutputList->Add(dedx_vs_deltat_pos);
-    fOutputList->Add(dedx_vs_deltat_pos_cut);    
-    fOutputList->Add(dedx_vs_deltat_neg);
-    fOutputList->Add(dedx_vs_deltat_neg_cut);    
-    fOutputList->Add(dedx_mom_deltat_pos);
-    fOutputList->Add(dedx_mom_deltat_pos_cut);    
-    fOutputList->Add(dedx_mom_deltat_neg);
-    fOutputList->Add(dedx_mom_deltat_neg_cut);
-
-    fOutputList->Add(deut_dphi_T);
-    fOutputList->Add(deut_dphi_A);
-    fOutputList->Add(deut_dphi_B);
-    fOutputList->Add(deut_dphi_pos_T);
-    fOutputList->Add(deut_dphi_pos_A);
-    fOutputList->Add(deut_dphi_pos_B);
-    fOutputList->Add(deut_dphi_neg_T);
-    fOutputList->Add(deut_dphi_neg_A);
-    fOutputList->Add(deut_dphi_neg_B);
-
-
+    fOutputList->Add(m2_pos);                 //  3
+    fOutputList->Add(m2_neg);                 //  4 
+    fOutputList->Add(beta_p_pos);             //  5
+    fOutputList->Add(beta_p_neg);             //  6
+    fOutputList->Add(deltat_p_pos);           //  7
+    fOutputList->Add(deltat_p_neg);           //  8
+    fOutputList->Add(dedx_p_pos);             //  9
+    fOutputList->Add(dedx_p_neg);             // 10
+    fOutputList->Add(dedx_deltat_pos);        // 11
+    fOutputList->Add(dedx_deltat_neg);        // 12
+    fOutputList->Add(dedx_p_deltat_pos);      // 13
+    fOutputList->Add(dedx_p_deltat_neg);      // 14
+    
+    fOutputList->Add(m2_pos_cut);             // 15
+    fOutputList->Add(m2_neg_cut);             // 16
+    fOutputList->Add(beta_p_pos_cut);         // 17
+    fOutputList->Add(beta_p_neg_cut);         // 18
+    fOutputList->Add(deltat_p_pos_cut);       // 19
+    fOutputList->Add(deltat_p_neg_cut);       // 20
+    fOutputList->Add(dedx_p_pos_cut);         // 21
+    fOutputList->Add(dedx_p_neg_cut);         // 22
+    fOutputList->Add(dedx_deltat_pos_cut);    // 23   
+    fOutputList->Add(dedx_deltat_neg_cut);    // 24
+    fOutputList->Add(dedx_p_deltat_pos_cut);  // 25  
+    fOutputList->Add(dedx_p_deltat_neg_cut);  // 26
+    fOutputList->Add(deut_dphi_T);            // 27
+    fOutputList->Add(deut_dphi_pos_T);        // 28
+    fOutputList->Add(deut_dphi_neg_T);        // 29
+    fOutputList->Add(deut_dphi_A);            // 30
+    fOutputList->Add(deut_dphi_pos_A);        // 31
+    fOutputList->Add(deut_dphi_neg_A);        // 32
+    fOutputList->Add(deut_dphi_B);            // 33
+    fOutputList->Add(deut_dphi_pos_B);        // 34
+    fOutputList->Add(deut_dphi_neg_B);        // 35
+    fOutputList->Add(deut_per_event);         // 36
+    fOutputList->Add(deut_per_event_pos);     // 37
+    fOutputList->Add(deut_per_event_neg);     // 38
+    fOutputList->Add(m2_pos_cut_T);           // 39
+    fOutputList->Add(m2_pos_cut_A);           // 40
+    fOutputList->Add(m2_pos_cut_B);	      // 41
+    fOutputList->Add(m2_neg_cut_T);           // 42
+    fOutputList->Add(m2_neg_cut_A);           // 43
+    fOutputList->Add(m2_neg_cut_B);           // 44
+    fOutputList->Add(dphi_ket_deut_T);        // 45
+    fOutputList->Add(dphi_ket_deut_A);        // 46
+    fOutputList->Add(dphi_ket_deut_B);        // 47
+    
+    fOutputList->Add(deltat_channel);         // 48
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -372,9 +436,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
     
-    int NDeuterons           = 0;
-    int NDeuterons_pos       = 0;
-    int NDeuterons_neg       = 0;
+    int NDeut           = 0;
+    int NDeut_pos       = 0;
+    int NDeut_neg       = 0;
     int deut_flag_T          = 0;
     int deut_flag_A          = 0;
     int deut_flag_B          = 0;
@@ -523,20 +587,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	// markc
 	if(isModGlobal == 1)
 	{
-	    Double_t m2tof          = get_mass_squared(track);
-
-	    if(fabs(pt-1.0) < 0.01)
-	    {
-		Double_t track_theta    = 0.0;
-		track_theta             = track->Theta();
-//		theta->Fill(track_theta);
-		Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
-		Double_t length         = 0.0;
-		length                  = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
-		length                  = length * 100;                                                                 // convert mm to c
-	    }
-	    
-//	    Float_t mom_tpc = track->GetTPCmomentum();
+	    Double_t m2tof = get_mass_squared(track);
 	    Float_t dedx   = track->GetTPCsignal();
 	    Float_t deltat = tof_minus_tpion(track);
 
@@ -568,13 +619,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	    if(charge > 0)
 	    {
-		m_squared_pos->Fill(      pt, m2tof);
-		beta_vs_mom_pos->Fill(   mom, Beta(track));
-		dedx_vs_mom_pos->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_vs_deltat_pos->Fill(deltat, dedx);
-		dedx_mom_deltat_pos->Fill(dedx, mom, deltat);
-//		dedx_mom_m2_pos->Fill(dedx, mom, m2tof);
-		deltat_vs_mom_pos->Fill(  pt, deltat);
+		m2_pos->Fill(        pt, m2tof);
+		beta_p_pos->Fill(   mom, Beta(track));
+		dedx_p_pos->Fill(   mom, dedx);
+		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos->Fill(deltat, dedx);
+		dedx_p_deltat_pos->Fill(dedx, mom, deltat);
+//		dedx_p_m2_pos->Fill(dedx, mom, m2tof);
+		deltat_p_pos->Fill(  pt, deltat);
 
 		
 		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
@@ -588,15 +639,32 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{
-			    m_squared_pos_cut->Fill(      pt, m2tof);
-			    beta_vs_mom_pos_cut->Fill(   mom, Beta(track));
-			    deltat_vs_mom_pos_cut->Fill(  pt, deltat);
-			    dedx_vs_mom_pos_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_vs_deltat_pos_cut->Fill(deltat, dedx);
-			    dedx_mom_deltat_pos_cut->Fill(dedx, mom, deltat);
-//			    dedx_mom_m2_pos_cut->Fill(dedx, mom, m2tof);
+			    m2_pos_cut->Fill(        pt, m2tof);
+			    beta_p_pos_cut->Fill(   mom, Beta(track));
+			    deltat_p_pos_cut->Fill(  pt, deltat);
+			    dedx_p_pos_cut->Fill(   mom, dedx);
+			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos_cut->Fill(deltat, dedx);
+			    dedx_p_deltat_pos_cut->Fill(dedx, mom, deltat);
+//			    dedx_p_m2_pos_cut->Fill(dedx, mom, m2tof);
 			}
 		    }
+
+		    Int_t channel           = 0;
+		    channel                 = fPIDResponse->GetTOFResponse().GetTOFchannel(track);
+//		    Double_t xy_length      = 0.00;
+//		    xy_length               = length * TMath::Sin(track_theta);
+
+		    if(channel > -1  &&  channel < 4801)
+		    {
+			if(pt >= 0.995  &&  pt < 1.005)
+			{
+			    if(deltat >= -0.6  &&  deltat < 0.6)
+			    {
+				deltat_channel->Fill(channel, deltat);
+			    }
+			}
+		    }
+
 		    
 		    if(mom >= 1.5  &&  mom < 4.4)
 		    {
@@ -607,22 +675,22 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 			{
-			    m_squared_pos_cut_T->Fill(mom,m2tof);
+			    m2_pos_cut_T->Fill(mom,m2tof);
 			    deut_track_num_T = i;
 			    // deut_track_num_pos_T = i;
-			    NDeuterons++;
-			    NDeuterons_pos++;
+			    NDeut++;
+			    NDeut_pos++;
 			    deut_flag_T = 1;
 			}
 			else if(m2tof < deut_mean -1 + cut_width * deut_sigma  &&   m2tof > deut_mean -1 - cut_width * deut_sigma)
 			{
-			    m_squared_pos_cut_A->Fill(mom,m2tof);
+			    m2_pos_cut_A->Fill(mom,m2tof);
 			    deut_flag_A = 1;
 			    deut_track_num_A = i;
 			}
 			else if(m2tof < deut_mean +1 + cut_width * deut_sigma  &&   m2tof > deut_mean +1 - cut_width * deut_sigma)
 			{
-			    m_squared_pos_cut_B->Fill(mom,m2tof);
+			    m2_pos_cut_B->Fill(mom,m2tof);
 			    deut_flag_B = 1;
 			    deut_track_num_B = i;
 			}		    
@@ -636,13 +704,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	    else if(charge < 0)
 	    {
-		m_squared_neg->Fill(      pt,m2tof);
-		beta_vs_mom_neg->Fill(   mom, Beta(track));
-		dedx_vs_mom_neg->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_vs_deltat_neg->Fill(deltat, dedx);
-		dedx_mom_deltat_neg->Fill(dedx, mom, deltat);
-//		dedx_mom_m2_neg->Fill(dedx, mom, m2tof);
-		deltat_vs_mom_neg->Fill(  pt, deltat);
+		m2_neg->Fill(      pt,m2tof);
+		beta_p_neg->Fill(   mom, Beta(track));
+		dedx_p_neg->Fill(   mom, dedx);
+		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg->Fill(deltat, dedx);
+		dedx_p_deltat_neg->Fill(dedx, mom, deltat);
+//		dedx_p_m2_neg->Fill(dedx, mom, m2tof);
+		deltat_p_neg->Fill(  pt, deltat);
 
 		
 		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
@@ -656,12 +724,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{	
-			    m_squared_neg_cut->Fill(      pt, m2tof);
-			    beta_vs_mom_neg_cut->Fill(   mom, Beta(track));
-			    deltat_vs_mom_neg_cut->Fill(  pt, deltat);
-			    dedx_vs_mom_neg_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_vs_deltat_neg_cut->Fill(deltat, dedx);
-			    dedx_mom_deltat_neg_cut->Fill(dedx, mom, deltat);
+			    m2_neg_cut->Fill(      pt, m2tof);
+			    beta_p_neg_cut->Fill(   mom, Beta(track));
+			    deltat_p_neg_cut->Fill(  pt, deltat);
+			    dedx_p_neg_cut->Fill(   mom, dedx);
+			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg_cut->Fill(deltat, dedx);
+			    dedx_p_deltat_neg_cut->Fill(dedx, mom, deltat);
 			}
 		    }
 
@@ -674,22 +742,22 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 			{
-			    m_squared_neg_cut_T->Fill(mom,m2tof);
+			    m2_neg_cut_T->Fill(mom,m2tof);
 			    deut_track_num_T = i;
 			    // deut_track_num_neg_T = i;
-			    NDeuterons++;
-			    NDeuterons_neg++;
+			    NDeut++;
+			    NDeut_neg++;
 			    deut_flag_T = 1;
 			}
 			else if(m2tof < deut_mean -1 + cut_width * deut_sigma  &&   m2tof > deut_mean -1 - cut_width * deut_sigma)
 			{
-			    m_squared_neg_cut_A->Fill(mom,m2tof);
+			    m2_neg_cut_A->Fill(mom,m2tof);
 			    deut_flag_A = 1;
 			    deut_track_num_A = i;
 			}
 			else if(m2tof < deut_mean +1 + cut_width * deut_sigma  &&   m2tof > deut_mean +1 - cut_width * deut_sigma)
 			{
-			    m_squared_neg_cut_B->Fill(mom,m2tof);
+			    m2_neg_cut_B->Fill(mom,m2tof);
 			    deut_flag_B = 1;
 			    deut_track_num_B = i;
 			}		    
@@ -702,9 +770,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     }        //   end of track loop
 
 
-    deuterons_per_event->Fill(NDeuterons);
-    deuterons_per_event_pos->Fill(NDeuterons_pos);
-    deuterons_per_event_neg->Fill(NDeuterons_neg);
+    deut_per_event->Fill(NDeut);
+    deut_per_event_pos->Fill(NDeut_pos);
+    deut_per_event_neg->Fill(NDeut_neg);
 
     if(deut_flag_T > 0)
     {
@@ -1062,7 +1130,7 @@ void AliAnalysisTaskCorPIDTOFQA::Terminate(Option_t *)
     cout<<"total number of events analyzed:   "<<NEvents<<endl;
 //    cout<<"total number of tracks analyzed:   "<<NTracks<<endl;
 //    cout<<"total number of good tracks:       "<<NGoodTracks<<endl;
-//    cout<<"tracks from events with deuterons: "<<NAssociatedTracks<<endl;
+//    cout<<"tracks from events with deut: "<<NAssociatedTracks<<endl;
     cout<<endl<<endl;
 }
 //_____________________________________________________________________________
@@ -1114,11 +1182,11 @@ Double_t AliAnalysisTaskCorPIDTOFQA::get_mass_squared(AliAODTrack *track)
     Double_t length         = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
     length                  = length * 100;                                                                 // convert to cm
     Double_t mom            = track->P();
-    Double_t m_squared      = 0.0;
+    Double_t m2      = 0.0;
 
     Double_t c2 = 29.9792458;
     
-    m_squared = pow(mom,2) * (tof*tof * c2 * c2 / (length * length) - 1);
-    return m_squared;
+    m2 = pow(mom,2) * (tof*tof * c2 * c2 / (length * length) - 1);
+    return m2;
 
 }

@@ -880,6 +880,7 @@ public:
   
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -1237,6 +1238,7 @@ private:
   Double_t fNumberOfRPsEBE; // # of Reference Particles
   Double_t fNumberOfPOIsEBE; // # of Particles of Interest
   Double_t fReferenceMultiplicityEBE; // reference multiplicity
+  Double_t fReferenceMultiplicityRecEBE; // reference multiplicity - <reference multiplicity>
   Double_t fCentralityEBE; // centrality percentile
   Double_t fNewCentralityEBE; // new centrality percentile
   Double_t fNewMetricLEBE; // new metric L
@@ -1582,6 +1584,9 @@ private:
   TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
   TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
   TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile2D *fhAvQMCRbR; //!
+  TProfile2D *fhAvQMARbR; //!
+  TProfile *fhAvAbsOrbit; //!
   TProfile3D *fCRCTPCQVecCenEtaRefMulTot[2][4]; //!
   TProfile2D *fCRCTPCQVecCenRefMulTotCheck[2][4]; //!
   
@@ -1592,10 +1597,13 @@ private:
   TH1D *fZDCVtxFitCenProjHist[4][3]; //!
   TH3D *fZDCVtxFitHist2[4]; //!
   TH1D *fZDCVtxFitCenProjHist2[4][3]; //!
-  TH3D *fZDCBinsRunVtx[10][4]; //!
-  TH1D *fZDCBinsRunVtxProjHist[10][4][3]; //!
   TH3D *fZDCBinsCenRefMult[10]; //!
-  TH2D *fZDCBinsCenRefMultFine[4]; //!
+  TProfile2D *fZDCBinsCenRefMultRbR[4]; //!
+  TProfile2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile *fZDCBinsCenRefMultRbRProf[10][4]; //!
+  TProfile *fZDCBinsCenRefMultTotProf[10][4]; //!
+  TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
+  TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1622,6 +1630,9 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
 //  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  const static Int_t fknRefMulCl = 6;
+  TProfile3D *fCRCZDCQVecVtxPosRefMul[fknRefMulCl][fkCRCnCQVecVtxPos]; //!
+  TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
@@ -1908,6 +1919,7 @@ private:
   TH1D *fEventCounter; //! Event counter for different methods
   TH2F *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
+  TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
   TH2D* fPhiExclZoneHist; //!
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
@@ -1931,6 +1943,7 @@ private:
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
   TH1F* fMultCutAv; //!
+  TH1F* fRMSRefMulCenBins[10]; //!
   TH1F* fEZNCutMin; //!
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
@@ -1960,7 +1973,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,53);
+  ClassDef(AliFlowAnalysisCRC,55);
   
 };
 

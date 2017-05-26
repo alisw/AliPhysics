@@ -88,6 +88,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialTrigger(0),
   fSpecialSubTrigger(0),
   fRemovePileUp(kFALSE),
+  fPastFutureRejectionLow(0),
+  fPastFutureRejectionHigh(0),
   fRejectExtraSignals(0),
   fOfflineTriggerMask(0),
   fHasV0AND(kTRUE),
@@ -117,6 +119,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameFitDataEta(""),
   fNameFitDataK0s(""),
   fHistoEventCuts(NULL),
+  fHistoPastFutureBits(NULL),
   hCentrality(NULL),
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
@@ -195,6 +198,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialTrigger(ref.fSpecialTrigger),
   fSpecialSubTrigger(ref.fSpecialSubTrigger),
   fRemovePileUp(ref.fRemovePileUp),
+  fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
+  fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fRejectExtraSignals(ref.fRejectExtraSignals),
   fOfflineTriggerMask(ref.fOfflineTriggerMask),
   fHasV0AND(ref.fHasV0AND),
@@ -224,6 +229,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameFitDataEta(ref.fNameFitDataEta),
   fNameFitDataK0s(ref.fNameFitDataK0s),
   fHistoEventCuts(NULL),
+  fHistoPastFutureBits(NULL),
   hCentrality(ref.hCentrality),
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
@@ -385,18 +391,20 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
     fHistograms->Add(hEventPlaneAngle);
   }
-
+  fHistoPastFutureBits=new TH1F(Form("PastFutureBits %s",GetCutNumber().Data()),"Past Future Bits",180,-90*25,90*25);
+  fHistograms->Add(fHistoPastFutureBits);
 
   // Event Cuts and Info
   if(preCut){
-    fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
+    fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",8,-0.5,7.5);
     fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
     fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
     fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
     fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
     fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
-    fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
+    fHistoEventCuts->GetXaxis()->SetBinLabel(7,"OOB-pileup");
+    fHistoEventCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoEventCuts);
 
     hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
@@ -640,6 +648,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   }
   cutindex++;
 
+  if(fRemovePileUp && IsOutOfBunchPileupPastFuture(fInputEvent)){
+    if(fHistoEventCuts) fHistoEventCuts->Fill(cutindex);
+    fEventQuality = 12;
+    return kFALSE;
+  }
+  cutindex++;
   // Fill Event Histograms
   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
   if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
@@ -815,16 +829,18 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
   if (fV0ReaderName.CompareTo("") == 0){
     fV0ReaderName = "V0ReaderV1";
   }
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -1549,10 +1565,30 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
 {// Set Cut
   switch(removePileUp){
   case 0:
-    fRemovePileUp=kFALSE;
+    fRemovePileUp           = kFALSE;
     break;
   case 1:
-    fRemovePileUp=kTRUE;
+    fRemovePileUp           = kTRUE;
+    break;
+  case 2:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow =-89;
+    fPastFutureRejectionHigh= 89;
+    break;
+  case 3:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -4;
+    fPastFutureRejectionHigh=  7;
+    break;
+  case 4:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -10;
+    fPastFutureRejectionHigh=  13;
+    break;
+  case 5:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow = -40;
+    fPastFutureRejectionHigh=  43;
     break;
   default:
     AliError("RemovePileUpCut not defined");
@@ -1891,6 +1927,36 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
   }
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *InputEvent)
+{
+  TBits fIR1 =  InputEvent->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
+  TBits fIR2 =  InputEvent->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information
+  UShort_t bunchCrossings = InputEvent->GetBunchCrossNumber();
+
+  if(fHistoPastFutureBits){
+    for(Int_t i = 0; i<180;i++){
+      if(fIR1.TestBitNumber(i))
+        fHistoPastFutureBits->Fill((i*25)-90*25);
+    }
+  }
+
+  Bool_t isOutOfBunchPileup = 0;
+  Int_t pf1 = fPastFutureRejectionLow +bunchCrossings%4;
+  Int_t pf2 = fPastFutureRejectionHigh+bunchCrossings%4;
+  if(pf1 < -89) pf1 = -89;
+  if(pf2 > 89)  pf2 =  89;
+  Int_t pf2maxForT0 = pf2;
+  Int_t ir1skip     = 0;
+  for (Int_t i=pf1;i<=pf2;i++) {
+    if (i==0) continue;
+    if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up 
+    if (i>0 && i<=ir1skip) continue; // skip next 2 for old IR definitions
+    isOutOfBunchPileup|=fIR1.TestBitNumber(90+i); // V0-based clean-up
+  }
+  return isOutOfBunchPileup;
 }
 
 //________________________________________________________________________
@@ -3280,6 +3346,10 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
     }  
   }
+  if(GetPastFutureLowBC()!=0 && GetPastFutureHighBC()!=0 ){
+    if(IsOutOfBunchPileupPastFuture(InputEvent))
+      return 12;
+  }
 
   if( isHeavyIon != 2 && GetIsFromPileup()){
     if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
@@ -4333,6 +4403,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16k3a2") == 0){
     fPeriodEnum = kLHC16k3a2;
     fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC17e2") == 0){
+    fPeriodEnum = kLHC17e2;
+    fEnergyEnum = k5TeV;
   } else if (periodName.Contains("LHC15k1a1")){
     fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
@@ -4394,7 +4467,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16j2b2") == 0){
     fPeriodEnum = kLHC16j2b2;
     fEnergyEnum = k13TeV;
-  // LHC17x anchored MCs
+  // LHC16qt anchored MCs
   } else if (periodName.CompareTo("LHC17a2a") == 0){
     fPeriodEnum = kLHC17a2a;
     fEnergyEnum = kpPb5TeV;
@@ -4419,6 +4492,128 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17a2b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a2b_cent_woSDD;
     fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a") == 0){
+    fPeriodEnum = kLHC17f2a;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_fast") == 0){
+    fPeriodEnum = kLHC17f2a_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_cent") == 0){
+    fPeriodEnum = kLHC17f2a_cent;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f2a_cent_woSDD;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b") == 0){
+    fPeriodEnum = kLHC17f2b;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_fast") == 0){
+    fPeriodEnum = kLHC17f2b_fast;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_cent") == 0){
+    fPeriodEnum = kLHC17f2b_cent;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC17f2b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f2b_cent_woSDD;
+    fEnergyEnum = kpPb5TeV;
+  // LHC16r anchored MCs
+  } else if (periodName.CompareTo("LHC17a3a") == 0){
+    fPeriodEnum = kLHC17a3a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_fast") == 0){
+    fPeriodEnum = kLHC17a3a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_cent") == 0){
+    fPeriodEnum = kLHC17a3a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a3a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b") == 0){
+    fPeriodEnum = kLHC17a3b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_fast") == 0){
+    fPeriodEnum = kLHC17a3b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_cent") == 0){
+    fPeriodEnum = kLHC17a3b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a3b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a3b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a") == 0){
+    fPeriodEnum = kLHC17f3a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_fast") == 0){
+    fPeriodEnum = kLHC17f3a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_cent") == 0){
+    fPeriodEnum = kLHC17f3a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f3a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b") == 0){
+    fPeriodEnum = kLHC17f3b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_fast") == 0){
+    fPeriodEnum = kLHC17f3b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_cent") == 0){
+    fPeriodEnum = kLHC17f3b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f3b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f3b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  // LHC16s anchored MCs
+  } else if (periodName.CompareTo("LHC17a4a") == 0){
+    fPeriodEnum = kLHC17a4a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_fast") == 0){
+    fPeriodEnum = kLHC17a4a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_cent") == 0){
+    fPeriodEnum = kLHC17a4a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a4a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b") == 0){
+    fPeriodEnum = kLHC17a4b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_fast") == 0){
+    fPeriodEnum = kLHC17a4b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_cent") == 0){
+    fPeriodEnum = kLHC17a4b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17a4b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17a4b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a") == 0){
+    fPeriodEnum = kLHC17f4a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_fast") == 0){
+    fPeriodEnum = kLHC17f4a_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_cent") == 0){
+    fPeriodEnum = kLHC17f4a_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4a_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f4a_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b") == 0){
+    fPeriodEnum = kLHC17f4b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_fast") == 0){
+    fPeriodEnum = kLHC17f4b_fast;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_cent") == 0){
+    fPeriodEnum = kLHC17f4b_cent;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17f4b_cent_woSDD") == 0){
+    fPeriodEnum = kLHC17f4b_cent_woSDD;
+    fEnergyEnum = kpPb8TeV;
 
 
   // MC upgrade 
@@ -4433,4 +4628,4 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kUnset;
   }
   return;
-}  
+}

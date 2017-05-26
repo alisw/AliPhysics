@@ -1324,7 +1324,7 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRu
   }
   else if ((runnumber > 188356 && runnumber <= 188503) ||  // LHC12g Run-1 (p-Pb pilot)
       (runnumber >= 195164 && runnumber <= 197388) ||      // LHC13b,c,d,e,f Run-1 (p-Pb)
-      (runnumber >= 265077 && runnumber <= 999999)) {      // LHC16 Run-2 (p-Pb)
+      (runnumber >= 265077 && runnumber <= 267166)) {      // LHC16 Run-2 (p-Pb)
     b = kpA;
   }
   return b;

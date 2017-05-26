@@ -851,9 +851,9 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
    printf("Add macro appendix %s\n", appendix.Data());
 
    if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors"))
-      gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigWeightFactors.C");
-   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp276"))
-      gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigHFEnpepp276.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C");
+   if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp5"))
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFEnpepp5.C");
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();

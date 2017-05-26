@@ -483,6 +483,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
   }
   
+  if(eventVtx){
+    Double_t covTracks[6];
+    eventVtx->GetCovarianceMatrix(covTracks);
+    for(Int_t i=0;i<6;++i) {
+      eventInfo->fVtxCovMatrix[i] = covTracks[i];
+    }
+  }
+  
   AliVVertex* eventVtxSPD = 0x0;
   if(isESD) eventVtxSPD = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexSPD());
   if(isAOD) eventVtxSPD = const_cast<AliAODVertex*>(aodEvent->GetPrimaryVertexSPD());
@@ -1165,6 +1173,20 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      esdTrack->GetXYZ(xyz);
+      esdTrack->GetPxPyPz(pxpypz);
+      esdTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+      
+      
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
@@ -1247,6 +1269,19 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      aodTrack->GetXYZ(xyz);
+      aodTrack->GetPxPyPz(pxpypz);
+      aodTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+        
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
@@ -1282,6 +1317,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             }
          }
       }
+      
+      
+      
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;

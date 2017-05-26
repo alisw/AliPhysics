@@ -25,7 +25,9 @@ class AliNuclexEventCutsContainer : public TNamed {
     fMultTrkFB32(-1),
     fMultTrkFB32Acc(-1),
     fMultTrkFB32TOF(-1),
-    fMultTrkTPC(-1) {}
+    fMultTrkTPC(-1),
+    fMultTrkTPCout(-1),
+    fMultVZERO(-1.) {}
 
     unsigned long fEventId;
     int fMultESD;
@@ -33,7 +35,9 @@ class AliNuclexEventCutsContainer : public TNamed {
     int fMultTrkFB32Acc;
     int fMultTrkFB32TOF;
     int fMultTrkTPC;
-  ClassDef(AliNuclexEventCutsContainer,1)
+    int fMultTrkTPCout;
+    double fMultVZERO;
+  ClassDef(AliNuclexEventCutsContainer,2)
 };
 
 class AliNuclexEventCuts : public TList {
@@ -45,6 +49,11 @@ class AliNuclexEventCuts : public TList {
       kDAQincomplete,
       kBfield,
       kTrigger,
+      kVertexSPD,
+      kVertexTracks,
+      kVertex,
+      kVertexPositionSPD,
+      kVertexPositionTracks,
       kVertexPosition,
       kVertexQuality,
       kPileUp,
@@ -110,6 +119,7 @@ class AliNuclexEventCuts : public TList {
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
+    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -119,6 +129,7 @@ class AliNuclexEventCuts : public TList {
     double        fESDvsTPConlyLinearCut[2];      ///< Linear cut in the ESD track vs TPC only track plane
     TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
     double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
+    double        fVZEROvsTPCoutPolCut[5];        ///< Cut on VZERO multipliciy vs the number of tracks with kTPCout on
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
@@ -127,8 +138,8 @@ class AliNuclexEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
-    AliNuclexEventCuts(const AliNuclexEventCuts& copy) {}
-    AliNuclexEventCuts operator=(const AliNuclexEventCuts& copy) {return *this;}
+    AliNuclexEventCuts(const AliNuclexEventCuts& copy);
+    AliNuclexEventCuts operator=(const AliNuclexEventCuts& copy);
     void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
@@ -160,8 +171,9 @@ class AliNuclexEventCuts : public TList {
     TH2F* fTPCvsAll[2];            //!<!
     TH2F* fMultvsV0M[2];           //!<!
     TH2F* fTPCvsTrkl[2];           //!<!
+    TH2F* fVZEROvsTPCout[2];       //!<!
 
-    ClassDef(AliNuclexEventCuts,1)
+    ClassDef(AliNuclexEventCuts,2)
 };
 
 template<typename F> F AliNuclexEventCuts::PolN(F x,F* coef, int n) {

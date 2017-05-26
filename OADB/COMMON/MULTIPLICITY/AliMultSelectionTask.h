@@ -270,17 +270,25 @@ private:
     TH2D *fHistEventSelections; //! For keeping track of 
     
     //Simple QA histograms
-    TH1D *fHistQA_V0M; 
+    TH1D *fHistQA_V0M;
+    TH1D *fHistQA_V0A;
+    TH1D *fHistQA_V0C;
     TH1D *fHistQA_CL0; 
-    TH1D *fHistQA_CL1; 
+    TH1D *fHistQA_CL1;
+    TH1D *fHistQA_ZNA;
+    TH1D *fHistQA_ZNC;
     TProfile *fHistQA_TrackletsVsV0M; 
     TProfile *fHistQA_TrackletsVsCL0; 
     TProfile *fHistQA_TrackletsVsCL1; 
     
-    TH1D *fHistQASelected_V0M; 
+    TH1D *fHistQASelected_V0M;
+    TH1D *fHistQASelected_V0A;
+    TH1D *fHistQASelected_V0C;
     TH1D *fHistQASelected_CL0; 
-    TH1D *fHistQASelected_CL1; 
-    TProfile *fHistQASelected_TrackletsVsV0M; 
+    TH1D *fHistQASelected_CL1;
+    TH1D *fHistQASelected_ZNA;
+    TH1D *fHistQASelected_ZNC;
+    TProfile *fHistQASelected_TrackletsVsV0M;
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
 

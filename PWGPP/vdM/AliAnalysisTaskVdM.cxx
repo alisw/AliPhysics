@@ -248,7 +248,7 @@ void AliAnalysisTaskVdM::SetBranches(TTree* t) {
   if (fTreeBranchNames.Contains("VertexTracks"))
     t->Branch("VertexTracks", &fVertexTracks, 32000, 0);
   if (fTreeBranchNames.Contains("VertexTracksUnconstrained"))
-      t->Branch("VertexTracks", &fVertexTracksUnconstrained, 32000, 0);
+      t->Branch("VertexTracksUnconstrained", &fVertexTracksUnconstrained, 32000, 0);
   if (fTreeBranchNames.Contains("TriggerIR"))
     t->Branch("TriggerIRs", &fTriggerIRs, 32000, 0);
 }
@@ -345,8 +345,9 @@ void AliAnalysisTaskVdM::UserExec(Option_t *)
   }
   PostData(1, fList);
 
-  fTreeData.fEventInfo.Fill(vEvent);
+  fFiredTriggerClasses = vEvent->GetFiredTriggerClasses();
 
+  fTreeData.fEventInfo.Fill(vEvent);
   fTreeData.fIsIncompleteDAQ = vEvent->IsIncompleteDAQ();
   fTreeData.fV0Info.FillV0(vEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(vEvent, fTriggerAnalysis);
@@ -355,7 +356,7 @@ void AliAnalysisTaskVdM::UserExec(Option_t *)
   fVertexTPC    = *esdEvent->GetPrimaryVertexTPC();
   fVertexTracks = *esdEvent->GetPrimaryVertexTracks();
   revertex(esdEvent);
-  fVertexTracksUnconstrained = *(esdEvent->GetPrimaryVertexTracks());
+  fVertexTracksUnconstrained = *esdEvent->GetPrimaryVertexTracks();
 
   TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   FillTriggerIR(dynamic_cast<const AliESDHeader*>(vHeader));

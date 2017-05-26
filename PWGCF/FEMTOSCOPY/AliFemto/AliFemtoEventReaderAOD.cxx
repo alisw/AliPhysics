@@ -555,6 +555,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
             } else { //particle's mother exists and the information about it can be added to hiddeninfo:
               tInfo->SetMotherPdgCode(mother->GetPdgCode());
+              tInfo->SetMotherMomentum(mother->Px(),mother->Py(),mother->Pz());
             }
           }
         }
@@ -1471,6 +1472,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetmomXiZ(tAODxi->MomXiZ());
   AliFemtoThreeVector momxi(tAODxi->MomXiX(), tAODxi->MomXiY(), tAODxi->MomXiZ());
   tFemtoXi->SetmomXi(momxi);
+  tFemtoXi->SetRadiusXi(TMath::Sqrt(tAODxi->DecayVertexXiX()*tAODxi->DecayVertexXiX()+tAODxi->DecayVertexXiY()*tAODxi->DecayVertexXiY()));
 
   tFemtoXi->SetidBac(tAODxi->GetBachID());
 

@@ -41,6 +41,7 @@
 #include "TF1.h"
 #include "THnSparse.h"
 #include "AliHFMassFitter.h"
+#include "AliHFCorrelationUtils.h"
 
 class AliDhCorrelationExtraction : public TObject
 {
@@ -152,7 +153,7 @@ public:
     Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractNumberOfTriggers_MC();
     Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
-    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax);
+    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect=kTRUE);
     
 private:
     

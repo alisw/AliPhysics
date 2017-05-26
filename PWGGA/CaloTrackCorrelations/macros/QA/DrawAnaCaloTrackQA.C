@@ -20,6 +20,7 @@
 /// * DCAL_L1 : kEMCEGA L1 EG1 DCal 
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
+/// A plot will be produced for each of the triggers, if they existed in the data.
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
@@ -79,7 +80,7 @@ TString histoTag = "";    /// file names tag, basically the trigger and calorime
 TString format = "eps";   /// plots format: eps, pdf, etc.
 Int_t   exportToFile = 0; /// option to what and if export to output file
 
-/// pre defined colors list 
+/// pre-defined colors list 
 Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
 //
 //-----------------------
@@ -182,7 +183,7 @@ void DrawAnaCaloTrackQA
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 ///
 /// Input:
-/// \param trigName: File name
+/// \param trigName: trigger case name
 /// \param checklist: get the list from file, in case not exported
 ///
 /// This method can be executed directly instead od DrawAnaCaloTrackQA if the
@@ -231,6 +232,7 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     // Plot basic Pi0 QA
     Pi0QA(icalo);
     
+    gStyle->SetPadRightMargin(0.02);
     // Plot basic isolation QA
     IsolQA(icalo);
     
@@ -239,6 +241,9 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     
     // MC basic QA plots, cluster origins (only if it run on MC)
     MCQA(icalo);
+    
+    // Re-set default setting
+    gStyle->SetPadRightMargin(0.15);
   }
 }
 
@@ -250,7 +255,6 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
 /// * cluster time vs pT, cluster long axis vs E, number of cells in cluster vs E, cells in cluster E vs cluster E
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
@@ -265,7 +269,7 @@ void CaloQA(Int_t icalo)
   ccalo->cd(1);
   gPad->SetLogy();
   gPad->SetLogx();
-      
+
   TH1F* hClusterEnergy = (TH1F*) GetHisto(Form("AnaPhoton_Calo%d_hPt_Cut_6_Fidutial",icalo));
   if(!hClusterEnergy) return;
   hClusterEnergy->SetYTitle("Entries");
@@ -277,28 +281,33 @@ void CaloQA(Int_t icalo)
   hClusterEnergy->SetAxisRange(0.,50.,"X");
   hClusterEnergy->Draw();
   
-  TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
-  TH1F* hCellAmplitude  = 0;
-  if(histoTag.Contains("default"))
-  {
-    if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()), 1,12);
-    else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),12,20);
-  }
-  else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),0,100);
-      
-  hCellAmplitude->Sumw2();
-  hCellAmplitude->SetMarkerColor(4);
-  hCellAmplitude->SetMarkerStyle(25);
-  hCellAmplitude->Draw("same");
-  
-  TLegend l(0.4,0.79,0.83,0.89);
+  TLegend l(0.15,0.15,0.3,0.3);
   l.SetTextSize(0.04);
   l.AddEntry(hClusterEnergy,"Good Cluster","P");
-  l.AddEntry(hCellAmplitude,"Cell","P");
   l.SetBorderSize(0);
   l.SetFillColor(0);
-  l.Draw();
+
   
+  TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
+  TH1F* hCellAmplitude  = 0;
+  if(h2CellAmplitude)
+  {
+    if(histoTag.Contains("default"))
+    {
+      if ( icalo == 0 ) hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()), 1,12);
+      else              hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),12,20);
+    }
+    else                hCellAmplitude = (TH1F*) h2CellAmplitude->ProjectionX(Form("%s_hCellAmp",histoTag.Data()),0,100);
+    
+    hCellAmplitude->Sumw2();
+    hCellAmplitude->SetMarkerColor(4);
+    hCellAmplitude->SetMarkerStyle(25);
+    hCellAmplitude->Draw("same");
+    l.AddEntry(hCellAmplitude,"Cell","P");
+  }
+  
+  l.Draw();
+
   ccalo->cd(2);
   //gPad->SetLogy();
   gPad->SetLogx();
@@ -340,7 +349,7 @@ void CaloQA(Int_t icalo)
   hShSh->Divide(hClusterEnergy);
   hShSh->Draw("same");
   
-  TLegend l2(0.45,0.8,0.95,0.93);
+  TLegend l2(0.15,0.15,0.3,0.3);
   l2.SetTextSize(0.04);
   //l2.AddEntry(hCorr,"No Exotics + non lin.","P");
   l2.AddEntry(hTM,  "+ Track matching","P");
@@ -363,10 +372,11 @@ void CaloQA(Int_t icalo)
     
     ccalo->cd(3);
     gPad->SetLogz();
-    
+
     hTrackMatchResEtaPhi->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaPhi->SetAxisRange(-0.025,0.025,"Y");
     hTrackMatchResEtaPhi->SetTitleOffset(1.5,"Y");
+    hTrackMatchResEtaPhi->SetTitleOffset(1.5,"Z");
     hTrackMatchResEtaPhi->SetTitle("Track-cluster residual #Delta#varphi vs #Delta#eta, #it{E}>0.5 GeV");
     hTrackMatchResEtaPhi->SetXTitle("#Delta #eta");
     hTrackMatchResEtaPhi->SetYTitle("#Delta #varphi");
@@ -374,12 +384,13 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPhi->Draw("colz");
     
     ccalo->cd(4);
-    gPad->SetLogy();
-    
-    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNeg",icalo));
-    TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPos",icalo));
-    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNeg",icalo));
-    TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPos",icalo));
+    //gPad->SetLogy();
+    TGaxis::SetMaxDigits(3);
+
+    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegNoCut",icalo));
+    TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosNoCut",icalo));
+    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegNoCut",icalo));
+    TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosNoCut",icalo));
     
     Float_t binMin = hClusterEnergy->FindBin(0.5);
     hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY(Form("%s_hTrackMatchProjClusEnEtaNeg",histoTag.Data()),binMin, 1000);
@@ -390,7 +401,8 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaNeg->SetXTitle("#Delta #eta, #Delta #varphi");
     hTrackMatchResEtaNeg->SetYTitle("Entries");
     hTrackMatchResEtaNeg->SetTitle("Track-cluster residuals, #it{E} > 1 GeV");
-    hTrackMatchResEtaNeg->SetAxisRange(-0.05,0.05,"X");
+    hTrackMatchResEtaNeg->SetTitleOffset(1.5,"Y");
+    hTrackMatchResEtaNeg->SetAxisRange(-0.025,0.025,"X");
     hTrackMatchResEtaNeg->Sumw2();
     hTrackMatchResEtaNeg->SetMarkerStyle(25);
     hTrackMatchResEtaNeg->SetMarkerColor(2);
@@ -411,7 +423,7 @@ void CaloQA(Int_t icalo)
     hTrackMatchResPhiPos->SetMarkerColor(4);
     hTrackMatchResPhiPos->Draw("same");
     
-    TLine l0(0,hTrackMatchResEtaNeg->GetMinimum(),0,hTrackMatchResEtaNeg->GetMaximum()*1.2);
+    TLine l0(0,hTrackMatchResEtaNeg->GetMinimum(),0,hTrackMatchResEtaNeg->GetMaximum()*1.);
     l0.Draw("same");
     
     TLegend l3(0.55,0.7,0.83,0.85);
@@ -462,32 +474,35 @@ void CaloQA(Int_t icalo)
   gPad->SetLogz();
 
   TH2F* hCellActivity  = (TH2F*) GetHisto("QA_Cell_hGridCells");
-  if(icalo == 0)  hCellActivity->SetAxisRange(  0,127,"Y");
-  else            hCellActivity->SetAxisRange(128,220,"Y");
-  hCellActivity->SetTitle("Hits per cell (#it{E} > 0.2 GeV)");
-  hCellActivity->SetTitleOffset(1.5,"Y");
-  hCellActivity->SetZTitle("Entries");
-  hCellActivity->SetTitleOffset(1.5,"Z");
-  hCellActivity->Draw("colz");
-  
+  if(hCellActivity)
+  {
+    if(icalo == 0)  hCellActivity->SetAxisRange(  0,127,"Y");
+    else            hCellActivity->SetAxisRange(128,220,"Y");
+    hCellActivity->SetTitle("Hits per cell (#it{E} > 0.2 GeV)");
+    hCellActivity->SetTitleOffset(1.5,"Y");
+    hCellActivity->SetZTitle("Entries");
+    hCellActivity->SetTitleOffset(1.5,"Z");
+    hCellActivity->Draw("colz");
+  }
   ccalo2->cd(2);
   
   TH2F* hCellActivityE = (TH2F*) GetHisto("QA_Cell_hGridCellsE");
-  
-  if(icalo == 0)  hCellActivityE->SetAxisRange(  0,127,"Y");
-  else            hCellActivityE->SetAxisRange(128,220,"Y");
-  
-  hCellActivityE->SetTitle("Mean energy per cell (#it{E} > 0.2 GeV)");
-  
-  if(icalo != 1 && !histoTag.Contains("default")) // ratio already done for calo=0
-    hCellActivityE->Divide(hCellActivity);
-  
-  hCellActivityE->SetTitleOffset(1.5,"Y");
-  hCellActivityE->SetZTitle("#Sigma #it{E}_{cell} / Entries_{per cell}");
-  hCellActivityE->SetTitleOffset(1.5,"Z");
-  
-  hCellActivityE->Draw("colz");
-  
+  if(hCellActivityE)
+  {
+    if(icalo == 0)  hCellActivityE->SetAxisRange(  0,127,"Y");
+    else            hCellActivityE->SetAxisRange(128,220,"Y");
+    
+    hCellActivityE->SetTitle("Mean energy per cell (#it{E} > 0.2 GeV)");
+    
+    if(icalo != 1 && !histoTag.Contains("default")) // ratio already done for calo=0
+      hCellActivityE->Divide(hCellActivity);
+    
+    hCellActivityE->SetTitleOffset(1.5,"Y");
+    hCellActivityE->SetZTitle("#Sigma #it{E}_{cell} / Entries_{per cell}");
+    hCellActivityE->SetTitleOffset(1.5,"Z");
+    
+    hCellActivityE->Draw("colz");
+  }
   ccalo2->cd(3);
   gPad->SetLogz();
   
@@ -602,7 +617,6 @@ void CaloQA(Int_t icalo)
 /// * track phi distribution per hybrid track component
 /// * track TOF
 /// * track pT per hybrid track component
-///
 //______________________________________
 void TrackQA()
 {
@@ -614,6 +628,7 @@ void TrackQA()
   ctrack->cd(1);
   //gPad->SetLogz();
   TH2F * hTrackEtaPhi = (TH2F*) GetHisto("AnaHadrons_hEtaPhiNegative");
+  if(!hTrackEtaPhi) return;
   hTrackEtaPhi ->Add(   (TH2F*) GetHisto("AnaHadrons_hEtaPhiPositive"));
   hTrackEtaPhi ->SetAxisRange(-0.9,0.9,"X");
   hTrackEtaPhi ->SetTitleOffset(1.5,"Y");
@@ -642,6 +657,7 @@ void TrackQA()
   hPhi     ->SetMaximum(hPhi->GetMaximum()*1.3);
   hPhi     ->SetTitleOffset(1.5,"Y");
   hPhi     ->SetYTitle("Entries");
+  
   TGaxis::SetMaxDigits(3);
 
   hPhi     ->Draw("H");
@@ -731,7 +747,6 @@ void TrackQA()
 /// * Invariant mass real/mixed pairs, in eta region
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //_____________________________
 void Pi0QA(Int_t icalo)
 {
@@ -808,6 +823,8 @@ void Pi0QA(Int_t icalo)
   
   Float_t maxPi0 = 0;
   Float_t maxEta = 0;
+  Float_t minPi0 = 1e6;
+  Float_t minEta = 1e6;
   for(Int_t icen = 0; icen < 6; icen++)
   {
     if(!hMassE[icen]) continue;
@@ -843,12 +860,15 @@ void Pi0QA(Int_t icalo)
     hMassEta[icen]->Scale(1./scale);
     
     if(maxEta < hMassEta[icen]->GetMaximum()) maxEta = hMassEta[icen]->GetMaximum();
-    if(maxPi0 < hMassPi0[icen]->GetMaximum()) maxPi0 = hMassPi0[icen]->GetMaximum();
+    if(maxPi0 < hMassPi0[icen]->GetMaximum()) maxPi0 = hMassPi0[icen]->GetMaximum();   
+    
+    if(minEta > hMassEta[icen]->GetMinimum()) minEta = hMassEta[icen]->GetMinimum();
+    if(minPi0 > hMassPi0[icen]->GetMinimum()) minPi0 = hMassPi0[icen]->GetMinimum();
   }
 
   //gPad->SetLogy();
   //gPad->SetGridy();
-  hMassPi0[0]->SetMinimum(0.8);
+  hMassPi0[0]->SetMinimum(minPi0);
   hMassPi0[0]->SetTitleOffset(1.5,"Y");
   hMassPi0[0]->SetYTitle("Real / Mixed");
   hMassPi0[0]->SetTitle("#pi^{0} peak, 2 < #it{E}_{pair}< 10 GeV");
@@ -949,7 +969,7 @@ void Pi0QA(Int_t icalo)
   hSM[first]->Draw("H");
   TLegend lsm(0.12,0.5,0.35,0.85);
   lsm.SetTextSize(0.04);
-  lsm.AddEntry(hSM[0],Form("Mod %d",0),"P");
+  lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
   
   for(Int_t ism = first+1; ism < 20; ism++)
   {
@@ -970,7 +990,7 @@ void Pi0QA(Int_t icalo)
   
   //gPad->SetLogy();
   //gPad->SetGridy();
-  hMassEta[0]->SetMinimum(0.8);
+  hMassEta[0]->SetMinimum(minEta);
   hMassEta[0]->SetTitleOffset(1.5,"Y");
   hMassEta[0]->SetYTitle("Real / Mixed");
   hMassEta[0]->SetTitle("#eta peak, 2 <#it{E}_{pair}< 10 GeV");
@@ -989,7 +1009,6 @@ void Pi0QA(Int_t icalo)
     hMassEta[2]->Draw("Hsame");
     hMassEta[1]->Draw("Hsame");
     hMassEta[0]->Draw("Hsame");
-    
     
     TLegend l2(0.12,0.6,0.4,0.85);
     l2.SetTextSize(0.04);
@@ -1061,8 +1080,6 @@ void Pi0QA(Int_t icalo)
 //__________________________________________________
 void IsolQA(Int_t icalo)
 {
-  gStyle->SetPadRightMargin(0.02);
-
   TCanvas * cIsolation = new TCanvas(Form("%s_IsolationHisto"    ,histoTag.Data()),
                                      Form("Isolation cone for %s",histoTag.Data()),
                                      1000,1000);
@@ -1435,12 +1452,9 @@ void IsolQA(Int_t icalo)
 /// * xE distribution of tracks correlated to a high pT cluster, in the opposite side or in perpendicular region (UE)
 /// 
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
-  gStyle->SetPadRightMargin(0.02);
-
   TCanvas * cCorrelation = new TCanvas(Form("%s_CorrelationHisto"                                  ,histoTag.Data()),
                                        Form("Trigger cluster - associated track correlation for %s",histoTag.Data()),
                                        1000,500);
@@ -1591,7 +1605,6 @@ void CorrelQA(Int_t icalo)
 /// * pseudorapidity distribution of generated particles
 ///
 /// \param icalo: 0 EMCal, 1 DCal
-///
 //________________________________________________________
 void MCQA(Int_t icalo)
 {
@@ -1864,7 +1877,6 @@ void MCQA(Int_t icalo)
 /// 
 /// \param trigName: name of list of histograms for a particular trigger
 /// \param exportToFile: put the list of histograms in a separate file if true
-///
 //____________________________________________________________________
 Bool_t GetList(TString trigName)
 {  
@@ -1901,7 +1913,6 @@ Bool_t GetList(TString trigName)
 /// \return the histogram with the provided name
 ///
 /// \param histoName: histogram name
-///
 //___________________________________
 TObject * GetHisto(TString histoName)
 {
@@ -1921,7 +1932,6 @@ TObject * GetHisto(TString histoName)
 ///
 /// \param histo: histogram TObject
 /// \param tag: add to the histogram name when saving the trigger/calo tag or not.
-///
 //_________________________________________
 void  SaveHisto(TObject* histo, Bool_t tag)
 {
@@ -1937,7 +1947,6 @@ void  SaveHisto(TObject* histo, Bool_t tag)
 ///
 /// Save canvas in new file.
 /// Name should have been differenciated for the different triggers
-///
 //_______________________________
 void  SaveCanvas(TCanvas* canvas)
 {
@@ -1947,7 +1956,6 @@ void  SaveCanvas(TCanvas* canvas)
 ///
 /// Scale axis by a constant factor
 /// used just to scale degrees to rad in a single histogram in the MC case
-///
 //___________________________________________________
 void ScaleAxis(TAxis *a, Double_t scale)
 {
@@ -1976,7 +1984,6 @@ void ScaleAxis(TAxis *a, Double_t scale)
 ///
 /// Scale x axis by a constant factor
 /// used just to scale degrees to rad in a single histogram in the MC case
-///
 //___________________________________________________
 void ScaleXaxis(TH1 *h, Double_t scale)
 {

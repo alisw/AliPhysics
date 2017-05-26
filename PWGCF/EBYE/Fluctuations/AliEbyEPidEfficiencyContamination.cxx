@@ -102,6 +102,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fPIDCombined(0x0),
   fPidType(1),
   fMcPid(211),
+  fPidStrategy(0),
   fNSigmaMaxITS(3.),
   fNSigmaMaxTPC(3.),
   fNSigmaMaxTPClow(3.),
@@ -200,6 +201,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fPIDCombined(0x0),
     fPidType(1),
     fMcPid(211),
+    fPidStrategy(0),
     fNSigmaMaxITS(4.),
     fNSigmaMaxTPC(4.),
     fNSigmaMaxTPClow(3.),
@@ -987,7 +989,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   
   Double_t ptot = track->P();
-  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
 
   Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
@@ -999,7 +1001,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   else rap = -999.;
   
-  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
   
   if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
@@ -1012,7 +1014,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE; 
   Double_t ptotMC = particle->P();
-  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
 
   //rapidity cut
@@ -1025,7 +1027,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   }
   else rap = -999;
   
-  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
   if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
   
   return kTRUE;
@@ -1140,15 +1142,15 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
   //ITS--------------
   Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-  Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  0.575  };
+  Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
   //TPC---------------
-  Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325,   0.425  };
+  Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325, 0.3  };
   Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,   2.0  };
   //TOF----
-  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  0.5  };
+  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  1.1  };
   Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
   //TPCTOF----------
-  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.825  };
+  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
   Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
   
 
@@ -1271,11 +1273,25 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     else isAccepted =  isAcceptedTPC; 
   }
   
-  if( fParticleSpecies == 4){//for proton: ITS+TPC, TPC, TPC+TOF
-    if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS && isAcceptedTPC;
-    else if( pt >= ptLowTPCTOF[fParticleSpecies] && pt <= ptHighTPCTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-    else isAccepted =  isAcceptedTPC;
-  }
+  if( fParticleSpecies == 4){//for proton
+    
+    if(fPidStrategy == 0){
+      //ITS+TPC and TPC+TOF
+      if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else isAccepted = isAcceptedTPC && isAcceptedTOF;
+    }
+    else if( fPidStrategy == 1){
+      //ITS+TPC, TPC , TPC+TOF
+      if( pt >= 0.3 && pt <= 0.5 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else if( pt >= 0.8 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+    }
+    else if( fPidStrategy == 2){
+      //ITS+TPC
+      isAccepted = isAcceptedITS && isAcceptedTPC;
+    }
+    
+  }//for proton
   
   
   if (fIsQA && isAccepted && (fCentrality == 0 || fCentrality == 1)) {

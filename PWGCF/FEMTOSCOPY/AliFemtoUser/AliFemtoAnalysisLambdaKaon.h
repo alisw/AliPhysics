@@ -166,6 +166,9 @@ struct V0CutParams
   double minPosDaughterToPrimVertex,
          minNegDaughterToPrimVertex;
 
+  double radiusV0Min,
+         radiusV0Max;
+
   bool ignoreOnFlyStatus;
 };
 
@@ -233,6 +236,9 @@ struct XiCutParams
   double minPtBac,
          maxPtBac;
 
+  double radiusXiMin,
+         radiusXiMax;
+
   int v0Type;
   double minDcaV0;
   double minInvMassV0,
@@ -251,6 +257,9 @@ struct XiCutParams
          maxPtPosV0Daughter;
   double minPtNegV0Daughter,
          maxPtNegV0Daughter;
+
+  double radiusV0Min,
+         radiusV0Max;
 
   int minTPCnclsV0Daughters;
 

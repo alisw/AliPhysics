@@ -789,6 +789,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
                fHistGenVarEtaXiMinus->Fill(partEta);
                fHistGenVarThetaXiMinus->Fill(partTheta);
                fHistGenVarPhiXiMinus->Fill(partPhi);
+               ngenximinus++;
            } else if (PDGcode == -3312) {
                fHistGenVarTotMomXiPlus->Fill(partP);
                fHistGenVarTransvMomXiPlus->Fill(partPt);
@@ -796,6 +797,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
                fHistGenVarEtaXiPlus->Fill(partEta);
                fHistGenVarThetaXiPlus->Fill(partTheta);
                fHistGenVarPhiXiPlus->Fill(partPhi);
+               ngenxiplus++;
            } else if (PDGcode == 3334)  {
                fHistGenVarTotMomOmegaMinus->Fill(partP);
                fHistGenVarTransvMomOmegaMinus->Fill(partPt);
@@ -803,6 +805,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
                fHistGenVarEtaOmegaMinus->Fill(partEta);
                fHistGenVarThetaOmegaMinus->Fill(partTheta);
                fHistGenVarPhiOmegaMinus->Fill(partPhi);
+               ngenomegaminus++;
            } else if (PDGcode == -3334) {
                fHistGenVarTotMomOmegaPlus->Fill(partP);
                fHistGenVarTransvMomOmegaPlus->Fill(partPt);
@@ -810,6 +813,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
                fHistGenVarEtaOmegaPlus->Fill(partEta);
                fHistGenVarThetaOmegaPlus->Fill(partTheta);
                fHistGenVarPhiOmegaPlus->Fill(partPhi);
+               ngenomegaplus++;
            }
 
       }
