@@ -57,7 +57,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask = AliVEvent::kINT7;//A Khuntia
-  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
+  // if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp = kTRUE; //
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
@@ -110,7 +110,9 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    TString taskName = Form("TOFKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->UseESDTriggerMask(triggerMask); //ESD
-   task->SelectCollisionCandidates(triggerMask); //AOD
+   //task->SelectCollisionCandidates(triggerMask); //AOD
+   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
+
    
    if (isPP) 
      task->UseMultiplicity("QUALITY");
