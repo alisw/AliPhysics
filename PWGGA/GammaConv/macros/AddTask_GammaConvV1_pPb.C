@@ -156,8 +156,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "06000008000100001500000000";
-  TString cutnumberEvent = "80000103";
-  if (trainConfig==189 || trainConfig==190 || trainConfig==191 || trainConfig==192) cutnumberEvent = "80000003";
+  TString cutnumberEvent = "80000003";
 
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
