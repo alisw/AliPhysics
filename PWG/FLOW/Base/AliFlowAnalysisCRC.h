@@ -881,6 +881,7 @@ public:
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
   void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = A;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -1630,8 +1631,6 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
 //  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
-  const static Int_t fknRefMulCl = 6;
-  TProfile3D *fCRCZDCQVecVtxPosRefMul[fknRefMulCl][fkCRCnCQVecVtxPos]; //!
   TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
@@ -1920,6 +1919,8 @@ private:
   TH2F *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
+  TProfile2D* fAvEZDCCRbRPro; //! run-by-run average EZDC-C
+  TProfile2D* fAvEZDCARbRPro; //! run-by-run average EZDC-A
   TH2D* fPhiExclZoneHist; //!
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
