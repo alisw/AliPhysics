@@ -136,7 +136,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15pp13TeV,
       k15pp5TeV,
       k15PbPb5TeV,
-      k16pp13TeV
+      k16pp13TeV,
+      k16pPb5023GeV,
+      k16pPb8TeV,
+      k17pp13TeV
     };
 
     
@@ -184,6 +187,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+    Float_t     FunctionNL_PHOSRun2(Float_t e, Float_t p0 = 0.08, Float_t p1 = 0.055, Float_t p2 = 0.03, Float_t p3 = 6.65e-02);
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
@@ -471,7 +475,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,43)
+    ClassDef(AliCaloPhotonCuts,44)
 };
 
 #endif
