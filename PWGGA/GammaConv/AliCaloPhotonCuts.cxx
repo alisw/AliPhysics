@@ -4576,6 +4576,21 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
+    // NonLinearity LHC13 pPb Calo  - kTestBeamv3 + shifting MC  
+    case 53:
+      if (fClusterType == 1 || fClusterType == 3){
+        energy *= FunctionNL_kTestBeamv3(energy);
+        goto label_case_51;// goto previous case for shifting MC
+      }  
+      break;
+
+    // NonLinearity LHC13 pPb Calo  - kTestBeamv3 + shifting MC
+    case 54:
+      if (fClusterType == 1 || fClusterType == 3){
+        energy *= FunctionNL_kTestBeamv3(energy);
+        goto label_case_52;// goto previous case for shifting MC
+      }  
+      break;
 
       
 // *************** 60 + x **** modified tender Settings 2 - pPb
