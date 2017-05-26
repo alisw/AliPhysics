@@ -765,14 +765,11 @@ filter   = new AliAnalysisFilter("filter","filter");
  
 // need this to use PID in dielectron framework
 varManager = new AliDielectronVarManager;
- 
-
     
 trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
 trfilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 trfilter->SetRequireITSRefit(kTRUE);
 trfilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
-
 
 trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
 trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
