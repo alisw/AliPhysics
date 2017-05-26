@@ -134,6 +134,8 @@ fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -290,6 +292,8 @@ fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -459,6 +463,9 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
   if(fRefMultRbRPro) fQC->SetRefMultRbRPro(fRefMultRbRPro);
+  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
+    fQC->SetAvEZDCRbRPro(fAvEZDCCRbRPro,fAvEZDCARbRPro);
+  }
   if(fPhiExclZoneHist) fQC->SetPhiExclZoneHist(fPhiExclZoneHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {

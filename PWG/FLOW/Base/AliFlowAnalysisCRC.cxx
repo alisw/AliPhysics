@@ -16697,12 +16697,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     for (Int_t cb=0; cb<fCRCnCen; cb++) {
       fCRCZDCQVecVtxPosCen[cb][c] = NULL;
     }
-//    for (Int_t cb=0; cb<fknRefMulCl; cb++) {
-//      fCRCZDCQVecVtxPosRefMul[cb][c] = NULL;
-//    }
-//    for(Int_t i=0;i<3;i++) {
-//      fCRCZDCQVecVtxCenEZDC[i][c] = NULL;
-//    }
+    for(Int_t i=0;i<3;i++) {
+      fCRCZDCQVecVtxCenEZDC[i][c] = NULL;
+    }
   }
   for (Int_t cb=0; cb<fCRCnCen; cb++) {
     for (Int_t eb=0; eb<fCRCZDCnEtaBin; eb++) {
@@ -17463,6 +17460,8 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 //  }
   fCenWeightsHist = NULL;
   fRefMultRbRPro = NULL;
+  fAvEZDCCRbRPro = NULL;
+  fAvEZDCARbRPro = NULL;
   fCenWeigCalHist = NULL;
   fPhiExclZoneHist = NULL;
   fVtxPos[0]=0.;
@@ -18980,6 +18979,16 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   Double_t QAIm = fZDCFlowVect[1].Y();
   Double_t QMA  = fZDCFlowVect[1].GetMult();
   
+  // get re-centered QM*
+  Double_t QMCrec = QMC;
+  Double_t QMArec = QMA;
+  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
+    Int_t runbin = fAvEZDCCRbRPro->GetXaxis()->FindBin(Form("%d",fRunNum));
+    Int_t cenbin = fAvEZDCCRbRPro->GetYaxis()->FindBin(fCentralityEBE);
+    QMCrec -= fAvEZDCCRbRPro->GetBinContent(runbin,cenbin);
+    QMArec -= fAvEZDCARbRPro->GetBinContent(runbin,cenbin);
+  }
+  
   Double_t QCReR=QCRe, QCImR=QCIm, QAReR=QARe, QAImR=QAIm;
   
   Double_t fillstep=0.5;
@@ -19450,37 +19459,19 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fhAvQMCRbR->Fill(fRunBin+0.5,fCentralityEBE,QMC);
     fhAvQMARbR->Fill(fRunBin+0.5,fCentralityEBE,QMA);
     
-//    if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//      // get ref mul class
-//      Int_t RefMulCl = fRMSRefMulCenBins[fCenBin]->FindBin(fReferenceMultiplicityRecEBE)-1;
-//      if(RefMulCl>=0 && RefMulCl<=5) {
-//        if(fbFlagIsPosMagField) {
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][0]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][1]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][4]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][5]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-//        } else {
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][2]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][3]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][6]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-//          fCRCZDCQVecVtxPosRefMul[RefMulCl][7]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-//        }
-//      }
-//    }
-//    
-//    for(Int_t i=0;i<3;i++) {
-//      if(fbFlagIsPosMagField) {
-//        fCRCZDCQVecVtxCenEZDC[i][0]->Fill(fCentralityEBE,QMC,fVtxPosCor[i],QCReR);
-//        fCRCZDCQVecVtxCenEZDC[i][1]->Fill(fCentralityEBE,QMC,fVtxPosCor[i],QCImR);
-//        fCRCZDCQVecVtxCenEZDC[i][4]->Fill(fCentralityEBE,QMA,fVtxPosCor[i],QAReR);
-//        fCRCZDCQVecVtxCenEZDC[i][5]->Fill(fCentralityEBE,QMA,fVtxPosCor[i],QAImR);
-//      } else {
-//        fCRCZDCQVecVtxCenEZDC[i][2]->Fill(fCentralityEBE,QMC,fVtxPosCor[i],QCReR);
-//        fCRCZDCQVecVtxCenEZDC[i][3]->Fill(fCentralityEBE,QMC,fVtxPosCor[i],QCImR);
-//        fCRCZDCQVecVtxCenEZDC[i][6]->Fill(fCentralityEBE,QMA,fVtxPosCor[i],QAReR);
-//        fCRCZDCQVecVtxCenEZDC[i][7]->Fill(fCentralityEBE,QMA,fVtxPosCor[i],QAImR);
-//      }
-//    }
+    for(Int_t i=0;i<3;i++) {
+      if(fbFlagIsPosMagField) {
+        fCRCZDCQVecVtxCenEZDC[i][0]->Fill(fCentralityEBE,QMCrec,fVtxPosCor[i],QCReR);
+        fCRCZDCQVecVtxCenEZDC[i][1]->Fill(fCentralityEBE,QMCrec,fVtxPosCor[i],QCImR);
+        fCRCZDCQVecVtxCenEZDC[i][4]->Fill(fCentralityEBE,QMArec,fVtxPosCor[i],QAReR);
+        fCRCZDCQVecVtxCenEZDC[i][5]->Fill(fCentralityEBE,QMArec,fVtxPosCor[i],QAImR);
+      } else {
+        fCRCZDCQVecVtxCenEZDC[i][2]->Fill(fCentralityEBE,QMCrec,fVtxPosCor[i],QCReR);
+        fCRCZDCQVecVtxCenEZDC[i][3]->Fill(fCentralityEBE,QMCrec,fVtxPosCor[i],QCImR);
+        fCRCZDCQVecVtxCenEZDC[i][6]->Fill(fCentralityEBE,QMArec,fVtxPosCor[i],QAReR);
+        fCRCZDCQVecVtxCenEZDC[i][7]->Fill(fCentralityEBE,QMArec,fVtxPosCor[i],QAImR);
+      }
+    }
     
 //    if(fnEvRbR[fRunBin]) {
 //      Double_t FracRun = (Double_t)fRbREventCounter/fnEvRbR[fRunBin];
@@ -30264,6 +30255,10 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       for (Int_t i=0; i<101; i++) {
         ZDCEbins[i] = 100 + i*5.;
       }
+      Double_t ZDCEbinsRec[21] = {0.};
+      for (Int_t i=0; i<21; i++) {
+        ZDCEbinsRec[i] = -300. + i*30.;
+      }
       
       for (Int_t k=0; k<4; k++) {
 //        fCRCZDCQVecCenEComTot[r][k] = new TProfile2D(Form("fCRCZDCQVecCenEComTot[%d][%d]",fRunList[r],k),Form("fCRCZDCQVecCenEComTot[%d][%d]",fRunList[r],k),90,finecenbins,100,ZDCEbins);
@@ -30322,35 +30317,30 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
             fCRCZDCQVecVtxPosCen[cb][c]->Sumw2();
             fCRCQVecList->Add(fCRCZDCQVecVtxPosCen[cb][c]);
           }
-//          for (Int_t cb=0; cb<fknRefMulCl; cb++) {
-//            fCRCZDCQVecVtxPosRefMul[cb][c] = new TProfile3D(Form("fCRCZDCQVecVtxPosRefMul[%d][%d]",cb,c),Form("fCRCZDCQVecVtxPosRefMul[%d][%d]",cb,c),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax,"s");
-//            fCRCZDCQVecVtxPosRefMul[cb][c]->Sumw2();
-//            fCRCQVecList->Add(fCRCZDCQVecVtxPosRefMul[cb][c]);
-//          }
-//          for(Int_t i=0;i<3;i++) {
-//            Double_t xmin=0.,xmax=0.;
-//            if(fDataSet==k2010) {
-//              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -0.032; xmax = 0.016;}
-//              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.146; xmax = 0.21;}
-//              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
-//            }if(fDataSet==k2011) {
-//              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = 0.045; xmax = 0.08;}
-//              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.258; xmax = 0.292;}
-//              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
-//            }if(fDataSet==k2015 || fDataSet==k2015v6) {
-//              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -8.5e-3; xmax = 8.5e-3;}
-//              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = -7.8e-3; xmax = 7.8e-3;}
-//              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin = -10.; xmax = 10.;}
-//            }
-//            Double_t vtxbins[11] = {0.};
-//            for (Int_t v=0; v<11; v++) {
-//              vtxbins[v]=xmin + v*(xmax-xmin)/10.;
-//            }
-//            fCRCZDCQVecVtxCenEZDC[i][c] = new TProfile3D(Form("fCRCZDCQVecVtxCenEZDC[%d][%d]",i,c),
-//                                                         Form("fCRCZDCQVecVtxCenEZDC[%d][%d]",i,c),90,finecenbins,100,ZDCEbins,10,vtxbins);
-//            fCRCZDCQVecVtxCenEZDC[i][c]->Sumw2();
-//            fCRCQVecList->Add(fCRCZDCQVecVtxCenEZDC[i][c]);
-//          }
+          for(Int_t i=0;i<3;i++) {
+            Double_t xmin=0.,xmax=0.;
+            if(fDataSet==k2010) {
+              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -0.032; xmax = 0.016;}
+              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.146; xmax = 0.21;}
+              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
+            }if(fDataSet==k2011) {
+              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = 0.045; xmax = 0.08;}
+              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.258; xmax = 0.292;}
+              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
+            }if(fDataSet==k2015 || fDataSet==k2015v6) {
+              if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -8.5e-3; xmax = 8.5e-3;}
+              if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = -7.8e-3; xmax = 7.8e-3;}
+              if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin = -10.; xmax = 10.;}
+            }
+            Double_t vtxbins[11] = {0.};
+            for (Int_t v=0; v<11; v++) {
+              vtxbins[v]=xmin + v*(xmax-xmin)/10.;
+            }
+            fCRCZDCQVecVtxCenEZDC[i][c] = new TProfile3D(Form("fCRCZDCQVecVtxCenEZDC[%d][%d]",i,c),
+                                                         Form("fCRCZDCQVecVtxCenEZDC[%d][%d]",i,c),10,cenbins,20,ZDCEbinsRec,10,vtxbins);
+            fCRCZDCQVecVtxCenEZDC[i][c]->Sumw2();
+            fCRCQVecList->Add(fCRCZDCQVecVtxCenEZDC[i][c]);
+          }
         }
       }
     } // end of for(Int_t r=0;r<fCRCnRun;r++)

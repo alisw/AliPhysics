@@ -571,6 +571,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     exit(1);
   }
   
+  TFile* AvEZDCCRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvEZDCCRbR_HIR.root","READ");
+  TFile* AvEZDCARbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvEZDCARbR_HIR.root","READ");
+  if(AvEZDCCRbRFile && AvEZDCARbRFile) {
+    TCanvas* cav = (TCanvas*)(AvEZDCCRbRFile->Get("Canvas_1"));
+    TProfile2D* AvQMCRbR = (TProfile2D*)(cav->GetPrimitive("fhAvQMCRbR"));
+    TCanvas* cav2 = (TCanvas*)(AvEZDCARbRFile->Get("Canvas_2"));
+    TProfile2D* AvQMARbR = (TProfile2D*)(cav2->GetPrimitive("fhAvQMARbR"));
+    
+    if(AvQMCRbR && AvQMARbR) {
+      taskQC->SetAvEZDCRbRPro(AvQMCRbR,AvQMARbR);
+      cout << "AvEZDCCRbR set (15o_AvEZDC*RbR_HIR.root)" << endl;
+    }
+    else {
+      cout << "ERROR: AvEZDCRbRPro not found!" << endl;
+      exit(1);
+    }
+  }
+  
   if(bPhiExclZone) {
     TString PhiExclFileName = "alien:///alice/cern.ch/user/j/jmargutt/PhiExclZone_15o.root";
     TFile* PhiExclFile = TFile::Open(PhiExclFileName,"READ");
