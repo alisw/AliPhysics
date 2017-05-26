@@ -20,7 +20,7 @@
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeV,kPythia13TeV};
+enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kPythia13TeVprompt};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -40,13 +40,13 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
 
 
 // Pt-shape histograms
-TH1D* LoadFONLL13TeV_D0();
-TH1D* LoadFONLL13TeV_Dplus();
-TH1D* LoadFONLL13TeV_Dstar();
-TH1D* LoadPYTHIA13TeV_D0();
-TH1D* LoadPYTHIA13TeV_Dplus();
-TH1D* LoadPYTHIA13TeV_Dstar();
-TH1D* LoadPYTHIA13TeV_Ds();
+TH1D* LoadFONLL13TeV_promptD0();
+TH1D* LoadFONLL13TeV_promptDplus();
+TH1D* LoadFONLL13TeV_promptDstar();
+TH1D* LoadPYTHIA13TeV_promptD0();
+TH1D* LoadPYTHIA13TeV_promptDplus();
+TH1D* LoadPYTHIA13TeV_promptDstar();
+TH1D* LoadPYTHIA13TeV_promptDs();
 
 
 
@@ -154,30 +154,30 @@ void ComputeAcceptance(){
     funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
     funcPt->SetParameters(0.322643,1.94635,1.40463,2.5);
     outFileName.Append("PYTHIA7ptshape.root");  
-  }else if(fPtShape==kFONLL13TeV){
+  }else if(fPtShape==kFONLL13TeVprompt){
     if(fDDecay==kDplusKpipi){
-      histPt = LoadFONLL13TeV_Dplus();
+      histPt = LoadFONLL13TeV_promptDplus();
       outFileName.Append("promptDplus");
     }else if (fDDecay==kDstarD0pi){
-      histPt = LoadFONLL13TeV_Dstar();
+      histPt = LoadFONLL13TeV_promptDstar();
       outFileName.Append("promptDstar");
     }else{
-      histPt = LoadFONLL13TeV_D0();
+      histPt = LoadFONLL13TeV_promptD0();
       outFileName.Append("promptD0");
     }
     outFileName.Append("FONLL13ptshape.root");
-  }else if(fPtShape==kPythia13TeV){
+  }else if(fPtShape==kPythia13TeVprompt){
     if(fDDecay==kDplusKpipi){
-      histPt = LoadPYTHIA13TeV_Dplus();
+      histPt = LoadPYTHIA13TeV_promptDplus();
       outFileName.Append("promptDplus");
     }else if (fDDecay==kDstarD0pi){
-      histPt = LoadPYTHIA13TeV_Dstar();
+      histPt = LoadPYTHIA13TeV_promptDstar();
       outFileName.Append("promptDstar");
     }else if (fDDecay==kDsKKpi){
-      histPt = LoadPYTHIA13TeV_Ds();
+      histPt = LoadPYTHIA13TeV_promptDs();
       outFileName.Append("promptDs");
     }else{
-      histPt = LoadPYTHIA13TeV_D0();
+      histPt = LoadPYTHIA13TeV_promptD0();
       outFileName.Append("promptD0");
     }
     outFileName.Append("PYTHIA13ptshape.root");
@@ -411,7 +411,7 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
 
 
 //___________________________________________________
-TH1D* LoadFONLL13TeV_D0()
+TH1D* LoadFONLL13TeV_promptD0()
 {
   TH1D *hFONLL13 = new TH1D("hFONLL13TeV_D0", "", 80, 0., 40.);
   Float_t val[80] = {
@@ -432,7 +432,7 @@ TH1D* LoadFONLL13TeV_D0()
 
 
 //___________________________________________________
-TH1D* LoadFONLL13TeV_Dplus()
+TH1D* LoadFONLL13TeV_promptDplus()
 {
   TH1D *hFONLL13 = new TH1D("hFONLL13TeV_Dplus", "", 80, 0., 40.);
   Float_t val[80] = {
@@ -453,7 +453,7 @@ TH1D* LoadFONLL13TeV_Dplus()
 
 
 //___________________________________________________
-TH1D* LoadFONLL13TeV_Dstar()
+TH1D* LoadFONLL13TeV_promptDstar()
 {
   TH1D *hFONLL13 = new TH1D("hFONLL13TeV_Dstar", "", 80, 0., 40.);
   Float_t val[80] = {
@@ -474,7 +474,7 @@ TH1D* LoadFONLL13TeV_Dstar()
 
 
 //___________________________________________________
-TH1D* LoadPYTHIA13TeV_D0()
+TH1D* LoadPYTHIA13TeV_promptD0()
 {
   TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_D0", "", 40, 0., 40.);
   Float_t val[40] = {
@@ -491,7 +491,7 @@ TH1D* LoadPYTHIA13TeV_D0()
 
 
 //___________________________________________________
-TH1D* LoadPYTHIA13TeV_Dplus()
+TH1D* LoadPYTHIA13TeV_promptDplus()
 {
   TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Dplus", "", 40, 0., 40.);
   Float_t val[40] = {
@@ -508,7 +508,7 @@ TH1D* LoadPYTHIA13TeV_Dplus()
 
 
 //___________________________________________________
-TH1D* LoadPYTHIA13TeV_Dstar()
+TH1D* LoadPYTHIA13TeV_promptDstar()
 {
   TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Dstar", "", 40, 0., 40.);
   Float_t val[40] = {
@@ -525,7 +525,7 @@ TH1D* LoadPYTHIA13TeV_Dstar()
 
 
 //___________________________________________________
-TH1D* LoadPYTHIA13TeV_Ds()
+TH1D* LoadPYTHIA13TeV_promptDs()
 {
   TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Ds", "", 40, 0., 40.);
   Float_t val[40] = {
