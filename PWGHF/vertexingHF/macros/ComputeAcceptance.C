@@ -20,7 +20,7 @@
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kPythia13TeVprompt,kPythia13TeVfeeddown};
+enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kFONLL13TeVfeeddown,kPythia13TeVprompt,kPythia13TeVfeeddown};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -43,6 +43,8 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
 TH1D* LoadFONLL13TeV_promptD0();
 TH1D* LoadFONLL13TeV_promptDplus();
 TH1D* LoadFONLL13TeV_promptDstar();
+TH1D* LoadFONLL13TeV_feeddownD();
+TH1D* LoadFONLL13TeV_feeddownDstar();
 TH1D* LoadPYTHIA13TeV_promptD0();
 TH1D* LoadPYTHIA13TeV_promptDplus();
 TH1D* LoadPYTHIA13TeV_promptDstar();
@@ -168,6 +170,16 @@ void ComputeAcceptance(){
     }else{
       histPt = LoadFONLL13TeV_promptD0();
       outFileName.Append("promptD0");
+    }
+    outFileName.Append("FONLL13ptshape.root");
+
+  }else if (fPtShape==kFONLL13TeVfeeddown){
+    if (fDDecay==kDstarD0pi){
+      histPt = LoadFONLL13TeV_feeddownDstar();
+      outFileName.Append("feeddownDstar");
+    }else{
+      histPt = LoadFONLL13TeV_feeddownD();
+      outFileName.Append("feeddownD");
     }
     outFileName.Append("FONLL13ptshape.root");
   }else if(fPtShape==kPythia13TeVprompt){
@@ -484,6 +496,48 @@ TH1D* LoadFONLL13TeV_promptDstar()
     1.0517e+05, 9.5920e+04, 8.7626e+04, 8.0172e+04, 7.3461e+04, 6.7409e+04, 6.1940e+04, 5.6992e+04, 5.2508e+04, 4.8437e+04,
     4.4736e+04, 4.1367e+04, 3.8296e+04, 3.5492e+04, 3.2929e+04, 3.0583e+04, 2.8433e+04, 2.6460e+04, 2.4648e+04, 2.2981e+04,
     2.1446e+04, 2.0032e+04, 1.8727e+04, 1.7522e+04, 1.6407e+04, 1.5376e+04, 1.4420e+04, 1.3535e+04, 1.2713e+04, 1.1950e+04
+  };
+  for (Int_t ibin=0; ibin<80; ++ibin) hFONLL13->SetBinContent(ibin+1, val[ibin]);
+
+  return hFONLL13;
+}
+
+
+
+//___________________________________________________
+TH1D* LoadFONLL13TeV_feeddownD()
+{ // B->D with B.R=1
+  TH1D *hFONLL13 = new TH1D("FONLL13TeV_feeddownD", "", 80, 0., 40.);
+  Float_t val[80] = {
+    1.0310e+07, 2.6790e+07, 3.4480e+07, 3.4430e+07, 3.0200e+07, 2.4740e+07, 1.9600e+07, 1.5300e+07, 1.1880e+07, 9.2260e+06,
+    7.1950e+06, 5.6470e+06, 4.4650e+06, 3.5580e+06, 2.8570e+06, 2.3120e+06, 1.8860e+06, 1.5490e+06, 1.2810e+06, 1.0660e+06,
+    8.9260e+05, 7.5170e+05, 6.3650e+05, 5.4160e+05, 4.6310e+05, 3.9770e+05, 3.4300e+05, 2.9700e+05, 2.5820e+05, 2.2520e+05,
+    1.9710e+05, 1.7310e+05, 1.5240e+05, 1.3460e+05, 1.1920e+05, 1.0590e+05, 9.4290e+04, 8.4160e+04, 7.5290e+04, 6.7500e+04,
+    6.0650e+04, 5.4610e+04, 4.9270e+04, 4.4530e+04, 4.0320e+04, 3.6580e+04, 3.3240e+04, 3.0250e+04, 2.7570e+04, 2.5170e+04,
+    2.3020e+04, 2.1070e+04, 1.9320e+04, 1.7740e+04, 1.6310e+04, 1.5010e+04, 1.3830e+04, 1.2760e+04, 1.1790e+04, 1.0900e+04,
+    1.0090e+04, 9.3520e+03, 8.6760e+03, 8.0560e+03, 7.4890e+03, 6.9670e+03, 6.4880e+03, 6.0470e+03, 5.6410e+03, 5.2670e+03,
+    4.9220e+03, 4.6030e+03, 4.3080e+03, 4.0350e+03, 3.7830e+03, 3.5480e+03, 3.3310e+03, 3.1290e+03, 2.9410e+03, 2.7670e+03
+  };
+  for (Int_t ibin=0; ibin<80; ++ibin) hFONLL13->SetBinContent(ibin+1, val[ibin]);
+
+  return hFONLL13;
+}
+
+
+
+//___________________________________________________
+TH1D* LoadFONLL13TeV_feeddownDstar()
+{ // B->D* with B.R=1
+  TH1D *hFONLL13 = new TH1D("FONLL13TeV_feeddownDstar", "", 80, 0., 40.);
+  Float_t val[80] = {
+    9.5260e+06, 2.5070e+07, 3.2890e+07, 3.3540e+07, 3.0010e+07, 2.5000e+07, 2.0090e+07, 1.5860e+07, 1.2430e+07, 9.7280e+06,
+    7.6360e+06, 6.0240e+06, 4.7820e+06, 3.8240e+06, 3.0800e+06, 2.5000e+06, 2.0430e+06, 1.6810e+06, 1.3930e+06, 1.1610e+06,
+    9.7390e+05, 8.2120e+05, 6.9610e+05, 5.9300e+05, 5.0750e+05, 4.3620e+05, 3.7650e+05, 3.2620e+05, 2.8370e+05, 2.4760e+05,
+    2.1680e+05, 1.9050e+05, 1.6780e+05, 1.4830e+05, 1.3140e+05, 1.1680e+05, 1.0400e+05, 9.2870e+04, 8.3100e+04, 7.4530e+04,
+    6.6990e+04, 6.0330e+04, 5.4440e+04, 4.9220e+04, 4.4580e+04, 4.0440e+04, 3.6760e+04, 3.3460e+04, 3.0510e+04, 2.7860e+04,
+    2.5470e+04, 2.3330e+04, 2.1390e+04, 1.9640e+04, 1.8060e+04, 1.6630e+04, 1.5320e+04, 1.4140e+04, 1.3060e+04, 1.2080e+04,
+    1.1190e+04, 1.0370e+04, 9.6190e+03, 8.9330e+03, 8.3050e+03, 7.7270e+03, 7.1970e+03, 6.7080e+03, 6.2580e+03, 5.8440e+03,
+    5.4610e+03, 5.1080e+03, 4.7810e+03, 4.4790e+03, 4.1980e+03, 3.9390e+03, 3.6970e+03, 3.4740e+03, 3.2650e+03, 3.0720e+03
   };
   for (Int_t ibin=0; ibin<80; ++ibin) hFONLL13->SetBinContent(ibin+1, val[ibin]);
 
