@@ -381,7 +381,11 @@ Bool_t AliLumiTools::GetLumiCTPRefClass(int run, TString& refClass, double &refS
   else if (run>=246995 && run<=256147) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=256148 && run<=256157) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
   else if (run>=256158 && run<=265301) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=265304               ) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
+  else if (run>=265304 && run<=265586) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
+  else if (run>=265587 && run<=267131) { refSigma=1715.; refEff = 0.82; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // T0 efficiency estimate from MC, refSigma assuming cs(INEL) = 2092
+  else if (run>=267132 && run<=267166) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
+  else if (run>=267167               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  
   //
   if (refClass.IsNull() || refSigma<1) {
     AliErrorClassF("Did not find reference class for run %d",run);
