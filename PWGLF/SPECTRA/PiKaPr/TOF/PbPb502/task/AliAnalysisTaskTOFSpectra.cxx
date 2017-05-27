@@ -226,8 +226,9 @@ hTimeOfFlightResFinePerEvent(0x0),
 
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
-fTOFmin(10000),
+fVtxZCut(10.),
 fTOFmax(80000),
+fTOFmin(10000),
 fLengthmin(350),
 fRapidityCut(0.5),
 hChannelTime(0x0),
@@ -2380,7 +2381,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   }
   
   Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
-  if(TMath::Abs(MCvtx->GetZ()) > 10) passMCSampSel = kFALSE;//Position on Z of the vertex
+  if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
   
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
@@ -2933,7 +2934,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   
   //Check the position of the vertex
   fVertStatus++;
-  if(TMath::Abs(fPrimVertex[2]) > 10.){
+  if(TMath::Abs(fPrimVertex[2]) > fVtxZCut){
     AliError(Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
     return 0x0;
   }

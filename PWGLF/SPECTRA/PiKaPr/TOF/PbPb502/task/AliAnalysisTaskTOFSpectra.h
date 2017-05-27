@@ -559,6 +559,7 @@ private:
   TArrayF fMultiplicityBin;  ///<  Array of the Event Multiplicity bins
   
   //Cut values
+  const Double_t fVtxZCut;     ///<  Max Z displacement of the vertex position
   const Double_t fTOFmax;      ///<  Max TOF time mesured for tracks
   const Double_t fTOFmin;      ///<  Min TOF time mesured for tracks
   const Double_t fLengthmin;   ///<  Min length for tracks
