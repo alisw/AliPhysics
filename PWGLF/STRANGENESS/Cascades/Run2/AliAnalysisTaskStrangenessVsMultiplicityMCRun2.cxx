@@ -2216,8 +2216,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarV0DCAptZ=zm;
             
             fTreeCascVarBachelorDCAptUncertainty = GetErrorInPosition(bachTrackXi);
-            fTreeCascVarV0DCAptUncertainty_V0Pos = pv0->GetEffectiveSigmaD0();
-            fTreeCascVarV0DCAptUncertainty_V0Ang = pv0->GetEffectiveSigmaAP0();
+            fTreeCascVarV0DCAptUncertainty_V0Pos = pv0->GetSigmaD0();
+            fTreeCascVarV0DCAptUncertainty_V0Ang = pv0->GetSigmaAP0();
         }
         //\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
         //\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
@@ -2671,7 +2671,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                     TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
 
                     // - Step 4.3 : level of Xi candidate
-                    
+                    //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+                    //Creation vertex of any one of the daughters!
                     fTreeCascVarV0DecayXMC = mcPosV0Dghter->Vx();
                     fTreeCascVarV0DecayYMC = mcPosV0Dghter->Vy();
                     fTreeCascVarV0DecayZMC = mcPosV0Dghter->Vz();
@@ -2702,6 +2703,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                                     if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
                                         lPDGCodeCascade = lPID_BachMother;
                                         lXiTransvMomMC = mcMotherBach->Pt();
+                                        //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+                                        //Creation vertex of any one of the daughters!
                                         fTreeCascVarCascadeDecayXMC = mcBach->Vx();
                                         fTreeCascVarCascadeDecayYMC = mcBach->Vy();
                                         fTreeCascVarCascadeDecayZMC = mcBach->Vz();
