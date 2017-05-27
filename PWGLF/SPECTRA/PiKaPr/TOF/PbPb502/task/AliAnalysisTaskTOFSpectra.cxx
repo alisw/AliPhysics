@@ -454,16 +454,18 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
       
-      hDenTrkVertMultTrk[charge][species] = 0x0;
-      hDenTrkTriggerMultTrk[charge][species] = 0x0;
+      hDenTrkTrigger[charge][species]         = 0x0;
+      hDenTrkMCVertexZ[charge][species]       = 0x0;
+      hDenTrkVertex[charge][species]          = 0x0;
+      hDenTrkVertexMCVertexZ[charge][species] = 0x0;
       
       for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
-        hDenPrimMCYCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
+        hDenPrimMCYCut[charge][species][mult]                = 0x0;
+        hDenPrimMCEtaCut[charge][species][mult]              = 0x0;
+        hDenPrimMCEtaYCut[charge][species][mult]             = 0x0;
+        hNumPrimMCTrueMatch[charge][species][mult]           = 0x0;
+        hNumPrimMCTrueMatchYCut[charge][species][mult]       = 0x0;
+        hNumPrimMCTrueMatchYCutTPC[charge][species][mult]    = 0x0;
         hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
       }
       
@@ -1201,13 +1203,21 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
         for(Int_t species = 0; species < 3; species++){//Species loop
           
-          hDenTrkVertMultTrk[charge][species] = new TH1F(Form("hDenTrkVert_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkVertMultTrk[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkVertMultTrk[charge][species]);
+          hDenTrkTrigger[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkTrigger[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkTrigger[charge][species]);
           
-          hDenTrkTriggerMultTrk[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkTriggerMultTrk[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkTriggerMultTrk[charge][species]);
+          hDenTrkMCVertexZ[charge][species] = new TH1F(Form("hDenTrkMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkMCVertexZ[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkMCVertexZ[charge][species]);
+          
+          hDenTrkVertex[charge][species] = new TH1F(Form("hDenTrkVert_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkVertex[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkVertex[charge][species]);
+          
+          hDenTrkVertexMCVertexZ[charge][species] = new TH1F(Form("hDenTrkVertMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkVertexMCVertexZ[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
           
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
             hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
@@ -2358,11 +2368,24 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   fMCStack = fMCEvt->Stack();
   if (!fMCStack) return;
   
-  fNMCTracks = fMCEvt->GetNumberOfTracks();
-  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();
+  //Get the number of tracks in the event
+  fNMCTracks = fMCEvt->GetNumberOfTracks();//Number of particles
+  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();//Number of primary particles
   
+  //Get the information of the MC vertex
+  const  AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
+  if (!MCvtx) {
+    AliError("Could not retrieve MC vertex");
+    return;
+  }
+  
+  Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
+  if(TMath::Abs(MCvtx->GetZ()) > 10) passMCSampSel = kFALSE;//Position on Z of the vertex
+  
+  //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
   
+  //Track flags
   Bool_t passeta = kTRUE;
   Bool_t passy = kTRUE;
   TParticle * trackMC = nullptr;
@@ -2373,11 +2396,13 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     passeta = kTRUE;
     passy = kTRUE;
     
+    //Get the particle in the stack at the index i
     trackMC = fMCStack->Particle(i);
+    
+    //Get the kinematic values of the particles
     fPMC = trackMC->P();
     fPtMC = trackMC->Pt();
     fEtaMC = trackMC->Eta();
-    //if(TMath::Abs(treeMCEtaBis)>= 0.9){continue;}
     fPhiMC = trackMC->Phi();
     fPdgcode = trackMC->GetPdgCode();
     if(TMath::Abs(trackMC->Y()) >= fRapidityCut) passy = kFALSE;//Rapidity cut
@@ -2389,15 +2414,21 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     else if((TMath::Abs(fPdgcode) == 2212)) fPdgIndex = 2;//Particle is a Proton
     else continue;
     
-    if(fPdgcode > 0) fSignMC = kFALSE;
-    else fSignMC = kTRUE;
+    if(fPdgcode > 0) fSignMC = kFALSE;//Particle is positive
+    else fSignMC = kTRUE;             //Particle is negative
     
-    if(passy) hDenTrkTriggerMultTrk[fSignMC][fPdgIndex]->Fill(fPtMC);
+    if(passy){
+      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(passMCSampSel) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+    }
     
     if(!fEvtPhysSelected) continue;//After Physics Selection
     //vertex efficiency correction+senza taglio in eta
     
-    if(passy) hDenTrkVertMultTrk[fSignMC][fPdgIndex]->Fill(fPtMC);
+    if(passy){
+      hDenTrkVertex[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(passMCSampSel) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+    }
     
     if(!fEvtSelected) continue;//After Event Selection
     

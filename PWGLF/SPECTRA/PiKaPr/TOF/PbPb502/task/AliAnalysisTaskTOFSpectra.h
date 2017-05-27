@@ -762,8 +762,10 @@ private:
   TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
   TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency numerator with kTIME, kTRDOut flags
   TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags
-  TH1F* hDenTrkVertMultTrk[2][3];                              ///<  Matching efficiency denominator with MC truth for events that passed Vertex Cuts
-  TH1F* hDenTrkTriggerMultTrk[2][3];                           ///<  Matching efficiency denominator with MC truth for events that passed Physics Selection
+  TH1F* hDenTrkTrigger[2][3];                                  ///<  Generated particles with MC truth on PID for events that passed Physics Selection
+  TH1F* hDenTrkMCVertexZ[2][3];                                ///<  Generated particles with MC truth on PID for events that passed Physics Selection
+  TH1F* hDenTrkVertex[2][3];                                   ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH1F* hDenTrkVertexMCVertexZ[2][3];                          ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
   TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];                    ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
   TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];                  ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
   TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];                 ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
