@@ -1,6 +1,16 @@
 #ifndef AliUtilTOFParams_h
 #define AliUtilTOFParams_h
 
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Set of parameters and utilities for the Pi/Ka/Pr analysis with TOF    //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TROOT.h>
