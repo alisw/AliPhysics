@@ -448,7 +448,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   }
 
   /* IMPLEMENT INEL > 0 */
-
+/*
   Float_t totalNch = 0;
   Float_t totalNtr = 0;
   if (fUseMC) {
@@ -483,7 +483,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
   }
 
-
+*/
 
 
   //
@@ -801,11 +801,51 @@ fVtxOK &= (fESDVtx[2] >= fZVertexMin && fESDVtx[2] <= fZVertexMax);
 //
 //  if (!fVtxOK || !fIsSelected) return;
 
-if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, totalNtr);
+
+
+
+  Float_t totalNch = 0;
+  Float_t totalNtr = 0;
+  if (fUseMC && (fVtxMC[2] >= fZVertexMin && fVtxMC[2] <= fZVertexMax)) {
+    for (Int_t i = 0; i < fStack->GetNtrack(); i++) {
+      if (!fStack->IsPhysicalPrimary(i))
+      continue;
+      AliMCParticle* particle = (AliMCParticle*)fMCEvent->GetTrack(i);
+      if (!particle)
+      continue;
+      if (particle->Charge() == 0)
+      continue;
+      if (TMath::Abs(particle->Eta()) < 1.)
+      //printf(" eta =  %f \n", particle->Eta());
+      totalNch++;
+    }
+    if (totalNch < 1) return;
+  }
+
+  Bool_t inelgt0 = kFALSE;
+    if (fVtxOK && fIsSelected){
+  for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
+    if (TMath::Abs(mult->GetEta(i)) < 1.) {
+      totalNtr++;
+      inelgt0 = kTRUE;
+    }
+  }
+}
+
+
+  //if (fVtxOK && fUseMC) {
+    // fill matrix
+    ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
+  //}
+
+
+
+
+if (fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, totalNtr);
 ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
 
 Float_t totalNtr2 = 0.0;
-if (fUseMC && fVtxOK && fIsSelected) {
+if (fVtxOK) {
 for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
   if (TMath::Abs(mult->GetEta(i)) < 1.) {
     totalNtr2++;
@@ -813,7 +853,7 @@ for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
 }
 }
 
-((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency. 
+ ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency.
 
 
 
