@@ -293,7 +293,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     trackCutsV0.SetRequireTPCRefit(kTRUE);
     trackCutsV0.SetMaxChi2PerClusterTPC(5);
     trackCutsV0.SetMinNClustersTPC(60);
-  } else if(!fUseAnalysisTrkSel){
+  } else {
       trackCutsV0.SetAcceptKinkDaughters(kFALSE);
       trackCutsV0.SetMinNClustersTPC(80);
       trackCutsV0.SetMaxChi2PerClusterITS(10);// TO BE INVESTIGATED !!!!!!!!!!!!!!
