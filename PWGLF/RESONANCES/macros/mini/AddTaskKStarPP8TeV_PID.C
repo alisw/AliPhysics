@@ -142,7 +142,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
 
 
    
-   if (isPP && (!isMC)) { 
+   if (isPP && (!isMC)&&cutVertex) { 
      cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
      //cutVertex->SetCheckZResolutionSPD();//A Khuntia
@@ -159,11 +159,14 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    cutEventUtils->SetCheckSPDClusterVsTrackletBG();*/
    //------------------------------------
    // define and fill cut set for event cut
-   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
+
+   AliRsnCutSet* eventCuts=0;
+   if(cutVertex){
+   eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
    task->SetEventCuts(eventCuts);
-   
+   }
    //
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
    //   
