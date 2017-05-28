@@ -2188,7 +2188,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             AliESDv0 *pv0=&vertex;
             AliExternalTrackParam bt(*bachTrackXi), *pbt=&bt;
             Double_t dcaCascade=PropagateToDCA(pv0,pbt,lMagneticField); //propagate call
-            fTreeCascVarDCADaughters_Test = dcaCascade; 
+            fTreeCascVarDCADaughters_Test = dcaCascade;
             
             //_____________________________________________________________________________
             //Concluded, now calculating relevant positions
@@ -2216,8 +2216,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarV0DCAptZ=zm;
             
             fTreeCascVarBachelorDCAptUncertainty = GetErrorInPosition(bachTrackXi);
-            fTreeCascVarV0DCAptUncertainty_V0Pos = pv0->GetEffectiveSigmaD0();
-            fTreeCascVarV0DCAptUncertainty_V0Ang = pv0->GetEffectiveSigmaAP0();
+            fTreeCascVarV0DCAptUncertainty_V0Pos = pv0->GetSigmaD0();
+            fTreeCascVarV0DCAptUncertainty_V0Ang = pv0->GetSigmaAP0();
         }
         //\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
         //\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
@@ -2671,10 +2671,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                     TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
 
                     // - Step 4.3 : level of Xi candidate
-                    
-                    fTreeCascVarV0DecayXMC = mcMotherPosV0Dghter->Vx();
-                    fTreeCascVarV0DecayYMC = mcMotherPosV0Dghter->Vy();
-                    fTreeCascVarV0DecayZMC = mcMotherPosV0Dghter->Vz();
+                    //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+                    //Creation vertex of any one of the daughters!
+                    fTreeCascVarV0DecayXMC = mcPosV0Dghter->Vx();
+                    fTreeCascVarV0DecayYMC = mcPosV0Dghter->Vy();
+                    fTreeCascVarV0DecayZMC = mcPosV0Dghter->Vz();
 
                     Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
                     Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
@@ -2702,9 +2703,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                                     if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
                                         lPDGCodeCascade = lPID_BachMother;
                                         lXiTransvMomMC = mcMotherBach->Pt();
-                                        fTreeCascVarCascadeDecayXMC = mcMotherBach->Vx();
-                                        fTreeCascVarCascadeDecayYMC = mcMotherBach->Vy();
-                                        fTreeCascVarCascadeDecayZMC = mcMotherBach->Vz();
+                                        //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+                                        //Creation vertex of any one of the daughters!
+                                        fTreeCascVarCascadeDecayXMC = mcBach->Vx();
+                                        fTreeCascVarCascadeDecayYMC = mcBach->Vy();
+                                        fTreeCascVarCascadeDecayZMC = mcBach->Vz();
                                         if( lMCstack->IsPhysicalPrimary       (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 1; //Is Primary!
                                         if( lMCstack->IsSecondaryFromWeakDecay(lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 2; //Weak Decay!
                                         if( lMCstack->IsSecondaryFromMaterial (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 3; //From Material!
