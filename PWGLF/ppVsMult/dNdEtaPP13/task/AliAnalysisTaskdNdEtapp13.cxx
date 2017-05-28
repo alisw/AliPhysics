@@ -833,10 +833,10 @@ fVtxOK &= (fESDVtx[2] >= fZVertexMin && fESDVtx[2] <= fZVertexMax);
 }
 
 
-  //if (fVtxOK && fUseMC) {
+  if (fUseMC) {
     // fill matrix
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
-  //}
+}
 
 
 
