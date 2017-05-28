@@ -26,6 +26,7 @@
 
 #define LOG_NO_INFO
 #define LOG_NO_DEBUG
+#define LOG_NO_WARNING
 #include "AliLog.h"
 #include "Riostream.h"
 #include "TChain.h"
@@ -177,12 +178,17 @@ fTreemode(tree),
 fChannelmode(chan),
 fCutmode(cuts),
 fSimpleCutmode(simplecuts),
+
+//Task setup flags
+fUseAliEveCut(kTRUE),
 fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fRecalibrateTOF(kFALSE),
 fFineTOFReso(kFALSE),
+
+//Mask for physics selection
 fSelectBit(AliVEvent::kINT7),
 
 tb(),//TBenchmark
@@ -626,33 +632,43 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Read from ESD");
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliESDtrackCuts");
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Phys. Sel. + Trig");
-    if(fHImode){
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");//Multiplicity estimator initialized
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");//kNoCalib: centrality not calibrated, this is the default value for the centrality code
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");//kRejTrigger: do not pass the trigger
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has INEL>0");//kRejINELgtZERO: do not pass INEL>0 Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Vtx Cut");//pkRejVzCut: do not pass vertex Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Pile-up");//kRejPileupInMultBins: do not pass Pile-up Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");//kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters");// kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");//kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
+    if(fUseAliEveCut){
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kDAQincomplete");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
     }
     else{
-      
-      //AliPPVsMultUtils::IsMinimumBias(fESD))
-      //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
-      //AliPPVsMultUtils::IsINELgtZERO(fESD))
-      //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
-      //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
-      
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsMinimumBias");//AliPPVsMultUtils::IsMinimumBias(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsAcceptedVertexPosition");//AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO");//AliPPVsMultUtils::IsINELgtZERO(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins");//AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices");//AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
-      
+      if(fHImode){
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");//Multiplicity estimator initialized
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");//kNoCalib: centrality not calibrated, this is the default value for the centrality code
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");//kRejTrigger: do not pass the trigger
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has INEL>0");//kRejINELgtZERO: do not pass INEL>0 Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Vtx Cut");//pkRejVzCut: do not pass vertex Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Pile-up");//kRejPileupInMultBins: do not pass Pile-up Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");//kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters");// kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");//kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
+      }
+      else{
+        
+        //AliPPVsMultUtils::IsMinimumBias(fESD))
+        //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
+        //AliPPVsMultUtils::IsINELgtZERO(fESD))
+        //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+        //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        
+        if(fSelectBit == AliVEvent::kINT7) hNEvt->GetXaxis()->SetBinLabel(binstart++, "IskINT7"); //If the trigger requested is kINT7 otherwise look for the MB as in the standard case
+        else hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsMinimumBias"); //AliPPVsMultUtils::IsMinimumBias(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsAcceptedVertexPosition"); //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO"); //AliPPVsMultUtils::IsINELgtZERO(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins"); //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices"); //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        
+      }
     }
     
+    //Check on the bins present in the histograms
     if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
     
@@ -2544,12 +2560,29 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
   
-  if (!fEventCut.AcceptEvent(fESD)) {
-    return kFALSE;
+  if(fUseAliEveCut){
+    
+    //Fill the histogram with the number of events per cut
+    if(fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
+      hNEvt->Fill(binstart++);
+      if(fEventCut.PassedCut(AliEventCuts::kPileUp)) {
+        hNEvt->Fill(binstart++);
+        if(fEventCut.PassedCut(AliEventCuts::kVertexQuality)) {
+          hNEvt->Fill(binstart++);
+          if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+            hNEvt->Fill(binstart++);
+          }
+        }
+      }
+    }
+    
+    //Global cut
+    if (!fEventCut.AcceptEvent(fESD)) {
+      return kFALSE;
+    }
+    else return kTRUE;
+    
   }
-  else return kTRUE;
-  
-  
   
   if(fHImode){//Heavy Ion
     if(fEvtMult == -999){//Multiplicity estimator not initialized
@@ -2614,7 +2647,7 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
     //------------------------------------------------
     //Step 1: Check for Min-Bias Trigger
     //------------------------------------------------
-    if(AliPPVsMultUtils::IsMinimumBias(fESD)){
+    if(fSelectBit == AliVEvent::kINT7 || AliPPVsMultUtils::IsMinimumBias(fESD)){
       hNEvt->Fill(binstart++);
       //------------------------------------------------
       //Step 2: Check for INEL>0
