@@ -281,7 +281,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             fQAhist->Fill("Tracks_all",1);
             //Apply global track filter
             if(!fIsAOD){
-                if(!(fESDtrackCuts->AcceptTrack(static_cast< const AliESDtrack*>(track)))){ 
+                if(!(fESDtrackCuts->AcceptTrack(static_cast<const AliESDtrack*>(track)))){ 
                     continue; 
                 }
             }
@@ -291,11 +291,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 }
             }
 
-            //Apply momentum and eta cuts
+            //Apply some track cuts 
             Double_t pt   = track->Pt();
             if( pt < fPtMin || pt > fPtMax ){ continue; }
             Double_t eta  = track->Eta();
             if( eta < fEtaMin || eta > fEtaMax ){ continue; } 
+
+
+            Double_t nTPCclusters = track->GetTPCNcls(); 
+            Double_t nTPCfindable = track->GetTPCNclsF();
+            if( nTPCclusters < 70 || nTPCfindable < 60){ continue;}
+
             fQAhist->Fill("Tracks_KineCuts", 1);
 
             Double_t phi  = track->Phi();
@@ -340,11 +346,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Double_t TPCsignal = track->GetTPCsignal();
             Double_t TOFsignal = track->GetTOFsignal();
 
-            Double_t nTPCclusters = track->GetTPCNcls(); 
             Double_t nTPCcrossed = track->GetTPCClusterInfo(2,1);
-            Double_t nTPCfindable = track->GetTPCNclsF();
             Double_t TPCcrossOverFind = 0;
-            if( nTPCclusters < 70 || nTPCfindable < 60){ continue;}
             if(nTPCfindable > 0){
                 TPCcrossOverFind = nTPCcrossed/nTPCfindable;
             }
