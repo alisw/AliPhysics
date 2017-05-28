@@ -505,6 +505,7 @@ private:
   Bool_t fChannelmode;          ///<  Flag to set the analysis only on channel TOF
   Bool_t fCutmode;              ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
   const Int_t fSimpleCutmode;   ///<  Index to set simple configuration of the track cuts
+  const Bool_t fUseAliEveCut;   ///<  Index to set the usage of the AliEventCuts class from OADB to select events
   const Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
   const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
   const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
