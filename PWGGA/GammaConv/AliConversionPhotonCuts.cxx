@@ -1337,7 +1337,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   //    }
   // }
 
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid )==0 && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     if(fHistoTOFbefore){
       Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
       Double_t  times[AliPID::kSPECIESC];
@@ -1358,7 +1358,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   }
   cutIndex++;
   
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)){
+  if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)==0){
     if(fHistoITSSigbefore) fHistoITSSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
     if(fUseITSpid){
       if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
