@@ -218,7 +218,10 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     if(orA<99999 && orC<99999) {
       fResolution->Fill((orA-orC)/2.);
       fTzeroORAplusORC->Fill(meanTOF); 
-      if (ncont>0)   fT0s[0]->Fill(ncont,meanTOF );
+      if (ncont>0)   {
+	fT0s[0]->Fill(ncont,meanTOF );
+	fT0s[3]->Fill(ncont,(orA-orC)/2. );
+      }
     }
   } //if TVDC on
   PostData(1, fTzeroObject);
