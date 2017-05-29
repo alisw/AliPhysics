@@ -262,7 +262,6 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		GetMeanAndSigma(proj, meanCFDvsTime[ibin-1], sigmat);
 		//	TFitResultPtr r = proj->Fit("gaus","SQ");
 		//	if ((Int_t)r==0) meanCFDvsTime[ibin-1] = r->Parameters()[1];
-		printf(" bin %i timestamp %f  meanCFD %f meanhist %f\n",ibin, timestamp[ibin-1], meanCFDvsTime[ibin-1],proj->GetMean() );
 	      }
 	    
 	      else 
@@ -273,7 +272,6 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    fCFDvsTime.AddAtAndExpand(cCFDvsTime,i);
 	    //  cCFDvsTime->Delete();
 	  }
-	  printf ("before write meandiff %f meancfdtime %f meanpedold %f\n",meandiff,meancfdtime, meanpedold);
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0,meancfdtime);
