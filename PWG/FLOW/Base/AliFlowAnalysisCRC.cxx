@@ -19640,15 +19640,10 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   
   if(fMinMulZN==11) {
     if(fRunNum==246087) PassZDCcuts = kFALSE;
-    if(fCentralityEBE<90.) {
-      Double_t cutmin = fMultCutMin->GetBinContent(fMultCutMin->FindBin(fCentralityEBE));
-      Double_t cutmax = fMultCutMax->GetBinContent(fMultCutMax->FindBin(fCentralityEBE));
-      Double_t cutave = fMultCutAv->GetBinContent(fMultCutAv->FindBin(fCentralityEBE));
-      Double_t tightcutmin = cutave - fabs(cutave-cutmin)/4.;
-      Double_t tightcutmax = cutave + fabs(cutave-cutmax)/4.;
-      if(fReferenceMultiplicityEBE<tightcutmin) PassZDCcuts = kFALSE;
-      if(fReferenceMultiplicityEBE>tightcutmax) PassZDCcuts = kFALSE;
-    }
+    Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[fRunBin],fVtxPos[1]-fAvVtxPosY[fRunBin],fVtxPos[2]-fAvVtxPosZ[fRunBin]};
+    if(fabs(fVtxPosCor[0])>4.25e-3) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[1])>3.9e-3) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[2])>5.) PassZDCcuts = kFALSE;
   }
   
   // fill QA plots
