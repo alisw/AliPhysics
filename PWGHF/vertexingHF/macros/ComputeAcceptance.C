@@ -29,7 +29,7 @@ Double_t fEtaMaxDau=0.9;
 Int_t fOptionYFiducial=kFixedY;
 Double_t fYMaxFidAccCut=0.8;
 Int_t fPtShape=kFONLL7TeV;
-TString fDecayTableFileName="$ALICE_PHYSICS/../src/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
+TString fDecayTableFileName="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
 Int_t fDebugLevel=0;
 Int_t totTrials=1000000;
 
@@ -68,7 +68,7 @@ void ComputeAcceptance(){
   if(fDecayTableFileName.CompareTo("")!=0){
     if(fDecayTableFileName.Contains("ALICE_PHYSICS")){
       gSystem->Exec(Form("cp %s .",fDecayTableFileName.Data()));
-      fDecayTableFileName.ReplaceAll("$ALICE_PHYSICS/../src/PWGHF/vertexingHF/macros/","./");
+      fDecayTableFileName.ReplaceAll("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/","./");
     }
     pdec->SetDecayTableFile(fDecayTableFileName.Data());
     pdec->ReadDecayTable();
