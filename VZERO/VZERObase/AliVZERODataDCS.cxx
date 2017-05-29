@@ -35,7 +35,7 @@ class TDatime;
 // AliVZERODataDCS class
 // main aim to introduce the aliases for the VZERO DCS
 // data points to be then
-// stored in the OCDB, and to process them. 
+// stored in the OCDB, and to process them.
 // ProcessData() method called by VZEROPreprocessor
 
 ClassImp(AliVZERODataDCS)
@@ -59,7 +59,7 @@ AliVZERODataDCS::AliVZERODataDCS():
 	for(int i=0;i<kNHvChannel;i++) {
 		fDeadChannel[i] = kFALSE;
 		fMeanHV[i]      = 100.0;
-		fWidthHV[i]     = 0.0; 
+		fWidthHV[i]     = 0.0;
 		fHv[i]          = NULL;
 	}
 }
@@ -82,9 +82,9 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, U
 
   // constructor with arguments
   	for(int i=0;i<kNHvChannel;i++) {
-	 fDeadChannel[i] = kFALSE;        
+	 fDeadChannel[i] = kFALSE;
 	 fMeanHV[i]      = 100.0;
-     fWidthHV[i]     = 0.0; 
+     fWidthHV[i]     = 0.0;
 	}
 	AliInfo(Form("\n\tRun %d \n\tTime Created %s \n\tTime Completed %s \n\tDAQ start %s \n\tDAQ end %s \n\tCTP start %s \n\tCTP end %s   ", nRun,
 		TTimeStamp(startTime).AsString(),
@@ -94,7 +94,7 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, U
 		TTimeStamp(ctpStartTime).AsString(),
 		TTimeStamp(ctpEndTime).AsString()
 		));
-	
+
 	fFEEParameters->SetOwnerValue();
 	Init();
 
@@ -131,14 +131,14 @@ Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
     }
 
     //Introduce(iAlias, aliasArr);
-    
+
     if(aliasArr->GetEntries()<2){
       AliWarning(Form("Alias %s has just %d entries!",
 		    fAliasNames[iAlias].Data(),aliasArr->GetEntries()));
     }
-    
+
     TIter iterarray(aliasArr);
-	
+
     if(iAlias<kNHvChannel){ // Treating HV values
     	Int_t nentries = aliasArr->GetEntries();
 
@@ -154,7 +154,7 @@ Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
 
    			values[iValue] = aValue->GetFloat();
    			times[iValue] = (Double_t) (currentTime);
-			
+
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
 				if(variation > 0.01) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
@@ -162,24 +162,24 @@ Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
 			fHv[iAlias]->Fill(values[iValue]);
 			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
    			iValue++;
-    	}      
-    	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
+    	}
+    	CreateGraph(iAlias, iValue, times, values); // fill graphs
 
   	// calculate mean and rms of the first two histos
 	// and convert index to aliroot channel
-	Int_t iChannel     = GetOfflineChannel(iAlias);	
+	Int_t iChannel     = GetOfflineChannel(iAlias);
 	fMeanHV[iChannel]  = fHv[iAlias]->GetMean();
 	fWidthHV[iChannel] = fHv[iAlias]->GetRMS();
 
     	delete[] values;
-    	delete[] times;	
+    	delete[] times;
 	} else { // Treating FEE Parameters
 		AliDCSValue * lastVal = NULL;
 		while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
 		fFEEParameters->Add(new TObjString(fAliasNames[iAlias].Data()),lastVal);
-	}      
+	}
   }
-  
+
   fIsProcessed=kTRUE;
 
   return success;
@@ -192,7 +192,7 @@ void AliVZERODataDCS::Init(){
 
   TString sindex;
   int iAlias = 0;
-  
+
   for(int iSide = 0; iSide<2 ; iSide++){
   	for(int iRing = 0; iRing<4 ; iRing++){
   		for(int iSector = 0; iSector<8 ; iSector++){
@@ -200,7 +200,7 @@ void AliVZERODataDCS::Init(){
   			else fAliasNames[iAlias] = "V00/HV/V0C/SECTOR";
 			sindex.Form("%d/RING%d",iSector,iRing);
 			fAliasNames[iAlias] += sindex;
-			
+
 			fHv[iAlias] = new TH1F(fAliasNames[iAlias].Data(),fAliasNames[iAlias].Data(), 3000, kHvMin, kHvMax);
 			fHv[iAlias]->GetXaxis()->SetTitle("Hv");
 			iAlias++;
@@ -209,7 +209,7 @@ void AliVZERODataDCS::Init(){
   }
 
  // Time Resolution Parameters
-	
+
 	for(int iCIU = 0; iCIU<8 ; iCIU++){
 		fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/TimeResolution",iCIU);
 		fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/WidthResolution",iCIU);
@@ -235,7 +235,7 @@ void AliVZERODataDCS::Init(){
 	  }
 	}
 
-  if(iAlias!=kNAliases) 
+  if(iAlias!=kNAliases)
   	      AliError(Form("Number of DCS Aliases defined not correct"));
 
 }
@@ -257,7 +257,7 @@ void AliVZERODataDCS::CreateGraph(int i, int dim, const Double_t *x, const Doubl
 {
 
    // Create graphics
-   
+
    TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
 
    gr->GetXaxis()->SetTimeDisplay(1);
@@ -276,10 +276,10 @@ void AliVZERODataDCS::Draw(const Option_t* /*option*/)
   if(!fIsProcessed) return;
 
   if(fGraphs.GetEntries()==0)  return;
-  
+
   TString canvasName;
   TCanvas *cHV[8];
-  
+
   for(int iSide = 0 ;iSide<2;iSide++){
   	for(int iRing=0;iRing<4;iRing++){
   		if(iSide == 0)  canvasName = "V0A_Ring";
@@ -290,12 +290,12 @@ void AliVZERODataDCS::Draw(const Option_t* /*option*/)
   		cHV[iCanvas]->Divide(3,3);
   		for(int iSector=0;iSector<8;iSector++){
   			cHV[iCanvas]->cd(iSector+1);
-  			int iChannel = iSide*32 + iRing*8 + iSector; 
+  			int iChannel = iSide*32 + iRing*8 + iSector;
   			((TGraph*) fGraphs.UncheckedAt(iChannel))->SetMarkerStyle(20);
   			((TGraph*) fGraphs.UncheckedAt(iChannel))->Draw("ALP");
 
   		}
-  		  		
+
   	}
   }
 

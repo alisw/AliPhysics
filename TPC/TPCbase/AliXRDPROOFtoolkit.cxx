@@ -87,7 +87,7 @@ ClassImp(AliXRDPROOFtoolkit)
 
 
 
-TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, const char *fName, Int_t maxFiles, Int_t startFile)
+TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, const char *fName, Int_t maxFiles, Int_t startFile, Int_t checkLevel)
 {
   /// Create a chain of files using the file 'fileIn' as input list
   /// where one line per root file is expected
@@ -98,12 +98,17 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
   /// maxFiles : maximum number of files in the chain
   /// -1 (default) add all possible files starting from 'startFile'
   /// startFile: position of the first file, starting with 0
+  TString finput=fileIn;
+  if (checkLevel>0){
+    FilterList(fileIn,TString::Format("* %s",treeName).Data(), checkLevel); 
+    finput+=".Good";
+  }
 
   TChain* chain = new TChain(treeName);
 
   // Open the input stream
   ifstream in;
-  in.open(fileIn);
+  in.open(finput.Data());
 
   // Read the input list of files and add them to the chain
   TString currentFile;
@@ -133,13 +138,18 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
   return chain;
 }
 
-TChain* AliXRDPROOFtoolkit::MakeChainRandom(const char*fileIn, const char * treeName,const char *fName, Int_t maxFiles, Int_t startFile)
+TChain* AliXRDPROOFtoolkit::MakeChainRandom(const char*fileIn, const char * treeName,const char *fName, Int_t maxFiles, Int_t startFile, Int_t checkLevel)
 {
   /// Create a TDSet - files are in random order
   ///
   /// filein    - input list text file
   /// treename  - containg tree
   /// maxFiles  - maximum number of files included
+  TString finput=fileIn;
+  if (checkLevel>0){
+    FilterList(fileIn,TString::Format("* %s",treeName).Data(), checkLevel); 
+    finput+=".Good";
+  }
 
   TObjArray array(10000);
 
@@ -147,7 +157,7 @@ TChain* AliXRDPROOFtoolkit::MakeChainRandom(const char*fileIn, const char * tree
 
   // Open the input stream
   ifstream in;
-  in.open(fileIn);
+  in.open(finput.Data());
 
   // Read the input list of files and add them to the chain
   TString currentFile;
@@ -286,9 +296,9 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
   /// return value = 0 - Check things  OK
   /// -1 - file not exist or not accesible
   /// -2 - file is zombie
-  /// 		   -3 - tree not present
+  /// -3 - tree not present
   /// -4 - branch not present
-
+  /// -5  - no branhes
   TFile * file = TFile::Open(fileName);
   if (!file) { return -1;}
   if (file->IsZombie()) {file->Close(); delete file; return -2;};
@@ -301,6 +311,9 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
   }
   TTree * tree = (TTree*)file->Get(treeName);
   if (!tree) {file->Close(); delete file; return -3;}
+  if (tree->GetListOfBranches()==NULL) return -5;
+  if (tree->GetListOfBranches()->GetEntries()==0) return -5;
+
   TBranch * branch = 0;
   if (branchName) {
     branch = tree->GetBranch(branchName);

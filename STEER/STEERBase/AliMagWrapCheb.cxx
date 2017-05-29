@@ -420,6 +420,28 @@ Int_t AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const
 }
 
 //__________________________________________________________________________________________________
+Int_t AliMagWrapCheb::GetDipSegmentsForZSlice(int zid, TObjArray& arr) const
+{
+  if (zid<0 || zid>=fNZSegDip) return -1;
+  arr.Clear();
+  arr.SetOwner(kFALSE);
+  int ysegBeg = fBegSegYDip[zid];
+  for (int yid=0;yid<fNSegYDip[zid];yid++) {
+    int yid1 = yid + ysegBeg;
+    int xsegBeg = fBegSegXDip[yid1];
+    for (int xid=0;xid<fNSegXDip[yid1];xid++) {
+      int xid1 = xid + xsegBeg;
+      //      printf("#%2d Adding segment %d\n",arr.GetEntriesFast(),xid1);
+      //      GetParamDip(fSegIDDip[xid1])->Print();
+      arr.AddLast( GetParamDip(fSegIDDip[xid1]) );
+    }    
+  }
+  return arr.GetEntriesFast();
+}
+
+
+
+//__________________________________________________________________________________________________
 Int_t AliMagWrapCheb::FindSolSegment(const Double_t *rpz) const 
 {
   // find the segment containing point xyz. If it is outside find the closest segment 

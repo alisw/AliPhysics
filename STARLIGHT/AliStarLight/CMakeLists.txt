@@ -37,6 +37,7 @@ set(SRCS
     AliGenStarLight.cxx
     AliDecayerSLEvtGen.cxx
     AliGenSLEvtGen.cxx
+    AliSLEventHeader.cxx
    )
 
 # Headers from sources

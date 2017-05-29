@@ -15,28 +15,28 @@
 
 #include "AliADSDigit.h"
 
-ClassImp(AliADSDigit)
+ClassImp(AliADSDigit);
 
 //__________________________________________________________________________
 AliADSDigit::AliADSDigit()
-   :AliDigit(),
-    fPMNumber(0),
-    fNBins(0),
-    fCharges(NULL)
+  : AliDigit()
+  , fPMNumber(0)
+  , fNBins(0)
+  , fCharges(NULL)
 {
   // Standard default
   // constructor
 }
 
 //__________________________________________________________________________
-AliADSDigit::AliADSDigit(Int_t pmnumber,
-                         Int_t nbins,
+AliADSDigit::AliADSDigit(Int_t    pmnumber,
+                         Int_t    nbins,
                          Float_t *charges,
-                         Int_t *labels)
-  :AliDigit(),
-   fPMNumber(pmnumber),
-   fNBins(nbins),
-   fCharges(NULL)
+                         Int_t   *labels)
+  : AliDigit()
+  , fPMNumber(pmnumber)
+  , fNBins(nbins)
+  , fCharges(NULL)
 {
   // Constructor
   // Used in the digitizer
@@ -44,12 +44,10 @@ AliADSDigit::AliADSDigit(Int_t pmnumber,
   if (charges) {
     for(Int_t i = 0; i < fNBins; ++i)
       fCharges[i] = charges[i];
-  }
-  else {
+  } else {
     for(Int_t i = 0; i < fNBins; ++i)
       fCharges[i] = 0;
   }
-
   if (labels)
     for(Int_t iTrack = 0; iTrack < 3; ++iTrack) fTracks[iTrack] = labels[iTrack];
 }
@@ -59,10 +57,9 @@ AliADSDigit::~AliADSDigit()
 {
   // Destructor
   // Delete the charges array if it was allocated
-  if (fCharges) {
+  if (fCharges)
     delete [] fCharges;
-    fCharges = NULL;
-  }
+  fCharges = NULL;
 }
 
 void AliADSDigit::Clear(Option_t* )
@@ -72,8 +69,8 @@ void AliADSDigit::Clear(Option_t* )
   fCharges = NULL;
 }
 //__________________________________________________________________________
-void AliADSDigit::Print(const Option_t*) const
+void AliADSDigit::Print(Option_t*) const
 {
-    // Dumps digit object
-    Dump();
+  // Dumps digit object
+  Dump();
 }

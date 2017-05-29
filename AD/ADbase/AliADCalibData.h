@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADCALIBDATA_H
 #define ALIADCALIBDATA_H
 
@@ -10,12 +11,12 @@
 class AliADDataDCS;
 
 
-class AliADCalibData: public TNamed {
+class AliADCalibData : public TNamed {
 
- public:
+public:
   AliADCalibData();
   AliADCalibData(const char* name);
-  
+
   AliADCalibData(const AliADCalibData &calibda);
   AliADCalibData& operator= (const AliADCalibData &calibda);
   virtual ~AliADCalibData();
@@ -33,12 +34,12 @@ class AliADCalibData: public TNamed {
   Float_t  GetADCsigma(Int_t channel)	const {return fADCsigma[channel];}
   Float_t* GetADCsigma()   const {return (float*)fADCsigma;}
   Float_t  GetMeanHV(Int_t channel)	const {return fMeanHV[channel];}
-  Float_t* GetMeanHV()   const {return (float*)fMeanHV;} 
+  Float_t* GetMeanHV()   const {return (float*)fMeanHV;}
   Float_t  GetWidthHV(Int_t channel)	const {return fWidthHV[channel];}
   Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
   Bool_t   IsChannelDead(Int_t channel)	const {return fDeadChannel[channel];}
-  Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;} 
-   
+  Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;}
+
   Float_t  GetGain(Int_t channel);
   Float_t  GetADCperMIP(Int_t channel);
   Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
@@ -64,7 +65,7 @@ class AliADCalibData: public TNamed {
   Float_t  GetDiscriThr(Int_t channel)	const {return fDiscriThr[channel];}
   Float_t* GetDiscriThr()   const {return (Float_t*)fDiscriThr;}
   Float_t  GetCalibDiscriThr(Int_t channel);
-  
+
   UShort_t * GetClk1Win1() const {return (UShort_t*)fClk1Win1;};
   UShort_t GetClk1Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk1Win1[board]:0);};
   UShort_t * GetClk2Win1() const {return (UShort_t*)fClk2Win1;};
@@ -79,22 +80,22 @@ class AliADCalibData: public TNamed {
   UShort_t GetDelayClk1Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk1Win1[board]:0);};
   UShort_t * GetDelayClk2Win1() const {return (UShort_t*)fDelayClk2Win1;};
   UShort_t GetDelayClk2Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk2Win1[board]:0);};
-  
+
   UShort_t * GetDelayClk1Win2() const {return (UShort_t*)fDelayClk1Win2;};
   UShort_t GetDelayClk1Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk1Win2[board]:0);};
   UShort_t * GetDelayClk2Win2() const {return (UShort_t*)fDelayClk2Win2;};
   UShort_t GetDelayClk2Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk2Win2[board]:0);};
-  
+
   UShort_t * GetLatchWin1() const {return (UShort_t*)fLatchWin1;};
   UShort_t GetLatchWin1(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fLatchWin1[board]:0);};
   UShort_t * GetLatchWin2() const {return (UShort_t*)fLatchWin2;};
   UShort_t GetLatchWin2(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fLatchWin2[board]:0);};
-  
+
   UShort_t * GetResetWin1() const {return (UShort_t*)fResetWin1;};
   UShort_t GetResetWin1(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fResetWin1[board]:0);};
   UShort_t * GetResetWin2() const {return (UShort_t*)fResetWin2;};
   UShort_t GetResetWin2(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fResetWin2[board]:0);};
-  
+
   Bool_t * GetPedestalSubtraction() const {return (Bool_t*) fPedestalSubtraction;};
   Bool_t GetPedestalSubtraction(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fPedestalSubtraction[board]:0);};
 
@@ -106,7 +107,7 @@ class AliADCalibData: public TNamed {
 
   UShort_t GetBBAForBGThreshold() const {return fBBAForBGThreshold;};
   UShort_t GetBBCForBGThreshold() const {return fBBCForBGThreshold;};
-  
+
   UShort_t GetMultADAThrLow() const {return fMultADAThrLow;};
   UShort_t GetMultADAThrHigh() const {return fMultADAThrHigh;};
 
@@ -114,7 +115,7 @@ class AliADCalibData: public TNamed {
   UShort_t GetMultADCThrHigh() const {return fMultADCThrHigh;};
 
   UShort_t GetTriggerSelected(Int_t output) const {return ((output>=0 && output<5)?fTriggerSelected[output]:0);};
-  
+
   Bool_t GetEnableCharge(Int_t channel) const;
   Bool_t GetEnableTiming(Int_t channel) const;
   UShort_t GetOnlinePedestal(Int_t integrator, Int_t channel) const;
@@ -124,7 +125,7 @@ class AliADCalibData: public TNamed {
   static Int_t GetBoardNumber(Int_t channel);
   static Int_t GetFEEChannelNumber(Int_t channel);
   static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
-  
+
   Float_t  GetLightYields(Int_t channel);
 
   Float_t *GetPMGainsA() const { return fPMGainsA; }
@@ -135,21 +136,21 @@ class AliADCalibData: public TNamed {
   void     SetSigma(Float_t val, Int_t channel) {fSigma[channel]=val;}
   void     SetSigma(const Float_t* Sigma);
   void 	   SetADCmean(Float_t val, Int_t channel) {fADCmean[channel]=val;}
-  void 	   SetADCmean(const Float_t* ADCmean);  
+  void 	   SetADCmean(const Float_t* ADCmean);
   void 	   SetADCsigma(Float_t val, Int_t channel) {fADCsigma[channel]=val;}
   void 	   SetADCsigma(const Float_t* ADCsigma);
   void     SetMeanHV(Float_t val, Int_t channel) {fMeanHV[channel]=val;}
-  void     SetMeanHV(const Float_t* MeanHV);  
+  void     SetMeanHV(const Float_t* MeanHV);
   void     SetWidthHV(Float_t val, Int_t channel) {fWidthHV[channel]=val;}
-  void     SetWidthHV(const Float_t* WidthHV); 
+  void     SetWidthHV(const Float_t* WidthHV);
   void     SetDeadChannel(Bool_t val, Int_t channel) {fDeadChannel[channel]=val;}
-  void     SetDeadMap(const Bool_t* deadMap);  
-   
+  void     SetDeadMap(const Bool_t* deadMap);
+
   void     SetTimeOffset(Float_t val, Int_t board, Int_t channel);
   void     SetTimeOffset(const Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(const Float_t* TimeGain);
-  
+
   void 	   SetParameter(TString name, Int_t val);
   void     SetTimeResolution(UShort_t *resols);
   void     SetTimeResolution(UShort_t resol, Int_t board);
@@ -167,42 +168,42 @@ class AliADCalibData: public TNamed {
 
   void     SetDiscriThr(Float_t thr, Int_t board, Int_t channel);
   void     SetDiscriThr(const Float_t* thresholds);
-  
+
   void	   SetADCperMIP(Int_t nADCperMIP);
 
   void SetClk1Win1(UShort_t* clks);
   void SetClk1Win1(UShort_t clk, Int_t board);
   void SetClk2Win1(UShort_t* clks);
   void SetClk2Win1(UShort_t clk, Int_t board);
-  
+
   void SetClk1Win2(UShort_t* clks);
   void SetClk1Win2(UShort_t clk, Int_t board);
   void SetClk2Win2(UShort_t* clks);
   void SetClk2Win2(UShort_t clk, Int_t board);
-  
+
   void SetDelayClk1Win1(UShort_t* delays);
   void SetDelayClk1Win1(UShort_t delay, Int_t board);
   void SetDelayClk2Win1(UShort_t* delays);
   void SetDelayClk2Win1(UShort_t delay, Int_t board);
-  
+
   void SetDelayClk1Win2(UShort_t* delays);
   void SetDelayClk1Win2(UShort_t delay, Int_t board);
   void SetDelayClk2Win2(UShort_t* delays);
   void SetDelayClk2Win2(UShort_t delay, Int_t board);
-  
+
   void SetLatchWin1(UShort_t *latchs);
   void SetLatchWin1(UShort_t latch, Int_t board);
   void SetLatchWin2(UShort_t *latchs);
   void SetLatchWin2(UShort_t latch, Int_t board);
-  
+
   void SetResetWin1(UShort_t *resets);
   void SetResetWin1(UShort_t reset, Int_t board);
   void SetResetWin2(UShort_t *resets);
   void SetResetWin2(UShort_t reset, Int_t board);
-  
+
   void SetPedestalSubtraction(Bool_t *peds);
   void SetPedestalSubtraction(Bool_t ped, Int_t board);
-  
+
   void SetBBAThreshold(UShort_t th) {fBBAThreshold = th;};
   void SetBBCThreshold(UShort_t th) {fBBCThreshold = th;};
 
@@ -211,16 +212,16 @@ class AliADCalibData: public TNamed {
 
   void SetBBAForBGThreshold(UShort_t th) {fBBAForBGThreshold = th;};
   void SetBBCForBGThreshold(UShort_t th) {fBBCForBGThreshold = th;};
-  
-  
+
+
   void SetMultADAThrLow(UShort_t th) {fMultADAThrLow = th;};
   void SetMultADAThrHigh(UShort_t th) {fMultADAThrHigh = th;};
-  
+
   void SetMultADCThrLow(UShort_t th) {fMultADCThrLow = th;};
   void SetMultADCThrHigh(UShort_t th) {fMultADCThrHigh = th;};
-  
+
   void SetTriggerSelected(UShort_t trigger, Int_t output);
-  
+
   void SetEnableCharge(Bool_t val, Int_t board, Int_t channel);
   void SetEnableTiming(Bool_t val, Int_t board, Int_t channel);
   void SetEnableCharge(Bool_t val, Int_t channel);
@@ -230,7 +231,7 @@ class AliADCalibData: public TNamed {
   void SetOnlinePedestal(UShort_t val, Int_t integrator, Int_t channel);
   void SetOnlinePedestalCut(UShort_t val, Int_t integrator, Int_t channel);
 
- protected:
+protected:
   void     InitLightYields();
   void     InitPMGains();
   void     InitCalibThresholds();
@@ -242,7 +243,7 @@ class AliADCalibData: public TNamed {
   Float_t  fADCsigma[32];     // ADC sigma values
   Float_t  fMeanHV[16];        // Mean PMT HV needed to compute MIP value
   Float_t  fWidthHV[16];       // Width of the PMT HV
-  
+
   Float_t  fTimeOffset[16];    // Time offsets of the TDC
   Float_t  fTimeGain[16];      // Gain factors of the TDC
   Bool_t   fDeadChannel[16];   // List of dead channels
@@ -253,7 +254,7 @@ class AliADCalibData: public TNamed {
   UInt_t   fSearchWindow[kNCIUBoards];// HPTDC search window (25ns units)
   UInt_t   fTriggerCountOffset[kNCIUBoards]; // HPTDC trigger count offset (25ns units)
   UInt_t   fRollOver[kNCIUBoards]; // HPTDC roll-over (25ns units)
-  
+
   UShort_t fClk1Win1[kNCIUBoards]; //Profil of the Clock 1  of the Window 1 (BB window)
   UShort_t fClk2Win1[kNCIUBoards]; //Profil of the Clock 2  of the Window 1 (BB window)
   UShort_t fClk1Win2[kNCIUBoards]; //Profil of the Clock 1  of the Window 2 (BG window)
@@ -297,4 +298,3 @@ class AliADCalibData: public TNamed {
 };
 
 #endif
-

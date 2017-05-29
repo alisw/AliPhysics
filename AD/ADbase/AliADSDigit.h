@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADSDIGIT_H
 #define ALIADSDIGIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -6,17 +7,16 @@
 #include "AliDigit.h"
 
 //_____________________________________________________________________________
-class AliADSDigit: public AliDigit  {
-
+class AliADSDigit: public AliDigit {
 public:
   AliADSDigit();
-  AliADSDigit(Int_t pmnumber,
-	      Int_t nbins,
+  AliADSDigit(Int_t    pmnumber,
+	      Int_t    nbins,
 	      Float_t *charges,
-	      Int_t *labels = 0);
+	      Int_t   *labels = NULL);
   virtual            ~AliADSDigit();
 
-  virtual void        Print(const Option_t* option="") const;
+  virtual void        Print(Option_t* option="") const;
 
   Int_t               PMNumber()   const {return fPMNumber;}
   Int_t               GetNBins()   const {return fNBins;}

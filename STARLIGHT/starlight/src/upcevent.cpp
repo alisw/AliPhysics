@@ -37,12 +37,28 @@
 upcEvent::upcEvent() :
         _particles(0)
         ,_vertices(0)
-{ }
+	,_isGammaavm(false)
+	,_bSlope(0)
+	,_t(0)
+	,_Egam(0)
+	,_Epom(0)
+{
+  for (int i=0; i<2; ++i)
+    _ptGam[i] = _ptPom[i] = 0.0;
+}
 
 upcEvent::upcEvent(starlightConstants::event &ev) :
         _particles(0)
         ,_vertices(0)
+	,_isGammaavm(false)
+	,_bSlope(0)
+	,_t(0)
+	,_Egam(0)
+	,_Epom(0)
 {
+  for (int i=0; i<2; ++i)
+    _ptGam[i] = _ptPom[i] = 0.0;
+
   for(int i = 0; i < ev._numberOfTracks; i++)
     {
       starlightParticle p(
@@ -64,12 +80,20 @@ upcEvent::~upcEvent()
 
 upcEvent& upcEvent::operator=(const upcEvent& rhs)
 {
-
   if(this != &rhs)
   {
-    this->_particles = rhs._particles;
-    this->_vertices = rhs._vertices;
-    this->_gammaEnergies = rhs._gammaEnergies;
+    _particles     = rhs._particles;
+    _vertices      = rhs._vertices;
+    _gammaEnergies = rhs._gammaEnergies;
+    _isGammaavm    = rhs._isGammaavm;
+    _bSlope        = rhs._bSlope;
+    _t             = rhs._t;
+    _Egam          = rhs._Egam;
+    _Epom          = rhs._Epom;
+    for (int i=0; i<2; ++i) {
+      _ptGam[i] = rhs._ptGam[i];
+      _ptPom[i] = rhs._ptPom[i];
+    }
   }
   return *this;
 }
@@ -88,6 +112,7 @@ upcEvent& upcEvent::operator+(const upcEvent& ev)
   {
     this->_gammaEnergies.push_back(ev._gammaEnergies.at(n));
   }
+  // what to do with _bSlope, _t2, ...?
   return *this;
 }
 

@@ -40,8 +40,9 @@
 #include "starlightconstants.h"
 #include "starlightparticle.h"
 
+class Gammaavectormeson;
 
-class upcEvent 
+class upcEvent
 {
    public:
 
@@ -57,15 +58,32 @@ class upcEvent
       const std::vector<vector3> * getVertices() const { return &_vertices; }
       const std::vector<float> * getGammaEnergies() const { return &_gammaEnergies; }
 
+      bool   isGammaavm() const { return _isGammaavm; }
+      double getBslope() const { return _bSlope; }
+      double gett() const { return _t; }
+      double getEgam() const { return _Egam; }
+      double getEpom() const { return _Epom; }
+      const double* getPtGam() const { return _ptGam; }
+      const double* getPtPom() const { return _ptPom; }
+
       upcEvent & operator=(const upcEvent&);
       upcEvent & operator+(const upcEvent&);
-      
+
       void boost(double rapidity);
    private:
-      
+
+      friend class Gammaavectormeson; // this class sets _bSlope, ..., _Epom;
+
       std::vector<starlightParticle> _particles;
       std::vector<vector3> _vertices;
       std::vector<float> _gammaEnergies;
+      bool   _isGammaavm; // if true the member variables below are set
+      double _bSlope;     // gammaavm b-slope
+      double _t;          // gammaavm t
+      double _ptGam[2];   // gammaavm photon pt
+      double _Egam;       // gammaavm photon energy
+      double _ptPom[2];   // gammaavm pomeron pt
+      double _Epom;       // gammaavm pomeron energy
 };
 
 

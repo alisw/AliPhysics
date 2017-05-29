@@ -579,6 +579,7 @@ void AliStack::FinishEvent()
        if(!allFilled) allFilled = kTRUE;
     }
   }
+  AliInfoF("Ntrack=%d kept from %d transported\n",fNtrack,fNtransported);
 } 
 //_____________________________________________________________________________
 

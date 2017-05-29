@@ -128,28 +128,28 @@ void AliADReconstructor::SetOption(Option_t* opt)
     }
   }
   delete oa;
-  AliInfo(Form("opt='%s'  fCorrectForSaturation: %s", opt, fCorrectForSaturation ? "ON" : "OFF"));
+  AliInfoF("opt='%s' fCorrectForSaturation: %s", opt, fCorrectForSaturation ? "ON" : "OFF");
 }
 //________________________________________________________________________________
 Double_t AliADReconstructor::GetZPosition(const char* symname)
 {
   // Get the global z coordinate of the given AD alignable volume
   //
-  Double_t *tr;
+  Double_t *tr = NULL;
   TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
   if (!pne) {
-    AliFatalClass(Form("TGeoPNEntry with symbolic name %s does not exist!", symname));
+    AliFatalClassF("TGeoPNEntry with symbolic name %s does not exist!", symname);
     return 0;
   }
 
   TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
-  if (NULL != pnode) {
+  if (pnode) {
     TGeoHMatrix* hm = pnode->GetMatrix();
     tr = hm->GetTranslation();
   } else {
     const char* path = pne->GetTitle();
     if (!gGeoManager->cd(path)) {
-      AliFatalClass(Form("Volume path %s not valid!", path));
+      AliFatalClassF("Volume path %s not valid!", path);
       return 0;
     }
     tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
@@ -162,7 +162,7 @@ Double_t AliADReconstructor::GetZPosition(const char* symname)
 AliADReconstructor& AliADReconstructor::operator = (const AliADReconstructor&)
 {
   // assignment operator
-  Fatal("operator =",  "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
@@ -170,9 +170,18 @@ AliADReconstructor& AliADReconstructor::operator = (const AliADReconstructor&)
 AliADReconstructor::~AliADReconstructor()
 {
   // destructor
-  delete fESDAD;
-  delete fESDADfriend;
-  delete fDigitsArray;
+  if (fESDAD) {
+    delete fESDAD;
+    fESDAD = NULL;
+  }
+  if (fESDADfriend) {
+    delete fESDADfriend;
+    fESDADfriend = NULL;
+  }
+  if (fDigitsArray) {
+    delete fDigitsArray;
+    fDigitsArray = NULL;
+  }
 }
 
 //_____________________________________________________________________________
@@ -217,12 +226,12 @@ UShort_t MakeTriggerFlags(Bool_t UBA, Bool_t UBC,
 void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
   // converts RAW to digits
-  if (NULL == digitsTree) {
+  if (!digitsTree) {
     AliError("No digits tree!");
     return;
   }
 
-  if (NULL == fDigitsArray)
+  if (!fDigitsArray)
     fDigitsArray = new TClonesArray("AliADdigit", 16);
   digitsTree->Branch("ADDigit", &fDigitsArray);
 
@@ -337,8 +346,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     adcTrigger[i]     = 0.0f;
   }
 
-  TClonesArray *f_Int0 = new TClonesArray;
-  TClonesArray *f_Int1 = new TClonesArray;
+  TClonesArray *f_Int0 = new TClonesArray("TF1");
+  TClonesArray *f_Int1 = new TClonesArray("TF1");
   Int_t chOffline=0, chOnline=0;
   Float_t extrapolationThresholds[kADNClocks];
   Bool_t  doExtrapolation[kADNClocks];
@@ -425,13 +434,10 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	for (Int_t iClock=end+1; iClock<kADNClocks; ++iClock)
 	  tailComplement[pmNumber] += adcPedSub[iClock];
 
-	if (fCorrectForSaturation) {
-	  f_Int0->Clear("C");
-	  f_Int1->Clear("C");
+	if (fCorrectForSaturation)
 	  fSaturationCorrection->GetEntry(pmNumber);
-	}
 
-	AliDebug(3, Form("pmNumber=%d offlineCh=%d onlineCh=%d isPileUp=%d", pmNumber, chOffline, chOnline, isPileUp));
+	AliDebugF(3, "pmNumber=%d offlineCh=%d onlineCh=%d isPileUp=%d", pmNumber, chOffline, chOnline, isPileUp);
 	adc[pmNumber] = 0.0f;
 	for (Int_t iClock=start; iClock<=end; ++iClock) {
 	  const Bool_t iIntegrator = ((iClock%2) == 0 ? integrator : !integrator);
@@ -443,12 +449,12 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 				       : NULL);
 	  correctedForSaturation  |= doExtrapolation[iClock];
 	  if (doExtrapolation[iClock]) {
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
 	    fExtrapolation->Optimize();
 #endif
-	    AliDebug(3, Form("Ch%02d bc%02d %d tail=%6.1f thr=%6.1f adc=%6.1f adcCorr=%7.1f",
-			     pmNumber, iClock, doExtrapolation[iClock], tail[pmNumber], extrapolationThresholds[iClock],
-			     adcPedSub[iClock], fExtrapolation->Eval(tail[pmNumber])));
+	    AliDebugF(3, "Ch%02d bc%02d %d tail=%6.1f thr=%6.1f adc=%6.1f adcCorr=%7.1f",
+		      pmNumber, iClock, doExtrapolation[iClock], tail[pmNumber], extrapolationThresholds[iClock],
+		      adcPedSub[iClock], fExtrapolation->Eval(tail[pmNumber]));
 	  }
 
 	  adc[pmNumber] += chargeEqualizationFactor*((doExtrapolation[iClock] && tail[pmNumber] > extrapolationThresholds[iClock])
@@ -462,36 +468,36 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	  tail[pmNumber] *= -1;
       }
 
-      AliDebug(3, Form("ADreco: GetRecoParam()->GetNPreClocks()=%d, GetRecoParam()->GetNPostClocks()=%d imax=%d maxadc=%.1f adc[%2d]=%.1f tail[%2d]=%.1f tailC=%.1f",
-		       GetRecoParam()->GetNPreClocks(),
-		       GetRecoParam()->GetNPostClocks(),
-		       imax,
-		       maxadc,
-		       pmNumber,
-		       adc[pmNumber],
-		       pmNumber,
-		       tail[pmNumber],
-		       tailComplement[pmNumber]));
+      AliDebugF(3, "ADreco: GetRecoParam()->GetNPreClocks()=%d, GetRecoParam()->GetNPostClocks()=%d imax=%d maxadc=%.1f adc[%2d]=%.1f tail[%2d]=%.1f tailC=%.1f",
+		GetRecoParam()->GetNPreClocks(),
+		GetRecoParam()->GetNPostClocks(),
+		imax,
+		maxadc,
+		pmNumber,
+		adc[pmNumber],
+		pmNumber,
+		tail[pmNumber],
+		tailComplement[pmNumber]);
 
       // MIP multiplicity
       const Float_t adcPerMIP = const_cast<AliADCalibData*>(fCalibData)->GetADCperMIP(pmNumber);
       mult[pmNumber] = (adcPerMIP != 0 ? adc[pmNumber]/adcPerMIP : 0.0f);
 
       if (adc[pmNumber] > 0) {
-	AliDebug(1, Form("PM = %d ADC = %.2f (%.2f) TDC %.2f (%.2f)   Int %d (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)    %.2f %.2f   %.2f %.2f    %d %d",
-			 pmNumber,  adc[pmNumber],
-			 digit->ChargeADC(11)+digit->ChargeADC(10)+digit->ChargeADC(9)+digit->ChargeADC(8)+
-			 digit->ChargeADC(7)+digit->ChargeADC(6)+digit->ChargeADC(5)+digit->ChargeADC(4)-
-			 4.*fCalibData->GetPedestal(pmNumber)-4.*fCalibData->GetPedestal(pmNumber+16),
-			 digit->Time(), time[pmNumber],
-			 integrator,
-			 digit->ChargeADC(0), digit->ChargeADC(1), digit->ChargeADC(2), digit->ChargeADC(3), digit->ChargeADC(4), digit->ChargeADC(5), digit->ChargeADC(6), digit->ChargeADC(7),
-			 digit->ChargeADC(8), digit->ChargeADC(9), digit->ChargeADC(10),
-			 digit->ChargeADC(11), digit->ChargeADC(12),
-			 digit->ChargeADC(13), digit->ChargeADC(14), digit->ChargeADC(15), digit->ChargeADC(16), digit->ChargeADC(17), digit->ChargeADC(18), digit->ChargeADC(19), digit->ChargeADC(20),
-			 fCalibData->GetPedestal(pmNumber), fCalibData->GetSigma(pmNumber),
-			 fCalibData->GetPedestal(pmNumber+16), fCalibData->GetSigma(pmNumber+16),
-			 aBBflag[pmNumber], aBGflag[pmNumber]));
+	AliDebugF(1, "PM = %d ADC = %.2f (%.2f) TDC %.2f (%.2f)   Int %d (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)    %.2f %.2f   %.2f %.2f    %d %d",
+		  pmNumber,  adc[pmNumber],
+		  digit->ChargeADC(11)+digit->ChargeADC(10)+digit->ChargeADC(9)+digit->ChargeADC(8)+
+		  digit->ChargeADC(7)+digit->ChargeADC(6)+digit->ChargeADC(5)+digit->ChargeADC(4)-
+		  4.*fCalibData->GetPedestal(pmNumber)-4.*fCalibData->GetPedestal(pmNumber+16),
+		  digit->Time(), time[pmNumber],
+		  integrator,
+		  digit->ChargeADC(0), digit->ChargeADC(1), digit->ChargeADC(2), digit->ChargeADC(3), digit->ChargeADC(4), digit->ChargeADC(5), digit->ChargeADC(6), digit->ChargeADC(7),
+		  digit->ChargeADC(8), digit->ChargeADC(9), digit->ChargeADC(10),
+		  digit->ChargeADC(11), digit->ChargeADC(12),
+		  digit->ChargeADC(13), digit->ChargeADC(14), digit->ChargeADC(15), digit->ChargeADC(16), digit->ChargeADC(17), digit->ChargeADC(18), digit->ChargeADC(19), digit->ChargeADC(20),
+		  fCalibData->GetPedestal(pmNumber), fCalibData->GetSigma(pmNumber),
+		  fCalibData->GetPedestal(pmNumber+16), fCalibData->GetSigma(pmNumber+16),
+		  aBBflag[pmNumber], aBGflag[pmNumber]);
       };
 
       // Fill ESD friend object
@@ -501,12 +507,20 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
       }
       fESDADfriend->SetTime (pmNumber, digit->Time());
       fESDADfriend->SetWidth(pmNumber, digit->Width());
+
+      if (fCorrectForSaturation ) {
+	if (f_Int0) f_Int0->Delete(); // TF1 does not implement TObject::Clear()
+	if (f_Int1) f_Int1->Delete();
+      }
     } // end of loop over digits
   } // end of loop over events in digits tree
 
   if (fCorrectForSaturation)
     fSaturationCorrection->ResetBranchAddresses();
 
+  delete f_Int0;
+  delete f_Int1;
+  
   fESDAD->SetBit(AliESDAD::kCorrectedLeadingTime,   kTRUE);
   fESDAD->SetBit(AliESDAD::kCorrectedForSaturation, correctedForSaturation);
   fESDAD->SetMultiplicity(mult);
@@ -557,13 +571,13 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   offlineDecision.SetRecoParam(GetRecoParam());
   offlineDecision.FillDecisions(fESDAD);
 
-  if (NULL != esd) {
-    AliDebug(1, Form("Writing AD data to ESD tree"));
+  if (esd) {
+    AliDebug(1, "Writing AD data to ESD tree");
     esd->SetADData(fESDAD);
 
     AliESDfriend *fr = dynamic_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
-    if (NULL != fr) {
-      AliDebug(1, Form("Writing AD friend data to ESD tree"));
+    if (fr) {
+      AliDebug(1, "Writing AD friend data to ESD tree");
       fr->SetADfriend(fESDADfriend);
     }
   }
@@ -578,9 +592,9 @@ const AliADCalibData* AliADReconstructor::GetCalibData() const
   AliCDBEntry *entry = man->Get("AD/Calib/Data");
   const AliADCalibData *calibdata = NULL;
 
-  if (NULL != entry)
+  if (entry)
     calibdata = dynamic_cast<const AliADCalibData*>(entry->GetObject());
-  if (NULL == calibdata)
+  if (!calibdata)
     AliFatal("No calibration data from calibration database !");
 
   return calibdata;
@@ -593,9 +607,9 @@ void AliADReconstructor::GetTimeSlewingSplines()
   AliCDBEntry *entry = man->Get("AD/Calib/TimeSlewing");
   TList *fListSplines = NULL;
 
-  if (NULL != entry)
+  if (entry)
     fListSplines = dynamic_cast<TList*>(entry->GetObject());
-  if (NULL == fListSplines)
+  if (!fListSplines)
     AliFatal("No time slewing correction from calibration database !");
 
   for (Int_t i=0; i<16; ++i)
@@ -648,7 +662,7 @@ void AliADReconstructor::GetCollisionMode()
     fBeamEnergy = 0.;
   }
 
-  AliDebug(1, Form("\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n", beamType.Data(), fCollisionMode, fBeamEnergy));
+  AliDebugF(1, "\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n", beamType.Data(), fCollisionMode, fBeamEnergy);
 }
 //____________________________________________________________________________
 Float_t AliADReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const

@@ -24,6 +24,7 @@
 // --- Standard library ---
 
 // --- ROOT system ---
+#include <RVersion.h>
 #include <TMath.h>
 #include <TTree.h>
 #include <TMap.h>
@@ -75,9 +76,9 @@ AliADDigitizer::AliADDigitizer()
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(kHits2Digits)
   , fAD(NULL)
@@ -96,9 +97,9 @@ AliADDigitizer::AliADDigitizer(AliAD *AD, DigiTask_t task)
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(task)
   , fAD(AD)
@@ -117,9 +118,9 @@ AliADDigitizer::AliADDigitizer(AliDigitizationInput* digInput)
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(kHits2Digits)
   , fAD(NULL)
@@ -184,8 +185,11 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
   if (!fTS)
     AliFatal("!fTS");
 
-  Int_t chOffline,chOnline;
-  TClonesArray *f_Int[2] = { NULL, NULL };
+  Int_t chOffline=0, chOnline=0;
+  TClonesArray *f_Int[2] = {
+    new TClonesArray("TF1", 21),
+    new TClonesArray("TF1", 21)
+  };
   Bool_t  doExtrapolation[kADNClocks];
   Float_t extrapolationThresholds[kADNClocks];
   fTS->SetBranchAddress("chOffline", &chOffline);
@@ -217,15 +221,18 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 	  AliWarning("f0==NULL || f1==NULL");
 	  continue;
 	}
-
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
+	f0->Optimize();
+	f1->Optimize();
+#endif
 	charge0 += TMath::Max(0.0, f0->Eval(tail));
 	charge1 += TMath::Max(0.0, f1->Eval(tail));
       }
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
     }
-    f_Int[0]->Clear("C");
-    f_Int[1]->Clear("C");
+    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
+    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
@@ -390,7 +397,6 @@ void AliADDigitizer::DigitizeHits()
   // SDigits (fTime arrays)
   Int_t nTotPhot[16];
   Float_t PMTime[16];
-  Float_t PMTimeWeight[16];
   Int_t nPMHits[16];
 
   for(Int_t i=0; i<16; ++i) {
@@ -398,7 +404,6 @@ void AliADDigitizer::DigitizeHits()
     fLabels[i][0] = fLabels[i][1] = fLabels[i][2] = -1;
     nTotPhot[i] = 0;
     PMTime[i] = 10000;
-    PMTimeWeight[i] = 0;
     nPMHits[i] = 0;
   }
 
@@ -438,7 +443,6 @@ void AliADDigitizer::DigitizeHits()
       nTotPhot[pmt] += nPhot;
       nPMHits[pmt]++;
       //PMTime[pmt] += t*nPhot*nPhot;
-      //PMTimeWeight[pmt] += nPhot*nPhot;
       if (PMTime[pmt]>t) PMTime[pmt] = t;
 
     }//hit loop
@@ -450,7 +454,6 @@ void AliADDigitizer::DigitizeHits()
       PMTime[iPM] = 0.0;
       continue;
     }
-    //PMTime[iPM] = PMTime[iPM]/PMTimeWeight[iPM];
     PMTime[iPM] += fHptdcOffset[iPM];
 
     fChargeSignalShape->SetParameters(fCssOffset[iPM],fCssTau[iPM],fCssSigma[iPM]);
@@ -513,7 +516,7 @@ void AliADDigitizer::DigitizeSDigits()
       if (clock >= 0 && clock < kADNClocks)
         fAdc[ipmt][clock] += fTime[ipmt][iBin]/kADChargePerADC;
     }
-    AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]));
+    AliDebugF(1,"Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]);
     const Int_t board = AliADCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
@@ -535,7 +538,7 @@ void AliADDigitizer::DigitizeSDigits()
     Float_t adcClock = 0.0;
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
-      AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
+      AliDebugF(1, "ADC %d %d %f",j,iClock,fAdc[j][iClock]);
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
@@ -587,6 +590,9 @@ void AliADDigitizer::AdjustPulseShapeADC()
 	continue;
       const Bool_t integrator = ((bc+fEvenOrOdd) % 2);
       TF1 *f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
+      f->Optimize();
+#endif
       chargeLastBC = newADC[bc] = f->Eval(tail);
     }
     // we use a linear function for the tail starting at 80% of the last BC before the tail
@@ -625,8 +631,8 @@ void AliADDigitizer::AdjustPulseShapeADC()
     AliDebugF(5, "Ch%02d: totalCharge,newCharge= %f %f  (tail=%f)", ch, totalCharge, newCharge, tail);
     if (TMath::Abs(totalCharge - newCharge) > 2.0f)
       AliWarningF("Ch%02d: difference between totalCharge=%f and newCharge=%f is too large (tail=%f)", ch, totalCharge, newCharge, tail);
-    f_Int[0]->Clear("C");
-    f_Int[1]->Clear("C");
+    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
+    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
@@ -672,7 +678,7 @@ void AliADDigitizer::ReadSDigits()
     sdigitsBranch->SetAddress(&sdigitsArray);
 
     int offset = fDigInput->GetMask(inputFile);
-    
+
     // Sum contributions from the sdigits
     // Get number of entries in the tree
     Int_t nentries  = Int_t(sdigitsBranch->GetEntries());
@@ -686,8 +692,8 @@ void AliADDigitizer::ReadSDigits()
         Int_t pmNumber = sDigit->PMNumber();
         Int_t nbins = sDigit->GetNBins();
         if (nbins != fNBins[pmNumber]) {
-          AliError(Form("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
-                        fNBins[pmNumber],nbins,pmNumber));
+          AliErrorF("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
+		    fNBins[pmNumber],nbins,pmNumber);
           continue;
         }
         // Sum the charges
@@ -907,7 +913,7 @@ void AliADDigitizer::ExtrapolateSplines()
     fTimeSlewingExtpol[i]->SetLineColor(kMagenta);
     Int_t fitStatus =  hTimeVsSignal->Fit(TimeSlewingFitName.Data(),"R"," ",-2.5,-1.5);
     if(fitStatus != 0) {
-      AliWarning(Form("Extrapolation of spline %d not succesfull",i));
+      AliWarningF("Extrapolation of spline %d not succesfull",i);
       fTimeSlewingExtpol[i] = 0x0;
     }
     delete c;
@@ -940,7 +946,7 @@ double AliADDigitizer::TimeSignalShape(double *x, double *par)
   if (xx <= par[3]) return a;
   Double_t b = 1./TMath::Power((xx-par[3])/par[4],1./par[5]);
   Double_t f = a*b/(a+b);
-  AliDebug(100,Form("x=%f func=%f",xx,f));
+  AliDebugF(100,"x=%f func=%f",xx,f);
   return f;
 }
 //____________________________________________________________________
