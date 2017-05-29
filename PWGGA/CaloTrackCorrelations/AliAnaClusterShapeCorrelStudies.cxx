@@ -3506,7 +3506,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM02[imatch]  = new TH3F 
       (Form("hNCellsPerClusterM02_%s",matchCase[imatch].Data()),
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
       fhNCellsPerClusterM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhNCellsPerClusterM02[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM02[imatch]->SetZTitle("#lambda_{0}^{2}");
@@ -3515,7 +3515,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]  = new TH3F 
       (Form("hNCellsPerClusterM20_%s",matchCase[imatch].Data()),
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
       fhNCellsPerClusterM20[imatch]->SetXTitle("#it{E} (GeV)");
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
