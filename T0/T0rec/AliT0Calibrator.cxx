@@ -59,13 +59,10 @@ ClassImp(AliT0Calibrator)
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-    printf("@@@ fTimeDelayCFD[i] %i \n",fTimeDelayCFD[i]);
     TGraph* fu = param ->GetWalk(i);
      fWalk.AddAtAndExpand(fu,i);
-     printf(" @@@@ read walk \n");
-    //CFD vs timestamp
+     //CFD vs timestamp
      TGraph* ft = param ->GetCFDvsTimestamp(i);
-     printf("@@@ read ft \n");
      if (ft) {   fCFDvsTime.AddAtAndExpand(ft,i);
        //     ft->Print();
      }
@@ -147,8 +144,7 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
   TGraph *grcfd=(TGraph*) fCFDvsTime.At(ipmt);
   if (grcfd && grcfd->GetN()>0) {
     cfdVStimestamp =  Int_t(grcfd->Eval(Double_t(timestamp)));
-    printf("@@@  AliT0Calibrator::WalkCorrection PMT %i timestamp %i cfdVStimestamp %f  time %i meantime %i \n",ipmt, timestamp, cfdVStimestamp, time, refAmp);
-  }
+   }
   if (fEqualized == 0)
     timeEq= time - fTimeDelayCFD[ipmt]-walk;
   else 

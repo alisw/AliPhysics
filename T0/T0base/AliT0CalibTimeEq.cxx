@@ -229,9 +229,13 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  ok = false; 
 		}
 	    }
-	    if(nent > 50  )  { //!!!!!!!!!!
-	      if(hcfdtime->GetRMS()>1.5 )
+	    if(nent > 500  )  { //!!!!!!!!!!
+	      if(hcfdtime->GetRMS()>1.5 ) {
+		//	TFitResultPtr r = hcfdtime->Fit("gaus","SQ");
+		//  if ((Int_t)r==0) 
+		//	meancfdtime = r->Parameters()[1];
 		GetMeanAndSigma(hcfdtime,meancfdtime, sigmacfdtime);
+	      }
 	      if(hcfdtime->GetRMS()<=1.5) 
 		{
 		  if(hcfdtime->GetRMS()==0 ||hcfdtime->GetMean()==0 ) {
@@ -241,7 +245,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  sigmacfdtime = hcfdtime->GetRMS();
 		}
 	      
-	      printf ("PMT %i meandiff %f meancfdtime %f\n",i,meandiff,meancfdtime);
+	      printf ("PMT %i meandiff %f meancfdtime %f meanhist %f entries %f\n",i,meandiff,meancfdtime, hcfdtime->GetMean(), hcfdtime->GetEntries());
 	    }
 	    if(hqt1) 	GetMeanAndSigma(hqt1,meanqt, sigmaor);
 	    //Pedestals
@@ -249,25 +253,23 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  } //cycle 24 PMT
 	  if (hCFDvsTime) {
 	    // CFD vs timestamp
-	    printf ("if timestamp PMT %i meandiff %f meancfdtime %f\n",i,meandiff,meancfdtime);
-	    //   printf(" meancfdtime %f \n",meancfdtime);
-	    for (int ibin=1; ibin<60; ibin++) {
+	    for (int ibin=1; ibin<59; ibin++) {
 	      timestamp[ibin-1] =  hCFDvsTime->GetXaxis()->GetBinCenter(ibin);
 	      TH1D* projd = hCFDvsTime->ProjectionY(Form("prY%i_%i",ibin,i),ibin, ibin+1);
 	      TH1F* proj = (TH1F*)projd;
-	      if(proj->GetEntries()>100 ) {
+	      if(proj->GetEntries()>200 ) {
 		Float_t sigmat;
-	       	GetMeanAndSigma(proj, meanCFDvsTime[ibin-1], sigmat);
-		printf(" bin %i timestamp %f  meanCFD %f \n",ibin, timestamp[ibin-1], meanCFDvsTime[ibin-1]);
-		//	      TFitResultPtr r = proj->Fit("gaus","S");
-		//	      if ((Int_t)r==0) meanCFDvsTime[ibin-1] = r->Parameters()[1];
+		GetMeanAndSigma(proj, meanCFDvsTime[ibin-1], sigmat);
+		//	TFitResultPtr r = proj->Fit("gaus","SQ");
+		//	if ((Int_t)r==0) meanCFDvsTime[ibin-1] = r->Parameters()[1];
+		printf(" bin %i timestamp %f  meanCFD %f meanhist %f\n",ibin, timestamp[ibin-1], meanCFDvsTime[ibin-1],proj->GetMean() );
 	      }
 	    
 	      else 
 		meanCFDvsTime[ibin-1] = meancfdtime; 
 	    }
 	    cCFDvsTime = new TGraph(58, timestamp, meanCFDvsTime);
-	    cCFDvsTime->Print();
+	    // cCFDvsTime->Print();
 	    fCFDvsTime.AddAtAndExpand(cCFDvsTime,i);
 	    //  cCFDvsTime->Delete();
 	  }
@@ -486,6 +488,7 @@ void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigm
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
+  printf("GetMeanAndSigma meanEstimate %f mean %f \n",  meanEstimate, mean);
 
  if(TMath::Abs(meanEstimate - mean) > 20 ) mean = meanEstimate; 
 

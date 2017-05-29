@@ -180,33 +180,12 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	if(hT0mult) {
 	  Int_t nbins = hT0mult->GetXaxis()->GetNbins();
 	  Float_t meanprof[nbins], sigmares[nbins], mult[nbins];
-	  printf(" %s Nbins %i \n",histname2D[i].Data(),nbins);
-	  /*
-	  if (i<3) {
-	    TProfile *prof = hT0mult->ProfileX(Form("prof%i",i), 0, nbins);
-	    for (int ibin=1; ibin<nbins; ibin++) {
-	      mult[ibin] = hT0mult->GetXaxis()->GetBinCenter(ibin);
-	      printf("@@@profile %s bin %i entries %f mean %f \n", histname2D[i].Data(),ibin,prof->GetBinEntries(ibin),prof->GetBinContent(ibin));
-	      if (prof->GetBinEntries(ibin)>100) {
-		meanprof[ibin]= prof->GetBinContent(ibin);
-		printf("@@@ %s, bin %i X %f Y %f \n",histname2D[i].Data(), ibin,mult[ibin], meanprof[ibin]);
-	      }	      else
-		meanprof[ibin] = fMeanPar[i];
-	    }
-	    TGraph * gr = new TGraph(nbins-1,mult, meanprof);
-	    fT0vsMult.AddAtAndExpand(gr,i);
-	    printf(" %s added \n", histname2D[i].Data());
-	    gr->Delete();
-	  }
-	  if (i==3) {
-	  */
 	  Int_t npoints;
 	  for (int ibin=1; ibin<nbins-2; ibin++) {
 	    mult[ibin-1]= hT0mult-> GetXaxis()->GetBinCenter(ibin);
 	    TH1D *proj = hT0mult->ProjectionY(Form("prY%i",ibin),ibin, ibin+1);
 	      if(proj->GetEntries()>100) {
 		GetMeanAndSigma( (TH1F*)proj, mean, sigma);
-		printf("@@@res %s, bin %i entries %f mult %f res mean %f sigma %f \n",histname2D[i].Data(), ibin,proj->GetEntries(), mult[ibin-1], mean, sigma);
 		sigmares[ibin-1]=sigma;
 		meanprof[ibin-1]=mean;
 		npoints++;
@@ -222,7 +201,6 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  else
 	    gr = new TGraph(npoints-1, mult, sigmares);
 	  fT0vsMult.AddAtAndExpand(gr,3);
-	  printf(" %s added \n", histname2D[i].Data());
 	  gr->Delete();
 	}
       }
