@@ -169,6 +169,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	    }
 	}
       } 
+    /*
     TString histname2D[4]={"hT0AC", "hT0A", "hT0C",  "hResolution"};
     for (Int_t i=0; i<4; i++)
       {
@@ -204,9 +205,10 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  gr->Delete();
 	}
       }
+    */
   }
-	
-
+  
+  
   gFile->Close();
   delete gFile;
   return ok;
