@@ -27,8 +27,8 @@ TF1* GetEtaCorrection(){
 
   // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double TOFs, double ITSs){
-  TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version 
-  //TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version 
+  //TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version 
+  TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version 
   gROOT->cd();
   //int isig = static_cast<int>(sigma * 100.);  // original
   int isig      = static_cast<int>(sigma * 1000.);   
