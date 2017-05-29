@@ -70,7 +70,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fBetheParamsHe(),
   fBetheParamsT(),
   fPidQa(0),
-  fUseAnalysisTrkSel(kTRUE) {
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE) {
 
   }
 
@@ -108,7 +109,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fBetheParamsHe(),
   fBetheParamsT(),
   fPidQa(0),
-  fUseAnalysisTrkSel(kTRUE) {
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE) {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TTree::Class());
@@ -335,6 +337,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (!trackCutsV0.AcceptTrack(trackP)) continue;
     fHistdEdxV0->Fill(trackP->GetInnerParam()->GetP() * trackP->GetSign(), trackP->GetTPCsignal());
     fHistdEdxV0->Fill(trackN->GetInnerParam()->GetP() * trackN->GetSign(), trackN->GetTPCsignal());
+    if(fPIDCheckOnly) continue;
     if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
     if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
     Bool_t pionPositive     = kFALSE;
