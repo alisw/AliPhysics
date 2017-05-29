@@ -23,8 +23,7 @@ class AliT0Calibrator: public TNamed
   virtual ~AliT0Calibrator() {};
   //  const AliT0RecoParam* fRecoParam;     // Pointer to T0 Recon. Pars
   //   const AliT0RecoParam* GetRecoParam() const { return fRecoParam; }
-
-
+  Int_t WalkCorrection(Int_t refAmp, Int_t ipmt, Int_t qt, Int_t time, UInt_t timestamp) ;
   Int_t WalkCorrection(Int_t refAmp, Int_t ipmt, Int_t qt, Int_t time) ;
   void SetEq(Int_t eq) { fEqualized= eq; };
  protected:
@@ -34,10 +33,11 @@ class AliT0Calibrator: public TNamed
   Float_t         fChannelWidth  ;   //channel width
   TObjArray       fWalk;             //walk correction function
   Int_t           fEqualized;        //if != 0 time centered around 0
+  TObjArray       fCFDvsTime;        //CFD vs timestamp
       
  // const AliT0RecoParam* fRecoParam; ///< reference to reco parameters
    
-  ClassDef(AliT0Calibrator, 2)   // class for the T0 reconstruction
+  ClassDef(AliT0Calibrator, 3)   // class for the T0 reconstruction
 
 };
 

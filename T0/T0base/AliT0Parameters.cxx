@@ -159,7 +159,7 @@ AliT0Parameters::Init()
      AliWarning(" !!! no latency  in CDB "); 
     return;
   }
-  
+ 
 fIsInit = kTRUE;
 }
 
@@ -364,8 +364,8 @@ TGraph *AliT0Parameters::GetAmpLED(Int_t ipmt) const
   } 
   return fgSlewCorr -> GetAmpLED(ipmt) ;
 }
-
 //__________________________________________________________________
+
 void 
 AliT0Parameters::SetPMTeff(Int_t ipmt)
 {
@@ -430,16 +430,7 @@ AliT0Parameters::GetNumberOfTRMs()
   } 
   return  fgLookUp ->GetNumberOfTRMs();
 }
-/*
-//________________________________________________________________________________
-Double_t AliT0Parameters::GetZPosition(const char* symname){
-// Get the global z coordinate of the given T0 alignable volume
-//
-  Double_t *tr = AliGeomManager::GetMatrix(symname)->GetTranslation();
 
-  return tr[2];
-}
-*/
 //________________________________________________________________________________
 Double_t AliT0Parameters::GetZPosition(const char* symname){
 // Get the global z coordinate of the given T0 alignable volume
@@ -479,3 +470,7 @@ Double_t AliT0Parameters::GetZPositionShift(const char* symname)
   return (tr[2]-otr[2]);
 }
 
+TGraph* AliT0Parameters::GetCFDvsTimestamp(Int_t channel)
+{
+  return fgCalibData->GetCFDvsTime(channel);
+}

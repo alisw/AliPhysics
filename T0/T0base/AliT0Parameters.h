@@ -102,7 +102,9 @@ public:
   void SetLatencyHPTDC(Float_t lat) {fLatencyHPTDC=lat;} 
   void SetLatencyL1(Float_t lat) {fLatencyL1=lat;} 
   void SetLatencyL1A(Float_t lat) { fLatencyL1A=lat;} 
-  void  SetLatencyL1C(Float_t lat) { fLatencyL1C=lat;} 
+  void  SetLatencyL1C(Float_t lat) { fLatencyL1C=lat;}
+  //timestamp
+  TGraph* GetCFDvsTimestamp(Int_t channel);/* const {return (TGraph*)fCFDvsTime.At(channel);}*/
 
  protected:
   static AliT0Parameters* fgInstance; // Static singleton instance
@@ -120,9 +122,7 @@ public:
   TObjArray fWalk; //array time-amplitude walk
   TObjArray fQTC; //array of TGraphs for QTC vs number of MIPs
   TObjArray fAmpLED; //array of TGraphs for LED-CFD vs number of MIPs
-
-  
-  Float_t   fTimeDelayCFD;  // sum time delay for CFD channel
+  Float_t  fTimeDelayCFD;  // sum time delay for CFD channel
  // Float_t   fTimeV0;  // sum time delay for CFD channel
   Float_t   fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   Float_t     fMeanT0; //mean of T0distribution with vertex=0;
@@ -135,7 +135,8 @@ public:
     
   TMap      fLookUp;           //lookup table
   Int_t     fNumberOfTRMs;    // number of TRMs in setup
-  
+  TObjArray fCFDvsTime;            // CFD vs timestamp
+
   //latency
 
 
@@ -153,7 +154,7 @@ public:
   AliT0Parameters(const  AliT0Parameters&);
   AliT0Parameters& operator=(const AliT0Parameters&);
   
-  ClassDef(AliT0Parameters,6)
+  ClassDef(AliT0Parameters,7)
  
 };
 
