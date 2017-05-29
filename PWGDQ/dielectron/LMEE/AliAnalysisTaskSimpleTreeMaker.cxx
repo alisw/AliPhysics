@@ -71,8 +71,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fEtaMax(0.8),
     fESigITSMin(-3.),
     fESigITSMax(3.),
-    fESigTPCMin(-5.),
-    fESigTPCMax(5.),
+    fESigTPCMin(-4.),
+    fESigTPCMax(4.),
     fESigTOFMin(-3.),
     fESigTOFMax(3.),
     fPSigTPCMin(-99.),
@@ -163,7 +163,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
     } 
 
     fStream = new TTreeStream("tracks");
-    fTree   = (TTree*)fStream->GetTree();
+    fTree   = static_cast<TTree*>(fStream->GetTree());
 
     //Get grid PID
     if(fIsGRIDanalysis){
@@ -293,66 +293,47 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
             //Apply some track cuts 
             Double_t pt   = track->Pt();
-            if( pt < fPtMin || pt > fPtMax ){ continue; }
+            if( pt < fPtMin || pt > fPtMax ){ continue;}
             Double_t eta  = track->Eta();
-            if( eta < fEtaMin || eta > fEtaMax ){ continue; } 
-
-
-            Double_t nTPCclusters = track->GetTPCNcls(); 
-            Double_t nTPCfindable = track->GetTPCNclsF();
-            if( nTPCclusters < 70 || nTPCfindable < 60){ continue;}
+            if( eta < fEtaMin || eta > fEtaMax ){ continue;} 
 
             fQAhist->Fill("Tracks_KineCuts", 1);
 
-            Double_t phi  = track->Phi();
+            Double_t nTPCclusters = track->GetTPCNcls(); 
 
-            //Get electron nSigma in TPC for cut (inclusive cut)
-            Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
-            if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue; }
-              
-            Double_t EnSigmaITS = -999;
-            if(fHasSDD){
-                //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
-                EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
-                if(fPIDcutITS){
-                    if(EnSigmaITS < fESigITSMin || EnSigmaITS > fESigITSMax){ continue; }
-                }
-            }
-
-            Double_t EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
-            if(fPIDcutTOF){
-                if(EnSigmaTOF < fESigTOFMin || EnSigmaTOF > fESigTOFMax){ continue; }
-            }
-
-            //Get pion nSigma for TPC and apply cut if requested (exclusive cut)
-            Double_t PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion);
-            if(fPionPIDcutTPC){
-                if(PnSigmaTPC > fPSigTPCMin && PnSigmaTPC < fPSigTPCMax){ continue; }
-            }
-          
-            fQAhist->Fill("Tracks_PIDcuts",1); 
-
-            //Get rest of nSigma values for pion and kaon
-            Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
-            Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion);
-
-            Double_t KnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon);
-            Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
-            Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
-
-
-            //Get ITS and TPC signals
-            Double_t ITSsignal = track->GetITSsignal();
-            Double_t TPCsignal = track->GetTPCsignal();
-            Double_t TOFsignal = track->GetTOFsignal();
-
+            if( nTPCclusters < 70 ){ continue;}
+            
             Double_t nTPCcrossed = track->GetTPCClusterInfo(2,1);
+            if(nTPCcrossed < 60){ continue;}
+
             Double_t TPCcrossOverFind = 0;
+
+            Double_t nTPCfindable = track->GetTPCNclsF();
             if(nTPCfindable > 0){
                 TPCcrossOverFind = nTPCcrossed/nTPCfindable;
             }
-            Double_t nTPCshared = track->GetNumberOfTPCClusters();
-            Double_t chi2TPC = track->GetTPCchi2();
+
+            if(TPCcrossOverFind < 0.3 || TPCcrossOverFind > 1.1){ continue;}
+
+            TBits tpcSharedMap = 0;
+            if(fIsAOD){
+                tpcSharedMap = static_cast<AliAODTrack*>(track)->GetTPCSharedMap();
+            }else{
+                tpcSharedMap = static_cast<AliESDtrack*>(track)->GetTPCSharedMap();
+            }
+
+            Double_t nTPCshared = -1;
+            if(fIsAOD){
+                nTPCshared = tpcSharedMap.CountBits(0) - tpcSharedMap.CountBits(159);
+            }else{
+                nTPCshared = static_cast<AliESDtrack*>(track)->GetTPCnclsS();
+            }
+
+            Double_t chi2TPC = track->GetTPCchi2(); //Function only implemented in ESDs. Returns dumym value for AODs
+            
+            //Check for refits 
+            if((track->GetStatus() & AliVTrack::kITSrefit) <= 0){ continue;}
+            if((track->GetStatus() & AliVTrack::kTPCrefit) <= 0){ continue;}
 
             //DCA values
             Float_t DCAesd[2] = {0.0,0.0};
@@ -375,20 +356,78 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 DCA[1] = static_cast<Double_t>(DCAaod[1]);
             }
 
-            Int_t nITS = 0;
-            Double_t fITS_shared = 0;
-            Double_t chi2ITS = 0;
+            if(DCA[0] < -1 || DCA[0] > 1){ continue;}
+            if(DCA[1] < -3 || DCA[1] > 3){ continue;}
+
+            Int_t nITS = track->GetNcls(0);;
+
             if(fHasSDD){
-                //ITS clusters and shared clusters
-                nITS = track->GetNumberOfITSClusters();
-                fITS_shared = 0.;
-                for(Int_t d = 0; d < 6; d++){
-                    fITS_shared += static_cast<Double_t>(track->HasSharedPointOnITSLayer(d));
-                }
-                fITS_shared /= nITS;
-         
-                chi2ITS = track->GetITSchi2();
+                if(nITS < 4){ continue;}
+            }else{
+                if(nITS < 2){ continue;}
             }
+            
+            Double_t chi2ITS = track->GetITSchi2();
+            if((chi2ITS/nITS) > 36){ continue;} 
+            
+            Double_t fITS_shared = 0.;
+            for(Int_t d = 0; d < 6; d++){
+                fITS_shared += static_cast<Double_t>(track->HasSharedPointOnITSLayer(d));
+            }
+            fITS_shared /= nITS;
+
+            //Store if SPD has hit in first layer
+            Bool_t SPDfirst = kFALSE;
+            if(fIsAOD){
+                SPDfirst = static_cast<AliAODTrack*>(track)->HasPointOnITSLayer(0); //Method available for ESDs and AODs
+            }else{
+                SPDfirst = static_cast<AliESDtrack*>(track)->HasPointOnITSLayer(0);
+            }
+     
+            fQAhist->Fill("Tracks_TrackCuts", 1);
+
+            Double_t phi  = track->Phi();
+
+            //Get electron nSigma in TPC for cut (inclusive cut)
+            Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
+            if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue;}
+              
+            Double_t EnSigmaITS = -999;
+            if(fHasSDD){
+                //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
+                EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
+                if(fPIDcutITS){
+                    if(EnSigmaITS < fESigITSMin || EnSigmaITS > fESigITSMax){ continue;}
+                }
+            }
+
+            Double_t EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
+            if(fPIDcutTOF){
+                if(EnSigmaTOF < fESigTOFMin || EnSigmaTOF > fESigTOFMax){ continue;}
+            }
+
+            //Get pion nSigma for TPC and apply cut if requested (exclusive cut)
+            Double_t PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion);
+            if(fPionPIDcutTPC){
+                if(PnSigmaTPC > fPSigTPCMin && PnSigmaTPC < fPSigTPCMax){ continue;}
+            }
+          
+            fQAhist->Fill("Tracks_PIDcuts",1); 
+
+            //Get rest of nSigma values for pion and kaon
+            Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
+            Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion);
+
+            Double_t KnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon);
+            Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
+            Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
+
+
+            //Get ITS and TPC signals
+            Double_t ITSsignal = track->GetITSsignal();
+            Double_t TPCsignal = track->GetTPCsignal();
+            Double_t TOFsignal = track->GetTOFsignal();
+           
 
             Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDtrackCuts->kVertexTracks | fESDtrackCuts->kVertexSPD;
 
@@ -467,18 +506,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "vertexZ="    << primaryVertex[2] <<
 
                 "nTPCclusters=" << nTPCclusters <<
-                "nTPCcrossed="<< nTPCcrossed <<
-                "TPCcrossFind="<< TPCcrossOverFind <<
-                "nTPCshared=" << nTPCshared <<
-                "chi2TPC="    << chi2TPC <<
+                "nTPCcrossed="  << nTPCcrossed <<
+                "TPCcrossFind=" << TPCcrossOverFind <<
+                "nTPCshared="   << nTPCshared <<
+                "chi2TPC="      << chi2TPC <<
 
                 "nITS="       << nITS <<
                 "fITSshared=" << fITS_shared << 
                 "chi2ITS="    << chi2ITS <<
+                "SPDfirst="    << SPDfirst <<
 
-                "DCAxy="      << DCA[0] <<
-                "DCAz="       << DCA[1] <<
-                "goldenChi2=" << goldenChi2 <<
+                "DCAxy="        << DCA[0] <<
+                "DCAz="         << DCA[1] <<
+                "goldenChi2="   << goldenChi2 <<
                 "multiplicity=" << nMultiplicity << 
 
                 "mcEta="      << mcEta <<
@@ -515,18 +555,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "vertexZ="    << primaryVertex[2] <<
 
                 "nTPCclusters=" << nTPCclusters <<
-                "nTPCcrossed=" << nTPCcrossed <<
-                "TPCcrossFind="<< TPCcrossOverFind <<
-                "nTPCshared=" << nTPCshared <<
-                "chi2TPC="    << chi2TPC <<
+                "nTPCcrossed="  << nTPCcrossed <<
+                "TPCcrossFind=" << TPCcrossOverFind <<
+                "nTPCshared="   << nTPCshared <<
+                "chi2TPC="      << chi2TPC <<
 
                 "nITS="       << nITS <<
                 "fITSshared=" << fITS_shared << 
                 "chi2ITS="    << chi2ITS <<
+                "SPDfirst="    << SPDfirst <<
 
-                "DCAxy="      << DCA[0] <<
-                "DCAz="       << DCA[1] <<
-                "goldenChi2=" << goldenChi2 <<
+                "DCAxy="        << DCA[0] <<
+                "DCAz="         << DCA[1] <<
+                "goldenChi2="   << goldenChi2 <<
                 "multiplicity=" << nMultiplicity << 
 
                 "runNumber="  << runNumber << 
