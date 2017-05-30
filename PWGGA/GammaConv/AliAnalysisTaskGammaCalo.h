@@ -337,6 +337,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fInvMassTreeAlpha;
     Float_t               fInvMassTreeTheta;
     Int_t                 fInvMassTreeMixPool;
+    Float_t               fInvMassTreeZVertex;
+    Float_t               fInvMassTreeEta;
 
     // tree for E/p studies
     TTree**               tClusterEOverP;                                       //! array of trees with tree for E/p studies
@@ -392,7 +394,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 36);
+    ClassDef(AliAnalysisTaskGammaCalo, 37);
 };
 
 #endif

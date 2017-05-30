@@ -267,6 +267,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fInvMassTreeAlpha(0),
   fInvMassTreeTheta(0),
   fInvMassTreeMixPool(0),
+  fInvMassTreeZVertex(0),
+  fInvMassTreeEta(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -526,6 +528,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fInvMassTreeAlpha(0),
   fInvMassTreeTheta(0),
   fInvMassTreeMixPool(0),
+  fInvMassTreeZVertex(0),
+  fInvMassTreeEta(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -993,6 +997,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tSigInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
         tSigInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
         tSigInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("zVtx",&fInvMassTreeZVertex,"fInvMassTreeZVertex/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("Eta",&fInvMassTreeEta,"fInvMassTreeEta/F");
         fTreeList[iCut]->Add(tSigInvMassPtAlphaTheta[iCut]);
 
         tBckInvMassPtAlphaTheta[iCut] = new TTree("Bck_InvMass_Pt_Alpha_Theta_MixPool","Bck_InvMass_Pt_Alpha_Theta_MixPool");
@@ -1001,6 +1007,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tBckInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
         tBckInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
         tBckInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("zVtx",&fInvMassTreeZVertex,"fInvMassTreeZVertex/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("Eta",&fInvMassTreeEta,"fInvMassTreeEta/F");
         fTreeList[iCut]->Add(tBckInvMassPtAlphaTheta[iCut]);
       }
 
@@ -3160,6 +3168,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             fInvMassTreeAlpha = TMath::Abs(pi0cand->GetAlpha());
             fInvMassTreeTheta = pi0cand->GetOpeningAngle();
             fInvMassTreeMixPool = zbin*100 + mbin;
+            fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+            fInvMassTreeEta = pi0cand->Eta();
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
           }
         
@@ -3909,6 +3919,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               fInvMassTreeAlpha = TMath::Abs(backgroundCandidate->GetAlpha());
               fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
               fInvMassTreeMixPool = zbin*100 + mbin;
+              fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+              fInvMassTreeEta = backgroundCandidate->Eta();
               tBckInvMassPtAlphaTheta[fiCut]->Fill();
             }
           }
@@ -3986,6 +3998,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fInvMassTreeAlpha = TMath::Abs(backgroundCandidate->GetAlpha());
                 fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
                 fInvMassTreeMixPool = zbin*100 + mbin;
+                fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+                fInvMassTreeEta = backgroundCandidate->Eta();
                 tBckInvMassPtAlphaTheta[fiCut]->Fill();
               }
             }
