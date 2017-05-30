@@ -91,6 +91,16 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhClusterMaxCellDiffM02[i] = 0;
     fhNCellsPerClusterM02  [i] = 0;
     fhNCellsPerClusterM20  [i] = 0;
+    
+    fhNCellsPerClusterMEta    [i] = 0;
+    fhNCellsPerClusterMPhi    [i] = 0;
+    fhNCellsPerClusterMEtaPhi [i] = 0;
+    fhNCellsPerClusterMEtaPhiA[i] = 0;
+    
+    fhSMM02                [i] = 0;
+    fhColM02               [i] = 0;
+    fhRowM02               [i] = 0;
+
     fhOriginE              [i] = 0;
     fhOriginM02            [i] = 0;
     
@@ -107,7 +117,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhDeltaIATotM02        [i] = 0;  
     fhDeltaIATotM20        [i] = 0;
     fhDeltaIATotNCells     [i] = 0;
-    fhDeltaIATotOrigin     [i] = 0;
+    fhDeltaIATotOrigin     [i] = 0;    
   }
   
   // Weight studies
@@ -1406,41 +1416,70 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   if(fStudyExotic)
     fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac, m02, GetEventWeight());
   
-  if(matchedPID >= 0 && matchedPID < 3)
+  //
+  // Fill histograms only for PID
+  //
+  if ( matchedPID < 0 || matchedPID > 2 ) return;
+  
+  fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxFrac, m02, GetEventWeight());
+  fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
+  fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
+  fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
+  
+  fhDeltaIANCells        [matchedPID]->Fill(energy, nCell  , dIA   , GetEventWeight());
+  fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell  , dIATot, GetEventWeight());
+  
+  if ( nCell > 4 ) // it makes sense only for significant size histograms
   {
-    fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxFrac, m02, GetEventWeight());
-    fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
-    fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
-    fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
-   
-    if ( clus->GetNCells() > 4 ) // it makes sense only for significant size histograms
-    {
-      fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
-      fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
-      fhDeltaIAM02        [matchedPID]->Fill(energy, m02  , dIA  , GetEventWeight());
-      fhDeltaIAM20        [matchedPID]->Fill(energy, m20  , dIA  , GetEventWeight());
-      fhDeltaIANCells     [matchedPID]->Fill(energy, nCell, dIA  , GetEventWeight());
-      
-      fhDeltaIEtaDeltaIPhiTot[matchedPID]->Fill(energy,dIetaPos-dIetaNeg, dIphiPos-dIphiNeg, GetEventWeight());    
-      fhDeltaIATot           [matchedPID]->Fill(energy, dIATot       , GetEventWeight());
-      fhDeltaIATotM02        [matchedPID]->Fill(energy, m02  , dIATot, GetEventWeight());
-      fhDeltaIATotM20        [matchedPID]->Fill(energy, m20  , dIATot, GetEventWeight());
-      fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell, dIATot, GetEventWeight());
-    }
+    fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
+    fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
+    fhDeltaIAM02        [matchedPID]->Fill(energy, m02  , dIA  , GetEventWeight());
+    fhDeltaIAM20        [matchedPID]->Fill(energy, m20  , dIA  , GetEventWeight());
     
-    // Check the origin.
-    if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
+    fhDeltaIEtaDeltaIPhiTot[matchedPID]->Fill(energy,dIetaPos-dIetaNeg, dIphiPos-dIphiNeg, GetEventWeight());    
+    fhDeltaIATot           [matchedPID]->Fill(energy, dIATot       , GetEventWeight());
+    fhDeltaIATotM02        [matchedPID]->Fill(energy, m02  , dIATot, GetEventWeight());
+    fhDeltaIATotM20        [matchedPID]->Fill(energy, m20  , dIATot, GetEventWeight());
+    
+    fhSMM02 [matchedPID]->Fill(energy, smMax  , m02, GetEventWeight());
+    fhColM02[matchedPID]->Fill(energy, ietaMax, m02, GetEventWeight());
+    fhRowM02[matchedPID]->Fill(energy, iphiMax, m02, GetEventWeight());
+  }
+  
+  Float_t l0   = 0., l1   = 0.;
+  Float_t dispp= 0., dEta = 0., dPhi    = 0.;
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
+  if ( GetCalorimeter() == kEMCAL )
+  {
+    GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), fCaloCellList, clus,
+                                                                                 l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+    
+    Float_t sEtaPhiA = -1000.;
+    if(sEta+sPhi>0.0001) sEtaPhiA = (sPhi-sEta)/(sEta+sPhi);
+    
+    AliDebug(2,Form("Recalculate shower shape org: m02 %2.2f, m20 %2.2f, disp %2.2f;"
+                    " new: m02 %2.2f, m20 %2.2f, disp %2.2f; "
+                    "mEta %2.2f, mPhi %2.2f, mEtaPhi %2.2f, A_EtaPhi %2.2f; dEta %2.2f dPhi %2.2f",
+                    m02,m20,clus->GetDispersion(),l0,l1,dispp,sEta,sPhi,sEtaPhi,sEtaPhiA,dEta,dPhi));
+    
+    fhNCellsPerClusterMEta    [matchedPID]->Fill(energy, nCell, sEta    , GetEventWeight());
+    fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell, sPhi    , GetEventWeight());
+    fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
+    fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
+  }
+  
+  // Check the origin.
+  if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
+  {
+    fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+    fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+    
+    if ( nCell > 4 )
     {
-      fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
-      fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
-      
-      if ( clus->GetNCells() > 4 )
-      {
-        fhDeltaIAOrigin   [matchedPID]->Fill(energy, mcIndex, dIA   , GetEventWeight()); 
-        fhDeltaIATotOrigin[matchedPID]->Fill(energy, mcIndex, dIATot, GetEventWeight()); 
-      }
-    } // MC
-  } // match PID ok
+      fhDeltaIAOrigin   [matchedPID]->Fill(energy, mcIndex, dIA   , GetEventWeight()); 
+      fhDeltaIATotOrigin[matchedPID]->Fill(energy, mcIndex, dIATot, GetEventWeight()); 
+    }
+  } // MC
 }
 
 //____________________________________________________________________________
@@ -3520,6 +3559,72 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
+      
+      fhSMM02[imatch]  = new TH3F 
+      (Form("hSMM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+      fhSMM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM02[imatch]->SetYTitle("SM number");
+      fhSMM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhSMM02[imatch]); 
+
+      fhColM02[imatch]  = new TH3F 
+      (Form("hColM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs column number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,48,-0.5,47.5,nShShBins,minShSh,maxShSh); 
+      fhColM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhColM02[imatch]->SetYTitle("column number");
+      fhColM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhColM02[imatch]); 
+
+      fhRowM02[imatch]  = new TH3F 
+      (Form("hRowM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs row number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,24,-0.5,23.5,nShShBins,minShSh,maxShSh); 
+      fhRowM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhRowM02[imatch]->SetYTitle("row number");
+      fhRowM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhRowM02[imatch]); 
+      
+      if ( GetCalorimeter() == kEMCAL )
+      {
+        fhNCellsPerClusterMEta[imatch]  = new TH3F 
+        (Form("hNCellsPerClusterMEta_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs #it{n}_{cells} vs #sigma_{#eta}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+        fhNCellsPerClusterMEta[imatch]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterMEta[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterMEta[imatch]->SetZTitle("#sigma_{#eta}^{2}");
+        outputContainer->Add(fhNCellsPerClusterMEta[imatch]); 
+        
+        fhNCellsPerClusterMPhi[imatch]  = new TH3F 
+        (Form("hNCellsPerClusterMPhi_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs #it{n}_{cells} vs #sigma_{#varphi}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+        fhNCellsPerClusterMPhi[imatch]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterMPhi[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterMPhi[imatch]->SetZTitle("#sigma_{#varphi}^{2}");
+        outputContainer->Add(fhNCellsPerClusterMPhi[imatch]); 
+        
+        fhNCellsPerClusterMEtaPhi[imatch]  = new TH3F 
+        (Form("hNCellsPerClusterMEtaPhi_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs #it{n}_{cells} vs #sigma_{#eta#varphi}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,-1*maxShSh,maxShSh); 
+        fhNCellsPerClusterMEtaPhi[imatch]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterMEtaPhi[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterMEtaPhi[imatch]->SetZTitle("#sigma_{#eta#varphi}^{2}");
+        outputContainer->Add(fhNCellsPerClusterMEtaPhi[imatch]); 
+        
+        fhNCellsPerClusterMEtaPhiA[imatch]  = new TH3F 
+        (Form("hNCellsPerClusterMEtaPhiA_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs #it{n}_{cells} vs (#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2}) for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,-1*maxShSh,maxShSh); 
+        fhNCellsPerClusterMEtaPhiA[imatch]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterMEtaPhiA[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterMEtaPhiA[imatch]->SetZTitle("(#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2})");
+        outputContainer->Add(fhNCellsPerClusterMEtaPhiA[imatch]); 
+      }
       
       if ( IsDataMC() )
       {

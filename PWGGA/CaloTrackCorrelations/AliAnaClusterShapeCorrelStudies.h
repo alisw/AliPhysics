@@ -431,10 +431,19 @@ public:
   TH3F *   fhClusterTimeEnergyM02 [3];           //!<! Cluster Time vs Energy vs m02
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
-  TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20
+  TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20  
   
-  TH2F *   fhOriginE  [3];                       //!<! check origin of selected clusters
-  TH3F *   fhOriginM02[3];                       //!<! check origin of selected clusters, vs E vs M02
+  TH3F *   fhNCellsPerClusterMEta    [3];         //!<! N cells per cluster vs cluster energy vs shape in eta direction
+  TH3F *   fhNCellsPerClusterMPhi    [3];         //!<! N cells per cluster vs cluster energy vs shape in phi direction
+  TH3F *   fhNCellsPerClusterMEtaPhi [3];         //!<! N cells per cluster vs cluster energy vs shape in eta*phi direction
+  TH3F *   fhNCellsPerClusterMEtaPhiA[3];         //!<! N cells per cluster vs cluster energy vs shape in (phi-eta)/(eta+phi)
+  
+  TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
+  TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
+  
+  TH3F *   fhSMM02    [3];                        //!<! SM number vs m02
+  TH3F *   fhColM02   [3];                        //!<! main cell column vs m02
+  TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02
   
   //
   // Weight studies
@@ -464,7 +473,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,1) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,2) ;
   /// \endcond
 
 } ;
