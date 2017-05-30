@@ -441,6 +441,10 @@ public:
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
   
+  TH3F *   fhSMM02    [3];                        //!<! SM number vs m02
+  TH3F *   fhColM02   [3];                        //!<! main cell column vs m02
+  TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02
+  
   //
   // Weight studies
   //
@@ -469,7 +473,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,1) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,2) ;
   /// \endcond
 
 } ;

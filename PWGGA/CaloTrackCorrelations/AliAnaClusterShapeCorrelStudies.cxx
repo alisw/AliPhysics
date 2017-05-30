@@ -97,6 +97,10 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhNCellsPerClusterMEtaPhi [i] = 0;
     fhNCellsPerClusterMEtaPhiA[i] = 0;
     
+    fhSMM02                [i] = 0;
+    fhColM02               [i] = 0;
+    fhRowM02               [i] = 0;
+
     fhOriginE              [i] = 0;
     fhOriginM02            [i] = 0;
     
@@ -1436,6 +1440,10 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     fhDeltaIATot           [matchedPID]->Fill(energy, dIATot       , GetEventWeight());
     fhDeltaIATotM02        [matchedPID]->Fill(energy, m02  , dIATot, GetEventWeight());
     fhDeltaIATotM20        [matchedPID]->Fill(energy, m20  , dIATot, GetEventWeight());
+    
+    fhSMM02 [matchedPID]->Fill(energy, smMax  , m02, GetEventWeight());
+    fhColM02[matchedPID]->Fill(energy, ietaMax, m02, GetEventWeight());
+    fhRowM02[matchedPID]->Fill(energy, iphiMax, m02, GetEventWeight());
   }
   
   Float_t l0   = 0., l1   = 0.;
@@ -3551,6 +3559,33 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
+      
+      fhSMM02[imatch]  = new TH3F 
+      (Form("hSMM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+      fhSMM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM02[imatch]->SetYTitle("SM number");
+      fhSMM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhSMM02[imatch]); 
+
+      fhColM02[imatch]  = new TH3F 
+      (Form("hColM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs column number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,48,-0.5,47.5,nShShBins,minShSh,maxShSh); 
+      fhColM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhColM02[imatch]->SetYTitle("column number");
+      fhColM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhColM02[imatch]); 
+
+      fhRowM02[imatch]  = new TH3F 
+      (Form("hRowM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs row number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,24,-0.5,23.5,nShShBins,minShSh,maxShSh); 
+      fhRowM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhRowM02[imatch]->SetYTitle("row number");
+      fhRowM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhRowM02[imatch]); 
       
       if ( GetCalorimeter() == kEMCAL )
       {
