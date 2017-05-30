@@ -1442,16 +1442,18 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), fCaloCellList, clus,
                                                                                    l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
       
+      Float_t sEtaPhiA = -1000.;
+      if(sEta+sPhi>0.0001) sEtaPhiA = (sPhi-sEta)/(sEta+sPhi);
+      
       AliDebug(2,Form("Recalculate shower shape org: m02 %2.2f, m20 %2.2f, disp %2.2f;"
                       " new: m02 %2.2f, m20 %2.2f, disp %2.2f; "
-                      "mEta %2.2f, mPhi %2.2f, mEtaPhi %2.2f; dEta %2.2f dPhi %2.2f",
-                      m02,m20,clus->GetDispersion(),l0,l1,dispp,sEta,sPhi,sEtaPhi,dEta,dPhi));
+                      "mEta %2.2f, mPhi %2.2f, mEtaPhi %2.2f, A_EtaPhi %2.2f; dEta %2.2f dPhi %2.2f",
+                      m02,m20,clus->GetDispersion(),l0,l1,dispp,sEta,sPhi,sEtaPhi,sEtaPhiA,dEta,dPhi));
       
-      fhNCellsPerClusterMEta    [matchedPID]->Fill(energy, nCell  , sEta   , GetEventWeight());
-      fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell  , sPhi   , GetEventWeight());
-      fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell  , sEtaPhi, GetEventWeight());
-      if(sEta+sPhi>0)
-      fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy,(sPhi-sEta)/(sEta+sPhi), GetEventWeight());
+      fhNCellsPerClusterMEta    [matchedPID]->Fill(energy, nCell, sEta    , GetEventWeight());
+      fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell, sPhi    , GetEventWeight());
+      fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
+      fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
     }
     
     // Check the origin.
