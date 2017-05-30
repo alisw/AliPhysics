@@ -136,6 +136,7 @@ fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
+fkDoImprovedCascadeVertexFinding(kFALSE),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
@@ -410,6 +411,7 @@ fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
+fkDoImprovedCascadeVertexFinding(kFALSE),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
@@ -2187,7 +2189,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             //V0 re-estimated, proceed to calculating cascade decay vertex
             AliESDv0 *pv0=&vertex;
             AliExternalTrackParam bt(*bachTrackXi), *pbt=&bt;
-            Double_t dcaCascade=PropagateToDCA(pv0,pbt,lMagneticField); //propagate call
+            Double_t dcaCascade=PropagateToDCA(pv0,pbt,lESDevent, lMagneticField); //propagate call
             fTreeCascVarDCADaughters_Test = dcaCascade;
             
             //_____________________________________________________________________________
@@ -4831,7 +4833,7 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::Det(Double_t a00,Double
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b) {
+Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b) {
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
@@ -4861,15 +4863,154 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
     Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
     
     x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
+    
+    
     //propagate track to the points of DCA
     
     x1=x1*cs1 + y1*sn1;
     if (!t->PropagateTo(x1,b)) {
-        Error("PropagateToDCA","Propagation failed, but should not have! (this was a saved cascade... weird)");
+        Error("PropagateToDCA","Propagation failed !");
         return 1.e+33;
     }
     
+    if( fkDoImprovedCascadeVertexFinding ){
+        //DCA Calculation improved -> non-linear propagation
+        //Preparatory step 1: get two tracks corresponding to V0
+        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+        
+        //Uncertainties: bachelor track as well as V0
+        Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
+        Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
+        Double_t dx2=dy2;
+        
+        //Create dummy V0 track
+        //V0 properties to get started
+        Double_t xyz[3], pxpypz[3], cv[21];
+        for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
+        
+        v->GetXYZ(xyz[0],xyz[1],xyz[2]);
+        v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
+        
+        //Mockup track for V0 trajectory (no covariance)
+        AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+        hV0Traj->ResetCovariance(1); //won't use
+        
+        Double_t p1[8]; t->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
+        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+        
+        Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+        Evaluate(p1,t1,r1,g1,gg1);
+        Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+        Evaluate(p2,t2,r2,g2,gg2);
+        
+        Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+        Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+        
+        Int_t max=27;
+        while (max--) {
+            Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+            Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+            Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+            (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+            (g1[2]*g1[2] - dz*gg1[2])/dz2;
+            Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+            (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+            (g2[2]*g2[2] + dz*gg2[2])/dz2;
+            Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+            
+            Double_t det=h11*h22-h12*h12;
+            
+            Double_t dt1,dt2;
+            if (TMath::Abs(det)<1.e-33) {
+                //(quasi)singular Hessian
+                dt1=-gt1; dt2=-gt2;
+            } else {
+                dt1=-(gt1*h22 - gt2*h12)/det;
+                dt2=-(h11*gt2 - h12*gt1)/det;
+            }
+            
+            if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+            
+            //check delta(phase1) ?
+            //check delta(phase2) ?
+            
+            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
+                        AliDebug(1," stopped at not a stationary point !");
+                    Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+                    if (lmb < 0.)
+                        AliDebug(1," stopped at not a minimum !");
+                    break;
+                }
+            
+            Double_t dd=dm;
+            for (Int_t div=1 ; ; div*=2) {
+                Evaluate(p1,t1+dt1,r1,g1,gg1);
+                Evaluate(p2,t2+dt2,r2,g2,gg2);
+                dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+                dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+                if (dd<dm) break;
+                dt1*=0.5; dt2*=0.5;
+                if (div>512) {
+                    AliDebug(1," overshoot !"); break;
+                }
+            }
+            dm=dd;
+            
+            t1+=dt1;
+            t2+=dt2;
+            
+        }
+        
+        if (max<=0) AliDebug(1," too many iterations !");
+        
+        Double_t cs=TMath::Cos(t->GetAlpha());
+        Double_t sn=TMath::Sin(t->GetAlpha());
+        Double_t xthis=r1[0]*cs + r1[1]*sn;
+        
+        //Propagate bachelor to the point of DCA
+        t->PropagateTo(xthis,b);
+        
+        //V0 distance to bachelor: the desired distance
+        Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
+        dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+    }
+    
     return dca;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::Evaluate(const Double_t *h, Double_t t,
+                                                Double_t r[3],  //radius vector
+                                                Double_t g[3],  //first defivatives
+                                                Double_t gg[3]) //second derivatives
+{
+    //--------------------------------------------------------------------
+    // Calculate position of a point on a track and some derivatives
+    //--------------------------------------------------------------------
+    Double_t phase=h[4]*t+h[2];
+    Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
+    
+    r[0] = h[5];
+    r[1] = h[0];
+    if (TMath::Abs(h[4])>kAlmost0) {
+        r[0] += (sn - h[6])/h[4];
+        r[1] -= (cs - h[7])/h[4];
+    } else {
+        r[0] += t*cs;
+        r[1] -= -t*sn;
+    }
+    r[2] = h[1] + h[3]*t;
+    
+    g[0] = cs; g[1]=sn; g[2]=h[3];
+    
+    gg[0]=-h[4]*sn; gg[1]=h[4]*cs; gg[2]=0.;
 }
 
 //________________________________________________________________________

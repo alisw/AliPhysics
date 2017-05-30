@@ -80,7 +80,10 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-
+    void SetDoImprovedCascadeVertexFinding( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedCascadeVertexFinding = lOpt;
+    }
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -221,12 +224,16 @@ public:
 //---------------------------------------------------------------------------------------
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
 //---------------------------------------------------------------------------------------
-    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b);
+    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b);
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
                  Double_t a10,Double_t a11,Double_t a12,
                  Double_t a20,Double_t a21,Double_t a22) const;
+    void Evaluate(const Double_t *h, Double_t t,
+                  Double_t r[3],  //radius vector
+                  Double_t g[3],  //first defivatives
+                  Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
 //---------------------------------------------------------------------------------------
 
@@ -260,6 +267,7 @@ private:
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectPID;
     Bool_t fkUseOnTheFlyV0Cascading;
+    Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
