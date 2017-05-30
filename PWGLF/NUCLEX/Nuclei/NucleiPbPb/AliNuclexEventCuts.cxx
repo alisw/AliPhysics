@@ -87,6 +87,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
   fCutStats{nullptr},
+  fNormalisationHist{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
   fCentrality{nullptr},
@@ -152,7 +153,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   double covTrc[6],covSPD[6];
   vtTrc->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
-  double dz = (fFlag & kVertexSPD) && (fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : -999.;
+  double dz = bool(fFlag & kVertexSPD) && bool(fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : 0.; /// If one of the two vertices is not available this cut is always passed.
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
@@ -204,10 +205,13 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     const double fb32tof = fContainer.fMultTrkFB32TOF;
     const double fb128 = fContainer.fMultTrkTPC;
     const double esd = fContainer.fMultESD;
+
     const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
     const double sigma32tof = PolN(fb32,fTOFvsFB32sigmaPars, 5);
     const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
+
     const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
+
     if ((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
         multV0Mcut &&
@@ -218,7 +222,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   } else fFlag |= BIT(kCorrelations);
 
   /// Ignore the vertex position and vertex 
-  int allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
+  unsigned long allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
   bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
   if (allcuts) fFlag |= BIT(kAllCuts);
   if (fCutStats) {
@@ -228,6 +232,17 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     }
   }
 
+  /// Filling normalisation histogram
+  array <unsigned long,4> norm_masks {
+    BIT(kNoCuts),
+    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
+    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexQuality)),
+    allcuts_mask
+  };
+  for (int iC = 0; iC < 4; ++iC) {
+    if ((fFlag & norm_masks[iC]) == norm_masks[iC])
+      fNormalisationHist->Fill(iC);
+  }
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
   for (int befaft = 0; befaft < 2; ++befaft) {
@@ -273,9 +288,20 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlot
     "Correlations",
     "All cuts"
   };
+
+  vector<string> norm_labels = {
+    "No cuts",
+    "Event selection",
+    "Vertex reconstruction and quality",
+    "Vertex position"
+  };
+
   fCutStats = new TH1I("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fNormalisationHist = new TH1I("fNormalisationHist",";;Number of selected events",norm_labels.size(),-.5,norm_labels.size() - 0.5);
   for (int iB = 1; iB <= bin_labels.size(); ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  for (int iB = 1; iB <= norm_labels.size(); ++iB) fNormalisationHist->GetXaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
   qaList->Add(fCutStats);
+  qaList->Add(fNormalisationHist);
 
   string titles[2] = {"before event cuts","after event cuts"};
   for (int iS = 0; iS < 2; ++iS) {
@@ -485,8 +511,6 @@ void AliNuclexEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
-    fMinCentrality = 0.f;
-    fMaxCentrality = 100.f;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;
