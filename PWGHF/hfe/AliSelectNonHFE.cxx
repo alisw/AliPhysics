@@ -79,6 +79,7 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
 ,fNClusITS(2)
 ,fUseGlobalTracks(kFALSE)
 ,fRequirePointOnITS(kFALSE)
+,fRequireITSAndTPCRefit(kTRUE)
 ,fUseDCAPartnerCut(kFALSE)
 ,fDCAcutxyPartner(1.00)
 ,fDCAcutzPartner(2.00)
@@ -138,6 +139,7 @@ AliSelectNonHFE::AliSelectNonHFE()
 ,fNClusITS(2)
 ,fUseGlobalTracks(kFALSE)
 ,fRequirePointOnITS(kFALSE)
+,fRequireITSAndTPCRefit(kTRUE)
 ,fUseDCAPartnerCut(kFALSE)
 ,fDCAcutxyPartner(1.00)
 ,fDCAcutzPartner(2.00)
@@ -239,7 +241,11 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
             }
             
             //ITS and TPC refit
-            if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+            if (fRequireITSAndTPCRefit)
+            {
+                if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit))))
+                    continue;
+            }
             
             //Eta cut
             if (fUseEtaCutForPart)
