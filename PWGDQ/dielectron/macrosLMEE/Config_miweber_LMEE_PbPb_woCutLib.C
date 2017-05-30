@@ -6,7 +6,7 @@ const AliDielectronEventCuts *GetEventCuts();
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
-Bool_t kMix = kTRUE;
+Bool_t kMix = kFALSE;
 Bool_t kNoPairing   = kTRUE;
 Bool_t randomizeDau = kTRUE;
      
