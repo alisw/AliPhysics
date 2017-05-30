@@ -241,7 +241,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   };
   for (int iC = 0; iC < 4; ++iC) {
     if ((fFlag & norm_masks[iC]) == norm_masks[iC])
-      fNormalisationHist->Fill(iC);
+      if (fNormalisationHist) fNormalisationHist->Fill(iC);
   }
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
