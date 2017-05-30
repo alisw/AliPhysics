@@ -74,7 +74,7 @@ class AliNuclexEventCuts : public TList {
     void   SetupRun2pp();
     void   SetupRun2pA(int iPeriod);
 
-    /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
+    /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
@@ -160,7 +160,8 @@ class AliNuclexEventCuts : public TList {
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
-    TH1I* fCutStats;               //!<! Cuts statistics
+    TH1I* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
+    TH1I* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex
     TH1D* fCentrality[2];          //!<! Centrality percentile distribution
