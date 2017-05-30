@@ -326,7 +326,9 @@ fTreeCascVarV0DCAptX(0),
 fTreeCascVarV0DCAptY(0),
 fTreeCascVarV0DCAptZ(0),
 fTreeCascVarDCADaughters_Test(0),
-fTreeCascVarBachelorDCAptUncertainty(0),
+fTreeCascVarBachelorDCAptSigmaX2(0),
+fTreeCascVarBachelorDCAptSigmaY2(0),
+fTreeCascVarBachelorDCAptSigmaZ2(0),
 fTreeCascVarV0DCAptUncertainty_V0Pos(0),
 fTreeCascVarV0DCAptUncertainty_V0Ang(0),
 fTreeCascVarV0Lifetime(0),
@@ -602,7 +604,9 @@ fTreeCascVarV0DCAptX(0),
 fTreeCascVarV0DCAptY(0),
 fTreeCascVarV0DCAptZ(0),
 fTreeCascVarDCADaughters_Test(0),
-fTreeCascVarBachelorDCAptUncertainty(0),
+fTreeCascVarBachelorDCAptSigmaX2(0),
+fTreeCascVarBachelorDCAptSigmaY2(0),
+fTreeCascVarBachelorDCAptSigmaZ2(0),
 fTreeCascVarV0DCAptUncertainty_V0Pos(0),
 fTreeCascVarV0DCAptUncertainty_V0Ang(0),
 fTreeCascVarV0Lifetime(0),
@@ -983,7 +987,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarV0DCAptY",&fTreeCascVarV0DCAptY,"fTreeCascVarV0DCAptY/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptZ",&fTreeCascVarV0DCAptZ,"fTreeCascVarV0DCAptZ/F");
             fTreeCascade->Branch("fTreeCascVarDCADaughters_Test",&fTreeCascVarDCADaughters_Test,"fTreeCascVarDCADaughters_Test/F");
-            fTreeCascade->Branch("fTreeCascVarBachelorDCAptUncertainty",&fTreeCascVarBachelorDCAptUncertainty,"fTreeCascVarBachelorDCAptUncertainty/F");
+            fTreeCascade->Branch("fTreeCascVarBachelorDCAptSigmaX2",&fTreeCascVarBachelorDCAptSigmaX2,"fTreeCascVarBachelorDCAptSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarBachelorDCAptSigmaY2",&fTreeCascVarBachelorDCAptSigmaY2,"fTreeCascVarBachelorDCAptSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarBachelorDCAptSigmaZ2",&fTreeCascVarBachelorDCAptSigmaZ2,"fTreeCascVarBachelorDCAptSigmaZ2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptUncertainty_V0Pos",&fTreeCascVarV0DCAptUncertainty_V0Pos,"fTreeCascVarV0DCAptUncertainty_V0Pos/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptUncertainty_V0Ang",&fTreeCascVarV0DCAptUncertainty_V0Ang,"fTreeCascVarV0DCAptUncertainty_V0Ang/F");
             /*
@@ -2026,7 +2032,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarV0DCAptY = -100; //!
         fTreeCascVarV0DCAptZ = -100; //!
         fTreeCascVarDCADaughters_Test = -100;
-        fTreeCascVarBachelorDCAptUncertainty = -100;
+        fTreeCascVarBachelorDCAptSigmaX2 = -100;
+        fTreeCascVarBachelorDCAptSigmaY2 = -100;
+        fTreeCascVarBachelorDCAptSigmaZ2 = -100;
         fTreeCascVarV0DCAptUncertainty_V0Pos = -100;
         fTreeCascVarV0DCAptUncertainty_V0Ang = -100; 
 
@@ -2217,7 +2225,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarV0DCAptY=ym;
             fTreeCascVarV0DCAptZ=zm;
             
-            fTreeCascVarBachelorDCAptUncertainty = GetErrorInPosition(bachTrackXi);
+            Double_t alphaBachelor=pbt->GetAlpha(), cs=TMath::Cos(alphaBachelor), sn=TMath::Sin(alphaBachelor);
+            //Double_t tmp[3];
+            //pbt->GetPxPyPz(tmp);
+            //Double_t px1a=tmp[0], py1a=tmp[1], pz1a=tmp[2];
+            //pbt->GetXYZ(tmp);
+            //Double_t  x1a=tmp[0],  y1a=tmp[1],  z1a=tmp[2];
+            const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
+            Double_t sx1=sn*sn*pbt->GetSigmaY2()+ss, sy1=cs*cs*pbt->GetSigmaY2()+ss;
+            
+            fTreeCascVarBachelorDCAptSigmaX2 = sx1;
+            fTreeCascVarBachelorDCAptSigmaY2 = sy1;
+            fTreeCascVarBachelorDCAptSigmaZ2 = pbt->GetSigmaZ2();
+            
             fTreeCascVarV0DCAptUncertainty_V0Pos = pv0->GetSigmaD0();
             fTreeCascVarV0DCAptUncertainty_V0Ang = pv0->GetSigmaAP0();
         }
@@ -4973,6 +4993,10 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
         Double_t cs=TMath::Cos(t->GetAlpha());
         Double_t sn=TMath::Sin(t->GetAlpha());
         Double_t xthis=r1[0]*cs + r1[1]*sn;
+        
+        //Memory cleanup
+        hV0Traj->Delete();
+        hV0Traj=0x0;
         
         //Propagate bachelor to the point of DCA
         t->PropagateTo(xthis,b);
