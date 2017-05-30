@@ -56,13 +56,13 @@ extern Double_t langaufunc(Double_t *x, Double_t *par) {
 
     // Convolution integral of Landau and Gaussian by sum
     for(i=1.0; i<=np/2; i++) {
-	xx = xlow + (i-.5) * step;
-	fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+        xx = xlow + (i-.5) * step;
+        fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
+        sum += fland * TMath::Gaus(x[0],xx,par[3]);
 
-	xx = xupp - (i-.5) * step;
-	fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+        xx = xupp - (i-.5) * step;
+        fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];	// mpc taken out
+        sum += fland * TMath::Gaus(x[0],xx,par[3]);
     }
 
     return (par[2] * step * sum * invsq2pi / par[3]);
@@ -83,32 +83,32 @@ AliTRDNDFast::AliTRDNDFast(): TObject(),
 }
 
 AliTRDNDFast::AliTRDNDFast(const char *name,Int_t ndim,Int_t nbins,Double_t xlow,Double_t xup): TObject(),
-fNDim(ndim),
-fTitle(name),
-fFunc(NULL),
-fHistos(NULL),
-fPars()
+    fNDim(ndim),
+    fTitle(name),
+    fFunc(NULL),
+    fHistos(NULL),
+    fPars()
 {
     Init();
     for(Int_t idim=0;idim<fNDim;idim++){
-	fHistos[idim]=new TH1F(Form("%s_axis_%d",fTitle.Data(),idim),Form("%s_axis_%d",fTitle.Data(),idim),nbins,xlow,xup);
-	fHistos[idim]->SetDirectory(0);
+        fHistos[idim]=new TH1F(Form("%s_axis_%d",fTitle.Data(),idim),Form("%s_axis_%d",fTitle.Data(),idim),nbins,xlow,xup);
+        fHistos[idim]->SetDirectory(0);
     }
 }
 
 AliTRDNDFast::AliTRDNDFast(const AliTRDNDFast &ref) : TObject(ref),
-fNDim(ref.fNDim),
-fTitle(ref.fTitle),
-fFunc(NULL),
-fHistos(NULL),
-fPars()
+    fNDim(ref.fNDim),
+    fTitle(ref.fTitle),
+    fFunc(NULL),
+    fHistos(NULL),
+    fPars()
 {
     Cleanup();
     Init();
     for(Int_t idim=0;idim<fNDim;idim++){
-	fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
-	fHistos[idim]->SetDirectory(0);
-	for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
+        fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
+        fHistos[idim]->SetDirectory(0);
+        for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
     }
 }
 
@@ -117,15 +117,15 @@ AliTRDNDFast &AliTRDNDFast::operator=(const AliTRDNDFast &ref){
     // Assignment operator
     //
     if(this != &ref){
-	TObject::operator=(ref);
-	fNDim=ref.fNDim;
-	fTitle=ref.fTitle;
-	fFunc = ref.fFunc;
-	for(Int_t idim=0;idim<fNDim;idim++){
-	  fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
-	  fHistos[idim]->SetDirectory(0);
-	  for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
-	}
+        TObject::operator=(ref);
+        fNDim=ref.fNDim;
+        fTitle=ref.fTitle;
+        fFunc = ref.fFunc;
+        for(Int_t idim=0;idim<fNDim;idim++){
+            fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
+            fHistos[idim]->SetDirectory(0);
+            for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
+        }
     }
     return *this;
 }
@@ -142,61 +142,65 @@ void AliTRDNDFast::Init(){
     fHistos=new TH1F*[fNDim];
     for(Int_t idim=0;idim<fNDim;idim++){
         fHistos[idim]=NULL;
-	for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[ipar].SetAt(0,idim);
-	fFunc[idim]=NULL;
+        for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[ipar].SetAt(0,idim);
+        fFunc[idim]=NULL;
     }
 }
 
 void AliTRDNDFast::Cleanup(){
     if(fHistos){
-	for(Int_t idim=0;idim<fNDim;idim++){
-	    if(fHistos[idim]){
-		delete fHistos[idim];
-		fHistos[idim]=NULL;
-	    }
-	}
-	delete[] fHistos;
-	fHistos=NULL;
+        for(Int_t idim=0;idim<fNDim;idim++){
+            if(fHistos[idim]){
+                delete fHistos[idim];
+                fHistos[idim]=NULL;
+            }
+        }
+        delete[] fHistos;
+        fHistos=NULL;
     }
     for(Int_t ipar=0;ipar<kNpar;ipar++){
-      fPars[ipar].Reset();
+        fPars[ipar].Reset();
     }
     if(fFunc){
-	for(Int_t idim=0;idim<fNDim;idim++){
-	    if(fFunc[idim]){
-		delete fFunc[idim];
-		fFunc[idim]=NULL;
-	    }
-	}
-	delete[] fFunc;
-	fFunc=NULL;
+        for(Int_t idim=0;idim<fNDim;idim++){
+            if(fFunc[idim]){
+                delete fFunc[idim];
+                fFunc[idim]=NULL;
+            }
+        }
+        delete[] fFunc;
+        fFunc=NULL;
     }
 }
 
 void AliTRDNDFast::PrintPars(){
     for(Int_t idim=0;idim<fNDim;idim++){
-	for(Int_t ipar=0;ipar<kNpar;ipar++)cout<<idim<<" "<<ipar<<" "<<GetParam(idim,ipar)<<endl;
+        for(Int_t ipar=0;ipar<kNpar;ipar++)cout<<idim<<" "<<ipar<<" "<<GetParam(idim,ipar)<<endl;
     }
+}
+
+int AliTRDNDFast::GetFitOptionParameter(){
+    return iLangauFitOptionParameter;
 }
 
 void AliTRDNDFast::ScaleLangauFun(TF1 *func,Double_t mpv){
 
     Double_t start[kNpar],low[kNpar],high[kNpar];
     for(Int_t ii=0;ii<kNpar;ii++){
-	start[ii]=func->GetParameter(ii);
-	func->GetParLimits(ii,low[ii],high[ii]);
+        start[ii]=func->GetParameter(ii);
+        func->GetParLimits(ii,low[ii],high[ii]);
     }
 
     Double_t scalefactor=mpv/start[1];
 
     for(Int_t ii=0;ii<kNpar;ii++){
-	Double_t scale=1;
-	if(ii==0||ii==1||ii==3)scale=scalefactor;
-	if(ii==4)scale=1./scalefactor;
-	start[ii]*=scale;
-	low[ii]*=scale;
-	high[ii]*=scale;
-	func->SetParLimits(ii, low[ii], high[ii]);
+        Double_t scale=1;
+        if(ii==0||ii==1||ii==3)scale=scalefactor;
+        if(ii==4)scale=1./scalefactor;
+        start[ii]*=scale;
+        low[ii]*=scale;
+        high[ii]*=scale;
+        func->SetParLimits(ii, low[ii], high[ii]);
     }
     func->SetParameters(start);
 }
@@ -213,9 +217,11 @@ TF1 *AliTRDNDFast::GetLangauFun(TString funcname,Double_t range[2],Double_t scal
     hlandauE->SetParameters(start);
     hlandauE->SetParNames("Width","MP","Area","GSigma","delta");
     for (int i=0; i<kNpar; i++) {
-	hlandauE->SetParLimits(i, low[i], high[i]);
+        hlandauE->SetParLimits(i, low[i], high[i]);
     }
-    //hlandauE->FixParameter(4,0);
+    if (iLangauFitOptionParameter==1){
+        hlandauE->FixParameter(4,0);
+    }
     if(scalefactor!=1){ScaleLangauFun(hlandauE,scalefactor*start[1]);}
 
     return hlandauE;
@@ -224,9 +230,7 @@ TF1 *AliTRDNDFast::GetLangauFun(TString funcname,Double_t range[2],Double_t scal
 TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString option){
     //cout<<"Started Fit Landau routine of name: "<<name.Data()<<endl;
     ofstream FileToDebugFit;
-    //cout<<"Debug File declared"<<endl;
     FileToDebugFit.open("FileToDebugFit.txt",std::ios::app);
-    //cout<<"Debug File opened"<<endl;
     TF1 *fitlandau1D=GetLangauFun(name,range);
     TF1 fit("land","landau");
     Double_t max=htemp->GetXaxis()->GetBinCenter(htemp->GetMaximumBin());
@@ -240,16 +244,25 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     TFitResultPtr FitRes=htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
     cout<<"got Fit result"<<endl;
     FitRes->GetCovarianceMatrix();
-    //cout<<"got Covariance Matrix"<<endl;
+    TMatrixDSym TMatrCovFitRes=FitRes->GetCovarianceMatrix();
+    TMatrixDSym TMatrCorFitRes=FitRes->GetCorrelationMatrix();
     double dChi2=FitRes->Chi2();
     double dNDF=FitRes->Ndf();
     double dChiDivNdf=dChi2/dNDF;
     //cout<<"got Chi2()"<<endl;
-    FileToDebugFit<<" "<<dChiDivNdf;//<<endl;
-    //cout<<"Printed Chi2() to File"<<endl;
+    FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
+    FileToDebugFit<<" CorrMatrix:"<<endl;
+    for (int i=0; i<kNpar; i++){
+        for (int j=0; j<kNpar; j++){
+            FileToDebugFit<<TMatrCorFitRes(i,j)<<" ";
+        }
+        FileToDebugFit<<endl;
+    }
     //FitRes->Print("V");
     FileToDebugFit.close();
-    //cout<<"closed File"<<endl;
+    FileToDebugFit.open("FileToDebugFit2.txt",std::ios::app);
+    FileToDebugFit<<dChiDivNdf<<" ";
+    FileToDebugFit.close();
     return fitlandau1D;
 }
 
@@ -257,27 +270,27 @@ void AliTRDNDFast::BuildHistos(){
 
     for(Int_t idim=0;idim<fNDim;idim++){
         fHistos[idim]->Reset();
-	// Fill Histo
-	Double_t pars[kNpar];
-	for(Int_t ipar=0;ipar<kNpar;ipar++)pars[ipar]=GetParam(idim,ipar);
+        // Fill Histo
+        Double_t pars[kNpar];
+        for(Int_t ipar=0;ipar<kNpar;ipar++)pars[ipar]=GetParam(idim,ipar);
         // Also Fill overflow bins!!!
-	for(Int_t ii=1;ii<=fHistos[idim]->GetNbinsX()+1;ii++){
-	    Double_t xval=fHistos[idim]->GetXaxis()->GetBinCenter(ii);
-	    Double_t val=langaufunc(&xval,&pars[0]);
-	    //Double_t val=fFunc[idim]->Eval(xval);
-	    fHistos[idim]->SetBinContent(ii,val);
-	}
-	// Normalization
-      if(fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width")!=0) fHistos[idim]->Scale(1./fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width"));
+        for(Int_t ii=1;ii<=fHistos[idim]->GetNbinsX()+1;ii++){
+            Double_t xval=fHistos[idim]->GetXaxis()->GetBinCenter(ii);
+            Double_t val=langaufunc(&xval,&pars[0]);
+            //Double_t val=fFunc[idim]->Eval(xval);
+            fHistos[idim]->SetBinContent(ii,val);
+        }
+        // Normalization
+        if(fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width")!=0) fHistos[idim]->Scale(1./fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width"));
     }
 }
 
 void AliTRDNDFast::Build(Double_t **pars){
     // pars[ndim][npar]
     for(Int_t idim=0;idim<fNDim;idim++){
-	for(Int_t ipar=0;ipar<kNpar;ipar++){
-	    fPars[ipar].SetAt(pars[idim][ipar],idim);
-	}
+        for(Int_t ipar=0;ipar<kNpar;ipar++){
+            fPars[ipar].SetAt(pars[idim][ipar],idim);
+        }
     }
     BuildHistos();
 }
@@ -293,27 +306,27 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
     if(fNDim>6)CANV->Divide(3,3);
     // Fit and Extract Parameters
     for(Int_t idim=0;idim<fNDim;idim++){
-	CANV->cd(idim+1);
+        CANV->cd(idim+1);
         gPad->SetLogy();
-	range[0]=hdEdx[idim]->GetXaxis()->GetXmin();
-	range[1]=hdEdx[idim]->GetXaxis()->GetXmax();
-	// Norm Histogram
+        range[0]=hdEdx[idim]->GetXaxis()->GetXmin();
+        range[1]=hdEdx[idim]->GetXaxis()->GetXmax();
+        // Norm Histogram
 
-	if(hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width")!=0) hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
+        if(hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width")!=0) hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
         // Fit Histogram
-    fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0S");
-	// Norm Landau
-	if(fFunc[idim]->Integral(range[0],range[1])!=0.0) fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
-	else {
-	    fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2));
-	}
-	hdEdx[idim]->DrawCopy();
+        fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0S");
+        // Norm Landau
+        if(fFunc[idim]->Integral(range[0],range[1])!=0.0) fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
+        else {
+            fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2));
+        }
+        hdEdx[idim]->DrawCopy();
         fFunc[idim]->DrawCopy("same");
-	// Set Pars
-	for(Int_t ipar=0;ipar<kNpar;ipar++){
-	    AliDebug(3,Form("parameters: %f %f %f %i %i \n",fFunc[idim]->GetParameter(ipar),fFunc[idim]->GetParError(ipar),fFunc[idim]->GetChisquare(),fFunc[idim]->GetNDF(),idim));
-	    fPars[ipar].SetAt(fFunc[idim]->GetParameter(ipar),idim);
-	}
+        // Set Pars
+        for(Int_t ipar=0;ipar<kNpar;ipar++){
+            AliDebug(3,Form("parameters: %f %f %f %i %i \n",fFunc[idim]->GetParameter(ipar),fFunc[idim]->GetParError(ipar),fFunc[idim]->GetChisquare(),fFunc[idim]->GetNDF(),idim));
+            fPars[ipar].SetAt(fFunc[idim]->GetParameter(ipar),idim);
+        }
     }
     if(path!="")CANV->Print(Form("%s/%s_Build.pdf",path.Data(),fTitle.Data()));
     delete CANV;
@@ -324,21 +337,21 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
 Double_t AliTRDNDFast::Eval(Double_t *point) const{
     Double_t val=1;
     for(Int_t idim=0;idim<fNDim;idim++){
-	Int_t bin=fHistos[idim]->GetXaxis()->FindBin(point[idim]);
-	val*=fHistos[idim]->GetBinContent(bin);
+        Int_t bin=fHistos[idim]->GetXaxis()->FindBin(point[idim]);
+        val*=fHistos[idim]->GetBinContent(bin);
     }
     return val;
 }
 
 void AliTRDNDFast::Random(Double_t *point) const{
     for(Int_t idim=0;idim<fNDim;idim++){
-	point[idim]=fHistos[idim]->GetRandom();
+        point[idim]=fHistos[idim]->GetRandom();
     }
 }
 
 void AliTRDNDFast::Random(Double_t *point,AliTRDNDFast *nd0,AliTRDNDFast *nd1,Double_t w0,Double_t w1){
     for(Int_t idim=0;idim<nd0->fNDim;idim++){
-	point[idim]=GetRandomInterpolation(nd0->fHistos[idim],nd1->fHistos[idim],w0,w1);
+        point[idim]=GetRandomInterpolation(nd0->fHistos[idim],nd1->fHistos[idim],w0,w1);
     }
 }
 
