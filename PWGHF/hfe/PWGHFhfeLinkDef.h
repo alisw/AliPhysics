@@ -104,7 +104,9 @@
 #pragma link C++ class  AliHFEhadronicbackground+;
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
+#pragma link C++ class  AliAnalysisTaskHaHFECorrel+;
 
+#pragma link C++ class  AliBasicParticleHaHFE+;
 #pragma link C++ class  AliehDPhiBasicParticle+;
 
 #endif
