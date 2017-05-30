@@ -1412,63 +1412,66 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   if(fStudyExotic)
     fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac, m02, GetEventWeight());
   
-  if(matchedPID >= 0 && matchedPID < 3)
+  //
+  // Fill histograms only for PID
+  //
+  if ( matchedPID < 0 || matchedPID > 2 ) return;
+  
+  fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxFrac, m02, GetEventWeight());
+  fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
+  fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
+  fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
+  
+  fhDeltaIANCells        [matchedPID]->Fill(energy, nCell  , dIA   , GetEventWeight());
+  fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell  , dIATot, GetEventWeight());
+  
+  if ( nCell > 4 ) // it makes sense only for significant size histograms
   {
-    fhClusterMaxCellDiffM02[matchedPID]->Fill(energy, maxFrac, m02, GetEventWeight());
-    fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
-    fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
-    fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
-   
-    if ( nCell > 4 ) // it makes sense only for significant size histograms
-    {
-      fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
-      fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
-      fhDeltaIAM02        [matchedPID]->Fill(energy, m02  , dIA  , GetEventWeight());
-      fhDeltaIAM20        [matchedPID]->Fill(energy, m20  , dIA  , GetEventWeight());
-      fhDeltaIANCells     [matchedPID]->Fill(energy, nCell, dIA  , GetEventWeight());
-      
-      fhDeltaIEtaDeltaIPhiTot[matchedPID]->Fill(energy,dIetaPos-dIetaNeg, dIphiPos-dIphiNeg, GetEventWeight());    
-      fhDeltaIATot           [matchedPID]->Fill(energy, dIATot       , GetEventWeight());
-      fhDeltaIATotM02        [matchedPID]->Fill(energy, m02  , dIATot, GetEventWeight());
-      fhDeltaIATotM20        [matchedPID]->Fill(energy, m20  , dIATot, GetEventWeight());
-      fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell, dIATot, GetEventWeight());
-    }
+    fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
+    fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
+    fhDeltaIAM02        [matchedPID]->Fill(energy, m02  , dIA  , GetEventWeight());
+    fhDeltaIAM20        [matchedPID]->Fill(energy, m20  , dIA  , GetEventWeight());
     
-    Float_t l0   = 0., l1   = 0.;
-    Float_t dispp= 0., dEta = 0., dPhi    = 0.;
-    Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
-    if ( GetCalorimeter() == kEMCAL )
-    {
-      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), fCaloCellList, clus,
-                                                                                   l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
-      
-      Float_t sEtaPhiA = -1000.;
-      if(sEta+sPhi>0.0001) sEtaPhiA = (sPhi-sEta)/(sEta+sPhi);
-      
-      AliDebug(2,Form("Recalculate shower shape org: m02 %2.2f, m20 %2.2f, disp %2.2f;"
-                      " new: m02 %2.2f, m20 %2.2f, disp %2.2f; "
-                      "mEta %2.2f, mPhi %2.2f, mEtaPhi %2.2f, A_EtaPhi %2.2f; dEta %2.2f dPhi %2.2f",
-                      m02,m20,clus->GetDispersion(),l0,l1,dispp,sEta,sPhi,sEtaPhi,sEtaPhiA,dEta,dPhi));
-      
-      fhNCellsPerClusterMEta    [matchedPID]->Fill(energy, nCell, sEta    , GetEventWeight());
-      fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell, sPhi    , GetEventWeight());
-      fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
-      fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
-    }
+    fhDeltaIEtaDeltaIPhiTot[matchedPID]->Fill(energy,dIetaPos-dIetaNeg, dIphiPos-dIphiNeg, GetEventWeight());    
+    fhDeltaIATot           [matchedPID]->Fill(energy, dIATot       , GetEventWeight());
+    fhDeltaIATotM02        [matchedPID]->Fill(energy, m02  , dIATot, GetEventWeight());
+    fhDeltaIATotM20        [matchedPID]->Fill(energy, m20  , dIATot, GetEventWeight());
+  }
+  
+  Float_t l0   = 0., l1   = 0.;
+  Float_t dispp= 0., dEta = 0., dPhi    = 0.;
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
+  if ( GetCalorimeter() == kEMCAL )
+  {
+    GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), fCaloCellList, clus,
+                                                                                 l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
     
-    // Check the origin.
-    if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
+    Float_t sEtaPhiA = -1000.;
+    if(sEta+sPhi>0.0001) sEtaPhiA = (sPhi-sEta)/(sEta+sPhi);
+    
+    AliDebug(2,Form("Recalculate shower shape org: m02 %2.2f, m20 %2.2f, disp %2.2f;"
+                    " new: m02 %2.2f, m20 %2.2f, disp %2.2f; "
+                    "mEta %2.2f, mPhi %2.2f, mEtaPhi %2.2f, A_EtaPhi %2.2f; dEta %2.2f dPhi %2.2f",
+                    m02,m20,clus->GetDispersion(),l0,l1,dispp,sEta,sPhi,sEtaPhi,sEtaPhiA,dEta,dPhi));
+    
+    fhNCellsPerClusterMEta    [matchedPID]->Fill(energy, nCell, sEta    , GetEventWeight());
+    fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell, sPhi    , GetEventWeight());
+    fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
+    fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
+  }
+  
+  // Check the origin.
+  if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
+  {
+    fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+    fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+    
+    if ( nCell > 4 )
     {
-      fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
-      fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
-      
-      if ( clus->GetNCells() > 4 )
-      {
-        fhDeltaIAOrigin   [matchedPID]->Fill(energy, mcIndex, dIA   , GetEventWeight()); 
-        fhDeltaIATotOrigin[matchedPID]->Fill(energy, mcIndex, dIATot, GetEventWeight()); 
-      }
-    } // MC
-  } // match PID ok
+      fhDeltaIAOrigin   [matchedPID]->Fill(energy, mcIndex, dIA   , GetEventWeight()); 
+      fhDeltaIATotOrigin[matchedPID]->Fill(energy, mcIndex, dIATot, GetEventWeight()); 
+    }
+  } // MC
 }
 
 //____________________________________________________________________________
