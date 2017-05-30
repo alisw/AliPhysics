@@ -723,6 +723,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     max[dim] = fPtHistBins[fNPtHistBins];
     dim++;
     
+    title[dim] = "#it{E}_{core} (GeV)";
+    nbins[dim] = fNPtHistBins;
+    binEdges[dim] = fPtHistBins;
+    min[dim] = fPtHistBins[0];
+    max[dim] = fPtHistBins[fNPtHistBins];
+    dim++;
+    
     title[dim] = "Matched track";
     nbins[dim] = 2;
     min[dim] = -0.5;
@@ -810,9 +817,21 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
 
   }
   
-  // plot centrality vs. emcal cell energy vs. cell type
-  histname = TString::Format("Cells/hCellEnergy");
-  htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%), Cluster type";
+  // Plot cell histograms
+  
+  // centrality vs. cell energy vs. cell type (for all cells)
+  histname = TString::Format("Cells/hCellEnergyAll");
+  htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%); Cluster type";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins, 3, clusType);
+  
+  // centrality vs. cell energy vs. cell type (for cells in accepted clusters)
+  histname = TString::Format("Cells/hCellEnergyAccepted");
+  htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%); Cluster type";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins, 3, clusType);
+  
+  // centrality vs. cell energy vs. cell type (for leading cells in accepted clusters)
+  histname = TString::Format("Cells/hCellEnergyLeading");
+  htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%); Cluster type";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins, 3, clusType);
   
 }
@@ -1706,18 +1725,33 @@ void AliAnalysisTaskEmcalDijetImbalance::FillGeometricalMatchingHistograms()
  */
 void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
 {
-  
-  // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
+  // Define some vars
+  TString histname;
+  Double_t Enonlin;
+  Double_t Ehadcorr;
+  Double_t Ecore;
+  Int_t absId;
+  Double_t ecell;
+  Double_t leadEcell;
   
   // Get cells from event
   fCaloCells = InputEvent()->GetEMCALCells();
   AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
   
-  TString histname;
-  Double_t Enonlin;
-  Double_t Ehadcorr;
-  Int_t absId;
-  Double_t ecell;
+  // Loop through all cells and fill histo
+  histname = TString::Format("Cells/hCellEnergyAll");
+  for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+    absId = fCaloCells->GetCellNumber(i);
+    ecell = fCaloCells->GetCellAmplitude(absId);
+    fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
+  }
+  for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+    absId = phosCaloCells->GetCellNumber(i);
+    ecell = phosCaloCells->GetCellAmplitude(absId);
+    fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
+  }
+  
+  // Loop through clusters and plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   AliClusterContainer* clusters = 0;
   TIter nextClusColl(&fClusterCollArray);
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
@@ -1756,15 +1790,16 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       } else {
         continue;
       }
-
       
-      // Fill cluster spectra by SM
+      // Fill cluster spectra by SM, and fill cell histograms
       Enonlin = 0;
       Ehadcorr = 0;
+      Ecore = 0;
       if (it->second->IsEMCAL()) {
         
         Ehadcorr = it->second->GetHadCorrEnergy();
         Enonlin = it->second->GetNonLinCorrEnergy();
+        Ecore = Ehadcorr;
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
@@ -1776,17 +1811,25 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         }
         
         // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
-        histname = TString::Format("Cells/hCellEnergy");
+        histname = TString::Format("Cells/hCellEnergyAccepted");
+        leadEcell = 0;
         for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
           absId = it->second->GetCellAbsId(iCell);
           ecell = fCaloCells->GetCellAmplitude(absId);
           fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
+          if (ecell > leadEcell) {
+            leadEcell = ecell;
+          }
         }
+        // Plot also the leading cell
+        histname = TString::Format("Cells/hCellEnergyLeading");
+        fHistManager.FillTH3(histname, leadEcell, fCent, kEMCal);
         
       } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
         
         Ehadcorr = it->second->E();
         Enonlin = it->second->E();
+        Ecore = it->second->GetCoreEnergy();
         
         Int_t relid[4];
         if (fPHOSGeo) {
@@ -1802,12 +1845,19 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         }
         
         // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
-        histname = TString::Format("Cells/hCellEnergy");
+        histname = TString::Format("Cells/hCellEnergyAccepted");
+        leadEcell = 0;
         for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
           absId = it->second->GetCellAbsId(iCell);
           ecell = phosCaloCells->GetCellAmplitude(absId);
           fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
+          if (ecell > leadEcell) {
+            leadEcell = ecell;
+          }
         }
+        // Plot also the leading cell
+        histname = TString::Format("Cells/hCellEnergyLeading");
+        fHistManager.FillTH3(histname, leadEcell, fCent, kPHOS);
       }
       
       // Check if the cluster has a matched track
@@ -1826,21 +1876,23 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
         TString title(histClusterObservables->GetAxis(i)->GetTitle());
         if (title=="Centrality %")
-        contents[i] = fCent;
+          contents[i] = fCent;
         else if (title=="cluster type")
-        contents[i] = clusType;
+          contents[i] = clusType;
         else if (title=="#it{E}_{clus} (GeV)")
-        contents[i] = Enonlin;
+          contents[i] = Enonlin;
         else if (title=="#it{E}_{clus, hadcorr} (GeV)")
-        contents[i] = Ehadcorr;
+          contents[i] = Ehadcorr;
+        else if (title=="#it{E}_{core} (GeV)")
+          contents[i] = Ecore;
         else if (title=="Matched track")
-        contents[i] = hasMatchedTrack;
+          contents[i] = hasMatchedTrack;
         else if (title=="M02")
-        contents[i] = it->second->GetM02();
+          contents[i] = it->second->GetM02();
         else if (title=="Ncells")
-        contents[i] = it->second->GetNCells();
+          contents[i] = it->second->GetNCells();
         else
-        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+          AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
       histClusterObservables->Fill(contents);
         
