@@ -4974,6 +4974,10 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
         Double_t sn=TMath::Sin(t->GetAlpha());
         Double_t xthis=r1[0]*cs + r1[1]*sn;
         
+        //Memory cleanup
+        hV0Traj->Delete();
+        hV0Traj=0x0;
+        
         //Propagate bachelor to the point of DCA
         t->PropagateTo(xthis,b);
         
