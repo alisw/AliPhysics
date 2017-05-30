@@ -99,7 +99,7 @@ ClassImp(AliAnalysisTaskCRCZDC)
 //________________________________________________________________________
 AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC():
 AliAnalysisTaskSE(""),
-fAnalysisType("AUTOMATIC"),
+fAnalysisType(kAUTOMATIC),
 fRPType(""),
 fCFManager1(NULL),
 fCFManager2(NULL),
@@ -281,7 +281,7 @@ fhZNBCCorr(0x0)
 //________________________________________________________________________
 AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates):
 AliAnalysisTaskSE(name),
-fAnalysisType("AUTOMATIC"),
+fAnalysisType(kAUTOMATIC),
 fRPType(RPtype),
 fCFManager1(NULL),
 fCFManager2(NULL),
@@ -512,12 +512,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
   // Create the output containers
   
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC" || fAnalysisType == "MCESD" || fAnalysisType == "TrackQA"))
-  {
-    AliError("WRONG ANALYSIS TYPE! only TrackQA, MCESD, MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
-    exit(1);
-  }
-  
   //set the common constants
   AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
   cc->SetNbinsMult(fNbinsMult);
@@ -640,7 +634,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
   
-  if(fAnalysisType == "MCAOD") {
+  if(fAnalysisType == kMCAOD) {
     
     fSpectraMCList = new TList();
     fSpectraMCList->SetOwner(kTRUE);
@@ -735,10 +729,13 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   Int_t dRun15ov6[] = {244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
   
+  Int_t dRun15opidfix[] = {245145, 245146, 245151, 245152, 245231, 245232, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245441, 245446, 245450, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554};
+  
   if(fDataSet==k2010) {fCRCnRun=92;}
   if(fDataSet==k2011) {fCRCnRun=119;}
   if(fDataSet==k2015) {fCRCnRun=90;}
   if(fDataSet==k2015v6) {fCRCnRun=91;}
+  if(fDataSet==k2015pidfix) {fCRCnRun=35;}
   if(fDataSet==kAny) {fCRCnRun=1;}
   
   Int_t d=0;
@@ -747,6 +744,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     if(fDataSet==k2011)   fRunList[d] = dRun11h[r];
     if(fDataSet==k2015)   fRunList[d] = dRun15o[r];
     if(fDataSet==k2015v6) fRunList[d] = dRun15ov6[r];
+    if(fDataSet==k2015pidfix) fRunList[d] = dRun15opidfix[r];
     if(fDataSet==kAny) fRunList[d] = 1;
     d++;
   }
@@ -790,7 +788,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   // track QA
   
-  if(fAnalysisType == "TrackQA") {
+  if(fAnalysisType == kTrackQA) {
     
     fTrackQAList = new TList();
     fTrackQAList->SetOwner(kTRUE);
@@ -890,11 +888,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   if(fDataSet==kAny) RunBin=0;
   
   //DEFAULT - automatically takes care of everything
-  if (fAnalysisType == "AUTOMATIC") {
+  if (fAnalysisType == kAUTOMATIC || fAnalysisType == kTracklets) {
     
     // get centrality
     Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
-    if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+    if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix) {
       centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
       centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
       centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
@@ -927,6 +925,30 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     //then make the event
     fFlowEvent->Fill( fCutsRP, fCutsPOI );
+    
+    if(fAnalysisType == kTracklets) {
+      // fill with tracklets
+      AliAODTracklets* anInputTracklets = (AliAODTracklets*)aod->GetTracklets();
+      Int_t multSPD = anInputTracklets->GetNumberOfTracklets();
+      //loop over tracklets
+      for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
+        Float_t thetaTr= anInputTracklets->GetTheta(itracklet);
+        Float_t phiTr= anInputTracklets->GetPhi(itracklet);
+        // calculate eta
+        Float_t etaTr = -TMath::Log(TMath::Tan(thetaTr/2.));
+        //make new AliFLowTrackSimple
+        AliFlowTrack* pTrack = new AliFlowTrack();
+        pTrack->SetPt(0.5);
+        pTrack->SetEta(etaTr);
+        pTrack->SetPhi(phiTr);
+        //marking the particles as POI type 2:
+        fFlowEvent->IncrementNumberOfPOIs(2);
+        pTrack->SetPOItype(2,kTRUE);
+        pTrack->SetSource(AliFlowTrack::kFromTracklet);
+        //Add the track to the flowevent
+        fFlowEvent->AddTrack(pTrack);
+      }
+    }
     
     fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
     
@@ -978,14 +1000,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
   }
   
-  if (fAnalysisType == "TrackQA") {
+  if (fAnalysisType == kTrackQA) {
     
     // empty flow event
     fFlowEvent->ClearFast();
     
     // get centrality
     Double_t centrV0M=300;
-    if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+    if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
       centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     } else {
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
@@ -1104,7 +1126,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
   }
   
-  if (fAnalysisType == "MCAOD") {
+  if (fAnalysisType == kMCAOD) {
     
     //check event cuts
     if (InputEvent()) {
@@ -1126,7 +1148,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     // get centrality (from AliMultSelection or AliCentrality)
     Double_t centr = 300;
-    if(fDataSet==k2015 || fDataSet==k2015v6) {
+    if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
       fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -1209,7 +1231,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
   }
   
-  if(fAnalysisType ==  "MCESD") {
+  if(fAnalysisType == kMCESD) {
     
     fFlowEvent->ClearFast();
     
@@ -1342,9 +1364,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     fFlowEvent->SetRun(esd->GetRunNumber());
     //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
     
-  } // end of if(fAnalysisType ==  "MCESD")
+  } // end of if(fAnalysisType ==  kMCESD)
   
-  if(fAnalysisType ==  "MCkine") {
+  if(fAnalysisType == kMCkine) {
     
     fFlowEvent->ClearFast();
     
@@ -1400,7 +1422,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetRun(1);
     }
     
-  } // end of if(fAnalysisType ==  "MCkine")
+  } // end of if(fAnalysisType == kMCkine)
   
   if (!fFlowEvent) return; //shuts up coverity
   
@@ -1444,7 +1466,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   //********************************************************************************************************************************
   
-  if(fAnalysisType == "AOD" || fAnalysisType == "AUTOMATIC") {
+  if(fAnalysisType == kAUTOMATIC || fAnalysisType == kTracklets) {
     
     // PHYSICS SELECTION
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
@@ -1658,13 +1680,18 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
           
           // get energy
-          if(i==1) {
-            EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
-            if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
-              EZNA = GetBadTowerResp(EZNA, fBadTowerCalibHist[cenb]);
+          if(fDataSet==k2015 || fDataSet==k2015v6) {
+            if(i==1) {
+              EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+              if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
+                EZNA = GetBadTowerResp(EZNA, fBadTowerCalibHist[cenb]);
+              }
+            } else {
+              EZNA = towZNA[i+1];
             }
           } else {
             EZNA = towZNA[i+1];
+            printf("suca!\n");
           }
           fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
 //          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
@@ -1806,7 +1833,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
   Bool_t BisPileup=kFALSE;
   Double_t centrV0M=300., centrCL1=300.;
   
-  if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+  if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
     
     // pileup for LHC10h and LHC11h
     

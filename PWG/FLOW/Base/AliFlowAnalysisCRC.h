@@ -68,6 +68,7 @@ public:
     k2011,
     k2015,
     k2015v6,
+    k2015pidfix,
     kAny
   };
   
@@ -754,6 +755,7 @@ public:
   Bool_t GetInvertZDC() const {return this->fInvertZDC;};
   void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
   Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
   void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
@@ -1605,6 +1607,8 @@ private:
   TProfile *fZDCBinsCenRefMultTotProf[10][4]; //!
   TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
+  TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
+  TH1D *fZDCBinsVtxCenEZDCproj[3][4][10][10]; //!
   
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1635,7 +1639,7 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 11;
+  const static Int_t fkNsteps = 12;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1968,6 +1972,7 @@ private:
   TH1D *fZDCESECutsHist[fZDCESEnPol]; //!
   
   Bool_t fQAZDCCuts;
+  Bool_t fUseTracklets;
   Bool_t fQAZDCCutsFlag;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;

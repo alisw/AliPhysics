@@ -153,10 +153,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (sDataSet == "2015v6") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015v6);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
- TString analysisType = "AUTOMATIC";
- if (analysisTypeUser != "") analysisType = analysisTypeUser;
- if (analysisTypeUser == "AOD") analysisType = "AUTOMATIC";
- taskFE->SetAnalysisType(analysisType);
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "AUTOMATIC") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kAUTOMATIC);
+ if (analysisTypeUser == "MCAOD") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kMCAOD);
+ if (analysisTypeUser == "MCkine") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kMCkine);
+ if (analysisTypeUser == "MCESD") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kMCESD);
+ if (analysisTypeUser == "TrackQA") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kTrackQA);
+ if (analysisTypeUser == "Tracklets") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kTracklets);
  // set the trigger selection
   if (EvTrigger == "Cen")
     taskFE->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
@@ -288,7 +290,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
     cutsEvent->SetQA(bCutsQA);
   }
- else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA") {
+ else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA" || analysisTypeUser == "Tracklets") {
    if (sDataSet == "2010" || sDataSet == "2011") {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
    }
@@ -344,7 +346,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bCutsQA);
  }
- if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD" || analysisTypeUser == "TrackQA") {
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD" || analysisTypeUser == "TrackQA" || analysisTypeUser == "Tracklets") {
   // Track cuts for RPs
   if(bUseVZERO) {
    if (sDataSet == "2011")
@@ -518,6 +520,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetZDCGainAlpha(ZDCGainAlpha);
  taskQC->SetTestSin(bTestSin);
  taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
+ if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
