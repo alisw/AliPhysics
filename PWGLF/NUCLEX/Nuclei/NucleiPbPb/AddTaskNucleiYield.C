@@ -16,7 +16,7 @@
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskNucleiYield* AddTaskNucleiYield_LHC15o(Bool_t isMC = kFALSE,
+AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
     AliPID::EParticleType part = AliPID::kDeuteron,
     Int_t pdgCode = 1000010020,
     TString tskname = "deuteron",
