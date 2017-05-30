@@ -498,7 +498,9 @@ private:
     Float_t fTreeCascVarV0DCAptY; //!
     Float_t fTreeCascVarV0DCAptZ; //!
     Float_t fTreeCascVarDCADaughters_Test; //!
-    Float_t fTreeCascVarBachelorDCAptUncertainty; //
+    Float_t fTreeCascVarBachelorDCAptSigmaX2; //
+    Float_t fTreeCascVarBachelorDCAptSigmaY2; //
+    Float_t fTreeCascVarBachelorDCAptSigmaZ2; //
     Float_t fTreeCascVarV0DCAptUncertainty_V0Pos; //
     Float_t fTreeCascVarV0DCAptUncertainty_V0Ang; //
     
