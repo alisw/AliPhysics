@@ -102,7 +102,8 @@ private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
-  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
+  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2], bool rapiditycut = true);
+  bool   RapidityCut(AliAODTrack *track);
   bool   PassesPIDSelection(AliAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
 
@@ -171,6 +172,7 @@ private:
   // MC only histograms
   TH1F                 *fProduction;             //!<! *(MC only)* Total number of produced particles
   TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
+  TH2F                 *fReconstructedNA[2][2];  //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF), no y cut
   TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
   TH2F                 *fPtCorrection[2];        //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks
   TH3F                 *fDCAPrimary[2][2];       //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries

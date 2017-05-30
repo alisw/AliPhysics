@@ -139,6 +139,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fCentralityClasses{nullptr}
    ,fProduction{nullptr}
    ,fReconstructed{{nullptr}}
+   ,fReconstructedNA{{nullptr}}
    ,fTotal{nullptr}
    ,fPtCorrection{nullptr}
    ,fDCAPrimary{{nullptr}}
@@ -207,6 +208,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       for (int iT = 0; iT < 2; ++iT) {
         fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
             nCentBins,centBins,nPtBins,pTbins);
+        fReconstructedNA[iT][iC] = new TH2F(Form("f%cITS_%sNA",letter[iC],tpctofMC[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
+            nCentBins,centBins,nPtBins,pTbins);
         fDCAPrimary[iT][iC] = new TH3F(Form("f%cDCAPrimary%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
         fDCASecondary[iT][iC] = new TH3F(Form("f%cDCASecondary%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
@@ -214,6 +217,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
         fDCASecondaryWeak[iT][iC] = new TH3F(Form("f%cDCASecondaryWeak%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
         fList->Add(fReconstructed[iT][iC]);
+        fList->Add(fReconstructedNA[iT][iC]);
         fList->Add(fDCAPrimary[iT][iC]);
         fList->Add(fDCASecondary[iT][iC]);
         fList->Add(fDCASecondaryWeak[iT][iC]);
@@ -342,7 +346,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (track->GetID() <= 0) continue;
     Double_t dca[2] = {0.};
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
-    if (!AcceptTrack(track,dca)) continue;
+    if (!AcceptTrack(track,dca,!fIsMC)) continue;
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
@@ -360,14 +364,18 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int iC = part->Charge() > 0 ? 1 : 0;
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
-          if (part->IsPhysicalPrimary()) {
-            if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy) fReconstructed[iR][iC]->Fill(centrality,pT);
-            fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
-            if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
-          } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
-            fDCASecondary[iR][iC]->Fill(centrality,pT,dca[0]);
-          else
-            fDCASecondaryWeak[iR][iC]->Fill(centrality,pT,dca[0]);
+          if (part->IsPhysicalPrimary() && TMath::Abs(dca[0]) <= fRequireMaxDCAxy)
+            fReconstructedNA[iR][iC]->Fill(centrality,pT);
+          if (RapidityCut(track)) {
+            if (part->IsPhysicalPrimary()) {
+              if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy) fReconstructed[iR][iC]->Fill(centrality,pT);
+              fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
+              if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
+            } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
+              fDCASecondary[iR][iC]->Fill(centrality,pT,dca[0]);
+            else
+              fDCASecondaryWeak[iR][iC]->Fill(centrality,pT,dca[0]);
+          }
         }
       }
     } else {
@@ -421,6 +429,11 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
   return;
 }
 
+bool AliAnalysisTaskNucleiYield::RapidityCut(AliAODTrack *track) {
+  fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
+  return (fCutVec.Rapidity() > fRequireYmin && fCutVec.Rapidity() < fRequireYmax);
+}
+
 /// This function checks whether a track passes the cuts required in this task
 ///
 /// \param track Track that is going to be checked
@@ -428,12 +441,11 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
 ///               of the track to the primary vertex
 /// \return Boolean value: true means that the track has passed all the cuts.
 ///
-bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
+bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2], bool rapiditycut) {
   ULong_t status = track->GetStatus();
-  fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return false;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
-  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return false;
+  if (!RapidityCut(track) && rapiditycut) return false;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return false;
   if (track->Chi2perNDF() > fRequireMaxChi2) return false;
