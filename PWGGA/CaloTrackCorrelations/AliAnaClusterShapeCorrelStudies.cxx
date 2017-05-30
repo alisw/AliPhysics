@@ -1419,7 +1419,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
     fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
    
-    if ( clus->GetNCells() > 4 ) // it makes sense only for significant size histograms
+    if ( nCell > 4 ) // it makes sense only for significant size histograms
     {
       fhDeltaIEtaDeltaIPhi[matchedPID]->Fill(energy, dIeta, dIphi, GetEventWeight());    
       fhDeltaIA           [matchedPID]->Fill(energy, dIA         , GetEventWeight());
