@@ -465,7 +465,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		   alldata[in+1][iHit] < high[in])
 		  {
 		    //    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-			   in+1,iHit, alldata[in+1][iHit] ); 
+		    //	   in+1,iHit, alldata[in+1][iHit] ); 
 		    timeCFD[in] = alldata[in+1][iHit] ; 
  		    break;
 		  }
@@ -476,7 +476,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		   alldata[in+1+56][iHit] < high[in+12])
 		  {
 		    //    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-			   in+12,iHit, alldata[in+1+56][iHit] ); 
+		    //	   in+12,iHit, alldata[in+1+56][iHit] ); 
 		    timeCFD[in+12] = alldata[in+56+1][iHit] ;
 		    break;
 		  }
