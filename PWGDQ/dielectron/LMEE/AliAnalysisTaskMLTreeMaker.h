@@ -221,6 +221,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> MCeta;
   std::vector<Double_t> MCphi;
   
+  std::vector<Double_t> MCvertx;
+  std::vector<Double_t> MCverty;
+  std::vector<Double_t> MCvertz;
+  
   std::vector<Float_t> dcar;    //DCA
   std::vector<Float_t> dcaz;
   
