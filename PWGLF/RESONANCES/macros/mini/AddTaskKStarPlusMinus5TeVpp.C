@@ -38,6 +38,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  TString     monitorOpt="NoSIGN",
  Float_t     piPIDCut = 3.0,
  Float_t     pi_k0s_PIDCut = 5.0,
+ Float_t     MaxRap = 0.5,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.004,//here
  Float_t     pLife = 20,  
@@ -55,6 +56,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus",
  Bool_t      ptDep= kFALSE,
+ Double_t    pt1 = 0.0105,
+ Double_t    pt2 = 0.0350,
  Int_t       centr = 0
  )
 {
@@ -186,7 +189,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair,ptDep)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair,ptDep,pt1,pt2)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

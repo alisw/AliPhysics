@@ -21,6 +21,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Bool_t                  enableMonitor,
    TString                 monitorOpt,
    Float_t                 massTol,
+   Float_t                 MaxRap,
    Float_t                 massTolVeto, 
    Float_t                 pLife, 
    Float_t                 radiuslow,
@@ -33,7 +34,9 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Int_t                   NTPCcluster,
    const char             *suffix,
    AliRsnCutSet           *cutsPair,
-   Bool_t                  ptDep
+   Bool_t                  ptDep,
+   Double_t                pt1,
+   Double_t                pt2
 )
 {
    // manage suffix
@@ -76,7 +79,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
 
    if(ptDep){
-     esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+     esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
    }else
      esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
   
@@ -92,7 +95,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not in the standard Cut 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
-   cutK0s->SetMaxRapidity(0.5);
+   cutK0s->SetMaxRapidity(MaxRap);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
    cutK0s->SetSwitch(Switch);    
@@ -104,7 +107,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    if(enableSys)
      {
 
-       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+       if(Sys==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");}
+       else if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
        else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
        else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
        else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
