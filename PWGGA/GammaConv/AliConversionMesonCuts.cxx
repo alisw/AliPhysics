@@ -1751,17 +1751,17 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
       fAlphaCutMeson    = 1;
     }  
     break;
-  case 10:  // 0-0.2
+  case 10:  //a 0-0.2
     fAlphaMinCutMeson   = 0.0;
     fAlphaCutMeson      = 0.2;
     fAlphaPtDepCut      = kFALSE;
     break;
-  case 11:  // 0.2-0.6
+  case 11:  //b 0.2-0.6
     fAlphaMinCutMeson   = 0.2;
     fAlphaCutMeson      = 0.6;
     fAlphaPtDepCut      = kFALSE;
     break;
-  case 12:  // 0.6-1.0
+  case 12:  //c 0.6-1.0
     fAlphaMinCutMeson   = 0.6;
     fAlphaCutMeson      = 1.0;
     fAlphaPtDepCut      = kFALSE;
@@ -2407,37 +2407,37 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       break;
 
     //cuts with one cell dist for GammaCalo only
-    case 10:      //
+    case 10:      //a
       fMinOpanCutMeson  = 0.;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 11:      //
+    case 11:      //b
       fMinOpanCutMeson  = 0.0152;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 12:      //
+    case 12:      //c
       fMinOpanCutMeson  = 0.016;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 13:      //
+    case 13:      //d
       fMinOpanCutMeson  = 0.017;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 14:      //
+    case 14:      //e
       fMinOpanCutMeson  = 0.018;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 15:      //
+    case 15:      //f
       fMinOpanCutMeson  = 0.019;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
-    case 16:      //
+    case 16:      //g
       fMinOpanCutMeson  = 0.0202;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
