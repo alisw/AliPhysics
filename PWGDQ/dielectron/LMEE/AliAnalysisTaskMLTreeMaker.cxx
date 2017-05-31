@@ -128,6 +128,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   vertx(0),
   verty(0),
   vertz(0),
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),
   mcTrackIndex(0),
   NCrossedRowsTPC(0),
   NClustersTPC(0),
@@ -213,6 +216,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   vertx(0),
   verty(0),
   vertz(0),
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),
   mcTrackIndex(0),
   NCrossedRowsTPC(0),
   NClustersTPC(0),
@@ -297,6 +303,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
   
+  fTree->Branch("PsigTPC", &PsigTPC);
+  
 //  fTree->Branch("NClustersITS", &NClustersITS);
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
@@ -304,16 +312,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("HasSPDfirstHit", &HasSPDfirstHit);   
   fTree->Branch("NTPCSignal", &NTPCSignal); 
   
-  if(fPionSigmas){
-    fTree->Branch("PsigTPC", &PsigTPC);
-    fTree->Branch("PsigITS", &PsigITS);
-    fTree->Branch("PsigTOF", &PsigTOF);
-  }
-  if(fKaonSigmas){
-    fTree->Branch("KsigTPC", &KsigTPC);
-    fTree->Branch("KsigITS", &KsigITS);
-    fTree->Branch("KsigTOF", &KsigTOF);
-  }
+  
+//  if(fPionSigmas){
+//    fTree->Branch("PsigTPC", &PsigTPC);
+//    fTree->Branch("PsigITS", &PsigITS);
+//    fTree->Branch("PsigTOF", &PsigTOF);
+//  }
+//  if(fKaonSigmas){
+//    fTree->Branch("KsigTPC", &KsigTPC);
+//    fTree->Branch("KsigITS", &KsigITS);
+//    fTree->Branch("KsigTOF", &KsigTOF);
+//  }
   
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
@@ -340,6 +349,10 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("MCpt", &MCpt);
     fTree->Branch("MCeta", &MCeta);
     fTree->Branch("MCphi", &MCphi);
+    
+    fTree->Branch("MCTrack_vertx", &MCvertx);
+    fTree->Branch("MCTrack_verty", &MCverty);
+    fTree->Branch("MCTrack_vertz", &MCvertz);
   }
   
   PostData(1, fList);
@@ -479,6 +492,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   motherlabel.clear();
   charge.clear();
   enh.clear();
+  MCvertx.clear();
+  MCverty.clear();
+  MCvertz.clear();
   
   // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
@@ -589,17 +605,15 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         MCphi.push_back(mcTrack->Phi());
         
 
-        //Get vertex only for first track in event
-        if(!acceptedTracks){     
+        //Get production vertex for MC tracks
 
-        Double_t vert[3] = {0};
-          mcTrack->XvYvZv(vert);
+          Double_t MCvert[3] = {0};
+          mcTrack->XvYvZv(MCvert);
           
-          vertx= vert[0];
-          verty= vert[1];
-          vertz= vert[2];
-        }
-      
+          MCvertx.push_back(MCvert[0]);
+          MCverty.push_back(MCvert[1]);
+          MCvertz.push_back(MCvert[2]);
+
         if(!(mcTrack->GetMother() < 0)) {  
           hasmother.push_back(1);
           AliAODMCParticle* mcmother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
@@ -614,36 +628,40 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
       } //End if hasMC 
       
-      else{                          //if not MC use AOD vertex to get vertex xyz - like in dielectron framework                           
-        if(!acceptedTracks){   //Get vertex only for first track in event
+                        
+       if(!acceptedTracks){   //Get vertex only for first track in event
           Double_t vert[3] = {0};  
           event->GetPrimaryVertex()->GetXYZ(vert); 
           vertx= vert[0];
           verty= vert[1];
           vertz= vert[2];
         }
-      }
+
 
       //Fill Tree with non MC data
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);
       EsigTOF.push_back(tempEsigTOF);
-      if(fPionSigmas){
-        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
-        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
-        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 2);
-        PsigTPC.push_back(tempPsigTPC);
-        PsigITS.push_back(tempPsigITS);
-        PsigTOF.push_back(tempPsigTOF);
-      }
-      if(fKaonSigmas){
-        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 3);
-        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 3);
-        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 3);
-        KsigTPC.push_back(tempKsigTPC);
-        KsigITS.push_back(tempKsigITS);
-        KsigTOF.push_back(tempKsigTOF);
-      }
+      
+      Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
+      PsigTPC.push_back(tempPsigTPC);
+      
+//      if(fPionSigmas){
+//        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
+//        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
+//        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 2);
+//        PsigTPC.push_back(tempPsigTPC);
+//        PsigITS.push_back(tempPsigITS);
+//        PsigTOF.push_back(tempPsigTOF);
+//      }
+//      if(fKaonSigmas){
+//        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 3);
+//        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 3);
+//        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 3);
+//        KsigTPC.push_back(tempKsigTPC);
+//        KsigITS.push_back(tempKsigITS);
+//        KsigTOF.push_back(tempKsigTOF);
+//      }
       eta.push_back(etatemp);
       phi.push_back(track->Phi());
       pt.push_back(pttemp);
