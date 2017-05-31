@@ -541,6 +541,34 @@ Bool_t AliMTRParameterizedResponse::SetFromMTRResponseTaskOutput ( Bool_t perBoa
 }
 
 //________________________________________________________________________
+void AliMTRParameterizedResponse::ZoomPad()
+{
+  if ( gPad->GetEvent() != kButton1Double ) return;
+  TVirtualPad* pad = gPad;
+  Int_t px = pad->GetEventX();
+  Int_t py = pad->GetEventY();
+  TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
+  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
+    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
+    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
+    TString drawOpt = obj->GetOption();
+    if ( drawOpt.IsNull() ) {
+      if ( obj->InheritsFrom(TGraph::Class()) ) {
+        drawOpt = "p";
+        if ( iobj == 1 ) drawOpt.Append("a");
+      }
+      else if ( obj->InheritsFrom(TH1::Class()) ) {
+        drawOpt = "e";
+        if ( iobj == 1 ) drawOpt.Append("same");
+      }
+    }
+    obj->Draw(drawOpt.Data());
+  }
+  can->Modified();
+  can->Update();
+}
+
+//________________________________________________________________________
 Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBoard ) const
 {
   /// Compare data and MC responses
@@ -562,6 +590,7 @@ Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBo
     Int_t ipad = 1;
     while ( (graph=static_cast<TGraphAsymmErrors*>(next())) ) {
       can->cd(ipad++);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRParameterizedResponse::ZoomPad()");
       TGraphAsymmErrors* clonedGraph = static_cast<TGraphAsymmErrors*>(graph->Clone());
       Int_t icolor = imc+1;
       clonedGraph->SetLineColor(icolor);
@@ -723,10 +752,3 @@ Double_t AliMTRParameterizedResponse::WeightPerEta ( Double_t pt, Double_t eta, 
   if ( ibin == 0 || ibin > fEtaBinning->GetNbins() ) return 0.;
   return GetWeight(pt,ibin-1,itype,isMC,useFit,kFALSE);
 }
-
-
-
-
-
-
-

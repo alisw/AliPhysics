@@ -804,6 +804,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     //    can->SetBottomMargin(0.1);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -890,6 +891,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
     can->Divide(nColumns,nRows,0,0);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -1004,6 +1006,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
       for ( Int_t ich=0; ich<4; ich++ ) {
         Int_t iplane = 4*icount+ich;
         can->cd(iplane+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetLogy();
         TLegend* leg = new TLegend(0.15,0.7,0.9,0.9);
@@ -1274,6 +1277,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
         trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
 
         can->cd(idetel+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetMargin(0.08,0.,0.08,0.);
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
@@ -2192,6 +2196,34 @@ Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t wr
     delete effMap; // CAVEAT: effMap is owner of effHistos
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliMTRChEffAnalysis::ZoomPad()
+{
+  if ( gPad->GetEvent() != kButton1Double ) return;
+  TVirtualPad* pad = gPad;
+  Int_t px = pad->GetEventX();
+  Int_t py = pad->GetEventY();
+  TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
+  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
+    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
+    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
+    TString drawOpt = obj->GetOption();
+    if ( drawOpt.IsNull() ) {
+      if ( obj->InheritsFrom(TGraph::Class()) ) {
+        drawOpt = "p";
+        if ( iobj == 1 ) drawOpt.Append("a");
+      }
+      else if ( obj->InheritsFrom(TH1::Class()) ) {
+        drawOpt = "e";
+        if ( iobj == 1 ) drawOpt.Append("same");
+      }
+    }
+    obj->Draw(drawOpt.Data());
+  }
+  can->Modified();
+  can->Update();
 }
 
 //___________________________________________________________________________
