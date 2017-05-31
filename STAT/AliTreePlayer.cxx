@@ -52,6 +52,8 @@
 #include "TLegend.h"
 #include "AliSysInfo.h"
 
+using namespace std;
+
 ClassImp(AliTreePlayer)
 
 //_____________________________________________________________________________
