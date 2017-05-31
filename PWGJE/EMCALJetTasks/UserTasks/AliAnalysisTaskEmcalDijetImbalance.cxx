@@ -702,10 +702,17 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
       dim++;
     }
     
-    title[dim] = "cluster type";
-    nbins[dim] = 3;
-    min[dim] = -0.5;
-    max[dim] = 2.5;
+    title[dim] = "#eta";
+    nbins[dim] = 28;
+    min[dim] = -0.7;
+    max[dim] = 0.7;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "#phi";
+    nbins[dim] = 100;
+    min[dim] = 1.;
+    max[dim] = 6.;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
@@ -801,6 +808,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     maxJet[dimJet] = fPtHistBins[fNPtHistBins];
     dimJet++;
     
+    axisTitle[dimJet] = "#rho (GeV/#it{c})";
+    nbinsJet[dimJet] = 100;
+    minJet[dimJet] = 0.;
+    maxJet[dimJet] = 1000.;
+    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+    dimJet++;
+    
     axisTitle[dimJet] = "N_{clusters}";
     nbinsJet[dimJet] = 20;
     minJet[dimJet] = -0.5;
@@ -833,6 +847,20 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
   histname = TString::Format("Cells/hCellEnergyLeading");
   htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%); Cluster type";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins, 3, clusType);
+  
+  // plot cell patches by SM
+  const Int_t nEmcalSM = 20;
+  for (Int_t sm = 0; sm < nEmcalSM; sm++) {
+    histname = TString::Format("Cells/BySM/hEmcalPatchEnergy_SM%d", sm);
+    htitle = histname + ";#it{E}_{cell patch} (GeV);Centrality (%)";
+    fHistManager.CreateTH2(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins);
+  }
+  
+  for (Int_t sm = 1; sm < 5; sm++) {
+    histname = TString::Format("Cells/BySM/hPhosPatchEnergy_SM%d", sm);
+    htitle = histname + ";#it{E}_{cell patch} (GeV);Centrality (%)";
+    fHistManager.CreateTH2(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins);
+  }
   
 }
 
@@ -1738,19 +1766,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
   fCaloCells = InputEvent()->GetEMCALCells();
   AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
   
-  // Loop through all cells and fill histo
-  histname = TString::Format("Cells/hCellEnergyAll");
-  for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
-    absId = fCaloCells->GetCellNumber(i);
-    ecell = fCaloCells->GetCellAmplitude(absId);
-    fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
-  }
-  for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
-    absId = phosCaloCells->GetCellNumber(i);
-    ecell = phosCaloCells->GetCellAmplitude(absId);
-    fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
-  }
-  
   // Loop through clusters and plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   AliClusterContainer* clusters = 0;
   TIter nextClusColl(&fClusterCollArray);
@@ -1877,8 +1892,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         TString title(histClusterObservables->GetAxis(i)->GetTitle());
         if (title=="Centrality %")
           contents[i] = fCent;
-        else if (title=="cluster type")
-          contents[i] = clusType;
+        else if (title=="#eta")
+          contents[i] = it->first.Eta();
+        else if (title=="#phi")
+          contents[i] = it->first.Phi_0_2pi();
         else if (title=="#it{E}_{clus} (GeV)")
           contents[i] = Enonlin;
         else if (title=="#it{E}_{clus, hadcorr} (GeV)")
@@ -1914,22 +1931,74 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
         TString title(histJetObservables->GetAxis(i)->GetTitle());
         if (title=="Centrality (%)")
-        contents[i] = fCent;
+          contents[i] = fCent;
         else if (title=="#eta_{jet}")
-        contents[i] = jet->Eta();
+          contents[i] = jet->Eta();
         else if (title=="#phi_{jet} (rad)")
-        contents[i] = jet->Phi_0_2pi();
+          contents[i] = jet->Phi_0_2pi();
         else if (title=="#it{E}_{T} (GeV)")
-        contents[i] = jet->Pt();
+          contents[i] = jet->Pt();
+        else if (title=="#rho (GeV/#it{c})")
+          contents[i] = jet->Pt() / jet->Area();
         else if (title=="N_{clusters}")
-        contents[i] = jet->GetNumberOfClusters();
+          contents[i] = jet->GetNumberOfClusters();
         else
-        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+          AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
       histJetObservables->Fill(contents);
       
     }
     
+  }
+  
+  // Loop through all cells and fill histos
+  Int_t sm;
+  Int_t relid[4];
+  Double_t patchSumEMCal[20] = {0.};
+  Double_t patchSumPHOS[4] = {0.};
+  for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = fCaloCells->GetCellNumber(i);
+    ecell = fCaloCells->GetCellAmplitude(absId);
+    
+    // Fill cell histo
+    histname = TString::Format("Cells/hCellEnergyAll");
+    fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
+    
+    // Fill cell patch histo, per SM
+    sm = fGeom->GetSuperModuleNumber(absId);
+    if (sm >=0 && sm < 20) {
+      patchSumEMCal[sm] += ecell;
+    }
+    
+  }
+  
+  for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = phosCaloCells->GetCellNumber(i);
+    ecell = phosCaloCells->GetCellAmplitude(absId);
+    
+    // Fill cell histo
+    histname = TString::Format("Cells/hCellEnergyAll");
+    fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
+    
+    // Fill cell patch histo, per SM
+    fPHOSGeo->AbsToRelNumbering(absId, relid);
+    sm = relid[0];
+    if (sm >=1 && sm < 5) {
+      patchSumPHOS[sm-1] += ecell;
+    }
+    
+  }
+  
+  for (Int_t sm = 0; sm < 20; sm++) {
+    histname = TString::Format("Cells/BySM/hEmcalPatchEnergy_SM%d", sm);
+    fHistManager.FillTH2(histname, patchSumEMCal[sm], fCent);
+  }
+  
+  for (Int_t sm = 1; sm < 5; sm++) {
+    histname = TString::Format("Cells/BySM/hPhosPatchEnergy_SM%d", sm);
+    fHistManager.FillTH2(histname, patchSumPHOS[sm-1], fCent);
   }
 
 }
