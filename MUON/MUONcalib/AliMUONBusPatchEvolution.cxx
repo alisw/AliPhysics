@@ -117,7 +117,7 @@ void AliMUONBusPatchEvolution::ComputeNumberOfPads()
     }
   }
 
-  cdbm->SetRun(0);
+  cdbm->SetRun(9999999);
 
   AliMpCDB::LoadAll();
 
