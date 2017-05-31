@@ -994,7 +994,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   } else if (fIsHeavyIon == 2){
     printf("Running in pPb mode \n");
     if (fDetectorCentrality == 0){
-      printf("\t centrality selection based on V0A \n");
+      printf("\t centrality selection based on V0A (V0M in case Run2)\n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
     } 
@@ -1683,10 +1683,8 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(esdEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
-      AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
-        if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-        else                           return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+	                               return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
       }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
