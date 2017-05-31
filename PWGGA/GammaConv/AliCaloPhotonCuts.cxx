@@ -538,9 +538,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistograms->Add(fHistClusterEtavsPhiAfterQA);
   } else if( fClusterType == 2 ){ //PHOS
     const Int_t nPhosEtaBins        = 56;
-    const Int_t nPhosPhiBins        = 192;
+    const Int_t nPhosPhiBins        = 256;
     const Float_t PhosEtaRange[2]   = {-0.16, 0.16};
-    const Float_t PhosPhiRange[2]   = {4.5, 5.6};
+    const Float_t PhosPhiRange[2]   = {4.355, 5.6};
 
     if(!fDoLightOutput){
       fHistClusterEtavsPhiBeforeAcc = new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
@@ -3283,6 +3283,10 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
     if( !fUsePhiCut ) fUsePhiCut=1;
     fMinPhiCut = 4.54;//DCal acceptance
     break;
+  case 6:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMinPhiCut = 4.36;//PHOS acceptance RUN2
+    break;
 
   default:
     AliError(Form("MinPhi Cut not defined %d",minPhi));
@@ -3318,6 +3322,10 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
   case 5:
     if( !fUsePhiCut ) fUsePhiCut=1;
     fMaxPhiCut = 5.59;//DCal acceptance
+    break;
+  case 6:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 5.59;//PHOS acceptance RUN2
     break;
     
   default:

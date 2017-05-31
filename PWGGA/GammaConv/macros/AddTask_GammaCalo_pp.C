@@ -1092,6 +1092,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","2444400040013300000","0163803100000010");
   } else if (trainConfig == 382){ // PHOS clusters
     cuts.AddCut("00062113","2444400040013300000","0163803100000010");
+  // PHOS clusters RUN2 config pp 5 TeV
+  } else if (trainConfig == 383){ // PHOS clusters with larger acceptance
+    cuts.AddCut("00010113","2446600040013300000","0163803100000010");
+    cuts.AddCut("00062113","2446600040013300000","0163803100000010");
 
     // 13 TeV & 5 TeV
   } else if (trainConfig == 401){ // EMCAL clusters
