@@ -366,7 +366,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 {
   // T0 raw ->
   //
-  printf("@@@@  AliT0Reconstructor::Reconstruct(AliRawReader* rawReader\n");
   Float_t meanOrA=0, meanOrC=0, meanTVDC=0, meanQT1[24]={0};
   if (fMeanOrA==0)  meanOrA = fTime0vertex[0] + 587;
   else 
@@ -454,7 +453,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	UInt_t timestamp = rawReader->GetTimestamp();
 	Int_t fBCID=Int_t (rawReader->GetBCID());
 	Int_t trmbunch= myrawreader.GetTRMBunchID();
-	printf("@@@@ timestamp %i\n",timestamp);
 	AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
 	if( (trmbunch-fBCID)!=37  ) {
 	  AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
@@ -466,7 +464,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		if(alldata[in+1][iHit] > low[in] && 
 		   alldata[in+1][iHit] < high[in])
 		  {
-		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+		    //    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
 			   in+1,iHit, alldata[in+1][iHit] ); 
 		    timeCFD[in] = alldata[in+1][iHit] ; 
  		    break;
@@ -477,7 +475,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		if(alldata[in+1+56][iHit] > low[in+12] && 
 		   alldata[in+1+56][iHit] < high[in+12])
 		  {
-		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+		    //    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
 			   in+12,iHit, alldata[in+1+56][iHit] ); 
 		    timeCFD[in+12] = alldata[in+56+1][iHit] ;
 		    break;
@@ -919,7 +917,6 @@ Bool_t  AliT0Reconstructor::SatelliteFlag() const
 void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[250][5], Int_t amplitude[26]) const
 {
   // QT00 -> QT11
-  printf("@@ readNewQTC");
   Float_t a[26], b[26];
   Int_t qt01mean[26], qt11mean[26];
   for(int i=0; i<26; i++) {
