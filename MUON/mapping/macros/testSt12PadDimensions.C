@@ -14,7 +14,7 @@
 #include "AliMpSector.h"
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSectorReader.h"
-
+#include "TVector2.h"
 #include <Riostream.h>
 
 #endif
@@ -25,10 +25,9 @@ void testPadDimensions(AliMq::Station12Type station, AliMp::PlaneType plane)
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpSectorReader r(dataStreams, station, plane);
-  AliMpSector* sector = r.BuildSector();
+  AliMpSectorReader r(station, plane);
+  AliMpSector* sector = r.BuildSector(dataStreams);
   AliMpSectorSegmentation segmentation(sector);  
-  segmentation.PrintZones(); 
   
   TVector2 previousDimensions;
   for (Int_t i=1; i<segmentation.MaxPadIndexX()+1;i++) 
@@ -38,7 +37,7 @@ void testPadDimensions(AliMq::Station12Type station, AliMp::PlaneType plane)
 
         // Check pad dimensions
 	AliMpPad pad = segmentation.PadByIndices(i,j);
-	TVector2 dimensions = segmentation.PadDimensions(segmentation.Zone(pad));
+	TVector2 dimensions(pad.GetDimensionX()*2,pad.GetDimensionY()*2);
 	
 	if ( dimensions.X() != previousDimensions.X() || 
 	     dimensions.Y() != previousDimensions.Y() ) {

@@ -75,7 +75,7 @@ void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpMotifReader r(dataStreams, AliMp::kStation12, station, plane);
+  AliMpMotifReader r(AliMp::kStation12, station, plane);
   //r.SetVerboseLevel(2);
 
   for (i=0;i<nofMotifs;++i){
@@ -94,7 +94,7 @@ void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane
     //if (i==36) continue;  
         // break for these motifs (St2, BP) - to be investigated
    
-    AliMpMotifType *mt = r.BuildMotifType(mname);
+    AliMpMotifType *mt = r.BuildMotifType(dataStreams,mname);
 
     cvs[i/4]->cd(1+ (i%4));
     //histos[i] = new TH2C(Form("h%d",i),Form("Motif type %c",names[i]),
