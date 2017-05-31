@@ -190,8 +190,8 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 
       if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors"))
          gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C");
-      if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp5"))
-         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFEnpepp5.C");
+      if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepp"))
+         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFEnpepp.C");
 
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
@@ -212,7 +212,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
       task->SelectCollisionCandidates(AliVEvent::kINT7);
 
       if(useMC && weightlevelback>=0) {
-         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5.root");
+         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect.root");
       }
 
       //create data containers
