@@ -331,6 +331,12 @@ fTreeCascVarBachelorDCAptSigmaY2(0),
 fTreeCascVarBachelorDCAptSigmaZ2(0),
 fTreeCascVarV0DCAptUncertainty_V0Pos(0),
 fTreeCascVarV0DCAptUncertainty_V0Ang(0),
+fTreeCascVarV0DCAptPosSigmaX2(0),
+fTreeCascVarV0DCAptPosSigmaY2(0),
+fTreeCascVarV0DCAptPosSigmaZ2(0),
+fTreeCascVarV0DCAptNegSigmaX2(0),
+fTreeCascVarV0DCAptNegSigmaY2(0),
+fTreeCascVarV0DCAptNegSigmaZ2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
@@ -612,6 +618,12 @@ fTreeCascVarBachelorDCAptSigmaY2(0),
 fTreeCascVarBachelorDCAptSigmaZ2(0),
 fTreeCascVarV0DCAptUncertainty_V0Pos(0),
 fTreeCascVarV0DCAptUncertainty_V0Ang(0),
+fTreeCascVarV0DCAptPosSigmaX2(0),
+fTreeCascVarV0DCAptPosSigmaY2(0),
+fTreeCascVarV0DCAptPosSigmaZ2(0),
+fTreeCascVarV0DCAptNegSigmaX2(0),
+fTreeCascVarV0DCAptNegSigmaY2(0),
+fTreeCascVarV0DCAptNegSigmaZ2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
@@ -1006,6 +1018,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachelorDCAptSigmaZ2",&fTreeCascVarBachelorDCAptSigmaZ2,"fTreeCascVarBachelorDCAptSigmaZ2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptUncertainty_V0Pos",&fTreeCascVarV0DCAptUncertainty_V0Pos,"fTreeCascVarV0DCAptUncertainty_V0Pos/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptUncertainty_V0Ang",&fTreeCascVarV0DCAptUncertainty_V0Ang,"fTreeCascVarV0DCAptUncertainty_V0Ang/F");
+            
+            fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaX2",&fTreeCascVarV0DCAptPosSigmaX2,"fTreeCascVarV0DCAptPosSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaY2",&fTreeCascVarV0DCAptPosSigmaY2,"fTreeCascVarV0DCAptPosSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaZ2",&fTreeCascVarV0DCAptPosSigmaZ2,"fTreeCascVarV0DCAptPosSigmaZ2/F");
+
+            fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaX2",&fTreeCascVarV0DCAptNegSigmaX2,"fTreeCascVarV0DCAptNegSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaY2",&fTreeCascVarV0DCAptNegSigmaY2,"fTreeCascVarV0DCAptNegSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaZ2",&fTreeCascVarV0DCAptNegSigmaZ2,"fTreeCascVarV0DCAptNegSigmaZ2/F");
             /*
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
@@ -2050,7 +2070,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarBachelorDCAptSigmaY2 = -100;
         fTreeCascVarBachelorDCAptSigmaZ2 = -100;
         fTreeCascVarV0DCAptUncertainty_V0Pos = -100;
-        fTreeCascVarV0DCAptUncertainty_V0Ang = -100; 
+        fTreeCascVarV0DCAptUncertainty_V0Ang = -100;
+        
+        fTreeCascVarV0DCAptPosSigmaX2 = -100;
+        fTreeCascVarV0DCAptPosSigmaY2 = -100;
+        fTreeCascVarV0DCAptPosSigmaY2 = -100;
+        fTreeCascVarV0DCAptNegSigmaX2 = -100;
+        fTreeCascVarV0DCAptNegSigmaY2 = -100;
+        fTreeCascVarV0DCAptNegSigmaY2 = -100;
 
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
         Double_t lEffMassXi      = 0. ;
@@ -2199,10 +2226,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
             }
             nt.PropagateTo(xn,lMagneticField); pt.PropagateTo(xp,lMagneticField);
+            
+            //_____________________________________________________________________________
+            //Get uncertainties in V0 decay point
+            //POSITIVE
+            Double_t alphaPos=pt.GetAlpha(), csp=TMath::Cos(alphaPos), snp=TMath::Sin(alphaPos);
+            Double_t sxp=snp*snp*pt.GetSigmaY2()+0.0005*0.0005, syp=csp*csp*pt.GetSigmaY2()+0.0005*0.0005;
+            fTreeCascVarV0DCAptPosSigmaX2 = sxp;
+            fTreeCascVarV0DCAptPosSigmaY2 = syp;
+            fTreeCascVarV0DCAptPosSigmaY2 = pt.GetSigmaZ2();
+
+            //NEGATIVE
+            Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
+            Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
+            fTreeCascVarV0DCAptNegSigmaX2 = sxn;
+            fTreeCascVarV0DCAptNegSigmaY2 = syn;
+            fTreeCascVarV0DCAptNegSigmaY2 = nt.GetSigmaZ2();
+            
+            //_____________________________________________________________________________
+            //Recreate V0
             AliESDv0 vertex(nt,lIdxNegXi,pt,lIdxPosXi);
-            
             Float_t cpa=vertex.GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-            
             vertex.SetDcaV0Daughters(dca);
             vertex.SetV0CosineOfPointingAngle(cpa);
             vertex.ChangeMassHypothesis(310);
