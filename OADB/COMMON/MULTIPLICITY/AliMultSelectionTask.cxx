@@ -1359,10 +1359,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //FIXME: get ZDC information in AOD in a fully consistent way
         AliAODZDC *lAODZDC = aodevent->GetZDCData();
 
-        if (TMath::Abs(lAODZDC->GetZNATime()) < 990.) fZnaFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZNCTime()) < 990.) fZncFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZPATime()) < 990.) fZpaFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZPCTime()) < 990.) fZpcFired -> SetValueInteger(1);
+        for (Int_t j = 0; j < 4; ++j) {
+            if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
+            if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
+            if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
+            if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+        }
 
         const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
         const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
