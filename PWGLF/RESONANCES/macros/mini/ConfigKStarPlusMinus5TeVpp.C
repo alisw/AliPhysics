@@ -74,8 +74,6 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetRequireTPCRefit(); // Standard
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
-   //esdTrackCuts->SetMaxChi2PerClusterTPC(4.); //not standard Cut 
-
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
 
    if(ptDep){
@@ -92,7 +90,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
-   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not in the standard Cut 
+   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not a standard Cut but taken to choose only primary V0s 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(MaxRap);
