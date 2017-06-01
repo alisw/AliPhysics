@@ -2752,10 +2752,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    // - Beginning of the Cascade Loop
    for (Int_t iXi = 0; iXi < ncascades; iXi++) {
 
-
-
-printf(Form(" ----- fMinTPCcrossrawoverfindable ----- :  %.1f",fMinTPCcrossrawoverfindable));
-
         lIsPosInXiProton      = kFALSE;
         lIsPosInXiPion        = kFALSE;
         lIsPosInOmegaProton   = kFALSE;
