@@ -1071,21 +1071,21 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
     v->GetXYZ(x2,y2,z2);
     v->GetPxPyPz(px2,py2,pz2);
     
-    // calculation dca
+    Double_t dca = 1e+33;
     
+    // calculation dca
     Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
     Double_t ax= Det(py1,pz1,py2,pz2);
     Double_t ay=-Det(px1,pz1,px2,pz2);
     Double_t az= Det(px1,py1,px2,py2);
     
-    Double_t dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
+    dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
     
     //points of the DCA
     Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
     Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
     
     x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-    
     
     //propagate track to the points of DCA
     
@@ -1201,7 +1201,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         hV0Traj=0x0;
         
         //Propagate bachelor to the point of DCA
-        t->PropagateTo(xthis,b);
+        if (!t->PropagateTo(xthis,b)) {
+            //AliWarning(" propagation failed !";
+            return 1e+33;
+        }
+        
         
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
