@@ -2964,7 +2964,7 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC13b", "LHC13c", "LHC16l"};
+  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l", "LHC13b", "LHC13c"};
   TFile* file=TFile::Open(filename);
   if(!file) return;
 
