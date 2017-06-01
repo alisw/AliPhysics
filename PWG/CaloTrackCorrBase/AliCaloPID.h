@@ -223,7 +223,9 @@ class AliCaloPID : public TObject {
   
   // Track matching EMC
   // Pt dependent
-  void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; InitParamTrackMatchPtDependent() ; }
+  
+  // Activate pT dependent track matching
+  void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; }  
   void    SwitchOffEMCTrackPtDepResMatching()  { fEMCALUseTrackPtDepMatchingCut = kFALSE ; }
 
   TF1    *GetEMCALFuncTrackPtDepDEta() ;     
