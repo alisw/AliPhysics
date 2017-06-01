@@ -45,10 +45,11 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdphiIso                 = 0.03,
                                                                  const Bool_t           bmcTruth                  = kTRUE,
                                                                  const Bool_t           isLCAnalysis              = kFALSE,
-								 TString                L1triggerName             = ""
+                                                                 TString                triggerName               = "",
+                                                                 const Bool_t           RejectPileUpEvent         = kFALSE,
+                                                                 const Int_t            NContrToPileUp            = 3
                                                                  )
 {
-  
   Printf("Preparing neutral cluster analysis\n");
   
   // #### Define manager and data container names
@@ -57,8 +58,38 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     ::Error("AddTaskEMCALPhotonIsolation", "No analysis manager to connect to.");
     return NULL;
   }
-  
-  printf("Creating container name for cluster analysis\n");
+
+  // Use the input containers naming convention with "usedefault" (already used in several EMCal tasks and new correction framework)
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  if(trackName == "usedefault"){
+    if(dType == "ESD"){
+      trackName = "Tracks";
+    }
+    else if(dType == "AOD"){
+      trackName = "tracks";
+    }
+    else{
+      trackName = "";
+    }
+  }
+
+  if(clusName == "usedefault"){
+    if(dType == "ESD"){
+      clusName = "CaloClusters";
+    }
+    else if(dType == "AOD"){
+      clusName = "caloClusters";
+    }
+    else{
+      clusName = "";
+    }
+  }
+
+  // Set the task output container name
+  Printf("Creating container name for cluster analysis\n");
+
   TString myContName("");
   if(bIsMC){
     myContName = Form("Analysis_Neutrals_MC");
@@ -67,22 +98,28 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     myContName = Form("Analysis_Neutrals");
   }
   
-  if(L1triggerName.Contains("EG1") || L1triggerName.Contains("EGA1")){
-    L1triggerName = "EG1";
+  if(triggerName.Contains("EG1") || triggerName.Contains("EGA1")){
+    triggerName = "_Trigger_EG1";
   }
-  else if(L1triggerName.Contains("EG2") || L1triggerName.Contains("EGA2")){
-    L1triggerName = "EG2";
+  else if(triggerName.Contains("EG2") || triggerName.Contains("EGA2")){
+    triggerName = "_Trigger_EG2";
+  }
+  else if(triggerName.Contains("MB")){
+    triggerName = "_Trigger_MB";
   }
   else{
-    L1triggerName = "";
+    triggerName = "";
   }
 
-  if(L1triggerName != ""){
-    myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d_Trigger_%s",isLCAnalysis?"_LC_Yes":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,L1triggerName.Data()));
+  TString pileUp;
+  if(RejectPileUpEvent){
+    pileUp = Form("_PU_ON%d", NContrToPileUp);
   }
   else{
-    myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d",isLCAnalysis?"_LC_Yes":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear));
+    pileUp = "";
   }
+  
+  myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d%s%s",isLCAnalysis?"_LC_Yes":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,triggerName.Data(),pileUp.Data()));
 
   // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -127,13 +164,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
   TString configFilePath(configBasePath+"/"+configFileMD5);
   gROOT->LoadMacro(configFilePath.Data());
-  printf("Path of config file: %s\n",configFilePath.Data());
+  Printf("Path of config file: %s\n",configFilePath.Data());
   
   // #### Task preferences
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(isLCAnalysis);
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetEtIsoThreshold(EtIso);
+  task->SetTMClusterRejection(bTMClusterRejection);
+  task->SetTMClusterRejectioninCone(bTMClusterRejectionInCone);
   task->SetCTMdeltaEta(TMdeta);
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
@@ -166,38 +205,43 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetSmearForClusters(bWhichToSmear);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetMCtruth(bmcTruth);
-  
+  task->SetPeriod(periodstr);
+  task->SetRejectPileUpEvent(RejectPileUpEvent);
+  task->SetNcontributorsToPileUp(NContrToPileUp);
+
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
-  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
+  TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data()));
   cout<<"Name of the container "<<name.Data()<<endl;
   
   // Tracks to be used for the track matching (already used in TM task, TPC only tracks)
-  AliTrackContainer *trackCont  = task->AddTrackContainer("tracks");
-  if(!trackCont) Printf("Error with TPCOnly!!");
+  AliTrackContainer *trackCont = task->AddTrackContainer(trackName);
+  if(!trackCont) Printf("Error with TPC-Only Tracks!!");
   trackCont->SetName("tpconlyMatch");
   trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
-
-  // Clusters to be used in the analysis already filtered
-  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
   
-  // Tracks to be used in the analysis (Hybrid tracks)
-  AliTrackContainer * tracksForAnalysis = task->AddTrackContainer("tracks");
-  if(!tracksForAnalysis) Printf("Error with Hybrids!!");
+  // Tracks to be used in the analysis (Hybrid Tracks)
+  AliTrackContainer * tracksForAnalysis = task->AddTrackContainer(trackName);
+  if(!tracksForAnalysis) Printf("Error with Hybrids Tracks!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
   if(!bIsMC){
     tracksForAnalysis->SetTrackCutsPeriod(periodstr);
     tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
   }
-  Printf("Name of tracks for matching: %s \nName of tracks for isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
+
+  // Clusters to be used in the analysis (already filtered)
+  AliClusterContainer *clusterCont = task->AddClusterContainer(clusName);
+
+  Printf("Name of track container for matching: %s \nName of track container for isolation: %s \nName of cluster container: %s",trackCont->GetName(),tracksForAnalysis->GetName(),clusterCont->GetName());
   
-  printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
   // #### Add analysis task
+  Printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
   manager->AddTask(task);
   
   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
+
+  AliAnalysisDataContainer *cinput = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
   

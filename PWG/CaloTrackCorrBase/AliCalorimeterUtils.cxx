@@ -27,7 +27,6 @@
 #include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
@@ -35,6 +34,7 @@
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliLog.h"
 
 // --- Detector ---
@@ -72,7 +72,9 @@ fPlotCluster(0),                  fOADBSet(kFALSE),
 fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
 fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
 fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
-fNSuperModulesUsed(0),            fRunNumber(0),
+fNSuperModulesUsed(0),            
+fFirstSuperModuleUsed(-1),        fLastSuperModuleUsed(-1),
+fRunNumber(0),
 fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   InitParameters();
@@ -282,8 +284,13 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       if(trecal)
       {
+        // pass number should be pass1 except on Run1 and special cases
         TString passM = pass;
-        if(pass=="spc_calo") passM = "pass3";
+        if ( pass=="spc_calo"    ) passM = "pass3";
+        if ( fRunNumber > 209121 ) passM = "pass1";//run2 periods
+        if ( pass == "muon_calo_pass1" && fRunNumber > 209121 && fRunNumber < 244284 ) 
+          passM = "pass0";//period LHC15a-m
+        
         TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
         
         if(trecalpass)
@@ -803,6 +810,51 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
   clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 }
 
+//______________________________________________________________________________________
+/// \return energy in cross axis around cell. For both calorimeters.
+/// For EMCal, same procedure as in AliEMCALRecoUtils.
+///
+/// \param absID: cell absolute ID naumber
+/// \param cells: total list of cells in calo
+/// \param bc: bunch crossing number
+///
+//______________________________________________________________________________________
+Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc)
+{
+  if ( cells->IsEMCAL() ) 
+  {
+    Double_t tcell = cells->GetCellTime(absID);
+ 
+    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc);
+  }
+  else // PHOS
+  { 
+    Int_t icol = -1, irow = -1,iRCU = -1;   
+    Int_t imod = GetModuleNumberCellIndexes(absID, AliFiducialCut::kPHOS, icol, irow, iRCU);
+   
+    Int_t absId1 = -1, absId2 = -1, absId3 = -1, absId4 = -1;
+    
+    Int_t relId1[] = { imod+1, 0, irow+1, icol   };
+    Int_t relId2[] = { imod+1, 0, irow-1, icol   };
+    Int_t relId3[] = { imod+1, 0, irow  , icol+1 };
+    Int_t relId4[] = { imod+1, 0, irow  , icol-1 };
+    
+    fPHOSGeo->RelToAbsNumbering(relId1, absId1);
+    fPHOSGeo->RelToAbsNumbering(relId2, absId2);
+    fPHOSGeo->RelToAbsNumbering(relId3, absId3);
+    fPHOSGeo->RelToAbsNumbering(relId4, absId4);
+    
+    Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+    
+    if(absId1 > 0 ) ecell1 = cells->GetCellAmplitude(absId1);
+    if(absId2 > 0 ) ecell2 = cells->GetCellAmplitude(absId2);
+    if(absId3 > 0 ) ecell3 = cells->GetCellAmplitude(absId3);
+    if(absId4 > 0 ) ecell4 = cells->GetCellAmplitude(absId4);
+    
+    return ecell1+ecell2+ecell3+ecell4;
+  }
+}
+
 //_______________________________________________________________
 /// Select EMCal SM regions, depending on its location in a SM, 
 /// behind frames, close to borders, etc.
@@ -1140,18 +1192,9 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     {
       Int_t mod =-1;
       Double_t z = 0., x=0.;
-      TParticle* primary = 0x0;
-      AliStack * stack = ((AliMCEvent*)inputEvent)->Stack();
-      
-      if(stack)
-      {
-        primary = stack->Particle(particle->GetCaloLabel(0));
-      }
-      else
-      {
-        AliFatal("Stack not available, stop!");
-      }
-      
+     
+      TParticle* primary = ((AliMCEvent*)inputEvent)->Particle(particle->GetCaloLabel(0));
+     
       if(primary)
       {
         fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
@@ -1225,7 +1268,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
   
   if ( absId < 0 ) return -1 ;
   
-  if ( calo == AliFiducialCut::kEMCAL )
+  if ( calo == AliFiducialCut::kEMCAL || calo == AliFiducialCut::kDCAL)
   {
     Int_t iTower = -1, iIphi = -1, iIeta = -1;
     fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
@@ -1780,6 +1823,48 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
       if(status > 0) ok = kFALSE;
     }
 
+    return ok ;
+  }
+  
+  return kFALSE ;
+}
+
+//______________________________________________________________________________________________________
+/// Check that a MC AOD is in the calorimeter acceptance.
+//______________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliVParticle* particle)
+{  
+  if(!particle || (calo!=AliFiducialCut::kEMCAL && calo!=AliFiducialCut::kPHOS)) return kFALSE ;
+  
+  if( (!IsPHOSGeoMatrixSet () && calo == AliFiducialCut::kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == AliFiducialCut::kEMCAL)   )
+  {
+    AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead",calo));
+    return kFALSE ;
+  }
+  
+  Float_t phi = particle->Phi();
+  if(phi < 0) phi+=TMath::TwoPi();
+  
+  if(calo == AliFiducialCut::kPHOS )
+  {
+    Int_t mod = 0 ;
+    Double_t x = 0, z = 0 ;
+    Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), phi, mod, z, x) ;
+  }
+  else if(calo == AliFiducialCut::kEMCAL)
+  {
+    Int_t absID = 0 ;
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
+    if(ok)
+    {
+      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
+      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
+      if(status > 0) ok = kFALSE;
+    }
+    
     return ok ;
   }
   

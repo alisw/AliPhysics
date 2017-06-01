@@ -17,6 +17,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include <fstream>
 #include <iostream>
 #include <bitset>
@@ -29,6 +30,9 @@
 #include <TGridResult.h>
 #include <TSystem.h>
 #include <TUUID.h>
+#include <TKey.h>
+#include <TProfile.h>
+#include <TH1F.h>
 
 #include <AliLog.h>
 #include <AliAnalysisManager.h>
@@ -60,7 +64,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -69,6 +73,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -86,9 +92,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
-  fPythiaTrials(0.),
-  fPythiaXSection(0.),
+  fPythiaTrials(0),
+  fPythiaTrialsFromFile(0),
+  fPythiaCrossSection(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
+  fPythiaCrossSectionFilenames(),
   fHistManager(),
   fOutput(nullptr)
 {
@@ -111,7 +120,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -120,6 +129,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -137,9 +148,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
-  fPythiaTrials(0.),
-  fPythiaXSection(0.),
+  fPythiaTrials(0),
+  fPythiaTrialsFromFile(0),
+  fPythiaCrossSection(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
+  fPythiaCrossSectionFilenames(),
   fHistManager(name),
   fOutput(nullptr)
 {
@@ -370,7 +384,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
   if (fFilenameIndex == -1 && fRandomFileAccess) {
     // - 1 ensures that we it doesn't overflow
     fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
-    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
+    // +1 to account for the fact that the filenames vector is 0 indexed.
+    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
   // If not random file access, then start from the beginning
   if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
@@ -381,7 +396,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
     fFilenameIndex = 0;
   }
 
-  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
+  // +1 to account for the fact that the filenames vector is 0 indexed.
+  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex+1, fFilenames.size()));
 }
 
 /**
@@ -462,7 +478,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
 
   if (fCreateHisto) {
     fHistManager.FillTH1("fHistEventCount", "Accepted");
-    fHistManager.FillTH1("fHistEmbeddingEventsRejected", attempts);
+    fHistManager.FillTH1("fHistEmbeddedEventsAttempted", attempts);
   }
 
   if (!fChain) return kFALSE;
@@ -470,6 +486,10 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
   return kTRUE;
 }
 
+/**
+ * Set some properties of the event that are not immediately available from the external event to make them
+ * available to user tasks.
+ */
 void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
 {
   AliDebug(4, "Set event properties");
@@ -486,12 +506,23 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
 
   if (fPythiaHeader)
   {
+    fPythiaCrossSection = fPythiaHeader->GetXsection();
     fPythiaTrials = fPythiaHeader->Trials();
-    fPythiaXSection = fPythiaHeader->GetXsection();
     fPythiaPtHard = fPythiaHeader->GetPtHard();
+    // It is identically zero if the available is not available
+    if (fPythiaCrossSection == 0.) {
+      AliDebugStream(4) << "Taking the pythia cross section avg from the xsec file.\n";
+      fPythiaCrossSection = fPythiaCrossSectionFromFile;
+    }
+    // It is identically zero if the available is not available
+    if (fPythiaTrials == 0.) {
+      AliDebugStream(4) << "Taking the pythia trials avg from the xsec file.\n";
+      fPythiaTrials = fPythiaTrialsFromFile;
+    }
+    // Pt hard is inherently event-by-event and cannot by taken as a avg quantity.
 
     AliDebugStream(4) << "Pythia header is defined!\n";
-    AliDebugStream(4) << "fPythiaXSection: " << fPythiaXSection << "\n";
+    AliDebugStream(4) << "fPythiaCrossSection: " << fPythiaCrossSection << "\n";
   }
 }
 
@@ -502,36 +533,55 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
 {
   // Fill trials, xsec, pt hard
   fHistManager.FillTH1("fHistTrials", fPtHardBin, fPythiaTrials);
-  fHistManager.FillProfile("fHistXsection", fPtHardBin, fPythiaXSection);
+  fHistManager.FillProfile("fHistXsection", fPtHardBin, fPythiaCrossSection);
   fHistManager.FillTH1("fHistPtHard", fPythiaPtHard);
-
-  // Keep count of the total number of events
-  fHistManager.FillTH1("fHistEventCount", "Total");
 }
 
 /**
- * Performs an event selection on the current external event.
+ * Handles (ie wraps) event selection and proper event counting.
  *
  * @return kTRUE if the event successfully passes all criteria.
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
-  // Trigger selection
+  if (CheckIsEmbeddedEventSelected()) {
+    return kTRUE;
+  }
+
+  if (fCreateHisto) {
+    // Keep count of number of rejected events
+    fHistManager.FillTH1("fHistEventCount", "Rejected");
+  }
+
+  return kFALSE;
+}
+
+/**
+ * Performs the embedded event selection on the current external event.
+ *
+ * @return kTRUE if the event successfully passes all criteria.
+ */
+Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
+{
+  // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
     if (eev) {
-      res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+        res = (dynamic_cast<AliVAODHeader*>(aev->GetHeader()))->GetOfflineTrigger();
       }
     }
 
     if ((res & fTriggerMask) == 0) {
       AliDebug(3, Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.",
                       res, fTriggerMask));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "PhysSel", 1);
+      }
       return kFALSE;
     }
   }
@@ -548,6 +598,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
     if (TMath::Abs(externalVertex[2]) > fZVertexCut) {
       AliDebug(3, Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",
        externalVertex[2], fZVertexCut));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "Vz", 1);
+      }
       return kFALSE;
     }
     Double_t dist = TMath::Sqrt((externalVertex[0]-inputVertex[0])*(externalVertex[0]-inputVertex[0])+(externalVertex[1]-inputVertex[1])*(externalVertex[1]-inputVertex[1])+(externalVertex[2]-inputVertex[2])*(externalVertex[2]-inputVertex[2]));
@@ -555,14 +608,44 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
       AliDebug(3, Form("Event rejected because the distance between the current and embedded vertices is > %f. "
        "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f",
        fMaxVertexDist, inputVertex[0], inputVertex[1], inputVertex[2], externalVertex[0], externalVertex[1], externalVertex[2], dist));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "VertexDist", 1);
+      }
       return kFALSE;
     }
   }
 
-  // TODO: Can we do selection based on the contents of the external event input objects?
-  //       The previous embedding task could do so by directly accessing the elements.
-  //       Certainly can't do jets (say minPt of leading jet) because this has to be embedded before them.
-  //       See AliJetEmbeddingFromAODTask::IsAODEventSelected()
+  // Check for pt hard bin outliers
+  if (fPythiaHeader && fMCRejectOutliers)
+  {
+    // Pythia jet / pT-hard > factor
+    // This corresponds to "condition 1" in AliAnalysisTaskEmcal
+    // NOTE: The other "conditions" defined there are not really suitable to define here, since they
+    //       depend on the input objects of the event
+    if (fPtHardJetPtRejectionFactor > 0.) {
+      TLorentzVector jet;
+
+      Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+      AliDebugStream(4) << "Pythia Njets: " << nTriggerJets << ", pT Hard: " << fPythiaPtHard << "\n";
+
+      Float_t tmpjet[]={0,0,0,0};
+      for (Int_t iJet = 0; iJet< nTriggerJets; iJet++) {
+        fPythiaHeader->TriggerJet(iJet, tmpjet);
+
+        jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+        AliDebugStream(5) << "Pythia jet " << iJet << ", pycell jet pT: " << jet.Pt() << "\n";
+
+        //Compare jet pT and pt Hard
+        if (jet.Pt() > fPtHardJetPtRejectionFactor * fPythiaPtHard) {
+          AliDebugStream(3) << "Event rejected because of MC outlier removal. Pythia header jet with: pT Hard " << fPythiaPtHard << ", pycell jet pT " << jet.Pt() << ", rejection factor " << fPtHardJetPtRejectionFactor << "\n";
+          fHistManager.FillTH1("fHistEmbeddedEventRejection", "MCOutlier", 1);
+          return kFALSE;
+        }
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -619,12 +702,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   // Cross section
   histName = "fHistXsection";
   histTitle = "Pythia Cross Section;p_{T} hard bin; XSection";
-  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Trials
   histName = "fHistTrials";
   histTitle = "Number of Pythia Trials;p_{T} hard bin;Trials";
-  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Pt hard spectra
   histName = "fHistPtHard";
@@ -636,12 +719,28 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histTitle = "fHistEventCount;Result;Count";
   auto histEventCount = fHistManager.CreateTH1(histName, histTitle, 2, 0, 2);
   histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
-  histEventCount->GetXaxis()->SetBinLabel(2,"Total");
+  histEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
+
+  // Event rejection reason
+  histName = "fHistEmbeddedEventRejection";
+  histTitle = "Reasons to reject embedded event";
+  std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist"};
+  auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
+  // Set label names
+  for (unsigned int i = 1; i <= binLabels.size(); i++) {
+    fHistEmbeddedEventRejection->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  }
+  fHistEmbeddedEventRejection->GetYaxis()->SetTitle("Counts");
 
   // Rejected events in embedded event selection
-  histName = "fHistEmbeddingEventsRejected";
+  histName = "fHistEmbeddedEventsAttempted";
   histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
   fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
+
+  // Number of files embedded
+  histName = "fHistNumberOfFilesEmbedded";
+  histTitle = "Number of files which contributed events to be embeeded";
+  fHistManager.CreateTH1(histName, histTitle, 1, 0, 2);
 
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
@@ -684,7 +783,12 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   // Add files for TChain
   // See: https://stackoverflow.com/a/8533198
   bool wrapped = false;
-  TString baseFileName("");
+  TString baseFileName = "";
+  // Hanlde the pythia cross section file list
+  bool failedEntirelyToFindFile = false;
+  TString pythiaXSecFilename = "";
+  TString pythiaBaseFilename = "";
+  std::vector <std::string> pythiaBaseFilenames = {"pyxsec.root", "pyxsec_hists.root"};
   for (auto filename = fFilenames.begin() + fFilenameIndex; (filename != fFilenames.begin() + fFilenameIndex || !wrapped); filename++)
   {
     // Wraps the loop back around to the beginning
@@ -713,7 +817,43 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
     }
 
     // Add to the Chain
+    AliDebugStream(4) << "Adding file to the embedded input chain \"" << filename->c_str() << "\".\n";
     fChain->Add(filename->c_str());
+
+    // Handle the pythia cross section (if it exists)
+    // Determiner which file it exists in (if it does exist)
+    if (pythiaBaseFilename == "" && failedEntirelyToFindFile == false) {
+      AliInfoStream() << "Attempting to determine pythia cross section filename. It can be normal to see some TFile::Init() errors!\n";
+      for (auto name : pythiaBaseFilenames) {
+        pythiaXSecFilename = DeterminePythiaXSecFilename(baseFileName, name, true);
+        if (pythiaXSecFilename != "") {
+          AliDebugStream(4) << "Found pythia cross section base filename \"" << name.c_str() << "\"\n";
+          pythiaBaseFilename = name;
+          break;
+        }
+      }
+
+      if (pythiaBaseFilename == "") {
+        // Failed entirely - just give up on this
+        AliErrorStream() << "Failed to find pythia x sec file! Continuing with only the pythia header!\n";
+        failedEntirelyToFindFile = true;
+      }
+      else {
+        AliInfoStream() << "Found pythia cross section file \"" << pythiaBaseFilename.Data() << "\".\n";
+      }
+    }
+    // Retrieve the value based on the previously determined filename
+    // If we have determined that it doesn't exist in the first loop then we don't repeated attempt to fail to open the file 
+    if (failedEntirelyToFindFile == false) {
+      // Can still check whether it exists here, but we don't necessarily have to!
+      // However, we won't check to ensure that rapid file access on AliEn doesn't cause it to crash!
+      pythiaXSecFilename = DeterminePythiaXSecFilename(baseFileName, pythiaBaseFilename, false);
+
+      AliDebugStream(4) << "Adding pythia cross section file \"" << pythiaXSecFilename.Data() << "\".\n";
+
+      // They will automatically be ordered the same as the files to embed!
+      fPythiaCrossSectionFilenames.push_back(pythiaXSecFilename.Data());
+    }
   }
 
   // Keep track of the total number of files in the TChain to ensure that we don't start repeating within the chain
@@ -728,6 +868,65 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   if (!res) return kFALSE;
 
   return kTRUE;
+}
+
+/**
+ * Check if the file pythia base filename can be found in the folder or archive corresponding where
+ * the external event input file is found.
+ *
+ * @param baseFileName Path to external event input file with "#*.root" already remove (it if existed).
+ * @param pythiaBaseFilename Name of the pythia cross section file to try.
+ * @param testIfExists If true, will check if the filename that it has determined actually exists.
+ *
+ * @return True if the file was found
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists)
+{
+  std::string pythiaXSecFilename = "";
+
+  // Handle different file types
+  if (baseFileName.Contains(".zip"))
+  {
+    // Hanlde zip files
+    pythiaXSecFilename = baseFileName;
+    pythiaXSecFilename += "#";
+    pythiaXSecFilename += pythiaBaseFilename;
+
+    // Check if the file is accessible
+    if (testIfExists) {
+      // Unfortunately, we cannot test for the existence of a file in an archive.
+      // Instead, we have to tolerate TFile throwing an error (maximum of two).
+      std::unique_ptr<TFile> fTemp(TFile::Open(pythiaXSecFilename.c_str(), "READ"));
+
+      if (!fTemp) {
+        AliDebugStream(4) << "File " << pythiaXSecFilename.c_str() << " does not exist!\n";
+        pythiaXSecFilename = "";
+      }
+      else {
+        AliDebugStream(4) << "Found pythia cross section file \"" << pythiaXSecFilename.c_str() << "\".\n";
+      }
+    }
+  }
+  else
+  {
+    // Hanlde normal root files
+    pythiaXSecFilename = gSystem->DirName(baseFileName);
+    pythiaXSecFilename += "/";
+    pythiaXSecFilename += pythiaBaseFilename;
+
+    // Check if the file is accessible
+    if (testIfExists) {
+      if (gSystem->AccessPathName(pythiaXSecFilename.c_str())) {
+        AliDebugStream(4) << "File " << pythiaXSecFilename.c_str() << " does not exist!\n";
+        pythiaXSecFilename = "";
+      }
+      else {
+        AliDebugStream(4) << "Found pythia cross section file \"" << pythiaXSecFilename.c_str() << "\".\n";
+      }
+    }
+  }
+
+  return pythiaXSecFilename;
 }
 
 /**
@@ -795,6 +994,27 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
     fFileNumber++;
   }
 
+  // Add to the count the number of files which were embedded
+  fHistManager.FillTH1("fHistNumberOfFilesEmbedded", 1);
+
+  // Check for pythia cross section and extract if possible
+  // fFileNumber corresponds to the next file
+  // If there are pythia filenames, the number of match the file number of the tree.
+  // If we previously gave up on extracting then there should be no entires
+  if (fPythiaCrossSectionFilenames.size() > 0) {
+    // Need to check that fFileNumber is smaller than the size of the vector because we don't check if
+    if (fFileNumber < fPythiaCrossSectionFilenames.size()) {
+      bool success = PythiaInfoFromCrossSectionFile(fPythiaCrossSectionFilenames.at(fFileNumber));
+
+      if (!success) {
+        AliDebugStream(3) << "Failed to retrieve cross section from xsec file. Will still attempt to get the information from the header.\n";
+      }
+    }
+    else {
+      AliErrorStream() << "Attempted to read past the end of the pythia cross section filenames vector. File number: " << fFileNumber << ", vector size: " << fPythiaCrossSectionFilenames.size() << ".\nThis should only occur if we have run out of files to embed!\n";
+    }
+  }
+
   AliDebug(2, TString::Format("Will start embedding file %i beginning from entry %i (entry %i within the file). NOTE: This file number is not equal to the absolute file number in the file list!", fFileNumber, fCurrentEntry, fCurrentEntry - fLowerEntry));
   // NOTE: Cannot use this print message, as it is possible that fMaxNumberOfFiles != fFilenames.size() because
   //       invalid filenames may be included in the fFilenames count!
@@ -805,6 +1025,77 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Note that the tree in the new file has been initialized
   fInitializedNewFile = kTRUE;
+}
+
+/**
+ * Extract pythia information from a cross section file. Modified from AliAnalysisTaskEmcal::PythiaInfoFromFile().
+ *
+ * @param filename Path to the pythia cross section file.
+ *
+ * @return True if the information has been successfully extracted.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::string pythiaFileName)
+{
+  std::unique_ptr<TFile> fxsec(TFile::Open(pythiaFileName.c_str()));
+
+  if (fxsec)
+  {
+    int trials = 0;
+    double crossSection = 0;
+    double nEvents = 0;
+    // Check if it's a tree
+    TTree *xtree = dynamic_cast<TTree*>(fxsec->Get("Xsection"));
+    if (xtree) {
+      UInt_t ntrials  = 0;
+      Double_t xsection  = 0;
+      xtree->SetBranchAddress("xsection",&xsection);
+      xtree->SetBranchAddress("ntrials",&ntrials);
+      xtree->GetEntry(0);
+      trials = ntrials;
+      crossSection = xsection;
+      // TODO: Test this on a file which has pyxsec.root!
+      nEvents = 1.;
+      AliFatal("Have no tested pyxsec.root files. Need to determine the proper way to get nevents!!");
+    }
+    else {
+      // Check if it's instead the histograms
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
+      if (!key) return false;
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if (!list) return false;
+      TProfile * crossSectionHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+      // check for failure
+      if(!(crossSectionHist->GetEntries())) {
+        // No cross seciton information available - fall back to raw
+        AliErrorStream() << "No cross section information available in file \"" << fxsec->GetName() << "\". Will still attempt to extract cross section information from pythia header.\n";
+      } else {
+        // Cross section histogram filled - take it from there
+        crossSection = crossSectionHist->GetBinContent(1);
+        if(!crossSection) AliErrorStream() << GetName() << ": Cross section 0 for file " << pythiaFileName << std::endl;
+      }
+      TH1F * trialsHist = static_cast<TH1F*>(list->FindObject("h1Trials"));
+      trials = trialsHist->GetBinContent(1);
+      nEvents = trialsHist->GetEntries();
+    }
+
+    // If successful in retrieveing the values, normalizae the xsec and trials by the number of events
+    // in the file. This way, we can use it as an approximate event-by-event value
+    // We do not want to just use the overall value because some of the events may be rejected by various
+    // event selections, so we only want that ones that were actually use. The easiest way to do so is by
+    // filling it for each event.
+    fPythiaTrialsFromFile = trials/nEvents;
+    // Do __NOT__ divide by nEvents here! The value is already from a TProfile and therefore is already the mean!
+    fPythiaCrossSectionFromFile = crossSection;
+
+    return true;
+  }
+  else {
+    AliDebugStream(3) << "Unable to open file \"" << pythiaFileName << "\". Will attempt to use values from the hader.";
+  }
+
+  // Could not open file
+  return false;
 }
 
 /**
@@ -914,6 +1205,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << GetName() << ": Embedding helper configuration:\n";
   tempSS << "Create histos: " << fCreateHisto << "\n";
   tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
+  tempSS << "N Pt Hard Bins: " << fNPtHardBins << "\n";
   tempSS << "Anchor Run: " << fAnchorRun << "\n";
   tempSS << "File pattern: \"" << fFilePattern << "\"\n";
   tempSS << "Input filename: \"" << fInputFilename << "\"\n";
@@ -927,6 +1219,8 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
   tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Reject outliers: " << fMCRejectOutliers << "\n";
+  tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
   tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
 

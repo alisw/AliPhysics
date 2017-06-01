@@ -64,6 +64,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
   void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetPurityStudies(Bool_t puritystudies=kFALSE) {fPurityStudies=puritystudies;}
 
   Int_t  GetReadMC() const {return fReadMC;}
   Int_t  GetMCReconstructedTracks() const {return fRecoTr;}
@@ -129,6 +130,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void ResetBranchTracks();
   void ResetBranchDForCutOptim();
   Bool_t AcceptTrackForMEOffline(Double_t pt);
+  void FillPurityPlots(TClonesArray* mcArray, AliReducedParticle* track, Int_t ptbin, Double_t deltaphi);
   
   Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
@@ -189,6 +191,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TreeFill  fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
   Int_t     fAODProtection;  	        // flag to activate protection against AOD-dAOD mismatch.
+  Bool_t    fPurityStudies;		// flag to activate purity studies (primaries, secondaries, charm and beauth tracks rejected by DCA cut, vs pT and deltaPhi)
 
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;
@@ -199,7 +202,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,13); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,143); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

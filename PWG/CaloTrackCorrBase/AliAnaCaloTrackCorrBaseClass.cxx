@@ -27,6 +27,7 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliVCaloCells.h" 
+#include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
@@ -41,6 +42,11 @@ ClassImp(AliAnaCaloTrackCorrBaseClass) ;
 //__________________________________________________________
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
+fNModules(20),                fNRCU(2),        
+fFirstModule(0),              fLastModule(19),
+fNMaxCols(48),                fNMaxRows(24),  
+fNMaxColsFull(48),            fNMaxRowsFull(24),  
+fNMaxRowsFullMin(0),          fNMaxRowsFullMax(24),  
 fDataMC(0),                   fDebug(0),
 fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
@@ -440,7 +446,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   // check overlap with same generator, but not hijing
   Int_t overpdg[nlabels];
   Int_t overlab[nlabels];
-  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetMC(),overpdg,overlab);
   Bool_t sameGenOverlap   = kFALSE;
   Bool_t sameGenOverlapHI = kFALSE;
   for(Int_t iover = 0; iover < noverlaps; iover++)
@@ -506,11 +512,11 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventNumber() const
 }
 
 //__________________________________________________________
-/// \return  Stack pointer from AliCaloTrackReader.
+/// \return  AliMCEvent pointer from AliCaloTrackReader.
 //__________________________________________________________
-AliStack *  AliAnaCaloTrackCorrBaseClass::GetMCStack() const 
+AliMCEvent *  AliAnaCaloTrackCorrBaseClass::GetMC() const 
 {  
-  return fReader->GetStack(); 
+  return fReader->GetMC(); 
 }
 
 //____________________________________________________________
@@ -738,6 +744,120 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   
   for(Int_t igen = 0; igen < 10; igen++)
     fCocktailGenIndeces[igen] = -1;
+}
+
+//_________________________________________________
+/// Initialize the parameters related to the calorimeters
+/// number of modules and modules to analyze.
+/// Mainly used to set histogram ranges. Add the line at 
+/// the Init() or GetCreateOutputObjects() methods of derived classes
+//_________________________________________________
+void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
+{
+  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
+  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
+  
+  fFirstModule = 0; 
+  fLastModule  = fNModules-1;
+  
+  // Set First/Last SM depending on CaloUtils or fiducial cut settings
+   
+  if ( IsFiducialCutOn() )
+  {
+    //printf("Get SM range from FiducialCut\n");
+
+    if(GetCalorimeter() != kPHOS)
+    {
+      Int_t nSections = GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->GetSize();
+      if( nSections == 1 )
+      {
+        Float_t minPhi = GetFiducialCut()->GetEMCALFidCutMinPhiArray()->At(0);
+        Float_t maxPhi = GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->At(0);
+        //printf("sections %d, min %f, max %f\n",nSections,minPhi,maxPhi);
+        
+        if     ( minPhi > 70  && maxPhi < 190) // EMCal
+        {
+          fFirstModule = 0;
+          fLastModule  = 11;
+        }
+        else if( minPhi > 250 && maxPhi < 330) // DCal
+        {
+          fFirstModule = 12;
+          fLastModule  = 19;
+        }
+      }
+    }
+  }
+
+  // Overwrite what used in FidCut, if more strict on CaloUtils
+  // Needed for special case in QA analysis train
+  if ( GetCaloUtils()->GetFirstSuperModuleUsed() >= 0 )
+  {
+    if(fFirstModule < GetCaloUtils()->GetFirstSuperModuleUsed() || 
+       fLastModule  > GetCaloUtils()->GetLastSuperModuleUsed())
+    {
+      //printf("Get SM range from CaloUtils\n");
+      
+      fFirstModule = GetCaloUtils()->GetFirstSuperModuleUsed();
+      fLastModule  = GetCaloUtils()->GetLastSuperModuleUsed();
+    }
+  }
+  
+  // EMCAL
+  fNMaxCols = 48;
+  fNMaxRows = 24;
+  fNRCU     = 2 ;
+  // PHOS
+  if(GetCalorimeter()==kPHOS)
+  {
+    fNMaxCols = 56;
+    fNMaxRows = 64;
+    fNRCU     = 4 ;
+  }
+  
+  fNMaxColsFull = fNMaxCols;
+  fNMaxRowsFull = fNMaxRows;
+  
+  fNMaxRowsFullMax = fNMaxRowsFull;
+  fNMaxRowsFullMin = 0;
+  
+  if(GetCalorimeter()==kEMCAL)
+  {
+    fNMaxColsFull=2*fNMaxCols;
+    
+    fNMaxRowsFull=Int_t(fNModules/2)*fNMaxRows;
+    if(fNMaxRowsFull > 208) 
+      fNMaxRowsFull = 208; //  8*24+2/3.*24, reduce since 1/3 SM should not be counted full.
+    
+    fNMaxRowsFullMin = 0;
+    fNMaxRowsFullMax = fNMaxRowsFull; 
+
+    if(fLastModule < 12)
+    {
+      fNMaxRowsFullMax = Int_t((fLastModule-fFirstModule+1)/2)*fNMaxRows;
+      if(fNMaxRowsFullMax > 127) fNMaxRowsFullMax = 127; // 24*5+8
+      fNMaxRowsFullMin = 0; 
+    }
+    else if (fFirstModule > 11)
+    {
+      fNMaxRowsFullMax = fNMaxRowsFull; 
+      fNMaxRowsFullMin = Int_t(fFirstModule/2)*fNMaxRows-Int_t(2./3.*fNMaxRows); // remove 2/3*24
+    }    
+  }
+  else
+  {
+    fNMaxRowsFull=fNModules*fNMaxRows;
+  }
+  
+//  printf("%s: N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d) \n",
+//                  GetName(),fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
+//                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax);
+
+  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d)",
+                  fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
+                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax));
+
+  
 }
 
 //__________________________________________________________________

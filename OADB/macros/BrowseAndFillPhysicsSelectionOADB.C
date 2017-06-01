@@ -427,7 +427,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadb_pPb_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNABG");
 
   triggerCount++;
-  oadb_pPb_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WU[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
+  oadb_pPb_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
   oadb_pPb_2016->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadb_pPb_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNABG");
 
@@ -514,7 +514,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadb_Pbp_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNCBG");
 
   triggerCount++;
-  oadb_Pbp_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WU[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
+  oadb_Pbp_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
   oadb_Pbp_2016->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadb_Pbp_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNCBG");
 

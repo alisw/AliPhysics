@@ -34,6 +34,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 ClassImp(AliJetResponseMaker)
 
@@ -45,6 +46,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMatchingPar2(0),
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
+  fEmbeddingQA(),
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
@@ -133,6 +135,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMatchingPar2(0),
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
+  fEmbeddingQA(),
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
@@ -1022,6 +1025,15 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   else 
     AllocateTHnSparse();
 
+  // Initialize
+  const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingHelper) {
+    bool res = fEmbeddingQA.Initialize();
+    if (res) {
+      fEmbeddingQA.AddQAPlotsToList(fOutput);
+    }
+  }
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
 
@@ -1355,7 +1367,6 @@ void AliJetResponseMaker::ExecOnce()
 Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
-
   if (fMatching == kNoMatching) 
     return kTRUE;
   else
@@ -1369,6 +1380,14 @@ Bool_t AliJetResponseMaker::DoJetMatching()
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
   if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
+
+  // Only fill the embedding qa plots if:
+  //  - We are using the embedding helper
+  //  - The class has been initialized
+  //  - Both jet collections are available
+  if (fEmbeddingQA.IsInitialized()) {
+    fEmbeddingQA.RecordEmbeddedEventProperties();
+  }
 
   DoJetLoop();
 
@@ -1543,7 +1562,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       d1 -= track->Pt();
 
       if (!track2Found) {
-        AliVParticle *MCpart = jet2->Track(index2);
+        AliVParticle *MCpart = jet2->Track(iTrack2);
         AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
             iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
         d2 -= MCpart->Pt();
@@ -1584,7 +1603,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
           d1 -= part.Pt() * cellFrac;
 
           if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-            AliVParticle *MCpart = jet2->Track(index2);
+            AliVParticle *MCpart = jet2->Track(iTrack2);
             AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
                 iCell,iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
             d2 -= MCpart->Pt() * cellFrac;
@@ -1622,7 +1641,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
         d1 -= part.Pt();
 
         if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-          AliVParticle *MCpart = jet2->Track(index2);
+          AliVParticle *MCpart = jet2->Track(iTrack2);
           AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
               iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
 

@@ -747,10 +747,21 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerRCutLargePtTrig;         //!<! Clusters Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerRCut;                      //!<! Tracks Sum Pt in the cone for different cone sizes, x axis.
   TH2F *   fhConeSumPtTrackPerRCutLargePtTrig;           //!<! Tracks Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
+
+  TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterPerMinPtCutLargePtTrig;         //!<! N Clusters in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeNTrackPerMinPtCutLargePtTrig;           //!<! N Tracks in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhPerpConeNTrackPerMinPtCutLargePtTrig;       //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtClusterPerMinPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerMinPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhPerpConeSumPtTrackPerMinPtCutLargePtTrig;   //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
   TH2F *   fhConeSumPtClusterPerMaxPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
@@ -762,6 +773,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInConePerNCellCutLargePtTrig;      //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerNCellCut;                   //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis.
   TH2F *   fhPtTrackInConePerNCellCutLargePtTrig;        //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerNCellCut;                //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis.
   TH2F *   fhConeSumPtClusterPerNCellCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerNCellCut;                  //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis.
@@ -771,6 +783,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInConePerExoCutLargePtTrig;        //!<! Clusters Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerExoCut;                     //!<! Tracks Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhPtTrackInConePerExoCutLargePtTrig;          //!<! Tracks Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerExoCut;                  //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.
@@ -782,9 +795,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeTOFBC0;                        //!<! track with TOF hit, pt, tof in BC0 
   TH2F *   fhPtTrackInConeTOFBCN;                        //!<! track with TOF hit, pt, tof not in BC0 
   TH2F *   fhPtTrackInConeTOFNo ;                        //!<! track without TOF hit, pt 
+
   TH2F *   fhPhiTrackInCone;                             //!<! track azhimuthal angle
   TH2F *   fhEtaTrackInCone;                             //!<! track pseudo-rapidity
   TH2F *   fhEtaPhiTrackInCone;                          //!<! track azhimuthal angle vs pseudo-rapidity
+  
   TH2F *   fhPhiTrackInConeTOFBC0;                       //!<! track with TOF hit, phi, tof in BC0 
   TH2F *   fhPhiTrackInConeTOFBCN;                       //!<! track with TOF hit, phi, tof not in BC0 
   TH2F *   fhPhiTrackInConeTOFNo ;                       //!<! track without TOF hit, phi 
@@ -828,6 +843,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInPerpConeTOFBC0ITSRefitOnSPDOn ;         //!<! track Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   TH2F *   fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn ;     //!<! tracl eta vs phi in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   
+  TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
+  TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
+   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     

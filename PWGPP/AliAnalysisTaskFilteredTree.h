@@ -114,7 +114,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Bool_t GetFillTrees() { return fFillTree ;}
 
   void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, Double_t centralityF, Double_t chi2TPCInnerC);
+  Int_t   GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType,  AliExternalTrackParam & paramNearest);
   static void SetDefaultAliasesV0(TTree *treeV0);
+  static void SetDefaultAliasesHighPt(TTree *treeV0);
  private:
 
   AliESDEvent *fESD;    //! ESD event

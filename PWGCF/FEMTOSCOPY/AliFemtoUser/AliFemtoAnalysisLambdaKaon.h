@@ -102,6 +102,7 @@ struct AnalysisParams
   bool monitorPart1CutPassOnly;
   bool monitorPart2CutPassOnly;
   bool monitorPairCutPassOnly;
+  bool useMCWeightGenerator;
 };
 
 struct EventCutParams
@@ -164,6 +165,11 @@ struct V0CutParams
   double maxDcaV0Daughters;
   double minPosDaughterToPrimVertex,
          minNegDaughterToPrimVertex;
+
+  double radiusV0Min,
+         radiusV0Max;
+
+  bool ignoreOnFlyStatus;
 };
 
 struct ESDCutParams
@@ -230,6 +236,9 @@ struct XiCutParams
   double minPtBac,
          maxPtBac;
 
+  double radiusXiMin,
+         radiusXiMax;
+
   int v0Type;
   double minDcaV0;
   double minInvMassV0,
@@ -249,12 +258,17 @@ struct XiCutParams
   double minPtNegV0Daughter,
          maxPtNegV0Daughter;
 
+  double radiusV0Min,
+         radiusV0Max;
+
   int minTPCnclsV0Daughters;
 
   bool useCustomV0Filter;
   bool useCustomV0MisID;
   bool useCustomBacPionFilter;
   bool useCustomBacPionMisID;
+
+  bool ignoreOnFlyStatusV0;
 };
 
 struct PairCutParams
@@ -274,6 +288,8 @@ struct PairCutParams
 
   double minAvgSepTrackPos,  // Set these for V0-PosTrack; V0-NegTrack, AntiV0-Pos, etc. cases
          minAvgSepTrackNeg;  // will automatically be handled by AliFemtoAnalysisLambdaKaon::CreateV0TrackPairCut
+
+  double minAvgSepTrackBacPion;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------

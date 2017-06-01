@@ -24,6 +24,10 @@ CEPEventBuffer::CEPEventBuffer()
   , fCollissionType(AliCEPBase::kBinEventUnknown)
   , fMagnField(AliCEPBase::kdumval)
   , fFiredTriggerClasses(TString(""))
+  , fPFBBFlagV0()
+  , fPFBGFlagV0()
+  , fPFBBFlagAD()
+  , fPFBGFlagAD()
   , fEventCutsel(kFALSE)
   , fPhysel(kFALSE)
   , fisPileup(kFALSE)
@@ -288,3 +292,40 @@ Int_t CEPEventBuffer::GetnTracks(TArrayI *masks, TArrayI *patterns,
 }
 
 // ------------------------------------------------------------------------------
+void CEPEventBuffer::SetPFFlags(AliVEvent *Event)
+{
+
+  // V0
+  // there are 64 channels - 32 channels per side (A, C) - and 21 bc values
+  AliVVZERO* esdV0 = Event->GetVZEROData();
+  if (esdV0) {
+    // side A (32-63) and C (0-31)
+    for (Int_t bc=0; bc<21; bc++) {
+      fPFBBFlagV0[bc] = kFALSE;
+      fPFBGFlagV0[bc] = kFALSE;
+      for (Int_t ch=0; ch<64; ch++) {
+        fPFBBFlagV0[bc] |= (esdV0->GetPFBBFlag(ch,bc)>0);
+        fPFBGFlagV0[bc] |= (esdV0->GetPFBGFlag(ch,bc)>0);
+      }
+    }
+  }
+  
+  // AD
+  // there are 16 channels - 8 channels per side (A, C) - and 21 bc values
+  AliESDAD* esdAD = (AliESDAD*)Event->GetADData();
+  if (esdAD) {
+    // side A (8-15) and C (0-7)
+    for (Int_t bc=0; bc<21; bc++) {
+      fPFBBFlagAD[bc] = kFALSE;
+      fPFBGFlagAD[bc] = kFALSE;
+      for (Int_t ch=0; ch<8; ch++) {
+        fPFBBFlagAD[bc] |= (esdAD->GetPFBBFlag(ch,bc)>0);
+        fPFBGFlagAD[bc] |= (esdAD->GetPFBGFlag(ch,bc)>0);
+      }
+    }
+  }
+
+}
+
+// ------------------------------------------------------------------------------
+

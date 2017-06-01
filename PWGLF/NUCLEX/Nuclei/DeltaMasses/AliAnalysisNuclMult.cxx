@@ -61,6 +61,8 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
+  nTPCclustersMin(70),
+  nsigmaTPCMax(3.),
   DCAxyMax(0.5),
   DCAzMax(1.),
   hzvertex(NULL),
@@ -71,7 +73,6 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   hCheckTrackSel(NULL)
 {
   fList->SetName("results");
-  //fList->SetOwner();
 }
 //______________________________________________________________________________
 AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
@@ -86,6 +87,8 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
+  nTPCclustersMin(70),
+  nsigmaTPCMax(3.),
   DCAxyMax(0.5),
   DCAzMax(1.),
   hzvertex(NULL),
@@ -106,6 +109,14 @@ AliAnalysisNuclMult::~AliAnalysisNuclMult()
 //______________________________________________________________________________
 void AliAnalysisNuclMult::UserCreateOutputObjects()
 {
+
+  fList->SetOwner(kTRUE);
+  
+  AliESDtrackCuts* esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE, 0);
+  esdTrackCuts->SetMinNClustersTPC(nTPCclustersMin);
+  esdTrackCuts->SetMaxDCAToVertexZ(1e+9);
+  //DCA cuts set in the task
+  fESDtrackCuts = esdTrackCuts;
 
   const Char_t nameSpec[18][30]={"e^{+}","#mu^{+}","#pi^{+}","K^{+}",     "p",      "d",      "t",      "^{3}He",      "^{4}He",
 				 "e^{-}","#mu^{-}","#pi^{-}","K^{-}","#bar{p}","#bar{d}","#bar{t}","^{3}#bar{He}","^{4}#bar{He}"};
@@ -158,7 +169,7 @@ for(Int_t i=0;i<7;i++) {
   }
     
   hCheckTrackSel = new TH1F("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
-  const Char_t *xaxisTitle3[12]={"|y|<0.5","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca",Form("|DCAxy|<%.1f",DCAxyMax),Form("|DCAz|<%.1f",DCAzMax),"|#eta|<0.8"};
+  const Char_t *xaxisTitle3[12]={"|y|<0.5",Form("nTPCclusters>=%d",nTPCclustersMin),"chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca",Form("|DCAxy|<%.1f",DCAxyMax),Form("|DCAz|<%.1f",DCAzMax),"|#eta|<0.8"};
   for(Int_t i=0;i<12;i++) {
     hCheckTrackSel->Fill(xaxisTitle3[i],0);
   }
@@ -230,6 +241,7 @@ for(Int_t i=0;i<7;i++) {
     }
   }
 
+  //fNsigmaTPC[1] with only one bin per axis (temporarily)
   Char_t name_fNsigmaTPC[18][200];
   Char_t title_fNsigmaTPC[18][200];
   for(Int_t iS=0;iS<18;iS++) {
@@ -241,8 +253,8 @@ for(Int_t i=0;i<7;i++) {
     snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_1_%s",nameSpec[iS]);
     snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s);p_{T} (GeV/c);Number of tracklets;n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
     if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-      fNsigmaTPC[1][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nsigmabins,sigmaMin,sigmaMax);
-      fNsigmaTPC[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+      fNsigmaTPC[1][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,ptMin,ptMax,1,0,1000,1,sigmaMin,sigmaMax);//Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nsigmabins,sigmaMin,sigmaMax
+      //fNsigmaTPC[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
     }
     else fNsigmaTPC[1][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,ptMin,ptMax,1,0,1000,1,sigmaMin,sigmaMax);
   }
@@ -299,6 +311,7 @@ for(Int_t i=0;i<7;i++) {
     else fDcaxy[1][iS]=new TH3F(name_fDcaxy[iS],title_fDcaxy[iS],1,-0.5,0.5,1,0,1000,1,0,5);
   }
   
+  //fDcawTOF with only one bin per axis (temporarily)
   Char_t name_fDca[18][200];
   Char_t title_fDca[18][200];
   for(Int_t iM=0;iM<7;iM++) {
@@ -306,7 +319,7 @@ for(Int_t i=0;i<7;i++) {
       snprintf(name_fDca[iS],200,"fDca_xy_wTOF_0_multMin=%.0f_multMax=%.0f_%s",multMin[iM],multMax[iM],nameSpec[iS]);
       snprintf(title_fDca[iS],200,"%s (wTOF) V0M %.0f-%.0f%%;DCA_{xy} (cm);m^{2}_{TOF} (GeV^{2}/c^{4});p_{T} (GeV/c)",
 	       nameSpec[iS],multMin[iM],multMax[iM]);
-      if(iS==5 || iS==5+9) fDcawTOF_0[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],NDCAxybins,-0.5,0.5,100,0,10,50,0,5);
+      if(iS==5 || iS==5+9) fDcawTOF_0[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,1,50,0,5);//NDCAxybins,-0.5,0.5,100,0,10,50,0,5
       else fDcawTOF_0[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,ptMin,ptMax,1,0,5);
     }
   }
@@ -315,7 +328,7 @@ for(Int_t i=0;i<7;i++) {
       snprintf(name_fDca[iS],200,"fDca_xy_wTOF_1_multMin=%.0f_multMax=%.0f_%s",trackletsMin[iM],trackletsMax[iM],nameSpec[iS]);
       snprintf(title_fDca[iS],200,"%s (wTOF) Number of tracklets [%.0f-%.0f[;DCA_{xy} (cm);m^{2}_{TOF} (GeV^{2}/c^{4});p_{T} (GeV/c)",
 	       nameSpec[iS],trackletsMin[iM],trackletsMax[iM]);
-      if(iS==5 || iS==5+9) fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],NDCAxybins,-0.5,0.5,100,0,10,50,0,5);
+      if(iS==5 || iS==5+9) fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,10,1,0,5);//NDCAxybins,-0.5,0.5,100,0,10,50,0,5
       else fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,ptMin,ptMax,1,0,5);
     }
   }
@@ -392,19 +405,20 @@ for(Int_t i=0;i<7;i++) {
     }
   }
 
+  //fM2vspt with only one bins per axis (temporarily)
   Char_t name_fM2vspt[18][200];
   Char_t title_fM2vspt[18][200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fM2vspt[iS],200,"fM2vspt_0_%s",nameSpec[iS]);
     snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[0][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,500,0,10);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[0][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,multV0Min,multV0Max,1,0,10);//Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,500,0,10)
     else fM2vspt[0][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,multV0Min,multV0Max,1,0,10);
         
     snprintf(name_fM2vspt[iS],200,"fM2vspt_1_%s",nameSpec[iS]);
     snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c);Number of tracklets;m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
     if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-      fM2vspt[1][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,500,0,10);
-      fM2vspt[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+      fM2vspt[1][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,0,1,500,0,10);//Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,500,0,10
+      //fM2vspt[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
     }
     else fM2vspt[1][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,0,1000,1,0,10);
   }
@@ -825,7 +839,6 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   //fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fESD){
@@ -1021,10 +1034,9 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 
     Double_t DCAxy, DCAz;
     if(!this->AcceptTrack(track, DCAxy, DCAz)) continue;
-    
-    
+        
     //------------------------- Track cuts (end)
-    
+        
     //reconstructed MC particles:
     if(isMC) {
       this->ForPtCorr(track->Pt(), t_pt, kSpec);
@@ -1077,7 +1089,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 
     //DCA filled:
     for(Int_t iS=0;iS<9;iS++){
-      if(TMath::Abs(nsigmaTPC[iS])<3) {
+      if(TMath::Abs(nsigmaTPC[iS])<nsigmaTPCMax) {
 	if(charge>0) {
 	  fDcaxy[0][iS]->Fill(DCAxy,mult,pt);
 	  fDcaxy[1][iS]->Fill(DCAxy,Ntracklets,pt);
@@ -1132,7 +1144,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     }
     
     for(Int_t iS=0;iS<9;iS++){
-      if(TMath::Abs(nsigmaTPC[iS])<3) {
+      if(TMath::Abs(nsigmaTPC[iS])<nsigmaTPCMax) {
 	if(charge>0) {
 	  fM2vspt[0][iS]->Fill(pt,mult,m2);
 	  fM2vspt[1][iS]->Fill(pt,Ntracklets,m2);
@@ -1347,7 +1359,7 @@ Bool_t AliAnalysisNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Doubl
 void AliAnalysisNuclMult::TrackSelectionMonitor(Int_t nTPCclusters, Double_t chi2TPC, Bool_t isTPCrefit, Bool_t isITSrefit, Int_t nSPD, Int_t nKinkDaughters, Double_t chi2ITS, Bool_t isPropagatedToDca, Double_t DCAxy, Double_t DCAz, Double_t eta) {
   
   hCheckTrackSel->Fill(0);
-  if(nTPCclusters>=70) {
+  if(nTPCclusters>=nTPCclustersMin) {
     hCheckTrackSel->Fill(1);
     
     if(chi2TPC<=4) {

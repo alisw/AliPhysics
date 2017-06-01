@@ -150,6 +150,9 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     
     void SetCentralityCut(Double_t lowerCut, Double_t upperCut){fUseCentralityCut = kTRUE; fLowerCentralityBound = lowerCut; fUpperCentralityBound = upperCut;}
     Bool_t IsSelectedCentrality();
+    
+    Bool_t fIncludeSigmas;
+    void SetIncludeSigmas(Bool_t includeSigmas){fIncludeSigmas = includeSigmas;}
 
   private:
     AliVEvent   *fEvent;			//!<! Event object (AliVEvent)

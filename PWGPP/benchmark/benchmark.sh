@@ -263,6 +263,10 @@ goCPass()
     *) runpath=$outputDir ;;
   esac
 
+  # Export CPASSMODE variable to the CPass step number as required by AliDPG and some classes
+  unset CPASSMODE
+  [[ $cpass == 0 || $cpass == 1 ]] && export CPASSMODE=$cpass
+
   logOutputDir=$runpath
   [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
@@ -549,8 +553,8 @@ goCPass()
       else
         collisionSystem=$(run2collisionSystem "$runNumber")
         printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents" "$runNumber" "$ocdbPath"
-	[[ -f AliESDs_Barrel.root ]] && echo AliESDs.root > filtered.list
-	printExec goMakeFilteredTrees $PWD $runNumber "$PWD/filtered.list" $filteringFactorHighPt \
+        [[ -f AliESDs.root ]] && echo AliESDs.root > filtered.list
+        printExec goMakeFilteredTrees $PWD $runNumber "$PWD/filtered.list" $filteringFactorHighPt \
                             $filteringFactorV0s $ocdbPath 1000000 0 10000000 0 \
                             $configFile AliESDs.root "${extraOpts[@]}"
       fi
@@ -736,7 +740,7 @@ goMergeCPass()
   doneFile="${commonOutputPath}/meta/${doneFileBase}"
 
   umask 0002
-  ulimit -c unlimited 
+  ulimit -c unlimited
 
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source "$alirootSource"
 
@@ -745,6 +749,10 @@ goMergeCPass()
     2) runpath=${PWD}/rundir_mergeCPass${cpass}_${runNumber} ;;
     *) runpath=$outputDir ;;
   esac
+
+  # Export CPASSMODE variable to the CPass step number as required by AliDPG and some classes
+  unset CPASSMODE
+  [[ $cpass == 0 || $cpass == 1 ]] && export CPASSMODE=$cpass
 
   # Robust error check in directory creation. After this block we are in $runpath.
   if ! mkdirLocal "$runpath" || ! cd "$runpath"; then

@@ -85,6 +85,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
   void SetRhoName(const char *r)                              {fRhoName = r;}
   void SetSoftDropRecluster(Int_t n)                          {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
+  void SetDoSubDetMatching(Bool_t b)                          {fSubMatching = b;}
   
 
  protected:
@@ -99,6 +100,10 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            PTD(AliEmcalJet *Jet, Int_t JetContNb);
   void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Bool_t fTruthJet);
   Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
+  Double_t                            GetFractionSharedPt_SubMatching(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
+  static Bool_t                       SameParticle(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+
+
   
   
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
@@ -135,6 +140,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            fRho;
   TString                             fRhoName;
   AliRhoParameter                     *fRhoParam;
+  Bool_t                              fSubMatching;
 
   Bool_t                              fNsubMeasure;
   Int_t                               fReclusterAlgo;
@@ -158,6 +164,23 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhDetJetPt_Incl;
   TH1F                                *fhDetJetPt_Matched;
   TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
+
+  TH1F                                *fhJetPt_Det;
+  TH1F                                *fhJetPt_True;
+  TH1F                                *fhJetPhi_Det;
+  TH1F                                *fhJetPhi_True;
+  TH1F                                *fhJetEta_Det;
+  TH1F                                *fhJetEta_True;
+  TH1F                                *fhJetMass_Det;
+  TH1F                                *fhJetMass_True;
+  TH1F                                *fhJetRadius_Det;
+  TH1F                                *fhJetRadius_True;
+  TH1F                                *fhJetCounter_Det;
+  TH1F                                *fhJetCounter_True;
+  TH1F                                *fhNumberOfJetTracks_Det;
+  TH1F                                *fhNumberOfJetTracks_True;
+  TH2F                                *fh2PtRatio; 
+    
   
 
  private:

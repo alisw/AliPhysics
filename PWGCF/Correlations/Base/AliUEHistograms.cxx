@@ -213,7 +213,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
 
 //_____________________________________________________________________________
 AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
-  TNamed(fName, fTitle),
+  TNamed(c.fName, c.fTitle),
   fNumberDensitypT(0),
   fSumpT(0),
   fNumberDensityPhi(0),

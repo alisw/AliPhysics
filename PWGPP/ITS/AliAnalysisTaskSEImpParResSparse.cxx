@@ -468,7 +468,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	return;
       }
       
-      AliMCEvent* mcEvent = eventHandler->MCEvent();
+      mcEvent = eventHandler->MCEvent();
       if (!mcEvent) {
 	Printf("ERROR: Could not retrieve MC event");
 	return;

@@ -18,7 +18,9 @@ enum eventCutSet { kEvtDefault=0,
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
 		   kNoEvtSel, //=8
-		   kSpecial3 //=9
+		   kSpecial3, //=9
+		   kSpecial4, //=10
+		   kSpecial5 //=11
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -46,17 +48,13 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  Bool_t      useMixLS=0,
  Bool_t      checkReflex=0,
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
- TString     polarizationOpt="" /* J - Jackson,T - Transversity */,
- TString     eventPlaneSubDet="" /* VZEROA*/,
- TString     eventPlaneExpStep="" /* latest*/
+ TString     polarizationOpt="" /* J - Jackson,T - Transversity */
 )
 {  
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if (!isPP)  triggerMask=AliVEvent::kAny;
-  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
@@ -78,6 +76,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(pairCutSetID==pairYCutSet::kCentral){//|y_cm|<0.3
     minYlab=-0.3; maxYlab=0.3;
   }
+
+  Bool_t CheckDecay=true;
+  if(customQualityCutsID==99){customQualityCutsID=1; CheckDecay=false;}
 
   //-------------------------------------------
   //mixing settings
@@ -103,8 +104,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  //task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-  task->SelectCollisionCandidates(triggerMask); //AOD
+  if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -205,11 +206,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
 
-  // -- SETS event plane parameters
-  if (!eventPlaneSubDet.IsNull()&&!eventPlaneExpStep.IsNull()) {
-    task->SetFlowQnVectorSubDet(eventPlaneSubDet.Data());
-    task->SetFlowQnVectorExpStep(eventPlaneExpStep.Data());
-  }
+  task->SetCheckDecay(CheckDecay);
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 

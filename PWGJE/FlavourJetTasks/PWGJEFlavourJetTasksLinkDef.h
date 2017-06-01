@@ -30,6 +30,7 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
 #pragma link C++ class std::pair<int,AliAnalysisTaskDmesonJets::AliDmesonJetInfo>+;

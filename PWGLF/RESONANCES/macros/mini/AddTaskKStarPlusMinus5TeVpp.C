@@ -38,11 +38,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  TString     monitorOpt="NoSIGN",
  Float_t     piPIDCut = 3.0,
  Float_t     pi_k0s_PIDCut = 5.0,
+ Float_t     MaxRap = 0.5,
  Float_t     massTol = 0.03,
- Float_t     massTolVeto = 0.006,//here
+ Float_t     massTolVeto = 0.004,//here
  Float_t     pLife = 20,  
  Float_t     radiuslow = 0.5,
  Float_t     radiushigh = 200,    
+ Float_t     MinDCAXY = 0.15,
  Bool_t      Switch = kFALSE,//here
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.97,
@@ -53,6 +55,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus",
+ Bool_t      ptDep= kFALSE,
+ Double_t    pt1 = 0.0105,
+ Double_t    pt2 = 0.0350,
  Int_t       centr = 0
  )
 {
@@ -165,8 +170,16 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
-   cutsPair->SetCutScheme(cutY->GetName());
+   //cutsPair->SetCutScheme(cutY->GetName());
    
+   if (ptDep) {
+     cutsPair->SetCutScheme(cutY->GetName()); 
+   } else {
+     AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+     cutsPair->AddCut(cutV0);
+     cutsPair->SetCutScheme(TString::Format("%s&!%s",cutY->GetName(),cutV0->GetName()).Data());
+   }// Considering Correlation issue
+
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
@@ -176,7 +189,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair,ptDep,pt1,pt2)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

@@ -62,6 +62,7 @@ class AliSelectNonHFE : public TNamed {
   void SetNClustITS(Int_t nclus) {fNClusITS = nclus; fRequirePointOnITS = kTRUE; };
   void SetUseGlobalTracks() {fUseGlobalTracks = kTRUE;};
   void SetDCAPartnerCuts(Double_t xy, Double_t z) {fUseDCAPartnerCut = kTRUE; fDCAcutxyPartner = xy; fDCAcutzPartner = z;};
+  void SetUseITSTPCRefit(Bool_t Use) {fRequireITSAndTPCRefit = Use;};
 	
 	void SetTrackCuts(Double_t TPCnSigmaMin, Double_t TPCnSigmaMax) 
 	{
@@ -111,6 +112,8 @@ class AliSelectNonHFE : public TNamed {
   Bool_t fUseEtaCutForPart; // Use eta cut in partners
   Double_t fEtaCutMin; // min eta cut
   Double_t fEtaCutMax; // max eta cut
+   
+  Bool_t fRequireITSAndTPCRefit;
 
 	
   Int_t			*fLSPartner;	        //! Pointer for the LS partners index
@@ -126,7 +129,7 @@ class AliSelectNonHFE : public TNamed {
   AliSelectNonHFE(const AliSelectNonHFE&); // not implemented
   AliSelectNonHFE& operator=(const AliSelectNonHFE&); // not implemented
   
-  ClassDef(AliSelectNonHFE, 1); //!example of analysis
+  ClassDef(AliSelectNonHFE, 2); //!example of analysis
 };
 
 #endif

@@ -307,7 +307,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   fReducedEvent->ClearEvent();
   
   if(isSelected==0) {
-    cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
+    //cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
     //PostData(1, fReducedEvent);
     return;
   }
@@ -321,6 +321,9 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if (fRejectPileup){
     if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
   }
+  
+  AliDielectronVarManager::SetFillMap(fUsedVars);
+  AliDielectronVarManager::SetEvent(InputEvent());
   
   if(fFillMCInfo) {
     Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
@@ -379,9 +382,6 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   
-  AliDielectronVarManager::SetFillMap(fUsedVars);
-  AliDielectronVarManager::SetEvent(event);
-
   if(fUseAnalysisUtils) {
     if(fAnalysisUtils->IsVertexSelected2013pA(event))  // 2013 p-Pb event selection    
       fReducedEvent->fEventTag |= (ULong64_t(1)<<0);
@@ -481,6 +481,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[7] = estimator->GetValue();
      estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[8] = estimator->GetValue();
      estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
+  }
+  
+  if(eventVtx){
+    Double_t covTracks[6];
+    eventVtx->GetCovarianceMatrix(covTracks);
+    for(Int_t i=0;i<6;++i) {
+      eventInfo->fVtxCovMatrix[i] = covTracks[i];
+    }
   }
   
   AliVVertex* eventVtxSPD = 0x0;
@@ -680,7 +688,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   if(fFillCaloClusterInfo) FillCaloClusters();
   
   // FMD information
-  if(fFillFMDInfo&&isESD) FillFMDInfo();
+  if(fFillFMDInfo) FillFMDInfo(isAOD);
 }
 
 //_________________________________________________________________________________
@@ -715,77 +723,59 @@ void AliAnalysisTaskReducedTreeMaker::FillCaloClusters() {
   }  // end loop over clusters
 }
 
-
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::FillFMDInfo()
-{
-  AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);
-  if (!aodEvent) {cout<<"didn't get AOD"<<endl; return;}
-
-  //TObject* obj = aodEvent->FindListObject("Forward");  
-  //if (!obj) return;
-
-  TH2D* histos[5];
-  histos[0] = static_cast<TH2D*>(aodEvent->FindListObject("FMD1I_cache"));  
-  histos[1] = static_cast<TH2D*>(aodEvent->FindListObject("FMD2I_cache"));  
-  histos[2] = static_cast<TH2D*>(aodEvent->FindListObject("FMD2O_cache"));  
-  histos[3] = static_cast<TH2D*>(aodEvent->FindListObject("FMD3I_cache"));  
-  histos[4] = static_cast<TH2D*>(aodEvent->FindListObject("FMD3O_cache"));  
-
-  //AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(obj);
-  //const TH2D& d2Ndetadphi = aodForward->GetHistogram();
-
+void AliAnalysisTaskReducedTreeMaker::FillFMDInfo(Bool_t isAOD) {
   Float_t m;
-
-  AliReducedEventInfo* eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
+  AliReducedEventInfo *eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
   if(!eventInfo) return;
-  
-  TClonesArray& fmd = *(eventInfo->GetFMD());
+  TClonesArray &fmd = *(eventInfo->GetFMD());
 
-  // Loop over eta 
-  Int_t nFMD=-1;
-  for (Int_t ih = 0; ih < 5; ih++) {
-    if(!histos[ih]) continue;
-    for (Int_t iEta = 1; iEta <= histos[ih]->GetNbinsX(); iEta++) {
-
-      //Int_t valid = histos[ih]->GetBinContent(iEta, 0);
-      //etabin=axeta->FindBin(histos[ih]->GetXaxis()->GetBinCenter(iEta));
-      //if (!valid) continue; // No data expected for this eta 
-      // Loop over phi 
-      for (Int_t iPhi = 1; iPhi <= histos[ih]->GetNbinsY(); iPhi++) {
-      m     =  histos[ih]->GetBinContent(iEta, iPhi);
-      if(m<1E-6) continue;
-      //phibin=axphi->FindBin(histos[ih]->GetYaxis()->GetBinCenter(iPhi));
-      nFMD++;
-      AliReducedFMDInfo   *reducedFMD=new(fmd[nFMD]) AliReducedFMDInfo();
-      reducedFMD->fMultiplicity     =  m;
-      reducedFMD->fId               =  iEta*histos[ih]->GetNbinsY()+iPhi;
-      if(ih==2||ih==4) reducedFMD->fId*=-1;
-
-      //cout<<ih<<"  "<<iEta<<"  "<<iPhi<<"  "<<reducedFMD->PhiBin()<<"  "<<histos[ih]->GetXaxis()->GetBinCenter(iEta)<<"  "<<histos[ih]->GetYaxis()->GetBinCenter(iPhi)<<"  "<<reducedFMD->Eta()<<"  "<<reducedFMD->Phi()<<"  "<<m<<endl;
-      //cout<<ih<<"  "<<iEta<<"  "<<iPhi<<"  "<<etabin<<"  "<<phibin<<"  "<<etabin*nPhi+phibin<<"  "<<reducedFMD->EtaBin(etabin*nPhi+phibin)<<"  "<<reducedFMD->PhiBin(etabin*nPhi+phibin)<<"  "<<endl;
-      
-        //xc[ih]+=m*TMath::Cos(2.*reducedFMD->Phi());
-        //yc[ih]+=m*TMath::Sin(2.*reducedFMD->Phi());
-
-      //cout<<"MINE  "<<iEta<<"  "<<iPhi<<"  "<<d2Ndetadphi.GetXaxis()->GetBinCenter(iEta)<<"  "<<d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi)<<"  "<<reducedFMD->Multiplicity()<<endl;;
-
-      //cout<<iEta<<"  "<<iPhi<<"  "<<d2Ndetadphi.GetXaxis()->GetBinCenter(iEta)<<"  "<<d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi)<<"  "<<reducedFMD->Eta()<<"  "<<reducedFMD->Phi()<<endl;
-
+  if (isAOD) {
+    AliAODEvent *aodEvent = static_cast<AliAODEvent*>(InputEvent());
+    TObject *obj = aodEvent->FindListObject("Forward");
+    if (!obj) return;
+    AliAODForwardMult *aodForward = static_cast<AliAODForwardMult*>(obj);
+    TH2D &d2Ndetadphi = aodForward->GetHistogram();
+    Int_t nFMD = -1;
+    // Loop over Eta
+    for (Int_t iEta = 1; iEta <= d2Ndetadphi.GetNbinsX(); iEta++) {
+      // Loop over phi
+      for (Int_t iPhi = 1; iPhi <= d2Ndetadphi.GetNbinsY(); iPhi++) {
+        m = d2Ndetadphi.GetBinContent(iEta, iPhi);
+        if(m<1E-6) continue;
+        nFMD++;
+        AliReducedFMDInfo *reducedFMD = (AliReducedFMDInfo*) fmd.ConstructedAt(nFMD);
+        reducedFMD->fMultiplicity = m;
+        reducedFMD->fId = iEta * d2Ndetadphi.GetNbinsY() + iPhi;
+      }
+    }
+  } else {
+    AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);
+    if (!aodEvent) {cout<<"didn't get AOD"<<endl; return;}
+    TH2D* histos[5];
+    histos[0] = static_cast<TH2D*>(aodEvent->FindListObject("FMD1I_cache"));
+    histos[1] = static_cast<TH2D*>(aodEvent->FindListObject("FMD2I_cache"));
+    histos[2] = static_cast<TH2D*>(aodEvent->FindListObject("FMD2O_cache"));
+    histos[3] = static_cast<TH2D*>(aodEvent->FindListObject("FMD3I_cache"));
+    histos[4] = static_cast<TH2D*>(aodEvent->FindListObject("FMD3O_cache"));
+    // Loop over eta
+    Int_t nFMD = -1;
+    for (Int_t ih = 0; ih < 5; ih++) {
+      if(!histos[ih]) continue;
+      for (Int_t iEta = 1; iEta <= histos[ih]->GetNbinsX(); iEta++) {
+        // Loop over phi
+        for (Int_t iPhi = 1; iPhi <= histos[ih]->GetNbinsY(); iPhi++) {
+        m = histos[ih]->GetBinContent(iEta, iPhi);
+        if(m<1E-6) continue;
+        nFMD++;
+        AliReducedFMDInfo *reducedFMD = new(fmd[nFMD]) AliReducedFMDInfo();
+        reducedFMD->fMultiplicity = m;
+        reducedFMD->fId = iEta*histos[ih]->GetNbinsY()+iPhi;
+        if(ih == 2 || ih == 4) reducedFMD->fId *= -1;
+        }
       }
     }
   }
-
-  //for (Int_t ih = 0; ih < 5; ih++) {
-  //cout<<"MINE "<<ih<<"  "<<xc[ih]<<"  "<<yc[ih]<<endl;
-  //}
-
-  //AliAODForwardEP fAODEP = AliAODForwardEP();
-  //AliFMDEventPlaneFinder  fEventPlaneFinder = AliFMDEventPlaneFinder() ;
-
-  //fEventPlaneFinder.FindEventPlane(event, fAODEP, 
-
-
 }
 
 //________________________________________________________________________________________
@@ -1183,6 +1173,20 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      esdTrack->GetXYZ(xyz);
+      esdTrack->GetPxPyPz(pxpypz);
+      esdTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+      
+      
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
@@ -1265,6 +1269,19 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
       
+      Double_t xyz[3], pxpypz[3];
+      Double_t covMat[21];
+      aodTrack->GetXYZ(xyz);
+      aodTrack->GetPxPyPz(pxpypz);
+      aodTrack->GetCovarianceXYZPxPyPz(covMat);
+      for(Int_t i=0;i<3;++i) {
+        trackInfo->fTrackParam[i] = xyz[i];
+        trackInfo->fTrackParam[i+3] = pxpypz[i];
+      }
+      for(Int_t i=0;i<21;++i) {
+        trackInfo->fCovMatrix[i] = covMat[i];
+      }
+        
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
@@ -1300,6 +1317,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             }
          }
       }
+      
+      
+      
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;

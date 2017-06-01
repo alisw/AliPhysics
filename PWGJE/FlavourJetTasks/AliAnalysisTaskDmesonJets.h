@@ -46,6 +46,7 @@ class THashList;
 class TTree;
 class AliEMCALGeometry;
 class TRandom;
+class AliRhoParameter;
 
 #include <list>
 #include <vector>
@@ -106,9 +107,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information that can be easily passed to a function.
   class AliJetInfo {
   public:
-    AliJetInfo() : fMomentum(), fNConstituents(0), fNEF(0), fMaxChargedPt(0), fMaxNeutralPt(0) {}
+    AliJetInfo() : fMomentum(), fNConstituents(0), fNEF(0), fMaxChargedPt(0), fMaxNeutralPt(0), fArea(0), fCorrPt(0) {}
     AliJetInfo(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t nconst, Double_t nef, Double_t cpt, Double_t npt) :
-      fMomentum(px, py, pz, E), fNConstituents(nconst), fNEF(nef), fMaxChargedPt(cpt), fMaxNeutralPt(npt) {}
+      fMomentum(px, py, pz, E), fNConstituents(nconst), fNEF(nef), fMaxChargedPt(cpt), fMaxNeutralPt(npt), fArea(0), fCorrPt(0) {}
 
     virtual ~AliJetInfo() {;}
 
@@ -116,6 +117,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t Eta()       const { return fMomentum.Eta()      ; }
     Double_t Phi()       const { return fMomentum.Phi()      ; }
     Double_t Phi_0_2pi() const { return fMomentum.Phi_0_2pi(); }
+    Double_t CorrPt()    const { return fCorrPt              ; }
     Int_t GetNConstituents() const { return  fNConstituents; }
     Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(const AliJetInfo& jet) const;
@@ -125,9 +127,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t          fNEF                  ; ///< Neutral Energy Fraction of the jet
     Double_t          fMaxChargedPt         ; ///< Transverse momentum of the leading charged particle (or track)
     Double_t          fMaxNeutralPt         ; ///< Transverse momentum of the leading neutral particle (or cluster)
+    Double_t          fArea                 ; ///< Jet area
+    Double_t          fCorrPt               ; ///< Transverse momentum of the jet after subtracting the average background
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfo, 1);
+    ClassDef(AliJetInfo, 2);
     /// \endcond
   };
 
@@ -202,6 +206,32 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     /// \cond CLASSIMP
     ClassDef(AliJetInfoSummary, 4);
+    /// \endcond
+  };
+
+  /// \class AliJetInfoPbPbSummary
+  /// \brief Lightweight class that encapsulates D meson jets for PbPb analysis
+  ///
+  /// This class encapsulates D meson jet
+  /// information in a very compact data structure (77 bits)
+  class AliJetInfoPbPbSummary : public AliJetInfoSummary {
+  public:
+    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fArea(0) {;}
+    AliJetInfoPbPbSummary(const AliDmesonJetInfo& source, std::string n);
+    virtual ~AliJetInfoPbPbSummary() {}
+
+    virtual void Reset();
+    virtual void Set(const AliDmesonJetInfo& source, std::string n) { AliJetInfoSummary::Set(source, n); }
+    virtual void Set(const AliJetInfo& source);
+
+    /// Transverse momentum of the jet in GeV/c after subtracting average background
+    Double32_t  fCorrPt    ; //[-409.6,409.6,14]
+
+    /// Area of the jet
+    Double32_t  fArea      ; //[0,2.048,8]
+
+    /// \cond CLASSIMP
+    ClassDef(AliJetInfoPbPbSummary, 1);
     /// \endcond
   };
 
@@ -310,6 +340,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     AliHFJetDefinition();
     AliHFJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
+    AliHFJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco, TString rhoName);
     AliHFJetDefinition(const AliHFJetDefinition &source);
 
     AliHFJetDefinition& operator=(const AliHFJetDefinition& source);
@@ -321,6 +352,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetJetPtRange(Double_t min, Double_t max)        { fMinJetPt     = min; fMaxJetPt     = max; }
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
+    void SetRhoName(TString n)                            { fRhoName      = n  ; }
     Double_t GetRadius() const { return fRadius; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
@@ -352,11 +384,13 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t                  fMaxChargedPt  ; ///<  Maximum pt of the leading charged particle (or track)
     Double_t                  fMinNeutralPt  ; ///<  Minimum pt of the leading neutral particle (or cluster)
     Double_t                  fMaxNeutralPt  ; ///<  Maximum pt of the leading neutral particle (or cluster)
+    TString                   fRhoName       ; ///<  Name of the object that holds the average background value
+    AliRhoParameter          *fRho           ; ///<  Object that holds the average background value
     std::vector<AliJetInfo>   fJets          ; //!<! Inclusive jets reconstructed in the current event (includes D meson candidate daughters, if any)
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliHFJetDefinition, 4);
+    ClassDef(AliHFJetDefinition, 5);
     /// \endcond
   };
 
@@ -493,8 +527,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJets();
 
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString cutfname = "");
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString cutfname = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
   std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }

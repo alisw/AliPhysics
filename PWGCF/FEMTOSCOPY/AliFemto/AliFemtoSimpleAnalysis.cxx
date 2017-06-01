@@ -119,14 +119,28 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   // cut is cutting on Xis
   case hbtXi:
+  {
+    AliFemtoXiTrackCut *xi_cut = (AliFemtoXiTrackCut*)partCut;
 
-    DoFillParticleCollection(
-      (AliFemtoXiTrackCut*)partCut,
-      hbtEvent->XiCollection(),
-      partCollection
-    );
-
+    // shared daughter cut returns all passed xis - add to particle collection
+    if (performSharedDaughterCut)
+    {
+      AliFemtoXiSharedDaughterCut shared_daughter_cut;
+      AliFemtoXiCollection xi_coll = shared_daughter_cut.AliFemtoXiSharedDaughterCutCollection(hbtEvent->XiCollection(), xi_cut);
+      for (AliFemtoXiIterator pIter = xi_coll.begin(); pIter != xi_coll.end(); ++pIter) {
+        partCollection->push_back(new AliFemtoParticle(*pIter, xi_cut->Mass()));
+      }
+    } 
+    else
+    {
+      DoFillParticleCollection(
+        (AliFemtoXiTrackCut*)partCut,
+        hbtEvent->XiCollection(),
+        partCollection
+      );
+    }
     break;
+  }
 
   // cut is cutting on Kinks
   case hbtKink:

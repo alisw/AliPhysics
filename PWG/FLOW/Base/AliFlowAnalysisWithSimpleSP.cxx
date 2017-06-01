@@ -128,7 +128,7 @@ void AliFlowAnalysisWithSimpleSP::Init() {
     tQARelated->SetName("QA");
     tQARelated->SetOwner();
 
-    fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP","AliFlowCommonHist",fMinimalBook);
+    fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP","AliFlowCommonHist",fMinimalBook, fHarmonic);
     (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
     fHistList->Add(fCommonHists);
 

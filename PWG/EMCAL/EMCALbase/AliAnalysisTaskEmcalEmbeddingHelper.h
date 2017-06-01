@@ -87,6 +87,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
+  Int_t GetNPtHardBins()                                    const { return fNPtHardBins; }
   Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
@@ -135,10 +136,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @name Options for the embedded event
    */
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
+  bool GetMCRejectOutliers()                                const { return fMCRejectOutliers; }
+  Double_t GetPtHardJetPtRejectionFactor()                  const { return fPtHardJetPtRejectionFactor; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
   Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
 
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
+  void SetMCRejectOutliers(bool reject = true)                    { fMCRejectOutliers = reject; }
+  void SetPtHardJetPtRejectionFactor(double factor)               { fPtHardJetPtRejectionFactor = factor; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
@@ -149,8 +154,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    */
   AliVHeader * GetEventHeader()                             const { return fExternalHeader; }
   AliGenPythiaEventHeader * GetPythiaHeader()               const { return fPythiaHeader; }
-  double GetPythiaXSection()                                const { return fPythiaXSection; }
-  double GetPythiaTrials()                                  const { return fPythiaTrials; }
+  double GetPythiaXSection()                                const { return fPythiaCrossSection; }
+  int GetPythiaTrials()                                     const { return fPythiaTrials; }
   double GetPythiaPtHard()                                  const { return fPythiaPtHard; }
   /* @} */
 
@@ -174,14 +179,19 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
+  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists);
   Bool_t          GetNextEntry()        ;
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
+  Bool_t          CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
+  bool            PythiaInfoFromCrossSectionFile(std::string filename);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
+  bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
+  Double_t                                      fPtHardJetPtRejectionFactor; ///<  Factor which the pt hard bin is multiplied by to compare against pythia header jets pt
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
@@ -203,6 +213,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
+  std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
   Int_t                                         fCurrentEntry     ; //!<! Current entry in the current tree
@@ -211,15 +222,17 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
   Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
   Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
-  THistManager                                  fHistManager      ; //!<! Manages access to all histograms
+  THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
   AliVHeader                                   *fExternalHeader   ; //!<! Header of the current external event
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
-  double                                        fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header)
-  double                                        fPythiaXSection   ; //!<! Pythia cross section for the current event (extracted from the pythia header)
-  double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header)
+  int                                           fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header).
+  int                                           fPythiaTrialsFromFile; //!<! Average number of trials extracted from a xsec file.
+  double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
+  double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
+  double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
@@ -228,7 +241,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 3);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 5);
   /// \endcond
 };
 #endif

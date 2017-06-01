@@ -35,6 +35,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SetPidQa(Bool_t pidQa = kTRUE) {fPidQa = pidQa;};
+  void SetUseAnalysisTrackSelection(Bool_t trkSel = kTRUE) {fUseAnalysisTrkSel = trkSel;};
+  void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
   void SetPeriod(Int_t period = 2015) {fPeriod = period;};
   void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
   void SetParamsHe(Double_t params[6]) { for(Int_t i; i < 6; i++) fBetheParamsHe[i] = params[i];};
@@ -66,6 +68,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Int_t                   fNV0Cand;             //!<! Number of V0 candidates in a event
   Int_t                   fMcGenRecCounter;     //!<! Number of matched particles in one MC event
   Bool_t                  fPidQa;               //< Flag for activating pid qa histogram
+  Bool_t                  fUseAnalysisTrkSel;   //< Flag to select track for analysis (true) or for good plot (false)
+  Bool_t                  fPIDCheckOnly;        //< Flag to reduce the task only to PID check for Hypertriton daughters
   Bool_t                  fMCtrue;              //< Flag for activating MC analysis (set automatically)
   AliEventCuts            fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
   Int_t		                fPeriod;              //< Data period for centrality selector

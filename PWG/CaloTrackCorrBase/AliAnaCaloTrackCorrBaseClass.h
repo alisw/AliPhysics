@@ -43,7 +43,7 @@ class TObjString;
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliMixedEvent.h" 
 class AliVCaloCells;
-class AliStack ; 
+class AliMCEvent ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
 class AliEMCALGeometry;
@@ -71,6 +71,7 @@ public:
   virtual void           Init()                                 { ; }
   virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
+  virtual void           InitCaloParameters() ;
   
   virtual void           FillEventMixPool()                     { ; }
 
@@ -316,7 +317,7 @@ public:
   
   // MC event acces methods
   
-  virtual AliStack *                 GetMCStack()          const ;
+  virtual AliMCEvent *               GetMC()               const ;
   
   virtual AliHeader*                 GetMCHeader()         const ;
   
@@ -380,6 +381,19 @@ public:
                                                                        TString & genName   , Int_t & index,
                                                                        TString & genNameBkg, Int_t & indexBkg);
   
+protected:
+
+  Int_t                      fNModules    ;        ///<  Number of EMCAL/PHOS modules to use in analysis, set in CaloUtils
+  Int_t                      fNRCU        ;        ///<  Number of EMCAL/PHOS RCU
+  Int_t                      fFirstModule ;        ///<  First EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fLastModule  ;        ///<  Last EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fNMaxCols    ;        ///<  Number of EMCAL/PHOS columns per SM
+  Int_t                      fNMaxRows    ;        ///<  Number of EMCAL/PHOS rows per SM
+  Int_t                      fNMaxColsFull;        ///<  Number of EMCAL/PHOS columns full detector
+  Int_t                      fNMaxRowsFull;        ///<  Number of EMCAL/PHOS rows full detector
+  Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
+  Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
+
 private:    
   
   Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    
@@ -438,7 +452,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,28) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,29) ;
   /// \endcond
 
 } ;

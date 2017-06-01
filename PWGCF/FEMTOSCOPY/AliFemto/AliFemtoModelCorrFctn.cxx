@@ -42,6 +42,11 @@ AliFemtoCorrFctn(),
 
   fQgenQrec = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
 
+    for(int i=0;i<fNbbPairs;i++){
+        fkTdists[i] = new TH1D(Form("fkTdists[%i]",i),Form("fkTdists[%i]",i),100,0.0,5.0);
+        fkTdists[i]->Sumw2();
+    }
+    
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -87,6 +92,11 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   //test
   //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
+    for(int i=0;i<fNbbPairs;i++){
+        fkTdists[i] = new TH1D(Form("fkTdists[%i]_%s",i,title),Form("fkTdists[%i]_%s",i,title),100,0.0,5.0);
+        fkTdists[i]->Sumw2();
+    }
+    
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -128,6 +138,11 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
   if (aCorrFctn.fQgenQrec)
     fQgenQrec = new TH2D(*(aCorrFctn.fQgenQrec));
 
+    for(int i=0;i<fNbbPairs;i++){
+        if(aCorrFctn.fkTdists[i])
+            fkTdists[i] = aCorrFctn.fkTdists[i];
+    }
+    
   fManager = aCorrFctn.fManager;
 }
 //_______________________
@@ -143,6 +158,10 @@ AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
   if (fDenominatorIdeal) delete fDenominatorIdeal;
 
   if (fQgenQrec) delete fQgenQrec;
+    
+    for(int i=0;i<fNbbPairs;i++){
+        if(fkTdists[i]) delete fkTdists[i];
+    }
 
 }
 //_______________________
@@ -172,6 +191,13 @@ AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrF
             ? new TH2D(*aCorrFctn.fQgenQrec)
             : nullptr;
 
+    for(int i=0;i<fNbbPairs;i++){
+        delete fkTdists[i];
+        fkTdists[i] = (aCorrFctn.fkTdists[i])
+        ? new TH1D(*aCorrFctn.fkTdists[i])
+        : nullptr;
+  
+    }
   delete fNumeratorTrueIdeal;
   fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
                       ? new TH1D(*aCorrFctn.fNumeratorTrueIdeal)
@@ -250,6 +276,16 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
     fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
     fDenominatorIdeal->Fill(tQinvTrue, 1.0);
     
+      if(fFillkT)
+      {
+          int pairNumber = GetPairNumber(aPair);
+          
+          if(pairNumber >= 0){
+              if(fkTdists[pairNumber]){
+                  fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
+              }
+          }
+      }
     fQgenQrec->Fill(tQinvTrue,aPair->QInv());
   }
   //Special MC analysis for K selected by PDG code -->
@@ -275,24 +311,30 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-      AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
-      if(!inf1 || !inf2)
-      {
-//          cout<<"Warning! AliFemtoModelCorrFctn::GetQinvTrue - Could not find requested tracks."<<endl;
+      
+      AliFemtoParticle *first = (AliFemtoParticle*)aPair->Track1();
+      AliFemtoParticle *second = (AliFemtoParticle*)aPair->Track2();
+      
+      if(!first || !second) return -1;
+      
+      AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
+      AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+      
+      if(!inf1 || !inf2){
+//          cout<<"no hidden info"<<endl;
           return -1;
       }
       
       AliFemtoLorentzVector fm1;
-      AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
+      AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
       fm1.SetVect(*temp);
-      Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
-      Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+      Double_t am1 = inf1->GetMass();
+      Double_t am2 = inf2->GetMass();
       double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
       fm1.SetE(ener);
       
       AliFemtoLorentzVector fm2;
-      AliFemtoThreeVector* temp2 =  ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
+      AliFemtoThreeVector* temp2 =  inf2->GetTrueMomentum();
       fm2.SetVect(*temp2);
       ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
       fm2.SetE(ener);
@@ -369,6 +411,12 @@ void AliFemtoModelCorrFctn::Write()
   fNumeratorFake->Write();
   fDenominator->Write();
 
+    if(fFillkT)
+    {
+        for(int i=0;i<fNbbPairs;i++){
+            fkTdists[i]->Write();
+        }
+    }
   fNumeratorTrueIdeal->Write();
   fNumeratorFakeIdeal->Write();
   fDenominatorIdeal->Write();
@@ -398,10 +446,124 @@ TList* AliFemtoModelCorrFctn::GetOutputList()
   tOutputList->Add(fDenominatorIdeal);
   tOutputList->Add(fQgenQrec);
 
-
+    if(fFillkT)
+    {
+        for(int i=0;i<fNbbPairs;i++){
+            tOutputList->Add(fkTdists[i]);
+        }
+    }
   return tOutputList;
 }
 void AliFemtoModelCorrFctn::SetKaonPDG(Bool_t aSetKaonAna)
 {
   fKaonPDG = aSetKaonAna;
 }
+
+double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
+{
+    AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
+    AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
+    
+    if(!first)
+    {
+        if(second) delete second;
+        return -1;
+    }
+    if(!second)
+    {
+        if(first) delete first;
+        return -1;
+    }
+    
+    AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
+    AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+    
+    if(!info1 || !info2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
+    AliFemtoThreeVector* p1 = info1->GetMotherMomentum();
+    AliFemtoThreeVector* p2 = info2->GetMotherMomentum();
+    
+    if(!p1 || !p2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
+    double px = p1->x() + p2->x();
+    double py = p1->y() + p2->y();
+    double pT = sqrt(px*px + py*py);
+    
+    delete first;delete second;
+    
+    return pT/2.;
+}
+
+int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
+{
+    AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
+    AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
+    
+    if(!first)
+    {
+        if(second) delete second;
+        return -1;
+    }
+    if(!second)
+    {
+        if(first) delete first;
+        return -1;
+    }
+    
+    AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
+    AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+    
+    if(!info1 || !info2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
+        
+    int pdg1 = TMath::Abs(info1->GetMotherPdgCode());
+    int pdg2 = TMath::Abs(info2->GetMotherPdgCode());
+    
+    int tmp;
+    if(pdg2 < pdg1){
+        tmp = pdg1;
+        pdg1 = pdg2;
+        pdg2 = tmp;
+    }
+    
+    delete first;delete second;
+    
+    if(pdg1 == 2212 && pdg2 == 2212) return 0; // pp
+    if(pdg1 == 2212 && pdg2 == 3122) return 1; // pΛ
+    if(pdg1 == 3122 && pdg2 == 3122) return 2; // ΛΛ
+    if(pdg1 == 2212 && pdg2 == 3222) return 3; // pΣ+
+    if(pdg1 == 3122 && pdg2 == 3222) return 4; // ΛΣ+
+    if(pdg1 == 3222 && pdg2 == 3222) return 5; // Σ+Σ+
+    if(pdg1 == 2212 && pdg2 == 3312) return 6; // pΞ-
+    if(pdg1 == 2212 && pdg2 == 3322) return 7; // pΞ0
+    if(pdg1 == 3122 && pdg2 == 3312) return 8; // ΛΞ-
+    if(pdg1 == 3122 && pdg2 == 3322) return 9; // ΛΞ0
+    if(pdg1 == 3222 && pdg2 == 3322) return 10; // Σ+Ξ0
+    if(pdg1 == 3222 && pdg2 == 3312) return 11; // Σ+Ξ-
+    if(pdg1 == 3212 && pdg2 == 3122) return 12; // Σ0Λ
+    if(pdg1 == 2212 && pdg2 == 3212) return 13; // pΣ0
+    if(pdg1 == 3212 && pdg2 == 3222) return 14; // Σ0Σ+
+    if(pdg1 == 3322 && pdg2 == 3322) return 15; // Ξ0Ξ0
+    if(pdg1 == 3312 && pdg2 == 3322) return 16; // Ξ-Ξ0
+    if(pdg1 == 3312 && pdg2 == 3312) return 17; // Ξ-Ξ-
+    if(pdg1 == 3212 && pdg2 == 3322) return 18; // Σ0Ξ0
+    if(pdg1 == 3212 && pdg2 == 3312) return 19; // Σ0Ξ-
+    if(pdg1 == 3212 && pdg2 == 3212) return 20; // Σ0Σ0
+    
+    return -1;
+}
+
+
+

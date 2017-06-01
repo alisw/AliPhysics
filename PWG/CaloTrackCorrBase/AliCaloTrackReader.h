@@ -34,7 +34,6 @@ class TArrayI ;
 //--- ANALYSIS system ---
 #include "AliVEvent.h"
 class AliVCaloCells;
-class AliStack; 
 class AliHeader; 
 class AliGenEventHeader; 
 class AliAODEvent;
@@ -47,6 +46,7 @@ class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
+#include "AliLog.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -484,7 +484,18 @@ public:
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
   
-  Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
+  Int_t            GetTrackMultiplicity(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
+  Float_t          GetTrackSumPt(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackSumPt[cut] ; else return 0 ; }
+
+  void             SetTrackMultiplicityNPtCut(Float_t ncut){ fTrackMultNPtCut = ncut      ; }
+  Int_t            GetTrackMultiplicityNPtCut() const      { return fTrackMultNPtCut      ; }
+
+  void             SetTrackMultiplicityPtCut(Int_t cut, Float_t  pt) {  if(cut < 10)  fTrackMultPtCut[cut] = pt; }
+  Float_t          GetTrackMultiplicityPtCut(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackMultPtCut[cut] ;  else return 0 ; }
+ 
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
@@ -624,9 +635,9 @@ public:
   
   // Kinematics and galice.root available
   
-  virtual AliStack*          GetStack()              const ;
   virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader() const ;
+  virtual AliGenEventHeader* GetGenEventHeader()     const { return 0x0                    ; }
+  // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
   
@@ -640,13 +651,11 @@ public:
   virtual AliMixedEvent*    GetMixedEvent()          const { return fMixedEvent            ; }
   virtual Int_t             GetNMixedEvent()         const { return fNMixedEvent           ; } 
   
-  void             SwitchOnStack()                         { fReadStack          = kTRUE   ; }
-  void             SwitchOffStack()                        { fReadStack          = kFALSE  ; }
-  void             SwitchOnAODMCParticles()                { fReadAODMCParticles = kTRUE   ; }
-  void             SwitchOffAODMCParticles()               { fReadAODMCParticles = kFALSE  ; }
-  Bool_t           ReadStack()                       const { return fReadStack             ; }
-  Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles    ; }
-	
+  void             SwitchOnStack()                         { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffStack()                        { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOnAODMCParticles()                { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffAODMCParticles()               { AliError("Obsolete, remove this setting in AddTask") ; }
+
   void             RemapMCLabelForAODs(Int_t &label);
   
   // Select generated events, depending on comparison of pT hard and jets
@@ -804,14 +813,16 @@ public:
   Int_t            fSmearNLMMin ;                  ///< Do smearing for clusters with at least this value 
   Int_t            fSmearNLMMax ;                  ///< Do smearing for clusters with at maximum this value
   
+  // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
-  Int_t            fTrackMult          ;           ///<  Track multiplicity.
-  Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
   
-  Bool_t           fReadStack          ;           ///<  Access kine information from stack.
-  Bool_t           fReadAODMCParticles ;           ///<  Access kine information from filtered AOD MC particles.
-	
+  Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
+  Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts
+  Int_t            fTrackMultNPtCut    ;           ///<  Track multiplicty, number of pt cuts
+  Float_t          fTrackMultPtCut[10] ;           ///<  Track multiplicity and sum pt cuts list
+  Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
+  	
   TString          fDeltaAODFileName   ;           ///<  Delta AOD file name.
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
@@ -937,7 +948,7 @@ public:
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
-
+  TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
@@ -961,7 +972,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,76) ;
+  ClassDef(AliCaloTrackReader,77) ;
   /// \endcond
 
 } ;

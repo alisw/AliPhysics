@@ -58,16 +58,30 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
 
   void    SwitchOnFillEtaPhiRegionsHistograms()  { fFillEtaPhiRegionHistograms = kTRUE  ; }
   void    SwitchOffFillEtaPhiRegionsHistograms() { fFillEtaPhiRegionHistograms = kFALSE ; }
+
+  void    SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
+  void    SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
+  
+  void    SwitchOnFillTrackDCAHistograms()       { fFillTrackDCAHistograms = kTRUE  ; }
+  void    SwitchOffFillTrackDCAHistograms()      { fFillTrackDCAHistograms = kFALSE ; }
   
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         ///<  Fill histograms for tracks with vertex BC=0 or not related histograms
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
+  Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
+  Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
+  
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
   //Histograms
-  TH1F * fhNtracks;                         //!<! Track multiplicity distribution
+  TH2F * fhNTracks;                         //!<! Track multiplicity distribution per event, different pT cuts
+  TH2F * fhSumPtTracks;                     //!<! Track sum pT distribution per event, different pT cuts
+  
+  TH2F * fhPtTrackNTracks    [10];          //!<! Track multiplicity distribution per event vs track pT, different pT cuts
+  TH2F * fhPtTrackSumPtTracks[10];          //!<! Track sum pT distribution per event vs track pT, different pT cuts  
+  
   TH1F * fhPt;                              //!<! pT distribution
   TH1F * fhPtNoCut;                         //!<! pT distribution, no cut
   TH1F * fhPtCutDCA;                        //!<! pT distribution, Apply DCA cut
@@ -118,7 +132,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiMCPrimPart[6];                //!<! Number of generated charged hadrons vs phi coming from MC particle, 6 hadron ID
   TH2F * fhEtaMCPrimPart[6];                //!<! Number of generated charged hadrons vs eta coming from MC particle, 6 hadron ID
 
-  // TOF
+  // TOF and BC
   TH1F * fhTOFSignal;                       //!<! TOF signal
   TH1F * fhTOFSignalPtCut;                  //!<! TOF signal pt and acceptance cut
   TH1F * fhTOFSignalBCOK;                   //!<! TOF signal pt and acceptance cut
@@ -141,6 +155,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhProductionVertexBC;              //!<! Check BC of production vertex
   TH1F * fhProductionVertexBCPileUp[7];     //!<! Check BC of production vertex, pile-up
 
+  // DCA
   TH2F * fhPtDCA[3];                        //!<! DCA (xy,z,constrained) of all tracks
   
   TH2F * fhPtDCASPDRefit[3];                //!<! DCA (xy,z,constrained) of tracks with SPD and ITS refit
@@ -164,6 +179,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtDCAVtxOutBC0PileUpNoTOFHit[3]; //!<! DCA (xy,z,constrained) of all tracks, vertex BC!=0, SPD pile-up, no hit in TOF
   TH2F * fhPtDCAVtxInBC0PileUpNoTOFHit[3];  //!<! DCA (xy,z,constrained) of all tracks, vertex BC=0, SPD pile-up, no hit in TOF
   
+  // pile-up
   TH2F * fhPtNPileUpSPDVtx;	                //!<! cluster pt vs number of spd pile-up vertices
   TH2F * fhPtNPileUpTrkVtx;                 //!<! cluster pt vs number of track pile-up vertices
   TH2F * fhPtNPileUpSPDVtxBC0;	            //!<! cluster pt vs number of spd pile-up vertices, track in BC=0
@@ -176,7 +192,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,11) ;
+  ClassDef(AliAnaChargedParticles,12) ;
   /// \endcond
 
 } ;

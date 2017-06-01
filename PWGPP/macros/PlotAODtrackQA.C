@@ -404,18 +404,20 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     cps1->SaveAs("PrimSecTracks.gif");
   }
   
-  TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefPion");
-  TH2F* hPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefKaon");
-  TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefProton");
-  hPtResidVsPtTPCselITSrefPion->SetStats(0);
-  hPtResidVsPtTPCselITSrefKaon->SetStats(0);
-  hPtResidVsPtTPCselITSrefProton->SetStats(0);
-  hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
-  hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
-  hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+  TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefpi");
+  TH2F* hPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefK");
+  TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefp");  
+  if(hPtResidVsPtTPCselITSrefPion){
+    hPtResidVsPtTPCselITSrefPion->SetStats(0);
+    hPtResidVsPtTPCselITSrefKaon->SetStats(0);
+    hPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+  }
 
   TGraphErrors* gMeanPi=new TGraphErrors(0);
   TGraphErrors* gMeanK=new TGraphErrors(0);
@@ -445,7 +447,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gRelK->SetTitle("");
   gRelProt->SetTitle("");
 
-  if(hPtResidVsPtTPCselITSrefPion->Integral()>0){
+  if(hPtResidVsPtTPCselITSrefPion && hPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPion,gMeanPi,gRmsPi,gRelPi);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefKaon,gMeanK,gRmsK,gRelK);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefProton,gMeanProt,gRmsProt,gRelProt);
@@ -709,7 +711,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ProjectDrawAndFit(hInvMassAntiLambda,"AntiLambda",fmass,0.8,1.0);
   clam->cd(6);
   ProjectDrawAndFit(hInvMassAntiLambda,"AntiLambda",fmass,1.,2.0);
-  ck0->SaveAs("LambdaInvMass.png");
+  clam->SaveAs("LambdaInvMass.png");
 
   trtree->Fill();
 
@@ -873,10 +875,11 @@ void ProjectDrawAndFitMomP(TH3F* hInvMassLambdaGoodHyp3d,TH3F* hInvMassLambdaBad
 }
 
 void InitFuncAndFit(TH1D* hm, TF1* fmass){
-  fmass->SetParameter(0,10000.);
+  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
   fmass->SetParameter(1,0.);
-  fmass->SetParLimits(1,-99999999999,0.);
+  //  fmass->SetParLimits(1,-99999999999,0.);
   fmass->SetParameter(2,100.);
+  fmass->SetParLimits(2,0.,1.e+9);
   fmass->SetParameter(3,1.116);
   fmass->SetParLimits(3,1.11,1.12);
   fmass->SetParameter(4,0.002);

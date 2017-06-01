@@ -26,6 +26,7 @@ class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEmcalEmbeddingQA.h"
 
 class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
  public:
@@ -80,6 +81,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fMatchingPar2;                           // matching parameter for jet2-jet1 matching
   Bool_t                      fUseCellsToMatch;                        // use cells instead of clusters to match jets (slower but sometimes needed)
   Double_t                    fMinJetMCPt;                             // minimum jet MC pt
+  AliEmcalEmbeddingQA         fEmbeddingQA;                            //!<! Embedding QA hists (will only be added if embedding)
   Int_t                       fHistoType;                              // histogram type (0=TH2, 1=THnSparse)
   Int_t                       fDeltaPtAxis;                            // add delta pt axis in THnSparse (default=0)
   Int_t                       fDeltaEtaDeltaPhiAxis;                   // add delta eta and delta phi axes in THnSparse (default=0)

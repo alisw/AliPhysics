@@ -140,6 +140,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -279,6 +280,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -407,7 +409,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   Int_t trackDepth = 0;
   if(fIsPbPb) trackDepth = 100000;
-  if(!fIsPbPb) trackDepth = 5000;
+  if(!fIsPbPb) trackDepth = 100000;
 
   Int_t poolsize   = 1000;
 
@@ -683,7 +685,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
   fOutputList->Add(fNoMixedEvents);
 
-  Int_t nEventBins =200;
+  Int_t nEventBins =500;
   Double_t EventBins[nEventBins+1];
   for(int i=0; i < nEventBins+1; i++)
     EventBins[i] = i;
@@ -927,6 +929,11 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+        
+      Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+    
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(clustTime) > 50) continue;
 
       /////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
@@ -938,6 +945,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       Double_t clustMatchE = clustMatch->E();
       fClsEAftMatch->Fill(clustMatchE);
       fClsEtaPhiAftMatch->Fill(emceta,emcphi);
+        
 
       //Select pT>2 GeV/c
       if(TrkPt < 2) continue;
@@ -1494,6 +1502,9 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+        
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(tof) > 50) continue;
 
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);

@@ -58,11 +58,14 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDpid(),
   fTRDpidLQ2D(),
   fCaloClusterId(-999),
+  fTrackParam(),
+  fCovMatrix(),
   fMCMom(),
   fMCFreezeout(),
   fMCLabels(),
   fMCPdg(),
   fMCGeneratorIndex(-1)
+
 {
   //
   // Constructor
@@ -75,6 +78,8 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
   for(Int_t i=0;i<3;++i) {fMCMom[i]=0.; fMCFreezeout[i]=0.;}
   for(Int_t i=0;i<4;++i) {fMCLabels[i]=-9999; fMCPdg[i]=-9999;}
+  for(Int_t i=0;i<6;++i) {fTrackParam[i]=0.;}
+  for(Int_t i=0;i<21;++i) {fCovMatrix[i]=0.;}
 }
 
 

@@ -137,9 +137,12 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , flQArnum(0x0)
+  , flBBFlag(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
+  , flV0(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
@@ -237,6 +240,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   if (flVtx) {
     delete flVtx;
     flVtx = 0x0;
+  }
+  if (flV0) {
+    delete flV0;
+    flV0 = 0x0;
   }
 
   // delete fHist and fCEPtree
@@ -431,7 +438,20 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
     // add histograms to the output list
     for (Int_t ii=0; ii<flVtx->GetEntries(); ii++)
       fHist->Add((TObject*)flVtx->At(ii));
-  }
+  } else flVtx = NULL;
+  
+  // histograms for Armenteros-Podolanski plot
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitV0Study,AliCEPBase::kBitV0Study)) {
+            
+    // get list of histograms
+    flV0 = new TList();
+    flV0 = fCEPUtil->GetV0QAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flV0->GetEntries(); ii++)
+      fHist->Add((TObject*)flV0->At(ii));
+  } else flV0 = NULL;
   
   // histogram for event statistics
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
@@ -534,10 +554,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->SPDVtxAnalysis(fEvent,3,0.8,3.,2.,5.,flSPDpileup);
   }
   
-  if (flBBFlag) {
-    fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
-  }
-  
   //fAnalysisUtils.SetBSPDCvsTCut(4);
 	//fAnalysisUtils.SetASPDCvsTCut(65);
   Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fEvent);
@@ -551,7 +567,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // this is doing a lot more than the physics selection (by default uses kAny)
   // run number > 225000
   Bool_t isEventCutsel = kFALSE;
-  if (fRun > 225000) {
+  if (fRun >= 225000 && fRun <= 260187) {
     isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
@@ -571,7 +587,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
      
-  
 	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the 2016 data
   // compare with (isSPD  && (!isV0A && !isV0C))
@@ -583,6 +598,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
   if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
   if (isDGTrigger) ((TH1F*)flQArnum->At(1))->Fill(fRun);
+  
+  // post-future trigger protection
+  // only valid for CCUP13-B-SPD1-CENTNOTRD
+  if (flBBFlag && isDGTrigger) {
+    fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
+  }
   
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -673,6 +694,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The TrackStatus is contained in an array of UInt_t
   // The definition of the TrackStatus bits is given in AliCEPBase.h
   Int_t nTracks = fCEPUtil->AnalyzeTracks(fESDEvent,fTracks,fTrackStatus);
+  
+  // V0 study
+  if (flV0) {
+    fCEPUtil->V0Analysis(fESDEvent,flV0);
+  }
 
   // nbad track with !kTTTPCScluster
   UInt_t mask = AliCEPBase::kTTTPCScluster;
@@ -687,9 +713,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
     
   // use the AliCEPUtils::GetCEPTracks method
-  //TArrayI *Pindices  = new TArrayI();
-  //Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
-  //if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
+  TArrayI *Pindices  = new TArrayI();
+  Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
+  // if (nMartinSel>0 || nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   // get the tracks which meet the TT conditions
   // the TT mask and pattern are given as input parameter
@@ -827,6 +853,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    
+    // FP Flags of V0 and AD
+    fCEPEvent->SetPFFlags(fEvent);
   
     // set event status word
     fCEPEvent->SetEventCondition(fEventCondition);
@@ -945,7 +974,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // save output
     fCEPtree->Fill();
     PostOutputs();
+    
+  } else {
+    PostData(1, fHist);
   }
+    
     
   // clean up
   //if (Pindices) {

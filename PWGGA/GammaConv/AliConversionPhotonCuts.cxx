@@ -1337,7 +1337,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   //    }
   // }
 
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid )==0 && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     if(fHistoTOFbefore){
       Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
       Double_t  times[AliPID::kSPECIESC];
@@ -1358,7 +1358,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   }
   cutIndex++;
   
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)){
+  if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)==0){
     if(fHistoITSSigbefore) fHistoITSSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
     if(fUseITSpid){
       if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
@@ -1610,13 +1610,15 @@ Bool_t AliConversionPhotonCuts::InitializeCutsFromCutString(const TString analys
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -1878,7 +1880,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
     printf("\t reject: p_{e,T} > %3.2f, n sigma_{pi,TPC} < %3.2f\n", fPIDMaxPnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt );
     if (fDoPionRejectionLowP) printf("\t reject: p_{e,T} < %3.2f, -%3.2f < n sigma_{pi,TPC} < %3.2f\n", fPIDMinPPionRejectionLowP, fPIDnSigmaAtLowPAroundPionLine, fPIDnSigmaAtLowPAroundPionLine );
     if (fDoKaonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundKaonLine, fPIDnSigmaAtLowPAroundKaonLine );
-    if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
+    if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{p,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
   } else {
     printf("\t accept: %3.2f <= Kappa_{TPC} < %3.2f\n", fKappaMinCut, fKappaMaxCut );
   }  
@@ -2527,6 +2529,15 @@ Bool_t AliConversionPhotonCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut
     fDoKaonRejectionLowP = kFALSE;
     fDoProtonRejectionLowP = kFALSE;
     fDoPionRejectionLowP = kTRUE;
+    fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLine;
+    break;
+  case 8:  //
+    fPIDnSigmaAtLowPAroundKaonLine=0.;
+    fPIDnSigmaAtLowPAroundProtonLine=0.5;
+    fPIDnSigmaAtLowPAroundPionLine=0.;
+    fDoKaonRejectionLowP = kFALSE;
+    fDoProtonRejectionLowP = kTRUE;
+    fDoPionRejectionLowP = kFALSE;
     fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLine;
     break;
   default:

@@ -8,23 +8,25 @@
 // - The arguments of the macro
 // - The names and paths in SetInputNames method
 // - The SetSBRanges values in the ExtractXPt methods (if you use austoSB=kFALSE, otherwise they are dummy)
+// - The SetSignRanges values in the ExtractXPt methods [to be created from scratch] (do only if you use autoSign=kFALSE)
 //
 // NOTE FOR D*: If setting the sideband range externally, the (unique) sideband to be used is LSB (not RSB)
-// NOTE FOR D+: If you need to integrate mass-pT bins in a single correlation bin BEFORE extracting the outputs, set plotter->IntegratePtBins(kFALSE) in the ExtractXPt methods
-//
+// NOTE FOR D+: If you need to integrate mass-pT bins in a single correlation bin BEFORE extracting the outputs, set plotter->IntegratePtBins(kFALSE) in the ExtractXPt methods 
+// 
 // setting plotter->SetDebugLevel(1) will print a series of additional plots for debugging; plotter->SetDebugLevel(2) will also be more verbose
-// Last updated: Shyam Kumar on 05/04/2017
+// Last updated: Fabio Colamaria on 18/04/2017
 
 void ExtractOutput_Dplus(
                          Bool_t treeSE=kFALSE, Bool_t treeME=kFALSE, //read TH2F from offline correlation framewrks (produced from the TTree) for SE, ME analysis instead of THnSparse
                          Int_t specie=AliDhCorrelationExtraction::kDplusKpipi, //the D-meson decay channel (check the enumerator for the options)
                          Int_t SandB=AliDhCorrelationExtraction::kBfromBinCount, //how to extract S and B (check the enumerator for the options) - kBfromBinCount is the paper approach
                          Int_t SBscale=AliDhCorrelationExtraction::kBinCountScaling, //how to renormalize the sidebands (check the enumerator for the options) - kBfromBinCount is the paper approach
-                         Int_t rebin=4, //rebin the invariant mass plots - USE WITH CARE! (different bin width w.r.t. THnSparse)
+                         Int_t rebin=1, //rebin the invariant mass plots - USE WITH CARE! (different bin width w.r.t. THnSparse)
                          Double_t leftRng=1.7, Double_t rightRng=2.05, //invariant mass fit range -> use 1.7-2.1 for D0 and D+, 0.14-0.16 for D* (but 1.695-2.1 for D0 in pp for results before 1/5/2015)
                          Int_t funcBkg=AliHFMassFitter::kExpo, //background function used for the mass fit -> use kExpo for D0 and D+, kPowEx for D*
                          Double_t nsigmaFitter=2, //number of sigma in which to extract S, B, S/B, signficance... (only for the spectra visualization, no influence on the correlations)
-                         Double_t nsigmaS=2, //number of sigma in which to define the signal region (for correlations)
+                         Bool_t autoSign=kTRUE, //kTRUE = define Sign from the fit results, in the range nsigmaS (below); kFALSE = use ranges provided via SetSignRanges
+                         Double_t nsigmaS=2, //number of sigma in which to define the signal region (for correlations), Valid only if autoSign flag = kTRUE, otherwise dummy
                          Bool_t autoSB=kTRUE, //kTRUE = define SB from the fit results, in the range insigma-outsigma (below); kFALSE = use ranges provided via SetSBRanges
                          Double_t insigma=4, Double_t outsigma=8, //sideband ranges (in units of sigma). Valid only if autoSB=kTRUES, otherwise dummy
                          Bool_t singleBinSB=kFALSE, //kTRUE=a single mass bin is used in the THnSparse for storing the sideband corlelations (used by D0 to save space)
@@ -43,6 +45,7 @@ void ExtractOutput_Dplus(
     plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D*
     plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
     plotter->SetNumberOfSigmasFitter(nsigmaFitter);
+    if(!autoSign) plotter->SetAutoSignRange(autoSign);
     plotter->SetSignalSigmas(nsigmaS);
     plotter->SetAutoSBRange(autoSB,insigma,outsigma); //kTRUE = evaluate SB range automatically (give inner and outer sigma as 2° and 3° args); kFALSE = use ranges provided via SetSBRanges
     plotter->SetSBSingleBin(singleBinSB);
@@ -53,6 +56,7 @@ void ExtractOutput_Dplus(
     if(!flagSpecie) return;
     
     plotter->SetDebugLevel(0); //0 = get main results; 1 = get full list of plots; 2 = get debug printouts
+    /*
     //-------------setting for online and offline combinations-------------------------------
     std::cout<<""<<std::endl;
     std::cout<< "\033[1;31m Enter 1 for SE and ME Both Online \033[0m\n"<<std::endl;
@@ -66,7 +70,7 @@ void ExtractOutput_Dplus(
     else if (num==4){treeSE=kTRUE; treeME=kFALSE;}
     else
         std::cout<<" The Choice entered is wrong !!!"<<std::endl;
-    
+    */
     plotter->ReadTTreeOutputFiles(treeSE,treeME);
     plotter->SetSubtractSoftPiInMEdistr(kFALSE);
     plotter->SetUseMassVsCentPlots(use2Dmassplots);

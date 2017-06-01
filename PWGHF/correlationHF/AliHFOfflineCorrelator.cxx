@@ -580,7 +580,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       Double_t deltaPhi, deltaEta;
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
 
-      if(fRemoveSoftPiInME && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
+      if(fRemoveSoftPiInME && fDmesonSpecies==kD0toKpi && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
 		Bool_t reject = IsSoftPionFromDstar(brD,brTr);
 		if(reject) continue;
 	  }

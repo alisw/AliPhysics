@@ -53,6 +53,7 @@ set(SRCS
   AliTrackContainer.cxx
   AliEmcalList.cxx
   AliAnalysisTaskEmcalEmbeddingHelper.cxx
+  AliEmcalEmbeddingQA.cxx
   )
 
 # Headers from sources

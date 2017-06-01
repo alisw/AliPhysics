@@ -58,6 +58,7 @@
 #include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
+#include <fstream>
 
 ClassImp(AliAnalysisTaskGammaCalo)
 
@@ -181,6 +182,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL),
   fHistoTrueLambdaWithPi0DaughterMCPt(NULL),
   fHistoTrueBckGGInvMassPt(NULL),
+  fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL),
+  fHistoTrueBckAsymEClustersInvMassPt(NULL),
   fHistoTrueBckContInvMassPt(NULL),
   fHistoTruePi0PtY(NULL),
   fHistoTrueEtaPtY(NULL),
@@ -266,6 +269,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fInvMassTreeAlpha(0),
   fInvMassTreeTheta(0),
   fInvMassTreeMixPool(0),
+  fInvMassTreeZVertex(0),
+  fInvMassTreeEta(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -312,7 +317,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0)
 {
   
 }
@@ -438,6 +445,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL),
   fHistoTrueLambdaWithPi0DaughterMCPt(NULL),
   fHistoTrueBckGGInvMassPt(NULL),
+  fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL),
+  fHistoTrueBckAsymEClustersInvMassPt(NULL),
   fHistoTrueBckContInvMassPt(NULL),
   fHistoTruePi0PtY(NULL),
   fHistoTrueEtaPtY(NULL),
@@ -523,6 +532,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fInvMassTreeAlpha(0),
   fInvMassTreeTheta(0),
   fInvMassTreeMixPool(0),
+  fInvMassTreeZVertex(0),
+  fInvMassTreeEta(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -569,7 +580,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceTreeEOverP(kFALSE),
   fProduceCellIDPlots(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fCloseHighPtClusters(NULL),
+  fLocalDebugFlag(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -785,7 +798,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
     
-    fHistoNEvents[iCut]     = new TH1F("NEvents","NEvents",12,-0.5,11.5);
+    fHistoNEvents[iCut]     = new TH1F("NEvents","NEvents",13,-0.5,12.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -804,10 +817,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problems");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
     
     if (fIsMC > 1){
-      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",12,-0.5,11.5);
+      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",13,-0.5,12.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -826,6 +840,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
       fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
     }
     if (fIsMC == 2){  
@@ -986,6 +1001,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tSigInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
         tSigInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
         tSigInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("zVtx",&fInvMassTreeZVertex,"fInvMassTreeZVertex/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("Eta",&fInvMassTreeEta,"fInvMassTreeEta/F");
         fTreeList[iCut]->Add(tSigInvMassPtAlphaTheta[iCut]);
 
         tBckInvMassPtAlphaTheta[iCut] = new TTree("Bck_InvMass_Pt_Alpha_Theta_MixPool","Bck_InvMass_Pt_Alpha_Theta_MixPool");
@@ -994,6 +1011,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tBckInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
         tBckInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
         tBckInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("zVtx",&fInvMassTreeZVertex,"fInvMassTreeZVertex/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("Eta",&fInvMassTreeEta,"fInvMassTreeEta/F");
         fTreeList[iCut]->Add(tBckInvMassPtAlphaTheta[iCut]);
       }
 
@@ -1184,8 +1203,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueK0lWithPi0DaughterMCPt                = new TH1F*[fnCuts];
           fHistoTrueEtaWithPi0DaughterMCPt                = new TH1F*[fnCuts];
           fHistoTrueLambdaWithPi0DaughterMCPt             = new TH1F*[fnCuts];
-          fHistoTrueBckGGInvMassPt                        = new TH2F*[fnCuts];
-          fHistoTrueBckContInvMassPt                      = new TH2F*[fnCuts];
         }
         fHistoTruePi0PtY                  = new TH2F*[fnCuts];
         fHistoTrueEtaPtY                  = new TH2F*[fnCuts];
@@ -1193,6 +1210,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueEtaPtAlpha              = new TH2F*[fnCuts];
         fHistoTruePi0PtOpenAngle          = new TH2F*[fnCuts];
         fHistoTrueEtaPtOpenAngle          = new TH2F*[fnCuts];
+        fHistoTrueBckGGInvMassPt          = new TH2F*[fnCuts];
+        fHistoTrueBckFullMesonContainedInOneClusterInvMassPt = new TH2F*[fnCuts];
+        fHistoTrueBckAsymEClustersInvMassPt                  = new TH2F*[fnCuts];
+        fHistoTrueBckContInvMassPt        = new TH2F*[fnCuts];
       }
       if (fDoMesonQA==2){
         fHistoTruePi0Category1            = new TH2F*[fnCuts];
@@ -1568,7 +1589,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueClusShowerPt[iCut]->Sumw2();
             fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
             fHistoTrueClusNParticles[iCut]->Sumw2();
-          fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
+            fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
         }
       }
 
@@ -1686,10 +1707,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTruePrimaryEtaMCPtResolPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
             fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
-            fHistoTrueBckGGInvMassPt[iCut]              = new TH2F("ESD_TrueBckGG_InvMass_Pt","ESD_TrueBckGG_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
-            fHistoTrueBckContInvMassPt[iCut]            = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fTrueList[iCut]->Add(fHistoTrueBckContInvMassPt[iCut]);
             fHistoTrueK0sWithPi0DaughterMCPt[iCut]      = new TH1F("ESD_TrueK0sWithPi0Daughter_MCPt","ESD_TrueK0sWithPi0Daughter_MCPt",nBinsPt, minPt, maxPt);
             fTrueList[iCut]->Add(fHistoTrueK0sWithPi0DaughterMCPt[iCut]);
             fHistoTrueK0lWithPi0DaughterMCPt[iCut]      = new TH1F("ESD_TrueK0lWithPi0Daughter_MCPt","ESD_TrueK0lWithPi0Daughter_MCPt",nBinsPt, minPt, maxPt);
@@ -1719,6 +1736,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueEtaPtOpenAngle[iCut]  = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",nBinsQAPt, minQAPt, maxQAPt,180,0,1.8);
           SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
           fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
+
+          fHistoTrueBckGGInvMassPt[iCut]              = new TH2F("ESD_TrueBckGG_InvMass_Pt","ESD_TrueBckGG_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
+          fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut] = new TH2F("ESD_TrueBckFullMesonContained_InvMass_Pt","ESD_TrueBckFullMesonContained_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut]);
+          fHistoTrueBckAsymEClustersInvMassPt[iCut]   = new TH2F("ESD_TrueBckAsymEClus_InvMass_Pt","ESD_TrueBckAsymEClus_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckAsymEClustersInvMassPt[iCut]);
+          fHistoTrueBckContInvMassPt[iCut]            = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
+          fTrueList[iCut]->Add(fHistoTrueBckContInvMassPt[iCut]);
           
           if (fIsMC > 1){
             fHistoTruePi0PtY[iCut]->Sumw2();
@@ -1727,6 +1753,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueEtaPtAlpha[iCut]->Sumw2();
             fHistoTruePi0PtOpenAngle[iCut]->Sumw2();
             fHistoTrueEtaPtOpenAngle[iCut]->Sumw2();
+            fHistoTrueBckGGInvMassPt[iCut]->Sumw2();
+            fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut]->Sumw2();
+            fHistoTrueBckAsymEClustersInvMassPt[iCut]->Sumw2();
+            fHistoTrueBckContInvMassPt[iCut]->Sumw2();
           }
           
         }
@@ -1825,12 +1855,19 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   }
   
-  if (fIsMC > 0){
+  if (fIsMC > 0 || fDoClusterQA > 0){
     tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    tBrokenFiles->Branch("closeHighPtClusters",&fCloseHighPtClusters);
     fOutputContainer->Add(tBrokenFiles);
   }
   
+  if(fLocalDebugFlag > 0){
+    fstream fOutputLocalDebug;
+    fOutputLocalDebug.open("debugOutput.txt",ios::out);
+    fOutputLocalDebug.close();
+  }
+
   PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
@@ -2097,6 +2134,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef(i);
+    PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
     // get MC label
     if(fIsMC> 0){
       Int_t* mclabelsCluster = clus->GetLabels();
@@ -2327,6 +2365,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   }
 
   if(fProduceCellIDPlots || fProduceTreeEOverP) mapIsClusterAccepted.clear();
+
+  if(fLocalDebugFlag == 2) EventDebugMethod();
   return;
 }
 
@@ -3090,7 +3130,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
                 
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),gamma0->GetLeadingCellID(),gamma1->GetLeadingCellID()))){
+          if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1)
@@ -3140,6 +3181,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             fInvMassTreeAlpha = TMath::Abs(pi0cand->GetAlpha());
             fInvMassTreeTheta = pi0cand->GetOpeningAngle();
             fInvMassTreeMixPool = zbin*100 + mbin;
+            fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+            fInvMassTreeEta = pi0cand->Eta();
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
           }
         
@@ -3149,6 +3192,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             if(fInputEvent->IsA()==AliAODEvent::Class())
               ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1);
           }          
+
+          if((pi0cand->GetOpeningAngle() < 0.017) && (pi0cand->Pt() > 15.) && fDoClusterQA > 0){
+            fCloseHighPtClusters = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+            if (tBrokenFiles) tBrokenFiles->Fill();
+            delete fCloseHighPtClusters;
+          }
         }        
         delete pi0cand;
         pi0cand=0x0;
@@ -3538,11 +3587,24 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       }
     }
   } else if(!isTruePi0 && !isTrueEta){ // Background
-    if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
+    if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
-        fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+
+        if( ((((TParticle*)MCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 111
+            || ((TParticle*)MCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 221)
+            && (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv()))
+            ||
+            ((((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111
+            || ((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 221)
+            && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
+        ){
+          fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+        }else if( (TrueGammaCandidate0->E()/Pi0Candidate->E() > 0.7) || (TrueGammaCandidate1->E()/Pi0Candidate->E() > 0.7) ){
+          fHistoTrueBckAsymEClustersInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+        }
       } else { // No photon or without mother
-        fHistoTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        fHistoTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
       }
     }
   }
@@ -3835,11 +3897,24 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
       }
     }
   } else if(!isTruePi0 && !isTrueEta) { // Background
-    if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
+    if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
-        fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+
+        if( ((((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111
+            || ((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 221)
+            && (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv()))
+            ||
+            ((((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111
+            || ((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221)
+            && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
+        ){
+          fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+        }else if( (TrueGammaCandidate0->E()/Pi0Candidate->E() > 0.7) || (TrueGammaCandidate1->E()/Pi0Candidate->E() > 0.7) ){
+          fHistoTrueBckAsymEClustersInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
+        }
       } else { // No photon or without mother
-        fHistoTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        fHistoTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
       }
     }
   }
@@ -3868,7 +3943,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
         
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-            ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID())){
             fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3883,11 +3958,55 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               fInvMassTreeAlpha = TMath::Abs(backgroundCandidate->GetAlpha());
               fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
               fInvMassTreeMixPool = zbin*100 + mbin;
+              fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+              fInvMassTreeEta = backgroundCandidate->Eta();
               tBckInvMassPtAlphaTheta[fiCut]->Fill();
             }
           }
           delete backgroundCandidate;
           backgroundCandidate = 0x0;
+        }
+      }
+    }
+  } else if ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UsePtmaxMethod() ) {
+
+    Double_t currentPtMax = 0; Double_t previousPtMax = 0;
+    Double_t currentEta = 0;   Double_t previousEta = 0;
+    Double_t currentPhi = 0;   Double_t previousPhi = 0;
+    Bool_t acceptedPtMax = kFALSE;
+
+    for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
+      AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
+      if(previousEventV0s){
+        acceptedPtMax = kFALSE;
+        currentPtMax = 0; previousPtMax = 0; currentEta = 0; previousEta = 0; currentPhi = 0; previousPhi = 0;
+        for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
+          AliAODConversionPhoton *currentV0 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
+          if(currentV0->GetPhotonPt() > currentPtMax){ currentPtMax = currentV0->GetPhotonPt(); currentEta = currentV0->GetPhotonEta(); currentPhi = currentV0->GetPhotonPhi(); }
+          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+            AliAODConversionPhoton *previousV0 = (AliAODConversionPhoton*)(previousEventV0s->at(iPrevious));
+            if(previousV0->GetPhotonPt() > previousPtMax){ previousPtMax = previousV0->GetPhotonPt(); previousEta = previousV0->GetPhotonEta(); previousPhi = previousV0->GetPhotonPhi(); }
+          }
+        }
+        if(currentPtMax > 0 && previousPtMax > 0){
+         if(TMath::Sqrt(pow((currentEta-previousEta),2)+pow((currentPhi-previousPhi),2)) < 0.2) acceptedPtMax = kTRUE;
+        }
+        if(acceptedPtMax){
+          for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
+            AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
+            for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+              AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
+              AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+              backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+
+              if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
+                ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID())){
+                fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+              }
+              delete backgroundCandidate;
+              backgroundCandidate = 0x0;
+            }
+          }
         }
       }
     }
@@ -3903,7 +4022,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
         
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
               fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3918,6 +4037,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fInvMassTreeAlpha = TMath::Abs(backgroundCandidate->GetAlpha());
                 fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
                 fInvMassTreeMixPool = zbin*100 + mbin;
+                fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+                fInvMassTreeEta = backgroundCandidate->Eta();
                 tBckInvMassPtAlphaTheta[fiCut]->Fill();
               }
             }
@@ -4095,5 +4216,126 @@ void AliAnalysisTaskGammaCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_t> &
     hist->Fill(it->second, fWeightJetJetMC);
   }
   ma.clear();
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(pi0cand->GetOpeningAngle() < 0.02) DebugMethod(pi0cand,gamma0,gamma1);
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1){
+  if(fLocalDebugFlag != 1) return;
+  fstream fOutputLocalDebug;
+  fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
+  if(!fOutputLocalDebug.is_open()) return;
+
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  fOutputLocalDebug << "--pi0cand--" << endl;
+  fOutputLocalDebug << "openingAngle " << pi0cand->GetOpeningAngle() << endl;
+  fOutputLocalDebug << "pT " << pi0cand->Pt() << endl;
+  fOutputLocalDebug << "invMass " << pi0cand->M() << endl;
+  fOutputLocalDebug << "--cluster1--" << endl;
+  Float_t clusPos[3]={0,0,0};
+  fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster = clusterVector.Eta();
+  Double_t phiCluster = clusterVector.Phi();
+
+  Int_t nCellCluster = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+  }
+  fOutputLocalDebug << "phi " << phiCluster << endl;
+  fOutputLocalDebug << "eta " << etaCluster << endl;
+
+  fOutputLocalDebug << "--cluster2--" << endl;
+  fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetPosition(clusPos);
+  TVector3 clusterVector2(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster2 = clusterVector2.Eta();
+  Double_t phiCluster2 = clusterVector2.Phi();
+  nCellCluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetNCells();
+  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+    Float_t nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+          fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nIphi,
+          nIeta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+  }
+  fOutputLocalDebug << "phi " << phiCluster2 << endl;
+  fOutputLocalDebug << "eta " << etaCluster2 << endl;
+  fOutputLocalDebug << "---------------------------------------" << endl;
+  fOutputLocalDebug.close();
+
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCalo::EventDebugMethod(){
+  if(fLocalDebugFlag != 2) return;
+  fstream fOutputLocalDebug;
+  fOutputLocalDebug.open("debugOutput.txt",ios::out|ios::app);
+  if(!fOutputLocalDebug.is_open()) return;
+
+  Long_t nclus = fInputEvent->GetNumberOfCaloClusters();
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  fOutputLocalDebug << "--event--" << endl;
+  fOutputLocalDebug << "nclusters " << nclus << endl;
+
+  // vertex
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+  for(Long_t i = 0; i < nclus; i++){
+    AliVCluster* clus = NULL;
+    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
+    if(!clus) continue;
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+      delete clus;
+      continue;
+    }
+    // TLorentzvector with cluster
+    TLorentzVector clusterVector;
+    clus->GetMomentum(clusterVector,vertex);
+
+    TLorentzVector* tmpvec = new TLorentzVector();
+    tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+
+    // convert to AODConversionPhoton
+    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
+    if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
+
+    fOutputLocalDebug << "--cluster" << i << "--" << endl;
+
+    Double_t etaCluster = clusterVector.Eta();
+    Double_t phiCluster = clusterVector.Phi();
+    Int_t nCellCluster = clus->GetNCells();
+    for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+      Float_t nIphi, nIeta;
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+            clus->GetCellAbsId(iCell),
+            nIphi,
+            nIeta);
+      fOutputLocalDebug << clus->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(clus->GetCellAbsId(iCell)) << endl;
+    }
+    fOutputLocalDebug << "phi " << phiCluster << endl;
+    fOutputLocalDebug << "eta " << etaCluster << endl;
+
+    delete clus;
+    delete tmpvec;
+  }
+  fOutputLocalDebug << "---------------------------------------" << endl;
+  fOutputLocalDebug.close();
+
   return;
 }

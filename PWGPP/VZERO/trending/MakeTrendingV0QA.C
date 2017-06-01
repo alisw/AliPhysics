@@ -537,10 +537,7 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
     {
       printf("Pb-Pb run \n\n\n");
       if(duration<600)
-	{ 
-	  printf("RUNS SHORTER THAN 10 MIN\n");
-	  return 0;
-	}
+	printf("RUNS SHORTER THAN 10 MIN\n");
       
       char v0QAdirName[30]="VZERO_PbPb_Performance";
       TDirectoryFile * v0QAdir=(TDirectoryFile*)fin->Get(v0QAdirName);
@@ -811,6 +808,7 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 		    }
 		}
 	    }
+	  printf("hRecoMult empty\n");
 	}
       AdcA=(betaSide1[1] + betaSide2[1])/2.;
       AdcC=(betaSide1[0] + betaSide2[0])/2.;

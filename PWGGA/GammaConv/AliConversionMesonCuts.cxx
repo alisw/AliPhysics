@@ -76,6 +76,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fHistograms(NULL),
   fDoLightOutput(kFALSE),
   fMode(0),
+  fCaloPhotonCuts(NULL),
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fMaxR(200),
@@ -87,6 +88,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fAlphaCutMeson(1),
   fRapidityCutMeson(1),
   fUseRotationMethodInBG(kFALSE),
+  fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
   fdoBGProbability(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
@@ -94,6 +96,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fNumberOfBGEvents(0),
   fOpeningAngle(0.005),
   fEnableMinOpeningAngleCut(kTRUE),
+  fEnableOneCellDistCut(kFALSE),
   fDoToCloseV0sCut(kFALSE),
   fminV0Dist(200.),
   fDoSharedElecCut(kFALSE),
@@ -150,6 +153,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fHistograms(NULL),
   fDoLightOutput(ref.fDoLightOutput),
   fMode(ref.fMode),
+  fCaloPhotonCuts(ref.fCaloPhotonCuts),
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fMaxR(ref.fMaxR),
@@ -161,6 +165,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fAlphaCutMeson(ref.fAlphaCutMeson),
   fRapidityCutMeson(ref.fRapidityCutMeson),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
+  fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
   fdoBGProbability(ref.fdoBGProbability),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
@@ -168,6 +173,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fNumberOfBGEvents(ref. fNumberOfBGEvents),
   fOpeningAngle(ref.fOpeningAngle),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
+  fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
   fminV0Dist(ref.fminV0Dist),
   fDoSharedElecCut(ref.fDoSharedElecCut),
@@ -279,24 +285,26 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoMesonCuts);
   } else if (fIsMergedClusterCut == 2){
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",7,-0.5,6.5, 250, 0, 50);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",8,-0.5,7.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(4,"opening angle");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(5,"alpha max");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(4,"1 cell distance");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(5,"opening angle");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha max");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",7,-0.5,6.5, 250, 0, 50);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",8,-0.5,7.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(4,"opening angle");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"alpha max");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");    
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(4,"1 cell distance");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"opening angle");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha max");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"alpha min");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
@@ -791,7 +799,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
+Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2)
 {
 
   // Selection of reconstructed Meson candidates
@@ -836,6 +844,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
         return kFALSE;
       }
     }  
+    cutIndex++;
+  }else if(fIsMergedClusterCut == 2){
+    if(fEnableOneCellDistCut && fCaloPhotonCuts->AreNeighbours(leadingCellID1,leadingCellID2)){
+      if(hist)hist->Fill(cutIndex, pi0->Pt());
+      return kFALSE;
+    }
     cutIndex++;
   }
   
@@ -944,13 +958,15 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -1118,6 +1134,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   
   printf("Meson cuts \n");
   printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+  if (fEnableOneCellDistCut)  printf("\t Only valid for GammaCalo: one cell distance cut enabled");
   if (fEnableMinOpeningAngleCut) printf("\t theta_{open} > %3.4f\n", fOpeningAngle);
   if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
   else printf("\t alpha pT-dep cut active\n");
@@ -1131,9 +1148,9 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   } else {
     printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
   }
-  if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.2f\n", fMinOpanCutMeson);
+  if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.4f\n", fMinOpanCutMeson);
   else printf("\t Min theta_{open} pT-dep cut active\n");
-  if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
+  if (!fMaxOpanPtDepCut) printf("\t %3.4f < theta_{open}\n", fMaxOpanCutMeson);
   else printf("\t Max theta_{open} pT-dep cut active\n");
   printf("\t Running mode for cutselection (0 std, 2 PCM-Calo): %d\n", fMode);
   
@@ -1144,6 +1161,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
     if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing V0 mult \n");
     if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing track mult \n");
     if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+    if (fUsePtmaxMethodForBG )printf("\t BG scheme: Ptmax \n");
     if (fdoBGProbability) printf("\t -> use BG probability \n");
     if (fBackgroundHandler) printf("\t -> use new BG handler \n");
     printf("\t depth of pool: %d\n", fNumberOfBGEvents);
@@ -1733,6 +1751,21 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
       fAlphaCutMeson    = 1;
     }  
     break;
+  case 10:  //a 0-0.2
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.2;
+    fAlphaPtDepCut      = kFALSE;
+    break;
+  case 11:  //b 0.2-0.6
+    fAlphaMinCutMeson   = 0.2;
+    fAlphaCutMeson      = 0.6;
+    fAlphaPtDepCut      = kFALSE;
+    break;
+  case 12:  //c 0.6-1.0
+    fAlphaMinCutMeson   = 0.6;
+    fAlphaCutMeson      = 1.0;
+    fAlphaPtDepCut      = kFALSE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
@@ -1910,6 +1943,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fdoBGProbability            = kTRUE;
     fBackgroundHandler          = 1;
     break;
+  case 9: // mixed event with Ptmax method
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fdoBGProbability            = kFALSE;
+    fUsePtmaxMethodForBG        = kTRUE;
+    break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;
@@ -2024,7 +2063,7 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
-  if(fMode == 2){
+  if(fMode == 2){ //PCM-EMCal running
     switch(useMCPSmearing){
     case 0:
       fUseMCPSmearing   = 0;
@@ -2319,56 +2358,116 @@ Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
   // Set Cut
-  switch(minOpanMesonCut){
-  case 0:      //
-    fMinOpanCutMeson  = 0;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 1:      //
-    fMinOpanCutMeson  = 0.005;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 2:
-    if( fFMinOpanCut ) delete fFMinOpanCut;
-    fFMinOpanCut      = new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
-    fFMinOpanCut->SetParameter(0,1.5);
-    fFMinOpanCut->SetParameter(1,1.35);
-    fFMinOpanCut->SetParameter(2,0.02);
-    fMinOpanCutMeson  = 0;
-    fMinOpanPtDepCut  = kTRUE;
-    break;
-  case 3:      //
-    fMinOpanCutMeson  = 0.01;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 4:      //
-    fMinOpanCutMeson  = 0.0152; // minimum 0.75 EMCal cell diagonals
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 5:      //
-    fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 6:      //
-    fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 7:      //
-    fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 8:      //
-    fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 9:      //
-    fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  default:
-    cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
-    return kFALSE;
-  }
+
+    switch(minOpanMesonCut){
+    case 0:      //
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 1:      //
+      fMinOpanCutMeson  = 0.005;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 2:
+      if( fFMinOpanCut ) delete fFMinOpanCut;
+      fFMinOpanCut      = new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+      fFMinOpanCut->SetParameter(0,1.5);
+      fFMinOpanCut->SetParameter(1,1.35);
+      fFMinOpanCut->SetParameter(2,0.02);
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kTRUE;
+      break;
+    case 3:      //
+      fMinOpanCutMeson  = 0.01;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 4:      //
+      fMinOpanCutMeson  = 0.0152; // minimum 0.75 EMCal cell diagonals
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 5:      //
+      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 6:      //
+      fMinOpanCutMeson  = 0.017; // new standard cut for EMCal analyses as of 17.05.2017
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 7:      //
+      fMinOpanCutMeson  = 0.016;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 8:      //
+      fMinOpanCutMeson  = 0.018;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 9:      //
+      fMinOpanCutMeson  = 0.019;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+
+    //cuts with one cell dist for GammaCalo only
+    case 10:      //a
+      fMinOpanCutMeson  = 0.;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 11:      //b
+      fMinOpanCutMeson  = 0.0152;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 12:      //c
+      fMinOpanCutMeson  = 0.016;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 13:      //d
+      fMinOpanCutMeson  = 0.017;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 14:      //e
+      fMinOpanCutMeson  = 0.018;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 15:      //f
+      fMinOpanCutMeson  = 0.019;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    case 16:      //g
+      fMinOpanCutMeson  = 0.0202;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      break;
+    // opening angle cut variations for EMCal related analyses up to 17. May 2017
+//    case 5:      //
+//      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 6:      //
+//      fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 7:      //
+//      fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 8:      //
+//      fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+//    case 9:      //
+//      fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
+//      fMinOpanPtDepCut  = kFALSE;
+//      break;
+    default:
+      cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
+      return kFALSE;
+    }
+
   return kTRUE;
 }
 
@@ -2583,4 +2682,3 @@ TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
   return SmearedParticle;
   
 }
-

@@ -41,6 +41,7 @@
 #include "TF1.h"
 #include "THnSparse.h"
 #include "AliHFMassFitter.h"
+#include "AliHFCorrelationUtils.h"
 
 class AliDhCorrelationExtraction : public TObject
 {
@@ -103,8 +104,10 @@ public:
     void SetBkgFitFunction(Int_t func=0) {fBkgFitFunction=func;}
     void SetSignalSigmas(Double_t nsigma=2) {fSignalSigmas=nsigma;}
     void SetAutoSBRange(Bool_t autoSB=kFALSE, Double_t inSigma=0., Double_t outSigma=0.) {fAutoSBRange=autoSB; fSBOuterSigmas=outSigma; fSBInnerSigmas=inSigma;}
+    void SetAutoSignRange(Bool_t autoSign=kFALSE) {fAutoSignRange=autoSign;}
     void SetSBSingleBin(Bool_t singleSBbin=kFALSE) {fSBSingleBin=singleSBbin;}
     void SetSBRanges(Double_t* rangesSB1L=0x0, Double_t* rangesSB1R=0x0, Double_t* rangesSB2L=0x0, Double_t* rangesSB2R=0x0);
+    void SetSignRanges(Double_t* rangesSignL=0x0, Double_t* rangesSignR=0x0);
     void PrintRanges();
     void PrintSandBForNormal();
     void GetSignalAndBackgroundForNorm(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
@@ -150,7 +153,7 @@ public:
     Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractNumberOfTriggers_MC();
     Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
-    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax);
+    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect=kTRUE);
     
 private:
     
@@ -218,6 +221,7 @@ private:
     Int_t fBkgFitFunction;
     Double_t fSignalSigmas;
     Bool_t fAutoSBRange;
+    Bool_t fAutoSignRange;
     Double_t fSBOuterSigmas;
     Double_t fSBInnerSigmas;
     Bool_t fSBSingleBin;
@@ -252,7 +256,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,3); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,4); // class for plotting HF correlations
 
 };
 

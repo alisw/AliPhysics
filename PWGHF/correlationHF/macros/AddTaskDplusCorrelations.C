@@ -29,7 +29,10 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t IsfillTrees=kTRUE,
                                                              Double_t fractAccME=100.,
                                                              Double_t DPtThrs=3,
-                                                             Bool_t LeadPartCorr=kFALSE)
+                                                             Bool_t LeadPartCorr=kFALSE,
+                                                             Double_t massWidth=0.004,
+                                                             Bool_t PoolCent = kFALSE,
+                                                             Bool_t autosignalSBrange)
 {
     
     Double_t etacorr  =  0.9;
@@ -128,10 +131,11 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     AliAnalysisTaskSEDplusCorrelations *dpluscorrTask = new AliAnalysisTaskSEDplusCorrelations("DplusCorrelation",DplusCorrCuts,HFAssoTrackCuts);
     dpluscorrTask->SetEventMixing(fMixing);
     dpluscorrTask->SetCorrelator(fOption);
-    dpluscorrTask->SetBinWidth(0.004);
+    dpluscorrTask->SetBinWidth(massWidth);
     dpluscorrTask->SetDebugLevel(0);
     //dpluscorrTask->SetEtaRagne(etacorr);
     dpluscorrTask->SetCorrFormPart(genMC);
+    dpluscorrTask->SetAutoSignalSBRange(autosignalSBrange);
     dpluscorrTask->SetCorrFormTrack(tracks);
     dpluscorrTask->SetLeadPartCorrelation(LeadPartCorr);
     dpluscorrTask->SetDataOrMC(readMC);
@@ -141,7 +145,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetDplusEffActive(isDplusEff);
     dpluscorrTask->SetSystem(useCentrality); //TRUE means pbpb Or pA
     dpluscorrTask->SetPoolByPoolCorr(PoolbyPool); //TRUE means pbpb Or pA
-    if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator);
+    if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator, PoolCent);
     dpluscorrTask->SetCheckCutDistandChoice(IncDCutQA, IncDCutQABefore);
     dpluscorrTask->SetAODMismatchProtection(AODproduction);
     dpluscorrTask->SetMinDPt(DPtThrs);
@@ -176,11 +180,11 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
         if(fSys=="pp" || fSys=="PP"|| fSys=="p-p"){
             
             //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
-            Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7850,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
+            Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7930,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
             Double_t LSBUppLim[15] = {0.,0.,0.,1.8410,1.8330,1.8330,1.8170,1.8250,1.8250,1.8250,1.8250,1.8250,1.8250,0.,0.};
             Double_t RSBLowLim[15] = {0.,0.,0.,1.8970,1.9050,1.9050,1.9210,1.9130,1.9130,1.9130,1.9130,1.9130,1.9130,0.,0.};
             Double_t RSBUppLim[15] = {0.,0.,0.,1.9450,1.9610,1.9450,1.9770,1.9690,1.9690,1.9690,1.9690,1.9690,1.9690,0.,0.};
-            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8330,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
+            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
             Double_t SandBUppLim[15] = {0.,0.,0.,1.8890,1.8970,1.8890,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,0.,0.};
             
             

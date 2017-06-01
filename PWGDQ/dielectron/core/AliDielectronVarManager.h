@@ -746,7 +746,7 @@ private:
   static AliVEvent       *fgEvent;              // current event pointer
   static AliEventplane   *fgTPCEventPlane;      // current event tpc plane pointer
   static AliKFVertex     *fgKFVertex;           // kf vertex
-  static TProfile        *fgMultEstimatorAvg[6][9];  // multiplicity estimator averages (6 periods x 18 estimators)
+  static TProfile        *fgMultEstimatorAvg[7][9];  // multiplicity estimator averages (7 periods x 18 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
   static TObject         *fgLegEffMap;             // single electron efficiencies
@@ -2964,11 +2964,11 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[6] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC13b", "LHC13c"};
+  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l", "LHC13b", "LHC13c"};
   TFile* file=TFile::Open(filename);
   if(!file) return;
 
-  for(Int_t ip=0; ip<6; ++ip) {
+  for(Int_t ip=0; ip<7; ++ip) {
     for(Int_t ie=0; ie<9; ++ie) {
       fgMultEstimatorAvg[ip][ie] = (TProfile*)(file->Get(Form("%s_%s",estimatorNames[ie],periodNames[ip]))->Clone(Form("%s_%s_clone",estimatorNames[ie],periodNames[ip])));
     }
@@ -2986,13 +2986,13 @@ inline void AliDielectronVarManager::InitEstimatorObjArrayAvg(const TObjArray* a
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+  const Char_t* periodNames[5] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l"};
 
   TString key;
 
   Int_t ieTotal = 9;
 
-  for(Int_t ip=0; ip<4; ++ip) {
+  for(Int_t ip=0; ip<5; ++ip) {
     for(Int_t ie=0; ie<ieTotal; ++ie) {
       key = Form("%s_%s",estimatorNames[ie],periodNames[ip]);
       if(array->FindObject(key.Data())){

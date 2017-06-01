@@ -44,6 +44,7 @@ AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker() :
 TObject(),
 fReader(0),                   fCaloUtils(0),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
+fProcessEvent(1),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
@@ -95,6 +96,7 @@ TObject(),
 fReader(),   //(new AliCaloTrackReader(*maker.fReader)),
 fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()),
+fProcessEvent(maker.fProcessEvent),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
@@ -461,6 +463,8 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 {
+  if ( !fProcessEvent ) return fCuts;
+
   // Reader cuts
   TObjString * objstring = fReader->GetListOfParameters();
   fCuts->Add(objstring);
@@ -484,6 +488,8 @@ TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 //___________________________________________________
 TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 {
+  if ( !fProcessEvent ) return fOutputContainer;
+
   // General event histograms
 
   fhNEventsIn      = new TH1F("hNEventsIn",   "Number of input events"     , 1 , 0 , 1  ) ;
@@ -494,11 +500,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -4 , 4  ) ;
+  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -1 , 1  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
   fOutputContainer->Add(fhXVertex);
   
-  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -4 , 4  ) ;
+  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -1 , 1  ) ;
   fhYVertex->SetXTitle("v_{y} (cm)");
   fOutputContainer->Add(fhYVertex);
   
@@ -514,7 +520,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
 
-  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
+  fhTrackMult    = new TH1F
+  ("hTrackMult", 
+   Form("Number of tracks per event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+        GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+   2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
@@ -547,7 +557,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhEventPlaneAngleWeighted->SetXTitle("EP angle (rad)");
     fOutputContainer->Add(fhEventPlaneAngleWeighted) ;
       
-    fhTrackMultWeighted       = new TH1F("hTrackMultWeighted", "Number of tracks per events weighted by centrality", 2000 , 0 , 2000) ;
+    fhTrackMultWeighted       = new TH1F
+    ("hTrackMultWeighted", 
+     Form("Number of tracks per weighted event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+          GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+     2000 , 0 , 2000) ;
     fhTrackMultWeighted->SetXTitle("# tracks");
     fOutputContainer->Add(fhTrackMultWeighted);
   }
@@ -736,11 +750,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
         fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
       }
       
-      fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+      fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
       fhXVertexExotic->SetXTitle("v_{x} (cm)");
       fOutputContainer->Add(fhXVertexExotic);
       
-      fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+      fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
       fhYVertexExotic->SetXTitle("v_{y} (cm)");
       fOutputContainer->Add(fhYVertexExotic);
       
@@ -992,6 +1006,12 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
 {	
   if(! opt)
     return;
+
+  if ( !fProcessEvent ) 
+  { 
+    printf("Events not processed\n");
+    return;
+  }
   
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
   printf("Debug level                =     %d\n", fAnaDebug   ) ;
@@ -1027,6 +1047,8 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
 //_____________________________________________________________________________________
 void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFileName)
 {  
+  if ( !fProcessEvent ) return;
+  
   if(fMakeHisto && !fOutputContainer)
     AliFatal("Histograms not initialized");
   
@@ -1139,6 +1161,8 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
 //__________________________________________________________
 void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
 {
+  if ( !fProcessEvent ) return;
+
   if (!outputList)
   {
     AliError("No output list");

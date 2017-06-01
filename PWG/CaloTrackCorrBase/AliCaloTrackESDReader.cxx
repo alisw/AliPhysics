@@ -21,7 +21,10 @@
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -36,8 +39,6 @@ AliCaloTrackReader(), fConstrainTrack(0),
 fESDtrackCuts(0), fESDtrackComplementaryCuts(0)
 {
   fDataType           = kESD;
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
   fConstrainTrack     = kFALSE ; // constrain tracks to vertex
 }
 
@@ -81,6 +82,39 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
   }
 
   return kFALSE;
+}
+
+//______________________________________________________________
+/// \return pointer to Generated event header (AliGenEventHeader)
+//______________________________________________________________
+AliGenEventHeader* AliCaloTrackESDReader::GetGenEventHeader() const
+{
+  if ( !fMC ) return 0x0 ;
+  
+  AliGenEventHeader * eventHeader = fMC->GenEventHeader();
+  
+  if ( fMCGenerEventHeaderToAccept=="" ) return eventHeader ;
+  
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if ( !cocktail ) return 0x0 ;
+  
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+  {
+    AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+    
+    TString name = eventHeader2->GetName();
+    //printf("ESD Event header %d %s\n",igen,name.Data());
+    
+    if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase)) 
+      return eventHeader2 ;
+  }
+  
+  return 0x0;
 }
 
 //________________________________

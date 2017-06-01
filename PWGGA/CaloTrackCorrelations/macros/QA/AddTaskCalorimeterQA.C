@@ -79,20 +79,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
-  if(simulation)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }
-  
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   
@@ -167,7 +153,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->SetCalorimeter("EMCAL");
   if(simulation)
   {
-    emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    // Access MC stack and fill more histograms
+    emcalQA->SwitchOnDataMC() ;
+    
     emcalQA->SwitchOffStudyBadClusters();
     emcalQA->SwitchOffFillAllCellTimeHisto();
   }

@@ -407,21 +407,19 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
       //nsub1 and nsub2 for kT
-      fShapesVar[6] =0;
-	//fjNSubJettiness(jet1,0,1,0,1,0);
-      fShapesVar[7]=0;
-	//fjNSubJettiness(jet1,0,2,0,1,0);
+      fShapesVar[6] = fjNSubJettiness(jet1,0,1,0,1,0);
+      fShapesVar[7] = fjNSubJettiness(jet1,0,2,0,1,0);
       //nsub1 and nsub2 for min_axis
-      fShapesVar[8]=0;
-	//fjNSubJettiness(jet1,0,1,10,1,0);
-      fShapesVar[9]=0;
-	//fjNSubJettiness(jet1,0,2,10,1,0);
+      fShapesVar[8] =0;
+	// 	fjNSubJettiness(jet1,0,1,10,1,0);
+      fShapesVar[9] =0;
+	// 	fjNSubJettiness(jet1,0,2,10,1,0);
       //deltaRkt
-      fShapesVar[10] =0;
-	//fjNSubJettiness(jet1,0,1,0,1,2);
+	fShapesVar[10] = 0;
+      //fjNSubJettiness(jet1,0,2,0,1,2);
       //deltaRmin
-      fShapesVar[11]=0;
-	//fjNSubJettiness(jet1,0,2,10,1,2);
+      fShapesVar[11] = 0;
+      //fjNSubJettiness(jet1,0,2,10,1,2);
     
       //SoftDropParameters for different reclustering strategies and beta values 
       SoftDrop(jet1,jetCont,0.1,0,0);
@@ -958,18 +956,16 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_
   
   if (Jet->GetNumberOfTracks()>=N){
     AliJetContainer *JetCont = GetJetContainer(JetContNb);
-    AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
-    //Printf("jetfinder =%p, JetCont=%p", JetFinder, JetCont);
-    JetFinder->SetJetMaxEta(0.9-fJetRadius);
-    JetFinder->SetRadius(fJetRadius);
-    JetFinder->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
-    JetFinder->SetRecombSheme(0);
-    JetFinder->SetJetMinPt(Jet->Pt());
-    const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+      AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
+      JetFinder->SetJetMaxEta(0.9-fJetRadius);
+      JetFinder->SetRadius(fJetRadius); 
+      JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
+      JetFinder->SetRecombSheme(0);
+      JetFinder->SetJetMinPt(Jet->Pt());
     //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-    Double_t dVtx[3]={0,0,0};
+    Double_t dVtx[3]={1,1,1};
     //Printf("JetFinder->Nsubjettiness =%f", JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option));
-    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option);
+    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,0.2,Beta,Option,0,0,0);
     
   }
   else return -2;
@@ -1084,20 +1080,21 @@ void AliAnalysisTaskEmcalJetShapesMC::Terminate(Option_t *)
 
 //_________________________________________________________________________
 void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, int ReclusterAlgo){
-  cout<<"HELLO"<<endl;
+ 
   std::vector<fastjet::PseudoJet>        fInputVectors;
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-  cout<<"it is here"<<fTrackCont<<endl;
+ 
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
   Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
   UShort_t FJNTracks=0,EmcalJetNTracks=0;
-  cout<<fJet->GetNumberOfTracks()<<" coco"<<endl;
+  
   if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
       JetInvMass += fTrk->M();
-      if (!fTrk) continue;
+      
       fastjet::PseudoJet PseudoTracks(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       TrackMom += TMath::Sqrt(TMath::Power(fTrk->Px(),2)+TMath::Power(fTrk->Py(),2)+TMath::Power(fTrk->Pz(),2));
       TrackEnergy += fTrk->E();
@@ -1145,23 +1142,23 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   //cout<< finaljet_antikt.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
 
 
-  AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
-  std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
-  Double_t FastjetTrackDelR,EmcalTrackDelR;
-  for(Int_t i=0;i<fJet->GetNumberOfConstituents();i++){
-    if(i<=finaljet.constituents().size()){
-      FastjetTrackDelR = TMath::Sqrt(TMath::Power(fSDTracks[i].eta()-JetEta,2)+TMath::Power(fSDTracks[i].phi()-JetPhi,2));
-      FJTrackEta[i]=fSDTracks[i].eta();
-      FJTrackPhi[i]=fSDTracks[i].phi();
-      FJTrackPt[i]=fSDTracks[i].perp();
-      FJNTracks++;
-    }
-    AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-    EmcalTrackDelR = TMath::Sqrt(TMath::Power(fTrk->Eta()-JetEta,2)+TMath::Power(fTrk->Phi()-JetPhi,2));       
-  }
+  //AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
+  //std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
+  //Double_t FastjetTrackDelR,EmcalTrackDelR;
+  //for(Int_t i=0;i<fJet->GetNumberOfConstituents();i++){
+  //  if(i<=finaljet.constituents().size()){
+  //    FastjetTrackDelR = TMath::Sqrt(TMath::Power(fSDTracks[i].eta()-JetEta,2)+TMath::Power(fSDTracks[i].phi()-JetPhi,2));
+  //    FJTrackEta[i]=fSDTracks[i].eta();
+  //    FJTrackPhi[i]=fSDTracks[i].phi();
+  //    FJTrackPt[i]=fSDTracks[i].perp();
+  //    FJNTracks++;
+  //  }
+  // AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+  // EmcalTrackDelR = TMath::Sqrt(TMath::Power(fTrk->Eta()-JetEta,2)+TMath::Power(fTrk->Phi()-JetPhi,2));       
+  //}
   Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
-  Int_t nConstituents(fClustSeqSA->constituents(finaljet).size());
-  jet->SetNumberOfTracks(nConstituents);
+  //Int_t nConstituents(fClustSeqSA->constituents(finaljet).size());
+  //jet->SetNumberOfTracks(nConstituents);
   Double_t SymParam, Mu, DeltaR, GroomedPt;
   Int_t NGroomedBranches;
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());

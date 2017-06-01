@@ -1,4 +1,7 @@
 #include <memory>
+#include <array>
+#include <functional>
+#include <sstream>
 
 #include <TRandom.h>
 #include <TTree.h>
@@ -35,6 +38,7 @@
 ClassImp(AliAnalysisTaskDG);
 ClassImp(AliAnalysisTaskDG::TreeData);
 ClassImp(AliAnalysisTaskDG::TrackData);
+ClassImp(AliAnalysisTaskDG::SPD_0STG);
 
 void AliAnalysisTaskDG::EventInfo::Fill(const AliVEvent* vEvent) {
   const AliVHeader *vHeader = vEvent->GetHeader();
@@ -42,9 +46,7 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliVEvent* vEvent) {
     return;
 
   fClassMask       = vHeader->GetTriggerMask();
-  fClassMaskNext50 = (dynamic_cast<const AliESDHeader*>(vHeader)
-		      ? dynamic_cast<const AliESDHeader*>(vHeader)->GetTriggerMaskNext50()
-		      : dynamic_cast<const AliAODHeader*>(vHeader)->GetTriggerMaskNext50());
+  fClassMaskNext50 = vHeader->GetTriggerMaskNext50();
   fRunNumber       = vEvent->GetRunNumber();
 
   fL0Inputs        = vHeader->GetL0TriggerInputs();
@@ -134,6 +136,56 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
 void AliAnalysisTaskDG::FMD::Fill(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
   fA = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kASide);
   fC = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kCSide);
+}
+
+template<typename A>
+std::string array2string(const A& a, std::string fill="") {
+  std::ostringstream oss;
+  std::for_each(a.begin(), a.end(), [&](typename A::value_type e){ oss << e << fill; });
+  return oss.str();
+}
+
+const TBits& AliAnalysisTaskDG::SPD_0STG::Fill(const TBits &bits) {
+  std::array<Int_t, 20> l0;
+  std::array<Int_t, 40> l1;
+
+  l0.fill(0);
+  l1.fill(0);
+
+  for (Int_t i=0; i<400; ++i)
+    l0[i/20] += bits.TestBitNumber(i);
+  for (Int_t i=400; i<1200; ++i)
+    l1[(i-400)/20] += bits.TestBitNumber(i);
+
+  AliDebugF(5, "l0: %s", array2string(l0, " ").c_str());
+  AliDebugF(5, "l1: %s", array2string(l1).c_str());
+
+  fNPseudoTracklets = 0;
+  std::array<Bool_t, 20> tr;
+  for (Int_t i=0; i<20; ++i) {
+    tr[i] = l0[i] & (l1[2*i] | l1[(2*i+1)%40] | l1[(2*i+2)%40] | l1[(2*i+39)%40]);
+    fNPseudoTracklets += tr[i];
+  }
+  AliDebugF(5, "fNPseudoTracklets = %d (%s)", fNPseudoTracklets, array2string(tr).c_str());
+
+  std::array<Bool_t, 10> match;
+  for (Int_t j=0; j<10; ++j) {
+    match[j] = kFALSE;
+    for (Int_t i=0; i<20 && !match[j]; ++i) {
+      match[j] = tr[i] & tr[(i+1+j)%20];
+    }
+  }
+  fMaxDeltaPhi = -1;
+  fMinDeltaPhi = -1;
+  for (Int_t i=0; i<10; ++i) {
+    if (match[i]) {
+      fMinDeltaPhi = (fMinDeltaPhi <= 0 ? i+1 : fMinDeltaPhi);
+      fMaxDeltaPhi = i+1;
+    }
+  }
+  AliDebugF(5, "fNPseudoTracklets = %d (%s)", fNPseudoTracklets, array2string(tr).c_str());
+
+  return bits;
 }
 
 void AliAnalysisTaskDG::FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]) {
@@ -227,11 +279,14 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fIR2InteractionMap()
   , fFastOrMap()
   , fFiredChipMap()
+  , fFiredTriggerClasses()
   , fVertexSPD()
   , fVertexTPC()
   , fVertexTracks()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 3)
+  , fSPD_0STG_Online()
+  , fSPD_0STG_Offline()
   , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTracksSave)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(nullptr)
@@ -253,18 +308,9 @@ AliAnalysisTaskDG::~AliAnalysisTaskDG()
   fTrackData.Delete();
   fMCTracks.Delete();
 
-  if (fList)
-    delete fList;
-  fList = nullptr;
-
-  if (fTE)
-    delete fTE;
-  fTE = nullptr;
-
-  if (fTrackCuts)
-    delete fTrackCuts;
-  fTrackCuts = nullptr;
-
+  SafeDelete(fList);
+  SafeDelete(fTE);
+  SafeDelete(fTrackCuts);
 }
 
 void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
@@ -277,6 +323,10 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
   if (fTreeBranchNames.Contains("SPDMaps")) {
     t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
     t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
+  }
+  if (fTreeBranchNames.Contains("0STG")) {
+    t->Branch("0STG_Online",  &fSPD_0STG_Online,  32000, 0);
+    t->Branch("0STG_Offline", &fSPD_0STG_Offline, 32000, 0);
   }
   if (fTreeBranchNames.Contains("VertexSPD")) {
     if (isAOD)
@@ -544,15 +594,11 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   }
 
   fHist[kHistTrig]->Fill(-1); // # analyzed events in underflow bin
-
-  const ULong64_t maskNext50 = (dynamic_cast<const AliESDHeader*>(vHeader)
-				? dynamic_cast<const AliESDHeader*>(vHeader)->GetTriggerMaskNext50()
-				: dynamic_cast<const AliAODHeader*>(vHeader)->GetTriggerMaskNext50());
   for (Int_t i=0; i<50; ++i) {
     const ULong64_t mask(1ULL<<i);
-    if ((vHeader->GetTriggerMask() & mask) == mask)
+    if ((vHeader->GetTriggerMask() & mask))
       fHist[kHistTrig]->Fill(i);
-    if ((maskNext50 & mask) == mask)
+    if ((vHeader->GetTriggerMaskNext50() & mask))
       fHist[kHistTrig]->Fill(50+i);
   }
 
@@ -629,8 +675,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   FillTriggerIR(dynamic_cast<const AliESDHeader*>(vHeader));
 
-  fFastOrMap    = mult->GetFastOrFiredChips();
-  fFiredChipMap = mult->GetFiredChipMap();
+  fFastOrMap    = fSPD_0STG_Online.Fill(mult->GetFastOrFiredChips());
+  fFiredChipMap = fSPD_0STG_Offline.Fill(mult->GetFiredChipMap());
 
   fIR1InteractionMap = vHeader->GetIRInt1InteractionMap();
   fIR2InteractionMap = vHeader->GetIRInt2InteractionMap();

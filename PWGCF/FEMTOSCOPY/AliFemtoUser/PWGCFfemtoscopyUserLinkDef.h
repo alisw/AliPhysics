@@ -130,6 +130,6 @@
 #pragma link C++ class AliFemtoCutMonitorPairKT;
 #pragma link C++ class AliFemtoPairCutMInv;
 
-#pragma link C++ class AliFemtoV0PurityBgdEstimator;
+#pragma link C++ class AliFemtoV0PurityBgdEstimator+;
 
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ3D+;

@@ -84,6 +84,7 @@ set(SRCS
   AliFemtoV0TrackPairCut.cxx
   AliFemtoCutMonitorCollections.cxx
   AliFemtoV0SharedDaughterCut.cxx
+  AliFemtoXiSharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx

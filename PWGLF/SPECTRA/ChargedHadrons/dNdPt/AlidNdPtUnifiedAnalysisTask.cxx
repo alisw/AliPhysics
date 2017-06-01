@@ -119,6 +119,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fUseCentralityCut(kFALSE),
   fLowerCentralityBound(0.),
   fUpperCentralityBound(0.),
+  fIncludeSigmas(kTRUE),
   fHistV0Amp(0)
 {
   // Set default binning
@@ -732,7 +733,14 @@ void AlidNdPtUnifiedAnalysisTask::Terminate(Option_t *)
 }
 
 Bool_t AlidNdPtUnifiedAnalysisTask::IsChargedPrimary(Int_t stackIndex){
-  if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)) return kTRUE;
+  if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)){
+   
+    // In case charged particles are defined as charged particles without the sigmas exclude them
+    Int_t pID = IdentifyMCParticle(stackIndex);
+    if(!fIncludeSigmas && (pID == kSigmaPlus || pID == kSigmaMinus)) return kFALSE;
+    
+    return kTRUE;
+  }
   return kFALSE;
 }
 
@@ -875,7 +883,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsSelectedCentrality(){
     Float_t centralityF = -1.;
     AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
 
-
     if (MultSelection){
       centralityF = MultSelection->GetMultiplicityPercentile("V0M");	
       if(centralityF >= fLowerCentralityBound  && centralityF <= fUpperCentralityBound) return kTRUE; 
@@ -994,7 +1001,7 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedGeometricalCut(AliVTrack *tr,
 /// Function to return Particle ID for Histograms
 Int_t AlidNdPtUnifiedAnalysisTask::IdentifyMCParticle(Int_t mcLabel){
 
-  Int_t ipdg = TMath::Abs(fMCStack->Particle(mcLabel)->GetPdgCode());
+  Int_t ipdg = TMath::Abs(fMCStack->Particle(mcLabel)->GetPdgCode()); // Abs() because antiparticles are negaitve...
   if(ipdg==211)  return AlidNdPtUnifiedAnalysisTask::kPion;
   if(ipdg==321)  return AlidNdPtUnifiedAnalysisTask::kKaon;
   if(ipdg==2212) return AlidNdPtUnifiedAnalysisTask::kProtons;

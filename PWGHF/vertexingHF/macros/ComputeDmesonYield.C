@@ -362,7 +362,7 @@ void ComputeDmesonYield(){
 
   Float_t invyPbPbS[nPtBins],invyPbPbLoS[nPtBins],invyPbPbHiS[nPtBins],minvalS[nPtBins];
   Float_t invyPbPbLoSingleSystS[nPtBins],invyPbPbHiSingleSystS[nPtBins],minvalLowHypS[nPtBins],minvalHigHypS[nPtBins];
-  Float_t fPromptLowHypS[nPtBins],fPromptHigHypS[nPtBins];
+  Float_t fPromptCentS[nPtBins],fPromptLowHypS[nPtBins],fPromptHigHypS[nPtBins];
   for(Int_t ib=0; ib<nPtBins; ib++){
     minvalS[ib]=9999.;
     minvalLowHypS[ib]=9999.;
@@ -393,6 +393,7 @@ void ComputeDmesonYield(){
       invyPbPbS[theBin]=invyieldAB;
       invyPbPbLoS[theBin]=invyieldABFDLow;
       invyPbPbHiS[theBin]=invyieldABFDHigh;
+      fPromptCentS[theBin]=fprompt;
     }
     Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPr);
     if(distLowHyp<minvalLowHypS[theBin]){
@@ -424,11 +425,34 @@ void ComputeDmesonYield(){
   for(Int_t ib=0; ib<nPtBins; ib++){
     printf("Bin %d\n",ib);
     printf("   fprompt central=%f ---  Nb fpromptmin=%f fpromptmax=%f ---  fc fpromptmin=%f fpromptmax=%f\n",fPromptCent[ib],fPromptHigHyp[ib],fPromptLowHyp[ib],fPromptHigHypS[ib],fPromptLowHypS[ib]);
+    
+    //add error from FONLL scale in quadrature
+    Double_t relerrFDscaleHigh = (invyPbPbHi[ib]-invyPbPb[ib])/invyPbPb[ib];
+    Double_t relerrFDscaleLow = (invyPbPb[ib]-invyPbPbLo[ib])/invyPbPb[ib];
+
+    Double_t relerrElossHigh = (fPromptLowHyp[ib]-fPromptCent[ib])/fPromptCent[ib];
+    Double_t relerrElossLow = (fPromptCent[ib]-fPromptHigHyp[ib])/fPromptCent[ib];
+    
+    Double_t toterrFDhigh = TMath::Sqrt(relerrFDscaleHigh*relerrFDscaleHigh+relerrElossHigh*relerrElossHigh)*fPromptCent[ib];
+    Double_t toterrFDlow = TMath::Sqrt(relerrFDscaleLow*relerrFDscaleLow+relerrElossLow*relerrElossLow)*fPromptCent[ib];
+
+    Double_t relerrFDscaleHighS = (invyPbPbHiS[ib]-invyPbPbS[ib])/invyPbPbS[ib];
+    Double_t relerrFDscaleLowS = (invyPbPbS[ib]-invyPbPbLoS[ib])/invyPbPbS[ib];
+    
+    Double_t relerrElossHighS = (fPromptLowHypS[ib]-fPromptCentS[ib])/fPromptCentS[ib];
+    Double_t relerrElossLowS = (fPromptCentS[ib]-fPromptHigHypS[ib])/fPromptCentS[ib];
+    
+    Double_t toterrFDhighS = TMath::Sqrt(relerrFDscaleHighS*relerrFDscaleHighS+relerrElossHighS*relerrElossHighS)*fPromptCentS[ib];
+    Double_t toterrFDlowS = TMath::Sqrt(relerrFDscaleLowS*relerrFDscaleLowS+relerrElossLowS*relerrElossLowS)*fPromptCentS[ib];
+
     hfPromptCent->SetBinContent(ib+1,fPromptCent[ib]);
-    hfPromptMinNb->SetBinContent(ib+1,fPromptHigHyp[ib]);
-    hfPromptMaxNb->SetBinContent(ib+1,fPromptLowHyp[ib]);
-    hfPromptMinfc->SetBinContent(ib+1,fPromptHigHypS[ib]);
-    hfPromptMaxfc->SetBinContent(ib+1,fPromptLowHypS[ib]);
+    hfPromptMinNb->SetBinContent(ib+1,fPromptCent[ib]-toterrFDlow);
+    hfPromptMaxNb->SetBinContent(ib+1,fPromptCent[ib]+toterrFDhigh);
+    hfPromptMinfc->SetBinContent(ib+1,fPromptCentS[ib]-toterrFDlowS);
+    hfPromptMaxfc->SetBinContent(ib+1,fPromptCentS[ib]+toterrFDhighS);
+    
+    printf("Bin %d\n",ib);
+    printf("   fprompt central=%f ---  Nb fpromptmin=%f fpromptmax=%f ---  fc fpromptmin=%f fpromptmax=%f\n",fPromptCent[ib],hfPromptMinNb->GetBinContent(ib+1),hfPromptMaxNb->GetBinContent(ib+1),hfPromptMinfc->GetBinContent(ib+1),hfPromptMaxfc->GetBinContent(ib+1));
   }
 
   TH1F* hppC=new TH1F("hppC",Form("pp reference for %s%% CC",centrality.Data()),nPtBins,binlim);

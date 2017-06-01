@@ -216,9 +216,11 @@ void AliHFInvMassFitter::SetNumberOfParams(){
 
 }
 //__________________________________________________________________________
-Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
+Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   /// Main function to fit the invariant mass distribution
-  ///
+  /// returns 0 if the fit fails
+  /// returns 1 if the fit succeeds
+  /// returns 2 if there is no signal and the fit is performed with only background
 
   TVirtualFitter::SetDefaultFitter("Minuit");
 
@@ -239,7 +241,7 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   fBkgFuncSb->SetLineColor(kGray+1);
   if (status != 0){
     printf("   ---> Failed first fit with only background, minuit status = %d\n",status);
-    return kFALSE;
+    return 0;
   }
 
   fOnlySideBands = kFALSE;
@@ -251,12 +253,13 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
 
   printf("\n--- Estimate signal counts in the peak region ---\n");
   Double_t estimSignal=CheckForSignal(fMass,fSigmaSgn);
+  Bool_t doFinalFit=kTRUE;
   if(estimSignal<0.){
     if(draw) DrawFit();
-    return kTRUE;
+    estimSignal=0.;
+    doFinalFit=kFALSE;
   } 
 
-  printf("\n--- Final fit with signal+background on the full range ---\n");
   fRawYieldHelp=estimSignal; // needed for reflection normalization
   if(!fBkgFuncRefit){
     fBkgFuncRefit = CreateBackgroundFitFunction("funcbkgrefit",integralHisto);
@@ -275,11 +278,16 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     fBkRFunc = CreateBackgroundPlusReflectionFunction("fbkgrfl");
   }
   fTotFunc = CreateTotalFitFunction("funcmass");
-  status=fHistoInvMass->Fit("funcmass",Form("R,%s,+,0",fFitOption.Data()));
-  if (status != 0){
-    printf("   ---> Failed fit with signal+background, minuit status = %d\n",status);
-    return kFALSE;
+
+  if(doFinalFit){
+    printf("\n--- Final fit with signal+background on the full range ---\n");
+    status=fHistoInvMass->Fit("funcmass",Form("R,%s,+,0",fFitOption.Data()));
+    if (status != 0){
+      printf("   ---> Failed fit with signal+background, minuit status = %d\n",status);
+      return 0;
+    }
   }
+
   for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
     fBkgFuncRefit->SetParameter(ipar,fTotFunc->GetParameter(ipar));
     fBkgFuncRefit->SetParError(ipar,fTotFunc->GetParError(ipar));
@@ -320,7 +328,8 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   fRawYieldErr=fTotFunc->GetParError(fNParsBkg)/fHistoInvMass->GetBinWidth(1);
   fRawYieldHelp=fRawYield;
   if(draw) DrawFit();
-  return kTRUE;
+  if(doFinalFit) return 1;
+  else return 2;
 }
 //______________________________________________________________________________
 void AliHFInvMassFitter::DrawFit(){

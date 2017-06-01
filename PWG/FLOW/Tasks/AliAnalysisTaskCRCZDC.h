@@ -58,6 +58,7 @@ public:
     k2011,
     k2015,
     k2015v6,
+    k2015pidfix,
     kAny
   };
   
@@ -68,6 +69,15 @@ public:
     kTRK
   };
   
+  enum AnalysisType {
+    kMCkine,
+    kMCAOD,
+    kAUTOMATIC,
+    kMCESD,
+    kTrackQA,
+    kTracklets
+  };
+  
   virtual void InitializeRunArrays();
   
   // Implementation of interface methods
@@ -75,8 +85,7 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   
-  void    SetAnalysisType(TString type) { this->fAnalysisType = type; }
-  TString GetAnalysisType() const       { return this->fAnalysisType; }
+  void    SetAnalysisType(AnalysisType type) { this->fAnalysisType = type; }
   
   void    SetRPType(TString rptype) { this->fRPType = rptype; }
   TString GetRPType() const         { return this->fRPType; }
@@ -111,6 +120,7 @@ public:
   TList*        GetQAList()      const      {return fQAList; }
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
   Bool_t        GetQAOn()   const         {return fQAon; }
+  Bool_t        SelectPileup(AliAODEvent* aod);
   
   void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
   
@@ -180,7 +190,7 @@ private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
   AliAnalysisTaskCRCZDC& operator=(const AliAnalysisTaskCRCZDC& dud);
   
-  TString       fAnalysisType;      // can be MC, ESD or AOD
+  AnalysisType  fAnalysisType;      // can be MC, ESD or AOD
   TString       fRPType;            // can be Global or Tracklet or FMD
   AliCFManager* fCFManager1;        // correction framework manager
   AliCFManager* fCFManager2;        // correction framework manager
@@ -360,6 +370,17 @@ private:
   Int_t fMaxRingVZC; //
   Int_t fMinRingVZA; //
   Int_t fMaxRingVZA; //
+  
+  // TrackQA
+  TList *fTrackQAList; //!
+  const static Int_t fKNFBs = 4;
+  TH3D* fTrackQADCAxy[fKNFBs][4]; //!
+  TH3D* fTrackQADCAz[fKNFBs][4]; //!
+  TH2D* fTrackQApT[fKNFBs][4]; //!
+  TProfile2D* fTrackQADphi[fKNFBs][4]; //!
+  TH2D* fEbEQRe[fKNFBs][4]; //!
+  TH2D* fEbEQIm[fKNFBs][4]; //!
+  TH2D* fEbEQMu[fKNFBs][4]; //!
   
   ClassDef(AliAnalysisTaskCRCZDC,10);
   

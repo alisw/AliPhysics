@@ -38,6 +38,7 @@
 class TString ;
 class TLorentzVector ;
 #include <TFormula.h>
+#include <TF1.h>
 class TList;
 class TH2F ;
 
@@ -79,6 +80,7 @@ class AliCaloPID : public TObject {
   // Main methods
   
   void      InitParameters();
+  void      InitParamTrackMatchPtDependent();
   
   Bool_t    IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy,  Int_t nlm) const;
 
@@ -105,7 +107,7 @@ class AliCaloPID : public TObject {
   
   TString   GetPIDParametersList();
   
-  Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) const ;    
+  Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) ;    
   
   void      SetPIDBits(AliVCluster * cluster, AliAODPWG4Particle *aodph, 
                        AliCalorimeterUtils* cu, AliVEvent* event);
@@ -188,7 +190,14 @@ class AliCaloPID : public TObject {
   void    SetPHOSPhotonWeightFormulaExpression(TString ph) { fPHOSPhotonWeightFormulaExpression = ph ; } 
   void    SetPHOSPi0WeightFormulaExpression   (TString pi) { fPHOSPi0WeightFormulaExpression    = pi ; }
   
+  //============
   // PID cuts 
+  //============
+
+  void    SetTOFCut(Float_t tcut )             { fTOFCut            = tcut    ; }
+  Float_t GetTOFCut()                    const { return fTOFCut               ; }   
+  
+  // Shower shape
   
   void    SetEMCALLambda0CutMax(Float_t lcut ) { fEMCALL0CutMax     = lcut    ; }
   Float_t GetEMCALLambda0CutMax()        const { return fEMCALL0CutMax        ; }   
@@ -196,21 +205,46 @@ class AliCaloPID : public TObject {
   void    SetEMCALLambda0CutMin(Float_t lcut ) { fEMCALL0CutMin     = lcut    ; }
   Float_t GetEMCALLambda0CutMin()        const { return fEMCALL0CutMin        ; }   
   
+  void    SetPHOSDispersionCut(Float_t dcut )  { fPHOSDispersionCut = dcut    ; }
+  Float_t GetPHOSDispersionCut()         const { return fPHOSDispersionCut    ; }   
+
+  // Track matching PHOS
+  
+  void    SetPHOSRCut(Float_t rcut )           { fPHOSRCut          = rcut    ; }
+  Float_t GetPHOSRCut()                  const { return fPHOSRCut             ; }   
+  
+  // Track matching EMC
+  // Fixed
   void    SetEMCALDEtaCut(Float_t dcut )       { fEMCALDEtaCut      = dcut    ; }
   Float_t GetEMCALDEtaCut()              const { return fEMCALDEtaCut         ; }   
   
   void    SetEMCALDPhiCut(Float_t dcut )       { fEMCALDPhiCut      = dcut    ; }
   Float_t GetEMCALDPhiCut()              const { return fEMCALDPhiCut         ; }   
   
-  void    SetTOFCut(Float_t tcut )             { fTOFCut            = tcut    ; }
-  Float_t GetTOFCut()                    const { return fTOFCut               ; }   
+  // Track matching EMC
+  // Pt dependent
   
-  void    SetPHOSRCut(Float_t rcut )           { fPHOSRCut          = rcut    ; }
-  Float_t GetPHOSRCut()                  const { return fPHOSRCut             ; }   
+  // Activate pT dependent track matching
+  void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; }  
+  void    SwitchOffEMCTrackPtDepResMatching()  { fEMCALUseTrackPtDepMatchingCut = kFALSE ; }
 
-  void    SetPHOSDispersionCut(Float_t dcut )  { fPHOSDispersionCut = dcut    ; }
-  Float_t GetPHOSDispersionCut()         const { return fPHOSDispersionCut    ; }   
+  TF1    *GetEMCALFuncTrackPtDepDEta() ;     
+  TF1    *GetEMCALFuncTrackPtDepDPhi() ;  
+  TString GetEMCALFuncTrackPtDepDEtaString() const { return fEMCALFuncTrackPtDepDEtaString ; } 
+  TString GetEMCALFuncTrackPtDepDPhiString() const { return fEMCALFuncTrackPtDepDPhiString ; } 
+  Float_t *GetEMCALFuncTrackPtDepDEtaParam() const { return fEMCALFuncTrackPtDepDEtaParam  ; } 
+  Float_t *GetEMCALFuncTrackPtDepDPhiParam() const { return fEMCALFuncTrackPtDepDPhiParam  ; } 
+
+  void    SetEMCALFuncTrackPtDepDEtaString(TString st  ) { fEMCALFuncTrackPtDepDEtaString = st  ; } 
+  void    SetEMCALFuncTrackPtDepDPhiString(TString st  ) { fEMCALFuncTrackPtDepDPhiString = st  ; } 
   
+  void    SetEMCALFuncTrackPtDepDEtaParam (Float_t *par, Int_t npar) 
+  { if(fEMCALFuncTrackPtDepDEtaNParam) delete [] fEMCALFuncTrackPtDepDEtaParam;
+    fEMCALFuncTrackPtDepDEtaParam  = par ; fEMCALFuncTrackPtDepDEtaNParam  = npar ; } 
+  void    SetEMCALFuncTrackPtDepDPhiParam (Float_t *par, Int_t npar) 
+  { if(fEMCALFuncTrackPtDepDPhiNParam) delete [] fEMCALFuncTrackPtDepDPhiParam;
+    fEMCALFuncTrackPtDepDPhiParam  = par ; fEMCALFuncTrackPtDepDPhiNParam  = npar ; } 
+
   // Cluster splitting analysis
   
   void    SwitchOnSimpleSplitMassCut()         { fUseSimpleMassCut   = kTRUE  ; }
@@ -303,9 +337,24 @@ private:
   
   Float_t   fEMCALL0CutMax;                     ///<  Max Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
   Float_t   fEMCALL0CutMin;                     ///<  Min Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
-  Float_t   fEMCALDEtaCut;                      ///<  Track matching cut on Dz.
-  Float_t   fEMCALDPhiCut;                      ///<  Track matching cut on Dx.
+  Float_t   fEMCALDEtaCut;                      ///<  Track matching fixed cut on eta residual.
+  Float_t   fEMCALDPhiCut;                      ///<  Track matching fixed cut on phi residual.
+  
+  Bool_t    fEMCALUseTrackPtDepMatchingCut;     ///<  Activate the matching selection, pT dependent.
+  TF1      *fEMCALFuncTrackPtDepDEta;           ///<  TF1 for track pT dependent cut in matching eta residual
+  TF1      *fEMCALFuncTrackPtDepDPhi;           ///<  TF1 for track pT dependent cut in matching phi residual
+  TString   fEMCALFuncTrackPtDepDEtaString;     ///<  TF1 for track pT dependent cut in matching eta residual, formula string
+  TString   fEMCALFuncTrackPtDepDPhiString;     ///<  TF1 for track pT dependent cut in matching phi residual, formula string
+  Int_t     fEMCALFuncTrackPtDepDEtaNParam;     ///<  number of formula parameters for matching eta residual pT track dependent
+  Int_t     fEMCALFuncTrackPtDepDPhiNParam;     ///<  number of formula parameters for matching eta residual pT track dependent
 
+  /// Formula parameters for track matching eta residual pT track dependent
+  Float_t  *fEMCALFuncTrackPtDepDEtaParam;      //[EMCALFuncTrackPtDepDEtaNParam]
+  
+  /// Formula parameters for track matching eta residual pT track dependent
+  Float_t  *fEMCALFuncTrackPtDepDPhiParam;      //[EMCALFuncTrackPtDepDPhiNParam] 
+  
+  
   Float_t   fTOFCut;                            ///<  Cut on TOF, used in PID evaluation.
   
   Float_t   fPHOSDispersionCut;                 ///<  Shower shape elipse radious cut.

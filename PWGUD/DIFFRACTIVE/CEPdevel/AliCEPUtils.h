@@ -49,17 +49,6 @@
 
 class AliCEPUtils : public TObject {
 
-  private:
-
-    Int_t fTPCnclsS;        // Maximum number of accepted shared clusters in TPC
-    Double_t fTrackDCA;     // Maximum distance of track to vertex
-    Double_t fTrackDCAz;    // Maximum distance of track to vertex in z-direction
-    Double_t fTrackEtaMin;  // EtaMin, used in second loop
-    Double_t fTrackEtaMax;  // EtaMax, used in second loop
-    TList *fTrackCutListPrim; // TList with primary track selection cuts
-
-    TArrayI *v0daughters;   //! 
-
   public:
 
   	AliCEPUtils();
@@ -110,6 +99,10 @@ class AliCEPUtils : public TObject {
     void VtxAnalysis (
       AliVEvent *Event,
       TList *lhh );
+    static TList* GetV0QAHists();
+    void V0Analysis (
+      AliESDEvent *Event,
+      TList *lhh );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 
@@ -125,7 +118,20 @@ class AliCEPUtils : public TObject {
     Int_t GetResiduals(AliESDEvent* fESDEvent);
     Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
     
-  	ClassDef(AliCEPUtils, 1);
+  private:
+
+    Int_t fTPCnclsS;        // Maximum number of accepted shared clusters in TPC
+    Double_t fTrackDCA;     // Maximum distance of track to vertex
+    Double_t fTrackDCAz;    // Maximum distance of track to vertex in z-direction
+    Double_t fTrackEtaMin;  // EtaMin, used in second loop
+    Double_t fTrackEtaMax;  // EtaMax, used in second loop
+    TList *fTrackCutListPrim; // TList with primary track selection cuts
+    
+    Int_t fnV0dp[5];        // number of data points in armenteros graph
+
+    TArrayI *v0daughters;   //! 
+
+    ClassDef(AliCEPUtils, 1);
 
 };
 

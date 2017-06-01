@@ -77,6 +77,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -102,6 +103,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -138,20 +140,20 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
     fHistos->CreateTH1("hVertexBefore" + trg, "Vertex distribution before z-cut for trigger class " + trg, 500, -50, 50, optionstring);
     fHistos->CreateTH1("hVertexAfter" + trg, "Vertex distribution after z-cut for trigger class " + trg, 100, -10, 10, optionstring);
 
-    fHistos->CreateTHnSparse("hPtEtaPhiAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
-    fHistos->CreateTHnSparse("hPtEtaPhiCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
+    fHistos->CreateTHnSparse("hPtEtaPhiAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
+    fHistos->CreateTHnSparse("hPtEtaPhiCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
     if(fStudyEMCALgeo){
-      fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
-      fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
+      fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
+      fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
     }
 
     if(fStudyPID){
       for(const auto &pid : species){
-        fHistos->CreateTHnSparse("hPtEtaPhiAll" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
-        fHistos->CreateTHnSparse("hPtEtaPhiCent" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
+        fHistos->CreateTHnSparse("hPtEtaPhiAll" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
+        fHistos->CreateTHnSparse("hPtEtaPhiCent" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
         if(fStudyEMCALgeo){
-          fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
-          fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D);
+          fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
+          fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + pid + trg, "p_{t}-#eta-#phi distribution of all accepted " + pid + " pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge; primary", 5, binning5D, optionstring);
         }
       }
     }
@@ -346,6 +348,15 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
     // Find associated particle
     assocMC = fMCEvent->GetTrack(TMath::Abs(checktrack->GetLabel()));
     if(!assocMC) continue;        // Fake track
+
+    // Require bunch crossing informaiton per track from TOF
+    // As this criterion cannot be checked in simulation
+    // the requirement reduces to the simple presence of a
+    // TOF hit as this is mandatory in order to determine
+    // a bunch crossing ID in data
+    if(fRequireTOFBunchCrossing){
+      if(!checktrack->IsOn(AliVTrack::kTOFout)) continue;
+    }
 
     // Select only particles within ALICE acceptance
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;

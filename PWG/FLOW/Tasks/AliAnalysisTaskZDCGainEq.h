@@ -177,6 +177,10 @@ private:
   TProfile    *fHist_v1xV1_ZDN_pTDiff[4][10];  //!
   TProfile   *fHist_v1xV1_ZDN_EtaDiff[4][10];  //!
 
+  TProfile               *fHist_Vx_vs_runnum;  //!
+  TProfile               *fHist_Vy_vs_runnum;  //!
+  TProfile               *fHist_Vz_vs_runnum;  //!
+
   TProfile2D     *fHist_znCx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znCy_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAx_V0_VxVy[90][10];  //!
@@ -185,6 +189,8 @@ private:
   TProfile2D  *fHist_ZDCC_En_Run[90];    //!
   TProfile2D  *fHist_ZDCA_En_Run[90];    //!
 
+  TProfile2D  *fHist_ZDCC_En_CommonCh[20];   //!
+  TProfile2D  *fHist_ZDCA_En_CommonCh[20];   //!
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };

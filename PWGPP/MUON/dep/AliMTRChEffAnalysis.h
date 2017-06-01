@@ -63,6 +63,8 @@ class AliMTRChEffAnalysis : public TObject {
   Bool_t BuildSystematicMap ();
   Bool_t RecoverEfficiency ( const char* runList, const char* ocdb, const char* systOcdb, Int_t referenceRun = -1 );
 
+  static void ZoomPad();
+
   virtual ~AliMTRChEffAnalysis();
 
  private:

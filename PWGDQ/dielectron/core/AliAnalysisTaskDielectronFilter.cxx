@@ -58,7 +58,8 @@ fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
 fStoreHeader(kFALSE),
 fStoreEventplanes(kFALSE),
-fEventFilter(0x0)
+fEventFilter(0x0),
+fQnList(0x0)
 {
   //
   // Constructor
@@ -83,7 +84,8 @@ fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
 fStoreHeader(kFALSE),
 fStoreEventplanes(kFALSE),
-fEventFilter(0x0)
+fEventFilter(0x0),
+fQnList(0x0)
 {
   //
   // Constructor
@@ -455,10 +457,12 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
             dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"))){
           if(flowQnVectorTask != NULL){
             AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-            TList *qnlist = flowQnVectorMgr->GetQnVectorList();
-            if(qnlist != NULL){
-              qnlist->SetName("qnVectorList");
-              aodH->AddBranch("TList",&qnlist);
+            fQnList = flowQnVectorMgr->GetQnVectorList();
+            if(fQnList != NULL){
+              fQnList->SetName("qnVectorList");
+              if(!t->GetBranch("qnVectorList")){
+                aodH->AddBranch("TList",&fQnList);
+              }
             }
           }
         }

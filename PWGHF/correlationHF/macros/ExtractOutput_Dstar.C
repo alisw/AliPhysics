@@ -8,6 +8,7 @@
 // - The arguments of the macro
 // - The names and paths in SetInputNames method
 // - The SetSBRanges values in the ExtractXPt methods (if you use austoSB=kFALSE, otherwise they are dummy)
+// - The SetSignRanges values in the ExtractXPt methods [to be created from scratch] (do only if you use autoSign=kFALSE)
 //
 // NOTE FOR D*: If setting the sideband range externally, the (unique) sideband to be used is LSB (not RSB)
 // NOTE FOR D+: If you need to integrate mass-pT bins in a single correlation bin BEFORE extracting the outputs, set plotter->IntegratePtBins(kFALSE) in the ExtractXPt methods 
@@ -24,14 +25,15 @@ void ExtractOutput(
    Double_t leftRng=0.14, Double_t rightRng=0.16, //invariant mass fit range -> use 1.7-2.1 for D0 and D+, 0.14-0.16 for D* (but 1.695-2.1 for D0 in pp for results before 1/5/2015)
    Int_t funcBkg=AliHFMassFitter::kPowEx, //background function used for the mass fit -> use kExpo for D0 and D+, kPowEx for D*
    Double_t nsigmaFitter=3, //number of sigma in which to extract S, B, S/B, signficance... (only for the spectra visualization, no influence on the correlations)
-   Double_t nsigmaS=2, //number of sigma in which to define the signal region (for correlations)
+   Bool_t autoSign=kTRUE, //kTRUE = define Sign from the fit results, in the range nsigmaS (below); kFALSE = use ranges provided via SetSignRanges
+   Double_t nsigmaS=2, //number of sigma in which to define the signal region (for correlations), Valid only if autoSign flag = kTRUE, otherwise dummy
    Bool_t autoSB=kFALSE, //kTRUE = define SB from the fit results, in the range insigma-outsigma (below); kFALSE = use ranges provided via SetSBRanges
    Double_t insigma=0, Double_t outsigma=0, //sideband ranges (in units of sigma). Valid only if autoSB=kTRUES, otherwise dummy
    Bool_t singleBinSB=kFALSE, //kTRUE=a single mass bin is used in the THnSparse for storing the sideband corlelations (used by D0 to save space)
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions
-   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
 {
  
   //Create and set the correlation plotter class
@@ -43,6 +45,7 @@ void ExtractOutput(
   plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D*
   plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
   plotter->SetNumberOfSigmasFitter(nsigmaFitter);
+  if(!autoSign) plotter->SetAutoSignRange(autoSign);
   plotter->SetSignalSigmas(nsigmaS);
   plotter->SetAutoSBRange(autoSB); //kTRUE = evaluate SB range automatically (give inner and outer sigma as 2° and 3° args); kFALSE = use ranges provided from outside (via SetSBRanges)
   plotter->SetSBSingleBin(singleBinSB);

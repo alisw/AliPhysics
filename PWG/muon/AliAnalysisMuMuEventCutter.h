@@ -17,6 +17,7 @@
 #include "TString.h"
 
 class AliMuonEventCuts;
+class AliAnalysisUtils;
 class TList;
 class AliVEvent;
 class AliVVertex;
@@ -89,7 +90,11 @@ public:
   Bool_t IsTZEROPileUp(const AliVEvent& event) const;
   void NameOfIsTZEROPileUp(TString& name) const { name="TZEROPILEUP"; }
 
+  Bool_t IsSPDPileUp(AliVEvent& event) const;
+  void NameOfIsSPDPileUp(TString& name) const { name="SPDPILEUP"; }
+
   AliMuonEventCuts* MuonEventCuts() const;
+  AliAnalysisUtils* AnalysisUtils() const;
 
 //  enum EEventCut
 //  {
@@ -115,8 +120,9 @@ private:
   AliAnalysisMuMuEventCutter(const AliAnalysisMuMuEventCutter& rhs);
 
   mutable AliMuonEventCuts* fMuonEventCuts; // common cuts for muon events (from Diego)
+  mutable AliAnalysisUtils* fAnalysisUtils; // common cuts for AliAnalysisUtils
 
-  ClassDef(AliAnalysisMuMuEventCutter,1) // default event cutters for AliAnalysisTaskMuMu
+  ClassDef(AliAnalysisMuMuEventCutter,2) // default event cutters for AliAnalysisTaskMuMu
 };
 
 #endif

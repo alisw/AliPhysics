@@ -43,6 +43,7 @@ public:
   Double_t Weight() const; 
   Int_t Charge() const;
   Double_t Mass() const;
+  Int_t ITStype() const;
   Int_t PID() const {return 0;}
   
   Bool_t InRPSelection() const; 
@@ -65,6 +66,7 @@ public:
   void SetWeight(Double_t weight);
   void SetCharge(Int_t charge);
   void SetMass(Double_t mass);
+  void SetITStype(Int_t val);
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
   virtual void Clear(Option_t* o="");
@@ -139,9 +141,10 @@ public:
   Double_t fTrackWeight; // weight
   Int_t    fCharge;      //charge
   Double_t fMass;        // mass
-  TBits    fPOItype;    // bits to set if track is selected
+  TBits    fPOItype;     // bits to set if track is selected
   TBits    fSubEventBits;// bits to set if track is selected for a subevent
   Int_t    fID;          // Unique track ID, point back to the ESD track
+  Int_t    fITStype;     // ITS hits identifier (test purpose only)
 
   ClassDef(AliFlowTrackSimple,2)                 // macro for rootcint
 
@@ -160,6 +163,8 @@ inline Int_t AliFlowTrackSimple::Charge() const {
   return this->fCharge; }
 inline Double_t AliFlowTrackSimple::Mass() const { 
   return this->fMass; }
+inline Int_t AliFlowTrackSimple::ITStype() const {
+  return this->fITStype; }
 //TBits
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
   return fPOItype.TestBitNumber(kRP); }
@@ -183,6 +188,8 @@ inline void AliFlowTrackSimple::SetCharge(Int_t val) {
   fCharge = val; }
 inline void AliFlowTrackSimple::SetMass(Double_t val) {
   fMass = val; }
+inline void AliFlowTrackSimple::SetITStype(Int_t val) {
+  fITStype = val; }
 
   //TBits
 inline void AliFlowTrackSimple::SetForRPSelection(Bool_t val) {

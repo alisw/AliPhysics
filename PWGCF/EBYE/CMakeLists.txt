@@ -57,6 +57,7 @@ set(SRCS
   LRC/AliLRCPtN.cxx
   LRC/AliLRCPtPt.cxx
   LRC/AliLRCProcess.cxx
+  LRC/AliForwardBackwardAnalysis.cxx
   Fluctuations/AliEbyEFluctuationAnalysisTask.cxx
   Fluctuations/AliAnalysisTaskChargeFluctuations.cxx
   Fluctuations/AliEbyEHigherMomentsTask.cxx

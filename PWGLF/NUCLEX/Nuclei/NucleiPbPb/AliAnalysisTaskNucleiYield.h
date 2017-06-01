@@ -94,12 +94,16 @@ public:
   AliNuclexEventCuts  fEventCut;
   TArrayD             fTOFfunctionPars;
 
-  UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis
+  UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis (set to 0 to skip the cut)
+  bool                fPropagateTracks; /// Workaround for troublesome productions
+  TArrayF             fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
+  TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
-  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
+  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2], bool rapiditycut = true);
+  bool   RapidityCut(AliAODTrack *track);
   bool   PassesPIDSelection(AliAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
 
@@ -122,9 +126,6 @@ private:
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
-
-  TArrayF               fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
-  TArrayF               fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
 
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
@@ -171,6 +172,7 @@ private:
   // MC only histograms
   TH1F                 *fProduction;             //!<! *(MC only)* Total number of produced particles
   TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
+  TH2F                 *fReconstructedNA[2][2];  //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF), no y cut
   TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
   TH2F                 *fPtCorrection[2];        //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks
   TH3F                 *fDCAPrimary[2][2];       //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries

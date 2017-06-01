@@ -16,10 +16,10 @@
 #pragma link C++ class AliAnalysisMuMuConfig+;
 #pragma link C++ class AliAnalysisMuMuResult+;
 #pragma link C++ class AliAnalysisMuMuJpsiResult+;
-#pragma link C++ class AliAnalysisMuMuSpectraCapsule+;
-#pragma link C++ class AliAnalysisMuMuSpectraCapsulePbPb+;
-#pragma link C++ class AliAnalysisMuMuSpectraCapsulePbP+;
-#pragma link C++ class AliAnalysisMuMuSpectraCapsulePP+;
+#pragma link C++ class AliAnalysisMuMuSpectraProcessor+;
+#pragma link C++ class AliAnalysisMuMuSpectraProcessorPbPb+;
+#pragma link C++ class AliAnalysisMuMuSpectraProcessorPbP+;
+#pragma link C++ class AliAnalysisMuMuSpectraProcessorPP+;
 #pragma link C++ class AliAnalysisMuMuFnorm+;
 #pragma link C++ class AliAnalysisMuMuGraphUtil+;
 #pragma link C++ class AliAnalysisMuMuSpectra+;

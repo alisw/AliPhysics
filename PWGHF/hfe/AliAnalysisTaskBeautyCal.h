@@ -52,6 +52,7 @@ public:
 
     void SetITSchi2(Int_t itschi2){fitschi2 = itschi2;};
     void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
+    void SetEopMim(Double_t mimEop){fmimEop = mimEop;};
 
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -116,6 +117,7 @@ private:
     Int_t fcentMax; // max. centrality
     Int_t fitschi2; // max. centrality
     Double_t fmimSig; // max. centrality
+    Double_t fmimEop; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Int_t fetarange;  
@@ -125,8 +127,8 @@ private:
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
    
-    //TF1 *fPi3040;
-    //TF1 *fEta3040;
+    TF1 *fPi010;
+    TF1 *fEta010;
     TF1 *fPi3040_0;
     TF1 *fPi3040_1;
     TF1 *fEta3040_0;
@@ -137,6 +139,8 @@ private:
     TH1F        *fCent;//! centrality
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fHistClustE;//!cluster energy
+    TH1F        *fHistClustE_etapos;//!cluster energy
+    TH1F        *fHistClustE_etaneg;//!cluster energy
     TH1F        *fHistClustEtime;//!cluster energy
     TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
@@ -180,7 +184,7 @@ private:
     TH1F        *fMCcheckMother;
     //TH1F        *fCheckEta;    
     //TH1F        *fCheckEtaMC;    
-
+   
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
@@ -230,6 +234,8 @@ private:
     TH1F        *fCheckEtaMC;    
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
+    TH2D        *fTPCcls;
+    TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
 

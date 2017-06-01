@@ -4,6 +4,11 @@
 
 #include "AliFemtoV0PurityBgdEstimator.h"
 
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoV0PurityBgdEstimator);
+  /// \endcond
+#endif
 
 const float DFLT_MinvMin = 0.0, DFLT_MinvMax = 1.0;
 const int DFLT_NbinsMinv = 200;
@@ -162,6 +167,9 @@ AliFemtoV0PurityBgdEstimator::~AliFemtoV0PurityBgdEstimator()
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
+
+  delete fFemtoV0;
+  delete fFemtoV0TrackCut;
 }
 
 //____________________________

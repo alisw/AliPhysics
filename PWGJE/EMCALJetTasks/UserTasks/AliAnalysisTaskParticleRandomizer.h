@@ -45,6 +45,7 @@ public:
   void          SetDistributionV5(TH2D* dist)               {fDistributionV5 = dist;}
   void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
   void          ActivateJetEmbedding(const char* arrName)   {fJetEmbeddingArrayName = arrName;}
+  void          ActivateLeadingJetRemoval(const char* arrName, Int_t nLeadingJets, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalNLeadingJets = nLeadingJets; fJetRemovalRhoObj = rhoObj;}
 
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
@@ -54,6 +55,8 @@ protected:
   Bool_t        Run();
   void          ExecOnce();
   Double_t      AddFlow(Double_t phi, Double_t pt);
+  void          GetLeadingJets(AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
+
 
   Bool_t              fRandomizeInPhi;            /// randomize the particle's position in azimuth
   Bool_t              fRandomizeInEta;            /// randomize the particle's position in pseudorap
@@ -82,6 +85,7 @@ protected:
   TString             fJetRemovalArrayName;       /// Name of the TClonesArray containing jets for removal that will be loaded
   TClonesArray*       fJetRemovalArray;           //!<! TClonesArray containing jets
   Double_t            fJetRemovalPtThreshold;     /// threshold at which jets given in fInputJetArray will be removed
+  Int_t               fJetRemovalNLeadingJets;    /// if this set via ActivateLeadingJetRemoval, the first n leading jets will be removed
 
   TString             fJetEmbeddingArrayName;     /// Name of the TClonesArray containing tracks for embedding
   TClonesArray*       fJetEmbeddingArray;         //!<! TClonesArray containing tracks to be embedded
@@ -89,6 +93,9 @@ protected:
   Double_t            fRandomPsi3;                /// eventwise calculated psi 3
   Double_t            fRandomPsi4;                /// eventwise calculated psi 4
   Double_t            fRandomPsi5;                /// eventwise calculated psi 5
+  AliEmcalJet*        fLeadingJet;                //!<!  leading jet (calculated event-by-event)
+  AliEmcalJet*        fSubleadingJet;             //!<!  subleading jet (calculated event-by-event)
+
   TRandom3*           fRandom;                    //!<! random number generator
 
   Bool_t              IsParticleInJet(Int_t part);

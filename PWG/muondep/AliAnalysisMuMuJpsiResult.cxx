@@ -2173,8 +2173,18 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
 
   Int_t bin = fHisto->FindBin(0.27);
 
-  bckInit->SetParameters(fHisto->GetBinContent(bin),2.,0.5,0.3);
-//  bckInit->SetParLimits(0,fHisto->GetBinContent(bin)*0.5,fHisto->GetBinContent(bin)*10);
+  // Get param from FitType or FitSingle if any
+  Double_t par0 = GetValue("kVWG");
+  Double_t par1 = GetValue("mVWG");
+  Double_t par2 = GetValue("sVWG1");
+  Double_t par3 = GetValue("sVWG2");
+
+  if (! IsValidValue(par0) ) par0 = fHisto->GetBinContent(bin);
+  if (! IsValidValue(par1) ) par1 = 2.;
+  if (! IsValidValue(par2) ) par2 = 0.5;
+  if (! IsValidValue(par3) ) par3 = 0.3;
+
+  bckInit->SetParameters(par0,par1,par2,par3);
 
   SetFitRejectRange(2.3,3.4);
 
@@ -2197,16 +2207,16 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
   }
 
   if(IsValidValue(binNormJPsi)) bin = fHisto->FindBin(binNormJPsi); //
-  else bin = fHisto->FindBin(3.09);
+  else                          bin = fHisto->FindBin(3.09);
   fitTotal->SetParameter(4, fHisto->GetBinContent(bin)); // norm
 
   if(IsValidValue(meanJPsi))fitTotal->SetParameter(5,meanJPsi); // mean
-  else fitTotal->SetParameter(5, 3.16); // mean
+  else                      fitTotal->SetParameter(5, 3.16); // mean
 
   fitTotal->SetParLimits(5, 2.95, 3.2);
 
-  if(IsValidValue(sigmaJPsi))fitTotal->SetParameter(5,sigmaJPsi);
-  else fitTotal->SetParameter(6, 0.08); // sigma
+  if(IsValidValue(sigmaJPsi)) fitTotal->SetParameter(5,sigmaJPsi);
+  else                        fitTotal->SetParameter(6, 0.08); // sigma
   fitTotal->SetParLimits(6, 0.03, 0.2);
 
   if ( IsValidValue(alphaLow) )

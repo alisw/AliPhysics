@@ -15,6 +15,7 @@
 
 #include "TList.h"
 #include "TH1.h"
+#include "THnBase.h"
 #include "AliLog.h"
 #include "AliEmcalList.h"
 
@@ -93,27 +94,35 @@ void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor
       continue;
     }
 
-    // Otherwise, scale TH1-derived histograms
-    TH1* histogram = dynamic_cast<TH1*>(listObject);
-    if (!histogram)
+    // Otherwise, scale TH1-derived / THnBase-derived histograms
+    if (!(listObject->InheritsFrom(TH1::Class()) || listObject->InheritsFrom(THnBase::Class())))
       continue;
 
     // Don't scale profiles and histograms used for scaling
-    TString histogram_class (histogram->ClassName());
-    if (!strcmp(histogram->GetName(), "fHistXsection") || !strcmp(histogram->GetName(), "fHistTrials"))
+    TString histogram_class (listObject->ClassName());
+    if (!strcmp(listObject->GetName(), "fHistXsection") || !strcmp(listObject->GetName(), "fHistTrials"))
     {
-      AliInfo(Form("Histogram %s will not be scaled, because a scaling histogram", histogram->GetName()));
+      AliInfo(Form("Histogram %s will not be scaled, because a scaling histogram", listObject->GetName()));
       continue;
     }
     if (histogram_class.Contains("TProfile"))
     {
-      AliInfo(Form("Histogram %s will not be scaled, because it is a TProfile", histogram->GetName()));
+      AliInfo(Form("Histogram %s will not be scaled, because it is a TProfile", listObject->GetName()));
       continue;
     }
 
-    histogram->Sumw2();
-    histogram->Scale(scalingFactor);
-    AliInfo(Form("Histogram %s (%s) was scaled...", histogram->GetName(), histogram_class.Data()));
+    TH1 *histogram = dynamic_cast<TH1 *>(listObject);
+    if(histogram) {
+      // Handle TH1/TH2/TH3
+      histogram->Sumw2();
+      histogram->Scale(scalingFactor);
+    } else {
+      // Handle THn
+      THnBase *histogramND = dynamic_cast<THnBase *>(listObject);
+      histogramND->Sumw2();
+      histogramND->Scale(scalingFactor);
+    }
+    AliInfo(Form("Histogram %s (%s) was scaled...", listObject->GetName(), histogram_class.Data()));
 
   }
 }

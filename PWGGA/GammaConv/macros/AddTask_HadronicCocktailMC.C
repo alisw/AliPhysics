@@ -1,5 +1,7 @@
-void AddTask_HadronicCocktailMC(Double_t maxy = 0.8, Bool_t runPi0 = kTRUE, Bool_t runLightOutput = kFALSE) {
-  
+void AddTask_HadronicCocktailMC(Bool_t runPi0 = kTRUE, Bool_t runLightOutput = kFALSE, TString maxyset = "0.8") {
+
+  Double_t maxy = maxyset.Atof();
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

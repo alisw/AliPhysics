@@ -5,8 +5,8 @@
 // This includes a TList of AliLRCProcess objects that are processing LRC analysis
 // for a given eta-phi windows
 
-// Author : Andrey Ivanov, Igor Altsybeev, St.Petersburg State University
-// Email: Igor.Altsybeev.ch
+// Authors : Andrey Ivanov, Igor Altsybeev, St.Petersburg State University
+// Email: Igor.Altsybeev@cern.ch
 
 
 #include <AliPIDResponse.h>

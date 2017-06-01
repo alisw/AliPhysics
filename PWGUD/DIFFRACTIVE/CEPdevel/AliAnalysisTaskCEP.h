@@ -120,6 +120,7 @@ private:
   TList *flSPDpileup;   //! list of QA histograms for SPD pile-up study
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection
+  TList *flV0      ;    //! list of QA histograms for V0 study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

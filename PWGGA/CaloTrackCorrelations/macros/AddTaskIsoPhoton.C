@@ -239,9 +239,9 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
 
   reader->SwitchOffWriteDeltaAOD()  ;
 
-if(SSsmearing != 0)
-{
-  reader->SwitchOnShowerShapeSmearing();
+  if(SSsmearing != 0)
+  {
+    reader->SwitchOnShowerShapeSmearing();
     if(SSsmearing == 1) //Gustavo's settings
     { 
       reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandau);
@@ -251,20 +251,6 @@ if(SSsmearing != 0)
     { 
       reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandauShift);
       reader->SetShowerShapeSmearWidth(0.035);
-    }
-}
-  // MC settings
-  if(useKinematics)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();
-      reader->SwitchOffAODMCParticles();
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();
-      reader->SwitchOnAODMCParticles();
     }
   }
 
@@ -691,17 +677,12 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
   // Study exotic clusters PHOS and EMCAL
   ana->SwitchOffStudyBadClusters() ;
 
-
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
-  ana->SwitchOffStudyBadClusters();
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
-
 
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below

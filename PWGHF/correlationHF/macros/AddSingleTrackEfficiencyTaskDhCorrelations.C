@@ -29,7 +29,7 @@ const Bool_t TPCRefit = kTRUE;
 const Bool_t ITSRefit = kFALSE;
 const Bool_t ischarged = kTRUE;
 const Int_t  fBit = 0;
-const TString centralityEstimator = "V0M";
+//const TString centralityEstimator = "ZNA";
 
 //
 // Container settings
@@ -70,7 +70,10 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
                                                                            Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
                                                                            Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID,
                                                                            TString effName="",
-                                                                           TString cutObjName="")
+                                                                           TString cutObjName="",
+									   TString centralityEstimator="ZNA",
+                                                                           Double_t maxRadiusForPrimaries=999.
+                                                                           )
 {
     
     Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -217,6 +220,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
     cuts->SetTriggerMask(triggerMask);
     cuts->SetIsAOD(readAOD);
+    cuts->SetMaxRadiusOfParticleOrigin(maxRadiusForPrimaries);
     //
     // Pid selection here
     //

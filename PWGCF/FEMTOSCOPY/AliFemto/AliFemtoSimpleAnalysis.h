@@ -14,6 +14,7 @@
 #include "AliFemtoPicoEventCollection.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoV0SharedDaughterCut.h"
+#include "AliFemtoXiSharedDaughterCut.h"
 
 class AliFemtoPicoEventCollectionVectorHideAway;
 class AliFemtoPicoEvent;

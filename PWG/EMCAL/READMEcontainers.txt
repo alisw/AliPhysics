@@ -150,4 +150,18 @@ For nearly all uses, they should use the following names:
 | Clusters | "caloClusters" | "CaloClusters" |
 | Tracks   | "tracks"       | "Tracks"       |
 
+Default containers as listed above can be accessed directly passing the argument *usedefault* as name of the 
+input containers. The example below demonstrates this for the cluster container:
+
+~~~{.cxx}
+AliClusterContainer *clustercont = new AliClusterContainer("usedefault", "myclustercont");
+~~~
+
+or
+
+~~~{.cxx}
+AliAnalysisTaskEmcal *emcaltask = new AliAnalysisTaskEmcal("emcaltask", kTRUE);
+AliClusterContainer *clustercont = emcaltask->AddClusterContainer("usedefault");
+~~~
+
 */ 

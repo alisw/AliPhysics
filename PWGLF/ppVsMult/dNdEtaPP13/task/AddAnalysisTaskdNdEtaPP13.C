@@ -11,7 +11,8 @@
 
 const Double_t centBinsMultV0MSPD[] = {1e-10, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
+//const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
+const Double_t centBinsMultV0M_Ridge[] = {0., 1., 8., 16., 25., 27., 43., 45., 68., 69., 100.};
 const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMB[] = {0., 100.};
 
@@ -55,7 +56,8 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
   Int_t BCmod4      = 2,              // set Bunch crossing mode 4
   Bool_t phicuts      = kFALSE,       // set cut on affected phi regions
-  TString calibfile = "$ALICE_PHYSICS/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root"
+  TString calibfile = "$ALICE_PHYSICS/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root",
+  Float_t mcscale = 1.0
 
 )
 {
@@ -191,6 +193,8 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   task->SetUseBCMod(useBCmod);
   task->SetBCMod(BCmod4);
   task->SetCutOnPhi(phicuts);
+  task->SetScaleMCV0(mcscale);
+
 
 
 

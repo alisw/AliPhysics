@@ -70,6 +70,7 @@ fRecoTrk(kFALSE),
 fLeadPartCorr(kFALSE),
 fMCParticle(kFALSE),
 fMCGenEvType(kFALSE),
+fAutoSignalSBRange(kFALSE),
 farrayMC(0x0),
 fMixing(kFALSE),
 fAssoParType(0),
@@ -95,6 +96,8 @@ fCounter(0x0),
 fBinWidth(0),
 fPoolByPool(kFALSE),
 fWhichPool(0),
+fPoolbyCent(kFALSE),
+fEvtMult(0),
 fCheckCutDist(kFALSE),
 fAODProtection(1),
 fCutSuffix(0x0),
@@ -136,6 +139,7 @@ fRecoTrk(kFALSE),
 fLeadPartCorr(kFALSE),
 fMCParticle(kFALSE),
 fMCGenEvType(kFALSE),
+fAutoSignalSBRange(kFALSE),
 farrayMC(0x0),
 fMixing(kFALSE),
 fAssoParType(0),
@@ -161,6 +165,8 @@ fCounter(0x0),
 fBinWidth(0.002),
 fPoolByPool(kFALSE),
 fWhichPool(0),
+fPoolbyCent(kFALSE),
+fEvtMult(0),
 fCheckCutDist(kFALSE),
 fAODProtection(1),
 fCutSuffix(0x0),
@@ -215,6 +221,7 @@ fRecoTrk(source.fRecoTrk),
 fLeadPartCorr(source.fLeadPartCorr),
 fMCParticle(source.fMCParticle),
 fMCGenEvType(source.fMCGenEvType),
+fAutoSignalSBRange(source.fAutoSignalSBRange),
 farrayMC(source.farrayMC),
 fMixing(source.fMixing),
 fAssoParType(source.fAssoParType),
@@ -240,6 +247,8 @@ fCounter(source.fCounter),
 fBinWidth(source.fBinWidth),
 fPoolByPool(source.fPoolByPool),
 fWhichPool(source.fWhichPool),
+fPoolbyCent(source.fPoolbyCent),
+fEvtMult(source.fEvtMult),
 fCheckCutDist(source.fCheckCutDist),
 fAODProtection(source.fAODProtection),
 fCutSuffix(source.fCutSuffix),
@@ -303,6 +312,7 @@ AliAnalysisTaskSEDplusCorrelations& AliAnalysisTaskSEDplusCorrelations::operator
     fLeadPartCorr=orig.fLeadPartCorr;
     fMCParticle = orig.fMCParticle;
     fMCGenEvType = orig.fMCGenEvType;
+    fAutoSignalSBRange= orig.fAutoSignalSBRange;
     farrayMC = orig.farrayMC;
     fMixing = orig.fMixing;
     fAssoParType = orig.fAssoParType;
@@ -328,6 +338,8 @@ AliAnalysisTaskSEDplusCorrelations& AliAnalysisTaskSEDplusCorrelations::operator
     fBinWidth=orig.fBinWidth;
     fPoolByPool=orig.fPoolByPool;
     fWhichPool=orig.fWhichPool;
+    fPoolbyCent=orig.fPoolbyCent;
+    fEvtMult=orig.fEvtMult;
     fCheckCutDist=orig.fCheckCutDist;
     fAODProtection=orig.fAODProtection;
     fCutSuffix=orig.fCutSuffix;
@@ -649,14 +661,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         Double_t zVtxMCreco = vertex->GetZ();
         if(TMath::Abs(zVtxMCreco)>10) return;
     }
-    
-    if(fEvalCentrality){
-        fMinCentrality = fDplusCuts->GetMinCentrality();
-        fMaxCentrality = fDplusCuts->GetMaxCentrality();
-        fCentrOrMult = fDplusCuts->GetCentrality(aod);
-        if(fCentrOrMult<fMinCentrality || fCentrOrMult >fMaxCentrality)fHistNEvents->Fill(2);
-    }
-    else if(!fEvalCentrality){
+
         Double_t count = -1, mineta = -1.0, maxeta = 1.0;
         AliAODTracklets* tracklets = aod->GetTracklets();
         if(!tracklets)return;
@@ -668,8 +673,19 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         }
         fCentrOrMult = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
         if(!fMixing)((TH2F*)fOutput->FindObject("h2SPDTrkVsTrkMult"))->Fill(aod->GetNumberOfTracks(),fCentrOrMult);
-    }
-    
+        fEvtMult = fCentrOrMult;
+
+    if(fEvalCentrality){
+        fMinCentrality = fDplusCuts->GetMinCentrality();
+        fMaxCentrality = fDplusCuts->GetMaxCentrality();
+        if(fDplusCuts->GetCentrality(aod)<fMinCentrality || fDplusCuts->GetCentrality(aod) >fMaxCentrality){
+        fHistNEvents->Fill(2);
+        return;
+        	}
+        if(fPoolbyCent)fCentrOrMult = fDplusCuts->GetCentrality(aod);
+
+        }
+
     AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
     Bool_t isGoodVtx=kFALSE;
     TString primTitle = vtx1->GetTitle();
@@ -866,7 +882,7 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
     fHistNDTrkOff->Fill(0); //Number of D+
     
     Double_t effDplus =1.0;
-    if(fEffDplus)effDplus = fAssoCuts->GetTrigWeight(ptDplusCand,fCentrOrMult); //Dplus efficiency
+    if(fEffDplus)effDplus = fAssoCuts->GetTrigWeight(ptDplusCand,fEvtMult); //Dplus efficiency
     if(effDplus<1.0e-9) effDplus=1; // case of 0 bin content
     
     Int_t iPtBin = fDplusCuts->PtBin(ptDplusCand); // Pt bins
@@ -1109,12 +1125,7 @@ void AliAnalysisTaskSEDplusCorrelations::HistoNomenclature() {
     Float_t fLowmasslimit  = 1.865 - range;
     Float_t  fUpmasslimit  = 1.865 + range;
     Float_t         width  = fBinWidth;
-    Int_t           nbins  = (Int_t)((fUpmasslimit-fLowmasslimit)/width+0.5);
-    Int_t     missingbins  = 4 - nbins%4;
-    //nbins  =  nbins + missingbins; : commented for 200 bins
-    width  = (fUpmasslimit-fLowmasslimit)/nbins; // new width
-    fBinWidth=width;
-    
+    Int_t           nbins  = (Int_t)((fUpmasslimit-fLowmasslimit)/width);
     Int_t nPoolCorr=1;
     if(fPoolByPool)nPoolCorr= fAssoCuts->GetNZvtxPoolBins()*fAssoCuts->GetNCentPoolBins();
     
@@ -1675,14 +1686,15 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineDPlusTree(AliAODRecoDecayHF3Pron
     Int_t DPtBin = fDplusCuts->PtBin(d->Pt());
     Double_t mDPlus = d->InvMassDplus();
     fBranchD->invMass_D = 0.;
-    
+    Bool_t IsDplusFilling = kTRUE;
     //allowing filling of D meson only if it's in the LSB or S+B or RSB region
-    Bool_t IsDplusFilling = kFALSE;
+    if(!fAutoSignalSBRange){
+    IsDplusFilling = kFALSE;
     if(mDPlus >=fLSBLowLim.at(DPtBin) && mDPlus<= fLSBUppLim.at(DPtBin)) IsDplusFilling = kTRUE; //in LSB region
     else if(mDPlus >=fSandBLowLim.at(DPtBin) && mDPlus <=fSandBUppLim.at(DPtBin)) IsDplusFilling = kTRUE; //in Signal+Bkg region
     else if(mDPlus >=fRSBLowLim.at(DPtBin) && mDPlus<=fRSBUppLim.at(DPtBin)) IsDplusFilling = kTRUE; //in RSB region
     else IsDplusFilling = kFALSE;
-    
+    }
     if(IsDplusFilling){
         
         fBranchD->phi_D = 0.;
@@ -1698,7 +1710,7 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineDPlusTree(AliAODRecoDecayHF3Pron
         fBranchD->invMass_D = (Float_t)mDPlus;
         
         fBranchD->mult_D = 0.;
-        fBranchD->mult_D = (Float_t)fCentrOrMult;
+        fBranchD->mult_D = (Float_t)fEvtMult;
         
         fBranchD->zVtx_D = 0.;
         fBranchD->zVtx_D = (Float_t)fzVtx;
@@ -1779,17 +1791,36 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineAssoTrackTree(AliAODEvent* aod){
         fTrackArrayFilled = kTRUE;
     }
     
-    Short_t trigID = -1;
     for(Int_t iTrack = 0; iTrack < fTrackArray->GetEntriesFast(); iTrack++){
         
         AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
-        trigID = -1;
+       
+       //skip D+ meson trigger daughters
+        Short_t trigID = -1, trigID2 = -1, trigID3 = -1, trigID4 = -1;
+        Int_t FoundTrig=0;
+        Bool_t trackIsTrig=kFALSE;
         
         for(Int_t iID=0; iID<(int)fDaughTrackID.size(); iID++){
-            
-            if(track->GetID() != fDaughTrackID.at(iID))continue;
-            else if(track->GetID() == fDaughTrackID.at(iID)){
-                trigID = fDaughTrigNum.at(iID);
+        	
+               trackIsTrig=kFALSE; //reset flag to signal that the track is a trigger
+        	if(FoundTrig==0 && track->GetID() == fDaughTrackID.at(iID)) {
+        		trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+        		trackIsTrig=kTRUE;
+        	}
+        	if(FoundTrig==1 && track->GetID() == fDaughTrackID.at(iID)) {
+        		trigID2 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+        		trackIsTrig=kTRUE;
+        	}
+        	if(FoundTrig==2 && track->GetID() == fDaughTrackID.at(iID)) {
+        		trigID3 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+        		trackIsTrig=kTRUE;
+        	}
+        	if(FoundTrig==3 && track->GetID() == fDaughTrackID.at(iID)) {
+        		trigID4 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+        		trackIsTrig=kTRUE;
+        	}
+            if(trackIsTrig==kTRUE) FoundTrig++; //if track is a trigger, next track has to be stored in another position, for IDTrig!
+
                 fHistNDDauTrigID->Fill(trigID);
                 fHistNDTrkOff->Fill(6);
                 if(trigID==-1)fHistNDTrkOff->Fill(7);//
@@ -1809,8 +1840,7 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineAssoTrackTree(AliAODEvent* aod){
                     ((TH1F*)fOutput->FindObject(Form("hDistOffDDauTrackPhi_%s",isDataOrMC.Data())))->Fill(track->Phi());
                 }
                 //break;
-            }
-        }
+             } // Daughter Track ID 
         
         
         
@@ -1837,7 +1867,7 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineAssoTrackTree(AliAODEvent* aod){
         fBranchTr->pT_Tr = (Float_t)track->Pt();
         
         fBranchTr->mult_Tr = 0.;
-        fBranchTr->mult_Tr = (Float_t)fCentrOrMult;
+        fBranchTr->mult_Tr = (Float_t)fEvtMult;
         
         fBranchTr->zVtx_Tr = 0.;
         fBranchTr->zVtx_Tr = (Float_t)fzVtx;
@@ -1852,7 +1882,17 @@ void AliAnalysisTaskSEDplusCorrelations::OfflineAssoTrackTree(AliAODEvent* aod){
         fBranchTr->BC_Tr = (UShort_t)aod->GetBunchCrossNumber();
         
         fBranchTr->IDtrig_Tr = 0;
-        fBranchTr->IDtrig_Tr = trigID;
+        fBranchTr->IDtrig_Tr = (Short_t)trigID;
+
+        fBranchTr->IDtrig2_Tr = 0;
+        fBranchTr->IDtrig2_Tr = (Short_t)trigID2;
+
+        fBranchTr->IDtrig3_Tr = 0;
+        fBranchTr->IDtrig3_Tr = (Short_t)trigID3;
+
+        fBranchTr->IDtrig4_Tr = 0;
+        fBranchTr->IDtrig4_Tr = (Short_t)trigID4;
+        
         
         //******DUMMY FOR THE MOMENT******* - To be used for multiple selection fills (2^n = 1 if selction n is ok)
         fBranchTr->sel_Tr = 0;

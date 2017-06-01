@@ -634,16 +634,34 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       fEvRejectionBits+=1<<kBadSPDVertex;
     }else{
       if(fCutOnzVertexSPD==1 && TMath::Abs(vSPD->GetZ())>12.) {
+	// protection for events with bad reconstructed track vertex (introduced for 2011 Pb-Pb)
 	fEvRejectionBits+=1<<kZVtxSPDOutFid;
 	if(accept) fWhyRejection=6;
 	accept=kFALSE;
       } 
-      if(fCutOnzVertexSPD==2 && vertex){
-	if(TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) {
-	  fEvRejectionBits+=1<<kZVtxSPDOutFid;
-	  if(accept) fWhyRejection=6;
+      if(fCutOnzVertexSPD>=2 && vertex){
+	Double_t dz = vSPD->GetZ()-vertex->GetZ();
+	// cut on absolute distance between track and SPD vertex (introduced for 2011 Pb-Pb)
+	if(TMath::Abs(dz)>0.5) {
+	  fEvRejectionBits+=1<<kBadTrackVertex;
+	  if(accept) fWhyRejection=0;
 	  accept=kFALSE;
-	} 
+	}
+	if(accept && fCutOnzVertexSPD==3){
+	  // cut on nsigma distance between track and SPD vertex (for 2015 Pb-Pb)
+	  double covTrc[6],covSPD[6];
+	  vertex->GetCovarianceMatrix(covTrc);
+	  vSPD->GetCovarianceMatrix(covSPD);
+	  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+	  double errTrc = TMath::Sqrt(covTrc[5]);
+	  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+	  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20){
+	    // reject, bad reconstructed track vertex
+	    fEvRejectionBits+=1<<kBadTrackVertex;
+	    if(accept) fWhyRejection=0;
+	    accept=kFALSE;
+	  }
+	}
       }
     }
   }

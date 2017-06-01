@@ -506,18 +506,15 @@ void AliEMCALTriggerOfflineQAPP::ProcessCell(const AliEMCALCellInfo& cell)
 
   if (fGeom) {
     Double_t pos[3] = {0};
-    fGeom->GetGlobal(cell.fAbsId, pos);
-    if (fGeom->IsInDCAL(pos[0], pos[1], pos[2])) {
+    Int_t sm = fGeom->GetSuperModuleNumber(cell.fAbsId);
+    if (fGeom->IsDCALSM(sm)) {
       if (!fDCalPlots) return;
       fSumOfflineDCal += cell.fEnergy;
       fNCellDCal++;
     }
-    else if (fGeom->IsInEMCAL(pos[0], pos[1], pos[2])) {
+    else {
       fSumOfflineEMCal += cell.fEnergy;
       fNCellEMCal++;
-    }
-    else {
-      AliWarning(Form("Cell with absolute ID %hd was not identified as neither DCal or EMCal!!", cell.fAbsId));
     }
   }
 }

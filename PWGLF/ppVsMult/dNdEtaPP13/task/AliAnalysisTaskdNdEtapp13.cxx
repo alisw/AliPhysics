@@ -448,7 +448,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   }
 
   /* IMPLEMENT INEL > 0 */
-
+/*
   Float_t totalNch = 0;
   Float_t totalNtr = 0;
   if (fUseMC) {
@@ -483,7 +483,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
   }
 
-
+*/
 
 
   //
@@ -692,6 +692,8 @@ if(!skipCentrality) {
     Float_t multV01=0;
     AliESDVZERO* esdV01 = esd->GetVZEROData();
     multV01 = esdV01->GetMTotV0A()+esdV01->GetMTotV0C();
+    multV01 *= fMCV0Scale;
+
     //    centPercentile = hMCcalib1->Interpolate(multV01);
 
     centPercentile = fHcalib3->Interpolate(multV01);
@@ -799,8 +801,60 @@ fVtxOK &= (fESDVtx[2] >= fZVertexMin && fESDVtx[2] <= fZVertexMax);
 //
 //  if (!fVtxOK || !fIsSelected) return;
 
-if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, totalNtr);
+
+
+
+  Float_t totalNch = 0;
+  Float_t totalNtr = 0;
+  if (fUseMC && (fVtxMC[2] >= fZVertexMin && fVtxMC[2] <= fZVertexMax)) {
+    for (Int_t i = 0; i < fStack->GetNtrack(); i++) {
+      if (!fStack->IsPhysicalPrimary(i))
+      continue;
+      AliMCParticle* particle = (AliMCParticle*)fMCEvent->GetTrack(i);
+      if (!particle)
+      continue;
+      if (particle->Charge() == 0)
+      continue;
+      if (TMath::Abs(particle->Eta()) < 1.)
+      //printf(" eta =  %f \n", particle->Eta());
+      totalNch++;
+    }
+    if (totalNch < 1) return;
+  }
+
+  Bool_t inelgt0 = kFALSE;
+    if (fVtxOK && fIsSelected){
+  for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
+    if (TMath::Abs(mult->GetEta(i)) < 1.) {
+      totalNtr++;
+      inelgt0 = kTRUE;
+    }
+  }
+}
+
+
+  if (fUseMC) {
+    // fill matrix
+    ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
+}
+
+
+
+
+if (fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, totalNtr);
 ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+
+Float_t totalNtr2 = 0.0;
+if (fVtxOK) {
+for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
+  if (TMath::Abs(mult->GetEta(i)) < 1.) {
+    totalNtr2++;
+  }
+}
+}
+
+ ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency.
+
 
 
 if (fUseMC) {
@@ -1213,7 +1267,16 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
     //
   }
 
-
+  char mybuffn3[100],mybufft3[500];
+  for (int ib3=0;ib3<fNCentBins;ib3++) {
+    sprintf(mybuffn3,"b%d_corrMatrixSel2",ib3);
+    sprintf(mybufft3,"bin%d Correlation Matrix2 Selected",ib3);
+    TH2F* hcorr5 = new  TH2F(mybuffn3,mybufft3, kMaxMlt, 0, kMaxMlt, kMaxMlt, 0, kMaxMlt);
+    hcorr5->GetXaxis()->SetTitle("n_{ch}");
+    hcorr5->GetYaxis()->SetTitle("n_{tracklets}");
+    AddHisto(histos,hcorr5,kHCorrMatrixSel2+ib3);
+    //
+  }
 
 
   if (fUseMC) {

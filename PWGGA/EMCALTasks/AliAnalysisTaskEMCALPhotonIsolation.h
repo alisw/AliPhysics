@@ -111,7 +111,9 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
   void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
   void                     SetMCtruth(Bool_t mctruth)                                      { fMCtruth = mctruth; }
-  
+  void                     SetPeriod(const char *period)                                   { fPeriod = period; }
+  void                     SetRejectPileUpEvent(Bool_t rpue)                               { fRejectPileUpEvent = rpue; }
+  void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -168,6 +170,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Float_t                  fSSsmearwidth;
   Float_t                  fSSsmear_mean;
   Int_t                    fWhich;
+  Bool_t                   fRejectPileUpEvent;
+  Int_t                    fNContrToPileUp;
   
   // TList       *fOutputList;                    //!<! Output list
   // TGeoHMatrix *fGeomMatrix[12];                //!<! Geometry misalignment matrices for EMCal
@@ -202,6 +206,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Int_t       fTest1;
   Int_t       fTest2;
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
+  TString     fPeriod;                         // String containing the LHC period
   
   // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters
@@ -311,6 +316,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F        *fEtVSM02VSEisoclust;            //!<!
   TH2F        *fPhiTracksVSclustPt;            //!<!
   TH2F        *fEtaTracksVSclustPt;            //!<!
+  TH2F        *fTrackResolutionPtMC;           //!<!
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output // Isolation on pTMax
@@ -337,7 +343,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 14); // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 16); // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
