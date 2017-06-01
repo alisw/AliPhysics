@@ -272,7 +272,7 @@ inline ULong64_t CharArr2uint32(const char* str)
 //______________________________________________________________________________
 class ZMQTMessage : public TMessage {
   public:
-    using TMessage::TMessage;
+    ZMQTMessage(UInt_t what = kMESS_ANY, Int_t bufsiz = TBuffer::kInitialSize) : TMessage(what,bufsiz) {}
     ZMQTMessage(void* buf, Int_t len) : TMessage(buf, len) {ResetBit(kIsOwner);}
     static TObject* Extract(const void* pBuffer, unsigned bufferSize, unsigned verbosity=0);
     static ZMQTMessage* Stream(TObject* pSrc, Int_t compression, unsigned verbosity=0, bool enableSchema=kFALSE);

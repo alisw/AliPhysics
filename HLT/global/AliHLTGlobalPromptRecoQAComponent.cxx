@@ -629,7 +629,7 @@ static void ReBinLogX(TAxis* axis)
     new_bins[i] = TMath::Power(10, from + i * width);
   }
   axis->Set(bins, new_bins);
-  delete new_bins;
+  delete [] new_bins;
 } 
 
 //__________________________________________________________________________________________________
