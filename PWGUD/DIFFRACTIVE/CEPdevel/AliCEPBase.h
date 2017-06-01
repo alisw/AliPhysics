@@ -67,7 +67,7 @@ class AliCEPBase : public TObject {
     kVtxErrRes,             // z-resolution of SPD vertex is out-of-bounds
     kVtxErrDif,             // difference in z between SPD and track vertex is
                             //  out-of-bounds
-    kVtxErrZ,               // z-position of vertex is  out-of-bounds
+    kVtxErrZ,               // z-position of vertex is out-of-bounds
     kVtxAOD,                // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
@@ -121,8 +121,11 @@ class AliCEPBase : public TObject {
 
     // MC process types
     kProctypeUnknown = 0,
+    kProctypeMB,
     kProctypeND,
-    kProctypeSD,
+    kProctypeEL,
+    kProctypeSDA,
+    kProctypeSDB,
     kProctypeDD,
     kProctypeCD,
 

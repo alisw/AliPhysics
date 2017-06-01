@@ -594,6 +594,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
     isDGTrigger = kTRUE;
+    printf("Fired trigger classes: %s\n",firedTriggerClasses.Data());
   }
   //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
   if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
@@ -723,6 +724,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   TArrayI *TTindices  = new TArrayI();
   Int_t nTracksTT = fCEPUtil->countstatus(fTrackStatus,
     fTTmask, fTTpattern, TTindices);
+  printf("Number of selected tracks: %i\n",nTracksTT);
 
   // get tracks which pass default TPCITS cuts
   //TArrayI *TPCITSindices  = new TArrayI();
@@ -1055,9 +1057,16 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
   if (fMCEvent) {  
     // Bug fix 28.05.2016 - do not trust to presence of MC handler, check if the content is valid
     //                    - proper solution (autodetection of MC information) to be implemented 
-    if (fMCEvent->Stack()==NULL) fMCEvent=NULL; 
+    if (fMCEvent->Stack()==NULL) fMCEvent=NULL;
   }
-
+  /*
+  if (fMCEvent) {
+    printf("Is MC event!\n");
+  } else {
+    printf("Is NOT MC event!\n");
+  }
+  */
+  
 	return kTRUE;
 }
 
