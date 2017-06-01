@@ -1,3 +1,4 @@
+// clang-format off
 /**************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
  * All rights reserved.                                                               *
@@ -24,108 +25,116 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
+// clang-format on
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTEMCALDigitsMonitor.h"
 #include "AliHLTEMCALDigitsMonitorComponent.h"
+#include "AliHLTEMCALGeometry.h"
 
 #include <TH1.h>
 #include <TObjArray.h>
 #include <TString.h>
 #include <TFile.h>
 
-AliHLTEMCALDigitsMonitorComponent::AliHLTEMCALDigitsMonitorComponent():
-    AliHLTCaloProcessor(),
-	fLocalEventCount(0),
-    fHistoResetOnPush(kTRUE),
-    fDigitsMonitor(0x0)
+AliHLTEMCALDigitsMonitorComponent::AliHLTEMCALDigitsMonitorComponent()
+  : AliHLTCaloProcessor(), fLocalEventCount(0), fHistoResetOnPush(kTRUE), fDigitsMonitor(NULL), fGeometry(NULL)
 
 {
-
 }
 
-AliHLTEMCALDigitsMonitorComponent::~AliHLTEMCALDigitsMonitorComponent(){
+AliHLTEMCALDigitsMonitorComponent::~AliHLTEMCALDigitsMonitorComponent() {}
 
-}
-    
-const char* AliHLTEMCALDigitsMonitorComponent::GetComponentID(){
-	//see header file for documentation
-    return "EmcalDigitsMonitor";
-}
-
-void AliHLTEMCALDigitsMonitorComponent::GetInputDataTypes(std::vector<AliHLTComponentDataType>& list){
-	//see header file for documentation
-	list.clear();
-	list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
+const char* AliHLTEMCALDigitsMonitorComponent::GetComponentID()
+{
+  // see header file for documentation
+  return "EmcalDigitsMonitor";
 }
 
-AliHLTComponentDataType AliHLTEMCALDigitsMonitorComponent::GetOutputDataType(){
-	//see header file for documentation
-	return kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL;
+void AliHLTEMCALDigitsMonitorComponent::GetInputDataTypes(std::vector<AliHLTComponentDataType>& list)
+{
+  // see header file for documentation
+  list.clear();
+  list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
 }
 
-void AliHLTEMCALDigitsMonitorComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier){
-    //constBase = 250000000;
-    constBase = 250000;
-    // to be reviewed later
-    inputMultiplier = 0;
+AliHLTComponentDataType AliHLTEMCALDigitsMonitorComponent::GetOutputDataType()
+{
+  // see header file for documentation
+  return kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL;
 }
 
-int AliHLTEMCALDigitsMonitorComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-			AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
-			std::vector<AliHLTComponentBlockData>& /*outputBlocks*/){
-    if(!blocks) {
-        return 0;
-    }
+void AliHLTEMCALDigitsMonitorComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
+{
+  // constBase = 250000000;
+  constBase = 250000;
+  // to be reviewed later
+  inputMultiplier = 0;
+}
 
-    //patch in order to skip calib events
-    if(! IsDataEvent()){
-        return 0;
-    }
-    
-    AliHLTCaloDigitDataStruct *digits = NULL;
-    const AliHLTComponentBlockData* iter = 0;
-    Int_t nDigits = 0;
-    for(Int_t ndx = 0; ndx < evtData.fBlockCnt; ndx++){
-        iter = blocks + ndx;
-
-        if(!CheckInputDataType(iter->fDataType)){
-            continue;
-        }
-
-        if(iter->fDataType == AliHLTEMCALDefinitions::fgkDigitDataType) {
-            digits = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
-            nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);
-            HLTDebug("Block %d received %d digits\n", ndx, nDigits);
-            fDigitsMonitor->ProcessDigits(nDigits, digits);
-        }
-    }
-    fLocalEventCount += 1;
-
-    PushHistograms(fDigitsMonitor->GetListOfHistograms());
+int AliHLTEMCALDigitsMonitorComponent::DoEvent(const AliHLTComponentEventData& evtData,
+                                               const AliHLTComponentBlockData* blocks,
+                                               AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/,
+                                               AliHLTUInt32_t& /*size*/,
+                                               std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
+{
+  if (!blocks) {
     return 0;
+  }
+
+  // patch in order to skip calib events
+  if (!IsDataEvent()) {
+    return 0;
+  }
+
+  AliHLTCaloDigitDataStruct* digits = NULL;
+  const AliHLTComponentBlockData* iter = 0;
+  Int_t nDigits = 0;
+  for (Int_t ndx = 0; ndx < evtData.fBlockCnt; ndx++) {
+    iter = blocks + ndx;
+
+    if (!CheckInputDataType(iter->fDataType)) {
+      continue;
+    }
+
+    if (iter->fDataType == AliHLTEMCALDefinitions::fgkDigitDataType) {
+      digits = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
+      nDigits = iter->fSize / sizeof(AliHLTCaloDigitDataStruct);
+      HLTDebug("Block %d received %d digits\n", ndx, nDigits);
+      fDigitsMonitor->ProcessDigits(nDigits, digits);
+    }
+  }
+  fLocalEventCount += 1;
+
+  PushHistograms(fDigitsMonitor->GetListOfHistograms());
+  return 0;
 }
 
-void AliHLTEMCALDigitsMonitorComponent::PushHistograms(TCollection* list){
+void AliHLTEMCALDigitsMonitorComponent::PushHistograms(TCollection* list)
+{
+  printf("Collection has %d histograms\n", list->GetEntries());
   TIter next(list);
 
   TH1* histo = 0;
-
   while ((histo = static_cast<TH1*>(next()))) {
     if (histo->GetEntries() > 0) {
-      Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL , 0);
+      printf("Pushing histogram %s\n", histo->GetName());
+      Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL, 0);
       if (fHistoResetOnPush && nbytes > 0) {
         histo->Reset();
       }
+    } else {
+      printf("Not pushing histogram %s, because it has 0 entries\n", histo->GetName());
     }
   }
 }
 
-bool AliHLTEMCALDigitsMonitorComponent::CheckInputDataType(const AliHLTComponentDataType &datatype){
-  vector <AliHLTComponentDataType> validTypes;
+bool AliHLTEMCALDigitsMonitorComponent::CheckInputDataType(const AliHLTComponentDataType& datatype)
+{
+  vector<AliHLTComponentDataType> validTypes;
   GetInputDataTypes(validTypes);
 
-  for(UInt_t i = 0; i < validTypes.size(); i++) {
+  for (UInt_t i = 0; i < validTypes.size(); i++) {
     if (datatype == validTypes.at(i)) {
       return true;
     }
@@ -135,15 +144,22 @@ bool AliHLTEMCALDigitsMonitorComponent::CheckInputDataType(const AliHLTComponent
   return false;
 }
 
-AliHLTComponent* AliHLTEMCALDigitsMonitorComponent::Spawn() {
-    return new AliHLTEMCALDigitsMonitorComponent();
+AliHLTComponent* AliHLTEMCALDigitsMonitorComponent::Spawn() { return new AliHLTEMCALDigitsMonitorComponent(); }
+
+int AliHLTEMCALDigitsMonitorComponent::DoInit(int argc, const char** argv)
+{
+  InitialiseGeometry();
+  fDigitsMonitor = new AliHLTEMCALDigitsMonitor;
+  fDigitsMonitor->Init();
+  fDigitsMonitor->SetGeometry(fGeometry);
 }
 
-int AliHLTEMCALDigitsMonitorComponent::DoInit(int argc, const char** argv){
-    fDigitsMonitor = new AliHLTEMCALDigitsMonitor;
-
+int AliHLTEMCALDigitsMonitorComponent::Deinit()
+{
+  if (fDigitsMonitor)
+    delete fDigitsMonitor;
+  if (fGeometry)
+    delete fGeometry;
 }
 
-int AliHLTEMCALDigitsMonitorComponent::Deinit(){
-    if(fDigitsMonitor) delete fDigitsMonitor;
-} 
+void AliHLTEMCALDigitsMonitorComponent::InitialiseGeometry() { fGeometry = new AliHLTEMCALGeometry(GetRunNo()); }

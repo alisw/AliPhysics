@@ -1,3 +1,4 @@
+// clang-format off
 /**************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
  * All rights reserved.                                                               *
@@ -24,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
+// clang-format on
 #ifndef AliHLTEMCALDIGITSMONITOR_H
 #define AliHLTEMCALDIGITSMONITOR_H
 
@@ -32,46 +34,69 @@
 class TH2;
 class TObjArray;
 class AliHLTCaloDigitDataStruct;
+class AliHLTEMCALGeometry;
 
-class AliHLTEMCALDigitsMonitor : public TObject {
-public:
-    /** Constructor */
-    AliHLTEMCALDigitsMonitor();
+/**
+ * @class   AliHLTEMCALDigitsMonitor
+ * @brief   Monitor class for EMCAL on digits level
+ * @author  Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since   June 1, 2017
+ *
+ * This class handles the montioring on digits level for EMCAL in the HLT reconstruction
+ * chain. As such, the class monitors:
+ *   - Energy vs cell ID
+ *   - Time vs cell ID
+ * both for high gain and low gain cells.
+ */
+class AliHLTEMCALDigitsMonitor : public TObject
+{
+ public:
+  /** Constructor */
+  AliHLTEMCALDigitsMonitor();
 
-    /** Destructor */
-    virtual ~AliHLTEMCALDigitsMonitor();
-    
-    /**
-     * @brief Initialize histograms
-     */
-    void Init();
+  /** Destructor */
+  virtual ~AliHLTEMCALDigitsMonitor();
 
-    /**
-     * @brief Process digits
-     * 
-     * Fill histograms:
-     * - Cell amp vs Cell ID
-     * - Cell time vs Cell ID
-     *
-     * @param[in] ndigits Number of digits in block
-     * @param[in] digits Block (array) of digits
-     */
-    void ProcessDigits(Int_t ndigits, const AliHLTCaloDigitDataStruct * digits);
+  /**
+   * @brief Initialize histograms
+   */
+  void Init();
 
-    /** 
-     * @brief Get a TObjArray with the histograms handled by this component
-     * @return List (TObjArray) of histograms handled by this component
-     */
-    TObjArray *GetListOfHistograms() const { return fListOfHistograms; }
+  /**
+   * @brief Set the EMCAL geometry
+   *
+   * EMCAL geometry is mandatory in order to get the absolute ID of a cell
+   *
+   * @param[in] geo EMCAL Geometry (HLT wrapped version)
+   */
+  void SetGeometry(const AliHLTEMCALGeometry* geo) { fGeometry = geo; }
 
-private:
+  /**
+   * @brief Process digits
+   *
+   * Fill histograms:
+   * - Cell amp vs Cell ID
+   * - Cell time vs Cell ID
+   *
+   * @param[in] ndigits Number of digits in block
+   * @param[in] digits Block (array) of digits
+   */
+  void ProcessDigits(Int_t ndigits, const AliHLTCaloDigitDataStruct* digits);
 
-    TObjArray           *fListOfHistograms;                //!<! Container with histograms
-    TH2                 *fHIDvsAmp[2];                     //!<! Amp vs tower ID
-    TH2                 *fHIDvsTime[2];                    //!<! Time vs tower ID
+  /**
+   * @brief Get a TObjArray with the histograms handled by this component
+   * @return List (TObjArray) of histograms handled by this component
+   */
+  TObjArray* GetListOfHistograms() const { return fListOfHistograms; }
 
-    /// \cond CLASSIMP
-    ClassDef(AliHLTEMCALDigitsMonitor, 1);
-    /// \endcond
+ private:
+  TObjArray* fListOfHistograms;         //!<! Container with histograms
+  const AliHLTEMCALGeometry* fGeometry; //!<! EMCAL geometry
+  TH2* fHIDvsAmp[2];                    //!<! Amp vs tower ID
+  TH2* fHIDvsTime[2];                   //!<! Time vs tower ID
+
+  /// \cond CLASSIMP
+  ClassDef(AliHLTEMCALDigitsMonitor, 1);
+  /// \endcond
 };
 #endif
