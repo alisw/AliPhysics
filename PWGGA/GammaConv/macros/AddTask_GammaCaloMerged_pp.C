@@ -234,18 +234,21 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   } else if (trainConfig == 6){  // new default 
     cuts.AddCut("00003113","1111121050032200000","1111121053022000001","0163300000000000"); // no M02, no exotics, TM only for second cut
     cuts.AddCut("00051013","1111121050032200000","1111121053022000001","0163300000000000"); // no M02, no exotics, TM only for second cut
-    cuts.AddCut("00003113","1111121050032200000","1111121053022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second cut
-    cuts.AddCut("00051013","1111121050032200000","1111121053022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second cut
+    cuts.AddCut("00003113","1111121050032200000","1111121053022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second cut
+    cuts.AddCut("00051013","1111121050032200000","1111121053022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second cut
   } else if (trainConfig == 7){  // new default , pt dep TM
-    cuts.AddCut("00003113","1111121057032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics
-    cuts.AddCut("00051013","1111121057032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics
-    cuts.AddCut("00003113","1111121050032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second
-    cuts.AddCut("00051013","1111121050032200000","1111121057022700001","0163300000000000"); // M02 < 0.27, no exotics, TM only for second
+    cuts.AddCut("00003113","1111121057032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics
+    cuts.AddCut("00051013","1111121057032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics
+    cuts.AddCut("00003113","1111121050032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second
+    cuts.AddCut("00051013","1111121050032200000","1111121057022700001","0163300000000000"); // M02 > 0.27, no exotics, TM only for second
   } else if (trainConfig == 8){  // new default, with eta < 0.7, y < 0.7
     cuts.AddCut("00003113","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
     cuts.AddCut("00051013","1551121053032200000","1551121053022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
     cuts.AddCut("00003113","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM  
     cuts.AddCut("00051013","1551121057032200000","1551121057022700001","0163200000000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27, pt dep TM  
+  } else if (trainConfig == 9){  // new default , pt dep TM, no M02
+    cuts.AddCut("00003113","1111121057032200000","1111121057022000001","0163300000000000"); // no M02, no exotics
+    cuts.AddCut("00051013","1111121057032200000","1111121057022000001","0163300000000000"); // no M02, no exotics
 
   // INT1 variations
   } else if (trainConfig == 10){ // M02 var  
@@ -414,11 +417,11 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121067032200000","1111121067022700001","0163300000000000"); 
     cuts.AddCut("00085013","1111121067032200000","1111121067022700001","0163300000000000"); 
     cuts.AddCut("00083013","1111121067032200000","1111121067022700001","0163300000000000"); 
-  } else if (trainConfig == 49){  // new default without mass, TM only in merged, pt dependent TM
-    cuts.AddCut("00010113","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00052013","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00085013","1111121060032200000","1111121067022700001","0163300000000000"); 
-    cuts.AddCut("00083013","1111121060032200000","1111121067022700001","0163300000000000"); 
+  } else if (trainConfig == 49){  // new default without mass, no M02
+    cuts.AddCut("00010113","1111121067032200000","1111121067022000001","0163300000000000"); 
+    cuts.AddCut("00052013","1111121067032200000","1111121067022000001","0163300000000000"); 
+    cuts.AddCut("00085013","1111121067032200000","1111121067022000001","0163300000000000"); 
+    cuts.AddCut("00083013","1111121067032200000","1111121067022000001","0163300000000000"); 
 
   // INT7 variations  
   } else if (trainConfig == 50){ // NLM 1 M02 var  
