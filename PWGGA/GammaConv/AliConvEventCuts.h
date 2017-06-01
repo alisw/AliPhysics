@@ -593,7 +593,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,31)
+      ClassDef(AliConvEventCuts,32)
 };
 
 
