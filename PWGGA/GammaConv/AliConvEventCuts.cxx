@@ -1684,7 +1684,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
       if(fDetectorCentrality==0){
-	                               return MultSelection->GetMultiplicityPercentile("V0A",kTRUE); // default for pPb
+	                               return MultSelection->GetMultiplicityPercentile("V0M",kTRUE); // default for pPb
       }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
