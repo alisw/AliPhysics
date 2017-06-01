@@ -43,18 +43,19 @@ private:
   TH1F        *fResolution;   //! or A minus or C spectrum    
   TH1F        *fTzeroORAplusORC; //! ORA+ORC /2 
   int         fRunNumber;
-  Float_t fCDBdelays[24];  //time delays from OCDB
-  Float_t fCDBcfds[24];    // mean CFD from OCDB
-  Float_t fCDBT0s[4];      //position T0AC, T0A, T0A, resolution
-  Int_t fRefPMTA;           // ref. PMT A side 
-  Int_t fRefPMTC;           // ref. PMT C side
-  TH2F      *fT0s[4];
-  
+  Float_t     fCDBdelays[24];  //time delays from OCDB
+  Float_t     fCDBcfds[24];    // mean CFD from OCDB
+  Float_t     fCDBT0s[4];      //position T0AC, T0A, T0A, resolution
+  Int_t       fRefPMTA;           // ref. PMT A side 
+  Int_t       fRefPMTC;           // ref. PMT C side
+  TH2F        *fT0s[4];           // T0s vs multiplicity
+  TH2F        *fCFDvsTimestamp[24]; // CFD vs timestamp
+  Int_t       fEvent;               //event counter      
  
   AliT0CalibOffsetChannelsTask(const AliT0CalibOffsetChannelsTask&); // not implemented
   AliT0CalibOffsetChannelsTask& operator=(const AliT0CalibOffsetChannelsTask&); // not implemented
   
-  ClassDef(AliT0CalibOffsetChannelsTask, 3); // example of analysis
+  ClassDef(AliT0CalibOffsetChannelsTask, 4); // example of analysis
 };
 
 #endif

@@ -36,16 +36,19 @@
 ClassImp(AliT0CalibSeasonTimeShift)
 
 //________________________________________________________________
-AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift():TNamed()
+AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift():TNamed(),
+  fT0vsMult(0)
 {
   //
-  for (Int_t i=0; i<4; i++)
-    fMeanPar[i] = fSigmaPar[i] = 0; 
+  for (Int_t i=0; i<4; i++) 
+    fMeanPar[i] = fSigmaPar[i] = 0;
+    
   fT0vsMult.SetOwner(kTRUE);
 }
 
 //________________________________________________________________
-AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const char* name):TNamed()
+AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const char* name):TNamed(),
+  fT0vsMult(0)
 {
     //constructor
     
@@ -98,7 +101,7 @@ void  AliT0CalibSeasonTimeShift::Print(Option_t*) const
   printf("\n	----	T0 results	----\n\n");
   printf(" (T0A+T0C)/2 = %f; T0A = %f; T0C = %f; resolution = %f  \n", fMeanPar[0], fMeanPar[1],fMeanPar[2],fMeanPar[3]);
   printf(" sigma(T0A+T0C)/2 = %f; sigma(T0 = %f; sigma(T0C) = %f; sigma(resolution) = %f  \n" , fSigmaPar[0], fSigmaPar[1], fSigmaPar[2],fSigmaPar[3]);
- 
+  
 } 
 
 //________________________________________________________________
@@ -136,8 +139,6 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
     return 2000;
   }
   else {
-        gFile->ls();
-    //    TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
     tzeroObj = dynamic_cast<TObjArray*>(gFile->Get("T0Calib"));
     TString histname[4]={"fTzeroORAplusORC", "fTzeroORA", "fTzeroORC",  "fResolution"};
     for (Int_t i=0; i<4; i++)
@@ -169,7 +170,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	    }
 	}
       } 
-    /*
+    
     TString histname2D[4]={"hT0AC", "hT0A", "hT0C",  "hResolution"};
     for (Int_t i=0; i<4; i++)
       {
@@ -201,11 +202,11 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  if(i<3) gr = new TGraph(npoints-1, mult, meanprof);
 	  else
 	    gr = new TGraph(npoints-1, mult, sigmares);
-	  fT0vsMult.AddAtAndExpand(gr,3);
-	  gr->Delete();
+	  fT0vsMult.AddAtAndExpand(gr,i);
+	  //  gr->Delete();
 	}
       }
-    */
+    
   }
   
   
