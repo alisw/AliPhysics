@@ -22,7 +22,9 @@
 #pragma link C++ class AliExternalInfo+;
 #pragma link C++ class AliTreePlayer+;
 #pragma link C++ class AliTreeTrending+;
-#pragma link C++ class AliNDFormulaBrowser+;
+#pragma link C++ class AliNDFormulaBrowser+; 
+#pragma link C++ class AliDrawStyle+;
+ 
 #pragma link C++ namespace AliFFTsmoother+;
 
 #pragma link C++ namespace TStatToolkit;

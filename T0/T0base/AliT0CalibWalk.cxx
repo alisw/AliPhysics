@@ -357,7 +357,7 @@ void AliT0CalibWalk::SetWalkDima(TString filename)
   TString aPMTname;
   for(Int_t iPMT = 0; iPMT < 24; iPMT++)
     {
-      if(iPMT<12)  aPMTname = Form("CORR_Graph_PMT%i", iPMT);
+      aPMTname = Form("CORR_Graph_PMT%i", iPMT);
       printf("  %s  \n",aPMTname.Data());
       currGraph = (TGraph*)dr->Get(aPMTname.Data());
       //     currGraph = (TGraph*)file->FindObjectAny(aPMTname.Data());

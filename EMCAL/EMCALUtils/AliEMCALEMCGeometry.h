@@ -39,8 +39,8 @@
 ///                   drawing (end of October 2010).
 ///                3. COMPLETEV1 contains now only 10 SM for runs for year 2011
 ///                4. COMPLETE12SMV1 contains 12 SM for runs from year 2012 and on
-///                5. COMPLETE12SMV1_DCAL contains 12 SM and 6 DCal SM
-///                6. COMPLETE12SMV1_DCAL_DEV contains 12 SM and 10 DCal SM
+///                5. COMPLETE12SMV1_DCAL contains 12 SM and 6 DCal SM -- not for standard user mode
+///                6. COMPLETE12SMV1_DCAL_DEV contains 12 SM and 10 DCal SM -- not for standard user mode
 ///                7. COMPLETE12SMV1_DCAL_8SM contains 12 SM and 6 DCal SM and 2 extentions
 ///
 ///   EMCAL_WSUC (Wayne State test stand)

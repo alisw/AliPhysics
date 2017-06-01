@@ -25,6 +25,8 @@
 #include "TPRegexp.h" 
 ClassImp(AliExternalInfo)
 
+using namespace std;
+
 const TString AliExternalInfo::fgkDefaultConfig="$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg";
 
 AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation, Int_t verbose/*, Bool_t copyToLocalStorage*/) :

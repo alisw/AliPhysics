@@ -19,6 +19,44 @@ class TString;
 class TClonesArray;
 class AliMUONGeometryTransformer;
 
+class AliMUONAlignmentTrackParam: public TObject
+{
+  public:
+
+  /// constructor
+  AliMUONAlignmentTrackParam(void):
+    fPx(0), fPy(0), fPz(0), fHitPattern(0)
+    {}
+
+  /// constructor
+  AliMUONAlignmentTrackParam( Double_t px, Double_t py, Double_t pz ):
+    fPx(px), fPy(py), fPz(pz), fHitPattern(0)
+    {}
+
+  /// object name
+  const char* GetName( void ) const
+  { return "AliMUONAlignmentTrackParam"; }
+
+  /// return number of chambers hit
+  Int_t GetNChambers( void ) const;
+
+  /// return number of stations hit
+  Int_t GetNStations( void ) const;
+
+  ///@name momentum
+  //@{
+  Double_t fPx;
+  Double_t fPy;
+  Double_t fPz;
+  //@}
+
+  /// hit pattern
+  UInt_t fHitPattern;
+
+  ClassDef(AliMUONAlignmentTrackParam,2)
+
+};
+
 class AliMUONAlignmentTask : public AliAnalysisTaskSE
 {
 
@@ -61,6 +99,29 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
     fForceBField = kTRUE;
     fBFieldOn = value;
   }
+
+  /// refit straight tracks
+  void SetRefitStraightTracks( Bool_t value )
+  { fRefitStraightTracks = value; }
+
+  /// do evaluation
+  void SetDoEvaluation( Bool_t value )
+  { fDoEvaluation = value; }
+
+  /// min Pt
+  void SetMinPt( Double_t value )
+  { fMinPt = value; }
+
+  /// min PyPz
+  /* cutting on this variable allows one to select more and more straight tracks
+   *  when magnetic field is on
+   */
+  void SetMinPyPz( Double_t value )
+  { fMinPyPz = value; }
+
+  /// min number of stations
+  void SetMinStations( Int_t value )
+  { fMinStations = value; }
 
   /// run range
   void SetRunRange( Int_t runNumberMin, Int_t runNumberMax )
@@ -135,7 +196,22 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   /// Flag for Magnetic field On/Off
   Bool_t fBFieldOn;
 
+  /// Flag for refitting straight tracks
+  Bool_t fRefitStraightTracks;
+
+  /// Flag for running refit evaluation
+  Bool_t fDoEvaluation;
+
   //@}
+
+  /// track momentum cut
+  Double_t fMinPt;
+
+  /// track momentum cut
+  Double_t fMinPyPz;
+
+  /// track min number of stations
+  Int_t fMinStations;
 
   /// The MUON alignment object
   AliMUONAlignment *fAlign;
@@ -170,6 +246,9 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   /// Number of tracks used for alignment
   Int_t fTrackOk;
 
+  /// Number of records (should match fTrackOk)
+  Int_t fRecordsTot;
+
   /// run range
   Int_t fRunNumberMin;
   Int_t fRunNumberMax;
@@ -182,6 +261,9 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
 
   /// Array of alignment parameters pulls
   Double_t fPulls[AliMUONAlignment::fNGlobal];
+
+  /// list of track parameters
+  TClonesArray *fTrackParams;
 
   /// list of track records
   TClonesArray *fRecords;

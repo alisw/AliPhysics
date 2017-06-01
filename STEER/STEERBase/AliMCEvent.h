@@ -125,7 +125,7 @@ public:
     virtual Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     virtual void      DrawCheck(Int_t i, Int_t search);
     virtual void      AddSubsidiaryEvent(AliMCEvent* event);
-    virtual Int_t     GetNumberOfPrimaries() {return fNprimaries;}
+    virtual Int_t     GetNumberOfPrimaries() const {return fNprimaries;}
     virtual Int_t     GetPrimaryOffset()    const {return fPrimaryOffset;}
     virtual Int_t     GetSecondaryOffset()  const {return fSecondaryOffset;}    
     virtual void      SetPrimaryOffset(Int_t ioff)    {fPrimaryOffset = ioff;}

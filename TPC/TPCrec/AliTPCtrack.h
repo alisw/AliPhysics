@@ -90,7 +90,9 @@ public:
   Bool_t GetBConstrain() const {return fBConstrain;}
   Int_t GetNShared() const {return fNShared;}
   Int_t GetNFoundable() const {return fNFoundable;}
-
+  //
+  static double* GetMatLarge() {return fgMatLarge;}
+  
 protected: 
   Double_t fdEdx;           // dE/dx
 
@@ -111,7 +113,7 @@ protected:
   Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
-
+  static double fgMatLarge[16]; // large initial cov. matrix (0-14) + optional additive term for p[4] error
   ClassDef(AliTPCtrack,5)   // Time Projection Chamber reconstructed tracks
 };
 
