@@ -39,14 +39,14 @@ class AliT0CalibSeasonTimeShift: public TNamed {
   
   void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
  
-  TGraph *GetT0s(Int_t icase )  const {return (TGraph*)fT0vsMult.At(icase);}
+  TObjArray GetT0s()  const {return fT0vsMult;}
   
  // TObjArray* GetfT0s() {return &fT0vsMult;}    
 
 
 
  protected:
-  Float_t  fMeanPar[4];     
+  Float_t  fMeanPar[4];
 // [0] (T0A+T0C)/2; 
 // [1] T0A corrected by primary vertex
 // [2] T0A corrected by primary vertex
@@ -56,10 +56,10 @@ class AliT0CalibSeasonTimeShift: public TNamed {
 // [1] sigma T0A corrected by primary vertex
 // [2]sigma T0A corrected by primary vertex
 // [3]sigma T0resolution
-  TObjArray fT0vsMult;     // T0A,T0C, T0AC, resolution vs SPD tracklets
+   TObjArray fT0vsMult;     // T0A,T0C, T0AC, resolution vs SPD tracklets
 
 
-  ClassDef(AliT0CalibSeasonTimeShift,2)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibSeasonTimeShift,3)    // T0 Sensor Calibration data
 };
 
 

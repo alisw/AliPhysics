@@ -27,7 +27,8 @@ ClassImp(AliT0CalibOffsetChannelsTask)
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask() 
   : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-    fRunNumber(0),fRefPMTA(12), fRefPMTC(0)
+  fRunNumber(0),fRefPMTA(12), fRefPMTC(0),
+   fEvent(0)
 {
   // Constructor
 
@@ -36,7 +37,11 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
     fCFD[ip]      = 0;
     fCDBdelays[ip]= 0;
     fCDBcfds[ip]= 0;
-    if (ip<4 ) fCDBT0s[ip]= 0;
+    fCFDvsTimestamp[ip] = NULL;
+    if (ip<4 ) {
+      fCDBT0s[ip]= 0;
+      fT0s[ip] =NULL;
+    }
   }
 
   // Define input and output slots here
@@ -50,7 +55,7 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-    fRunNumber(0),fRefPMTA(12), fRefPMTC(0)
+    fRunNumber(0),fRefPMTA(12), fRefPMTC(0), fEvent(0)
 {
   // Constructor
  
@@ -59,8 +64,12 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name)
     fCFD[ip]      = 0;
     fCDBdelays[ip]= 0;
     fCDBcfds[ip]= 0;
-    if (ip<4 ) fCDBT0s[ip]= 0;
-
+    fCFDvsTimestamp[ip] = NULL;
+		    
+    if (ip<4 ) {
+      fCDBT0s[ip]= 0;
+      fT0s[ip] =NULL;
+    }
   }
  
   // Define input and output slots here
@@ -83,7 +92,9 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
   for( Int_t  ip=0; ip < 24; ip++){
     delete fTimeDiff[ip];
     delete fCFD[ip];
+    delete fCFDvsTimestamp[ip];
   }
+  for( Int_t  ip=0; ip < 4; ip++) delete fT0s[ip];
   
   delete fTzeroObject;
 }
@@ -115,10 +126,13 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   // Create histograms
   Float_t low = fCDBcfds[fRefPMTC] - 500;
   Float_t high = fCDBcfds[fRefPMTA] + 500;
+  printf (" AliT0CalibOffsetChannelsTask %f %f \n",low,high);
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",150, -300, 300);
     fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250,low, high);//6000, 7000);
-    //    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, -1000, 1000);//6000, 7000);
+    fCFDvsTimestamp[i] = new TH2F();
+    fCFDvsTimestamp[i]->SetName(Form("hCFDvsTimestamp%i", i+1));
+    fCFDvsTimestamp[i]->SetTitle(Form("CFD vs timestamp%i", i+1));
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-4000,4000);   //or A plus or C 
@@ -128,13 +142,14 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   TString histname[4] = {"hT0AC","hT0A","hT0C","hResolution"};
   for (int icase=0; icase<4; icase++) 
     fT0s[icase] = new TH2F(histname[icase].Data(), histname[icase].Data(), 100, 0, 200, 200, -1000, 1000);
+
   fTzeroObject     = new TObjArray(0);
   fTzeroObject->SetOwner(kTRUE);
   
   for (Int_t i=0; i<24; i++)
     fTzeroObject->AddAtAndExpand(fTimeDiff[i],i);
 
-  for (Int_t i=0; i<24; i++)
+  for (Int_t i=0; i<24; i++) 
     fTzeroObject->AddAtAndExpand(fCFD[i],i+24); //24 - 48
 
   fTzeroObject->AddAtAndExpand(fTzeroORAplusORC, 48);
@@ -143,8 +158,11 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   fTzeroObject->AddAtAndExpand(fTzeroORC, 51);
   for (int icase=0; icase<4; icase++) 
     fTzeroObject->AddAtAndExpand(fT0s[icase], 52+icase);
+  for (int icase=0; icase<24; icase++) 
+    fTzeroObject->AddAtAndExpand(fCFDvsTimestamp[icase], 56+icase);
 
   PostData(1, fTzeroObject);
+  fEvent=0;
   // Called once
 }
 
@@ -161,6 +179,13 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     printf("ERROR: fESD not available\n");
     return;
   }
+  UInt_t timestamp=fESD->GetTimeStamp();
+  if (fEvent==0 ) 
+    for (int iii=0; iii<24; iii++)
+      fCFDvsTimestamp[iii]->SetBins(121, timestamp-60, timestamp+72000, 250,fCDBcfds[fRefPMTC]-500, fCDBcfds[fRefPMTA] + 500);
+   fEvent++;
+ 
+            
   AliESDTZERO* tz= (AliESDTZERO*) fESD->GetESDTZERO();
   Int_t trigT0 = fESD->GetT0Trig();
   Float_t tvdctr = tz->GetTVDC(0);
@@ -178,6 +203,7 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
       if( time[i] > 0  && amp[i]>0.1 ){
 	if (eq)	{
 	  fCFD[i]->Fill( time[i] );//////!!!!!
+	  fCFDvsTimestamp[i]->Fill(timestamp,time[i]);
 	  if(  time[fRefPMTC] > 0 && i<12)   {
 	    diff =  time[i]-time[fRefPMTC];
 	    fTimeDiff[i]->Fill( diff);
