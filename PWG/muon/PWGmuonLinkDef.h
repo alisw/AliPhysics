@@ -43,6 +43,7 @@
 #pragma link C++ class AliAnalysisTaskFlowSingleMu+;
 #pragma link C++ class AliAnalysisMuonUtility+;
 #pragma link C++ class AliUtilityMuonAncestor+;
+#pragma link C++ class AliUtilityDimuonSource+;
 #pragma link C++ class AliOADBMuonTrackCutsParam+;
 #pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
 #pragma link C++ class AliAnalysisNonMuonTrackCuts+;
@@ -82,4 +83,3 @@
 #pragma link C++ class AliMuonTrackSmearing+;
 #pragma link C++ class AliTaskMuonTrackSmearing+;
 #endif
-
