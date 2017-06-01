@@ -40,13 +40,13 @@ ClassImp(AliT0CalibTimeEq)
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
   fMeanVertex(0),        
-  fRmsVertex(0),
-  fCFDvsTime()
+  fRmsVertex(0)
 {
   //
   for(Int_t i=0; i<24; i++) {
    fTimeEq[i] = 0;	      // Time Equalized for OCDB	 
    fTimeEqRms[i] = -1;	      // RMS of Time Equalized for OCDB	 
+   fCFDvsTime[i] = NULL;
    for (Int_t ih=0; ih<5; ih++)   fCFDvalue[i][ih] = 0;
   }
   fCFDvsTime.SetOwner(kTRUE);
@@ -55,8 +55,7 @@ AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 						     fMeanVertex(0),        
-						     fRmsVertex(0),
-						     fCFDvsTime(0)
+						     fRmsVertex(0)
 {
   //constructor
 
@@ -323,9 +322,13 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
   Int_t okcfd=0;
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
+  TH2F *hCFDvsTime = NULL;
   TObjArray * tzeroObj = NULL;
   Float_t qt1[24], ped[24], orA, orC, tvdc;
-
+  Float_t meanCFDvsTime[121], timestamp[121];
+  TGraph *cCFDvsTime;
+  for (int ibin=0; ibin<121; ibin++) meanCFDvsTime[ibin]=0;
+  
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
@@ -341,7 +344,8 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 	  if (i != badpmt) {	    
 	    if(tzeroObj) {
 	      cfddiff = (TH1F*) tzeroObj->FindObject(Form("CFD1minCFD%d",i+1));
-	      cfdtime = (TH1F*)tzeroObj->FindObject(Form("CFD%d",i+1));
+	      cfdtime = (TH1F*) tzeroObj->FindObject(Form("CFD%d",i+1));
+	      hCFDvsTime = (TH2F*) tzeroObj->FindObject(Form("hCFDvsTimestamp%i",i+1) );
 	    }
 	    else
 	      {
@@ -421,15 +425,15 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 	      if(nent<=100 && nent>0 ) 
 		{
 		  okcfd++;
-		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
+		  AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
 		  meancfdtime = cfdvalue[i];
 		  //		  ok = -11;
 		  printf("!!!!low statstics:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
 			 i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  cfdvalue[i]);
 		  if (okcfd>2) {
-		  ok = -11;
-		  if (tzeroObj) delete tzeroObj;
-		  return ok;
+		    ok = -11;
+		    if (tzeroObj) delete tzeroObj;
+		    return ok;
 		  }
 		}
 	      
@@ -444,25 +448,45 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 		Int_t   maxBin = cfdtime->GetMaximumBin(); 
 		Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
 		if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
+	      }
 	    }
-	  }
 	  
-	  SetTimeEq(i,meandiff);
-	  SetTimeEqRms(i,sigmadiff);
-	  SetCFDvalue(i,0, meancfdtime );
-	  qt1[i]=cfdvalue[24+i];
-	  SetCFDvalue(i,1,qt1[i]);
-	  ped[i]=cfdvalue[52+i];
-	  SetCFDvalue(i,3,ped[i]);
-	  AliInfo(Form(" !!! AliT0CalibTimeEq pmt %i pedestal %f \n ", i, ped[i]) );
-	  if (cfddiff) cfddiff->Reset();
-	  if (cfdtime) cfdtime->Reset();
+	    SetTimeEq(i,meandiff);
+	    SetTimeEqRms(i,sigmadiff);
+	    SetCFDvalue(i,0, meancfdtime );
+	    qt1[i]=cfdvalue[24+i];
+	    SetCFDvalue(i,1,qt1[i]);
+	    ped[i]=cfdvalue[52+i];
+	    SetCFDvalue(i,3,ped[i]);
+	    //    AliInfo(Form(" !!! AliT0CalibTimeEq pmt %i pedestal %f \n ", i, ped[i]) );
+	    if (cfddiff) cfddiff->Reset();
+	    if (cfdtime) cfdtime->Reset();
+	  if (hCFDvsTime) {
+	    // CFD vs timestamp
+	    for (int ibin=1; ibin<120; ibin++) {
+	      timestamp[ibin-1] =  hCFDvsTime->GetXaxis()->GetBinCenter(ibin);
+	      TH1D* projd = hCFDvsTime->ProjectionY(Form("prY%i_%i",ibin,i),ibin, ibin+1);
+	      TH1F* proj = (TH1F*)projd;
+	      if(proj->GetEntries()>200 ) {
+		Float_t sigmat;
+		GetMeanAndSigma(proj, meanCFDvsTime[ibin-1], sigmat);
+	      }
+	      else 
+		meanCFDvsTime[ibin-1] = meancfdtime; 
+	    }
+	    cCFDvsTime = new TGraph(58, timestamp, meanCFDvsTime);
+	    // cCFDvsTime->Print();
+	    fCFDvsTime.AddAtAndExpand(cCFDvsTime,i);
+	    //  cCFDvsTime->Delete();
+	  }
+
+	    
 	  } //bad pmt
 	}      
       SetMeanVertex(cfdvalue[48]);
       SetOrA(cfdvalue[49]);
       SetOrC(cfdvalue[50]);
-
+      
       gFile->Close();
       delete gFile;
     }
@@ -486,7 +510,6 @@ void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigm
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
-  printf("GetMeanAndSigma meanEstimate %f mean %f \n",  meanEstimate, mean);
 
  if(TMath::Abs(meanEstimate - mean) > 20 ) mean = meanEstimate; 
 
