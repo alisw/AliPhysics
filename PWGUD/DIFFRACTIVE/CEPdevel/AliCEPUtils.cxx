@@ -1300,19 +1300,18 @@ void AliCEPUtils::DetermineMCprocessType (
 		  
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
-      //printf("MC generator name: %s\n",fMCGenerator.Data());
+      // printf("MC generator name: %s\n",fMCGenerator.Data());
       Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
 			if (fMCGenerator == "Pythia") {
 				fMCProcess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				//printf("Pythia process type: %i\n",fMCProcess);
+				printf("Pythia process type: %i\n",fMCProcess);
         switch(fMCProcess) {
-				case 92:
-				case 93:
-				case 94:
-				case 104: fMCProcessType = AliCEPBase::kProctypeSD; break;
+				case 101: fMCProcessType = AliCEPBase::kProctypeMB; break;
+				case 103: fMCProcessType = AliCEPBase::kProctypeSDA; break;
+				case 104: fMCProcessType = AliCEPBase::kProctypeSDB; break;
 				case 105: fMCProcessType = AliCEPBase::kProctypeDD; break;
 				case 106: fMCProcessType = AliCEPBase::kProctypeCD; break;
 				default:  fMCProcessType = AliCEPBase::kProctypeND; break;
@@ -1332,9 +1331,11 @@ void AliCEPUtils::DetermineMCprocessType (
 				//printf("DPMjet process type: %i\n",fMCProcess);
 				switch(fMCProcess) {
 				case 1:  fMCProcessType = AliCEPBase::kProctypeND; break;
-				case 3:  fMCProcessType = AliCEPBase::kProctypeSD; break;
-				case 4:  fMCProcessType = AliCEPBase::kProctypeDD; break;
-				case 5:  fMCProcessType = AliCEPBase::kProctypeCD; break;
+				case 2:  fMCProcessType = AliCEPBase::kProctypeEL; break;
+				case 4:  fMCProcessType = AliCEPBase::kProctypeCD; break;
+				case 5:  fMCProcessType = AliCEPBase::kProctypeSDA; break;
+				case 6:  fMCProcessType = AliCEPBase::kProctypeSDB; break;
+				case 7:  fMCProcessType = AliCEPBase::kProctypeDD; break;
 				default: fMCProcessType = AliCEPBase::kProctypeND; break;
 				}
 			}
