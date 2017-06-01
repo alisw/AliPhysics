@@ -994,7 +994,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   } else if (fIsHeavyIon == 2){
     printf("Running in pPb mode \n");
     if (fDetectorCentrality == 0){
-      printf("\t centrality selection based on V0A (V0M in case Run2)\n");
+      printf("\t centrality selection based on V0A \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
     } 
@@ -1684,7 +1684,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
       if(fDetectorCentrality==0){
-	                               return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+	                               return MultSelection->GetMultiplicityPercentile("V0A",kTRUE); // default for pPb
       }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
@@ -4161,6 +4161,12 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   ) {
     fPeriodEnum = kLHC15fm;
     fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC15n") == 0 ){
+    fPeriodEnum = kLHC15n;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC15o") == 0 ){
+    fPeriodEnum = kLHC15o;
+    fEnergyEnum = kPbPb5TeV;
   } else if (periodName.CompareTo("LHC16k") == 0 || periodName.CompareTo("LHC16l") == 0 ){
     fPeriodEnum = kLHC16kl;
     fEnergyEnum = k13TeV;
@@ -4169,19 +4175,13 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC16r") == 0 ){
     fPeriodEnum = kLHC16r;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC16s") == 0 ){
     fPeriodEnum = kLHC16s;
-    fEnergyEnum = kpPb5TeV;
+    fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC16t") == 0 ){
     fPeriodEnum = kLHC16t;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC15n") == 0 ){
-    fPeriodEnum = kLHC15n;
-    fEnergyEnum = k5TeV;
-  } else if (periodName.CompareTo("LHC15o") == 0 ){
-    fPeriodEnum = kLHC15o;
-    fEnergyEnum = kPbPb5TeV;
     
   // LHC10x anchored MCs
   } else if (periodName.CompareTo("LHC10d1") == 0){
