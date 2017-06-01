@@ -69,6 +69,7 @@
 
 #pragma link C++ class AliAnalysisTaskMTRResponse+;
 #pragma link C++ class AliMTRParameterizedResponse+;
+#pragma link C++ class AliAnalysisTaskWeightMTRResponse+;
 
 #pragma link C++ class AliAnalysisMuMuMCGene+;
 

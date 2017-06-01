@@ -78,6 +78,7 @@ set(SRCS
   AliAnalysisTaskSEMuonsHF.cxx
   AliAnalysisTaskSingleMu.cxx
   AliAnalysisTaskSingleMuESD.cxx
+  AliAnalysisTaskWeightMTRResponse.cxx
   AliAODEventInfo.cxx
   AliAODMuonReplicator.cxx
   AliCFMuonResTask1.cxx
