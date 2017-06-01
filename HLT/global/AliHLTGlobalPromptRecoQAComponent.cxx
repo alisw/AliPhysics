@@ -168,6 +168,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistDeDxOffline(NULL)
   , fHistTRDHCId(NULL)
   , fHistTPCClusterFlags(NULL)
+  , fITSSPDvertexZ(0)
 {
   for (int i = 0;i < 10;i++) fHistDeDxNew[i] = NULL;
 }
@@ -548,6 +549,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fAxes["dEdx"].set( 300, 10., 3000., &fakePtr );
   fAxes["tpcClusterFlags"].set( 8, 0, 7, &fakePtr );
   fAxes["trdHCId"].set( 1080, 0, 1079, &fakePtr );
+  fAxes["ITSSPDvertexZ"].set( 100, -100., 100., &fITSSPDvertexZ );
 
   //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
@@ -571,7 +573,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
   NewHistogram(",fHistZNC_VZEROTrigChargeC,ZNC vs. VZERO Trigger Charge C,vZEROTriggerChargeC,zdcZNC");
   NewHistogram(",fHistZNT_VZEROTrigChargeT,ZN (A+C) vs. VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,zdcZNAC");
-  NewHistogram(",fHistTZERO_ITSSAPTracks,TZERO Amplitude vs ITS SAP Tracks,nITSSAPtracks,tZEROAmplitude");
+  NewHistogram(",fHistTZERO_ITSSPDVertexZ,TZERO interaction time vs ITS vertex z,ITSSPDvertexZ,tZEROAmplitude");
   NewHistogram(",fHistVZERO_SPDClusters,SPD Clusters vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nClustersSPD");
   NewHistogram(",fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
 
@@ -1076,6 +1078,15 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     if (iter->fDataType == (kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD))
     {
       bITSSPDVertex = kTRUE;
+      const TObject* o = GetInputObjectFromIndex(ndx);
+      if (o)
+      {
+        const AliESDVertex* esdVertex = dynamic_cast<const AliESDVertex*>(o);
+        if (esdVertex)
+        {
+          fITSSPDvertexZ = esdVertex->GetZ();
+        }
+      }
     }
 
     //numbers of clusters
@@ -1153,7 +1164,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         const AliESDTZERO* esdTZERO = dynamic_cast<const AliESDTZERO*>(o);
         if (esdTZERO)
         {
-          for (int i = 0;i < 24;i++) tZEROAmplitude += esdTZERO->GetT0amplitude()[i];
+          tZEROAmplitude = esdTZERO->GetT0TOF()[0];
         }
       }
     }
