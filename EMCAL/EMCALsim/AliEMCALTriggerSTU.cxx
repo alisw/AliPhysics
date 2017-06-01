@@ -57,10 +57,6 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, con
   fGammaTh[0] = fGammaTh[1] = 0;
   fJetTh[0] = fJetTh[1] = 0;	
   fBkgRho = 0;
-
-  // Getting fW version
-  if (dcsConf) fFw = dcsConf->GetFw();
-  else AliError("DCS STU Config not found.");
 }
 
 ///

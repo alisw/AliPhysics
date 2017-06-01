@@ -86,33 +86,41 @@ fGeometry(0)
   AliEMCALTriggerSTUDCSConfig* stuConf = dcsConf->GetSTUDCSConfig();
   fSTU = new AliEMCALTriggerSTU(stuConf, rSize);
 	
+//MHO FIXME
+ // printf("MHO DCS gives EGA1 %d EGA2 %d EJE1 %d EJE2 %d\n",stuConf->GetG(2,0),stuConf->GetG(2,1),stuConf->GetJ(2,0),stuConf->GetJ(2,1));
+//END MHO
 
   // Checking Firmware from DCS config to choose algorithm
   fEMCALFw = stuConf->GetFw();
-  printf("MHO: Found EMCAL fW %x from OCDB\n",fEMCALFw);
+//  printf("MHO: Found EMCAL fW %x from OCDB\n",fEMCALFw);
+  AliInfo(TString::Format("Found EMCAL STU firmware %x.",fEMCALFw));
   if (iTriggerMapping >= 2) {
-    AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0xb000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));
-    fSTU->SetFw(0xb000);
-    fEMCALFw = fSTU->GetFw();
+   // AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0x2b000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));
+  //  stuConf->SetFw(0xb000); //(4,4)x(2,2) FIXME hardcode
+//    stuConf->SetFw(0x2b000); //(4,4)x(4,4)
+    fEMCALFw = stuConf->GetFw();
   }
+
 
   if (iTriggerMapping >= 2) {
     rSize.Set( 40., 48. );  // This should be accurate
-    AliEMCALTriggerSTUDCSConfig* stuConfDCal = dcsConf->GetSTUDCSConfig(false);
+    AliEMCALTriggerSTUDCSConfig* stuConfDCal = dcsConf->GetSTUDCSConfig(true);
     if (stuConfDCal) {
       fDCALFw = stuConfDCal->GetFw();
       printf("MHO: Found DCAL fW %x from OCDB\n",fDCALFw);
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
-      if ((fDCALFw % 0xf000) != 0xd000) {
-        AliInfo(TString::Format("Found DCAL STU firmware %x. Manually setting DCAL STU fW object to 0xd000.  This code should be changed when the OCDB entries have been corrected.",fDCALFw));
-        fSTUDCAL->SetFw(0xd000);
+      AliInfo(TString::Format("Found DCAL STU firmware %x.",fDCALFw));
+      if ((fDCALFw & 0xf000) != 0xd000) {
+    //    AliInfo(TString::Format("Found DCAL STU firmware %x. Manually setting DCAL STU fW object to 0xd000.  This code should be changed when the OCDB entries have been corrected.",fDCALFw));
+ //       stuConfDCal->SetFw(0xd000); // FIXME hardcode
       }
     } else {
       AliError("No DCS Config found for DCAL!  Using EMCAL DCS config for now.");
       fSTUDCAL = new AliEMCALTriggerSTU(stuConf, rSize);
       AliInfo("Manually setting DCAL STU fW object to 0xd000.");
       // Manually setting DCAL STU DCS fW version to 0xd000
-      fSTUDCAL->SetFw(0xd000);
+        stuConfDCal->SetFw(0xd000);
+        fDCALFw = stuConfDCal->GetFw();
 //			fDCALfW = fEMCALfW;
     }
   } else fSTUDCAL = 0;
@@ -130,8 +138,7 @@ fGeometry(0)
   Int_t iTRU = 0;
   for (Int_t i = 0; i < fNTRU; i++) {
 
-    // Alternative to fixing trigger mapping:
-    // keep old mapping, skip over virtual TRUs
+    // Skip virtual TRUs
     if (i == 34 || i == 35 ||
         i == 40 || i == 41 ||
         i == 46 || i == 47) {
@@ -216,7 +223,6 @@ AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 /// Digits to trigger
 //__________________
 void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data)
-//<<<<<<< 60cc34719a2039638351deca1c8a53523f1d8797
 {
   // Digits to trigger
   Int_t pos, px, py, id; 
@@ -229,6 +235,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     posMap[i][j] = -1;
   }
   
+  // Loading raw digits
   for (Int_t i = 0; i < digits->GetEntriesFast(); i++)
   {
     AliEMCALTriggerRawDigit* digit = (AliEMCALTriggerRawDigit*)digits->At(i);
@@ -259,11 +266,10 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         }
       }
     }
-  
+    
   //	if (fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) posMap[px][py] = i;
     if (fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, py, px)) posMap[px][py] = i;
   }
-
 
   Int_t iL0 = 0;
 
@@ -373,7 +379,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     }
   }
 
-  if (iL0 && !data->GetMode())
+  if (iL0 && !data->GetMode()) //Simulation
   {
   //	for (Int_t i = 0; i < kNTRU; i++)
     for (Int_t i = 0; i < fNTRU; i++)
@@ -386,14 +392,16 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       TIter next(&iTRU->Patches());
       while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)next())
       {
-        p->Position(px, py); // x is phi, y is eta
+//        p->Position(px, py); // x is phi, y is eta
+        p->Position(py, px); // x is phi, y is eta
       
 //				if (fGeometry->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) 
 //					&& 
 //					fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
 
         // Local 2 Global
-        if (fGeometry->GetAbsFastORIndexFromPositionInTRU(i, py, px, id) 
+//        if (fGeometry->GetAbsFastORIndexFromPositionInTRU(i, py, px, id) 
+        if (fGeometry->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) 
           && 
           fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, py, px)) p->SetPosition(px, py);
 
@@ -406,18 +414,23 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         
         Int_t peaks = p->Peaks();
                 
-        Int_t sizeX = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
-        Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
-          
+//        Int_t sizeX = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
+//        Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
+        Int_t sizeX = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
+        Int_t sizeY = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
+ printf("MHO: eta,phi = %d,%d, sizeX = %d, sizeY = %d",px,py,sizeX,sizeY);
+ 
         for (Int_t j = 0; j < sizeX * sizeY; j++)
         {
           if (peaks & (1 << j))
           {
-            pos = posMap[px + j % sizeX][py + j / sizeX];
+//            pos = posMap[px + j % sizeX][py + j / sizeX];
+            pos = posMap[px + j / sizeX][py + j % sizeX];
               
             if (pos == -1) {
               // Add a new digit
-              posMap[px + j % sizeX][py + j / sizeX] = digits->GetEntriesFast();
+//              posMap[px + j % sizeX][py + j / sizeX] = digits->GetEntriesFast();
+              posMap[px + j / sizeX][py + j % sizeX] = digits->GetEntriesFast();
 
               new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
                 
@@ -425,7 +438,11 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
             } else {
               dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
             }
-              
+
+// MHO FIXME              
+// AliInfo(Form("MHO: Trying to setL0 time eta,phi = %d,%d, time = %d",py,px,p->Time()));
+ printf("MHO: Trying to setL0 time eta,phi = %d,%d, time = %d\n",py,px,p->Time());
+//            dig->Print("");
             if (dig) dig->SetL0Time(p->Time());
           }
         }
@@ -453,12 +470,12 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
   // Prepare STU for L1 calculation
 
-	Int_t nPhiRegionSizeX = fSTU->RegionSize()->X();
-	if (fSTUDCAL) nPhiRegionSizeX += fSTUDCAL->RegionSize()->X();
+	Int_t nSTURegionSizeX = fSTU->RegionSize()->X();
+	if (fSTUDCAL) nSTURegionSizeX += fSTUDCAL->RegionSize()->X();
+  Int_t nSTURegionSizeY = fSTU->RegionSize()->Y();
 
-
-  for (int i = 0; i < nPhiRegionSizeX; i++) {
-    for (int j = 0; j < (fSTU->RegionSize())->Y(); j++) {
+  for (int i = 0; i < nSTURegionSizeX; i++) {
+    for (int j = 0; j < nSTURegionSizeY; j++) {
       
       pos = posMap[i][j];
 
@@ -468,9 +485,12 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     
         if (digit && digit->GetL1TimeSum() > -1) region[i][j] = digit->GetL1TimeSum();
       }
+ //     if (region[i][j] > 0) printf("O"); else printf("-"); //MHO
     }
+//    printf("\n"); //MHO
   }
-
+//  printf("\n"); //MHO
+  printf("MHO found %d raw digits\n",digits->GetEntriesFast());
 
   AliDebug(999,"==================== STU  ====================");
   if (AliDebugLevel() >= 999) {
@@ -483,11 +503,11 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 	if (fSTUDCAL) fSTUDCAL->SetRegion(&region[64]);
 //	if (fSTUDCAL) fSTUDCAL->SetRegion(region); 
   
-  if (data->GetMode()) 
+  if (data->GetMode()) // Reconstruction
   {
     for (int ithr = 0; ithr < 2; ithr++) {
       AliDebug(999, Form(" THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
-      AliInfo(Form("MHO THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
+   //   AliInfo(Form("MHO THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
                  
       fSTU->SetThreshold(kL1GammaHigh + ithr, data->GetL1GammaThreshold(ithr));
       fSTU->SetThreshold(kL1JetHigh + ithr, data->GetL1JetThreshold(  ithr));
@@ -497,25 +517,53 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       }
     }
   }
-  else
+  else  // Simulation
   {
     for (int ithr = 0; ithr < 2; ithr++) {
       //
       fSTU->ComputeThFromV0(kL1GammaHigh + ithr, V0M); 
-      data->SetL1GammaThreshold(ithr, fSTU->GetThreshold(kL1GammaHigh + ithr));
+//      data->SetL1GammaThreshold(ithr, fSTU->GetThreshold(kL1GammaHigh + ithr));
       
       fSTU->ComputeThFromV0(kL1JetHigh + ithr,   V0M);
-      data->SetL1JetThreshold(ithr, fSTU->GetThreshold(kL1JetHigh + ithr)  );
+  //    data->SetL1JetThreshold(ithr, fSTU->GetThreshold(kL1JetHigh + ithr)  );
       
+
+      // MHO Manually Setting FIXME
+
+      TString fGeometryName = fGeometry->GetName();
+      Int_t iTriggerMapping = 1 + (Int_t) fGeometryName.Contains("DCAL");
+      if (iTriggerMapping >= 2) {
+        // Hard Code LHC15o thresholds
+        data->SetL1GammaThreshold(ithr, 128);
+        fSTU->SetThreshold(kL1GammaHigh + ithr, 128);
+
+        data->SetL1JetThreshold(ithr, 255);
+        fSTU->SetThreshold(kL1JetHigh + ithr, 255);
+      } else {
+        // HardCore LHC13f thresholds
+        data->SetL1GammaThreshold(ithr, 89 + 51*ithr);
+        fSTU->SetThreshold(kL1GammaHigh + ithr, 89 + 51*ithr);
+
+        data->SetL1JetThreshold(ithr, 127 + 133*ithr);
+        fSTU->SetThreshold(kL1JetHigh + ithr, 127 + 133*ithr);
+      }
+
+
       AliDebug(999, Form("STU EMCAL THR %d EGA %d EJE %d", ithr, fSTU->GetThreshold(kL1GammaHigh + ithr), fSTU->GetThreshold(kL1JetHigh + ithr)));
-      AliInfo(Form("MHO THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
+ //     AliInfo(Form("MHO THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
       if (fSTUDCAL) {
         // Setting threshold for DCAL.  Already set in data
         fSTUDCAL->ComputeThFromV0(kL1GammaHigh + ithr, V0M); 
 //				data->SetL1GammaThreshold(ithr, fSTU->GetThreshold(kL1GammaHigh + ithr));
         fSTUDCAL->ComputeThFromV0(kL1JetHigh + ithr,   V0M);
 //				data->SetL1JetThreshold(ithr, fSTU->GetThreshold(kL1JetHigh + ithr)  );
-        AliDebug(999, Form("STU DCAL THR %d EGA %d EJE %d", ithr, fSTUDCAL->GetThreshold(kL1GammaHigh + ithr), fSTUDCAL->GetThreshold(kL1JetHigh + ithr)));
+ 
+      // MHO Manually Setting FIXME
+        fSTUDCAL->SetThreshold(kL1GammaHigh + ithr, 128);
+        fSTUDCAL->SetThreshold(kL1JetHigh + ithr, 255);
+
+
+       AliDebug(999, Form("STU DCAL THR %d EGA %d EJE %d", ithr, fSTUDCAL->GetThreshold(kL1GammaHigh + ithr), fSTUDCAL->GetThreshold(kL1JetHigh + ithr)));
       }
   
     }
@@ -523,7 +571,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
 
   if (fSTUDCAL && ((fEMCALFw & 0xf000) == 0xb000)) { // Execute run 2 algorithm
-    AliInfo("Executing Run 2 event-by-event background subtraction for trigger");	
+    AliInfo("Executing event-by-event median background subtraction for trigger");	
 
     Int_t fBkgRhoEMCAL = fSTU->GetMedianEnergy();
     Int_t fBkgRhoDCAL = fSTUDCAL->GetMedianEnergy();
@@ -550,6 +598,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     nP = (fSTU->Patches()).MakeIterator();
     
     AliDebug(999, Form("=== EMCAL STU found %d gamma patches", (fSTU->Patches()).GetEntriesFast()));
+    printf("=== EMCAL STU found %d gamma patches\n", (fSTU->Patches()).GetEntriesFast());
     
     while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
     {			
@@ -567,15 +616,19 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
           new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
           
           dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+printf("MHO: Adding a new EMCAL GA at (%d,%d)\n",px,py);
         } 
         else
         {
+printf("MHO: Updating an EMCAL GA at (%d,%d)\n",px,py);
+
           dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);								
         }
         
         if (AliDebugLevel()) dig->Print("");
         
         if (dig) dig->SetTriggerBit(kL1GammaHigh + ithr, 0);
+//        if (dig) dig->SetTriggerBit(kL1GammaHigh + ithr, data->GetMode());
       }
     }
 
@@ -586,6 +639,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     nP = (fSTU->Patches()).MakeIterator();
     
     AliDebug(999, Form("=== EMCAL STU found %d jet patches", (fSTU->Patches()).GetEntriesFast()));
+    printf("=== EMCAL STU found %d jet patches\n", (fSTU->Patches()).GetEntriesFast());
     
     while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
     {			
@@ -603,15 +657,21 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
           new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
           
           dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+          printf("MHO Creating new JE digit\n");
         } 
         else
         {
+          printf("MHO updating JE digit:\n");
           dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);
+          dig->Print("");
         }
         
         if (AliDebugLevel()) dig->Print("");
         
         if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, 0);
+//        if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, data->GetMode());
+        printf("MHO now digit is:\n");
+        dig->Print("");
       }
     }
 
@@ -628,7 +688,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       nP = (fSTUDCAL->Patches()).MakeIterator();
       
       AliDebug(999, Form("=== DCAL STU found %d gamma patches", (fSTUDCAL->Patches()).GetEntriesFast()));
-
+      printf("=== DCAL STU found %d gamma patches\n", (fSTUDCAL->Patches()).GetEntriesFast());
 
       while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
       {			
@@ -655,6 +715,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
           if (AliDebugLevel()) dig->Print("");
           
           if (dig) dig->SetTriggerBit(kL1GammaHigh + ithr, 0);
+//          if (dig) dig->SetTriggerBit(kL1GammaHigh + ithr, data->GetMode());
         }
       }
       // Jet L1 
@@ -665,7 +726,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       
       nP = (fSTUDCAL->Patches()).MakeIterator();
       
-      AliDebug(1, Form("=== DCAL STU found %d jet patches", (fSTUDCAL->Patches()).GetEntriesFast()));
+      AliDebug(999, Form("=== DCAL STU found %d jet patches", (fSTUDCAL->Patches()).GetEntriesFast()));
+      printf("=== DCAL STU found %d jet patches", (fSTUDCAL->Patches()).GetEntriesFast());
 
       while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
       {			
@@ -691,7 +753,9 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
           
           if (AliDebugLevel()) dig->Print("");
           
+
           if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, 0);
+//          if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, data->GetMode());
         }
       }
 
