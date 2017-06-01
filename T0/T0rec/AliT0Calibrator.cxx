@@ -54,16 +54,19 @@ ClassImp(AliT0Calibrator)
    AliT0Parameters* param = AliT0Parameters::Instance();
    param->Init();
    //slewing correcion and equalizing channels
-
-  fChannelWidth = param->GetChannelWidth() ;  
+   fChannelWidth = param->GetChannelWidth() ;  
    //   Double_t *grX ; 
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-     TGraph* fu = param ->GetWalk(i);
-    // fWalk.AddAtAndExpand(fu,i);
-    //TGraph* fu = param ->GetAmpLEDRec(i);
-    fWalk.AddAtAndExpand(fu,i);
+    TGraph* fu = param ->GetWalk(i);
+     fWalk.AddAtAndExpand(fu,i);
+     //CFD vs timestamp
+     TGraph* ft = param ->GetCFDvsTimestamp(i);
+     if (ft) {   fCFDvsTime.AddAtAndExpand(ft,i);
+       //     ft->Print();
+     }
+     
   }
   
 }
@@ -104,18 +107,49 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
   //
   // referemce amplitude for walk correction now read from RecoParam
 
-   Int_t walk=0;
+  Int_t walk=0;
   Int_t timeEq=0, timeWalk=0;  
   TGraph *fu1=(TGraph*) fWalk.At(ipmt);
-  if(fu1 && fu1->GetN()>0) {
+  if(fu1 && fu1->GetN()>0) 
     walk = Int_t(fu1->Eval(Double_t(qt)));
-  }
   
   if (fEqualized == 0)
     timeEq= time - fTimeDelayCFD[ipmt]-walk;
   else 
     timeEq = time - walk -  refAmp;
+  
+  //   printf(" ipmt %i time before %i timeWalk %i , walk %i  qt %i fTimeDelayCFD[ipmt] %i timeEq %i \n ",
+  //	 ipmt, time,timeWalk, walk, qt,fTimeDelayCFD[ipmt], timeEq );
+     AliDebug(2,Form(" fEqualized %i ipmt %i refAmp %i time before %i timeWalk %i , walk %i  qt %i timeEq %i, diff %i \n ",
+		     fEqualized,   ipmt, refAmp, time,timeWalk, walk, qt, timeEq , fTimeDelayCFD[ipmt]));
+  
+   return timeEq;
+}
 
+//____________________________________________________________________
+
+Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_t time, UInt_t timestamp) 
+
+{
+  //
+  // referemce amplitude for walk correction now read from RecoParam
+
+  Int_t walk=0;
+  Int_t timeEq=0, timeWalk=0;  
+  TGraph *fu1=(TGraph*) fWalk.At(ipmt);
+  if(fu1 && fu1->GetN()>0) 
+    walk = Int_t(fu1->Eval(Double_t(qt)));
+  
+  Float_t cfdVStimestamp=refAmp;
+  TGraph *grcfd=(TGraph*) fCFDvsTime.At(ipmt);
+  if (grcfd && grcfd->GetN()>0) {
+    cfdVStimestamp =  Int_t(grcfd->Eval(Double_t(timestamp)));
+   }
+  if (fEqualized == 0)
+    timeEq= time - fTimeDelayCFD[ipmt]-walk;
+  else 
+    timeEq = time - walk -  refAmp;
+  
   //   printf(" ipmt %i time before %i timeWalk %i , walk %i  qt %i fTimeDelayCFD[ipmt] %i timeEq %i \n ",
   //	 ipmt, time,timeWalk, walk, qt,fTimeDelayCFD[ipmt], timeEq );
      AliDebug(2,Form(" fEqualized %i ipmt %i refAmp %i time before %i timeWalk %i , walk %i  qt %i timeEq %i, diff %i \n ",

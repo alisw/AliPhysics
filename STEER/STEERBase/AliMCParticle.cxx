@@ -38,7 +38,8 @@ AliMCParticle::AliMCParticle():
     fMother(-1),
     fFirstDaughter(-1),
     fLastDaughter(-1),
-    fGeneratorIndex(-1)
+    fGeneratorIndex(-1),
+    fStack(0)
 {
     // Constructor
 }
@@ -53,7 +54,8 @@ AliMCParticle::AliMCParticle(TParticle* part, TObjArray* rarray, Int_t index):
     fMother(-1),
     fFirstDaughter(-1),
     fLastDaughter(-1),
-    fGeneratorIndex(-1)
+    fGeneratorIndex(-1),
+    fStack(0)
 {
     // Constructor
     if (rarray != 0) {
@@ -71,7 +73,8 @@ AliMCParticle::AliMCParticle(const AliMCParticle& mcPart) :
     fMother(-1),
     fFirstDaughter(-1),
     fLastDaughter(-1),
-    fGeneratorIndex(-1)
+    fGeneratorIndex(-1),
+    fStack(0)
 {
 // Copy constructor
 }

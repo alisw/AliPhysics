@@ -39,7 +39,9 @@ class AliAODMCParticle: public AliVParticle {
     virtual Double_t Pt()        const;
     virtual Double_t P()         const;
     virtual Bool_t   PxPyPz(Double_t p[3]) const;
-    
+  
+    virtual void     Momentum(TLorentzVector & lv)  { lv.SetPxPyPzE(Px(),Py(),Pz(),E()) ; }
+  
     virtual Double_t OneOverPt() const;
     virtual Double_t Phi()       const;
     virtual Double_t Theta()     const;
@@ -48,7 +50,8 @@ class AliAODMCParticle: public AliVParticle {
     virtual Double_t Yv() const;
     virtual Double_t Zv() const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
-    virtual Double_t T() const;
+    virtual Double_t T()  const;
+    virtual Double_t Tv() const;
 
     virtual Double_t E()          const;
     virtual Double_t M()          const;
@@ -66,10 +69,11 @@ class AliAODMCParticle: public AliVParticle {
 
     // 
     virtual Double_t GetCalcMass() const;
-    virtual void SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
+    virtual void  SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
     virtual Int_t GetDaughter(Int_t i) const {if(i<2)return fDaughter[i];else return -1;}
+    virtual Int_t GetDaughterLabel(Int_t i) const { return GetDaughter(i); }
     virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : (fDaughter[0]>0 ? 1:0 ) ;}
-    virtual void SetMother(Int_t im){fMother = im;}
+    virtual void  SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
 
     virtual Int_t   GetFirstDaughter()   const {return fDaughter[0];}
@@ -95,6 +99,9 @@ class AliAODMCParticle: public AliVParticle {
       // bit shift by 16
       return fFlag>>16;
     }
+
+    void        SetMCStatusCode(Int_t status) { SetStatus(status)  ; }
+    virtual UInt_t MCStatusCode()       const { return GetStatus() ; }
 
     // Bitwise operations
     void SetPrimary(Bool_t b = kTRUE){
@@ -175,7 +182,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  ClassDef(AliAODMCParticle,8)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,9)  // AliVParticle realisation for AODMCParticles
 
 };
 
@@ -193,6 +200,7 @@ inline Double_t AliAODMCParticle::Yv()        const {return fVy;}
 inline Double_t AliAODMCParticle::Zv()        const {return fVz;}
 inline Bool_t   AliAODMCParticle::XvYvZv(Double_t x[3]) const { x[0] = fVx; x[1] = fVy; x[2] = fVz; return kTRUE; }
 inline Double_t AliAODMCParticle::T()         const {return fVt;}
+inline Double_t AliAODMCParticle::Tv()        const {return fVt;}
 inline Double_t AliAODMCParticle::E()         const {return fE;}
 inline Double_t AliAODMCParticle::Eta()       const {  
   Double_t pmom = P();

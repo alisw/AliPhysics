@@ -87,6 +87,8 @@ inputParameters::inputParameters()
           _axionMass             (this, "AXION_MASS",50, NOT_REQUIRED),  // AXION HACK
 	  _bslopeDefinition      (this, "BSLOPE_DEFINITION",0, NOT_REQUIRED),
 	  _bslopeValue           (this, "BSLOPE_VALUE",4.0,NOT_REQUIRED),
+	  _bslope0               (this, "BSLOPE0",4.63,NOT_REQUIRED),
+	  _bslope_alphaprime     (this, "BSLOPE_ALPHAPRIME",0.164,NOT_REQUIRED),
 	  _printVM               (this, "PRINT_VM",0,NOT_REQUIRED)
 {
   // All parameters must be initialised in initialisation list!

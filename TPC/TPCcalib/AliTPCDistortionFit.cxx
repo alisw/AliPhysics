@@ -83,7 +83,7 @@ Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *
     Double_t drphi=TMath::Pi()*0.3*x[1]/9.;    
     Double_t values[4], distance2[4];
     Double_t xxx[4];
-    for (Int_t i=0; i<4; i++){
+    for (Int_t i=0; i<4; i++){   // calculate si
       xxx[0]=x[0]-2;   xxx[1]=x[1]; xxx[2]=0; xxx[3]=x[3];
       xxx[1]=(i<2)?    x[1]-10:x[1]+10;
       xxx[2]=(i%2==0)? -drphi:drphi;
@@ -125,46 +125,45 @@ Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *
 }
 
 Double_t AliTPCDistortionFit::NLinesFieldLocal(const Double_t *x, const Double_t *param){
-  // Simple E filed
-  // x        - input vector
+  //  Mulitiline response
+  //   x       - input vector
   //   x[0]   - return vector description
   //     0    - Er
   //     1    - Erphi
   //     2    - Dr
   //     3    - Drphi
+  //     4    - Dr-bckg
+  //     5    - Drphi-bckg
   //
   //   x[1]   - r
   //   x[2]   - rphi
   //   x[3]   - z
   // param    - description of charge
+  //
   //      [0] - scale
   //      [1] - wt
-  //      [2] - E nominal
-  //      [3] - nLines
-  //      [4+i*3] - line Q_i
-  //      [5+i*3] - r0_i
-  //      [6+i*3] - rphi0_i
+  //      [2] - symmetry plane for mirror charge - not used
+  //      [3] - E nominal
+  //      [4] - nlines
+  //      [5] - line Q
+  //      [6] - r0
+  //      [7] - rphi0 ...
 
-  
-  Int_t nLines=TMath::Nint(param[3]);
-  Double_t eR=0;
-  Double_t eRPhi=0;
-  Double_t dR=0;
-  Double_t dRPhi=0;
+  Double_t paramLocal[7];
+  paramLocal[3]=param[0]; // scale 
+  paramLocal[4]=param[1]; // wt
+  paramLocal[5]=param[2]; // symetry axis
+  paramLocal[6]=param[3]; // E nominal
+  Int_t nLines=param[4];
+  if (nLines<=0) return 0;
+  Double_t sum=0;
   for (Int_t iLine=0; iLine<nLines; iLine++){
-    Int_t    offset=4+iLine*3;
-    Double_t rdist2= (x[1]-param[offset+1])*(x[1]-param[offset+1])+(x[2]-param[offset+2])*(x[2]-param[offset+2]);
-    Double_t eField=param[offset+0]/TMath::Sqrt(rdist2+param[0]*param[0]);
-    eR+=eField*(x[1]-param[offset+1])/TMath::Sqrt(rdist2);
-    eRPhi+=eField*(x[2]-param[offset+2])/TMath::Sqrt(rdist2);
+    paramLocal[0]=param[5+iLine*3];
+    paramLocal[1]=param[6+iLine*3];
+    paramLocal[2]=param[7+iLine*3];
+    sum+=AliTPCDistortionFit::LineFieldLocal(x,paramLocal);
   }
-  if (x[0]==0) return eR;
-  if (x[0]==1) return eRPhi;
-  Double_t drift=250-TMath::Abs(x[3]);
-  dR=    drift*(eR-param[1]*eRPhi)/param[2];
-  dRPhi= drift*(eR*param[1]+eRPhi)/param[2];
-  if (x[0]==2) return dR;
-  if (x[0]==3) return dRPhi;
+  return sum;
 }
 
 
@@ -604,7 +603,7 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
   initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
   initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
   initPar1(3,0)=1;   initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
-  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=-0.5; initPar1(4,3)=0.5;          // wt   
+  initPar1(4,0)=0.35;initPar1(4,1)=0.1;  initPar1(4,2)=-0.5; initPar1(4,3)=0.5;          // wt   
   initPar1(5,0)=40;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   for (Int_t ipar=0; ipar<7; ipar++) {funLine1->SetParameter(ipar, initPar1(ipar,0)); param1(ipar,0)=initPar1(ipar,0);}
@@ -616,10 +615,11 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
   AliTMinuitToolkit * fitterLineN = new AliTMinuitToolkit();
   fitterLineN->SetVerbose(0x1); fitterLineN->SetFitFunction(funLineN,kTRUE);
   TMatrixD initParN(21,4),   paramN(21,1);            // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
-  initParN(0,0)=1;   initParN(0,1)=0;    initParN(0,2)=0.01; initParN(0,3)=5;            // scale distance
-  initParN(1,0)=0.3; initParN(1,1)=0.1;  initParN(1,2)=-0.5; initParN(1,3)=0.5;          // wt   
-  initParN(2,0)=400; initParN(2,1)=0;    initParN(2,2)=0;    initParN(2,3)=0.0;          // Ez 
-  initParN(3,0)=1;   initParN(3,1)=0;    initParN(3,2)=0;    initParN(3,3)=0.0;          // Ez 
+  initParN(0,0)=0.1;   initParN(0,1)=0;    initParN(0,2)=0.01; initParN(0,3)=5;            // scale distance
+  initParN(1,0)=0.35;   initParN(1,1)=0.0;  initParN(1,2)=-0.5; initParN(1,3)=0.5;          // wt   
+  initParN(2,0)=400;   initParN(2,1)=0;    initParN(2,2)=0;    initParN(2,3)=0.0;          // Ez 
+  initParN(3,0)=40;    initParN(3,1)=0;    initParN(3,2)=0;    initParN(3,3)=0.0;          /// symetry plane
+  initParN(4,0)=1;     initParN(4,1)=0;    initParN(4,2)=0;    initParN(4,3)=0.0;          // nlines
   for (Int_t ipar=4; ipar<21; ipar++) {initParN(ipar,1)=1;}
   for (Int_t ipar=0; ipar<21; ipar++) {funLineN->SetParameter(ipar, initParN(ipar,0));}
   fitterLineN->SetInitialParam(&initParN);

@@ -198,6 +198,8 @@ public:
         double       axionMass             () const { return _axionMass.value();              }  ///< returns axion mass //AXION HACK
 	int          bslopeDefinition      () const { return _bslopeDefinition.value();       }  ///< returns the definition of b-slope
 	double       bslopeValue           () const { return _bslopeValue.value();            }  ///< returns the value of b-slope
+        double       bslope0               () const { return _bslope0.value();                }  ///<
+        double       bslope_alphaprime     () const { return _bslope_alphaprime.value();      }  ///<
 	starlightConstants::particleTypeEnum    prodParticleType     () const { return _particleType;    }  ///< returns type of produced particle
 	starlightConstants::decayTypeEnum       prodParticleDecayType() const { return _decayType;       }  ///< returns decay type of produced particle
 	starlightConstants::interactionTypeEnum interactionType      () const { return _interactionType; }  ///< returns interaction type
@@ -241,6 +243,8 @@ public:
 	void setAxionMass        (double v)  {  _axionMass = v;                   }  ///< sets axion mass    //AXION HACK
 	void setbslopeDefinition      (int v)  {  _bslopeDefinition = v;          }  ///< sets the definition of b slope
         void setbslopeValue           (double v)  {  _bslopeValue = v;            }  ///< sets the value of b slope
+        void setbslope0               (double v)  {  _bslope0 = v;                }  ///< sets the value of the b-slope parameterization
+        void setbslope_alphaprime     (double v)  {  _bslope_alphaprime = v;      }  ///< sets the value of the b-slope parameterization
 
 	int  printVM                  () const { return _printVM.value();         }  ///< returns the printVM value
 	void setprintVM               (int v)  {  _printVM = v;                   }  ///< sets the value of _printVM
@@ -318,6 +322,8 @@ private:
         parameter<double, VALIDITY_CHECK>          _axionMass;               ///Axion mass//AXION HACK
         parameter<unsigned int, VALIDITY_CHECK>    _bslopeDefinition;        ///< Optional parameter to set different values of slope parameter
         parameter<double, VALIDITY_CHECK>          _bslopeValue;             ///< Value of slope parameter when _bslopeDefinition is set to 1
+        parameter<double, VALIDITY_CHECK>          _bslope0;                 ///< Parameterization of slope parameter when _bslopeDefinition is set to 3
+        parameter<double, VALIDITY_CHECK>          _bslope_alphaprime;       ///< Parameterization of slope parameter when _bslopeDefinition is set to 3
 	parameter<unsigned int, VALIDITY_CHECK>    _printVM;                 ///< Optional parameter to set printing options for VM cross section
 
 	starlightConstants::particleTypeEnum       _particleType;

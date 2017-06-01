@@ -493,14 +493,23 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
       stuConfig->SetFw(dcsVal->GetInt());
     }
     
+    if((dcsVal = ReadDCSValue(dcsAliasMap, Form("%s_STU_PATCHSIZE", *idet)))){
+    	AliInfo(Form("saving value: %d\n", dcsVal->GetInt()));
+    	stuConfig->SetPatchSize(dcsVal->GetInt());
+    }
+    if((dcsVal = ReadDCSValue(dcsAliasMap, Form("%s_STU_MEDIAN", *idet)))){
+    	AliInfo(Form("saving value: %d\n", dcsVal->GetInt()));
+    	stuConfig->SetMedianMode(dcsVal->GetInt());
+    }
+
     AliDCSValue *errorcount(NULL);
-    for(Int_t itru = 0; itru < 32; itru++)
+    for(Int_t itru = 0; itru < 68; itru++)
     {
       // TODO: Cross check - we might receive multiple data points
       // Currently a test procedure
-      if(itru > 14 && !isEMCAL) continue;
+      if(itru > 55 && !isEMCAL) continue;
       
-      snprintf(buf, bufsize, "%s_STU_ERROR_COUNT_TRU%d", *idet, itru);
+      snprintf(buf, bufsize, "%s_STU_ERROR_COUNT_TRU%02d", *idet, itru);
       AliInfo(Form("Reading %s", buf));
       
       TObjArray *dcsvals = (TObjArray *)dcsAliasMap->GetValue(buf);
@@ -718,7 +727,7 @@ AliDCSValue *AliEMCALPreprocessor::ReadDCSValue(const TMap *values, const char *
   TObjArray * dcsvalarray = (TObjArray*)values->GetValue(valname);
   if (!dcsvalarray)
   {
-    AliWarning(Form("%s alias not found!", valname));
+    AliWarning(Form("%s alias value not found!", valname));
     return NULL;
   }
   else

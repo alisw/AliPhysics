@@ -50,6 +50,9 @@
 #include "TEntryList.h"
 #include "THn.h"
 #include "TLegend.h"
+#include "AliSysInfo.h"
+
+using namespace std;
 
 ClassImp(AliTreePlayer)
 
@@ -889,6 +892,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   Int_t nExpressions=hisString.CountChar(':')+hisString.CountChar(';')+1;
   TObjArray * formulaArray   = new TObjArray(nExpressions);    // array of all expressions  - OWNER
   TString queryString = "";
+  Int_t hisSizeFull=0;
   //
   //  1.) Analyze formula, book list of TObjString
   //
@@ -949,6 +953,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
   Int_t tNumber=-1;
   for (Int_t bEntry=firstEntry; bEntry<lastEntry; bEntry+=chunkSize){  // chunks loop
+    AliSysInfo::AddStamp(TString::Format("Begin.%s",tree->GetName()).Data(),0, bEntry);
     Int_t toQuery=TMath::Min(chunkSize, lastEntry-bEntry);
     Int_t qLength = tree->Draw(queryString,defaultCut,"goffpara",toQuery, bEntry); // query varaibles
     if (qLength>tree->GetEstimate()){
@@ -999,18 +1004,27 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	    }
 	  }
 	  if (xMax[iDim]<=xMin[iDim]){
-	    ::Error("xxx","Invalid range specification %s\t%s",descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
+	    ::Error("AliTreePlayer::MakeHistograms","Invalid hstogram range specification for histogram  %s: %s\t%s",hisDescription.Data(), \
+		    descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
 	  }
 	}
 	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
 	hisArray->AddAt(phis,iHis);
+	AliSysInfo::AddStamp(hName.Data(),10, phis->GetNbins());
+	if (verbose&0x1) {
+	  ::Info("AliTreePlayer::MakeHistograms","%s: size=%d",hisDescription.Data(), phis->GetNbins());
+	}
+	hisSizeFull+= phis->GetNbins();
 	for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
 	  phis->GetAxis(iDim)->SetName(varArray->At(iDim)->GetName());	  
 	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());	  
 	  TNamed *axisTitle=TStatToolkit::GetMetadata(tree,TString::Format("%s.AxisTitle",varArray->At(iDim)->GetName()).Data());
 	  if (axisTitle)  phis->GetAxis(iDim)->SetTitle(axisTitle->GetTitle());	
 	}
-      }      
+      }
+      if (verbose&0x1) {
+	::Info("AliTreePlayer::MakeHistograms","Total size=%d",hisSizeFull);
+      }
     }
     //    2.3 fill histograms
     Double_t values[kMaxDim];
@@ -1038,7 +1052,8 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent]; 
 	if (weight>0) his->Fill(values,weight);
       }
-    }    
+    }
+    AliSysInfo::AddStamp(TString::Format("End.%s",tree->GetName()).Data(),0, bEntry);    
   }
   //
   delete hisDescriptionArray;
@@ -1068,7 +1083,9 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
   // structure pad
   TString padDescription=drawList->At(0)->GetName();
   if (pad==NULL){
-    pad = new TCanvas(drawExpression, drawExpression,1000,800);
+    static Int_t counter=0;
+    pad = new TCanvas(TString::Format("canvasCounter%d",counter).Data(), drawExpression,1000,800);
+    counter++;
   }
   // divide pads
   Int_t nPads=0, nRows=0;
@@ -1078,7 +1095,7 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     Int_t nCols=TString(padRows->At(iRow)->GetName()).Atoi();
     for (Int_t iCol=0; iCol<nCols; iCol++){
       pad->cd();      
-      TPad * newPad=new TPad("pad","pad",iCol/Double_t(nCols),(nRows-iRow-1)/Double_t(nRows),(iCol+1)/Double_t(nCols),(nRows-iRow)/Double_t(nRows));
+      TPad * newPad=new TPad(Form("pad%d",nPads),Form("pad%d",nPads),iCol/Double_t(nCols),(nRows-iRow-1)/Double_t(nRows),(iCol+1)/Double_t(nCols),(nRows-iRow)/Double_t(nRows));
       newPad->Draw();
       nPads++;
       newPad->SetNumber(nPads);
@@ -1090,10 +1107,11 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
   TPRegexp isPadOption("^%O");
   Bool_t isLogY=kFALSE;
   for (Int_t iPad=0; iPad<nPads; iPad++){
+    Int_t nGraphs=0, nHistos=0;
     if (drawList->At(iPad+1)==NULL) break;
     //TVirtualPad  *cPad = 
-    pad->cd(iPad+1);
-    TLegend * legend = new TLegend(0.11,0.85, 0.89,0.99, TString::Format("Pad%d",iPad));
+    TVirtualPad *cPad = pad->cd(iPad+1);    
+    TLegend * legend = new TLegend(cPad->GetLeftMargin()+0.02,0.7,1-cPad->GetRightMargin()-0.02 ,1-cPad->GetTopMargin()-0.02, TString::Format("Pad%d",iPad));
     legend->SetNColumns(2);
     legend->SetBorderSize(0);
     TString padSetup=drawList->At(iPad+1)->GetName();
@@ -1162,7 +1180,11 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       TH1 * hProj =0;
       TGraphErrors*gr=0;
       //
-      if (nDims==1) hProj=his->Projection(projString.Atoi());
+      if (nDims==1) {
+	hProj=his->Projection(projString.Atoi());
+	//hProj->SetName(Form("Pad%d_His%d",iPad,nHistos));  // 
+	nHistos++;
+      }
       if (nDims==2) {
 	Int_t dim0 = projString.Atoi();
 	Int_t dim1 = TString(&(projString[2])).Atoi();
@@ -1170,7 +1192,9 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 	for (Int_t iProj=0; iProj<8; iProj++){
 	  if (drawOption.Contains(projType[iProj])){
 	    gr=TStatToolkit::MakeStat1D(his2D,0,1.0,iProj,21+ihis,ihis+1);
-	    gr->SetName(padDrawList->At(ihis)->GetName());
+	    //gr->SetName(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  // 
+	    nGraphs++;
+	    // gr->SetTitle(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  // 
 	    gr->SetTitle(padDrawList->At(ihis)->GetName());
 	    gr->GetXaxis()->SetTitle(his2D->GetXaxis()->GetTitle());
 	    gr->GetYaxis()->SetTitle(his2D->GetYaxis()->GetTitle());

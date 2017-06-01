@@ -993,7 +993,7 @@ Int_t AliTPCcalibDB::InitDeadMap()
     }
 
     if (numberOfDeactivatedChannels>0) {
-      AliInfo(Form("Deactivated %4d channels in ROC %2d due to altro and DDL map states",
+      AliInfo(Form("Deactivated %4d channels in ROC %2d due to altro and DDL map states as well as chamber status and correction map",
                    numberOfDeactivatedChannels, iROC));
     }
   }
@@ -1805,8 +1805,9 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
   for (int isec=72;isec--;) {  // flag masked full rows
     mapRef->GetNMaskedRows(isec,&maskedRows[isec]);
     for (int imap=nMaps;imap--;) ((AliTPCChebCorr*)arrMaps->UncheckedAt(imap))->GetNMaskedRows(isec,&maskedRows[isec]);
-    nrowsMasked += maskedRows[isec].CountBits();
-    //       printf("ROC%d masked %d rows\n",isec,maskedRows[isec].CountBits());
+    const Int_t nrowsMaskedROC = maskedRows[isec].CountBits();
+    nrowsMasked += nrowsMaskedROC;
+    if (nrowsMaskedROC>0) AliInfoF("%3d rows masked in ROC%02d",nrowsMaskedROC,isec);
   }
   //
   // Now we need to mask individual pads where the assigned errors or distortions are too large
@@ -2108,6 +2109,13 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
         time+=samplingPeriod;
         if (!IsDataTakingActive(time-samplingPeriod)) continue;
         vSampled[nPointsSampled++]=sampledHV;
+
+        // in case the last HV point is not the one at EOR (change in acceptance band
+        // handling in the PreProcessor), the while loop above will not set the last
+        // value in the active data taking period. Force this!
+        if (pointGraph+1==nGraph) {
+          sampledHV = gr->GetY()[nGraph-1];
+        }
       }
 
       if (nPointsSampled<1) continue;

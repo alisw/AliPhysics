@@ -50,15 +50,16 @@
 #include "AliMagF.h"
 #include "AliMillePedeRecord.h"
 #include "AliMpCDB.h"
-#include "AliMUONCDB.h"
 #include "AliMUONAlignment.h"
+#include "AliMUONCDB.h"
+#include "AliMUONESDInterface.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONConstants.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONESDInterface.h"
+#include "AliMUONVCluster.h"
 
 // system headers
 #include <cassert>
@@ -78,7 +79,37 @@
 
 ///\cond CLASSIMP
 ClassImp(AliMUONAlignmentTask)
+ClassImp(AliMUONAlignmentTrackParam)
 ///\endcond
+
+//________________________________________________________________________
+Int_t AliMUONAlignmentTrackParam::GetNChambers( void ) const
+{
+  Int_t out(0);
+  for( Int_t iCh = 0; iCh < 10; ++iCh )
+  { if( fHitPattern&(1<<iCh) ) out++; }
+
+  return out;
+
+}
+
+//______________________________________
+Int_t AliMUONAlignmentTrackParam::GetNStations( void ) const
+{
+
+  Int_t out(0);
+  for( Int_t iSt = 0; iSt < 5; ++iSt )
+  { if( fHitPattern&( (1<<(iSt*2)) | (1<<(iSt*2+1) ) ) ) out++; }
+
+  return out;
+
+}
+
+
+//________________________________________________________________________
+// Double_t Square( Double_t x ) { return x*x; }
+// defined in AliMUONAlignent0
+Double_t Square( Double_t x );
 
 //________________________________________________________________________
 AliMUONAlignmentTask::AliMUONAlignmentTask( const char *name ):
@@ -89,6 +120,11 @@ AliMUONAlignmentTask::AliMUONAlignmentTask( const char *name ):
   fMergeAlignmentCDBs( kTRUE ),
   fForceBField( kFALSE ),
   fBFieldOn( kFALSE ),
+  fRefitStraightTracks( kFALSE ),
+  fDoEvaluation( kFALSE ),
+  fMinPt( 0 ),
+  fMinPyPz( 0 ),
+  fMinStations( 0 ),
   fAlign(0x0),
   fDefaultStorage(),
   fOldAlignStorage(),
@@ -100,8 +136,10 @@ AliMUONAlignmentTask::AliMUONAlignmentTask( const char *name ):
   fEvent(0),
   fTrackTot(0),
   fTrackOk(0),
-  fRunNumberMin(0),
-  fRunNumberMax(0),
+  fRecordsTot(0),
+  fRunNumberMin( 0 ),
+  fRunNumberMax( AliCDBRunRange::Infinity() ),
+  fTrackParams(0x0),
   fRecords(0x0),
   fRecordCount(0)
 {
@@ -147,41 +185,55 @@ void AliMUONAlignmentTask::LocalInit()
   if( fReadRecords && !fDoAlignment )
   {
 
-    AliInfo( "Automatically setting fDoAlignment to kTRUE because fReadRecords is kTRUE" );
+    std::cout << "I-AliMUONAlignmentTask::LocalInit: " << "Automatically setting fDoAlignment to kTRUE because fReadRecords is kTRUE" << std::endl;
     SetDoAlignment( kTRUE );
 
   }
 
   // print configuration
   if( fRunNumberMin > 0 || fRunNumberMax > 0 )
-  { AliInfo( Form( "run range: %i - %i", fRunNumberMin, fRunNumberMax ) ); }
+  { std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "run range: %i - %i", fRunNumberMin, fRunNumberMax ) << std::endl; }
 
-  AliInfo( Form( "fReadRecords: %s", (fReadRecords ? "kTRUE":"kFALSE" ) ) );
-  AliInfo( Form( "fWriteRecords: %s", (fWriteRecords ? "kTRUE":"kFALSE" ) ) );
-  AliInfo( Form( "fDoAlignment: %s", (fDoAlignment ? "kTRUE":"kFALSE" ) ) );
+  std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fReadRecords: %s", (fReadRecords ? "kTRUE":"kFALSE" ) ) << std::endl;
+  std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fWriteRecords: %s", (fWriteRecords ? "kTRUE":"kFALSE" ) ) << std::endl;
+  std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fDoAlignment: %s", (fDoAlignment ? "kTRUE":"kFALSE" ) ) << std::endl;
 
   if( fDoAlignment )
   {
     // merge alignment DB flag is irrelevant if not actually performing the alignemnt
-    AliInfo( Form( "fMergeAlignmentCDBs: %s", (fMergeAlignmentCDBs ? "kTRUE":"kFALSE" ) ) );
+    std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fMergeAlignmentCDBs: %s", (fMergeAlignmentCDBs ? "kTRUE":"kFALSE" ) ) << std::endl;
   }
 
   // storage elements
-  if( !fDefaultStorage.IsNull() ) AliInfo( Form( "fDefaultStorage: %s", fDefaultStorage.Data() ) );
-  if( !fOldAlignStorage.IsNull() ) AliInfo( Form( "fOldAlignStorage: %s", fOldAlignStorage.Data() ) );
+  if( !fDefaultStorage.IsNull() ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fDefaultStorage: %s", fDefaultStorage.Data() ) << std::endl;
+  if( !fOldAlignStorage.IsNull() ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fOldAlignStorage: %s", fOldAlignStorage.Data() ) << std::endl;
 
   if( fDoAlignment )
   {
     // new alignment storage is irrelevant if not actually performing the alignemnt
-    if( !fNewAlignStorage.IsNull() ) AliInfo( Form( "fNewAlignStorage: %s", fNewAlignStorage.Data() ) );
+    if( !fNewAlignStorage.IsNull() ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fNewAlignStorage: %s", fNewAlignStorage.Data() ) << std::endl;
     else AliFatal( "Invalid new alignment storage path" );
   }
 
   if( !fReadRecords )
   {
     // following flags are only relevant if not reading records
-    if( fForceBField ) AliInfo( Form( "fBFieldOn: %s", (fBFieldOn ? "kTRUE":"kFALSE" ) ) );
-    else AliInfo( "fBFieldOn: from GRP" );
+    if( fForceBField ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fBFieldOn: %s", (fBFieldOn ? "kTRUE":"kFALSE" ) ) << std::endl;
+    else std::cout << "I-AliMUONAlignmentTask::LocalInit: " << "fBFieldOn: from GRP" << std::endl;
+
+    // refit straight tracks
+    std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fRefitStraightTracks: %s", (fRefitStraightTracks ? "kTRUE":"kFALSE" ) ) << std::endl;
+    std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fDoEvaluation: %s", (fDoEvaluation ? "kTRUE":"kFALSE" ) ) << std::endl;
+
+    // min px/pz cut
+    if( fMinPt > 0 ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fMinPt: %f", fMinPt ) << std::endl;
+
+    // min px/pz cut
+    if( fMinPyPz > 0 ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fMinPyPz: %f", fMinPyPz ) << std::endl;
+
+    // min number of stations
+    if( fMinStations > 0 ) std::cout << "I-AliMUONAlignmentTask::LocalInit: " << Form( "fMinStations: %i", fMinStations ) << std::endl;
+
   }
 
   // consistency checks between flags
@@ -201,8 +253,21 @@ void AliMUONAlignmentTask::LocalInit()
   if( fDoAlignment )
   {
 
-    fAlign->FixChamber(1);
-    fAlign->FixChamber(10);
+//     // Note: grouping must be done before fixing chambers
+//     AliInfo( "Grouping all detectors by half chambers" );
+//     for( Int_t iCh = 5; iCh <= 10; ++iCh )
+//     {
+//       fAlign->GroupHalfChamber( iCh, 0 );
+//       fAlign->GroupHalfChamber( iCh, 1 );
+//     }
+
+    // fix chambers
+    const Int_t chambers[] = { 1, 10, 0 };
+    for( Int_t i = 0; chambers[i] > 0; ++i )
+    {
+      AliInfo( Form( "Fixing chamber %i", chambers[i] ) );
+      fAlign->FixChamber( chambers[i] );
+    }
 
   } else {
 
@@ -210,11 +275,13 @@ void AliMUONAlignmentTask::LocalInit()
 
   }
 
+  // propagate magnetic field flag
+  fAlign->SetBFieldOn( fBFieldOn );
+  fAlign->SetRefitStraightTracks( fRefitStraightTracks );
+  fAlign->SetDoEvaluation( fDoEvaluation );
+
   // initialize
   fAlign->Init();
-
-  // Do alignment with magnetic field off
-  fAlign->SetBFieldOn( fBFieldOn );
 
   // Set expected resolution (see AliMUONAlignment)
   fAlign->SetSigmaXY(0.15,0.10);
@@ -231,11 +298,17 @@ void AliMUONAlignmentTask::UserCreateOutputObjects()
   // connect AOD output
   if( fWriteRecords )
   {
+    // get AOD output handler and add Branch
     AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
     if( handler )
     {
 
-      // get AOD output handler and add Branch
+      // track params
+      fTrackParams = new TClonesArray( "AliMUONAlignmentTrackParam", 0 );
+      fTrackParams->SetName( "trackParams" );
+      handler->AddBranch("TClonesArray", &fTrackParams);
+
+      // records
       fRecords = new TClonesArray( "AliMillePedeRecord", 0 );
       fRecords->SetName( "records" );
       handler->AddBranch("TClonesArray", &fRecords);
@@ -260,9 +333,10 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
   ++fEvent;
 
   // clear array
-  if( fWriteRecords && fRecords )
+  if( fWriteRecords )
   {
-    fRecords->Clear();
+    if( fTrackParams ) fTrackParams->Clear();
+    if( fRecords ) fRecords->Clear();
     fRecordCount = 0;
   }
 
@@ -275,6 +349,14 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     if( !lAOD )
     {
       AliInfo("Error: AOD event not available");
+      return;
+    }
+
+    // read track parameters
+    TClonesArray* trackParams = static_cast<TClonesArray*>( lAOD->FindListObject( "trackParams" ) );
+    if( !trackParams )
+    {
+      AliInfo( "Unable to read object name \"trackParams\"" );
       return;
     }
 
@@ -294,16 +376,43 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     for( Int_t index = 0; index < lRecordsCount; ++index )
     {
 
-      if( AliMillePedeRecord* record = dynamic_cast<AliMillePedeRecord*>( records->UncheckedAt(index) ) )
+      // read track param
+      AliMUONAlignmentTrackParam* trackParam = 0;
+      if( !( trackParam = dynamic_cast<AliMUONAlignmentTrackParam*>( trackParams->UncheckedAt(index) ) ) )
       {
+        AliInfo( Form( "Invalid trackParam at %i", index ) );
+        continue;
+      }
 
-        fAlign->ProcessTrack( record );
-        ++fTrackOk;
+      // apply minPyPz cut
+      const Bool_t pypzOk( fMinPyPz <= 0 || TMath::Sqrt( Square(trackParam->fPy) + Square(trackParam->fPz) ) >= fMinPyPz );
+      if( !pypzOk ) continue;
 
-        if(!(fTrackTot%100))
-        { AliInfo( Form( "Processed %i Tracks and %i were fitted.", fTrackTot, fTrackOk ) ); }
+      // apply minPt cut
+      const Bool_t ptOk( fMinPt <= 0 || TMath::Sqrt( Square(trackParam->fPx) + Square(trackParam->fPy) ) >= fMinPt );
+      if( !ptOk ) continue;
 
-      } else AliInfo( Form( "Invalid record at %i", index ) );
+      // check number of stations
+      if( fMinStations > 0 && trackParam->GetNStations() < fMinStations )
+      {
+        AliInfo( "Skipping track because no enough stations hit" );
+        continue;
+      }
+
+      // read record
+      AliMillePedeRecord* record = 0;
+      if( !( record = dynamic_cast<AliMillePedeRecord*>( records->UncheckedAt(index) ) ) )
+      {
+        AliInfo( Form( "Invalid record at %i", index ) );
+        continue;
+      }
+
+      // process track
+      fAlign->ProcessTrack( record );
+      ++fTrackOk;
+
+      if(!(fTrackTot%100))
+      { AliInfo( Form( "Processed %i Tracks and %i were fitted.", fTrackTot, fTrackOk ) ); }
 
     }
 
@@ -327,8 +436,11 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
       if (!esdTrack->ContainTrackerData()) continue;
       if (!esdTrack->ContainTriggerData()) continue;
 
-      Double_t invBenMom = esdTrack->GetInverseBendingMomentum();
-      if (TMath::Abs(invBenMom)<=1.04)
+      // apply minPyPz and pt cut
+      const Bool_t pypzOk( fMinPyPz <= 0 || TMath::Sqrt( Square(esdTrack->Py()) + Square(esdTrack->Pz()) ) >= fMinPyPz );
+      const Bool_t ptOk( fMinPt <= 0 || esdTrack->Pt() >= fMinPt );
+      const Bool_t invBendMomentumOk( TMath::Abs( esdTrack->GetInverseBendingMomentum() ) <= 1.04 );
+      if( pypzOk && ptOk && invBendMomentumOk )
       {
 
         AliMUONTrack track;
@@ -339,9 +451,38 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
         ++fTrackOk;
 
         // store in array
-        if( fWriteRecords && fRecords )
+        if( fWriteRecords )
         {
-          new((*fRecords)[fRecordCount]) AliMillePedeRecord( *lRecords );
+
+          if( fTrackParams )
+          {
+
+            // create local track parameters
+            AliMUONAlignmentTrackParam trackParams( esdTrack->Px(), esdTrack->Py(), esdTrack->Pz() );
+
+            // fill hit pattern
+            AliMUONTrack track;
+            AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+            TObjArray* trackParamAtCluster( track.GetTrackParamAtCluster() );
+            for( Int_t iCluster = 0; iCluster < trackParamAtCluster->GetEntries(); ++iCluster )
+            {
+
+              AliMUONTrackParam* trackParam( (AliMUONTrackParam*) trackParamAtCluster->At(iCluster) );
+              if (!trackParam) continue;
+
+              // cluster
+              AliMUONVCluster* cluster( trackParam->GetClusterPtr() );
+              if( !cluster ) continue;
+
+              trackParams.fHitPattern |= (1<<cluster->GetChamberId());
+
+            }
+
+            // append to TClonesArray
+            new((*fTrackParams)[fRecordCount]) AliMUONAlignmentTrackParam( trackParams );
+
+          }
+          if( fRecords ) new((*fRecords)[fRecordCount]) AliMillePedeRecord( *lRecords );
           ++fRecordCount;
         }
 
@@ -358,6 +499,7 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     }
 
     // save AOD
+    fRecordsTot += fRecords->GetEntriesFast();
     if( fWriteRecords && fRecordCount > 0 )
     {
       AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
@@ -365,9 +507,9 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
       {
         AliAODEvent* aod = handler->GetAOD();
         AliAODHeader* header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
-        if(!header) AliFatal("Not a standard AOD");
         header->SetRunNumber(lESD->GetRunNumber());
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+        AliInfo( Form( "Fitted Tracks: %i, records: %i", fTrackOk, fRecordsTot ) );
 
       } else AliInfo( "Error: invalid output event handler" );
 
@@ -385,6 +527,9 @@ void AliMUONAlignmentTask::FinishTaskOutput()
   AliInfo( Form( "Processed %i tracks.", fTrackTot ) );
   AliInfo( Form( "Accepted %i tracks.", fTrackOk ) );
 
+  // terminate output
+  fAlign->Terminate();
+
   // stop here if no alignment is to be performed
   if( !fDoAlignment ) return;
 
@@ -392,31 +537,6 @@ void AliMUONAlignmentTask::FinishTaskOutput()
 
   // Perform global fit
   fAlign->GlobalFit(fParameters,fErrors,fPulls);
-  Int_t idOffset = 0; // 400
-  Int_t lSDetElemCh = 0;
-
-  for( Int_t iDE=0; iDE<AliMUONAlignment::fgNDetElem; iDE++ )
-  {
-
-    Int_t detElemId = idOffset+100;
-    detElemId += iDE;
-    lSDetElemCh = 0;
-    for(Int_t iCh=0; iCh<9; iCh++)
-    {
-
-      lSDetElemCh += AliMUONAlignment::fgNDetElemCh[iCh];
-      if (iDE>=lSDetElemCh)
-      {
-        detElemId += 100;
-        detElemId -= AliMUONAlignment::fgNDetElemCh[iCh];
-      }
-
-    }
-
-  }
-
-  // Post final data. Write histo list to a file with option "RECREATE"
-  // PostData(1,fList);
 
   // store misalignments from OCDB into old transformers
   if( fMergeAlignmentCDBs )
@@ -456,7 +576,7 @@ void AliMUONAlignmentTask::FinishTaskOutput()
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
-  AliCDBId id("MUON/Align/Data", 0, AliCDBRunRange::Infinity());
+  AliCDBId id("MUON/Align/Data", fRunNumberMin, fRunNumberMax );
   cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
 }
@@ -529,11 +649,6 @@ void AliMUONAlignmentTask::NotifyRun()
       // propagete to Alignment class
       // and printout
       AliMagF* magF = dynamic_cast<AliMagF*>( TGeoGlobalMagField::Instance()->GetField() );
-      if ( !magF ) {
-        AliError( "Failed to get field" );
-        return;
-      }
-      
       fBFieldOn = TMath::Abs( magF->GetFactorDip() ) > 1e-5;
       fAlign->SetBFieldOn( fBFieldOn );
       AliInfo( Form( "Dipole magnetic field factor: %.2f", magF->GetFactorDip() ) );
@@ -654,6 +769,8 @@ void AliMUONAlignmentTask::SaveMisAlignmentData( AliMUONGeometryTransformer* tra
     AliGeomManager::ELayerID layerId;
     Int_t moduleId;
     matrix->GetVolUID( layerId, moduleId);
+
+    AliInfo( Form( "layer: %i, module: %i name: %s", layerId, moduleId, matrix->GetSymName() ) );
 
     // make sure ELayerID is correct
     assert( layerId == AliGeomManager::kMUON );

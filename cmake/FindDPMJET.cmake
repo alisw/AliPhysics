@@ -1,4 +1,4 @@
-message(STATUS "looking for DPMJET in \"${DPMJET}"\")
+message(STATUS "looking for DPMJET in \"${DPMJET}\"")
 
 find_library(DPMJET_LIB NAMES DPMJET PATHS ${DPMJET}/lib NO_DEFAULT_PATH)
 
