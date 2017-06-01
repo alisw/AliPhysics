@@ -239,7 +239,7 @@ void AddTask_GammaCalo_pPb(
   //-----------------------------------------------------------------------------------------------
   // Standard cuts
   //-----------------------------------------------------------------------------------------------  
-  } else if (trainConfig == 10){ // default cutstring and first set of variations nonlinearity, smaller openangle 17 mrad
+  } else if (trainConfig == 10){ // default cutstring smaller openangle 17 mrad
     cuts.AddCut("80000113","1111141057032230000","0163103100000060"); // default with 17mrad
     cuts.AddCut("80000113","1111141057032230000","0163103100000050"); // default with 20mrad
   } else if (trainConfig == 11){ // new default cut
@@ -298,6 +298,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86000413","1111144017032230000","0163103100000060"); // 250ns protected
     cuts.AddCut("86000513","1111144017032230000","0163103100000060"); // 1.075 \mus protected
 
+  } else if (trainConfig == 21){ // default cutstring, 1cell distance lead cell
+    cuts.AddCut("80000113","1111141057032230000","01631031000000a0"); // 1 cell lead cell
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // 1 cell lead cell, 17mrad open
+    cuts.AddCut("80000113","1111141057032230000","01631031000000b0"); // 1 cell lead cell, 15mrad open
+    
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB
   //-----------------------------------------------------------------------------------------------
