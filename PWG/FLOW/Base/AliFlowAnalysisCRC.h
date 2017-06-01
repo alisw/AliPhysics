@@ -1110,8 +1110,8 @@ public:
   TH1D* GetMultHist() const {return this->fMultHist;}
   void SetCenHist(TH1D* const TH) {this->fCenHist = TH;};
   TH1D* GetCenHist() const {return this->fCenHist;}
-  void SetVtxHist(TH2F* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
-  TH2F* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
+  void SetVtxHist(TH3D* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
+  TH3D* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
   void SetRunNumber(Int_t const n) {this->fRunNum = n;};
   Int_t GetRunNumber() const {return this->fRunNum;}
   void SetDataSet(DataSet set) {this->fDataSet = set;};
@@ -1608,7 +1608,8 @@ private:
   TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
-  TH1D *fZDCBinsVtxCenEZDCproj[3][4][10][10]; //!
+  TH3D *fZDCQVecVtxCenEZDCFit0; //!
+  TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1920,7 +1921,7 @@ private:
   TH1D *fV0MMultHist; //! V0M Multiplicity distribution
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
-  TH2F *fVtxHist[3]; //! primary vertex
+  TH3D *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
   TProfile2D* fAvEZDCCRbRPro; //! run-by-run average EZDC-C
@@ -1979,7 +1980,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,55);
+  ClassDef(AliFlowAnalysisCRC,56);
   
 };
 
