@@ -418,7 +418,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 //        Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
         Int_t sizeX = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
         Int_t sizeY = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
- printf("MHO: eta,phi = %d,%d, sizeX = %d, sizeY = %d",px,py,sizeX,sizeY);
  
         for (Int_t j = 0; j < sizeX * sizeY; j++)
         {
@@ -439,10 +438,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
               dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
             }
 
-// MHO FIXME              
-// AliInfo(Form("MHO: Trying to setL0 time eta,phi = %d,%d, time = %d",py,px,p->Time()));
- printf("MHO: Trying to setL0 time eta,phi = %d,%d, time = %d\n",py,px,p->Time());
-//            dig->Print("");
             if (dig) dig->SetL0Time(p->Time());
           }
         }
