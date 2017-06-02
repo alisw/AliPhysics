@@ -122,6 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fUseVPhotonMCPSmearing(kFALSE),
     fUseElectronMCPSmearing(kFALSE),
     fCutString(NULL),
+    fCutStringRead(""),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
     hITSdEdxbefore(NULL),
@@ -822,6 +823,8 @@ Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
    // Initialize Cuts from a given Cut string
 
 //   out<<"Set Cut Number: "<<analysisCutSelection.Data()<<endl;
@@ -2162,11 +2165,7 @@ Bool_t AliDalitzElectronCuts::SetUseVPhotonMCPmearing(Int_t useMCPSmearing)
 ///________________________________________________________________________
 TString AliDalitzElectronCuts::GetCutNumber(){
     // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-	a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 

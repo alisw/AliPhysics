@@ -102,6 +102,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fPeriodEnum(kNoPeriod),
   fEnergyEnum(kUnset),
   fCutString(NULL),
+  fCutStringRead(""),
   fUtils(NULL),
   fEtaShift(0.0),
   fDoEtaShift(kFALSE),
@@ -212,6 +213,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fPeriodEnum(ref.fPeriodEnum),
   fEnergyEnum(kUnset),
   fCutString(NULL),
+  fCutStringRead(""),
   fUtils(NULL),
   fEtaShift(ref.fEtaShift),
   fDoEtaShift(ref.fDoEtaShift),
@@ -808,6 +810,8 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+
   // Initialize Cuts from a given Cut string
   if(fDoCentralityFlat > 0){
     AliInfo("Centrality flattening was enabled");
@@ -2978,11 +2982,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 //________________________________________________________________________
 TString AliConvEventCuts::GetCutNumber(){
   // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-      a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 //________________________________________________________________________

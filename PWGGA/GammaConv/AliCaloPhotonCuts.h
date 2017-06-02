@@ -375,7 +375,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     // CutString
     TObjString* fCutString;                             // cut number used for analysis
-    
+    TString     fCutStringRead;
+
     // Histograms
     TH1F*     fHistCutIndex;                            // bookkeeping for cuts
     TH1F*     fHistAcceptanceCuts;                      // bookkeeping for acceptance cuts
@@ -475,7 +476,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,44)
+    ClassDef(AliCaloPhotonCuts,45)
 };
 
 #endif

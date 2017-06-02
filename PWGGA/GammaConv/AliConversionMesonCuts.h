@@ -209,6 +209,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     
     // Histograms
     TObjString* fCutString;                     // cut number used for analysis
+    TString     fCutStringRead;
     TH2F*       fHistoMesonCuts;                // bookkeeping for meson cuts
     TH2F*       fHistoMesonBGCuts;              // bookkeeping for meson bg cuts
     TH1F*       fHistoDCAGGMesonBefore;         //
@@ -222,7 +223,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,18)
+    ClassDef(AliConversionMesonCuts,19)
 };
 
 
