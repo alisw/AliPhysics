@@ -162,6 +162,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsPureCalo(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
+  fCutStringRead(""),
   fHistCutIndex(NULL),
   fHistAcceptanceCuts(NULL),
   fHistClusterIdentificationCuts(NULL),
@@ -331,6 +332,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fIsPureCalo(ref.fIsPureCalo),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
+  fCutStringRead(""),
   fHistCutIndex(NULL),
   fHistAcceptanceCuts(NULL),
   fHistClusterIdentificationCuts(NULL),
@@ -2916,6 +2918,8 @@ Bool_t AliCaloPhotonCuts::UpdateCutString() {
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+
   // Initialize Cuts from a given Cut string
   AliInfo(Form("Set CaloCut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -4959,11 +4963,7 @@ Double_t AliCaloPhotonCuts::GetDistanceBetweenClusters(AliVCluster* cluster1, Al
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){
    // returns TString with current cut number
-   TString a(kNCuts);
-   for(Int_t ii=0;ii<kNCuts;ii++){
-      a.Append(Form("%d",fCuts[ii]));
-   }
-   return a;
+   return fCutStringRead;
 }
 
 

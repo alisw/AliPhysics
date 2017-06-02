@@ -2162,12 +2162,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
             fHistoTrueBckGGInvMassPt[iCut]->SetYTitle("#pair p_{T}(GeV/c)");
             fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
             fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut] = new TH2F("ESD_TrueBckFullMesonContained_InvMass_Pt","ESD_TrueBckFullMesonContained_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fHistoTrueBckGGInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) #gamma #gamma, calo gamma with full pi0");
-            fHistoTrueBckGGInvMassPt[iCut]->SetYTitle("#pair p_{T}(GeV/c)");
+            fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) #gamma #gamma, calo gamma with full pi0");
+            fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut]->SetYTitle("#pair p_{T}(GeV/c)");
             fTrueList[iCut]->Add(fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[iCut]);
             fHistoTrueBckAsymEClustersInvMassPt[iCut]   = new TH2F("ESD_TrueBckAsymEClus_InvMass_Pt","ESD_TrueBckAsymEClus_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
-            fHistoTrueBckGGInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) #gamma #gamma, calo gamma >70% of pi0 energy");
-            fHistoTrueBckGGInvMassPt[iCut]->SetYTitle("#pair p_{T}(GeV/c)");
+            fHistoTrueBckAsymEClustersInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) #gamma #gamma, calo gamma >70% of pi0 energy");
+            fHistoTrueBckAsymEClustersInvMassPt[iCut]->SetYTitle("#pair p_{T}(GeV/c)");
             fTrueList[iCut]->Add(fHistoTrueBckAsymEClustersInvMassPt[iCut]);
             fHistoTrueBckContInvMassPt[iCut]                        = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,nBinsPt, minPt, maxPt);
             fHistoTrueBckContInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) contamination");

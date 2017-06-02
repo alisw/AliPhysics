@@ -85,6 +85,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fMassCut(10),
 	fDoWeights(kFALSE),
 	fCutString(NULL),
+  fCutStringRead(""),
 	fHistCutIndex(NULL),
 	fHistdEdxCuts(NULL),
 	fHistITSdEdxbefore(NULL),
@@ -487,6 +488,8 @@ Bool_t AliPrimaryPionCuts::UpdateCutString() {
 
 ///________________________________________________________________________
 Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
 	// Initialize Cuts from a given Cut string
 
 	AliInfo(Form("Set PionCuts Number: %s",analysisCutSelection.Data()));
@@ -1043,11 +1046,7 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
 ///________________________________________________________________________
 TString AliPrimaryPionCuts::GetCutNumber(){
 	// returns TString with current cut number
-	TString a(kNCuts);
-	for(Int_t ii=0;ii<kNCuts;ii++){
-		a.Append(Form("%d",fCuts[ii]));
-	}
-	return a;
+	return fCutStringRead;
 }
 
 

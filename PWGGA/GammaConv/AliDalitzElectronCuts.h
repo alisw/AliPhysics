@@ -222,6 +222,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   // Histograms
   TObjString *fCutString; // cut number used for analysis
+  TString fCutStringRead;
   TH1F *hCutIndex; // bookkeeping for cuts
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
   TH2F *hITSdEdxbefore; // ITS dEdx before cuts
@@ -251,7 +252,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,2)
+  ClassDef(AliDalitzElectronCuts,3)
 };
 
 

@@ -79,6 +79,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fMC(0),
   fRequireVtxTracks(kTRUE),
   fUsePtLogAxis(kFALSE),
+  fUseGenPt(kFALSE),
   fDoCutV0multTPCout(kFALSE),
   fListHist(0x0),
   fESDtrackCuts(0x0),
@@ -113,6 +114,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fMC(0),
     fRequireVtxTracks(kTRUE),
     fUsePtLogAxis(kFALSE),
+    fUseGenPt(kFALSE),
     fDoCutV0multTPCout(kFALSE),
     fListHist(0x0),
     fESDtrackCuts(0x0),
@@ -551,6 +553,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	  if(fspecie&BIT(iSpec)) {
 	    if(IsConsistentWithPid(iSpec, track)) {
 	      Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
+	      if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
 	      histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	      if(fMC){
 		Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
@@ -581,6 +584,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	if(fspecie&BIT(iSpec)) {
 	  if(IsConsistentWithPid(iSpec, track)) {
 	    Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
+	    if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
 	    histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	    if(fMC){
 	      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
