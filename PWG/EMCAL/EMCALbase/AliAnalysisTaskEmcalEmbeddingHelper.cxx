@@ -739,7 +739,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 
   // Number of files embedded
   histName = "fHistNumberOfFilesEmbedded";
-  histTitle = "Number of files which contributed events to be embeeded";
+  histTitle = "Number of files which contributed events to be embedded";
   fHistManager.CreateTH1(histName, histTitle, 1, 0, 2);
 
   // Add all histograms to output list
