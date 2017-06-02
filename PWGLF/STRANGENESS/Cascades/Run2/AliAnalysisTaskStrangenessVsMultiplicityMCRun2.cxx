@@ -2234,14 +2234,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Double_t sxp=snp*snp*pt.GetSigmaY2()+0.0005*0.0005, syp=csp*csp*pt.GetSigmaY2()+0.0005*0.0005;
             fTreeCascVarV0DCAptPosSigmaX2 = sxp;
             fTreeCascVarV0DCAptPosSigmaY2 = syp;
-            fTreeCascVarV0DCAptPosSigmaY2 = pt.GetSigmaZ2();
+            fTreeCascVarV0DCAptPosSigmaZ2 = pt.GetSigmaZ2();
 
             //NEGATIVE
             Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
             Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
             fTreeCascVarV0DCAptNegSigmaX2 = sxn;
             fTreeCascVarV0DCAptNegSigmaY2 = syn;
-            fTreeCascVarV0DCAptNegSigmaY2 = nt.GetSigmaZ2();
+            fTreeCascVarV0DCAptNegSigmaZ2 = nt.GetSigmaZ2();
             
             //_____________________________________________________________________________
             //Recreate V0
