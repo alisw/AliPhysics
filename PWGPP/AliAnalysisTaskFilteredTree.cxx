@@ -3051,24 +3051,25 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
   TStatToolkit::AddMetadata(tree,"phiInner.Title","#phi_{TPCin}");
   TStatToolkit::AddMetadata(tree,"secInner.Title","sector_{TPCin}");
-  TStatToolkit::AddMetadata(tree,"tgl.Title","p_{z}/p_{t}");
+  TStatToolkit::AddMetadata(tree,"tgl.Title","#it{p_{z}}/#it{p}_{T}");
   TStatToolkit::AddMetadata(tree,"alphaV.Title","#phi_{vertex}");
-  TStatToolkit::AddMetadata(tree,"qPt.Title","q/p_{t}");
-  TStatToolkit::AddMetadata(tree,"phiInner.AxisTitle","#phi_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"qPt.Title","q/#it{p}_{T}");
+  TStatToolkit::AddMetadata(tree,"phiInner.AxisTitle","#it{#phi}_{TPCin}");
   TStatToolkit::AddMetadata(tree,"secInner.AxisTitle","sector_{TPCin}");
-  TStatToolkit::AddMetadata(tree,"tgl.AxisTitle","p_{z}/p_{t}");
-  TStatToolkit::AddMetadata(tree,"alphaV.AxisTitle","#phi_{vertex}");
-  TStatToolkit::AddMetadata(tree,"qPt.AxisTitle","q/p_{t} (1/GeV)");
+  TStatToolkit::AddMetadata(tree,"tgl.AxisTitle","#it{p}_{z}/#it{p}_{t}");
+  TStatToolkit::AddMetadata(tree,"alphaV.AxisTitle","#it{#phi}_{vertex}");
+  TStatToolkit::AddMetadata(tree,"qPt.AxisTitle","q/#it{p}_{T} (1/GeV)");
   
   //
   tree->SetAlias("normChi2ITS","sqrt(esdTrack.fITSchi2/esdTrack.fITSncls)");
   tree->SetAlias("normChi2TPC","esdTrack.fTPCchi2/esdTrack.fTPCncls");
+  tree->SetAlias("normChi2TRD","esdTrack.fTRDchi2/esdTrack.fTRDncls");
   tree->SetAlias("normDCAR","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
   tree->SetAlias("normDCAZ","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
-  TStatToolkit::AddMetadata(tree,"normChi2ITS.Title","#sqrt{#chi2 ITS /N_{clITS}}");
-  TStatToolkit::AddMetadata(tree,"normChi2ITS.Title","#chi2{{TPC}/N_{clTPC}");
-  TStatToolkit::AddMetadata(tree,"normChi2ITS.AxisTitle","#sqrt{#chi2 ITS /N_{clITS}}");
-  TStatToolkit::AddMetadata(tree,"normChi2ITS.AxisTitle","#chi2{{TPC}/N_{clTPC}");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.Title","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.Title","#chi2_{TPC}/N_{clTPC}");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.AxisTitle","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.AxisTitle","#chi2_{TPC}/N_{clTPC}");
   //
   tree->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
   tree->SetAlias("TPCCSide","esdTrack.fIp.fP[1]<0");
@@ -3086,7 +3087,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
   
 
-  const char * chName[5]={"r#phi","z","sin(#phi)","tan(#theta)", "q/p_{t}"};
+  const char * chName[5]={"#it{r#phi}","#it{z}","sin(#phi)","tan(#it{#theta})", "q/#it{p}_{t}"};
   const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
   const char * refBranch=(tree->GetBranch("extInnerParamV."))? "extInnerParamV":"esdTrack.fTPCInner";
 
@@ -3120,6 +3121,8 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
     TStatToolkit::AddMetadata(tree,TString::Format("pullP%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("pullPC%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
   }
-
-
+  TStatToolkit::AddMetadata(tree, "mult.Title","N_{prim}");
+  TStatToolkit::AddMetadata(tree, "mult.AxisTitle","N_{prim}");
+  TStatToolkit::AddMetadata(tree, "ntracks.Title","N_{tr}");
+  TStatToolkit::AddMetadata(tree, "ntracks.AxisTitle","N_{tr} (prim+sec+pile-up)");
 } 
