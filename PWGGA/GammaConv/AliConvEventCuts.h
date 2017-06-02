@@ -186,6 +186,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2016
         kLHC16kl,         // pp 13 TeV
         kLHC16q,          // pPb 5 TeV
+	kLHC16r,          // pPb 8 TeV
+	kLHC16s,          // pPb 8 TeV
+	kLHC16t,          // pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
         kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
