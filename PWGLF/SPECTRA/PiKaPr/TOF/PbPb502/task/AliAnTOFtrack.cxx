@@ -261,20 +261,32 @@ Double_t AliAnTOFtrack::GetT0Resolution(const Double_t TOFsigma) const {
 ////////////////////////
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0TOF(){
-  if(GetMaskBit(fTrkMask, kT0_0)) return kTRUE;
+Bool_t AliAnTOFtrack::IsT0TOF(const Bool_t exclusive){
+  if(GetMaskBit(fTrkMask, kT0_0)){
+    if(exclusive && !GetMaskBit(fTrkMask, kT0_1) && !GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    else if(exclusive) return kFALSE;
+    return kTRUE;
+  }
   return kFALSE;
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0A(){
-  if(GetMaskBit(fTrkMask, kT0_1)) return kTRUE;
+Bool_t AliAnTOFtrack::IsT0A(const Bool_t exclusive){
+  if(GetMaskBit(fTrkMask, kT0_1)){
+    if(exclusive && !GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    else if(exclusive) return kFALSE;
+    return kTRUE;
+  }
   return kFALSE;
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0C(){
-  if(GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+Bool_t AliAnTOFtrack::IsT0C(const Bool_t exclusive){
+  if(GetMaskBit(fTrkMask, kT0_2)){
+    if(exclusive && !GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_1)) return kTRUE;
+    else if(exclusive) return kFALSE;
+    return kTRUE;
+  }
   return kFALSE;
 }
 

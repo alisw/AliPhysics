@@ -1488,18 +1488,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   UInt_t PhysSelmask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fEvtPhysSelected = (PhysSelmask & fSelectBit);//--> Physics Selection
   
-  //
-  //Physics Selection Cut
-  //
-  if (!fEvtPhysSelected) {
-    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
-    // Post output data.
-    PostAllTheData();
-    return;
-  }
-  
   //   AliInfo(Form("Event %.0f Passed the Phys. Sel. + Trig", hNEvt->GetBinContent(1)));
-  hNEvt->Fill(EvtStart++); //-->Pass Phys. Sel. + Trig
+  if (fEvtPhysSelected) hNEvt->Fill(EvtStart); //-->Pass Phys. Sel. + Trig
+  EvtStart++;
   
   //
   //Event Selection
@@ -1536,6 +1527,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   StopTimePerformance(3);
   
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
+  
+  //
+  //Physics Selection Cut
+  //
+  if (!fEvtPhysSelected) {
+    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
+    // Post output data.
+    PostAllTheData();
+    return;
+  }
   
   //
   //Filling the Multiplicity histogram before the event selection
