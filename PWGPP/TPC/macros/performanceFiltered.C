@@ -445,34 +445,38 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
 
   //
   TStopwatch timer;
-
+  //
   timer.Start();
   hisArrayV0 = AliTreePlayer::MakeHistograms(chainV0, hisV0String, "1",0,maxEntries,200000,15);
   timer.Print();
+  (*pcstream).GetFile()->cd();
+  for (Int_t iKey=0; iKey<hisArrayV0->GetEntries(); iKey++){
+    hisArrayV0->At(iKey)->Write( hisArrayV0->At(iKey)->GetName());
+  }
+  delete  hisArrayV0;
   //
   timer.Start();
   hisArray = AliTreePlayer::MakeHistograms(chain, hisString, defaultCut,0,maxEntries,200000,15);
   timer.Print();
-  
+  (*pcstream).GetFile()->cd();
+  for (Int_t iKey=0; iKey<hisArray->GetEntries(); iKey++){
+    hisArray->At(iKey)->Write( hisArray->At(iKey)->GetName());
+  }
+  delete hisArray;
   timer.Start();
-  TObjArray * hisArrayMatch = AliTreePlayer::MakeHistograms(chain, hisMatch, defaultCutMatch,0,maxEntries,200000,15);
+  hisArray = AliTreePlayer::MakeHistograms(chain, hisMatch, defaultCutMatch,0,maxEntries,200000,15);
   timer.Print();
-  hisArray->AddAll(hisArrayMatch);
-
-
   (*pcstream).GetFile()->cd();
   //  hisArray->Write("perfArray",  TObjArray::kSingleKey);
   for (Int_t iKey=0; iKey<hisArray->GetEntries(); iKey++){
     hisArray->At(iKey)->Write( hisArray->At(iKey)->GetName());
   }
-  for (Int_t iKey=0; iKey<hisArrayV0->GetEntries(); iKey++){
-    hisArrayV0->At(iKey)->Write( hisArrayV0->At(iKey)->GetName());
-  }
+  delete hisArray;
   //
   //  hisArray->Write("perfArray");
   //  hisArrayV0->Write("perfArrayV0");
   (*pcstream).GetFile()->Flush();
-  return hisArray;
+  return 0;
 }
 
 
