@@ -793,10 +793,15 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     Int_t id=0;
     char tag[1000];
     char description[1000];
+    Int_t firstrun=-1;
+    Int_t lastrun=-1;
+    
     treeProd->GetBranch("ID")->SetAddress(&id);
     treeProd->GetBranch("Tag")->SetAddress(&tag);
     treeProd->GetBranch("Description")->SetAddress(&description);
-
+    treeProd->GetBranch("First_run")->SetAddress(&firstrun);
+    treeProd->GetBranch("Last_run")->SetAddress(&lastrun);
+    
     TTree *dumptree = new TTree("dumptree_RD","dumptree_RD");       //tree that will hold information for guessing
 
     char paliroot[1000];            // variables that will hold information read of the tree: GetTreeProdCycleByID(TString::Format("%d",id))
@@ -816,6 +821,8 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     dumptree->Branch("aliphysics",&saliphysics);
     dumptree->Branch("prodName",&sprodname);
     dumptree->Branch("passName",&spassname);
+    dumptree->Branch("First_Run",&firstrun);
+    dumptree->Branch("Last_Run",&lastrun);
 
     Int_t entries=treeProd->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
