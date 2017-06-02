@@ -1923,7 +1923,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // Define the radius between the leading cluster and the considered cluster
     
     if(radius>fIsoConeRadius){ // The cluster is outside the isolation cone -> add the cluster pT to pT_UE
-      if(TMath::Abs(phiClust - c.Phi()) < fIsoConeRadius)
+      if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
         sumEnergyPhiBandClus += nClust.Pt();
     }
     else if(radius<fIsoConeRadius && radius != 0.){ // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
@@ -2002,7 +2002,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       iTracksCone++;
     }
     else{
-      if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){ // The track is outside the isolation cone -> add the track pT to pT_UE
+      if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius){ // The track is outside the isolation cone -> add the track pT to pT_UE
         sumpTPhiBandTracks += eTrack->Pt();
       }
     }
@@ -2111,7 +2111,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // Define the radius between the leading cluster and the considered cluster
     
     if(radius>fIsoConeRadius){ // The cluster is outside the isolation cone -> add the cluster pT to pT_UE
-      if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
+      if(TMath::Abs(phiClust - c.Phi()) < fIsoConeRadius)
         sumEnergyEtaBandClus += nClust.Pt();
     }
     else if(radius<fIsoConeRadius && radius != 0.){ // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
@@ -2190,7 +2190,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       iTracksCone++;
     }
     else{ // The track is outside the isolation cone -> add the track pT to pT_UE
-      if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius){
+      if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){
           // Printf("but phi similar, so UE EtaBand!!");
         sumpTEtaBandTracks += eTrack->Pt();
       }
