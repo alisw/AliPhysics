@@ -1482,7 +1482,6 @@ private:
   Double_t fCRCEtaMax;
   Int_t fRunNum;
   Int_t fCachedRunNum;
-  Int_t fRbREventCounter;
   Int_t fRunBin;
   Int_t fCenBin;
   CorrelationWeights fCorrWeightTPC;
@@ -1635,8 +1634,11 @@ private:
   const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
 //  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
-  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
   TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
+  const static Int_t fknEZDCBins = 10;
+  TProfile3D *fCRCZDCQVecVtxCenEZDC3D[fCRCMaxnCen][fknEZDCBins][fkCRCnCQVecVtxPos]; //!
+  TH1D* fCRCZDCQVecDummyEZDCBins[fCRCMaxnCen]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower

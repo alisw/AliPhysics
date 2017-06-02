@@ -164,6 +164,7 @@ public:
   void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
   void SetRejectPileUpTight( Bool_t kB ) { fRejectPileUpTight = kB; }
   void SetResetNegativeZDC( Bool_t kB ) { fResetNegativeZDC = kB; }
+  void SetCorrectPhiTracklets( Bool_t kB ) { fCorrectPhiTracklets = kB; }
   void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
     fCentrUpLim=centrup;}
   void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
@@ -370,6 +371,7 @@ private:
   Int_t fMaxRingVZC; //
   Int_t fMinRingVZA; //
   Int_t fMaxRingVZA; //
+  Bool_t fCorrectPhiTracklets; //
   
   // TrackQA
   TList *fTrackQAList; //!
