@@ -211,6 +211,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(NULL),
    fCutString(NULL),
+   fCutStringRead(""),
    fUtils(NULL),
    fEtaShift(0.0),
    fDoEtaShift(kFALSE),
@@ -371,6 +372,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(ref.fGeneratorNames),
    fCutString(NULL),
+   fCutStringRead(""),
    fUtils(NULL),
    fEtaShift(ref.fEtaShift),
    fDoEtaShift(ref.fDoEtaShift),
@@ -1823,6 +1825,8 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+   fCutStringRead = Form("%s",analysisCutSelection.Data());
+
    // Initialize Cuts from a given Cut string
    if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
       AliInfo("Weighting was enabled");
@@ -4039,11 +4043,7 @@ Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon) con
 ///________________________________________________________________________
 TString AliConversionCuts::GetCutNumber(){
    // returns TString with current cut number
-   TString a(kNCuts);
-   for(Int_t ii=0;ii<kNCuts;ii++){
-      a.Append(Form("%d",fCuts[ii]));
-   }
-   return a;
+   return fCutStringRead;
 }
 
 ///________________________________________________________________________

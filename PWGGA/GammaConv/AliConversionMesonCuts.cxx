@@ -123,6 +123,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
   fCutString(NULL),
+  fCutStringRead(""),
   fBackgroundHandler(0),
   fHistoMesonCuts(NULL),
   fHistoMesonBGCuts(NULL),
@@ -201,6 +202,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMaxOpanPtDepCut(kFALSE),
   fMinOpanCutMeson(0),
   fCutString(NULL),
+  fCutStringRead(""),
   fHistoMesonCuts(NULL),
   fHistoMesonBGCuts(NULL),
   fHistoDCAGGMesonBefore(NULL),
@@ -952,6 +954,8 @@ Bool_t AliConversionMesonCuts::UpdateCutString() {
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
   // Initialize Cuts from a given Cut string
   AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -2507,11 +2511,7 @@ Bool_t AliConversionMesonCuts::SetMaxOpanMesonCut(Int_t maxOpanMesonCut){
 //________________________________________________________________________
 TString AliConversionMesonCuts::GetCutNumber(){
   // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-    a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 //________________________________________________________________________

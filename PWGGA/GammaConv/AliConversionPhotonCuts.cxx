@@ -175,6 +175,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fConversionPointYArray(0.0),
   fConversionPointZArray(0.0),
   fCutString(NULL),
+  fCutStringRead(""),
   fIsHeavyIon(0),
   fUseITSpid(kFALSE),
   fITSPIDnSigmaAboveElectronLine(100),
@@ -308,6 +309,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fConversionPointYArray(ref.fConversionPointYArray),
   fConversionPointZArray(ref.fConversionPointZArray),
   fCutString(NULL),
+  fCutStringRead(""),
   fIsHeavyIon(ref.fIsHeavyIon),
   fUseITSpid(ref.fUseITSpid),
   fITSPIDnSigmaAboveElectronLine(ref.fITSPIDnSigmaAboveElectronLine),
@@ -1604,6 +1606,8 @@ Bool_t AliConversionPhotonCuts::UpdateCutString() {
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
   // Initialize Cuts from a given Cut string
   AliInfo(Form("Set Photoncut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -3296,11 +3300,7 @@ Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photo
 ///________________________________________________________________________
 TString AliConversionPhotonCuts::GetCutNumber(){
   // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-    a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 ///________________________________________________________________________

@@ -300,6 +300,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fConversionPointYArray;               // Array with conversion Point y
     Float_t           fConversionPointZArray;               // Array with conversion Point z
     TObjString*       fCutString;                           // cut number used for analysis
+    TString           fCutStringRead;                       //
     Int_t             fIsHeavyIon;                          // flag for pp (0), PbPb (1), pPb (2)
     Bool_t            fUseITSpid;                           // flag to use tof pid    
     Double_t          fITSPIDnSigmaAboveElectronLine;       // sigma cut RRnewTOF
@@ -347,7 +348,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,13)
+    ClassDef(AliConversionPhotonCuts,14)
 };
 
 #endif

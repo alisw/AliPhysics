@@ -515,8 +515,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            // period selector
       EnergyVar                   fEnergyEnum;                            // energy selector
-      
+
       TObjString*                 fCutString;                             // cut number used for analysis
+      TString                     fCutStringRead;
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
       Bool_t                      fDoEtaShift;                            // Flag for Etashift
@@ -590,7 +591,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,31)
+      ClassDef(AliConvEventCuts,32)
 };
 
 
