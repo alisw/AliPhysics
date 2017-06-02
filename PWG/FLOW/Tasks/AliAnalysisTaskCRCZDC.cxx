@@ -200,6 +200,7 @@ fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
 fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
+fCorrectPhiTracklets(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fTrackQAList(NULL),
@@ -382,6 +383,7 @@ fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
 fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
+fCorrectPhiTracklets(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fTrackQAList(NULL),
@@ -837,15 +839,13 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fCRCQVecListRun[r]->SetOwner(kTRUE);
     fOutput->Add(fCRCQVecListRun[r]);
     
-    if(!fUseTowerEq) {
-      for(Int_t k=0;k<fCRCnTow;k++) {
-        fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-        fZNCTower[r][k]->Sumw2();
-        fCRCQVecListRun[r]->Add(fZNCTower[r][k]);
-        fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-        fZNATower[r][k]->Sumw2();
-        fCRCQVecListRun[r]->Add(fZNATower[r][k]);
-      }
+    for(Int_t k=0;k<fCRCnTow;k++) {
+      fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+      fZNCTower[r][k]->Sumw2();
+      fCRCQVecListRun[r]->Add(fZNCTower[r][k]);
+      fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+      fZNATower[r][k]->Sumw2();
+      fCRCQVecListRun[r]->Add(fZNATower[r][k]);
     }
     
 //    fhZNSpectraRbR[r] = new TH3D(Form("fhZNSpectraRbR[%d]",fRunList[r]),Form("fhZNSpectraRbR[%d]",fRunList[r]),50,0.,100.,8,0.,8.,100,0.,1.E5);
@@ -930,6 +930,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       // fill with tracklets
       AliAODTracklets* anInputTracklets = (AliAODTracklets*)aod->GetTracklets();
       Int_t multSPD = anInputTracklets->GetNumberOfTracklets();
+      Double_t BField = aod->GetMagneticField();
       //loop over tracklets
       for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
         Float_t thetaTr= anInputTracklets->GetTheta(itracklet);
@@ -940,6 +941,18 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         AliFlowTrack* pTrack = new AliFlowTrack();
         pTrack->SetPt(0.5);
         pTrack->SetEta(etaTr);
+        // set charge: "according to Ruben, with positive magnetic field, the positive tracks rotate clockwise. Since the angle stored in AOD is the difference between the hit on the first and second layers of SPD, in positive mag field, positive delta_phi -> positive track charge."
+        Double_t DeltaPhi = anInputTracklets->GetDeltaPhi(itracklet);
+        if(BField>0. && DeltaPhi>0.) pTrack->SetCharge(1);
+        if(BField>0. && DeltaPhi<0.) pTrack->SetCharge(-1);
+        if(BField<0. && DeltaPhi>0.) pTrack->SetCharge(-1);
+        if(BField<0. && DeltaPhi<0.) pTrack->SetCharge(1);
+        // correction of phi
+        if(fCorrectPhiTracklets) {
+          phiTr += 39./34.*DeltaPhi;
+          if (phiTr < 0.)  phiTr += 2.*TMath::Pi();
+          if (phiTr > 2.*TMath::Pi()) phiTr -= 2.*TMath::Pi();
+        }
         pTrack->SetPhi(phiTr);
         //marking the particles as POI type 2:
         fFlowEvent->IncrementNumberOfPOIs(2);
@@ -1480,99 +1493,99 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       AliAODTracklets *trackl = aod->GetTracklets();
       Int_t nTracklets = trackl->GetNumberOfTracklets();
       
-      // VZERO
-      
       // get VZERO data
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
       Double_t multV0A = vzeroAOD->GetMTotV0A();
       Double_t multV0C = vzeroAOD->GetMTotV0C();
-      Int_t CachednRing = 1;
-      Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
-      Double_t denom = 0.;
-      Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
-      Double_t MultC[fkVZEROnHar] = {0.}, MultA[fkVZEROnHar] = {0.};
       
-      for(Int_t i=0; i<64; i++) {
+      // set VZERO Q-vectors
+      if(fDataSet==k2015 || fDataSet==k2015v6) {
+        Int_t CachednRing = 1;
+        Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
+        Double_t denom = 0.;
+        Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
+        Double_t MultC[fkVZEROnHar] = {0.}, MultA[fkVZEROnHar] = {0.};
         
-        // correct multiplicity per channel
-        Double_t mult = vzeroAOD->GetMultiplicity(i);
-        if(fVZEROGainEqHist) {
-          Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
-          if(EqFactor>0.) mult *= EqFactor;
-        }
-        fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
-        
-        // build Q-vector per ring
-        Int_t nRing = (Int_t)i/8 + 1;
-        Double_t ChPhi = TMath::PiOver4()*(0.5+i%8);
-        
-        if(i == 63) {
+        for(Int_t i=0; i<64; i++) {
+          
+          // correct multiplicity per channel
+          Double_t mult = vzeroAOD->GetMultiplicity(i);
+          if(fVZEROGainEqHist) {
+            Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
+            if(EqFactor>0.) mult *= EqFactor;
+          }
+          fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
+          
+          // build Q-vector per ring
+          Int_t nRing = (Int_t)i/8 + 1;
+          Double_t ChPhi = TMath::PiOver4()*(0.5+i%8);
+          
+          if(i == 63) {
+            for (Int_t k=0; k<fkVZEROnHar; k++) {
+              QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
+              QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
+            }
+            denom += mult;
+            nRing++;
+          }
+          
+          if(nRing!=CachednRing) {
+            for (Int_t k=0; k<fkVZEROnHar; k++) {
+              Double_t QxRec = QxTot[k]/denom;
+              Double_t QyRec = QyTot[k]/denom;
+              // store values for re-centering
+              //            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
+              //            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
+              // do re-centering
+              if(fVZEROQVectorRecQxStored[k]) {
+                if(!std::isnan(fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+                if(!std::isnan(fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+              }
+              // sum of Q-vectors over all rings (total V0 Q-vector)
+              if (CachednRing >= fMinRingVZC && CachednRing <= fMaxRingVZC) {
+                V0TotQC[k][0] += QxRec*denom;
+                V0TotQC[k][1] += QyRec*denom;
+                MultC[k] += denom;
+              }
+              if (CachednRing >= fMinRingVZA && CachednRing <= fMaxRingVZA) {
+                V0TotQA[k][0] += QxRec*denom;
+                V0TotQA[k][1] += QyRec*denom;
+                MultA[k] += denom;
+              }
+              QxTot[k] = 0.;
+              QyTot[k] = 0.;
+            }
+            denom = 0.;
+            CachednRing = nRing;
+          }
           for (Int_t k=0; k<fkVZEROnHar; k++) {
             QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
             QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
           }
           denom += mult;
-          nRing++;
         }
         
-        if(nRing!=CachednRing) {
-          for (Int_t k=0; k<fkVZEROnHar; k++) {
-            Double_t QxRec = QxTot[k]/denom;
-            Double_t QyRec = QyTot[k]/denom;
-            // store values for re-centering
-//            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
-//            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
-            // do re-centering
-            if(fVZEROQVectorRecQxStored[k]) {
-              if(!std::isnan(fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
-              if(!std::isnan(fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
-            }
-            // sum of Q-vectors over all rings (total V0 Q-vector)
-            if (CachednRing >= fMinRingVZC && CachednRing <= fMaxRingVZC) {
-              V0TotQC[k][0] += QxRec*denom;
-              V0TotQC[k][1] += QyRec*denom;
-              MultC[k] += denom;
-            }
-            if (CachednRing >= fMinRingVZA && CachednRing <= fMaxRingVZA) {
-              V0TotQA[k][0] += QxRec*denom;
-              V0TotQA[k][1] += QyRec*denom;
-              MultA[k] += denom;
-            }
-            QxTot[k] = 0.;
-            QyTot[k] = 0.;
-          }
-          denom = 0.;
-          CachednRing = nRing;
-        }
         for (Int_t k=0; k<fkVZEROnHar; k++) {
-          QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
-          QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
-        }
-        denom += mult;
-      }
-      
-      for (Int_t k=0; k<fkVZEROnHar; k++) {
-        if(MultC[k]>0. && MultA[k]>0.) {
-          Double_t QCx = V0TotQC[k][0]/MultC[k], QCy = V0TotQC[k][1]/MultC[k], QAx = V0TotQA[k][0]/MultA[k], QAy = V0TotQA[k][1]/MultA[k];
-          if(!std::isnan(QCx) && !std::isnan(QCy) && !std::isnan(QAx) && !std::isnan(QAy)) {
-            fFlowEvent->SetV02Qsub(QCx,QCy,MultC[k],QAx,QAy,MultA[k],k+1);
-            fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
-            fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
-            fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
-            fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
-            fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
-            fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
-            fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
-            fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
+          if(MultC[k]>0. && MultA[k]>0.) {
+            Double_t QCx = V0TotQC[k][0]/MultC[k], QCy = V0TotQC[k][1]/MultC[k], QAx = V0TotQA[k][0]/MultA[k], QAy = V0TotQA[k][1]/MultA[k];
+            if(!std::isnan(QCx) && !std::isnan(QCy) && !std::isnan(QAx) && !std::isnan(QAy)) {
+              fFlowEvent->SetV02Qsub(QCx,QCy,MultC[k],QAx,QAy,MultA[k],k+1);
+              fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
+              fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
+              fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
+              fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
+              fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
+              fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
+              fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
+              fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
+            } else {
+              fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
+            }
           } else {
             fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
           }
-        } else {
-          fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
         }
       }
-    
-    
     
 //      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));
 //      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
@@ -1691,7 +1704,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             }
           } else {
             EZNA = towZNA[i+1];
-            printf("suca!\n");
           }
           fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
 //          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
