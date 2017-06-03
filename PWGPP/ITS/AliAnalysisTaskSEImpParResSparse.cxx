@@ -353,7 +353,6 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
   Bool_t sddIsIn=kTRUE;
   if(fCheckSDDIsIn) {
-
     if(!fTrigConfig) {    
       AliCDBManager* man = AliCDBManager::Instance();
       if(fOCDBPath.Contains("OCDB")) { // when running in the QAtrain this is not called (OCBD is already set)
@@ -391,9 +390,12 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	}
       //sddIsIn = kFALSE;
     }
-    else sddIsIn=((AliESDEvent*)event)->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+    else {
+	  sddIsIn=((AliESDEvent*)event)->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);	  
+    }
     if(fCheckSDDIsIn==1 && !sddIsIn) return;
     if(fCheckSDDIsIn==-1 && sddIsIn) return;
+    if(fCheckSDDIsIn==3) sddIsIn=kFALSE; //for MC without SDD
   }
 
   fNentries->Fill(1);
