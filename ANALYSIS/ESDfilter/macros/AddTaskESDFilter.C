@@ -54,7 +54,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
    // Barrel tracks filter
-   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
+   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter", addPCMv0s);
    if (disableCascades) esdfilter->DisableCascades();
    if  (disableKinks) esdfilter->DisableKinks();
   

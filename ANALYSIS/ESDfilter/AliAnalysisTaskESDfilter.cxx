@@ -157,7 +157,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
 }
 
 //______________________________________________________________________________
-AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
+AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name, Bool_t addPCMv0s):
   AliAnalysisTaskSE(name),
   fTrackFilter(0x0),
   fKinkFilter(0x0),
@@ -215,7 +215,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0),
   fIsMuonCaloPass(kFALSE),
-  fAddPCMv0s(kFALSE),
+  fAddPCMv0s(addPCMv0s),
   fbitfieldPCMv0sA(NULL),
   fbitfieldPCMv0sB(NULL),
   fv0Histos(NULL),
@@ -239,9 +239,11 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fCascadeCuts[5] =   0.999; // min allowed cosine of the cascade pointing angle
   fCascadeCuts[6] =   0.9  ; // min radius of the fiducial volume
   fCascadeCuts[7] = 100.   ; // max radius of the fiducial volume
-  DefineInput(1,TBits::Class());	//Bit field for pcm v0s  OfflineV0Finder
-  DefineInput(2,TBits::Class());	//Bit field for pcm v0s  On-FlyV0Finder
-  DefineOutput(1,TList::Class());	//TList containing PCM v0 histos for consistency checks
+  if(fAddPCMv0s){
+    DefineInput(1,TBits::Class());	//Bit field for pcm v0s  OfflineV0Finder
+    DefineInput(2,TBits::Class());	//Bit field for pcm v0s  On-FlyV0Finder
+    DefineOutput(1,TList::Class());	//TList containing PCM v0 histos for consistency checks
+  }
 }
 
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter()
@@ -270,8 +272,9 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
     fv0Histos->GetXaxis()->SetBinLabel(8,"PCM Offline not selected by filter");
     fHistov0List->Add(fv0Histos);
     fHistov0List->SetOwner(kTRUE);
+    PostData(1,fHistov0List);
   }
-  PostData(1,fHistov0List);
+
   if(OutputTree())
   {
     OutputTree()->GetUserInfo()->Add(fTrackFilter);
@@ -372,7 +375,7 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
     AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
   }   
   ConvertESDtoAOD();
-  PostData(1,fHistov0List);
+  if(fAddPCMv0s) PostData(1,fHistov0List);
 }
 
 //______________________________________________________________________________
