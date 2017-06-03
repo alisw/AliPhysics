@@ -322,7 +322,7 @@ public:
   }
 
   //Method to set shift-rotational matrixes from ESDHeader
-  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod);
+  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) const;
 	
   //Alternate geometry that allows to calculate tower position for different particles and different alignments
   void RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,

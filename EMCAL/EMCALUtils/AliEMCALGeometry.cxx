@@ -1501,30 +1501,20 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
 {	
   if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
     AliFatal(Form("Wrong supermodule index -> %d",smod));
-		
-  // Use matrices set externally
-  if(!gGeoManager)
-  {
-    if(fkSModuleMatrix[smod])
-    {
-      return fkSModuleMatrix[smod] ;
+
+  if (!fkSModuleMatrix[smod]) {
+    if (gGeoManager) {
+      SetMisalMatrix(GetMatrixForSuperModuleFromGeoManager(smod), smod);
     }
-    else
-    {
+    else {
       AliInfo("Stop:");
       printf("\t Can not find EMCAL misalignment matrixes\n") ;
       printf("\t Either import TGeoManager from geometry.root or \n");
       printf("\t read stored matrixes from AliESD Header:  \n") ;   
-      printf("\t AliEMCALGeometry::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
-      AliFatal("") ;
+      printf("\t AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) \n") ;
+      AliFatal("");
     }  
- } // external matrices
-  
-  // If gGeoManager exists, take matrix from it
-  // only once to speed up things
-  if ( gGeoManager && !fkSModuleMatrix[smod] )
-    fkSModuleMatrix[smod] = GetMatrixForSuperModuleFromGeoManager(smod) ;
-
+  }
   return fkSModuleMatrix[smod];
 }
 
@@ -1734,7 +1724,7 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
 /// Move from header due to coding violations : Dec 2,2011 by PAI
 ///
 //__________________________________________________________________________________________________________________
-void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
+void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) const
 {
   if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules())
   {
