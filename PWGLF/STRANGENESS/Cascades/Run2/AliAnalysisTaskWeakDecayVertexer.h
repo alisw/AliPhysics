@@ -58,7 +58,16 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedCascadeVertexFinding = lOpt;
     }
-    
+    void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkIfImprovedPerformInitialLinearPropag = lOpt;
+    }
+    void SetIfImprovedExtraPrecisionFactor( Double_t lOpt ){
+        //Highly experimental, use with care!
+        fkIfImprovedExtraPrecisionFactor = lOpt;
+    }
+
+
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -189,6 +198,8 @@ private:
     Bool_t fkPreselectDedxLambda;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedCascadeVertexFinding;
+    Bool_t fkIfImprovedPerformInitialLinearPropag;
+    Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
 
     //Objects Controlling Task Behaviour: has to be streamed!
@@ -221,6 +232,8 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
     TH1D *fHistNumberOfCandidates; //!
+    
+    TH1D *fHistV0ToBachelorPropagationStatus; //! 
 
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented
