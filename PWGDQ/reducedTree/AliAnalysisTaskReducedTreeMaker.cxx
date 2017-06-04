@@ -262,7 +262,9 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   
   // enable all variables in the VarManager
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
-  for(Int_t i=0;i<AliDielectronVarManager::kNMaxValues;++i) fUsedVars->SetBitNumber(i,kTRUE);
+  for(Int_t i=0;i<AliDielectronVarManager::kNacc;++i) fUsedVars->SetBitNumber(i,kTRUE);
+  
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   
   
   PostData(1, fReducedEvent);
@@ -295,6 +297,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     AliFatal("This task needs the PID response attached to the input event handler!");
   }
 
+  
   // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
   if(fSelectPhysics && inputHandler){
@@ -322,14 +325,15 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
   }
   
-  AliDielectronVarManager::SetFillMap(fUsedVars);
+  if(fFillMCInfo) {
+     Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+     if(hasMC) {
+        AliDielectronMC::Instance()->ConnectMCEvent();
+        AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
+     }
+  }
   AliDielectronVarManager::SetEvent(InputEvent());
   
-  if(fFillMCInfo) {
-    Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
-    if(hasMC) AliDielectronMC::Instance()->ConnectMCEvent();
-  }
-
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
@@ -451,7 +455,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
-
+  
   // In case we want to write just basic event information, we stop here
   if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kBaseEventsWithFullTracks) 
      return;
@@ -961,6 +965,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Bool_t usedForPureV0[4] = {kFALSE};
   Bool_t usedForV0Or = kFALSE;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
+     
     AliVParticle *particle=event->GetTrack(itrack);
     if(isESD) {
       esdTrack=static_cast<AliESDtrack*>(particle);
@@ -990,7 +995,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         }
       }
     }
-        
+   
+    
     ULong_t status = (isESD ? esdTrack->GetStatus() : aodTrack->GetStatus());
     
     AliReducedEventInfo* eventInfo = NULL; 
@@ -1004,7 +1010,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       }
     }
     
-    //apply track cuts
     if(!usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
     
     TClonesArray& tracks = *(fReducedEvent->fTracks);
