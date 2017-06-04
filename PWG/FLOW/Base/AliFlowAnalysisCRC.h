@@ -1607,6 +1607,7 @@ private:
   TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
+  TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
   TH3D *fZDCQVecVtxCenEZDCFit0; //!
   TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
