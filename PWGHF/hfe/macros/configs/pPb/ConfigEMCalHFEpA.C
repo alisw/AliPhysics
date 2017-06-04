@@ -1,5 +1,5 @@
 
-AliAnalysisTaskEMCalHFEpA2* ConfigEMCalHFEpA(
+AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
 
 Bool_t isMC=kFALSE, 
@@ -103,7 +103,7 @@ Bool_t isTOFdet 		= kFALSE
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
-	AliAnalysisTaskEMCalHFEpA2 *task = new AliAnalysisTaskEMCalHFEpA2(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
+	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
@@ -127,16 +127,16 @@ Bool_t isTOFdet 		= kFALSE
 		task->SetUseTrigger();
 		task->SetUseShowerShapeCut(kTRUE);
 				
-		if(configIndex==120)task->SetM20Cut(0.0,0.2);
-		else if(configIndex==121)task->SetM20Cut(0.0,0.4);
+		if(configIndex==120)task->SetM20Cut(0.0,0.25);
+		else if(configIndex==121)task->SetM20Cut(0.0,0.35);
 		else if(configIndex==122)task->SetM20Cut(0.01,0.3);
 		else if(configIndex==123)task->SetM20Cut(0.0,2);
 		else task->SetM20Cut(0.0,0.3);
 		
-		if(configIndex==124)task->SetM02Cut(0.0,0.2);
-		else if(configIndex==125)task->SetM02Cut(0.0,0.4);
-		else if(configIndex==126)task->SetM02Cut(0.0,0.5);
-		else if(configIndex==127)task->SetM02Cut(0.0,0.6);
+		if(configIndex==124)task->SetM02Cut(0.0,0.25);
+		else if(configIndex==125)task->SetM02Cut(0.0,0.3);
+		else if(configIndex==126)task->SetM02Cut(0.0,0.35);
+		else if(configIndex==127)task->SetM02Cut(0.01,0.3);
 		else task->SetM02Cut(0.0,2);
 			
 		
