@@ -628,7 +628,13 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 {  
   //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
   
-  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  if ( !GetGenEventHeader() ) 
+  {
+    AliError("Skip event, event header is not available!");
+    return kFALSE;
+  }
+  
+  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
   {
     TParticle * jet =  0;
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
@@ -668,7 +674,13 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 //____________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
 {  
-  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  if ( !GetGenEventHeader() ) 
+  {
+    AliError("Skip event, event header is not available!");
+    return kFALSE;
+  }
+  
+  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
   {
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
     Float_t ptHard = pygeh->GetPtHard();
