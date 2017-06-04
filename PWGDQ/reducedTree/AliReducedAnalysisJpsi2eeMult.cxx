@@ -306,6 +306,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s+", trackClass.Data()) );
+      FillTrackHistograms(track, Form("%s", trackClass.Data()) );
    }
    TIter nextNegTrack(&fNegTracks);
    for(Int_t i=0;i<fNegTracks.GetEntries();++i) {
@@ -314,6 +315,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s-", trackClass.Data()) );
+      FillTrackHistograms(track, Form("%s", trackClass.Data()) );
       //cout << "Neg track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
    }
 }
