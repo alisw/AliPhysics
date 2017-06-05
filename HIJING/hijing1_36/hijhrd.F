@@ -14,7 +14,9 @@ C     or not(0). Information of jets are in  COMMON/ATTJET and     *
 C     /MINJET. ABS(NFP(JP,6)) is the total number jets produced by *
 C    JP. If NFP(JP,6)<0 JP can not produce jet anymore.	           *
 C*******************************************************************
-	DIMENSION IP(100,2),IPQ(50),IPB(50),IT(100,2),ITQ(50),ITB(50)
+	DIMENSION IP(100,2),IPQ(50),IPB(50),IT(100,2),ITQ(50),ITB(50) 
+	INTEGER maxmiss
+c	PARAMETER (maxmiss = 50)
 #define BLANKET_SAVE
 #include "hijcrdn.inc"
 #include "hiparnt.inc"
@@ -41,6 +43,11 @@ C		SIZE OF COMMON BLOCK FOR # OF SINGLE STRINGS
 	MXSJ=100
 C		SIZE OF COMMON BLOCK FOR # OF PARTON PER SINGLE
 C		STRING
+	maxmiss=50
+	IF (IHPR2(30).GT.0) THEN
+	   maxmiss=IHPR2(30)
+        ENDIF
+C
 	JFLG=0
 	IHNT2(11)=JP
 	IHNT2(12)=JT
@@ -66,8 +73,12 @@ C
 C		********for the first hard scattering of (JP,JT)
 C			have collision only when Ycm(JP)>Ycm(JT)
 
-	ECUT1=HIPR1(1)+HIPR1(8)+PP(JP,14)+PP(JP,15)
-	ECUT2=HIPR1(1)+HIPR1(8)+PT(JT,14)+PT(JT,15)
+        ECUT1=-1.0
+        ECUT2=-1.0
+	IF (IHPR2(31).EQ.1) THEN
+	   ECUT1=HIPR1(1)+HIPR1(8)+PP(JP,14)+PP(JP,15)
+	   ECUT2=HIPR1(1)+HIPR1(8)+PT(JT,14)+PT(JT,15)
+	ENDIF
 	IF(PP(JP,4).LE.ECUT1) THEN
 		NFP(JP,6)=-ABS(NFP(JP,6))
 		RETURN
@@ -138,13 +149,13 @@ C		********q-qbar jets must has minimum mass HIPR1(1)
 
 	IF(PEP.LE.ECUT1) THEN
 		MISP=MISP+1
-		IF(MISP.LT.50) GO TO 155
+		IF(MISP.LT.maxmiss) GO TO 155
 		NFP(JP,6)=-ABS(NFP(JP,6))
 		RETURN
 	ENDIF
 	IF(PET.LE.ECUT2) THEN
 		MIST=MIST+1
-		IF(MIST.LT.50) GO TO 155
+		IF(MIST.LT.maxmiss) GO TO 155
 		NFT(JT,6)=-ABS(NFT(JT,6))
 		RETURN
 	ENDIF
@@ -155,7 +166,7 @@ C			 can not produce jet anymore
 	WM=PEP-PZP+PET-PZT
 	IF(WP.LT.0.0 .OR. WM.LT.0.0) THEN
 		MISS=MISS+1
-		IF(MISS.LT.50) GO TO 155
+		IF(MISS.LT.maxmiss) GO TO 155
 		RETURN
 	ENDIF
 C		********the total W+, W- must be positive
@@ -165,7 +176,7 @@ C		********the total W+, W- must be positive
 	SXX=(AMPX+AMTX)**2
 	IF(SW.LT.SXX.OR.VINT(43).LT.HIPR1(1)) THEN
 		MISS=MISS+1
-		IF(MISS.LT.50) GO TO 155
+		IF(MISS.LT.maxmiss) GO TO 155
 		RETURN
 	ENDIF  
 C		********the proj and targ remnants must have at least
@@ -319,7 +330,7 @@ c
 c
 	IF(LPQ.NE.LPB .OR. LTQ.NE.LTB) THEN
 		MISS=MISS+1
-		IF(MISS.LE.50) GO TO 155
+		IF(MISS.LE.maxmiss) GO TO 155
 		WRITE(6,*) ' Q -QBAR NOT MATCHED IN HIJHRD'
 		JFLG=0
 		RETURN
@@ -484,7 +495,7 @@ C************************correction made on Oct. 14,1994*****
 200	CONTINUE
 	IF(LPQ.NE.LPB) THEN
 	   MISS=MISS+1
-	   IF(MISS.LE.50) GO TO 155
+	   IF(MISS.LE.maxmiss) GO TO 155
 	   WRITE(6,*) LPQ,LPB, 'Q-QBAR NOT CONSERVED OR NOT MATCHED'
 	   JFLG=0
 	   RETURN
