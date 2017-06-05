@@ -91,15 +91,15 @@ public:
   
   ///
   /// Method to get if the T0 time is T0 TOF
-  Bool_t IsT0TOF();
+  Bool_t IsT0TOF(const Bool_t exclusive = kFALSE);
   
   ///
   /// Method to get if the T0 time is T0 T0A
-  Bool_t IsT0A();
+  Bool_t IsT0A(const Bool_t exclusive = kFALSE);
   
   ///
   /// Method to get if the T0 time is T0 T0C
-  Bool_t IsT0C();
+  Bool_t IsT0C(const Bool_t exclusive = kFALSE);
   
   ///
   /// Method to get if the T0 time is T0 Fill
@@ -177,7 +177,7 @@ public:
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
   
-  ClassDef(AliAnTOFtrack, 6);//AliAnTOFtrack : TOF analysis container class
+  ClassDef(AliAnTOFtrack, 7);//AliAnTOFtrack : TOF analysis container class
 };
 
 #endif

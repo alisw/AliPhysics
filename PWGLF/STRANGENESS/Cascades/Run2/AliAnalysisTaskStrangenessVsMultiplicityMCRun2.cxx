@@ -137,6 +137,8 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkIfImprovedPerformInitialLinearPropag( kFALSE ),
+fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
@@ -423,6 +425,8 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkIfImprovedPerformInitialLinearPropag( kFALSE ),
+fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
@@ -2234,14 +2238,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Double_t sxp=snp*snp*pt.GetSigmaY2()+0.0005*0.0005, syp=csp*csp*pt.GetSigmaY2()+0.0005*0.0005;
             fTreeCascVarV0DCAptPosSigmaX2 = sxp;
             fTreeCascVarV0DCAptPosSigmaY2 = syp;
-            fTreeCascVarV0DCAptPosSigmaY2 = pt.GetSigmaZ2();
+            fTreeCascVarV0DCAptPosSigmaZ2 = pt.GetSigmaZ2();
 
             //NEGATIVE
             Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
             Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
             fTreeCascVarV0DCAptNegSigmaX2 = sxn;
             fTreeCascVarV0DCAptNegSigmaY2 = syn;
-            fTreeCascVarV0DCAptNegSigmaY2 = nt.GetSigmaZ2();
+            fTreeCascVarV0DCAptNegSigmaZ2 = nt.GetSigmaZ2();
             
             //_____________________________________________________________________________
             //Recreate V0
@@ -4932,27 +4936,28 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
     v->GetPxPyPz(px2,py2,pz2);
     
     Double_t dca = 1e+33;
-    
-    // calculation dca
-    Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
-    Double_t ax= Det(py1,pz1,py2,pz2);
-    Double_t ay=-Det(px1,pz1,px2,pz2);
-    Double_t az= Det(px1,py1,px2,py2);
-    
-    dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
-    
-    //points of the DCA
-    Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
-    Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
-    
-    x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-    
-    //propagate track to the points of DCA
-    
-    x1=x1*cs1 + y1*sn1;
-    if (!t->PropagateTo(x1,b)) {
-        Error("PropagateToDCA","Propagation failed !");
-        return 1.e+33;
+    if ( !fkDoImprovedCascadeVertexFinding || fkIfImprovedPerformInitialLinearPropag ){
+        // calculation dca
+        Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
+        Double_t ax= Det(py1,pz1,py2,pz2);
+        Double_t ay=-Det(px1,pz1,px2,pz2);
+        Double_t az= Det(px1,py1,px2,py2);
+        
+        dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
+        
+        //points of the DCA
+        Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
+        Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
+        
+        x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
+        
+        //propagate track to the points of DCA
+        
+        x1=x1*cs1 + y1*sn1;
+        if (!t->PropagateTo(x1,b)) {
+            Error("PropagateToDCA","Propagation failed !");
+            return 1.e+33;
+        }
     }
     
     if( fkDoImprovedCascadeVertexFinding ){
@@ -4967,6 +4972,11 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
         Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
         Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
         Double_t dx2=dy2;
+        
+        //For testing purposes
+        dx2 = dx2/fkIfImprovedExtraPrecisionFactor;
+        dy2 = dy2/fkIfImprovedExtraPrecisionFactor;
+        dz2 = dz2/fkIfImprovedExtraPrecisionFactor;
         
         //Create dummy V0 track
         //V0 properties to get started
@@ -5065,7 +5075,7 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0
             //AliWarning(" propagation failed !";
             return 1e+33;
         }
-
+        
         
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);

@@ -755,11 +755,11 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     //
     Bool_t okSPD=kFALSE,okTRK=kFALSE;
     //
-    if (ndfSPD>1 && (chiSPD=(chiSPD/ndfSPD))<2) okSPD = kTRUE;
-    if (ndfTRK>1 && (chiTRK=(chiTRK/ndfTRK))<2) okTRK = kTRUE;
+    if (ndfSPD>1 && (histSPDvtxZ->GetEntries()>100)) okSPD = kTRUE;
+    if (ndfTRK>1 && (histTRKvtxZ->GetEntries()>100)) okTRK = kTRUE;
     //
     if (!okSPD && !okTRK) {
-      printf("Neither histos fits have converged\n");
+      printf("Neither histos fits have convergecd\n");
       fStatus=kFitUpdateZFailed;
     }
 
@@ -853,7 +853,12 @@ void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, dou
   }
   commComb += commentAdd;
   mdnew->SetComment(commComb.Data());
-  //man->SetSpecificStorage(url,"local://");
+  
   AliCDBId id(url,firstRun,lastRun);
-  man->Put(vtx,id,mdnew);
+  man->Put(vtx,id,mdnew); //comment to run locally
+  
+  //uncomment to run locally 
+  //AliCDBStorage* stor = man->GetStorage("local://");
+  //stor->Put(vtx,id,mdnew);
+  
 }

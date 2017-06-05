@@ -119,6 +119,8 @@ fkRunCascadeVertexer    ( kFALSE ),
 fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding( kFALSE ),
+fkIfImprovedPerformInitialLinearPropag( kFALSE ),
+fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -126,7 +128,8 @@ fMassWindowAroundCascade(0.060),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
-fHistNumberOfCandidates(0) //bookkeep total number of candidates analysed
+fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
+fHistV0ToBachelorPropagationStatus(0)
 //________________________________________________
 {
 
@@ -154,7 +157,9 @@ fkDoV0Refit       ( kFALSE ),
 fkRunCascadeVertexer    ( kFALSE ),
 fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
-fkDoImprovedCascadeVertexFinding( kFALSE ), 
+fkDoImprovedCascadeVertexFinding( kFALSE ),
+fkIfImprovedPerformInitialLinearPropag( kFALSE ),
+fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -162,7 +167,8 @@ fMassWindowAroundCascade(0.060),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
-fHistNumberOfCandidates(0) //bookkeep total number of candidates analysed
+fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
+fHistV0ToBachelorPropagationStatus(0)
 //________________________________________________
 {
 
@@ -246,6 +252,21 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistNumberOfCandidates->GetXaxis()->SetBinLabel(3, "Cascades: original");
         fHistNumberOfCandidates->GetXaxis()->SetBinLabel(4, "Cascades: re-vertexed");
         fListHist->Add(fHistNumberOfCandidates);
+    }
+    if(! fHistV0ToBachelorPropagationStatus ) {
+        //Bookkeep bach/v0 combination attempts, please
+        fHistV0ToBachelorPropagationStatus = new TH1D( "fHistV0ToBachelorPropagationStatus", "V0/Bach pair counts",10,0,10);
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(1, "Linear propag start");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(2, "Linear propag failure");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(3, "Linear propag OK");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(4, "Curved propag start");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(5, "Not stationary");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(6, "Not minimum");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(7, "Overshoot");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(8, "Too many iter");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(9, "Propag failure");
+        fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(10,"Propag OK");
+        fListHist->Add(fHistV0ToBachelorPropagationStatus);
     }
 
     PostData(1, fListHist    );
@@ -1059,6 +1080,10 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
+    
+    //Count received
+    fHistV0ToBachelorPropagationStatus->Fill(0.5);
+    
     Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
     Double_t r[3]; t->GetXYZ(r);
     Double_t x1=r[0], y1=r[1], z1=r[2];
@@ -1072,30 +1097,38 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
     v->GetPxPyPz(px2,py2,pz2);
     
     Double_t dca = 1e+33;
-    
-    // calculation dca
-    Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
-    Double_t ax= Det(py1,pz1,py2,pz2);
-    Double_t ay=-Det(px1,pz1,px2,pz2);
-    Double_t az= Det(px1,py1,px2,py2);
-    
-    dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
-    
-    //points of the DCA
-    Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
-    Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
-    
-    x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-    
-    //propagate track to the points of DCA
-    
-    x1=x1*cs1 + y1*sn1;
-    if (!t->PropagateTo(x1,b)) {
-        Error("PropagateToDCA","Propagation failed !");
-        return 1.e+33;
+    if ( !fkDoImprovedCascadeVertexFinding || fkIfImprovedPerformInitialLinearPropag ){
+        // calculation dca
+        Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
+        Double_t ax= Det(py1,pz1,py2,pz2);
+        Double_t ay=-Det(px1,pz1,px2,pz2);
+        Double_t az= Det(px1,py1,px2,py2);
+        
+        dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
+        
+        //points of the DCA
+        Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
+        Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
+        
+        x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
+        
+        //propagate track to the points of DCA
+        
+        x1=x1*cs1 + y1*sn1;
+        if (!t->PropagateTo(x1,b)) {
+            //Count linear propagation failures
+            fHistV0ToBachelorPropagationStatus->Fill(1.5);
+            Error("PropagateToDCA","Propagation failed !");
+            return 1.e+33;
+        }
+        //Count linear propagation successes
+        fHistV0ToBachelorPropagationStatus->Fill(2.5);
     }
     
     if( fkDoImprovedCascadeVertexFinding ){
+        //Count Improved Cascade propagation received
+        fHistV0ToBachelorPropagationStatus->Fill(3.5); //bin 4
+        
         //DCA Calculation improved -> non-linear propagation
         //Preparatory step 1: get two tracks corresponding to V0
         UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
@@ -1107,6 +1140,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
         Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
         Double_t dx2=dy2;
+        
+        //For testing purposes
+        dx2 = dx2/fkIfImprovedExtraPrecisionFactor;
+        dy2 = dy2/fkIfImprovedExtraPrecisionFactor;
+        dz2 = dz2/fkIfImprovedExtraPrecisionFactor;
         
         //Create dummy V0 track
         //V0 properties to get started
@@ -1163,11 +1201,17 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
             
             if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
                 if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
-                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
+                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
                         AliDebug(1," stopped at not a stationary point !");
+                        //Count not stationary point
+                        fHistV0ToBachelorPropagationStatus->Fill(4.5); //bin 5
+                    }
                     Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
-                    if (lmb < 0.)
+                    if (lmb < 0.){
+                        //Count stopped at not a minimum
+                        fHistV0ToBachelorPropagationStatus->Fill(5.5);
                         AliDebug(1," stopped at not a minimum !");
+                    }
                     break;
                 }
             
@@ -1181,6 +1225,8 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 dt1*=0.5; dt2*=0.5;
                 if (div>512) {
                     AliDebug(1," overshoot !"); break;
+                    //Count overshoots
+                    fHistV0ToBachelorPropagationStatus->Fill(6.5);
                 }
             }
             dm=dd;
@@ -1190,7 +1236,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
             
         }
         
-        if (max<=0) AliDebug(1," too many iterations !");
+        if (max<=0){
+            AliDebug(1," too many iterations !");
+            //Count excessive iterations
+            fHistV0ToBachelorPropagationStatus->Fill(7.5);
+        }
         
         Double_t cs=TMath::Cos(t->GetAlpha());
         Double_t sn=TMath::Sin(t->GetAlpha());
@@ -1203,6 +1253,8 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         //Propagate bachelor to the point of DCA
         if (!t->PropagateTo(xthis,b)) {
             //AliWarning(" propagation failed !";
+            //Count curved propagation failures
+            fHistV0ToBachelorPropagationStatus->Fill(8.5);
             return 1e+33;
         }
         
@@ -1210,6 +1262,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
         dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+        fHistV0ToBachelorPropagationStatus->Fill(9.5);
     }
     
     return dca;
