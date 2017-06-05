@@ -39,6 +39,7 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -82,11 +83,18 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoCaloStudy(kFALSE),
+  fDoTriggerSimulation(kFALSE),
+  fMedianEMCal(0),
+  fMedianDCal(0),
+  fkEMCEJE(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
+  
+  // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
+  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -127,11 +135,18 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoCaloStudy(kFALSE),
+  fDoTriggerSimulation(kFALSE),
+  fMedianEMCal(0),
+  fMedianDCal(0),
+  fkEMCEJE(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
+  
+  // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
+  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -179,6 +194,7 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   if (fDoMomentumBalance) AllocateMomentumBalanceHistograms();
   if (fDoGeometricalMatching) AllocateGeometricalMatchingHistograms();
   if (fDoCaloStudy) AllocateCaloHistograms();
+  if (fDoTriggerSimulation) AllocateTriggerSimHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -281,6 +297,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, fMaxPt);
+    
+    // Median patch energy vs. pT
+    if (fDoTriggerSimulation) {
+      histname = TString::Format("%s/JetHistograms/hMedPatchVsTypeVsPt", jets->GetArrayName().Data());
+      title = histname + ";#it{E}_{patch,med};type;#it{p}_{T}^{corr} (GeV/#it{c});";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5, nPtBins, 0, fMaxPt);
+    }
     
     // Allocate background subtraction histograms, if enabled
     if (fComputeBackground) {
@@ -486,6 +509,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetImbalanceHistograms()
       hn->GetAxis(i)->SetTitle(axisTitle[i]);
       hn->SetBinEdges(i, binEdges[i]);
     }
+  }
+  
+  // Median patch energy vs. pT
+  if (fDoTriggerSimulation) {
+    TString histname = "TriggerSimHistograms/hMedPatchVsTypeDijet";
+    TString title = histname + ";#it{E}_{patch,med};type";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5);
   }
 }
 
@@ -864,6 +894,100 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
   
 }
 
+/*
+ * This function allocates the histograms for single jets, when the "simulated" trigger has been fired.
+ * A set of histograms is allocated per each jet container.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
+{
+  TString histname;
+  TString title;
+  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
+  
+  //----------------------------------------------
+  // Trigger patch histograms
+  
+  // patch eta vs. phi
+  histname = "TriggerSimHistograms/hEtaVsPhi";
+  title = histname + ";#eta_{patch} (rad);#phi_{patch} (rad)";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 140, -0.7, 0.7, 500, 1., 6.);
+  
+  // patch E vs. centrality
+  histname = "TriggerSimHistograms/hPatchE";
+  title = histname + ";Centrality (%);#it{E}_{patch} (GeV)";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, nPtBins, 0, fMaxPt);
+  
+  // patch median
+  histname = "TriggerSimHistograms/hPatchMedianE";
+  title = histname + ";#it{E}_{patch} (GeV);type";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5);
+  
+  // N patches
+  histname = "TriggerSimHistograms/hNPatches";
+  title = histname + ";#it{N}_{patches};type";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, 200, 2, -0.5, 1.5);
+  
+  //----------------------------------------------
+  // Jet histograms for "triggered" events
+  AliJetContainer* jets = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    
+    // Jet rejection reason
+    histname = TString::Format("%s/TriggerSimHistograms/hJetRejectionReason", jets->GetArrayName().Data());
+    title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
+    TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, fMaxPt);
+    SetRejectionReasonLabels(hist->GetXaxis());
+    
+    // Rho vs. Centrality
+    if (!jets->GetRhoName().IsNull()) {
+      histname = TString::Format("%s/TriggerSimHistograms/hRhoVsCent", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
+    }
+    
+    // Centrality vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%);counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 10, 0, 100);
+    
+    // NEF vs. pT vs. eta vs. phi
+    histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
+    title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    Int_t nbins[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
+    Double_t min[4] = {-0.5,1., 0, 0};
+    Double_t max[4] = {0.5,6., fMaxPt, 1.};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
+    
+    // pT-leading vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt);
+    
+    // A vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
+    
+    // z-leading (charged) vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
+    
+    // z (charged) vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
+    
+    // Nconst vs. pT
+    histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, fMaxPt);
+    
+  }
+  
+}
+
 /**
  * Load histogram of eta-phi background scale factors from AliEn
  */
@@ -905,10 +1029,26 @@ void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const ch
  */
 void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
 {
-  AliAnalysisTaskEmcalJet::ExecOnce();
   
+  AliAnalysisTaskEmcalJet::ExecOnce();
+
   fNeedEmcalGeom = kTRUE;
   
+  // Check if trigger patches are loaded
+  if (fTriggerPatchInfo) {
+    TString objname(fTriggerPatchInfo->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom("AliEMCALTriggerPatchInfo")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEMCALTriggerPatchInfo!",
+                    GetName(), cls.GetName(), "EmcalTriggers"));
+      fTriggerPatchInfo = 0;
+    }
+  }
+  if (!fTriggerPatchInfo) {
+    AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), "EmcalTriggers"));
+    return;
+  }
+
   // Load the PHOS geometry
   if (fDoCaloStudy) {
     fPHOSGeo = AliPHOSGeometry::GetInstance();
@@ -1034,31 +1174,37 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
       }
       
     }
-    
+
     //---------------------------------------------------------------------------------------------------
     // Now, study the accepted dijet selection -- specified by the trig/ass jet pT conditions
     
     // Find the dijet candidate of the event and store its info in struct fDijet
     FindDijet(jetCont, 0);
-    
+
     // If we find an accepted dijet, fill the dijet imbalance histogram
     if (fDijet.isAccepted && fPlotDijetImbalanceHistograms) {
       TString histname = TString::Format("%s/DijetImbalanceObservables", jetCont->GetArrayName().Data());
       FillDijetImbalanceHistograms(histname);
     }
-    
     // If we find an accepted dijet, perform momentum-balance study (if requested)
     if (fDijet.isAccepted && fDoMomentumBalance) {
       histname = TString::Format("%s/MomentumBalance", jetCont->GetArrayName().Data());
       DoMomentumBalance(histname);
     }
     
+    //---------------------------------------------------------------------------
+    // Do a simple trigger simulation (if requested)
+    if (fDoTriggerSimulation) {
+      DoTriggerSimulation();
+    }
+    
   }
 
   //---------------------------------------------------------------------------
   // Do the constituent threshold and geometrical matching study (if requested)
-  if (fDoGeometricalMatching)
+  if (fDoGeometricalMatching) {
     DoGeometricalMatching();
+  }
 
   return kTRUE;
 }
@@ -1183,6 +1329,96 @@ void AliAnalysisTaskEmcalDijetImbalance::DoGeometricalMatching()
     FindMatchingDijet(jetContAll);
     FillGeometricalMatchingHistograms();
   }
+}
+
+/**
+ * Do a simple trigger simulation, mimicking the median-subtraction method using cell amplitudes.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
+{
+  TString histname;
+
+  // Check if trigger patches are loaded
+  if (fTriggerPatchInfo) {
+    TString objname(fTriggerPatchInfo->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom("AliEMCALTriggerPatchInfo")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEMCALTriggerPatchInfo!",
+                    GetName(), cls.GetName(), "EmcalTriggers"));
+      fTriggerPatchInfo = 0;
+    }
+  }
+  if (!fTriggerPatchInfo) {
+    AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), "EmcalTriggers"));
+    return;
+  }
+
+  // Compute patches in EMCal, DCal (I want offline simple trigger patch, i.e. patch calculated using FEE energy)
+  std::vector<Double_t> vecEMCal;
+  std::vector<Double_t> vecDCal;
+  for(auto p : *fTriggerPatchInfo){
+    AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
+    if (recpatch) {
+      
+      if(!recpatch->IsJetHighSimple()) continue;
+      
+      histname = "TriggerSimHistograms/hEtaVsPhi";
+      fHistManager.FillTH2(histname.Data(), recpatch->GetEtaGeo(), recpatch->GetPhiGeo());
+      
+      histname = "TriggerSimHistograms/hPatchE";
+      fHistManager.FillTH2(histname.Data(), fCent, recpatch->GetPatchE());
+
+      if (recpatch->IsEMCal()) {
+        vecEMCal.push_back(recpatch->GetPatchE());
+      } else {
+        vecDCal.push_back(recpatch->GetPatchE());
+      }
+      
+    }
+  }
+  
+  // Compute the median in each calorimeter
+  const Int_t nBkgPatchesEMCal = vecEMCal.size(); // 6*8;
+  const Int_t nBkgPatchesDCal = vecDCal.size();   // 4*5;
+  fMedianEMCal = TMath::Median(nBkgPatchesEMCal, &vecEMCal[0]); // point to array used internally by vector
+  fMedianDCal = TMath::Median(nBkgPatchesDCal, &vecDCal[0]);
+  
+  histname = "TriggerSimHistograms/hPatchMedianE";
+  fHistManager.FillTH2(histname.Data(), fMedianEMCal, kEMCal);
+  fHistManager.FillTH2(histname.Data(), fMedianDCal, kDCal);
+  
+  histname = "TriggerSimHistograms/hNPatches";
+  fHistManager.FillTH2(histname.Data(), nBkgPatchesEMCal, kEMCal);
+  fHistManager.FillTH2(histname.Data(), nBkgPatchesDCal, kDCal);
+
+  // Then compute background subtracted patches, by subtracting from each patch the median patch E from the opposite hemisphere
+  // If a patch is above threshold, the event is "triggered"
+  Bool_t fkEMCEJE = kFALSE;
+  Double_t threshold = 20;
+  for(auto p : *fTriggerPatchInfo){
+    AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
+    if (recpatch) {
+      
+      if(!recpatch->IsJetHighSimple()) continue;
+      
+      if (recpatch->IsEMCal()) {
+        if ((recpatch->GetPatchE() - fMedianDCal) > threshold) {
+          fkEMCEJE = kTRUE;
+          break;
+        }
+      } else {
+        if ((recpatch->GetPatchE() - fMedianEMCal) > threshold) {
+          fkEMCEJE = kTRUE;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (fkEMCEJE) {
+    FillTriggerSimHistograms();
+  }
+  
 }
 
 /**
@@ -1604,11 +1840,94 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, jet->GetNumberOfConstituents());
       
+      // Median patch energy vs. pT
+      if (fDoTriggerSimulation) {
+        histname = TString::Format("%s/JetHistograms/hMedPatchVsTypeVsPt", jets->GetArrayName().Data());
+        fHistManager.FillTH3(histname.Data(), fMedianEMCal, kEMCal, corrPt);
+        fHistManager.FillTH3(histname.Data(), fMedianDCal, kDCal, corrPt);
+      }
+      
     } //jet loop
     
     //---------------------------------------------------------------------------
     // Do study of background (if requested)
     if (fComputeBackground) ComputeBackground(jets);
+  }
+}
+
+/**
+ * This function performs a loop over the reconstructed jets, when the "simulated" trigger has been fired.
+ * in the current event and fills the relevant histograms.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::FillTriggerSimHistograms()
+{
+  TString histname;
+  AliJetContainer* jets = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    TString jetContName = jets->GetName();
+    if (jetContName.Contains("HardCore")) continue;
+    Double_t rhoVal = 0;
+    if (jets->GetRhoParameter()) {
+      rhoVal = jets->GetRhoVal();
+      histname = TString::Format("%s/TriggerSimHistograms/hRhoVsCent", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
+    }
+    
+    for (auto jet : jets->all()) {
+      
+      Float_t ptLeading = jets->GetLeadingHadronPt(jet);
+      Float_t corrPt = GetJetPt(jets, jet);
+      
+      // A vs. pT (fill before area cut)
+      histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), corrPt, jet->Area());
+      
+      
+      // Rejection reason
+      UInt_t rejectionReason = 0;
+      if (!jets->AcceptJet(jet, rejectionReason)) {
+        histname = TString::Format("%s/TriggerSimHistograms/hJetRejectionReason", jets->GetArrayName().Data());
+        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
+        continue;
+      }
+      
+      // Centrality vs. pT
+      histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), corrPt, fCent);
+      
+      // NEF vs. pT vs. eta vs. phi
+      histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
+      Double_t x[4] = {jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF()};
+      fHistManager.FillTHnSparse(histname, x);
+      
+      // pT-leading vs. pT
+      histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
+      
+      // z-leading (charged) vs. pT
+      TLorentzVector leadPart;
+      jets->GetLeadingHadronMomentum(leadPart, jet);
+      Double_t z = GetParallelFraction(leadPart.Vect(), jet);
+      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+      histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), corrPt, z);
+      
+      // z (charged) vs. pT
+      histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
+      AliVTrack* track;
+      for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
+        track = static_cast<AliVTrack*>(jet->Track(i));
+        z = track->Pt() / TMath::Abs(corrPt);
+        fHistManager.FillTH2(histname.Data(), corrPt, z);
+      }
+      
+      // Nconst vs. pT
+      histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), corrPt, jet->GetNumberOfConstituents());
+      
+    } //jet loop
+    
   }
 }
 
@@ -1674,6 +1993,14 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetImbalanceHistograms(TString hi
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
   histJetObservables->Fill(contents);
+  
+  // Median patch energy vs. pT
+  if (fDoTriggerSimulation) {
+    histname = "TriggerSimHistograms/hMedPatchVsTypeDijet";
+    fHistManager.FillTH2(histname.Data(), fMedianEMCal, kEMCal);
+    fHistManager.FillTH2(histname.Data(), fMedianDCal, kDCal);
+  }
+
 }
 
 /**
