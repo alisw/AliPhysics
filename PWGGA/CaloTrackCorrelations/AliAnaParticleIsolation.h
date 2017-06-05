@@ -62,7 +62,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                    Float_t coneptsumCell,  Float_t coneptsumTrack,
-                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand ) ;
+                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand, Int_t mcIndex ) ;
   
   TObjString * GetAnalysisCuts() ;
   
@@ -611,10 +611,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   /// Candidate Pt distribution depending on bin of cone sum pt.
   TH1F **  fhSumPtConeBin  ;                           //![fNBkgBin]
+  
+  /// Candidate Pt distribution depending on bin of cone sum pt after ue subtraction from eta band.
+  TH1F **  fhSumPtConeAfterEtaBandUESubBin  ;          //![fNBkgBin]
     
   /// Candidate Pt distribution depending on bin of cone leading particle, per MC particle.
   TH1F **  fhPtLeadConeBinMC ;                         //![fNBkgBin*fgkNmcTypes]
     
+  /// Candidate Pt distribution depending on bin of cone sum pt after ue subtraction from eta band, per MC particle.
+  TH1F **  fhSumPtConeAfterEtaBandUESubBinMC  ;        //![fNBkgBin*fgkNmcTypes]
+  
   /// Candidate Pt distribution depending on bin of cone sum pt, per MC particle.
   TH1F **  fhSumPtConeBinMC  ;                         //![fNBkgBin*fgkNmcTypes]
 
@@ -629,9 +635,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   /// Candidate shower shape distribution depending on bin of cone sum pt.
   TH2F **  fhSumPtConeBinLambda0  ;                    //![fNBkgBin]
+  
+  /// Candidate shower shape distribution depending on bin of cone sum pt after UE subtraction from eta band.
+  TH2F **  fhSumPtConeAfterEtaBandUESubBinLambda0  ;   //![fNBkgBin]
     
   /// Candidate shower shape distribution depending on bin of cone leading particle, per MC particle.
   TH2F **  fhPtLeadConeBinLambda0MC ;                  //![fNBkgBin*fgkNmcTypes]
+  
+  /// Candidate shower shape distribution depending on bin of cone leading particle after UE subtraction from eta band, per MC particle.
+  TH2F **  fhSumPtConeAfterEtaBandUESubBinLambda0MC ;  //![fNBkgBin*fgkNmcTypes]
     
   /// Candidate shower shape distribution depending on bin of cone sum pt, per MC particle.
   TH2F **  fhSumPtConeBinLambda0MC  ;                  //![fNBkgBin*fgkNmcTypes]
