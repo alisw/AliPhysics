@@ -79,7 +79,7 @@ AliAlgPoint* AliAlgSensTOF::TrackPoint2AlgPoint(int pntId, const AliTrackPointAr
   // convert the pntId-th point to AliAlgPoint, detectors may override this method
   //
   // TOF stores in the trackpoints X,Y with alignment applied but Z w/o alignment!!!
-  // -> need special treatment
+  // -> need special treatment unless data are already corrected
   //
   AliAlgDetTOF* det = (AliAlgDetTOF*)GetDetector();
   AliAlgPoint* pnt = det->GetPointFromPool();
@@ -91,20 +91,22 @@ AliAlgPoint* AliAlgSensTOF::TrackPoint2AlgPoint(int pntId, const AliTrackPointAr
   const TGeoHMatrix& matT2L    = GetMatrixT2L();     // matrix for tracking to local frame translation
   //
   // >>>------------- here we fix the z by emulating Misalign action in the tracking frame ------>>>
-  //  /*
-  // we need reco-time alignment matrix in tracking frame, T^-1 * delta * T, where delta is local alignment matrix
-  TGeoHMatrix mClAlgTrec = GetMatrixClAlgReco();
-  mClAlgTrec.Multiply(&GetMatrixT2L());
-  mClAlgTrec.MultiplyLeft(&GetMatrixT2L().Inverse());
-  TGeoHMatrix mT2G;
-  GetMatrixT2G(mT2G);
-  mT2G.MasterToLocal(glo,tra);     // we are in tracking frame, with original wrong alignment
-  mClAlgTrec.MasterToLocal(tra,traId); // here we have almost ideal X,Y and wrong Z
-  const double *trans = mClAlgTrec.GetTranslation();
-  const double *rotmt = mClAlgTrec.GetRotationMatrix();  
-  tra[2] = trans[2] + traId[0]*rotmt[6]+traId[1]*rotmt[7]+tra[2]*rotmt[8]; //we got misaligned Z
-  mT2G.LocalToMaster(tra,glo);
-  //  */
+  if (!trpArr->TestBit(AliTrackPointArray::kTOFBugFixed)) {
+    //
+    // we need reco-time alignment matrix in tracking frame, T^-1 * delta * T, where delta is local alignment matrix
+    TGeoHMatrix mClAlgTrec = GetMatrixClAlgReco();
+    mClAlgTrec.Multiply(&GetMatrixT2L());
+    mClAlgTrec.MultiplyLeft(&GetMatrixT2L().Inverse());
+    TGeoHMatrix mT2G;
+    GetMatrixT2G(mT2G);
+    mT2G.MasterToLocal(glo,tra);     // we are in tracking frame, with original wrong alignment
+    mClAlgTrec.MasterToLocal(tra,traId); // here we have almost ideal X,Y and wrong Z
+    const double *trans = mClAlgTrec.GetTranslation();
+    const double *rotmt = mClAlgTrec.GetRotationMatrix();  
+    tra[2] = trans[2] + traId[0]*rotmt[6]+traId[1]*rotmt[7]+tra[2]*rotmt[8]; //we got misaligned Z
+    mT2G.LocalToMaster(tra,glo);
+    //
+  }
   // now continue as usual
   // <<<------------- here we fix the z by emulating Misalign action in the tracking frame ------<<<
   //
