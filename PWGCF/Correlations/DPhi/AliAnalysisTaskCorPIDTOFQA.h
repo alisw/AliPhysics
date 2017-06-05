@@ -13,7 +13,7 @@ class AliAODTrack;
 //class AliEmcalTrackSelection;
 
 //namespace BSchaefer_devel{
-    
+
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
     public:
