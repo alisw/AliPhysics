@@ -124,6 +124,7 @@ ULong64_t CharArr2uint64(const char* str);
 
 //helper function to print a hex/ASCII dump of some memory
 void hexDump (const char* desc, const void* addr, int len);
+void hexDump (aliZMQmsg* message, size_t maxsize=16);
 
 struct BaseDataTopic
 {
@@ -235,6 +236,7 @@ extern const DataTopic kDataTypeTObject;
 extern const DataTopic kDataTypeTH1;
 
 extern const ULong64_t kSerializationROOT;
+extern const ULong64_t kSerializationNONE;
 
 //a general utility to tokenize strings
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
