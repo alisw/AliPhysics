@@ -18,6 +18,7 @@
 #include "AliEMCALTriggerSTU.h"
 #include "AliEMCALGeometry.h"
 #include "AliRunLoader.h"
+#include "AliCDBManager.h"
 #include "AliEMCAL.h" 
 #include "AliRun.h" 
 #include "AliEMCALTriggerDCSConfig.h"
@@ -89,16 +90,23 @@ fGeometry(0)
 //MHO FIXME
  // printf("MHO DCS gives EGA1 %d EGA2 %d EJE1 %d EJE2 %d\n",stuConf->GetG(2,0),stuConf->GetG(2,1),stuConf->GetJ(2,0),stuConf->GetJ(2,1));
 //END MHO
+//  Int_t runNumber = rl->GetRunNumber();
+  AliCDBManager * cdb = AliCDBManager::Instance();
+  Int_t runNumber = cdb->GetRun();
 
+  AliInfo(TString::Format("MHO: runNumber = %d\n",runNumber));
   // Checking Firmware from DCS config to choose algorithm
   fEMCALFw = stuConf->GetFw();
 //  printf("MHO: Found EMCAL fW %x from OCDB\n",fEMCALFw);
   AliInfo(TString::Format("Found EMCAL STU firmware %x.",fEMCALFw));
   if (iTriggerMapping >= 2) {
    // AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0x2b000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));
-  //  stuConf->SetFw(0xb000); //(4,4)x(2,2) FIXME hardcode
+    if (runNumber > 244640 && runNumber < 247173) {
+      AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0xb000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));    
+      stuConf->SetFw(0xb000); //(4,4)x(2,2) FIXME hardcode
+      fEMCALFw = stuConf->GetFw();
+    }
 //    stuConf->SetFw(0x2b000); //(4,4)x(4,4)
-    fEMCALFw = stuConf->GetFw();
   }
 
 
@@ -111,8 +119,11 @@ fGeometry(0)
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
       AliInfo(TString::Format("Found DCAL STU firmware %x.",fDCALFw));
       if ((fDCALFw & 0xf000) != 0xd000) {
-    //    AliInfo(TString::Format("Found DCAL STU firmware %x. Manually setting DCAL STU fW object to 0xd000.  This code should be changed when the OCDB entries have been corrected.",fDCALFw));
- //       stuConfDCal->SetFw(0xd000); // FIXME hardcode
+        if (runNumber > 244640 && runNumber < 247173) {
+          AliInfo(TString::Format("Found DCAL STU firmware %x. Manually setting DCAL STU fW object to 0xd000.  This code should be changed when the OCDB entries have been corrected.",fDCALFw));
+          stuConfDCal->SetFw(0xd000); // FIXME hardcode
+          fDCALFw = stuConfDCal->GetFw();
+        }
       }
     } else {
       AliError("No DCS Config found for DCAL!  Using EMCAL DCS config for now.");
@@ -480,7 +491,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     
         if (digit && digit->GetL1TimeSum() > -1) region[i][j] = digit->GetL1TimeSum();
       }
- //     if (region[i][j] > 0) printf("O"); else printf("-"); //MHO
+//      if (region[i][j] > 0) printf("O"); else printf("-"); //MHO
     }
 //    printf("\n"); //MHO
   }
@@ -524,10 +535,16 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       
 
       // MHO Manually Setting FIXME
+//      AliRunLoader *rl = AliRunLoader::Instance();
+//      Int_t runNumber = rl->GetRunNumber();
+      AliCDBManager * cdb = AliCDBManager::Instance();
+      Int_t runNumber = cdb->GetRun();
+      AliInfo(TString::Format("MHO: runNumber = %d\n",runNumber));
 
       TString fGeometryName = fGeometry->GetName();
       Int_t iTriggerMapping = 1 + (Int_t) fGeometryName.Contains("DCAL");
-      if (iTriggerMapping >= 2) {
+     // if (iTriggerMapping >= 2) {
+      if (runNumber > 244640 && runNumber < 247173) {
         // Hard Code LHC15o thresholds
         data->SetL1GammaThreshold(ithr, 128);
         fSTU->SetThreshold(kL1GammaHigh + ithr, 128);
@@ -535,7 +552,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         data->SetL1JetThreshold(ithr, 255);
         fSTU->SetThreshold(kL1JetHigh + ithr, 255);
       } else {
-        // HardCore LHC13f thresholds
+        // Hard Code LHC13f thresholds
         data->SetL1GammaThreshold(ithr, 89 + 51*ithr);
         fSTU->SetThreshold(kL1GammaHigh + ithr, 89 + 51*ithr);
 
