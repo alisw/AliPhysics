@@ -944,7 +944,7 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 //_____________________________________________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                                   Float_t coneptsumCell,  Float_t coneptsumTrack,
-                                                                  Float_t &sumEtaUESub ,  Float_t &sumPhiUESub)
+                                                                  Float_t &sumEtaUESub ,  Float_t &sumPhiUESub, Int_t mcIndex)
 {
   Float_t etaUEptsumTrack   = 0 ;
   Float_t phiUEptsumTrack   = 0 ;
