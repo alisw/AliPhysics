@@ -1793,7 +1793,7 @@ private:
   
   TProfile *fFlowSPZDCv1Pro[4]; //!
   const static Int_t fkNHistv1eta = 14;
-  const static Int_t fkNHarv1eta = 3;
+  const static Int_t fkNHarv1eta = 4;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaCov = 13;
   TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
