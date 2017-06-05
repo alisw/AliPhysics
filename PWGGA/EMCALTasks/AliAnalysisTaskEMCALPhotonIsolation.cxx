@@ -1403,11 +1403,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   
   Double_t distCT=0.,maxdist=10.;
-  
+  Bool_t matched=kFALSE;
   if(nbMObj == 0)
     return kFALSE;
   
-  for(Int_t i=0;i<nbMObj;i++){
+  for(Int_t i=0;i<nbMObj && matched==kFALSE;i++){
     if(fIsEsd){
       Int_t imt = clust->GetTrackMatchedIndex(0);
       if(imt >= 0) mt = static_cast<AliVTrack*>(tracks->GetAcceptParticle(imt));
@@ -1460,13 +1460,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       if(fQA && candidate){
         fDeltaETAClusTrackMatch->Fill(deta);
         fDeltaPHIClusTrackMatch->Fill(dphi);
+        matched=kTRUE;
       }
-      return kTRUE;
     }
   }
   fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
 
-  return kFALSE;
+  return matched;
 }
 
   //_____________________________________________________________________________________________
