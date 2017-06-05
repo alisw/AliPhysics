@@ -19485,8 +19485,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
     if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
     if(pass2) {
-      QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-      QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+      QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+      QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
       QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
       QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
     } else {
@@ -21217,6 +21217,19 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
         fFlowSPZDCv1etaPro[fCenBin][2][12]->Fill(etab,QetNRe*ZetARe+QetNIm*ZetAIm,QetNM*fCenWeightEbE);
         fFlowSPZDCv1etaPro[fCenBin][2][13]->Fill(etab,QetNRe*ZetCRe+QetNIm*ZetCIm,QetNM*fCenWeightEbE);
       }
+      
+      fFlowSPZDCv1etaPro[fCenBin][3][0]->Fill(etab,QetIm*ZetARe,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][1]->Fill(etab,QetRe*ZetAIm,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][2]->Fill(etab,QetIm*ZetCRe,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][3]->Fill(etab,QetRe*ZetCIm,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][4]->Fill(etab,QetPIm*ZetARe,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][5]->Fill(etab,QetPRe*ZetAIm,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][6]->Fill(etab,QetPIm*ZetCRe,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][7]->Fill(etab,QetPRe*ZetCIm,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][8]->Fill(etab,QetNIm*ZetARe,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][9]->Fill(etab,QetNRe*ZetAIm,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][10]->Fill(etab,QetNIm*ZetCRe,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaPro[fCenBin][3][11]->Fill(etab,QetNRe*ZetCIm,QetNM*fCenWeightEbE);
       
       // test run-by-run
       if(fCentralityEBE>5. && fCentralityEBE<40.) {
