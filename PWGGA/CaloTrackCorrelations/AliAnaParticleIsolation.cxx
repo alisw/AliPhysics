@@ -962,7 +962,9 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   Float_t ptTrig    = pCandidate->Pt() ;
   Float_t phiTrig   = pCandidate->Phi();
   Float_t etaTrig   = pCandidate->Eta();
+  Float_t pt        = pCandidate->Pt();
   Float_t m02       = pCandidate->GetM02();
+  Int_t  mcTag      = pCandidate->GetTag() ;
   
   // ------ //
   // Tracks //
@@ -7106,7 +7108,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Normalize phi/eta band per area unit
     //---------------------------------------------------------------
     if(fFillUEBandSubtractHistograms)
-      CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand) ;
+      CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand, mcIndex) ;
         
     //---------------------------------------------------------------
     // EMCAL SM regions

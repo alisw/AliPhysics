@@ -62,7 +62,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                    Float_t coneptsumCell,  Float_t coneptsumTrack,
-                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand ) ;
+                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand, Int_t mcIndex ) ;
   
   TObjString * GetAnalysisCuts() ;
   
