@@ -111,6 +111,10 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtSPDRefit;                      //!<! pT distribution of tracks with SPD and ITS refit
   TH1F * fhPtNoSPDRefit;                    //!<! pT distribution of constrained tracks no SPD and with ITSRefit
   TH1F * fhPtNoSPDNoRefit;                  //!<! pT distribution of constrained tracks with no SPD requierement and without ITSRefit
+  
+  TH2F * fhEtaPhiSPDRefit;                  //!<! eta-phi distribution of tracks with SPD and ITS refit
+  TH2F * fhEtaPhiNoSPDRefit;                //!<! eta-phi distribution of constrained tracks no SPD and with ITSRefit
+  TH2F * fhEtaPhiNoSPDNoRefit;              //!<! eta-phi distribution of constrained tracks with no SPD requierement and without ITSRefit
 
   TH2F * fhEtaPhiSPDRefitPt02;              //!<! eta-phi distribution of tracks with SPD and ITS refit, 0 < pT < 2 GeV
   TH2F * fhEtaPhiNoSPDRefitPt02;            //!<! eta-phi distribution of constrained tracks no SPD and with ITSRefit,  0 < pT < 2 GeV
