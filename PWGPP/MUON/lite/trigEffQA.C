@@ -22,13 +22,14 @@
 #include "TMap.h"
 #include "TGridResult.h"
 #include "TF1.h"
+#include "TPad.h"
+#include "TLatex.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliCDBPath.h"
 #include "AliCDBStorage.h"
-#include "AliMUONTriggerEfficiencyCells.h"
-#include "AliMUONTriggerChamberEfficiency.h"
+#include "AliMTRChEffAnalysis.h"
 #include "AliMUONTriggerUtilities.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONVDigit.h"
@@ -51,20 +52,20 @@ void SetMyStyle()
   gStyle->SetStatColor(10);
   gStyle->SetFillColor(10);
   gStyle->SetTitleFillColor(10);
-  
+
   gStyle->SetTitleXSize(0.03);
   gStyle->SetTitleXOffset(1.1);
   gStyle->SetTitleYSize(0.03);
   gStyle->SetTitleYOffset(1.9);
-  
+
   gStyle->SetMarkerSize(0.7);
   gStyle->SetHistLineWidth(2);
-  
+
   gStyle->SetPadLeftMargin(0.12);
   gStyle->SetPadRightMargin(0.04);
-  gStyle->SetPadBottomMargin(0.08);
-  gStyle->SetPadTopMargin(0.08);
-  
+  gStyle->SetPadBottomMargin(0.12);
+  gStyle->SetPadTopMargin(0.03);
+
   gROOT->ForceStyle();
 }
 
@@ -109,7 +110,7 @@ Int_t GetRunNumber(TString filePath)
     }
   }
   delete array;
-  
+
   if ( runNum < 0 ) {
     array = auxString.Tokenize("_");
     array->SetOwner();
@@ -118,54 +119,8 @@ Int_t GetRunNumber(TString filePath)
     if ( IsRunNum(auxString) ) runNum = auxString.Atoi();
     delete array;
   }
-  
+
   return runNum;
-}
-
-//_____________________________________________________________________________
-TObjArray* ChangeFilenames ( const TObjArray &fileNameArray )
-{
-  /// Use custom output
-  /// We used to perform the QA on the MTR chamber efficiency
-  /// but since it is obtained form tracks matching with the tracker
-  /// it is not that good for QA since we are dependent on the tracker status.
-  /// In recent versions, the task also calculates the efficiency from all trigger tracks
-  /// (including ghosts). Analyse this output instead.
-  TObjArray* outArray = new TObjArray(fileNameArray.GetEntries());
-  outArray->SetOwner();
-  TString newBaseName = "trigChEff_ANY_Apt_allTrig.root";
-  for ( Int_t ifile=0; ifile<fileNameArray.GetEntries(); ifile++ ) {
-    TObjString* currObjString = static_cast<TObjString*>(fileNameArray.At(ifile));
-    TString currFile = currObjString->GetString();
-    TString baseName = gSystem->BaseName(currFile.Data());
-    // In the old scripts, the run number is in the QA filename
-    Int_t runNum = GetRunNumber(baseName);
-    TString newFilename = "";
-    if ( runNum < 0 ) {
-      // New central script: the re-created trigger output is in the same directory
-      newFilename = currFile;
-      newFilename.ReplaceAll(baseName.Data(),newBaseName.Data());
-    }
-    else {
-      // Old script. The re-creaated trigger output is in terminateRuns
-      TString dirName = gSystem->DirName(currFile.Data());
-      newFilename = Form("%s/terminateRuns/%i/%s",dirName.Data(),runNum,newBaseName.Data());
-    }
-    if ( gSystem->AccessPathName(newFilename.Data()) ) {
-      printf("New output not found in %s.\n", currFile.Data());
-      delete outArray;
-      outArray = 0x0;
-      break;
-    }
-    outArray->AddAt(new TObjString(newFilename),ifile);
-  }
-
-  if ( outArray ) printf("Using re-built output in %s\n",newBaseName.Data());
-  else {
-    outArray = static_cast<TObjArray*>(fileNameArray.Clone());
-    printf("Using default output\n");
-  }
-  return outArray;
 }
 
 //_____________________________________________________________________________
@@ -228,7 +183,7 @@ Double_t* GetBinomial(Double_t* effErr1, Double_t* effErr2 = 0x0, Double_t* effE
   Double_t* effErrBinomial = new Double_t[2];
   effErrBinomial[0] = 0.;
   effErrBinomial[1] = 0.;
-  
+
   for ( Int_t ich = -1; ich<kNch; ich++ ) {
     Double_t* currEffErr = GetProdErr(effErr1, ich);
     if ( ich >= 0 ) {
@@ -247,41 +202,19 @@ Double_t* GetBinomial(Double_t* effErr1, Double_t* effErr2 = 0x0, Double_t* effE
     if ( ich < 0 ) currEffErr44 = currEffErr;
     else delete [] currEffErr;
     delete [] auxBinomial;
-    
+
     Double_t* effErr = GetProdErr(effProd, -1, 2);
     //printf("%f * %f = %f\n", effProd[0], effProd[1], effErr[0]); // REMEMBER TO CUT
     effErrBinomial[0] += effErr[0];
     effErrBinomial[1] += effErr[1]*effErr[1];
     delete [] effErr;
   } // loop on chambers
-  
+
   delete [] currEffErr44;
-  
+
   effErrBinomial[1] = TMath::Sqrt(effErrBinomial[1]);
-  
+
   return effErrBinomial;
-}
-
-
-//_____________________________________________________________________________
-TH1* GetHisto(TString histoName, TFile* file, TList* histoList)
-{
-  /// Get histogram
-  TH1* histo = 0x0;
-  if ( histoList )
-    histo = (TH1*)histoList->FindObject(histoName.Data());
-  else
-    histo = (TH1*)file->FindObjectAny(histoName.Data());
-  
-  return histo;
-}
-
-//_____________________________________________________________________________
-Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
-{
-  /// Get efficienct histogram index
-  if ( iel == 0 ) return icount;
-  return 3 + 4*3*(iel-1) + 3*ich + icount;
 }
 
 //_____________________________________________________________________________
@@ -308,7 +241,7 @@ TList* GetOCDBList ( TString ocdbDirs )
   TString storageType = AliCDBManager::Instance()->GetDefaultStorage()->GetType();
   Bool_t isGrid = storageType.Contains("alien");
   TString baseFolder = AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder();
-  
+
   TList* outList = new TList();
   outList->SetOwner();
   TObjArray* dirNameList = ocdbDirs.Tokenize(",");
@@ -416,260 +349,53 @@ Bool_t IsOCDBChanged ( Int_t currRun, Int_t previousRun, TList* fileList )
   return kFALSE;
 }
 
+
 //_____________________________________________________________________________
-TH2* GetOutliers ( TH2* histo, Double_t nSigmas = 3. )
+void TrigEffTrending ( TString fileNameList, TList& outList)
 {
-  TH2* outHisto = static_cast<TH2*>(histo->Clone());
-  outHisto->SetName(Form("%s_outlier",histo->GetName()));
-  outHisto->Reset();
-  for ( Int_t ybin=1; ybin<=histo->GetYaxis()->GetNbins(); ybin++ ) {
-    TH1* auxHisto = histo->ProjectionX("projectionOutlier",ybin,ybin);
-    if ( auxHisto->Integral() == 0. ) continue;
-    auxHisto->Fit("pol0","Q0");
-    Double_t mean = auxHisto->GetFunction("pol0")->GetParameter(0);
-    for ( Int_t xbin=1; xbin<=auxHisto->GetXaxis()->GetNbins(); xbin++ ) {
-      Double_t err = auxHisto->GetBinError(xbin);
-      if ( err == 0. ) continue;
-      if ( TMath::Abs(auxHisto->GetBinContent(xbin)-mean)/err < nSigmas ) continue;
-      outHisto->SetBinContent(xbin,ybin,auxHisto->GetBinContent(xbin)-mean);
-    }
-    delete auxHisto;
-  }
-  return outHisto;
+
+  TString physSel = "PhysSelPass,PhysSelReject";
+  TString trigClass = "ANY";
+  TString centrClass = "-5_105";
+  Int_t matchTrig = AliTrigChEffOutput::kMatchApt;
+  for ( Int_t ieff=0; ieff<2; ieff++ ) {
+    Int_t trackSel = ( ieff == 0 ) ? AliTrigChEffOutput::kNoSelectTrack : AliTrigChEffOutput::kSelectTrack;
+    Int_t effType = ( ieff == 0 ) ? AliTrigChEffOutput::kEffFromTrig : AliTrigChEffOutput::kEffFromTrack;
+
+    AliMTRChEffAnalysis an;
+    an.SetEffConditions(physSel,trigClass,centrClass,trackSel,matchTrig,effType);
+    an.InitFromLocal(fileNameList);
+
+    Int_t nCanvases = gROOT->GetListOfCanvases()->GetEntries();
+
+    an.DrawEffTrend(AliTrigChEffOutput::kHchamberEff,-1,3.,0.9,1.05);
+    an.DrawEffTrend(AliTrigChEffOutput::kHslatEff,-1,3.,0.8,1.05);
+
+    TString baseName = ( ieff == 0 ) ? "Trigger" : "Tracker";
+    for ( Int_t ican=nCanvases;   ican<gROOT->GetListOfCanvases()->GetEntries(); ican++ ) {
+      TCanvas* can = static_cast<TCanvas*>(gROOT->GetListOfCanvases()->At(ican));
+      can->SetName(Form("%s_from%s",baseName.Data(),can->GetName()));
+      can->SetTitle(Form("%s_from%s",baseName.Data(),can->GetTitle()));
+      can->cd();
+      TPad* pad = new TPad(Form("%s_text",can->GetName()),"",0.35,0.97,0.65,1.);
+      pad->SetFillStyle(4000);
+      pad->Draw();
+      pad->cd();
+      TLatex tex;
+      tex.SetTextSize(0.75);
+      tex.DrawLatexNDC(0.1,0.1,Form("From %s track",baseName.Data()));
+      outList.Add(can);
+    } // loop on canvases
+  } // loop on efficiency types
 }
 
 //_____________________________________________________________________________
-void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outCanList, TList& outList)
-{
-  /// Get the efficiency vs. run number
-  TString elementName[3] = { "Chamber", "RPC", "Board" };
-  TString countTypeName[4] = { "allTracks", "bendPlane", "nonBendPlane", "bothPlanes" };
-
-  TString filename = "", effName = "", effTitle = "";
-
-  SetMyStyle();
-  Double_t effValues[3][2*kNch];
-  const Int_t kNgraphs = kNch*3*2+3;
-  TObjArray effList(kNgraphs);
-  effList.SetOwner();
-  const Int_t kNeffVsRun = kNgraphs+1;
-  TObjArray effVsRunList(kNeffVsRun);
-  
-  effName = "totalEffEvolution";
-  effTitle = "Multinomial probability of firing at least 3/4 chambers";
-  TH1D* totalEff = new TH1D(effName.Data(), effTitle.Data(), 1, 0., 1.);
-  effVsRunList.AddAt(totalEff, kNeffVsRun-1);
-
-  TString runNumString = "";
-  for ( Int_t irun=0; irun<runNumArray.GetEntries(); irun++ ) {
-    effList.Clear();
-    runNumString = runNumArray.At(irun)->GetName();
-
-    // Search corresponding file (for sorting)
-    for ( Int_t ifile=0; ifile<fileNameArray.GetEntries(); ifile++ ) {
-      filename = fileNameArray.At(ifile)->GetName();
-      if ( filename.Contains(runNumString.Data()) ) break;
-    }
-
-    if ( filename.Contains("alien://") && ! gGrid ) gGrid->Connect("alien://");
-    
-    //
-    // First get the list of efficiency graphs
-    //
-    
-    // Chamber efficiency
-    TFile* file = TFile::Open(filename.Data());
-    if ( ! file ) {
-      printf("Warning: cannot find %s\n", filename.Data());
-      continue;
-    }
-    
-    TList* trigEffList = (TList*)file->FindObjectAny("triggerChamberEff");
-    if ( ! trigEffList ) {
-      printf("Warning: histo list not found in %s.\n", filename.Data());
-      continue;
-    }
-    if ( trigEffList->GetEntries() == 0 ) {
-      printf("Warning: empty trigger list in file %s. Probably no MUON info there. Skip.\n", filename.Data());
-      continue;
-    }
-    
-    TH1* histoDen = 0x0;
-    for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts; icount++ ) {
-      effName = countTypeName[icount] + "Count" + elementName[0];
-      if ( icount == 0 ) {
-        histoDen = GetHisto(effName, file, trigEffList);
-        continue;
-      }
-      
-      TH1* histoNum = GetHisto(effName, file, trigEffList);
-      TGraphAsymmErrors* graph = new TGraphAsymmErrors(histoNum, histoDen,"e0");
-      effName.ReplaceAll("Count","Eff");
-      graph->SetName(effName.Data());
-      effList.AddAt(graph, GetEffIndex(0, icount-1));
-    }
-    file->Close();
-  
-    if ( ! histoDen ) {
-      printf("Error: cannot find histograms in file %s. Skip to next\n", filename.Data());
-      continue;
-    }
-  
-    // RPC/board efficiency
-    AliMUONTriggerChamberEfficiency trigChEff(filename);
-    for ( Int_t iel=1; iel<3; iel++ ) {
-      for ( Int_t ich=0; ich<kNch; ich++ ) {
-        for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
-          TObject* obj = trigChEff.GetEffObject(2-iel, icount, ich);
-          effList.AddAt(obj->Clone(Form("%s_cloned",obj->GetName())), GetEffIndex(iel, icount, ich));
-        }
-      }
-    }
-    
-    // Fill efficiency vs run
-    for ( Int_t iel=0; iel<3; iel++ ) {
-      for ( Int_t ich=0; ich<kNch; ich++ ) {
-        for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
-          TGraphAsymmErrors* graph = static_cast<TGraphAsymmErrors*>(effList.At(GetEffIndex(iel, icount, ich)));
-          Int_t nPoints = ( iel == 0 ) ? 1 : graph->GetN();
-          for ( Int_t ipoint=0; ipoint<nPoints; ipoint++ ) {
-            Int_t currPoint = ( iel == 0 ) ? ich : ipoint;
-            Double_t xpt, ypt;
-            graph->GetPoint(currPoint, xpt, ypt);
-            effValues[icount][ich] = ypt;
-            Int_t ihisto = GetEffIndex(iel,icount,ich);
-            TH2* effHisto = static_cast<TH2*>(effVsRunList.At(ihisto));
-            if ( ! effHisto ) {
-              effName = Form("effEvolution%s%s", countTypeName[icount+1].Data(), elementName[iel].Data());
-              effTitle = Form("Trigger chamber efficiency vs run");
-              if ( iel>0 ) {
-                effName += Form("Ch%i", 11+ich);
-                effTitle += Form(" for chamber %i", 11+ich);
-              }
-              effHisto = new TH2D(effName.Data(), effTitle.Data(), 1, 0., 1., graph->GetN(), xpt-0.5, xpt-0.5+(Double_t)graph->GetN());
-              effVsRunList.AddAt(effHisto, ihisto);
-            }
-            Int_t currBin = effHisto->Fill(runNumString.Data(), xpt, ypt);
-            Double_t err = 0.5*(graph->GetErrorYlow(ipoint) + graph->GetErrorYhigh(ipoint));
-            Int_t binx, biny, binz;
-            effHisto->GetBinXYZ(currBin, binx, biny, binz);
-            effHisto->SetBinError(binx, biny, err);
-            effValues[icount][ich+kNch] = err;
-          } // loop on points
-        } // loop on counts
-      } // loop on chambers
-      if ( iel > 0 ) continue;
-      Double_t* binomialEff = GetBinomial(effValues[0], effValues[1], effValues[2]);
-      Int_t currBin = totalEff->Fill(runNumString, binomialEff[0]);
-      // CAVEAT!!!!
-      // Well, error calculation of the binomial efficiency is a mess...
-      // Sometimes it happens that efficiency + error > 1.
-      // In that case reduce the error.
-      totalEff->SetBinError(currBin, TMath::Min(binomialEff[1], 1.-binomialEff[0]));
-      delete [] binomialEff;
-    } // loop on detection elements
-  } // loop on runs
-  
-  // Set correct range (do not show last empty bins)
-  for ( Int_t ihisto=0; ihisto<effVsRunList.GetEntries(); ihisto++ ) {
-    TH1* histo = static_cast<TH1*>(effVsRunList.At(ihisto));
-    if ( ! histo ) continue;
-    SetRunAxisRange(histo);
-    outList.Add(histo);
-    //histo->GetXaxis()->SetLabelSize(0.03);
-  }
-
-  TString canName = "totalEff";
-  TCanvas* can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
-  TH1* totEff = (TH1*)effVsRunList.At(kNeffVsRun-1);
-  totEff->GetYaxis()->SetRangeUser(0.9,1.05);
-  totEff->GetYaxis()->SetTitle("Probability to satisfy trigger conditions (3/4)");
-  totEff->SetStats(kFALSE);
-  totEff->DrawCopy();
-  outCanList.Add(can);
-
-  Int_t color[3] = {kBlack, kRed, kBlue};
-  Int_t markStyle[3] = {20, 24, 26};
-  TLegend* leg = 0x0;
-
-  for ( Int_t ich=0; ich<kNch; ich++ ) {
-    canName = Form("trigEffCh%i", 11+ich);
-    can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
-    can->SetGridy();
-    leg = new TLegend(0.7, 0.8, 0.96, 0.92);
-    leg->SetBorderSize(1);
-    //can->Divide(2,2);
-    TString drawOpt = "e";
-    for(Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++) {
-      //can->cd(icount+1);
-      TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(0, icount)));
-      if ( ! histo ) continue;
-      TH1* chEff = histo->ProjectionX(Form("effEvolutionCh%i",11+ich), ich+1, ich+1);
-      chEff->SetTitle(Form("%s for chamber %i", histo->GetTitle(), 11+ich));
-      chEff->GetYaxis()->SetRangeUser(0.9,1.02);
-      chEff->SetStats(kFALSE);
-      chEff->GetYaxis()->SetTitle("Trigger chamber efficiency");
-      TH1* copyEff = chEff->DrawCopy(drawOpt.Data());
-      copyEff->SetLineColor(color[icount]);
-      copyEff->SetMarkerColor(color[icount]);
-      copyEff->SetMarkerStyle(markStyle[icount]);
-      leg->AddEntry(copyEff, countTypeName[icount+1].Data(), "lp");
-      drawOpt = "esame";
-    } // loop on counts
-    leg->Draw("same");
-    outCanList.Add(can);
-  } // loop on chambers
-  
-  for ( Int_t iel=1; iel<3; iel++ ) {
-    for ( Int_t ich=0; ich<kNch; ich++ ) {
-      Int_t icount = AliMUONTriggerEfficiencyCells::kBothPlanesEff; // Just plot the efficiency for both
-//      for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
-        canName = Form("trigEff%sCh%i", elementName[iel].Data(), 11+ich);
-        can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
-        can->SetRightMargin(0.14);
-        TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(iel, icount,ich)));
-        if ( ! histo ) continue;
-        histo->SetStats(kFALSE);
-        histo->GetYaxis()->SetTitle(elementName[iel].Data());
-        // FIX issue when plotting 2D histos in aliroot on linux
-        if ( histo->GetMinimum() == 0. && histo->GetMaximum() == 0. ) histo->SetMaximum(0.1);
-        histo->DrawCopy("COLZ");
-//      } // loop on counts
-      outCanList.Add(can);
-    } // loop on chambers
-  } // loop on detection element type
-
-
-  // Find outliers in RPC efficiency
-  for ( Int_t ich=0; ich<kNch; ich++ ) {
-    Int_t icount = AliMUONTriggerEfficiencyCells::kBothPlanesEff; // Just plot the efficiency for both
-    Int_t iel = 1;
-      //      for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
-    canName = Form("trigEff%sCh%i_outliers", elementName[iel].Data(), 11+ich);
-    can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
-    can->SetRightMargin(0.14);
-    TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(iel, icount,ich)));
-    if ( ! histo || histo->Integral() == 0. ) continue;
-    TH2* outHisto = GetOutliers(histo);
-    TString histoTitle = histo->GetTitle();
-    histoTitle.ReplaceAll("efficiency","eff.-<eff.> for outliers");
-    outHisto->SetTitle(histoTitle.Data());
-    outList.Add(outHisto);
-    outHisto->SetMinimum(-0.08);
-    outHisto->SetMaximum(0.08);
-    outHisto->DrawCopy("COLZ");
-    //      } // loop on counts
-    outCanList.Add(can);
-  } // loop on chambers
-}
-
-//_____________________________________________________________________________
-void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCanList, TList& outList )
+void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outList )
 {
   /// Get the masks vs. run number
-  
+
   if ( ! SetAndCheckOCDB(defaultStorage) ) return;
-  
+
   TObjArray maskedList(8);
   TObjArray auxList(8);
   auxList.SetOwner();
@@ -687,7 +413,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
       auxList.AddAt(histo->Clone(Form("%s_aux",histoName.Data())), imask);
     } // loop on chambers
   } // loop on cathodes
-  
+
   TArrayS xyPatternAll[2];
   for(Int_t icath=0; icath<2; icath++){
     xyPatternAll[icath].Set(kNch);
@@ -698,16 +424,16 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
   Int_t previousRun = -1;
   AliMUONDigitMaker* digitMaker = 0x0;
   AliMUONDigitStoreV2R digitStore;
-  
+
   AliMUONCalibrationData* calibData = 0x0;
   AliMUONTriggerUtilities* trigUtilities = 0x0;
   for ( Int_t irun=0; irun<runNumArray.GetEntries(); irun++ ) {
     TString runNumString = runNumArray.At(irun)->GetName();
     Int_t runNumber = runNumString.Atoi();
-    
+
     if ( IsOCDBChanged(runNumber, previousRun, ocdbFileList) ) {
       AliCDBManager::Instance()->SetRun(runNumber);
-      
+
       if ( ! digitMaker ) {
         digitMaker = new AliMUONDigitMaker(kFALSE);
         // Create a store with all digits in trigger
@@ -715,17 +441,17 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
           digitMaker->TriggerDigits(iboard, xyPatternAll, digitStore, kFALSE);
         }
       }
-      
+
       if ( ! ocdbFileList ) ocdbFileList = GetOCDBList("MUON/Calib/GlobalTriggerCrateConfig,MUON/Calib/RegionalTriggerConfig,MUON/Calib/LocalTriggerBoardMasks");
-  
+
       delete calibData;
       calibData = new AliMUONCalibrationData (runNumber);
       delete trigUtilities;
       trigUtilities = new AliMUONTriggerUtilities (calibData);
     }
-    
+
     previousRun = runNumber;
-    
+
     TIter next(digitStore.CreateIterator());
     AliMUONVDigit* dig = 0x0;
     while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) ) {
@@ -747,15 +473,14 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     TH2* histo = static_cast<TH2*>(maskedList.At(imask));
     histo->Divide(static_cast<TH2*>(auxList.At(imask)));
     SetRunAxisRange(histo);
-    outList.Add(histo);
-    
+
     canName = Form("%sCan", histo->GetName());
     TCanvas* can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
     can->SetRightMargin(0.14);
     histo->SetStats(kFALSE);
     if ( histo->GetMinimum() == 0. && histo->GetMaximum() == 0. ) histo->SetMaximum(0.1);
     histo->DrawCopy("COLZ");
-    outCanList.Add(can);
+    outList.Add(can);
   }
 }
 
@@ -766,11 +491,11 @@ Bool_t CheckPattern ( TString trigName, TObjArray* keepArray, TObjArray* rejectA
   for ( Int_t ipat=0; ipat<rejectArray->GetEntries(); ++ipat ) {
     if ( trigName.Contains(rejectArray->At(ipat)->GetName() ) ) return kFALSE;
   } // loop on reject pattern
-  
+
   for ( Int_t ipat=0; ipat<keepArray->GetEntries(); ++ipat ) {
     if ( trigName.Contains(keepArray->At(ipat)->GetName() ) ) return kTRUE;
   } // loop on keep pattern
-  
+
   return ( keepArray->GetEntries() == 0 ) ? kTRUE : kFALSE;
 }
 
@@ -782,7 +507,7 @@ TObjArray* BuildListOfTrigger ( const TObjArray* triggerArray, TString keepPatte
   selectedList->SetOwner();
   TObjArray* rejectArray = rejectPattern.Tokenize(",");
   TObjArray* keepArray = keepPattern.Tokenize(",");
-  
+
   for ( Int_t iTrig = 0; iTrig < triggerArray->GetEntries(); iTrig++ ){
     TString currTrigName = ((TObjString*)triggerArray->At(iTrig))->GetName();
     if ( CheckPattern(currTrigName, keepArray, rejectArray) ) selectedList->AddLast(new TObjString(currTrigName.Data()));
@@ -817,7 +542,7 @@ TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray
 }
 
 //_____________________________________________________________________________
-void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString defaultStorage, TList& outCanList, TList& outList )
+void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString defaultStorage, TList& outList )
 {
   /// Get the scalers vs. run number
   if ( ! SetAndCheckOCDB(defaultStorage) ) return;
@@ -825,25 +550,25 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   //trigger count from ESDs
   TFile *file = TFile::Open(mergedFileName.Data());
   AliCounterCollection* ccol = (AliCounterCollection*)((TDirectoryFile*)file->FindObjectAny("MUON_QA"))->FindObjectAny("eventCounters");
-  
+
   //Build the trigger list for trigger with muon only in readout and min. bias triggers
   TString triggerListName = ccol->GetKeyWords("trigger");
-  
+
   TObjArray selectedTriggerArray, selectedL0TriggerArray;
   selectedTriggerArray.SetOwner();
   selectedL0TriggerArray.SetOwner();
-  
+
   const Int_t nScaler = 3;
   TString sScaler[nScaler] = {"L0B","L2A","L0BRATE"};
   enum eScaler {kL0B = 0, kL2A=1, kL0BRATE=2};
   Float_t maxScaler[nScaler] = {1e8,1e7,1e6};
   TObjArray hFromQA;
-  TObjArray hFromScalers; 
+  TObjArray hFromScalers;
   TObjArray hOutput;
 
   TString cdbDir = "GRP/CTP/Config";
-  
-  
+
+
   TString sHistName, sHistNameFull, sTitleName;
   Int_t nRuns = runNumArray.GetEntries();
 
@@ -852,39 +577,39 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   //
   //loop on run list
   for ( Int_t iRun = 0; iRun < runNumArray.GetEntries(); iRun++ ) {
-    
+
     TString sRunNr = ((TObjString*)runNumArray.At(iRun))->GetString();
     Int_t runNr = sRunNr.Atoi();
     if ( ! CheckOCDBFile(cdbDir, runNr)) continue;
     AliAnalysisTriggerScalers triggerScaler(runNr);
     AliTriggerConfiguration* tc = static_cast<AliTriggerConfiguration*>(triggerScaler.GetOCDBObject(cdbDir.Data(),runNr));
     const TObjArray& trClasses = tc->GetClasses();
-    
+
     Int_t ibin = iRun+1;
-    
+
     for ( Int_t itype=0; itype<2; itype++ ) {
       TObjArray* currSelectedList = ( itype == 0 ) ? &selectedTriggerArray : &selectedL0TriggerArray;
       TString matchTrig = ( itype == 0 ) ? "" : "C0TVX";
       TObjArray* selectedTrigArrayForRun = BuildListOfTrigger(&trClasses, matchTrig);
-      
+
       //loop on trigger list
       for ( Int_t iTrig = 0; iTrig < selectedTrigArrayForRun->GetEntries(); iTrig++ ) {
-      
+
         TString currTrigName = selectedTrigArrayForRun->At(iTrig)->GetName();
         if ( itype == 0 && ! triggerListName.Contains(currTrigName.Data()) ) continue;
         if ( ! currSelectedList->FindObject(currTrigName.Data()) ) currSelectedList->Add(new TObjString(currTrigName));
-        
+
         //loop on scaler list
         for ( Int_t iScaler = 0; iScaler < nScaler; iScaler++ ) {
-        
+
           if ( itype == 1 && iScaler != kL0B ) continue;
-          
+
           //from Scalers
           TGraph* graph = triggerScaler.PlotTrigger(currTrigName.Data(),sScaler[iScaler].Data(),kFALSE);
-        
+
           sHistName = Form("%s_%s",currTrigName.Data(),sScaler[iScaler].Data());
           sHistNameFull = Form("Scalers_%s",sHistName.Data());
-          
+
           TH1* hist = (TH1*) hFromScalers.FindObject(sHistNameFull);
           if ( ! hist ) {
             hist = new TH1D(sHistNameFull,sHistName,nRuns,1.,1.+(Double_t)nRuns);
@@ -904,7 +629,7 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
           if ( tab ) hist->SetBinContent(ibin,tab[0]);
           hist->GetXaxis()->SetBinLabel(ibin,sRunNr.Data());
           delete graph;
-          
+
           //from QA
           if ( iScaler != kL2A ) continue;
           TH1* histCounters = static_cast<TH1*>(ccol->Get("run",Form("run:%s/trigger:%s",sRunNr.Data(),currTrigName.Data())));
@@ -917,16 +642,16 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
       }//end loop on trigger list
     } // end loop on type
   }//end loop on run list
-  
-  
+
+
   if ( selectedTriggerArray.GetEntries() == 0 ) {
     printf("No trigger selected from trigger list %s\n",triggerListName.Data());
     return;
   }
   printf("Nr of triggers selected %i\n",selectedTriggerArray.GetEntries());
-  
+
   printf("Nr of T0 triggers selected %i\n",selectedL0TriggerArray.GetEntries());
-  
+
   //Set options for QA and Scalers histos
 
   for ( Int_t itype=0; itype<2; itype++ ) {
@@ -946,21 +671,21 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     }
   }
 
-  
+
   //Loop on histos from scalers and QA and create resulting histos from scalers
   const Int_t nHisto = 3;
   TString sHisto[nHisto] = {"L0BoverL0BC0TVX","L2AoverL0B","L2AQAoverSCALERS"};
   TString sTitleHisto[nHisto] = {"L0B trigger / L0BC0TVX","L2A / L0B","L2A from QA / L2A from SCALERS"};
   //  TString sHisto[nHisto] = {"L2AoverL0B","L2AQAoverSCALERS"};
-  
+
   //loop on trigger list
   for ( Int_t iTrig = 0; iTrig < selectedTriggerArray.GetEntries(); iTrig++ ) {
 
     sHistNameFull = Form("Scalers_%s_L0B",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo1 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
     if (!histo1) continue;
-    
-    
+
+
     //C0TVX
     TString sTrig = ( (TObjString*) selectedTriggerArray.At(iTrig) )->GetName();
     TString sL0Trig = FindCorrespondingTrigger(sTrig, &selectedL0TriggerArray);
@@ -982,11 +707,11 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
       //outList.Add(histo1);
     }
 
-    //DEADTIME    
+    //DEADTIME
     sHistNameFull = Form("Scalers_%s_L2A",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo2 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
     if (!histo2) continue;
-    
+
     sHistNameFull = Form("%s_%s",sHisto[1].Data(),((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo3 = (TH1*) histo2->Clone(sHistNameFull);
     histo3->SetTitle(sTitleHisto[1]);
@@ -996,12 +721,12 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     histo3->SetMinimum(1e-5);
     //outList.Add(histo3);
     hOutput.AddLast(histo3);
-    
+
     //QA over Scalers
     sHistNameFull = Form("QA_%s_L2A",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo4 = static_cast<TH1*> ( hFromQA.FindObject(sHistNameFull) );
     if (!histo4) continue;
-    
+
     sHistNameFull = Form("%s_%s",sHisto[2].Data(),((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo5 = (TH1*) histo4->Clone(sHistNameFull);
     histo5->SetTitle(sTitleHisto[2]);
@@ -1012,13 +737,13 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     //outList.Add(histo5);
     hOutput.AddLast(histo5);
   }
-  
+
   // Plot all on canvases (only canvases will be saved)
   const Int_t nCanvases = nScaler + nHisto;
   TString sCanvases[nCanvases];
   for (Int_t iScaler = 0; iScaler < nScaler; iScaler++) sCanvases[iScaler] = sScaler[iScaler];
   for (Int_t iHisto = 0; iHisto < nHisto; iHisto++) sCanvases[nScaler+iHisto] = sHisto[iHisto];
-  
+
   //loop on canvases
   for ( Int_t iCan = 0; iCan < nCanvases; iCan++) {
     TCanvas* canvas = new TCanvas(sCanvases[iCan],sCanvases[iCan],200,10,600,600);
@@ -1026,29 +751,28 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     leg->SetBorderSize(1);
     if ( iCan != 4 ) canvas->SetLogy();
     TString optDraw = "e";
-    
+
     //loop on trigger list
     Int_t icolor = 1;
     for ( Int_t iTrig = 0; iTrig < selectedTriggerArray.GetEntries(); iTrig++ ) {
-      
+
       if ( iCan < nScaler ) sHistNameFull = Form("Scalers_%s_%s",selectedTriggerArray.At(iTrig)->GetName(),sCanvases[iCan].Data());
       else sHistNameFull = Form("%s_%s",sCanvases[iCan].Data(),selectedTriggerArray.At(iTrig)->GetName());
       TH1* histo1 = static_cast<TH1*> ( hOutput.FindObject(sHistNameFull) );
       if (!histo1) continue;
-      
+
       if ( icolor == 10 ) icolor++;
       histo1->SetLineColor(icolor++);
       histo1->Draw(optDraw);
       optDraw = "esame";
-      
+
       leg->AddEntry(histo1,selectedTriggerArray.At(iTrig)->GetName(),"l");
     }
-    
+
     leg->Draw();
     outList.Add(canvas);
-    outCanList.Add(canvas);
   }
-  
+
   file->Close();
 }
 
@@ -1076,38 +800,32 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
     printf("Fatal: cannot open input file %s\n",fileListName.Data());
     return;
   }
-  
+
   runNumArray.Sort();
-  
-  // Instead of using the efficiency stored in the QA output
-  // search for the new efficiency produced with trigger tracks only
-  TObjArray* finalFileNameArray =  ChangeFilenames(fileNameArray);
-  
-  TList outCanList, outList;
-  TrigEffTrending(runNumArray, *finalFileNameArray, outCanList, outList);
+
+  TList outList;
+  TrigEffTrending(fileListName, outList);
   if ( SetAndCheckOCDB(defaultStorage) ) {
-    MaskTrending(runNumArray, defaultStorage, outCanList, outList);
+    MaskTrending(runNumArray, defaultStorage, outList);
     if ( doScalers ) {
       if ( gSystem->AccessPathName(trackerQAmergedOut.Data()) ) {
         printf("Warning: cannot perform scaler trending:\n merged QA from tracker\n  %s\n  does not exist\n",trackerQAmergedOut.Data());
       }
       else {
-        ScalerTrending(runNumArray, trackerQAmergedOut, defaultStorage, outCanList, outList);
+        ScalerTrending(runNumArray, trackerQAmergedOut, defaultStorage, outList);
       }
     }
   }
-
-  delete finalFileNameArray;
 
   if ( outFilename.IsNull() ) return;
 
   TString outCanName = outFilename;
   outCanName.ReplaceAll(".root",".pdf");
-  for ( Int_t ican=0; ican<outCanList.GetEntries(); ican++ ) {
+  for ( Int_t ican=0; ican<outList.GetEntries(); ican++ ) {
     TString canName = outCanName;
     if ( ican == 0 ) canName.Append("("); // open pdf file
-    else if ( ican == outCanList.GetEntries()-1 ) canName.Append(")"); // close pdf file
-    static_cast<TCanvas*>(outCanList.At(ican))->Print(canName.Data());
+    else if ( ican == outList.GetEntries()-1 ) canName.Append(")"); // close pdf file
+    static_cast<TCanvas*>(outList.At(ican))->Print(canName.Data());
   }
   // There is a bug when creating a pdf
   // So create a ps and then convert via epstopdf
