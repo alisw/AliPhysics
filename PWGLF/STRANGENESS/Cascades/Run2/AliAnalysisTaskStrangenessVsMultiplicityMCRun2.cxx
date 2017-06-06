@@ -336,13 +336,18 @@ fTreeCascVarV0DCAptUncertainty_V0Ang(0),
 fTreeCascVarV0DCAptPosSigmaX2(0),
 fTreeCascVarV0DCAptPosSigmaY2(0),
 fTreeCascVarV0DCAptPosSigmaZ2(0),
+fTreeCascVarV0DCAptPosSigmaSnp2(0),
+fTreeCascVarV0DCAptPosSigmaTgl2(0),
 fTreeCascVarV0DCAptNegSigmaX2(0),
 fTreeCascVarV0DCAptNegSigmaY2(0),
 fTreeCascVarV0DCAptNegSigmaZ2(0),
+fTreeCascVarV0DCAptNegSigmaSnp2(0),
+fTreeCascVarV0DCAptNegSigmaTgl2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
 fTreeCascVarV0Lifetime(0),
+fTreeCascVarMagField(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -625,13 +630,18 @@ fTreeCascVarV0DCAptUncertainty_V0Ang(0),
 fTreeCascVarV0DCAptPosSigmaX2(0),
 fTreeCascVarV0DCAptPosSigmaY2(0),
 fTreeCascVarV0DCAptPosSigmaZ2(0),
+fTreeCascVarV0DCAptPosSigmaSnp2(0),
+fTreeCascVarV0DCAptPosSigmaTgl2(0),
 fTreeCascVarV0DCAptNegSigmaX2(0),
 fTreeCascVarV0DCAptNegSigmaY2(0),
 fTreeCascVarV0DCAptNegSigmaZ2(0),
+fTreeCascVarV0DCAptNegSigmaSnp2(0),
+fTreeCascVarV0DCAptNegSigmaTgl2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
 fTreeCascVarV0Lifetime(0),
+fTreeCascVarMagField(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -997,12 +1007,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarCascadeDecayXMC",&fTreeCascVarCascadeDecayXMC,"fTreeCascVarCascadeDecayXMC/F");
             fTreeCascade->Branch("fTreeCascVarCascadeDecayYMC",&fTreeCascVarCascadeDecayYMC,"fTreeCascVarCascadeDecayYMC/F");
             fTreeCascade->Branch("fTreeCascVarCascadeDecayZMC",&fTreeCascVarCascadeDecayZMC,"fTreeCascVarCascadeDecayZMC/F");
-
-            fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexY",&fTreeCascVarPrimVertexY,"fTreeCascVarPrimVertexY/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
             
             fTreeCascade->Branch("fTreeCascVarV0Lifetime",&fTreeCascVarV0Lifetime,"fTreeCascVarV0Lifetime/F");
+            fTreeCascade->Branch("fTreeCascVarMagField",&fTreeCascVarMagField,"fTreeCascVarMagField/F");
             //Track Labels (check for duplicates, etc)
             
             //Cascade decay position calculation metrics
@@ -1026,10 +1033,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaX2",&fTreeCascVarV0DCAptPosSigmaX2,"fTreeCascVarV0DCAptPosSigmaX2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaY2",&fTreeCascVarV0DCAptPosSigmaY2,"fTreeCascVarV0DCAptPosSigmaY2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaZ2",&fTreeCascVarV0DCAptPosSigmaZ2,"fTreeCascVarV0DCAptPosSigmaZ2/F");
-
+            fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaSnp2",&fTreeCascVarV0DCAptPosSigmaSnp2,"fTreeCascVarV0DCAptPosSigmaSnp2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptPosSigmaTgl2",&fTreeCascVarV0DCAptPosSigmaTgl2,"fTreeCascVarV0DCAptPosSigmaTgl2/F");
+            
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaX2",&fTreeCascVarV0DCAptNegSigmaX2,"fTreeCascVarV0DCAptNegSigmaX2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaY2",&fTreeCascVarV0DCAptNegSigmaY2,"fTreeCascVarV0DCAptNegSigmaY2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaZ2",&fTreeCascVarV0DCAptNegSigmaZ2,"fTreeCascVarV0DCAptNegSigmaZ2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaSnp2",&fTreeCascVarV0DCAptNegSigmaSnp2,"fTreeCascVarV0DCAptNegSigmaSnp2/F");
+            fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaTgl2",&fTreeCascVarV0DCAptNegSigmaTgl2,"fTreeCascVarV0DCAptNegSigmaTgl2/F");
+            
             /*
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
@@ -1258,7 +1270,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
 
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
-
+    fTreeCascVarMagField = lMagneticField;
+    
     //------------------------------------------------
     // Event Selection ---
     //  --- Performed entirely via AliPPVsMultUtils
@@ -2078,10 +2091,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         fTreeCascVarV0DCAptPosSigmaX2 = -100;
         fTreeCascVarV0DCAptPosSigmaY2 = -100;
-        fTreeCascVarV0DCAptPosSigmaY2 = -100;
+        fTreeCascVarV0DCAptPosSigmaZ2 = -100;
+        fTreeCascVarV0DCAptPosSigmaSnp2 = -100;
+        fTreeCascVarV0DCAptPosSigmaTgl2 = -100;
         fTreeCascVarV0DCAptNegSigmaX2 = -100;
         fTreeCascVarV0DCAptNegSigmaY2 = -100;
-        fTreeCascVarV0DCAptNegSigmaY2 = -100;
+        fTreeCascVarV0DCAptNegSigmaZ2 = -100;
+        fTreeCascVarV0DCAptNegSigmaSnp2 = -100;
+        fTreeCascVarV0DCAptNegSigmaTgl2 = -100;
 
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
         Double_t lEffMassXi      = 0. ;
@@ -2239,13 +2256,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarV0DCAptPosSigmaX2 = sxp;
             fTreeCascVarV0DCAptPosSigmaY2 = syp;
             fTreeCascVarV0DCAptPosSigmaZ2 = pt.GetSigmaZ2();
-
+            fTreeCascVarV0DCAptPosSigmaSnp2 = pt.GetSigmaSnp2();
+            fTreeCascVarV0DCAptPosSigmaTgl2 = pt.GetSigmaTgl2();
+ 
             //NEGATIVE
             Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
             Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
             fTreeCascVarV0DCAptNegSigmaX2 = sxn;
             fTreeCascVarV0DCAptNegSigmaY2 = syn;
             fTreeCascVarV0DCAptNegSigmaZ2 = nt.GetSigmaZ2();
+            fTreeCascVarV0DCAptNegSigmaSnp2 = nt.GetSigmaSnp2();
+            fTreeCascVarV0DCAptNegSigmaTgl2 = nt.GetSigmaTgl2();
             
             //_____________________________________________________________________________
             //Recreate V0
