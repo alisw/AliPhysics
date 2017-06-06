@@ -1551,6 +1551,7 @@ private:
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
+  TH2D* fCRCQVecPtHistMagField; //!
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
 //  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
 //  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
@@ -1795,6 +1796,7 @@ private:
   const static Int_t fkNHistv1eta = 14;
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta];
   const static Int_t fkNHistv1etaCov = 13;
   TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
   TH1D *fFlowSPZDCv1etaCovHist[fCRCMaxnCen][fkNHistv1etaCov]; //!

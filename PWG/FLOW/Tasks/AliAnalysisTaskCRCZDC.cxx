@@ -829,34 +829,36 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   // run-by-run stuff
   
-  Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
-  Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
-  Double_t etamin[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
-  
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    fCRCQVecListRun[r] = new TList();
-    fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
-    fCRCQVecListRun[r]->SetOwner(kTRUE);
-    fOutput->Add(fCRCQVecListRun[r]);
+  if(!fUseTowerEq) {
+    Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
+    Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
+    Double_t etamin[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
     
-    for(Int_t k=0;k<fCRCnTow;k++) {
-      fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-      fZNCTower[r][k]->Sumw2();
-      fCRCQVecListRun[r]->Add(fZNCTower[r][k]);
-      fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-      fZNATower[r][k]->Sumw2();
-      fCRCQVecListRun[r]->Add(fZNATower[r][k]);
+    for(Int_t r=0;r<fCRCnRun;r++) {
+      fCRCQVecListRun[r] = new TList();
+      fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
+      fCRCQVecListRun[r]->SetOwner(kTRUE);
+      fOutput->Add(fCRCQVecListRun[r]);
+      
+      for(Int_t k=0;k<fCRCnTow;k++) {
+        fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNCTower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZNCTower[r][k]);
+        fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNATower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZNATower[r][k]);
+      }
+      
+      //    fhZNSpectraRbR[r] = new TH3D(Form("fhZNSpectraRbR[%d]",fRunList[r]),Form("fhZNSpectraRbR[%d]",fRunList[r]),50,0.,100.,8,0.,8.,100,0.,1.E5);
+      //    fCRCQVecListRun[r]->Add(fhZNSpectraRbR[r]);
+      
+      //   for(Int_t i=0;i<fnCen;i++) {
+      //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+      //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
+      //     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+      //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
+      //   }
     }
-    
-//    fhZNSpectraRbR[r] = new TH3D(Form("fhZNSpectraRbR[%d]",fRunList[r]),Form("fhZNSpectraRbR[%d]",fRunList[r]),50,0.,100.,8,0.,8.,100,0.,1.E5);
-//    fCRCQVecListRun[r]->Add(fhZNSpectraRbR[r]);
-    
-    //   for(Int_t i=0;i<fnCen;i++) {
-    //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-    //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
-    //     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-    //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
-    //   }
   }
   
   PostData(2, fOutput);

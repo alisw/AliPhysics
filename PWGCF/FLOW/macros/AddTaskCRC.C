@@ -196,6 +196,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCTowerEqFile;
   }
+  if(sDataSet=="2015pidfix") {
+    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHIpidfix_EZDCcalib.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    gROOT->cd();
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCTowerEqFile;
+  }
   if(bCorrectForBadChannel) {
     TString ZDCBadTowerFileName = "alien:///alice/cern.ch/user/j/jmargutt/ZDCCalibBadChannel.root";
     TFile* ZDCBadTowerFile = TFile::Open(ZDCBadTowerFileName,"READ");
