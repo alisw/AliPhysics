@@ -97,6 +97,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhNCellsPerClusterMEtaPhi [i] = 0;
     fhNCellsPerClusterMEtaPhiA[i] = 0;
     
+    fhSMNCell              [i] = 0;
     fhSMM02                [i] = 0;
     fhColM02               [i] = 0;
     fhRowM02               [i] = 0;
@@ -1426,6 +1427,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
   
+  fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell , GetEventWeight());
   fhDeltaIANCells        [matchedPID]->Fill(energy, nCell  , dIA   , GetEventWeight());
   fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell  , dIATot, GetEventWeight());
   
@@ -3569,6 +3571,15 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM02[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhSMM02[imatch]); 
 
+      fhSMNCell[imatch]  = new TH3F 
+      (Form("hSMNCell_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs  #it{n}_{cells} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax); 
+      fhSMNCell[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMNCell[imatch]->SetYTitle("SM number");
+      fhSMNCell[imatch]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      outputContainer->Add(fhSMNCell[imatch]); 
+      
       fhColM02[imatch]  = new TH3F 
       (Form("hColM02_%s",matchCase[imatch].Data()),
        Form("#it{E} vs column number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
