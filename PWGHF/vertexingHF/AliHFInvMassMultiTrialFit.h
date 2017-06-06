@@ -66,6 +66,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   }
   void SetUseChi2Fit(){fFitOption=1;}
   void SetUseLogLikelihoodFit(){fFitOption=0;}
+
+
   void SetUseExpoBackground(Bool_t opt=kTRUE){fUseExpoBkg=opt;}
   void SetUseLinBackground(Bool_t opt=kTRUE){fUseLinBkg=opt;}
   void SetUsePol2Background(Bool_t opt=kTRUE){fUsePol2Bkg=opt;}
@@ -89,7 +91,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Bool_t DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad=0x0);
   void SaveToRoot(TString fileName, TString option="recreate") const;
   void DrawHistos(TCanvas* cry) const;
-  TH1F* SetTemplateRefl(const TH1F *hTemplRefl);
+  void SetTemplatesForReflections(const TH1F *hTemplRefl, const TH1F *hTemplSig);
 
   void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
 
@@ -110,7 +112,6 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   Bool_t CreateHistos();
   TH1F* RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstUse) const;
-  void BinCount(TH1F* h, TF1* fB, Int_t rebin, Double_t minMass, Double_t maxMass, Double_t& count, Double_t& ecount) const;
   Bool_t DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax,
 			  Int_t theCase);
 
@@ -168,8 +169,10 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   TH1F* fHistoBkgTrialAll;     /// histo with bkg from all trials
   TH1F* fHistoBkgInBinEdgesTrialAll;    /// histo with bkg in mass bin edges from all trials
 
-  TH1F* fHistoRawYieldDistBinCAll; /// histo with bin counts from all trials
-  TH2F* fHistoRawYieldTrialBinCAll; /// histo with bin counts from all trials
+  TH1F* fHistoRawYieldDistBinC0All; /// histo with bin counts from all trials
+  TH2F* fHistoRawYieldTrialBinC0All; /// histo with bin counts from all trials
+  TH1F* fHistoRawYieldDistBinC1All; /// histo with bin counts from all trials
+  TH2F* fHistoRawYieldTrialBinC1All; /// histo with bin counts from all trials
 
   TH1F** fHistoRawYieldDist;  /// histo with yield from subsamples of trials
   TH1F** fHistoRawYieldTrial; /// histo with yield from subsamples of trials
@@ -180,9 +183,13 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   TH1F** fHistoBkgTrial;     /// histo with bkg from subsamples of trials
   TH1F** fHistoBkgInBinEdgesTrial;    /// histo with bkg in mass bin edges from subsamples of trials
 
-  TH1F** fHistoRawYieldDistBinC;  /// histo with bin counts from subsamples of trials
-  TH2F** fHistoRawYieldTrialBinC; /// histo with bin counts from subsamples of trials
+  TH1F** fHistoRawYieldDistBinC0;  /// histo with bin counts from subsamples of trials
+  TH2F** fHistoRawYieldTrialBinC0; /// histo with bin counts from subsamples of trials
+  TH1F** fHistoRawYieldDistBinC1;  /// histo with bin counts from subsamples of trials
+  TH2F** fHistoRawYieldTrialBinC1; /// histo with bin counts from subsamples of trials
+
   TH1F *fhTemplRefl;        /// template of reflection contribution
+  TH1F *fhTemplSign;        /// template of signal contribution
   Float_t fFixRefloS;
   TNtuple* fNtupleMultiTrials; /// tree
 
@@ -192,7 +199,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,1); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,2); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
