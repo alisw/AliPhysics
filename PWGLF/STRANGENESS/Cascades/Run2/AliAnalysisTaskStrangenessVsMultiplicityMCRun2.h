@@ -518,14 +518,20 @@ private:
     Float_t fTreeCascVarV0DCAptPosSigmaX2; //
     Float_t fTreeCascVarV0DCAptPosSigmaY2; //
     Float_t fTreeCascVarV0DCAptPosSigmaZ2; //
-
+    Float_t fTreeCascVarV0DCAptPosSigmaSnp2; //
+    Float_t fTreeCascVarV0DCAptPosSigmaTgl2; //
+    
     Float_t fTreeCascVarV0DCAptNegSigmaX2; //
     Float_t fTreeCascVarV0DCAptNegSigmaY2; //
     Float_t fTreeCascVarV0DCAptNegSigmaZ2; //
-    
+    Float_t fTreeCascVarV0DCAptNegSigmaSnp2; //
+    Float_t fTreeCascVarV0DCAptNegSigmaTgl2; //
+
     Float_t fTreeCascVarPrimVertexX;
     Float_t fTreeCascVarPrimVertexY;
     Float_t fTreeCascVarPrimVertexZ;
+    
+    Float_t fTreeCascVarMagField; // for X-checks
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
     //Track Labels (check for duplicates, etc)
