@@ -208,8 +208,6 @@ AliTOFAnalysisTaskCalibPass0::InitEvent()
     if (fkVertex->GetNContributors() < 1) return kFALSE;
   }
   if (fVertexSelectionFlag && TMath::Abs(fkVertex->GetZ()) > fVertexCut) return kFALSE;
-  /* calibrate ESD if requested */
-  fTOFcalib->CalibrateESD(fESDEvent);
 
   return kTRUE;
 }
@@ -322,8 +320,10 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
 
   /* loop over ESD tracks */
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
+  UInt_t timestamp = fESDEvent->GetTimeStamp();
   AliESDtrack *track;
-  Double_t eta, costheta, pt, time, timei[AliPID::kSPECIESC], deltat, deltaz;
+  Int_t index, l0l1, deltaBC;
+  Double_t eta, costheta, pt, time, tot, corr, timei[AliPID::kSPECIESC], deltat, deltaz;
   for (Int_t itrk = 0; itrk < nTracks; itrk++) {
     /* get track */
     track = fESDEvent->GetTrack(itrk);
@@ -344,7 +344,15 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
     /* fill matched tracks histo */
     fHistoMatchedTracksEtaPt->Fill(eta, pt);
     /* get TOF info */
-    time = track->GetTOFsignal();
+    index = track->GetTOFCalChannel();
+    time = track->GetTOFsignalRaw();
+    tot = track->GetTOFsignalToT();
+    l0l1 = track->GetTOFL0L1();
+    deltaBC = track->GetTOFDeltaBC();
+    /* get correction */
+    corr = fTOFcalib->GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+    /* apply correction */
+    time -= corr;
     track->GetIntegratedTimes(timei,AliPID::kSPECIESC);
     deltat = time - timei[AliPID::kPion];
     deltaz = track->GetTOFsignalDz();
