@@ -2319,11 +2319,14 @@ TH1D* AliVertexingHFUtils::RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse){
   Int_t lastSummed=firstBinOrig-1;
   for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
     Float_t sum=0.;
+    Float_t sume2=0.;
     for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
       sum+=hOrig->GetBinContent(lastSummed+1);
+      sume2+=(hOrig->GetBinError(lastSummed+1)*hOrig->GetBinError(lastSummed+1));
       lastSummed++;
     }
     hRebin->SetBinContent(iBin,sum);
+    hRebin->SetBinError(iBin,TMath::Sqrt(sume2));
   }
   return hRebin;
 }
