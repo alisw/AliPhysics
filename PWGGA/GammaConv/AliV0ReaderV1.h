@@ -212,7 +212,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 14)
+    ClassDef(AliV0ReaderV1, 15)
 
 };
 
