@@ -263,10 +263,10 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     // NEF vs. pT vs. eta vs. phi
     histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
     title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    Int_t nbins[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
-    Double_t min[4] = {-0.5,1., 0, 0};
-    Double_t max[4] = {0.5,6., fMaxPt, 1.};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
+    Int_t nbinsthn[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
+    Double_t minthn[4] = {-0.5,1., 0, 0};
+    Double_t maxthn[4] = {0.5,6., fMaxPt, 1.};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsthn, minthn, maxthn);
     
     // pT upscaled
     histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
@@ -330,6 +330,59 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       Double_t maxDpT[4] = {0.5,6., 100, 150};
       fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsDpT, minDpT, maxDpT);
       
+    }
+    
+    // Plot cluster spectra within jets
+    // (centrality, cluster energy, jet pT, jet eta, jet phi)
+    Int_t dim = 0;
+    TString title[20];
+    Int_t nbins[20] = {0};
+    Double_t min[30] = {0.};
+    Double_t max[30] = {0.};
+    Double_t *binEdges[20] = {0};
+    
+    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+      title[dim] = "Centrality %";
+      nbins[dim] = fNCentHistBins;
+      binEdges[dim] = fCentHistBins;
+      min[dim] = fCentHistBins[0];
+      max[dim] = fCentHistBins[fNCentHistBins];
+      dim++;
+    }
+    
+    title[dim] = "#it{E}_{clus} (GeV)";
+    nbins[dim] = fNPtHistBins;
+    binEdges[dim] = fPtHistBins;
+    min[dim] = fPtHistBins[0];
+    max[dim] = fPtHistBins[fNPtHistBins];
+    dim++;
+    
+    title[dim] = "#it{p}_{T,jet}^{corr}";
+    nbins[dim] = nPtBins;
+    min[dim] = 0;
+    max[dim] = fMaxPt;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "#eta_{jet}";
+    nbins[dim] = fNEtaBins;
+    min[dim] = -0.5;
+    max[dim] = 0.5;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "#phi_{jet}";
+    nbins[dim] = fNPhiBins;
+    min[dim] = 1.;
+    max[dim] = 6.;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    TString thnname = TString::Format("%s/JetHistograms/hClustersInJets", jets->GetArrayName().Data());
+    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
+    for (Int_t i = 0; i < dim; i++) {
+      hn->GetAxis(i)->SetTitle(title[i]);
+      hn->SetBinEdges(i, binEdges[i]);
     }
     
   }
@@ -753,14 +806,7 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     max[dim] = fPtHistBins[fNPtHistBins];
     dim++;
     
-    title[dim] = "#it{E}_{clus, hadcorr} (GeV)";
-    nbins[dim] = fNPtHistBins;
-    binEdges[dim] = fPtHistBins;
-    min[dim] = fPtHistBins[0];
-    max[dim] = fPtHistBins[fNPtHistBins];
-    dim++;
-    
-    title[dim] = "#it{E}_{core} (GeV)";
+    title[dim] = "#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)";
     nbins[dim] = fNPtHistBins;
     binEdges[dim] = fPtHistBins;
     min[dim] = fPtHistBins[0];
@@ -785,6 +831,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     nbins[dim] = 40;
     min[dim] = -0.5;
     max[dim] = 49.5;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "Dispersion cut";
+    nbins[dim] = 2;
+    min[dim] = -0.5;
+    max[dim] = 1.5;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
@@ -1847,6 +1900,17 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
         fHistManager.FillTH3(histname.Data(), fMedianDCal, kDCal, corrPt);
       }
       
+      // Fill cluster spectra of clusters within jets
+      //(centrality, cluster energy, jet pT, jet eta, jet phi)
+      histname = TString::Format("%s/JetHistograms/hClustersInJets", jets->GetArrayName().Data());
+      Int_t nClusters = jet->GetNumberOfClusters();
+      AliVCluster* clus;
+      for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+        clus = jet->Cluster(iClus);
+        Double_t x[5] = {fCent, clus->E(), corrPt, jet->Eta(), jet->Phi_0_2pi()};
+        fHistManager.FillTHnSparse(histname, x);
+      }
+      
     } //jet loop
     
     //---------------------------------------------------------------------------
@@ -2084,7 +2148,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
   TString histname;
   Double_t Enonlin;
   Double_t Ehadcorr;
-  Double_t Ecore;
   Int_t absId;
   Double_t ecell;
   Double_t leadEcell;
@@ -2136,12 +2199,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       // Fill cluster spectra by SM, and fill cell histograms
       Enonlin = 0;
       Ehadcorr = 0;
-      Ecore = 0;
       if (it->second->IsEMCAL()) {
         
         Ehadcorr = it->second->GetHadCorrEnergy();
         Enonlin = it->second->GetNonLinCorrEnergy();
-        Ecore = Ehadcorr;
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
@@ -2169,9 +2230,8 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         
       } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
         
-        Ehadcorr = it->second->E();
+        Ehadcorr = it->second->GetCoreEnergy();
         Enonlin = it->second->E();
-        Ecore = it->second->GetCoreEnergy();
         
         Int_t relid[4];
         if (fPHOSGeo) {
@@ -2211,6 +2271,12 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         hasMatchedTrack = 1;
       }
       
+      // Check if the cluster passes the dispersion cut for photon-like cluster (meaningful only for PHOS)
+      Int_t passedDispersionCut = 0;
+      if (it->second->Chi2() < 2.5*2.5) {
+        passedDispersionCut = 1;
+      }
+      
       Double_t contents[30]={0};
       histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
       THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
@@ -2225,16 +2291,16 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
           contents[i] = it->first.Phi_0_2pi();
         else if (title=="#it{E}_{clus} (GeV)")
           contents[i] = Enonlin;
-        else if (title=="#it{E}_{clus, hadcorr} (GeV)")
+        else if (title=="#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)")
           contents[i] = Ehadcorr;
-        else if (title=="#it{E}_{core} (GeV)")
-          contents[i] = Ecore;
         else if (title=="Matched track")
           contents[i] = hasMatchedTrack;
         else if (title=="M02")
           contents[i] = it->second->GetM02();
         else if (title=="Ncells")
           contents[i] = it->second->GetNCells();
+        else if (title=="Dispersion cut")
+          contents[i] = passedDispersionCut;
         else
           AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
