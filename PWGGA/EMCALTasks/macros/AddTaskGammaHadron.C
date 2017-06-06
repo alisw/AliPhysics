@@ -82,7 +82,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing, InputMCorData);
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing,InputMCorData);
 
   //..Add the containers and set the names
   AnalysisTask->AddClusterContainer(clusName);
@@ -114,6 +114,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   //..set the beamtype and the run2 flag
   AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
+  AnalysisTask->SetNeedEmcalGeom(kTRUE);
   //..for Run1 pPb
   if(isRun2==0)
   {
@@ -142,13 +143,12 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);        //by default set to 0.15
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
 //    AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
-//	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
 //	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
   }
 
   //..some additional input for the analysis
-  AnalysisTask->SetNeedEmcalGeom(kTRUE);
   AnalysisTask->SetSavePool(SavePool);
   AnalysisTask->SetEvtTriggerType(evtTriggerType);   //..Trigger to be used for filling same event histograms
   AnalysisTask->SetEvtMixType(evtMixingType);        //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
@@ -156,7 +156,6 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   if(InputGammaOrPi0==0)
   {
 	  AnalysisTask->SetM02(0.1,0.4);                 //..Ranges of allowed cluster shapes in the analysis
-	  AnalysisTask->SetRmvMatchedTrack(1);           //..Removes all clusters that have a matched track
   }
 
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
