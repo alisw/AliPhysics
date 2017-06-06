@@ -50,7 +50,7 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree(Bool_t lightmode = kFAL
   task->SetVertexCut(50.0);
   task->SetDiscardPileupEventFlag(kFALSE);
   task->SetPrimaryDCASelectionFlag(kFALSE);
-  task->SetCalibrateTOFsignal(kTRUE);
+  task->SetCalibrateTOFsignal(kFALSE);
   task->SetComputeT0TOF(kTRUE);
   task->SetUseT0TOF(kFALSE);
   task->SetUseLHCClockPhase(kFALSE);
