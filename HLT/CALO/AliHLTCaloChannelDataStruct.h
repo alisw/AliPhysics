@@ -30,9 +30,13 @@
 
 struct AliHLTCaloChannelDataStruct
 {
+  UChar_t fModuleID;
   Float_t fEnergy;
   Float_t fTime;
+  UChar_t fRow;
+  UChar_t fColumn;
   Short_t fCrazyness;
+  Bool_t  fLowGain;
   int fChannelID;
 };
 

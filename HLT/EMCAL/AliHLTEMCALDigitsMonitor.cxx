@@ -1,4 +1,3 @@
-// clang-format off
 /**************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
  * All rights reserved.                                                               *
@@ -25,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
-// clang-format on
 #include <TH2.h>
 #include <TObjArray.h>
 #include <cstring>
@@ -37,9 +35,9 @@
 
 /// \cond CLASSIMP
 ClassImp(AliHLTEMCALDigitsMonitor)
-/// \endcond CLASSIMP
+  /// \endcond CLASSIMP
 
-AliHLTEMCALDigitsMonitor::AliHLTEMCALDigitsMonitor()
+  AliHLTEMCALDigitsMonitor::AliHLTEMCALDigitsMonitor()
   : TObject(), fListOfHistograms(NULL), fGeometry(NULL)
 {
   memset(fHIDvsAmp, 0, sizeof(TH2*) * 2);
@@ -69,10 +67,12 @@ void AliHLTEMCALDigitsMonitor::ProcessDigits(Int_t ndigits, const AliHLTCaloDigi
   const int kNsecPerSec = 1e9;
   for (int idig = 0; idig < ndigits; idig++) {
     int gaintype = digits[idig].fHgPresent ? 1 : 0;
-    int cellID = fGeometry->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digits[idig].fModule, digits[idig].fX, digits[idig].fZ);
+    int cellID =
+      fGeometry->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digits[idig].fModule, digits[idig].fX, digits[idig].fZ);
     AliDebug(1, Form("Digit %d is of type %s\n", idig, gaintype == 1 ? "high gain" : "low gain"));
-    AliDebug(1, Form("Digit ID %d in module %d: Absolute cell ID: %d\n", digits[idig].fID, digits[idig].fModule, cellID));
+    AliDebug(1,
+             Form("Digit ID %d in module %d: Absolute cell ID: %d\n", digits[idig].fID, digits[idig].fModule, cellID));
     fHIDvsAmp[gaintype]->Fill(digits[idig].fEnergy, cellID);
-    fHIDvsTime[gaintype]->Fill(digits[idig].fTime * kNsecPerSec, cellID);
+    fHIDvsTime[gaintype]->Fill(digits[idig].fTime, cellID);
   }
 }

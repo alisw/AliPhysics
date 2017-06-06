@@ -1,4 +1,3 @@
-// clang-format off
 /**************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
  * All rights reserved.                                                               *
@@ -25,17 +24,16 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
-// clang-format on
+#include "AliHLTEMCALDigitsMonitorComponent.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTEMCALDigitsMonitor.h"
-#include "AliHLTEMCALDigitsMonitorComponent.h"
 #include "AliHLTEMCALGeometry.h"
 
+#include <TFile.h>
 #include <TH1.h>
 #include <TObjArray.h>
 #include <TString.h>
-#include <TFile.h>
 
 AliHLTEMCALDigitsMonitorComponent::AliHLTEMCALDigitsMonitorComponent()
   : AliHLTCaloProcessor(), fLocalEventCount(0), fHistoResetOnPush(kTRUE), fDigitsMonitor(NULL), fGeometry(NULL)
@@ -112,19 +110,19 @@ int AliHLTEMCALDigitsMonitorComponent::DoEvent(const AliHLTComponentEventData& e
 
 void AliHLTEMCALDigitsMonitorComponent::PushHistograms(TCollection* list)
 {
-  printf("Collection has %d histograms\n", list->GetEntries());
+  HLTDebug("Collection has %d histograms", list->GetEntries());
   TIter next(list);
 
   TH1* histo = 0;
   while ((histo = static_cast<TH1*>(next()))) {
     if (histo->GetEntries() > 0) {
-      printf("Pushing histogram %s\n", histo->GetName());
+      HLTDebug("Pushing histogram %s", histo->GetName());
       Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL, 0);
       if (fHistoResetOnPush && nbytes > 0) {
         histo->Reset();
       }
     } else {
-      printf("Not pushing histogram %s, because it has 0 entries\n", histo->GetName());
+      HLTDebug("Not pushing histogram %s, because it has 0 entries", histo->GetName());
     }
   }
 }

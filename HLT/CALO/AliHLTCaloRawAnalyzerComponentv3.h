@@ -187,6 +187,9 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
       
   /** Should we push all raw data (using the raw data writer) */
   Bool_t fDoPushRawData; //COMMENT 
+
+  /** Switch on L1 phase subtraction */ 
+  Bool_t fDoL1PhaseSubtraction;                         // COMMENT             
   
   class RawDataWriter  
   {

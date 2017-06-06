@@ -1,4 +1,3 @@
-// clang-format off
 /**************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
  * All rights reserved.                                                               *
@@ -25,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
-// clang-format on
 #ifndef AliHLTEMCALDIGITSMONITOR_H
 #define AliHLTEMCALDIGITSMONITOR_H
 
