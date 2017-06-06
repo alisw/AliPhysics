@@ -890,20 +890,26 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    char paliphysics[1000];
    char pprodname[1000];
    char panchprodname[1000];
+   char prunlist[50000];
 
    treeMC->GetBranch("aliphysics")->SetAddress(&paliphysics);       //set branch addresses
    treeMC->GetBranch("aliroot")->SetAddress(&paliroot);
    treeMC->GetBranch("prodName")->SetAddress(&pprodname);
    treeMC->GetBranch("anchorProdTag")->SetAddress(&panchprodname);
+   treeMC->GetBranch("runList")->SetAddress(&prunlist);
 
    TObjString saliroot;             //variables from dumptree
    TObjString saliphysics;
    TObjString sprodname;
    TObjString sMCanchprodname; 
+   Int_t first=-1;
+   Int_t last=-1;
 
+   TString sfirst;
+   TString slast;
    TString sanprod;
    TObjArray *subStrL;
-   const char * temparr;
+//   const char * temparr;
    
    outfile->cd();
    dumptree = new TTree("dumptree_MC","dumptree_MC");
@@ -912,6 +918,8 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    dumptree->Branch("aliphysics",&saliphysics);
    dumptree->Branch("prodName",&sprodname);
    dumptree->Branch("anchorProdTag",&sMCanchprodname);
+   dumptree->Branch("First_Run",&first);
+   dumptree->Branch("Last_Run",&last);
 
    Int_t entries=treeMC->GetEntries();  
    for (Int_t i=0; i<entries; i++){             //loop overall MC production
@@ -921,13 +929,28 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
      subStrL = TPRegexp("[A-Za-z0-9]*").MatchS(sanprod);
      sanprod = ((TObjString *)subStrL->At(0))->GetString(); 
      delete subStrL; 
-     temparr=sanprod.Data();
 
+     if(TString::Format("%s",prunlist).Length()!=0){        //extract first run number
+        subStrL = TPRegexp("^[^ ,]+").MatchS(TString::Format("%s",prunlist));
+        sfirst = ((TObjString *)subStrL->At(0))->GetString();
+        delete subStrL;
+     }
+     else sfirst=TString("-1");
+
+     if(TString::Format("%s",prunlist).Length()!=0){        //extract last run number
+        subStrL = TPRegexp("[^ ,]+$").MatchS(TString::Format("%s",prunlist));
+        slast = ((TObjString *)subStrL->At(0))->GetString();
+        delete subStrL;
+     }
+     else slast=TString("-1");
+     
      saliroot = TObjString(paliroot);
      saliphysics = TObjString(paliphysics);
      sprodname = TObjString(pprodname); 
-     sMCanchprodname = TObjString(temparr);
-
+     sMCanchprodname = TObjString(sanprod);
+     first=sfirst.Atoi();
+     last=slast.Atoi();
+          
      dumptree->Fill();
    }
    
