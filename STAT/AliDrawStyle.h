@@ -28,10 +28,12 @@
 #include "TString.h"
 class TPRegexp;
 class TStyle;
+class TPad;
 
 class AliDrawStyle : public TObject{
 public:
   static void ApplyStyle(const char* styleName);
+  static const TStyle *GetStyle(const char * styleName) {return fStyleAlice[styleName];}
   static void SetDefaults();
   static TString GetLatexAlice(const char * symbol);
   static void AddLatexSymbol(const char * symbolName, const char * symbolTitle);
