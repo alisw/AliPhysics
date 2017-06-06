@@ -77,8 +77,10 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fHistoSignifTrialAll(0x0),
   fHistoBkgTrialAll(0x0),
   fHistoBkgInBinEdgesTrialAll(0x0),
-  fHistoRawYieldDistBinCAll(0x0),
-  fHistoRawYieldTrialBinCAll(0x0),
+  fHistoRawYieldDistBinC0All(0x0),
+  fHistoRawYieldTrialBinC0All(0x0),
+  fHistoRawYieldDistBinC1All(0x0),
+  fHistoRawYieldTrialBinC1All(0x0),
   fHistoRawYieldDist(0x0),
   fHistoRawYieldTrial(0x0),
   fHistoSigmaTrial(0x0),
@@ -87,10 +89,13 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fHistoSignifTrial(0x0),
   fHistoBkgTrial(0x0),
   fHistoBkgInBinEdgesTrial(0x0),
-  fHistoRawYieldDistBinC(0x0),
-  fHistoRawYieldTrialBinC(0x0),
+  fHistoRawYieldDistBinC0(0x0),
+  fHistoRawYieldTrialBinC0(0x0),
+  fHistoRawYieldDistBinC1(0x0),
+  fHistoRawYieldTrialBinC1(0x0),
   fhTemplRefl(0x0),
-  fFixRefloS(0),
+  fhTemplSign(0x0),
+  fFixRefloS(1.),
   fNtupleMultiTrials(0x0),
   fMinYieldGlob(0),
   fMaxYieldGlob(0),
@@ -114,6 +119,7 @@ AliHFInvMassMultiTrialFit::~AliHFInvMassMultiTrialFit(){
   delete [] fLowLimFitSteps;
   delete [] fUpLimFitSteps;
   if(fhTemplRefl) delete fhTemplRefl;
+  if(fhTemplSign) delete fhTemplSign;
   for (auto fitter : fMassFitters) delete fitter;
 }
 
@@ -140,8 +146,10 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
   }
 
 
-  fHistoRawYieldDistBinCAll = new TH1F(Form("hRawYieldDistBinCAll%s",fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
-  fHistoRawYieldTrialBinCAll = new TH2F(Form("hRawYieldTrialBinCAll%s",fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
+  fHistoRawYieldDistBinC0All = new TH1F(Form("hRawYieldDistBinC0All%s",fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
+  fHistoRawYieldTrialBinC0All = new TH2F(Form("hRawYieldTrialBinC0All%s",fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
+  fHistoRawYieldDistBinC1All = new TH1F(Form("hRawYieldDistBinC1All%s",fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
+  fHistoRawYieldTrialBinC1All = new TH2F(Form("hRawYieldTrialBinC1All%s",fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
 
   fHistoRawYieldDist = new TH1F*[nCases];
   fHistoRawYieldTrial = new TH1F*[nCases];
@@ -154,16 +162,20 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
     fHistoBkgInBinEdgesTrial = new TH1F*[nCases];
   }
 
-  fHistoRawYieldDistBinC = new TH1F*[nCases];
-  fHistoRawYieldTrialBinC = new TH2F*[nCases];
+  fHistoRawYieldDistBinC0 = new TH1F*[nCases];
+  fHistoRawYieldTrialBinC0 = new TH2F*[nCases];
+  fHistoRawYieldDistBinC1 = new TH1F*[nCases];
+  fHistoRawYieldTrialBinC1 = new TH2F*[nCases];
 
   for(Int_t ib=0; ib<kNBkgFuncCases; ib++){
     for(Int_t igs=0; igs<kNFitConfCases; igs++){
       Int_t theCase=igs*kNBkgFuncCases+ib;
       fHistoRawYieldDist[theCase]=new TH1F(Form("hRawYieldDist%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Raw Yield",5000,0.,50000.);
-      fHistoRawYieldDistBinC[theCase]=new TH1F(Form("hRawYieldDistBinC%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
+      fHistoRawYieldDistBinC0[theCase]=new TH1F(Form("hRawYieldDistBinC0%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
+      fHistoRawYieldDistBinC1[theCase]=new TH1F(Form("hRawYieldDistBinC1%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
       fHistoRawYieldTrial[theCase]=new TH1F(Form("hRawYieldTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Raw Yield",totTrials,-0.5,totTrials-0.5);
-      fHistoRawYieldTrialBinC[theCase]=new TH2F(Form("hRawYieldTrialBinC%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
+      fHistoRawYieldTrialBinC0[theCase]=new TH2F(Form("hRawYieldTrialBinC0%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
+      fHistoRawYieldTrialBinC1[theCase]=new TH2F(Form("hRawYieldTrialBinC1%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
       fHistoSigmaTrial[theCase]=new TH1F(Form("hSigmaTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Sigma (GeV/c^{2})",totTrials,-0.5,totTrials-0.5);
       fHistoMeanTrial[theCase]=new TH1F(Form("hMeanTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Mean (GeV/c^{2})",totTrials,-0.5,totTrials-0.5);
       fHistoChi2Trial[theCase]=new TH1F(Form("hChi2Trial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; #chi^{2}",totTrials,-0.5,totTrials-0.5);
@@ -258,10 +270,11 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		if(typeb==kPol5Bkg) fitter->SetPolDegreeForBackgroundFit(5);
 	      }
               // D0 Reflection
-              if(fhTemplRefl){  
+              if(fhTemplRefl && fhTemplSign){
 		TH1F* hrfl=fitter->SetTemplateReflections(fhTemplRefl,"2gaus",minMassForFit,maxMassForFit);
-		if(hrfl){
-		  fitter->SetFixReflOverS(fFixRefloS);
+		if(fFixRefloS>0){
+		  Double_t fixSoverRefAt=fFixRefloS*(fhTemplRefl->Integral(fhTemplRefl->FindBin(minMassForFit*1.0001),fhTemplRefl->FindBin(maxMassForFit*0.999))/fhTemplSign->Integral(fhTemplSign->FindBin(minMassForFit*1.0001),fhTemplSign->FindBin(maxMassForFit*0.999)));
+		  fitter->SetFixReflOverS(fixSoverRefAt);
 		}
               }
 	      if(fUseSecondPeak){
@@ -418,15 +431,23 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                       maxMassBC<maxMassForFit &&
                       minMassBC>(hRebinned->GetXaxis()->GetXmin()) &&
                       maxMassBC<(hRebinned->GetXaxis()->GetXmax())){
-                    Double_t cnts,ecnts;
-                    BinCount(hRebinned,fB1,1,minMassBC,maxMassBC,cnts,ecnts);
+                    Double_t cnts0,ecnts0;
+                    Double_t cnts1,ecnts1;
+		    cnts0=fitter->GetRawYieldBinCounting(ecnts0,minMassBC,maxMassBC,0);
+		    cnts1=fitter->GetRawYieldBinCounting(ecnts1,minMassBC,maxMassBC,1);
                     ++itrialBC;
-                    fHistoRawYieldDistBinCAll->Fill(cnts);
-                    fHistoRawYieldTrialBinCAll->SetBinContent(globBin,iStepBC+1,cnts);
-                    fHistoRawYieldTrialBinCAll->SetBinError(globBin,iStepBC+1,ecnts);
-                    fHistoRawYieldTrialBinC[theCase]->SetBinContent(itrial,iStepBC+1,cnts);
-                    fHistoRawYieldTrialBinC[theCase]->SetBinError(itrial,iStepBC+1,ecnts);
-                    fHistoRawYieldDistBinC[theCase]->Fill(cnts);
+                    fHistoRawYieldDistBinC0All->Fill(cnts0);
+                    fHistoRawYieldTrialBinC0All->SetBinContent(globBin,iStepBC+1,cnts0);
+                    fHistoRawYieldTrialBinC0All->SetBinError(globBin,iStepBC+1,ecnts0);
+                    fHistoRawYieldTrialBinC0[theCase]->SetBinContent(itrial,iStepBC+1,cnts0);
+                    fHistoRawYieldTrialBinC0[theCase]->SetBinError(itrial,iStepBC+1,ecnts0);
+                    fHistoRawYieldDistBinC0[theCase]->Fill(cnts0);
+                    fHistoRawYieldDistBinC1All->Fill(cnts1);
+                    fHistoRawYieldTrialBinC1All->SetBinContent(globBin,iStepBC+1,cnts1);
+                    fHistoRawYieldTrialBinC1All->SetBinError(globBin,iStepBC+1,ecnts1);
+                    fHistoRawYieldTrialBinC1[theCase]->SetBinContent(itrial,iStepBC+1,cnts1);
+                    fHistoRawYieldTrialBinC1[theCase]->SetBinError(itrial,iStepBC+1,ecnts1);
+                    fHistoRawYieldDistBinC1[theCase]->Fill(cnts1);
                   }
                 }
               }
@@ -457,24 +478,28 @@ void AliHFInvMassMultiTrialFit::SaveToRoot(TString fileName, TString option) con
   fHistoMeanTrialAll->Write();
   fHistoChi2TrialAll->Write();
   fHistoSignifTrialAll->Write();
-  if(fSaveBkgVal) {  
-    fHistoBkgTrialAll->Write(); 
-    fHistoBkgInBinEdgesTrialAll->Write(); 
+  if(fSaveBkgVal) {
+    fHistoBkgTrialAll->Write();
+    fHistoBkgInBinEdgesTrialAll->Write();
   }
-  fHistoRawYieldDistBinCAll->Write(); 
-  fHistoRawYieldTrialBinCAll->Write(); 
+  fHistoRawYieldDistBinC0All->Write();
+  fHistoRawYieldTrialBinC0All->Write();
+  fHistoRawYieldDistBinC1All->Write();
+  fHistoRawYieldTrialBinC1All->Write();
   for(Int_t ic=0; ic<nCases; ic++){
     fHistoRawYieldTrial[ic]->Write();
-    fHistoSigmaTrial[ic]->Write();    
-    fHistoMeanTrial[ic]->Write();    
-    fHistoChi2Trial[ic]->Write();    
-    fHistoSignifTrial[ic]->Write();    
-    if(fSaveBkgVal) {  
-      fHistoBkgTrial[ic]->Write(); 
-      fHistoBkgInBinEdgesTrial[ic]->Write(); 
+    fHistoSigmaTrial[ic]->Write();
+    fHistoMeanTrial[ic]->Write();
+    fHistoChi2Trial[ic]->Write();
+    fHistoSignifTrial[ic]->Write();
+    if(fSaveBkgVal) {
+      fHistoBkgTrial[ic]->Write();
+      fHistoBkgInBinEdgesTrial[ic]->Write();
     }
-    fHistoRawYieldTrialBinC[ic]->Write();
-    fHistoRawYieldDistBinC[ic]->Write();
+    fHistoRawYieldTrialBinC0[ic]->Write();
+    fHistoRawYieldDistBinC0[ic]->Write();
+    fHistoRawYieldTrialBinC1[ic]->Write();
+    fHistoRawYieldDistBinC1[ic]->Write();
   }
   fNtupleMultiTrials->SetDirectory(&outHistos);
   fNtupleMultiTrials->Write();
@@ -554,21 +579,6 @@ TH1F* AliHFInvMassMultiTrialFit::RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstU
 }
 
 //________________________________________________________________________
-void AliHFInvMassMultiTrialFit::BinCount(TH1F* h, TF1* fB, Int_t rebin, Double_t minMass, Double_t maxMass, Double_t& count, Double_t& ecount) const{
-  // compute yield with bin couting
-  Int_t minBinSum=h->FindBin(minMass);
-  Int_t maxBinSum=h->FindBin(maxMass);
-  Double_t cntSig=0.;
-  Double_t cntErr=0.;
-  for(Int_t iMB=minBinSum; iMB<=maxBinSum; iMB++){
-    Double_t bkg=fB ? fB->Eval(h->GetBinCenter(iMB))/(Double_t)rebin : 0;
-    cntSig+=(h->GetBinContent(iMB)-bkg);
-    cntErr+=(h->GetBinError(iMB)*h->GetBinError(iMB));
-  }
-  count=cntSig;
-  ecount=TMath::Sqrt(cntErr);
-}
-//________________________________________________________________________
 Bool_t AliHFInvMassMultiTrialFit::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax, 
     Int_t iCase){
   //
@@ -617,8 +627,12 @@ Bool_t AliHFInvMassMultiTrialFit::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  h
   return kTRUE;
 }
 //__________________________________________________________________________________
-TH1F* AliHFInvMassMultiTrialFit::SetTemplateRefl(const TH1F *h) {
-  fhTemplRefl=(TH1F*)h->Clone("hTemplRefl");
-  return fhTemplRefl;
+void AliHFInvMassMultiTrialFit::SetTemplatesForReflections(const TH1F *hr, const TH1F *hs) {
+  /// signal and reflection templates
+  if(fhTemplSign) delete fhTemplSign;
+  if(fhTemplRefl) delete fhTemplRefl;
+  fhTemplRefl=(TH1F*)hr->Clone("hTemplRefl");
+  fhTemplSign=(TH1F*)hs->Clone("hTemplSign");
+  return;
 }
 
