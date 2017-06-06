@@ -1167,6 +1167,11 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             fCRCQVecHarCosProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Cos((h+1.)*dPhi),wPhiEta);
             fCRCQVecHarSinProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Sin((h+1.)*dPhi),wPhiEta);
           }
+          Double_t FillCw = (fbFlagIsPosMagField==kTRUE?(cw==0?0.5:1.5):(cw==0?2.5:3.5));
+          if(fCentralityEBE>5. && fCentralityEBE<40.) {
+            fCRCQVecPtHistMagField->Fill(dPt,FillCw,wPhiEta);
+          }
+          
           // run-by-run
 //          fCRCQVecPhiRbRHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
 //          fCRCQVecPhiRbRHistCh[fRunBin][cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
@@ -16594,6 +16599,7 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
 //  fCRCZDCQVecResvsEAsym = NULL;
 //  fCRCZDCQVecResvsETot = NULL;
 //  fCRCZDCQVecResvsESum = NULL;
+  fCRCQVecPtHistMagField = NULL;
   fCRCQVecPhiHist = NULL;
   for(Int_t h=0;h<2;h++) {
     fCRCQVecPhiHistCh[h] = NULL;
@@ -16909,6 +16915,9 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowSPZDC()
         fFlowSPZDCv1etaHist[h][k][j] = NULL;
         fFlowSPZDCv1etaNUAPro[h][k][j] = NULL;
       }
+    }
+    for(Int_t j=0; j<fkNHistv1eta; j++) {
+      fFlowSPZDCv1etaProImag[h][j] = NULL;
     }
     for (Int_t k=0; k<fkNHistv1etaPt; k++) {
       fFlowSPZDCv1etaPtPro[h][k] = NULL;
@@ -19479,16 +19488,36 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
   Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
   
-  Bool_t pass2=kTRUE;
-  if(fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]) {
-    if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
-    if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
-    if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
+  if(fZDCQVecVtxCenEZDC3D[0][0][0]) {
+    Bool_t pass2=kTRUE;
+    // exclude events with vtx outside of range
+    if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
+    if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
+    if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
+    // exclude events with EZDC outside of range
+    Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
+    Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
+    if(EZDCCBin<=0 || EZDCCBin>=10 || EZDCABin<=0 || EZDCABin>=10) pass2 = kFALSE;
     if(pass2) {
-      QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-      QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-      QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-      QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+      // check if possible to interpolate
+      Bool_t bInterp = kTRUE;
+      Int_t bx = fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->FindBin(fVtxPosCor[0]);
+      Int_t by = fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->FindBin(fVtxPosCor[1]);
+      Int_t bz = fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->FindBin(fVtxPosCor[2]);
+      if(bx==1 || bx==fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetNbins()) bInterp = kFALSE;
+      if(by==1 || by==fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetNbins()) bInterp = kFALSE;
+      if(bz==1 || bz==fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetNbins()) bInterp = kFALSE;
+      if(bInterp) {
+        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+      } else {
+        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->GetBinContent(bx,by,bz);
+        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->GetBinContent(bx,by,bz);
+        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->GetBinContent(bx,by,bz);
+        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->GetBinContent(bx,by,bz);
+      }
     } else {
       QCReR = 0.; QCImR = 0.; QAReR = 0.; QAImR = 0.; QMC=0.; QMA=0.;
       fZDCFlowVect[0].Set(QCReR,QCImR);
@@ -21200,6 +21229,7 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
       fFlowSPZDCv1etaCovPro[fCenBin][11]->Fill(etab,(QetPRe*ZetCRe+QetPIm*ZetCIm)*(QetNRe*ZetARe+QetNIm*ZetAIm),QetPM*QetNM*fCenWeightEbE);
       fFlowSPZDCv1etaCovPro[fCenBin][12]->Fill(etab,(QetPRe*ZetCRe+QetPIm*ZetCIm)*(QetNRe*ZetCRe+QetNIm*ZetCIm),QetPM*QetNM*fCenWeightEbE);
       
+      // store separately positive and negative magnet polarity
       if(fbFlagIsPosMagField) {
         fFlowSPZDCv1etaPro[fCenBin][2][0]->Fill(etab,QetRe*ZetARe+QetIm*ZetAIm,QetM*fCenWeightEbE);
         fFlowSPZDCv1etaPro[fCenBin][2][1]->Fill(etab,QetRe*ZetCRe+QetIm*ZetCIm,QetM*fCenWeightEbE);
@@ -21217,6 +21247,20 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
         fFlowSPZDCv1etaPro[fCenBin][2][12]->Fill(etab,QetNRe*ZetARe+QetNIm*ZetAIm,QetNM*fCenWeightEbE);
         fFlowSPZDCv1etaPro[fCenBin][2][13]->Fill(etab,QetNRe*ZetCRe+QetNIm*ZetCIm,QetNM*fCenWeightEbE);
       }
+      
+      // sine terms: sin(\phi - \Psi_{A,C})
+      fFlowSPZDCv1etaProImag[fCenBin][0]->Fill(etab,QetIm*ZetARe,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][1]->Fill(etab,QetRe*ZetAIm,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][2]->Fill(etab,QetIm*ZetCRe,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][3]->Fill(etab,QetRe*ZetCIm,QetM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][4]->Fill(etab,QetPIm*ZetARe,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][5]->Fill(etab,QetPRe*ZetAIm,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][6]->Fill(etab,QetPIm*ZetCRe,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][7]->Fill(etab,QetPRe*ZetCIm,QetPM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][8]->Fill(etab,QetNIm*ZetARe,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][9]->Fill(etab,QetNRe*ZetAIm,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][10]->Fill(etab,QetNIm*ZetCRe,QetNM*fCenWeightEbE);
+      fFlowSPZDCv1etaProImag[fCenBin][11]->Fill(etab,QetNRe*ZetCIm,QetNM*fCenWeightEbE);
       
       // test run-by-run
       if(fCentralityEBE>5. && fCentralityEBE<40.) {
@@ -30110,6 +30154,14 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     //    fCRCQVecList->Add(fCRCZDCResCenEn);
   }
   
+  Double_t dummybins[] = {0.,1.,2.,3.,4.};
+  fCRCQVecPtHistMagField = new TH2D("fCRCQVecPtHistMagField","fCRCQVecPtHistMagField",fPtDiffNBins,fCRCPtBins,4,dummybins);
+  fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(1,"pol+;ch+");
+  fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(2,"pol+;ch-");
+  fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(3,"pol-;ch+");
+  fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(4,"pol-;ch-");
+  fCRCQVecList->Add(fCRCQVecPtHistMagField);
+  
   Double_t phibinsforphihist[101] = {0.};
   for (Int_t phib=0; phib<101; phib++) {
     phibinsforphihist[phib] = phib*TMath::TwoPi()/100.;
@@ -30760,6 +30812,9 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
         fFlowSPZDCv1etaNUAPro[h][k][j]->Sumw2();
         fFlowSPZDCList->Add(fFlowSPZDCv1etaNUAPro[h][k][j]);
       }
+    }
+    for(Int_t j=0; j<fkNHistv1eta; j++) {
+      fFlowSPZDCv1etaProImag[h][j] = new TProfile(Form("fFlowSPZDCv1etaProImag[%d][%d]",h,j),Form("fFlowSPZDCv1etaProImag[%d][%d]",h,j),fkEtaDiffNBins,fCRCEtaMin,fCRCEtaMax);
     }
     Double_t etabinsf[] = {-0.8,-0.48,-0.16,0.16,0.48,0.8};
     Double_t ZDCptbins[] = {0.2,0.5,1.,50.};
