@@ -1540,7 +1540,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
     graph->GetPoint(ipt,xpt,ypt);
     Double_t diff = ypt - func->Eval(xpt);
     Double_t err = ( diff > 0. ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
-    if ( err < 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
+    if ( err <= 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
     outliers->RemovePoint(ipt-nremoved);
     nremoved++;
 //    outliers->SetPoint(iopt,xpt,ypt);
