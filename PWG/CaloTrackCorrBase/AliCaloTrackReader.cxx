@@ -636,11 +636,21 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
   
   if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
   {
-    TParticle * jet =  0;
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    
+    // Do this check only for gamma-jet or jet-jet productions
+    Int_t process =  pygeh->ProcessType();
+    //printf("Process %d \n", process);
+    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 && // prompt gamma 
+         process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
+         process != 68 && process != 96  // jet-jet
+       ) return kTRUE ;
+    //printf("\t yes \n");
+    
     Int_t nTriggerJets =  pygeh->NTriggerJets();
     Float_t ptHard = pygeh->GetPtHard();
-    
+    TParticle * jet =  0;
+
     AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, ptHard));
     
     Float_t tmpjet[]={0,0,0,0};
@@ -654,8 +664,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
       //Compare jet pT and pt Hard
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-                     ptHard, jet->Pt(), fPtHardAndJetPtFactor));
+        AliInfo(Form("Reject jet event with : process %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+                     process, ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
     }
@@ -683,6 +693,16 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
   if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
   {
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    
+    // Do this check only for gamma-jet productions
+    Int_t process =  pygeh->ProcessType();
+    //printf("Process %d \n", process);
+    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 // && // prompt gamma 
+        //process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
+        //process != 68 && process != 96  // jet-jet
+       ) return kTRUE ;
+    //printf("\t yes \n");
+    
     Float_t ptHard = pygeh->GetPtHard();
     
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
@@ -693,7 +713,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
       
       if(ecluster > fPtHardAndClusterPtFactor*ptHard)
       {
-        AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
+        AliInfo(Form("Reject : process %d, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                     process, ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
         
         return kFALSE;
       }
@@ -1046,8 +1067,8 @@ void AliCaloTrackReader::InitParameters()
   
   fNMixedEvent = 1;
   
-  fPtHardAndJetPtFactor     = 7.;
-  fPtHardAndClusterPtFactor = 1.;
+  fPtHardAndJetPtFactor     = 4. ;
+  fPtHardAndClusterPtFactor = 1.5;
   
   //Centrality
   fUseAliCentrality = kFALSE;
