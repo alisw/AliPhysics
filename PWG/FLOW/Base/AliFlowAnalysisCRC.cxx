@@ -30815,6 +30815,8 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
     }
     for(Int_t j=0; j<fkNHistv1eta; j++) {
       fFlowSPZDCv1etaProImag[h][j] = new TProfile(Form("fFlowSPZDCv1etaProImag[%d][%d]",h,j),Form("fFlowSPZDCv1etaProImag[%d][%d]",h,j),fkEtaDiffNBins,fCRCEtaMin,fCRCEtaMax);
+      fFlowSPZDCv1etaProImag[h][j]->Sumw2();
+      fFlowSPZDCList->Add(fFlowSPZDCv1etaProImag[h][j]);
     }
     Double_t etabinsf[] = {-0.8,-0.48,-0.16,0.16,0.48,0.8};
     Double_t ZDCptbins[] = {0.2,0.5,1.,50.};
