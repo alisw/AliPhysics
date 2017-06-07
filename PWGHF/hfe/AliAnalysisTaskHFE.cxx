@@ -908,7 +908,7 @@ void AliAnalysisTaskHFE::ProcessMC(){
                 }
                 fMCQA->Init();
                 
-                fMCQA->GetMesonKine();
+                //fMCQA->GetMesonKine();
                 
                 // loop over all tracks for decayed electrons
                 AliAODMCParticle * mcpart;
