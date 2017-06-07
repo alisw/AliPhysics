@@ -29,6 +29,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   fSpecialPDG(0),
   fRejectedOrigin(0),
   fAcceptedDecay(0),
+  fRejectISR(kFALSE),
   fHistOrigin(0)
 {
   // Constructor.
@@ -42,6 +43,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   fSpecialPDG(0),
   fRejectedOrigin(AliAnalysisTaskDmesonJets::kUnknownQuark | AliAnalysisTaskDmesonJets::kFromBottom),
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay),
+  fRejectISR(kFALSE),
   fHistOrigin(0)
 {
   // Constructor.
@@ -162,6 +164,12 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, T
   if (partPdgCode != fSpecialPDG) return kFALSE;
 
   if (!part->IsPrimary()) return kFALSE;
+
+  if (fRejectISR) {
+    // proton has PDG code 2212
+    auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray, AliAnalysisTaskDmesonJets::AnalysisEngine::kParticlePDG, 2212);
+    if (origin.second && TMath::Abs(origin.second->GetPdgCode()) == 2212) return kFALSE;
+  }
 
   auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
 
