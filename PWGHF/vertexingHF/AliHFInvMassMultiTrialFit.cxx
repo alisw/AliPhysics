@@ -24,6 +24,7 @@
 #include <TFile.h>
 #include "AliHFInvMassFitter.h"
 #include "AliHFInvMassMultiTrialFit.h"
+#include "AliVertexingHFUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFInvMassMultiTrialFit);
@@ -222,8 +223,8 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
     Int_t rebin=fRebinSteps[ir];
     for(Int_t iFirstBin=1; iFirstBin<=fNumOfFirstBinSteps; iFirstBin++) {
       TH1F* hRebinned=0x0;
-      if(fNumOfFirstBinSteps==1) hRebinned=RebinHisto(hInvMassHisto,rebin,-1);
-      else hRebinned=RebinHisto(hInvMassHisto,rebin,iFirstBin);
+      if(fNumOfFirstBinSteps==1) hRebinned=(TH1F*)AliVertexingHFUtils::RebinHisto(hInvMassHisto,rebin,-1);
+      else hRebinned=(TH1F*)AliVertexingHFUtils::RebinHisto(hInvMassHisto,rebin,iFirstBin);
       for(Int_t iMinMass=0; iMinMass<fNumOfLowLimFitSteps; iMinMass++){
         Double_t minMassForFit=fLowLimFitSteps[iMinMass];
         Double_t hmin=TMath::Max(minMassForFit,hRebinned->GetBinLowEdge(2));
@@ -271,11 +272,15 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 	      }
               // D0 Reflection
               if(fhTemplRefl && fhTemplSign){
-		TH1F* hrfl=fitter->SetTemplateReflections(fhTemplRefl,"2gaus",minMassForFit,maxMassForFit);
+		TH1F *hReflModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(fhTemplRefl,hRebinned,minMassForFit,maxMassForFit);
+		TH1F *hSigModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(fhTemplSign,hRebinned,minMassForFit,maxMassForFit);
+		TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,"2gaus",minMassForFit,maxMassForFit);
 		if(fFixRefloS>0){
-		  Double_t fixSoverRefAt=fFixRefloS*(fhTemplRefl->Integral(fhTemplRefl->FindBin(minMassForFit*1.0001),fhTemplRefl->FindBin(maxMassForFit*0.999))/fhTemplSign->Integral(fhTemplSign->FindBin(minMassForFit*1.0001),fhTemplSign->FindBin(maxMassForFit*0.999)));
+		  Double_t fixSoverRefAt=fFixRefloS*(hReflModif->Integral(hReflModif->FindBin(minMassForFit*1.0001),hReflModif->FindBin(maxMassForFit*0.999))/hSigModif->Integral(hSigModif->FindBin(minMassForFit*1.0001),hSigModif->FindBin(maxMassForFit*0.999)));
 		  fitter->SetFixReflOverS(fixSoverRefAt);
 		}
+		delete hReflModif;
+		delete hSigModif;
               }
 	      if(fUseSecondPeak){
 		fitter->IncludeSecondGausPeak(fMassSecondPeak, fFixMassSecondPeak, fSigmaSecondPeak, fFixSigmaSecondPeak);
@@ -535,49 +540,6 @@ void AliHFInvMassMultiTrialFit::DrawHistos(TCanvas* cry) const{
   trms->Draw();
 
 }
-//________________________________________________________________________
-TH1F* AliHFInvMassMultiTrialFit::RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstUse) const{
-  // Rebin histogram, from bin firstUse to lastUse
-  // Use all bins if firstUse=-1
-
-  Int_t nBinOrig=hOrig->GetNbinsX();
-  Int_t firstBinOrig=1;
-  Int_t lastBinOrig=nBinOrig;
-  Int_t nBinOrigUsed=nBinOrig;
-  Int_t nBinFinal=nBinOrig/reb;
-  if(firstUse>=1){ 
-    firstBinOrig=firstUse;
-    nBinFinal=(nBinOrig-firstUse+1)/reb;
-    nBinOrigUsed=nBinFinal*reb;
-    lastBinOrig=firstBinOrig+nBinOrigUsed-1;
-  }else{
-    Int_t exc=nBinOrigUsed%reb;
-    if(exc!=0){
-      nBinOrigUsed-=exc;
-      firstBinOrig+=exc/2;
-      lastBinOrig=firstBinOrig+nBinOrigUsed-1;
-    }
-  }
-
-  printf("Rebin from %d bins to %d bins -- Used bins=%d in range %d-%d\n",nBinOrig,nBinFinal,nBinOrigUsed,firstBinOrig,lastBinOrig);
-  Float_t lowLim=hOrig->GetXaxis()->GetBinLowEdge(firstBinOrig);
-  Float_t hiLim=hOrig->GetXaxis()->GetBinUpEdge(lastBinOrig);
-  TH1F* hRebin=new TH1F(Form("%s-rebin%d_%d",hOrig->GetName(),reb,firstUse),hOrig->GetTitle(),nBinFinal,lowLim,hiLim);
-  Int_t lastSummed=firstBinOrig-1;
-  for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
-    Float_t sum=0.;
-    Float_t sum2=0.;
-    for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
-      sum+=hOrig->GetBinContent(lastSummed+1);
-      sum2+=hOrig->GetBinError(lastSummed+1)*hOrig->GetBinError(lastSummed+1);
-      lastSummed++;
-    }
-    hRebin->SetBinContent(iBin,sum);
-    hRebin->SetBinError(iBin,TMath::Sqrt(sum2));
-  }
-  return hRebin;
-}
-
 //________________________________________________________________________
 Bool_t AliHFInvMassMultiTrialFit::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax, 
     Int_t iCase){
