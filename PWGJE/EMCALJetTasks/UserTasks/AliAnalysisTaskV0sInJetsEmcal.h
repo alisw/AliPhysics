@@ -247,6 +247,8 @@ private:
   TH1D* fh1QAV0TPCRefit[fgkiNQAIndeces]; //! TPC refit on vs off
   TH1D* fh1QAV0TPCRows[fgkiNQAIndeces]; //! crossed TPC pad rows
   TH1D* fh1QAV0TPCFindable[fgkiNQAIndeces]; //! findable clusters
+  TH2D* fh2QAV0PtNCls[fgkiNQAIndeces]; //! pt vs TPC clusters
+  TH2D* fh2QAV0PtChi[fgkiNQAIndeces]; //! pt vs Chi2/ndf
   TH1D* fh1QAV0TPCRowsFind[fgkiNQAIndeces]; //! ratio rows/clusters
   TH1D* fh1QAV0Eta[fgkiNQAIndeces]; //! pseudorapidity
   TH2D* fh2QAV0EtaRows[fgkiNQAIndeces]; //! pseudorapidity vs TPC rows
@@ -462,7 +464,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 17) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 18) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
