@@ -20,6 +20,7 @@
 //          C. Bianchin, Utrecht University
 //          X. Zhang, LBNL
 //          S. Aiola, Yale University
+//	    B. Trzeciak, Utrecht University
 //-----------------------------------------------------------------------
 
 
@@ -28,6 +29,7 @@
 class TH2;
 class TString;
 class TClonesArray;
+class AliAODMCHeader;
 class AliRDHFCuts;
 class AliAODRecoCascadeHF;
 class AliAODRecoDecayHF2Prong;
@@ -58,7 +60,14 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   // set MC usage
   void   SetMC(Bool_t theMCon) { fUseMCInfo = theMCon ; }
   Bool_t GetMC() const         { return fUseMCInfo    ; }
+
+  // set MC RM or eff
+  void   SetBuildRMEff(Bool_t theRM)   { fBuildRMEff = theRM ; }
+  Bool_t GetBuildRMEff() const         { return fBuildRMEff    ; }
   
+  void   SetUsePythia(Bool_t theUsePythia) { fUsePythia = theUsePythia; }
+  Bool_t GetUsePythia() const { return fUsePythia; }
+
   // set usage of generated or reconstucted quantities (relevant for MC)
   void SetUseReco(Bool_t useReco=kTRUE)    { fUseReco = useReco           ; }
   Bool_t GetUseReco() const                { return fUseReco              ; }
@@ -99,18 +108,27 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   
   static Int_t CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
   static Int_t CheckDecayChannel(Int_t ipart, AliStack* stack); // ESD
+  
+  void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  void GetMCTrackPrimaryGenerator(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
+  Bool_t IsMCTrackInjected(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC);
+
 
  protected:
   void ExecOnce();
   void ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected);
   void ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t isSelected);
   void FillD0MCTruthKinHistos(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t isD0);
-  void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
+  void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t isSelected, Int_t isDstar);
   void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
   void AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks);
   void AddMCEventTracks(TClonesArray* coll, AliParticleContainer* mctracks);
+  
 
   Bool_t          fUseMCInfo;              //  Use MC info
+  Bool_t 	  fBuildRMEff;		   //  MC RM or efficiency studies
+  Bool_t 	  fUsePythia;		   //  Use Pythia info only for MC
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
   UInt_t          fCandidateType;          //  Dstar or D0
   TString         fCandidateName;          //  Dstar or D0
@@ -130,6 +148,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fRejectDfromB;           //  reject D mesons coming from a B meson decay (MC)
   Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;               //!
+  AliAODMCHeader *fMCHeader;		   //!
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
@@ -169,12 +188,13 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   TH2            *fHistDeltaRDpiR;         //!
   TH2            *fHistDeltaRDKR;          //!
 
+
  private:
   
   AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
   AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 6); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 7); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif
