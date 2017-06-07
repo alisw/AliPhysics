@@ -70,7 +70,8 @@ class AliIsolationCut : public TObject {
   void       CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,     Float_t   etaC, Float_t phiC,
                                                  Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
                                                  Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
-                                                 Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
+                                                 Float_t & excessFracEta,         Float_t & excessFracPhi,
+                                                 Bool_t fUERemoveBandSizes,       Float_t BandSizeToRemove) const ;
 
   void       CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
                                                  Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack,

@@ -65,7 +65,8 @@ fTrackVector()
 void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /*reader*/, Float_t   etaC, Float_t /*phiC*/,
                                                            Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
                                                            Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
-                                                           Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
+                                                           Float_t & excessFracEta,         Float_t & excessFracPhi,
+                                                           Bool_t fUERemoveBandSizes,       Float_t BandSizeToRemove) const
 {
   Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
 
@@ -79,23 +80,49 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
    if(((2*(fConeSize-excess)*emcEtaSize)-(coneA-excessFracPhi))*phiBandBadCellsCoeff!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*(fConeSize-excess)*emcEtaSize)-(coneA/excessFracPhi))*phiBandBadCellsCoeff));
    */
 
-  if((2*fConeSize*emcPhiSize-coneA)!=0) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
-  if((2*fConeSize*emcEtaSize-coneA)!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / (((2*fConeSize*emcEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
-
-  //out of eta acceptance
-  excessFracEta = 1;
-  excessFracPhi = 1;
-
-  if(TMath::Abs(etaC)+fConeSize > emcEtaSize/2.)
+  if(!fUERemoveBandSizes)
   {
-    Float_t excess = TMath::Abs(etaC) + fConeSize - emcEtaSize/2.;
-    excessFracEta  = CalculateExcessAreaFraction(excess);
-
-    if ( excessFracEta != 0) coneA /=  excessFracEta;
-
-    //UE band is also out of acceptance, need to estimate corrected area
-    if(((2*fConeSize-excess)*emcPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-coneA)));
-    if(( 2*fConeSize        *emcEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-coneA)));
+    if((2*fConeSize*emcPhiSize-coneA)!=0) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+    if((2*fConeSize*emcEtaSize-coneA)!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / (((2*fConeSize*emcEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
+    
+    //out of eta acceptance
+    excessFracEta = 1;
+    excessFracPhi = 1;
+    
+    if(TMath::Abs(etaC)+fConeSize > emcEtaSize/2.)
+    {
+      Float_t excess = TMath::Abs(etaC) + fConeSize - emcEtaSize/2.;
+      excessFracEta  = CalculateExcessAreaFraction(excess);
+      
+      if ( excessFracEta != 0) coneA /=  excessFracEta;
+      
+      //UE band is also out of acceptance, need to estimate corrected area
+      if(((2*fConeSize-excess)*emcPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-coneA)));
+      if(( 2*fConeSize        *emcEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-coneA)));
+    }
+  }
+  else
+  {
+    if((2*fConeSize*emcPhiSize-(2*fConeSize*2*BandSizeToRemove))!=0) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-(2*fConeSize*2*BandSizeToRemove)))); // pi * R^2 / (2 R * 2 100 deg) -  Band around trigger cone of 2*fConeSize large and 2*BandSizeToRemove height
+    if((2*fConeSize*emcEtaSize-(2*fConeSize*2*BandSizeToRemove))!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-(2*fConeSize*2*BandSizeToRemove)))); // pi * R^2 / (2 R * 2*0.7)  -  Band around trigger cone of 2*fConeSize large and 2*BandSizeToRemove height
+    
+    //out of eta acceptance
+    excessFracEta = 1;
+    excessFracPhi = 1;
+    
+    if(TMath::Abs(etaC)+fConeSize > emcEtaSize/2.)
+    {
+      Float_t excess = TMath::Abs(etaC) + fConeSize - emcEtaSize/2.;
+      excessFracEta  = CalculateExcessAreaFraction(excess);
+      
+      if ( excessFracEta != 0) coneA /=  excessFracEta;
+      
+      //UE band is also out of acceptance, need to estimate corrected area
+      if(((2*fConeSize-excess)*emcPhiSize-(2*fConeSize*2*BandSizeToRemove)) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-(2*fConeSize*2*BandSizeToRemove))));
+      if(( 2*fConeSize        *emcEtaSize-(2*fConeSize*2*BandSizeToRemove)) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-(2*fConeSize*2*BandSizeToRemove))));
+    }
+    
+    
   }
 }
 
@@ -105,7 +132,8 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
 void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,    Float_t   etaC, Float_t /*phiC*/,
                                                           Float_t   phiUEptsumTrack,      Float_t   etaUEptsumTrack,
                                                           Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
-                                                          Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
+                                                          Float_t & excessFracEta,        Float_t & excessFracPhi,
+                                                          Bool_t fUERemoveBandSizes,       Float_t BandSizeToRemove) const
 {
   Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
 
@@ -127,18 +155,37 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * r
   excessFracEta = 1;
   excessFracPhi = 1;
 
-  if((2*fConeSize*tpcPhiSize-coneA)!=0) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-  if((2*fConeSize*tpcEtaSize-coneA)!=0) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
-
-  if(TMath::Abs(etaC)+fConeSize > tpcEtaSize/2.)
+  if(!fUERemoveBandSizes)
   {
-    Float_t excess = TMath::Abs(etaC) + fConeSize - tpcEtaSize/2.;
-    excessFracEta  = CalculateExcessAreaFraction(excess);
-    if (excessFracEta != 0) coneA /=  excessFracEta;
-
-    //UE band is also out of acceptance, need to estimate corrected area
-    if(((2*fConeSize-excess)*tpcPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-coneA)));
-    if(( 2*fConeSize        *tpcEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-coneA)));
+    if((2*fConeSize*tpcPhiSize-coneA)!=0) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+    if((2*fConeSize*tpcEtaSize-coneA)!=0) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+    
+    if(TMath::Abs(etaC)+fConeSize > tpcEtaSize/2.)
+    {
+      Float_t excess = TMath::Abs(etaC) + fConeSize - tpcEtaSize/2.;
+      excessFracEta  = CalculateExcessAreaFraction(excess);
+      if (excessFracEta != 0) coneA /=  excessFracEta;
+      
+      //UE band is also out of acceptance, need to estimate corrected area
+      if(((2*fConeSize-excess)*tpcPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-coneA)));
+      if(( 2*fConeSize        *tpcEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-coneA)));
+    }
+  }
+  else
+  {
+    if((2*fConeSize*tpcPhiSize-(2*fConeSize*2*BandSizeToRemove))!=0) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-(2*fConeSize*2*BandSizeToRemove)))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+    if((2*fConeSize*tpcEtaSize-(2*fConeSize*2*BandSizeToRemove))!=0) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-(2*fConeSize*2*BandSizeToRemove)))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+    
+    if(TMath::Abs(etaC)+fConeSize > tpcEtaSize/2.)
+    {
+      Float_t excess = TMath::Abs(etaC) + fConeSize - tpcEtaSize/2.;
+      excessFracEta  = CalculateExcessAreaFraction(excess);
+      if (excessFracEta != 0) coneA /=  excessFracEta;
+      
+      //UE band is also out of acceptance, need to estimate corrected area
+      if(((2*fConeSize-excess)*tpcPhiSize - (2*fConeSize*2*BandSizeToRemove)) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-(2*fConeSize*2*BandSizeToRemove))));
+      if(( 2*fConeSize        *tpcEtaSize - (2*fConeSize*2*BandSizeToRemove)) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-(2*fConeSize*2*BandSizeToRemove))));
+    }
   }
 }
 

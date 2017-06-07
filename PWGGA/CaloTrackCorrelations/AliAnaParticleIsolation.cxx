@@ -54,6 +54,7 @@ AliAnaParticleIsolation::AliAnaParticleIsolation() :
 AliAnaCaloTrackCorrBaseClass(),
 fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
+fMakeSeveralUEEstimate(0),
 fFillTMHisto(0),                  fFillSSHisto(1),                          
 fFillEMCALRegionHistograms(0),    fFillUEBandSubtractHistograms(1), 
 fFillCellHistograms(0),
@@ -70,6 +71,7 @@ fFillPtTrigBinHistograms(0),      fNPtTrigBin(0),
 fMinCellsAngleOverlap(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0),
+fNUESizes(0),                     fUERemoveBandSizes(),
 fConeSizes(),                     fPtThresholds(),
 fPtFractions(),                   fSumPtThresholds(),
 fStudyPtCutInCone(0),             fNPtCutsInCone(0),                        
@@ -130,11 +132,13 @@ fhConeSumPtEtaUESubTrigEtaPhi(0),           fhConeSumPtPhiUESubTrigEtaPhi(0),
 fhConeSumPtEtaUESubTrackCell(0),            fhConeSumPtPhiUESubTrackCell(0),
 fhConeSumPtEtaUESubTrackCellTrigEtaPhi(0),  fhConeSumPtPhiUESubTrackCellTrigEtaPhi(0),
 fhConeSumPtEtaUENormCluster(0),             fhConeSumPtPhiUENormCluster(0),
+fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand(0),             fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand(0),
 fhConeSumPtEtaUESubCluster(0),              fhConeSumPtPhiUESubCluster(0),
 fhConeSumPtEtaUESubClusterTrigEtaPhi(0),    fhConeSumPtPhiUESubClusterTrigEtaPhi(0),
 fhConeSumPtEtaUESubCell(0),                 fhConeSumPtPhiUESubCell(0),
 fhConeSumPtEtaUESubCellTrigEtaPhi(0),       fhConeSumPtPhiUESubCellTrigEtaPhi(0),
 fhConeSumPtEtaUENormTrack(0),               fhConeSumPtPhiUENormTrack(0),
+fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand(0),               fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand(0),
 fhConeSumPtEtaUESubTrack(0),                fhConeSumPtPhiUESubTrack(0),
 fhConeSumPtEtaUESubTrackTrigEtaPhi(0),      fhConeSumPtPhiUESubTrackTrigEtaPhi(0),
 fhFractionTrackOutConeEta(0),               fhFractionTrackOutConeEtaTrigEtaPhi(0),
@@ -519,6 +523,75 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliAODPWG4ParticleCorrelation 
     fhConeSumPtPhiBandUEClusterTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSum *GetEventWeight()); // Check
   }
 }
+
+
+//_______________________________________________________________________________________________
+/// Get the clusters sum of pT in phi/eta bands for several band widths.
+//_______________________________________________________________________________________________
+void AliAnaParticleIsolation::CalculateCaloUEBandSeveralUEEstimate(AliAODPWG4ParticleCorrelation * pCandidate,Float_t BandSizeToRemove,
+                                                                   Float_t & etaBandPtSum, Float_t & phiBandPtSum)
+{
+  if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
+  
+  Float_t conesize   = GetIsolationCut()->GetConeSize();
+  
+  // Select the Calorimeter
+  TObjArray * pl = 0x0;
+  if      (GetCalorimeter() == kPHOS )
+    pl    = GetPHOSClusters();
+  else if (GetCalorimeter() == kEMCAL)
+    pl    = GetEMCALClusters();
+  
+  if(!pl) return ;
+  
+  // Get vertex for cluster momentum calculation
+  Double_t vertex[] = {0,0,0} ; //vertex ;
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
+    GetReader()->GetVertex(vertex);
+  
+  Float_t ptTrig    = pCandidate->Pt() ;
+  Float_t phiTrig   = pCandidate->Phi();
+  Float_t etaTrig   = pCandidate->Eta();
+  
+  for(Int_t icluster=0; icluster < pl->GetEntriesFast(); icluster++)
+  {
+    AliVCluster* cluster = (AliVCluster *) pl->At(icluster);
+    
+    if ( !cluster )
+    {
+      AliWarning("Cluster not available?");
+      continue;
+    }
+    
+    // Do not count the candidate (photon or pi0) or the daughters of the candidate
+    if(cluster->GetID() == pCandidate->GetCaloLabel(0) ||
+       cluster->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
+    
+    // Remove matched clusters to tracks if Neutral and Track info is used
+    if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged &&
+       IsTrackMatched(cluster,GetReader()->GetInputEvent())) continue ;
+    
+    cluster->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
+    
+    // Exclude particles in cone
+    Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, fMomentum.Eta(), fMomentum.Phi());
+    if(rad < BandSizeToRemove) continue ;
+    
+    // Fill histogram for UE in phi band in EMCal acceptance
+    if(fMomentum.Eta() > (etaTrig-BandSizeToRemove) && fMomentum.Eta()  < (etaTrig+BandSizeToRemove))
+    {
+      phiBandPtSum+=fMomentum.Pt();
+    }
+    
+    // Fill histogram for UE in eta band in EMCal acceptance
+    if(fMomentum.Phi() > (phiTrig-BandSizeToRemove) && fMomentum.Phi() < (phiTrig+BandSizeToRemove))
+    {
+      etaBandPtSum+=fMomentum.Pt();
+    }
+  }
+}
+
+
 
 //________________________________________________________________________________________________
 /// Get the cells amplitude or sum of amplitude in phi/eta bands or at 45 degrees from trigger.
@@ -939,6 +1012,169 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 
 }
 
+//________________________________________________________________________________________________
+/// Get the track sum of pT in phi/eta bands for several band widths.
+//________________________________________________________________________________________________
+void AliAnaParticleIsolation::CalculateTrackUEBandSeveralUEEstimate(AliAODPWG4ParticleCorrelation * pCandidate,Float_t BandSizeToRemove,
+                                                                    Float_t & etaBandPtSum, Float_t & phiBandPtSum)
+{
+  if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
+  
+  Float_t conesize   = GetIsolationCut()->GetConeSize();
+  
+  Double_t sumptPerp = 0. ;
+  Double_t sumptPerpBC0 = 0. ;
+  Double_t sumptPerpITSSPD = 0. ;
+  Double_t sumptPerpBC0ITSSPD = 0.;
+  
+  Float_t coneptsumPerpTrackPerMinCut[20];
+  Float_t coneNPerpTrackPerMinCut    [20];
+  
+  if(fStudyPtCutInCone)
+  {
+    for(Int_t icut = 0; icut < fNPtCutsInCone; icut++)
+    {
+      coneptsumPerpTrackPerMinCut[icut] = 0;
+      coneNPerpTrackPerMinCut    [icut] = 0;
+    }
+  }
+  
+  Float_t ptTrig    = pCandidate->Pt() ;
+  Float_t phiTrig   = pCandidate->Phi();
+  Float_t etaTrig   = pCandidate->Eta();
+  
+  Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
+  
+  TObjArray * trackList   = GetCTSTracks() ;
+  for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++)
+  {
+    AliVTrack* track = (AliVTrack *) trackList->At(itrack);
+    
+    if(!track)
+    {
+      AliWarning("Track not available?");
+      continue;
+    }
+    
+    // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+    // do not count the candidate or the daughters of the candidate
+    // in the isolation conte
+    if ( pCandidate->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
+    {
+      Int_t  trackID   = GetReader()->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
+      Bool_t contained = kFALSE;
+      
+      for(Int_t i = 0; i < 4; i++)
+      {
+        if( trackID == pCandidate->GetTrackLabel(i) ) contained = kTRUE;
+      }
+      
+      if ( contained ) continue ;
+    }
+    
+    //exclude particles band to remove
+    Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, track->Eta(), track->Phi());
+    if(rad < BandSizeToRemove) continue ;
+    
+    // Fill histogram for UE in phi band
+    if(track->Eta() > (etaTrig-BandSizeToRemove) && track->Eta()  < (etaTrig+BandSizeToRemove))
+    {
+      phiBandPtSum+=track->Pt();
+    }
+    
+    // Fill histogram for UE in eta band in EMCal acceptance
+    if(track->Phi() > (phiTrig-BandSizeToRemove) && track->Phi() < (phiTrig+BandSizeToRemove))
+    {
+      etaBandPtSum+=track->Pt();
+    }
+  } // track loop
+}
+
+
+
+//_____________________________________________________________________________________________________________________________________
+/// Make Several UE in cone estimate
+//_____________________________________________________________________________________________________________________________________
+void  AliAnaParticleIsolation::MakeSeveralUERemoveBandAnalysis(AliAODPWG4ParticleCorrelation * pCandidate)
+{
+  Float_t conesize  = GetIsolationCut()->GetConeSize();
+  Float_t coneA     = conesize*conesize*TMath::Pi(); // A = pi R^2, isolation cone area
+  Float_t ptTrig    = pCandidate->Pt() ;
+  Float_t phiTrig   = pCandidate->Phi();
+  Float_t etaTrig   = pCandidate->Eta();
+  Float_t pt        = pCandidate->Pt();
+  
+  // ------ //
+  // Tracks //
+  // ------ //
+  
+  Float_t  etaBandPtSumTrackNorm   = 0;
+  Float_t  phiBandPtSumTrackNorm   = 0;
+  
+  for(Int_t iSize = 0; iSize < fNUESizes; iSize++)
+  {
+    Float_t etaUEptsumTrack   = 0 ;
+    Float_t phiUEptsumTrack   = 0 ;
+    Float_t etaUEptsumCluster = 0 ;
+    Float_t phiUEptsumCluster = 0 ;
+    
+    
+    // ------ //
+    // Tracks //
+    // ------ //
+    Float_t phiUEptsumTrackNorm  = 0 ;
+    Float_t etaUEptsumTrackNorm  = 0 ;
+    
+    if ( partTypeInCone != AliIsolationCut::kOnlyNeutral )
+    {
+      // Sum the pT in the phi or eta band for tracks
+      CalculateTrackUEBandSeveralUEEstimate   (pCandidate, fUERemoveBandSizes[iSize],etaUEptsumTrack  ,phiUEptsumTrack  );
+      
+      // Fill histograms
+      Float_t correctConeSumTrack    = 1;
+      Float_t correctConeSumTrackPhi = 1;
+      
+      GetIsolationCut()->CalculateUEBandTrackNormalization(GetReader(),etaTrig, phiTrig,
+                                                           phiUEptsumTrack,etaUEptsumTrack,
+                                                           phiUEptsumTrackNorm,etaUEptsumTrackNorm,
+                                                           correctConeSumTrack,correctConeSumTrackPhi,
+                                                           fMakeSeveralUEEstimate , fUERemoveBandSizes[iSize]);
+      
+      fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[iSize] ->Fill(ptTrig, phiUEptsumTrackNorm , GetEventWeight());
+      fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[iSize] ->Fill(ptTrig, etaUEptsumTrackNorm , GetEventWeight());
+    }
+    //end tracks
+
+    // -------- //
+    // Clusters //
+    // -------- //
+    
+    Float_t phiUEptsumClusterNorm  = 0 ;
+    Float_t etaUEptsumClusterNorm  = 0 ;
+    
+    if ( partTypeInCone != AliIsolationCut::kOnlyCharged )
+    {
+      // Sum the pT in the phi or eta band for clusters
+      CalculateCaloUEBandSeveralUEEstimate    (pCandidate, fUERemoveBandSizes[iSize],etaUEptsumCluster,phiUEptsumCluster);
+      
+      // Fill histograms
+      Float_t correctConeSumClusterEta = 1;
+      Float_t correctConeSumClusterPhi = 1;
+      
+      GetIsolationCut()->CalculateUEBandClusterNormalization(GetReader(),etaTrig, phiTrig,
+                                                             phiUEptsumCluster,etaUEptsumCluster,
+                                                             phiUEptsumClusterNorm,etaUEptsumClusterNorm,
+                                                             correctConeSumClusterEta,correctConeSumClusterPhi,
+                                                             fMakeSeveralUEEstimate , fUERemoveBandSizes[iSize]);
+      
+      fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[iSize]  ->Fill(ptTrig ,          phiUEptsumClusterNorm , GetEventWeight());
+      fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[iSize]  ->Fill(ptTrig ,          etaUEptsumClusterNorm , GetEventWeight());
+    }
+  }
+}
+
+
+
 //_____________________________________________________________________________________________________________________________________
 /// Normalize phi/eta band per area unit
 //_____________________________________________________________________________________________________________________________________
@@ -994,7 +1230,7 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     GetIsolationCut()->CalculateUEBandTrackNormalization(GetReader(),etaTrig, phiTrig,
                                                          phiUEptsumTrack,etaUEptsumTrack,
                                                          phiUEptsumTrackNorm,etaUEptsumTrackNorm,
-                                                         correctConeSumTrack,correctConeSumTrackPhi);
+                                                         correctConeSumTrack,correctConeSumTrackPhi,kFALSE,0.);
     
     coneptsumTrackSubPhi = coneptsumTrack - phiUEptsumTrackNorm;
     coneptsumTrackSubEta = coneptsumTrack - etaUEptsumTrackNorm;
@@ -1064,7 +1300,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     GetIsolationCut()->CalculateUEBandClusterNormalization(GetReader(),etaTrig, phiTrig,
                                                            phiUEptsumCluster,etaUEptsumCluster,
                                                            phiUEptsumClusterNorm,etaUEptsumClusterNorm,
-                                                           correctConeSumClusterEta,correctConeSumClusterPhi);
+                                                           correctConeSumClusterEta,correctConeSumClusterPhi,
+                                                           kFALSE,0.);
     
     // In case that cone is out of eta and phi side, we are over correcting, not too often with the current cuts ...
     // Comment if not used
@@ -4150,12 +4387,32 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtEtaUENormCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtEtaUENormCluster) ;
         
+        for(Int_t iSize = 0; iSize < fNUESizes; iSize++)
+        {
+          fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[iSize] = new TH2F(Form("hConeSumPtEtaUENormClusterSeveralUESizeRemoveBand_Bin%i",iSize),
+                                                                               Form("Tracks #Sigma #it{p}_{T} in normalized #varphi band, #it{R}_{gap} = %.1f, #it{R} =  %2.2f",fUERemoveBandSizes[iSize],r),
+                                                                               nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax));
+          fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[iSize]->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm} (GeV/#it{c})");
+          fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[iSize]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[iSize]) ;
+        }
+        
         fhConeSumPtPhiUENormCluster  = new TH2F("hConeSumPtPhiUENormCluster",
                                               Form("Clusters #Sigma #it{p}_{T} in normalized #varphi band, #it{R} =  %2.2f",r),
                                               nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax);
         fhConeSumPtPhiUENormCluster->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm} (GeV/#it{c})");
         fhConeSumPtPhiUENormCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtPhiUENormCluster) ;
+        
+        for(Int_t iSize = 0; iSize < fNUESizes; iSize++)
+        {
+          fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[iSize] = new TH2F(Form("hConeSumPtPhiUENormClusterSeveralUESizeRemoveBand_Bin%i",iSize),
+                                                                             Form("Tracks #Sigma #it{p}_{T} in normalized #varphi band, #it{R}_{gap} = %.1f, #it{R} =  %2.2f",fUERemoveBandSizes[iSize],r),
+                                                                             nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax));
+          fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[iSize]->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm} (GeV/#it{c})");
+          fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[iSize]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[iSize]) ;
+        }
         
         fhConeSumPtEtaUESubCluster  = new TH2F("hConeSumPtEtaUESubCluster",
                                                Form("Clusters #Sigma #it{p}_{T} after bkg subtraction from #eta band in the isolation cone for #it{R} =  %2.2f",r),
@@ -5105,12 +5362,33 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtEtaUENormTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtEtaUENormTrack) ;
         
+        for(Int_t iSize = 0; iSize < fNUESizes; iSize++)
+        {
+          fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[iSize] = new TH2F(Form("hConeSumPtEtaUENormTrackSeveralUESizeRemoveBand_Bin%i",iSize),
+                                                                             Form("Tracks #Sigma #it{p}_{T} in normalized #eta band, #it{R}_{gap} = %.1f, #it{R} =  %2.2f",fUERemoveBandSizes[iSize],r),
+                                                                             nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax));
+          fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[iSize]->SetYTitle("#Sigma #it{p}_{T}^{#eta-band}_{norm} (GeV/#it{c})");
+          fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[iSize]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[iSize]) ;
+        }
+        
         fhConeSumPtPhiUENormTrack  = new TH2F("hConeSumPtPhiUENormTrack",
                                              Form("Tracks #Sigma #it{p}_{T} in normalized #varphi band, #it{R} =  %2.2f",r),
                                              nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax);
         fhConeSumPtPhiUENormTrack->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm} (GeV/#it{c})");
         fhConeSumPtPhiUENormTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtPhiUENormTrack) ;
+        
+        for(Int_t iSize = 0; iSize < fNUESizes; iSize++)
+        {
+          fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[iSize] = new TH2F(Form("hConeSumPtPhiUENormTrackSeveralUESizeRemoveBand_Bin%i",iSize),
+                                                                             Form("Tracks #Sigma #it{p}_{T} in normalized #varphi band, #it{R}_{gap} = %.1f, #it{R} =  %2.2f",fUERemoveBandSizes[iSize],r),
+                                                                             nptbins,ptmin,ptmax,1.2*nptsumbins,-ptsummax*0.2,ptsummax));
+          fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[iSize]->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm} (GeV/#it{c})");
+          fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[iSize]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[iSize]) ;
+        }
+        
 
         
         fhConeSumPtEtaUESubTrack  = new TH2F("hConeSumPtEtaUESubTrack",
@@ -6659,6 +6937,7 @@ void AliAnaParticleIsolation::InitParameters()
   
   fReMakeIC = kFALSE ;
   fMakeSeveralIC = kFALSE ;
+  fMakeSeveralUEEstimate = kFALSE ;
   
   fMinCellsAngleOverlap = 3.;
   
@@ -6712,6 +6991,11 @@ void AliAnaParticleIsolation::InitParameters()
   fPtThresholds   [0] = 1.;      fPtThresholds   [1] = 2.;    fPtThresholds   [2] = 3.;  fPtThresholds   [3] = 4.;   fPtThresholds   [4] = 5.;
   fPtFractions    [0] = 0.05;    fPtFractions    [1] = 0.075; fPtFractions    [2] = 0.1; fPtFractions    [3] = 1.25; fPtFractions    [4] = 1.5;
   fSumPtThresholds[0] = 1.;      fSumPtThresholds[1] = 2.;    fSumPtThresholds[2] = 3.;  fSumPtThresholds[3] = 4.;   fSumPtThresholds[4] = 5.;
+  
+  //-------- Several UE Estimate----------
+  fNUESizes             = 3 ;
+  fUERemoveBandSizes     [0] = 0.4;     fUERemoveBandSizes      [1] = 0.5;   fUERemoveBandSizes      [2] = 0.6;
+  
 }
 
 //_________________________________________________________________________________________
@@ -7109,6 +7393,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //---------------------------------------------------------------
     if(fFillUEBandSubtractHistograms)
       CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand, mcIndex) ;
+    if(fFillUEBandSubtractHistograms && fMakeSeveralUEEstimate)
+      MakeSeveralUERemoveBandAnalysis(aod) ;
         
     //---------------------------------------------------------------
     // EMCAL SM regions
