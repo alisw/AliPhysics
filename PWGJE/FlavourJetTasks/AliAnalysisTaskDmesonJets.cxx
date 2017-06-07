@@ -747,6 +747,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fMaxPt(100),
   fRandomGen(0),
   fTrackEfficiency(0),
+  fRejectISR(kFALSE),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -1309,9 +1310,10 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
 ///
 /// \param part Pointer to an AliAODMCParticle object for which originating quark is required
 /// \param mcArray Pointer to a TClonesArray object where to look for particles
+/// \param mode See documentation of the enum type ECheckOriginMode_t
 ///
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonOrigin_t (unknown quark, bottom or charm)
-std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, Bool_t firstParton)
+std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, ECheckOriginMode_t mode, Int_t pdg)
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
 
@@ -1334,8 +1336,16 @@ std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> AliAnaly
       if (abspdgGranma == 6) result = {kFromTop, mcGranma};
       if (abspdgGranma == 9 || abspdgGranma == 21) result = {kFromGluon, mcGranma};
 
-      // If looking for the very first parton in the hard scattering, it will continue the loop until it cannot find a mother particle
-      if (result.first != kUnknownQuark && !firstParton) return result;
+      // If looking for the first particle with specified PDG code verify if it corresponds to
+      // the current granma and return it
+      if (mode == kParticlePDG && abspdgGranma == pdg) {
+        result = {kUnknownQuark, mcGranma};
+        return result;
+      }
+
+      // If looking for the last parton in the shower (closest to the D meson in the fragmentation tree),
+      // return the result as soon as a parton is found
+      if (mode == kLastParton && result.first != kUnknownQuark) return result;
 
       mother = mcGranma->GetMother();
     }
@@ -1552,6 +1562,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
+  fMCContainer->SetRejectISR(fRejectISR);
 
   if (!fMCContainer->IsSpecialPDGFound()) return;
 
@@ -1592,6 +1603,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
       for (auto constituent : jet.constituents()) {
         Int_t iPart = constituent.user_index() - 100;
+        if (constituent.perp() < 1e-6) continue; // reject ghost particles
         AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
         if (!part) {
           ::Error("AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
@@ -1611,14 +1623,14 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
             UShort_t p = 0;
             UInt_t rs = 0;
 
-            auto firstParton = CheckOrigin(part, fMCContainer->GetArray(), kTRUE);
+            auto firstParton = CheckOrigin(part, fMCContainer->GetArray(), kFirstParton);
             p = 0;
             rs = firstParton.first;
             while (rs >>= 1) { p++; }
             (*dMesonJetIt).second.fFirstPartonType = p;
             (*dMesonJetIt).second.fFirstParton = firstParton.second;
 
-            auto lastParton = CheckOrigin(part, fMCContainer->GetArray(), kFALSE);
+            auto lastParton = CheckOrigin(part, fMCContainer->GetArray(), kLastParton);
             p = 0;
             rs = lastParton.first;
             while (rs >>= 1) { p++; }
@@ -2132,6 +2144,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(0),
   fTrackEfficiency(0),
+  fRejectISR(kFALSE),
   fMCContainer(0),
   fAodEvent(0),
   fFastJetWrapper(0)
@@ -2151,6 +2164,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOu
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(nOutputTrees),
   fTrackEfficiency(0),
+  fRejectISR(kFALSE),
   fMCContainer(0),
   fAodEvent(0),
   fFastJetWrapper(0)
@@ -2526,6 +2540,7 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
     params.fAodEvent = fAodEvent;
     params.fFastJetWrapper = fFastJetWrapper;
     params.fTrackEfficiency = fTrackEfficiency;
+    params.fRejectISR = fRejectISR;
     params.fRandomGen = rnd;
 
     for (auto &jetdef: params.fJetDefinitions) {
