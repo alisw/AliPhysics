@@ -11,7 +11,8 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
                                   Bool_t externalDecayer      = 0,
                                   Bool_t decayLongLived       = 0,
                                   Bool_t dynamicalPtRange     = 0,
-                                  Bool_t useYWeights          = 0
+                                  Bool_t useYWeights          = 0,
+                                  TString paramV2FileDir        = ""
                                 )
 {
   // collisions systems defined:
@@ -51,6 +52,8 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   gener->SelectMotherParticles(selectedMothers);
   gener->SetCollisionSystem(collisionsSystem);                //pp 7 TeV
   gener->SetCentrality(centrality);                           // kpp
+  if(paramV2FileDir.Length()>0)
+    gener->SetParametrizationFileV2Directory(paramV2FileDir);
   (AliPythia::Instance())->SetMSTU(22, pythiaErrorTolerance);   // tolerance for error due to rhos
   
   if (decayMode == 1){

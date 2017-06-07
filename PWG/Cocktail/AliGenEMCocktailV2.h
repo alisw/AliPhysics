@@ -53,6 +53,7 @@ public:
   void    SetDynamicalPtRange(Bool_t dynamicalPtRange)                { fDynPtRange = dynamicalPtRange;   }
   void    SetParametrizationFile(TString paramFile)                   { fParametrizationFile = paramFile; }
   void    SetParametrizationFileDirectory(TString paramDir)           { fParametrizationDir = paramDir;   }
+  void    SetParametrizationFileV2Directory(TString paramDir)         { fV2ParametrizationDir = paramDir; }
   void    SetDecayer(AliDecayer* const decayer)                       { fDecayer = decayer;               }
   void    SetDecayMode(Decay_t decay)                                 { fDecayMode = decay;               }
   void    SetWeightingMode(Weighting_t weight)                        { fWeightingMode = weight;          }
@@ -76,6 +77,7 @@ public:
   UInt_t    GetSelectedMothers()              const                   { return fSelectedParticles;        }
   TString   GetParametrizationFile()          const                   { return fParametrizationFile;      }
   TString   GetParametrizationFileDirectory() const                   { return fParametrizationDir;       }
+  TString   GetParametrizationFileV2Directory() const                 { return fV2ParametrizationDir;     }
   Int_t     GetNumberOfParticles()            const                   { return fNPart;                    }
   Double_t  GetMaxPtStretchFactor(Int_t pdgCode);
   Double_t  GetYWeight(Int_t pdgCode, TParticle* part);
@@ -115,6 +117,7 @@ private:
   
   TString         fParametrizationFile;                 // parametrization file
   TString         fParametrizationDir;                  // parametrization file directory
+  TString         fV2ParametrizationDir;                // parametrization file directory for flow
   Int_t           fNPart;                               // multiplicity of each source per event
   Double_t        fYieldArray[kGENs];                   // array of dN/dy for each source
   static TF1*     fPtParametrization[18];               // pt paramtrizations
@@ -131,7 +134,7 @@ private:
   Bool_t        fForceConv;                             // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles;                     // which particles to simulate, allows to switch on and off 32 different particles
   
-  ClassDef(AliGenEMCocktailV2,7)                        // cocktail for EM physics
+  ClassDef(AliGenEMCocktailV2,8)                        // cocktail for EM physics
 };
 
 #endif
