@@ -255,23 +255,23 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
-    // Centrality vs. pT
+    // (Centrality, pT, calo type)
     histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%);counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 10, 0, 100);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
     
-    // NEF vs. pT vs. eta vs. phi
+    // (Centrality, eta, phi, pT, NEF, calo type)
     histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    Int_t nbinsthn[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
-    Double_t minthn[4] = {-0.5,1., 0, 0};
-    Double_t maxthn[4] = {0.5,6., fMaxPt, 1.};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsthn, minthn, maxthn);
+    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
+    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
+    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
+    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
     
-    // pT upscaled
+    // (Centrality, pT upscaled, calo type)
     histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c})";
-    fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, "s");
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5, "s");
     
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
@@ -283,26 +283,38 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
     
-    // z-leading (charged) vs. pT
+    // (Centrality, pT, z-leading (charged), calo type)
     histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
+    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
+    Double_t min2[4] = {0, 0, 0, -0.5};
+    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
     
-    // z (charged) vs. pT
+    // (Centrality, pT, z (charged), calo type)
     histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
+    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
+    Double_t min3[4] = {0, 0, 0, -0.5};
+    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
 
-    // Nconst vs. pT
+    // (Centrality, pT, Nconst, calo type)
     histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, fMaxPt);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
+    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
+    Double_t min4[4] = {0, 0, 0, -0.5};
+    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
     
-    // Median patch energy vs. pT
+    // (Median patch energy, calo type, jet pT, centrality)
     if (fDoTriggerSimulation) {
-      histname = TString::Format("%s/JetHistograms/hMedPatchVsTypeVsPt", jets->GetArrayName().Data());
-      title = histname + ";#it{E}_{patch,med};type;#it{p}_{T}^{corr} (GeV/#it{c});";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5, nPtBins, 0, fMaxPt);
+      histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
+      title = histname + ";#it{E}_{patch,med};type;#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%)";
+      Int_t nbins5[4]  = {100, 2, nPtBins, 50};
+      Double_t min5[4] = {0,-0.5, 0, 0};
+      Double_t max5[4] = {50,1.5, fMaxPt, 100};
+      fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins5, min5, max5);
     }
     
     // Allocate background subtraction histograms, if enabled
@@ -487,88 +499,126 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetCandHistograms()
  */
 void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetImbalanceHistograms()
 {
-  // Allocate dijet imbalance THnSparse
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    TString axisTitle[30]= {""};
-    Int_t nbins[30]  = {0};
-    Double_t min[30] = {0.};
-    Double_t max[30] = {0.};
-    Double_t *binEdges[20] = {0};
-    Int_t dim = 0;
     
-    if (fForceBeamType != kpp) {
-      axisTitle[dim] = "Centrality (%)";
-      nbins[dim] = fNCentHistBins;
-      binEdges[dim] = fCentHistBins;
-      min[dim] = fCentHistBins[0];
-      max[dim] = fCentHistBins[fNCentHistBins];
+    // Allocate dijet imbalance THnSparse, unless doing trigger simulation
+    if (!fDoTriggerSimulation) {
+      TString axisTitle[30]= {""};
+      Int_t nbins[30]  = {0};
+      Double_t min[30] = {0.};
+      Double_t max[30] = {0.};
+      Double_t *binEdges[20] = {0};
+      Int_t dim = 0;
+      
+      if (fForceBeamType != kpp) {
+        axisTitle[dim] = "Centrality (%)";
+        nbins[dim] = fNCentHistBins;
+        binEdges[dim] = fCentHistBins;
+        min[dim] = fCentHistBins[0];
+        max[dim] = fCentHistBins[fNCentHistBins];
+        dim++;
+      }
+
+      axisTitle[dim] = "#Delta#phi";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = 4;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
-    }
+      
+      axisTitle[dim] = "#Delta#eta";
+      nbins[dim] = 100;
+      min[dim] = -2;
+      max[dim] = 2;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      axisTitle[dim] = "A_{J}";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = 1;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      axisTitle[dim] = "x_{J}";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = 1;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    
+      axisTitle[dim] = "k_{Ty} (GeV)";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = 100;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      axisTitle[dim] = "N_{tracks, trig jet}";
+      nbins[dim] = fMaxPt/5;
+      min[dim] = 0;
+      max[dim] = 100;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      axisTitle[dim] = "N_{tracks, ass jet}";
+      nbins[dim] = fMaxPt/5;
+      min[dim] = 0;
+      max[dim] = 100;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
 
-    axisTitle[dim] = "#Delta#phi";
-    nbins[dim] = 100;
-    min[dim] = 0;
-    max[dim] = 4;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#Delta#eta";
-    nbins[dim] = 100;
-    min[dim] = -2;
-    max[dim] = 2;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "A_{J}";
-    nbins[dim] = 100;
-    min[dim] = 0;
-    max[dim] = 1;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "x_{J}";
-    nbins[dim] = 100;
-    min[dim] = 0;
-    max[dim] = 1;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-  
-    axisTitle[dim] = "k_{Ty} (GeV)";
-    nbins[dim] = 100;
-    min[dim] = 0;
-    max[dim] = 100;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "N_{tracks, trig jet}";
-    nbins[dim] = fMaxPt/5;
-    min[dim] = 0;
-    max[dim] = 100;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "N_{tracks, ass jet}";
-    nbins[dim] = fMaxPt/5;
-    min[dim] = 0;
-    max[dim] = 100;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-
-    TString thnname = TString::Format("%s/DijetImbalanceObservables", jets->GetArrayName().Data());
-    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
-    for (Int_t i = 0; i < dim; i++) {
-      hn->GetAxis(i)->SetTitle(axisTitle[i]);
-      hn->SetBinEdges(i, binEdges[i]);
+      TString thnname = TString::Format("%s/DijetImbalanceObservables", jets->GetArrayName().Data());
+      THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
+      for (Int_t i = 0; i < dim; i++) {
+        hn->GetAxis(i)->SetTitle(axisTitle[i]);
+        hn->SetBinEdges(i, binEdges[i]);
+      }
     }
-  }
-  
-  // Median patch energy vs. pT
-  if (fDoTriggerSimulation) {
-    TString histname = "TriggerSimHistograms/hMedPatchVsTypeDijet";
-    TString title = histname + ";#it{E}_{patch,med};type";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5);
+    
+    // Now, allocate 2d pt spectrum, upscaled according to MB downscaling factors (for trigger efficiency)
+    Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
+    
+    // (Centrality, pT1, pT2) (upscaled)
+    TString histname = TString::Format("%s/DijetJetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+    TString title = histname + ";Centrality (%);#it{p}_{T,1}^{corr} (GeV/#it{c});#it{p}_{T,2}^{corr} (GeV/#it{c})";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt, "s");
+    
+    // Now, plot jet histograms for the leading jet within the dijet (for comparison to single jets, and triggered to MB)
+    
+    // (Centrality, pT, NEF, calo type)
+    histname = TString::Format("%s/DijetJetHistograms/hNEFVsPt", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
+    Int_t nbins1[4]  = {20, nPtBins, 50, 3};
+    Double_t min1[4] = {0, 0, 0, -0.5};
+    Double_t max1[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins1, min1, max1);
+    
+    // (Centrality, pT, z-leading (charged), calo type)
+    histname = TString::Format("%s/DijetJetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
+    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
+    Double_t min2[4] = {0, 0, 0, -0.5};
+    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
+    
+    // (Centrality, pT, z (charged), calo type)
+    histname = TString::Format("%s/DijetJetHistograms/hZVsPt", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
+    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
+    Double_t min3[4] = {0, 0, 0, -0.5};
+    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
+    
+    // (Centrality, pT, Nconst, calo type)
+    histname = TString::Format("%s/DijetJetHistograms/hNConstVsPt", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
+    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
+    Double_t min4[4] = {0, 0, 0, -0.5};
+    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
   }
 }
 
@@ -965,20 +1015,25 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
   title = histname + ";#eta_{patch} (rad);#phi_{patch} (rad)";
   fHistManager.CreateTH2(histname.Data(), title.Data(), 140, -0.7, 0.7, 500, 1., 6.);
   
+  // N patches
+  histname = "TriggerSimHistograms/hNPatches";
+  title = histname + ";#it{N}_{patches};type";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, 200, 2, -0.5, 1.5);
+  
   // patch E vs. centrality
   histname = "TriggerSimHistograms/hPatchE";
   title = histname + ";Centrality (%);#it{E}_{patch} (GeV)";
   fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, nPtBins, 0, fMaxPt);
   
-  // patch median
+  // patch median vs. Centrality
   histname = "TriggerSimHistograms/hPatchMedianE";
-  title = histname + ";#it{E}_{patch} (GeV);type";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 50, 2, -0.5, 1.5);
+  title = histname + ";Centrality (%);#it{E}_{patch,med} (GeV);type";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 50, 2, -0.5, 1.5);
   
-  // N patches
-  histname = "TriggerSimHistograms/hNPatches";
-  title = histname + ";#it{N}_{patches};type";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, 200, 2, -0.5, 1.5);
+  // Median patch energy vs. centrality, for dijets
+  histname = "TriggerSimHistograms/hMedPatchDijet";
+  title = histname + ";Centrality (%);#it{E}_{patch,med} (GeV);type";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 50, 2, -0.5, 1.5);
   
   //----------------------------------------------
   // Jet histograms for "triggered" events
@@ -999,18 +1054,18 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
-    // Centrality vs. pT
+    // (Centrality, pT, calo type)
     histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%);counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 10, 0, 100);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
     
-    // NEF vs. pT vs. eta vs. phi
+    // (Centrality, eta, phi, pT, NEF, calo type)
     histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    Int_t nbins[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
-    Double_t min[4] = {-0.5,1., 0, 0};
-    Double_t max[4] = {0.5,6., fMaxPt, 1.};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
+    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
+    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
+    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
+    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
     
     // pT-leading vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
@@ -1022,20 +1077,29 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
     
-    // z-leading (charged) vs. pT
+    // (Centrality, pT, z-leading (charged), calo type)
     histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
+    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
+    Double_t min2[4] = {0, 0, 0, -0.5};
+    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
     
     // z (charged) vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
-    
-    // Nconst vs. pT
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
+    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
+    Double_t min3[4] = {0, 0, 0, -0.5};
+    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
+
+    // (Centrality, pT, Nconst, calo type)
     histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, fMaxPt);
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
+    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
+    Double_t min4[4] = {0, 0, 0, -0.5};
+    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
     
   }
   
@@ -1222,8 +1286,7 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
 
       // If we find a dijet candidate (i.e. acceptable trig jet; ass jet accepted or not), fill the di-jet candidate histogram
       if (fDijet.trigJet && fPlotDijetCandHistograms) {
-        TString histname = TString::Format("%s/DijetCandObservables", jetCont->GetArrayName().Data());
-        FillDijetCandHistograms(histname);
+        FillDijetCandHistograms(jetCont);
       }
       
     }
@@ -1236,8 +1299,7 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
 
     // If we find an accepted dijet, fill the dijet imbalance histogram
     if (fDijet.isAccepted && fPlotDijetImbalanceHistograms) {
-      TString histname = TString::Format("%s/DijetImbalanceObservables", jetCont->GetArrayName().Data());
-      FillDijetImbalanceHistograms(histname);
+      FillDijetImbalanceHistograms(jetCont);
     }
     // If we find an accepted dijet, perform momentum-balance study (if requested)
     if (fDijet.isAccepted && fDoMomentumBalance) {
@@ -1437,8 +1499,8 @@ void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
   fMedianDCal = TMath::Median(nBkgPatchesDCal, &vecDCal[0]);
   
   histname = "TriggerSimHistograms/hPatchMedianE";
-  fHistManager.FillTH2(histname.Data(), fMedianEMCal, kEMCal);
-  fHistManager.FillTH2(histname.Data(), fMedianDCal, kDCal);
+  fHistManager.FillTH3(histname.Data(), fCent, fMedianEMCal, kEMCal);
+  fHistManager.FillTH3(histname.Data(), fCent, fMedianDCal, kDCal);
   
   histname = "TriggerSimHistograms/hNPatches";
   fHistManager.FillTH2(histname.Data(), nBkgPatchesEMCal, kEMCal);
@@ -1805,6 +1867,27 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetDeltaR(AliTLorentzVector* part, 
 }
 
 /**
+ * Get calo acceptance type of jet
+ */
+Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetType(AliEmcalJet* jet)
+{
+  UInt_t jetType = jet->GetJetAcceptanceType();
+  Double_t type = -1;
+  if (jetType & AliEmcalJet::kEMCAL) {
+    type = kEMCal;
+  }
+  else if (jetType & AliEmcalJet::kDCALonly) {
+    type = kDCal;
+  }
+  else if (jetType & AliEmcalJet::kPHOS) {
+    type = kPHOS;
+  }
+
+  return type;
+}
+
+
+/**
  * The body of this function should contain instructions to fill the output histograms.
  * This function is called inside the event loop, after the function Run() has been
  * executed successfully (i.e. it returned kTRUE).
@@ -1854,50 +1937,58 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
         fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
         continue;
       }
-
-      // Centrality vs. pT
-      histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, fCent);
       
-      // NEF vs. pT vs. eta vs. phi
+      // compute jet acceptance type
+      Double_t type = GetJetType(jet);
+
+      // (Centrality, pT, calo type)
+      histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
+      
+      // (Centrality, eta, phi, pT, NEF, calo type)
       histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[4] = {jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF()};
+      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
       fHistManager.FillTHnSparse(histname, x);
       
-      // pT un-downscaled
+      // (Centrality, pT upscaled, calo type)
       histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-      fHistManager.FillTH1(histname.Data(), corrPt, fMBUpscaleFactor);
+      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type, fMBUpscaleFactor);
       
       // pT-leading vs. pT
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
       
-      // z-leading (charged) vs. pT
+      // (Centrality, pT, z-leading (charged), calo type)
       TLorentzVector leadPart;
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
       histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, z);
+      Double_t y[4] = {fCent, corrPt, z, type};
+      fHistManager.FillTHnSparse(histname, y);
       
-      // z (charged) vs. pT
+      // (Centrality, pT, z (charged), calo type)
       histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
       AliVTrack* track;
       for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
         track = static_cast<AliVTrack*>(jet->Track(i));
         z = track->Pt() / TMath::Abs(corrPt);
-        fHistManager.FillTH2(histname.Data(), corrPt, z);
+        Double_t y2[4] = {fCent, corrPt, z, type};
+        fHistManager.FillTHnSparse(histname, y2);
       }
       
-      // Nconst vs. pT
+      // (Centrality, pT, Nconst, calo type)
       histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->GetNumberOfConstituents());
+      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
+      fHistManager.FillTHnSparse(histname, a);
       
-      // Median patch energy vs. pT
+      // (Median patch energy, calo type, jet pT, centrality)
       if (fDoTriggerSimulation) {
-        histname = TString::Format("%s/JetHistograms/hMedPatchVsTypeVsPt", jets->GetArrayName().Data());
-        fHistManager.FillTH3(histname.Data(), fMedianEMCal, kEMCal, corrPt);
-        fHistManager.FillTH3(histname.Data(), fMedianDCal, kDCal, corrPt);
+        histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
+        Double_t x[4] = {fMedianEMCal, kEMCal, corrPt, fCent};
+        fHistManager.FillTHnSparse(histname, x);
+        Double_t y[4] = {fMedianDCal, kDCal, corrPt, fCent};
+        fHistManager.FillTHnSparse(histname, y);
       }
       
       // Fill cluster spectra of clusters within jets
@@ -1956,39 +2047,45 @@ void AliAnalysisTaskEmcalDijetImbalance::FillTriggerSimHistograms()
         continue;
       }
       
+      // compute jet acceptance type
+      Double_t type = GetJetType(jet);
+      
       // Centrality vs. pT
       histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, fCent);
+      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
       
-      // NEF vs. pT vs. eta vs. phi
+      // (Centrality, eta, phi, pT, NEF, calo type)
       histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[4] = {jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF()};
+      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
       fHistManager.FillTHnSparse(histname, x);
       
       // pT-leading vs. pT
       histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
       
-      // z-leading (charged) vs. pT
+      // (Centrality, pT, z-leading (charged), calo type)
       TLorentzVector leadPart;
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
       histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, z);
+      Double_t y[4] = {fCent, corrPt, z, type};
+      fHistManager.FillTHnSparse(histname, y);
       
-      // z (charged) vs. pT
+      // (Centrality, pT, z (charged), calo type)
       histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
       AliVTrack* track;
       for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
         track = static_cast<AliVTrack*>(jet->Track(i));
         z = track->Pt() / TMath::Abs(corrPt);
-        fHistManager.FillTH2(histname.Data(), corrPt, z);
+        Double_t y2[4] = {fCent, corrPt, z, type};
+        fHistManager.FillTHnSparse(histname, y2);
       }
       
-      // Nconst vs. pT
+      // (Centrality, pT, Nconst, calo type)
       histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->GetNumberOfConstituents());
+      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
+      fHistManager.FillTHnSparse(histname, a);
       
     } //jet loop
     
@@ -1998,9 +2095,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillTriggerSimHistograms()
 /**
  * Fill dijet candidate THnSparse.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FillDijetCandHistograms(TString histname)
+void AliAnalysisTaskEmcalDijetImbalance::FillDijetCandHistograms(AliJetContainer* jets)
 {
   Double_t contents[30]={0};
+  TString histname = TString::Format("%s/DijetCandObservables", jets->GetArrayName().Data());
   THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
   if (!histJetObservables) return;
   for (Int_t n = 0; n < histJetObservables->GetNdimensions(); n++) {
@@ -2030,39 +2128,80 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetCandHistograms(TString histnam
 /**
  * Fill dijet imbalance THnSparse.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FillDijetImbalanceHistograms(TString histname)
+void AliAnalysisTaskEmcalDijetImbalance::FillDijetImbalanceHistograms(AliJetContainer* jets)
 {
-  Double_t contents[30]={0};
-  THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
-  if (!histJetObservables) return;
-  for (Int_t n = 0; n < histJetObservables->GetNdimensions(); n++) {
-    TString title(histJetObservables->GetAxis(n)->GetTitle());
-    if (title=="Centrality (%)")
-      contents[n] = fCent;
-    else if (title=="#Delta#phi")
-      contents[n] = fDijet.deltaPhi;
-    else if (title=="#Delta#eta")
-      contents[n] = fDijet.deltaEta;
-    else if (title=="A_{J}")
-      contents[n] = fDijet.AJ;
-    else if (title=="x_{J}")
-      contents[n] = fDijet.xJ;
-    else if (title=="k_{Ty} (GeV)")
-      contents[n] = fDijet.kTy;
-    else if (title=="N_{tracks, trig jet}")
-      contents[n] = fDijet.trigJet->GetNumberOfTracks();
-    else if (title=="N_{tracks, ass jet}")
-      contents[n] = fDijet.assJet->GetNumberOfTracks();
-    else
-      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  // Fill the dijet imbalance histogram (unless doing trigger simulation, in which case bypass this)
+  if (!fDoTriggerSimulation) {
+    Double_t contents[30]={0};
+    TString histname = TString::Format("%s/DijetImbalanceObservables", jets->GetArrayName().Data());
+    THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+    if (!histJetObservables) return;
+    for (Int_t n = 0; n < histJetObservables->GetNdimensions(); n++) {
+      TString title(histJetObservables->GetAxis(n)->GetTitle());
+      if (title=="Centrality (%)")
+        contents[n] = fCent;
+      else if (title=="#Delta#phi")
+        contents[n] = fDijet.deltaPhi;
+      else if (title=="#Delta#eta")
+        contents[n] = fDijet.deltaEta;
+      else if (title=="A_{J}")
+        contents[n] = fDijet.AJ;
+      else if (title=="x_{J}")
+        contents[n] = fDijet.xJ;
+      else if (title=="k_{Ty} (GeV)")
+        contents[n] = fDijet.kTy;
+      else if (title=="N_{tracks, trig jet}")
+        contents[n] = fDijet.trigJet->GetNumberOfTracks();
+      else if (title=="N_{tracks, ass jet}")
+        contents[n] = fDijet.assJet->GetNumberOfTracks();
+      else
+        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+    }
+    histJetObservables->Fill(contents);
   }
-  histJetObservables->Fill(contents);
+  
+  // (Centrality, pT1, pT2) (upscaled)
+  TString histname = TString::Format("%s/DijetJetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+  fHistManager.FillTH3(histname.Data(), fCent, fDijet.trigJetPt, fDijet.assJetPt, fMBUpscaleFactor);
+  
+  // Get jet acceptance type
+  AliEmcalJet* trigJet = fDijet.trigJet;
+  Double_t type = GetJetType(trigJet);
+  
+  // (Centrality, pT, NEF, calo type)
+  histname = TString::Format("%s/DijetJetHistograms/hNEFVsPt", jets->GetArrayName().Data());
+  Double_t x[4] = {fCent, fDijet.trigJetPt, trigJet->NEF(), type};
+  fHistManager.FillTHnSparse(histname, x);
+  
+  // (Centrality, pT, z-leading (charged), calo type)
+  histname = TString::Format("%s/DijetJetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
+  TLorentzVector leadPart;
+  jets->GetLeadingHadronMomentum(leadPart, trigJet);
+  Double_t z = GetParallelFraction(leadPart.Vect(), trigJet);
+  if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+  Double_t y[4] = {fCent, fDijet.trigJetPt, z, type};
+  fHistManager.FillTHnSparse(histname, y);
+  
+  // (Centrality, pT, z (charged), calo type)
+  histname = TString::Format("%s/DijetJetHistograms/hZVsPt", jets->GetArrayName().Data());
+  AliVTrack* track;
+  for (Int_t i=0; i<trigJet->GetNumberOfTracks(); i++) {
+    track = static_cast<AliVTrack*>(trigJet->Track(i));
+    z = track->Pt() / TMath::Abs(fDijet.trigJetPt);
+    Double_t y2[4] = {fCent, fDijet.trigJetPt, z, type};
+    fHistManager.FillTHnSparse(histname, y2);
+  }
+  
+  // (Centrality, pT, Nconst, calo type)
+  histname = TString::Format("%s/DijetJetHistograms/hNConstVsPt", jets->GetArrayName().Data());
+  Double_t a[4] = {fCent, fDijet.trigJetPt, 1.*trigJet->GetNumberOfConstituents(), type};
+  fHistManager.FillTHnSparse(histname, a);
   
   // Median patch energy vs. pT
   if (fDoTriggerSimulation) {
-    histname = "TriggerSimHistograms/hMedPatchVsTypeDijet";
-    fHistManager.FillTH2(histname.Data(), fMedianEMCal, kEMCal);
-    fHistManager.FillTH2(histname.Data(), fMedianDCal, kDCal);
+    histname = "TriggerSimHistograms/hMedPatchDijet";
+    fHistManager.FillTH3(histname.Data(), fCent, fMedianEMCal, kEMCal);
+    fHistManager.FillTH3(histname.Data(), fCent, fMedianDCal, kDCal);
   }
 
 }
