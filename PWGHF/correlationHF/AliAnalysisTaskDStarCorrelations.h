@@ -105,6 +105,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     void SetUseRemoveMoreThanOneCDmesonCandidate (Bool_t use){fRemoveMoreThanOneDmesonCandidate = use;}
     void SetLimitAcceptanceForMC (Bool_t use){fLimitAcceptanceForMC = use;}
     void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}   
+    void SetUseSmallSizePlots(Bool_t smsize){fUseSmallSizePlots=smsize;}
     
     void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;} // number of delta phi bins
     void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
@@ -198,8 +199,10 @@ private:
   Bool_t fUseHadronicChannelAtKineLevel; //
   Bool_t fRemoveMoreThanOneDmesonCandidate; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
   Bool_t fLimitAcceptanceForMC; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
- Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
- Int_t fDoVZER0ParamVertexCorr; 
+  Bool_t fUseSmallSizePlots; //flag to reduce number o bins in THnSparse (for merging issues)
+
+  Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+  Int_t fDoVZER0ParamVertexCorr; 
 
   Int_t fPhiBins;
   Int_t fEvents; //! number of event
@@ -231,7 +234,7 @@ private:
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   TProfile* fMultEstimatorAvg[4]; 
-  ClassDef(AliAnalysisTaskDStarCorrelations,10); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,11); // class for D meson correlations
   
 };
 
