@@ -1359,21 +1359,24 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //FIXME: get ZDC information in AOD in a fully consistent way
         AliAODZDC *lAODZDC = aodevent->GetZDCData();
 
-        for (Int_t j = 0; j < 4; ++j) {
-            if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
-            if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
-            if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
-            if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+        //Only do this bit if the AOD has ZDC data
+        if( lAODZDC ){
+            for (Int_t j = 0; j < 4; ++j) {
+                if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+            }
+            
+            const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
+            const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
+            const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
+            const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
+            fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+            fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+            fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+            fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
         }
-
-        const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
-        const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
-        const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
-        const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
-        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
     }
     
     fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
