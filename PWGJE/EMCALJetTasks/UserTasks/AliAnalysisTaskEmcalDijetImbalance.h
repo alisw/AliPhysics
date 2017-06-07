@@ -112,8 +112,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        DoTriggerSimulation()                             ;
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
   void                        FillJetHistograms()                               ;
-  void                        FillDijetCandHistograms(TString histname)         ;
-  void                        FillDijetImbalanceHistograms(TString histname)    ;
+  void                        FillDijetCandHistograms(AliJetContainer* jets)    ;
+  void                        FillDijetImbalanceHistograms(AliJetContainer* jets);
   void                        FillMomentumBalanceHistograms(TString histname, Double_t deltaPhi, Double_t trackPt, Double_t balancePt);
   void                        FillGeometricalMatchingHistograms()               ;
   void                        FillCaloHistograms()                              ;
@@ -124,6 +124,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                GetLeadingJet(AliJetContainer* jetCont);
   Double_t                    GetDeltaR(AliEmcalJet* jet1, AliEmcalJet* jet2);
   Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
+  Double_t                    GetJetType(AliEmcalJet* jet);
   
   // Analysis parameters
   Double_t                    fDeltaPhiMin;                         ///< minimum delta phi between di-jets
@@ -169,7 +170,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMBUpscaleFactor;                     //!<! inverse of downscale factor, for MB trigger
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
-  Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not
+  Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
   
   // Phos geometry (only needed for cluster studies)
   AliPHOSGeometry*            fPHOSGeo;                             //!<! phos geometry
