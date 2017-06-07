@@ -111,7 +111,6 @@ class AliHFInvMassMultiTrialFit : public TNamed {
  private:
 
   Bool_t CreateHistos();
-  TH1F* RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstUse) const;
   Bool_t DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax,
 			  Int_t theCase);
 

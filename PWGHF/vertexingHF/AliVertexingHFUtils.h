@@ -121,6 +121,7 @@ class AliVertexingHFUtils : public TObject{
 
   /// Rebinning of invariant mass histograms
   static TH1D* RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse=-1);
+  static TH1* AdaptTemplateRangeAndBinning(const TH1 *hRef,TH1 *hData, Double_t minFit, Double_t maxFit);
 
   /// Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
