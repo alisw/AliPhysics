@@ -2743,7 +2743,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
             if( lMCstack->IsPhysicalPrimary( lblMotherNegV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryNegativeMother = kTRUE;
             fTreeCascVarPIDNegativeMother = lNegMother->GetPdgCode();
-            fTreeCascVarNegLabelMother = lblMotherPosV0Dghter;
+            fTreeCascVarNegLabelMother = lblMotherNegV0Dghter;
             //Go further than that, please
             Int_t lblGrandMother = lNegMother->GetFirstMother();
             if( lblGrandMother > -1 ){
