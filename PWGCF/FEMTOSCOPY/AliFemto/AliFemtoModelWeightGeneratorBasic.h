@@ -26,11 +26,19 @@ public:
 
   virtual void     SetPairType(Int_t aPairType);
   virtual void     SetPairTypeFromPair(AliFemtoPair *aPair);
-  virtual Int_t    GetPairType() const; 
+  virtual Int_t    GetPairType() const;
+
+  /// Sets whether or not to print a notification when the generator
+  /// reads a particle with no mass, energy, momentum (i.e. "empty")
+  ///
+  void ShouldPrintEmptyParticleNotification(bool option) { fPrintEmptyParticleNotification = option; };
 
   virtual AliFemtoModelWeightGenerator* Clone() const;
+
 protected:
-  
+
+  bool fPrintEmptyParticleNotification;
+
 private:
   AliFemtoModelWeightGenerator* GetGenerator() const;
 
@@ -41,7 +49,7 @@ private:
 #endif
 
 };
-  
+
 #endif
 
 
