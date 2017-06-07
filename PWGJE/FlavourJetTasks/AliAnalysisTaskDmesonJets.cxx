@@ -1592,6 +1592,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
       for (auto constituent : jet.constituents()) {
         Int_t iPart = constituent.user_index() - 100;
+        if (constituent.perp() < 1e-6) continue; // reject ghost particles
         AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
         if (!part) {
           ::Error("AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
