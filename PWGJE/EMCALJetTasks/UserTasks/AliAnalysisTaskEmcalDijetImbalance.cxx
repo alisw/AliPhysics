@@ -87,6 +87,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
+  fPlotNeutralJets(kFALSE),
+  fPlotClustersInJets(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -139,6 +141,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
+  fPlotNeutralJets(kFALSE),
+  fPlotClustersInJets(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -342,59 +346,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       Double_t maxDpT[4] = {0.5,6., 100, 150};
       fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsDpT, minDpT, maxDpT);
       
-    }
-    
-    // Plot cluster spectra within jets
-    // (centrality, cluster energy, jet pT, jet eta, jet phi)
-    Int_t dim = 0;
-    TString title[20];
-    Int_t nbins[20] = {0};
-    Double_t min[30] = {0.};
-    Double_t max[30] = {0.};
-    Double_t *binEdges[20] = {0};
-    
-    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-      title[dim] = "Centrality %";
-      nbins[dim] = fNCentHistBins;
-      binEdges[dim] = fCentHistBins;
-      min[dim] = fCentHistBins[0];
-      max[dim] = fCentHistBins[fNCentHistBins];
-      dim++;
-    }
-    
-    title[dim] = "#it{E}_{clus} (GeV)";
-    nbins[dim] = fNPtHistBins;
-    binEdges[dim] = fPtHistBins;
-    min[dim] = fPtHistBins[0];
-    max[dim] = fPtHistBins[fNPtHistBins];
-    dim++;
-    
-    title[dim] = "#it{p}_{T,jet}^{corr}";
-    nbins[dim] = nPtBins;
-    min[dim] = 0;
-    max[dim] = fMaxPt;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    title[dim] = "#eta_{jet}";
-    nbins[dim] = fNEtaBins;
-    min[dim] = -0.5;
-    max[dim] = 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    title[dim] = "#phi_{jet}";
-    nbins[dim] = fNPhiBins;
-    min[dim] = 1.;
-    max[dim] = 6.;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    TString thnname = TString::Format("%s/JetHistograms/hClustersInJets", jets->GetArrayName().Data());
-    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
-    for (Int_t i = 0; i < dim; i++) {
-      hn->GetAxis(i)->SetTitle(title[i]);
-      hn->SetBinEdges(i, binEdges[i]);
     }
     
   }
@@ -782,6 +733,7 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
 {
   TString histname;
   TString htitle;
+  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
   
   Double_t* clusType = new Double_t[3+1];
   GenerateFixedBinArray(3, -0.5, 2.5, clusType);
@@ -899,67 +851,124 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     }
   }
 
-  // plot neutral jets
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
-    TString axisTitle[30]= {""};
-    Int_t nbinsJet[30]  = {0};
-    Double_t minJet[30] = {0.};
-    Double_t maxJet[30] = {0.};
-    Double_t *binEdgesJet[20] = {0};
-    Int_t dimJet = 0;
-    
-    if (fForceBeamType != kpp) {
-      axisTitle[dimJet] = "Centrality (%)";
-      nbinsJet[dimJet] = fNCentHistBins;
-      binEdgesJet[dimJet] = fCentHistBins;
-      minJet[dimJet] = fCentHistBins[0];
-      maxJet[dimJet] = fCentHistBins[fNCentHistBins];
+    // plot neutral jets
+    if (fPlotNeutralJets) {
+      TString axisTitle[30]= {""};
+      Int_t nbinsJet[30]  = {0};
+      Double_t minJet[30] = {0.};
+      Double_t maxJet[30] = {0.};
+      Double_t *binEdgesJet[20] = {0};
+      Int_t dimJet = 0;
+      
+      if (fForceBeamType != kpp) {
+        axisTitle[dimJet] = "Centrality (%)";
+        nbinsJet[dimJet] = fNCentHistBins;
+        binEdgesJet[dimJet] = fCentHistBins;
+        minJet[dimJet] = fCentHistBins[0];
+        maxJet[dimJet] = fCentHistBins[fNCentHistBins];
+        dimJet++;
+      }
+      
+      axisTitle[dimJet] = "#eta_{jet}";
+      nbinsJet[dimJet] = 28;
+      minJet[dimJet] = -0.7;
+      maxJet[dimJet] = 0.7;
+      binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
       dimJet++;
+      
+      axisTitle[dimJet] = "#phi_{jet} (rad)";
+      nbinsJet[dimJet] = 100;
+      minJet[dimJet] = 1.;
+      maxJet[dimJet] = 6.;
+      binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+      dimJet++;
+      
+      axisTitle[dimJet] = "#it{E}_{T} (GeV)";
+      nbinsJet[dimJet] = fNPtHistBins;
+      binEdgesJet[dimJet] = fPtHistBins;
+      minJet[dimJet] = fPtHistBins[0];
+      maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+      dimJet++;
+      
+      axisTitle[dimJet] = "#rho (GeV/#it{c})";
+      nbinsJet[dimJet] = 100;
+      minJet[dimJet] = 0.;
+      maxJet[dimJet] = 1000.;
+      binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+      dimJet++;
+      
+      axisTitle[dimJet] = "N_{clusters}";
+      nbinsJet[dimJet] = 20;
+      minJet[dimJet] = -0.5;
+      maxJet[dimJet] = 19.5;
+      binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+      dimJet++;
+      
+      TString thnname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
+      THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dimJet, nbinsJet, minJet, maxJet);
+      for (Int_t i = 0; i < dimJet; i++) {
+        hn->GetAxis(i)->SetTitle(axisTitle[i]);
+        hn->SetBinEdges(i, binEdgesJet[i]);
+      }
     }
     
-    axisTitle[dimJet] = "#eta_{jet}";
-    nbinsJet[dimJet] = 28;
-    minJet[dimJet] = -0.7;
-    maxJet[dimJet] = 0.7;
-    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
-    dimJet++;
-    
-    axisTitle[dimJet] = "#phi_{jet} (rad)";
-    nbinsJet[dimJet] = 100;
-    minJet[dimJet] = 1.;
-    maxJet[dimJet] = 6.;
-    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
-    dimJet++;
-    
-    axisTitle[dimJet] = "#it{E}_{T} (GeV)";
-    nbinsJet[dimJet] = fNPtHistBins;
-    binEdgesJet[dimJet] = fPtHistBins;
-    minJet[dimJet] = fPtHistBins[0];
-    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
-    dimJet++;
-    
-    axisTitle[dimJet] = "#rho (GeV/#it{c})";
-    nbinsJet[dimJet] = 100;
-    minJet[dimJet] = 0.;
-    maxJet[dimJet] = 1000.;
-    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
-    dimJet++;
-    
-    axisTitle[dimJet] = "N_{clusters}";
-    nbinsJet[dimJet] = 20;
-    minJet[dimJet] = -0.5;
-    maxJet[dimJet] = 19.5;
-    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
-    dimJet++;
-    
-    TString thnname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
-    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dimJet, nbinsJet, minJet, maxJet);
-    for (Int_t i = 0; i < dimJet; i++) {
-      hn->GetAxis(i)->SetTitle(axisTitle[i]);
-      hn->SetBinEdges(i, binEdgesJet[i]);
+    // Plot cluster spectra within jets
+    // (centrality, cluster energy, jet pT, jet eta, jet phi)
+    if (fPlotClustersInJets) {
+      Int_t dim = 0;
+      TString title[20];
+      Int_t nbins[20] = {0};
+      Double_t min[30] = {0.};
+      Double_t max[30] = {0.};
+      Double_t *binEdges[20] = {0};
+      
+      if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+        title[dim] = "Centrality %";
+        nbins[dim] = fNCentHistBins;
+        binEdges[dim] = fCentHistBins;
+        min[dim] = fCentHistBins[0];
+        max[dim] = fCentHistBins[fNCentHistBins];
+        dim++;
+      }
+      
+      title[dim] = "#it{E}_{clus} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "#it{p}_{T,jet}^{corr}";
+      nbins[dim] = nPtBins;
+      min[dim] = 0;
+      max[dim] = fMaxPt;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#eta_{jet}";
+      nbins[dim] = fNEtaBins;
+      min[dim] = -0.5;
+      max[dim] = 0.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#phi_{jet}";
+      nbins[dim] = fNPhiBins;
+      min[dim] = 1.;
+      max[dim] = 6.;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      TString thnname = TString::Format("%s/hClustersInJets", jets->GetArrayName().Data());
+      THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
+      for (Int_t i = 0; i < dim; i++) {
+        hn->GetAxis(i)->SetTitle(title[i]);
+        hn->SetBinEdges(i, binEdges[i]);
+      }
     }
 
   }
@@ -1991,17 +2000,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
         fHistManager.FillTHnSparse(histname, y);
       }
       
-      // Fill cluster spectra of clusters within jets
-      //(centrality, cluster energy, jet pT, jet eta, jet phi)
-      histname = TString::Format("%s/JetHistograms/hClustersInJets", jets->GetArrayName().Data());
-      Int_t nClusters = jet->GetNumberOfClusters();
-      AliVCluster* clus;
-      for (Int_t iClus = 0; iClus < nClusters; iClus++) {
-        clus = jet->Cluster(iClus);
-        Double_t x[5] = {fCent, clus->E(), corrPt, jet->Eta(), jet->Phi_0_2pi()};
-        fHistManager.FillTHnSparse(histname, x);
-      }
-      
     } //jet loop
     
     //---------------------------------------------------------------------------
@@ -2449,35 +2447,50 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
 
   }
   
-  // plot neutral jets THnSparse (centrality, eta, phi, E, Nclusters)
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
     for (auto jet : jets->accepted()) {
 
-      Double_t contents[30]={0};
-      histname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
-      THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
-      if (!histJetObservables) return;
-      for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
-        TString title(histJetObservables->GetAxis(i)->GetTitle());
-        if (title=="Centrality (%)")
-          contents[i] = fCent;
-        else if (title=="#eta_{jet}")
-          contents[i] = jet->Eta();
-        else if (title=="#phi_{jet} (rad)")
-          contents[i] = jet->Phi_0_2pi();
-        else if (title=="#it{E}_{T} (GeV)")
-          contents[i] = jet->Pt();
-        else if (title=="#rho (GeV/#it{c})")
-          contents[i] = jet->Pt() / jet->Area();
-        else if (title=="N_{clusters}")
-          contents[i] = jet->GetNumberOfClusters();
-        else
-          AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+      // plot neutral jets THnSparse (centrality, eta, phi, E, Nclusters)
+      if (fPlotNeutralJets) {
+        Double_t contents[30]={0};
+        histname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
+        THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+        if (!histJetObservables) return;
+        for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
+          TString title(histJetObservables->GetAxis(i)->GetTitle());
+          if (title=="Centrality (%)")
+            contents[i] = fCent;
+          else if (title=="#eta_{jet}")
+            contents[i] = jet->Eta();
+          else if (title=="#phi_{jet} (rad)")
+            contents[i] = jet->Phi_0_2pi();
+          else if (title=="#it{E}_{T} (GeV)")
+            contents[i] = jet->Pt();
+          else if (title=="#rho (GeV/#it{c})")
+            contents[i] = jet->Pt() / jet->Area();
+          else if (title=="N_{clusters}")
+            contents[i] = jet->GetNumberOfClusters();
+          else
+            AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+        }
+        histJetObservables->Fill(contents);
       }
-      histJetObservables->Fill(contents);
+      
+      // Fill cluster spectra of clusters within jets
+      //(centrality, cluster energy, jet pT, jet eta, jet phi)
+      if (fPlotClustersInJets) {
+        histname = TString::Format("%s/hClustersInJets", jets->GetArrayName().Data());
+        Int_t nClusters = jet->GetNumberOfClusters();
+        AliVCluster* clus;
+        for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+          clus = jet->Cluster(iClus);
+          Double_t x[5] = {fCent, clus->E(), GetJetPt(jets, jet), jet->Eta(), jet->Phi_0_2pi()};
+          fHistManager.FillTHnSparse(histname, x);
+        }
+      }
       
     }
     
