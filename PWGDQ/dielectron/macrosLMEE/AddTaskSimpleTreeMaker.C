@@ -33,7 +33,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     //taskESD->SetMC(kFALSE);
     //taskESD->setSDDstatus(kFALSE);
     //taskESD->createV0tree(kFALSE);
-    //taskESD->GRIDanalysis(kTRUE);
+    taskESD->GRIDanalysis(kFALSE);
     //taskESD->useAODs(kTRUE);
     //taskESD->setFilterBitSelection(4);
 
