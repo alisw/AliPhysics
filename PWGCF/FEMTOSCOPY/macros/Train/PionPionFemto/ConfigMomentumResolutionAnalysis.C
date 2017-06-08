@@ -207,7 +207,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
           AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctn("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
           AliFemtoModelManager *model_manager = new AliFemtoModelManager();
-          model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+
+          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
+          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          model_manager->AcceptWeightGenerator(weight_gen);
+
           model_cf->ConnectToManager(model_manager);
 
         analysis->AddCorrFctn(
