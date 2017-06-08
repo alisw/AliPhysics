@@ -16,13 +16,13 @@
 /* $Id$ */
 
 //
-//  Generator for slow nucleons in pA interactions. 
+//  Generator for slow nucleons in pA interactions.
 //  Source is modelled by a relativistic Maxwell distributions.
 //  This class cooparates with AliCollisionGeometry if used inside AliGenCocktail.
 //  In this case the number of slow nucleons is determined from the number of wounded nuclei
 //  using a realisation of AliSlowNucleonModel.
 //  Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
-// 
+//
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
@@ -42,7 +42,7 @@
 
 ClassImp(AliGenSlowNucleons)
 
-    
+
 AliGenSlowNucleons::AliGenSlowNucleons()
     :AliGenerator(-1),
      fCMS(0.),
@@ -51,7 +51,7 @@ AliGenSlowNucleons::AliGenSlowNucleons()
      fPmax (0.),
      fCharge(0),
      fProtonDirection(1.),
-     fTemperatureG(0.), 
+     fTemperatureG(0.),
      fBetaSourceG(0.),
      fTemperatureB(0.),
      fBetaSourceB(0.),
@@ -83,7 +83,7 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
      fPmax (10.),
      fCharge(1),
      fProtonDirection(1.),
-     fTemperatureG(0.05), 
+     fTemperatureG(0.05),
      fBetaSourceG(0.05),
      fTemperatureB(0.005),
      fBetaSourceB(0.),
@@ -144,15 +144,15 @@ void AliGenSlowNucleons::Init()
 			    "(2./3.14159265358979312)/(exp(2./3.14159265358979312)-exp(-2./3.14159265358979312))*exp(2.*x/3.14159265358979312)",
 			    -1., 1.);
     }
-   
-    printf("\n  AliGenSlowNucleons: applying crossing angle %f mrad to slow nucleons\n",fBeamCrossingAngle*1000.);
+
+    if(TMath::Abs(fBeamCrossingAngle)>0.) printf("\n  AliGenSlowNucleons: applying crossing angle %f mrad to slow nucleons\n",fBeamCrossingAngle*1000.);
 }
 
 void AliGenSlowNucleons::FinishRun()
 {
 // End of run action
 // Show histogram for debugging if requested.
-    if (fDebug) {
+ if (fDebug) {
 	TCanvas *c = new TCanvas("c","Canvas 1",400,10,600,700);
 	c->Divide(2,1);
 	c->cd(1);
@@ -161,7 +161,7 @@ void AliGenSlowNucleons::FinishRun()
 	fDebugHist2->Draw();
 	c->cd(3);
 	fCosThetaGrayHist->Draw();
-    }
+ }
 }
 
 
@@ -171,21 +171,21 @@ void AliGenSlowNucleons::Generate()
   // Generate one event
   //
   //
-  // Communication with Gray Particle Model 
-  // 
+  // Communication with Gray Particle Model
+  //
     if (fCollisionGeometry) {
 	Float_t b   = fCollisionGeometry->ImpactParameter();
 	//	Int_t  nn   = fCollisionGeometry->NN();
 	//      Int_t  nwn  = fCollisionGeometry->NwN();
 	//      Int_t  nnw  = fCollisionGeometry->NNw();
 	//      Int_t  nwnw = fCollisionGeometry->NwNw();
-	
-	// (1) Sikler' model 
+
+	// (1) Sikler' model
 	if(fSmearMode==0) fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	// (2) Model inspired on exp. data at lower energy (Gallio-Oppedisano)
-	// --- smearing the Ncoll fron generator used as input 
+	// --- smearing the Ncoll fron generator used as input
 	else if(fSmearMode==1) fSlowNucleonModel->GetNumberOfSlowNucleons2(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
-	// --- smearing directly Nslow 
+	// --- smearing directly Nslow
 	else if(fSmearMode==2) fSlowNucleonModel->GetNumberOfSlowNucleons2s(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
 	    //printf("Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
@@ -194,31 +194,31 @@ void AliGenSlowNucleons::Generate()
 	    fDebugHist2->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), b, 1.);
 
 	}
-    }     
+    }
 
    //
     Float_t p[3] = {0., 0., 0.}, theta=0;
     Float_t origin[3] = {0., 0., 0.};
     Float_t time = 0.;
-    Float_t polar [3] = {0., 0., 0.};    
+    Float_t polar [3] = {0., 0., 0.};
     Int_t nt, i, j;
     Int_t kf;
-     
+
     // Extracting 1 value per event for the divergence angle
     Double_t rvec = gRandom->Gaus(0.0, 1.0);
     fBeamDivEvent = fBeamDivergence * TMath::Abs(rvec);
-    printf("\n  AliGenSlowNucleons: applying beam divergence %f mrad to slow nucleons\n",fBeamDivEvent*1000.);
+    if(TMath::Abs(fBeamDivEvent)>0.) printf("\n  AliGenSlowNucleons: applying beam divergence %f mrad to slow nucleons\n",fBeamDivEvent*1000.);
 
     if(fVertexSmear == kPerEvent) {
-	Vertex();
-	for (j=0; j < 3; j++) origin[j] = fVertex[j];
-	time = fTime;
+	    Vertex();
+	    for (j=0; j < 3; j++) origin[j] = fVertex[j];
+	     time = fTime;
     } // if kPerEvent
 //
 //  Gray protons
 //
     fCharge = 1;
-    kf = kProton;    
+    kf = kProton;
     for(i = 0; i < fNgp; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
@@ -231,7 +231,7 @@ void AliGenSlowNucleons::Generate()
 //  Gray neutrons
 //
     fCharge = 0;
-    kf = kNeutron;    
+    kf = kNeutron;
     for(i = 0; i < fNgn; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
@@ -244,7 +244,7 @@ void AliGenSlowNucleons::Generate()
 //  Black protons
 //
     fCharge = 1;
-    kf = kProton;    
+    kf = kProton;
     for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
@@ -256,7 +256,7 @@ void AliGenSlowNucleons::Generate()
 //  Black neutrons
 //
     fCharge = 0;
-    kf = kNeutron;    
+    kf = kNeutron;
     for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
@@ -269,23 +269,23 @@ void AliGenSlowNucleons::Generate()
 
 
 
-void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, 
+void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
 	Double_t beta, Float_t* q, Float_t &theta)
 
 {
-/* 
-   Emit a slow nucleon with "temperature" T [GeV], 
-   from a source moving with velocity beta         
-   Three-momentum [GeV/c] is given back in q[3]    
+/*
+   Emit a slow nucleon with "temperature" T [GeV],
+   from a source moving with velocity beta
+   Three-momentum [GeV/c] is given back in q[3]
 */
 
  //printf("Generating slow nuc. with: charge %d. temp. %1.4f, beta %f \n",charge,T,beta);
- 
+
  Double_t m, pmax, p, f, phi;
  TDatabasePDG * pdg = TDatabasePDG::Instance();
  const Double_t kMassProton  = pdg->GetParticle(kProton) ->Mass();
  const Double_t kMassNeutron = pdg->GetParticle(kNeutron)->Mass();
- 
+
  /* Select nucleon type */
  if(charge == 0) m = kMassNeutron;
  else m = kMassProton;
@@ -330,12 +330,12 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
 
  /* Transform to laboratory system */
  Lorentz(m, fBeta, q);
- q[2] *= fProtonDirection; 
- if(fDebug==1)printf("\n Momentum after LHC boost: p = (%f, %f, %f)\n",q[0],q[1],q[2]);
- 
- if(fBeamCrossingAngle>0.) BeamCrossDivergence(1, q); // applying crossing angle
- if(fBeamDivergence>0.) BeamCrossDivergence(2, q);    // applying divergence
- 
+ q[2] *= fProtonDirection;
+ if(fDebug==1) printf("\n Momentum after LHC boost: p = (%f, %f, %f)\n",q[0],q[1],q[2]);
+
+ if(TMath::Abs(fBeamCrossingAngle)>0.) BeamCrossing(q); // applying crossing angle
+ if(TMath::Abs(fBeamDivergence)>0.) BeamDivergence(q);    // applying divergence
+
 }
 
 Double_t AliGenSlowNucleons::Maxwell(Double_t m, Double_t p, Double_t T)
@@ -351,30 +351,35 @@ Double_t AliGenSlowNucleons::Maxwell(Double_t m, Double_t p, Double_t T)
 void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
 {
 /* Lorentz transform in the direction of q[2] */
- 
-    Double_t gamma  = 1./TMath::Sqrt((1.-beta)*(1.+beta)); 
+
+    Double_t gamma  = 1./TMath::Sqrt((1.-beta)*(1.+beta));
     Double_t energy = TMath::Sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
     //printf(" \t beta %1.10f gamma %f energy %f -> p_z = %f\n",beta, gamma, energy,q[2]);
 }
 
 //_____________________________________________________________________________
-void AliGenSlowNucleons::BeamCrossDivergence(Int_t iwhat, Float_t *pLab)
+void AliGenSlowNucleons::BeamCrossing(Float_t *pLab)
 {
-  // Applying beam divergence and crossing angle
+  // Applying beam crossing angle
+  //
+  pLab[1] = pLab[2]*TMath::Sin(fBeamCrossingAngle)+pLab[1]*TMath::Cos(fBeamCrossingAngle);
+  pLab[2] = pLab[2]*TMath::Cos(fBeamCrossingAngle)-pLab[1]*TMath::Sin(fBeamCrossingAngle);
+  if(fDebug==1){
+    printf(" Beam crossing angle = %f mrad ", fBeamCrossingAngle*1000.);
+    printf("  p = (%f, %f, %f)\n",pLab[0],pLab[1],pLab[2]);
+  }
+
+}
+//_____________________________________________________________________________
+void AliGenSlowNucleons::BeamDivergence(Float_t *pLab)
+{
+  // Applying beam divergence
   //
   Double_t pmod = TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1]+pLab[2]*pLab[2]);
 
-  Double_t tetdiv = 0.;
-  Double_t fidiv = 0.;
-  if(iwhat==1){
-    tetdiv = fBeamCrossingAngle;
-    fidiv = k2PI/4.;
-  }
-  else if(iwhat==2){
-    tetdiv = fBeamDivEvent;
-    fidiv = (gRandom->Rndm())*k2PI;
-  }
+  Double_t tetdiv = fBeamDivEvent;
+  Double_t fidiv = (gRandom->Rndm())*k2PI;
 
   Double_t tetpart = TMath::ATan2(TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1]), pLab[2]);
   Double_t fipart=0.;
@@ -384,34 +389,33 @@ void AliGenSlowNucleons::BeamCrossDivergence(Int_t iwhat, Float_t *pLab)
   fidiv = fidiv*kRaddeg;
   tetpart = tetpart*kRaddeg;
   fipart = fipart*kRaddeg;
-  
+
   Double_t angleSum[2]={0., 0.};
   AddAngle(tetpart,fipart,tetdiv,fidiv,angleSum);
-  
+
   Double_t tetsum = angleSum[0];
   Double_t fisum  = angleSum[1];
   //printf("tetpart %f fipart %f tetdiv %f fidiv %f angleSum %f %f\n",tetpart,fipart,tetdiv,fidiv,angleSum[0],angleSum[1]);
   tetsum = tetsum*kDegrad;
   fisum = fisum*kDegrad;
-  
+
   pLab[0] = pmod*TMath::Sin(tetsum)*TMath::Cos(fisum);
   pLab[1] = pmod*TMath::Sin(tetsum)*TMath::Sin(fisum);
   pLab[2] = pmod*TMath::Cos(tetsum);
   if(fDebug==1){
-    if(iwhat==1) printf(" Beam crossing angle %f mrad ", fBeamCrossingAngle*1000.);
-    else if(iwhat==2) printf(" Beam divergence %f mrad ", fBeamDivEvent*1000.);
+    printf(" Beam divergence %f mrad ", fBeamDivEvent*1000.);
     printf("  p = (%f, %f, %f)\n",pLab[0],pLab[1],pLab[2]);
   }
 }
-  
+
 //_____________________________________________________________________________
-void  AliGenSlowNucleons::AddAngle(Double_t theta1, Double_t phi1, 
+void  AliGenSlowNucleons::AddAngle(Double_t theta1, Double_t phi1,
 	Double_t theta2, Double_t phi2, Double_t *angleSum)
-{ 
-  // Calculating the sum of 2 angles  
+{
+  // Calculating the sum of 2 angles
   Double_t temp = -1.;
   Double_t conv = 180./TMath::ACos(temp);
-  
+
   Double_t ct1 = TMath::Cos(theta1/conv);
   Double_t st1 = TMath::Sin(theta1/conv);
   Double_t cp1 = TMath::Cos(phi1/conv);
@@ -423,7 +427,7 @@ void  AliGenSlowNucleons::AddAngle(Double_t theta1, Double_t phi1,
   Double_t cx = ct1*cp1*st2*cp2+st1*cp1*ct2-sp1*st2*sp2;
   Double_t cy = ct1*sp1*st2*cp2+st1*sp1*ct2+cp1*st2*sp2;
   Double_t cz = ct1*ct2-st1*st2*cp2;
-  
+
   Double_t rtetsum = TMath::ACos(cz);
   Double_t tetsum = conv*rtetsum;
   if(TMath::Abs(tetsum)<1e-4 || tetsum==180.) return;
@@ -433,10 +437,10 @@ void  AliGenSlowNucleons::AddAngle(Double_t theta1, Double_t phi1,
   if(temp<-1.) temp=-1.;
   Double_t fisum = conv*TMath::ACos(temp);
   if(cy<0) {fisum = 360.-fisum;}
-  
+
   angleSum[0] = tetsum;
   angleSum[1] = fisum;
-}  
+}
 
 //_____________________________________________________________________________
 void AliGenSlowNucleons::SetProcessID(Int_t nt, UInt_t process)
@@ -445,6 +449,6 @@ void AliGenSlowNucleons::SetProcessID(Int_t nt, UInt_t process)
   // gray or black
   if (fStack)
     fStack->Particle(nt)->SetUniqueID(process);
-  else 
+  else
     gAlice->GetMCApp()->Particle(nt)->SetUniqueID(process);
 }
