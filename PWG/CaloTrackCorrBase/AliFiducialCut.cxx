@@ -15,7 +15,6 @@
 
 // --- ROOT system ---
 #include <TMath.h>
-//#include <TLorentzVector.h>
 #include <TString.h>
 
 //---- ANALYSIS system ----
@@ -79,31 +78,31 @@ Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) cons
 {  
   if(det == kCTS)
   {
-	  if(!fCTSFiducialCut)  
-      return kTRUE; //Fiducial cut not requested, accept all tracks  
-	  else 
-      return CheckFiducialRegion(eta,phi, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
+    if(!fCTSFiducialCut)  
+    return kTRUE; //Fiducial cut not requested, accept all tracks  
+    else 
+    return CheckFiducialRegion(eta,phi, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
   }
   else   if(det == kEMCAL)
   {
-	  if(!fEMCALFiducialCut) 
-      return kTRUE; //Fiducial cut not requested, accept all clusters  
-	  else                   
-      return CheckFiducialRegion(eta,phi, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
+    if(!fEMCALFiducialCut) 
+    return kTRUE; //Fiducial cut not requested, accept all clusters  
+    else                   
+    return CheckFiducialRegion(eta,phi, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
   }
   else   if(det == kPHOS)
   {
     if(!fPHOSFiducialCut)
-      return kTRUE; //Fiducial cut not requested, accept all clusters
+    return kTRUE; //Fiducial cut not requested, accept all clusters
     else
-      return CheckFiducialRegion(eta,phi, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
+    return CheckFiducialRegion(eta,phi, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
   }
   else   if(det == kDCAL || det == kDCALPHOS)
   {
     if(!fDCALFiducialCut)
-      return kTRUE; //Fiducial cut not requested, accept all clusters
+    return kTRUE; //Fiducial cut not requested, accept all clusters
     else
-      return CheckFiducialRegion(eta,phi, fDCALFidCutMinPhi , fDCALFidCutMaxPhi , fDCALFidCutMinEta , fDCALFidCutMaxEta );
+    return CheckFiducialRegion(eta,phi, fDCALFidCutMinPhi , fDCALFidCutMaxPhi , fDCALFidCutMinEta , fDCALFidCutMaxEta );
   }
   else
   {
@@ -119,49 +118,83 @@ Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) cons
 /// \param phiOrg: track/cluster/particle azimuthal angle.
 /// \param phimin: array with list of minimum azimuthal angle regions.
 /// \param phimax: array with list of maximum azimuthal angle regions.
-/// \param mineta: array with list of minimum pseudorapidity regions.
-/// \param maxeta: array with list of maximum pseudorapidity regions.
+/// \param etamin: array with list of minimum pseudorapidity regions.
+/// \param etamax: array with list of maximum pseudorapidity regions.
 /// \return kTRUE if track/cluster/particle is in one of the regions
 //___________________________________________________________________________________________
 Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
                                            const TArrayF* phimin, const TArrayF* phimax, 
-                                           const TArrayF* mineta, const TArrayF* maxeta) const 
+                                           const TArrayF* etamin, const TArrayF* etamax) const 
 {  
   Float_t phi = phiOrg;
-	if(phi < 0) phi+=TMath::TwoPi() ;
+  if(phi < 0) phi+=TMath::TwoPi() ;
+  phi*=TMath::RadToDeg();
   
-	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
+  //printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
   
-  Int_t netaregions = maxeta->GetSize();
+  Int_t netaregions = etamax->GetSize();
   Int_t nphiregions = phimax->GetSize();
-  if(netaregions !=  mineta->GetSize() || nphiregions !=  phimin->GetSize())
-		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nphimax %d != nphimin %d\n",
-           netaregions, mineta->GetSize(),  nphiregions, phimin->GetSize());
-	
-	// Eta fiducial cut
-	Bool_t bInEtaFidCut = kFALSE;
-	for(Int_t ieta = 0; ieta < netaregions; ieta++)
+  
+  if ( netaregions !=  etamin->GetSize() || nphiregions !=  phimin->GetSize() )
+  AliWarning(Form("Wrong number of fiducial cut regions: netamax %d != netamin %d; nphimax %d != nphimin %d\n",
+                  netaregions, etamin->GetSize(),  nphiregions, phimin->GetSize()));
+  
+  //printf("n eta %d, nphi %d\n",netaregions,nphiregions);
+  //printf("eta %2.2f, phi %2.2f\n",eta,phi);
+  
+  //
+  // Same number of regions in eta and phi
+  //
+  if(netaregions == nphiregions)
   {
-		if(eta > mineta->GetAt(ieta) && eta < maxeta->GetAt(ieta)) bInEtaFidCut = kTRUE;
+    for(Int_t iRegion = 0; iRegion < netaregions; iRegion++)
+    {
+      //      printf("region %d, min %2.2f < eta %2.2f < max %2.2f;min %2.2f < phi %2.2f < max %2.2f\n",
+      //             iRegion,
+      //             etamin->GetAt(iRegion),eta,etamax->GetAt(iRegion),
+      //             phimax->GetAt(iRegion),phi,phimax->GetAt(iRegion));
+      
+      if ( eta > etamin->GetAt(iRegion) && eta < etamax->GetAt(iRegion) && 
+          phi > phimin->GetAt(iRegion) && phi < phimax->GetAt(iRegion)    )
+      return kTRUE ;
+    }
+    
+    return kFALSE;
   }
   
-	if(bInEtaFidCut)
+  //
+  // Different number of regions in eta and phi
+  // Careful, better use same number.
+  //
+  
+  // Eta fiducial cut
+  Bool_t bInEtaFidCut = kFALSE;
+  for(Int_t ieta = 0; ieta < netaregions; ieta++)
   {
-		//printf("Eta cut passed\n");
-		//Phi fiducial cut
-		Bool_t bInPhiFidCut = kFALSE;
-		for(Int_t iphi = 0; iphi < nphiregions; iphi++)
-			if(phi > phimin->GetAt(iphi) *TMath::DegToRad()&& phi < phimax->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
-	  
-		if(bInPhiFidCut) 
+    if(eta > etamin->GetAt(ieta) && eta < etamax->GetAt(ieta)) bInEtaFidCut = kTRUE;
+  }
+  
+  //printf("Eta ok? %d\n",bInEtaFidCut);
+  if(bInEtaFidCut)
+  {
+    //printf("Eta cut passed\n");
+    //Phi fiducial cut
+    Bool_t bInPhiFidCut = kFALSE;
+    for(Int_t iphi = 0; iphi < nphiregions; iphi++)
     {
-			//printf("IsInFiducialCut:: %s cluster/track accepted\n",det.Data());
-			return kTRUE;
-		}
-		else return kFALSE;
+      if ( phi > phimin->GetAt(iphi) && phi < phimax->GetAt(iphi) ) bInPhiFidCut = kTRUE ;
+    }
+    //printf("Phi ok? %d\n",bInPhiFidCut);
     
-	} // In eta fid cut
-	else
+    if(bInPhiFidCut) 
+    {
+      //printf("IsInFiducialCut:: %s cluster/track accepted\n",det.Data());
+      return kTRUE;
+    }
+    else return kFALSE;
+    
+  } // In eta fid cut
+  else
   {
     return kFALSE;
   }
@@ -230,8 +263,8 @@ void AliFiducialCut::InitParameters()
   
   fDCALFidCutMaxPhi = new TArrayF(3);
   fDCALFidCutMaxPhi->SetAt(320.,0);
-  fDCALFidCutMaxPhi->SetAt(320.,0);
-  fDCALFidCutMaxPhi->SetAt(327.,0);
+  fDCALFidCutMaxPhi->SetAt(320.,1);
+  fDCALFidCutMaxPhi->SetAt(327.,2);
 }
 
 
