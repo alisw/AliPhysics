@@ -224,6 +224,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
   void InitD0toKpi2013pPb0100LowPtAn();
+  void InitD0toKpi2016pPb0100LowPtAn();
 
   void InitDplustoKpipi2010pp();
   void InitDplustoKpipi2010ppPass4();
