@@ -2,7 +2,7 @@
 
 //by default the task is anyway computing 1, 2 and 3 sigmas
 
-const Bool_t theRareOn = kTRUE;
+const Bool_t theRareOn = kFALSE;
 
 const Bool_t anaType   = 1;//0 HD; 1 UU;
 
