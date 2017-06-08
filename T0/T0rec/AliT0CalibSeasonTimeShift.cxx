@@ -127,7 +127,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
   // 300 no one histogram or it is empty
   //-100 peak is very narrow
 
-  Float_t mean, sigma;
+  Float_t mean=0, sigma=0;
   Int_t ok = 0;
   TH1F *hcfd = NULL;
   TH2F *hT0mult = NULL;
@@ -182,7 +182,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	if(hT0mult) {
 	  Int_t nbins = hT0mult->GetXaxis()->GetNbins();
 	  Float_t meanprof[nbins], sigmares[nbins], mult[nbins];
-	  Int_t npoints;
+	  Int_t npoints = 0;
 	  for (int ibin=1; ibin<nbins-2; ibin++) {
 	    mult[ibin-1]= hT0mult-> GetXaxis()->GetBinCenter(ibin);
 	    TH1D *proj = hT0mult->ProjectionY(Form("prY%i",ibin),ibin, ibin+1);
@@ -197,6 +197,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 		sigmares[ibin-1]=fSigmaPar[i]; 
 		meanprof[ibin-1]=fMeanPar[i];
 		}
+	      delete proj;
 	  }
 	  TGraph *gr = NULL;
 	  if(i<3) gr = new TGraph(npoints-1, mult, meanprof);
