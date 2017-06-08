@@ -99,6 +99,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     
     fhSMNCell              [i] = 0;
     fhSMM02                [i] = 0;
+    fhSMM02NoCut           [i] = 0;
     fhColM02               [i] = 0;
     fhRowM02               [i] = 0;
 
@@ -1329,6 +1330,11 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Int_t ietaMax=-1; Int_t iphiMax = 0; Int_t rcuMax = 0;
   Int_t smMax = GetModuleNumberCellIndexes(absIdMax,GetCalorimeter(), ietaMax, iphiMax, rcuMax);
   
+  // REMOVE
+//  if(smMax == 3) energy*=1.1;
+//  if(smMax == 7) energy*=0.9;
+  // REMOVE
+  
   // Loop on cells in cluster to get cell cluster asymmetry and 
   // other correlation parameters
   for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
@@ -1428,6 +1434,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell , GetEventWeight());
+  fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02   , GetEventWeight());
   fhDeltaIANCells        [matchedPID]->Fill(energy, nCell  , dIA   , GetEventWeight());
   fhDeltaIATotNCells     [matchedPID]->Fill(energy, nCell  , dIATot, GetEventWeight());
   
@@ -3564,16 +3571,25 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       
       fhSMM02[imatch]  = new TH3F 
       (Form("hSMM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs SM number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{0}^{2}, #it{n}_{cells}^{w>0.01} > 4, for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
       fhSMM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMM02[imatch]->SetYTitle("SM number");
       fhSMM02[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhSMM02[imatch]); 
-
+      
+      fhSMM02NoCut[imatch]  = new TH3F 
+      (Form("hSMM02NoCut_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+      fhSMM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM02NoCut[imatch]->SetYTitle("SM number");
+      fhSMM02NoCut[imatch]->SetZTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhSMM02NoCut[imatch]); 
+      
       fhSMNCell[imatch]  = new TH3F 
       (Form("hSMNCell_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs SM number vs  #it{n}_{cells} for ID %s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs  #it{n}_{cells}^{w>0.01} for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax); 
       fhSMNCell[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMNCell[imatch]->SetYTitle("SM number");
@@ -3582,7 +3598,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       
       fhColM02[imatch]  = new TH3F 
       (Form("hColM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs column number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       Form("#it{E} vs column number vs #lambda_{0}^{2}, #it{n}_{cells}^{w>0.01} > 4, for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,48,-0.5,47.5,nShShBins,minShSh,maxShSh); 
       fhColM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhColM02[imatch]->SetYTitle("column number");
@@ -3591,7 +3607,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 
       fhRowM02[imatch]  = new TH3F 
       (Form("hRowM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs row number vs #lambda_{0}^{2} for ID %s",matchCase[imatch].Data()),
+       Form("#it{E} vs row number vs #lambda_{0}^{2}, #it{n}_{cells}^{w>0.01} > 4, for ID %s",matchCase[imatch].Data()),
        nEbins,minE,maxE,24,-0.5,23.5,nShShBins,minShSh,maxShSh); 
       fhRowM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhRowM02[imatch]->SetYTitle("row number");
