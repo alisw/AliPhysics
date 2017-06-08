@@ -1738,15 +1738,23 @@ Bool_t AliMTRChEffAnalysis::InitFromLocal ( const char *localFileList, const cha
   if ( filename.EndsWith(".root") ) return AddToList(filename.Data(),outputName);
 
   Bool_t isOk = kTRUE;
+  // std::vector<Int_t> orderedRuns;
+  std::map<int,std::string> tmpMap;
   ifstream inFile(filename.Data());
   TString currLine = "";
   while ( ! inFile.eof() ) {
     currLine.ReadLine(inFile);
     if ( currLine.IsNull() ) continue;
     if ( gSystem->AccessPathName(currLine.Data()) ) continue;
-    if ( ! AddToList(currLine.Data(), outputName) ) isOk = kFALSE;
+    int currRun = AliAnalysisMuonUtility::GetRunNumber ( currLine );
+    tmpMap[currRun] = std::string(currLine.Data());
+    // orderedRuns.push_back(currRun);
   }
   inFile.close();
+
+  for ( auto it = tmpMap.begin(); it != tmpMap.end(); ++it ) {
+    if ( ! AddToList(it->second.c_str(), outputName) ) isOk = kFALSE;
+  }
 
   return isOk;
 }
