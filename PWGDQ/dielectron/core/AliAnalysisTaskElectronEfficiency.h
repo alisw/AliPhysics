@@ -117,6 +117,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWidthCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetCentroidCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetWidthCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetCentroidCorrFunctionTOF(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetWidthCorrFunctionTOF(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins, Int_t Nmeebins=0, Double_t *Meebins=0x0, Int_t Npteebins=0, Double_t *Pteebins=0x0) {
     /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;   fMeeBins=Meebins; fPteeBins=Pteebins;
@@ -165,6 +167,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH1*              fPostPIDWdthCorrTPC;      // post pid correction object for widths in TPC
   TH1*              fPostPIDCntrdCorrITS;     // post pid correction object for centroids in ITS
   TH1*              fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
+  TH1*              fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
+  TH1*              fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
   TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   TObjArray*        fSignalsMC;               // array of AliDielectronSignalMC
 
