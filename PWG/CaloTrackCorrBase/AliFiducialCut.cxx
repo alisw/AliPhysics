@@ -117,14 +117,14 @@ Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) cons
 /// defined by the TArray.
 /// \param eta: track/cluster/particle pseudorapidity.
 /// \param phiOrg: track/cluster/particle azimuthal angle.
-/// \param minphi: array with list of minimum azimuthal angle regions.
-/// \param maxphi: array with list of maximum azimuthal angle regions.
+/// \param phimin: array with list of minimum azimuthal angle regions.
+/// \param phimax: array with list of maximum azimuthal angle regions.
 /// \param mineta: array with list of minimum pseudorapidity regions.
 /// \param maxeta: array with list of maximum pseudorapidity regions.
 /// \return kTRUE if track/cluster/particle is in one of the regions
 //___________________________________________________________________________________________
 Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
-                                           const TArrayF* minphi, const TArrayF* maxphi, 
+                                           const TArrayF* phimin, const TArrayF* phimax, 
                                            const TArrayF* mineta, const TArrayF* maxeta) const 
 {  
   Float_t phi = phiOrg;
@@ -133,10 +133,10 @@ Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
 	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
   
   Int_t netaregions = maxeta->GetSize();
-  Int_t nphiregions = maxphi->GetSize();
-  if(netaregions !=  mineta->GetSize() || nphiregions !=  minphi->GetSize())
-		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
-           netaregions, mineta->GetSize(),  nphiregions, minphi->GetSize());
+  Int_t nphiregions = phimax->GetSize();
+  if(netaregions !=  mineta->GetSize() || nphiregions !=  phimin->GetSize())
+		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nphimax %d != nphimin %d\n",
+           netaregions, mineta->GetSize(),  nphiregions, phimin->GetSize());
 	
 	// Eta fiducial cut
 	Bool_t bInEtaFidCut = kFALSE;
@@ -151,7 +151,7 @@ Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
 		//Phi fiducial cut
 		Bool_t bInPhiFidCut = kFALSE;
 		for(Int_t iphi = 0; iphi < nphiregions; iphi++)
-			if(phi > minphi->GetAt(iphi) *TMath::DegToRad()&& phi < maxphi->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
+			if(phi > phimin->GetAt(iphi) *TMath::DegToRad()&& phi < phimax->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
 	  
 		if(bInPhiFidCut) 
     {
@@ -207,28 +207,19 @@ void AliFiducialCut::InitParameters()
   fPHOSFidCutMinPhi->SetAt(260.,0); 
   fPHOSFidCutMaxPhi = new TArrayF(1);
   fPHOSFidCutMaxPhi->SetAt(320.,0); 
-  
-//  fDCALFidCutMinEta = new TArrayF(1);
-//  fDCALFidCutMinEta->SetAt(-0.7,0);
-//  fDCALFidCutMaxEta = new TArrayF(1);
-//  fDCALFidCutMaxEta->SetAt( 0.7,0);
-//  
-//  fDCALFidCutMinPhi = new TArrayF(1);
-//  fDCALFidCutMinPhi->SetAt(260.,0);
-//  fDCALFidCutMaxPhi = new TArrayF(1);
-//  fDCALFidCutMaxPhi->SetAt(327.,0);
-  
+    
   // Divide DCal in 3 regions:
-  // A (C?) side : -0.70<eta<-0.15, 260<phi<320
-  // C (A?) side :  0.15<eta< 0.70, 260<phi<320
+  // A (C?) side : -0.70<eta<-0.22, 260<phi<320
+  // C (A?) side :  0.22<eta< 0.70, 260<phi<320
   // 1/3 SM      : -0.70<eta< 0.70, 320<phi<327
   
   fDCALFidCutMinEta = new TArrayF(3);
   fDCALFidCutMinEta->SetAt(-0.7 ,0);
-  fDCALFidCutMinEta->SetAt( 0.20,1);
+  fDCALFidCutMinEta->SetAt( 0.22,1);
   fDCALFidCutMinEta->SetAt(-0.7 ,2);
+  
   fDCALFidCutMaxEta = new TArrayF(3);
-  fDCALFidCutMaxEta->SetAt(-0.20,0);
+  fDCALFidCutMaxEta->SetAt(-0.22,0);
   fDCALFidCutMaxEta->SetAt( 0.7 ,1);
   fDCALFidCutMaxEta->SetAt( 0.7 ,2);
   
@@ -236,6 +227,7 @@ void AliFiducialCut::InitParameters()
   fDCALFidCutMinPhi->SetAt(260.,0);
   fDCALFidCutMinPhi->SetAt(260.,1);
   fDCALFidCutMinPhi->SetAt(320.,2);
+  
   fDCALFidCutMaxPhi = new TArrayF(3);
   fDCALFidCutMaxPhi->SetAt(320.,0);
   fDCALFidCutMaxPhi->SetAt(320.,0);
@@ -307,10 +299,10 @@ void AliFiducialCut::Print(const Option_t * opt) const
 //_______________________________________________________________________________________
 /// Define simple acceptance cut to tracks.
 /// \param eta: absolute maximum value of track pseudorapidity.
-/// \param minphi track minimum azimuthal angle.
-/// \param maxphi track maximum azimuthal angle.
+/// \param phimin track minimum azimuthal angle.
+/// \param phimax track maximum azimuthal angle.
 //_______________________________________________________________________________________
-void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
+void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t phimin, Float_t phimax)
 {
   fCTSFidCutMinEta->Set(1);
   fCTSFidCutMaxEta->Set(1);
@@ -319,17 +311,17 @@ void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t minphi, Float_
   
   fCTSFidCutMinEta->SetAt(-eta,0);
   fCTSFidCutMaxEta->SetAt( eta,0);
-  fCTSFidCutMinPhi->SetAt(minphi,0);
-  fCTSFidCutMaxPhi->SetAt(maxphi,0);
+  fCTSFidCutMinPhi->SetAt(phimin,0);
+  fCTSFidCutMaxPhi->SetAt(phimax,0);
 }
 
 //_________________________________________________________________________________________
 /// Define simple acceptance cut to EMCal clusters.
 /// \param eta: absolute maximum value of cluster pseudorapidity.
-/// \param minphi cluster minimum azimuthal angle.
-/// \param maxphi cluster maximum azimuthal angle.
+/// \param phimin cluster minimum azimuthal angle.
+/// \param phimax cluster maximum azimuthal angle.
 //_________________________________________________________________________________________
-void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
+void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t phimin, Float_t phimax)
 {  
   fEMCALFidCutMinEta->Set(1);
   fEMCALFidCutMaxEta->Set(1);
@@ -338,17 +330,17 @@ void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t minphi, Floa
   
   fEMCALFidCutMinEta->SetAt(-eta,0);
   fEMCALFidCutMaxEta->SetAt( eta,0);
-  fEMCALFidCutMinPhi->SetAt(minphi,0);
-  fEMCALFidCutMaxPhi->SetAt(maxphi,0);
+  fEMCALFidCutMinPhi->SetAt(phimin,0);
+  fEMCALFidCutMaxPhi->SetAt(phimax,0);
 }
 
 //_______________________________________________________________________________________
 /// Define simple acceptance cut to PHOS clusters.
 /// \param eta: absolute maximum value of cluster pseudorapidity.
-/// \param minphi cluster minimum azimuthal angle.
-/// \param maxphi cluster maximum azimuthal angle.
+/// \param phimin cluster minimum azimuthal angle.
+/// \param phimax cluster maximum azimuthal angle.
 //_______________________________________________________________________________________
-void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
+void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t phimin, Float_t phimax)
 {  
   fPHOSFidCutMinEta->Set(1);
   fPHOSFidCutMaxEta->Set(1);
@@ -357,17 +349,17 @@ void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float
   
   fPHOSFidCutMinEta->SetAt(-eta,0);
   fPHOSFidCutMaxEta->SetAt(eta,0);
-  fPHOSFidCutMinPhi->SetAt(minphi,0);
-  fPHOSFidCutMaxPhi->SetAt(maxphi,0);
+  fPHOSFidCutMinPhi->SetAt(phimin,0);
+  fPHOSFidCutMaxPhi->SetAt(phimax,0);
 }
 
 //_________________________________________________________________________________________
 /// Define simple acceptance cut to DCal clusters.
 /// \param eta: absolute maximum value of cluster pseudorapidity.
-/// \param minphi cluster minimum azimuthal angle.
-/// \param maxphi cluster maximum azimuthal angle.
+/// \param phimin cluster minimum azimuthal angle.
+/// \param phimax cluster maximum azimuthal angle.
 //_________________________________________________________________________________________
-void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
+void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t phimin, Float_t phimax)
 {  
   fDCALFidCutMinEta->Set(1);
   fDCALFidCutMaxEta->Set(1);
@@ -376,8 +368,49 @@ void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float
   
   fDCALFidCutMinEta->SetAt(-eta,0);
   fDCALFidCutMaxEta->SetAt( eta,0);
-  fDCALFidCutMinPhi->SetAt(minphi,0);
-  fDCALFidCutMaxPhi->SetAt(maxphi,0);
+  fDCALFidCutMinPhi->SetAt(phimin,0);
+  fDCALFidCutMaxPhi->SetAt(phimax,0);
+}
+
+//_________________________________________________________________________________________
+/// Define acceptance cut to DCal clusters 
+/// with more accurate description than in SetSimpleDCALFiducialCut()
+/// \param etaminFull  minimum value of cluster pseudorapidity in Full SMs.
+/// \param etamaxFull  maximum value of cluster pseudorapidity in Full SMs.
+/// \param phiminFull  cluster minimum azimuthal angle in Full SMs.
+/// \param phimaxFull  cluster maximum azimuthal angle in Full SMs.
+/// \param etaminThird minimum value of cluster pseudorapidity in 1/3 SMs.
+/// \param etamaxThird maximum value of cluster pseudorapidity in 1/3 SMs.
+/// \param phiminThird cluster minimum azimuthal angle in 1/3 SMs.
+/// \param phimaxThird cluster maximum azimuthal angle in 1/3 SMs.
+//_________________________________________________________________________________________
+void AliFiducialCut::SetDCALFiducialCut(Float_t etaminFull , Float_t etamaxFull,
+                                        Float_t phiminFull , Float_t phimaxFull,
+                                        Float_t etaminThird, Float_t etamaxThird,
+                                        Float_t phiminThird, Float_t phimaxThird)
+{  
+  fDCALFidCutMinEta->Set(3);
+  fDCALFidCutMaxEta->Set(3);
+  fDCALFidCutMinPhi->Set(3);
+  fDCALFidCutMaxPhi->Set(3);
+  
+  // 1/3 SM
+  fDCALFidCutMinEta->SetAt(etaminThird,2);
+  fDCALFidCutMaxEta->SetAt(etamaxThird,2);
+  fDCALFidCutMinPhi->SetAt(phiminThird,2);
+  fDCALFidCutMaxPhi->SetAt(phimaxThird,2);
+  
+  // Full SM positive eta
+  fDCALFidCutMinEta->SetAt(etaminFull,1);
+  fDCALFidCutMaxEta->SetAt(etamaxFull,1);
+  fDCALFidCutMinPhi->SetAt(phiminFull,1);
+  fDCALFidCutMaxPhi->SetAt(phimaxFull,1); 
+
+  // Full SM negative eta
+  fDCALFidCutMinEta->SetAt(-etamaxFull,0);
+  fDCALFidCutMaxEta->SetAt(-etaminFull,0);
+  fDCALFidCutMinPhi->SetAt( phiminFull,0);
+  fDCALFidCutMaxPhi->SetAt( phimaxFull,0); 
 }
 
 
