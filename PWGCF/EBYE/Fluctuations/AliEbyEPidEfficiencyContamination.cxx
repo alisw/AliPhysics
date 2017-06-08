@@ -989,7 +989,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   
   Double_t ptot = track->P();
-  if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
 
   Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
@@ -1014,7 +1014,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE; 
   Double_t ptotMC = particle->P();
-  if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
 
   //rapidity cut
