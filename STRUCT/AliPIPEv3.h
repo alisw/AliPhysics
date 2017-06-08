@@ -16,6 +16,9 @@
 #include "AliPIPE.h"
 class TGeoPcon;
 class TGeoVolume;
+class TGeoMedium; 
+class TGeoVolumeAssembly; 
+class TGeoRotation; 
 
 
 class AliPIPEv3 : public AliPIPE {
@@ -34,12 +37,16 @@ class AliPIPEv3 : public AliPIPE {
   virtual void   AddAlignableVolumes() const;
 	  
  private:
+  // ECV 
+  // TGeoRotation * Ry180;
+  virtual TGeoVolume * CreatePipeOvalyzed(const TGeoMedium * mat);
+  virtual TGeoVolume * MakeEllipticalSlice(Double_t x, Double_t y, Double_t dz, Double_t thk, Int_t iplane, const TGeoMedium * mat);
   virtual TGeoPcon*   MakeMotherFromTemplate(const TGeoPcon* shape, Int_t imin = -1, Int_t imax = -1, Float_t r0 = 0., Int_t nz =-1);
   virtual TGeoPcon*   MakeInsulationFromTemplate(TGeoPcon* shape);
   virtual TGeoVolume* MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie);
   Bool_t  fBeamBackground; // Flag for beam background simulations
   
-  ClassDef(AliPIPEv3, 2)  //Class for PIPE version using TGeo
+  ClassDef(AliPIPEv3, 3)  //Class for PIPE version using TGeo
 };
  
 #endif
