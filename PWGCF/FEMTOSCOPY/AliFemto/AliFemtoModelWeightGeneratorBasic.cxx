@@ -1,8 +1,6 @@
 ///
-/// \class AliFemtoModelWeightGeneratorBasic
-/// \brief Basic femtoscopic weight generator only return a simple
-/// \author Adam Kisiel <kisiel@mps.ohio-state.edu>
-///
+/// \file AliFemtoModelWeightGeneratorBasic.cxx
+/// \author Adam Kisiel kisiel@mps.ohio-state.edu
 ///
 
 #ifdef __ROOT__
