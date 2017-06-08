@@ -92,7 +92,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
   
-  void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
+  void         MakeSeveralUERemoveBandAnalysis(AliAODPWG4ParticleCorrelation * pCandidate) ;
+  
+  void         CalculateCaloUEBandSeveralUEEstimate(AliAODPWG4ParticleCorrelation * pCandidate,
+                                                    Float_t BandSizeToRemove,
+                                                    Float_t & etaBandPtSum,
+                                                    Float_t & phiBandPtSum) ;
+  
+  void         CalculateTrackUEBandSeveralUEEstimate(AliAODPWG4ParticleCorrelation * pCandidate,
+                                                     Float_t BandSizeToRemove,
+                                                     Float_t & etaBandPtSum,
+                                                     Float_t & phiBandPtSum) ;
+  
+  void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02,
                                  Float_t coneptsumTrack, Float_t coneptsumCluster, 
                                  Bool_t isolated, Int_t iSM) ;
   
@@ -130,6 +142,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsSeveralIsolationOn()          const { return fMakeSeveralIC     ; }
   void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
   void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
+  
+  void         SwitchOnSeveralUEEstimate()           { fMakeSeveralUEEstimate = kTRUE    ; }
+  void         SwitchOffSeveralUEEstimate()          { fMakeSeveralUEEstimate = kFALSE   ; }
   
   void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
   void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
@@ -238,6 +253,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TString  fIsoDetectorString ;                       ///<  Candidate particle for isolation detector.
   Bool_t   fReMakeIC ;                                ///<  Do isolation analysis.
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
+  Bool_t   fMakeSeveralUEEstimate;                    ///<  Do analysis for different Band to estimate UE.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
@@ -277,6 +293,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtThresholds[5] ;                         ///<  Array with pt thresholds to test. Multiple cones and pt thresholds analysis.
   Float_t  fPtFractions[5] ;                          ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
   Float_t  fSumPtThresholds[5] ;                      ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
+  
+  Int_t    fNUESizes ;                                ///< Number of different band width for UE estimate.
+  
+  Float_t  fUERemoveBandSizes[3] ;                    ///< Array with UE estimate band widths.
   
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
@@ -482,6 +502,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtVSUETracksPhiBand;               //!<! Tracks, phi band:  sum pT in cone vs bkg to subtract.
   TH2F *   fhConeSumPtVSUEClusterEtaBand;              //!<! Clusters, eta band: sum pT in cone vs bkg to subtract.
   TH2F *   fhConeSumPtVSUEClusterPhiBand;              //!<! Clusters, phi band:  sum pT in cone vs bkg to subtract.
+  TH2F *   fhConeSumPtEtaUENormClusterSeveralUESizeRemoveBand[3] ; //!<! Accumulated pT in Eta band with different sizes to estimate UE in cone, normalized to cone size, clusters.
+  TH2F *   fhConeSumPtPhiUENormClusterSeveralUESizeRemoveBand[3] ; //!<! Accumulated pT in Phi band with different sizes to estimate UE in cone, normalized to cone size, clusters.
+  TH2F *   fhConeSumPtEtaUENormTrackSeveralUESizeRemoveBand[3] ; //!<! Accumulated pT in Eta band with different sizes to estimate UE in cone, normalized to cone size, tracks.
+  TH2F *   fhConeSumPtPhiUENormTrackSeveralUESizeRemoveBand[3] ; //!<! Accumulated pT in Phi band with different sizes to estimate UE in cone, normalized to cone size, tracks.
   
   // MC
   
