@@ -372,6 +372,10 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     Bool_t hasSPD = spdVertex->GetStatus();
     Bool_t hasTrk = trkVertex->GetStatus();
   
+    // SPD/track vertex?
+    if (hasSPD) fVtxType |= AliCEPBase::kVtxSPD;
+    if (hasTrk) fVtxType |= AliCEPBase::kVtxTracks;
+    
     // Note that AliVertex::GetStatus checks that N_contributors is > 0
     // reject events if both are explicitly requested and none is available
     if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
@@ -380,31 +384,25 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     if (hasSPD) {
       if (spdVertex->IsFromVertexerZ() &&
         !(spdVertex->GetDispersion()<0.04 &&
-        spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxErrRes;
+        spdVertex->GetZRes()<0.25)) fVtxType |= AliCEPBase::kVtxErrRes;
     }
   
-    // reject events if none between the SPD or track verteces are available
-    // if no trk vertex, try to fall back to SPD vertex;
-    if (hasTrk) {
-      fVtxType |= AliCEPBase::kVtxTracks;
-      if (hasSPD) {
-        fVtxType |= AliCEPBase::kVtxSPD;
-        // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
-        if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxErrDif;
-      }
-      
-    } else {
-      fVtxType |= AliCEPBase::kVtxSPD;
+    // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+    if (hasSPD && hasTrk) {
+      if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5)
+        fVtxType |= AliCEPBase::kVtxErrDif;
     }
   
   }
   
   // Cut on the vertex z position
   const AliVVertex *vertex = Event->GetPrimaryVertex();
-  if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxErrZ;
+  if (vertex->GetStatus()) {
+    if (TMath::Abs(vertex->GetZ())>10) fVtxType |= AliCEPBase::kVtxErrZ;
   
-  // set the vertex position fVtxPos
-  fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+    // set the vertex position fVtxPos
+    fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+  }
   
   return fVtxType;
   
