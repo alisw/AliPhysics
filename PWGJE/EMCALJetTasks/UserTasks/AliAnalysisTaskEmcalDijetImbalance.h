@@ -88,6 +88,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetNEtaBins(Int_t n)                                 { fNEtaBins = n; }
   void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
+  void SetPlotNeutralJets(Bool_t b)                         { fPlotNeutralJets = b; }
+  void SetPlotClustersInJets(Bool_t b)                      { fPlotClustersInJets = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -152,6 +154,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
   Bool_t                      fDoCaloStudy;                         ///< Set whether to perform calorimeter detector study
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
+  Bool_t                      fPlotNeutralJets;                     ///< Set whether to plot neutral jet histo
+  Bool_t                      fPlotClustersInJets;                  ///< Set whether to plot histogram of clusters within jets
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -183,7 +187,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 9);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 10);
   /// \endcond
 };
 #endif
