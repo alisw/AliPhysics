@@ -503,6 +503,10 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   } else if (trainConfig == 303) {  // PHOS triggers
     cuts.AddCut("80000113", "00200009327000008250404000", "0162103500000000", "2444400041013200000"); // MinBias
     cuts.AddCut("80052113", "00200009327000008250404000", "0162103500000000", "2444400041013200000"); // PHI7    
+  //
+  } else if (trainConfig == 304) {
+    cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
+    cuts.AddCut("80010113", "00200009327000008250404000", "0162101500000000"); // new default, alpha pT dependent for 5TeV
 
   //--------------------------------------------------------------------------      
   // 2016 pPb w/ past future protection 2.24 \mus protected
@@ -524,6 +528,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   } else if (trainConfig == 313) {  // PHOS triggers
     cuts.AddCut("80000213", "00200009327000008250404000", "0162103500000000", "2444400041013200000"); // MinBias
     cuts.AddCut("80052213", "00200009327000008250404000", "0162103500000000", "2444400041013200000"); // PHI7    
+  } else if (trainConfig == 314) {
+    cuts.AddCut("80010213", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
+    cuts.AddCut("80010213", "00200009327000008250404000", "0162101500000000"); // new default, alpha pT dependent for 5TeV
     
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
