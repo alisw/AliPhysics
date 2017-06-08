@@ -1,5 +1,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+#include <map>
+#include <vector>
+
 #include <Riostream.h>
 
 // ROOT includes
@@ -17,6 +20,7 @@
 #include "TAxis.h"
 #include "TH2.h"
 #include "TLegend.h"
+#include "TTree.h"
 #endif
 
 Int_t fNpages = 0;
@@ -129,6 +133,7 @@ void EscapeSpecialChars ( TString& str )
 //_________________________________
 void BeginFrame ( TString title, ofstream& outFile, TString label = "" )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << endl;
   outFile << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   outFile << "\\begin{frame}";
@@ -140,24 +145,28 @@ void BeginFrame ( TString title, ofstream& outFile, TString label = "" )
 //_________________________________
 void EndFrame ( ofstream& outFile )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << "\\end{frame}" << endl;
 }
 
 //_________________________________
 void MakeDefaultItem ( ofstream& outFile, TString defaultItem = "" )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << "\\begin{itemize}" << endl;
   outFile << " \\item " << defaultItem.Data() << endl;
   outFile << "\\end{itemize}" << endl;
 }
 
 //_________________________________
-Bool_t MakeSingleFigureSlide ( TString objName, TString filename, TString title, ofstream &outFile, TString label = "", Bool_t warnIfMissing = kTRUE, Bool_t closePdf = kFALSE )
+Bool_t MakeSingleFigureSlide ( TString objName, TString filename, TString title, ofstream& outFile, TString label = "", Bool_t warnIfMissing = kTRUE, Bool_t closePdf = kFALSE )
 {
   Bool_t isOk = PrintToPdf(objName,filename,closePdf,warnIfMissing);
   if ( ! isOk ) {
     return kFALSE;
   }
+
+  if ( ! outFile.is_open() ) return kTRUE;
 
   BeginFrame(title,outFile,label);
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
@@ -225,6 +234,8 @@ Bool_t MakeTriggerSlide ( TString filename, ofstream &outFile )
   fNpages++;
   delete can;
 
+  if ( ! outFile.is_open() ) return kTRUE;
+
   BeginFrame("Trigger chamber efficiencies", outFile);
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{0.66\\textwidth}" << endl;
@@ -241,17 +252,21 @@ Bool_t MakeTriggerSlide ( TString filename, ofstream &outFile )
 //_________________________________
 Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile, Bool_t outliers = kFALSE )
 {
+  for ( Int_t ich=0; ich<4; ich++ ) {
+    TString currName = Form("effEvolutionbothPlanesRPCCh%i",11+ich);
+    if ( outliers ) currName += "_outlier";
+    PrintToPdf(currName,filename,kFALSE,kFALSE);
+  }
+
+  if ( ! outFile.is_open() ) return kTRUE;
   TString baseName = outliers ? "eff.-<eff.> for outliers" : "efficiency";
   BeginFrame(Form("Trigger chamber %s per RPC",baseName.Data()),outFile,outliers?"":"rpcEff");
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{\\textwidth}" << endl;
   outFile << "  \\centering" << endl;
   for ( Int_t ich=0; ich<4; ich++ ) {
-    TString currName = Form("effEvolutionbothPlanesRPCCh%i",11+ich);
-    if ( outliers ) currName += "_outlier";
-    PrintToPdf(currName,filename,kFALSE,kFALSE);
     if ( ich%2 == 0 ) outFile << endl;
-    outFile << "  \\includegraphics[width=0.37\\textwidth,page=" << fNpages << "]{" << outPdf << "}" << endl;
+    outFile << "  \\includegraphics[width=0.37\\textwidth,page=" << fNpages-3+ich << "]{" << outPdf << "}" << endl;
   }
   outFile << " \\end{columns}" << endl;
   EndFrame(outFile);
@@ -274,6 +289,7 @@ Bool_t MakeTriggerRPCslides ( TString filename, ofstream &outFile, Bool_t fromTr
 //_________________________________
 void MakeSummary ( TString period, ofstream &outFile )
 {
+  if ( ! outFile.is_open() ) return;
   BeginFrame("Summary I",outFile);
   outFile << "General informations" << endl;
   outFile << "\\begin{itemize}" << endl;
@@ -311,7 +327,7 @@ void MakeSummary ( TString period, ofstream &outFile )
   MakeDefaultItem(outFile);
   outFile << endl;
   outFile << "MTR efficiency:" << endl;
-  MakeDefaultItem(outFile,"More than xx\\% efficiency in trigger chambers, stable");
+  MakeDefaultItem(outFile);
   outFile << endl;
   outFile << "MCH and MUON data quality:" << endl;
   MakeDefaultItem(outFile);
@@ -319,8 +335,37 @@ void MakeSummary ( TString period, ofstream &outFile )
 }
 
 //_________________________________
-void MakeRunSummary ( ofstream &outFile, TString trackerQA, ifstream* inFile = 0x0 )
+std::map<Int_t,std::vector<Int_t>> GetRunInfo ( TString evsQA )
 {
+  std::map<Int_t,std::vector<Int_t>> map;
+  if ( gSystem->AccessPathName(evsQA.Data()) == 0 ) {
+    TFile* file = TFile::Open(evsQA);
+    TTree* tree = static_cast<TTree*>(file->Get("trending"));
+    if ( tree ) {
+      Int_t run, fill, bcs;
+      tree->SetBranchAddress("run",&run);
+      tree->SetBranchAddress("fill",&fill);
+      tree->SetBranchAddress("bcs",&bcs);
+      for ( Long64_t ientry=0; ientry<tree->GetEntries(); ientry++ ) {
+        tree->GetEntry(ientry);
+        auto search = map.find(run);
+        if ( search != map.end() ) continue;
+        auto vec = &(map[run]);
+        vec->push_back(fill);
+        vec->push_back(bcs);
+      }
+    }
+    delete file;
+  }
+  return map;
+}
+
+//_________________________________
+void MakeRunSummary ( ofstream &outFile, TString trackerQA, TString evsQA = "", ifstream* inFile = 0x0 )
+{
+
+  std::map<Int_t,std::vector<Int_t>> map = GetRunInfo(evsQA);
+
   TObjArray* runListArr = GetRunList(trackerQA);
   runListArr->Sort();
 
@@ -337,6 +382,8 @@ void MakeRunSummary ( ofstream &outFile, TString trackerQA, ifstream* inFile = 0
 
   Int_t irun = 0;
   Int_t readRun = -2, currRun = -1;
+
+  Int_t previousFill = -1;
 
   for ( Int_t ipage=0; ipage<nPages; ipage++ ) {
     TString title = "Run summary";
@@ -373,7 +420,19 @@ void MakeRunSummary ( ofstream &outFile, TString trackerQA, ifstream* inFile = 0
             }
             else if ( currLine.Contains("colorLegend") ) readSummary = kFALSE;
           }
-          if ( isNew ) outFile << "   \\runTab{" << currRun << "}{}" << endl;
+          if ( isNew ) {
+            auto search = map.find(currRun);
+            TString info = "";
+            if ( search != map.end() ) {
+              auto vec = search->second;
+              Int_t fill = vec[0];
+              if ( fill != previousFill ) {
+                previousFill = fill;
+                info = Form("Fill %i, IB %i",fill,vec[1]);
+              }
+            }
+            outFile << "   \\runTab{" << currRun << "}{" << info.Data() << "}" << endl;
+          }
           else outFile << readLines.Data();
           if ( irun%nRunsPerColumn == 0 ) break;
         }
@@ -400,6 +459,7 @@ void MakeRunSummary ( ofstream &outFile, TString trackerQA, ifstream* inFile = 0
 //_________________________________
 void MakePreamble ( ofstream &outFile )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << "\\documentclass[9pt,table]{beamer}" << endl;
   outFile << "\\mode<presentation>" << endl;
   outFile << "\\usepackage[T1]{fontenc}" << endl;
@@ -475,6 +535,7 @@ void MakePreamble ( ofstream &outFile )
 //_________________________________
 void BeginSlides ( TString period, TString pass, TString authors, ofstream &outFile )
 {
+  if ( ! outFile.is_open() ) return;
   TString authorsShort = "";
   Bool_t previousIsLetter = kFALSE;
   for ( Int_t ichar=0; ichar<authors.Length(); ichar++ ) {
@@ -506,6 +567,7 @@ void BeginSlides ( TString period, TString pass, TString authors, ofstream &outF
 //_________________________________
 void EndSlides ( ofstream &outFile )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << "\\end{document}" << endl;
   outFile.close();
 }
@@ -513,6 +575,7 @@ void EndSlides ( ofstream &outFile )
 //_________________________________
 void StartAppendix ( ofstream &outFile )
 {
+  if ( ! outFile.is_open() ) return;
   outFile << endl;
   outFile << endl;
   outFile << "\\AtBeginSection[] % Do nothing for \\section*" << endl;
@@ -547,8 +610,9 @@ void WriteRunList ( TString trackerQA, TString outFilename = "runListQA.txt" )
 
 
 //_________________________________
-void UpdateExisting ( TString texFilename, TString trackerQA )
+TObjArray* UpdateExisting ( TString texFilename, TString trackerQA, TString evsQA )
 {
+  TObjArray* trigList = NULL;
   TString backupFile = texFilename;
   backupFile.Append(".backup");
   printf("Copying existing file into %s\n",backupFile.Data());
@@ -571,71 +635,89 @@ void UpdateExisting ( TString texFilename, TString trackerQA )
       frameTitle.ReadLine(inFile,kFALSE);
       currLine += Form("\n%s",frameTitle.Data());
       if ( frameTitle.Contains("frametitle") && frameTitle.Contains("Run summary") ) {
-        MakeRunSummary(outFile, trackerQA, &inFile);
+        MakeRunSummary(outFile, trackerQA, evsQA, &inFile);
         while ( currLine != "\\end{frame}" ) {
           currLine.ReadLine(inFile);
         }
         continue;
       }
     }
+    else if ( currLine.Contains("%TriggerList=") ) {
+      TString triggers = currLine;
+      triggers.Remove(0,triggers.Index("=")+1);
+      trigList = triggers.Tokenize(",");
+    }
     outFile << currLine.Data() << endl;
   }
   inFile.close();
+
+  return trigList;
 }
 
 //_________________________________
-void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.root", TString triggerQA = "QA_muon_trigger.root", TString texFilename = "muonQA.tex", TString outRunList = "" )
+void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.root", TString triggerQA = "QA_muon_trigger.root", TString evsQA = "trending_evs.root", TString texFilename = "muonQA.tex", TString outRunList = "" )
 {
-  // if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
-  if ( 0 ) { // REMEMBER TO CHANGE
+
+  TString fileNames[2] = {trackerQA,triggerQA};
+  for ( Int_t ifile=0; ifile<2; ifile++ ) {
+    if ( gSystem->AccessPathName(fileNames[ifile].Data()) ) {
+      printf("Fatal: cannot open %s\n",fileNames[ifile].Data());
+      return;
+    }
+  }
+
+  TObjArray* trigList = 0x0;
+  ofstream outFile;
+  if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
     printf("Output file %s already exists: updating it\n", texFilename.Data());
-    UpdateExisting(texFilename, trackerQA);
+    trigList = UpdateExisting(texFilename, trackerQA, evsQA);
   }
   else {
     EscapeSpecialChars(period);
     EscapeSpecialChars(pass);
 
-    TObjArray* trigList = triggerList.Tokenize(",");
+    trigList = triggerList.Tokenize(",");
 
-    ofstream outFile(texFilename);
+    outFile.open(texFilename);
     outFile << "%TriggerList=" << triggerList.Data() << endl;
     MakePreamble(outFile);
     BeginSlides(period,pass,authors,outFile);
 
     MakeSummary(period,outFile);
-    MakeRunSummary(outFile, trackerQA);
+    MakeRunSummary(outFile, trackerQA, evsQA);
+  }
 
-    MakeSingleFigureSlide("AllTriggers",trackerQA,"Number of events per trigger",outFile);
-    MakeSingleFigureSlide("L2AQAoverSCALERS",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
+  MakeSingleFigureSlide("AllTriggers",trackerQA,"Number of events per trigger",outFile);
+  MakeSingleFigureSlide("L2AQAoverSCALERS",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
 
     // Bool_t isNew = MakeSingleFigureSlide("Trigger_fromChamberEff", triggerQA, "MTR chamber efficiency (from trigger track)", outFile);
-    Bool_t isNew = MakeTriggerRPCslides(triggerQA, outFile);
-    if ( ! isNew ) MakeTriggerSlide(triggerQA,outFile);
+  Bool_t isNew = MakeTriggerRPCslides(triggerQA, outFile);
+  if ( ! isNew ) MakeTriggerSlide(triggerQA,outFile);
 
-    for ( Int_t itrig=0; itrig<trigList->GetEntries(); itrig++ ) {
-      TString currTrig = trigList->At(itrig)->GetName();
-      TString shortTrig = GetTriggerShort(currTrig);
-      MakeSingleFigureSlide(Form("RatioTrackTypes_cent0trigger%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile);
-      MakeSingleFigureSlide(Form("RatioTrackTypes_cent3trigger%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,"",kFALSE);
-      MakeSingleFigureSlide(Form("TrackMult_cent0trigger%s",currTrig.Data()),trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile);
-      MakeSingleFigureSlide(Form("AsymMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
-      MakeSingleFigureSlide(Form("BeamGasMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
-    }
-    MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);
-    MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
+  for ( Int_t itrig=0; itrig<trigList->GetEntries(); itrig++ ) {
+    TString currTrig = trigList->At(itrig)->GetName();
+    TString shortTrig = GetTriggerShort(currTrig);
+    MakeSingleFigureSlide(Form("RatioTrackTypes_cent0trigger%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile);
+    MakeSingleFigureSlide(Form("RatioTrackTypes_cent3trigger%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,"",kFALSE);
+    MakeSingleFigureSlide(Form("TrackMult_cent0trigger%s",currTrig.Data()),trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile);
+    MakeSingleFigureSlide(Form("AsymMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
+    MakeSingleFigureSlide(Form("BeamGasMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
+  }
+  MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);    MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
 
-    StartAppendix(outFile);
-    MakeSingleFigureSlide("PhysSelCutOnCollTrigger",trackerQA,"Physics selection effects",outFile);
-    MakeSingleFigureSlide("cClusterHitMapPerCh",trackerQA,"Average cluster position per chamber",outFile,"","clustersPosition");
-    MakeSingleFigureSlide("cChi2",trackerQA,"Tracking quality",outFile);
+  if ( outFile.is_open() ) StartAppendix(outFile);
+  MakeSingleFigureSlide("PhysSelCutOnCollTrigger",trackerQA,"Physics selection effects",outFile);
+  MakeSingleFigureSlide("cClusterHitMapPerCh",trackerQA,"Average cluster position per chamber",outFile,"","clustersPosition");
+  MakeSingleFigureSlide("cChi2",trackerQA,"Tracking quality",outFile);
 
-    if ( isNew ) MakeTriggerRPCslides(triggerQA, outFile, kTRUE);
-    else {
-      MakeTriggerRPCslide(triggerQA,outFile);
-      MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
-    }
-    MakeSingleFigureSlide("cLptHpt",trackerQA,"Trigger \\pt\\ cut",outFile,"",kTRUE,kTRUE);
+  if ( isNew ) MakeTriggerRPCslides(triggerQA, outFile, kTRUE);
+  else {
+    MakeTriggerRPCslide(triggerQA,outFile);
+    MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
+  }
+  MakeSingleFigureSlide("cLptHpt",trackerQA,"Trigger \\pt\\ cut",outFile,"",kTRUE,kTRUE);
 
+  if ( outFile.is_open() ) {
     BeginFrame("Hardware issues",outFile);
     outFile << "MUON Trigger" << endl;
     MakeDefaultItem(outFile);
@@ -645,9 +727,9 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     EndFrame(outFile);
 
     EndSlides(outFile);
-
-    delete trigList;
   }
+
+  delete trigList;
 
   if ( ! outRunList.IsNull() ) WriteRunList(trackerQA, outRunList);
 }
