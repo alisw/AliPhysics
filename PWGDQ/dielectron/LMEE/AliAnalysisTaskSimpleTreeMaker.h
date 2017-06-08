@@ -79,9 +79,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
     void SetMC(Bool_t answer){ fIsMC = answer; }
 
-    //Set to request centrality value for events
-    void SetIsIonColl(Bool_t answer){ fIsIonColl = answer; }
-    
     //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
     void SetTPCminClusters(Int_t number){
         fESDtrackCuts->SetMinNClustersTPC(number);
@@ -169,6 +166,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
     Bool_t fIsMC;
+	AliMCParticle* fMcTrack;
+	AliMCParticle* fMotherTrack;
   
     Double_t fPtMin;// minimum pT threshold (default = 0)
     Double_t fPtMax;// maximum pT threshold (default = 10)
@@ -193,7 +192,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Double_t fPSigTPCMax;
     
     Bool_t fPionPIDcutTPC;
-    Bool_t fIsIonColl;
     
     Bool_t fIsV0tree;
     Bool_t fHasSDD;
@@ -206,7 +204,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Bool_t fIsGRIDanalysis;
     Int_t fGridPID;
     
-    ClassDef(AliAnalysisTaskSimpleTreeMaker, 2); //
+    ClassDef(AliAnalysisTaskSimpleTreeMaker, 3); //
 
 };
 
