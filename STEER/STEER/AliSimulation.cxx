@@ -1123,8 +1123,10 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
       if (entry) {
 	  AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+	  Bool_t useSigmaxy=kTRUE;
 	  if (vertex) {
 	      if(vertex->GetXRes()>2.8) { // > pipe radius --> it's a dummy object, don't use it 
+		  useSigmaxy=kFALSE;
 		  entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
 		  if (entry) vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
 	      }
@@ -1133,12 +1135,19 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	      vertex->GetXYZ(vtxPos);
 	      vertex->GetSigmaXYZ(vtxSig);
 	      AliInfo("Overwriting Config.C vertex settings !");
-	      AliInfo(Form("Vertex position from OCDB entry: x = %13.3f, y = %13.3f, z = %13.3f (sigma = %13.3f)\n",
-			   vtxPos[0], vtxPos[1], vtxPos[2], vtxSig[2]));
-	      
+	      TString usedCDBobj=(entry->GetId()).GetPath();
+	      AliInfo(Form("Vertex mean position from OCDB entry (%s): x = %13.3f, y = %13.3f, z = %13.3f", usedCDBobj.Data(), vtxPos[0], vtxPos[1], vtxPos[2]));
 	      AliGenerator *gen = gAlice->GetMCApp()->Generator();
 	      gen->SetOrigin(vtxPos[0], vtxPos[1], vtxPos[2]);   // vertex position
-	      gen->SetSigmaZ(vtxSig[2]);
+	      if(useSigmaxy){
+		vtxSig[0]*=0.9; // remove 10% tolerance
+		vtxSig[1]*=0.9; // remove 10% tolerance
+		AliInfo(Form("Vertex spread from OCDB entry: sigmax = %13.6f, sigmay = %13.6f, sigmaz = %13.3f",vtxSig[0], vtxSig[1], vtxSig[2]));
+		gen->SetSigma(vtxSig[0], vtxSig[1], vtxSig[2]);
+	      }else{
+		AliInfo(Form("Vertex spread from OCDB entry only for z: sigmaz = %13.3f", vtxSig[2]));
+		gen->SetSigmaZ(vtxSig[2]);
+	      }
 	  }
       }
   }
