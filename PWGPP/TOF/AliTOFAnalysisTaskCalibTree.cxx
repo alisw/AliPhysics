@@ -241,7 +241,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     deltax = track->GetTOFsignalDx();
     deltaz = track->GetTOFsignalDz();
     deltat = (time - timei[AliPID::kPion] - timeZeroTOF);
-    deltaraw = (track->GetTOFSignalRaw() - timei[AliPID::kPion] - timeZeroTOF);
+    deltaraw = (track->GetTOFsignalRaw() - timei[AliPID::kPion] - timeZeroTOF);
     // add hit to array (if there is room)
     if (fnhits > fMaxHits) continue;
     fmomentum[fnhits] = momentum;
