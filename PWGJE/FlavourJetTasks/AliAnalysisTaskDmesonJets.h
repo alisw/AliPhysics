@@ -403,7 +403,13 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     typedef std::pair<AliJetInfo*, Double_t> jet_distance_pair;
 
-    static std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, Bool_t firstParton=kFALSE);
+    enum ECheckOriginMode_t {
+      kFirstParton,    /// Look for the very first parton in the fragmentation tree
+      kLastParton,     /// Look for the last parton in the fragmentation tree (closest to the hadron)
+      kParticlePDG     /// Look for a specific particle in the fragmentation tree (closest to the hadron)
+    };
+
+    static std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, ECheckOriginMode_t mode = kLastParton, Int_t pdg = 2212);
     static EMesonDecayChannel_t CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray);
 
     AnalysisEngine();
@@ -421,6 +427,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetRDHFCuts(AliRDHFCuts* cuts);
     void SetRejectedOriginMap(UInt_t m)             { fRejectedOrigin = m    ; }
     void SetAcceptedDecayMap(UInt_t m)              { fAcceptedDecay  = m    ; }
+    void SetRejectISR(Bool_t b)                     { fRejectISR      = b    ; }
 
     const char* GetCandidateName() const { return fCandidateName.Data(); }
     const char* GetName() const;
@@ -490,6 +497,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
     TRandom                           *fRandomGen             ; //!<! Random number generator
     Double_t                           fTrackEfficiency       ; //!<! Artificial tracking inefficiency (0...1) -> set automatically at ExecOnce by AliAnalysisTaskDmesonJets
+    Bool_t                             fRejectISR             ; //!<! Reject initial state radiation
     Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
@@ -544,6 +552,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetApplyKinematicCuts(Bool_t b)            { fApplyKinematicCuts = b ; }
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
   void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
+  void SetRejectISR(Bool_t b)                     { fRejectISR          = b ; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -573,6 +582,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Bool_t               fApplyKinematicCuts        ; ///<  Apply jet kinematic cuts
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
+  Bool_t               fRejectISR                 ; ///<  Reject initial state radiation
   AliHFAODMCParticleContainer* fMCContainer       ; //!<! MC particle container
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
@@ -583,7 +593,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 7);
+  ClassDef(AliAnalysisTaskDmesonJets, 8);
   /// \endcond
 };
 

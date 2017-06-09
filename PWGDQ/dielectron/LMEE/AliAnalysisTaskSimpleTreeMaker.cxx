@@ -61,6 +61,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fStream(0),
     fQAhist(0),
     mcEvent(0), 
+    fMcTrack(0),
+    fMotherTrack(0),
     fESDtrackCuts(0),
     fPIDResponse(0),
     fCentralityPercentileMin(0),
@@ -80,7 +82,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fPIDcutITS(kFALSE),
     fPIDcutTOF(kFALSE),
     fPionPIDcutTPC(kFALSE),
-    fIsIonColl(kFALSE),
     fIsMC(kTRUE),
     fHasSDD(kTRUE),
     fIsGRIDanalysis(kTRUE),
@@ -99,6 +100,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fStream(0),
     fQAhist(0),
     mcEvent(0), 
+    fMcTrack(0),
+    fMotherTrack(0),
     fESDtrackCuts(0),
     fPIDResponse(0),
     fCentralityPercentileMin(0),
@@ -118,7 +121,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fPIDcutITS(kFALSE),
     fPIDcutTOF(kFALSE),
     fPionPIDcutTPC(kFALSE),
-    fIsIonColl(kFALSE),
     fIsMC(kTRUE),
     fHasSDD(kTRUE),
     fIsGRIDanalysis(kTRUE),
@@ -153,19 +155,20 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
   
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = static_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+    AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
     inputHandler->SetNeedField();
      
     fPIDResponse = inputHandler->GetPIDResponse();
-    if (!fPIDResponse){
+    if(!fPIDResponse){
         AliFatal("This task needs the PID response attached to the inputHandler");
       return;
     } 
 
+    
     fStream = new TTreeStream("tracks");
-    fTree   = static_cast<TTree*>(fStream->GetTree());
+    fTree   = dynamic_cast<TTree*>(fStream->GetTree());
 
-    //Get grid PID
+    //Get grid PID which can be used later to assign unique event numbers
     if(fIsGRIDanalysis){
         const char* gridIDchar = gSystem->Getenv("ALIEN_PROC_ID");
         std::string str(gridIDchar);
@@ -175,6 +178,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
         fGridPID = -1;
     }
 
+    //Create TH2F for armenteros plot. Filled if creating v0 tree
     fArmPlot = new TH2F("ArmPlot", "Armenteros Plot", 100, -1, 1, 100, 0, 0.4);
     if(fIsV0tree){
         fArmPlot->GetXaxis()->SetTitle("#alpha = (p^{+}-p^{-})/(p^{+}+p^{-})");
@@ -195,20 +199,29 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     AliVEvent* event = 0x0;
     AliESDEvent* esdEvent = 0x0;
     if(!fIsV0tree){
-        event = static_cast<AliVEvent*>(InputEvent());
+        event = dynamic_cast<AliVEvent*>(InputEvent());
     }else{
-        esdEvent = static_cast<AliESDEvent*>(InputEvent());
+        esdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
+        //event = dynamic_cast<AliESDEvent*>(InputEvent());
         event = esdEvent;
     }
-    if(!event && !esdEvent) {
+    if(!event) {
         AliError("No event");
     return;
     } 
     fQAhist->Fill("Events_check",1);
+    
+    // check event cuts
+    if(IsEventAccepted(event) == 0){ 
+        return;
+    }
+    fQAhist->Fill("Events_accepted",1);
 
     // Process also MC truth  
-    mcEvent = MCEvent();
+    AliMCEventHandler* mcHandler = 0x0;     
     if(fIsMC){
+        mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+        mcEvent = MCEvent();
         if(!mcEvent){
             AliError("Could not retrieve MC event");
             return;
@@ -217,14 +230,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
     eventNum += 1;
 
-    // check event cuts
-    if( IsEventAccepted(event) == 0){ 
-        return;
-    }
-    fQAhist->Fill("Events_accepted",1);
-
+    
     // PID Response task active?
-    fPIDResponse = (static_cast<AliInputEventHandler*>((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))->GetPIDResponse();
+    fPIDResponse = (dynamic_cast<AliInputEventHandler*>((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))->GetPIDResponse();
 
     if(!fPIDResponse){ AliFatal("This task needs the PID response attached to the inputHandler"); }
 
@@ -233,29 +241,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     Double_t primaryVertex[3];
     primaryVertex[0] = vertex->GetX();
     primaryVertex[1] = vertex->GetY();
-    primaryVertex[2] = vertex->GetZ();
+    primaryVertex[2] = vertex->GetZ(); 
 
-    Double_t impactParameter = -999;
-    if(fIsMC){
-        AliGenHijingEventHeader* hHijing = 0;
-        AliGenEventHeader*  mcGenH  = mcEvent->GenEventHeader();
-
-        if(mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
-            //Option 1: Just Hijing
-            hHijing = static_cast<AliGenHijingEventHeader*>(mcGenH);
-        }else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-            //Option 2: cocktail involving Hijing
-            TList* headers = (static_cast<AliGenCocktailEventHeader*>(mcGenH))->GetHeaders();
-            hHijing = static_cast<AliGenHijingEventHeader*>(headers->FindObject("hijing_0"));
-        }   
-        if(hHijing){
-            impactParameter = hHijing->ImpactParameter();
-        }
-    }
 
     //Get Multiplicity
     Double_t nMultiplicity = -1;
-    AliMultSelection* multSelection = static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+    AliMultSelection* multSelection = dynamic_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
     if(!multSelection){
         AliWarning("AliMultSelection object not found");
     }
@@ -272,21 +263,74 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     if(!fIsV0tree){
         for (Int_t iTrack = 0; iTrack < eventTracks; iTrack++){ 
 
-            AliVTrack* track = static_cast<AliVTrack*>(event->GetTrack(iTrack));
+            AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
             if(!track){
                 AliError(Form("Could not receive track %d", iTrack));
             continue;
             }
 
             fQAhist->Fill("Tracks_all",1);
+
+            //Declare MC variables
+            Double_t mcEta   = -99;
+            Double_t mcPhi   = -99;
+            Double_t mcPt    = -99;
+            Int_t iPdg       = -9999;
+            Int_t iPdgMother = -9999;
+            Bool_t IsEnhanced = kFALSE;
+
+            std::cout << "Track label: " << track->GetLabel() << std::endl;
+
+            //Get MC information
+            if(fIsMC){
+                mcEvent = MCEvent();
+                fMcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+
+                //Check valid pointer has been returned. If so, retrieve MC information.
+                if(!fMcTrack){
+                    
+                    //Printf("mcTrack is a null pointer....");
+                    continue;
+                }
+                else{
+                    iPdg = fMcTrack->PdgCode();
+                    
+                    mcEta = fMcTrack->Eta();
+                    mcPhi = fMcTrack->Phi();
+                    mcPt = fMcTrack->Pt();
+
+                    Int_t gMotherIndex = fMcTrack->GetMother();
+
+                    fMotherTrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+                    iPdgMother = fMotherTrack->PdgCode();
+
+                    //Currently no injected MC productions for Run 2. Hence commented out
+                    //Now determine whether track comes from an injected MC sample or not
+                    /*Int_t mcTrackIndex = -9999;
+                    while(!(fMcTrack->GetMother() < 0)){ 
+                        mcTrackIndex = fMcTrack->GetMother();
+                        mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(fMcTrack->GetMother()));
+                    }
+                    if(!(mcEvent->IsFromBGEvent(TMath::Abs(mcTrackIndex)))){
+                        IsEnchanced = kTRUE;
+                    }else{
+                        IsEnhanced = kFALSE;
+                    }*/
+
+                }
+                
+            }
+
+            fQAhist->Fill("Tracks_MCcheck", 1);
+
             //Apply global track filter
             if(!fIsAOD){
-                if(!(fESDtrackCuts->AcceptTrack(static_cast<const AliESDtrack*>(track)))){ 
+                if(!(fESDtrackCuts->AcceptTrack(dynamic_cast<const AliESDtrack*>(track)))){ 
                     continue; 
                 }
             }
             else{
-                if(!(static_cast<AliAODTrack*>(track))->TestFilterBit(fFilterBit)){
+                if(!((dynamic_cast<AliAODTrack*>(track)))->TestFilterBit(fFilterBit)){
                     continue;
                 }
             }
@@ -317,16 +361,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
             TBits tpcSharedMap = 0;
             if(fIsAOD){
-                tpcSharedMap = static_cast<AliAODTrack*>(track)->GetTPCSharedMap();
+                tpcSharedMap = (dynamic_cast<AliAODTrack*>(track))->GetTPCSharedMap();
             }else{
-                tpcSharedMap = static_cast<AliESDtrack*>(track)->GetTPCSharedMap();
+                tpcSharedMap = (dynamic_cast<AliESDtrack*>(track))->GetTPCSharedMap();
             }
 
             Double_t nTPCshared = -1;
             if(fIsAOD){
                 nTPCshared = tpcSharedMap.CountBits(0) - tpcSharedMap.CountBits(159);
             }else{
-                nTPCshared = static_cast<AliESDtrack*>(track)->GetTPCnclsS();
+                nTPCshared = (dynamic_cast<AliESDtrack*>(track))->GetTPCnclsS();
             }
 
             Double_t chi2TPC = track->GetTPCchi2(); //Function only implemented in ESDs. Returns dumym value for AODs
@@ -343,7 +387,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 track->GetImpactParameters( &DCAesd[0], &DCAesd[1]);
             }
             else{
-                GetDCA(const_cast<const AliVEvent*>(event), static_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
+                GetDCA(const_cast<const AliVEvent*>(event), dynamic_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
             }
             //Final DCA values stored here 
             Double_t DCA[2];
@@ -379,9 +423,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             //Store if SPD has hit in first layer
             Bool_t SPDfirst = kFALSE;
             if(fIsAOD){
-                SPDfirst = static_cast<AliAODTrack*>(track)->HasPointOnITSLayer(0); //Method available for ESDs and AODs
+                SPDfirst = (dynamic_cast<AliAODTrack*>(track))->HasPointOnITSLayer(0); //Method available for ESDs and AODs
             }else{
-                SPDfirst = static_cast<AliESDtrack*>(track)->HasPointOnITSLayer(0);
+                SPDfirst = (dynamic_cast<AliESDtrack*>(track))->HasPointOnITSLayer(0);
             }
      
             fQAhist->Fill("Tracks_TrackCuts", 1);
@@ -449,40 +493,18 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Double_t goldenChi2 = -1;
             if(vertex->GetStatus()){
                 if(fIsAOD){
-                    goldenChi2 = static_cast<AliAODTrack*>(track)->GetChi2TPCConstrainedVsGlobal();
+                    goldenChi2 = dynamic_cast<AliAODTrack*>(track)->GetChi2TPCConstrainedVsGlobal();
                 }
                 else{
-                    goldenChi2 = static_cast<AliESDtrack*>(track)->GetChi2TPCConstrainedVsGlobal(static_cast<const AliESDVertex*>(vertex));
+                    goldenChi2 = dynamic_cast<AliESDtrack*>(track)->GetChi2TPCConstrainedVsGlobal(dynamic_cast<const AliESDVertex*>(vertex));
                 }
             }
 
             Int_t charge = -10;
             charge = track->Charge();
-            Int_t label = -999;
-            label = track->GetLabel();
-
-            //Declare MC variables
-            Double_t mcEta   = -99;
-            Double_t mcPhi   = -99;
-            Double_t mcPt    = -99;
-            Int_t iPdg       = 0;
-            Int_t iPdgMother = 0;
-            if(fIsMC){
-                AliMCParticle* mcTrack = static_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
-                TParticle* mcParticle = static_cast<TParticle*>(mcTrack->Particle());
-                mcEta = mcTrack->Eta();
-                mcPhi = mcTrack->Phi();
-                mcPt = mcTrack->Pt();
-
-                iPdg = mcTrack->PdgCode();
-
-                Int_t gMotherIndex = mcTrack->GetMother();
-                AliMCParticle* motherTrack = static_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
-                iPdgMother = motherTrack->PdgCode();
-            }
 
             //Stream values into tree
-            if( fIsMC ){
+            if(fIsMC){
                 (*fStream)    << "tracks" <<
                 "pt="         << pt << 
                 "eta="        << eta << 

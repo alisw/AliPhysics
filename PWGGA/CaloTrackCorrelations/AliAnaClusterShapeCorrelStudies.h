@@ -440,10 +440,12 @@ public:
   
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
-  
-  TH3F *   fhSMM02    [3];                        //!<! SM number vs m02
-  TH3F *   fhColM02   [3];                        //!<! main cell column vs m02
-  TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02
+
+  TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
+  TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
+  TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
+  TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
+  TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
   //
   // Weight studies
