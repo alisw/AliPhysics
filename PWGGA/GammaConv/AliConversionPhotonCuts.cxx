@@ -2155,7 +2155,10 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
     fMinPhiCut = 2.4; //OROC C08 tightest cut
     break;
-    
+  case 8:
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    fMinPhiCut = 4.54; //PHOS phi
+    break;
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2201,7 +2204,10 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
     fMaxPhiCut = 3.6; //OROC C08 tighest cut
     break;
-    
+  case 8:
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    fMaxPhiCut = 5.59; //PHOS phi
+    break;
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;
