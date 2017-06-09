@@ -74,8 +74,8 @@ class AliHFSystErr : public TNamed
     if(flag) AliInfo("Settings for the pass4 analysis");  
   }
   void SetIs5TeVAnalysis(Bool_t flag){
-   fIs5TeVAnalysis = flag;
-   if(flag) AliInfo("Settings for the 5TeV analysis");  
+    fIs5TeVAnalysis = flag;
+    if(flag) AliInfo("Settings for the 5TeV analysis");  
   }
   void SetIsBDTAnalysis(Bool_t flag){
     fIsBDTAnalysis = flag;
@@ -267,7 +267,9 @@ class AliHFSystErr : public TNamed
 
   void InitD0toKpi2015PbPb3050();
   void InitDplustoKpipi2015PbPb3050();
+  void InitDstoKKpi2015PbPb010();
   void InitDstoKKpi2015PbPb3050();
+  void InitDstoKKpi2015PbPb6080();
   void InitDstartoD0pi2015PbPb3050();
 
 
@@ -285,7 +287,7 @@ class AliHFSystErr : public TNamed
   Int_t fRunNumber;        /// Run Number (year)
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
   TString fCentralityClass;  /// Centrality class
-                           /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
+  /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
   TString fRapidityRange;  /// Rapidity range fot y measurements 
 
   Bool_t fIsLowEnergy;     /// flag for the low energy (2.76TeV) run
