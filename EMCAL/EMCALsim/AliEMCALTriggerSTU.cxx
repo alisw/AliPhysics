@@ -74,9 +74,6 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
 {	
   str.ToLower();
   
-//  Int_t ix = (iTRU % 2) ? 24 : 0;
-//  Int_t iy =  iTRU / 2;
-  
   Int_t ix,iy;
 
   switch (triggerMapping + 3*(iTRU >= 32)) {
@@ -96,7 +93,6 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
     case 4:	
       AliFatal("EMCAL STU object tried to use run 1 trigger mapping with a DCAL TRU");
   	case 5:
-  //		Int_t iDcTRU = iTRU - 32;
       iTRU -= 32;
       // Run2 DCAL Geometry
       // If using iTRU corresponding to virtual TRU index:
@@ -104,12 +100,6 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
       ix = ix * 12; // Each row adds 12 modules
       iy = iTRU % 6; // iy = 0,1,2,3,4,5
       iy = iy * 8 ; // each TRU adds 8. 
-      // If using iTRU corresponding to real TRU index:
-  //		ix = iTRU / 4; // ix = number of rows above
-  //		ix = ix * 12; // Each row adds 12 modules
-//			iy = iTRU % 4; // iy = 0,1,2, or 3
-//			iy = iy * 8 + 16 * (iy > 1); // each TRU adds 8.  2,3 have an additional 16 for the PHOS hole
-//			if ((iTRU == 12) || (iTRU == 13)) iy = (iTRU % 2) * 24; // DCAL 1/3 SM TRUs
 
       if ((iTRU == 18) || (iTRU == 19)) iy = (iTRU % 2) * 24; // DCAL 1/3 SM TRUs
       break;
@@ -136,11 +126,8 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
   if(v){	
     for (Int_t i=0; i<rSize->X(); i++)
       for (Int_t j=0; j<rSize->Y(); j++) { 
-	//			printf("MHO: STU Build accessing (ix,iy) = (%d,%d):  v[%d][%d]\n",ix,iy,i+ix,j+iy);
 				v[i + ix][j + iy] = M[i][j];
 			}
-   //   for (Int_t j=0; j<rSize->Y(); j++) v[i + ix * 4][j + iy] = M[i][j];
- //     for (Int_t j=0; j<rSize->Y(); j++) v[i + ix][j + iy * 4] = M[i][j];
   }
 }
 
@@ -151,7 +138,7 @@ void AliEMCALTriggerSTU::L1(int type)
 {	
   TVector2 s1, s2, s3, s4;
   fDCSConfig->GetSegmentation(s1, s2, s3, s4);
-  
+  Int_t fBkg = 0;
   switch (type)
   {
     case kL1GammaHigh:
@@ -163,19 +150,17 @@ void AliEMCALTriggerSTU::L1(int type)
     case kL1JetLow:
       SetSubRegionSize(s3);
       SetPatchSize(s4);
+      fBkg = fBkgRho * (PatchSize()->X() * PatchSize()->Y() / 4);
       break;
     default:
       AliError("Not supported L1 trigger type");
       return;
       break;
   }
-  printf("MHO: STU L1 (type %d) using subregion size (%d,%d), patch size (%d,%d)\n",type,int(SubRegionSize()->X()),int(SubRegionSize()->Y()),int(PatchSize()->X()),int(PatchSize()->Y()));
-  printf("MHO: STU L1 using bkg_sum %d,  using threshold + bkg_sum = %d\n",fBkgRho * int(PatchSize()->X() * PatchSize()->Y() / 4.),GetThreshold(type) + fBkgRho * int(PatchSize()->X() * PatchSize()->Y() / 4.) );
+  AliDebug(999,Form("STU L1 (type %d) using subregion size (%d,%d), patch size (%d,%d)\n",type,int(SubRegionSize()->X()),int(SubRegionSize()->Y()),int(PatchSize()->X()),int(PatchSize()->Y())));
+  AliDebug(999,Form("STU L1 subtracting Bkg = %d\n",fBkg));
 
-  // MHO
-  SlidingWindow(GetThreshold(type) + fBkgRho * int(PatchSize()->X() * PatchSize()->Y() / 4.));
-//  SlidingWindow(GetThreshold(type));	
-//  AliDebug(999, Form("STU type %d sliding window w/ thr %d found %d patches", type, GetThreshold(type), fPatches->GetEntriesFast()));
+  SlidingWindow(GetThreshold(type) + fBkg);
   AliDebug(999, Form("STU type %d sliding window w/ thr %d found %d patches", type, GetThreshold(type)+ fBkgRho * int(PatchSize()->X() * PatchSize()->Y() / 4.), fPatches->GetEntriesFast()));
 }
 
@@ -284,19 +269,22 @@ Int_t AliEMCALTriggerSTU::GetThreshold(int type)
 /// Calculate median energy of patches
 //___________
 Int_t AliEMCALTriggerSTU::GetMedianEnergy(){
-	// FIXME check firmware version for DCAL to decide if the PHOS is to be included in the patches
 
   // iterate over non-overlaping set of (8x8 tower) subregions 
 	// 4x4 FastOR units
-	const int kPatchXSize = 4; // How many FastOR units in X
-	const int kPatchYSize = 4; // How many FastOR units in Y
+	const int kPatchXSize = 8; // How many FastOR units in X
+	const int kPatchYSize = 8; // How many FastOR units in Y
 
 	vector<int> fPatchEnergies ;
 	// How many columns and rows in energy patches.
 	int nX = (int) fRegionSize->X()/kPatchXSize; 
 	int nY = (int) fRegionSize->Y()/kPatchYSize;
+
+  Bool_t fZeroPHOS = (fDCSConfig->GetFw() & 0xd007) != 0; // Whether to ignore PHOS patches
+
 	for (int i = 0; i < nX; i++) {
 		for (int j = 0; j < nY; j++) {
+      if (fZeroPHOS && (j == 2 || j == 3))  continue; // Skip middle 10 patches
 			int fLocalSum = 0;
 			int fXAnchor = i * kPatchXSize;
 			int fYAnchor = j * kPatchYSize;
@@ -309,10 +297,11 @@ Int_t AliEMCALTriggerSTU::GetMedianEnergy(){
 		}	
 	}
 	sort(fPatchEnergies.begin(),fPatchEnergies.end());
-	// If EMCAL, use 24th
-	// If DCAL, use 15th
+	// If EMCAL, use 24th.
+	// If DCAL, use 15th.  If DCAL without PHOS, use 10th.
 
   // Note: this is proper only for an even number of patches
+  // Technically, this is the median excluding the highest patch
 	return fPatchEnergies.at(fPatchEnergies.size()/2-1);
 }
 

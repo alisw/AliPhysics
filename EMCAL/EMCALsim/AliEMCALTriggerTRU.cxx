@@ -86,12 +86,10 @@ fL0Time(0)
     {
       // idx: 0..95 since iphim: 0..11 ietam: 0..23
 //      Int_t idx = ( !mapType ) ? ( 3 - iphim ) + ietam * 4 : iphim + (23 - ietam) * 4;	
-      // MHO
 			Int_t idx = ( !mapType ) ? ( nPhi - 1 - iphim ) + ietam * nPhi : iphim + (nEta - 1 - ietam) * nPhi;	
       
       // Build a matrix used to get TRU digit id (ADC channel) from (eta,phi)|SM
 //      fMap[ietam][iphim] = idx; // [0..11][0..3] namely [eta][phi] in SM
-      // MHO
 			fMap[iphim][ietam] = idx; // [0..3][0..11] or [0..11][0..8 namely [phi][eta] in SM
     }
   }
