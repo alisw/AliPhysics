@@ -58,11 +58,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
   fMCTimeZero(0.),
-  fIsNotPileUpFromSPDInMultBins(kTRUE),
-  fIsINELgtZERO(kTRUE),
-  fIsAcceptedVertexPosition(kTRUE),
-  fHasNoInconsistentSPDandTrackVertices(kTRUE),
-  fIsMinimumBias(kTRUE),
+  fEventFlags(0),
   fMagneticField(0.),
   fRunNo(0)
 {
@@ -103,11 +99,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
   fMCTimeZero(source.fMCTimeZero),
-  fIsNotPileUpFromSPDInMultBins(source.fIsNotPileUpFromSPDInMultBins),
-  fIsINELgtZERO(source.fIsINELgtZERO),
-  fIsAcceptedVertexPosition(source.fIsAcceptedVertexPosition),
-  fHasNoInconsistentSPDandTrackVertices(source.fHasNoInconsistentSPDandTrackVertices),
-  fIsMinimumBias(source.fIsMinimumBias),
+  fEventFlags(source.fEventFlags),
   fMagneticField(source.fMagneticField),
   fRunNo(source.fRunNo)
 {
@@ -152,11 +144,7 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   for (Int_t i = 0; i < 3; i++) 
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
   fMCTimeZero = source.fMCTimeZero;
-  fIsNotPileUpFromSPDInMultBins=source.fIsNotPileUpFromSPDInMultBins;
-  fIsINELgtZERO=source.fIsINELgtZERO;
-  fIsAcceptedVertexPosition=source.fIsAcceptedVertexPosition;
-  fHasNoInconsistentSPDandTrackVertices=source.fHasNoInconsistentSPDandTrackVertices;
-  fIsMinimumBias=source.fIsMinimumBias;
+  fEventFlags = source.fEventFlags;
   fMagneticField=source.fMagneticField;
   fRunNo=source.fRunNo;
   return *this;
@@ -191,7 +179,7 @@ AliAnalysisPIDEvent::Reset()
   fReferenceMultiplicity = 0;
   fMCMultiplicity = 0;
   fV0Mmultiplicity = 0;
-  fIsMinimumBias=0;
+  fEventFlags = 0;
   fMagneticField=0;
   fRunNo=0;
   for (Int_t i = 0; i < 10; i++) {
@@ -515,14 +503,3 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 
 //___________________________________________________________
 
-void
-AliAnalysisPIDEvent::SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias) {
-  /*
-    Setting up some flags from AliPPVsMultUtils
-  */
-  fIsNotPileUpFromSPDInMultBins = IsNotPileUpFromSPDInMultBins;
-  fIsINELgtZERO = IsINELgtZERO;
-  fIsAcceptedVertexPosition = IsAcceptedVertexPosition;
-  fHasNoInconsistentSPDandTrackVertices = HasNoInconsistentSPDandTrackVertices;
-  fIsMinimumBias = IsMinimumBias;
-};
