@@ -24,7 +24,7 @@ public:
     ~AliEveSaveViews();
     
     void SaveForAmore();
-    void Save(bool withDialog=true,char* filename="");
+    void Save(bool withDialog=true,const char* filename="");
     int SendToAmore();
 private:
     void ChangeRun();
