@@ -3,7 +3,7 @@
 
 /// \ingroup STAT
 /// \class AliElasticSearchRoot
-/// \brief AliDrawStyle - AliElasticSearchRoot - C++ interace to the Elastic --> root tree like-   using gSystem->GetFromPipe, Exec, Elastic, painlsees scripting,  curl,  jq
+/// \brief AliElasticSearchRoot - C++ interace to the Elastic --> root tree like-   using gSystem->GetFromPipe, Exec, Elastic, painlsees scripting,  curl,  jq
 ///      - Originally planned usage of  higher level C++ inteface not possible for a moment
 ///      -- C++11 or better C++14 and ROOT6 needed (e.g https://github.com/QHedgeTech/cpp-elasticsearch/tree/master/src )
 ///      - Using older  C++  and Root 5 to represent heirarchiacal structure root trees to be used
