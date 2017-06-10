@@ -68,6 +68,7 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID() :
   fTrackCuts2010(NULL),
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
+  fTrackCuts2011Sys(NULL),
   fESDpid(new AliESDpid()),
   fIsCollisionCandidate(kFALSE),
   fIsEventSelected(0),
@@ -105,8 +106,13 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID() :
   fTrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   fTrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
   fTrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
-  
-  
+  //Following is TC for systematics estimation. To compensate, once should probably reduce gamma DeltaM even further :)
+  fTrackCuts2011Sys = new AliESDtrackCuts("AliESDtrackCuts2011Sys","AliESDtrackCuts2011Sys");
+  fTrackCuts2011Sys = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;                                                                                            
+  fTrackCuts2011Sys->SetEtaRange(-0.8,0.8);
+  fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
+  fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
+  fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
 
 }
 
@@ -134,6 +140,7 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID(Bool_t isMC) :
   fTrackCuts2010(NULL),
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
+  fTrackCuts2011Sys(NULL),
   fESDpid(new AliESDpid()),
   fIsCollisionCandidate(kFALSE),
   fIsEventSelected(0),
@@ -171,6 +178,14 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID(Bool_t isMC) :
   fTrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   fTrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
   fTrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
+  //Following is TC for systematics estimation. To compensate, once should probably reduce gamma DeltaM even further :)                                                                                    
+  fTrackCuts2011Sys = new AliESDtrackCuts("AliESDtrackCuts2011Sys","AliESDtrackCuts2011Sys");
+  fTrackCuts2011Sys = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;                                                                                            
+  fTrackCuts2011Sys->SetEtaRange(-0.8,0.8);
+  fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
+  fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
+  fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
+
   fMCFlag = isMC;
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TH1D::Class());
@@ -199,6 +214,7 @@ AliAnalysisTaskTPCTOFPID::~AliAnalysisTaskTPCTOFPID()
   if (fTrackCuts2010) delete fTrackCuts2010;
   if (fTrackCuts2011) delete fTrackCuts2011;
   if (fTrackCutsTPCRefit) delete fTrackCutsTPCRefit;
+  if (fTrackCuts2011Sys) delete fTrackCuts2011Sys
   delete fESDpid;
   delete fTOFcalib;
   delete fTOFT0maker;
@@ -386,6 +402,7 @@ Int_t AliAnalysisTaskTPCTOFPID::GetTrackCutsFlag(AliESDtrack *LocalTrack) {
   if(fTrackCuts2010->AcceptTrack(LocalTrack)) ReturnFlag+=1;
   if(fTrackCuts2011->AcceptTrack(LocalTrack)) ReturnFlag+=2;
   if(fTrackCutsTPCRefit->AcceptTrack(LocalTrack)) ReturnFlag+=4;
+  if(fTrackCuts2011Sys->AcceptTrack(LocalTrack)) ReturnFlag+=8;
   return ReturnFlag;
 };
 //_______________________________________________________
@@ -464,7 +481,7 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
       InvMasses[i] = V0KFs[i].GetMass()-myMasses[i];
       if(i!=0) //For all but gammas
 	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.06);
-      else TrashTracks = (InvMasses[0]==0)||(TMath::Abs(InvMasses[0])>0.03); //For gammas, also throw away if exacly 0 (= error code)
+      else TrashTracks = (InvMasses[0]==0)||(TMath::Abs(InvMasses[0])>0.015); //For gammas, also throw away if exacly 0 (= error code)
     };
     if(TrashTracks) continue;
     fAnalysisV0Track->Update(pTrack,nTrack,InvMasses,IV0Radius,V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle());
