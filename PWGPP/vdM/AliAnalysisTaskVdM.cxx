@@ -25,8 +25,8 @@ ClassImp(AliAnalysisTaskVdM);
 ClassImp(AliAnalysisTaskVdM::TreeData);
 
 // code from RS for obtaining an unconstrained vertex
-Bool_t revertex(AliESDEvent* esdEv, Int_t algo=6, const Double_t* cuts=0, Bool_t useSA=kTRUE);
-Bool_t revertex(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts, Bool_t useSA)
+Bool_t revertex(AliESDEvent* esdEv, Bool_t kVtxConstr=kTRUE, Int_t algo=6, const Double_t* cuts=0, Bool_t useSA=kTRUE);
+Bool_t revertex(AliESDEvent* esdEv, Bool_t kVtxConstr, Int_t algo, const Double_t *cuts, Bool_t useSA)
 {
   // Refit ESD VertexTracks and redo tracks->RelateToVertex
   // Default vertexin algorithm is 6 (multivertexer). To use old vertexed, use algo=1
@@ -35,7 +35,6 @@ Bool_t revertex(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts, Bool_t use
   static int currRun = 0;
   static int defAlgo = -1;
   static double bkgauss = 0;
-  const Bool_t kVtxConstr = kTRUE;
   //
   if (!vtFinder) { // create vertexer
     vtFinder = new AliVertexerTracks(esdEv->GetMagneticField());
@@ -355,7 +354,7 @@ void AliAnalysisTaskVdM::UserExec(Option_t *)
   fVertexSPD    = *esdEvent->GetPrimaryVertexSPD();
   fVertexTPC    = *esdEvent->GetPrimaryVertexTPC();
   fVertexTracks = *esdEvent->GetPrimaryVertexTracks();
-  revertex(esdEvent);
+  revertex(esdEvent, kFALSE);
   fVertexTracksUnconstrained = *esdEvent->GetPrimaryVertexTracks();
 
   TClonesArrayGuard guardTriggerIR(fTriggerIRs);
