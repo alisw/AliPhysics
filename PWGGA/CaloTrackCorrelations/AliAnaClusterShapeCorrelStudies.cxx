@@ -49,6 +49,7 @@ fStudyTCardCorrelation(kFALSE),        fStudyExotic(kFALSE),
 // Parameters and cuts
 fM02Min(0),                            fNCellMin(0),            
 fMinDistToBad(0),                      fNEBinCuts(0),
+fEMinShape(0),                         fEMaxShape(100),
 
 fdEdXMinEle(0),                        fdEdXMaxEle(0),
 fdEdXMinHad(0),                        fdEdXMaxHad(0),
@@ -1351,7 +1352,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Int_t smMax = GetModuleNumberCellIndexesAbsCaloMap(absIdMax, GetCalorimeter(), 
                                                      ietaMax, iphiMax, rcuMax, icolAbs, irowAbs);
 
-  if ( energy > 8 && energy < 12 )
+  if ( energy > fEMinShape && energy < fEMaxShape )
   {
     fhColRowM02[matchedPID]->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
     
@@ -1520,7 +1521,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   }
   
   // Invariant mass for clusters looking like photons, depending number of cells
-  if ( matchedPID == 0 && energy > 8 && energy < 12 &&
+  if ( matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape &&
        m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut )
   {
     for(Int_t jclus = 0 ; jclus < fCaloClusList->GetEntriesFast() ; jclus++) 
@@ -3532,8 +3533,9 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   {
     fhInvMassNCellSM  = new TH3F 
     ("fhInvMassNCellSM",
-     "8 < #it{E}_{1} < 12 GeV, 0.5 < #it{E}_{2} < 12 GeV, 0.1< #lambda^{2}_{0}<0.4 "
-     "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number ",
+     Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
+          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number ",
+          fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
      nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
     fhInvMassNCellSM->SetZTitle("SM number");
     fhInvMassNCellSM->SetYTitle("#it{n}_{cells}^{w>0.01}");
@@ -3544,7 +3546,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     {
       fhColRowM02[imatch] = new TH3F
       (Form("hColRowM02_%s",matchCase[imatch].Data()),
-       Form("column vs row vs M02, 8 < #it{E} < 12 GeV for ID %s",matchCase[imatch].Data()),
+       Form("column vs row vs M02, %2.2f < #it{E} < %2.2f GeV for ID %s",
+            fEMinShape,fEMaxShape,matchCase[imatch].Data()),
        ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
       fhColRowM02[imatch]->SetYTitle("row");
       fhColRowM02[imatch]->SetXTitle("column");
@@ -3553,7 +3556,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 
       fhColRowM02NCellCut[imatch] = new TH3F
       (Form("hColRowM02NCellCut_%s",matchCase[imatch].Data()),
-       Form("column vs row vs M02, 8 < #it{E} < 12 GeV #it{n}_{cells}^{w>0.01} > 4 for ID %s",matchCase[imatch].Data()),
+       Form("column vs row vs M02, %2.2f<#it{E}<%2.2f GeV #it{n}_{cells}^{w>0.01} > 4 for ID %s",
+            fEMinShape,fEMaxShape,matchCase[imatch].Data()),
        ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
       fhColRowM02NCellCut[imatch]->SetYTitle("row");
       fhColRowM02NCellCut[imatch]->SetXTitle("column");
@@ -4027,6 +4031,9 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
   fEBinCuts[3] = 8. ; fEBinCuts[4] = 10.;  fEBinCuts[5] = 12.;
   fEBinCuts[6] = 16.; fEBinCuts[7] = 20.;  
   for(Int_t i = fNEBinCuts+1; i < 15; i++) fEBinCuts[i] = 1000.;
+  
+  fEMinShape =  8;
+  fEMaxShape = 12;
 }
 
 //________________________________________
