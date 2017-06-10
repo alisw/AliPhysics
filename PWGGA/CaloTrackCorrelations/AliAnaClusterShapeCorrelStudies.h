@@ -453,8 +453,8 @@ public:
 
   TH3F *   fhInvMassNCellSM;                      //!<! Invariant mass vs first selected cluster N cell with 8 < E < 12 GeV and per SM
   
-  TH3F *   fhColRowM02[3];                        //!<! Cluster position in cell max col-row, 8 < E < 12 GeV
-  TH3F *   fhColRowM02NCellCut[3];                //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > 4
+  TH3F *   fhColRowM02;                           //!<! Cluster position in cell max col-row, 8 < E < 12 GeV, neutral only
+  TH3F *   fhColRowM02NCellCut;                   //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > 4, neutral only
   
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02

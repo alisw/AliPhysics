@@ -80,6 +80,7 @@ fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCo
 //fhClusterMaxCellCloseCellDiffM02(0),  
 fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
 fhInvMassNCellSM(0),
+fhColRowM02(0),                        fhColRowM02NCellCut(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
@@ -106,9 +107,6 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhColM02               [i] = 0;
     fhRowM02               [i] = 0;
 
-    fhColRowM02            [i] = 0;
-    fhColRowM02NCellCut    [i] = 0;
-    
     fhOriginE              [i] = 0;
     fhOriginM02            [i] = 0;
     
@@ -1352,12 +1350,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Int_t smMax = GetModuleNumberCellIndexesAbsCaloMap(absIdMax, GetCalorimeter(), 
                                                      ietaMax, iphiMax, rcuMax, icolAbs, irowAbs);
 
-  if ( energy > fEMinShape && energy < fEMaxShape )
+  if ( matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape )
   {
-    fhColRowM02[matchedPID]->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
+    fhColRowM02->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
     
     if ( nCell > 4 )
-      fhColRowM02[matchedPID]->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
+      fhColRowM02->Fill(icolAbs,irowAbs,m02,GetEventWeight()) ;
   }
   //
   
@@ -3531,10 +3529,29 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   // Cluster size in terms of cells and shape TH3
   if(fStudyShape)
   {
+    fhColRowM02 = new TH3F
+    (Form("hColRowM02"),
+     Form("column vs row vs M02, %2.2f < #it{E} < %2.2f GeV for Neutral",fEMinShape,fEMaxShape),
+     ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
+    fhColRowM02->SetYTitle("row");
+    fhColRowM02->SetXTitle("column");
+    fhColRowM02->SetZTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhColRowM02) ;
+    
+    fhColRowM02NCellCut = new TH3F
+    (Form("hColRowM02NCellCut"),
+     Form("column vs row vs M02, %2.2f<#it{E}<%2.2f GeV #it{n}_{cells}^{w>0.01} > 4 for Neutral",
+          fEMinShape,fEMaxShape),
+     ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
+    fhColRowM02NCellCut->SetYTitle("row");
+    fhColRowM02NCellCut->SetXTitle("column");
+    fhColRowM02NCellCut->SetZTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhColRowM02NCellCut) ;
+
     fhInvMassNCellSM  = new TH3F 
     ("fhInvMassNCellSM",
      Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
-          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number ",
+          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number",
           fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
      nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
     fhInvMassNCellSM->SetZTitle("SM number");
@@ -3543,27 +3560,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     outputContainer->Add(fhInvMassNCellSM);         
 
     for(Int_t imatch = 0; imatch < 3; imatch++)
-    {
-      fhColRowM02[imatch] = new TH3F
-      (Form("hColRowM02_%s",matchCase[imatch].Data()),
-       Form("column vs row vs M02, %2.2f < #it{E} < %2.2f GeV for ID %s",
-            fEMinShape,fEMaxShape,matchCase[imatch].Data()),
-       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
-      fhColRowM02[imatch]->SetYTitle("row");
-      fhColRowM02[imatch]->SetXTitle("column");
-      fhColRowM02[imatch]->SetZTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhColRowM02[imatch]) ;
-
-      fhColRowM02NCellCut[imatch] = new TH3F
-      (Form("hColRowM02NCellCut_%s",matchCase[imatch].Data()),
-       Form("column vs row vs M02, %2.2f<#it{E}<%2.2f GeV #it{n}_{cells}^{w>0.01} > 4 for ID %s",
-            fEMinShape,fEMaxShape,matchCase[imatch].Data()),
-       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nShShBins,minShSh,maxShSh);
-      fhColRowM02NCellCut[imatch]->SetYTitle("row");
-      fhColRowM02NCellCut[imatch]->SetXTitle("column");
-      fhColRowM02NCellCut[imatch]->SetZTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhColRowM02NCellCut[imatch]) ;
-      
+    {      
       if ( fStudyShapeParam )
       {
         fhDeltaIEtaDeltaIPhi[imatch]  = new TH3F 
