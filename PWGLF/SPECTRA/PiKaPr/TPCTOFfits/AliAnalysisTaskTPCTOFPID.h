@@ -28,7 +28,7 @@ class AliAnalysisPIDParticle;
 class TClonesArray;
 class AliCentrality;
 class AliPIDResponse;
-class AliPPVsMultUtils;
+class AliMultSelection;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class TTree;
@@ -93,7 +93,6 @@ public AliAnalysisTaskSE
   TH1D *fEvHist;
   /* ESD analysis */
   AliPIDResponse *fPIDResponse; //! PID object
-  AliPPVsMultUtils *fMultiUtils; //! V0M Multi utils
   AliAnalysisUtils *fAnUtils; //! Analysis Utils
   Int_t fRunNumber; // run number
   UInt_t fStartTime; // start time
