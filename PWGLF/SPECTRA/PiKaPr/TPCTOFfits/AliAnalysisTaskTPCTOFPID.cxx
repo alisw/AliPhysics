@@ -30,8 +30,8 @@
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 #include "AliPIDResponse.h"
-#include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 #include "TRandom.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
@@ -58,7 +58,6 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID() :
   fPIDTree(0),
   fEvHist(0),
   fPIDResponse(0),
-  fMultiUtils(0),
   fAnUtils(0),
   fRunNumber(0),
   fStartTime(0),
@@ -125,7 +124,6 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID(Bool_t isMC) :
   fPIDTree(0),
   fEvHist(0),
   fPIDResponse(0),
-  fMultiUtils(0),
   fAnUtils(0),
   fRunNumber(0),
   fStartTime(0),
@@ -231,7 +229,6 @@ AliAnalysisTaskTPCTOFPID::UserCreateOutputObjects()
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse(); 
-  fMultiUtils = new AliPPVsMultUtils();
   fAnUtils = new AliAnalysisUtils();
   Double_t V0MbinsDefault[13] = {0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
   V0MBinCount = new TH1F("V0MBinCount","V0MBinCount",12,V0MbinsDefault);
@@ -493,14 +490,23 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   /* init event */
   if (!InitEvent()) return;
   FillHist(5);
-  
-  
-  Float_t V0MPercentile = fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M");
-  Bool_t IsNotPileUpFromSPDInMultBins=fMultiUtils->IsNotPileupSPDInMultBins(fESDEvent);
-  Bool_t IsINELgtZERO = fMultiUtils->IsINELgtZERO(fESDEvent);
-  Bool_t IsAcceptedVertexPosition=fMultiUtils->IsAcceptedVertexPosition(fESDEvent);
-  Bool_t HasNoInconsistentSPDandTrackVertices=kTRUE;//fMultiUtils->HasNoInconsistentSPDandTrackVertices(fESDEvent);
-  Bool_t IsMinimumBias=kTRUE;//fMultiUtils->IsMinimumBias(fESDEvent);
+  fAnalysisEvent->Reset();
+  Int_t EventSelectionFlag = 0;
+  Float_t V0MPercentile = -1000;
+  AliMultSelection *ams = (AliMultSelection*)fESDEvent->FindListObject("MultSelection");
+  if(!ams)
+    V0MPercentile = -999;
+  else {
+    V0MPercentile = ams->GetMultiplicityPercentile("V0M");
+    if(ams->GetThisEventIsNotPileup()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInSPD;
+    if(ams->GetThisEventIsNotPileupMV()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInMV;
+    if(ams->GetThisEventIsNotPileupInMultBins()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInMB;
+    if(ams->GetThisEventINELgtZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kINELgtZERO;
+    if(ams->GetThisEventHasNoInconsistentVertices()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoInconsistentVtx;
+    if(ams->GetThisEventIsNotAsymmetricInVZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoV0Asym;
+  };
+  fAnalysisEvent->SetV0Mmultiplicity(V0MPercentile);
+  fAnalysisEvent->SetEventFlags(EventSelectionFlag);
   AliVVZERO *v0 = fESDEvent->GetVZEROData();
   for(Int_t i=0;i<32;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0A(i));
   for(Int_t i=32;i<64;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0C(i-32));
@@ -549,7 +555,7 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 
   /*** GLOBAL EVENT INFORMATION ***/
 
-  fAnalysisEvent->Reset();
+  //  fAnalysisEvent->Reset(); // Moved up
   /* update global event info */
   fAnalysisEvent->SetIsCollisionCandidate(fIsCollisionCandidate);
   fAnalysisEvent->SetIsEventSelected(fIsEventSelected);
@@ -557,7 +563,6 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   fAnalysisEvent->SetHasVertex(fHasVertex);
   fAnalysisEvent->SetVertexZ(fVertexZ);
   fAnalysisEvent->SetMCTimeZero(fMCTimeZero);
-  fAnalysisEvent->SetPPVsMultFlags(IsNotPileUpFromSPDInMultBins,IsINELgtZERO,IsAcceptedVertexPosition,HasNoInconsistentSPDandTrackVertices,IsMinimumBias);
   fAnalysisEvent->SetRunNumber(fRunNumber);
   fAnalysisEvent->SetMagneticField(fESDEvent->GetMagneticField());
 				
@@ -575,7 +580,6 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   refmulti = AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.8);  
   fAnalysisEvent->SetReferenceMultiplicity(refmulti);
   fAnalysisEvent->SetMCMultiplicity(mcmulti);
-  fAnalysisEvent->SetV0Mmultiplicity(fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M"));
   /*** RECONSTRUCTED TRACKS ***/
 
   /* reset track array */
