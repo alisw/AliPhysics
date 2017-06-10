@@ -490,7 +490,7 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   /* init event */
   if (!InitEvent()) return;
   FillHist(5);
- 
+  fAnalysisEvent->Reset();
   Int_t EventSelectionFlag = 0;
   Float_t V0MPercentile = -1000;
   AliMultSelection *ams = (AliMultSelection*)fESDEvent->FindListObject("MultSelection");
@@ -505,6 +505,7 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     if(ams->GetThisEventHasNoInconsistentVertices()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoInconsistentVtx;
     if(ams->GetThisEventIsNotAsymmetricInVZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoV0Asym;
   };
+  fAnalysisEvent->SetV0Mmultiplicity(V0MPercentile);
   fAnalysisEvent->SetEventFlags(EventSelectionFlag);
   AliVVZERO *v0 = fESDEvent->GetVZEROData();
   for(Int_t i=0;i<32;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0A(i));
@@ -554,7 +555,7 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 
   /*** GLOBAL EVENT INFORMATION ***/
 
-  fAnalysisEvent->Reset();
+  //  fAnalysisEvent->Reset(); // Moved up
   /* update global event info */
   fAnalysisEvent->SetIsCollisionCandidate(fIsCollisionCandidate);
   fAnalysisEvent->SetIsEventSelected(fIsEventSelected);

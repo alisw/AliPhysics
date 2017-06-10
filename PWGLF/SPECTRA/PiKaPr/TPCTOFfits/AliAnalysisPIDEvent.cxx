@@ -115,6 +115,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
 
     fReferenceMultiplicity = source.fReferenceMultiplicity;
+    fV0Mmultiplicity = source.fV0Mmultiplicity;
 }
 
 //___________________________________________________________
@@ -136,6 +137,7 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   fVertexZ = source.fVertexZ;
   fCentralityQuality = source.fCentralityQuality;
   fReferenceMultiplicity = source.fReferenceMultiplicity;
+  fV0Mmultiplicity = source.fV0Mmultiplicity;
   fMCMultiplicity = source.fMCMultiplicity;
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = source.fTimeZeroTOF[i];
