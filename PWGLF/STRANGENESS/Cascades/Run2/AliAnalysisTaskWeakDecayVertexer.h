@@ -66,7 +66,10 @@ public:
         //Highly experimental, use with care!
         fkIfImprovedExtraPrecisionFactor = lOpt;
     }
-
+    void SetOnlyCombineMCTrue( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkOnlyCombineCorrect = lOpt;
+    }
 
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
@@ -200,6 +203,7 @@ private:
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
     Double_t fkIfImprovedExtraPrecisionFactor;
+    Bool_t fkOnlyCombineCorrect; 
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
 
     //Objects Controlling Task Behaviour: has to be streamed!
