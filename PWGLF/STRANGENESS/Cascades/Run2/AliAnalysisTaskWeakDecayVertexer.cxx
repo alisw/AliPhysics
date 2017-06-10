@@ -121,6 +121,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
+fkOnlyCombineCorrect(kFALSE),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -160,6 +161,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
+fkOnlyCombineCorrect(kFALSE),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -734,6 +736,99 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             
             AliESDtrack *btrk=event->GetTrack(bidx);
             
+            
+            //==================================================================
+            // Check if this a true cascade before attempting combination
+            // if requested
+            //==================================================================
+            // Monte Carlo-related information
+            if( fkOnlyCombineCorrect ){
+                AliMCEvent  *lMCevent  = 0x0;
+                AliStack    *lMCstack  = 0x0;
+                
+                lMCevent = MCEvent();
+                if (!lMCevent) {
+                    Printf("ERROR: Could not retrieve MC event \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                lMCstack = lMCevent->Stack();
+                if (!lMCstack) {
+                    Printf("ERROR: Could not retrieve MC stack \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( v0.GetPindex() );
+                UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( v0.GetNindex() );
+                
+                AliESDtrack *pTrackXi		= event->GetTrack( lIdxPosXi );
+                AliESDtrack *nTrackXi		= event->GetTrack( lIdxNegXi );
+                
+                Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+                Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+                Int_t lblBach        = (Int_t) TMath::Abs( btrk->GetLabel() );
+                
+                TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+                TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+                TParticle* mcBach        = lMCstack->Particle( lblBach );
+                
+                //Recover mothers
+                Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
+                Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+                Int_t lblMotherBachelor    = mcBach->GetFirstMother();
+                
+                Int_t lPDGCodeCascade = 0;
+                Int_t lPID_BachMother = 0;
+                Int_t lPID_NegMother = 0;
+                Int_t lPID_PosMother = 0;
+                
+                //Rather uncivilized: Open brackets for each 'continue'
+                if(! (lblMotherPosV0Dghter != lblMotherNegV0Dghter) ) { // same mother
+                    if(! (lblMotherPosV0Dghter < 0) ) { // mother != primary (!= -1)
+                        if(! (lblMotherNegV0Dghter < 0) ) {
+                            
+                            // mothers = Lambda candidate ... a priori
+                            
+                            TParticle* mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
+                            TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
+                            
+                            Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
+                            Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
+                            
+                            if(! (lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter) ) {
+                                if(! (lblGdMotherPosV0Dghter < 0) ) { // primary lambda ...
+                                    if(! (lblGdMotherNegV0Dghter < 0) ) { // primary lambda ...
+                                        
+                                        // Gd mothers = Xi candidate ... a priori
+                                        
+                                        TParticle* mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
+                                        TParticle* mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
+                                        
+                                        Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother()  );
+                                        
+                                        //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+                                        if(!(lblMotherBach != lblGdMotherPosV0Dghter)) { //same mother for bach and V0 daughters
+                                            
+                                            TParticle* mcMotherBach = lMCstack->Particle( lblMotherBach );
+                                            
+                                            lPID_BachMother = mcMotherBach->GetPdgCode();
+                                            lPID_NegMother = mcGdMotherPosV0Dghter->GetPdgCode();
+                                            lPID_PosMother = mcGdMotherNegV0Dghter->GetPdgCode();
+                                            
+                                            if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
+                                                lPDGCodeCascade = lPID_BachMother;
+                                                if(TMath::Abs(lPDGCodeCascade)!=3312&&TMath::Abs(lPDGCodeCascade)!=3334) continue;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } //Ends all conditionals above...
+            }
+            //==================================================================
+            
             if (btrk->GetSign()>0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
@@ -791,6 +886,98 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            
+            //==================================================================
+            // Check if this a true cascade before attempting combination
+            // if requested
+            //==================================================================
+            // Monte Carlo-related information
+            if( fkOnlyCombineCorrect ){
+                AliMCEvent  *lMCevent  = 0x0;
+                AliStack    *lMCstack  = 0x0;
+                
+                lMCevent = MCEvent();
+                if (!lMCevent) {
+                    Printf("ERROR: Could not retrieve MC event \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                lMCstack = lMCevent->Stack();
+                if (!lMCstack) {
+                    Printf("ERROR: Could not retrieve MC stack \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( v0.GetPindex() );
+                UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( v0.GetNindex() );
+                
+                AliESDtrack *pTrackXi		= event->GetTrack( lIdxPosXi );
+                AliESDtrack *nTrackXi		= event->GetTrack( lIdxNegXi );
+                
+                Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+                Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+                Int_t lblBach        = (Int_t) TMath::Abs( btrk->GetLabel() );
+                
+                TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+                TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+                TParticle* mcBach        = lMCstack->Particle( lblBach );
+                
+                //Recover mothers
+                Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
+                Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+                Int_t lblMotherBachelor    = mcBach->GetFirstMother();
+                
+                Int_t lPDGCodeCascade = 0;
+                Int_t lPID_BachMother = 0;
+                Int_t lPID_NegMother = 0;
+                Int_t lPID_PosMother = 0;
+                
+                //Rather uncivilized: Open brackets for each 'continue'
+                if(! (lblMotherPosV0Dghter != lblMotherNegV0Dghter) ) { // same mother
+                    if(! (lblMotherPosV0Dghter < 0) ) { // mother != primary (!= -1)
+                        if(! (lblMotherNegV0Dghter < 0) ) {
+                            
+                            // mothers = Lambda candidate ... a priori
+                            
+                            TParticle* mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
+                            TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
+                            
+                            Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
+                            Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
+                            
+                            if(! (lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter) ) {
+                                if(! (lblGdMotherPosV0Dghter < 0) ) { // primary lambda ...
+                                    if(! (lblGdMotherNegV0Dghter < 0) ) { // primary lambda ...
+                                        
+                                        // Gd mothers = Xi candidate ... a priori
+                                        
+                                        TParticle* mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
+                                        TParticle* mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
+                                        
+                                        Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother()  );
+                                        
+                                        //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+                                        if(!(lblMotherBach != lblGdMotherPosV0Dghter)) { //same mother for bach and V0 daughters
+                                            
+                                            TParticle* mcMotherBach = lMCstack->Particle( lblMotherBach );
+                                            
+                                            lPID_BachMother = mcMotherBach->GetPdgCode();
+                                            lPID_NegMother = mcGdMotherPosV0Dghter->GetPdgCode();
+                                            lPID_PosMother = mcGdMotherNegV0Dghter->GetPdgCode();
+                                            
+                                            if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
+                                                lPDGCodeCascade = lPID_BachMother;
+                                                if(TMath::Abs(lPDGCodeCascade)!=3312&&TMath::Abs(lPDGCodeCascade)!=3334) continue;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } //Ends all conditionals above...
+            }
+            //==================================================================
             
             if (btrk->GetSign()<0) continue;  // bachelor's charge
             
@@ -865,6 +1052,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
     //               candidates!
     //      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //--------------------------------------------------------------------
+    
     const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
     
     Double_t xPrimaryVertex=vtxT3D->GetX();
@@ -1019,6 +1207,98 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
             if (v0.GetIndex(0)==v0.GetIndex(1)) continue; //Bo:  consistency 0 for neg
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            
+            //==================================================================
+            // Check if this a true cascade before attempting combination
+            // if requested
+            //==================================================================
+            // Monte Carlo-related information
+            if( fkOnlyCombineCorrect ){
+                AliMCEvent  *lMCevent  = 0x0;
+                AliStack    *lMCstack  = 0x0;
+
+                lMCevent = MCEvent();
+                if (!lMCevent) {
+                    Printf("ERROR: Could not retrieve MC event \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                lMCstack = lMCevent->Stack();
+                if (!lMCstack) {
+                    Printf("ERROR: Could not retrieve MC stack \n");
+                    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+                    break;
+                }
+                UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( v0.GetPindex() );
+                UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( v0.GetNindex() );
+                
+                AliESDtrack *pTrackXi		= event->GetTrack( lIdxPosXi );
+                AliESDtrack *nTrackXi		= event->GetTrack( lIdxNegXi );
+                
+                Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+                Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+                Int_t lblBach        = (Int_t) TMath::Abs( btrk->GetLabel() );
+                
+                TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+                TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+                TParticle* mcBach        = lMCstack->Particle( lblBach );
+                
+                //Recover mothers
+                Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
+                Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+                Int_t lblMotherBachelor    = mcBach->GetFirstMother();
+                
+                Int_t lPDGCodeCascade = 0;
+                Int_t lPID_BachMother = 0;
+                Int_t lPID_NegMother = 0;
+                Int_t lPID_PosMother = 0;
+                
+                //Rather uncivilized: Open brackets for each 'continue'
+                if(! (lblMotherPosV0Dghter != lblMotherNegV0Dghter) ) { // same mother
+                    if(! (lblMotherPosV0Dghter < 0) ) { // mother != primary (!= -1)
+                        if(! (lblMotherNegV0Dghter < 0) ) {
+                            
+                            // mothers = Lambda candidate ... a priori
+                            
+                            TParticle* mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
+                            TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
+                            
+                            Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
+                            Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
+                            
+                            if(! (lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter) ) {
+                                if(! (lblGdMotherPosV0Dghter < 0) ) { // primary lambda ...
+                                    if(! (lblGdMotherNegV0Dghter < 0) ) { // primary lambda ...
+                                        
+                                        // Gd mothers = Xi candidate ... a priori
+                                        
+                                        TParticle* mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
+                                        TParticle* mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
+                                        
+                                        Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother()  );
+                                        
+                                        //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+                                        if(!(lblMotherBach != lblGdMotherPosV0Dghter)) { //same mother for bach and V0 daughters
+                                            
+                                            TParticle* mcMotherBach = lMCstack->Particle( lblMotherBach );
+                                            
+                                            lPID_BachMother = mcMotherBach->GetPdgCode();
+                                            lPID_NegMother = mcGdMotherPosV0Dghter->GetPdgCode();
+                                            lPID_PosMother = mcGdMotherNegV0Dghter->GetPdgCode();
+                                            
+                                            if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
+                                                lPDGCodeCascade = lPID_BachMother;
+                                                if(TMath::Abs(lPDGCodeCascade)!=3312&&TMath::Abs(lPDGCodeCascade)!=3334) continue;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } //Ends all conditionals above...
+            }
+            //==================================================================
             
             //Do not check charges!
             AliESDv0 *pv0=&v0;
