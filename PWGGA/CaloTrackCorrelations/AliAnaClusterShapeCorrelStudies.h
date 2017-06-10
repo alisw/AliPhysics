@@ -108,6 +108,9 @@ public:
   void SwitchOnStudyClusterShape()              { fStudyShape            = kTRUE  ; }
   void SwitchOffStudyClusterShape()             { fStudyShape            = kFALSE ; }
 
+  void SwitchOnStudyClusterShapeParam()         { fStudyShapeParam       = kTRUE  ; }
+  void SwitchOffStudyClusterShapeParam()        { fStudyShapeParam       = kFALSE ; }
+  
   void SwitchOnStudyWeight()                    { fStudyWeight           = kTRUE  ; }
   void SwitchOffStudyWeight()                   { fStudyWeight           = kFALSE ; }
   
@@ -124,8 +127,9 @@ public:
   //
   // Switches
   //
-  Bool_t   fStudyShape;                         ///<  Study asymmetry and shower shape of clusters
-  
+  Bool_t   fStudyShape;                         ///<  Study shower shape of clusters and other param on TH3
+  Bool_t   fStudyShapeParam;                    ///<  Study not only M02 but other kind of shape param
+
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
  
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
