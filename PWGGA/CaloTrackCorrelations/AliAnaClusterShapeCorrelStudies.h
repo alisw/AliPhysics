@@ -443,7 +443,9 @@ public:
   TH3F *   fhNCellsPerClusterMEtaPhiA[3];         //!<! N cells per cluster vs cluster energy vs shape in (phi-eta)/(eta+phi)
 
   TH3F *   fhInvMassNCellSM;                      //!<! Invariant mass vs first selected cluster N cell with 8 < E < 12 GeV and per SM
-
+  
+  TH3F *   fhColRowM02[3];                        //!<! Cluster position in cell max col-row, 8 < E < 12 GeV
+  TH3F *   fhColRowM02NCellCut[3];                //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > 4
   
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
