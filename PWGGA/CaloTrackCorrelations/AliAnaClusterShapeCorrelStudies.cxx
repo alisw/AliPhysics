@@ -77,6 +77,7 @@ fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCo
 //fhCellTimeSpreadRespectToCellMaxM02(0), 
 //fhClusterMaxCellCloseCellDiffM02(0),  
 fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
+fhInvMassNCellSM(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
@@ -1476,6 +1477,58 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
     fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
   }
+  
+  // Invariant mass for clusters looking like photons, depending number of cells
+  if ( matchedPID == 0 && energy > 8 && energy < 12 &&
+       m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut )
+  {
+    for(Int_t jclus = 0 ; jclus < fCaloClusList->GetEntriesFast() ; jclus++) 
+    {
+      AliVCluster* clus2 =  (AliVCluster*) fCaloClusList->At(jclus);
+      
+      Float_t maxCellFraction = 0.;
+      Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(fCaloCellList, clus2, maxCellFraction);
+      
+      Double_t tof2 =  clus2->GetTOF()*1.e9;
+      if(tof2>400) tof2-=fConstantTimeShift;
+      
+      Double_t diffTof = tmax-tof2;
+      
+      // Try to reduce background with a mild shower shape cut and no more 
+      // than 1 local maximum in cluster and remove low energy clusters
+      
+      if(   absIdMax == absIdMax2   
+         || !IsGoodCluster(absIdMax2, clus2->GetM02(), clus2->GetNCells()) 
+         || GetCaloUtils()->GetNumberOfLocalMaxima(clus2,fCaloCellList) > 1 
+         || clus2->GetM02() > fInvMassMaxM02Cut
+         || clus2->GetM02() < fInvMassMinM02Cut
+         || clus2->E() < fInvMassMinECut 
+         || clus2->E() > fInvMassMaxECut  
+         || TMath::Abs(diffTof) > fInvMassMaxTimeDifference
+         ) continue;
+      
+      // Get cluster kinematics
+      Double_t v[3] = {0,0,0}; //vertex ;
+      clus2->GetMomentum(fClusterMomentum2,v);
+      
+      // Check only certain regions
+      Bool_t in2 = kTRUE;
+      if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum2.Eta(),fClusterMomentum2.Phi(),GetCalorimeter()) ;
+      if(!in2) continue;	
+      
+      //Float_t  pairE = (fClusterMomentum+fClusterMomentum2).E();
+      
+      // Opening angle cut, avoid combination of DCal and EMCal clusters
+      Double_t angle  = fClusterMomentum.Angle(fClusterMomentum2.Vect());
+      
+      if( angle > fInvMassMaxOpenAngle ) continue;
+      
+      // Fill histograms
+      Float_t mass   = (fClusterMomentum+fClusterMomentum2).M ();
+      fhInvMassNCellSM->Fill(mass, nCell, smMax, GetEventWeight());
+    }
+  }
+  
   
   // Check the origin.
   if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
@@ -3443,6 +3496,16 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
   // Cluster size in terms of cells and shape TH3
   if(fStudyShape)
   {
+    fhInvMassNCellSM  = new TH3F 
+    ("fhInvMassNCellSM",
+     "8 < #it{E}_{1} < 12 GeV, 0.5 < #it{E}_{2} < 12 GeV, 0.1< #lambda^{2}_{0}<0.4 "
+     "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number ",
+     nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
+    fhInvMassNCellSM->SetZTitle("SM number");
+    fhInvMassNCellSM->SetYTitle("#it{n}_{cells}^{w>0.01}");
+    fhInvMassNCellSM->SetXTitle("#it{M}_{#gamma #gamma}");
+    outputContainer->Add(fhInvMassNCellSM);         
+
     for(Int_t imatch = 0; imatch < 3; imatch++)
     {
       fhDeltaIEtaDeltaIPhi[imatch]  = new TH3F 
@@ -3892,12 +3955,12 @@ void AliAnaClusterShapeCorrelStudies::InitParameters()
   fMinDistToBad = 5;
   
   fInvMassMinECut  = 0.5; // 500 MeV
-  fInvMassMaxECut  = 10; 
+  fInvMassMaxECut  = 12; 
 
   fInvMassMinM02Cut = 0.1; 
   fInvMassMaxM02Cut = 0.4; 
   
-  fInvMassMaxTimeDifference = 200; // ns, quite open 
+  fInvMassMaxTimeDifference = 70; // ns
   
   fInvMassMaxOpenAngle = 100*TMath::DegToRad(); // 100 degrees
   
