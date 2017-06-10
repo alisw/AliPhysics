@@ -291,13 +291,15 @@ Bool_t AliAnalysisTaskSimSpectraLF::IsMCParticleGenerated(TObject* obj, AliStack
   if ( !vpart ) return kFALSE;
 
   Bool_t isSelected = kTRUE;
-  
+
+  // ### not needed for resonances, but it is kept for later reference
+  /*  
   if ( !fstack->IsPhysicalPrimary(vpart->GetLabel()) )
   {
     if( vpart->PdgCode() != 11 )
       isSelected = kFALSE;
   }
-
+  */
   return isSelected;
 }
 
