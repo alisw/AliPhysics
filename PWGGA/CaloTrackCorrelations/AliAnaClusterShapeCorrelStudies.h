@@ -103,11 +103,14 @@ public:
   void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
   void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
 
-  Float_t      GetEnergyMinShape()       const  { return fEMinShape   ; }
-  void         SetEnergyMinShape(Float_t en)    { fEMinShape = en     ; }
+  Float_t      GetEnergyMinShape()       const  { return fEMinShape      ; }
+  void         SetEnergyMinShape(Float_t en)    { fEMinShape = en        ; }
   
-  Float_t      GetEnergyMaxShape()       const  { return fEMaxShape   ; }
-  void         SetEnergyMaxShape(Float_t en)    { fEMaxShape = en     ; }
+  Float_t      GetEnergyMaxShape()       const  { return fEMaxShape      ; }
+  void         SetEnergyMaxShape(Float_t en)    { fEMaxShape = en        ; }
+  
+  Int_t        GetNCellMinShape()        const  { return fNCellMinShape   ; }
+  void         SetNCellMinShape(Int_t nc)       { fNCellMinShape = nc     ; }
   
   // Analysis switchs
   
@@ -153,6 +156,7 @@ public:
   
   Float_t  fEMinShape;                          ///<  Minimum cluster energy for some fStudyShape histograms           
   Float_t  fEMaxShape;                          ///<  Maximum cluster energy for some fStudyShape histograms           
+  Int_t    fNCellMinShape;                      ///<  Minumum cluster number of cells for some fStudyShape histograms           
   
   Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
   Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
