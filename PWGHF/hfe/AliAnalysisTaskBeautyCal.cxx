@@ -422,7 +422,8 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   // pi0 weight
   fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-  fPi010->SetParameters(1.44711e+02,3.67740e-01,1.75256e+00,3.14474e+01,4.62962e+00);
+  //fPi010->SetParameters(1.44711e+02,3.67740e-01,1.75256e+00,3.14474e+01,4.62962e+00);  // HIJING
+  fPi010->SetParameters(2.75146e-02,-1.33252e+00,3.53590e+00,1.04521e+00,3.15246e+00);  // HIJING + Data
 
   fPi3040_0 = new TF1("fPi3040_0","[0]*x/pow([1]+x/[2],[3])");
   fPi3040_0->SetParameters(0.937028,0.674846,9.02659,10.);
@@ -432,7 +433,8 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   // Eta weight
   fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-  fEta010->SetParameters(5.25808e+01,4.23392e-01,1.83269e+00,3.59161e+01,4.60538e+00);
+  //fEta010->SetParameters(5.25808e+01,4.23392e-01,1.83269e+00,3.59161e+01,4.60538e+00);
+  fEta010->SetParameters(2.50883e-02,-1.63341e+00,6.58911e+00,8.07446e-01,3.12257e+00);
 
 
   fEta3040_0 = new TF1("fEta3040_0","[0]*x/pow([1]+x/[2],[3])");
