@@ -441,7 +441,11 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hPrimFit = new TH1F("hPrimFit","",nPhi,0.,6.28);
         hPrimMC  = new TH1F("hPrimMC","",nPhi,0.,6.28);
         hSecFit  = new TH1F("hSecFit","",nPhi,0.,6.28);
-        hSecMC   = new TH1F("hSecMC","",nPhi,0.,6.28);
+        hSecPhFit  = new TH1F("hSecPhFit","",nPhi,0.,6.28);
+        hSecMatFit = new TH1F("hSecMatFit","",nPhi,0.,6.28);
+        hSecMC     = new TH1F("hSecMC","",nPhi,0.,6.28);
+        hSecPhMC   = new TH1F("hSecPhMC","",nPhi,0.,6.28);
+        hSecMatMC  = new TH1F("hSecMatMC","",nPhi,0.,6.28);
         hRedChi2 = new TH1F("hRedChi2","",nPhi,0.,6.28);
         hChi2    = new TH1F("hChi2","",nPhi,0.,6.28);
         hNDF     = new TH1F("hNDF","",nPhi,0.,6.28);
@@ -456,7 +460,11 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hPrimFit = new TH1F("hPrimFit","",nEta,-0.8,0.8);
         hPrimMC  = new TH1F("hPrimMC","",nEta,-0.8,0.8);
         hSecFit  = new TH1F("hSecFit","",nEta,-0.8,0.8);
-        hSecMC   = new TH1F("hSecMC","",nEta,-0.8,0.8);
+        hSecPhFit  = new TH1F("hSecPhFit","",nEta,-0.8,0.8);
+        hSecMatFit = new TH1F("hSecMatFit","",nEta,-0.8,0.8);
+        hSecMC     = new TH1F("hSecMC","",nEta,-0.8,0.8);
+        hSecPhMC   = new TH1F("hSecPhMC","",nEta,-0.8,0.8);
+        hSecMatMC  = new TH1F("hSecMatMC","",nEta,-0.8,0.8);
         hRedChi2 = new TH1F("hRedChi2","",nEta,-0.8,0.8);
         hChi2    = new TH1F("hChi2","",nEta,-0.8,0.8);
         hNDF     = new TH1F("hNDF","",nEta,-0.8,0.8);
