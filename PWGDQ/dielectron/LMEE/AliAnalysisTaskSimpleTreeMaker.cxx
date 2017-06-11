@@ -60,9 +60,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fTree(0),
     fStream(0),
     fQAhist(0),
-    mcEvent(0), 
-    fMcTrack(0),
-    fMotherTrack(0),
     fESDtrackCuts(0),
     fPIDResponse(0),
     fCentralityPercentileMin(0),
@@ -99,9 +96,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fTree(0),
     fStream(0),
     fQAhist(0),
-    mcEvent(0), 
-    fMcTrack(0),
-    fMotherTrack(0),
     fESDtrackCuts(0),
     fPIDResponse(0),
     fCentralityPercentileMin(0),
@@ -164,6 +158,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
       return;
     } 
 
+	//Check for MC
+	if(man->GetMCtruthEventHandler() != 0x0){
+        Printf("MC handler found");
+		fIsMC = kTRUE;
+	}else{
+        Printf("MC handler not found");
+		fIsMC = kFALSE;	
+	}
     
     fStream = new TTreeStream("tracks");
     fTree   = dynamic_cast<TTree*>(fStream->GetTree());
@@ -217,11 +219,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
     fQAhist->Fill("Events_accepted",1);
 
-    // Process also MC truth  
-    AliMCEventHandler* mcHandler = 0x0;     
+    // Process MC truth  
+    AliMCEvent* mcEvent = 0x0;
     if(fIsMC){
-        mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+
+        AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
         mcEvent = MCEvent();
+
         if(!mcEvent){
             AliError("Could not retrieve MC event");
             return;
@@ -266,7 +270,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
             if(!track){
                 AliError(Form("Could not receive track %d", iTrack));
-            continue;
+                continue;
             }
 
             fQAhist->Fill("Tracks_all",1);
@@ -283,33 +287,34 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
             //Get MC information
             if(fIsMC){
-                mcEvent = MCEvent();
-                fMcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+                //AliMCEvent* mcEvent = MCEvent();
+                AliMCParticle* mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+                //mcTrack = mcEvent->GetTrack(iTrack);
 
                 //Check valid pointer has been returned. If so, retrieve MC information.
-                if(!fMcTrack){
+                if(!mcTrack){
                     
                     //Printf("mcTrack is a null pointer....");
                     continue;
                 }
                 else{
-                    iPdg = fMcTrack->PdgCode();
+                    iPdg = mcTrack->PdgCode();
                     
-                    mcEta = fMcTrack->Eta();
-                    mcPhi = fMcTrack->Phi();
-                    mcPt = fMcTrack->Pt();
+                    mcEta = mcTrack->Eta();
+                    mcPhi = mcTrack->Phi();
+                    mcPt = mcTrack->Pt();
 
-                    Int_t gMotherIndex = fMcTrack->GetMother();
+                    Int_t gMotherIndex = mcTrack->GetMother();
 
-                    fMotherTrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
-                    iPdgMother = fMotherTrack->PdgCode();
+                    AliMCParticle* motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+                    iPdgMother = motherMCtrack->PdgCode();
 
                     //Currently no injected MC productions for Run 2. Hence commented out
                     //Now determine whether track comes from an injected MC sample or not
                     /*Int_t mcTrackIndex = -9999;
-                    while(!(fMcTrack->GetMother() < 0)){ 
-                        mcTrackIndex = fMcTrack->GetMother();
-                        mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(fMcTrack->GetMother()));
+                    while(!(mcTrack->GetMother() < 0)){ 
+                        mcTrackIndex = mcTrack->GetMother();
+                        mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(mcTrack->GetMother()));
                     }
                     if(!(mcEvent->IsFromBGEvent(TMath::Abs(mcTrackIndex)))){
                         IsEnchanced = kTRUE;
@@ -684,7 +689,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
             if(fIsMC){
                 label = posTrack->GetLabel();
-                AliMCParticle* mcTrack = static_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				AliVEvent* mcEvent = MCEvent();
+                AliVParticle* mcTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
                 TParticle* mcParticle = static_cast<TParticle*>(mcTrack->Particle());
                 mcEta = mcTrack->Eta();
                 mcPhi = mcTrack->Phi();
@@ -693,7 +699,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 iPdg = mcTrack->PdgCode();
 
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliMCParticle* motherTrack = static_cast<AliMCParticle*>(mcEvent->GetTrack(gMotherIndex));
+                AliVParticle* motherTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(gMotherIndex));
                 iPdgMother = motherTrack->PdgCode();
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
@@ -791,7 +797,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             //Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
             if(fIsMC){
                 label = negTrack->GetLabel();
-                AliMCParticle* mcTrack = static_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				AliVEvent* mcEvent = MCEvent();
+                AliVParticle* mcTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
                 TParticle* mcParticle = static_cast<TParticle*>(mcTrack->Particle());
                 mcEta = mcTrack->Eta();
                 mcPhi = mcTrack->Phi();
@@ -800,7 +807,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 iPdg = mcTrack->PdgCode();
 
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliMCParticle* motherTrack = static_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+                AliVParticle* motherTrack = static_cast<AliVParticle*>((mcEvent->GetTrack(gMotherIndex)));
                 iPdgMother = motherTrack->PdgCode();
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
