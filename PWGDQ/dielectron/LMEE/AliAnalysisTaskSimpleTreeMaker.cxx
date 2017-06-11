@@ -198,7 +198,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
 	fQAhist->Fill("Events_MCcheck",0);
 	fQAhist->Fill("Tracks_all",0);
 	fQAhist->Fill("Tracks_MCcheck",0);
-	fQAhist->Fill("MCmotherCheck",0);
 	fQAhist->Fill("Tracks_KineCuts",0);
 	fQAhist->Fill("Tracks_TrackCuts",0);
 	fQAhist->Fill("Tracks_PIDcuts",0);
@@ -326,7 +325,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 					if(!motherMCtrack){
 						continue;
 					}
-            		fQAhist->Fill("MCmotherCheck",1);
 					HasMother = kTRUE;
                 	iPdgMother = motherMCtrack->PdgCode();
 				}
