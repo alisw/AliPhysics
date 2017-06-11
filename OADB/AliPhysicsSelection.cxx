@@ -540,6 +540,7 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t all                 = histStat->GetBinContent(1);
     Float_t accepted            = histStat->GetBinContent(4);
     Float_t v0and = 0;
+    Float_t plusNoZDCBG           = 0;
     Float_t plusNoSPDClsVsTrkBG   = 0;
     Float_t plusNoV0C012vsTklBG   = 0;
     Float_t plusNoV0MOnVsOfPileup = 0;
@@ -555,9 +556,11 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
     Float_t znInTime          = 0;
-    Bool_t b[16];
+    Float_t noZNABG           = 0;
+    Float_t noZNCBG           = 0;
+    Bool_t b[18];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
-      for (Int_t bit=0;bit<16;bit++) b[bit]=i & 1<<bit;
+      for (Int_t bit=0;bit<18;bit++) b[bit]=i & 1<<bit;
       if (b[ 5]) noSPDClsVsTrkBG  +=histStat->GetBinContent(i+1);
       if (b[ 6]) noV0C012vsTklBG  +=histStat->GetBinContent(i+1);
       if (b[ 7]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
@@ -566,9 +569,36 @@ void AliPhysicsSelection::FillStatistics(){
       if (b[10]) noV0PFPileup     +=histStat->GetBinContent(i+1);
       if (b[11]) noV0Casym        +=histStat->GetBinContent(i+1);
       if (b[15]) znInTime         +=histStat->GetBinContent(i+1);
+      if (b[16]) noZNABG          +=histStat->GetBinContent(i+1);
+      if (b[17]) noZNCBG          +=histStat->GetBinContent(i+1);
       if (!b[ 3]) continue;
       if (!b[ 4]) continue;
       v0and+=histStat->GetBinContent(i+1);
+      if ( // bad event according to ZDC cuts
+          (// Pb-Pb
+            !b[15] && ( (fCurrentRun>=136849 && fCurrentRun<=139517) || //10h
+                        (fCurrentRun>=166477 && fCurrentRun<=170593) || //11h
+                        (fCurrentRun>=243399 && fCurrentRun<=246542) || //15o
+                        (fCurrentRun>=246672 && fCurrentRun<=244823) || //15o
+                        (fCurrentRun>=244890 && fCurrentRun<=245060) || //15o
+                        (fCurrentRun>=245062 && fCurrentRun<=245147) || //15o
+                        (fCurrentRun>=245149 && fCurrentRun<=246994)    //15o
+                      )
+          ) ||
+          (// p-Pb
+            !b[16] && ( (fCurrentRun>=188144 && fCurrentRun<=188374) || //12g
+                        (fCurrentRun>=194713 && fCurrentRun<=196345) || //13bcde
+                        (fCurrentRun>=265304 && fCurrentRun<=266318) || //16qr
+                        (fCurrentRun>=267132 && fCurrentRun<=267166)    //16t
+                      )
+          ) ||
+          (// Pb-p
+            !b[17] && ( (fCurrentRun>=196346 && fCurrentRun<=197411) || //13f
+                        (fCurrentRun>=266405 && fCurrentRun<=267131)    //16s
+                      )
+          )
+      ) continue;
+      plusNoZDCBG+=histStat->GetBinContent(i+1);
       if (!b[ 5]) continue;
       plusNoSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
       if (!b[ 6]) continue;
@@ -587,6 +617,7 @@ void AliPhysicsSelection::FillStatistics(){
     fHistStat->Fill("all",trigger,all);
     fHistStat->Fill("accepted",trigger,accepted);
     fHistStat->Fill("V0A & V0C",trigger,v0and);
+    fHistStat->Fill("+ !ZDCBG",trigger,plusNoZDCBG);
     fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
     fHistStat->Fill("+ !V0C012vsTklBG",trigger,plusNoV0C012vsTklBG);
     fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
