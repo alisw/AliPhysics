@@ -190,7 +190,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat            = new TH1F("fHistStat","Accepted events;;",65536,-0.5,65535.5);
+  fHistStat            = new TH1F("fHistStat","Accepted events;;",262144,-0.5,262143.5);
   fHistFiredBitsSPD    = new TH1F("fHistFiredBitsSPD","SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTklAll  = new TH2F("fHistSPDClsVsTklAll",                  "All events;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
   fHistSPDClsVsTklCln  = new TH2F("fHistSPDClsVsTklCln","Events cleaned by other cuts;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
@@ -1521,6 +1521,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
   Bool_t isTKLTrigger      = TKLTrigger(event,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
+  Bool_t isZNATimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kASide);
+  Bool_t isZNCTimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kCSide);
   Bool_t isV0A             = decisionV0A==kV0BB;
   Bool_t isV0C             = decisionV0C==kV0BB;
   
@@ -1542,6 +1544,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   if (isV0MOfTrigger)     accept |= 1 <<13;
   if (isSH1Trigger)       accept |= 1 <<14;
   if (isZDCTimeTrigger)   accept |= 1 <<15;
+  if (!isZNATimeBG)       accept |= 1 <<16;
+  if (!isZNCTimeBG)       accept |= 1 <<17;
   if (accept) fHistStat->Fill(accept);
   
   Bool_t acceptDefault = isV0A & isV0C;
