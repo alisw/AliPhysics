@@ -152,7 +152,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
     AliAnalysisTaskSimpleTreeMaker& operator=(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
-    AliMCEvent* mcEvent;    //MC object
 
     AliESDtrackCuts *fESDtrackCuts; // ESD track cuts object
 
@@ -165,9 +164,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
     Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
+    //MC flag
     Bool_t fIsMC;
-	AliMCParticle* fMcTrack;
-	AliMCParticle* fMotherTrack;
   
     Double_t fPtMin;// minimum pT threshold (default = 0)
     Double_t fPtMax;// maximum pT threshold (default = 10)
