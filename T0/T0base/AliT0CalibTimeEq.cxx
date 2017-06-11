@@ -40,13 +40,14 @@ ClassImp(AliT0CalibTimeEq)
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
   fMeanVertex(0),        
-  fRmsVertex(0)
+  fRmsVertex(0),
+  fCFDvsTime()
 {
   //
   for(Int_t i=0; i<24; i++) {
    fTimeEq[i] = 0;	      // Time Equalized for OCDB	 
    fTimeEqRms[i] = -1;	      // RMS of Time Equalized for OCDB	 
-   fCFDvsTime[i] = NULL;
+   //fCFDvsTime[i] = NULL;
    for (Int_t ih=0; ih<5; ih++)   fCFDvalue[i][ih] = 0;
   }
   fCFDvsTime.SetOwner(kTRUE);
@@ -55,7 +56,8 @@ AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 						     fMeanVertex(0),        
-						     fRmsVertex(0)
+						     fRmsVertex(0),
+						     fCFDvsTime()
 {
   //constructor
 
@@ -66,7 +68,7 @@ AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
   for(Int_t i=0; i<24; i++) {
    fTimeEq[i] = 0;	      // Time Equalized for OCDB	 
    fTimeEqRms[i] = -1;	      // RMS of Time Equalized for OCDB	 
-   fCFDvsTime[i]=NULL;
+   //fCFDvsTime[i]=NULL;
    for (Int_t ih=0; ih<5; ih++)   fCFDvalue[i][ih] = 0;
   }
   fCFDvsTime.SetOwner(kTRUE);
@@ -76,7 +78,7 @@ AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda):TNamed(calibda),		
 								    fMeanVertex(0),        
 								    fRmsVertex(0),
-								    fCFDvsTime(0)
+								    fCFDvsTime()
 {
 // copy constructor
   SetName(calibda.GetName());

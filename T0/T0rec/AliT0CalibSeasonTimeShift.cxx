@@ -127,7 +127,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
   // 300 no one histogram or it is empty
   //-100 peak is very narrow
 
-  Float_t mean, sigma;
+  Float_t mean=0, sigma=0;
   Int_t ok = 0;
   TH1F *hcfd = NULL;
   TH2F *hT0mult = NULL;

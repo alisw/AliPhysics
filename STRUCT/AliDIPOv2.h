@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////
  
 #include "AliDIPO.h"
+class TGeoVolume;
   
 class AliDIPOv2 : public AliDIPO {
   
@@ -23,6 +24,7 @@ public:
  private:
   virtual void  CreateSpectrometerDipole();
   virtual void  CreateCompensatorDipole();
+  TGeoVolume *  CreateMagnetYoke();
   
   ClassDef(AliDIPOv2,1)  //Class manager for magnetic dipole version 2
 };

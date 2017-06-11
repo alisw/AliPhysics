@@ -65,7 +65,7 @@
 #include "AliADCalibData.h"
 #include "AliADConst.h"
 
-ClassImp(AliAD);
+ClassImp(AliAD)
 //__________________________________________________________________
 AliAD::AliAD()
   : AliDetector()
@@ -110,7 +110,13 @@ void AliAD::CreateMaterials()
   Float_t  density,  as[11], zs[11], ws[11];
   Double_t radLength, absLength, a_ad, z_ad;
   Int_t    id;
-
+  // PVC (C2H3Cl)n - Stealed from ITSsim/AliITSv11.cxx
+  Float_t aPVC[3] = { 12.0107, 1.00794, 35.4527};
+  Float_t zPVC[3] = {  6.    , 1.     , 35.   };
+  Float_t wPVC[3] = {  2.    , 3.     ,  1.   };
+  Float_t dPVC    = 1.3;
+  AliMixture(47,"PVC",aPVC,zPVC,dPVC,-3,wPVC);
+  
   //
   // Air
   //
@@ -150,11 +156,16 @@ void AliAD::CreateMaterials()
   AliMixture(16, "VACUUM1 ", aAir, zAir, dAir1, 4, wAir);
   AliMixture(36, "VACUUM2 ", aAir, zAir, dAir1, 4, wAir);
   AliMixture(56, "VACUUM3 ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(76, "VACUUM4 ", aAir, zAir, dAir1, 4, wAir);
 
   //     Stainless Steel
   AliMixture(19, "STAINLESS STEEL1", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(39, "STAINLESS STEEL2", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(59, "STAINLESS STEEL3", asteel, zsteel, 7.88, 4, wsteel);
+  //     Lead
+  AliMaterial(13, "LEAD1     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(33, "LEAD2     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(53, "LEAD3     ", 207.19, 82., 11.35, .56, 18.5);
 
   //     Cast iron
   AliMixture(18, "CAST IRON1", acasti, zcasti, 7.2, 4, wcasti);
@@ -171,6 +182,8 @@ void AliAD::CreateMaterials()
   deemax = -.3;   // Maximum fractional energy loss, DLS
   stmin  = -.8;
   // ***************
+  // PVC
+  AliMedium(47, "PVC"              , 47 , 0 , fieldType , maxField , tmaxfd , stemax , deemax , epsil , stmin);
 
   //    Aluminum
   AliMedium(9,  "ALU_C0          ", 9, 0,  fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
@@ -191,6 +204,13 @@ void AliAD::CreateMaterials()
   AliMedium(16, "VA_C0           ", 16, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(36, "VA_C1           ", 36, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(56, "VA_C2           ", 56, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(76, "VA_SENSITIVE    ", 76, 1, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
+
+  //    Lead
+  AliMedium(13, "PB_C0           ", 13, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(33, "PB_C1           ", 33, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(53, "PB_C2           ", 53, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
+  
 
   //    Steel
   AliMedium(19, "ST_C0           ", 19, 0, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
@@ -242,8 +262,7 @@ void AliAD::CreateMaterials()
   density = 1.032;
   id      = 1;
   AliMixture( id, "BC404", as, zs, density, -2, ws );
-  AliMedium ( id, "BC404", id, 1, fieldType, maxField, maxBending, maxStepSize,
-              maxEnergyLoss, precision, minStepSize );
+  AliMedium ( id, "BC404", id, 1, fieldType, maxField, maxBending, maxStepSize, maxEnergyLoss, precision, minStepSize );
   // parameters AliMedium: numed  name   nmat   isvol  ifield fieldm tmaxfd stemax deemax epsil  stmin
   // ...
   // isvol       sensitive volume if isvol!=0
@@ -276,7 +295,7 @@ void AliAD::CreateMaterials()
   id      = 2;
   AliMixture( id, "PMMA", as, zs, density, 3, ws );
   AliMedium( id,"PMMA", id, 1, fieldType, maxField, maxBending, maxStepSize,
-             maxEnergyLoss, precision, minStepSize );
+      maxEnergyLoss, precision, minStepSize );
 
 
   // mu-metal
@@ -306,8 +325,8 @@ void AliAD::CreateMaterials()
   absLength = 37.2;
   id = 4;
   AliMaterial (id, "Alum",  a_ad, z_ad, density, radLength, absLength, 0, 0 );
-  AliMedium( id, "Alum", id, 1, fieldType, maxField, maxBending, maxStepSize,
-             maxEnergyLoss, precision, minStepSize );
+  AliMedium   (id, "Alum", id, 1, fieldType, maxField, maxBending, maxStepSize,
+               maxEnergyLoss, precision, minStepSize );
 
   // Parameters for ADCPMG: Glass for the simulation Aluminium
   // TODO fix material
@@ -318,8 +337,8 @@ void AliAD::CreateMaterials()
   absLength = 37.2;
   id = 5;
   AliMaterial( id, "Glass",  a_ad, z_ad, density, radLength, absLength, 0, 0 );
-  AliMedium( id, "Glass", id, 1, fieldType, maxField, maxBending, maxStepSize,
-             maxEnergyLoss, precision, minStepSize );
+  AliMedium  ( id, "Glass", id, 1, fieldType, maxField, maxBending, maxStepSize,
+               maxEnergyLoss, precision, minStepSize );
 
 
 }
@@ -336,8 +355,7 @@ void AliAD::SetTreeAddress()
   TTree *treeH = fLoader->TreeH();
   if (treeH) {
     branch = treeH->GetBranch(branchname);
-    if (branch)
-      branch->SetAddress(&fHits);
+    if (branch) branch->SetAddress(&fHits);
   }
 }
 
@@ -346,7 +364,8 @@ void AliAD::SetTreeAddress()
 void AliAD::MakeBranch(Option_t* opt)
 {
   const char* oH = strstr(opt,"H");
-  if (fLoader->TreeH() && oH && !fHits) {
+  if (fLoader->TreeH() && oH && !fHits) 
+  {
     fHits = new TClonesArray("AliADhit",1000);
     fNhits = 0;
   }
