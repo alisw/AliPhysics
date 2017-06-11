@@ -57,7 +57,7 @@ public:
             
   void         ClusterShapeHistograms(AliVCluster* cluster,  
                                       Int_t   absIdMax    , Double_t maxCellFraction, 
-                                      Float_t eCrossFrac  , Double_t tmax, 
+                                      Float_t eCrossFrac  , Float_t ampMax  , Double_t tmax, 
                                       Int_t   matchedPID  , Int_t    mcIndex);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
@@ -469,6 +469,20 @@ public:
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
+  TH3F *   fhESecCellEMaxCellM02SM;               //!<! m02 vs SM number vs E cell / E cell max 
+  TH3F *   fhESecCellEClusterM02SM;               //!<! m02 vs SM number vs E cluster - E cell / E cluster
+  TH3F *   fhESecCellLogM02SM     ;               //!<! m02 vs SM number vs log E cell 
+  TH3F *   fhESecCellWeightM02SM  ;               //!<! m02 vs SM number vs cell weight
+
+  TH3F *   fhESecCellEMaxCellM02SMSameTCard;      //!<! m02 vs SM number vs E cell / E cell max, cell in same TCard as max
+  TH3F *   fhESecCellEClusterM02SMSameTCard;      //!<! m02 vs SM number vs E cluster - E cell / E cluster, cell in same TCard as max
+  TH3F *   fhESecCellLogM02SMSameTCard     ;      //!<! m02 vs SM number vs log E cell, cell in same TCard as max 
+  TH3F *   fhESecCellWeightM02SMSameTCard  ;      //!<! m02 vs SM number vs cell weight, cell in same TCard as max
+
+  TH3F *   fhEMaxCellEClusterM02SM;               //!<! m02 vs SM number vs E cluster - E max cell / E cluster
+  TH3F *   fhEMaxCellLogM02SM     ;               //!<! m02 vs SM number vs log E max cell 
+  TH3F *   fhEMaxCellWeightM02SM  ;               //!<! m02 vs SM number vs max cell weight
+
   //
   // Weight studies
   //
@@ -497,7 +511,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,2) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,3) ;
   /// \endcond
 
 } ;
