@@ -848,7 +848,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     }  
     cutIndex++;
   }else if(fIsMergedClusterCut == 2){
-    if(fEnableOneCellDistCut && fCaloPhotonCuts->AreNeighbours(leadingCellID1,leadingCellID2)){
+    if(fEnableOneCellDistCut && ((leadingCellID1 == leadingCellID2) || fCaloPhotonCuts->AreNeighbours(leadingCellID1,leadingCellID2)) ){
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -2413,36 +2413,43 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
     //cuts with one cell dist for GammaCalo only
     case 10:      //a
       fMinOpanCutMeson  = 0.;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 11:      //b
       fMinOpanCutMeson  = 0.0152;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 12:      //c
       fMinOpanCutMeson  = 0.016;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 13:      //d
       fMinOpanCutMeson  = 0.017;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 14:      //e
       fMinOpanCutMeson  = 0.018;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 15:      //f
       fMinOpanCutMeson  = 0.019;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
     case 16:      //g
       fMinOpanCutMeson  = 0.0202;
+      fEnableMinOpeningAngleCut = kFALSE;
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
