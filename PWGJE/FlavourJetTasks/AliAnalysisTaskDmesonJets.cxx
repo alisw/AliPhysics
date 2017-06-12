@@ -415,7 +415,8 @@ ClassImp(AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary);
 AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary::AliDmesonMCInfoSummary(const AliDmesonJetInfo& source) :
   AliDmesonInfoSummary(source),
   fPartonType(0),
-  fPartonPt(0)
+  fPartonPt(0),
+  fAncestorPDG(0)
 {
   Set(source);
 }
@@ -435,6 +436,10 @@ void AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary::Set(const AliDmesonJetIn
   else {
     fPartonPt = 0.;
   }
+
+  if (source.fAncestor) {
+    fAncestorPDG = (UShort_t)((UInt_t)(TMath::Abs(source.fAncestor->GetPdgCode())));
+  }
 }
 
 /// Reset the object
@@ -443,6 +448,7 @@ void AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary::Reset()
   AliDmesonInfoSummary::Reset();
   fPartonType = 0,
   fPartonPt = 0.;
+  fAncestorPDG = 0;
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliD0InfoSummary
