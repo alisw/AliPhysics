@@ -466,6 +466,7 @@ public:
   TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
   TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
   TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
+  TH3F *   fhSMNCellM02[3];                       //!<! SM number vs number of cells vs M02, in E bin
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
