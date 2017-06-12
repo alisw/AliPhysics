@@ -329,7 +329,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
-  fNTracklets(0)
+  fNTracklets(0),
+  fSaveMode(kElephant)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -491,113 +492,158 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   const char* nameoutput = GetOutputSlot(1)->GetContainer()->GetName();
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
-  Int_t nVar = 90;
+
+  Int_t nVar; 
+  switch (fSaveMode) {
+    case kElephant : // "heavy mode", save all possible branches
+      nVar = 90;
+      break;
+    case kMouse :    // "light mode", save smaller subset of branches 
+      nVar = 28; 
+      break;
+    }
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
-  fCandidateVariableNames[0]="massLc2K0Sp";
-  fCandidateVariableNames[1]="massLc2Lambdapi";
-  fCandidateVariableNames[2]="massK0S";
-  fCandidateVariableNames[3]="massLambda";
-  fCandidateVariableNames[4]="massLambdaBar";
-  fCandidateVariableNames[5]="cosPAK0S";
-  fCandidateVariableNames[6]="dcaV0";
-  fCandidateVariableNames[7]="tImpParBach";
-  fCandidateVariableNames[8]="tImpParV0";
-  fCandidateVariableNames[9]="nSigmaTPCpr";
-  fCandidateVariableNames[10]="nSigmaTPCpi";
-  fCandidateVariableNames[11]="nSigmaTPCka";
-  fCandidateVariableNames[12]="nSigmaTOFpr";
-  fCandidateVariableNames[13]="nSigmaTOFpi";
-  fCandidateVariableNames[14]="nSigmaTOFka";
-  fCandidateVariableNames[15]="bachelorPt";
-  fCandidateVariableNames[16]="V0positivePt";
-  fCandidateVariableNames[17]="V0negativePt";
-  fCandidateVariableNames[18]="dcaV0pos";
-  fCandidateVariableNames[19]="dcaV0neg";
-  fCandidateVariableNames[20]="v0Pt";
-  fCandidateVariableNames[21]="massGamma";
-  fCandidateVariableNames[22]="LcPt";
-  fCandidateVariableNames[23]="combinedProtonProb";
-  fCandidateVariableNames[24]="LcEta";
-  fCandidateVariableNames[25]="V0positiveEta";
-  fCandidateVariableNames[26]="V0negativeEta";
-  fCandidateVariableNames[27]="TPCProtonProb";
-  fCandidateVariableNames[28]="TOFProtonProb";
-  fCandidateVariableNames[29]="bachelorEta";
-  fCandidateVariableNames[30]="LcP";
-  fCandidateVariableNames[31]="bachelorP";
-  fCandidateVariableNames[32]="v0P";
-  fCandidateVariableNames[33]="V0positiveP";
-  fCandidateVariableNames[34]="V0negativeP";
-  fCandidateVariableNames[35]="LcY";
-  fCandidateVariableNames[36]="v0Y";
-  fCandidateVariableNames[37]="bachelorY";
-  fCandidateVariableNames[38]="V0positiveY";
-  fCandidateVariableNames[39]="V0negativeY";
-  fCandidateVariableNames[40]="v0Eta";
-  fCandidateVariableNames[41]="DecayLengthLc";
-  fCandidateVariableNames[42]="DecayLengthK0S";
-  fCandidateVariableNames[43]="CtLc";
-  fCandidateVariableNames[44]="CtK0S";
-  fCandidateVariableNames[45]="bachCode";
-  fCandidateVariableNames[46]="k0SCode";
 
-  fCandidateVariableNames[47]="V0KFmass";
-  fCandidateVariableNames[48]="V0KFdecayLength";
-  fCandidateVariableNames[49]="V0KFlifeTime";
+  
+  switch (fSaveMode) {
+     case kElephant : // "heavy mode"
+        fCandidateVariableNames[0]="massLc2K0Sp";
+        fCandidateVariableNames[1]="massLc2Lambdapi";
+        fCandidateVariableNames[2]="massK0S";
+        fCandidateVariableNames[3]="massLambda";
+        fCandidateVariableNames[4]="massLambdaBar";
+        fCandidateVariableNames[5]="cosPAK0S";
+        fCandidateVariableNames[6]="dcaV0";
+        fCandidateVariableNames[7]="tImpParBach";
+        fCandidateVariableNames[8]="tImpParV0";
+        fCandidateVariableNames[9]="nSigmaTPCpr";
+        fCandidateVariableNames[10]="nSigmaTPCpi";
+        fCandidateVariableNames[11]="nSigmaTPCka";
+        fCandidateVariableNames[12]="nSigmaTOFpr";
+        fCandidateVariableNames[13]="nSigmaTOFpi";
+        fCandidateVariableNames[14]="nSigmaTOFka";
+        fCandidateVariableNames[15]="bachelorPt";
+        fCandidateVariableNames[16]="V0positivePt";
+        fCandidateVariableNames[17]="V0negativePt";
+        fCandidateVariableNames[18]="dcaV0pos";
+        fCandidateVariableNames[19]="dcaV0neg";
+        fCandidateVariableNames[20]="v0Pt";
+        fCandidateVariableNames[21]="massGamma";
+        fCandidateVariableNames[22]="LcPt";
+        fCandidateVariableNames[23]="combinedProtonProb";
+        fCandidateVariableNames[24]="LcEta";
+        fCandidateVariableNames[25]="V0positiveEta";
+        fCandidateVariableNames[26]="V0negativeEta";
+        fCandidateVariableNames[27]="TPCProtonProb";
+        fCandidateVariableNames[28]="TOFProtonProb";
+        fCandidateVariableNames[29]="bachelorEta";
+        fCandidateVariableNames[30]="LcP";
+        fCandidateVariableNames[31]="bachelorP";
+        fCandidateVariableNames[32]="v0P";
+        fCandidateVariableNames[33]="V0positiveP";
+        fCandidateVariableNames[34]="V0negativeP";
+        fCandidateVariableNames[35]="LcY";
+        fCandidateVariableNames[36]="v0Y";
+        fCandidateVariableNames[37]="bachelorY";
+        fCandidateVariableNames[38]="V0positiveY";
+        fCandidateVariableNames[39]="V0negativeY";
+        fCandidateVariableNames[40]="v0Eta";
+        fCandidateVariableNames[41]="DecayLengthLc";
+        fCandidateVariableNames[42]="DecayLengthK0S";
+        fCandidateVariableNames[43]="CtLc";
+        fCandidateVariableNames[44]="CtK0S";
+        fCandidateVariableNames[45]="bachCode";
+        fCandidateVariableNames[46]="k0SCode";
+      
+        fCandidateVariableNames[47]="V0KFmass";
+        fCandidateVariableNames[48]="V0KFdecayLength";
+        fCandidateVariableNames[49]="V0KFlifeTime";
+      
+        fCandidateVariableNames[50]="V0KFmassErr";
+        fCandidateVariableNames[51]="V0KFdecayTimeErr";
+        fCandidateVariableNames[52]="V0KFlifeTimeErr";
+      
+        fCandidateVariableNames[53]="LcKFmass";
+        fCandidateVariableNames[54]="LcKFdecayLength";
+        fCandidateVariableNames[55]="LcKFlifeTime";
+      
+        fCandidateVariableNames[56]="LcKFmassErr";
+        fCandidateVariableNames[57]="LcKFdecayTimeErr";
+        fCandidateVariableNames[58]="LcKFlifeTimeErr";
+      
+        fCandidateVariableNames[59]="LcKFDistToPrimVtx";
+        fCandidateVariableNames[60]="V0KFDistToPrimVtx";
+        fCandidateVariableNames[61]="V0KFDistToLc";
+        fCandidateVariableNames[62]="alphaArmKF";
+        fCandidateVariableNames[63]="ptArmKF";
+        fCandidateVariableNames[64]="alphaArm";
+        fCandidateVariableNames[65]="ptArm";
+      
+        fCandidateVariableNames[66]="ITSrefitV0pos";
+        fCandidateVariableNames[67]="ITSrefitV0neg";
+      
+        fCandidateVariableNames[68]="TPCClV0pos";
+        fCandidateVariableNames[69]="TPCClV0neg";
+      
+        fCandidateVariableNames[70]="v0Xcoord";
+        fCandidateVariableNames[71]="v0Ycoord";
+        fCandidateVariableNames[72]="v0Zcoord";
+        fCandidateVariableNames[73]="primVtxX";
+        fCandidateVariableNames[74]="primVtxY";
+        fCandidateVariableNames[75]="primVtxZ";
+      
+        fCandidateVariableNames[76]="ITSclBach";
+        fCandidateVariableNames[77]="SPDclBach";
+      
+        fCandidateVariableNames[78]="ITSclV0pos";
+        fCandidateVariableNames[79]="SPDclV0pos";
+        fCandidateVariableNames[80]="ITSclV0neg";
+        fCandidateVariableNames[81]="SPDclV0neg";
+      
+        fCandidateVariableNames[82]="alphaArmLc";
+        fCandidateVariableNames[83]="alphaArmLcCharge";
+        fCandidateVariableNames[84]="ptArmLc";
+      
+        fCandidateVariableNames[85]="CosThetaStar";
+      
+        fCandidateVariableNames[86]="weightPtFlat";
+        fCandidateVariableNames[87]="weightFONLL5overLHC13d3";
+        fCandidateVariableNames[88]="weightFONLL5overLHC13d3Lc";
+        fCandidateVariableNames[89]="weightNch";
+        break;
 
-  fCandidateVariableNames[50]="V0KFmassErr";
-  fCandidateVariableNames[51]="V0KFdecayTimeErr";
-  fCandidateVariableNames[52]="V0KFlifeTimeErr";
-
-  fCandidateVariableNames[53]="LcKFmass";
-  fCandidateVariableNames[54]="LcKFdecayLength";
-  fCandidateVariableNames[55]="LcKFlifeTime";
-
-  fCandidateVariableNames[56]="LcKFmassErr";
-  fCandidateVariableNames[57]="LcKFdecayTimeErr";
-  fCandidateVariableNames[58]="LcKFlifeTimeErr";
-
-  fCandidateVariableNames[59]="LcKFDistToPrimVtx";
-  fCandidateVariableNames[60]="V0KFDistToPrimVtx";
-  fCandidateVariableNames[61]="V0KFDistToLc";
-  fCandidateVariableNames[62]="alphaArmKF";
-  fCandidateVariableNames[63]="ptArmKF";
-  fCandidateVariableNames[64]="alphaArm";
-  fCandidateVariableNames[65]="ptArm";
-
-  fCandidateVariableNames[66]="ITSrefitV0pos";
-  fCandidateVariableNames[67]="ITSrefitV0neg";
-
-  fCandidateVariableNames[68]="TPCClV0pos";
-  fCandidateVariableNames[69]="TPCClV0neg";
-
-  fCandidateVariableNames[70]="v0Xcoord";
-  fCandidateVariableNames[71]="v0Ycoord";
-  fCandidateVariableNames[72]="v0Zcoord";
-  fCandidateVariableNames[73]="primVtxX";
-  fCandidateVariableNames[74]="primVtxY";
-  fCandidateVariableNames[75]="primVtxZ";
-
-  fCandidateVariableNames[76]="ITSclBach";
-  fCandidateVariableNames[77]="SPDclBach";
-
-  fCandidateVariableNames[78]="ITSclV0pos";
-  fCandidateVariableNames[79]="SPDclV0pos";
-  fCandidateVariableNames[80]="ITSclV0neg";
-  fCandidateVariableNames[81]="SPDclV0neg";
-
-  fCandidateVariableNames[82]="alphaArmLc";
-  fCandidateVariableNames[83]="alphaArmLcCharge";
-  fCandidateVariableNames[84]="ptArmLc";
-
-  fCandidateVariableNames[85]="CosThetaStar";
-
-  fCandidateVariableNames[86]="weightPtFlat";
-  fCandidateVariableNames[87]="weightFONLL5overLHC13d3";
-  fCandidateVariableNames[88]="weightFONLL5overLHC13d3Lc";
-  fCandidateVariableNames[89]="weightNch";
-
+     case kMouse :   // "light mode"
+        fCandidateVariableNames[0]="massLc2K0Sp";
+        fCandidateVariableNames[1]="massLc2Lambdapi";
+        fCandidateVariableNames[2]="massK0S";
+        fCandidateVariableNames[3]="massLambda";
+        fCandidateVariableNames[4]="massLambdaBar";
+        fCandidateVariableNames[5]="cosPAK0S";
+        fCandidateVariableNames[6]="dcaV0";
+        fCandidateVariableNames[7]="tImpParBach";
+        fCandidateVariableNames[8]="tImpParV0";
+        fCandidateVariableNames[9]="nSigmaTPCpr";
+        fCandidateVariableNames[10]="nSigmaTOFpr";
+        fCandidateVariableNames[11]="bachelorPt";
+        fCandidateVariableNames[12]="V0positivePt";
+        fCandidateVariableNames[13]="V0negativePt";
+        fCandidateVariableNames[14]="dcaV0pos";
+        fCandidateVariableNames[15]="dcaV0neg";
+        fCandidateVariableNames[16]="v0Pt";
+        fCandidateVariableNames[17]="massGamma";
+        fCandidateVariableNames[18]="LcPt";
+        fCandidateVariableNames[19]="combinedProtonProb";
+        fCandidateVariableNames[20]="V0positiveEta";
+        fCandidateVariableNames[21]="V0negativeEta";
+        fCandidateVariableNames[22]="bachelorEta";
+        fCandidateVariableNames[23]="v0P";
+        fCandidateVariableNames[24]="DecayLengthK0S";
+        fCandidateVariableNames[25]="CtK0S";
+        fCandidateVariableNames[26]="alphaArm";
+        fCandidateVariableNames[27]="ptArm";
+        break;
+  }
 
   for(Int_t ivar=0; ivar<nVar; ivar++){
     fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1621,185 +1667,225 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
+ 
+          EBachelor bachCode = kBachInvalid;
+          EK0S k0SCode = kK0SInvalid;
+          if (fUseMCInfo) {
+            bachCode = CheckBachelor(part, bachelor, mcArray);
+            k0SCode = CheckK0S(part, v0part, mcArray);
+          }
 
-    fCandidateVariables[0] = invmassLc;
-    fCandidateVariables[1] = invmassLc2Lpi;
-    fCandidateVariables[2] = invmassK0s;
-    fCandidateVariables[3] = invmassLambda;
-    fCandidateVariables[4] = invmassLambdaBar;
-    fCandidateVariables[5] = part->CosV0PointingAngle();
-    fCandidateVariables[6] = dcaV0;
-    fCandidateVariables[7] = part->Getd0Prong(0);
-    fCandidateVariables[8] = part->Getd0Prong(1);
-    fCandidateVariables[9] = nSigmaTPCpr;
-    fCandidateVariables[10] = nSigmaTPCpi;
-    fCandidateVariables[11] = nSigmaTPCka;
-    fCandidateVariables[12] = nSigmaTOFpr;
-    fCandidateVariables[13] = nSigmaTOFpi;
-    fCandidateVariables[14] = nSigmaTOFka;
-    fCandidateVariables[15] = bachelor->Pt();
-    AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
-    fCandidateVariables[16] = v0pos->Pt();
-    AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
-    fCandidateVariables[17] = v0neg->Pt();
-    fCandidateVariables[18] = v0part->Getd0Prong(0);
-    fCandidateVariables[19] = v0part->Getd0Prong(1);
-    fCandidateVariables[20] = v0part->Pt();
-    fCandidateVariables[21] = v0part->InvMass2Prongs(0,1,11,11);
-    fCandidateVariables[22] = part->Pt();
-    fCandidateVariables[23] = probProton;
-    fCandidateVariables[24] = part->Eta();
-    fCandidateVariables[25] = v0pos->Eta();
-    fCandidateVariables[26] = v0neg->Eta();
-    fCandidateVariables[27] = probProtonTPC;
-    fCandidateVariables[28] = probProtonTOF;
-    fCandidateVariables[29] = bachelor->Eta();
+          Double_t V0KF[3] = {-999999, -999999, -999999};
+          Double_t errV0KF[3] = {-999999, -999999, -999999};
+          Double_t LcKF[3] = {-999999, -999999, -999999};
+          Double_t errLcKF[3] = {-999999, -999999, -999999};
+          Double_t distances[3] = {-999999, -999999, -999999};
+          Double_t armPolKF[2] = {-999999, -999999};
 
-    fCandidateVariables[30] = part->P();
-    fCandidateVariables[31] = bachelor->P();
-    fCandidateVariables[32] = v0part->P();
-    fCandidateVariables[33] = v0pos->P();
-    fCandidateVariables[34] = v0neg->P();
 
-    fCandidateVariables[35] = part->Y(4122);
-    fCandidateVariables[36] = bachelor->Y(2212);
-    fCandidateVariables[37] = v0part->Y(310);
-    fCandidateVariables[38] = v0pos->Y(211);
-    fCandidateVariables[39] = v0neg->Y(211);
-
-    fCandidateVariables[40] = v0part->Eta();
-
-    fCandidateVariables[41] = part->DecayLength();
-    fCandidateVariables[42] = part->DecayLengthV0();
-    fCandidateVariables[43] = part->Ct(4122);
-    fCandidateVariables[44] = v0part->Ct(310, v0part->GetSecondaryVtx());
-
-    EBachelor bachCode = kBachInvalid;
-    EK0S k0SCode = kK0SInvalid;
-    if (fUseMCInfo) {
-      bachCode = CheckBachelor(part, bachelor, mcArray);
-      k0SCode = CheckK0S(part, v0part, mcArray);
+    switch (fSaveMode) {
+       case kElephant :  //  "heavy" mode
+          fCandidateVariables[0] = invmassLc;
+          fCandidateVariables[1] = invmassLc2Lpi;
+          fCandidateVariables[2] = invmassK0s;
+          fCandidateVariables[3] = invmassLambda;
+          fCandidateVariables[4] = invmassLambdaBar;
+          fCandidateVariables[5] = part->CosV0PointingAngle();
+          fCandidateVariables[6] = dcaV0;
+          fCandidateVariables[7] = part->Getd0Prong(0);
+          fCandidateVariables[8] = part->Getd0Prong(1);
+          fCandidateVariables[9] = nSigmaTPCpr;
+          fCandidateVariables[10] = nSigmaTPCpi;
+          fCandidateVariables[11] = nSigmaTPCka;
+          fCandidateVariables[12] = nSigmaTOFpr;
+          fCandidateVariables[13] = nSigmaTOFpi;
+          fCandidateVariables[14] = nSigmaTOFka;
+          fCandidateVariables[15] = bachelor->Pt();
+          AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
+          fCandidateVariables[16] = v0pos->Pt();
+          AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
+          fCandidateVariables[17] = v0neg->Pt();
+          fCandidateVariables[18] = v0part->Getd0Prong(0);
+          fCandidateVariables[19] = v0part->Getd0Prong(1);
+          fCandidateVariables[20] = v0part->Pt();
+          fCandidateVariables[21] = v0part->InvMass2Prongs(0,1,11,11);
+          fCandidateVariables[22] = part->Pt();
+          fCandidateVariables[23] = probProton;
+          fCandidateVariables[24] = part->Eta();
+          fCandidateVariables[25] = v0pos->Eta();
+          fCandidateVariables[26] = v0neg->Eta();
+          fCandidateVariables[27] = probProtonTPC;
+          fCandidateVariables[28] = probProtonTOF;
+          fCandidateVariables[29] = bachelor->Eta();
+      
+          fCandidateVariables[30] = part->P();
+          fCandidateVariables[31] = bachelor->P();
+          fCandidateVariables[32] = v0part->P();
+          fCandidateVariables[33] = v0pos->P();
+          fCandidateVariables[34] = v0neg->P();
+      
+          fCandidateVariables[35] = part->Y(4122);
+          fCandidateVariables[36] = bachelor->Y(2212);
+          fCandidateVariables[37] = v0part->Y(310);
+          fCandidateVariables[38] = v0pos->Y(211);
+          fCandidateVariables[39] = v0neg->Y(211);
+      
+          fCandidateVariables[40] = v0part->Eta();
+      
+          fCandidateVariables[41] = part->DecayLength();
+          fCandidateVariables[42] = part->DecayLengthV0();
+          fCandidateVariables[43] = part->Ct(4122);
+          fCandidateVariables[44] = v0part->Ct(310, v0part->GetSecondaryVtx());
+      
+      
+      
+          if (fCallKFVertexing){
+            Int_t kfResult = CallKFVertexing(part, v0part, bachelor, mcArray, &V0KF[0], &errV0KF[0], &LcKF[0], &errLcKF[0], &distances[0], &armPolKF[0]);
+            AliDebug(2, Form("Result from KF = %d", kfResult));
+          }
+      
+          /*
+            for (Int_t i = 0; i< 3; i++){
+            Printf("i = %d, V0KF = %f, errV0KF = %f, LcKF = %f, errLcKF = %f", V0KF[i], errV0KF[i], LcKF[i], errLcKF[i]);
+            }
+          */
+      
+          fCandidateVariables[47] = V0KF[0];
+          fCandidateVariables[48] = V0KF[1];
+          fCandidateVariables[49] = V0KF[2];
+      
+          fCandidateVariables[50] = errV0KF[0];
+          fCandidateVariables[51] = errV0KF[1];
+          fCandidateVariables[52] = errV0KF[2];
+      
+          fCandidateVariables[53] = LcKF[0];
+          fCandidateVariables[54] = LcKF[1];
+          fCandidateVariables[55] = LcKF[2];
+      
+          fCandidateVariables[56] = errLcKF[0];
+          fCandidateVariables[57] = errLcKF[1];
+          fCandidateVariables[58] = errLcKF[2];
+      
+          fCandidateVariables[59] = distances[0];
+          fCandidateVariables[60] = distances[1];
+          fCandidateVariables[61] = distances[2];
+          fCandidateVariables[62] = armPolKF[0];
+          fCandidateVariables[63] = armPolKF[1];
+          fCandidateVariables[64] = v0part->AlphaV0();
+          fCandidateVariables[65] = v0part->PtArmV0();
+      
+          AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
+          fCandidateVariables[66] = v0pos->GetStatus() & AliESDtrack::kITSrefit;
+          fCandidateVariables[67] = v0neg->GetStatus() & AliESDtrack::kITSrefit;
+          fCandidateVariables[68] = v0pos->GetTPCClusterInfo(2, 1);
+          fCandidateVariables[69] = v0neg->GetTPCClusterInfo(2, 1);
+      
+          fCandidateVariables[70] = v0part->Xv();
+          fCandidateVariables[71] = v0part->Yv();
+          fCandidateVariables[72] = v0part->Zv();
+      
+          fCandidateVariables[73] = fVtx1->GetX();
+          fCandidateVariables[74] = fVtx1->GetY();
+          fCandidateVariables[75] = fVtx1->GetZ();
+      
+          fCandidateVariables[76] = bachelor->GetITSNcls();
+          fCandidateVariables[77] = bachelor->HasPointOnITSLayer(0) + bachelor->HasPointOnITSLayer(1);
+      
+          fCandidateVariables[78] = v0pos->GetITSNcls();
+          fCandidateVariables[79] = v0pos->HasPointOnITSLayer(0) + v0pos->HasPointOnITSLayer(1);
+      
+          fCandidateVariables[80] = v0neg->GetITSNcls();
+          fCandidateVariables[81] = v0neg->HasPointOnITSLayer(0) + v0neg->HasPointOnITSLayer(1);
+      
+          TVector3 mom1(bachelor->Px(), bachelor->Py(), bachelor->Pz());
+          TVector3 mom2(v0part->Px(), v0part->Py(), v0part->Pz());
+          TVector3 momTot(part->Px(), part->Py(), part->Pz());
+      
+          Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();
+          Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag();
+      
+          Double_t alphaArmLc = (Ql1 - Ql2)/(Ql1 + Ql2);
+          Double_t alphaArmLcCharge = ( bachelor->Charge() > 0 ? (Ql1 - Ql2)/(Ql1 + Ql2) : (Ql2 - Ql1)/(Ql1 + Ql2) );
+          Double_t ptArmLc = mom1.Perp(momTot);
+      
+          fCandidateVariables[82] = alphaArmLc;
+          fCandidateVariables[83] = alphaArmLcCharge;
+          fCandidateVariables[84] = ptArmLc;
+      
+          Double_t massK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();    // mass K0S PDG
+          Double_t massPrPDG = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    // mass Proton PDG
+          Double_t massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();    // mass Lc PDG
+      
+          Double_t pStar = TMath::Sqrt((massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)*(massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)-4.*massPrPDG*massPrPDG*massK0SPDG*massK0SPDG)/(2.*massLcPDG);
+          Double_t e = part->E(4122);
+          Double_t beta = part->P()/e;
+          Double_t gamma = e/massLcPDG;
+      
+          Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
+      
+          fCandidateVariables[85] = cts;
+      
+          fCandidateVariables[86] = weightPythia;
+          fCandidateVariables[87] = weight5LHC13d3;
+          fCandidateVariables[88] = weight5LHC13d3Lc;
+          fCandidateVariables[89] = weightNch;
+       break;
+      
+       case kMouse: //"light mode"
+        
+          fCandidateVariables[0] = invmassLc;
+          fCandidateVariables[1] = invmassLc2Lpi;
+          fCandidateVariables[2] = invmassK0s;
+          fCandidateVariables[3] = invmassLambda;
+          fCandidateVariables[4] = invmassLambdaBar;
+          fCandidateVariables[5] = part->CosV0PointingAngle();
+          fCandidateVariables[6] = dcaV0;
+          fCandidateVariables[7] = part->Getd0Prong(0);
+          fCandidateVariables[8] = part->Getd0Prong(1);
+          fCandidateVariables[9] = nSigmaTPCpr;
+          fCandidateVariables[10] = nSigmaTOFpr;
+          fCandidateVariables[11] = bachelor->Pt();
+          AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
+          fCandidateVariables[12] = v0pos->Pt();
+          AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
+          fCandidateVariables[13] = v0neg->Pt();
+          fCandidateVariables[14] = v0part->Getd0Prong(0);
+          fCandidateVariables[15] = v0part->Getd0Prong(1);
+          fCandidateVariables[16] = v0part->Pt();
+          fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
+          fCandidateVariables[18] = part->Pt();
+          fCandidateVariables[19] = probProton;
+          fCandidateVariables[20] = v0pos->Eta();
+          fCandidateVariables[21] = v0neg->Eta();
+          fCandidateVariables[22] = bachelor->Eta();
+          fCandidateVariables[23] = v0part->P();
+          fCandidateVariables[24] = part->DecayLengthV0();
+          fCandidateVariables[25] = v0part->Ct(310, v0part->GetSecondaryVtx()); 
+          fCandidateVariables[26] = v0part->AlphaV0();
+          fCandidateVariables[27] = v0part->PtArmV0();
+      
+       break; 
+       
+       }
+      
+      
+     if (fUseMCInfo) {
+       if (isLc){
+    AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
+    fVariablesTreeSgn->Fill();
+    fHistoCodesSgn->Fill(bachCode, k0SCode);
+       }
+       else {
+    if (fFillOnlySgn == kFALSE){
+      AliDebug(2, "Filling Bkg");
+      fVariablesTreeBkg->Fill();
+      fHistoCodesBkg->Fill(bachCode, k0SCode);
     }
-
-    fCandidateVariables[45] = bachCode;
-    fCandidateVariables[46] = k0SCode;
-
-    Double_t V0KF[3] = {-999999, -999999, -999999};
-    Double_t errV0KF[3] = {-999999, -999999, -999999};
-    Double_t LcKF[3] = {-999999, -999999, -999999};
-    Double_t errLcKF[3] = {-999999, -999999, -999999};
-    Double_t distances[3] = {-999999, -999999, -999999};
-    Double_t armPolKF[2] = {-999999, -999999};
-
-    if (fCallKFVertexing){
-      Int_t kfResult = CallKFVertexing(part, v0part, bachelor, mcArray, &V0KF[0], &errV0KF[0], &LcKF[0], &errLcKF[0], &distances[0], &armPolKF[0]);
-      AliDebug(2, Form("Result from KF = %d", kfResult));
-    }
-
-    /*
-      for (Int_t i = 0; i< 3; i++){
-      Printf("i = %d, V0KF = %f, errV0KF = %f, LcKF = %f, errLcKF = %f", V0KF[i], errV0KF[i], LcKF[i], errLcKF[i]);
-      }
-    */
-
-    fCandidateVariables[47] = V0KF[0];
-    fCandidateVariables[48] = V0KF[1];
-    fCandidateVariables[49] = V0KF[2];
-
-    fCandidateVariables[50] = errV0KF[0];
-    fCandidateVariables[51] = errV0KF[1];
-    fCandidateVariables[52] = errV0KF[2];
-
-    fCandidateVariables[53] = LcKF[0];
-    fCandidateVariables[54] = LcKF[1];
-    fCandidateVariables[55] = LcKF[2];
-
-    fCandidateVariables[56] = errLcKF[0];
-    fCandidateVariables[57] = errLcKF[1];
-    fCandidateVariables[58] = errLcKF[2];
-
-    fCandidateVariables[59] = distances[0];
-    fCandidateVariables[60] = distances[1];
-    fCandidateVariables[61] = distances[2];
-    fCandidateVariables[62] = armPolKF[0];
-    fCandidateVariables[63] = armPolKF[1];
-    fCandidateVariables[64] = v0part->AlphaV0();
-    fCandidateVariables[65] = v0part->PtArmV0();
-
-    AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
-    fCandidateVariables[66] = v0pos->GetStatus() & AliESDtrack::kITSrefit;
-    fCandidateVariables[67] = v0neg->GetStatus() & AliESDtrack::kITSrefit;
-    fCandidateVariables[68] = v0pos->GetTPCClusterInfo(2, 1);
-    fCandidateVariables[69] = v0neg->GetTPCClusterInfo(2, 1);
-
-    fCandidateVariables[70] = v0part->Xv();
-    fCandidateVariables[71] = v0part->Yv();
-    fCandidateVariables[72] = v0part->Zv();
-
-    fCandidateVariables[73] = fVtx1->GetX();
-    fCandidateVariables[74] = fVtx1->GetY();
-    fCandidateVariables[75] = fVtx1->GetZ();
-
-    fCandidateVariables[76] = bachelor->GetITSNcls();
-    fCandidateVariables[77] = bachelor->HasPointOnITSLayer(0) + bachelor->HasPointOnITSLayer(1);
-
-    fCandidateVariables[78] = v0pos->GetITSNcls();
-    fCandidateVariables[79] = v0pos->HasPointOnITSLayer(0) + v0pos->HasPointOnITSLayer(1);
-
-    fCandidateVariables[80] = v0neg->GetITSNcls();
-    fCandidateVariables[81] = v0neg->HasPointOnITSLayer(0) + v0neg->HasPointOnITSLayer(1);
-
-    TVector3 mom1(bachelor->Px(), bachelor->Py(), bachelor->Pz());
-    TVector3 mom2(v0part->Px(), v0part->Py(), v0part->Pz());
-    TVector3 momTot(part->Px(), part->Py(), part->Pz());
-
-    Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();
-    Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag();
-
-    Double_t alphaArmLc = (Ql1 - Ql2)/(Ql1 + Ql2);
-    Double_t alphaArmLcCharge = ( bachelor->Charge() > 0 ? (Ql1 - Ql2)/(Ql1 + Ql2) : (Ql2 - Ql1)/(Ql1 + Ql2) );
-    Double_t ptArmLc = mom1.Perp(momTot);
-
-    fCandidateVariables[82] = alphaArmLc;
-    fCandidateVariables[83] = alphaArmLcCharge;
-    fCandidateVariables[84] = ptArmLc;
-
-    Double_t massK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();    // mass K0S PDG
-    Double_t massPrPDG = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    // mass Proton PDG
-    Double_t massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();    // mass Lc PDG
-
-    Double_t pStar = TMath::Sqrt((massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)*(massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)-4.*massPrPDG*massPrPDG*massK0SPDG*massK0SPDG)/(2.*massLcPDG);
-    Double_t e = part->E(4122);
-    Double_t beta = part->P()/e;
-    Double_t gamma = e/massLcPDG;
-
-    Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
-
-    fCandidateVariables[85] = cts;
-
-    fCandidateVariables[86] = weightPythia;
-    fCandidateVariables[87] = weight5LHC13d3;
-    fCandidateVariables[88] = weight5LHC13d3Lc;
-    fCandidateVariables[89] = weightNch;
-
-
-    if (fUseMCInfo) {
-      if (isLc){
-	AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
-	fVariablesTreeSgn->Fill();
-	fHistoCodesSgn->Fill(bachCode, k0SCode);
-      }
-      else {
-	if (fFillOnlySgn == kFALSE){
-	  AliDebug(2, "Filling Bkg");
-	  fVariablesTreeBkg->Fill();
-	  fHistoCodesBkg->Fill(bachCode, k0SCode);
-	}
-      }
-    }
-    else {
-      fVariablesTreeSgn->Fill();
-    }
+       }
+     }
+     else {
+       fVariablesTreeSgn->Fill();
+     }
   }
 
   return;

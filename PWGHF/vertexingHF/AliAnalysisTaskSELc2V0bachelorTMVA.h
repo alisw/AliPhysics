@@ -64,6 +64,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     kK0NoLambdaMother = 5,
     kK0DifferentLambdaMother = 6,
     kK0CorrectLambdaMother = 7 };    
+
+  enum EMode {
+     kElephant = 0,   /// heavy configuration, all branches saved
+     kMouse = 1};     /// light configuration, subset of branches saved
   
   AliAnalysisTaskSELc2V0bachelorTMVA();
   AliAnalysisTaskSELc2V0bachelorTMVA(const Char_t* name, AliRDHFCutsLctoV0* cutsA,
@@ -129,6 +133,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   void SetMCNchHisto(TH1F* h){
     if(fHistoMCNch) delete fHistoMCNch;
     fHistoMCNch = new TH1F(*h);
+  }
+  
+  void SetSaveMode(Int_t mode){
+     fSaveMode = mode;
   }
 
  private:
@@ -276,9 +284,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
   TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
-
+  
+  Int_t fSaveMode; /// switch to change saving mode for tree (light or heavy)
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 11); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 12); /// class for Lc->p K0
   /// \endcond    
 };
 

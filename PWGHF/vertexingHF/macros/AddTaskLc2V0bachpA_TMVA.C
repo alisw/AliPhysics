@@ -2,7 +2,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
 							    Bool_t theMCon=kTRUE,
 							    Bool_t onTheFly=kFALSE,
 							    Bool_t keepingOnlyHIJINGbkd=kFALSE,
-							    TString suffixName=""){
+							    TString suffixName="",
+                         Int_t savemode=AliAnalysisTaskSELc2V0bachelorTMVA::kElephant){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -46,6 +47,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   task->SetKeepingKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
+  task->SetSaveMode(savemode);
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
