@@ -673,14 +673,14 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	{
 		//..geometrical hit distribution of clusters
 		fHistDEtaDPhiGammaQA[identifier] = new TH2F(Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),142,-0.71,0.71,250,1.396263*fRtoD,5.707227*fRtoD);
-		fHistDEtaDPhiGammaQA[identifier]->GetXaxis()->SetTitle("#varphi^{#gamma}");
-		fHistDEtaDPhiGammaQA[identifier]->GetYaxis()->SetTitle("#eta^{#gamma}");
+		fHistDEtaDPhiGammaQA[identifier]->GetXaxis()->SetTitle("#eta^{#gamma}");
+		fHistDEtaDPhiGammaQA[identifier]->GetYaxis()->SetTitle("#varphi^{#gamma}");
 		fOutputListQA->Add(fHistDEtaDPhiGammaQA[identifier]);
 
 		//..geometrical hit distribution of tracks
-		fHistDEtaDPhiTrackQA[identifier] = new TH2F(Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),142,-0.71,0.71,250,1.396263*fRtoD,5.707227*fRtoD);
-		fHistDEtaDPhiTrackQA[identifier]->GetXaxis()->SetTitle("#varphi^{hadron}");
-		fHistDEtaDPhiTrackQA[identifier]->GetYaxis()->SetTitle("#eta^{hadron}");
+		fHistDEtaDPhiTrackQA[identifier] = new TH2F(Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),182,-0.91,0.91,360,0,360);
+		fHistDEtaDPhiTrackQA[identifier]->GetXaxis()->SetTitle("#eta^{hadron}");
+		fHistDEtaDPhiTrackQA[identifier]->GetYaxis()->SetTitle("#varphi^{hadron}");
 		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
 
 	    //..Cluster Info
@@ -1071,7 +1071,6 @@ TObjArray* AliAnalysisTaskGammaHadron::CloneToCreateTObjArray(AliParticleContain
 		//tracksClone->Add((AliVParticle*)track);  //only add accepted tracks
 		tracksClone->Add(new AliPicoTrack(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0, 0, 0, 0));
 	}
-
 	if(tracksClone->GetEntries()!=tracks->GetNAcceptedParticles())cout<<"!!!!!!! Major error!!!! "<<"Accepted tracks in event: "<<tracks->GetNAcceptedParticles()<<", Tracks in TObjArray: "<<tracksClone->GetEntries()<<endl;
 
 	return tracksClone;
@@ -1168,6 +1167,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 				trackCounter++;
 				//cout<<"..Track number: "<<NoTrack<<", pT = "<<track->Pt()<<endl;
 
+				//..Fill this histogram only for clusters above 5 GeV
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
 				FillGhHisograms(1,aliCaloClusterVec,track,5,Weight);
 
