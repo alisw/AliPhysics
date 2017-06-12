@@ -4246,12 +4246,22 @@ void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliA
 
   Int_t nCellCluster = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetNCells();
   for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-    Float_t nIphi, nIeta;
-    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+    Int_t nSupMod, nModule, nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellIndex(
           fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nSupMod,
+          nModule,
           nIphi,
           nIeta);
-    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+    Int_t nphi, neta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellPhiEtaIndexInSModule(
+          nSupMod,
+          nModule,
+          nIphi,
+          nIeta,
+          nphi,
+          neta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nSupMod << " " << nphi << " " << neta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
   }
   fOutputLocalDebug << "phi " << phiCluster << endl;
   fOutputLocalDebug << "eta " << etaCluster << endl;
@@ -4263,12 +4273,22 @@ void AliAnalysisTaskGammaCalo::DebugMethod(AliAODConversionMother *pi0cand, AliA
   Double_t phiCluster2 = clusterVector2.Phi();
   nCellCluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetNCells();
   for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-    Float_t nIphi, nIeta;
-    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+    Int_t nSupMod, nModule, nIphi, nIeta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellIndex(
           fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell),
+          nSupMod,
+          nModule,
           nIphi,
           nIeta);
-    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
+    Int_t nphi, neta;
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellPhiEtaIndexInSModule(
+          nSupMod,
+          nModule,
+          nIphi,
+          nIeta,
+          nphi,
+          neta);
+    fOutputLocalDebug << fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell) << " " << nSupMod << " " << nphi << " " << neta << " " << cells->GetCellAmplitude(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetCellAbsId(iCell)) << endl;
   }
   fOutputLocalDebug << "phi " << phiCluster2 << endl;
   fOutputLocalDebug << "eta " << etaCluster2 << endl;
@@ -4321,12 +4341,22 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
     Double_t phiCluster = clusterVector.Phi();
     Int_t nCellCluster = clus->GetNCells();
     for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-      Float_t nIphi, nIeta;
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->EtaPhiFromIndex(
+      Int_t nSupMod, nModule, nIphi, nIeta;
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellIndex(
             clus->GetCellAbsId(iCell),
+            nSupMod,
+            nModule,
             nIphi,
             nIeta);
-      fOutputLocalDebug << clus->GetCellAbsId(iCell) << " " << nIphi << " " << nIeta << " " << cells->GetCellAmplitude(clus->GetCellAbsId(iCell)) << endl;
+      Int_t nphi, neta;
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomEMCAL()->GetCellPhiEtaIndexInSModule(
+            nSupMod,
+            nModule,
+            nIphi,
+            nIeta,
+            nphi,
+            neta);
+      fOutputLocalDebug << clus->GetCellAbsId(iCell) << " " << nSupMod << " " << nphi << " " << neta << " " << cells->GetCellAmplitude(clus->GetCellAbsId(iCell)) << endl;
     }
     fOutputLocalDebug << "phi " << phiCluster << endl;
     fOutputLocalDebug << "eta " << etaCluster << endl;
