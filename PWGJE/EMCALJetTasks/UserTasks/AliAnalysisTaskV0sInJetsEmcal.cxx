@@ -37,6 +37,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliMCEvent.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -85,6 +86,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   AliAnalysisTaskEmcalJet(),
   fAODIn(0),
   fAODOut(0),
+  fEventMC(0),
   fRandom(0),
   fPoolMgr(0),
   fOutputListStd(0),
@@ -94,6 +96,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fbIsPbPb(0),
   fbMCAnalysis(0),
+  fsGeneratorName(""),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -369,6 +372,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fAODIn(0),
   fAODOut(0),
+  fEventMC(0),
   fRandom(0),
   fPoolMgr(0),
   fOutputListStd(0),
@@ -378,6 +382,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fbIsPbPb(0),
   fbMCAnalysis(0),
+  fsGeneratorName(""),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -1381,6 +1386,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   printf("-------------------------------------------------------\n");
   printf("collision system: %s\n", fbIsPbPb ? "Pb+Pb" : "p+p");
   printf("data type: %s\n", fbMCAnalysis ? "MC" : "real");
+  if(fbMCAnalysis)
+    printf("MC generator: %s\n", fsGeneratorName.Length() ? fsGeneratorName.Data() : "any");
   if(fbIsPbPb)
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
@@ -1476,10 +1483,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   // Simulation info
   if(fbMCAnalysis)
   {
+    fEventMC = MCEvent();
     arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC)
+    if(!arrayMC || !fEventMC)
     {
-      AliError("No MC array found!");
+      AliError("No MC array/event found!");
       return kFALSE;
     }
     if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
@@ -2704,6 +2712,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           continue;
       }
 
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iIndexMotherPos))
+        continue;
+
       // Is MC mother particle physical primary? Attention!! Definition of IsPhysicalPrimary may change!!
 //          Bool_t bV0MCIsPrimary = particleMCMother->IsPhysicalPrimary();
       // Get the MC mother particle of the MC mother particle
@@ -2906,11 +2918,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
       // Fill Xi spectrum (3322 - Xi0, 3312 - Xi-)
 //          if ( (iPdgCodeParticleMC==3322) || (iPdgCodeParticleMC==3312) )
-      if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5))
+      if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC))
       {
         fh1V0XiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
-      if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5))
+      else if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC))
       {
         fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
@@ -2971,6 +2983,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dz = dPrimVtxMCZ - particleMC->Zv();
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
+
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iPartMC))
+        continue;
 
       // Check whether the MC V0 particle is in a MC jet
       AliAODJet* jetMC = 0;
@@ -3515,4 +3531,21 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::MassPeakSigmaOld(Double_t pt, Int_t part
 bool AliAnalysisTaskV0sInJetsEmcal::CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2)
 {
   return (cluster1[1] > cluster2[1]);
+}
+
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsFromGoodGenerator(Int_t index)
+{
+  if(!fEventMC)
+  {
+    AliError("No MC event!");
+    return kFALSE;
+  }
+  if(fsGeneratorName.Length())
+  {
+    TString sGenName = "";
+    Bool_t bCocktailOK = fEventMC->GetCocktailGenerator(index, sGenName);
+    if(!bCocktailOK || !sGenName.Contains(fsGeneratorName.Data()))
+      return kFALSE;
+  }
+  return kTRUE;
 }
