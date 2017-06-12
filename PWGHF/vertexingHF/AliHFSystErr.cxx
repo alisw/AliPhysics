@@ -5239,7 +5239,11 @@ void AliHFSystErr::InitLctopK0S2010pp() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
-  for(Int_t i=1;i<=nBins;i++) fTrackingEff->SetBinContent(i,0.08); // 4%+4% (4%->bachelor, 4%->V0)
+  //for(Int_t i=1;i<=nBins;i++) fTrackingEff->SetBinContent(i,0.08); // 4%+4% (4%->bachelor, 4%->V0)
+  fTrackingEff->SetBinContent(1,0.07); // it was 8%
+  fTrackingEff->SetBinContent(2,0.07); // it was 8%
+  fTrackingEff->SetBinContent(3,0.06); // it was 8%
+  fTrackingEff->SetBinContent(4,0.05); // it was 8%
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
@@ -5289,7 +5293,11 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
-  for(Int_t i=1;i<=nBins;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
+  //for(Int_t i=1;i<=nBins;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
+  fTrackingEff->SetBinContent(1,0.10); // it was 7%
+  fTrackingEff->SetBinContent(2,0.06); // it was 7%
+  fTrackingEff->SetBinContent(3,0.06); // it was 7%
+  fTrackingEff->SetBinContent(4,0.06); // it was 7%
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
@@ -5335,7 +5343,9 @@ void AliHFSystErr::InitLctopK0S2013pPbBDT() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0.,12.);
-  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
+  //for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
+  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=12;i++) fTrackingEff->SetBinContent(i,0.06);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0.,12.);
