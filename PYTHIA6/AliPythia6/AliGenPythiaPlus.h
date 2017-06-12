@@ -354,9 +354,7 @@ class AliGenPythiaPlus : public AliGenMC
     AliGenPythiaPlus(const AliGenPythiaPlus &Pythia);
     AliGenPythiaPlus & operator=(const AliGenPythiaPlus & rhs);
 
-    /// \cond CLASSIMP
-    ClassDef(AliGenPythiaPlus, 5);
-    /// \endcond
+    ClassDef(AliGenPythiaPlus, 5)
 
 };
 #endif

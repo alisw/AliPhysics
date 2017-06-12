@@ -35,9 +35,7 @@
 #include "AliLog.h"
 #include "PyquenCommon.h"
 
-/// \cond CLASSIMP
-ClassImp(AliGenPythiaPlus);
-/// \endcond
+ClassImp(AliGenPythiaPlus)
 
 AliGenPythiaPlus::AliGenPythiaPlus():
     AliGenMC(),
@@ -1346,10 +1344,7 @@ void AliGenPythiaPlus::GetSubEventTime()
 ///
 Bool_t AliGenPythiaPlus::IsInBarrel(Float_t eta) const
 {
-  if( eta < fTriggerEta  ) 
-  return kTRUE;
-  else 
-  return kFALSE;
+  return ( eta < fTriggerEta ) ;
 }
 
 ///
@@ -1380,7 +1375,7 @@ Bool_t AliGenPythiaPlus::IsInPHOS(Float_t phi, Float_t eta, Int_t iparticle)
 {
   if(phi > fPHOSMinPhi  && phi < fPHOSMaxPhi && 
      eta < fPHOSEta  ) 
-  return kTRUE;
+    return kTRUE;
   else 
   {
     if( fCheckPHOSeta && eta < fPHOSEta) fPHOSRotateCandidate = iparticle;
