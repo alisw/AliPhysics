@@ -168,9 +168,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
-        kLHC16h3,         // anchored LHC15n pass2 - jet-jet first chunck
-        kLHC16h3b,        // anchored LHC15n pass2 - jet-jet second chunck
-        kLHC16h3_bis,     // anchored LHC15n pass2 - jet-jet extra sample
+        kLHC16h3,         // anchored LHC15n pass4 - jet-jet MC Pythia8 reproduction
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
         kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
