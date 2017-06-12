@@ -34,6 +34,7 @@ public:
 
   void SetPtBinEdgesForMassPlot(Double_t ptmin, Double_t ptmax)    { fpTmin                  = ptmin ; fpTmax                  = ptmax ; }
   void SetZedges(Double_t zmin, Double_t zmax)                     { fzmin                   = zmin  ; fzmax                   = zmax  ; }
+  void SetMassRebin(Int_t r)                                       { fMassRebin              = r > 0 ? r : 1; }
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
@@ -55,12 +56,13 @@ protected:
   Int_t              fnJetbins                   ; ///< Number of pT-bins to be used for spectrum
   Double_t          *fJetbinpTedges              ; ///< Jet pT bin edges to be used for spectrum
   Double_t          *fDEffValues                 ; ///< D-meson efficiency values
+  UInt_t             fMassRebin                  ; ///< Rebin the mass histogram axis
 
   TH1D              *fMassPlot                   ; //!<!Mass spectra to be fitted
   TH2D              *fMassVsJetPtPlot            ; //!<!Mass vs jet pt (SB method)
 
 private:
-  ClassDef(AliDJetVReader,1);
+  ClassDef(AliDJetVReader,2);
 };
 
 #endif
