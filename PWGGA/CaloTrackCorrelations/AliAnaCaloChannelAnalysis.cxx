@@ -1654,7 +1654,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 TH1D* AliAnaCaloChannelAnalysis::BuildMeanFromGood(Int_t warmIn)
 {
 	TH1D* hGoodAmp;
-	TH1D* hgoodMean = hgoodMean = (TH1D*)fCellAmplitude->ProjectionX("hgoodMean");
+	TH1D* hgoodMean = (TH1D*)fCellAmplitude->ProjectionX("hgoodMean");
 	hgoodMean->Reset();
 	Int_t NrGood=0;
 
