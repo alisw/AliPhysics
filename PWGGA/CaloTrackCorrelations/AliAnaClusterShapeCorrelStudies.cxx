@@ -110,6 +110,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhNCellsPerClusterMEtaPhiA[i] = 0;
     
     fhSMNCell              [i] = 0;
+    fhSMNCellM02           [i] = 0;
     fhSMM02                [i] = 0;
     fhSMM02NoCut           [i] = 0;
     fhColM02               [i] = 0;
@@ -1472,6 +1473,9 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
+  
+  if ( energy > fEMinShape && energy < fEMaxShape ) 
+    fhSMNCellM02         [matchedPID]->Fill(smMax , nCell, m02, GetEventWeight());
   
   if ( nCell > fNCellMinShape ) // it makes sense only for significant size histograms
   { 
@@ -3894,6 +3898,16 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMNCell[imatch]->SetYTitle("SM number");
       fhSMNCell[imatch]->SetZTitle("#it{n}_{cells}^{w>0.01}");
       outputContainer->Add(fhSMNCell[imatch]); 
+      
+      fhSMNCellM02[imatch]  = new TH3F 
+      (Form("hSMNCellM02_%s",matchCase[imatch].Data()),
+       Form("SM number vs #it{n}_{cells}^{w>0.01} vs #lambda_{0}^{2}, "
+            "%2.2f<#it{E}<%2.2f GeV, for ID %s",fEMinShape,fEMaxShape,matchCase[imatch].Data()),
+       fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhSMNCellM02[imatch]->SetZTitle("#lambda_{0}^{2}");
+      fhSMNCellM02[imatch]->SetXTitle("SM number");
+      fhSMNCellM02[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      outputContainer->Add(fhSMNCellM02[imatch]); 
       
       fhColM02[imatch]  = new TH3F 
       (Form("hColM02_%s",matchCase[imatch].Data()),
