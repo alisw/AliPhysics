@@ -8,14 +8,13 @@
 /////  \code
 //      .L $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c
 //    InitElastic();
-//    testExportBinary();
 //    testGetIndexLayout();
 //    testSelect();
 ///// \endcode
 //
 ///// To run full test
 /////  \code
-// aliroot -b -q $AliRoot_SRC/STAT/AliElasticSearchRoot.cxx+  $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c >AliElasticSearchRootTest.log
+// aliroot -b -q $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c >AliElasticSearchRootTest.log
 //    Parse output
 //    cat AliElasticSearchRootTest.log | grep "I-AliElasticSearchRoot.*Key"
 //I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-Begin
@@ -46,6 +45,7 @@ void AliElasticSearchRootTest(char *phostName=0){
     InitElastic();
     testExportBinary();
     testGetIndexLayout();
+    testExportClass();
     testSelect();
     ::Info("AliElasticSearchRoot::AliElasticSearchRootTest","KeyValue-EndOK");
 }
@@ -58,21 +58,59 @@ void InitElastic(){
 }
 
 ///  testExportBinary() AliElasticSearchRoot::ExportBinary
-///  Get production tree and export al branches to the elastic key /alice_mc/passguess/
+///  - 1.) Get production tree and export al branches to the elastic key /alice_mc/passguess/
+///  - 2.) Get QA/TPC and export all branches to the elastic key /alice/tpc_bulk
+///  - 3.) Get QA.TPC and export selected branches to the elastic key /alice/tpx_test0
 void testExportBinary(){
-  // Example export MC production table
-  ::Info("AliElasticSearchRoot::ExportBinary","KeyValue-Begin");
-  AliExternalInfo info;
-  TTree * tree = info.GetTreeMCPassGuess();
-  TString exportInfo="%IprodName:";
-  Int_t nBranches = tree->GetListOfBranches()->GetEntries();
-  for (Int_t iBranch=0; iBranch<nBranches; iBranch++){
-    exportInfo+= tree->GetListOfBranches()->At(iBranch)->GetName();
-    if (iBranch<nBranches) exportInfo+=":";
-  }
-  Int_t entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","mctableAnchor.json");
-  pelastic->ExportBinary("/alice_mc/passguess/","mctableAnchor.json","xxx");
-  ::Info("AliElasticSearchRoot::ExportBinary","KeyValue-EndOK");
+    // Example export MC production table
+    ::Info("AliElasticSearchRoot::ExportBinary","KeyValue-Begin");
+    AliExternalInfo info;
+    TTree * tree = info.GetTreeMCPassGuess();
+    TString exportInfo="%IprodName:";
+    Int_t nBranches = tree->GetListOfBranches()->GetEntries();
+    for (Int_t iBranch=0; iBranch<nBranches; iBranch++){
+        exportInfo+= tree->GetListOfBranches()->At(iBranch)->GetName();
+        if (iBranch<nBranches) exportInfo+=":";
+    }
+    Int_t entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","mctableAnchor.json");
+    pelastic->ExportBinary("/alice_mc/passguess/","mctableAnchor.json","xxx");
+    ::Info("AliElasticSearchRoot::ExportBinary","KeyValue-EndOK");
+    //
+    tree = info.GetTree("QA.TPC","LHC15n","pass2","Logbook");
+    //TObjArray * branches = AliTreePlayer::selectMetadata(tree, "[class==\"dEdx||DCA\"]",0);
+    // 2.) Example all branches of the TPC QA
+    exportInfo="%Irun:";
+    nBranches = tree->GetListOfBranches()->GetEntries();
+    for (Int_t iBranch=0; iBranch<nBranches; iBranch++){
+        exportInfo+= tree->GetListOfBranches()->At(iBranch)->GetName();
+        exportInfo+=":";
+    }
+
+    entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","qatpcbulk.json");
+    pelastic->ExportBinary("/alice/qatpcbulk/","qatpcbulk.json","xxx");
+    // 3. export selected branches of the TPC QA
+    TString exportInfo="%ILogbook.LHCperiod:%Ipass.GetName():%Irun:%Prun:";
+    exportInfo+="period.GetName():pass.GetName():run:Logbook.run:";
+    exportInfo+="meanTPCncl:meanMIP;1.5:meanMIPele;1.5:";
+    exportInfo+="grdcar_neg_ASidePhi.fY:grdcar_neg_CSidePhi.fY:grdcar_pos_ASidePhi.fY:grdcar_pos_CSidePhi.fY";
+
+    entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","qatpc_test0.json");
+    pelastic->ExportBinary("/alice/qatpc_test0/","qatpc_test0.json","xxx");
+
+}
+
+void testExportClass() {
+    ::Info("AliElasticSearchRoot::testExportClass","KeyValue-Begin");
+    AliExternalInfo info;
+    TTree *tree = info.GetTree("QA.TPC","LHC15n","pass2","Logbook");
+    TString exportInfo="%Irun:";
+    exportInfo+="period.GetName():";
+    exportInfo+="period.:";
+    exportInfo+="run:";
+    exportInfo+="grdcar_neg_ASidePhi.";
+    Int_t entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","qatpc_testClass.json");
+     pelastic->ExportBinary("/alice/qatpc_testClass1/","qatpc_testClass.json","xxx");
+    ::Info("AliElasticSearchRoot::testExportClass","KeyValue-End");
 }
 
 
@@ -84,6 +122,7 @@ void testGetIndexLayout(){
     pelastic->GetIndexLayout("alice_mc","passguess",0,kTRUE).Tokenize("\n")->Print();
     pelastic->GetIndexLayout("alice","qatpc_test0","float").Tokenize("\n")->Print();
     pelastic->GetIndexLayout("alice","qatpc_test0",0,kTRUE).Tokenize("\n")->Print();
+    //
     ::Info("AliElasticSearchRoot::GetIndexLayout","KeyValue-EndOK");
 }
 
@@ -92,5 +131,8 @@ void testSelect(){
     TString select="";
     select=  pelastic->select("/alice/qatpc_test0/","*","run>240000&&run<246844&&meanMIP>50",0,1000,"jqEQueryStat,jqEQueryHeader");
     select=  pelastic->select("/alice/qatpc_test0/","*","run>240000&&run<246844&&meanMIP>50",0,1000,"jqEQueryArrayNamed,jqEQueryStat,jqEQueryHeader");
+
+    select=  pelastic->select("/alice/qatpcbulk/","*","run>0&&meanMIP>0",0,1000,",jqEQueryHeader,jqEQueryStat");
+
     ::Info("AliElasticSearchRoot::select","KeyValue-EndOK");
 }
