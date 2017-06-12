@@ -2984,6 +2984,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
 
+      // Select only primary-like MC V0 particles
+      if(!bV0MCIsPrimaryDist)
+        continue;
+
       // Select only particles from a specific generator
       if(!IsFromGoodGenerator(iPartMC))
         continue;
@@ -3007,10 +3011,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       }
 
-      // Select only primary-like MC V0 particles
       // K0s
 //          if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
-      if(bV0MCIsK0s && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsK0s) // well reconstructed candidates
       {
         fh1V0K0sPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0K0sEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
@@ -3023,7 +3026,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       // Lambda
 //          if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
-      if(bV0MCIsLambda && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsLambda) // well reconstructed candidates
       {
         fh1V0LambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0LambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
@@ -3036,7 +3039,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       // anti-Lambda
 //          if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
-      if(bV0MCIsALambda && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsALambda) // well reconstructed candidates
       {
         fh1V0ALambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0ALambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
