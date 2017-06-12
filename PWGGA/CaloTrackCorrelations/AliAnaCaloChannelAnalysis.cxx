@@ -756,7 +756,7 @@ void AliAnaCaloChannelAnalysis::FlagAsDead()
 			sumOfExcl++;
 		}
 		//..add here the manual masking
-		if(manualMaskCounter<fManualMask.size() && fManualMask.at(manualMaskCounter)==cell)
+		if(manualMaskCounter<(Int_t)fManualMask.size() && fManualMask.at(manualMaskCounter)==cell)
 		{
 			fFlag[cell] = 2;
 			manualMaskCounter++;
