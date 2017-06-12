@@ -89,14 +89,6 @@ fGeometry(0)
   // Checking Firmware from DCS config to choose algorithm
   fMedianMode = stuConf->GetMedianMode();
   fEMCALFw = stuConf->GetFw();
-  if (iTriggerMapping >= 2) {
-    if (runNumber > 244640 && runNumber < 247173) {
-      AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0xb000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));    
-      stuConf->SetFw(0xb000); //(4,4)x(2,2) FIXME hardcode
-      fEMCALFw = stuConf->GetFw();
-      fMedianMode = 1;
-    }
-  }
 
 
   if (iTriggerMapping >= 2) {
@@ -106,13 +98,6 @@ fGeometry(0)
       fDCALFw = stuConfDCal->GetFw();
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
       AliInfo(TString::Format("Found DCAL STU firmware %x.",fDCALFw));
-      if ((fDCALFw & 0xf000) != 0xd000) {
-        if (runNumber > 244640 && runNumber < 247173) {
-          AliInfo(TString::Format("Found DCAL STU firmware %x. Manually setting DCAL STU fW object to 0xd000.  This code should be changed when the OCDB entries have been corrected.",fDCALFw));
-          stuConfDCal->SetFw(0xd000); // FIXME hardcode
-          fDCALFw = stuConfDCal->GetFw();
-        }
-      }
     } else {
       AliError("No DCS Config found for DCAL!  Using EMCAL DCS config for now.");
       fSTUDCAL = new AliEMCALTriggerSTU(stuConf, rSize);
@@ -156,16 +141,6 @@ fGeometry(0)
     Int_t iSMType = fGeometry->GetSMType(iSM);
     
     if (truConf) { 		
-
-      // FIXME
-      if (runNumber > 244640 && runNumber < 247173) {
-        AliInfo(Form("MHO: Manually setting L0"));
-        truConf->SetGTHRL0(132);
-      } else if (runNumber > 247173) {
-        AliInfo(Form("MHO: Manually setting L0"));
-        truConf->SetGTHRL0(132);
-      }
-
       switch (iTriggerMapping) {
         case 1:
           rSize.Set(4.,24.);	
@@ -526,24 +501,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
       TString fGeometryName = fGeometry->GetName();
       Int_t iTriggerMapping = 1 + (Int_t) fGeometryName.Contains("DCAL");
-
-      // MHO Manually Setting FIXME
-      if (runNumber > 244640 && runNumber < 247173) {
-        // Hard Code LHC15o thresholds
-        data->SetL1GammaThreshold(ithr, 128);
-        fSTU->SetThreshold(kL1GammaHigh + ithr, 128);
-
-        data->SetL1JetThreshold(ithr, 255);
-        fSTU->SetThreshold(kL1JetHigh + ithr, 255);
-  
-      } else {
-        // Hard Code LHC13f thresholds
-        data->SetL1GammaThreshold(ithr, 89 + 51*ithr);
-        fSTU->SetThreshold(kL1GammaHigh + ithr, 89 + 51*ithr);
-
-        data->SetL1JetThreshold(ithr, 127 + 133*ithr);
-        fSTU->SetThreshold(kL1JetHigh + ithr, 127 + 133*ithr);
-      }
 
 
       AliDebug(999, Form("STU EMCAL THR %d EGA %d EJE %d", ithr, fSTU->GetThreshold(kL1GammaHigh + ithr), fSTU->GetThreshold(kL1JetHigh + ithr)));
