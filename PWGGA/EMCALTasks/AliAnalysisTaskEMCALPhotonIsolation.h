@@ -114,6 +114,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     SetPeriod(const char *period)                                   { fPeriod = period; }
   void                     SetRejectPileUpEvent(Bool_t rpue)                               { fRejectPileUpEvent = rpue; }
   void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
+  void                     SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -172,6 +173,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Int_t                    fWhich;
   Bool_t                   fRejectPileUpEvent;
   Int_t                    fNContrToPileUp;
+  Bool_t                   fLightOutput;
   
   // TList       *fOutputList;                    //!<! Output list
   // TGeoHMatrix *fGeomMatrix[12];                //!<! Geometry misalignment matrices for EMCal
