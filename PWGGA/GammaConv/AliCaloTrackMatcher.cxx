@@ -91,9 +91,9 @@ AliCaloTrackMatcher::~AliCaloTrackMatcher(){
 
     if(fHistControlMatches) delete fHistControlMatches;
     if(fSecHistControlMatches) delete fSecHistControlMatches;
-    if(fListHistos != NULL){
-      delete fListHistos;
-    }
+    //if(fListHistos != NULL){ //it fails when the analysis framework runs in the GSI train
+    //delete fListHistos;
+    //}
 }
 
 //________________________________________________________________________
