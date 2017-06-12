@@ -267,7 +267,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information in a very compact data structure (68 bits)
   class AliDmesonMCInfoSummary : public AliDmesonInfoSummary {
   public:
-    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fPartonType(0), fPartonPt(0) {;}
+    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fPartonType(0), fPartonPt(0), fAncestorPDG(0) {;}
     AliDmesonMCInfoSummary(const AliDmesonJetInfo& source);
     virtual ~AliDmesonMCInfoSummary() {}
 
@@ -278,6 +278,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double32_t   fPartonType  ; //[0, 16, 4]
     /// Transverse momentum of the parton
     Double32_t   fPartonPt    ; //[0,819.2,14]
+
+    UShort_t     fAncestorPDG ; /// Absolute PDG of the ancestor particle
 
     /// \cond CLASSIMP
     ClassDef(AliDmesonMCInfoSummary, 3);
