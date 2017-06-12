@@ -295,7 +295,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 			Double_t mcVert[3] = {-99,-99,-99};
             Int_t iPdg       = -9999;
             Int_t iPdgMother = -9999;
-			Bool_t HasMother = kFALSE; //Flag in case motherTrack was not found but did exist
+			Bool_t HasMother = kFALSE; 
+            Int_t motherLabel = -9999; //Needed to determine whether tracks have same mother in evet with many ee pairs
             //Bool_t IsEnhanced = kFALSE;
 
             //Get MC information
@@ -327,6 +328,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 					}
 					HasMother = kTRUE;
                 	iPdgMother = motherMCtrack->PdgCode();
+                    motherLabel = TMath::Abs(motherMCtrack->GetLabel());
 				}
 					
                 //Currently no injected MC productions for Run 2. Hence commented out
@@ -565,18 +567,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "goldenChi2="   << goldenChi2 <<
                 "multiplicity=" << nMultiplicity << 
 
-                "mcPt="       << mcPt <<
-                "mcEta="      << mcEta <<
-                "mcPhi="      << mcPhi <<
-				"mcVtX="      << mcVert[0] <<
-				"mcVtY="      << mcVert[1] <<
-				"mcVtZ="      << mcVert[2] <<
-                "pdg="        << iPdg <<
-				"hasMother="  << HasMother << 
-                "pdgMother="  << iPdgMother <<
-                "runNumber="  << runNumber << 
-                "eventNum="   << eventNum <<
-                "gridPID="    << fGridPID <<
+                "mcPt="        << mcPt <<
+                "mcEta="       << mcEta <<
+                "mcPhi="       << mcPhi <<
+				"mcVtX="       << mcVert[0] <<
+				"mcVtY="       << mcVert[1] <<
+				"mcVtZ="       << mcVert[2] <<
+                "pdg="         << iPdg <<
+				"hasMother="   << HasMother << 
+                "pdgMother="   << iPdgMother <<
+                "motherLabel=" << motherLabel << 
+                "runNumber="   << runNumber << 
+                "eventNum="    << eventNum <<
+                "gridPID="     << fGridPID <<
                 "\n";
             }
             else{
