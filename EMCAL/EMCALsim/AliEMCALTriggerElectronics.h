@@ -51,6 +51,7 @@ private:
  
   Int_t                fEMCALFw;  //< EMCAL STU firmware version
   Int_t                fDCALFw;   //<  DCAL STU firmware version
+  Int_t                fMedianMode; // 0 for no median subtraction, 1 for median sub.
   TClonesArray*        fTRUDCAL;  //< 14 TRU
   AliEMCALTriggerSTU*  fSTUDCAL;  //< 1 STU for DCAL
  

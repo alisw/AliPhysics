@@ -87,12 +87,14 @@ fGeometry(0)
   Int_t runNumber = cdb->GetRun();
 
   // Checking Firmware from DCS config to choose algorithm
+  fMedianMode = stuConf->GetMedianMode();
   fEMCALFw = stuConf->GetFw();
   if (iTriggerMapping >= 2) {
     if (runNumber > 244640 && runNumber < 247173) {
       AliInfo(TString::Format("Found EMCAL STU firmware %x. Manually setting EMCAL STU fW object to 0xb000.  This code should be changed when the OCDB entries have been corrected.",fEMCALFw));    
       stuConf->SetFw(0xb000); //(4,4)x(2,2) FIXME hardcode
       fEMCALFw = stuConf->GetFw();
+      fMedianMode = 1;
     }
   }
 
@@ -533,6 +535,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
         data->SetL1JetThreshold(ithr, 255);
         fSTU->SetThreshold(kL1JetHigh + ithr, 255);
+  
       } else {
         // Hard Code LHC13f thresholds
         data->SetL1GammaThreshold(ithr, 89 + 51*ithr);
@@ -561,7 +564,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
 
 
-
        AliDebug(999, Form("STU DCAL THR %d EGA %d EJE %d", ithr, fSTUDCAL->GetThreshold(kL1GammaHigh + ithr), fSTUDCAL->GetThreshold(kL1JetHigh + ithr)));
       }
   
@@ -569,7 +571,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
   }
 
 
-  if (fSTUDCAL && ((fEMCALFw & 0xf000) == 0xb000)) { // Execute run 2 algorithm
+ // if (fSTUDCAL && ((fEMCALFw & 0xf000) == 0xb000)) { // Execute run 2 algorithm
+  if (fSTUDCAL && fMedianMode) { // Execute run 2 algorithm
     AliInfo("Executing event-by-event median background subtraction for trigger");	
 
     Int_t fBkgRhoEMCAL = fSTU->GetMedianEnergy();
