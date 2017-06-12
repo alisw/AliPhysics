@@ -98,6 +98,7 @@ Bool_t AliDJetTHnReader::ExtractInputMassPlotEffScale()
   }
 
   fMassPlot = static_cast<TH1D*>(hmass->Clone("inputSpectrum"));
+  if (fMassRebin != 1) fMassPlot->Rebin(fMassRebin);
 
   return kTRUE;
 }
@@ -121,6 +122,7 @@ Bool_t AliDJetTHnReader::ExtractInputMassPlotSideband()
 
   fMassPlot = sparse->Projection(3);
   fMassPlot->SetName("inputSpectrum");
+  if (fMassRebin != 1) fMassPlot->Rebin(fMassRebin);
   fMassVsJetPtPlot = sparse->Projection(3, 1);
   fMassVsJetPtPlot->SetName("hInvMassJetPt");
 
