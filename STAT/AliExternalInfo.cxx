@@ -803,7 +803,8 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     treeProd->GetBranch("Last_run")->SetAddress(&lastrun);
     
     TTree *dumptree = new TTree("dumptree_RD","dumptree_RD");       //tree that will hold information for guessing
-
+//    TTree * dumptree=treeMC->CloneTree();
+    
     char paliroot[1000];            // variables that will hold information read of the tree: GetTreeProdCycleByID(TString::Format("%d",id))
     char paliphysics[1000];
     char poutputdir[1000];
@@ -867,11 +868,9 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
 TTree*  AliExternalInfo::GetTreeAliVersMC(){
 //    returns and stores tree ("dumptree") containing the relevant information of MC productions
 //    for guessing the anchor pass of MC productions
-    
+   TTree* treeMC = GetTreeMC();  
    TFile* outfile;
-   TTree * treeMC;
-   TTree *dumptree;
-   
+
    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC.root"),TString::Format("QA.TPC"));     //check if download is needed
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_MC.root"),"UPDATE");
@@ -883,24 +882,17 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
     
    AliInfo("-- dumptree_MC.root not validated--> Caching from remote");
    
-   outfile= TFile::Open(fLocalStorageDirectory+"/dumptree_MC.root","RECREATE");
-   treeMC = GetTreeMC();
+   outfile= new TFile(fLocalStorageDirectory+"/dumptree_MC.root","RECREATE");
 
-   char paliroot[1000];     //variable to read tree from GetTreeMC()
-   char paliphysics[1000];
-   char pprodname[1000];
+   TTree* dumptree=treeMC->CloneTree();
+   
+   //variable to read tree from GetTreeMC()
    char panchprodname[1000];
    char prunlist[50000];
 
-   treeMC->GetBranch("aliphysics")->SetAddress(&paliphysics);       //set branch addresses
-   treeMC->GetBranch("aliroot")->SetAddress(&paliroot);
-   treeMC->GetBranch("prodName")->SetAddress(&pprodname);
-   treeMC->GetBranch("anchorProdTag")->SetAddress(&panchprodname);
-   treeMC->GetBranch("runList")->SetAddress(&prunlist);
+   dumptree->GetBranch("anchorProdTag")->SetAddress(&panchprodname);
+   dumptree->GetBranch("runList")->SetAddress(&prunlist);
 
-   TObjString saliroot;             //variables from dumptree
-   TObjString saliphysics;
-   TObjString sprodname;
    TObjString sMCanchprodname; 
    Int_t first=-1;
    Int_t last=-1;
@@ -909,21 +901,14 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TString slast;
    TString sanprod;
    TObjArray *subStrL;
-//   const char * temparr;
    
-   outfile->cd();
-   dumptree = new TTree("dumptree_MC","dumptree_MC");
-
-   dumptree->Branch("aliroot",&saliroot);           //add branches to dumptree
-   dumptree->Branch("aliphysics",&saliphysics);
-   dumptree->Branch("prodName",&sprodname);
-   dumptree->Branch("anchorProdTag",&sMCanchprodname);
+   dumptree->Branch("anchorProdTag_ForGuess",&sMCanchprodname);
    dumptree->Branch("First_Run",&first);
    dumptree->Branch("Last_Run",&last);
 
-   Int_t entries=treeMC->GetEntries();  
+   Int_t entries=dumptree->GetEntries();  
    for (Int_t i=0; i<entries; i++){             //loop overall MC production
-     treeMC->GetEntry(i);                       //read info
+     dumptree->GetEntry(i);                       //read info
 
      sanprod= TString::Format("%s",panchprodname);          //extract anchor production name from anchorProdTag
      subStrL = TPRegexp("[A-Za-z0-9]*").MatchS(sanprod);
@@ -944,16 +929,13 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
      }
      else slast=TString("-1");
      
-     saliroot = TObjString(paliroot);
-     saliphysics = TObjString(paliphysics);
-     sprodname = TObjString(pprodname); 
      sMCanchprodname = TObjString(sanprod);
      first=sfirst.Atoi();
      last=slast.Atoi();
           
      dumptree->Fill();
    }
-   
+   outfile->cd();
    dumptree->Write("dumptree_MC");
 
    delete outfile;
@@ -1038,16 +1020,21 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
 
     MCFile->cd();
 
-    TObjString* osMCaliroot=0;          //variables for reading MC tree
-    TObjString* osMCaliphysics=0;
-    TObjString* osMCprodname=0;
-    TObjString* osMCanchprodname=0;
+    TObjString osMCaliroot;          //char arrays for reading from MCTree
+    TObjString osMCaliphysics;
+    TObjString osMCprodname;
+    TObjString* osMCanchprodname=0; //variables for reading TObjString from MCTree
+    
+    char pMCaliroot[1000];     //variable to read tree from GetTreeMC()
+    char pMCaliphysics[1000];
+    char pMCprodname[1000];
+//    char pMCanchprodname[1000];
      
-    MCTree->GetBranch("aliphysics")->SetAddress(&osMCaliphysics);
-    MCTree->GetBranch("aliroot")->SetAddress(&osMCaliroot);
-    MCTree->GetBranch("prodName")->SetAddress(&osMCprodname);
-    MCTree->GetBranch("anchorProdTag")->SetAddress(&osMCanchprodname);
-
+    MCTree->GetBranch("aliphysics")->SetAddress(&pMCaliphysics);       //set branch addresses
+    MCTree->GetBranch("aliroot")->SetAddress(&pMCaliroot);
+    MCTree->GetBranch("prodName")->SetAddress(&pMCprodname);
+    MCTree->GetBranch("anchorProdTag_ForGuess")->SetAddress(&osMCanchprodname);
+    
     TBranch *branchpass = MCTree->Branch("anchorPassName_guess",&osrdpass);         //adding new branches holding information about pass and ali-versions of guessed RD production
     TBranch *branchroot = MCTree->Branch("anchoraliroot_guess",&osrdaliroot);
     TBranch *branchphys = MCTree->Branch("anchoraliphys_guess",&osrdaliphys);
@@ -1064,9 +1051,15 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     for (Int_t i=0; i<m; i++) {     //loop over MC productions
 
         MCTree->GetEntry(i); 
+        
+        osMCaliroot = TObjString(pMCaliroot);          //get TObjStrings for guessing
+        osMCaliphysics= TObjString(pMCaliphysics);
+        osMCprodname= TObjString(pMCprodname);
+//        osMCanchprodname= TObjString(pMCanchprodname);
+    
         cout<<endl;
         cout<<i<<" of "<<m<<endl;
-        cout<<"MC Production name: "<<osMCprodname->String()<<" Anchor Production name: "<<osMCanchprodname->String()<<" MC aliphys: "<<osMCaliphysics->String()<<" MC aliroot: "<<osMCaliroot->String()<<endl;
+        cout<<"MC Production name: "<<osMCprodname.String()<<" Anchor Production name: "<<osMCanchprodname->String()<<" MC aliphys: "<<osMCaliphysics.String()<<" MC aliroot: "<<osMCaliroot.String()<<endl;
 
         prfound=kFALSE;         // flag to know if any RD production with matching production name was found
         list.clear();                  //reset set of RDinfos
@@ -1089,7 +1082,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                 list.insert(tempprod);
 
             }            
-            if(osMCanchprodname->String()==osrdprod->String() && (( osMCaliphysics->String()!="" && osMCaliphysics->String()==osrdaliphys->String())  || (osMCaliphysics->String()=="" && osrdaliroot->String()==osMCaliroot->String())  ) && !osrdpass->GetString().Contains("cpass")  && !osrdpass->GetString().Contains("cosmic")){      //check for perfect match, i.e. prodname and aliphys/aliroot match
+            if(osMCanchprodname->String()==osrdprod->String() && (( osMCaliphysics.String()!="" && osMCaliphysics.String()==osrdaliphys->String())  || (osMCaliphysics.String()=="" && osrdaliroot->String()==osMCaliroot.String())  ) && !osrdpass->GetString().Contains("cpass")  && !osrdpass->GetString().Contains("cosmic")){      //check for perfect match, i.e. prodname and aliphys/aliroot match
          
                  cout<<"Complete match: yes"<<endl;
                  cout<<"Used for guess: RDphys:"<<osrdaliphys->GetString()<<" RDroot: "<<osrdaliroot->GetString()<<" RDpass: "<<osrdpass->GetString()<<endl;
@@ -1098,9 +1091,9 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
             }
 
             if(j==n-1 && prfound){            //if match not found check what was closest if matching prodname was found
-                             tempprod.aliphys=osMCaliphysics->String();         //make anchprd instance with MC info and insert into its lexicographical position
-                             tempprod.aliroot=osMCaliroot->String();
-                             tempprod.anchprodname=osMCprodname->String();
+                             tempprod.aliphys=osMCaliphysics.String();         //make anchprd instance with MC info and insert into its lexicographical position
+                             tempprod.aliroot=osMCaliroot.String();
+                             tempprod.anchprodname=osMCprodname.String();
                              tempprod.anchpass=TString("MCPass");               //dummy info to make visible in list what was MC entry
                              list.insert(tempprod);     //insert MC prod 
                              it=list.find(tempprod);         //get iterator to pointer before MC prod
@@ -1169,19 +1162,21 @@ TString  AliExternalInfo::GetMCPassGuess(TString sMCprodname){
      AliInfo("got the tree with guesses");
 }
  
- TObjString* osMCprodname=0;
+ char pMCprodname[1000];
+ TObjString osMCprodname=0;
  TObjString* osMCpassguess=0;
  
- guesstree->GetBranch("prodName")->SetAddress(&osMCprodname);
+ guesstree->GetBranch("prodName")->SetAddress(&pMCprodname);
  guesstree->GetBranch("anchorPassName_guess")->SetAddress(&osMCpassguess);
  
  for(int i=0;i<guesstree->GetEntries();i++){        //loop over tree with guesses
      guesstree->GetEntry(i);
-     if(osMCprodname->String()==sMCprodname){       //if match found return corresponding guess
-         cout<<"Anchor Pass guess for "<<osMCprodname->String()<<": "<<osMCpassguess->String()<<endl;
+     osMCprodname = TObjString(pMCprodname);
+     if(osMCprodname.String()==sMCprodname){       //if match found return corresponding guess
+         cout<<"Anchor Pass guess for "<<osMCprodname.String()<<": "<<osMCpassguess->String()<<endl;
          return(osMCpassguess->String());
      }
  }
- cout<<osMCprodname->String()<<" was not found in list of MC productions"<<endl;
+ cout<<osMCprodname.String()<<" was not found in list of MC productions"<<endl;
  return(TString::Format("MC production not found"));
 }
