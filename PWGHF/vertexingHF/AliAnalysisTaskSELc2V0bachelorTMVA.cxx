@@ -198,7 +198,8 @@ AliAnalysisTaskSE(),
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
-  fNTracklets(0)
+  fNTracklets(0),
+  fSaveMode(kElephant)
 {
   //
   /// Default ctor
@@ -1681,7 +1682,31 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           Double_t errLcKF[3] = {-999999, -999999, -999999};
           Double_t distances[3] = {-999999, -999999, -999999};
           Double_t armPolKF[2] = {-999999, -999999};
+          
+          AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
+          AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
+          Int_t kfResult;
+          TVector3 mom1(bachelor->Px(), bachelor->Py(), bachelor->Pz());
+          TVector3 mom2(v0part->Px(), v0part->Py(), v0part->Pz());
+          TVector3 momTot(part->Px(), part->Py(), part->Pz());
+      
+          Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();
+          Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag();
+      
+          Double_t alphaArmLc = (Ql1 - Ql2)/(Ql1 + Ql2);
+          Double_t alphaArmLcCharge = ( bachelor->Charge() > 0 ? (Ql1 - Ql2)/(Ql1 + Ql2) : (Ql2 - Ql1)/(Ql1 + Ql2) );
+          Double_t ptArmLc = mom1.Perp(momTot);
 
+          Double_t massK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();    // mass K0S PDG
+          Double_t massPrPDG = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    // mass Proton PDG
+          Double_t massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();    // mass Lc PDG
+      
+          Double_t pStar = TMath::Sqrt((massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)*(massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)-4.*massPrPDG*massPrPDG*massK0SPDG*massK0SPDG)/(2.*massLcPDG);
+          Double_t e = part->E(4122);
+          Double_t beta = part->P()/e;
+          Double_t gamma = e/massLcPDG;
+      
+          Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
 
     switch (fSaveMode) {
        case kElephant :  //  "heavy" mode
@@ -1701,9 +1726,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           fCandidateVariables[13] = nSigmaTOFpi;
           fCandidateVariables[14] = nSigmaTOFka;
           fCandidateVariables[15] = bachelor->Pt();
-          AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
           fCandidateVariables[16] = v0pos->Pt();
-          AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
           fCandidateVariables[17] = v0neg->Pt();
           fCandidateVariables[18] = v0part->Getd0Prong(0);
           fCandidateVariables[19] = v0part->Getd0Prong(1);
@@ -1740,7 +1763,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
       
       
           if (fCallKFVertexing){
-            Int_t kfResult = CallKFVertexing(part, v0part, bachelor, mcArray, &V0KF[0], &errV0KF[0], &LcKF[0], &errLcKF[0], &distances[0], &armPolKF[0]);
+             kfResult = CallKFVertexing(part, v0part, bachelor, mcArray, &V0KF[0], &errV0KF[0], &LcKF[0], &errLcKF[0], &distances[0], &armPolKF[0]);
             AliDebug(2, Form("Result from KF = %d", kfResult));
           }
       
@@ -1797,31 +1820,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           fCandidateVariables[80] = v0neg->GetITSNcls();
           fCandidateVariables[81] = v0neg->HasPointOnITSLayer(0) + v0neg->HasPointOnITSLayer(1);
       
-          TVector3 mom1(bachelor->Px(), bachelor->Py(), bachelor->Pz());
-          TVector3 mom2(v0part->Px(), v0part->Py(), v0part->Pz());
-          TVector3 momTot(part->Px(), part->Py(), part->Pz());
-      
-          Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();
-          Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag();
-      
-          Double_t alphaArmLc = (Ql1 - Ql2)/(Ql1 + Ql2);
-          Double_t alphaArmLcCharge = ( bachelor->Charge() > 0 ? (Ql1 - Ql2)/(Ql1 + Ql2) : (Ql2 - Ql1)/(Ql1 + Ql2) );
-          Double_t ptArmLc = mom1.Perp(momTot);
       
           fCandidateVariables[82] = alphaArmLc;
           fCandidateVariables[83] = alphaArmLcCharge;
           fCandidateVariables[84] = ptArmLc;
       
-          Double_t massK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();    // mass K0S PDG
-          Double_t massPrPDG = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    // mass Proton PDG
-          Double_t massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();    // mass Lc PDG
-      
-          Double_t pStar = TMath::Sqrt((massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)*(massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)-4.*massPrPDG*massPrPDG*massK0SPDG*massK0SPDG)/(2.*massLcPDG);
-          Double_t e = part->E(4122);
-          Double_t beta = part->P()/e;
-          Double_t gamma = e/massLcPDG;
-      
-          Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
       
           fCandidateVariables[85] = cts;
       
@@ -1845,9 +1848,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           fCandidateVariables[9] = nSigmaTPCpr;
           fCandidateVariables[10] = nSigmaTOFpr;
           fCandidateVariables[11] = bachelor->Pt();
-          AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
           fCandidateVariables[12] = v0pos->Pt();
-          AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
           fCandidateVariables[13] = v0neg->Pt();
           fCandidateVariables[14] = v0part->Getd0Prong(0);
           fCandidateVariables[15] = v0part->Getd0Prong(1);
