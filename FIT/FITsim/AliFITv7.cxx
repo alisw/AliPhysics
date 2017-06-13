@@ -16,7 +16,8 @@
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
-// FIT detector full geometry  version 5                           //
+// FIT detector full geometry  version 7
+//aluminium support in front of each radiator                            //
 //
 //Begin Html       
 /*
@@ -158,9 +159,10 @@ void AliFITv7::CreateGeometry()
   //  Float_t pstartA[3] = {2.55, 20 ,5};
   Float_t pstartC[3] = {20., 20 ,5};
   Float_t pstartA[3] = {20, 20 ,5};
-  Float_t pinstart[3] = {2.95,2.95,4.};
+  Float_t pinstart[3] = {2.95,2.95,4.25};
   Float_t  pmcp[3] = {2.949, 2.949, 2.8}; //MCP
-  Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
+  Float_t ptop[3] = {1.324, 1.324, 1.};   //cherenkov radiator
+  Float_t pAl[3] = {2.648, 2.648, 0.25};  // Al support in fron of radiator
   Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
   Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
   Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
@@ -322,6 +324,8 @@ void AliFITv7::CreateGeometry()
   // Entry window (glass)
   TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass radiator
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
+  TVirtualMC::GetMC()->Gsvolu("0Al","BOX",idtmed[kAl],pAl,3); //Al support
+  TGeoVolume *al = gGeoManager->GetVolume("0Al");
   TVirtualMC::GetMC()->Gsvolu("0TRE","BOX",idtmed[kAir],ptopref,3); //air: wrapped  radiator
   TGeoVolume *topref = gGeoManager->GetVolume("0TRE");
   TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
@@ -337,9 +341,8 @@ void AliFITv7::CreateGeometry()
   Int_t ntops=0, nrfvs=0, nrfhs=0;
   Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
   topref->AddNode(top, 1, new TGeoTranslation(0,0,0) );
-  // xinv = -ptopref[0] + prfv[0];
-  
-xinv = -ptop[0] - prfv[0];
+  // xinv = -ptopref[0] + prfv[0];  
+  xinv = -ptop[0] - prfv[0];
   topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
   printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
   xinv = ptop[0] + prfv[0];
@@ -355,7 +358,7 @@ xinv = -ptop[0] - prfv[0];
   for (Int_t ix=0; ix<2; ix++) {
     xin = - pinstart[0] + 0.3 + (ix+0.5)*2*ptopref[0] ;
     for (Int_t iy=0; iy<2 ; iy++) {
-      z = - pinstart[2]+ptopref[2];
+     z = - pinstart[2]+ptopref[2];
       yin = - pinstart[1] + 0.3 + (iy+0.5)*2*ptopref[1];
       ntops++;
       ins->AddNode(topref, ntops, new TGeoTranslation(xin,yin,z) );
@@ -368,11 +371,13 @@ xinv = -ptop[0] - prfv[0];
    }
      
 // MCP
-   z=-pinstart[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
+   z=-pinstart[2] + 2*pAl[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
    //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
-
-
+  // Al support in front
+  z = -pinstart[2] + pAl[2];
+  ins->AddNode(al, 1, new TGeoTranslation(0,0,z) );
+ 
  
   //V0+
 
@@ -840,18 +845,21 @@ void AliFITv7::CreateMaterials()
    Float_t dglass=2.65;
  // MCP glass SiO2
    Float_t dglass_mcp=1.3;
-//*** Definition Of avaible T0 materials ***
+//*** Definition Of avaible FIT materials ***
    AliMixture(1, "Vacuum$", aAir, zAir, dAir1,4,wAir);
    AliMixture(2, "Air$", aAir, zAir, dAir,4,wAir);
    AliMixture( 4, "MCP glass   $",aglass,zglass,dglass_mcp,-2,wglass);
    AliMixture( 24, "Radiator Optical glass$",aglass,zglass,dglass,-2,wglass);
-   
+   AliMaterial(11, "Aliminium$", 26.98, 13.0, 2.7, 8.9,999); 
+
+ 
    AliMedium(1, "Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
    AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
   
    AliMedium(7, "OpAir$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
-   AliMedium(16, "OpticalGlass$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(15, "Aluminium$", 11, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
+     AliMedium(16, "OpticalGlass$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
     AliMedium(19, "OpticalGlassCathode$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(22, "SensAir$", 2, 1, isxfld, sxmgmx, 10., .1, 1., .003, .003);
 
