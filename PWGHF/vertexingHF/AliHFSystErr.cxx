@@ -294,7 +294,7 @@ void AliHFSystErr::Init(Int_t decay){
     }
     else if (fCollisionType==2) { 
       if (fCentralityClass=="0100"){
-	if(fRunNumber==16 || fRunNumber==2016) InitDplustoKpipi2016pPb0100();
+	if(fRunNumber==16 || fRunNumber==2016) InitDstartoD0pi2016pPb0100();
 	else InitDstartoD0pi2013pPb0100();
       }
       if (fCentralityClass=="020V0A") InitDstartoD0pi2013pPb020V0A();
@@ -2954,7 +2954,7 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//Dummy for the moment
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.06);//Dummy for the moment
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
