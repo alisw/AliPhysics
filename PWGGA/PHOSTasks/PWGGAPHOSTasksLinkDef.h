@@ -38,6 +38,10 @@
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
 #pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
 
+// PHOS_Run2embedding
+#pragma link C++ class AliPHOSEmbeddingRun2+;
+#pragma link C++ class AliPHOSEventCounter+;
+
 //PHOS_GAFlow
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
 #pragma link C++ class AliAnalysisTaskThermalGAFlowMC+;
