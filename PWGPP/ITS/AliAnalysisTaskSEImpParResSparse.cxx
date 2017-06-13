@@ -66,6 +66,7 @@ AliAnalysisTaskSE(),
   fReadMC(kFALSE),
   fSelectedPdg(-1),
   fUseDiamond(kFALSE),
+  fUseRecoVertex(kFALSE),
   fSkipTrack(kTRUE),
   fMinMult(0),
   fMaxMult(1000000),
@@ -90,10 +91,12 @@ AliAnalysisTaskSE(),
   fImpParrphiSparsePtzVtxEtaPhi(0),
   fImpParrphiSparsePtEtaPhi(0),
   fImpParPullrphiSparsePtEtaPhi(0),
+  fImpParPullrphiSparsePtBchargePhi(0),
   fImpParzSparsePtBchargePhi(0),
   fImpParzSparsePtzVtxEtaPhi(0),
   fImpParzSparsePtEtaPhi(0),
   fImpParPullzSparsePtEtaPhi(0),
+  fImpParPullzSparsePtBchargePhi(0),
   fPtDistrib(0),
   fhPtWeights(0x0),
   fUseptWeights(0),
@@ -112,6 +115,7 @@ AliAnalysisTaskSEImpParResSparse::AliAnalysisTaskSEImpParResSparse(const char *n
   fReadMC(kFALSE),
   fSelectedPdg(-1),
   fUseDiamond(kFALSE),
+  fUseRecoVertex(kFALSE),
   fSkipTrack(kTRUE),
   fMinMult(0),
   fMaxMult(1000000),
@@ -136,10 +140,12 @@ AliAnalysisTaskSEImpParResSparse::AliAnalysisTaskSEImpParResSparse(const char *n
   fImpParrphiSparsePtzVtxEtaPhi(0),
   fImpParrphiSparsePtEtaPhi(0),
   fImpParPullrphiSparsePtEtaPhi(0),
+  fImpParPullrphiSparsePtBchargePhi(0),
   fImpParzSparsePtBchargePhi(0),
   fImpParzSparsePtzVtxEtaPhi(0),
   fImpParzSparsePtEtaPhi(0),
   fImpParPullzSparsePtEtaPhi(0),
+  fImpParPullzSparsePtBchargePhi(0),
   fPtDistrib(0),
   fhPtWeights(0x0),
   fUseptWeights(0),
@@ -169,10 +175,12 @@ AliAnalysisTaskSEImpParResSparse::~AliAnalysisTaskSEImpParResSparse()
   delete fImpParrphiSparsePtzVtxEtaPhi;
   delete fImpParrphiSparsePtEtaPhi;
   delete fImpParPullrphiSparsePtEtaPhi;
+  delete fImpParPullrphiSparsePtBchargePhi;
   delete fImpParzSparsePtBchargePhi;
   delete fImpParzSparsePtzVtxEtaPhi;
   delete fImpParzSparsePtEtaPhi;
   delete fImpParPullzSparsePtEtaPhi;
+  delete fImpParPullzSparsePtBchargePhi;
   delete fPtDistrib;
   delete fhPtWeights;
 
@@ -248,6 +256,30 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     for(Int_t iax=0; iax<5; iax++) fImpParzSparsePtzVtxEtaPhi->GetAxis(iax)->SetTitle(axTitle4[iax].Data());
     BinLogAxis(fImpParzSparsePtzVtxEtaPhi, 1);
     fOutput->Add(fImpParzSparsePtzVtxEtaPhi);
+
+    
+    //pulls
+    Int_t nbinsImpParSparse_pullPtBchargePhi[5] =       {400, 50, 4, 2, 2};
+    Double_t limitLowImpParSparse_pullPtBchargePhi[5] = {-10., 0.1, 0., 0., 0.};
+    Double_t limitUpImpParSparse_pullPtBchargePhi[5] =  {10., 25., 4., 2., 2.};
+    TString axTitle_rphi_pullPtBchargePhi[5]={"rphi pull",
+					      "#it{p}_{T} (GeV/c)",
+					      "#phi",
+					      "mag. field",
+					      "charge"};
+    fImpParPullrphiSparsePtBchargePhi=new THnSparseF("fImpParPullrphiSparsePtBchargePhi","fImpParPullrphiSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
+    for(Int_t iax=0; iax<5; iax++) fImpParPullrphiSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_rphi_pullPtBchargePhi[iax].Data());
+    BinLogAxis(fImpParPullrphiSparsePtBchargePhi, 1);
+    fOutput->Add(fImpParPullrphiSparsePtBchargePhi);
+    TString axTitle_z_pullPtBchargePhi[5]={"z pull",
+					   "#it{p}_{T} (GeV/c)",
+					   "#phi",
+					   "mag. field",
+					   "charge"};
+    fImpParPullzSparsePtBchargePhi=new THnSparseF("fImpParPullzSparsePtBchargePhi","fImpParPullzSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
+    for(Int_t iax=0; iax<5; iax++) fImpParPullzSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_z_pullPtBchargePhi[iax].Data());
+    BinLogAxis(fImpParPullzSparsePtBchargePhi, 1);
+    fOutput->Add(fImpParPullzSparsePtBchargePhi);
   }
 
   //default THnSparses
@@ -353,7 +385,6 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
   Bool_t sddIsIn=kTRUE;
   if(fCheckSDDIsIn) {
-
     if(!fTrigConfig) {    
       AliCDBManager* man = AliCDBManager::Instance();
       if(fOCDBPath.Contains("OCDB")) { // when running in the QAtrain this is not called (OCBD is already set)
@@ -391,9 +422,12 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	}
       //sddIsIn = kFALSE;
     }
-    else sddIsIn=((AliESDEvent*)event)->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+    else {
+	  sddIsIn=((AliESDEvent*)event)->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);	  
+    }
     if(fCheckSDDIsIn==1 && !sddIsIn) return;
     if(fCheckSDDIsIn==-1 && sddIsIn) return;
+    if(fCheckSDDIsIn==3) sddIsIn=kFALSE; //for MC without SDD
   }
 
   fNentries->Fill(1);
@@ -515,10 +549,12 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
   Double_t eta=0.;
   Double_t pointrphi[4];
   Double_t pullrphi[4];
+  Double_t pullrphi1[5];
   Double_t pointrphi1[5];
   Double_t pointrphi2[5];
   Double_t pointz[4];
   Double_t pullz[4];
+  Double_t pullz1[5];
   Double_t pointz1[5];
   Double_t pointz2[5];
 
@@ -560,10 +596,12 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
     
     pullrphi[1]=pt;
+    pullrphi1[1]=pt;
     pointrphi[1]=pt;
     pointrphi1[1]=pt;
     pointrphi2[1]=pt;
     pullz[1]=pt;
+    pullz1[1]=pt;
     pointz[1]=pt;
     pointz1[1]=pt;
     pointz2[1]=pt;
@@ -588,8 +626,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     }
 
     charge=vtrack->Charge();
-    if(charge<0.) {pointrphi1[4]=0.; pointz1[4]=0.;}
-    else if(charge>0.) {pointrphi1[4]=1.; pointz1[4]=1.;}
+    if(charge<0.) {pointrphi1[4]=0.; pointz1[4]=0.; pullrphi1[4]=0.; pullz1[4]=0.;}
+    else if(charge>0.) {pointrphi1[4]=1.; pointz1[4]=1.; pullrphi1[4]=1.; pullz1[4]=1.;}
     //Printf("charge %d",charge);
 
     phi=vtrack->Phi();
@@ -597,6 +635,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     if(phibin<0) continue;
     pullrphi[2]=phibin;
     pullz[2]=phibin;
+    pullrphi1[2]=phibin;
+    pullz1[2]=phibin;
     pointrphi[2]=phibin;
     pointz[2]=phibin;
     pointrphi1[2]=phibin;
@@ -607,8 +647,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
 
     Float_t magField=event->GetMagneticField();
-    if(magField<0.) {pointrphi1[3]=0.; pointz1[3]=0.;}
-    else if(magField>0.) {pointrphi1[3]=1.; pointz1[3]=1.;}
+    if(magField<0.) {pointrphi1[3]=0.; pointz1[3]=0.; pullrphi1[3]=0.; pullz1[3]=0.;}
+    else if(magField>0.) {pointrphi1[3]=1.; pointz1[3]=1.; pullrphi1[3]=1.; pullz1[3]=1.;}
     
 
     //MC
@@ -710,7 +750,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     }
     //delete vtxVSkip; vtxVSkip=NULL; // not needed anymore
  
-    if(fReadMC) {
+    if(fReadMC && !fUseRecoVertex) {
       vtrack->PropagateToDCA(vtxESDTrue, event->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
       dz[0]=dzTrue[0]; 
       dz[1]=dzTrue[1];
@@ -727,9 +767,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     pointz2[0]=10000.*dz[1];
     pullrphi[0]=dz[0]/TMath::Sqrt(covdz[0]);
     pullz[0]=dz[1]/TMath::Sqrt(covdz[2]);
+    pullrphi1[0]=dz[0]/TMath::Sqrt(covdz[0]);
+    pullz1[0]=dz[1]/TMath::Sqrt(covdz[2]);
     //    Printf("point %f",pointrphi[0]);
 
-    if(fReadMC) primaryVtx=vtxESDTrue;
+    if(fReadMC && !fUseRecoVertex) primaryVtx=vtxESDTrue;
     else if(fSkipTrack) primaryVtx=vtxVSkip;
     else primaryVtx=vtxVRec;
 
@@ -744,6 +786,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
 	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+	fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+	fImpParPullzSparsePtBchargePhi->Fill(pullz1);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
@@ -759,6 +803,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
 	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+	fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+	fImpParPullzSparsePtBchargePhi->Fill(pullz1);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
@@ -774,6 +820,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
 	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+	fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+	fImpParPullzSparsePtBchargePhi->Fill(pullz1);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);

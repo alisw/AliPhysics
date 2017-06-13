@@ -369,9 +369,14 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
     
     if(trecal)
-    {
+    {      
+      // pass number should be pass1 except on Run1 and special cases
       TString passM = pass;
-      if(pass=="spc_calo") passM = "pass1";
+      if ( pass=="spc_calo"   ) passM = "pass3";
+      if ( runnumber > 209121 ) passM = "pass1"; // run2 periods
+      if ( pass == "muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+        passM = "pass0";//period LHC15a-m
+
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
       if(trecalpass)

@@ -322,7 +322,7 @@ void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
     eventID = eventIDHeader->GetEventIdAsLong();
 
   // ### Actually add the basic jet
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypeIC, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypeIC, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent, jet->M(), fPtHard);
 
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -698,11 +698,7 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
 
   if (parton[0]) {
     Int_t pdg = TMath::Abs(parton[0]->PdgCode());
-
-    if      ((pdg == 21) || (pdg == 1) || (pdg == 2)) typeIC = 1; // light jets
-    else if (pdg == 3 ) typeIC = 3; // s-jets
-    else if (pdg == 4 ) typeIC = 4; // c-jets
-    else if (pdg == 5 ) typeIC = 5; // b-jets
+    typeIC = pdg;
   }
 
   if (!parton[1])

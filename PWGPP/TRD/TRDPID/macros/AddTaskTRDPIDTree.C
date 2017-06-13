@@ -21,23 +21,23 @@ AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
 
 
   //================================================
-  //              data containers
-  //================================================
-  //            find input container
-  //below the trunk version
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+   //              data containers
+   //================================================
+   //            find input container
+   //below the trunk version
+   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
-  //dumm output container
-  AliAnalysisDataContainer *coutput1 =
-      mgr->CreateContainer("TRDPIDTree_tree",
-                           TTree::Class(),
-                           AliAnalysisManager::kOutputContainer,
-                           "TRDPIDTree_tree.root");
-  AliAnalysisDataContainer *coutput2 =
-      mgr->CreateContainer("TRDPIDTree_list",
-                           TList::Class(),
-                           AliAnalysisManager::kOutputContainer,
-                           "TRDPIDTree_hists.root");
+   //dumm output container
+   AliAnalysisDataContainer *coutput1 =
+       mgr->CreateContainer("TRDPIDTree_tree",
+                            TTree::Class(),
+                            AliAnalysisManager::kOutputContainer,
+                            Form("TRDPIDTree_tree_T%i.root",trigger));
+   AliAnalysisDataContainer *coutput2 =
+       mgr->CreateContainer("TRDPIDTree_list",
+                            TList::Class(),
+                            AliAnalysisManager::kOutputContainer,
+                            Form("TRDPIDTree_hists_T%i.root",trigger));
 
   //connect containers
   mgr->ConnectInput(task,  0, cinput );

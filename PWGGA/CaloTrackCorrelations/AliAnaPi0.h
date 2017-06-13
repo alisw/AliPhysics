@@ -184,8 +184,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   /// Containers for photons in stored events
   TList ** fEventsList ;               //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()]
-
-  Int_t    fNModules ;                 ///<  Number of EMCAL/PHOS modules, set as many histogras as modules 
   
   Bool_t   fUseAngleCut ;              ///<  Select pairs depending on their opening angle
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle

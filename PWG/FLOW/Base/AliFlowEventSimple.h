@@ -142,6 +142,8 @@ class AliFlowEventSimple: public TObject {
   Double_t GetZNCEnergy() const {return fZNCM;};
   void SetZNAEnergy(Double_t const en) {fZNAM = en;};
   Double_t GetZNAEnergy() const {return fZNAM;};
+  void SetAbsOrbit(UInt_t const en) {fAbsOrbit = en;};
+  UInt_t GetAbsOrbit() const {return fAbsOrbit;};
 
  protected:
   virtual void Generate( Int_t nParticles,
@@ -189,12 +191,13 @@ class AliFlowEventSimple: public TObject {
   Double_t                fZNCM;                      // total energy from ZNC-C
   Double_t                fZNAM;                      // total energy from ZNC-A
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
+  UInt_t                  fAbsOrbit;                  // Absolute orbit number
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,6)
+  ClassDef(AliFlowEventSimple,7)
 };
 
 #endif

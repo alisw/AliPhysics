@@ -148,11 +148,11 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
 
   fOutput->Add(fNtupleVertexESD);
 
-  fhSPDVertexX = new TH1F("fhSPDVertexX","SPDVertex x; x vertex [cm]; events",200,-1,1);
+  fhSPDVertexX = new TH1F("fhSPDVertexX","SPDVertexer3D x; x vertex [cm]; events",200,-1,1);
   fOutput->Add(fhSPDVertexX);
-  fhSPDVertexY = new TH1F("fhSPDVertexY","SPDVertex y; y vertex [cm]; events",200,-1,1);
+  fhSPDVertexY = new TH1F("fhSPDVertexY","SPDVertexer3D y; y vertex [cm]; events",200,-1,1);
   fOutput->Add(fhSPDVertexY);
-  fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",500,-25,25);
+  fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertexer3D z; z vertex [cm]; events",500,-25,25);
   fOutput->Add(fhSPDVertexZ);
   	
   fhSPDVertexZonly = new TH1F("fhSPDVertexZonly","SPDVertexer z; z vertex [cm]; events",500,-25,25);

@@ -62,7 +62,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                    Float_t coneptsumCell,  Float_t coneptsumTrack,
-                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand ) ;
+                                                   Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand, Int_t mcIndex ) ;
   
   TObjString * GetAnalysisCuts() ;
   
@@ -611,10 +611,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   /// Candidate Pt distribution depending on bin of cone sum pt.
   TH1F **  fhSumPtConeBin  ;                           //![fNBkgBin]
+  
+  /// Candidate Pt distribution depending on bin of cone sum pt after ue subtraction from eta band.
+  TH1F **  fhSumPtConeAfterEtaBandUESubBin  ;          //![fNBkgBin]
     
   /// Candidate Pt distribution depending on bin of cone leading particle, per MC particle.
   TH1F **  fhPtLeadConeBinMC ;                         //![fNBkgBin*fgkNmcTypes]
     
+  /// Candidate Pt distribution depending on bin of cone sum pt after ue subtraction from eta band, per MC particle.
+  TH1F **  fhSumPtConeAfterEtaBandUESubBinMC  ;        //![fNBkgBin*fgkNmcTypes]
+  
   /// Candidate Pt distribution depending on bin of cone sum pt, per MC particle.
   TH1F **  fhSumPtConeBinMC  ;                         //![fNBkgBin*fgkNmcTypes]
 
@@ -629,9 +635,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   /// Candidate shower shape distribution depending on bin of cone sum pt.
   TH2F **  fhSumPtConeBinLambda0  ;                    //![fNBkgBin]
+  
+  /// Candidate shower shape distribution depending on bin of cone sum pt after UE subtraction from eta band.
+  TH2F **  fhSumPtConeAfterEtaBandUESubBinLambda0  ;   //![fNBkgBin]
     
   /// Candidate shower shape distribution depending on bin of cone leading particle, per MC particle.
   TH2F **  fhPtLeadConeBinLambda0MC ;                  //![fNBkgBin*fgkNmcTypes]
+  
+  /// Candidate shower shape distribution depending on bin of cone leading particle after UE subtraction from eta band, per MC particle.
+  TH2F **  fhSumPtConeAfterEtaBandUESubBinLambda0MC ;  //![fNBkgBin*fgkNmcTypes]
     
   /// Candidate shower shape distribution depending on bin of cone sum pt, per MC particle.
   TH2F **  fhSumPtConeBinLambda0MC  ;                  //![fNBkgBin*fgkNmcTypes]
@@ -795,9 +807,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeTOFBC0;                        //!<! track with TOF hit, pt, tof in BC0 
   TH2F *   fhPtTrackInConeTOFBCN;                        //!<! track with TOF hit, pt, tof not in BC0 
   TH2F *   fhPtTrackInConeTOFNo ;                        //!<! track without TOF hit, pt 
+
   TH2F *   fhPhiTrackInCone;                             //!<! track azhimuthal angle
   TH2F *   fhEtaTrackInCone;                             //!<! track pseudo-rapidity
   TH2F *   fhEtaPhiTrackInCone;                          //!<! track azhimuthal angle vs pseudo-rapidity
+  
   TH2F *   fhPhiTrackInConeTOFBC0;                       //!<! track with TOF hit, phi, tof in BC0 
   TH2F *   fhPhiTrackInConeTOFBCN;                       //!<! track with TOF hit, phi, tof not in BC0 
   TH2F *   fhPhiTrackInConeTOFNo ;                       //!<! track without TOF hit, phi 
@@ -841,6 +855,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInPerpConeTOFBC0ITSRefitOnSPDOn ;         //!<! track Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   TH2F *   fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn ;     //!<! tracl eta vs phi in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   
+  TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
+  TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
+   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     

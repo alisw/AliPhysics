@@ -140,6 +140,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -279,6 +280,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -495,19 +497,36 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     }
   }
   if(!fIsPbPb){
-    vertexBins[0] = -10;
-    vertexBins[1] = -4.6;
-    vertexBins[2] = -1.6;
-    vertexBins[3] = 0.9;
-    vertexBins[4] = 3.4;
-    vertexBins[5] = 6.1;
-    vertexBins[6] = 10;
+    if(!fFlagMEBinChange){
+      vertexBins[0] = -10;
+      vertexBins[1] = -4.6;
+      vertexBins[2] = -1.6;
+      vertexBins[3] = 0.9;
+      vertexBins[4] = 3.4;
+      vertexBins[5] = 6.1;
+      vertexBins[6] = 10;
 
-    CentralityBinspp[0] = 0;
-    CentralityBinspp[1] = 25;
-    CentralityBinspp[2] = 50;
-    CentralityBinspp[3] = 75;
-    CentralityBinspp[4] = 100;
+      CentralityBinspp[0] = 0;
+      CentralityBinspp[1] = 25;
+      CentralityBinspp[2] = 50;
+      CentralityBinspp[3] = 75;
+      CentralityBinspp[4] = 100;
+    }
+    if(fFlagMEBinChange){
+      vertexBins[0] = -10;
+      vertexBins[1] = -5;
+      vertexBins[2] = -2.5;
+      vertexBins[3] = 0;
+      vertexBins[4] = 2.5;
+      vertexBins[5] = 5;
+      vertexBins[6] = 10;
+
+      CentralityBinspp[0] = 0;
+      CentralityBinspp[1] = 20;
+      CentralityBinspp[2] = 40;
+      CentralityBinspp[3] = 60;
+      CentralityBinspp[4] = 100;
+    }
   }
 
   if(fIsPbPb)
@@ -928,6 +947,11 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+      Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(clustTime) > 50) continue;
+
       /////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
       /////////////////////////////////////////////
@@ -938,6 +962,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       Double_t clustMatchE = clustMatch->E();
       fClsEAftMatch->Fill(clustMatchE);
       fClsEtaPhiAftMatch->Fill(emceta,emcphi);
+
 
       //Select pT>2 GeV/c
       if(TrkPt < 2) continue;
@@ -1494,6 +1519,9 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(tof) > 50) continue;
 
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);

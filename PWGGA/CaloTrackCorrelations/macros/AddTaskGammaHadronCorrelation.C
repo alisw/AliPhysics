@@ -16,8 +16,10 @@
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
-// Set includes for compilation
-
+//// Set includes for compilation
+//
+//#if !defined(__CINT__) || defined(__MAKECINT__)
+//
 //#include <TString.h>
 //#include <TROOT.h>
 //
@@ -39,6 +41,11 @@
 //#include "AliAnalysisManager.h"
 //#include "AliInputEventHandler.h"
 //#include "AliVTrack.h"
+//#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+//#include "AliESDtrackCuts.h"
+//#include "CreateTrackCutsPWGJE.C"
+//#include "ConfigureEMCALRecoUtils.C"
+//#endif
 //
 //// Declare methods for compilation
 //
@@ -47,29 +54,28 @@
 //                                              TString calorimeter,   Bool_t nonLinOn,
 //                                              TString trigger,       Bool_t rejectEMCTrig,
 //                                              Int_t   minCen,        Int_t  maxCen,
-//                                              Bool_t  mixOn,         Bool_t printSettings,
-//                                              Int_t   debug                                 );
+//                                              Bool_t  printSettings, Int_t  debug       );
 //AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
-//                                              TString clustersArray, Bool_t tender,
+//                                                                     Bool_t tender,
 //                                              Bool_t  nonLinOn,      Int_t  year,
-//                                              Bool_t  printSettings, Int_t debug            );
+//                                              Bool_t  printSettings, Int_t  debug            );
 //AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 //                                              TString calorimeter,   Int_t  year,  Int_t tm,
-//                                              Bool_t  printSettings, Int_t debug            );
+//                                              Bool_t  printSettings, Int_t  debug            );
 //AliAnaPi0EbE        * ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
 //                                              Bool_t useSSIso,       Bool_t useAsy,
 //                                              TString col,           Bool_t simulation,
 //                                              TString calorimeter,   Int_t  year, Int_t tm,
-//                                              Bool_t  printSettings, Int_t debug            );
+//                                              Bool_t  printSettings, Int_t  debug            );
 //AliAnaParticleIsolation* ConfigureIsolationAnalysis
-//                                             (TString particle,      Int_t  leading,
-//                                              Int_t partInCone, Int_t thresType,
+//                                             (TString particle,      Int_t   leading,
+//                                              Int_t partInCone,      Int_t   thresType,
 //                                              Float_t cone,          Float_t pth,      Bool_t multi,
-//                                              TString col,           Bool_t simulation,
-//                                              TString calorimeter,   Int_t  year,      Int_t tm,
-//                                              Bool_t  printSettings, Int_t debug                    );
+//                                              TString col,           Bool_t  simulation,
+//                                              TString calorimeter,   Int_t   year,      Int_t tm,
+//                                              Bool_t  printSettings, Int_t   debug                    );
 //AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
-//                                             (TString particle,      Int_t leading,
+//                                             (TString particle,      Int_t   leading,
 //                                              Bool_t  bIsolated,     Float_t shshMax,
 //                                              Int_t partInCone,      Int_t   thresType,
 //                                              Float_t cone,          Float_t pth,      Bool_t mixOn,
@@ -86,11 +92,10 @@
 //                                              TString calorimeter,   Int_t   year,
 //                                              Bool_t  printSettings, Int_t   debug                     );
 //
-//void SetAnalysisCommonParameters     (AliAnaCaloTrackCorrBaseClass* ana,
-//                                              TString calorimeter, Int_t year,
-//                                              TString col, Bool_t simulation,
-//                                              Bool_t printSettings, Int_t debug);
-//UInt_t SetTriggerMaskFromName                (TString trigger);
+//void SetAnalysisCommonParameters             (AliAnaCaloTrackCorrBaseClass* ana,
+//                                              TString calorimeter , Int_t  year,
+//                                              TString col         , Bool_t simulation,
+//                                              Bool_t printSettings, Int_t  debug);
 
 
 /// Global name to be composed of the settings, used to set the AOD branch name
@@ -124,7 +129,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
-/// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureEventTriggerCaloTrackCorr()
+/// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 (
@@ -196,8 +201,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   
   // General frame setting and configuration
-  maker->SetReader   ( ConfigureReader   (col,simulation,clustersArray,tender,calorimeter,nonLinOn,trigger,rejectEMCTrig,minCen,maxCen,mixOn,printSettings,debug) );
-  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,clustersArray,tender,nonLinOn,year,                                                 printSettings,debug) );
+  maker->SetReader   ( ConfigureReader   (col,simulation,clustersArray,tender,calorimeter,nonLinOn,trigger,rejectEMCTrig,minCen,maxCen,printSettings,debug) );
+  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,tender,nonLinOn,year,printSettings,debug) );
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
@@ -285,8 +290,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
   
-  // Create task
-  
+  //
+  // Create task, pass the maker and add it to the manager
+  //
   AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("%s",kAnaGammaHadronCorr.Data()));
   
   task->SetDebugLevel(debug);
@@ -296,19 +302,42 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   
   task->SetAnalysisMaker(maker);
   
+  mgr->AddTask(task);
+
   //
   // Select events trigger depending on trigger
   //
-  if(!simulation && !mixOn)
+  maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
+  if(!simulation)
   {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureEventTriggerCaloTrackCorr.C");
-    ConfigureEventTriggerCaloTrackCorr(task,trigger,year);
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
+    TString caloTriggerString = "";
+    UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
+
+    maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
+
+    // For mixing with AliAnaParticleHadronCorrelation switch it off
+    if(mixOn)
+    {
+      maker->GetReader()->SwitchOffEventTriggerAtSE();
+      maker->GetReader()->SetEventTriggerMask(mask); 
+      // what to do with caloTriggerString?
+      
+      // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+      //reader->SetMixEventTriggerMask(AliVEvent::kMB); 
+      maker->GetReader()->SetMixEventTriggerMask(AliVEvent::kINT7); 
+      
+      printf("---Trigger selection done in AliCaloTrackReader!!!\n");
+    }
+    else
+    {
+      task ->SelectCollisionCandidates( mask );
+    }
   }
   
-  mgr->AddTask(task);
-  
-  //Create containers
-  
+  //
+  // Create containers
+  //
   if(outputfile.Length()==0) outputfile = AliAnalysisManager::GetCommonFileName();
   
   AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(kAnaGammaHadronCorr, TList::Class(),
@@ -338,8 +367,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString calorimeter,   Bool_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
-                                     Bool_t  mixOn,         Bool_t printSettings,
-                                     Int_t   debug                                )
+                                     Bool_t  printSettings, Int_t  debug         )
 {
   // Get the data type ESD or AOD
   AliAnalysisManager * mgr = AliAnalysisManager::GetAnalysisManager();
@@ -356,28 +384,14 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // MC settings
   //
   // Check if kine stack is available, independent of request of simulation
-  Bool_t useKinematics = kFALSE;
-  useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
-  
-  if(simulation)
-  {
-    if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
-  }
-  
-  if(useKinematics)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();
-      reader->SwitchOffAODMCParticles();
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();
-      reader->SwitchOnAODMCParticles();
-    }
-  }
-  
+//  Bool_t useKinematics = kFALSE;
+//  useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+//  
+//  if(simulation)
+//  {
+//    if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
+//  }
+    
   // In case of Pythia pt Hard bin simulations (jet-jet, gamma-jet)
   // reject some special events that bother the cross section
   if(simulation)
@@ -541,20 +555,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   }
   
   //reader->RejectFastClusterEvents() ;
-  
-  // For mixing with AliAnaParticleHadronCorrelation switch it off
-  reader->SwitchOnEventTriggerAtSE(); // on is default case
-  if(mixOn)
-  {
-    reader->SwitchOffEventTriggerAtSE();
-    UInt_t mask = SetTriggerMaskFromName(trigger);
-    reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
-    //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-    reader->SetMixEventTriggerMask(AliVEvent::kINT7); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     
-    printf("---Trigger selection done in AliCaloTrackReader!!!\n");
-  }
-  
   reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   reader->SwitchOnRejectNoTrackEvents();
@@ -568,7 +569,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SetCentralityClass("V0M");
     reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
-    reader->SwitchOnAcceptOnlyHIJINGLabels();
+    //reader->SwitchOnAcceptOnlyHIJINGLabels();
     // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
     reader->SetEventPlaneMethod("V0");
   }
@@ -581,10 +582,10 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation,
-                                        TString clustersArray, Bool_t tender,
-                                        Bool_t  nonLinOn,      Int_t year,
-                                        Bool_t  printSettings, Int_t   debug)
+AliCalorimeterUtils* ConfigureCaloUtils(TString col,    Bool_t simulation,
+                                        Bool_t  tender, Bool_t nonLinOn,      
+                                        Int_t   year,   Bool_t printSettings, 
+                                        Int_t   debug)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   
@@ -1358,8 +1359,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
   ana->SwitchOffStudyBadClusters() ;
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOffFillAllCellTimeHisto() ;
   
   ana->SwitchOnFillAllTrackMatchingHistogram();
@@ -1440,26 +1439,26 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
     {
       histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
-      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    }
-      else // Run2
-      {
-        histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
-        histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
-        histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
-      }
-      
-      histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
     }
-    else if(calorimeter=="PHOS")
+    else // Run2
     {
-      histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
-      histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
+      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
+      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
     }
-    else if(calorimeter=="CTS")
-    {
-      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
-      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
-    }
+    
+    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+  }
+  else if(calorimeter=="PHOS")
+  {
+    histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
+  }
+  else if(calorimeter=="CTS")
+  {
+    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
   histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 4.9, 500);

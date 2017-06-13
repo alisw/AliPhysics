@@ -580,7 +580,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       Double_t deltaPhi, deltaEta;
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
 
-      if(fRemoveSoftPiInME && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
+      if(fRemoveSoftPiInME && fDmesonSpecies==kD0toKpi && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
 		Bool_t reject = IsSoftPionFromDstar(brD,brTr);
 		if(reject) continue;
 	  }
@@ -673,6 +673,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeight(AliHFCorrelationBranchD *br
   if(fMapEffTr->IsBinUnderflow(binTr)||fMapEffTr->IsBinOverflow(binTr))return 1.;
   effTr = fMapEffTr->GetBinContent(binTr);
 
+  if(effD*effTr==0) return 1.; //safety fix
   return 1./(effD*effTr);
 }
 
@@ -685,6 +686,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeightDOnly(AliHFCorrelationBranch
   if(fMapEffD->IsBinUnderflow(binD)||fMapEffD->IsBinOverflow(binD))return 1.;
   effD = fMapEffD->GetBinContent(binD);
 
+  if(effD==0) return 1.; //safety fix
   return 1./(effD);
 }
 

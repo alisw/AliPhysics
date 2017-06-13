@@ -58,8 +58,8 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
-fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
@@ -100,8 +100,8 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
-fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
@@ -143,8 +143,8 @@ fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
-fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000),    fPHOSRCut(1000),
 //Split
@@ -218,15 +218,13 @@ void AliCaloPID::InitParameters()
   //EMCAL  
   fEMCALL0CutMax = 0.3 ;
   fEMCALL0CutMin = 0.01;
-  
+    
   // Fix Track Matching
   fEMCALDPhiCut  = 0.05; // Same cut as in AliEMCALRecoUtils
   fEMCALDEtaCut  = 0.025;// Same cut as in AliEMCALRecoUtils
-
+  
   // Pt dependent track matching
-  // In case we change the default setting to true
-  if(fEMCALUseTrackPtDepMatchingCut) 
-    InitParamTrackMatchPtDependent();
+  InitParamTrackMatchPtDependent();
   
   // PHOS / EMCAL, not used
   fTOFCut        = 1.e-6;
@@ -343,10 +341,7 @@ void AliCaloPID::InitParameters()
 /// Called in InitParameters() and SwitchOnEMCTrackPtDepReaMatching()
 //_______________________________
 void AliCaloPID::InitParamTrackMatchPtDependent()
-{
-  AliInfo("Init track matching residual pt dependent cuts;"
-          " careful if another initialization is done before this call!");
-  
+{  
   fEMCALFuncTrackPtDepDEtaString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
   fEMCALFuncTrackPtDepDPhiString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
   
@@ -1232,7 +1227,7 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   {
     AliDebug(1,Form("EMCAL dPhi %f < %f, dEta %f < %f ",dPhi, fEMCALDPhiCut, dEta, fEMCALDEtaCut));
     
-    if(!fEMCALUseTrackPtDepMatchingCut)
+    if ( !fEMCALUseTrackPtDepMatchingCut )
     {
       if(TMath::Abs(dPhi) < fEMCALDPhiCut &&
          TMath::Abs(dEta) < fEMCALDEtaCut)   return kTRUE;

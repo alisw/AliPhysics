@@ -21,7 +21,7 @@ void ExtractOutput_Dplus(
                          Int_t specie=AliDhCorrelationExtraction::kDplusKpipi, //the D-meson decay channel (check the enumerator for the options)
                          Int_t SandB=AliDhCorrelationExtraction::kBfromBinCount, //how to extract S and B (check the enumerator for the options) - kBfromBinCount is the paper approach
                          Int_t SBscale=AliDhCorrelationExtraction::kBinCountScaling, //how to renormalize the sidebands (check the enumerator for the options) - kBfromBinCount is the paper approach
-                         Int_t rebin=4, //rebin the invariant mass plots - USE WITH CARE! (different bin width w.r.t. THnSparse)
+                         Int_t rebin=1, //rebin the invariant mass plots - USE WITH CARE! (different bin width w.r.t. THnSparse)
                          Double_t leftRng=1.7, Double_t rightRng=2.05, //invariant mass fit range -> use 1.7-2.1 for D0 and D+, 0.14-0.16 for D* (but 1.695-2.1 for D0 in pp for results before 1/5/2015)
                          Int_t funcBkg=AliHFMassFitter::kExpo, //background function used for the mass fit -> use kExpo for D0 and D+, kPowEx for D*
                          Double_t nsigmaFitter=2, //number of sigma in which to extract S, B, S/B, signficance... (only for the spectra visualization, no influence on the correlations)
@@ -45,7 +45,7 @@ void ExtractOutput_Dplus(
     plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D*
     plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
     plotter->SetNumberOfSigmasFitter(nsigmaFitter);
-    if(autoSign) plotter->SetAutoSignRange(autoSign);
+    if(!autoSign) plotter->SetAutoSignRange(autoSign);
     plotter->SetSignalSigmas(nsigmaS);
     plotter->SetAutoSBRange(autoSB,insigma,outsigma); //kTRUE = evaluate SB range automatically (give inner and outer sigma as 2° and 3° args); kFALSE = use ranges provided via SetSBRanges
     plotter->SetSBSingleBin(singleBinSB);

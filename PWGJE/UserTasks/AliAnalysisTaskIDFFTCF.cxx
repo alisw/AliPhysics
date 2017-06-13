@@ -2446,10 +2446,12 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
   // }
 
   // ...
-
   
   if(fQAMode || fFFMode){
 
+    Double_t sumPtPerpRec   = 0;
+    Double_t sumPtPerpGen   = 0;
+    
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
     
       AliAODJet* jet = (AliAODJet*)(fJetsRecCuts->At(ij));
@@ -2458,10 +2460,10 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       if(fQAMode&2) fQAJetHistosRecCuts->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jetPt);
 
       hJetSpecIncRec->Fill(jet->Pt());
-      Double_t sumPtPerp = 0;
-      GetTracksTiltedwrpJetAxis(TMath::Pi()/2., fTracksRecCuts,0x0,jet,TMath::Abs(GetFFRadius()),sumPtPerp);
-      hJetSpecIncRecUEsub->Fill(jet->Pt()-sumPtPerp);
-      h2UERec->Fill(jet->Pt(),sumPtPerp);
+      Double_t sumPtPerpRec = 0;
+      if(ij == 0) GetTracksTiltedwrpJetAxis(TMath::Pi()/2., fTracksRecCuts,0x0,jet,TMath::Abs(GetFFRadius()),sumPtPerpRec);
+      if(ij == 0) h2UERec->Fill(jet->Pt(),sumPtPerpRec);
+      hJetSpecIncRecUEsub->Fill(jet->Pt()-sumPtPerpRec);
 			   
       if(fLeadingJets && ij>0) continue;  // leading/all jets
   	
@@ -2626,10 +2628,9 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       if(fQAMode&2) fQAJetHistosGen->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jetPt);
 
       hJetSpecIncGen->Fill(jet->Pt());
-      Double_t sumPtPerp = 0;
-      GetTracksTiltedwrpJetAxis(TMath::Pi()/2., fTracksGen,0x0,jet,TMath::Abs(GetFFRadius()),sumPtPerp);
-      hJetSpecIncGenUEsub->Fill(jet->Pt()-sumPtPerp);
-      h2UEGen->Fill(jet->Pt(),sumPtPerp);
+      if(ij == 0) GetTracksTiltedwrpJetAxis(TMath::Pi()/2., fTracksGen,0x0,jet,TMath::Abs(GetFFRadius()),sumPtPerpGen);
+      if(ij == 0) h2UEGen->Fill(jet->Pt(),sumPtPerpGen);
+      hJetSpecIncGenUEsub->Fill(jet->Pt()-sumPtPerpGen);
 
       if(fLeadingJets && ij>0) continue;  // leading/all jets
 

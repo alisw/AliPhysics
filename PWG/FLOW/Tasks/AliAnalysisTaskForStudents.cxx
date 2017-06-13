@@ -10,24 +10,25 @@
 * copies and that both the copyright notice and this permission notice   *
 * appear in the supporting documentation. The authors make no claims     *
 * about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  *
+* provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-/**************************************
-* template class for student projects *
-**************************************/
-
+/************************************** 
+* template class for student projects * 
+**************************************/ 
+  
 #include "Riostream.h"
 #include "AliAnalysisTaskForStudents.h"
 #include "AliLog.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
 #include "TLegend.h"
 
 #include "TCanvas.h" // TBI
 #include "TFile.h" // TBI
-#include "TRandom.h"
+#include "TRandom.h" 
 #include "TGraphErrors.h"
 #include "TComplex.h"
 #include "TProfile.h"
@@ -40,60 +41,72 @@ ClassImp(AliAnalysisTaskForStudents)
 
 //================================================================================================================
 
-AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights):
- AliAnalysisTaskSE(name),
+AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights): 
+ AliAnalysisTaskSE(name), 
  fHistList(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
- fgr(NULL),
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fhr2(NULL),
- fhr3(NULL),
- fhrc22(NULL),
- fhrc23(NULL),
-  fhrc24(NULL),
- fhrc3(NULL),
- fhrc4(NULL),
- leg_hist(NULL),
-
+ fCentralityHist(NULL),
+ fNCentralityBins(10),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+ fMultHist(NULL),
+ fPhiHist(NULL),
+ fEtaHist(NULL),
  fhf(NULL),
-   fhf2(NULL),
- fq6(0.,0.),
- fq4(0.,0.),
- fq2(0.,0.),
- fq5(0.,0.),
- fq3(0.,0.),
- fq1(0.,0.),
- fqq(0.,0.),
- fq(0.,0.),
- fq3x(0.,0.),
- fqq3(0.,0.),
-
+ fhf2(NULL),
+ leg_hist(NULL),
  // Final results:
  fFinalResultsList(NULL),
  num(0),
+ fhr2bin(0), // me
  fsize(9),
- fvarb(0.),
- fmu(0.),
- fper2(0.),
- fper3(0.),
- fper4(0.),
  fbinnum(0),
- fc4(0.),
- fc22(0.),
- fc24(0.),
  fcounter1(0),
  fcounter2(0),
  fcounter3(0),
  fmult(0),
- c2(0.)
+ c2(0.),
+ fhr2min(0.),
+ fhr2max(0.),
+ fper2(0.),
+ fper3(0.),
+ fper4(0.),
+ fvarb(0.),
+ fmu(0.),
+ fymin(0.), // me
+ fymax(0.), // me
+ fc4(0.),
+ fc3(0.),
+ fc22(0.),
+ fc24(0.),
+ fc23(0.),
+ fhr2(NULL),
+ fhr3(NULL),
+ fhrc22(NULL),
+ fhrc23(NULL),
+ fhrc24(NULL),
+ fhrc3(NULL),
+ fhrc4(NULL),
+ fgr(NULL),
+ fq6(0.,0.),
+ fq4(0.,0.),
+ fq(0.,0.),
+ fq2(0.,0.),
+ fqq(0.,0.),
+ fq5(0.,0.),
+ fq3(0.,0.),
+ fq1(0.,0.),
+ fq3x(0.,0.),
+ fqq3(0.,0.)
  {
   // Constructor.
-
-  AliDebug(2,"AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights)"); 
+ 
+  AliDebug(2,"AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights)");
 
   // Base list:
   fHistList = new TList();
@@ -105,80 +118,93 @@ AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t 
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
-  //DefineInput(0, AliFlowEventSimple::Class());
+  //DefineInput(0, AliFlowEventSimple::Class());  
   // Input slot #1 is needed for the weights input file:
   //if(useParticleWeights)
   //{
-  // DefineInput(1, TList::Class());
-  //}
-  // Output slot #0 is reserved
+  // DefineInput(1, TList::Class());   
+  //}  
+  // Output slot #0 is reserved              
   // Output slot #1 writes into a TList container
 
   //num =1;
 
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, TList::Class());  
 
   if(useParticleWeights)
   {
    // not needed for the time being
   }
 
-} // AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights):
+} // AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights): 
 
 //================================================================================================================
 
-AliAnalysisTaskForStudents::AliAnalysisTaskForStudents():
+AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(): 
  AliAnalysisTaskSE(),
  fHistList(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
- fgr(NULL),
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fhr2(NULL),
- fhr3(NULL),
- fhrc22(NULL),
- fhrc23(NULL),
-  fhrc24(NULL),
- fhrc3(NULL),
- fhrc4(NULL),
- leg_hist(NULL),
-
+ fCentralityHist(NULL),
+ fNCentralityBins(10),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+ fMultHist(NULL),
+ fPhiHist(NULL),
+ fEtaHist(NULL),
  fhf(NULL),
-  fhf2(NULL),
- fq6(0.,0.),
- fq4(0.,0.),
- fq2(0.,0.),
- fq5(0.,0.),
- fq3(0.,0.),
- fq1(0.,0.),
- fqq(0.,0.),
- fq(0.,0.),
- fq3x(0.,0.),
- fqq3(0.,0.),
+ fhf2(NULL),
+ leg_hist(NULL),
  // Final results:
  fFinalResultsList(NULL),
- num(0.),
+ num(0),
+ fhr2bin(0),
  fsize(9),
- fvarb(0.),
- fmu(0.),
- fper2(0.),
- fper3(0.),
- fper4(0.),
  fbinnum(0),
- fc4(0.),
- fc22(0.),
- fc24(0.),
  fcounter1(0),
  fcounter2(0),
  fcounter3(0),
  fmult(0),
- c2(0.)
+ c2(0.),
+ fhr2min(0.),
+ fhr2max(0.),
+ fper2(0.),
+ fper3(0.),
+ fper4(0.),
+ fvarb(0.),
+ fmu(0.),
+ fymin(0.), // me
+ fymax(0.), // me
+ fc4(0.),
+ fc3(0.),
+ fc22(0.),
+ fc24(0.),
+ fc23(0.),
+ fhr2(NULL),
+ fhr3(NULL),
+ fhrc22(NULL),
+ fhrc23(NULL),
+ fhrc24(NULL),
+ fhrc3(NULL),
+ fhrc4(NULL),
+ fgr(NULL),
+ fq6(0.,0.),
+ fq4(0.,0.),
+ fq(0.,0.),
+ fq2(0.,0.),
+ fqq(0.,0.),
+ fq5(0.,0.),
+ fq3(0.,0.),
+ fq1(0.,0.),
+ fq3x(0.,0.),
+ fqq3(0.,0.)
 {
   // Dummy constructor.
-
+ 
   AliDebug(2,"AliAnalysisTaskForStudents::AliAnalysisTaskForStudents()");
 
 } // AliAnalysisTaskForStudents::AliAnalysisTaskForStudents():
@@ -190,12 +216,12 @@ AliAnalysisTaskForStudents::~AliAnalysisTaskForStudents()
  // Destructor.
 
  if(fHistList) delete fHistList;
-
+  
 } // AliAnalysisTaskForStudents::~AliAnalysisTaskForStudents()
 
 //================================================================================================================
 
-void AliAnalysisTaskForStudents::UserCreateOutputObjects()
+void AliAnalysisTaskForStudents::UserCreateOutputObjects() 
 {
  // Called at every worker node to initialize.
 
@@ -203,9 +229,9 @@ void AliAnalysisTaskForStudents::UserCreateOutputObjects()
  // b) Book and nest all lists;
  // c) Book all objects;
  // *) Trick to avoid name clashes, part 2.
-
+  
  // a) Trick to avoid name clashes, part 1:
- Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
  TH1::AddDirectory(kFALSE);
 
  // b) Book and nest all lists:
@@ -220,11 +246,11 @@ void AliAnalysisTaskForStudents::UserCreateOutputObjects()
 
  PostData(1,fHistList);
 
-} // void AliAnalysisTaskForStudents::UserCreateOutputObjects()
+} // void AliAnalysisTaskForStudents::UserCreateOutputObjects() 
 
 //================================================================================================================
 
-void AliAnalysisTaskForStudents::UserExec(Option_t *)
+void AliAnalysisTaskForStudents::UserExec(Option_t *) 
 {
  Int_t im=0, jm=0;
 
@@ -234,7 +260,7 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
   fq5 = TComplex(0.,0.);
   fq3 = TComplex(0.,0.);
   fq1 = TComplex(0.,0.);
-
+  
  // Main loop (called for each event).
 
  // a) Get pointer to AOD event:
@@ -247,15 +273,27 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
 
+ AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
+ if(!ams){return;}
+ if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
+ {
+  fCentralityHist->Fill(ams->GetMultiplicityPercentile("V0M"));
+ }
+ else
+ {
+  return; // this event do not belong to the centrality class specified for this particular analysis
+ }
+
+
  // b) Start analysis over AODs:
- Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event
+ Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
   if(!aTrack){continue;} // protection against NULL pointers
   if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks, use only them for the analysis
 
-  // example variables for each track: (for more options, please see class /home/deniz/alicesw/aliroot/v5-07-20/src/STEER/AOD/AliAODTrack.h )
+  // example variables for each track: (for more options, please see class /home/deniz/alicesw/aliroot/v5-07-20/src/STEER/AOD/AliAODTrack.h )  
   Double_t px = aTrack->Px(); // x-component of momenta
   Double_t py = aTrack->Py(); // y-component of momenta
   Double_t pz = aTrack->Pz(); // z-component of momenta
@@ -264,12 +302,12 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
   Double_t eta = aTrack->Eta(); // pseudorapidity
   Double_t charge = aTrack->Charge(); // charge
   Double_t pt = aTrack->Pt(); // Pt
-
+ 
   // apply some cuts: e.g. take for the analysis only particles in -0.8 < eta < 0.8, and 0.2 < pT < 5.0
   // ... implementation of particle cuts ...
   if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0)  ) {
 
-        fq2 += TComplex(cos(2.*phi),sin(2.*phi));
+        fq2 += TComplex(cos(2.*phi),sin(2.*phi));      
         fq4 += TComplex(cos(4.*phi),sin(4.*phi));
         fq6 += TComplex(cos(6.*phi),sin(6.*phi));
         fq1 += TComplex(cos(phi),sin(phi));
@@ -277,18 +315,22 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
         fq5 += TComplex(cos(5.*phi),sin(5.*phi));
 
         im++;
-
+    
         fPtHist->Fill(pt);
+        fPhiHist->Fill(phi); 
+        fEtaHist->Fill(eta);
 
   } // if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pT) && (pT < 5.0)  )
 
 
   // do some analysis only with the particles which passed the cuts
-  // ... your analysis code ...
+  // ... your analysis code ... 
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
-
+  
     fmult = im;
+
+    fMultHist->Fill(fmult);
 
     if ( fmult > 3) {
       fper2 = fmult*(fmult-1.);
@@ -297,7 +339,7 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
 
       fc22=(fq2.Rho2()-fmult)/fper2;
       fhr2->Fill(0.1,fc22,fper2);
-
+   
       fc24=(fq4.Rho2()-fmult)/fper2;
       fhr2->Fill(1.1,fc24,fper2);
 
@@ -312,13 +354,13 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
 
       fq3x=fq5*TComplex::Conjugate(fq2)*TComplex::Conjugate(fq3);
       fqq3=fq3*TComplex::Conjugate(fq1)*TComplex::Conjugate(fq2);
-
+   
       fc3=(fq2.Rho2()*fq3.Rho2() - 2.*fq3x.Re() - 2.*fqq3.Re() + fq5.Rho2()+fq2.Rho2()-(fmult-4.)*(fq2.Rho2()+fq3.Rho2())+fmult*(fmult-6.))/fper4;
       fhr3->Fill(0.6,fc3,fper4);
 
        //cout<<endl<<"Aod disinda "<<fcounter1++<<"  "<<fc3<<"  "<<fc23<<"  "<<fc22<<"  "<< fc23*fc22<<endl;
        //cout<<endl<<"Aod disinda "<<fcounter1++<<"  "<<fc3<<"  "<<fc23<<"  "<<fc22<<"  "<< fc23*fc22<<endl;
-
+    
       fbinnum = gRandom->Uniform(0,10);
       fhrc22->Fill(fbinnum,fc22,fper2);
       fhrc24->Fill(fbinnum,fc24,fper2);
@@ -327,7 +369,7 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
       fhrc23->Fill(fbinnum,fc23,fper2);
       fhrc3->Fill(fbinnum,fc3,fper4);
     } // if ( fmult > 3)
-
+ 
 
  // c) Reset event-by-event objects:
  // ...
@@ -353,7 +395,7 @@ void AliAnalysisTaskForStudents::Terminate(Option_t *)
  // raise that two particle correlation to power 7
  // store that information in the histogram holding final results
 
- cout<<" sc(3,2) "<<sc32<<" "<<" sc(4,2) "<<sc42<<endl;
+ cout<<endl<<" fhr2(3) "<<fhr2->GetBinContent(3)<<" "<<fhr2->GetBinContent(2)<<"  "<<fhr2->GetBinContent(1)<<" sc(4,2) "<<sc42<<endl;
  fhf->SetBinContent(1, sc32);
  fhf->SetBinContent(2,sc42);
 
@@ -368,7 +410,8 @@ void AliAnalysisTaskForStudents::Terminate(Option_t *)
     varb3+= pow(fhrc3->GetBinContent(s)-fhrc23->GetBinContent(s)*fhrc22->GetBinContent(s) - mu3/10.,2);
   }
  fhf->SetBinError(1,sqrt(varb3/9.));
-
+ 
+ cout<<endl<<" sc32 "<<fhf->GetBinContent(1)<<" "<<" sc42 "<<fhf->GetBinContent(2)<<endl;
 
  fHistList = (TList*)GetOutputData(1);
  if(!fHistList){exit(1);}
@@ -376,7 +419,7 @@ void AliAnalysisTaskForStudents::Terminate(Option_t *)
  // Do some calculation in offline mode here:
  // ...
 
- TFile *f = new TFile("AnalysisResults.root","RECREATE");
+ TFile *f = new TFile("AnalysisResultsSC.root","RECREATE");
  fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
 
  delete f;
@@ -396,7 +439,7 @@ void AliAnalysisTaskForStudents::InitializeArrays()
   fyerr[i] = 0.;
  }
 
-
+ 
  // end
 
 } // void AliAnalysisTaskForStudents::InitializeArrays()
@@ -426,7 +469,7 @@ void AliAnalysisTaskForStudents::BookAndNestAllLists()
  fHistList->Add(fFinalResultsList);
 
 } // void AliAnalysisTaskForStudents::BookAndNestAllLists()
- 
+
 //=======================================================================================================================
 
 void AliAnalysisTaskForStudents::BookControlHistograms()
@@ -443,9 +486,27 @@ void AliAnalysisTaskForStudents::BookControlHistograms()
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
 
+ fCentralityHist = new TH1F("fCentralityHist","ams->GetMultiplicityPercentile(\"V0M\")",fNCentralityBins,fMinCentrality,fMaxCentrality);
+ fCentralityHist->SetFillColor(kBlue-10);
+ fCentralityHist->GetXaxis()->SetTitle("centrality percentile");
+ fControlHistogramsList->Add(fCentralityHist);
 
+ fMultHist = new TH1F("fMultHist","Multiplicity Distribution",1000,0,3000);
+ fMultHist->GetXaxis()->SetTitle("m");
+ fMultHist->SetLineColor(4);
+ fControlHistogramsList->Add(fMultHist);
+
+ fPhiHist = new TH1F("fPhiHist","Phi Distribution",1000,0.,6.3);
+ fPhiHist->GetXaxis()->SetTitle("Phi");
+ fPhiHist->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHist);
+
+ fEtaHist = new TH1F("fEtaHist","Eta Distribution",1000,-1.,1.);
+ fEtaHist->GetXaxis()->SetTitle("Eta");
+ fEtaHist->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHist);
  //fControlHistogramsList->Add(fhf);
-
+ 
 
  fgr = new TGraphErrors(fsize,fcentral,fsc4,0,fyerr);
  fgr->SetName("gr");
@@ -461,7 +522,7 @@ void AliAnalysisTaskForStudents::BookControlHistograms()
  fhr2 = new TProfile("fhr2","fhr2 ",3,0.,3.);
   fhr2->Sumw2();
   fControlHistogramsList->Add(fhr2);
-
+ 
  fhr3 = new TProfile("fhr3","fhr3 ",2,0.,1.);
   fhr3->Sumw2();
   fControlHistogramsList->Add(fhr3);
@@ -482,7 +543,7 @@ void AliAnalysisTaskForStudents::BookControlHistograms()
   fhrc3->Sumw2();
   fControlHistogramsList->Add(fhrc3);
 
-
+ 
  // b) ...
 
 } // void AliAnalysisTaskForStudents::BookControlHistograms()
@@ -511,3 +572,4 @@ void AliAnalysisTaskForStudents::BookFinalResultsHistograms()
 } // void AliAnalysisTaskForStudents::BookFinalResultsHistograms()
 
 //=======================================================================================================================
+

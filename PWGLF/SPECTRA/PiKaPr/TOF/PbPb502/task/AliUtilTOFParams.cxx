@@ -1,5 +1,15 @@
 #include "AliUtilTOFParams.h"
 
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Set of parameters and utilities for the Pi/Ka/Pr analysis with TOF    //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
+
 namespace AliUtilTOFParams {
   const Double_t *CutValues[nCuts] = {CutValueTPCRows, CutValueMaxChi2, CutValueMaxDCAz, CutValueMaxDCAxy, CutValueGeo};//Values of the cuts for each cut type
   

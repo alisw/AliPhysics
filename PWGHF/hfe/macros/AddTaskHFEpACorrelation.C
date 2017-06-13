@@ -25,7 +25,9 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                          Int_t TPCNClusterPID = 80,
                                                          Bool_t UseGlobalTracksForHadrons = kTRUE,
                                                          Int_t CentralityEstimator = 0,
-                                                         TString HadronEfficiencyFile = "alien:///alice/cern.ch/user/h/hzanoli/Efficiency/Hadron_Tracking.root"
+                                                         TString HadronEfficiencyFile = "alien:///alice/cern.ch/user/h/hzanoli/Efficiency/Hadron_Tracking.root",
+                                                         TString BackgroundWFile = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundW.root",
+                                                         TString BackgroundWFileToData = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundWToData.root"
                                                          )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -51,17 +53,15 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     //_______________________
     //Trigger
-    if (!isMC)
-    {
-        if (!ispp)
-            task->SelectCollisionCandidates(AliVEvent::kINT7);
-        else
-            task->SelectCollisionCandidates(AliVEvent::kMB);
-    }
+    
+    if (!ispp)
+        task->SelectCollisionCandidates(AliVEvent::kINT7);
+    else
+        task->SelectCollisionCandidates(AliVEvent::kMB);
     
     if(pTBin ==0)
     {
-        Float_t pTBinsCorrelation[] = {0.5,0.75,1.0,1.25,1.5,2,2.5,3,4,5,6};
+        Float_t pTBinsCorrelation[] = {0.5,0.75,1.0,1.25,1.5,2,2.5,3,4,6};
         task->SetpTBins(11,pTBinsCorrelation);
     }
     else if (pTBin ==1)
@@ -72,8 +72,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     if(pTBin ==2)
     {
-        Float_t pTBinsCorrelation[] = {1,2,4,6};
-        task->SetpTBins(4,pTBinsCorrelation);
+        Float_t pTBinsCorrelation[] = {0.5,1,2,4,6};
+        task->SetpTBins(5,pTBinsCorrelation);
     }
     
     else if (pTBin ==3)
@@ -85,7 +85,6 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     if(Correlation)
     {
-        
         TFile *fileH = TFile::Open(HadronEfficiencyFile.Data());
         TH3F* HadronEffHisto = (TH3F*) fileH->Get(Form("HadronEff_%1.2f_%1.2f",HadronDCAxy,HadronDCAz));
         if(HadronEffHisto)
@@ -93,14 +92,54 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
         else
         {
             printf("=!=!=!=!=!=!=!=! No Hadron Correction =!=!=!=!=!=!=!=!\n");
-            printf("=!=!=!=!=!=!=!=! No Hadron Correction =!=!=!=!=!=!=!=!\n");
-            printf("=!=!=!=!=!=!=!=! No Hadron Correction =!=!=!=!=!=!=!=!\n");
-            printf("=!=!=!=!=!=!=!=! No Hadron Correction =!=!=!=!=!=!=!=!\n");
             printf("=!=!=!=!=!=!=!=! Correlation will be useless =!=!=!=!=!=!=!=!\n");
         }
     }
     
-    
+    if (isMC)
+    {
+        TFile *fileBkgW= TFile::Open(BackgroundWFile.Data());
+        if (fileBkgW)
+        {
+            TH1F *Pi0 = (TH1F*) fileBkgW->Get("Pi0W");
+            TH1F *Eta = (TH1F*) fileBkgW->Get("EtaW");
+            
+            if (Pi0)
+                task->SetBackgroundPi0Weight(Pi0);
+            else
+                printf("MC analysis with no pi0 weight hijing\n");
+            
+            if (Eta)
+                task->SetBackgroundEtaWeight(Eta);
+            else
+                printf("MC analysis with no Eta weight hijing \n");
+            
+        }
+        else
+            printf("Background weight to Hijing not available\n");
+        
+        TFile *fileBkgWToData= TFile::Open(BackgroundWFileToData.Data());
+        
+        if (fileBkgWToData)
+        {
+            TH1F *Pi0W = (TH1F*) fileBkgWToData->Get("Pi0");
+            TH1F *EtaW = (TH1F*) fileBkgWToData->Get("Eta");
+            
+            if (Pi0W)
+                task->SetBackgroundPi0WeightToData(Pi0W);
+            else
+                printf("MC analysis with no pi0 weight to data \n");
+            
+            if (Eta)
+                task->SetBackgroundEtaWeightToData(EtaW);
+            else
+                printf("MC analysis with no Eta weight to data\n");
+            
+        }
+        else
+            printf("Background weight to Data not available. Check the path to the file! \n");
+
+    }
     
     
     TString containerName = mgr->GetCommonFileName();

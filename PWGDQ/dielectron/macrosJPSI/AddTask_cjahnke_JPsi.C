@@ -88,6 +88,10 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
   eventCuts->SetVertexZ(-10.,10.);
   //eventCuts->SetCentralityRange(0.0,80.0);
   task->SetEventFilter(eventCuts);
+	
+
+
+	
 
 	
 	
@@ -162,6 +166,9 @@ if(!isMC){
 		task->SetTriggerMask(AliVEvent::kHighMultV0);
 	}
 	
+	if(trigger_index == 100){
+		task->SetTriggerMask(AliVEvent::kINT7);
+	}
 	
 	//use this line for data, otherwise the physics selection is ignored by my task...
 	task->UsePhysicsSelection();

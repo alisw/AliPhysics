@@ -2285,3 +2285,126 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
   return spherocity;
 
 }
+
+//________________________________________________________________________
+TH1D* AliVertexingHFUtils::RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse){
+  /// Rebin histogram, from bin firstUse to lastUse
+  /// Use all bins if firstUse=-1
+  /// If ngroup is not an exact divider of the number of bins, 
+  ///  the bin width is kept as reb*original width 
+  ///  and the range of rebinned histogram is adapted
+
+  Int_t nBinOrig=hOrig->GetNbinsX();
+  Int_t firstBinOrig=1;
+  Int_t lastBinOrig=nBinOrig;
+  Int_t nBinOrigUsed=nBinOrig;
+  Int_t nBinFinal=nBinOrig/reb;
+  if(firstUse>=1){ 
+    firstBinOrig=firstUse;
+    nBinFinal=(nBinOrig-firstUse+1)/reb;
+    nBinOrigUsed=nBinFinal*reb;
+    lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+  }else{
+    Int_t exc=nBinOrigUsed%reb;
+    if(exc!=0){
+      nBinOrigUsed-=exc;
+      lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+    }
+  }
+
+  printf("Rebin from %d bins to %d bins -- Used bins=%d in range %d-%d\n",nBinOrig,nBinFinal,nBinOrigUsed,firstBinOrig,lastBinOrig);
+  Float_t lowLim=hOrig->GetXaxis()->GetBinLowEdge(firstBinOrig);
+  Float_t hiLim=hOrig->GetXaxis()->GetBinUpEdge(lastBinOrig);
+  TH1D* hRebin=new TH1D(Form("%s-rebin",hOrig->GetName()),hOrig->GetTitle(),nBinFinal,lowLim,hiLim);
+  Int_t lastSummed=firstBinOrig-1;
+  for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
+    Float_t sum=0.;
+    Float_t sume2=0.;
+    for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
+      sum+=hOrig->GetBinContent(lastSummed+1);
+      sume2+=(hOrig->GetBinError(lastSummed+1)*hOrig->GetBinError(lastSummed+1));
+      lastSummed++;
+    }
+    hRebin->SetBinContent(iBin,sum);
+    hRebin->SetBinError(iBin,TMath::Sqrt(sume2));
+  }
+  return hRebin;
+}
+//________________________________________________________________________
+TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData, Double_t minFit, Double_t maxFit){
+  /// Adapt the MC histograms (for signal and reflections) to the binning of the data histogram
+
+  Int_t binmin=TMath::Max(1,hData->FindBin(hMC->GetXaxis()->GetXmin()));
+  Bool_t found=kFALSE;
+  Int_t binminD=-1;
+  Int_t binminMC=-1;
+  for(Int_t j=binmin; j<hData->GetNbinsX(); j++){
+    if(found) break;
+    for(Int_t k=1; k<hMC->GetNbinsX(); k++){
+      Double_t delta=TMath::Abs(hMC->GetBinLowEdge(k)-hData->GetBinLowEdge(j));
+      if(delta<0.0001){
+	found=kTRUE;
+	binminMC=k;
+	binminD=j;
+      }
+      if(found) break;
+    }
+  }
+  Int_t binmax=TMath::Min(hData->GetNbinsX(),hData->FindBin(hMC->GetXaxis()->GetXmax()*0.99999));
+  found=kFALSE;
+  Int_t binmaxD=-1;
+  Int_t binmaxMC=-1;
+  for(Int_t j=binmax; j>1; j--){
+    if(found) break;
+    for(Int_t k=hMC->GetNbinsX(); k>400; k--){
+      Double_t delta=TMath::Abs(hMC->GetBinLowEdge(k+1)-hData->GetBinLowEdge(j+1));
+      if(delta<0.0001){
+	found=kTRUE;
+	binmaxMC=k;
+	binmaxD=j;
+      }
+      if(found) break;
+    }
+  }
+
+  Double_t min=hData->GetBinLowEdge(binminD);
+  Double_t max=hData->GetBinLowEdge(binmaxD)+hData->GetBinWidth(binmaxD);
+  Double_t minMC=hMC->GetBinLowEdge(binminMC);
+  Double_t maxMC=hMC->GetBinLowEdge(binmaxMC)+hMC->GetBinWidth(binmaxMC);
+  Double_t width=hData->GetBinWidth(binminD);
+  Double_t widthMC=hMC->GetBinWidth(binminMC);
+
+  if(TMath::Abs(minMC-min)>0.0001*min || TMath::Abs(maxMC-max)>0.0001*max){
+    printf("Cannot adapt range and rebin histo:\n");
+    printf("Range for data histo: %f-%f GeV/c2    bins %d-%d width=%f\n",min,max,binminD,binmaxD,width);
+    printf("Range for reflection histo: %f-%f GeV/c2    bins %d-%d width=%f\n",minMC,maxMC,binminMC,binmaxMC,widthMC);
+    return 0x0;
+  }
+
+  Double_t rebin=width/widthMC;
+  if(TMath::Abs(rebin-(Int_t)(rebin+0.000001))>0.001){
+    printf("Cannot adapt histo: rebin %f issue, width MC = %f, width hData=%f (check=%f)\n",rebin,widthMC,width,TMath::Abs(rebin-(Int_t)rebin));
+    return 0x0;
+  }
+
+  Int_t nBinsNew=binmaxD-binminD+1;
+  TH1 *hOut;
+  TString stype=hMC->ClassName();
+  if(stype.Contains("TH1F")){
+    hOut=new TH1F(Form("%s-rebinned",hMC->GetName()),hMC->GetTitle(),nBinsNew,min,max);
+  }else if(stype.Contains("TH1D")){
+    hOut=new TH1D(Form("%s-rebinned",hMC->GetName()),hMC->GetTitle(),nBinsNew,min,max);
+  }else{
+    printf("Wrong type %s\n",stype.Data());
+    return 0x0;
+  }
+
+  for(Int_t j=1; j<=hMC->GetNbinsX(); j++){
+    Double_t m=hMC->GetBinCenter(j);
+    Int_t binFin=hOut->FindBin(m);
+    if(binFin>=1 && binFin<=nBinsNew){
+      hOut->AddBinContent(binFin,hMC->GetBinContent(j));
+    }
+  }
+  return hOut;
+}

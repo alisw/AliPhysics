@@ -616,10 +616,13 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     TParticle *part = fUPCEvent->AddMCParticle();
     part->SetMomentum(aodmc->Px(), aodmc->Py(), aodmc->Pz(), aodmc->E());
     part->SetProductionVertex(aodmc->Xv(), aodmc->Yv(), aodmc->Zv(), aodmc->T());
-    part->SetFirstMother(aodmc->GetMother());
-    part->SetLastDaughter(aodmc->GetNDaughters());
     part->SetPdgCode(aodmc->GetPdgCode());
+    part->SetStatusCode(aodmc->GetStatus());
     part->SetUniqueID(imc);
+    part->SetFirstMother(aodmc->GetMother());
+    part->SetFirstDaughter(aodmc->GetFirstDaughter());
+    part->SetLastDaughter(aodmc->GetLastDaughter());
+ 
   }//loop over mc particles
 
 }//RunAODMC

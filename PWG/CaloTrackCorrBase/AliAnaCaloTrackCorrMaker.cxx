@@ -44,6 +44,7 @@ AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker() :
 TObject(),
 fReader(0),                   fCaloUtils(0),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
+fProcessEvent(1),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
@@ -95,6 +96,7 @@ TObject(),
 fReader(),   //(new AliCaloTrackReader(*maker.fReader)),
 fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()),
+fProcessEvent(maker.fProcessEvent),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
@@ -461,6 +463,8 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 {
+  if ( !fProcessEvent ) return fCuts;
+
   // Reader cuts
   TObjString * objstring = fReader->GetListOfParameters();
   fCuts->Add(objstring);
@@ -484,6 +488,8 @@ TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 //___________________________________________________
 TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 {
+  if ( !fProcessEvent ) return fOutputContainer;
+
   // General event histograms
 
   fhNEventsIn      = new TH1F("hNEventsIn",   "Number of input events"     , 1 , 0 , 1  ) ;
@@ -1000,6 +1006,12 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
 {	
   if(! opt)
     return;
+
+  if ( !fProcessEvent ) 
+  { 
+    printf("Events not processed\n");
+    return;
+  }
   
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
   printf("Debug level                =     %d\n", fAnaDebug   ) ;
@@ -1035,6 +1047,8 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
 //_____________________________________________________________________________________
 void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFileName)
 {  
+  if ( !fProcessEvent ) return;
+  
   if(fMakeHisto && !fOutputContainer)
     AliFatal("Histograms not initialized");
   
@@ -1147,6 +1161,8 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
 //__________________________________________________________
 void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
 {
+  if ( !fProcessEvent ) return;
+
   if (!outputList)
   {
     AliError("No output list");

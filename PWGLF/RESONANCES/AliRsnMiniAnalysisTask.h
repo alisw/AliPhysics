@@ -59,6 +59,7 @@ public:
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
    void                SetMixPrintRefresh(Int_t n)        {fMixPrintRefresh = n;}
+   void                SetCheckDecay(Bool_t checkDecay = kTRUE) {fCheckDecay = checkDecay;}
    void                SetMaxNDaughters(Short_t n)        {fMaxNDaughters = n;}
    void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
@@ -142,6 +143,7 @@ private:
    AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
+   Bool_t               fCheckDecay;      // check if the mother decayed via the requested channel
    Short_t              fMaxNDaughters;   // maximum number of allowed mother's daughter
    Bool_t               fCheckP;          // flag to set in order to check the momentum conservation for mothers
    

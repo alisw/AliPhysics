@@ -185,9 +185,15 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     return 2;
   }
   
-  // Here, it looks for a specific pass
+  // The calibration object is accessed by specifying a pass
+  // For run 1, the actual pass is used (fFilepass, as determined in AliEmcalCorrectionComponent::GetPass())
+  // For run 2, the pass is always set to pass1 (as a convention)
+  // Other exceptions are hard-coded below
+  
   TString pass = fFilepass;
-  if (fFilepass=="calo_spc") pass ="pass1";
+  if (fFilepass=="spc_calo") pass = "pass3";
+  if (fRun > 209121) pass = "pass1";
+  
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
@@ -278,7 +284,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
     return 2;
   }
   
-  // Only 1 L1 phase correction possible, except special cases
+  // The calibration object is accessed by specifying a pass
+  // For run 2 (which is the only time L1-phase is implemented), the pass is always set to pass1 (as a convention)
+  // Other exceptions are hard-coded below
+  
   TString pass = "pass1";
 
   if ( fFilepass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 )

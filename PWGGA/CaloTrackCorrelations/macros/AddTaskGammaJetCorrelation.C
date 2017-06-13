@@ -238,18 +238,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   //reader->SetDeltaAODFileName("");
   //if(kOutputAOD) reader->SwitchOnWriteDeltaAOD()  ;
   
-  // MC settings
-  if(useKinematics){
-    if(inputDataType == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }  
-  
   //------------------------
   // Detector input filling
   //------------------------

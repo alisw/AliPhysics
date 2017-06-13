@@ -31,6 +31,7 @@ class AliAnalysisTaskSE;
 #include "AliCentrality.h"
 #include "AliFlowVector.h"
 #include "AliFlowEvent.h"
+#include "TProfile2D.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCRC.h"
 #include "AliFlowAnalysisCRC.h"
@@ -112,6 +113,7 @@ fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
 fCRCTestSin(kFALSE),
+fVtxRbR(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -131,7 +133,12 @@ fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
+fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
+fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
+fUseTracklets(kFALSE),
 fMinMulZN(1),
 fMaxDevZN(5.),
 fZDCGainAlpha(0.395)
@@ -265,6 +272,7 @@ fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
 fCRCTestSin(kFALSE),
+fVtxRbR(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -284,7 +292,12 @@ fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
+fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
+fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
+fUseTracklets(kFALSE),
 fMinMulZN(1),
 fMaxDevZN(5.),
 fZDCGainAlpha(0.395)
@@ -371,6 +384,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
+  if(fDataSet.EqualTo("2015pidfix")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015pidfix);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
@@ -398,9 +412,11 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetDivSigma(fDivSigma);
   fQC->SetInvertZDC(fInvertZDC);
   fQC->SetQAZDCCuts(fQAZDCCuts);
+  fQC->SetUseTracklets(fUseTracklets);
   fQC->SetMinMulZN(fMinMulZN);
   fQC->SetMaxDevZN(fMaxDevZN);
   fQC->SetTestSin(fCRCTestSin);
+  fQC->SetRecenterZDCVtxRbR(fVtxRbR);
   fQC->SetNUAforCRC(fUseNUAforCRC);
   fQC->SetUseCRCRecenter(fUseCRCRecenter);
   fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
@@ -450,6 +466,11 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fZDCESEList) fQC->SetZDCESEList(fZDCESEList);
   }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
+  if(fRefMultRbRPro) fQC->SetRefMultRbRPro(fRefMultRbRPro);
+  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
+    fQC->SetAvEZDCRbRPro(fAvEZDCCRbRPro,fAvEZDCARbRPro);
+  }
+  if(fPhiExclZoneHist) fQC->SetPhiExclZoneHist(fPhiExclZoneHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {
       if(fPtWeightsHist[c]) fQC->SetPtWeightsHist(fPtWeightsHist[c],c);
@@ -559,6 +580,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
+  if(fDataSet.EqualTo("2015pidfix")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015pidfix);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);

@@ -1,8 +1,11 @@
 /*
-  .x $NOTES/aux/NimStyle.C(1)
+  .x $NOTES/aux/NimStyle.C(1) 
+  NimStyleBig()
   .L $AliPhysics_SRC/PWGPP/TPC/macros/comparePerformanceMaps.C+
-
-
+  inputFileSelection ="LHC16f.pass1.B0.Bin0:LHC16f.pass1.B0.Bin1:LHC16f.pass1.B0.Bin3:LHC15n.pass4.B1.Bin0:LHC17d1.LHC16f.pass1.B0.Bin0";
+  InitTrees(inputFileSelection);  
+  
+ 
 
  */
 #include "TFile.h"
@@ -14,37 +17,91 @@
 #include "TGraph.h"
 #include "TStyle.h"
 
-TTree *  InitMapTree(TPRegexp regExp,  TPRegexp notReg, TString axisAlias,  TString axisTitle);
-TObjArray * samples=new TObjArray();
+TTree *  InitMapTree(TPRegexp regExp,  TPRegexp notReg, TString axisAlias,  TString axisTitle, TString  inputFileSelection);
+TObjArray * samples=new TObjArray(1000);
 
 
 TPRegexp dummy("^!");
 TPRegexp regTreeK0Qpt("hisK0.*proj_0_1");
 TPRegexp regTreeNotK0Qpt("hisK0.*(Alpha|DSec)");
 TPRegexp regTreeK0QptDSec("hisK0.*QPtTglDSec_1_1_5_1Dist");
-TPRegexp regTreeDelta("his(Delta|Pull).*TRD");
-TPRegexp regTreeNotDeltaInt("his.*(Alpha|DSec)");
+TPRegexp regTreeK0Alpha("hisK0.*AlphaDist");
+//TPRegexp regTreeDelta("(his|qahis|matchhis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
+TPRegexp regTreeDelta("(his|qahis|matchhis).*_tglDist$");  // regular expression for standard trees
+TPRegexp regTreesmdEdx(".*smdEdxDist$");  // regular expression for standard trees
+TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("his(Delta|Pull).*Alpha.*TRD");
+TPRegexp regTreeDeltaAlpha("(his|qahis|matchhis).*alphaVDist$");
+TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis).*logTracks5Dist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis).*_dalphaQDist$");
+
+TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha,*treeLogTrack5;
+TTree * treesmdEdx=0;
+TCanvas *canvasDrawRec=0;
+TCanvas *canvasDrawSquare=0;
 
 
-TTree * treeDelta0= InitMapTree(regTreeDelta,regTreeNotDeltaInt,"qpt:tgl","q/p_{t}(1/GeV):unit");
-TTree * treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)");
-TTree * treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec");
-TTree * treeCovar= InitMapTree(regCovar,dummy , "qpt:tgl","q/p_{t} (1/GeV): tan(#lambda)");
-TTree * treeDeltaAlpha= InitMapTree(regTreeDeltaAlpha,dummy , "qpt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha");
+void makeCanvas(){
+  gStyle->SetTitleOffset(0.8,"Z");
+  gStyle->SetTitleOffset(1.3,"X");
+  gStyle->SetTitleOffset(1.0,"Y");
+
+  canvasDrawRec = new TCanvas("canvasDrawRec","canvasDrawRec",1100,500);
+  canvasDrawRec->SetRightMargin(0.03);
+  canvasDrawRec->SetTopMargin(0.03);
+  canvasDrawRec->SetBottomMargin(0.15);
+  canvasDrawRec->SetLeftMargin(0.1);
+  canvasDrawSquare = new TCanvas("canvasDrawSquare","canvasDrawSquare",700,700);  
+  canvasDrawSquare->SetTopMargin(0.03);
+  canvasDrawSquare->SetRightMargin(0.03);
+  canvasDrawSquare->SetBottomMargin(0.15);
+  canvasDrawSquare->SetLeftMargin(0.15);
+
+}
+
+void InitTrees(TString  inputFileSelection=""){
+  // TString  inputFileSelection ="LHC15o.pass1.B1.Bin3:LHC15o.pass3_lowIR_pidfix.B0.Bin0:LHC16i.TRD0:LHC16i.TRD2:LHC15n.TRD0:LHC15n.TRD2:LHC15n.TRD0"
+
+  treeDelta0= InitMapTree(regTreeDelta,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
+  treesmdEdx= InitMapTree(regTreesmdEdx,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
+  treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)",inputFileSelection);
+  treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec",inputFileSelection);
+  treeCovar= InitMapTree(regCovar,dummy , "qPt:tgl","q/p_{t} (1/GeV): tan(#lambda)",inputFileSelection);
+  treeDeltaAlpha= InitMapTree(regTreeDeltaAlpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha",inputFileSelection);
+  treeDeltaDAlphaQ= InitMapTree(regTreeDeltaDAlphaQ,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):dalphaQ",inputFileSelection);
+  treeK0Alpha= InitMapTree(regTreeK0Alpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha",inputFileSelection);
+  treeLogTrack5= InitMapTree(regTreeDeltaTrack5,dummy , "qPt:tgl:logTrack5","q/p_{t} (1/GeV):tan(#lambda):log(1+N_{tracks}/5.)",inputFileSelection);
+
+}
 
 
-TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TString axisTitle){
+TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TString axisTitle, TString  inputFileSelection){
   //
-  TObjArray * residualMapList=  gSystem->GetFromPipe("cat residualMap.list").Tokenize("\n");
+  TObjArray * regExpArray= inputFileSelection.Tokenize(":");
+  TObjArray * residualMapList=  gSystem->GetFromPipe("cat residualMap.list | grep -v '^#'").Tokenize("\n");
   Int_t nFiles=residualMapList->GetEntries()/2;
   TTree * treeBase =0; 
   TObjArray *arrayAxisAlias=axisAlias.Tokenize(":");
   TObjArray *arrayAxisTitle=axisTitle.Tokenize(":");
+  
   for (Int_t iFile=0; iFile<nFiles; iFile++){
     TString name0=residualMapList->At(iFile*2)->GetName();
+    Bool_t isSelected=kTRUE;
+    if (regExpArray->GetEntries()>0){
+      isSelected=kFALSE;
+      for (Int_t entry=0; entry<regExpArray->GetEntries(); entry++){
+	TPRegexp reg(regExpArray->At(entry)->GetName());
+	if (reg.Match(name0)) isSelected|=kTRUE;
+      }
+    }
+    if (!isSelected) continue;
+    TString description="";
+    if (name0.Contains(":")){
+      TObjArray *array = name0.Tokenize(":");
+      name0=array->At(0)->GetName();
+      description=array->At(1)->GetName();
+    }
     samples->AddAt(new TObjString(name0),iFile);
     TFile * finput = TFile::Open(residualMapList->At(iFile*2+1)->GetName());
     if (finput==NULL){
@@ -52,6 +109,7 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
       continue;
     }
     TList * keys = finput->GetListOfKeys();
+    Int_t isLegend=kFALSE;
     for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){   
       if (regExp.Match(keys->At(iKey)->GetName())==0) continue;
       if (notReg.Match(keys->At(iKey)->GetName())!=0) continue;
@@ -61,11 +119,28 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
 	treeBase= (TTree*)finput2->Get(keys->At(iKey)->GetName());
       }
       treeBase->AddFriend(tree,TString::Format("%s.%s",name0.Data(),keys->At(iKey)->GetName()).Data());
+      if (isLegend==kFALSE&&description.Length()>0){
+	TStatToolkit::AddMetadata(treeBase,TString::Format("%s.Legend",name0.Data()), description.Data());
+	::Info("InitMapTree.Legend","%s\t%s",name0.Data(), description.Data());
+	isLegend=kTRUE;
+      }
+      Int_t entriesF=tree->GetEntries();
+      Int_t entriesB=treeBase->GetEntries();
+      if (entriesB==entriesF){
+	::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d",treeBase->GetName(),name0.Data(),keys->At(iKey)->GetName(),entriesB, entriesF);
+      }else{
+	::Error("InitMapTree","%s\t%s.%s:\t%d\t%d",treeBase->GetName(),name0.Data(),keys->At(iKey)->GetName(),entriesB, entriesF);
+      }
     }
   }
-  for (Int_t iAxis=0; iAxis<arrayAxisAlias->GetEntries(); iAxis++){
-    treeBase->SetAlias(arrayAxisAlias->At(iAxis)->GetName(), TString::Format("axis%dCenter",iAxis+1).Data());
-    TStatToolkit::AddMetadata(treeBase,TString::Format("%s.AxisTitle",arrayAxisAlias->At(iAxis)->GetName()).Data(),  arrayAxisTitle->At(iAxis)->GetName());
+  if (treeBase){
+    for (Int_t iAxis=0; iAxis<arrayAxisAlias->GetEntries(); iAxis++){
+      treeBase->SetAlias(arrayAxisAlias->At(iAxis)->GetName(), TString::Format("%s%dCenter",arrayAxisAlias->At(iAxis)->GetName(),iAxis+1).Data());
+      TStatToolkit::AddMetadata(treeBase,TString::Format("%s.AxisTitle",arrayAxisAlias->At(iAxis)->GetName()).Data(),  arrayAxisTitle->At(iAxis)->GetName());
+    }
+    treeBase->SetMarkerStyle(25);
+    treeBase->SetMarkerSize(0.5);
+    treeBase->SetAlias("fsector","9*alphaVCenter/pi+18*(alphaVCenter<0)");
   }
   return treeBase;
 }
@@ -216,57 +291,71 @@ void PreliminaryPlot(){
   //
   //
   //
-  treeDelta0->SetMarkerStyle(21); treeDelta0->SetMarkerColor(0.2); 
+  treeDelta0->SetMarkerStyle(21); treeDelta0->SetMarkerColor(2); 
   TLatex  latex;
   //
   //
-  treeDelta0->Draw("WithoutTRD.hisDeltaP2CQPtTglTRDDist.rmsG/WithTRD4.hisDeltaP2CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
-  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("sin(#phi)");
-  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{#phi}_{WithoutTRD}/#sigma_{#phi}_{TRD4}");
-  latex.DrawLatexNDC(0.2,0.15,"#sigma(#phi_{(TPC+(TRD))}-#phi_{(ITS+TPC+(TRD))})");
-  gPad->SaveAs("deltaP2RatioWithoutTo4.png");
+  treeDelta0->Draw("WithoutTRD.hisDeltaP0_TRDv_qPt_tglDist.rms/WithTRD2.hisDeltaP0_TRDv_qPt_tglDist.rms:qPtCenter:abs(tglCenter)","entries>50&&abs(qPtCenter)<1","colz");
+  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (1/GeV)");
+  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{r#phi}_{WithoutTRD}/#sigma_{r#phi}_{TRD2}");
+  latex.DrawLatexNDC(0.2,0.15,"#sigma(r#phi_{(TPC+(TRD))}/#sigma(r#phi_{(ITS+TPC+(TRD))})");
+  gPad->SaveAs("deltaP0RatioWithoutTo2.png");
+
+  treeDelta0->Draw("WithoutTRD.hisDeltaP2_TRDv_qPt_tglDist.rms/WithTRD2.hisDeltaP2_TRDv_qPt_tglDist.rms:qPtCenter:abs(tglCenter)","entries>50&&abs(qPtCenter)<1","colz");
+  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (1/GeV)");
+  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{#phi}_{WithoutTRD}/#sigma_{#phi}_{TRD2}");
+  latex.DrawLatexNDC(0.2,0.15,"#sigma(#phi_{(TPC+(TRD))}/#sigma(#phi_{(ITS+TPC+(TRD))})");
+  gPad->SaveAs("deltaP2RatioWithoutTo2.png");
   //
-  treeDelta0->Draw("WithoutTRD.hisPullP2CQPtTglTRDDist.rmsG/WithTRD4.hisPullP2CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
-  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
-  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("pull_{q/pt}_{WithoutTRD}/pull_{q/pt}_{TRD4}");
-  latex.DrawLatexNDC(0.2,0.15,"pull(#phi_{(TPC+(TRD))}-#phi_{(ITS+TPC+(TRD))})");
-  gPad->SaveAs("pullP2RatioWithoutTo4.png");
+  treeDelta0->Draw("WithoutTRD.hisDeltaP4_TRDv_qPt_tglDist.rms/WithTRD2.hisDeltaP4_TRDv_qPt_tglDist.rms:qPtCenter:abs(tglCenter)","entries>50&&abs(qPtCenter)<1","colz");
+  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (1/GeV)");
+  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{#phi}_{WithoutTRD}/#sigma_{#phi}_{TRD2}");
+  latex.DrawLatexNDC(0.2,0.15,"#sigma(qpt_{(TPC+(TRD))}/#sigma(qpt_{(ITS+TPC+(TRD))})");
+  gPad->SaveAs("deltaP4RatioWithoutTo2.png");
+
   //
   //
-  //
-  treeDelta0->Draw("WithoutTRD.hisDeltaP0CQPtTglTRDDist.rmsG/WithTRD4.hisDeltaP0CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithoutTRD.hisDeltaP0_TRDv_qPt_tglDist.rms/WithTRD2.hisDeltaP0_TRDv_qPt_tglDist.rms:qPtCenter:abs(tglCenter)","entries>50&&abs(qPtCenter)<1","colz");
+  treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (1/GeV)");
+  treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{r#phi}_{WithoutTRD}/#sigma_{r#phi}_{TRD2}");
+  latex.DrawLatexNDC(0.2,0.15,"#sigma(r#phi_{(TPC+(TRD))}/#sigma(r#phi_{(ITS+TPC+(TRD))})");
+  gPad->SaveAs("deltaP0RatioWithoutTo2.png");
+
+
+
+  treeDelta0->Draw("WithoutTRD.hisDeltaP0CQPtTglTRDDist.rmsG/WithTRD2.hisDeltaP0CQPtTglTRDDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("sin(#phi)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{r#phi}_{WithoutTRD}/#sigma_{r#phi}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"#sigma(r#phi_{(TPC+(TRD))}-r#phi_{(ITS+TPC+(TRD))})");
   gPad->SaveAs("deltaP0RatioWithoutTo4.png");
   //
-  treeDelta0->Draw("WithoutTRD.hisPullP0CQPtTglTRDDist.rmsG/WithTRD4.hisPullP0CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithoutTRD.hisPullP0CQPtTglTRDDist.rmsG/WithTRD2.hisPullP0CQPtTglTRDDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("pull_{q/pt}_{WithoutTRD}/pull_{q/pt}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"pull(r#phi_{(TPC+(TRD))}-r#phi_{(ITS+TPC+(TRD))})");
   gPad->SaveAs("pullP0RatioWithoutTo4.png");
 
   //
-  treeDelta0->Draw("WithoutTRD.hisDeltaP4CQPtTglTRDDist.rmsG/WithTRD4.hisDeltaP4CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithoutTRD.hisDeltaP4CQPtTglTRDDist.rmsG/WithTRD2.hisDeltaP4CQPtTglTRDDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{q/pt}_{WithoutTRD}/#sigma_{q/pt}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"#sigma(q/pt_{(TPC+(TRD))}-q/pt_{(ITS+TPC+(TRD))})");
   gPad->SaveAs("deltaP4RatioWithoutTo4.png");
   //
-  treeDelta0->Draw("WithoutTRD.hisPullP4CQPtTglTRDDist.rmsG/WithTRD4.hisPullP4CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithoutTRD.hisPullP4CQPtTglTRDDist.rmsG/WithTRD2.hisPullP4CQPtTglTRDDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("pull_{q/pt}_{WithoutTRD}/pull_{q/pt}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"pull(q/pt_{(TPC+(TRD))}-q/pt_{(ITS+TPC+(TRD))})");
   gPad->SaveAs("pullP4RatioWithoutTo4.png");
   //
   //
-  treeDelta0->Draw("WithTRD1.hisDeltaP2CQPtTglTRDDist.rmsG/WithTRD4.hisDeltaP2CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithTRD1.hisDeltaP2_TRDv_qPt_tglDist.rmsG/WithTRD2.hisDeltaP2_TRDv_qPt_tglDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("sin(#phi)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("#sigma_{#phi}_{WithTRD1}/#sigma_{#phi}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"#sigma(#phi_{(TPC+(TRD))}-#phi_{(ITS+TPC+(TRD))})");
   gPad->SaveAs("deltaP2RatioWithTRD1To4.png");
   //
-  treeDelta0->Draw("WithTRD1.hisPullP2CQPtTglTRDDist.rmsG/WithTRD4.hisPullP2CQPtTglTRDDist.rmsG:qpt:abs(tgl)","entries>200&&abs(qpt)<1&&abs(rmsG/rms-1.2)<0.3","colz");
+  treeDelta0->Draw("WithTRD1.hisPullP2CQPtTglTRDDist.rmsG/WithTRD2.hisPullP2CQPtTglTRDDist.rmsG:qPtCenter:abs(tglCenter)","entries>200&&abs(qPtCenter)<1&&abs(rmsG/rms-1.2)<0.3","colz");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
   treeDelta0->GetHistogram()->GetYaxis()->SetTitle("pull_{q/pt}_{TRD1}/pull_{q/pt}_{TRD4}");
   latex.DrawLatexNDC(0.2,0.15,"pull(#phi_{(TPC+(TRD))}-#phi_{(ITS+TPC+(TRD))})");
@@ -281,17 +370,17 @@ void DrawResolcomparison(){
   TCanvas *canvas =  new TCanvas("canvas","canvas",1200, 800);
   treeCovar->SetMarkerStyle(21); treeCovar->SetMarkerSize(0.5);
   //
-  treeCovar->Draw("WithTRD4.hisCovarP4ConstCQPtTglTRDDist.mean:qpt:tgl","abs(qpt)<0.3&tgl>0","colz");
+  treeCovar->Draw("WithTRD2.hisCovarP4ConstCQPtTglTRDDist.mean:qPtCenter:tgl","abs(qPtCenter)<0.3&tgl>0","colz");
   treeCovar->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
-  treeCovar->GetHistogram()->GetYaxis()->SetTitle("exp. #sigma_{q/pt}_{TRD4}");
+  treeCovar->GetHistogram()->GetYaxis()->SetTitle("exp. #sigma_{q/pt}_{TRD2}");
   latex.DrawLatexNDC(0.2,0.15,"ITS+TPC+TRD setting4");
-  gPad->SaveAs("covarP4WithTRD4.png");
+  gPad->SaveAs("covarP4WithTRD2.png");
   //
-  treeCovar->Draw("WithoutTRD.hisCovarP4ConstCQPtTglTRDDist.mean/WithTRD4.hisCovarP4ConstCQPtTglTRDDist.mean:qpt:tgl","abs(qpt)<2&tgl>0","colz");
+  treeCovar->Draw("WithoutTRD.hisCovarP4ConstCQPtTglTRDDist.mean/WithTRD2.hisCovarP4ConstCQPtTglTRDDist.mean:qPtCenter:tgl","entries>10&&abs(qPtCenter)<2&tgl>0","colz");
   treeCovar->GetHistogram()->GetXaxis()->SetTitle("q/pt (GeV)");
-  treeCovar->GetHistogram()->GetYaxis()->SetTitle("exp. #sigma_{q/pt}_{WithoutTRD} #sigma_{q/pt}_{TRD4}");
+  treeCovar->GetHistogram()->GetYaxis()->SetTitle("exp. #sigma_{q/pt}_{WithoutTRD} #sigma_{q/pt}_{TRD2}");
   latex.DrawLatexNDC(0.2,0.15,"ITS+TPC+TRD setting4");
-  gPad->SaveAs("covarRatioP4WithoutToTRD4.png");
+  gPad->SaveAs("covarRatioP4WithoutToTRD2.png");
   
 
 }  
@@ -301,19 +390,23 @@ void errorComp(){
 
   TObjArray *hisArray= new TObjArray(10);   
   treeDelta0->SetMarkerStyle(22); treeDelta0->SetMarkerColor(2);
-  treeDelta0->Draw("WithTRD4.hisDeltaP4CQPtTglTRDDist.rmsG/WithTRD1.hisDeltaP4CQPtTglTRDDist.rmsG-1:qpt>>hisRationRMS4(20,-0.5,0.5)","entries>50","prof");
+  treeDelta0->Draw("WithTRD2.hisDeltaP4CQPtTglTRDDist.rmsG/WithTRD1.hisDeltaP4CQPtTglTRDDist.rmsG-1:qpt>>hisRationRMS4(20,-0.5,0.5)","entries>50","prof");
   treeDelta0->GetHistogram()->GetXaxis()->SetTitle("q/p_{t} (GeV/c)");
   treeDelta0->GetHistogram()->SetMaximum(0.1);
   treeDelta0->GetHistogram()->SetMinimum(-0.2);
 
   hisArray->AddLast(treeDelta0->GetHistogram());
   treeDelta0->SetMarkerStyle(21); treeDelta0->SetMarkerColor(1);
-  treeDelta0->Draw("WithTRD4.hisDeltaP0CQPtTglTRDDist.rmsG/WithTRD1.hisDeltaP0CQPtTglTRDDist.rmsG-1:qpt>>hisRationRMS0(20,-0.5,0.5)","entries>50","profsame");
+  treeDelta0->Draw("WithTRD2.hisDeltaP0CQPtTglTRDDist.rmsG/WithTRD1.hisDeltaP0CQPtTglTRDDist.rmsG-1:qpt>>hisRationRMS0(20,-0.5,0.5)","entries>50","profsame");
   hisArray->AddLast(treeDelta0->GetHistogram());
   treeDelta0->SetMarkerStyle(25); treeDelta0->SetMarkerColor(4);
-  treeDelta0->Draw("WithTRD4.hisDeltaP2CQPtTglTRDDist.rmsG/WithTRD1.hisDeltaP2CQPtTglTRDDist.rmsG-1:qpt>>hisRationRMS2(20,-0.5,0.5)","entries>50","profsame");
+  treeDelta0->Draw("WithTRD2.hisDeltaP2_TRDv_qPt_tglDist.rmsG/WithTRD1.hisDeltaP2_TRDv_qPt_tglDist.rmsG-1:qpt>>hisRationRMS2(20,-0.5,0.5)","entries>50","profsame");
   hisArray->AddLast(treeDelta0->GetHistogram());
 
 
 }
 
+
+
+void xxx(){
+}

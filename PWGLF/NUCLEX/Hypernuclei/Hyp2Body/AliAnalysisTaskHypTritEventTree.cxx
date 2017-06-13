@@ -69,7 +69,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fBetheSplines(),
   fBetheParamsHe(),
   fBetheParamsT(),
-  fPidQa(0) {
+  fPidQa(0),
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE) {
 
   }
 
@@ -106,7 +108,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fBetheSplines(),
   fBetheParamsHe(),
   fBetheParamsT(),
-  fPidQa(0) {
+  fPidQa(0),
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE) {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TTree::Class());
@@ -284,12 +288,25 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   fNV0Cand = 0;
   fMCGenRecArray = new TObjArray();
   AliESDtrackCuts trackCutsV0("AlitrackCutsV0", "AlitrackCutsV0");
-  trackCutsV0.SetEtaRange(-0.9,0.9);
-  trackCutsV0.SetAcceptKinkDaughters(kFALSE);
-  trackCutsV0.SetRequireTPCRefit(kTRUE);
-  trackCutsV0.SetMaxChi2PerClusterTPC(5);
-  trackCutsV0.SetMinNClustersTPC(60);
 
+  if(fUseAnalysisTrkSel){
+    trackCutsV0.SetEtaRange(-0.9,0.9);
+    trackCutsV0.SetAcceptKinkDaughters(kFALSE);
+    trackCutsV0.SetRequireTPCRefit(kTRUE);
+    trackCutsV0.SetMaxChi2PerClusterTPC(5);
+    trackCutsV0.SetMinNClustersTPC(60);
+  } else {
+      trackCutsV0.SetAcceptKinkDaughters(kFALSE);
+      trackCutsV0.SetMinNClustersTPC(80);
+      trackCutsV0.SetMaxChi2PerClusterITS(10);// TO BE INVESTIGATED !!!!!!!!!!!!!!
+      trackCutsV0.SetMaxChi2PerClusterTPC(5);
+      trackCutsV0.SetRequireTPCRefit(kTRUE);
+      trackCutsV0.SetRequireITSRefit(kTRUE);
+      trackCutsV0.SetMinNClustersITS(2);
+      trackCutsV0.SetMaxDCAToVertexXY(0.1);
+      trackCutsV0.SetMaxDCAToVertexZ(0.5);
+      trackCutsV0.SetEtaRange(-0.8,0.8);
+  }
   // Pidqa loop
   if (fPidQa) {
     AliESDtrackCuts* trackCutsPid = new AliESDtrackCuts("trackCutsPid", "trackCutsPid");
@@ -320,6 +337,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (!trackCutsV0.AcceptTrack(trackP)) continue;
     fHistdEdxV0->Fill(trackP->GetInnerParam()->GetP() * trackP->GetSign(), trackP->GetTPCsignal());
     fHistdEdxV0->Fill(trackN->GetInnerParam()->GetP() * trackN->GetSign(), trackN->GetTPCsignal());
+    if(fPIDCheckOnly) continue;
     if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
     if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
     Bool_t pionPositive     = kFALSE;

@@ -55,6 +55,20 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   void SetMaxPtStrongPid(Float_t spid){fMaxPtStrongPid=spid;}
   void SetMaxPStrongPidK(Float_t spid){fMaxPStrongPidK=spid;}
   void SetMaxPStrongPidpi(Float_t spid){fMaxPStrongPidpi=spid;}
+  void SetUseOnlyTPCPid() {
+    fPidHF->SetMatch(0);
+    fPidHF->SetTPC(1);
+    fPidHF->SetTOF(0);
+    fPidHF->SetITS(0);
+    fPidHF->SetTRD(0);
+  }
+  void SetUseOnlyTOFPid() {
+    fPidHF->SetMatch(0);
+    fPidHF->SetTPC(0);
+    fPidHF->SetTOF(1);
+    fPidHF->SetITS(0);
+    fPidHF->SetTRD(0);
+  }
   Int_t GetStrongPid() const {return fUseStrongPid;}
   Float_t GetMaxPtStrongPid() const {return fMaxPtStrongPid;}
   Float_t GetMaxPtStrongPidK() const {return fMaxPStrongPidK;}

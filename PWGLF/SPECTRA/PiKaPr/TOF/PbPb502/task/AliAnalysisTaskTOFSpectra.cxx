@@ -13,17 +13,20 @@
 *  provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-//                                                                       //
-// Analysis for identified charged hadron spectra: TOF                   //
-//                                                                       //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Analysis for identified charged hadron spectra: TOF                   //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
 
 
 #define LOG_NO_INFO
 #define LOG_NO_DEBUG
+#define LOG_NO_WARNING
 #include "AliLog.h"
 #include "Riostream.h"
 #include "TChain.h"
@@ -175,12 +178,17 @@ fTreemode(tree),
 fChannelmode(chan),
 fCutmode(cuts),
 fSimpleCutmode(simplecuts),
+
+//Task setup flags
+fUseAliEveCut(kTRUE),
 fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fRecalibrateTOF(kFALSE),
 fFineTOFReso(kFALSE),
+
+//Mask for physics selection
 fSelectBit(AliVEvent::kINT7),
 
 tb(),//TBenchmark
@@ -224,8 +232,9 @@ hTimeOfFlightResFinePerEvent(0x0),
 
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
-fTOFmin(10000),
+fVtxZCut(10.),
 fTOFmax(80000),
+fTOFmin(10000),
 fLengthmin(350),
 fRapidityCut(0.5),
 hChannelTime(0x0),
@@ -452,16 +461,18 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
       
-      hDenTrkVertMultTrk[charge][species] = 0x0;
-      hDenTrkTriggerMultTrk[charge][species] = 0x0;
+      hDenTrkTrigger[charge][species]         = 0x0;
+      hDenTrkMCVertexZ[charge][species]       = 0x0;
+      hDenTrkVertex[charge][species]          = 0x0;
+      hDenTrkVertexMCVertexZ[charge][species] = 0x0;
       
       for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
-        hDenPrimMCYCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
+        hDenPrimMCYCut[charge][species][mult]                = 0x0;
+        hDenPrimMCEtaCut[charge][species][mult]              = 0x0;
+        hDenPrimMCEtaYCut[charge][species][mult]             = 0x0;
+        hNumPrimMCTrueMatch[charge][species][mult]           = 0x0;
+        hNumPrimMCTrueMatchYCut[charge][species][mult]       = 0x0;
+        hNumPrimMCTrueMatchYCutTPC[charge][species][mult]    = 0x0;
         hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
       }
       
@@ -621,33 +632,43 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Read from ESD");
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliESDtrackCuts");
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Phys. Sel. + Trig");
-    if(fHImode){
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");//Multiplicity estimator initialized
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");//kNoCalib: centrality not calibrated, this is the default value for the centrality code
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");//kRejTrigger: do not pass the trigger
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has INEL>0");//kRejINELgtZERO: do not pass INEL>0 Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Vtx Cut");//pkRejVzCut: do not pass vertex Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Pile-up");//kRejPileupInMultBins: do not pass Pile-up Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");//kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters");// kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");//kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
+    if(fUseAliEveCut){
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kDAQincomplete");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
     }
     else{
-      
-      //AliPPVsMultUtils::IsMinimumBias(fESD))
-      //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
-      //AliPPVsMultUtils::IsINELgtZERO(fESD))
-      //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
-      //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
-      
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsMinimumBias");//AliPPVsMultUtils::IsMinimumBias(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsAcceptedVertexPosition");//AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO");//AliPPVsMultUtils::IsINELgtZERO(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins");//AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
-      hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices");//AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
-      
+      if(fHImode){
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");//Multiplicity estimator initialized
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");//kNoCalib: centrality not calibrated, this is the default value for the centrality code
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");//kRejTrigger: do not pass the trigger
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has INEL>0");//kRejINELgtZERO: do not pass INEL>0 Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Vtx Cut");//pkRejVzCut: do not pass vertex Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Pile-up");//kRejPileupInMultBins: do not pass Pile-up Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");//kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters");// kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");//kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
+      }
+      else{
+        
+        //AliPPVsMultUtils::IsMinimumBias(fESD))
+        //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
+        //AliPPVsMultUtils::IsINELgtZERO(fESD))
+        //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+        //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        
+        if(fSelectBit == AliVEvent::kINT7) hNEvt->GetXaxis()->SetBinLabel(binstart++, "IskINT7"); //If the trigger requested is kINT7 otherwise look for the MB as in the standard case
+        else hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsMinimumBias"); //AliPPVsMultUtils::IsMinimumBias(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsAcceptedVertexPosition"); //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO"); //AliPPVsMultUtils::IsINELgtZERO(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins"); //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+        hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices"); //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        
+      }
     }
     
+    //Check on the bins present in the histograms
     if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
     
@@ -1199,13 +1220,21 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
         for(Int_t species = 0; species < 3; species++){//Species loop
           
-          hDenTrkVertMultTrk[charge][species] = new TH1F(Form("hDenTrkVert_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkVertMultTrk[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkVertMultTrk[charge][species]);
+          hDenTrkTrigger[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkTrigger[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkTrigger[charge][species]);
           
-          hDenTrkTriggerMultTrk[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkTriggerMultTrk[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkTriggerMultTrk[charge][species]);
+          hDenTrkMCVertexZ[charge][species] = new TH1F(Form("hDenTrkMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkMCVertexZ[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkMCVertexZ[charge][species]);
+          
+          hDenTrkVertex[charge][species] = new TH1F(Form("hDenTrkVert_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkVertex[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkVertex[charge][species]);
+          
+          hDenTrkVertexMCVertexZ[charge][species] = new TH1F(Form("hDenTrkVertMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
+          hDenTrkVertexMCVertexZ[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
           
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
             hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
@@ -1445,6 +1474,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
   if(fRecalibrateTOF) fPIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
   fTOFPIDResponse = fPIDResponse->GetTOFResponse();
+  if(fRecalibrateTOF) fTOFPIDResponse.SetTimeResolution(fTimeResolution);
   
   //
   //Physics Selection
@@ -1458,18 +1488,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   UInt_t PhysSelmask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fEvtPhysSelected = (PhysSelmask & fSelectBit);//--> Physics Selection
   
-  //
-  //Physics Selection Cut
-  //
-  if (!fEvtPhysSelected) {
-    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
-    // Post output data.
-    PostAllTheData();
-    return;
-  }
-  
   //   AliInfo(Form("Event %.0f Passed the Phys. Sel. + Trig", hNEvt->GetBinContent(1)));
-  hNEvt->Fill(EvtStart++); //-->Pass Phys. Sel. + Trig
+  if (fEvtPhysSelected) hNEvt->Fill(EvtStart); //-->Pass Phys. Sel. + Trig
+  EvtStart++;
   
   //
   //Event Selection
@@ -1506,6 +1527,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   StopTimePerformance(3);
   
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
+  
+  //
+  //Physics Selection Cut
+  //
+  if (!fEvtPhysSelected) {
+    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
+    // Post output data.
+    PostAllTheData();
+    return;
+  }
   
   //
   //Filling the Multiplicity histogram before the event selection
@@ -2355,11 +2386,24 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   fMCStack = fMCEvt->Stack();
   if (!fMCStack) return;
   
-  fNMCTracks = fMCEvt->GetNumberOfTracks();
-  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();
+  //Get the number of tracks in the event
+  fNMCTracks = fMCEvt->GetNumberOfTracks();//Number of particles
+  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();//Number of primary particles
   
+  //Get the information of the MC vertex
+  const  AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
+  if (!MCvtx) {
+    AliError("Could not retrieve MC vertex");
+    return;
+  }
+  
+  Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
+  if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
+  
+  //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
   
+  //Track flags
   Bool_t passeta = kTRUE;
   Bool_t passy = kTRUE;
   TParticle * trackMC = nullptr;
@@ -2370,11 +2414,13 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     passeta = kTRUE;
     passy = kTRUE;
     
+    //Get the particle in the stack at the index i
     trackMC = fMCStack->Particle(i);
+    
+    //Get the kinematic values of the particles
     fPMC = trackMC->P();
     fPtMC = trackMC->Pt();
     fEtaMC = trackMC->Eta();
-    //if(TMath::Abs(treeMCEtaBis)>= 0.9){continue;}
     fPhiMC = trackMC->Phi();
     fPdgcode = trackMC->GetPdgCode();
     if(TMath::Abs(trackMC->Y()) >= fRapidityCut) passy = kFALSE;//Rapidity cut
@@ -2386,15 +2432,21 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     else if((TMath::Abs(fPdgcode) == 2212)) fPdgIndex = 2;//Particle is a Proton
     else continue;
     
-    if(fPdgcode > 0) fSignMC = kFALSE;
-    else fSignMC = kTRUE;
+    if(fPdgcode > 0) fSignMC = kFALSE;//Particle is positive
+    else fSignMC = kTRUE;             //Particle is negative
     
-    if(passy) hDenTrkTriggerMultTrk[fSignMC][fPdgIndex]->Fill(fPtMC);
+    if(passy){
+      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(passMCSampSel) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+    }
     
     if(!fEvtPhysSelected) continue;//After Physics Selection
     //vertex efficiency correction+senza taglio in eta
     
-    if(passy) hDenTrkVertMultTrk[fSignMC][fPdgIndex]->Fill(fPtMC);
+    if(passy){
+      hDenTrkVertex[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(passMCSampSel) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+    }
     
     if(!fEvtSelected) continue;//After Event Selection
     
@@ -2509,12 +2561,29 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
   
-  if (!fEventCut.AcceptEvent(fESD)) {
-    return kFALSE;
+  if(fUseAliEveCut){
+    
+    //Fill the histogram with the number of events per cut
+    if(fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
+      hNEvt->Fill(binstart++);
+      if(fEventCut.PassedCut(AliEventCuts::kPileUp)) {
+        hNEvt->Fill(binstart++);
+        if(fEventCut.PassedCut(AliEventCuts::kVertexQuality)) {
+          hNEvt->Fill(binstart++);
+          if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+            hNEvt->Fill(binstart++);
+          }
+        }
+      }
+    }
+    
+    //Global cut
+    if (!fEventCut.AcceptEvent(fESD)) {
+      return kFALSE;
+    }
+    else return kTRUE;
+    
   }
-  else return kTRUE;
-  
-  
   
   if(fHImode){//Heavy Ion
     if(fEvtMult == -999){//Multiplicity estimator not initialized
@@ -2579,7 +2648,7 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
     //------------------------------------------------
     //Step 1: Check for Min-Bias Trigger
     //------------------------------------------------
-    if(AliPPVsMultUtils::IsMinimumBias(fESD)){
+    if(fSelectBit == AliVEvent::kINT7 || AliPPVsMultUtils::IsMinimumBias(fESD)){
       hNEvt->Fill(binstart++);
       //------------------------------------------------
       //Step 2: Check for INEL>0
@@ -2899,7 +2968,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   
   //Check the position of the vertex
   fVertStatus++;
-  if(TMath::Abs(fPrimVertex[2]) > 10.){
+  if(TMath::Abs(fPrimVertex[2]) > fVtxZCut){
     AliError(Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
     return 0x0;
   }

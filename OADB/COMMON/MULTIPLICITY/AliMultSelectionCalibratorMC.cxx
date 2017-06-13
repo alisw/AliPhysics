@@ -32,7 +32,8 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
+    fkUseQuadraticMapping(kFALSE)
 {
     // Constructor
 
@@ -54,7 +55,8 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
+    fkUseQuadraticMapping(kFALSE)
 {
     // Named Constructor
 
@@ -577,6 +579,11 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             //MC loop
             cout<<"Done! MC..."<<flush;
             lEvalMe = fSelection->GetEstimator(iEst)->GetDefinition();
+            //Ignore fired condition ONLY in MC
+            lEvalMe.ReplaceAll("fZnaFired", "1");
+            lEvalMe.ReplaceAll("fZncFired", "1");
+            lEvalMe.ReplaceAll("fZpaFired", "1");
+            lEvalMe.ReplaceAll("fZpcFired", "1");
             lEvalMe.Append(Form(":fnTracklets>>l2dTrackletVsEstimatorMC_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
             sTreeMC[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
             cout<<"Done!"<<endl;
@@ -590,28 +597,55 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     TF1 *fitdata[1000][lNEstimators];
     TF1 *fitmc[1000][lNEstimators];
     
+    TString fFormula = "[0]*x";
+    
+    //Experimental: quadratic fit
+    if(fkUseQuadraticMapping) fFormula = "[0]*TMath::Power(x-[1],2)+[2]";
+    
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
+            
+            //Check if anchored, disregard anchored range if the case
+            Double_t lLowestX=0.0;
+            if(fSelection->GetEstimator(iEst)->GetUseAnchor()){
+                lLowestX=fSelection->GetEstimator(iEst)->GetAnchorPoint(); //Remove lowest
+            }
+            
             cout<<"At Run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), estimator "<<fSelection->GetEstimator(iEst)->GetName()<<", fit range "<<lMaxEst[iEst][iRun]<<endl;
             profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileY(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
             profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileY(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
-            fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "[0]*x", 0.0, lMaxEst[iEst][iRun]);
-            fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "[0]*x", 0.0, lMaxEst[iEst][iRun]);
+            fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
+            fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
             
-	    //Adjust range if needed
-	    //fitdata[iRun][iEst] -> SetRange(0,15000);
-	    //fitmc  [iRun][iEst] -> SetRange(0,15000);
-	    
-	    fitdata[iRun][iEst]->SetParameter(0,1.0);
-            fitmc[iRun][iEst]->SetParameter(0,1.0);
+            //Adjust range if needed
+            //fitdata[iRun][iEst] -> SetRange(0,15000);
+            //fitmc  [iRun][iEst] -> SetRange(0,15000);
+            
+            //Initial guess: y = a (x-b)^2 + c
+            //has to be such that
+            //
+            // || 0 = c
+            // || Y = a(X-b)^2
+            
+            //Die hard fitting
+            //TVirtualFitter::SetMaxIterations(1000000);
+            
+            fitdata[iRun][iEst]->SetParameter(0,-1e-3);
+            fitmc[iRun][iEst]->SetParameter(0,-1e-3);
+            fitdata[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            fitmc[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            fitdata[iRun][iEst]->SetParameter(2,0.0);
+            fitmc[iRun][iEst]->SetParameter(2,0.0);
             
             //remember to not be silly...
             TString lEstName = fSelection->GetEstimator(iEst)->GetName();
             if( !lEstName.Contains("SPD") &&
                !lEstName.Contains("CL0") &&
                !lEstName.Contains("CL1") ){
-                profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
-                profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
+                cout<<"Fit DATA: "<<endl;
+                profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "IREM0" );
+                cout<<"Fit MONTE CARLO: "<<endl;
+                profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "IREM0" );
             }
         }
     }
@@ -713,8 +747,31 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             TString lTempDef;
             for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                 lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
-                lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                lTempDef.Append(")"); //don't forget parentheses...
+                lTempDef.ReplaceAll("fZnaFired", "1");
+                lTempDef.ReplaceAll("fZncFired", "1");
+                lTempDef.ReplaceAll("fZpaFired", "1");
+                lTempDef.ReplaceAll("fZpcFired", "1");
+                
+                //Construction of estimator re-definition
+                if(!fkUseQuadraticMapping){
+                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                    lTempDef.Append(")"); //don't forget parentheses...
+                }else{
+                    //Experimental quadratic fit
+                    TString lTemporary = lTempDef.Data();
+                    lTempDef = Form("TMath::Sqrt( (%.10f*TMath::Power(ESTIMATOR-%.10f,2)+%.10f-%.10f)/(%.10f))+%.10f",
+                                    fitmc[iRun][iEst]->GetParameter(0),
+                                    fitmc[iRun][iEst]->GetParameter(1),
+                                    fitmc[iRun][iEst]->GetParameter(2),
+                                    fitdata[iRun][iEst]->GetParameter(2),
+                                    fitdata[iRun][iEst]->GetParameter(0),
+                                    fitdata[iRun][iEst]->GetParameter(1));
+                    lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                    cout<<"================================================================================"<<endl;
+                    cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
+                    cout<<lTempDef.Data()<<endl;
+                    cout<<"================================================================================"<<endl;
+                }
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
             }
             
@@ -754,6 +811,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
                     lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
                     lTempDef.Append(")"); //don't forget parentheses...
+                    
+                    //if ZxxFired included in the estimator, ignore it
+                    lTempDef.ReplaceAll("fZnaFired", "1");
+                    lTempDef.ReplaceAll("fZncFired", "1");
+                    lTempDef.ReplaceAll("fZpaFired", "1");
+                    lTempDef.ReplaceAll("fZpcFired", "1");
+                    
                     fselsdef->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
                 }
                 
@@ -837,6 +901,29 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
     
+    //ZDC Related
+    AliMultVariable *fZncEnergy = new AliMultVariable("fZncEnergy");
+    AliMultVariable *fZpcEnergy = new AliMultVariable("fZpcEnergy");
+    AliMultVariable *fZnaEnergy = new AliMultVariable("fZnaEnergy");
+    AliMultVariable *fZpaEnergy = new AliMultVariable("fZpaEnergy");
+    AliMultVariable *fZem1Energy = new AliMultVariable("fZem1Energy");
+    AliMultVariable *fZem2Energy = new AliMultVariable("fZem2Energy");
+    
+    AliMultVariable *fZnaTower = new AliMultVariable("fZnaTower");
+    AliMultVariable *fZncTower = new AliMultVariable("fZncTower");
+    AliMultVariable *fZpaTower = new AliMultVariable("fZpaTower");
+    AliMultVariable *fZpcTower = new AliMultVariable("fZpcTower");
+    
+    //Fired or not booleans (stored as integer for compatibility)
+    AliMultVariable *fZnaFired = new AliMultVariable("fZnaFired");
+    fZnaFired->SetIsInteger(kTRUE);
+    AliMultVariable *fZncFired = new AliMultVariable("fZncFired");
+    fZncFired->SetIsInteger(kTRUE);
+    AliMultVariable *fZpaFired = new AliMultVariable("fZpaFired");
+    fZpaFired->SetIsInteger(kTRUE);
+    AliMultVariable *fZpcFired = new AliMultVariable("fZpcFired");
+    fZpcFired->SetIsInteger(kTRUE);
+    
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
@@ -855,6 +942,20 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     fInput->AddVariable( fnSPDClusters0 );
     fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
+    fInput->AddVariable( fZncEnergy );
+    fInput->AddVariable( fZpcEnergy );
+    fInput->AddVariable( fZnaEnergy );
+    fInput->AddVariable( fZpaEnergy );
+    fInput->AddVariable( fZem1Energy );
+    fInput->AddVariable( fZem2Energy );
+    fInput->AddVariable( fZnaTower );
+    fInput->AddVariable( fZncTower );
+    fInput->AddVariable( fZpaTower );
+    fInput->AddVariable( fZpcTower );
+    fInput->AddVariable( fZnaFired );
+    fInput->AddVariable( fZncFired );
+    fInput->AddVariable( fZpaFired );
+    fInput->AddVariable( fZpcFired );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
     fInput->AddVariable( fEvSel_VtxZ  );

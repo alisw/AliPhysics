@@ -87,6 +87,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
+  Int_t GetNPtHardBins()                                    const { return fNPtHardBins; }
   Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
@@ -135,10 +136,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @name Options for the embedded event
    */
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
+  bool GetMCRejectOutliers()                                const { return fMCRejectOutliers; }
+  Double_t GetPtHardJetPtRejectionFactor()                  const { return fPtHardJetPtRejectionFactor; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
   Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
 
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
+  void SetMCRejectOutliers(bool reject = true)                    { fMCRejectOutliers = reject; }
+  void SetPtHardJetPtRejectionFactor(double factor)               { fPtHardJetPtRejectionFactor = factor; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
@@ -179,11 +184,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
+  Bool_t          CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
+  bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
+  Double_t                                      fPtHardJetPtRejectionFactor; ///<  Factor which the pt hard bin is multiplied by to compare against pythia header jets pt
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
@@ -221,9 +229,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
   int                                           fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header).
-  int                                           fPythiaTrialsAvg  ; //!<! Average number of trials extracted from a xsec file.
+  int                                           fPythiaTrialsFromFile; //!<! Average number of trials extracted from a xsec file.
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
-  double                                        fPythiaCrossSectionAvg; //!<! Average pythia cross section extracted from a xsec file.
+  double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
@@ -233,7 +241,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 3);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 5);
   /// \endcond
 };
 #endif

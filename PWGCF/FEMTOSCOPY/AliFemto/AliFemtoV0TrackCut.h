@@ -114,6 +114,10 @@ public:
 
   virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 and fK0sMassOfMisIDV0 etc. in the output list 
 
+  bool GetBuildMisIDHistograms();
+
+  void SetIgnoreOnFlyStatus(bool aIgnore);
+
  protected:   // here are the quantities I want to cut on...
 
   double fInvMassLambdaMin;        ///< invariant mass Lambda min
@@ -187,7 +191,9 @@ public:
   TH1D *fLambdaMassOfMisIDV0;          // Mass assuming Lambda hypothesis for V0s rejected by misidentification cut
   TH1D *fAntiLambdaMassOfMisIDV0;      // Mass assuming AntiLambda hypothesis for V0s rejected by misidentification cut
 
-
+  bool fIgnoreOnFlyStatus;  //This will accept V0s with aV0->OnFlyStatusV0()==true and aV0->OnFlyStatusV0()==false
+                            //NOTE IMPORTANT: If you set this to true, be sure to call AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(true)
+                            //otherwise, in many cases, you will receive multiple copies of the same V0.
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -198,4 +204,7 @@ public:
 };
 
 inline TH1D* AliFemtoV0TrackCut::GetMinvPurityAidHistoV0() {return fMinvPurityAidHistoV0;}
+inline bool AliFemtoV0TrackCut::GetBuildMisIDHistograms() {return fBuildMisIDHistograms;}
+inline void AliFemtoV0TrackCut::SetIgnoreOnFlyStatus(bool aIgnore) {fIgnoreOnFlyStatus = aIgnore;}
+
 #endif

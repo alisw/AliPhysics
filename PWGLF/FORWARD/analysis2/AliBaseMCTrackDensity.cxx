@@ -2,7 +2,7 @@
 #include "AliForwardFlowWeights.h"
 #include <AliMCEvent.h>
 #include <AliTrackReference.h>
-#include <AliStack.h>
+//#include <AliStack.h>
 #include <TMath.h>
 #include <AliLog.h>
 #include <TH2D.h>
@@ -252,7 +252,7 @@ AliBaseMCTrackDensity::GetMother(Int_t iTr, const AliMCEvent& event) const
       // a primary or not.
       return p;
 
-    if (const_cast<AliMCEvent&>(event).Stack()->IsPhysicalPrimary(i)) {
+    if (const_cast<AliMCEvent&>(event).IsPhysicalPrimary(i)) {
       candidate = p;
       if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22) 
 	// If we want to track gammas back to a possible pi0, we flag
@@ -360,11 +360,13 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
   fIP.SetXYZ(ip.X(), ip.Y(), ip.Z());
   GetCollisionParameters(event);
   
-  AliStack* stack = const_cast<AliMCEvent&>(event).Stack();
-  if (!stack) return kFALSE;
+  //  AliStack* stack = const_cast<AliMCEvent&>(event).Stack();
+  //  if (!stack) return kFALSE;
+
   
-  Int_t nTracks   = stack->GetNtrack();//event.GetNumberOfTracks();
-  Int_t nPrim     = stack->GetNprimary();//event.GetNumberOfPrimary();
+  Int_t nTracks   = /*stack->GetNtrack();*/event.GetNumberOfTracks();
+  // temporary remove constness, since event.GetNumberOfPrimaries() was not const
+  Int_t nPrim     = /*stack->GetNprimary();*/((AliMCEvent&)event).GetNumberOfPrimaries();
   for (Int_t iTr = 0; iTr < nTracks; iTr++) { 
     AliMCParticle* particle = 
       static_cast<AliMCParticle*>(event.GetTrack(iTr));
@@ -372,7 +374,7 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
     // Check if this charged and a primary 
     if (!particle->Charge() != 0) continue;
     
-    Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
+    Bool_t isPrimary = event.IsPhysicalPrimary(iTr) && iTr < nPrim;
     
     // Fill 'dn/deta' histogram 
     if (isPrimary && primary) {

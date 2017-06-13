@@ -24,6 +24,7 @@ public:
       kDCAproduct,
       kDeltaCosRange,
       kPhiVRange,
+      kContainsV0Daughter,
       kTypes
    };
 

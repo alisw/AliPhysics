@@ -117,6 +117,21 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
   fhDetJetPt_Matched(0x0),
+  fhJetPt_Det(0x0),
+  fhJetPt_True(0x0),
+  fhJetPhi_Det(0x0),
+  fhJetPhi_True(0x0),
+  fhJetEta_Det(0x0),
+  fhJetEta_True(0x0),
+  fhJetMass_Det(0x0),
+  fhJetMass_True(0x0),
+  fhJetRadius_Det(0x0),
+  fhJetRadius_True(0x0),
+  fhJetCounter_Det(0x0),
+  fhJetCounter_True(0x0),
+  fhNumberOfJetTracks_Det(0x0),
+  fhNumberOfJetTracks_True(0x0),
+  fh2PtRatio(0x0), 
   fReclusterAlgo(0),
   fSubMatching(kFALSE)
 
@@ -181,6 +196,21 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
   fhDetJetPt_Matched(0x0),
+  fhJetPt_Det(0x0),
+  fhJetPt_True(0x0),
+  fhJetPhi_Det(0x0),
+  fhJetPhi_True(0x0),
+  fhJetEta_Det(0x0),
+  fhJetEta_True(0x0),
+  fhJetMass_Det(0x0),
+  fhJetMass_True(0x0),
+  fhJetRadius_Det(0x0),
+  fhJetRadius_True(0x0),
+  fhJetCounter_Det(0x0),
+  fhJetCounter_True(0x0),
+  fhNumberOfJetTracks_Det(0x0),
+  fhNumberOfJetTracks_True(0x0),
+  fh2PtRatio(0x0), 
   fReclusterAlgo(0),
   fSubMatching(kFALSE)
   
@@ -243,8 +273,22 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
       fTreeJetInfo->Branch(fJetInfoVarNames[ivar].Data(), &fJetInfoVar[ivar], Form("%s/D", fJetInfoVarNames[ivar].Data()));
     }
   }
+   if(fJetSelection == kRecoil){
+      fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
+      fOutput->Add(fhPtTriggerHadron);
+      fh2PtTriggerHadronJet= new TH2F("fh2PtTriggerHadronJet", "fh2PtTriggerHadronJet",1500,-0.5,149.5,1500,-0.5,149.5);  
+      fOutput->Add(fh2PtTriggerHadronJet);
+      fhPhiTriggerHadronJet= new TH1F("fhPhiTriggerHadronJet", "fhPhiTriggerHadronJet",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fOutput->Add(fhPhiTriggerHadronJet);
+      fhPhiTriggerHadronEventPlane= new TH1F("fhPhiTriggerHadronEventPlane", "fhPhiTriggerHadronEventPlane",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fOutput->Add(fhPhiTriggerHadronEventPlane);
+      fhPhiTriggerHadronEventPlaneTPC= new TH1F("fhPhiTriggerHadronEventPlaneTPC", "fhPhiTriggerHadronEventPlaneTPC",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fOutput->Add(fhPhiTriggerHadronEventPlaneTPC);
+      
+  
+    }
 
-  if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
+   if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart || fJetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     
     fhJetPt= new TH1F("fhJetPt", "Jet Pt",150,-0.5,149.5 );   
     fOutput->Add(fhJetPt);
@@ -273,20 +317,40 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );   
     fOutput->Add(fhDetJetPt_Matched);
 
-    if(fJetSelection == kRecoil){
-      fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
-      fOutput->Add(fhPtTriggerHadron);
-      fh2PtTriggerHadronJet= new TH2F("fh2PtTriggerHadronJet", "fh2PtTriggerHadronJet",1500,-0.5,149.5,1500,-0.5,149.5);  
-      fOutput->Add(fh2PtTriggerHadronJet);
-      fhPhiTriggerHadronJet= new TH1F("fhPhiTriggerHadronJet", "fhPhiTriggerHadronJet",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
-      fOutput->Add(fhPhiTriggerHadronJet);
-      fhPhiTriggerHadronEventPlane= new TH1F("fhPhiTriggerHadronEventPlane", "fhPhiTriggerHadronEventPlane",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
-      fOutput->Add(fhPhiTriggerHadronEventPlane);
-      fhPhiTriggerHadronEventPlaneTPC= new TH1F("fhPhiTriggerHadronEventPlaneTPC", "fhPhiTriggerHadronEventPlaneTPC",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
-      fOutput->Add(fhPhiTriggerHadronEventPlaneTPC);
-      
-  
-    }
+   
+  }
+  if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet){
+    fhJetPt_Det= new TH1F("fhJetPt_Det", "Jet Pt Detector Level",1500,-0.5,149.5 );
+    fOutput->Add(fhJetPt_Det);
+    fhJetPt_True= new TH1F("fhJetPt_True", "Jet Pt Particle Level",1500,-0.5,149.5 );
+    fOutput->Add(fhJetPt_True);
+    fhJetPhi_Det= new TH1F("fhJetPhi_Det", "Jet Phi Detector Level",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    fOutput->Add(fhJetPhi_Det);
+    fhJetPhi_True= new TH1F("fhJetPhi_True", "Jet Phi Particle Level",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+    fOutput->Add(fhJetPhi_True);
+    fhJetEta_Det= new TH1F("fhJetEta_Det", "Jet Eta Detector Level", Eta_Bins_1, Eta_Lower, Eta_Upper);
+    fOutput->Add(fhJetEta_Det);
+    fhJetEta_True= new TH1F("fhJetEta_True", "Jet Eta Particle Level", Eta_Bins_1, Eta_Lower, Eta_Upper);
+    fOutput->Add(fhJetEta_True);
+    fhJetMass_Det= new TH1F("fhJetMass_Det", "Jet Mass Detector Level", 4000,-0.5, 39.5);
+    fOutput->Add(fhJetMass_Det);
+    fhJetMass_True= new TH1F("fhJetMass_True", "Jet Mass Particle Level", 4000,-0.5, 39.5);
+    fOutput->Add(fhJetMass_True);
+    fhJetRadius_Det= new TH1F("fhJetRadius_Det", "Jet Radius Detector Level", 100, -0.05,0.995);
+    fOutput->Add(fhJetRadius_Det);
+    fhJetRadius_True= new TH1F("fhJetRadius_True", "Jet Radius Particle Level", 100, -0.05,0.995);
+    fOutput->Add(fhJetRadius_True);
+    fhNumberOfJetTracks_Det= new TH1F("fhNumberOfJetTracks_Det", "Number of Tracks within a Jet Detector Level", 300, -0.5,299.5);
+    fOutput->Add(fhNumberOfJetTracks_Det);
+    fhNumberOfJetTracks_True= new TH1F("fhNumberOfJetTracks_True", "Number of Tracks within a Jet Particle Level", 300, -0.5,299.5);
+    fOutput->Add(fhNumberOfJetTracks_True);
+    
+    fhJetCounter_Det= new TH1F("fhJetCounter_Det", "Jet Counter Detector Level", 150, -0.5, 149.5);
+    fOutput->Add(fhJetCounter_Det);
+    fhJetCounter_True= new TH1F("fhJetCounter_True", "Jet Counter Particle Level", 150, -0.5, 149.5);
+    fOutput->Add(fhJetCounter_True);
+    fh2PtRatio= new TH2F("fhPtRatio", "MC pt for detector level vs particle level jets",1500,-0.5,149.5,1500,-0.5,149.5);
+    fOutput->Add(fh2PtRatio);
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
@@ -353,6 +417,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlane->Fill(TMath::Abs(RelativePhiEventPlane(fEPV0,TriggerHadron->Phi()))); //fEPV0 is the event plane from AliAnalysisTaskEmcal
     if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
   }
+
+
+
+  
 
   ////////////////////kData////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kData){
@@ -525,6 +593,101 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     
   }
 
+  ////////////////////kTrueDet////////////////////
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kTrueDet){ //Truth->Detector response	        
+    AliEmcalJet *JetDet = NULL; //Detector Level Jet                                                                                                                  
+    AliEmcalJet *JetTrue = NULL; //Particle Level Jet  
+    AliJetContainer *JetContDet= GetJetContainer(0); //Jet Container for Detector Level Pythia
+    AliJetContainer *JetContTrue= GetJetContainer(1); //Jet Container for Particle Level Pythia                                                                                                     
+    Double_t JetPhiDet=0;
+    Double_t JetPhiTrue=0;
+    Bool_t JetsMatched=kFALSE;
+    Double_t Pythia_Event_Weight=1;
+    Bool_t EventCounter=kFALSE;
+    Int_t JetCounter_Det=0,JetCounter_True=0;
+    JetContDet->ResetCurrentID();
+    JetContTrue->ResetCurrentID();
+    if(JetContDet) {
+      while((JetDet=JetContDet->GetNextAcceptJet())) {
+	if( (!JetDet) || ((JetDet->Pt())<fPtThreshold)) {
+	  // fhEventCounter_1->Fill(3); //events where the jet had a problem                                                                                   
+	  continue;
+	}
+	else {
+	  /* if(fSemigoodCorrect){
+	     Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
+	     if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
+	     }*/
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), JetDet->Phi());
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), JetDet->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), JetDet->Phi()));
+	  }
+	  JetCounter_Det++;
+	  fhJetPt_Det->Fill(JetDet->Pt());
+	  JetPhiDet=JetDet->Phi();
+	  if(JetPhiDet < -1*TMath::Pi()) JetPhiDet += (2*TMath::Pi());
+	  else if (JetPhiDet > TMath::Pi()) JetPhiDet -= (2*TMath::Pi());
+	  fhJetPhi_Det->Fill(JetPhiDet);
+	  fhJetEta_Det->Fill(JetDet->Eta());
+	  fhJetMass_Det->Fill(JetDet->M());
+	  fhJetRadius_Det->Fill(TMath::Sqrt((JetDet->Area()/TMath::Pi())));                                                           
+	  fhNumberOfJetTracks_Det->Fill(JetDet->GetNumberOfTracks());
+	  if((JetTrue = JetDet->ClosestJet())){
+	    JetsMatched=kTRUE;
+	    JetCounter_True++;
+	    fhJetPt_True->Fill(JetTrue->Pt());
+	    JetPhiTrue=JetTrue->Phi();
+	    if(JetPhiTrue < -1*TMath::Pi()) JetPhiTrue += (2*TMath::Pi());
+	    else if (JetPhiTrue > TMath::Pi()) JetPhiTrue -= (2*TMath::Pi());
+	    fhJetPhi_True->Fill(JetPhiTrue);
+	    fhJetEta_True->Fill(JetTrue->Eta());
+	    fhJetMass_True->Fill(JetTrue->M());
+	    fhJetRadius_True->Fill(TMath::Sqrt((JetTrue->Area()/TMath::Pi())));                                                                         
+	    fhNumberOfJetTracks_True->Fill(JetTrue->GetNumberOfTracks());
+	    fh2PtRatio->Fill(JetDet->Pt(),JetTrue->Pt(),Pythia_Event_Weight);
+	  }
+          else continue;
+          if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= JetDet->Pt()-(GetRhoVal(0)*JetDet->Area());
+	  else fJetInfoVar[0]=JetDet->Pt();
+	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[1]= JetTrue->Pt()-(GetRhoVal(0)*JetTrue->Area());
+	  else fJetInfoVar[1]=JetTrue->Pt();
+	  if(fDoSoftDrop) {
+	    SoftDrop(JetDet,JetContDet,fZCut,fBeta_SD,kFALSE);
+	    SoftDrop(JetTrue,JetContTrue,fZCut,fBeta_SD,kTRUE);
+	  }
+	  else{
+	    fJetInfoVar[2]=0;
+	    fJetInfoVar[3]=0;
+	    fJetInfoVar[4]=0;
+	    fJetInfoVar[5]=0;
+	    fJetInfoVar[6]=0;
+	    fJetInfoVar[7]=0;
+	    fJetInfoVar[12]=0;
+	    fJetInfoVar[13]=0;
+	    fJetInfoVar[14]=0;
+	    fJetInfoVar[15]=0;
+	    fJetInfoVar[16]=0;
+	    fJetInfoVar[17]=0;
+	  }		    
+	  fJetInfoVar[8]=PTD(JetDet,0);
+	  fJetInfoVar[9]=PTD(JetTrue,0);
+	  fJetInfoVar[10]=Angularity(JetDet,0);
+	  fJetInfoVar[11]=Angularity(JetTrue,0);
+	  fTreeJetInfo->Fill();
+
+	  JetsMatched=kFALSE;
+	}
+      }
+      fhJetCounter_Det->Fill(JetCounter_Det); //Number of Jets in Each Event Particle Level                                                                 
+      fhJetCounter_True->Fill(JetCounter_True); //Number of Jets in Each Event Detector Level        
+    }
+  }
+
+  
+  ////////////////////kEmbedded////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
@@ -806,17 +969,22 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
   Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
-  fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
-  fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
+  //fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
+  //fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
   else fJetInfoVar[13] = DeltaR;
   if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
-  if(!fTruthJet) fJetInfoVar[16]=finaljet.perp();
-  else fJetInfoVar[17]=finaljet.perp();
-  
+  if(!(fJetShapeSub==kConstSub)){
+    if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp()-(GetRhoVal(0)*fJet->Area()));
+    else fJetInfoVar[17]=finaljet.perp();
+  }
+  else{
+    if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp());
+    else fJetInfoVar[17]=(finaljet.perp());
+  }
   
   return;
 

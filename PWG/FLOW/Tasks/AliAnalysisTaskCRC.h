@@ -28,6 +28,7 @@
 
 class TString;
 class TList;
+class TProfile2D;
 class AliFlowEventSimple;
 class AliFlowEvent;
 class AliFlowAnalysisCRC;
@@ -194,6 +195,8 @@ public:
   Bool_t GetInvertZDC() const {return this->fInvertZDC;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
+  void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
+  Bool_t GetRecenterZDCVtxRbR() const {return this->fVtxRbR;};
   void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
   Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
   void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -229,6 +232,10 @@ public:
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = B;};
+  void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
+  TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
   TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
   void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
@@ -246,6 +253,7 @@ public:
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -329,6 +337,7 @@ private:
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
   Bool_t fCRCTestSin;
+  Bool_t fVtxRbR;
   Bool_t fUseNUAforCRC;
   Bool_t fUseCRCRecenter;
   Double_t fCRCEtaMin;
@@ -348,15 +357,20 @@ private:
   TList *fCRCZDCResList; // ZDC rescaling
   TList *fZDCESEList;       // list with weights
   TH1D* fCenWeightsHist;
+  TProfile2D *fRefMultRbRPro;
+  TProfile2D *fAvEZDCCRbRPro;
+  TProfile2D *fAvEZDCARbRPro;
   TH1D* fPtWeightsHist[10];
   TH1D* fEtaWeightsHist[10][21][2];
   TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
   TH2F* fZDCESEMultWeightsHist[5];
   TH2F* fZDCESESpecWeightsHist[5];
+  TH2D* fPhiExclZoneHist;
   Bool_t fQAZDCCuts;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
+  Bool_t fUseTracklets;
   
   ClassDef(AliAnalysisTaskCRC,11);
 };

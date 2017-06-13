@@ -38,11 +38,12 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
   Bool_t    IsSPDPileupMultBins()             const {return fIsSPDPileupMultBins;}
   Int_t     IRIntClosestIntMap(Int_t id)      const {return (id>=0 && id<2 ? fIRIntClosestIntMap[id] : -999);}
+  Float_t   VertexCovMatrix(Int_t iCov = 0)   const {return (iCov>=0 && iCov<6 ? fVtxCovMatrix[iCov] : 0.0);}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
   Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
   Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
-  Int_t     NTPCClusters()                      const {return fNTPCclusters;}
+  Int_t     NTPCClusters()                    const {return fNTPCclusters;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
   Int_t     NpileupTracks()                   const {return fNpileupTracks;}
@@ -154,6 +155,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
   Int_t     fIRIntClosestIntMap[2]; // out of bunch interactions, [0]-Int1, [1]-Int2 
+  Float_t   fVtxCovMatrix[6];       // Covariance matrix of the event vertex
   Float_t   fVtxTPC[3];             // TPC only event vertex       
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
   Float_t   fVtxSPD[3];             // SPD only event vertex

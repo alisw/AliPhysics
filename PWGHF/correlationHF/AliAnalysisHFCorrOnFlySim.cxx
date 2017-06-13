@@ -951,9 +951,9 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
         Double_t binlowTrigHF[3] = {-7.5, 0., -2.};
         Double_t  binupTrigHF[3] = { 7.5, 20., 2.};
         
-        Int_t     nbinsCorrHF[8] = {  15, 20,  20,  6,   30,               32,   20,    11};
+        Int_t     nbinsCorrHF[8] = {  15, 20,  20, 10,   30,               32,   20,    11};
         Double_t binlowCorrHF[8] = {-7.5, 0., -2., 0., -15., -0.5*TMath::Pi(),  -5.,  -1.5};
-        Double_t  binupCorrHF[8] = { 7.5, 20., 2., 3.,  15.,  1.5*TMath::Pi(),   5.,   9.5};
+        Double_t  binupCorrHF[8] = { 7.5, 20., 2., 5.,  15.,  1.5*TMath::Pi(),   5.,   9.5};
         
         THnSparseD *trigDPartPr   = new THnSparseD("HFTrgiggerProp","fHFTrgiggerProp;pdg;ptTrig;etaTrig;",3,nbinsTrigHF,binlowTrigHF,binupTrigHF);
         THnSparseD *trigDPartCorr = new THnSparseD("2PCorrBtwn_HF-hadron","HFCorrelations;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",8,nbinsCorrHF,binlowCorrHF,binupCorrHF);

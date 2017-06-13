@@ -387,6 +387,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t *fNotRejectedEnd; //[fnHeaders]
    TString *fGeneratorNames; //[fnHeaders]
    TObjString *fCutString; // cut number used for analysis
+   TString fCutStringRead;
    AliAnalysisUtils *fUtils;
    Double_t fEtaShift;
    Bool_t fDoEtaShift;            // Flag for Etashift
@@ -441,7 +442,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,9)
+   ClassDef(AliConversionCuts,10)
 };
 
 

@@ -29,6 +29,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   fSpecialPDG(0),
   fRejectedOrigin(0),
   fAcceptedDecay(0),
+  fRejectISR(kFALSE),
   fHistOrigin(0)
 {
   // Constructor.
@@ -42,6 +43,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   fSpecialPDG(0),
   fRejectedOrigin(AliAnalysisTaskDmesonJets::kUnknownQuark | AliAnalysisTaskDmesonJets::kFromBottom),
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay),
+  fRejectISR(kFALSE),
   fHistOrigin(0)
 {
   // Constructor.
@@ -163,7 +165,14 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, T
 
   if (!part->IsPrimary()) return kFALSE;
 
-  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+  if (fRejectISR) {
+    // proton has PDG code 2212
+    std::set<UInt_t> pdgSet = {2212};
+    auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::FindParticleOrigin(part, fClArray, AliAnalysisTaskDmesonJets::AnalysisEngine::kFindFirst, pdgSet);
+    if (origin) return kFALSE;
+  }
+
+  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::IsPromptCharm(part, fClArray);
 
   if (histOrigin) {
     UInt_t rs = origin.first;

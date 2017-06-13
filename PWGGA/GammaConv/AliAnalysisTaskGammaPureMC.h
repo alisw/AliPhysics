@@ -6,6 +6,48 @@
 
 class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
   public:
+    /**
+     * @enum AcceptanceType_t
+     * @brief Enumeration for acceptance type
+     */
+    enum AcceptanceType_t {
+      kPCMAcceptance = 1,       //!< PCM Acceptance
+      kEMCALAcceptance = 2,     //!< EMCAL Acceptance
+      kPHOSAcceptance = 3       //!< PHOS Acceptance
+    };
+
+    /**
+     * @enum SupportedPdg_t
+     * @brief Definition of constants for PDG codes used within the task
+     */
+    enum SupportedPdg_t {
+      kPdgPi0 = 111,           //!< kPdgPi0
+      kPdgRho0 = 113,          //!< kPdgRho0
+      kPdgK0Long = 130,        //!< kPdgK0Long
+      kPdgPiPlus = 211,        //!< kPdgPiPlus
+      kPdgPiMinus = -211,      //!< kPdgPiMinus
+      kPdgRhoPlus = 213,       //!< kPdgRhoPlus
+      kPdgRhoMinus = -213,     //!< kPdgRhoMinus
+      kPdgEta = 221,           //!< kPdgEta
+      kPdgOmega = 223,         //!< kPdgOmega
+      kPdgK0Short = 310,       //!< kPdgK0Short
+      kPdgKStar = 313,         //!< kPdgKStar
+      kPdgKPlus = 321,         //!< kPdgKPlus
+      kPdgKMinus = -321,       //!< kPdgKMinus
+      kPdgEtaPrime = 331,      //!< kPdgEtaPrime
+      kPdgPhi = 333,           //!< kPdgPhi
+      kPdgJPsi = 443,          //!< kPdgJPsi
+      kPdgDeltaMinus = 1114,   //!< kPdgDeltaMinus
+      kPdgDelta0 = 2114,       //!< kPdgDelta0
+      kPdgDeltaPlus = 2214,    //!< kPdgDeltaPlus
+      kPdgDeltaPlusPlus = 2224,//!< kPdgDeltaPlusPlus
+      kPdgSigmaMinus = 3112,   //!< kPdgSigmaMinus
+      kPdgSigma0 = 3212,       //!< kPdgSigma0
+      kPdgLambda = 3122,       //!< kPdgLambda
+      kPdgSigmaPlus = 3222,    //!< kPdgSigmaPlus
+      kPdgXiMinus = 3312,      //!< kPdgXiMinus
+      kPdgXi0 = 3322           //!< kPdgXi0
+    };
 
     AliAnalysisTaskGammaPureMC();
     AliAnalysisTaskGammaPureMC(const char *name);
@@ -18,9 +60,9 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    void IsInPCMAcceptance(TParticle* part, Int_t& acceptance);
-    void IsInPHOSAcceptance(TParticle* part, Int_t& acceptance);
-    void IsInEMCalAcceptance(TParticle* part, Int_t& acceptance);
+    bool IsInPCMAcceptance(TParticle* part) const;
+    bool IsInPHOSAcceptance(TParticle* part) const;
+    bool IsInEMCalAcceptance(TParticle* part) const;
     
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);

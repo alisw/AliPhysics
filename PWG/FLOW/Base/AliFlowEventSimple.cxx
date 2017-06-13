@@ -82,6 +82,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fRun(-1),
   fZNCM(0.),
   fZNAM(0.),
+  fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
@@ -136,6 +137,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fRun(-1),
   fZNCM(0.),
   fZNAM(0.),
+  fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -194,6 +196,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fZNAQ(anEvent.fZNAQ),
   fZNCM(anEvent.fZNCM),
   fZNAM(anEvent.fZNAM),
+  fAbsOrbit(anEvent.fAbsOrbit),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -278,6 +281,7 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fZNAQ = anEvent.fZNAQ;
   fZNCM = anEvent.fZNCM;
   fZNAM = anEvent.fZNAM;
+  fAbsOrbit = anEvent.fAbsOrbit;
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
   }
@@ -868,6 +872,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fRun(-1),
   fZNCM(0.),
   fZNAM(0.),
+  fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {

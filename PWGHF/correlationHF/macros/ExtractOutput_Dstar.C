@@ -33,7 +33,7 @@ void ExtractOutput(
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions
-   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
 {
  
   //Create and set the correlation plotter class
@@ -45,7 +45,7 @@ void ExtractOutput(
   plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D*
   plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
   plotter->SetNumberOfSigmasFitter(nsigmaFitter);
-  if(autoSign) plotter->SetAutoSignRange(autoSign);
+  if(!autoSign) plotter->SetAutoSignRange(autoSign);
   plotter->SetSignalSigmas(nsigmaS);
   plotter->SetAutoSBRange(autoSB); //kTRUE = evaluate SB range automatically (give inner and outer sigma as 2° and 3° args); kFALSE = use ranges provided from outside (via SetSBRanges)
   plotter->SetSBSingleBin(singleBinSB);

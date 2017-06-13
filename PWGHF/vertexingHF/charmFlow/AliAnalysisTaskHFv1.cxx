@@ -384,6 +384,15 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
     fOutput->Add(hNormQA);
     TH1F* hNormQB = new TH1F("hNormQB","hNormQB;QBx;QBy",100,0.,1);
     fOutput->Add(hNormQB);
+    // store resolution correction
+    TProfile* hScalProdDenom = new TProfile("hScalProdQAQC","hScalProdQAQC",(Int_t)1000./fCentBinSizePerMil,0.,100.);
+    fOutput->Add(hScalProdDenom);
+    // store correlations between all ZDC Q-vector terms
+    TProfile2D* hScalProdDenomMixed = new TProfile2D("hScalProdQAQC_mixed","hScalProdQAQC_mixed",(Int_t)1000./fCentBinSizePerMil,0.,100.,4,0.,4.);
+    fOutput->Add(hScalProdDenomMixed);
+    // store NUA correction terms: Re(QA), Re(QC), Im(QA), Im(QC)
+    TProfile2D* hNUAtermsQAQC = new TProfile2D("hNUAtermsQAQC","hNUAtermsQAQC",(Int_t)1000./fCentBinSizePerMil,0.,100.,4,0.,4.);
+    fOutput->Add(hNUAtermsQAQC);
   }
 
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
@@ -479,8 +488,38 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
       THnSparseD* hMassScalProd2 = new THnSparseD(Form("hMassScalProd%s_%s",SPsuffix2.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix2.Data(),centrname.Data()),5,nBins,xmin,xmax);
       hMassScalProd2->Sumw2();
       fOutput->Add(hMassScalProd2);
-      TProfile* hScalProdDenom = new TProfile(Form("hScalProd%s",SPsuffix3.Data()),Form("hScalProd%s",SPsuffix3.Data()),(Int_t)1000./fCentBinSizePerMil,0.,100.);
-      fOutput->Add(hScalProdDenom);
+      // store directly v1-odd and v1-even components:
+      THnSparseD* hMassScalProd1Odd = new THnSparseD(Form("hMassScalProdOdd_%s",centrname.Data()),Form("Mass vs hScalProd%s ;u(QA-QC);M (GeV/c^{2})",centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd1Odd->Sumw2();
+      fOutput->Add(hMassScalProd1Odd);
+      THnSparseD* hMassScalProdEven = new THnSparseD(Form("hMassScalProdEven_%s",centrname.Data()),Form("Mass vs hScalProd%s ;u(QA+QC);M (GeV/c^{2})",centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProdEven->Sumw2();
+      fOutput->Add(hMassScalProdEven);
+      // store separately real and imaginary terms:
+      // Re(uQA), Re(uQC)
+      THnSparseD* hMassScalProd1Re = new THnSparseD(Form("hMassScalProd%s_%s_Real",SPsuffix1.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix1.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd1Re->Sumw2();
+      fOutput->Add(hMassScalProd1Re);
+      THnSparseD* hMassScalProd2Re = new THnSparseD(Form("hMassScalProd%s_%s_Real",SPsuffix2.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix2.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd2Re->Sumw2();
+      fOutput->Add(hMassScalProd2Re);
+      // Im(uQA), Im(uQC)
+      THnSparseD* hMassScalProd1Im = new THnSparseD(Form("hMassScalProd%s_%s_Imag",SPsuffix1.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix1.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd1Im->Sumw2();
+      fOutput->Add(hMassScalProd1Im);
+      THnSparseD* hMassScalProd2Im = new THnSparseD(Form("hMassScalProd%s_%s_Imag",SPsuffix2.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix2.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd2Im->Sumw2();
+      fOutput->Add(hMassScalProd2Im);
+      // store NUA correction terms: Re(u), Im(u)
+      Int_t nBinsNUA[5] = {200,fNMassBins,50,4,3};
+      Double_t xminNUA[5] = {-1.,fLowmasslimit,0.,-0.8,0.};
+      Double_t xmaxNUA[5] = {1.,fUpmasslimit,50.,0.8,3.};
+      THnSparseD* hMassNUAtermsRe = new THnSparseD(Form("hMassNUAterms_%s_Real",centrname.Data()),Form("Mass vs hNUAterms (real) ;%s;M (GeV/c^{2})",centrname.Data()),5,nBinsNUA,xminNUA,xmaxNUA);
+      hMassNUAtermsRe->Sumw2();
+      fOutput->Add(hMassNUAtermsRe);
+      THnSparseD* hMassNUAtermsIm = new THnSparseD(Form("hMassNUAterms_%s_Imag",centrname.Data()),Form("Mass vs hNUAterms (imag) ;%s;M (GeV/c^{2})",centrname.Data()),5,nBinsNUA,xminNUA,xmaxNUA);
+      hMassNUAtermsIm->Sumw2();
+      fOutput->Add(hMassNUAtermsIm);
     }
     else if (fFlowMethod==kEvShape){
       TString q2axisname="q_{2}^{TPC}";
@@ -811,6 +850,16 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
       //fill histograms for denominator in SP formula
       Double_t scalprod=QA[0]*QB[0]+QA[1]*QB[1];
       ((TProfile*)fOutput->FindObject("hScalProdQAQC"))->Fill(centr,scalprod);
+      // fill mixed terms
+      ((TProfile2D*)fOutput->FindObject("hScalProdQAQC_mixed"))->Fill(centr,0.5,QA[0]*QB[0]);
+      ((TProfile2D*)fOutput->FindObject("hScalProdQAQC_mixed"))->Fill(centr,1.5,QA[1]*QB[1]);
+      ((TProfile2D*)fOutput->FindObject("hScalProdQAQC_mixed"))->Fill(centr,2.5,QA[0]*QB[1]);
+      ((TProfile2D*)fOutput->FindObject("hScalProdQAQC_mixed"))->Fill(centr,3.5,QA[1]*QB[0]);
+      // fill NUAs
+      ((TProfile2D*)fOutput->FindObject("hNUAtermsQAQC"))->Fill(centr,0.5,QA[0]);
+      ((TProfile2D*)fOutput->FindObject("hNUAtermsQAQC"))->Fill(centr,1.5,QA[1]);
+      ((TProfile2D*)fOutput->FindObject("hNUAtermsQAQC"))->Fill(centr,2.5,QB[0]);
+      ((TProfile2D*)fOutput->FindObject("hNUAtermsQAQC"))->Fill(centr,3.5,QB[1]);
     }
   }
   if(fDebug>2)printf("Loop on D candidates\n");
@@ -1070,6 +1119,11 @@ void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
     scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
     sparsearray[0] = scalprod[1];
     ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    // store odd and even components of v1
+    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
   }
   else {
     ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1103,6 +1157,8 @@ void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
 //******************************************************************************
 void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
 
+  printf("beginning AliAnalysisTaskHFv1::FillD02p \n");
+  
   //D0->Kpi channel
 
   //mass histograms
@@ -1121,6 +1177,25 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
       ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store odd and even components of v1
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store separately real and imaginary terms
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*QB[0];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*QA[0];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD)*QB[1];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD)*QA[1];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
+      // store NUA correction terms
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassNUAterms_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassNUAterms_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1139,6 +1214,25 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
       ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store odd and even components of v1
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store separately real and imaginary terms
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*QB[0];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*QA[0];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD)*QB[1];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD)*QA[1];
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
+      // store NUA correction terms
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassNUAterms_centr%d_%d_Real",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Sin(fHarmonic*phiD);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassNUAterms_centr%d_%d_Imag",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
@@ -1227,6 +1321,11 @@ void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
     scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
     sparsearray[0] = scalprod[1];
     ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    // store odd and even components of v1
+    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
   }
   else {
     ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1278,6 +1377,11 @@ void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
       ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store odd and even components of v1
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1296,6 +1400,11 @@ void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
       ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      // store odd and even components of v1
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);

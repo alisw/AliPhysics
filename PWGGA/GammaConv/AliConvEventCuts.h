@@ -179,25 +179,70 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16k3b2,       // anchored LHC15o pass3 - gen. purpose Pyt6wopileup
         kLHC16k5a,        // anchored LHC15n pass3 - general purpose Pythia8
         kLHC16k5b,        // anchored LHC15n pass3 - general purpose Pythia6
+        kLHC17e2,         // anchored LHC15n pass4 - general purpose Pythia8
         // MC upgrade
         kLHC13d19,        // upgrade 5.5TeV PbPb
         
         // 2016
         kLHC16kl,         // pp 13 TeV
         kLHC16q,          // pPb 5 TeV
+	kLHC16r,          // pPb 8 TeV
+	kLHC16s,          // pPb 8 TeV
+	kLHC16t,          // pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
         kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
         kLHC16j2a2,       // anchored LHC16l pass 1 - general purpose Pythia8
         kLHC16j2b2,       // anchored LHC16l pass 1 - general purpose EPOSLHC
-        kLHC17a2a,            // anchored LHC16qrs pass 1 - general purpose EPOSLHC
-        kLHC17a2a_fast,       // anchored LHC16qrs pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a2a_cent,       // anchored LHC16qrs pass 1 - general purpose EPOSLHC, CENT 
-        kLHC17a2a_cent_woSDD, // anchored LHC16qrs pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a2b,            // anchored LHC16qrs pass 1 - general purpose DPMJET
-        kLHC17a2b_fast,       // anchored LHC16qrs pass 1 - general purpose DPMJET,  fast only
-        kLHC17a2b_cent,       // anchored LHC16qrs pass 1 - general purpose DPMJET,  CENT
-        kLHC17a2b_cent_woSDD, // anchored LHC16qrs pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17a2a,            // anchored LHC16qt pass 1 - general purpose EPOSLHC
+        kLHC17a2a_fast,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a2a_cent,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a2a_cent_woSDD, // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a2b,            // anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC17a2b_fast,       // anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
+        kLHC17a2b_cent,       // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
+        kLHC17a2b_cent_woSDD, // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17a3a,            // anchored LHC16r pass 1 - general purpose EPOSLHC
+        kLHC17a3a_fast,       // anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a3a_cent,       // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a3a_cent_woSDD, // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a3b,            // anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17a3b_fast,       // anchored LHC16r pass 1 - general purpose DPMJET,  fast only
+        kLHC17a3b_cent,       // anchored LHC16r pass 1 - general purpose DPMJET,  CENT
+        kLHC17a3b_cent_woSDD, // anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17a4a,            // anchored LHC16s pass 1 - general purpose EPOSLHC
+        kLHC17a4a_fast,       // anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a4a_cent,       // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a4a_cent_woSDD, // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a4b,            // anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17a4b_fast,       // anchored LHC16s pass 1 - general purpose DPMJET,  fast only
+        kLHC17a4b_cent,       // anchored LHC16s pass 1 - general purpose DPMJET,  CENT
+        kLHC17a4b_cent_woSDD, // anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
+
+        kLHC17f2a,            // anchored LHC16qt pass 1 - general purpose EPOSLHC
+        kLHC17f2a_fast,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f2a_cent,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f2a_cent_woSDD, // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f2b,            // anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC17f2b_fast,       // anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
+        kLHC17f2b_cent,       // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
+        kLHC17f2b_cent_woSDD, // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17f3a,            // anchored LHC16r pass 1 - general purpose EPOSLHC
+        kLHC17f3a_fast,       // anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f3a_cent,       // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f3a_cent_woSDD, // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f3b,            // anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17f3b_fast,       // anchored LHC16r pass 1 - general purpose DPMJET,  fast only
+        kLHC17f3b_cent,       // anchored LHC16r pass 1 - general purpose DPMJET,  CENT
+        kLHC17f3b_cent_woSDD, // anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17f4a,            // anchored LHC16s pass 1 - general purpose EPOSLHC
+        kLHC17f4a_fast,       // anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f4a_cent,       // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f4a_cent_woSDD, // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f4b,            // anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17f4b_fast,       // anchored LHC16s pass 1 - general purpose DPMJET,  fast only
+        kLHC17f4b_cent,       // anchored LHC16s pass 1 - general purpose DPMJET,  CENT
+        kLHC17f4b_cent_woSDD, // anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
 
         // 
         kUnknownPeriod
@@ -231,7 +276,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    UpdateCutString();
       static const char * fgkCutNames[kNCuts];
 
-      // Seters
+      // Setters
       Bool_t    SetCutIds (TString cutString); 
       Bool_t    SetCut (cutIds cutID, Int_t cut);
       Bool_t    SetIsHeavyIon (Int_t isHeavyIon);
@@ -320,6 +365,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
+      Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -400,6 +447,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
+      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
       Bool_t    VertexZCut(AliVEvent *fInputEvent);
       Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
       Float_t   GetPtHard(AliVEvent *MCEvent);
@@ -457,6 +505,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fSpecialTrigger;                        // flag
       Int_t                       fSpecialSubTrigger;                     // flag
       Bool_t                      fRemovePileUp;                          // flag
+      Int_t                       fPastFutureRejectionLow;                // sets bunch crossing event rejection in past
+      Int_t                       fPastFutureRejectionHigh;               // sets bunch crossing event rejection in future
       Int_t                       fRejectExtraSignals;                    //
       UInt_t                      fOfflineTriggerMask;                    // Task processes collision candidates only
       Bool_t                      fHasV0AND;                              // V0AND Offline Trigger
@@ -468,8 +518,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            // period selector
       EnergyVar                   fEnergyEnum;                            // energy selector
-      
+
       TObjString*                 fCutString;                             // cut number used for analysis
+      TString                     fCutStringRead;
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
       Bool_t                      fDoEtaShift;                            // Flag for Etashift
@@ -488,6 +539,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameFitDataK0s;                        // Fit name for fit to spectrum of k0s in Data
       // Histograms
       TH1F*                       fHistoEventCuts;                        // bookkeeping for event selection cuts
+      TH1F*                       fHistoPastFutureBits;                   // bookkeeping for event selection cuts
       TH1F*                       hCentrality;                            // centrality distribution for selected events
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
@@ -542,7 +594,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,29)
+      ClassDef(AliConvEventCuts,32)
 };
 
 

@@ -627,17 +627,17 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
     fCounterC->SetStudyMultiplicity(kTRUE,1.);
-    fCounterC->SetStudySpherocity(kTRUE,10.);
+    fCounterC->SetStudySpherocity(kTRUE,20.);
     fCounterC->Init();
     
     fCounterU = new AliNormalizationCounter("NormCounterUnCorrMult");
     fCounterU->SetStudyMultiplicity(kTRUE,1.);
-    fCounterU->SetStudySpherocity(kTRUE,10.);
+    fCounterU->SetStudySpherocity(kTRUE,20.);
     fCounterU->Init();
     
     fCounterCandidates = new AliNormalizationCounter("NormCounterCorrMultCandidates");
     fCounterCandidates->SetStudyMultiplicity(kTRUE,1.);
-    fCounterCandidates->SetStudySpherocity(kTRUE,10.);
+    fCounterCandidates->SetStudySpherocity(kTRUE,20.);
     fCounterCandidates->Init();
     
     fOutputCounters = new TList();

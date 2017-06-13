@@ -128,7 +128,7 @@ public:
   Bool_t fFillEventPlaneInfo;     // Write event plane information
   Bool_t fFillMCInfo;                  // Write MC truth information
 
-  AliAnalysisCuts *fEventFilter;     //! event filter
+  AliAnalysisCuts *fEventFilter;     // event filter
   AliAnalysisCuts *fTrackFilter;     // filter for the hadrons to be correlated with the dielectrons
   AliAnalysisCuts *fFlowTrackFilter; // filter for the barrel tracks to be used for the Q-vector
   
@@ -169,7 +169,7 @@ public:
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
   void FillCaloClusters();
-  void FillFMDInfo();
+  void FillFMDInfo(Bool_t isAOD);
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
 
   

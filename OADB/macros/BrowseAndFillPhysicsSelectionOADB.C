@@ -427,7 +427,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadb_pPb_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNABG");
 
   triggerCount++;
-  oadb_pPb_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WU[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
+  oadb_pPb_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
   oadb_pPb_2016->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadb_pPb_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNABG");
 
@@ -514,7 +514,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadb_Pbp_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNCBG");
 
   triggerCount++;
-  oadb_Pbp_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WU[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
+  oadb_Pbp_2016->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[HJT|HSE|HQU|HNU]-T-NOPF-CENTNOPMD","B",triggerCount);
   oadb_Pbp_2016->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadb_Pbp_2016->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !ZNCBG");
 
@@ -1130,12 +1130,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC8, 196346, 197411);
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDCCut_pPb_2016 = new AliOADBTriggerAnalysis("ZDCCut_pPb_2016");
-  oadbTrigAnalysisZDCCut_pPb_2016->SetZNCorrParameters(2.0,100,5.,100);
+  oadbTrigAnalysisZDCCut_pPb_2016->SetZNCorrParameters(2.0,50,5.,50);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDCCut_pPb_2016, 265304,266318);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDCCut_pPb_2016->Clone("ZDCCut_pPb_2016_16t"),267132,267166);
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDCCut_Pbp_2016 = new AliOADBTriggerAnalysis("ZDCCut_Pbp_2016");
-  oadbTrigAnalysisZDCCut_Pbp_2016->SetZNCorrParameters(5.0,100,2.0,100);
+  oadbTrigAnalysisZDCCut_Pbp_2016->SetZNCorrParameters(5.0,50,2.0,50);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDCCut_Pbp_2016, 266405,267131);
   
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC9 = new AliOADBTriggerAnalysis("ZDCCut9");

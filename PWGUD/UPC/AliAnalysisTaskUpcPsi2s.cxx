@@ -1018,7 +1018,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
-      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       fNLooseTracks++;
       }
@@ -1040,7 +1040,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<4))) continue;
-      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -1063,7 +1063,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
   
   fJPsiAODTracks->Clear("C");
-  if(nGoodTracks == 2){
+  if(0){
+  //if(nGoodTracks == 2){
 
    	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
@@ -1130,7 +1131,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(UInt_t i=0; i<2; i++)delete KFpart[i];
   delete KFvtx; 
 
-  if(!isMC) fJPsiTree ->Fill();
+  //if(!isMC) fJPsiTree ->Fill();
   }
   
    nGoodTracks = 0;
@@ -1140,7 +1141,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     
     if(fTracking == 0){
-      if(!(trk->TestFilterBit(1<<0))) continue;
+      if(!(trk->TestFilterBit(1<<4))) continue;
   
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -1163,8 +1164,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
       
   fPsi2sAODTracks->Clear("C");  
-  //if(nGoodTracks == 4){
-  if(0){
+  if(nGoodTracks == 4){
 
   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
@@ -1236,7 +1236,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }
   
   if(isMC){
-  	fJPsiTree ->Fill();
+  	//fJPsiTree ->Fill();
 	fPsi2sTree ->Fill();
   }
   

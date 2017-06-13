@@ -1,17 +1,20 @@
 // Grid running parameters
 TString gGridRunMode = "full";
-TString gRootVersion = "v5-34-30-alice7-1";
-TString gAlirootVersion = "v5-08-18c-1";
-TString gAliphysicsVersion = "vAN-20161208-1";
+TString gRootVersion = "v5-34-30-alice7-6";
+TString gAlirootVersion = "v5-09-03a-1";
+TString gAliphysicsVersion = "vAN-20170503-1";
 //TString gGridDataDir = "/alice/data/2015/LHC15o";
-TString gGridDataDir = "/alice/data/2016/LHC16q";
+//TString gGridDataDir = "/alice/data/2016/LHC16q";
+TString gGridDataDir = "/alice/sim/2017/LHC17d13_cent/";
 //TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
 //TString gGridDataPattern = "*/pass1/*/AliESDs.root";
 //TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
-TString gGridDataPattern = "*/pass1/*/AliESDs.root";
+//TString gGridDataPattern = "*/pass1_CENT_wSDD/*/AliESDs.root";
+TString gGridDataPattern = "*/AOD/*/AliAOD.root";
+//TString gGridDataPattern = "*/pass1_CENT_wSDD/AOD/*/AliAOD.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "testTrees_runBLALA";
-Int_t gGridMaxInputFileNumber = 40;
+TString gGridOutputDir = "20170504_dstTrees_LHC17d13_CENT_AOD_2";
+Int_t gGridMaxInputFileNumber = 2;
 
 //______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
@@ -103,6 +106,8 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
          AliMultSelectionTask* multTask = AddTaskMultSelection();
          if(hasMC && !prod.CompareTo("LHC15o"))
            multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
+         if(hasMC && (!prod.CompareTo("LHC16q") || !prod.CompareTo("LHC16t")))
+            multTask->SetAlternateOADBforEstimators("LHC16q-DefaultMC-HIJING");
       }      
 
       //===== ADD PID RESPONSE: ===

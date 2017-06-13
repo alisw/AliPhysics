@@ -46,6 +46,12 @@ void AliRsnMiniPair::Fill
 
    fNSisters=-1;
    if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
+
+   fContainsV0Daughter = kFALSE;
+   if (p1->IndexV0Pos() == p2->Index()) fContainsV0Daughter = kTRUE;
+   if (p1->IndexV0Neg() == p2->Index()) fContainsV0Daughter = kTRUE;
+   if (p2->IndexV0Pos() == p1->Index()) fContainsV0Daughter = kTRUE;
+   if (p2->IndexV0Neg() == p1->Index()) fContainsV0Daughter = kTRUE;
 }
 
 //__________________________________________________________________________________________________

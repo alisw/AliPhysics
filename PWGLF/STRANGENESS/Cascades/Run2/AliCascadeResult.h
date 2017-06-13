@@ -79,11 +79,14 @@ public:
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     void SetCutMCSelectBump         ( Bool_t lCut ) { fCutMCSelectBump         = lCut; }
     
-    //Rsn-like bg subtraction (experimental
+    //Rsn-like bg subtraction (experimental)
     void SetSwapBachelorCharge         ( Bool_t lCut ) { fSwapBachCharge = lCut; }
     void SetSwapBaryon                 ( Bool_t lCut ) { fSwapBaryon        = lCut; }
     void SetSwapV0MesonCharge          ( Bool_t lCut ) { fSwapV0MesonCharge = lCut; }
     void SetSwapV0BaryonCharge         ( Bool_t lCut ) { fSwapV0BaryonCharge = lCut; }
+    
+    //2.76 TeV reanalysis cuts
+    void SetCutUse276TeVV0CosPA ( Bool_t lCut ) { fCutUse276TeVV0CosPA = lCut; }
     
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
@@ -185,6 +188,9 @@ public:
     Bool_t GetSwapV0MesonCharge          () const { return fSwapV0MesonCharge;     }
     Bool_t GetSwapV0BaryonCharge         () const { return fSwapV0BaryonCharge;     }
     
+    //2.76 TeV reanalysis cuts
+    Bool_t GetCutUse276TeVV0CosPA () const { return fCutUse276TeVV0CosPA; }
+    
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
@@ -275,6 +281,8 @@ private:
     Bool_t fSwapV0MesonCharge; //swap V0 meson daughter charge
     Bool_t fSwapV0BaryonCharge; //swap V0 baryon daughter charge
     
+    Bool_t fCutUse276TeVV0CosPA; //use 2.76 TeV-like variable V0 CosPA (experimental)
+    
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
@@ -314,7 +322,7 @@ private:
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     
-    ClassDef(AliCascadeResult, 27)
+    ClassDef(AliCascadeResult, 28)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -342,5 +350,6 @@ private:
     // 25 - addition of rapidity selection (to enable 2.76 TeV re-analysis corrections)
     // 26 - addition of proton momenta histogram (for G3/F correction, 2.76 TeV re-analysis corrections)
     // 27 - bugfix
+    // 28 - implementation of 276TeVV0CosPA cut (variable with lambda p)
 };
 #endif

@@ -51,14 +51,24 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
+  void SetFillTracklets(Bool_t flag) {fUseTrkl=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
-    
+  
+  void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
+  void SetPtWeightsFromFONLL5overLHC16i2abc();
+  void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
+  void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();
+
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
+
+  Double_t GetPtWeightFromHistogram(Double_t pt);
+    
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -72,13 +82,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
     
-  enum {kMaxPtBins=20,knVarForSparse=12,knVarForSparseAcc=2,knVarForSparseIP=6};
+  enum {kMaxPtBins=20,knVarForSparse=13,knVarForSparseAcc=2,knVarForSparseIP=6};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
     
   TList*  fOutput;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents;               //!<! hist. for No. of events
+  TH1F*   fHistoPtWeight;             //-> user-defined histogram to calculate the Pt weights
   TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins];     //!<! hist. of mass spectra via phi (sig,bkg,tot)
@@ -145,6 +156,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t fUseWeight;                  /// flag to decide whether to use pt-weights != 1 when filling the container or not
+  Bool_t fUseTrkl;                    /// flag to fill sparse with Ntracklets 
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
@@ -173,7 +186,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,23);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,24);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

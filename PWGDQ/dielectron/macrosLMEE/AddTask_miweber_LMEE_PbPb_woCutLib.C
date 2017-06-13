@@ -44,7 +44,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   if(!isNano){
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    task->SetRejectPileup();
+    // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
   }
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!

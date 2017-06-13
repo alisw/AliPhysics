@@ -11,17 +11,19 @@
 
 //__________________
 AliFemtoXiTrackPairCut::AliFemtoXiTrackPairCut():
+  fV0TrackPairCut(nullptr),
   fNPairsPassed(0),
   fNPairsFailed(0),
+  fMinAvgSepTrackBacPion(0.),
   fDataType(kAOD),
   fTrackTPCOnly(0)
 {
-  /* no-op */
+  fV0TrackPairCut = new AliFemtoV0TrackPairCut();
 }
 //__________________
 AliFemtoXiTrackPairCut::~AliFemtoXiTrackPairCut()
 {
-  /* no-op */
+  delete fV0TrackPairCut;
 }
 
 AliFemtoXiTrackPairCut &AliFemtoXiTrackPairCut::operator=(const AliFemtoXiTrackPairCut &cut)
@@ -33,8 +35,12 @@ AliFemtoXiTrackPairCut &AliFemtoXiTrackPairCut::operator=(const AliFemtoXiTrackP
   AliFemtoPairCut::operator=(cut);
   fNPairsPassed = cut.fNPairsPassed;
   fNPairsFailed = cut.fNPairsFailed;
+  fMinAvgSepTrackBacPion = cut.fMinAvgSepTrackBacPion;
   fDataType = cut.fDataType;
   fTrackTPCOnly = cut.fTrackTPCOnly;
+
+  if(fV0TrackPairCut) delete fV0TrackPairCut;
+  fV0TrackPairCut = new AliFemtoV0TrackPairCut(*cut.fV0TrackPairCut);
 
   return *this; 
 }
@@ -68,6 +74,53 @@ bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair)
     return false;
   }
 
+  //Calling tPassV0 = fV0TrackPairCut->Pass(tPair) below will handle the average separation of
+  //the V0 daughters to the track.  So, all that needs to be checked here in the average separation
+  //of the bachelor pion to the track
+  UInt_t bac_point_cnt = 0;
+  Double_t bac_avgSep = 0.0;
+
+  // loop through NominalTpcPoints of the track and bachelor pion
+  for (int i = 0; i < 8; i++) {
+    // Grab references to each of the i'th points
+    const AliFemtoThreeVector &bac_p = Xi->NominalTpcPointBac(i),
+                            &track_p = track->NominalTpcPoint(i);
+
+    // if any track points are outside the boundary - skip
+    if (track_p.x() < -9990.0 || track_p.y() < -9990.0 || track_p.z() < -9990.0) {
+      continue;
+    }
+
+    // If the bachelor pion points are not bad, increment point count and
+    // increase the cumulative average separation
+    if (!(bac_p.x() < -9990.0 || bac_p.y() < -9990.0 || bac_p.z() < -9990.0)) {
+      bac_avgSep += (bac_p - track_p).Mag();
+      bac_point_cnt++;
+    }
+  }
+
+  if (bac_point_cnt == 0 || bac_avgSep / bac_point_cnt < fMinAvgSepTrackBacPion) {
+    fNPairsFailed++;
+    return false;
+  }
+
+
+
+
+  //Make sure it passes AliFemtoV0TrackPairCuts
+  double tLambdaMass = 1.115683;
+  double tPionMass = 0.19357018;
+  AliFemtoPair *tPair = new AliFemtoPair();
+  AliFemtoParticle* tV0 = new AliFemtoParticle((AliFemtoV0*)Xi, tLambdaMass);
+  AliFemtoParticle* tTrack = new AliFemtoParticle(track, tPionMass);
+  tPair->SetTrack1(tV0);
+  tPair->SetTrack2(tTrack);
+  bool tPassV0 = false;
+  tPassV0 = fV0TrackPairCut->Pass(tPair);
+  delete tPair;
+  delete tV0;
+  delete tTrack;
+  if(!tPassV0) return false;
 
   return true;
 }

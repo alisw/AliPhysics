@@ -11,6 +11,7 @@
 #pragma link C++ class AliHistogramManager+;
 #pragma link C++ class AliMixingHandler+;
 #pragma link C++ class AliReducedAnalysisJpsi2ee+;
+#pragma link C++ class AliReducedAnalysisJpsi2eeMult+;
 #pragma link C++ class AliReducedAnalysisTaskSE+;
 #pragma link C++ class AliReducedAnalysisTest+;
 #pragma link C++ class AliReducedBaseEvent+;

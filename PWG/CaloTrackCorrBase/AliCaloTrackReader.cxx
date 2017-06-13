@@ -22,8 +22,7 @@
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-#include "AliGenHijingEventHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVTrack.h"
@@ -35,8 +34,6 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
-#include "AliStack.h"
-#include "AliLog.h"
 #include "AliMultSelection.h"
 
 // ---- Detectors ----
@@ -89,7 +86,6 @@ fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMultNPtCut(0),         fTrackMultEtaCut(0.9),
-fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
 fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0),
@@ -109,7 +105,7 @@ fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE),
 //Trigger rejection
-fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(1),
+fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
@@ -437,25 +433,7 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
 /// goodness of the EMCal trigger ...
 //_____________________________________________
 Bool_t AliCaloTrackReader::CheckEventTriggers()
-{  
-  //-----------------------------------------------------------
-  // Reject events depending on the trigger name 
-  //-----------------------------------------------------------
-  
-  AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
-                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
-                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
-  
-  if ( fFiredTriggerClassName != "" )
-  {
-    if ( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) 
-      return kFALSE;
-    else 
-      AliDebug(1,"Accepted triggered event");
-  }
-  
-  fhNEventsAfterCut->Fill(1.5);
-  
+{    
   //-----------------------------------------------------------
   // Reject events depending on the event species type
   //-----------------------------------------------------------
@@ -491,7 +469,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   AliDebug(1,"Pass event species selection");
 
-  fhNEventsAfterCut->Fill(2.5);
+  fhNEventsAfterCut->Fill(1.5);
   
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
@@ -517,11 +495,31 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if(!isTrigger && !isMB) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
-    AliDebug(0,"Pass uninteresting triggered events rejection in case of mixing analysis");  
+    AliDebug(1,"Pass uninteresting triggered events rejection in case of mixing analysis");  
+    
+    fhNEventsAfterCut->Fill(2.5);
+  }
+
+  //-----------------------------------------------------------
+  // Reject events depending on the trigger name 
+  // Careful!, if a special MB event string is selected but the option
+  // to select events via the mask in the reader is done, it will not 
+  // be taken into account.
+  //-----------------------------------------------------------
+  
+  AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
+                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
+                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
+  
+  if ( fFiredTriggerClassName != "" && !isMB )
+  {
+    if ( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) 
+      return kFALSE;
+    
+    AliDebug(1,"Accepted triggered event");
     
     fhNEventsAfterCut->Fill(3.5);
   }
-
   
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
@@ -571,10 +569,12 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     {
      AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
                      fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
+      
       if     (fIsExoticEvent)         return kFALSE;
       else if(fIsBadCellEvent)        return kFALSE;
       else if(fRemoveUnMatchedTriggers && !fIsTriggerMatch) return kFALSE ;
       else if(fTriggerClusterBC != 0) return kFALSE;
+      
       AliDebug(1,Form("\t *** YES for %s",GetFiredTriggerClasses().Data()));
     }
     
@@ -628,13 +628,29 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 {  
   //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
   
-  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  if ( !GetGenEventHeader() ) 
   {
-    TParticle * jet =  0;
+    AliError("Skip event, event header is not available!");
+    return kFALSE;
+  }
+  
+  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
+  {
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    
+    // Do this check only for gamma-jet or jet-jet productions
+    Int_t process =  pygeh->ProcessType();
+    //printf("Process %d \n", process);
+    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 && // prompt gamma 
+         process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
+         process != 68 && process != 96  // jet-jet
+       ) return kTRUE ;
+    //printf("\t yes \n");
+    
     Int_t nTriggerJets =  pygeh->NTriggerJets();
     Float_t ptHard = pygeh->GetPtHard();
-    
+    TParticle * jet =  0;
+
     AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, ptHard));
     
     Float_t tmpjet[]={0,0,0,0};
@@ -648,8 +664,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
       //Compare jet pT and pt Hard
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-                     ptHard, jet->Pt(), fPtHardAndJetPtFactor));
+        AliInfo(Form("Reject jet event with : process %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+                     process, ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
     }
@@ -668,9 +684,25 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 //____________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
 {  
-  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  if ( !GetGenEventHeader() ) 
+  {
+    AliError("Skip event, event header is not available!");
+    return kFALSE;
+  }
+  
+  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
   {
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    
+    // Do this check only for gamma-jet productions
+    Int_t process =  pygeh->ProcessType();
+    //printf("Process %d \n", process);
+    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 // && // prompt gamma 
+        //process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
+        //process != 68 && process != 96  // jet-jet
+       ) return kTRUE ;
+    //printf("\t yes \n");
+    
     Float_t ptHard = pygeh->GetPtHard();
     
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
@@ -681,7 +713,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
       
       if(ecluster > fPtHardAndClusterPtFactor*ptHard)
       {
-        AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
+        AliInfo(Form("Reject : process %d, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                     process, ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
         
         return kFALSE;
       }
@@ -698,38 +731,38 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
 //___________________________________________________
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
-  
-  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 19, 0, 19) ;
+  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 20, 0, 20) ;
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(2 ,"2=Trigger string");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Event Type");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Mixing Event");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(2 ,"2=Event Type");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Mixing Event");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Trigger string");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(5 ,"5=Trigger Bit");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=Good EMC Trigger");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=!Fast Cluster");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(8 ,"8=!LED");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=Time stamp"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=Z vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Primary vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Pile-up"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=V0AND"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=Centrality"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=GenHeader"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=PtHard-Jet");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=PtHard-Cluster"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=Track multi."); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=TOF BC"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=Primary vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Null 3 vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Z vertex window"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=Pile-up"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=V0AND"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=Centrality"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=GenHeader"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=PtHard-Jet");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=PtHard-Cluster"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=N Track>0"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(20,"20=TOF BC"); 
   fOutputContainer->Add(fhNEventsAfterCut);
 
-  
   if(fFillEMCAL)
   {
     for(Int_t i = 0; i < 8; i++)
     {
-      TString names[] = {"NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial","NCells", "BadDist","Time"};
+      TString names[] = 
+      { "NoCut", "Corrected", "GoodCluster", "NonLinearity", 
+        "EnergyAndFidutial", "NCells", "BadDist", "Time" } ;
       
       fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
                                         Form("EMCal %d, %s",i,names[i].Data()),   
@@ -866,20 +899,6 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
 }
 
 
-//____________________________________________
-/// \return pointer to stack (AliStack)
-//____________________________________________
-AliStack* AliCaloTrackReader::GetStack() const
-{
-  if(fMC)
-    return fMC->Stack();
-  else
-  {
-    AliDebug(1,"Stack is not available");
-    return 0x0 ;
-  }
-}
-
 //______________________________________________
 /// \return pointer to header (AliHeader)
 //______________________________________________
@@ -893,65 +912,6 @@ AliHeader* AliCaloTrackReader::GetHeader() const
   {
     AliInfo("Header is not available");
     return 0x0 ;
-  }
-}
-
-//______________________________________________________________
-/// \return pointer to Generated event header (AliGenEventHeader)
-//______________________________________________________________
-AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
-{
-  if     (ReadStack() && fMC)
-  {
-    AliGenEventHeader * eventHeader = fMC->GenEventHeader();
-    
-    if(fMCGenerEventHeaderToAccept=="") return eventHeader ;
-        
-    AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
-    
-    if(!cocktail) return 0x0 ;
-    
-    TList *genHeaders = cocktail->GetHeaders();
-    
-    Int_t nGenerators = genHeaders->GetEntries();
-    
-    for(Int_t igen = 0; igen < nGenerators; igen++)
-    {
-      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
-      TString name = eventHeader2->GetName();
-      //printf("ESD Event header %d %s\n",igen,name.Data());
-
-      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase)) 
-        return eventHeader2 ;
-    }
-
-    return 0x0;
-    
-  }
-  else if(ReadAODMCParticles() && GetAODMCHeader())
-  {
-    Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
-
-    if( nGenerators <= 0)        return 0x0;
-    
-    if(fMCGenerEventHeaderToAccept=="") return GetAODMCHeader()->GetCocktailHeader(0);
-        
-    for(Int_t igen = 0; igen < nGenerators; igen++)
-    {
-      AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
-      TString name = eventHeader->GetName();
-      //printf("AOD Event header %d %s\n",igen,name.Data());
-      
-      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
-        return eventHeader ;
-    }
-    
-    return 0x0;
-        
-  }
-  else
-  {
-    return 0x0;
   }
 }
 
@@ -1048,13 +1008,6 @@ Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track)
 //_____________________________
 void AliCaloTrackReader::Init()
 {  
-  if(fReadStack && fReadAODMCParticles)
-  {
-    AliInfo("Cannot access stack and mcparticles at the same time, change them");
-    fReadStack          = kFALSE;
-    fReadAODMCParticles = kFALSE;
-  }
-
   // Activate debug level in AliAnaWeights
   if( fWeightUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
@@ -1093,8 +1046,6 @@ void AliCaloTrackReader::InitParameters()
   fFillEMCALCells = kFALSE;
   fFillPHOSCells  = kFALSE;
   
-  fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
-  fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName = "";
   fEventTriggerMask      = AliVEvent::kAny;
@@ -1116,8 +1067,8 @@ void AliCaloTrackReader::InitParameters()
   
   fNMixedEvent = 1;
   
-  fPtHardAndJetPtFactor     = 7.;
-  fPtHardAndClusterPtFactor = 1.;
+  fPtHardAndJetPtFactor     = 4. ;
+  fPtHardAndClusterPtFactor = 1.5;
   
   //Centrality
   fUseAliCentrality = kFALSE;
@@ -1345,6 +1296,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     }
     
     AliDebug(1,"Pass Time Stamp rejection");
+    
     fhNEventsAfterCut->Fill(8.5);
   }
 
@@ -1354,23 +1306,29 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   FillVertexArray();
   
-  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
-  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
-  
-  fhNEventsAfterCut->Fill(9.5);
-
   if(fUseEventsWithPrimaryVertex)
   {
     if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
+
+    fhNEventsAfterCut->Fill(9.5);
+
     if( TMath::Abs(fVertex[0][0] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
-  }
-  
-  AliDebug(1,"Pass primary vertex rejection");
-  
-  fhNEventsAfterCut->Fill(10.5);
 
+    AliDebug(1,"Pass primary vertex/null rejection");
+    
+    fhNEventsAfterCut->Fill(10.5);
+  }
+
+  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
+  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
+  
+  fhNEventsAfterCut->Fill(11.5);
+
+  AliDebug(1,"Pass z vertex rejection");
+
+  
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
   if(fDoPileUpEventRejection)
@@ -1383,7 +1341,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass Pile-Up event rejection");
     
-    fhNEventsAfterCut->Fill(11.5);
+    fhNEventsAfterCut->Fill(12.5);
   }
   
   if(fDoV0ANDEventSelection)
@@ -1402,7 +1360,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass V0AND event rejection");
     
-    fhNEventsAfterCut->Fill(12.5);
+    fhNEventsAfterCut->Fill(13.5);
   }
 
   //------------------------------------------------------
@@ -1420,7 +1378,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass centrality rejection");
     
-    fhNEventsAfterCut->Fill(13.5);
+    fhNEventsAfterCut->Fill(14.5);
   }
   
   //----------------------------------------------------------------
@@ -1428,10 +1386,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // the one requested among the possible generators.
   // Needed in case of cocktail MC generation with multiple options.
   //----------------------------------------------------------------
-  if(fMCGenerEventHeaderToAccept!="" && !GetGenEventHeader()) 
-    return kFALSE;
-  
-  fhNEventsAfterCut->Fill(14.5);
+  if(fMCGenerEventHeaderToAccept!="") 
+  {
+    if(!GetGenEventHeader()) return kFALSE;
+    
+    AliDebug(1,"Pass Event header selection");
+    
+    fhNEventsAfterCut->Fill(15.5);
+  }
 
   //---------------------------------------------------------------------------
   // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
@@ -1441,15 +1403,19 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fComparePtHardAndJetPt)
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
+    
     AliDebug(1,"Pass Pt Hard - Jet rejection");
-    fhNEventsAfterCut->Fill(15.5);
+    
+    fhNEventsAfterCut->Fill(16.5);
   }
   
   if(fComparePtHardAndClusterPt)
   {
     if(!ComparePtHardAndClusterPt()) return kFALSE ;
+    
     AliDebug(1,"Pass Pt Hard - Cluster rejection");
-    fhNEventsAfterCut->Fill(16.5);
+    
+    fhNEventsAfterCut->Fill(17.5);
   }
   
   //------------------------------------------------------------------
@@ -1481,9 +1447,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     //Accept events with at least one track
     if(fTrackMult[0] == 0 && fDoRejectNoTrackEvents) return kFALSE ;
     
-    fhNEventsAfterCut->Fill(17.5);
-    
     AliDebug(1,"Pass rejection of null track events");
+
+    fhNEventsAfterCut->Fill(18.5);    
   }
   
   if(fDoVertexBCEventSelection)
@@ -1492,7 +1458,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
-    fhNEventsAfterCut->Fill(18.5);
+    fhNEventsAfterCut->Fill(19.5);
   }
   
   if(fFillEMCALCells)
@@ -1843,7 +1809,7 @@ void AliCaloTrackReader::FillInputCTS()
     else      fVertexBC = AliVTrack::kTOFBCNA ;
   }
   
-  AliDebug(1,Form("AOD entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
+  AliDebug(1,Form("CTS entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
 }
 
 //_______________________________________________________________________________
@@ -1867,7 +1833,7 @@ void AliCaloTrackReader::FillInputCTS()
 //_______________________________________________________________________________
 void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
-  // Accept clusters with the proper label
+  // Accept clusters with the proper label, only applicable for MC
   if ( clus->GetLabel() >= 0 )  // -1 corresponds to noisy MC
   { 
     if ( !AcceptParticleMCLabel(clus->GetLabel()) ) return ;
@@ -1959,7 +1925,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if(!goodCluster)
   {
     //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-    AliDebug(2,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+    AliDebug(1,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
                     fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
     return;
@@ -2281,7 +2247,10 @@ void AliCaloTrackReader::FillInputEMCAL()
     
   }
   
-  AliDebug(1,Form("AOD entries %d, n pile-up clusters %d, n non pile-up %d", fEMCALClusters->GetEntriesFast(),fNPileUpClusters,fNNonPileUpClusters));
+  AliDebug(1,Form("EMCal selected clusters %d", 
+                  fEMCALClusters->GetEntriesFast()));
+  AliDebug(2,Form("\t n pile-up clusters %d, n non pile-up %d", 
+                  fNPileUpClusters,fNNonPileUpClusters));
 }
 
 //_______________________________________
@@ -2400,7 +2369,7 @@ void AliCaloTrackReader::FillInputPHOS()
     
   } // esd/aod cluster loop
   
-  AliDebug(1,Form("AOD entries %d",fPHOSClusters->GetEntriesFast())) ;  
+  AliDebug(1,Form("PHOS selected clusters %d",fPHOSClusters->GetEntriesFast())) ;  
 }
 
 //____________________________________________
@@ -3007,10 +2976,15 @@ void AliCaloTrackReader::SetEMCALTriggerThresholds()
   { 
     // Revise for periods > LHC11d 
     Int_t runNumber = fInputEvent->GetRunNumber();
-    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;
-    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;
-    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;
-    else                        fTriggerL0EventThreshold = 2  ;
+    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
+    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
+    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
+    else if(runNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
+    else if(runNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def 
+    else if(runNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g 
+    else if(runNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2 
+    else if(runNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir 
+    else                        fTriggerL0EventThreshold = 3.5;  // LHC16s 
   }  
 }
 
@@ -3062,7 +3036,6 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   if(fComparePtHardAndClusterPt)
     printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
   
-  printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
   printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
   

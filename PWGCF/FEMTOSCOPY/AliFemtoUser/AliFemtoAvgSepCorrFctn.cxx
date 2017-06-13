@@ -29,6 +29,8 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   fDenominatorNegPos(0),
   fNumeratorNegNeg(0),
   fDenominatorNegNeg(0),
+  fNumeratorBac(0),
+  fDenominatorBac(0),
   fRatio(0),
   fPairType(kTracks)
 {
@@ -88,6 +90,12 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   strncat(tTitDenNegNeg, title, 100);
   fDenominatorNegNeg = new TH1D(tTitDenNegNeg, title, nbins, Low, High);
 
+  char tTitNumBac[101] = "NumXiTrackBac";
+  strncat(tTitNumBac, title, 100);
+  fNumeratorBac = new TH1D(tTitNumBac, title, nbins, Low, High);
+  char tTitDenBac[101] = "DenXiTrackBac";
+  strncat(tTitDenBac, title, 100);
+  fDenominatorBac = new TH1D(tTitDenBac, title, nbins, Low, High);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
@@ -106,6 +114,9 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   fDenominatorNegPos->Sumw2();
   fNumeratorNegNeg->Sumw2();
   fDenominatorNegNeg->Sumw2();
+
+  fNumeratorBac->Sumw2();
+  fDenominatorBac->Sumw2();
 
   fRatio->Sumw2();
 }
@@ -127,6 +138,8 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const AliFemtoAvgSepCorrFctn &aCo
   fDenominatorNegPos(0),
   fNumeratorNegNeg(0),
   fDenominatorNegNeg(0),
+  fNumeratorBac(0),
+  fDenominatorBac(0),
   fRatio(0),
   fPairType(kTracks)
 {
@@ -134,19 +147,22 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const AliFemtoAvgSepCorrFctn &aCo
   fNumerator = new TH1D(*aCorrFctn.fNumerator);
   fDenominator = new TH1D(*aCorrFctn.fDenominator);
 
-  fNumeratorPos = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorPos = new TH1D(*aCorrFctn.fDenominator);
-  fNumeratorNeg = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorNeg = new TH1D(*aCorrFctn.fDenominator);
+  fNumeratorPos = new TH1D(*aCorrFctn.fNumeratorPos);
+  fDenominatorPos = new TH1D(*aCorrFctn.fDenominatorPos);
+  fNumeratorNeg = new TH1D(*aCorrFctn.fNumeratorNeg);
+  fDenominatorNeg = new TH1D(*aCorrFctn.fDenominatorNeg);
 
-  fNumeratorPosPos = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorPosPos = new TH1D(*aCorrFctn.fDenominator);
-  fNumeratorPosNeg = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorPosNeg = new TH1D(*aCorrFctn.fDenominator);
-  fNumeratorNegPos = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorNegPos = new TH1D(*aCorrFctn.fDenominator);
-  fNumeratorNegNeg = new TH1D(*aCorrFctn.fNumerator);
-  fDenominatorNegNeg = new TH1D(*aCorrFctn.fDenominator);
+  fNumeratorPosPos = new TH1D(*aCorrFctn.fNumeratorPosPos);
+  fDenominatorPosPos = new TH1D(*aCorrFctn.fDenominatorPosPos);
+  fNumeratorPosNeg = new TH1D(*aCorrFctn.fNumeratorPosNeg);
+  fDenominatorPosNeg = new TH1D(*aCorrFctn.fDenominatorPosNeg);
+  fNumeratorNegPos = new TH1D(*aCorrFctn.fNumeratorNegPos);
+  fDenominatorNegPos = new TH1D(*aCorrFctn.fDenominatorNegPos);
+  fNumeratorNegNeg = new TH1D(*aCorrFctn.fNumeratorNegNeg);
+  fDenominatorNegNeg = new TH1D(*aCorrFctn.fDenominatorNegNeg);
+
+  fNumeratorBac = new TH1D(*aCorrFctn.fNumeratorBac);
+  fDenominatorBac = new TH1D(*aCorrFctn.fDenominatorBac);
 
   fRatio = new TH1D(*aCorrFctn.fRatio);
 }
@@ -170,6 +186,9 @@ AliFemtoAvgSepCorrFctn::~AliFemtoAvgSepCorrFctn()
   delete fDenominatorNegPos;
   delete fNumeratorNegNeg;
   delete fDenominatorNegNeg;
+
+  delete fNumeratorBac;
+  delete fDenominatorBac;
 
   delete fRatio;
 }
@@ -210,6 +229,11 @@ AliFemtoAvgSepCorrFctn &AliFemtoAvgSepCorrFctn::operator=(const AliFemtoAvgSepCo
   fNumeratorNegNeg = new TH1D(*aCorrFctn.fNumeratorNegNeg);
   if (fDenominatorNegNeg) delete fDenominatorNegNeg;
   fDenominatorNegNeg = new TH1D(*aCorrFctn.fDenominatorNegNeg);
+
+  if (fNumeratorBac) delete fNumeratorBac;
+  fNumeratorBac = new TH1D(*aCorrFctn.fNumeratorBac);
+  if (fDenominatorBac) delete fDenominatorBac;
+  fDenominatorBac = new TH1D(*aCorrFctn.fDenominatorBac);
 
   if (fRatio) delete fRatio;
   fRatio = new TH1D(*aCorrFctn.fRatio);
@@ -408,6 +432,44 @@ static void StoreAvgSepBetweenV0s(const AliFemtoV0 *V0_1,
   }
 }
 
+static void StoreAvgSepBetweenXiBacAndTrack(const AliFemtoXi *Xi,
+                                            const AliFemtoTrack *track,
+                                            TH1D *bac_output)
+{
+  // store number of successful points for bachelor pion
+  int countBac = 0;
+
+  // sums of the separation magnitude
+  double avgSepBac = 0.0;
+
+  // Need non-const V0 for some reason.
+  AliFemtoXi *mutable_Xi = const_cast<AliFemtoXi*>(Xi);
+
+  // loop through the 8 points of the 'NominalTpcPoint' methods
+  for (int i = 0; i < 8; i++) {
+    const AliFemtoThreeVector &bac_vec = mutable_Xi->NominalTpcPointBac(i),
+                              &trac_vec = track->NominalTpcPoint(i);
+
+    if (TpcPointIsUnset(trac_vec)) {
+      break;
+    }
+
+    const bool bad_bac = TpcPointIsUnset(bac_vec);
+
+    if (bad_bac) {
+      break;
+    }
+
+    if (!bad_bac) {
+      avgSepBac += (bac_vec - trac_vec).Mag();
+      countBac++;
+    }
+  }
+  if (countBac != 0) {
+    bac_output->Fill(avgSepBac / countBac);
+  }
+}
+
 //____________________________
 void AliFemtoAvgSepCorrFctn::AddRealPair(AliFemtoPair *pair)
 {
@@ -443,6 +505,17 @@ void AliFemtoAvgSepCorrFctn::AddRealPair(AliFemtoPair *pair)
                           fNumeratorPosNeg,
                           fNumeratorNegPos,
                           fNumeratorNegNeg);
+    break;
+
+  // track + Xi
+  case kTrackXi:
+    StoreAvgSepBetweenXiBacAndTrack(track_1->Xi(),
+                                    track_2->Track(),
+                                    fNumeratorBac);
+    StoreAvgSepBetweenV0AndTrack((AliFemtoV0*)track_1->Xi(),
+                                              track_2->Track(),
+                                              fNumeratorPos,
+                                              fNumeratorNeg);
     break;
   }
 }
@@ -484,6 +557,17 @@ void AliFemtoAvgSepCorrFctn::AddMixedPair(AliFemtoPair *pair)
                           fDenominatorNegPos,
                           fDenominatorNegNeg);
     break;
+
+  // track + Xi
+  case kTrackXi:
+    StoreAvgSepBetweenXiBacAndTrack(track_1->Xi(),
+                                    track_2->Track(),
+                                    fDenominatorBac);
+    StoreAvgSepBetweenV0AndTrack((AliFemtoV0*)track_1->Xi(),
+                                              track_2->Track(),
+                                              fDenominatorPos,
+                                              fDenominatorNeg);
+    break;
   }
 
 }
@@ -509,6 +593,13 @@ void AliFemtoAvgSepCorrFctn::Write()
     fDenominatorNegPos->Write();
     fNumeratorNegNeg->Write();
     fDenominatorNegNeg->Write();
+  } else if (fPairType == kTrackXi) {
+    fNumeratorPos->Write();
+    fDenominatorPos->Write();
+    fNumeratorNeg->Write();
+    fDenominatorNeg->Write();
+    fNumeratorBac->Write();
+    fDenominatorBac->Write();
   }
 }
 //______________________________
@@ -535,6 +626,13 @@ TList *AliFemtoAvgSepCorrFctn::GetOutputList()
     tOutputList->Add(fDenominatorNegPos);
     tOutputList->Add(fNumeratorNegNeg);
     tOutputList->Add(fDenominatorNegNeg);
+  } else if (fPairType == kTrackXi) {
+    tOutputList->Add(fNumeratorPos);
+    tOutputList->Add(fDenominatorPos);
+    tOutputList->Add(fNumeratorNeg);
+    tOutputList->Add(fDenominatorNeg);
+    tOutputList->Add(fNumeratorBac);
+    tOutputList->Add(fDenominatorBac);
   }
   return tOutputList;
 }

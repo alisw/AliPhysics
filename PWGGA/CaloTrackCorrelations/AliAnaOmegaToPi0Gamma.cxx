@@ -17,7 +17,6 @@
 class TROOT;
 #include "TH2F.h"
 #include "TLorentzVector.h"
-#include "TParticle.h"
 #include "TCanvas.h"
 #include "TFile.h"
 
@@ -25,10 +24,10 @@ class TROOT;
 #include "AliAnaOmegaToPi0Gamma.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaOmegaToPi0Gamma) ;
@@ -315,60 +314,30 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   // Fill the MC AOD if needed first.
   //-----------
   //need to be further implemented
-  AliStack * stack = 0x0;
-  // TParticle * primary = 0x0;
-  TClonesArray * mcparticles0 = 0x0;
-  //TClonesArray * mcparticles1 = 0x0;
-  AliAODMCParticle * aodprimary = 0x0;
-  Int_t pdg=0;
-  Double_t pt=0;
-  Double_t eta=0;
+  AliVParticle * primary = 0x0;
+  Int_t    pdg   = 0;
+  Double_t pt    = 0;
+  Double_t eta   = 0;
+  Int_t    nprim = 0;
   
-  if(IsDataMC())
+  if ( IsDataMC() && GetMC() )
   {
-    if(GetReader()->ReadStack())
+    nprim = GetMC()->GetNumberOfTracks();
+    
+    for(Int_t i=0;i<nprim;i++)
     {
-      stack =  GetMCStack() ;
-      if(!stack){
-        printf("AliAnaAcceptance::MakeAnalysisFillHistograms() - There is no stack!\n");
-      }
-      else{
-        for(Int_t i=0 ; i<stack->GetNtrack(); i++){
-          TParticle * prim = stack->Particle(i) ;
-          pdg = prim->GetPdgCode() ;
-          eta=prim->Eta();
-          pt=prim->Pt();
-          if(TMath::Abs(eta)<0.5) {
-            if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
-          }
-        }
+      primary = GetMC()->GetTrack(i);
+      
+      pdg = primary->PdgCode() ;
+      eta = primary->Eta();
+      pt  = primary->Pt();
+      
+      if(TMath::Abs(eta)<0.5)
+      {
+        if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
       }
     }
-    else if(GetReader()->ReadAODMCParticles()){
-      //Get the list of MC particles
-      mcparticles0 = GetReader()->GetAODMCParticles();
-      if(!mcparticles0 )
-      {
-        if(GetDebug() > 0) printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-      }
-      else
-      {
-        for(Int_t i=0;i<mcparticles0->GetEntries();i++)
-        {
-          aodprimary =(AliAODMCParticle*)mcparticles0->At(i);
-          pdg = aodprimary->GetPdgCode() ;
-          eta=aodprimary->Eta();
-          pt=aodprimary->Pt();
-          if(TMath::Abs(eta)<0.5)
-          {
-            if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
-          }
-          
-        }
-      }//mcparticles0 exists
-    }//AOD MC Particles
   }// is data and MC
-  
   
   //process event from AOD brach 
   //extract pi0, eta and omega analysis

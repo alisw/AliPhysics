@@ -49,6 +49,7 @@ AliV0CutsStrange::AliV0CutsStrange(const char *name,const char *title) :
   fIsQA(kFALSE),
   fV0ReaderStrangeName("V0ReaderStrange"),
   fCutString(NULL),
+  fCutStringRead(""),
   fPreSelCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
   fUseOnFlyV0FinderSameSign(0),
@@ -98,6 +99,7 @@ AliV0CutsStrange::AliV0CutsStrange(const AliV0CutsStrange &ref) :
   fIsQA(kFALSE),
   fV0ReaderStrangeName("V0ReaderStrange"),
   fCutString(ref.fCutString),
+  fCutStringRead(ref.fCutStringRead),
   fPreSelCut(ref.fPreSelCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
   fUseOnFlyV0FinderSameSign(ref.fUseOnFlyV0FinderSameSign),
@@ -261,11 +263,7 @@ void AliV0CutsStrange::InitCutHistograms(TString name, Bool_t preCut){
 ///________________________________________________________________________
 TString AliV0CutsStrange::GetCutNumber(){
   // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-    a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 
@@ -325,6 +323,8 @@ Bool_t AliV0CutsStrange::SetCut(cutIds cutID, const Int_t value) {
 
 ///________________________________________________________________________
 Bool_t AliV0CutsStrange::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
   // Initialize Cuts from a given Cut string
 
   AliInfo(Form("Set V0 Cut Number: %s",analysisCutSelection.Data()));
@@ -332,16 +332,18 @@ Bool_t AliV0CutsStrange::InitializeCutsFromCutString(const TString analysisCutSe
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-    AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+    AliError("Cut selection is not alphanumeric");
     return kFALSE;
   }
 
 //   if (fV0ReaderStrangeName.CompareTo("") == 0){
 //     fV0ReaderStrangeName = "V0ReaderV1";
 //   }
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -607,6 +609,7 @@ Bool_t AliV0CutsStrange::GetPIDpion(AliVTrack *fCurrentTrack){
     if(fHistoTOFdEdxPionAfter)fHistoTOFdEdxPionAfter->Fill(fCurrentTrack->Pt(),fCurrentTrack->GetTOFsignal());
   }  
   
+  return kTRUE;
 }
 
 
@@ -658,6 +661,8 @@ Bool_t AliV0CutsStrange::GetPIDproton(AliVTrack *fCurrentTrack){
     if(fHistoTOFdEdxSigmaProtonAfter)fHistoTOFdEdxSigmaProtonAfter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton));
     if(fHistoTOFdEdxProtonAfter)fHistoTOFdEdxProtonAfter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTOFsignal());
   }
+
+  return kTRUE;
 }
 
 

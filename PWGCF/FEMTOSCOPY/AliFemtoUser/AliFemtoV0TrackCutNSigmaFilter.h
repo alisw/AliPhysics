@@ -92,9 +92,10 @@ public:
   bool IsMisIDLambda(const AliFemtoV0* aV0);
   bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
 
-  void SetParticleType(short x);
+  void SetCTauHistoV0(int aNbins=500, double aMin=0.0, double aMax=50.0);
   short GetParticleType();
   double GetCTau(const AliFemtoV0* aV0);
+  TH1D* GetCTauHist();
 
   virtual TList *GetOutputList();
 
@@ -117,6 +118,7 @@ protected:
   vector<AliFemtoNSigmaFilter> fLambdaRejectionFilters;
   vector<AliFemtoNSigmaFilter> fAntiLambdaRejectionFilters;
 
+  bool fBuildCTau;
   TH1D* fCTau;  //Currently in development, if useful, will be added to AliFemtoV0TrackCut,
 		// or to the cut monitor
 
@@ -215,5 +217,6 @@ inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTOFNSigmaCut(double aMomMin
 
 inline short AliFemtoV0TrackCutNSigmaFilter::GetParticleType() {return fParticleType;}
 
+inline TH1D* AliFemtoV0TrackCutNSigmaFilter::GetCTauHist() {return fCTau;}
 
 #endif

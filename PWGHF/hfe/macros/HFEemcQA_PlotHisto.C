@@ -494,7 +494,7 @@ void HFEemcQA_PlotHisto()
   */
 
   TFile *fout = new TFile("ElectronsMB.root","recreate");
-  electron->Write("eArray");
+  //electron->Write("eArray");
   ClusEcent->Write("clE");
   cent->Write("Cent");
 }

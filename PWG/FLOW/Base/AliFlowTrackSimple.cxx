@@ -42,7 +42,8 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fMass(-1),
   fPOItype(0),
   fSubEventBits(0),
-  fID(-1)
+  fID(-1),
+  fITStype(0)
 {
   //constructor 
 }
@@ -58,9 +59,10 @@ AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, 
   fMass(mass),
   fPOItype(0),
   fSubEventBits(0),
-  fID(-1)
+  fID(-1),
+  fITStype(0)
 {
-  //constructor 
+  //constructor
 }
 
 //-----------------------------------------------------------------------
@@ -74,7 +76,8 @@ AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
   fMass(-1),
   fPOItype(0),
   fSubEventBits(0),
-  fID(-1)
+  fID(-1),
+  fITStype(0)
 {
   //ctor
   TParticlePDG* ppdg = p->GetPDG();
@@ -93,6 +96,7 @@ void AliFlowTrackSimple::Set(TParticle* p)
   TParticlePDG* ppdg = p->GetPDG();
   fCharge = TMath::Nint(ppdg->Charge()/3.0);
   fMass = ppdg->Mass();
+  fITStype = 0;
 }
 
 //-----------------------------------------------------------------------
@@ -106,7 +110,8 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fMass(aTrack.fMass),
   fPOItype(aTrack.fPOItype),
   fSubEventBits(aTrack.fSubEventBits),
-  fID(aTrack.fID)
+  fID(aTrack.fID),
+  fITStype(aTrack.fITStype)
 {
   //copy constructor 
 }
@@ -132,6 +137,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fPOItype = aTrack.fPOItype;
   fSubEventBits = aTrack.fSubEventBits;
   fID = aTrack.fID;
+  fITStype = aTrack.fITStype;
 
   return *this;
 }
@@ -380,4 +386,5 @@ void AliFlowTrackSimple::Clear(Option_t*)
   fPOItype.ResetAllBits();
   fSubEventBits.ResetAllBits();
   fID=-1;
+  fITStype=0;
 }

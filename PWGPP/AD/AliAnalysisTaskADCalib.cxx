@@ -63,13 +63,11 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
 }
 
 AliAnalysisTaskADCalib::~AliAnalysisTaskADCalib() {
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis) {
-    delete fList;
-    fList = NULL;
+  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
+    return;
 
-    delete fADESDFriendUtils;
-    fADESDFriendUtils = NULL;
-  }
+  SafeDelete(fList);
+  SafeDelete(fADESDFriendUtils);
 }
 
 Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y) {
@@ -293,10 +291,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   fStatus = kOk;
 
   // if necessary clean up
-  if (NULL != fList) {
-    delete fList;
-    fList = NULL;
-  }
+  SafeDelete(fList);
 
   // (0) get and set up the OCDB manager
   AliCDBManager *man = AliCDBManager::Instance();
@@ -494,13 +489,13 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   case 13:
   case 14:
   case 15:
-    f->SetParameters(0, slope, 0.1, 1.5);
     f->SetParNames("offset", "slope", "p_{0}", "power");
     f->SetParLimits(0,-20.0,20.0);
     f->SetParLimits(1, 0.0, 10.0);
     f->SetParLimits(2, 0.0,  1.0);
-    f->SetParLimits(3, 1.1,  4.0);
-    if (bc >= 13 && slope < 0.6) {
+    f->SetParLimits(3, 1.1,  1.5);
+    f->SetParameters(0, slope, 0.01, 1.2);
+    if (bc >= 13 && slope < 0.7) {
       f->FixParameter(2, 0.0);
       f->FixParameter(3, 1.1);
     }
@@ -622,8 +617,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 
   // (3) fill TTree
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    f_Int0.Clear("C");
-    f_Int1.Clear("C");
+    f_Int0.Delete();
+    f_Int1.Delete();
 
     chOffline = ch;
     chOnline  = gOffline2Online[ch];

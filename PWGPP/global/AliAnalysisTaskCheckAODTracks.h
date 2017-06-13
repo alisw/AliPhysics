@@ -59,6 +59,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SeMinNumOfTPCPIDclu(Int_t minc){
     fMinNumOfTPCPIDclu=minc;
   }
+  void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
+    fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
+  }
 
  private:
 
@@ -73,6 +76,13 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH1F* fHistNEvents;                //!<!  histo with N of events  
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
   TH2D* fHistFilterBits;             //!<!  histo of fieter bits
+
+  TH1F* fHistITSnClusTPCsel;        //!<! histo of ITS clusters
+  TH1F* fHistITSnClusITSsa;         //!<! histo of ITS clusters
+  TH1F* fHistITSnClusITSPureSA;     //!<! histo of ITS clusters
+  TH1F* fHistITSCluInLayTPCsel;     //!<! histo of track pts in ITS layers
+  TH1F* fHistITSCluInLayITSsa;      //!<! histo of track pts in ITS layers
+  TH1F* fHistITSCluInLayITSPureSA;  //!<! histo of track pts in ITS layers
 
   TH2F* fHistNtracksFb4VsV0befEvSel;    //!<!  histo of tracks vs. centr.
   TH2F* fHistNtracksFb5VsV0befEvSel;    //!<!  histo of tracks vs. centr.
@@ -117,7 +127,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
 
-  TH2F* fHistInvMassK0s;
+  TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
   TH3F* fHistInvMassAntiLambda;
 
@@ -137,7 +147,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,4);
+  ClassDef(AliAnalysisTaskCheckAODTracks,6);
 };
 
 

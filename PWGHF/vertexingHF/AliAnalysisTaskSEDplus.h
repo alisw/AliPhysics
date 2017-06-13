@@ -86,7 +86,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void CreateMCAcceptanceHistos();
 
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets);
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -106,7 +106,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
   Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
-  enum {kVarForSparse=12,kVarForSparseFD=13,kVarForTrackSparse=7,kVarForImpPar=3};
+  enum {kVarForSparse=13,kVarForSparseFD=14,kVarForTrackSparse=7,kVarForImpPar=3};
 
   TList* fOutput;            //!<! list send on output slot 0
   TH1F* fHistNEvents;        //!<! hist. for No. of events

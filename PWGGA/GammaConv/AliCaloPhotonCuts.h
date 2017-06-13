@@ -110,6 +110,19 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16k3b,
       k16k5a,
       k16k5b,
+      k17a2a,
+      k17a2b,
+      k17a3a,
+      k17a3b,
+      k17a4a,
+      k17a4b,
+      k17e2,
+      k17f2a,
+      k17f2b,
+      k17f3a,
+      k17f3b,
+      k17f4a,
+      k17f4b,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -123,7 +136,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15pp13TeV,
       k15pp5TeV,
       k15PbPb5TeV,
-      k16pp13TeV
+      k16pp13TeV,
+      k16pPb5023GeV,
+      k16pPb8TeV,
+      k17pp13TeV
     };
 
     
@@ -167,11 +183,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
-    void        CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
+    void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
+    Float_t     FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+    Float_t     FunctionNL_PHOSRun2(Float_t e, Float_t p0 = 0.08, Float_t p1 = 0.055, Float_t p2 = 0.03, Float_t p3 = 6.65e-02);
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
+    Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     //predefined functions
     Float_t     FunctionNL_kPi0MCv1(Float_t e);
     Float_t     FunctionNL_kPi0MCv2(Float_t e);
@@ -266,6 +285,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
+
+    AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
+    AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
     
   protected:
     TList      *fHistograms;
@@ -353,7 +375,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     // CutString
     TObjString* fCutString;                             // cut number used for analysis
-    
+    TString     fCutStringRead;
+
     // Histograms
     TH1F*     fHistCutIndex;                            // bookkeeping for cuts
     TH1F*     fHistAcceptanceCuts;                      // bookkeeping for acceptance cuts
@@ -399,6 +422,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterIncludedCellsTimingEnergyAfterQA;   // Timing vs Energy of CellIDs in Cluster of accepted ones
     TH2F*     fHistClusterDistanceInTimeCut;            // distance of clusters: within cluster timing cut + within cluster timing cut
     TH2F*     fHistClusterDistanceOutTimeCut;           // distance of clusters: within cluster timing cut + outside cluster timing cut
+    TH1F*     fHistClusterDistance1DInTimeCut;          // 1D distance of clusters: within cluster timing cut + within cluster timing cut
 
     //Track matching histograms
     TH1F*     fHistClusterRBeforeQA;                    // cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -452,7 +476,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,41)
+    ClassDef(AliCaloPhotonCuts,45)
 };
 
 #endif

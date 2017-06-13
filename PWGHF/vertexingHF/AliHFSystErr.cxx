@@ -5127,10 +5127,12 @@ void AliHFSystErr::InitLctopKpi2013pPb() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
+
   for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.10); // 2-4
   for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); // 4-6
   for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.09); // 6-8
   for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
@@ -5192,10 +5194,12 @@ void AliHFSystErr::InitLctopKpi2013pPbBDT() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
+
   for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.10); // 2-4
   for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); // 4-6
   for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.09); // 6-8
   for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);

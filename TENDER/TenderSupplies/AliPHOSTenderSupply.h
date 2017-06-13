@@ -54,6 +54,8 @@ public:
   
   void UseLGForTime(Bool_t toUse=kFALSE){fUseLGForTime=toUse;} //Switch off LowGain digits from time calculation
   void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
+  TH2I * GetPHOSBadChannelStatusMap(Int_t iModule) const { return (TH2I*)fPHOSBadMap[iModule] ; }
+  void SetPrivateOADBBadMap(char * filename){fPrivateOADBBadMap = filename;}
   
   void   InitTender();
 
@@ -88,6 +90,7 @@ private:
   Int_t fRecoPass ;                          // Reconstruction pass
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
+  TString fPrivateOADBBadMap ;               //Name of force loaded OADB bad channel map
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)

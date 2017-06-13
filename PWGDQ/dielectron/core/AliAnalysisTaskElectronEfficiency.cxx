@@ -80,6 +80,8 @@ fPostPIDCntrdCorrTPC(0x0),
 fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
+fPostPIDCntrdCorrTOF(0x0),
+fPostPIDWdthCorrTOF(0x0),
 fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
@@ -280,6 +282,8 @@ fPostPIDCntrdCorrTPC(0x0),
 fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
+fPostPIDCntrdCorrTOF(0x0),
+fPostPIDWdthCorrTOF(0x0),
 fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
@@ -980,6 +984,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
   if(fPostPIDCntrdCorrITS) AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
   if(fPostPIDWdthCorrITS)  AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
+  if(fPostPIDCntrdCorrTOF) AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
+  if(fPostPIDWdthCorrTOF)  AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
   
   AliStack *fStack = mcEvent->Stack();
   
@@ -2423,6 +2429,80 @@ void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TObject *fun, UI
       case 3: printf(" %s, ",fPostPIDWdthCorrITS->GetZaxis()->GetName());
       case 2: printf(" %s, ",fPostPIDWdthCorrITS->GetYaxis()->GetName());
       case 1: printf(" %s ",fPostPIDWdthCorrITS->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunctionTOF(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key = Form("cntrdTOF%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDCntrdCorrTOF = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDCntrdCorrTOF = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDCntrdCorrTOF) {
+      fPostPIDCntrdCorrTOF->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
+  if(fPostPIDCntrdCorrTOF)  {
+    // check for corrections and add their variables to the fill map
+    printf("POST TOF PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorrTOF->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDCntrdCorrTOF->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDCntrdCorrTOF->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDCntrdCorrTOF->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionTOF(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key = Form("wdthTOF%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDWdthCorrTOF = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDWdthCorrTOF = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDWdthCorrTOF) {
+      fPostPIDWdthCorrTOF->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
+  if(fPostPIDWdthCorrTOF)  {
+    // check for corrections and add their variables to the fill map
+    printf("POST TOF PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorrTOF->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDWdthCorrTOF->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDWdthCorrTOF->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDWdthCorrTOF->GetXaxis()->GetName());
     }
     printf("\n");
     fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...

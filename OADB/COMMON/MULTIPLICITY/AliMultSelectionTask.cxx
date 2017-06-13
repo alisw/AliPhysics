@@ -181,14 +181,22 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistEventCounter(0),
       fHistEventSelections(0), 
       fHistQA_V0M(0),
+      fHistQA_V0A(0),
+      fHistQA_V0C(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
+      fHistQA_ZNA(0),
+      fHistQA_ZNC(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
       fHistQASelected_V0M(0),
+      fHistQASelected_V0A(0),
+      fHistQASelected_V0C(0),
       fHistQASelected_CL0(0),
       fHistQASelected_CL1(0),
+      fHistQASelected_ZNA(0),
+      fHistQASelected_ZNC(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -300,14 +308,22 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistEventCounter(0),
       fHistEventSelections(0), 
       fHistQA_V0M(0),
+      fHistQA_V0A(0),
+      fHistQA_V0C(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
+      fHistQA_ZNA(0),
+      fHistQA_ZNC(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
       fHistQASelected_V0M(0),
+      fHistQASelected_V0A(0),
+      fHistQASelected_V0C(0),
       fHistQASelected_CL0(0),
       fHistQASelected_CL1(0),
+      fHistQASelected_ZNA(0),
+      fHistQASelected_ZNC(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -685,6 +701,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_V0M);
     }
+    if ( !fHistQA_V0A ) {
+        fHistQA_V0A = new TH1D("fHistQA_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_V0A);
+    }
+    if ( !fHistQA_V0C ) {
+        fHistQA_V0C = new TH1D("fHistQA_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_V0C);
+    }
     if ( !fHistQA_CL0 ) {
         fHistQA_CL0 = new TH1D("fHistQA_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_CL0);
@@ -692,6 +716,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQA_CL1 ) {
         fHistQA_CL1 = new TH1D("fHistQA_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_CL1);
+    }
+    if ( !fHistQA_ZNA ) {
+        fHistQA_ZNA = new TH1D("fHistQA_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_ZNA);
+    }
+    if ( !fHistQA_ZNC ) {
+        fHistQA_ZNC = new TH1D("fHistQA_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_ZNC);
     }
     //To compare SPD tracklets in data and MC
     if ( !fHistQA_TrackletsVsV0M ) {
@@ -712,6 +744,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQASelected_V0M = new TH1D("fHistQASelected_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_V0M);
     }
+    if ( !fHistQASelected_V0A ) {
+        fHistQASelected_V0A = new TH1D("fHistQASelected_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_V0A);
+    }
+    if ( !fHistQASelected_V0C ) {
+        fHistQASelected_V0C = new TH1D("fHistQASelected_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_V0C);
+    }
     if ( !fHistQASelected_CL0 ) {
         fHistQASelected_CL0 = new TH1D("fHistQASelected_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_CL0);
@@ -719,6 +759,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQASelected_CL1 ) {
         fHistQASelected_CL1 = new TH1D("fHistQASelected_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_CL1);
+    }
+    if ( !fHistQASelected_ZNA ) {
+        fHistQASelected_ZNA = new TH1D("fHistQASelected_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_ZNA);
+    }
+    if ( !fHistQASelected_ZNC ) {
+        fHistQASelected_ZNC = new TH1D("fHistQASelected_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_ZNC);
     }
     //To compare SPD tracklets in data and MC
     if ( !fHistQASelected_TrackletsVsV0M ) {
@@ -1297,10 +1345,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
         const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
         const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
         const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
-        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
 
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
@@ -1311,19 +1359,24 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //FIXME: get ZDC information in AOD in a fully consistent way
         AliAODZDC *lAODZDC = aodevent->GetZDCData();
 
-        if (TMath::Abs(lAODZDC->GetZNATime()) < 990.) fZnaFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZNCTime()) < 990.) fZncFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZPATime()) < 990.) fZpaFired -> SetValueInteger(1);
-        if (TMath::Abs(lAODZDC->GetZPCTime()) < 990.) fZpcFired -> SetValueInteger(1);
-
-        const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
-        const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
-        const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
-        const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
-        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        //Only do this bit if the AOD has ZDC data
+        if( lAODZDC ){
+            for (Int_t j = 0; j < 4; ++j) {
+                if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+            }
+            
+            const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
+            const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
+            const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
+            const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
+            fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+            fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+            fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+            fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        }
     }
     
     fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
@@ -1453,25 +1506,41 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // Fill in quick debug information (available in any execution)
 
         Float_t lV0M = lSelection->GetMultiplicityPercentile("V0M");
+        Float_t lV0A = lSelection->GetMultiplicityPercentile("V0A");
+        Float_t lV0C = lSelection->GetMultiplicityPercentile("V0C");
         Float_t lCL0 = lSelection->GetMultiplicityPercentile("CL0");
         Float_t lCL1 = lSelection->GetMultiplicityPercentile("CL1");
+        Float_t lZNA = lSelection->GetMultiplicityPercentile("ZNA");
+        Float_t lZNC = lSelection->GetMultiplicityPercentile("ZNC");
         Int_t ltracklets = fnTracklets->GetValueInteger();
 
         fHistQA_V0M -> Fill( lV0M );
+        fHistQA_V0A -> Fill( lV0A );
+        fHistQA_V0C -> Fill( lV0C );
         fHistQA_CL0 -> Fill( lCL0 );
         fHistQA_CL1 -> Fill( lCL1 );
+        fHistQA_ZNA -> Fill( lZNA );
+        fHistQA_ZNC -> Fill( lZNC );
 
         fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
 
         lV0M = lSelection->GetMultiplicityPercentile("V0M",kTRUE);
+        lV0A = lSelection->GetMultiplicityPercentile("V0A",kTRUE);
+        lV0C = lSelection->GetMultiplicityPercentile("V0C",kTRUE);
         lCL0 = lSelection->GetMultiplicityPercentile("CL0",kTRUE);
         lCL1 = lSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        lZNA = lSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+        lZNC = lSelection->GetMultiplicityPercentile("ZNC",kTRUE);
 
         fHistQASelected_V0M -> Fill( lV0M );
+        fHistQASelected_V0A -> Fill( lV0A );
+        fHistQASelected_V0C -> Fill( lV0C );
         fHistQASelected_CL0 -> Fill( lCL0 );
         fHistQASelected_CL1 -> Fill( lCL1 );
+        fHistQASelected_ZNA -> Fill( lZNA );
+        fHistQASelected_ZNC -> Fill( lZNC );
 
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );

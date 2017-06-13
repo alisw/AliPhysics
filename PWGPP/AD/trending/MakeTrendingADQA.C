@@ -27,7 +27,7 @@
 
 bool IsADReady(Int_t run);
 
-Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 245145,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE, Bool_t doRebin = kTRUE)
+Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 244619,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE, Bool_t doRebin = kTRUE)
 {
   
   TTree *ttree=new TTree("trending","tree of trending variables");
@@ -1107,6 +1107,61 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 24
     fHistDecision->Draw("COLZTEXT");
 
     c12->Print(Form("ADQA_Run_%d.pdf)",runNumber));
+    
+    if(runNumber > 251861){
+        AliCDBEntry *entTrends = 0x0;
+        entTrends = man->Get("AD/Calib/PMTrends");
+	
+    	TClonesArray *fGraphs = (TClonesArray*)entTrends->GetObject();
+    	TGraph *fGraphPM[32];
+  
+    	TCanvas *cHV = new TCanvas("AD0_HV","AD0_HV",1000,500);
+    	cHV->Divide(4,4);
+   
+    	TCanvas *cImon = new TCanvas("AD0_Imon","AD0_Imon",1000,500);
+    	cImon->Divide(4,4);
+  
+    	for(int iPM = 0; iPM<16 ; iPM++){
+  		myPadSetUp(cHV->cd(iPM+1),0.2,0.10,0.02,0.2);
+  		cHV->cd(iPM+1);
+
+		fGraphPM[iPM] = (TGraph*)fGraphs->At(iPM);
+	
+		fGraphPM[iPM]->SetMarkerStyle(20);
+		fGraphPM[iPM]->SetMarkerSize(0.5);
+		fGraphPM[iPM]->SetTitle(Form("PM%d",iPM));
+		fGraphPM[iPM]->GetYaxis()->SetTitle("Voltage [V]");
+		fGraphPM[iPM]->GetXaxis()->SetTitle("DayTime");
+		fGraphPM[iPM]->GetYaxis()->SetTitleSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetTitleSize(0.08);
+		fGraphPM[iPM]->GetYaxis()->SetLabelSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetLabelSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetNdivisions(502);
+		fGraphPM[iPM]->GetXaxis()->SetTimeFormat("%H:%M");
+		fGraphPM[iPM]->Draw("APL");
+  		}
+		cHV->Print(Form("HVtrends_Run_%d.pdf(",runNumber));
+	
+    	for(int iPM = 16; iPM<32 ; iPM++){
+  		cImon->cd(iPM-15);
+		myPadSetUp(cImon->cd(iPM-15),0.2,0.10,0.02,0.2);
+		fGraphPM[iPM] = (TGraph*)fGraphs->At(iPM);
+		fGraphPM[iPM]->SetMarkerStyle(20);
+		fGraphPM[iPM]->SetMarkerSize(0.5);
+		fGraphPM[iPM]->SetTitle(Form("PM%d",iPM-16));
+		fGraphPM[iPM]->GetYaxis()->SetTitle("Current [mA]");
+		fGraphPM[iPM]->GetXaxis()->SetTitle("DayTime");
+		fGraphPM[iPM]->GetYaxis()->SetTitleSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetTitleSize(0.08);
+		fGraphPM[iPM]->GetYaxis()->SetLabelSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetLabelSize(0.08);
+		fGraphPM[iPM]->GetXaxis()->SetNdivisions(502);
+		fGraphPM[iPM]->GetXaxis()->SetTimeFormat("%H:%M");
+		fGraphPM[iPM]->Draw("APL");		
+  		}
+	cImon->Print(Form("HVtrends_Run_%d.pdf)",runNumber));
+	}
+
         
     
     }

@@ -410,12 +410,16 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[6] = fjNSubJettiness(jet1,0,1,0,1,0);
       fShapesVar[7] = fjNSubJettiness(jet1,0,2,0,1,0);
       //nsub1 and nsub2 for min_axis
-      fShapesVar[8] = fjNSubJettiness(jet1,0,1,10,1,0);
-      fShapesVar[9] = fjNSubJettiness(jet1,0,2,10,1,0);
+      fShapesVar[8] =0;
+	// 	fjNSubJettiness(jet1,0,1,10,1,0);
+      fShapesVar[9] =0;
+	// 	fjNSubJettiness(jet1,0,2,10,1,0);
       //deltaRkt
-      fShapesVar[10] = fjNSubJettiness(jet1,0,1,0,1,2);
+	fShapesVar[10] = 0;
+      //fjNSubJettiness(jet1,0,2,0,1,2);
       //deltaRmin
-      fShapesVar[11] = fjNSubJettiness(jet1,0,2,10,1,2);
+      fShapesVar[11] = 0;
+      //fjNSubJettiness(jet1,0,2,10,1,2);
     
       //SoftDropParameters for different reclustering strategies and beta values 
       SoftDrop(jet1,jetCont,0.1,0,0);
@@ -961,7 +965,7 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_
     //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
     Double_t dVtx[3]={1,1,1};
     //Printf("JetFinder->Nsubjettiness =%f", JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option));
-    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,0.2,Beta,Option,0);
+    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,0.2,Beta,Option,0,0,0);
     
   }
   else return -2;

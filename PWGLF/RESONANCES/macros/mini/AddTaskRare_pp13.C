@@ -363,7 +363,7 @@ AliRsnMiniAnalysisTask *AddTask_pik0
   Int_t       aodN = 68;
   TString     outNameSuffix = lname;
   Int_t       centr = 0;
-  Bool_t      ptDep = kTRUE;
+  Bool_t      ptDep = kFALSE;//kTRUE;
    
   //-------------------------------------------                                                                                          
   // event cuts                                                                                                                             
@@ -597,7 +597,7 @@ Bool_t Config_pik0
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     }else
-   esdTrackCuts->SetMinDCAToVertexXY("0.06"); //Use one of the two - pt dependent or fixed value cut.
+   esdTrackCuts->SetMinDCAToVertexXY(0.0); //Use one of the two - pt dependent or fixed value cut.  0.06
   
    //
    /////////////////////////////////////////////////
@@ -641,6 +641,16 @@ Bool_t Config_pik0
    /* centrality       */ Int_t centID  = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
    /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+   
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+   
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
 
    
    //
@@ -679,7 +689,14 @@ Bool_t Config_pik0
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(TrackCutsK & 1024){
+       out->SetPairCuts(cutsPair);
+     }else if(TrackCutsK & 2048){
+       out->SetPairCuts(cutsPair2);
+     }else{
+       if(i==0 || i==1 || i==4 || i==5) out->SetPairCuts(cutsPair2);
+       else out->SetPairCuts(cutsPair);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 1370, 0.63, 2.);

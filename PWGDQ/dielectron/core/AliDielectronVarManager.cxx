@@ -152,6 +152,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPC_nSigma_Kaons",       "n#sigma_{K}^{TPC}",                                  ""},
   {"TPC_nSigma_Protons",     "n#sigma_{p}^{TPC}",                                  ""},
 
+  {"TOF_nSigma_ElectronsRaw","n#sigma_{e}^{TOF} (raw)",                            ""},
   {"TOF_nSigma_Electrons",   "n#sigma_{e}^{TOF}",                                  ""},
   {"TOF_nSigma_Pions",       "n#sigma_{#pi}^{TOF}",                                ""},
   {"TOF_nSigma_Muons",       "n#sigma_{#mu}^{TOF}",                                ""},
@@ -643,7 +644,7 @@ AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;
 AliVEvent*      AliDielectronVarManager::fgEvent            = 0x0;
 AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
-TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[6][9] = {{0x0}};
+TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[7][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
 TObject*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 TObject*        AliDielectronVarManager::fgPairEffMap          = 0x0;

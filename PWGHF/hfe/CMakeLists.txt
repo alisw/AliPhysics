@@ -112,10 +112,12 @@ set(SRCS
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEMulti.cxx
+  AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
   AliHFEhadronicbackground.cxx
   AliHFEUnfolding.cxx	
   AliAnalysisTaskHFEEfficiency.cxx
+  AliAnalysisTaskHaHFECorrel.cxx
   )
 
 # Headers from sources

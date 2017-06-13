@@ -55,6 +55,7 @@ public:
     void SetStandardMassFunctionsPbPb2015(); 
     
     void SetVerbose     ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; }
+    void SetUseGeant3FlukaCorrection ( Bool_t lg3f = kTRUE ) { lUseGeant3FlukaCorrection = lg3f; }
     void SetDoOnlyData  ( Bool_t lDoOnlyDataRec = kTRUE ) { lDoOnlyData = lDoOnlyDataRec; }
     
     //Option to use integrated multiplicity for very first fit (to get mean, sigma)  
@@ -127,6 +128,9 @@ private:
 
     //Verbosity boolean
     Bool_t lVerbose;
+    
+    //G3/F correction (only meant for run 1 data!)
+    Bool_t lUseGeant3FlukaCorrection;
     
     //Other control booleans
     Bool_t lDoOnlyData; //process only the data part and break without using MC 

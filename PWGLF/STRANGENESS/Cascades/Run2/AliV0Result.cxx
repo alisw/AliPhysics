@@ -26,6 +26,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -69,6 +70,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -119,6 +121,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -174,6 +177,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -226,6 +230,7 @@ fCutV0CosPA(lCopyMe.fCutV0CosPA),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutCompetingV0Rejection(lCopyMe.fCutCompetingV0Rejection),
 fCutArmenteros(lCopyMe.fCutArmenteros),
+fCutArmenterosParameter(lCopyMe.fCutArmenterosParameter),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
@@ -286,6 +291,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
     fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
+    fCutArmenterosParameter = lCopyMe->GetCutArmenterosParameter();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutMinBaryonMomentum = lCopyMe->GetCutMinBaryonMomentum();
     
@@ -361,6 +367,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
     fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
+    fCutArmenterosParameter = lCopyMe.GetCutArmenterosParameter();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutMinBaryonMomentum = lCopyMe.GetCutMinBaryonMomentum();
     
@@ -470,6 +477,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
 
     //if( fCutCompetingV0Rejection != lCompareV0->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
     if( fCutArmenteros != lCompareV0->GetCutArmenteros() ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutArmenterosParameter - lCompareV0->GetCutArmenterosParameter() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
     
@@ -529,6 +537,7 @@ void AliV0Result::Print()
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
+    cout<<" Armenteros param...: "<<fCutArmenterosParameter<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Min baryon momentum: "<<fCutMinBaryonMomentum<<endl;
     

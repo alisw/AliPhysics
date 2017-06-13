@@ -48,7 +48,7 @@ class AlidNdPtHelper : public TObject
     public:
         enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kTPCTrackSPDvtx, kTPCTrackSPDvtxUpdate, kTPCITSHybrid, kTPCITSHybridTrackSPDvtx, kTPCITSHybridTrackSPDvtxDCArPt, kITSStandAloneTrackSPDvtx,kITSStandAloneTPCTrackSPDvtx, kMCRec };
 
-        enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kMCSigmaPlus, kMCSigmaMinus, kMCLambda, kMCK0, kMCXiMinus, kMCElectron, kMCMuon, kMCOmegaMinus, kPlus, kMinus, kCosmic, kBackgroundTrack, kMCRest, kMCRemainingRest, kVZEROCase1, kVZEROCase2};
+        enum ParticleMode { kAllPart = 0, kInclWoSimga, kMCPion, kMCKaon, kMCProton, kMCSigmaPlus, kMCSigmaMinus, kMCLambda, kMCK0, kMCXiMinus, kMCElectron, kMCMuon, kMCOmegaMinus, kPlus, kMinus, kCosmic, kBackgroundTrack, kMCRest, kMCRemainingRest, kVZEROCase1, kVZEROCase2};
 
         enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kAnalysisPbPb, kCorrection, kSystematics, kCutAnalysisPbPb };
 
@@ -81,8 +81,8 @@ class AlidNdPtHelper : public TObject
 
         static Int_t GetSPDMBTrackMult(const AliESDEvent* const esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
         static Int_t GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack *const  stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
-        static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);    
-        static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift);    
+        static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
+        static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift);
 
         static AliESDtrack* GetTPCOnlyTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
         static AliESDtrack* GetTPCOnlyTrackTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
@@ -115,7 +115,7 @@ class AlidNdPtHelper : public TObject
         static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
 
         static Double_t GetStrangenessCorrFactor(const Double_t pt);
-        static Double_t GetStrangenessCorrFactorPbPb(const Double_t pt);    
+        static Double_t GetStrangenessCorrFactorPbPb(const Double_t pt);
         static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
 
         // function to rebin THnSparse, the content of hist1 will be rebinned, hist2 serves as a protoype for the binning

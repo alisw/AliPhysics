@@ -1380,6 +1380,44 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 }
 
 //_______________________________________________________________________
+Int_t AliFlowTrackCuts::GetITStype(const AliAODTrack* track) const
+{
+  // set ITStype (test purpose only)
+  Int_t ITStype=0;
+  Bool_t bHITs[6] = {kFALSE};
+  Int_t hitcnt=0;
+  Bool_t isSPD=kFALSE, isSDD=kFALSE, isSSD=kFALSE;
+  for (Int_t i=0; i<6; i++) {
+    if(track->HasPointOnITSLayer(i)) {
+      if(i<2) isSPD=kTRUE;
+      if(i>2 && i<4) isSDD=kTRUE;
+      if(i>4) isSSD=kTRUE;
+      bHITs[i]=kTRUE;
+      hitcnt++;
+    }
+  }
+  if(hitcnt==1) {
+    for (Int_t i=0; i<6; i++) {
+      if(bHITs[i]) ITStype = i+1;
+    }
+  }
+  if(hitcnt>=2) {
+    if(isSPD  & !isSDD & !isSSD) ITStype = 7;
+    if(isSPD  &  isSDD & !isSSD) ITStype = 8;
+    if(isSPD  & !isSDD &  isSSD) ITStype = 9;
+    if(!isSPD & isSDD  & !isSSD) ITStype = 10;
+    if(!isSPD & isSDD  &  isSSD) ITStype = 11;
+    if(!isSPD & !isSDD &  isSSD) ITStype = 12;
+    if(isSPD  &  isSDD &  isSSD) {
+      if(bHITs[0]  && !bHITs[1]) ITStype = 13;
+      if(!bHITs[0] &&  bHITs[1]) ITStype = 14;
+      if(bHITs[0]  &&  bHITs[1]) ITStype = 15;
+    }
+  }
+  return ITStype;
+}
+
+//_______________________________________________________________________
 Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFid)
 {
   //check cuts for AOD
@@ -1406,8 +1444,11 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   
   if (fCutChi2PerClusterITS)
   {
-    Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
-    if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
+    Int_t nitscls = track->GetITSNcls();
+    if(nitscls>0) {
+      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
+      if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
+    }
   }
   
   if (fCutITSClusterGlobal)
@@ -1480,7 +1521,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
     }
     if (fCutDCAToVertexXYPtDepAOD) {
-      Double_t MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      Double_t MaxDCAPtDep = 2.4;
+      if (fAODFilterBit!=128) MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      else MaxDCAPtDep = 0.4+0.2/pow(track->Pt(),0.3);
       if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
     }
     if (fCutDCAToVertexZAOD) {
@@ -1553,10 +1596,17 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       Int_t ntpcclsS = track->GetTPCnclsS();
       Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
       QAbefore(19)->Fill(track->P(),fshtpccls);
-      if (pass) QAafter( 19)->Fill(track->P(),fshtpccls);
+      if (pass) QAafter(19)->Fill(track->P(),fshtpccls);
+    }
+    QAbefore(20)->Fill(track->P(),ntpccls);
+    if (pass) QAafter(20)->Fill(track->P(),ntpccls);
+    Int_t nitscls = track->GetITSNcls();
+    if(nitscls>0) {
+      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
+      QAbefore(21)->Fill(track->P(),chi2TIS);
+      if (pass) QAafter(21)->Fill(track->P(),chi2TIS);
     }
   }
-
 
   return pass;
 }
@@ -2283,6 +2333,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
     else                                              // XZhang 20120604
       flowtrack->SetSource(AliFlowTrack::kFromAOD);   // XZhang 20120604
     flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fTrack);
+    flowtrack->SetITStype(GetITStype(aodTrack));
   }
   else if (dynamic_cast<AliMCParticle*>(fTrack)) 
   {
@@ -2816,11 +2868,17 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   
-  before->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
-  after->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  before->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  after->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
   
-  before->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
-  after->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  before->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  after->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  
+  before->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
+  after->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
+  
+  before->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
+  after->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
 
   TH1::AddDirectory(adddirstatus);
 }
