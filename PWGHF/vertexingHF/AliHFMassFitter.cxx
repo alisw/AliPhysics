@@ -1840,6 +1840,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
     for (Int_t i=fNFinalPars-3;i<fNFinalPars;i++){
       pinfom->SetTextColor(kBlue);
       TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+      if (ff->GetParameter(fNFinalPars-2)<0.2) str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i)*1000,ff->GetParError(i)*1000);
       if(!(writeFitInfo==1 && i==fNFinalPars-3)) pinfom->AddText(str);
     }
     pd->cd();
