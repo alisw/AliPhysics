@@ -1,5 +1,5 @@
 // $Id$
-AliAnalysisTaskEMCALPi0GammaCorr* AddTask(
+AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   UInt_t      evtTriggerType         = AliVEvent::kEMCEGA, //AliVEvent::kAnyINT,// AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
   UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
   Double_t    trackptcut             = 0.15,              //..
