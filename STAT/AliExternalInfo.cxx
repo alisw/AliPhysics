@@ -774,7 +774,9 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     
 //    returns and stores tree ("dumptree") containing the relevant information of real data productions
 //    for guessing the anchor pass of MC productions
+   TTree * treeProd = GetTreeProdCycle();              // getting tree with information on real data productions (list, id, tag) - id will be used to get info for each production via GetTreeProdCycleByID(TString::Format("%d",id))
    TFile* outfile;
+   
 
    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_RD.root"),TString::Format("QA.TPC"));     //check if download is needed
    if(!downloadNeeded){
@@ -786,23 +788,24 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     } 
         
     else  AliInfo("-- dumptree_RD.root not validated--> Caching from remote");
-    
-
    
-    TTree * treeProd = GetTreeProdCycle();              // getting tree with information on real data productions (list, id, tag) - id will be used to get info for each production via GetTreeProdCycleByID(TString::Format("%d",id))
+//    outfile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","RECREATE");
+    outfile= new TFile(fLocalStorageDirectory+"/dumptree_RD.root","RECREATE");
+    TTree *dumptree = treeProd->CloneTree();       //tree that will hold information for guessing
+    
     Int_t id=0;
     char tag[1000];
     char description[1000];
     Int_t firstrun=-1;
     Int_t lastrun=-1;
     
-    treeProd->GetBranch("ID")->SetAddress(&id);
-    treeProd->GetBranch("Tag")->SetAddress(&tag);
-    treeProd->GetBranch("Description")->SetAddress(&description);
-    treeProd->GetBranch("First_run")->SetAddress(&firstrun);
-    treeProd->GetBranch("Last_run")->SetAddress(&lastrun);
+    dumptree->GetBranch("ID")->SetAddress(&id);
+//    dumptree->GetBranch("Tag")->SetAddress(&tag);
+//    dumptree->GetBranch("Description")->SetAddress(&description);
+//    dumptree->GetBranch("First_run")->SetAddress(&firstrun);
+//    dumptree->GetBranch("Last_run")->SetAddress(&lastrun);
     
-    TTree *dumptree = new TTree("dumptree_RD","dumptree_RD");       //tree that will hold information for guessing
+
 //    TTree * dumptree=treeMC->CloneTree();
     
     char paliroot[1000];            // variables that will hold information read of the tree: GetTreeProdCycleByID(TString::Format("%d",id))
@@ -817,17 +820,18 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     TString soutputdir;
     TObjArray *subStrL;
 
-    dumptree->Branch("ID",&id);                    //create branches in dumptree
+//    dumptree->Branch("ID",&id);                    //create branches in dumptree
     dumptree->Branch("aliroot",&saliroot);
     dumptree->Branch("aliphysics",&saliphysics);
     dumptree->Branch("prodName",&sprodname);
     dumptree->Branch("passName",&spassname);
-    dumptree->Branch("First_Run",&firstrun);
-    dumptree->Branch("Last_Run",&lastrun);
+//    dumptree->Branch("First_Run",&firstrun);
+//    dumptree->Branch("Last_Run",&lastrun);
 
-    Int_t entries=treeProd->GetEntries();
+    Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
-      treeProd->GetEntry(i);
+      dumptree->GetEntry(i);
+      AliInfo(TString::Format("Getting ProdCyle ID: %d",id));
       TTree * tree= GetTreeProdCycleByID(TString::Format("%d",id));         //get tree with production info for each ID
 
       if (tree==NULL) continue;
@@ -857,7 +861,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       dumptree->Fill();                                     
       delete tree;
     }
-    outfile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","RECREATE");
+    outfile->cd();
     dumptree->Write("dumptree_RD");
 
     delete outfile;
@@ -883,7 +887,6 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    AliInfo("-- dumptree_MC.root not validated--> Caching from remote");
    
    outfile= new TFile(fLocalStorageDirectory+"/dumptree_MC.root","RECREATE");
-
    TTree* dumptree=treeMC->CloneTree();
    
    //variable to read tree from GetTreeMC()
