@@ -188,7 +188,8 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl)
   reader->SetInputTreename("AliAnalysisTaskDmesonJets_AnyINT_D0");
   reader->SetInputDBranchname("DmesonJet");
   reader->SetInputJetBranchname("Jet_AKTChargedR040_pt_scheme");
-  reader->SetMassEdgesAndBinWidthForMassPlot(1.5664,2.1664,0.006);
+  reader->SetMassEdgesAndBinWidthForMassPlot(1.5664,2.1664,0.00006);
+  reader->SetMassRebin(100);
 
   interface->SetDJetReader(reader);
   interface->SetDmesonPtBins(nDbins,ptDbins);

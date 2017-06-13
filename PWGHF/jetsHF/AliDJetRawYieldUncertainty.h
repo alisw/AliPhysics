@@ -74,6 +74,7 @@ public:
   void SetReflHistoname(TString hname)                             { fReflHistoName          = hname ; }
   void SetMCSigHistoname(TString hname)                            { fSigMCHistoName         = hname ; }
   void SetUseCoherentChoice(Bool_t c)                              { fCoherentChoice         = c     ; }
+  void SetUseBkgInBinEdges(Bool_t b)                               { fUseBkgInBinEdges       = b     ; }
 
   void SetValueOfReflOverSignal(Double_t ratio, Double_t minrange=1.7, Double_t maxrange=2.1) { fFixRiflOverS = ratio; fReflRangeL = minrange; fReflRangeR = maxrange; }
 
@@ -163,6 +164,8 @@ protected:
   Double_t           fReflRangeR                 ; ///< Upper range of reflection template (for refl/signMC)
 
   Bool_t             fCoherentChoice             ; ///< Use coherent choice for the SB method
+
+  Bool_t             fUseBkgInBinEdges           ; ///< Whether the background should be computed between bin edges rather than exact limits (must be false if the binning of the histogram used for the projections in the SB method is different compared to the histogram used for the invariant mass fit)
 
   Int_t              fDebug                      ; ///< Debug level
 

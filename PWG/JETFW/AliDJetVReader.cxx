@@ -50,6 +50,7 @@ AliDJetVReader::AliDJetVReader():
   fnJetbins(0),
   fJetbinpTedges(nullptr),
   fDEffValues(nullptr),
+  fMassRebin(1),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr)
 {
@@ -70,6 +71,7 @@ AliDJetVReader::AliDJetVReader(const AliDJetVReader &source):
   fnJetbins(0),
   fJetbinpTedges(nullptr),
   fDEffValues(nullptr),
+  fMassRebin(source.fMassRebin),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr)
 {
