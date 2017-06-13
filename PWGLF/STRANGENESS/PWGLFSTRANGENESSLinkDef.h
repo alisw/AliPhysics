@@ -47,4 +47,5 @@
 #pragma link C++ class AliCascadeResult+;
 #pragma link C++ class AliStrangenessModule+;
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
+#pragma link C++ class AliAnalysisTaskStrEffStudy+; 
 #endif
