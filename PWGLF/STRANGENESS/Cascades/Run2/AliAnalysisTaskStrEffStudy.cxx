@@ -1358,7 +1358,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                                                            lBestPrimaryVtxPos[1],
                                                            lMagneticField) );
         //DCAz
-        Double_t dz[2];
+        Float_t dz[2];
         esdTrackPos->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dz );
         fTreeVariablePosDz = dz[1];
         esdTrackNeg->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dz );
