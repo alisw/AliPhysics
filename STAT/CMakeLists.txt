@@ -40,6 +40,7 @@ set(SRCS
     AliTreeTrending.cxx
     AliNDFormulaBrowser.cxx
     AliDrawStyle.cxx
+        AliElasticSearchRoot.cxx
   )
 
 # Headers from sources

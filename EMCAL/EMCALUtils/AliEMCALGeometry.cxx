@@ -1499,32 +1499,22 @@ Int_t AliEMCALGeometry::IsInEMCALOrDCAL(Double_t x, Double_t y, Double_t z) cons
 //____________________________________________________________________________
 const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const 
 {	
-  if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
+  if ( smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules() ) 
     AliFatal(Form("Wrong supermodule index -> %d",smod));
-		
-  // Use matrices set externally
-  if(!gGeoManager)
-  {
-    if(fkSModuleMatrix[smod])
-    {
-      return fkSModuleMatrix[smod] ;
-    }
-    else
-    {
-      AliInfo("Stop:");
-      printf("\t Can not find EMCAL misalignment matrixes\n") ;
-      printf("\t Either import TGeoManager from geometry.root or \n");
-      printf("\t read stored matrixes from AliESD Header:  \n") ;   
-      printf("\t AliEMCALGeometry::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
-      AliFatal("") ;
-    }  
- } // external matrices
-  
-  // If gGeoManager exists, take matrix from it
-  // only once to speed up things
-  if ( gGeoManager && !fkSModuleMatrix[smod] )
-    fkSModuleMatrix[smod] = GetMatrixForSuperModuleFromGeoManager(smod) ;
 
+  if ( !fkSModuleMatrix[smod] ) 
+  {
+    if ( gGeoManager )
+      SetMisalMatrix( GetMatrixForSuperModuleFromGeoManager(smod), smod );
+    else 
+      AliFatal("Cannot find EMCAL misalignment matrices! Recover them either: \n"
+               "\t - importing TGeoManager from file geometry.root or \n"
+               "\t - from OADB in file OADB/EMCAL/EMCALlocal2master.root or \n"
+               "\t - from OCDB in directory OCDB/EMCAL/Align/Data/ or \n"
+               "\t - from AliESDs (not in AliAOD) via AliESDRun::GetEMCALMatrix(Int_t superModIndex). \n"   
+               "Store them via AliEMCALGeometry::SetMisalMatrix(Int_t superModIndex)") ;
+  }
+  
   return fkSModuleMatrix[smod];
 }
 
@@ -1734,7 +1724,7 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
 /// Move from header due to coding violations : Dec 2,2011 by PAI
 ///
 //__________________________________________________________________________________________________________________
-void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
+void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) const
 {
   if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules())
   {

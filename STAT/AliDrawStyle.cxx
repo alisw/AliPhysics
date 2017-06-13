@@ -28,7 +28,7 @@
 ///    * performance reports -  with styles as a parameter
 ///    * QA reports
 ///    * AliTreePlayer, and TStatToolkit
-/// \author marian  Ivanov marian.ivanov@cen.ch
+/// \author marian  Ivanov marian.ivanov@cern.ch
 ///
 ///  ## Example usage
 ///

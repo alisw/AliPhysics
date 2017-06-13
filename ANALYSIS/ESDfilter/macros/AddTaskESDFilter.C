@@ -18,7 +18,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Int_t  muonMCMode = 3  ,
                                            Bool_t useV0Filter=kTRUE,
                                            Bool_t muonWithSPDTracklets=kTRUE,
-                                           Bool_t isMuonCaloPass=kFALSE)
+                                           Bool_t isMuonCaloPass=kFALSE,
+					   Bool_t addPCMv0s=kTRUE)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -53,7 +54,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
    // Barrel tracks filter
-   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
+   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter", addPCMv0s);
    if (disableCascades) esdfilter->DisableCascades();
    if  (disableKinks) esdfilter->DisableKinks();
   
@@ -121,6 +122,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      v0Filter->AddCuts(esdV0Cuts);
 
      esdfilter->SetV0Filter(v0Filter);
+     esdfilter->SetAddPCMv0s(addPCMv0s);
    }  
 
    // Enable writing of Muon AODs
@@ -132,6 +134,34 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->ConnectInput  (esdfilter,  0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (esdfilter,  0, mgr->GetCommonOutputContainer());
    mgr->ConnectInput  (esdmuonfilter, 0, mgr->GetCommonInputContainer());
+
+  if (addPCMv0s){
+    TObjArray *allContainers = mgr->GetContainers();
+    Int_t containersSize = allContainers->GetSize();
+    TString containerName;
+    AliAnalysisDataContainer* cinputPCMv0sA;
+    AliAnalysisDataContainer* cinputPCMv0sB;
+    for (Int_t i=0;i<containersSize;i++){
+      if (allContainers->At(i)){
+	containerName = allContainers->At(i)->GetName();
+	if (containerName.CompareTo("PCM offlineV0Finder container")==0){
+	  cinputPCMv0sA = allContainers->At(i);
+	}
+	else{
+	  cout << "No container for offline v0s" << endl;}
+	if (containerName.CompareTo("PCM onflyV0Finder container")==0){
+	  cinputPCMv0sB = allContainers->At(i);
+	}
+	else{
+	  cout << "No container for onfly v0s found" << endl;
+	}
+      }
+    }
+    mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
+    mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
+    mgr->ConnectOutput(esdfilter ,1, mgr->CreateContainer("v0ConsistencyChecks", TList::Class(), AliAnalysisManager::kOutputContainer, "PCMv0Checks.root")) ;
+  }
+   
    if (useKineFilter) {
       mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());
       mgr->ConnectOutput (kinefilter,  0, mgr->GetCommonOutputContainer());

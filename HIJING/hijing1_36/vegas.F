@@ -85,8 +85,8 @@ C
       NDO=ND
 C
 8     CONTINUE
-      IF(NPRN.NE.0) WRITE(16,200) NDIM,CALLS,IT,ITMX,ACC,MDS,ND
-     1                           ,(XL(J),XU(J),J=1,NDIM)
+c      IF(NPRN.NE.0) WRITE(16,200) NDIM,CALLS,IT,ITMX,ACC,MDS,ND
+c     1                           ,(XL(J),XU(J),J=1,NDIM)
 C
       ENTRY VEGAS3(FXN,AVGI,SD,CHI2A)
 C         - MAIN INTEGRATION LOOP
@@ -160,10 +160,10 @@ C
 C****this is the line 150
       IF(NPRN.EQ.0) GO TO 21
       TSI=DSQRT(TSI)
-      WRITE(16,201) IT,TI,TSI,AVGI,SD,CHI2A
+c      WRITE(16,201) IT,TI,TSI,AVGI,SD,CHI2A
       IF(NPRN.GE.0) GO TO 21
-      DO 20 J=1,NDIM
-20    WRITE(16,202) J,(XI(I,J),DI(I,J),D(I,J),I=1,ND)
+c      DO 20 J=1,NDIM
+c20    WRITE(16,202) J,(XI(I,J),DI(I,J),D(I,J),I=1,ND)
 C
 C   REFINE GRID
 C

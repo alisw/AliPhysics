@@ -26,7 +26,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 {
  public:
   AliAnalysisTaskESDfilter();
-  AliAnalysisTaskESDfilter(const char* name);
+  AliAnalysisTaskESDfilter(const char* name,  Bool_t addPCMv0s = kFALSE);
   virtual ~AliAnalysisTaskESDfilter();
   // Implementation of interface methods
   virtual void   UserCreateOutputObjects();
@@ -80,6 +80,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void SetRefitVertexTracks(Int_t algo=6, Double_t* cuts=0);
   
   void SetMuonCaloPass();
+  void SetAddPCMv0s(Bool_t addPCMv0s) {fAddPCMv0s=addPCMv0s;}
   
 private:
   AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
@@ -174,6 +175,11 @@ private:
   Int_t              fRefitVertexTracksNCuts;      // number of cut parameters
   Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts] optional cuts for vertex refit
   Bool_t fIsMuonCaloPass; /// whether or not this filtering is used on a muon_calo ESD
+  Bool_t	     fAddPCMv0s;		   // Add pcm v0s when v0filter is switched on
+  TBits* 	     fbitfieldPCMv0sA;		   // Bitfield with PCM v0s from on-fly v0 finder
+  TBits* 	     fbitfieldPCMv0sB;		   // Bitfield with PCM v0s from offline v0 finder
+  TH1D*		     fv0Histos; 		   // v0 histos for PCM consistency checks
+  TList*	     fHistov0List;		  // TList containing PCM histos
   
   ClassDef(AliAnalysisTaskESDfilter, 21); // Analysis task for standard ESD filtering
 };
