@@ -34,7 +34,9 @@ public:
 
   void SetPtBinEdgesForMassPlot(Double_t ptmin, Double_t ptmax)    { fpTmin                  = ptmin ; fpTmax                  = ptmax ; }
   void SetZedges(Double_t zmin, Double_t zmax)                     { fzmin                   = zmin  ; fzmax                   = zmax  ; }
-  void SetMassRebin(Int_t r)                                       { fMassRebin              = r > 0 ? r : 1; }
+  void SetMassRebin(UInt_t r)                                      { fMassRebin              = r > 0 ? r : 1; }
+
+  UInt_t GetMassRebin() const { return fMassRebin; }
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);

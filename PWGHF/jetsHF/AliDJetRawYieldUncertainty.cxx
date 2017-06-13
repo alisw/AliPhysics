@@ -93,6 +93,7 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fReflRangeL(0),
   fReflRangeR(0),
   fCoherentChoice(kFALSE),
+  fUseBkgInBinEdges(kTRUE),
   fDebug(0),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
@@ -158,6 +159,7 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fReflRangeL(source.fReflRangeL),
   fReflRangeR(source.fReflRangeR),
   fCoherentChoice(source.fCoherentChoice),
+  fUseBkgInBinEdges(source.fUseBkgInBinEdges),
   fDebug(source.fDebug),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
@@ -600,7 +602,12 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
       TH1F* hchi2t = dynamic_cast<TH1F*>(fil.Get(hchi2name.Data()));
 
       TString hbkgname = histo[j]->GetName();
-      hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
+      if (fUseBkgInBinEdges) {
+        hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
+      }
+      else {
+        hbkgname.ReplaceAll("RawYield","Bkg");
+      }
       TH1F* hbkg = dynamic_cast<TH1F*>(fil.Get(hbkgname.Data()));
 
       for (Int_t ib = 1; ib <= histo[j]->GetNbinsX(); ib++) {
@@ -959,8 +966,18 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   hjetpt->SetLineColor(kBlue + 3);
 
   //Normalize to full range the signal range (from fnSigmaSignReg range)
-  Double_t normNsigma = 1.0 - TMath::Erfc(fnSigmaSignReg / TMath::Sqrt2());
+  Double_t normNsigma = 1.0;
+  if (!fUseBkgInBinEdges) {
+    normNsigma -= TMath::Erfc(fnSigmaSignReg / TMath::Sqrt2());
+  }
+  else {
+    Double_t effSigma1 = (mean - hInvMassJetPt->GetXaxis()->GetBinLowEdge(hInvMassJetPt->GetXaxis()->FindBin(mean - fnSigmaSignReg * sigma))) / sigma;
+    Double_t effSigma2 = (hInvMassJetPt->GetXaxis()->GetBinUpEdge(hInvMassJetPt->GetXaxis()->FindBin(mean + fnSigmaSignReg * sigma)) - mean) / sigma;
+    normNsigma -= TMath::Erfc(effSigma1 / TMath::Sqrt2()) / 2 + TMath::Erfc(effSigma2 / TMath::Sqrt2()) / 2;
+    Printf("The left effective sigma is %.3f. The right effective sigma is %.3f.", effSigma1, effSigma2);
+  }
   hjetpt->Scale(1.0 / normNsigma);
+
   return kTRUE;
 }
 
@@ -1033,7 +1050,14 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
     if (fDebug) std::cout << "Default trial" << " TrialExpoFreeS" << std::endl;
     TH1F *hMeanDef = static_cast<TH1F*>(fileMultVar.Get("hMeanTrialExpoFreeS"));
     TH1F *hSigmaDef = static_cast<TH1F*>(fileMultVar.Get("hSigmaTrialExpoFreeS"));
-    TH1F *hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
+    TH1F *hBkgDef = 0;
+    if (fUseBkgInBinEdges) {
+      hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
+    }
+    else {
+      hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgTrialExpoFreeS"));
+    }
+
     TH1F *hRawYieldDef = static_cast<TH1F*>(fileMultVar.Get("hRawYieldTrialExpoFreeS"));
     fileMultVar.Close();
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());
