@@ -1305,53 +1305,64 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
   }
   
   // open file
-  TFile* fMtFactorFile = TFile::Open(fileName.Data());
-  TDirectory* fMtFactorDir = (TDirectory*)fMtFactorFile->Get(dirName.Data());
-  
+  TFile*        fMtFactorFile = TFile::Open(fileName.Data());
+  TDirectory*   fMtFactorDir  = (TDirectory*)fMtFactorFile->Get(dirName.Data());
+
+  // set bin labels
+  fMtFactorHisto = new TH1D("histoMtScaleFactor", "", 26, 0.5, 26.5);
+  fMtFactorHisto->GetYaxis()->SetTitle("mt scaling factor");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(1,"111");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(2,"221");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(3,"113");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(4,"223");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(5,"331");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(6,"333");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(7,"443");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(8,"3212");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(9,"310");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(10,"2224");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(11,"2214");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(12,"1114");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(13,"2114");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(14,"213");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(15,"-213");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(16,"313");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(17,"130");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(18,"3122");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(19,"321");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(20,"-321");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(21,"-3334");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(22,"3334");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(23,"-3312");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(24,"3312");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(25,"3224");
+  fMtFactorHisto->GetXaxis()->SetBinLabel(26,"3114");
+  fMtFactorHisto->SetDirectory(0);
+
   // check for mt scaling factor histo
-  TH1D* fMtFactorHistoTemp              = NULL;
-  if (fMtFactorDir) fMtFactorHistoTemp  = (TH1D*)fMtFactorDir->Get("histoMtScaleFactor");
-  if (fMtFactorHistoTemp && fMtFactorHistoTemp->GetNbinsX()==26) {
-    fMtFactorHisto                      = new TH1D(*fMtFactorHistoTemp);
-    for (Int_t i=1; i<27; i++) {
-      if (fMtFactorHisto->GetBinContent(i) < 0) {
-        fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
+  TH1D*             fMtFactorHistoTemp = NULL;
+  if (fMtFactorDir) fMtFactorHistoTemp = (TH1D*)fMtFactorDir->Get("histoMtScaleFactor");
+  if (fMtFactorHistoTemp) {
+    AliGenEMlibV2 lib;
+    TRandom* rndm;
+    for (Int_t i=0; i<26; i++) {
+      Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
+      Double_t factor = 0.;
+      for (Int_t j=1; j<fMtFactorHistoTemp->GetNbinsX()+1; j++) {
+        factor = 0.;
+        TString tempLabel = Form("%s", fMtFactorHistoTemp->GetXaxis()->GetBinLabel(j));
+        if (tempLabel.Atoi()==ip) {
+          factor = fMtFactorHistoTemp->GetBinContent(j);
+          break;
+        }
       }
+      if (factor>0) fMtFactorHisto->SetBinContent(i+1, factor);
+      else          fMtFactorHisto->SetBinContent(i+1, fgkMtFactor[selectedCol][i]);
     }
   } else {
-    fMtFactorHisto = new TH1D("histoMtScaleFactor", "", 26, 0.5, 26.5);
-    fMtFactorHisto->GetYaxis()->SetTitle("mt scaling factor");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(1,"111");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(2,"221");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(3,"113");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(4,"223");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(5,"331");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(6,"333");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(7,"443");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(8,"3212");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(9,"310");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(10,"2224");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(11,"2214");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(12,"1114");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(13,"2114");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(14,"213");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(15,"-213");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(16,"313");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(17,"130");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(18,"3122");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(19,"321");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(20,"-321");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(21,"-3334");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(22,"3334");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(23,"-3312");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(24,"3312");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(25,"3224");
-    fMtFactorHisto->GetXaxis()->SetBinLabel(26,"3114");
-
     for (Int_t i=1; i<27; i++)
       fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
   }
-  fMtFactorHisto->SetDirectory(0);
 
   fMtFactorFile->Close();
   delete fMtFactorFile;
