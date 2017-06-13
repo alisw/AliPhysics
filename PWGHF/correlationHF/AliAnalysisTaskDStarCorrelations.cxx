@@ -1493,7 +1493,7 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Int_t nbinsSparse[5]=      {nbinscorr, 50 ,  32, 10,nbinsPool};
     Double_t binLowLimitSparse[5]={lowcorrbin,0.142 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparse[5]= {upcorrbin ,0.1495 , 1.6,  5,nbinsPool-0.5};
-    if(fUseSmallSizePlots) nbinsSparse[1]=25;
+    if(fUseSmallSizePlots) nbinsSparse[1]=25; nbinsSparse[2]=16;
     
     
   //  Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     27 ,  32, 10,nbinsPool};
@@ -1504,7 +1504,7 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.148 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.160 , 1.6,  5,nbinsPool-0.5};
     if(fUseSmallSizePlots) {
-       nbinsSparseDStarSB[1]= 30;
+       nbinsSparseDStarSB[1]=30;  nbinsSparse[2]=16;
        binLowLimitSparseDStarSB[1]=0.148;
        binUpLimitSparseDStarSB[1]=0.157; 
    }
@@ -1517,7 +1517,7 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Int_t nbinsSparseMC[6]=         {nbinscorr ,  50 ,  32, 10,nbinsPool,3};
     Double_t binLowLimitSparseMC[6]={lowcorrbin,0.142 ,-1.6, 0,-0.5,-0.5};
     Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.1495 , 1.6, 5,nbinsPool-0.5,2.5};
-    if(fUseSmallSizePlots) nbinsSparseMC[1]= 25;
+    if(fUseSmallSizePlots) nbinsSparseMC[1]=25; nbinsSparse[2]=16;
   
     
     TString signalSparseName = "";
