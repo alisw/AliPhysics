@@ -59,6 +59,7 @@
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
+#pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
 /// Utils
