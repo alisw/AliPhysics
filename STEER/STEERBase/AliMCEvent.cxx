@@ -664,6 +664,7 @@ void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event)
     }
     
     fSubsidiaryEvents->Add(event);
+    if (fStack) fStack->SetMCEmbeddingFlag(kTRUE);
 }
 
 AliGenEventHeader *AliMCEvent::FindHeader(Int_t ipart) {

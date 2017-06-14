@@ -274,7 +274,7 @@ void AliEveSaveViews::SaveForAmore()
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
-void AliEveSaveViews::Save(bool withDialog,char* filename)
+void AliEveSaveViews::Save(bool withDialog,const char* filename)
 {
     TEnv settings;
     AliEveInit::GetConfig(&settings);
