@@ -38,6 +38,7 @@
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
+#include "AliTOFTriggerMask.h"
 
 // my headers
 #include "AliAnalysisTaskUpcNano_MB.h"
@@ -70,7 +71,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0) 
+	hNLooseTracks(0),
+	fTOFmask(0) 
 
 {
 
@@ -100,7 +102,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
-	hNLooseTracks(0)  
+	hNLooseTracks(0),
+	fTOFmask(0)  
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -159,6 +162,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
   fTreeJPsi ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
@@ -194,6 +198,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
+  fTreeRho ->Branch("fTOFmask", &fTOFmask);
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -294,6 +299,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(isMC) RunMC(aod);
   
   for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
+  
+  const AliTOFHeader *tofH = aod->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
     
   TString trigger = aod->GetFiredTriggerClasses();
   fHistEvents->Fill(1);
