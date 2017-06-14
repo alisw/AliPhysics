@@ -6,6 +6,7 @@
 #include "AliEventPoolManager.h"
 #include "AliEventCuts.h"
 #include "AliFiducialCut.h"
+#include "AliEMCALRecoUtils.h"
 #include <THn.h>
 #include <THnSparse.h>
 
@@ -43,7 +44,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
  private:
   AliEventCuts                fEventCuts;                   ///< event selection utility
-  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal
+  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
+  AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
 
  protected:
 
