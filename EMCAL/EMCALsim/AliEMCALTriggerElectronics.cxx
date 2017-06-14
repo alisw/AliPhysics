@@ -557,7 +557,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     nP = (fSTU->Patches()).MakeIterator();
     
     AliDebug(999, Form("=== EMCAL STU found %d gamma patches", (fSTU->Patches()).GetEntriesFast()));
-    printf("=== EMCAL STU found %d gamma patches\n", (fSTU->Patches()).GetEntriesFast());
     
     while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
     {			
@@ -616,13 +615,11 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         else
         {
           dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);
-          dig->Print("");
         }
         
         if (AliDebugLevel()) dig->Print("");
         
         if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, 0);
-        dig->Print("");
       }
     }
 
@@ -639,7 +636,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       nP = (fSTUDCAL->Patches()).MakeIterator();
       
       AliDebug(999, Form("=== DCAL STU found %d gamma patches", (fSTUDCAL->Patches()).GetEntriesFast()));
-      printf("=== DCAL STU found %d gamma patches\n", (fSTUDCAL->Patches()).GetEntriesFast());
 
       while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
       {			
@@ -677,7 +673,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       nP = (fSTUDCAL->Patches()).MakeIterator();
       
       AliDebug(999, Form("=== DCAL STU found %d jet patches", (fSTUDCAL->Patches()).GetEntriesFast()));
-      printf("=== DCAL STU found %d jet patches", (fSTUDCAL->Patches()).GetEntriesFast());
 
       while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
       {			
