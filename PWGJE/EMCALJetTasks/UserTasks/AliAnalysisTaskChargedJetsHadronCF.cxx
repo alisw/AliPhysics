@@ -91,6 +91,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
   fNumRandomConesPerEvent(10),
+  fUseDataConstituents(kTRUE),
+  fUseMCConstituents(kTRUE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -139,6 +141,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
   fNumRandomConesPerEvent(10),
+  fUseDataConstituents(kTRUE),
+  fUseMCConstituents(kTRUE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -516,16 +520,26 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
   }
 
   // ####### Jet constituent plots
+  Int_t nProcessedTracks = 0;
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
   {
     AliVParticle* constituent = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
     if(!constituent) 
       continue;
 
+    // Check whether to discard this track
+    if((!fUseMCConstituents) && (constituent->GetLabel() >= 10000)) // is from MC
+      continue;
+    if((!fUseDataConstituents) && (constituent->GetLabel() < 10000)) // is from data
+      continue;
+
+    nProcessedTracks++;
+
     Bool_t filterConditionFulfilled = kFALSE;
     AliAODTrack* aodTrack = static_cast<AliAODTrack*>(constituent);
     if (aodTrack)
       filterConditionFulfilled = aodTrack->TestFilterBit(fConstPtFilterBit);
+
 
     // Fill jet constituent plots
     FillHistogram(Form("hJetConstituentPt_Cent0_100%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
@@ -557,13 +571,13 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
     }
   }
 
-  FillHistogram(Form("hJetConstituentCount_Cent0_100%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
+  FillHistogram(Form("hJetConstituentCount_Cent0_100%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), nProcessedTracks); 
   if( (fCent >= 0) && (fCent < 10) )
-    FillHistogram(Form("hJetConstituentCount_Cent0_10%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
+    FillHistogram(Form("hJetConstituentCount_Cent0_10%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), nProcessedTracks); 
 
-  FillHistogram(Form("hBackgroundPtConstCount_Cent0_100%s", appendix.Data()), fJetsCont->GetRhoVal(), jet->GetNumberOfTracks()); 
+  FillHistogram(Form("hBackgroundPtConstCount_Cent0_100%s", appendix.Data()), fJetsCont->GetRhoVal(), nProcessedTracks); 
   if( (fCent >= 0) && (fCent < 10) )
-    FillHistogram(Form("hBackgroundPtConstCount_Cent0_10%s", appendix.Data()), fJetsCont->GetRhoVal(), jet->GetNumberOfTracks()); 
+    FillHistogram(Form("hBackgroundPtConstCount_Cent0_10%s", appendix.Data()), fJetsCont->GetRhoVal(), nProcessedTracks); 
 
   // ####### Embedding plots
   if( (fJetOutputMode == 4) || (fJetOutputMode == 5))
@@ -645,6 +659,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
     fAcceptedTracks++;
   }
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::AddTrackToTree(AliVTrack* track)
@@ -766,6 +781,12 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   Int_t trackcount = 0;
   while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
   {
+    // Check whether to discard this track
+    if((!fUseMCConstituents) && (track->GetLabel() >= 10000)) // is from MC
+      continue;
+    if((!fUseDataConstituents) && (track->GetLabel() < 10000)) // is from data
+      continue;
+
     // Track plots
     FillHistogramsTracks(track);
     // Add track to output array
@@ -790,12 +811,19 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     // Fill pT that is in cone
     fTracksCont->ResetCurrentID();
     while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+    {
+      // Check whether to discard this track
+      if((!fUseMCConstituents) && (track->GetLabel() >= 10000)) // is from MC
+        continue;
+      if((!fUseDataConstituents) && (track->GetLabel() < 10000)) // is from data
+        continue;
       if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
       {
         tmpRandConePt += track->Pt();
         if (track->Pt() > 3.0)
           tmpRandConePt3GeV += track->Pt();
       }
+    }
     // Fill histograms
     FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
     FillHistogram("hRandomConePtCut3GeV", tmpRandConePt3GeV - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
