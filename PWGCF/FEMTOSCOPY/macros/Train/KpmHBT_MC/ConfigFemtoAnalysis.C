@@ -130,8 +130,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     //Generate freeze-out coordinates as a 3D gaussian sphere in PRF
     AliFemtoModelGausRinvFreezeOutGenerator *tFreeze = new AliFemtoModelGausRinvFreezeOutGenerator();
     //tFreeze->SetSizeInv(3.0*TMath::Sqrt(2.0));//r_0=3fm it should be time to sqrt(2) !!!!KM
-    tFreeze->SetSizeInv(5.0*TMath::Sqrt(2.0));//r_0=5fm it should be time to sqrt(2) !!!!KM
-    
+    //tFreeze->SetSizeInv(5.0*TMath::Sqrt(2.0));//r_0=5fm it should be time to sqrt(2) !!!!KM
+    tFreeze->SetSizeInv(4.0*TMath::Sqrt(2.0));//r_0=4fm it should be time to sqrt(2) !!!!KM
     
     AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
     tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
