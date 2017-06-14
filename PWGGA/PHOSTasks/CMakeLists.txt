@@ -107,7 +107,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies)
 
 # Generate the ROOT map
 # Dependecies
