@@ -61,6 +61,7 @@ set(SRCS
     AliStaObjects.cxx
     AliAnalysisTaskNeutralMesons.cxx
     AliAnalysisTaskGammaHadron.cxx
+    AliAnalysisTaskEMCALPi0GammaCorr.cxx
    )
 
 # Headers from sources
