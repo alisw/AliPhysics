@@ -115,6 +115,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYEtaPrimGGPHOAcc(NULL),
   fHistPtYEtaPrimGGPCMEMCAcc(NULL),
   fHistPtYEtaPrimGGPCMPHOAcc(NULL),
+  fHistPtYPi0FromKGG(NULL),
+  fHistPtYPi0FromKGGPCMAcc(NULL),
+  fHistPtYPi0FromKGGEMCAcc(NULL),
+  fHistPtYPi0FromKGGPCMEMCAcc(NULL),
+  fHistPtYPi0FromKGGEMCPCMAcc(NULL),
+  fHistPtYPi0FromKGGEMCAccSamePi0(NULL),
+  fHistPtYPi0FromKGGEMCAccDiffPi0(NULL),
   fIsMC(1)
 {
   
@@ -183,6 +190,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYEtaPrimGGPHOAcc(NULL),
   fHistPtYEtaPrimGGPCMEMCAcc(NULL),
   fHistPtYEtaPrimGGPCMPHOAcc(NULL),
+  fHistPtYPi0FromKGG(NULL),
+  fHistPtYPi0FromKGGPCMAcc(NULL),
+  fHistPtYPi0FromKGGEMCAcc(NULL),
+  fHistPtYPi0FromKGGPCMEMCAcc(NULL),
+  fHistPtYPi0FromKGGEMCPCMAcc(NULL),
+  fHistPtYPi0FromKGGEMCAccSamePi0(NULL),
+  fHistPtYPi0FromKGGEMCAccDiffPi0(NULL),
   fIsMC(1)
 {
   // Define output slots here
@@ -419,6 +433,30 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   SetLogBinningXTH2(fHistPtAlphaEtaGGPCMPHOAcc);
   fHistPtAlphaEtaGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPCMPHOAcc);
+
+  fHistPtYPi0FromKGG               = new TH2F("Pt_Y_Pi0FromKGG","Pt_Y_Pi0FromKGG", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGG->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaGG);
+  fHistPtYPi0FromKGGPCMAcc         = new TH2F("Pt_Y_Pi0FromKGGPCMAcc","Pt_Y_Pi0FromKGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGPCMAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGPCMAcc);
+  fHistPtYPi0FromKGGEMCAcc         = new TH2F("Pt_Y_Pi0FromKGGEMCAcc","Pt_Y_Pi0FromKGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAcc);
+  fHistPtYPi0FromKGGPCMEMCAcc         = new TH2F("Pt_Y_Pi0FromKGGPCMEMCAcc","Pt_Y_Pi0FromKGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGPCMEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGPCMEMCAcc);
+  fHistPtYPi0FromKGGEMCPCMAcc         = new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGEMCPCMAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGEMCPCMAcc);
+  fHistPtYPi0FromKGGEMCAccSamePi0  = new TH2F("Pt_Y_fHistPi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGEMCAccSamePi0->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccSamePi0);
+  fHistPtYPi0FromKGGEMCAccDiffPi0  = new TH2F("Pt_Y_fHistPi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
+  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
+
+  
   
   PostData(1, fOutputContainer);
 }
@@ -645,16 +683,28 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       UChar_t acceptanceGamma[2] = {0,0};
       Double_t energyGamma[2] = {0,0};
       Bool_t allOK[2] = {kFALSE,kFALSE};
+
+      
       for(Int_t i=0;i<2;i++){
         TParticle *daughter=fMCStack->Particle(particle->GetDaughter(i));
         if (!daughter) continue;
-        // Is Daughter a Photon?
+	
+        // Is Daughter a Photon? 
         if(daughter->GetPdgCode() == 22) allOK[i] =kTRUE;
         if(IsInPCMAcceptance(daughter))  SETBIT(acceptanceGamma[i], kPCMAcceptance);
         if(IsInPHOSAcceptance(daughter)) SETBIT(acceptanceGamma[i], kPHOSAcceptance);
         if(IsInEMCalAcceptance(daughter)) SETBIT(acceptanceGamma[i], kEMCALAcceptance);
         energyGamma[i] = daughter->Energy();
+	
+
+	if(IsInPCMAcceptance(daughter))  SETBIT(acceptanceGamma[i], kPCMAcceptance);
+        //if(IsInPHOSAcceptance(daughter)) SETBIT(acceptanceGamma[i], kPHOSAcceptance);
+        if(IsInEMCalAcceptance(daughter)) SETBIT(acceptanceGamma[i], kEMCALAcceptance);
+        energyGamma[i] = daughter->Energy();
+
+	
       }
+      
       if (!(allOK[0] && allOK[1])) continue;
       
       Double_t alpha = (energyGamma[0]-energyGamma[1])/(energyGamma[0]+energyGamma[1]);
@@ -734,9 +784,111 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         )
           fHistPtYEtaPrimGGPCMPHOAcc->Fill(particle->Pt(), particle->Y());
       }
-      
-      
     }
+
+      //  ******* ADDED **********
+
+    if( particle->GetPdgCode() == kPdgK0Short){
+      	TParticle *daughter=fMCStack->Particle(particle->GetDaughter(i));
+        if (!daughter) continue;
+        UChar_t acceptanceGamma[2] = {0,0};
+      	Double_t energyGamma[2] = {0,0};
+      	Bool_t allOK[2] = {kFALSE,kFALSE};
+	UChar_t gdAcceptanceGamma[4] = {0,0,0,0};
+	Double_t gdEnergyGamma[4] = {0,0,0,0};
+	Bool_t allGDOK[4] = {kFALSE, kFALSE, kFALSE,kFALSE};
+
+
+	// Is Daughter a pi0?
+	if (daughter->GetPdgCode() == kPdgPi0){
+	  allOK[i] = kTRUE;
+
+	  // only the two particle decays
+	  if(daughter->GetNDaughters() != 2) continue;
+
+	  	
+	  
+	  for(Int_t k=0;k<2;k++){
+	    TParticle *granddaughter = fMCStack->Particle(daughter->GetDaughter(k)); 
+	    if(granddaughter->GetPdgCode() == 22) allGDOK[2*i + k] = kTRUE;
+	    if(IsInPCMAcceptance(granddaughter))  SETBIT(gdAcceptanceGamma[2*i+k], kPCMAcceptance);
+	    //if(IsInPHOSAcceptance(daughter)) SETBIT(acceptanceGamma[i], kPHOSAcceptance);
+	    if(IsInEMCalAcceptance(granddaughter)) SETBIT(gdAcceptanceGamma[2*i+k], kEMCALAcceptance);
+	    gdEnergyGamma[2*i+k] = granddaughter->Energy();
+	  }
+	
+      
+	
+     
+        fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
+	
+	// if all granddaughters are photons, fill the appropriate histograms
+	if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
+
+	// all 4 photons in PCM acceptance
+	if (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+	    && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance) )
+	  fHistPtYPi0FromKGGPCMAcc->Fill(particle->Pt(),particle->Y());
+
+	// if all 4 photons in EMCal acceptance
+	if (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+	    && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance) )
+	  fHistPtYPi0FromKGGEMCAcc->Fill(particle->Pt(),particle->Y());
+
+	// if one photon in EMcal acceptance, 3 photons in PCM acceptance 
+	// there are 4 ways this can happen
+	if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
+
+	  fHistPtYPi0FromKGGPCMEMCAcc->Fill(particle->Pt(),particle->Y());
+
+	// if 3 photons in EMcal acceptance, 1 photon in PCM acceptance 
+	// there are 4 ways this can happen
+	if ((TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+	    (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+	     && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)))
+
+	  fHistPtYPi0FromKGGEMCPCMAcc->Fill(particle->Pt(),particle->Y());
+	
+	// if 2 photons in EMCal from the same pi0
+	// this can happen two ways, both from first pi0 and both from 2nd pi0
+	if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) &&
+	    TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+	    (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) &&
+	     TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
+	  fHistPtYPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(),particle->Y());
+
+	// if 2 photons in EMCal from different pi0
+	// this can happen in four different ways
+	if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
+	     TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+	    (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
+	     TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance))||
+	    (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
+	     TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+	    (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
+	     TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance)))
+	  fHistPtYPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(),particle->Y());
+
+	}
+
+     
+      
+      
+      
+    }// end if (particle->GetPdgCode() == kPdgK0Short)
+    
     
   }
   
