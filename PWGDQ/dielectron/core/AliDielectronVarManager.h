@@ -1648,8 +1648,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
-  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
-  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
+  //values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  //values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
 
