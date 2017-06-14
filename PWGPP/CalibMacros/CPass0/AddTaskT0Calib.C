@@ -5,8 +5,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
 {
   //
   // add calibration task
-  //
-
+  //  read start and end of run time from GRP
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskT0Calib", "No analysis manager to connect to.");
@@ -79,6 +78,13 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   TString LHCperiod = grpData->GetLHCPeriod();
   Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
   Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
+  
+  //  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  // AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
+  UInt_t timeStart = grpData->GetTimeStart();
+  UInt_t timeEnd = grpData->GetTimeEnd();
+  mytask->SetStartEndTime(timeStart,timeEnd);
+  cout<<"T0 start time  "<<timeStart<<" end time "<<timeEnd<<endl;
 
   //  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   // AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
