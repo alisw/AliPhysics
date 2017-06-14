@@ -16,7 +16,6 @@ AliAnalysisTask *AddTaskNucleiv2pPb(TString name="name",Int_t ptctype =1, Float_
   task->SetCentralityEstimator(CentEstim);
   task->SetHarmonic(harmonic);
   task->SetRecPass(recPass);
-  task->SetRecPass(0);
   task->SetFilterBit(filterbit);
   mgr->AddTask(task);
 
