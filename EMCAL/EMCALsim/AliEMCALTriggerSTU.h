@@ -5,6 +5,7 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerSTU
+/// \ingroup EMCALsim
 /// \brief EMCal trigger STU handling
 ///
 /// Add description

@@ -5,6 +5,7 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerBoard
+/// \ingroup EMCALsim
 /// \brief EMCal trigger board super class
 ///
 /// EMCal trigger board super class

@@ -5,6 +5,7 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerElectronics
+/// \ingroup EMCALsim
 /// \brief EMCal trigger electronics manager L0/L1
 ///
 /// EMCal trigger electronics manager L0/L1
