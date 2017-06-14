@@ -280,6 +280,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
       AddHistogram2D<TH2D>(Form("hEmbeddingDeltaR%s", appendix), "Matched jet #Delta R distribution", "", 200, -50., 150., 100, 0, 1.0, "p_{T, jet} (GeV/c)", "#Delta R", "dN^{Matched}/dp_{T}dR");
       AddHistogram2D<TH2D>(Form("hEmbeddingDeltaEta%s", appendix), "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
       AddHistogram2D<TH2D>(Form("hEmbeddingDeltaPhi%s", appendix), "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
+      AddHistogram2D<TH2D>(Form("hEmbeddingDeltaPt%s", appendix), "Matched jet #Delta p_{T} distribution", "", 200, -50., 150., 300, -150.0, 150.0, "p_{T, jet} (GeV/c)", "#Delta p_{T}", "dN^{Matched}/dp_{T}dp_{T}");
       AddHistogram1D<TH1D>(Form("hEmbeddingJetPt%s", appendix), "Embedded jets p_{T} distribution", "", 200, -50., 150., "p_{T, jet} (GeV/c)", "dN/dp_{T}");
       AddHistogram2D<TH2D>(Form("hEmbeddingJetPhiEta%s", appendix), "Embedded jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
 
@@ -583,6 +584,7 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
   if( (fJetOutputMode == 4) || (fJetOutputMode == 5))
   {
     AliEmcalJet* refJet = GetReferenceJet(jet);
+    Double_t deltaPt = jet->Pt() - fJetsCont->GetRhoVal()*jet->Area() - refJet->Pt();
     Double_t deltaEta = (jet->Eta()-refJet->Eta());
     Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-refJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-refJet->Phi()));
     if(jet->Phi() < refJet->Phi())
@@ -592,6 +594,7 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
     FillHistogram(Form("hEmbeddingDeltaR%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), deltaR);
     FillHistogram(Form("hEmbeddingDeltaEta%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), deltaPhi);
     FillHistogram(Form("hEmbeddingDeltaPhi%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), deltaEta);
+    FillHistogram(Form("hEmbeddingDeltaPt%s", appendix.Data()), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), deltaPt);
     FillHistogram(Form("hEmbeddingJetPt%s", appendix.Data()), refJet->Pt());
     FillHistogram(Form("hEmbeddingJetPhiEta%s", appendix.Data()), refJet->Phi(), refJet->Eta()); 
 
@@ -899,18 +902,29 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
 
   AliEmcalJet* jetLeading = 0;
   AliEmcalJet* jetSubLeading = 0;
-  GetLeadingJetsInArray(fJetEmbeddingArray, "rho", jetLeading, jetSubLeading);
 
-  // ############ Search for all matches with leading/subleading jets
-  for(Int_t i=0; i<fJetEmbeddingNumMatchedJets; i++)
+  if(fJetEmbeddingNumMatchedJets<3)
+    GetLeadingJetsInArray(fJetEmbeddingArray, "", jetLeading, jetSubLeading);
+
+  // ############ Search for all matches
+  for(Int_t i=0; i<TMath::Min(fJetEmbeddingArray->GetEntries(), fJetEmbeddingNumMatchedJets); i++)
   {
     AliEmcalJet* probeJet = 0;
-    if(i==0)
-      probeJet = jetLeading;
-    else if(i==1)
-      probeJet = jetSubLeading;
+    // Extract leading/subleading
+    if(fJetEmbeddingNumMatchedJets<3)
+    {
+      if(i==0)
+        probeJet = jetLeading;
+      else if(i==1)
+        probeJet = jetSubLeading;
+    }
+    else // extract more than 2 jets, e.g. all
+      probeJet = static_cast<AliEmcalJet*>(fJetEmbeddingArray->At(i));
 
     if(!probeJet)
+      continue;
+
+    if(probeJet->Pt() < 0.001) // do not use ghosts
       continue;
 
     AliEmcalJet* matchedJet = 0;
