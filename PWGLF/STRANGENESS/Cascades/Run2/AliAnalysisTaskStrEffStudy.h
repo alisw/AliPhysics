@@ -355,6 +355,11 @@ private:
     Float_t fTreeVariableNegDxy;
     Float_t fTreeVariablePosDz;
     Float_t fTreeVariableNegDz;
+    Int_t fTreeVariablePID;
+    Int_t fTreeVariablePIDPositive;
+    Int_t fTreeVariablePIDNegative;
+    Float_t fTreeVariablePtMC;
+    Float_t fTreeVariableRapMC;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree

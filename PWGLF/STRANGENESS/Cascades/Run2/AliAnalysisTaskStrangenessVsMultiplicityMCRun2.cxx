@@ -1766,7 +1766,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeVariablePIDPositive = lPIDPositive;
         fTreeVariablePIDNegative = lPIDNegative;
 
-        Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother() ;
+        Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
         Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
 
         if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ) {
