@@ -1048,7 +1048,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		//..update pool only with tracks from event type fMixingEventType,
 		//..and do NOT add tracks from GA triggered events (BIT(15))
-		if((fCurrentEventTrigger & fMixingEventType) && ((fCurrentEventTrigger & 1000000000000000)==0))
+		if((fCurrentEventTrigger & fMixingEventType) && ((fCurrentEventTrigger & AliVEvent::kEMCEGA)==0))
 		{
 			TObjArray* tracksClone=0x0;
 			tracksClone = CloneToCreateTObjArray(tracks);
