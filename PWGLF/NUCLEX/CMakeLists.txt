@@ -68,6 +68,7 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
+  Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
   Utils/NuclexFilter/AliAODNuclExReplicator.cxx
