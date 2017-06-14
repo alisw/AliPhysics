@@ -653,6 +653,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227300008250400000", "0152103500000000"); // no double counting
     cuts.AddCut("00010113", "00200009227300008250404000", "0152105500000000"); // meson alpha < 0.75
     cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // meson alpha < 0.85
+    // eta cut variation to exclude central cathode
+  } else if (trainConfig == 130) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
+    cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
+
     // -------- Material weights -several configs with same sets for running with various mat weights ----------
   } else if (trainConfig == 160) { // like last last two in 70 and dalitz standard 7TeV
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
