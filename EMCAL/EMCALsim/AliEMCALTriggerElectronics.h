@@ -37,7 +37,7 @@ public:
   virtual void   Reset();  
   
   virtual AliEMCALTriggerTRU* GetTRU( Int_t iTRU ) {return (AliEMCALTriggerTRU*)fTRU->At(iTRU);}
-  virtual AliEMCALTriggerSTU* GetSTU(            ) {return                      fSTU;          }
+  virtual AliEMCALTriggerSTU* GetSTU( Bool_t isDCAL = false ) {return isDCAL ? fSTUDCAL : fSTU;}
   
 private:
   
@@ -46,11 +46,9 @@ private:
   
   Int_t                 fNTRU;     //< Total number of TRUs
   TClonesArray*         fTRU;      ///< 32 TRU
-  AliEMCALTriggerSTU*   fSTU;      ///<  1 STU
+  AliEMCALTriggerSTU*   fSTU;      ///< 1 STU for EMCAL
   AliEMCALGeometry     *fGeometry; ///< EMCal geometry
  
-  Int_t                fEMCALFw;  //< EMCAL STU firmware version
-  Int_t                fDCALFw;   //<  DCAL STU firmware version
   Int_t                fMedianMode; // 0 for no median subtraction, 1 for median sub.
   TClonesArray*        fTRUDCAL;  //< 14 TRU
   AliEMCALTriggerSTU*  fSTUDCAL;  //< 1 STU for DCAL

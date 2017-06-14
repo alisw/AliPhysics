@@ -280,7 +280,7 @@ Int_t AliEMCALTriggerSTU::GetMedianEnergy(){
 	int nX = (int) fRegionSize->X()/kPatchXSize; 
 	int nY = (int) fRegionSize->Y()/kPatchYSize;
 
-  Bool_t fZeroPHOS = (fDCSConfig->GetFw() & 0xd007) != 0; // Whether to ignore PHOS patches
+  Bool_t fZeroPHOS = (fDCSConfig->GetFw() & 0xffff) == 0xd007; // Whether to ignore PHOS patches
 
 	for (int i = 0; i < nX; i++) {
 		for (int j = 0; j < nY; j++) {

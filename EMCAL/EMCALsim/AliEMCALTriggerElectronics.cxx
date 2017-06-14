@@ -62,18 +62,17 @@ fGeometry(0)
   }
     
   fNTRU = fGeometry->GetNTotalTRU() ;
-//	fNTRU = dcsConf->GetTRUArr()->GetSize();
-  AliInfo(TString::Format("fGeometry <<%s>> has %d TRUs; dcsConf has %d TRUs.\n",fGeometry->GetName(),fNTRU,dcsConf->GetTRUArr()->GetSize()));
+  AliDebug(999,TString::Format("fGeometry <<%s>> has %d TRUs; dcsConf has %d TRUs.\n",fGeometry->GetName(),fNTRU,dcsConf->GetTRUArr()->GetSize()));
   TString fGeometryName = fGeometry->GetName();
 
   // Update here for future trigger mapping versions
   Int_t iTriggerMapping = 1 + (Int_t) fGeometryName.Contains("DCAL");
   switch (iTriggerMapping ) {
     case 1:
-    AliInfo("Trigger Mapping V1.  Will not include DCAL.");
+    AliDebug(999,"Trigger Mapping V1.  Will not include DCAL.");
     break;
     case 2:
-    AliInfo("Trigger Mapping V2.  Will include DCAL.");
+    AliDebug(999,"Trigger Mapping V2.  Will include DCAL.");
   }
 
 
@@ -88,24 +87,20 @@ fGeometry(0)
 
   // Checking Firmware from DCS config to choose algorithm
   fMedianMode = stuConf->GetMedianMode();
-  fEMCALFw = stuConf->GetFw();
 
 
   if (iTriggerMapping >= 2) {
     rSize.Set( 40., 48. );  // This should be accurate
     AliEMCALTriggerSTUDCSConfig* stuConfDCal = dcsConf->GetSTUDCSConfig(true);
     if (stuConfDCal) {
-      fDCALFw = stuConfDCal->GetFw();
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
-      AliInfo(TString::Format("Found DCAL STU firmware %x.",fDCALFw));
+      AliDebug(999,TString::Format("Found DCAL STU firmware %x.",stuConfDCal->GetFw()));
     } else {
       AliError("No DCS Config found for DCAL!  Using EMCAL DCS config for now.");
       fSTUDCAL = new AliEMCALTriggerSTU(stuConf, rSize);
-      AliInfo("Manually setting DCAL STU fW object to 0xd000.");
+      AliDebug(999,"Manually setting DCAL STU fW object to 0xd000.");
       // Manually setting DCAL STU DCS fW version to 0xd000
-        stuConfDCal->SetFw(0xd000);
-        fDCALFw = stuConfDCal->GetFw();
-//			fDCALfW = fEMCALfW;
+      stuConfDCal->SetFw(0xd000);
     }
   } else fSTUDCAL = 0;
 
@@ -509,6 +504,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         fSTUDCAL->ComputeThFromV0(kL1GammaHigh + ithr, V0M); 
         fSTUDCAL->ComputeThFromV0(kL1JetHigh + ithr,   V0M);
 
+/*
         if (runNumber > 244640 && runNumber < 247173) {
           // Hard Code LHC15o thresholds
           fSTUDCAL->SetThreshold(kL1GammaHigh + ithr, 128);
@@ -518,7 +514,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
           fSTUDCAL->SetThreshold(kL1GammaHigh + ithr, 89 + 51*ithr);
           fSTUDCAL->SetThreshold(kL1JetHigh + ithr, 127 + 133*ithr);
         }
-
+*/
 
 
        AliDebug(999, Form("STU DCAL THR %d EGA %d EJE %d", ithr, fSTUDCAL->GetThreshold(kL1GammaHigh + ithr), fSTUDCAL->GetThreshold(kL1JetHigh + ithr)));
@@ -528,21 +524,20 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
   }
 
 
- // if (fSTUDCAL && ((fEMCALFw & 0xf000) == 0xb000)) { // Execute run 2 algorithm
   if (fSTUDCAL && fMedianMode) { // Execute run 2 algorithm
-    AliInfo("Executing event-by-event median background subtraction for trigger");	
+    AliDebug(999,"Executing event-by-event median background subtraction for trigger");	
 
     Int_t fBkgRhoEMCAL = fSTU->GetMedianEnergy();
     Int_t fBkgRhoDCAL = fSTUDCAL->GetMedianEnergy();
 
 
-    AliInfo(Form("Found Rho from EMCAL: %d,    Rho from DCAL: %d",fBkgRhoEMCAL,fBkgRhoDCAL));
+    AliDebug(999,Form("Found Rho from EMCAL: %d,    Rho from DCAL: %d",fBkgRhoEMCAL,fBkgRhoDCAL));
 
     fSTU->SetBkgRho(fBkgRhoDCAL);
     fSTUDCAL->SetBkgRho(fBkgRhoEMCAL);
 
   } else {
-    AliInfo("Not doing event-by-event background subtraction for trigger");
+    AliDebug(999,"Not doing event-by-event background subtraction for trigger");
   } 
   
 

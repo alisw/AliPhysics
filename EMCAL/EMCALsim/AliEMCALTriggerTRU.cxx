@@ -167,6 +167,7 @@ Int_t AliEMCALTriggerTRU::L0()
   ma = (ma >> 8) & 0x7f;
   
   AliDebug(999,Form("=== TRU fw version %x ===",fDCSConfig->GetFw()));
+  AliDebug(999,Form("=== TRU L0 THR = %d ===",fDCSConfig->GetGTHRL0()));
   
   if (fDCSConfig->GetFw() < 0x4d) {
     return L0v0(nb, ma);
