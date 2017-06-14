@@ -577,7 +577,7 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     
 	clusters->GetMomentum(ph_lead, cluster_lead);
     clusters->GetMomentum(ph_sub, cluster_sub);
-    double asym = abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
+    double asym = std::abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
 	pi0= ph_lead+ph_sub;
     
     //////////////////Selection//////////////////////////////////////////////
@@ -602,7 +602,7 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     if(dphi<-0.5) dphi +=2;
     
     double entries[24] = {fCent, fVertex[2], pi0.Pt(), pi0.E(), pi0.Rapidity(), pi0.Eta(), pi0.Phi(), 
-                         track->Pt(), track->Eta(), trackphi, dphi, deta, abs(deta), Zt, Xi,
+                         track->Pt(), track->Eta(), trackphi, dphi, deta, std::abs(deta), Zt, Xi,
                          pi0.M(), ph_lead.Pt(), ph_sub.Pt(), ph_lead.Eta(), ph_sub.Eta(), ph_lead.Phi(), ph_sub.Phi() , cluster_lead->GetM02(), cluster_sub->GetM02()};                
     histo->Fill(entries, weight); //
     /*
@@ -649,8 +649,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
     if(dphi<-0.5) dphi +=2;
     
     double entries[18] = {fCent, fVertex[2], ph.Pt(), ph.E(), ph.Eta(), ph.Rapidity(), ph.Phi(),  
-              track->Pt(), track->Eta(), trackphi, dphi, deta, abs(deta), Zt, Xi,
-              cluster->GetM02(), cluster->GetNTracksMatched(), cluster->GetNExMax()
+              track->Pt(), track->Eta(), trackphi, dphi, deta, std::abs(deta), Zt, Xi,
+              cluster->GetM02(), static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax())
               };                
     histo->Fill(entries, weight);//
     
@@ -701,11 +701,11 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     if( pi0.M()  > 1.0) return;
     if(cluster_lead->E()<6.0) return;
     ////////////////////////////////////////////////////////////////////
-    double asym = abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
+    double asym = std::abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
     double entries[25] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Eta(), pi0.Phi(), pi0.E(), 
-                          ph_lead.E(), ph_sub.E(), asym, ph_lead.Pt(), ph_sub.Pt(), ph_lead.Eta(), ph_sub.Eta(), ph_lead.Phi(), ph_sub.Phi() , abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())), 
-                          cluster_lead->GetM02(), cluster_sub->GetM02(), cluster_lead->GetNCells(), cluster_sub->GetNCells(), cluster_lead->GetNTracksMatched(), cluster_sub->GetNTracksMatched(), 
-                          cluster_lead->GetNExMax(), cluster_sub->GetNExMax()};                
+                          ph_lead.E(), ph_sub.E(), asym, ph_lead.Pt(), ph_sub.Pt(), ph_lead.Eta(), ph_sub.Eta(), ph_lead.Phi(), ph_sub.Phi() , std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())),
+                          cluster_lead->GetM02(), cluster_sub->GetM02(), static_cast<double>(cluster_lead->GetNCells()), static_cast<double>(cluster_sub->GetNCells()), static_cast<double>(cluster_lead->GetNTracksMatched()), static_cast<double>(cluster_sub->GetNTracksMatched()),
+                          static_cast<double>(cluster_lead->GetNExMax()), static_cast<double>(cluster_sub->GetNExMax())};
     histo->Fill(entries);
     return;
 }
@@ -716,7 +716,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     TLorentzVector ph;
     clusters->GetMomentum(ph, cluster);
     if(cluster->E()< 5.0) return;
-    double entries[10] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetNExMax()};                
+    double entries[10] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax())};
     histo->Fill(entries);
     return;
 }
