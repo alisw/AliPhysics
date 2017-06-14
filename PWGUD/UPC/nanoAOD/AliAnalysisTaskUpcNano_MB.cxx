@@ -69,7 +69,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTOFPIDProton(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0) 
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0) 
 
 {
 
@@ -98,7 +99,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hTOFPIDProton(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0)  
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0)  
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -157,6 +159,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeJPsi ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -190,6 +193,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeRho ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -270,6 +274,9 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  hNLooseTracks = new TH1D("hNLooseTracks"," ",10000,0,10000);
+  fOutputList->Add(hNLooseTracks);
+  
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -329,6 +336,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t TrackPtALL[7]={0,0,0,0,0,0,0};
   Double_t MeanPt = -1;
   Int_t nSpdHits = 0;
+  
+  fNLooseTracks = aod->GetNumberOfESDTracks();
+  hNLooseTracks->Fill(fNLooseTracks);
   
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   //Track loop
