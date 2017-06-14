@@ -31,7 +31,7 @@ class AliT0CalibOffsetChannelsTask : public AliAnalysisTaskSE {
   Float_t *GetT0Means() { return fCDBT0s;}
   void SetT0Means(Int_t ihist, Float_t mean ) {fCDBT0s[ihist]=mean;};
   void SetRefPMT(Int_t refPMTA = 12, Int_t refPMTC=0) {fRefPMTA = refPMTA; fRefPMTC = refPMTC;};
-
+  void SetStartEndTime(UInt_t start, UInt_t end) {fStartTime=start; fEndTime=end;} 
 
 private:
   AliESDEvent *fESD;          //! ESD object
@@ -51,11 +51,13 @@ private:
   TH2F        *fT0s[4];           // T0s vs multiplicity
   TH2F        *fCFDvsTimestamp[24]; // CFD vs timestamp
   Int_t       fEvent;               //event counter      
- 
+  UInt_t      fStartTime;               //Start of run
+  UInt_t      fEndTime;               //End of run
+  
   AliT0CalibOffsetChannelsTask(const AliT0CalibOffsetChannelsTask&); // not implemented
   AliT0CalibOffsetChannelsTask& operator=(const AliT0CalibOffsetChannelsTask&); // not implemented
   
-  ClassDef(AliT0CalibOffsetChannelsTask, 4); // example of analysis
+  ClassDef(AliT0CalibOffsetChannelsTask, 5); // example of analysis
 };
 
 #endif
