@@ -2033,6 +2033,18 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
+  case 10: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = 0.;
+    break;
+  case 11: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
+    break;
   default:
     AliError(Form(" EtaCut not defined %d",etaCut));
     return kFALSE;
