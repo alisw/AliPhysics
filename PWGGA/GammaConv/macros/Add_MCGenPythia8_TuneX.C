@@ -1,3 +1,12 @@
+AliGenerator* CreatePythia8Gen( Float_t e_cms,
+                                Int_t tune,
+                                Bool_t kCR,
+                                Int_t kF,
+                                Int_t kProcess,
+                                Double_t ptHardMin,
+                                Double_t ptHardMax
+                            );
+
 AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760., 
                                         Int_t tune          = 5, 
                                         Bool_t kCR          = kTRUE, 
@@ -39,7 +48,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
 
 
-    AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
+    AliGenPythiaPlus* gener = new AliGenPythiaPlus(pythia);
 
     std::cout << "*****************************************************************" << std::endl;
     std::cout << "Process: "<< kProcess << "\t Color reconnection: "<< kCR << "\t Tune: " << tune << "\t kFactor: "<< kF <<  std::endl;
@@ -55,7 +65,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     
     if(kProcess==1) {
         gener->SetProcess(kPyJets);
-        std::cout << "went into jet loop" << endl;
+        std::cout << "went into jet loop" << std::endl;
         if(ptHardMin > 0.){ 
             std::cout << "Setting pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
             gener->SetPtHard(ptHardMin,ptHardMax);
