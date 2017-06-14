@@ -168,6 +168,11 @@ fTreeVariablePosDxy(0),
 fTreeVariableNegDxy(0),
 fTreeVariablePosDz(0),
 fTreeVariableNegDz(0),
+fTreeVariablePID(0),
+fTreeVariablePIDPositive(0),
+fTreeVariablePIDNegative(0),
+fTreeVariablePtMC(0),
+fTreeVariableRapMC(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -410,6 +415,11 @@ fTreeVariablePosDxy(0),
 fTreeVariableNegDxy(0),
 fTreeVariablePosDz(0),
 fTreeVariableNegDz(0),
+fTreeVariablePID(0),
+fTreeVariablePIDPositive(0),
+fTreeVariablePIDNegative(0),
+fTreeVariablePtMC(0),
+fTreeVariableRapMC(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -729,6 +739,11 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariableNegDxy",&fTreeVariableNegDxy,"fTreeVariableNegDxy/F");
         fTreeV0->Branch("fTreeVariablePosDz",&fTreeVariablePosDz,"fTreeVariablePosDz/F");
         fTreeV0->Branch("fTreeVariableNegDz",&fTreeVariableNegDz,"fTreeVariableNegDz/F");
+        fTreeV0->Branch("fTreeVariablePID",&fTreeVariablePID,"fTreeVariablePID/I");
+        fTreeV0->Branch("fTreeVariablePIDPositive",&fTreeVariablePIDPositive,"fTreeVariablePIDPositive/I");
+        fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
+        fTreeV0->Branch("fTreeVariablePtMC",&fTreeVariablePtMC,"fTreeVariablePtMC/F");
+        fTreeV0->Branch("fTreeVariableRapMC",&fTreeVariableRapMC,"fTreeVariableRapMC/F");
         //------------------------------------------------
     }
 
@@ -1292,6 +1307,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        
+        //Skip three-body decays and the like
+        if ( lParticleMother->GetNDaughters()!=2 ) continue;
+        
         Bool_t lOfDesiredType = kFALSE;
         for(Int_t iType=0; iType<3; iType++){
             if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
@@ -1322,14 +1341,15 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 
                 //1 = Positive, 2 = Negative case
                 if( esdTrack1->GetSign() > 0. && esdTrack2->GetSign() < 0. ){
-                    lPosTrackArray[lFindableV0s] = iTrack;
-                    lNegTrackArray[lFindableV0s] = jTrack;
+                    lPosTrackArray[lFindableV0s] = lTrackArray[iTrack];
+                    lNegTrackArray[lFindableV0s] = lTrackArray[jTrack];
                     lFindableV0s++; //add this to findable
                 }else{
-                    lPosTrackArray[lFindableV0s] = jTrack;
-                    lNegTrackArray[lFindableV0s] = iTrack;
+                    lPosTrackArray[lFindableV0s] = lTrackArray[jTrack];
+                    lNegTrackArray[lFindableV0s] = lTrackArray[iTrack];
                     lFindableV0s++; //add this to findable
                 }
+                
             }
         }
     }
@@ -1343,8 +1363,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         //-----------------------------------------------------------------
         //3a: get basic track characteristics
+        fTreeVariablePosLength = -1;
+        fTreeVariableNegLength = -1;
+        
+        if( esdTrackPos->GetInnerParam() )
         fTreeVariablePosLength = esdTrackPos->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if( esdTrackNeg->GetInnerParam() )
         fTreeVariableNegLength = esdTrackNeg->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+
         fTreeVariablePosCrossedRows = esdTrackPos ->GetTPCClusterInfo(2,1);
         fTreeVariableNegCrossedRows = esdTrackNeg ->GetTPCClusterInfo(2,1);
         //Tracking flags
@@ -1369,6 +1395,21 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
 
         //-----------------------------------------------------------------
         //3c: Get perfect MC information for bookkeeping
+        Int_t lblPosV0Dghter = (Int_t) TMath::Abs( esdTrackPos->GetLabel() );
+        Int_t lblNegV0Dghter = (Int_t) TMath::Abs( esdTrackNeg->GetLabel() );
+        
+        TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+        TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+
+        fTreeVariablePIDPositive = mcPosV0Dghter -> GetPdgCode();
+        fTreeVariablePIDNegative = mcNegV0Dghter -> GetPdgCode();
+        
+        Int_t lblMotherV0 = mcPosV0Dghter->GetFirstMother();
+        TParticle* pThisV0 = lMCstack->Particle( lblMotherV0 );
+        //Set tree variables
+        fTreeVariablePID   = pThisV0->GetPdgCode(); //PDG Code
+        fTreeVariablePtMC  = pThisV0->Pt(); //Perfect Pt
+        fTreeVariableRapMC = pThisV0->Y();
         
         //End step 3: fill findable ttree
         fTreeV0->Fill();
