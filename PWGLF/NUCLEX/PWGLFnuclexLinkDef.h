@@ -43,6 +43,7 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
+#pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 
