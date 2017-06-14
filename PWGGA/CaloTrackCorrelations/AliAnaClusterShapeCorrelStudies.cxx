@@ -80,7 +80,7 @@ fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCo
 //fhCellTimeSpreadRespectToCellMaxM02(0), 
 //fhClusterMaxCellCloseCellDiffM02(0),  
 fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
-fhInvMassNCellSM(0),
+fhInvMassNCellSM(0),                   fhInvMassNCellSMSame(0),
 fhColRowM02(0),                        fhColRowM02NCellCut(0),
 
 fhESecCellEMaxCellM02SM(0),            fhESecCellEClusterM02SM(0),
@@ -1609,6 +1609,9 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       // Fill histograms
       Float_t mass   = (fClusterMomentum+fClusterMomentum2).M ();
       fhInvMassNCellSM->Fill(mass, nCell, smMax, GetEventWeight());
+      
+      Int_t smMax2 = GetModuleNumber(clus2);
+      if(smMax == smMax2) fhInvMassNCellSMSame->Fill(mass, nCell, smMax, GetEventWeight());
     }
   }
   
@@ -3592,15 +3595,26 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     outputContainer->Add(fhColRowM02NCellCut) ;
 
     fhInvMassNCellSM  = new TH3F 
-    ("fhInvMassNCellSM",
+    ("hInvMassNCellSM",
      Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
-          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number",
+          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number trig cluster",
           fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
      nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
     fhInvMassNCellSM->SetZTitle("SM number");
     fhInvMassNCellSM->SetYTitle("#it{n}_{cells}^{w>0.01}");
     fhInvMassNCellSM->SetXTitle("#it{M}_{#gamma #gamma}");
     outputContainer->Add(fhInvMassNCellSM);         
+    
+    fhInvMassNCellSMSame  = new TH3F 
+    ("hInvMassNCellSMSame",
+     Form("%2.2f<#it{E}_{1}<%2.2f GeV, %2.2f<#it{E}_{2}<%2.2f GeV, %2.2f<#lambda^{2}_{0}<%2.2f"
+          "#it{M}_{#gamma #gamma} vs #it{n}_{1, cells}^{w>0.01} vs SM number both cluster",
+          fEMinShape,fEMaxShape,fInvMassMinECut,fInvMassMaxECut,fInvMassMinM02Cut,fInvMassMaxM02Cut),
+     nmassbins,massmin,massmax,cellBins,cellMin,cellMax,fNModules,-0.5,fNModules-0.5); 
+    fhInvMassNCellSMSame->SetZTitle("SM number");
+    fhInvMassNCellSMSame->SetYTitle("#it{n}_{cells}^{w>0.01}");
+    fhInvMassNCellSMSame->SetXTitle("#it{M}_{#gamma #gamma}");
+    outputContainer->Add(fhInvMassNCellSMSame);       
     
     //
     
