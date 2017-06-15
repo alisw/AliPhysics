@@ -397,13 +397,27 @@ private:
     Float_t fTreeCascVarDcaV0Daughters;
     Bool_t fTreeCascVarNegPropagStatus;
     Bool_t fTreeCascVarPosPropagStatus;
-    Bool_t fTreeCascVarV0Radius;
-    Bool_t fTreeCascVarV0DecayX;
-    Bool_t fTreeCascVarV0DecayY;
-    Bool_t fTreeCascVarV0DecayZ;
-    Bool_t fTreeCascVarV0CosineOfPointingAngle;
-    Bool_t fTreeCascVarInvMassLambda;
-    Bool_t fTreeCascVarInvMassAntiLambda;
+    Float_t fTreeCascVarV0Radius;
+    Float_t fTreeCascVarV0DecayX;
+    Float_t fTreeCascVarV0DecayY;
+    Float_t fTreeCascVarV0DecayZ;
+    Float_t fTreeCascVarV0CosineOfPointingAngle;
+    Float_t fTreeCascVarDCAV0ToPrimVtx;
+    Float_t fTreeCascVarInvMassLambda;
+    Float_t fTreeCascVarInvMassAntiLambda;
+    
+    Float_t fTreeCascVarDCACascDaughtersClassical;
+    Bool_t fTreeCascVarCascPropagationClassical;
+    
+    Float_t fTreeCascVarDecayX;
+    Float_t fTreeCascVarDecayY;
+    Float_t fTreeCascVarDecayZ;
+    Float_t fTreeCascVarCascCosPointingAngle;
+    
+    Float_t fTreeCascVarInvMassXiMinus;
+    Float_t fTreeCascVarInvMassXiPlus;
+    Float_t fTreeCascVarInvMassOmegaMinus;
+    Float_t fTreeCascVarInvMassOmegaPlus;
 
 //===========================================================================================
 //   Histograms
