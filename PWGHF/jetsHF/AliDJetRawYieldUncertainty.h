@@ -106,7 +106,7 @@ public:
 
   Bool_t Success() const { return fSuccess; }
 
-  Bool_t GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2);
+  Bool_t GenerateJetSpectrum(TH2* hInvMassJetObs, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetobs, TH1* hjetobs_s, TH1* hjetobs_s1, TH1* hjetobs_s2);
 
   virtual void ClearObjects();
 

@@ -904,21 +904,21 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
 
 /**
  * Generate the jet pt spectrum for a given D-meson pt bin (side-band method).
- * @param[in] hInvMassJetPt Valid pointer to a 2-dimensional histogram with x = inv.mass and y = jet pt
+ * @param[in] hInvMassJetObs Valid pointer to a 2-dimensional histogram with x = inv.mass and y = jet observable (pt, z, etc.)
  * @param[in] mean Mean of the invariant mass fit in the D meson pt bin
  * @param[in] sigma Sigma of the invariant mass fit in the D meson pt bin
  * @param[in] bkg Background of the invariant mass fit in the D meson pt bin
  * @param[in] iDbin D meson pt bin
- * @param[out] hjetpt Valid pointer to a histogram which will be filled with the subtracted jet pt spectrum
- * @param[out] hjetpt_s Valid pointer to a histogram which will be filled with the side-band jet pt spectrum
- * @param[out] hjetpt_s1 Valid pointer to a histogram which will be filled with the side-band jet pt spectrum (left)
- * @param[out] hjetpt_s2 Valid pointer to a histogram which will be filled with the side-band jet pt spectrum (right)
+ * @param[out] hjetobs Valid pointer to a histogram which will be filled with the subtracted jet spectrum
+ * @param[out] hjetobs_s Valid pointer to a histogram which will be filled with the side-band jet spectrum
+ * @param[out] hjetobs_s1 Valid pointer to a histogram which will be filled with the side-band jet spectrum (left)
+ * @param[out] hjetobs_s2 Valid pointer to a histogram which will be filled with the side-band jet spectrum (right)
  * @return kTRUE if successful
  */
-Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2)
+Bool_t AliDJetRawYieldUncertainty::GenerateJetSpectrum(TH2* hInvMassJetObs, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetobs, TH1* hjetobs_s, TH1* hjetobs_s1, TH1* hjetobs_s2)
 {
-  Double_t jetmin = hjetpt->GetXaxis()->GetXmin();
-  Double_t jetmax = hjetpt->GetXaxis()->GetXmax();
+  Double_t jetmin = hjetobs->GetXaxis()->GetXmin();
+  Double_t jetmax = hjetobs->GetXaxis()->GetXmax();
 
   Float_t signal_l_min = mean - fnSigmaSideBandLeft1 * sigma;
   Float_t signal_l_max = mean - fnSigmaSideBandLeft2 * sigma;
@@ -928,10 +928,10 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Float_t signal_c_max = mean + fnSigmaSignReg * sigma;
 
   //extract signal and sideband region spectra
-  TH1* tmphjetpt = hInvMassJetPt->ProjectionY(Form("tmphjetpt%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_c_min), hInvMassJetPt->GetXaxis()->FindBin(signal_c_max));
-  TH1* tmphjetpt_s1 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s1%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_l_min), hInvMassJetPt->GetXaxis()->FindBin(signal_l_max));
-  TH1* tmphjetpt_s2 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s2%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_u_min), hInvMassJetPt->GetXaxis()->FindBin(signal_u_max));
-  TH1* tmphjetpt_s = static_cast<TH1*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
+  TH1* tmphjetpt = hInvMassJetObs->ProjectionY(Form("tmphjetobs%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_c_min), hInvMassJetObs->GetXaxis()->FindBin(signal_c_max));
+  TH1* tmphjetpt_s1 = hInvMassJetObs->ProjectionY(Form("tmphjetobs_s1%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_l_min), hInvMassJetObs->GetXaxis()->FindBin(signal_l_max));
+  TH1* tmphjetpt_s2 = hInvMassJetObs->ProjectionY(Form("tmphjetobs_s2%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_u_min), hInvMassJetObs->GetXaxis()->FindBin(signal_u_max));
+  TH1* tmphjetpt_s = static_cast<TH1*>(tmphjetpt_s1->Clone(Form("tmphjetobs_s%d",iDbin)));
   tmphjetpt_s->Add(tmphjetpt_s2);
 
   // scale background from side bands to the background under the peak
@@ -943,27 +943,27 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Printf("Background scaling factor = %.6f", scaling);
   for (int j = 1; j <= tmphjetpt->GetNbinsX(); j++) {
     Double_t centerbin = tmphjetpt->GetBinCenter(j);
-    hjetpt->Fill(centerbin, tmphjetpt->GetBinContent(j));
-    hjetpt_s1->Fill(centerbin, tmphjetpt_s1->GetBinContent(j));
-    hjetpt_s2->Fill(centerbin, tmphjetpt_s2->GetBinContent(j));
-    hjetpt_s->Fill(centerbin, tmphjetpt_s->GetBinContent(j));
+    hjetobs->Fill(centerbin, tmphjetpt->GetBinContent(j));
+    hjetobs_s1->Fill(centerbin, tmphjetpt_s1->GetBinContent(j));
+    hjetobs_s2->Fill(centerbin, tmphjetpt_s2->GetBinContent(j));
+    hjetobs_s->Fill(centerbin, tmphjetpt_s->GetBinContent(j));
   }
-  for (int j = 1; j <= hjetpt->GetNbinsX(); j++) {
-    hjetpt->SetBinError(j, TMath::Sqrt(hjetpt->GetBinContent(j)));
-    hjetpt_s1->SetBinError(j, TMath::Sqrt(hjetpt_s1->GetBinContent(j)));
-    hjetpt_s2->SetBinError(j, TMath::Sqrt(hjetpt_s2->GetBinContent(j)));
-    hjetpt_s->SetBinError(j, TMath::Sqrt(hjetpt_s->GetBinContent(j)));
+  for (int j = 1; j <= hjetobs->GetNbinsX(); j++) {
+    hjetobs->SetBinError(j, TMath::Sqrt(hjetobs->GetBinContent(j)));
+    hjetobs_s1->SetBinError(j, TMath::Sqrt(hjetobs_s1->GetBinContent(j)));
+    hjetobs_s2->SetBinError(j, TMath::Sqrt(hjetobs_s2->GetBinContent(j)));
+    hjetobs_s->SetBinError(j, TMath::Sqrt(hjetobs_s->GetBinContent(j)));
   }
 
-  hjetpt_s->Scale(scaling);
+  hjetobs_s->Scale(scaling);
 
   // subtract background from signal jet
-  hjetpt->Add(hjetpt_s, -1);
+  hjetobs->Add(hjetobs_s, -1);
 
   // correct for D* efficiency
-  hjetpt->Scale(1. / fDEffValues[iDbin]); // D efficiency
-  hjetpt->SetMarkerColor(kBlue + 3);
-  hjetpt->SetLineColor(kBlue + 3);
+  hjetobs->Scale(1. / fDEffValues[iDbin]); // D efficiency
+  hjetobs->SetMarkerColor(kBlue + 3);
+  hjetobs->SetLineColor(kBlue + 3);
 
   //Normalize to full range the signal range (from fnSigmaSignReg range)
   Double_t normNsigma = 1.0;
@@ -971,12 +971,12 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
     normNsigma -= TMath::Erfc(fnSigmaSignReg / TMath::Sqrt2());
   }
   else {
-    Double_t effSigma1 = (mean - hInvMassJetPt->GetXaxis()->GetBinLowEdge(hInvMassJetPt->GetXaxis()->FindBin(mean - fnSigmaSignReg * sigma))) / sigma;
-    Double_t effSigma2 = (hInvMassJetPt->GetXaxis()->GetBinUpEdge(hInvMassJetPt->GetXaxis()->FindBin(mean + fnSigmaSignReg * sigma)) - mean) / sigma;
+    Double_t effSigma1 = (mean - hInvMassJetObs->GetXaxis()->GetBinLowEdge(hInvMassJetObs->GetXaxis()->FindBin(mean - fnSigmaSignReg * sigma))) / sigma;
+    Double_t effSigma2 = (hInvMassJetObs->GetXaxis()->GetBinUpEdge(hInvMassJetObs->GetXaxis()->FindBin(mean + fnSigmaSignReg * sigma)) - mean) / sigma;
     normNsigma -= TMath::Erfc(effSigma1 / TMath::Sqrt2()) / 2 + TMath::Erfc(effSigma2 / TMath::Sqrt2()) / 2;
     Printf("The left effective sigma is %.3f. The right effective sigma is %.3f.", effSigma1, effSigma2);
   }
-  hjetpt->Scale(1.0 / normNsigma);
+  hjetobs->Scale(1.0 / normNsigma);
 
   return kTRUE;
 }
@@ -1072,7 +1072,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       std::cout << "Error while generating spectrum for TrialExpoFreeS variation: trial did not converge!" << std::endl;
     }
 
-    Bool_t resDefSpectrum = GenerateJetPtSpectrum(hInvMassJetPt, meanDef, sigmaDef, bkgDef, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
+    Bool_t resDefSpectrum = GenerateJetSpectrum(hInvMassJetPt, meanDef, sigmaDef, bkgDef, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
     if (!resDefSpectrum) {
       std::cout << "Error while generating spectrum for TrialExpoFreeS variation" << std::endl;
       return kFALSE;
@@ -1125,7 +1125,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
 
         std::cout << "Mean " << mean << ", sigma " << sigma << ", bkg " << bkg << std::endl;
 
-        Bool_t resSpectrum = GenerateJetPtSpectrum(hInvMassJetPt, mean, sigma, bkg, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
+        Bool_t resSpectrum = GenerateJetSpectrum(hInvMassJetPt, mean, sigma, bkg, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
         if (!resSpectrum) {
           std::cout << "Error while generating spectrum for one of the variations" << std::endl;
           return kFALSE;
