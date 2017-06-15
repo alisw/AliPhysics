@@ -464,12 +464,12 @@ void AliAnalysisTaskAllPtcv2::UserCreateOutputObjects()
     fListHist->Add(fhMassTOF);
   }
   
-  EPVzAvsCentrality  = new TH2D("EPVzAvsCentrality" , "EPVzAvsCentrality" , 80, -2, 2,105,0,105);
-  EPVzCvsCentrality  = new TH2D("EPVzCvsCentrality" , "EPVzCvsCentrality" , 80, -2, 2,105,0,105);
-  EPTPCvsCentrality  = new TH2D("EPTPCvsCentrality" , "EPTPCvsCentrality" , 80, -2, 2,105,0,105);
-  EPVzvsCentrality   = new TH2D("EPVzvsCentrality"  , "EPVzvsCentrality"  , 80, -2, 2,105,0,105);
-  EPTPCpvsCentrality = new TH2D("EPTPCpvsCentrality", "EPTPCpvsCentrality", 80, -2, 2,105,0,105);
-  EPTPCnvsCentrality = new TH2D("EPTPCnvsCentrality", "EPTPCnvsCentrality", 80, -2, 2,105,0,105);
+  EPVzAvsCentrality  = new TH2D("EPVzAvsCentrality" , "EPVzAvsCentrality" , 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
+  EPVzCvsCentrality  = new TH2D("EPVzCvsCentrality" , "EPVzCvsCentrality" , 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
+  EPTPCvsCentrality  = new TH2D("EPTPCvsCentrality" , "EPTPCvsCentrality" , 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
+  EPVzvsCentrality   = new TH2D("EPVzvsCentrality"  , "EPVzvsCentrality"  , 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
+  EPTPCpvsCentrality = new TH2D("EPTPCpvsCentrality", "EPTPCpvsCentrality", 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
+  EPTPCnvsCentrality = new TH2D("EPTPCnvsCentrality", "EPTPCnvsCentrality", 80, -0.5,2*TMath::Pi()+0.5, 105,0,105);
 
   fListHist->Add(EPVzAvsCentrality);
   fListHist->Add(EPVzCvsCentrality);
@@ -615,20 +615,20 @@ void AliAnalysisTaskAllPtcv2::UserCreateOutputObjects()
   fListHist->Add(hphivsPtAll5060); 
   fListHist->Add(hphivsPtAll6080); 
 
-  huqV0AvsPtAll0010 = new TH2F("huqV0AvsPtAll0010","huqV0AvsPtAll0010",100,-5,5,400,0,20);
-  huqV0CvsPtAll0010 = new TH2F("huqV0CvsPtAll0010","huqV0CvsPtAll0010",100,-5,5,400,0,20);
-  huqV0AvsPtAll1020 = new TH2F("huqV0AvsPtAll1020","huqV0AvsPtAll1020",100,-5,5,400,0,20);
-  huqV0CvsPtAll1020 = new TH2F("huqV0CvsPtAll1020","huqV0CvsPtAll1020",100,-5,5,400,0,20);
-  huqV0AvsPtAll2030 = new TH2F("huqV0AvsPtAll2030","huqV0AvsPtAll2030",100,-5,5,400,0,20);
-  huqV0CvsPtAll2030 = new TH2F("huqV0CvsPtAll2030","huqV0CvsPtAll2030",100,-5,5,400,0,20);
-  huqV0AvsPtAll3040 = new TH2F("huqV0AvsPtAll3040","huqV0AvsPtAll3040",100,-5,5,400,0,20);
-  huqV0CvsPtAll3040 = new TH2F("huqV0CvsPtAll3040","huqV0CvsPtAll3040",100,-5,5,400,0,20);
-  huqV0AvsPtAll4050 = new TH2F("huqV0AvsPtAll4050","huqV0AvsPtAll4050",100,-5,5,400,0,20);
-  huqV0CvsPtAll4050 = new TH2F("huqV0CvsPtAll4050","huqV0CvsPtAll4050",100,-5,5,400,0,20);
-  huqV0AvsPtAll5060 = new TH2F("huqV0AvsPtAll5060","huqV0AvsPtAll5060",100,-5,5,400,0,20);
-  huqV0CvsPtAll5060 = new TH2F("huqV0CvsPtAll5060","huqV0CvsPtAll5060",100,-5,5,400,0,20);
-  huqV0AvsPtAll6080 = new TH2F("huqV0AvsPtAll6080","huqV0AvsPtAll6080",100,-5,5,400,0,20);
-  huqV0CvsPtAll6080 = new TH2F("huqV0CvsPtAll6080","huqV0CvsPtAll6080",100,-5,5,400,0,20);
+  huqV0AvsPtAll0010 = new TH2F("huqV0AvsPtAll0010","huqV0AvsPtAll0010",100,-20,20,400,0,20);
+  huqV0CvsPtAll0010 = new TH2F("huqV0CvsPtAll0010","huqV0CvsPtAll0010",100,-20,20,400,0,20);
+  huqV0AvsPtAll1020 = new TH2F("huqV0AvsPtAll1020","huqV0AvsPtAll1020",100,-20,20,400,0,20);
+  huqV0CvsPtAll1020 = new TH2F("huqV0CvsPtAll1020","huqV0CvsPtAll1020",100,-20,20,400,0,20);
+  huqV0AvsPtAll2030 = new TH2F("huqV0AvsPtAll2030","huqV0AvsPtAll2030",100,-20,20,400,0,20);
+  huqV0CvsPtAll2030 = new TH2F("huqV0CvsPtAll2030","huqV0CvsPtAll2030",100,-20,20,400,0,20);
+  huqV0AvsPtAll3040 = new TH2F("huqV0AvsPtAll3040","huqV0AvsPtAll3040",100,-20,20,400,0,20);
+  huqV0CvsPtAll3040 = new TH2F("huqV0CvsPtAll3040","huqV0CvsPtAll3040",100,-20,20,400,0,20);
+  huqV0AvsPtAll4050 = new TH2F("huqV0AvsPtAll4050","huqV0AvsPtAll4050",100,-20,20,400,0,20);
+  huqV0CvsPtAll4050 = new TH2F("huqV0CvsPtAll4050","huqV0CvsPtAll4050",100,-20,20,400,0,20);
+  huqV0AvsPtAll5060 = new TH2F("huqV0AvsPtAll5060","huqV0AvsPtAll5060",100,-20,20,400,0,20);
+  huqV0CvsPtAll5060 = new TH2F("huqV0CvsPtAll5060","huqV0CvsPtAll5060",100,-20,20,400,0,20);
+  huqV0AvsPtAll6080 = new TH2F("huqV0AvsPtAll6080","huqV0AvsPtAll6080",100,-20,20,400,0,20);
+  huqV0CvsPtAll6080 = new TH2F("huqV0CvsPtAll6080","huqV0CvsPtAll6080",100,-20,20,400,0,20);
 
   fListHist->Add(huqV0AvsPtAll0010);
   fListHist->Add(huqV0CvsPtAll0010);
@@ -647,21 +647,21 @@ void AliAnalysisTaskAllPtcv2::UserCreateOutputObjects()
 
   // new hist
 
-  huqV0AvsuqV0C0010  = new TH2F("huqV0AvsuqV0C0010","huqV0AvsuqV0C0010",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C1020  = new TH2F("huqV0AvsuqV0C1020","huqV0AvsuqV0C1020",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C2030  = new TH2F("huqV0AvsuqV0C2030","huqV0AvsuqV0C2030",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C3040  = new TH2F("huqV0AvsuqV0C3040","huqV0AvsuqV0C3040",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C4050  = new TH2F("huqV0AvsuqV0C4050","huqV0AvsuqV0C4050",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C5060  = new TH2F("huqV0AvsuqV0C5060","huqV0AvsuqV0C5060",100,-5,5,100,-5,5);
-  huqV0AvsuqV0C6080  = new TH2F("huqV0AvsuqV0C6080","huqV0AvsuqV0C6080",100,-5,5,100,-5,5);
+  huqV0AvsuqV0C0010  = new TH2F("huqV0AvsuqV0C0010","huqV0AvsuqV0C0010",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C1020  = new TH2F("huqV0AvsuqV0C1020","huqV0AvsuqV0C1020",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C2030  = new TH2F("huqV0AvsuqV0C2030","huqV0AvsuqV0C2030",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C3040  = new TH2F("huqV0AvsuqV0C3040","huqV0AvsuqV0C3040",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C4050  = new TH2F("huqV0AvsuqV0C4050","huqV0AvsuqV0C4050",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C5060  = new TH2F("huqV0AvsuqV0C5060","huqV0AvsuqV0C5060",100,-20,20,100,-20,20);
+  huqV0AvsuqV0C6080  = new TH2F("huqV0AvsuqV0C6080","huqV0AvsuqV0C6080",100,-20,20,100,-20,20);
  
-  huqV0AxuqV0CvsPtAll0010     = new TH2F("huqV0AxuqV0CvsPtAll0010","huqV0AxuqV0CvsPtAll0010",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll1020     = new TH2F("huqV0AxuqV0CvsPtAll1020","huqV0AxuqV0CvsPtAll1020",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll2030     = new TH2F("huqV0AxuqV0CvsPtAll2030","huqV0AxuqV0CvsPtAll2030",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll3040     = new TH2F("huqV0AxuqV0CvsPtAll3040","huqV0AxuqV0CvsPtAll3040",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll4050     = new TH2F("huqV0AxuqV0CvsPtAll4050","huqV0AxuqV0CvsPtAll4050",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll5060     = new TH2F("huqV0AxuqV0CvsPtAll5060","huqV0AxuqV0CvsPtAll5060",100,-5,5,400,0,20);
-  huqV0AxuqV0CvsPtAll6080     = new TH2F("huqV0AxuqV0CvsPtAll6080","huqV0AxuqV0CvsPtAll6080",100,-5,5,400,0,20);
+  huqV0AxuqV0CvsPtAll0010     = new TH2F("huqV0AxuqV0CvsPtAll0010","huqV0AxuqV0CvsPtAll0010",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll1020     = new TH2F("huqV0AxuqV0CvsPtAll1020","huqV0AxuqV0CvsPtAll1020",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll2030     = new TH2F("huqV0AxuqV0CvsPtAll2030","huqV0AxuqV0CvsPtAll2030",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll3040     = new TH2F("huqV0AxuqV0CvsPtAll3040","huqV0AxuqV0CvsPtAll3040",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll4050     = new TH2F("huqV0AxuqV0CvsPtAll4050","huqV0AxuqV0CvsPtAll4050",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll5060     = new TH2F("huqV0AxuqV0CvsPtAll5060","huqV0AxuqV0CvsPtAll5060",100,-20,20,400,0,20);
+  huqV0AxuqV0CvsPtAll6080     = new TH2F("huqV0AxuqV0CvsPtAll6080","huqV0AxuqV0CvsPtAll6080",100,-20,20,400,0,20);
  
   fListHist->Add(huqV0AvsuqV0C0010);
   fListHist->Add(huqV0AvsuqV0C1020);
