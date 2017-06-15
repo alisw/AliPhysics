@@ -555,3 +555,11 @@ AliMpSegmentation::GetTriggerByElectronics(Int_t detElemId, Int_t elCardID,
 
   return GetTrigger(GetMpSegmentationByElectronics(detElemId, elCardID, warn), warn);
 }    
+
+//_____________________________________________________________________________
+void AliMpSegmentation::Print(Option_t* opt) const
+{
+    /// Print the list of segmentations
+
+    fMpSegmentations.Print(opt);
+}
