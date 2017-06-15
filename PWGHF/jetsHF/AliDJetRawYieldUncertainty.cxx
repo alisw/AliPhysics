@@ -917,8 +917,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
  */
 Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2)
 {
-  Double_t jetmin = 5;
-  Double_t jetmax = 30;
+  Double_t jetmin = hjetpt->GetXaxis()->GetXmin();
+  Double_t jetmax = hjetpt->GetXaxis()->GetXmax();
 
   Float_t signal_l_min = mean - fnSigmaSideBandLeft1 * sigma;
   Float_t signal_l_max = mean - fnSigmaSideBandLeft2 * sigma;
@@ -942,7 +942,7 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Double_t scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin+0.0001), tmphjetpt_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
   Printf("Background scaling factor = %.6f", scaling);
   for (int j = 1; j <= tmphjetpt->GetNbinsX(); j++) {
-    Double_t centerbin = tmphjetpt->GetBinCenter(j); //bin of hjetpt corresponding to j-th bin of THnSparse projection
+    Double_t centerbin = tmphjetpt->GetBinCenter(j);
     hjetpt->Fill(centerbin, tmphjetpt->GetBinContent(j));
     hjetpt_s1->Fill(centerbin, tmphjetpt_s1->GetBinContent(j));
     hjetpt_s2->Fill(centerbin, tmphjetpt_s2->GetBinContent(j));
