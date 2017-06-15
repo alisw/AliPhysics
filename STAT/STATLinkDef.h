@@ -19,10 +19,13 @@
 #pragma link C++ class AliTMinuitToolkit+;
 #pragma link C++ class AliNDLocalRegression+;
 
-#pragma link C++ class AliExternalInfo+;
+#ifdef ROOT_HAS_HTTP
 #pragma link C++ class AliTreePlayer+;
+#endif
+
+#pragma link C++ class AliExternalInfo+;
 #pragma link C++ class AliTreeTrending+;
-#pragma link C++ class AliNDFormulaBrowser+; 
+#pragma link C++ class AliNDFormulaBrowser+;
 #pragma link C++ class AliDrawStyle+;
 #pragma link C++ class AliElasticSearchRoot++;
 
