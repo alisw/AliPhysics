@@ -115,7 +115,7 @@ void AliMpRowSegmentPainter::Draw(Option_t *option)
 	      ->FindMotifPosition(motifPositionId);
 				     
 	gr->SetPadPosForReal(TVector2(motifPos->GetPositionX(), motifPos->GetPositionY()),
-                             TVector2(motifPos->GetDimensionX(),motifPos->GetDimensionX()));
+                             TVector2(motifPos->GetDimensionX(),motifPos->GetDimensionY()));
       	gr->SetColor(GetColor());
 	DrawObject(motifPos,option+1);
 
