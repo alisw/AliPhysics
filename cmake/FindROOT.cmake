@@ -351,7 +351,8 @@ if(ROOTSYS)
         file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o"
                              "${ROOTSYS}/tree/treeplayer/src/*.o"
                              "${ROOTSYS}/io/xmlparser/src/*.o"
-                             "${ROOTSYS}/math/minuit2/src/*.o")
+                             "${ROOTSYS}/math/minuit2/src/*.o"
+                             "${ROOTSYS}/net/http/src/*.o")
         add_library(RootExtra STATIC ${_extraroot})
         set_target_properties(RootExtra PROPERTIES
                                         COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
