@@ -49,6 +49,21 @@ public:
     kSideband
   };
 
+  /**
+   * \struct SBResults
+   * \brief Implementation of a struct used to hold results of the SB uncertainty evalualtion
+   *
+   * Implementation of a struct used to hold results of the SB uncertainty evalualtion
+   */
+  struct SBResults {
+    Bool_t     fSuccess                  ; //!<!Status of the last run
+    TH1D      *fJetYieldCentral          ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+    TH1D      *fJetYieldUnc              ; //!<!Yield uncertainty vs jet pT bin
+    TH1F     **fJetSpectrSBVars          ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+    TH1F      *fJetSpectrSBDef           ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+    TH1F     **fJetBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
+  };
+
   AliDJetRawYieldUncertainty();
   AliDJetRawYieldUncertainty(const AliDJetRawYieldUncertainty &source);
   virtual ~AliDJetRawYieldUncertainty();
@@ -80,6 +95,7 @@ public:
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
+  void SetJetzBins(Int_t nbins=0, Double_t* zedges=0x0);
   void SetDmesonEfficiency(Double_t* effvalues=0x0);
 
   void SetSigmaToFixDPtBins(Double_t* sigmafix);
@@ -102,6 +118,7 @@ public:
 
   Bool_t EvaluateUncertainty();
   Bool_t EvaluateUncertaintyEffScale();
+  SBResults EvaluateUncertaintySideband(TString obs, Int_t nJetBins, Double_t* jetBinEdges);
   Bool_t EvaluateUncertaintySideband();
 
   Bool_t Success() const { return fSuccess; }
@@ -127,8 +144,10 @@ protected:
   Double_t           fzmax                       ; ///< z maximum value to extract jet pT spectrum
   Int_t              fnDbins                     ; ///< Number of D-meson pT bins (for eff scaling)
   Double_t          *fDbinpTedges                ; ///< D-meson pt bin edges values
-  Int_t              fnJetbins                   ; ///< Number of pT-bins to be used for spectrum
-  Double_t          *fJetbinpTedges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnJetPtbins                 ; ///< Number of jet pT bins to be used for spectrum
+  Double_t          *fJetPtBinEdges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnJetzbins                  ; ///< Number of jet z bins to be used for spectrum
+  Double_t          *fJetzBinEdges               ; ///< Jet z bin edges to be used for spectrum
   Double_t          *fDEffValues                 ; ///< D-meson efficiency values
 
   Double_t           fnSigmaSignReg              ; ///< Number of sigma for signal region
@@ -171,11 +190,19 @@ protected:
 
   TH1D              *fMassPlot                   ; //!<!Mass spectra to be fitted
   TH2D              *fMassVsJetPtPlot            ; //!<!Mass vs jet pt (SB method)
-  TH1D              *fJetYieldCentral            ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
-  TH1D              *fJetYieldUnc                ; //!<!Yield uncertainty vs jet pT bin
-  TH1F             **fJetSpectrSBVars            ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
-  TH1F              *fJetSpectrSBDef             ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+  TH2D              *fMassVsJetzPlot             ; //!<!Mass vs jet z (SB method)
+
+  TH1D              *fJetPtYieldCentral          ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+  TH1D              *fJetPtYieldUnc              ; //!<!Yield uncertainty vs jet pT bin
+  TH1F             **fJetPtSpectrSBVars          ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+  TH1F              *fJetPtSpectrSBDef           ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
   TH1F             **fJetPtBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
+
+  TH1D              *fJetzYieldCentral           ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+  TH1D              *fJetzYieldUnc               ; //!<!Yield uncertainty vs jet pT bin
+  TH1F             **fJetzSpectrSBVars           ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+  TH1F              *fJetzSpectrSBDef            ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+  TH1F             **fJetzBinYieldDistribution   ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
 
   Bool_t             fSuccess                    ; //!<!Status of the last run
 
