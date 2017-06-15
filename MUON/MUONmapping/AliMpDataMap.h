@@ -30,7 +30,9 @@ class AliMpDataMap : public TObject
     
     /// Return the map constant reference 
     const TMap& GetMap() const { return fMap; }
-    
+
+    void Print(Option_t*) const;
+
   private:  
     TMap  fMap; ///< the map of strings to strings
  
