@@ -781,23 +781,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     if(fIsK0 == 0) continue;
     if( particle->GetPdgCode() == kPdgK0Short){
       if (particle->GetNDaughters() != 2) continue;   // only the two particle decays
+      UChar_t acceptanceGamma[2] = {0,0};
+      Double_t energyGamma[2] = {0,0};
+      Bool_t allOK[2] = {kFALSE,kFALSE};
+      UChar_t gdAcceptanceGamma[4] = {0,0,0,0};
+      Double_t gdEnergyGamma[4] = {0,0,0,0};
+      Bool_t allGDOK[4] = {kFALSE, kFALSE, kFALSE,kFALSE};
       for(Int_t k=0;k<2;k++){
         TParticle *daughter=fMCStack->Particle(particle->GetDaughter(k));
         if (!daughter) continue;
-        UChar_t acceptanceGamma[2] = {0,0};
-        Double_t energyGamma[2] = {0,0};
-        Bool_t allOK[2] = {kFALSE,kFALSE};
-        UChar_t gdAcceptanceGamma[4] = {0,0,0,0};
-        Double_t gdEnergyGamma[4] = {0,0,0,0};
-        Bool_t allGDOK[4] = {kFALSE, kFALSE, kFALSE,kFALSE};
-
-
+        
         // Is Daughter a pi0?
         if (daughter->GetPdgCode() == kPdgPi0){
           allOK[k] = kTRUE;
           if(daughter->GetNDaughters() != 2) continue;
-
-
 
           for(Int_t h=0;h<2;h++){
             TParticle *granddaughter = fMCStack->Particle(daughter->GetDaughter(k));
@@ -805,65 +802,62 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
             if(IsInPCMAcceptance(granddaughter))  SETBIT(gdAcceptanceGamma[2*k+h], kPCMAcceptance);
             if(IsInEMCalAcceptance(granddaughter)) SETBIT(gdAcceptanceGamma[2*k+h], kEMCALAcceptance);
             gdEnergyGamma[2*k+h] = granddaughter->Energy();
-          }// end for
+          }
+        }
+      }
 
-        }// end if
-      }// end for
+      fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
 
-          fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
+      if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
 
-          if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
+      if (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance) )
+        fHistPtYPi0FromKGGPCMAcc->Fill(particle->Pt(),particle->Y());
 
-          if (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-              && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance) )
-            fHistPtYPi0FromKGGPCMAcc->Fill(particle->Pt(),particle->Y());
+      if (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance) )
+        fHistPtYPi0FromKGGEMCAcc->Fill(particle->Pt(),particle->Y());
 
-          if (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
-              && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance) )
-            fHistPtYPi0FromKGGEMCAcc->Fill(particle->Pt(),particle->Y());
+      if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
 
-          if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-               && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
-              (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
-               && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
-              (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-               && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
-              (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-               && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
+        fHistPtYPi0FromKGGPCMEMCAcc->Fill(particle->Pt(),particle->Y());
 
-            fHistPtYPi0FromKGGPCMEMCAcc->Fill(particle->Pt(),particle->Y());
+      if ((TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
+        (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
+        && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)))
 
-          if ((TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
-              && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
-              (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-               && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
-              (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
-                      && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
-                      (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
-                          && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)))
+        fHistPtYPi0FromKGGEMCPCMAcc->Fill(particle->Pt(),particle->Y());
 
-            fHistPtYPi0FromKGGEMCPCMAcc->Fill(particle->Pt(),particle->Y());
+      if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) &&
+        TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+        (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) &&
+        TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
+        
+        fHistPtYPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(),particle->Y());
 
-          if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) &&
-              TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
-              (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) &&
-                  TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
-            fHistPtYPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(),particle->Y());
-
-          if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
-              TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
-              (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
-                  TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance))||
-                  (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
-                      TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
-                      (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
-                          TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance)))
-            fHistPtYPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(),particle->Y());
-
+      if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
+        TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+        (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
+        TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance))||
+        (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
+        TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
+        (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
+        TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance)))
+          
+        fHistPtYPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(),particle->Y());
     }
-
-    
-
   }
 }
 
