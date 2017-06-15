@@ -55,9 +55,7 @@ ClassImp(AliAnalysisTaskGammaPureMC)
 
 //________________________________________________________________________
 AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
-  fOutputContainer(nullptrptr),
-  fInputEvent(nullptr),
-  fMCEvent(nullptr),
+  fOutputContainer(nullptr),
   fMCStack(nullptr),
   fHistNEvents(nullptr),
   fHistXSection(nullptr),
@@ -132,8 +130,6 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
 AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   AliAnalysisTaskSE(name),
   fOutputContainer(nullptr),
-  fInputEvent(nullptr),
-  fMCEvent(nullptr),
   fMCStack(nullptr),
   fHistNEvents(nullptr),
   fHistXSection(nullptr),
@@ -783,7 +779,6 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     }
 
 
-
     if(fIsK0 == 0) continue;
     if( particle->GetPdgCode() == kPdgK0Short){
       for(Int_t k=0;k<2;k++){
@@ -872,6 +867,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 
 
     }
+
   }
 }
 
