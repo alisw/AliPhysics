@@ -4,7 +4,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
                                 Int_t kF,
                                 Int_t kProcess,
                                 Double_t ptHardMin,
-                                Double_t ptHardMax
+                                Double_t ptHardMax,
+                                Bool_t longlived
                             );
 
 AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760., 
@@ -13,7 +14,9 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
                                         Int_t kF            = 1, 
                                         Int_t kProcess      = 0, 
                                         Double_t ptHardMin  = 0, 
-                                        Double_t ptHardMax  = 1.
+                                        Double_t ptHardMax  = 1.,
+                                        Bool_t longlived = kFALSE
+
                                     ) {
     // Add Pythia 8 generator: 
     //    -kProcess=0  MB generation
@@ -35,7 +38,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
                                 Int_t kF, 
                                 Int_t kProcess, 
                                 Double_t ptHardMin, 
-                                Double_t ptHardMax
+                                Double_t ptHardMax,
+                                Bool_t longlived
                             ) {
     
     gSystem->Load("libpythia6");
@@ -94,5 +98,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         
     (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
     
+    if(longlived) gener->SetMaximumLifetime(1e6);
+
     return gener;
 }
