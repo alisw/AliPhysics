@@ -355,198 +355,55 @@ private:
     Float_t fTreeVariableNegDxy;
     Float_t fTreeVariablePosDz;
     Float_t fTreeVariableNegDz;
+    Float_t fTreeVariableDcaV0Daughters; //!;
+    Bool_t fTreeVariablePosPropagStatus;
+    Bool_t fTreeVariableNegPropagStatus;
+    Float_t fTreeVariableV0Radius; //!
+    Float_t fTreeVariableV0CosineOfPointingAngle; //!
+    Float_t fTreeVariableDecayX;
+    Float_t fTreeVariableDecayY;
+    Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableInvMassK0s; //!
+    Float_t fTreeVariableInvMassLambda; //!
+    Float_t fTreeVariableInvMassAntiLambda; //!
     Int_t fTreeVariablePID;
     Int_t fTreeVariablePIDPositive;
     Int_t fTreeVariablePIDNegative;
     Float_t fTreeVariablePtMC;
     Float_t fTreeVariableRapMC;
     
+    
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
 //===========================================================================================
-    Int_t fTreeCascVarCharge;         //!
-    Float_t fTreeCascVarMassAsXi;     //!
-    Float_t fTreeCascVarMassAsOmega;  //!
-    Float_t fTreeCascVarPt;           //!
-    Float_t fTreeCascVarPtMC;         //!
-    Float_t fTreeCascVarRapXi;        //!
-    Float_t fTreeCascVarRapOmega;     //!
-    Float_t fTreeCascVarRapMC;        //!
-    Float_t fTreeCascVarNegEta;       //!
-    Float_t fTreeCascVarPosEta;       //!
-    Float_t fTreeCascVarBachEta;      //!
-    Float_t fTreeCascVarDCACascDaughters; //!
-    Float_t fTreeCascVarDCABachToPrimVtx; //!
-    Float_t fTreeCascVarDCAV0Daughters;   //!
-    Float_t fTreeCascVarDCAV0ToPrimVtx;   //!
-    Float_t fTreeCascVarDCAPosToPrimVtx;  //!
-    Float_t fTreeCascVarDCANegToPrimVtx;  //!
-    Float_t fTreeCascVarCascCosPointingAngle;         //!
-    Float_t fTreeCascVarCascRadius;                   //!
-    Float_t fTreeCascVarV0Mass;                       //!
-    Float_t fTreeCascVarV0CosPointingAngle;           //!
-    Float_t fTreeCascVarV0CosPointingAngleSpecial;    //!
-    Float_t fTreeCascVarV0Radius;                     //!
-    Float_t fTreeCascVarDCABachToBaryon;              //!
-    Float_t fTreeCascVarWrongCosPA;                   //!
-    Int_t   fTreeCascVarLeastNbrClusters;             //!
-    Float_t fTreeCascVarDistOverTotMom;               //!
-    Float_t fTreeCascVarMaxChi2PerCluster; //!
-    Float_t fTreeCascVarMinTrackLength; //!
-
-    //TPC dEdx
-    Float_t fTreeCascVarNegNSigmaPion;   //!
-    Float_t fTreeCascVarNegNSigmaProton; //!
-    Float_t fTreeCascVarPosNSigmaPion;   //!
-    Float_t fTreeCascVarPosNSigmaProton; //!
-    Float_t fTreeCascVarBachNSigmaPion;  //!
-    Float_t fTreeCascVarBachNSigmaKaon;  //!
-
-    //Variables for debugging Wrong PID hypothesis in tracking bug
-    // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
-    Int_t fTreeCascVarPosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
-    Int_t fTreeCascVarNegPIDForTracking; //!
-    Int_t fTreeCascVarBachPIDForTracking; //!
-    Float_t fTreeCascVarNegInnerP; //!
-    Float_t fTreeCascVarPosInnerP; //!
-    Float_t fTreeCascVarBachInnerP; //!
-    Float_t fTreeCascVarNegdEdx; //!
-    Float_t fTreeCascVarPosdEdx; //!
-    Float_t fTreeCascVarBachdEdx; //!
-
-    //Decay Length issue debugging: ULong_t with track status
-    ULong64_t fTreeCascVarNegTrackStatus; //!
-    ULong64_t fTreeCascVarPosTrackStatus; //!
-    ULong64_t fTreeCascVarBachTrackStatus; //!
-    Float_t fTreeCascVarNegDCAz; //!
-    Float_t fTreeCascVarPosDCAz; //!
-    Float_t fTreeCascVarBachDCAz; //!
-
-    //Variables for debugging the invariant mass bump
-    //Full momentum information
-    Float_t fTreeCascVarNegPx; //!
-    Float_t fTreeCascVarNegPy; //!
-    Float_t fTreeCascVarNegPz; //!
-    Float_t fTreeCascVarPosPx; //!
-    Float_t fTreeCascVarPosPy; //!
-    Float_t fTreeCascVarPosPz; //!
-    Float_t fTreeCascVarBachPx; //!
-    Float_t fTreeCascVarBachPy; //!
-    Float_t fTreeCascVarBachPz; //!
-
-    Float_t fTreeCascVarNegPxMC; //!
-    Float_t fTreeCascVarNegPyMC; //!
-    Float_t fTreeCascVarNegPzMC; //!
-    Float_t fTreeCascVarPosPxMC; //!
-    Float_t fTreeCascVarPosPyMC; //!
-    Float_t fTreeCascVarPosPzMC; //!
-    Float_t fTreeCascVarBachPxMC; //!
-    Float_t fTreeCascVarBachPyMC; //!
-    Float_t fTreeCascVarBachPzMC; //!
-
-    Float_t fTreeCascVarV0DecayX; //!
-    Float_t fTreeCascVarV0DecayY; //!
-    Float_t fTreeCascVarV0DecayZ; //!
-    Float_t fTreeCascVarCascadeDecayX; //!
-    Float_t fTreeCascVarCascadeDecayY; //!
-    Float_t fTreeCascVarCascadeDecayZ; //!
-
-    Float_t fTreeCascVarV0DecayXMC; //!
-    Float_t fTreeCascVarV0DecayYMC; //!
-    Float_t fTreeCascVarV0DecayZMC; //!
-    Float_t fTreeCascVarCascadeDecayXMC; //!
-    Float_t fTreeCascVarCascadeDecayYMC; //!
-    Float_t fTreeCascVarCascadeDecayZMC; //!
-
-    //Vars for studying cascade decay point calculations
-    Float_t fTreeCascVarBachelorDCAptX; //!
-    Float_t fTreeCascVarBachelorDCAptY; //!
-    Float_t fTreeCascVarBachelorDCAptZ; //!
-    Float_t fTreeCascVarV0DCAptX; //!
-    Float_t fTreeCascVarV0DCAptY; //!
-    Float_t fTreeCascVarV0DCAptZ; //!
-    Float_t fTreeCascVarDCADaughters_Test; //!
-    Float_t fTreeCascVarBachelorDCAptSigmaX2; //
-    Float_t fTreeCascVarBachelorDCAptSigmaY2; //
-    Float_t fTreeCascVarBachelorDCAptSigmaZ2; //
-    Float_t fTreeCascVarV0DCAptUncertainty_V0Pos; //
-    Float_t fTreeCascVarV0DCAptUncertainty_V0Ang; //
-    
-    Float_t fTreeCascVarV0DCAptPosSigmaX2; //
-    Float_t fTreeCascVarV0DCAptPosSigmaY2; //
-    Float_t fTreeCascVarV0DCAptPosSigmaZ2; //
-    Float_t fTreeCascVarV0DCAptPosSigmaSnp2; //
-    Float_t fTreeCascVarV0DCAptPosSigmaTgl2; //
-    
-    Float_t fTreeCascVarV0DCAptNegSigmaX2; //
-    Float_t fTreeCascVarV0DCAptNegSigmaY2; //
-    Float_t fTreeCascVarV0DCAptNegSigmaZ2; //
-    Float_t fTreeCascVarV0DCAptNegSigmaSnp2; //
-    Float_t fTreeCascVarV0DCAptNegSigmaTgl2; //
-
-    Float_t fTreeCascVarPrimVertexX;
-    Float_t fTreeCascVarPrimVertexY;
-    Float_t fTreeCascVarPrimVertexZ;
-    
-    Float_t fTreeCascVarMagField; // for X-checks
-    
-    Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
-    //Track Labels (check for duplicates, etc)
-    Int_t fTreeCascVarNegIndex; //!
-    Int_t fTreeCascVarPosIndex; //!
-    Int_t fTreeCascVarBachIndex; //!
-    Int_t fTreeCascVarNegLabel; //!
-    Int_t fTreeCascVarPosLabel; //!
-    Int_t fTreeCascVarBachLabel; //!
-    Int_t fTreeCascVarNegLabelMother; //!
-    Int_t fTreeCascVarPosLabelMother; //!
-    Int_t fTreeCascVarBachLabelMother; //!
-    Int_t fTreeCascVarNegLabelGrandMother; //!
-    Int_t fTreeCascVarPosLabelGrandMother; //!
-    Int_t fTreeCascVarBachLabelGrandMother; //!
-    //Event Number (check same-event index mixups)
-    ULong64_t fTreeCascVarEventNumber; //!
-
-    //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
-    Float_t fTreeCascVarNegTOFExpTDiff; //!
-    Float_t fTreeCascVarPosTOFExpTDiff; //!
-    Float_t fTreeCascVarBachTOFExpTDiff; //!
-    //Event info
-    Float_t fTreeCascVarAmplitudeV0A; //!
-    Float_t fTreeCascVarAmplitudeV0C; //!
-    Float_t fTreeCascVarNHitsFMDA; //!
-    Float_t fTreeCascVarNHitsFMDC; //!
-
-    //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
-    Bool_t fTreeCascVarMVPileupFlag; //!
-    Bool_t fTreeCascVarOOBPileupFlag; //!
-
-    //MC-only Variabless
-    Int_t   fTreeCascVarIsPhysicalPrimary; //!
-    Int_t   fTreeCascVarPID;         //!
-    Int_t   fTreeCascVarPIDNegative;         //!
-    Int_t   fTreeCascVarPIDPositive;         //!
-    Int_t   fTreeCascVarPIDBachelor;         //!
-    Int_t   fTreeCascVarPIDNegativeMother;         //!
-    Int_t   fTreeCascVarPIDPositiveMother;         //!
-    Int_t   fTreeCascVarPIDBachelorMother;         //!
-    Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
-    Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
-    Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
-
-    Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
-    Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
-    Bool_t fTreeCascVarIsPhysicalPrimaryBachelor;
-    Bool_t fTreeCascVarIsPhysicalPrimaryNegativeMother;
-    Bool_t fTreeCascVarIsPhysicalPrimaryPositiveMother;
-    Bool_t fTreeCascVarIsPhysicalPrimaryBachelorMother;
-    Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
-    Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
-    Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
-
-    //Well, why not? Let's give it a shot
-    Int_t   fTreeCascVarSwappedPID;         //!
+    Float_t fTreeCascVarPosLength;
+    Float_t fTreeCascVarNegLength;
+    Float_t fTreeCascVarBachLength;
+    Float_t fTreeCascVarPosCrossedRows;
+    Float_t fTreeCascVarNegCrossedRows;
+    Float_t fTreeCascVarBachCrossedRows;
+    //Tracking flags
+    ULong64_t fTreeCascVarPosTrackStatus;
+    ULong64_t fTreeCascVarNegTrackStatus;
+    ULong64_t fTreeCascVarBachTrackStatus;
+    //DCAxy to PV
+    Float_t fTreeCascVarPosDxy;
+    Float_t fTreeCascVarNegDxy;
+    Float_t fTreeCascVarBachDxy;
+    //DCAz
+    Float_t fTreeCascVarPosDz;
+    Float_t fTreeCascVarNegDz;
+    Float_t fTreeCascVarBachDz;
+    Float_t fTreeCascVarDcaV0Daughters;
+    Bool_t fTreeCascVarNegPropagStatus;
+    Bool_t fTreeCascVarPosPropagStatus;
+    Bool_t fTreeCascVarV0Radius;
+    Bool_t fTreeCascVarV0DecayX;
+    Bool_t fTreeCascVarV0DecayY;
+    Bool_t fTreeCascVarV0DecayZ;
+    Bool_t fTreeCascVarV0CosineOfPointingAngle;
+    Bool_t fTreeCascVarInvMassLambda;
+    Bool_t fTreeCascVarInvMassAntiLambda;
 
 //===========================================================================================
 //   Histograms
