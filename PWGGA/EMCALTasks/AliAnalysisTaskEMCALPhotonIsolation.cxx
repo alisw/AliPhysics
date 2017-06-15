@@ -206,6 +206,7 @@ fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
 fTrackResolutionPtMC(0),
+fVzBeforecut(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -382,6 +383,7 @@ fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
 fTrackResolutionPtMC(0),
+fVzBeforecut(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -892,6 +894,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fVz->Sumw2();
   fOutput->Add(fVz);
   
+  fVzBeforecut = new TH1D("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
+  fVzBeforecut->Sumw2();
+  fOutput->Add(fVzBeforecut);
+  
   fEvents = new TH1D("hEvents_NC","Events",100,0.,100.);
   fEvents->Sumw2();
   fOutput->Add(fEvents);
@@ -1169,6 +1175,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   }
   
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  
+  fVzBeforecut->Fill(fVertex[2]);
   
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
