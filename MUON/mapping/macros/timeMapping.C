@@ -187,7 +187,7 @@ void timeMapping(Int_t nloop=1)
   {
     AliSysInfo::AddStamp("0");
     AliCodeTimerAutoGeneral("Load mapping",);
-    AliMpCDB::LoadDDLStore2();
+    AliMpCDB::LoadDDLStore2("local://$ALIROOT_OCDB_ROOT/OCDB",0);
     AliSysInfo::AddStamp("1");
     AliCodeTimer::Instance()->Print();
     TTree t;

@@ -43,8 +43,8 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpSectorReader r(dataStreams, station, plane);
-  AliMpSector* sector = r.BuildSector();
+  AliMpSectorReader r(station, plane);
+  AliMpSector* sector = r.BuildSector(dataStreams);
   
   //new TCanvas(" ", " ", station, plane);  // BREAKS
   new TCanvas();

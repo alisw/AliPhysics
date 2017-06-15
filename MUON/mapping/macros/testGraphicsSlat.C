@@ -58,8 +58,8 @@ void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Doubl
   AliMq::Station12Type station12 = AliMq::kNotSt12;
   AliMp::PlaneType plane = AliMp::kBendingPlane;
   
-  AliMpMotifReader reader(dataStreams, station, station12, plane);
-  AliMpMotifType* type = reader.BuildMotifType(motifType);
+  AliMpMotifReader reader(station, station12, plane);
+  AliMpMotifType* type = reader.BuildMotifType(dataStreams,motifType);
   if (!type)
   {
     cerr << "Motif not found" << endl;
@@ -97,11 +97,11 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
   AliMpDataStreams dataStreams(dataMap);
 
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader* reader = new AliMpSt345Reader(dataStreams, motifMap);
+  AliMpSt345Reader* reader = new AliMpSt345Reader(motifMap);
 
   // PMPT to get manu channels numbering
   
-  Char_t *slatName[19] = {"122000SR1", "112200SR2", "122200S", "222000N", "220000N",
+  const char* slatName[19] = {"122000SR1", "112200SR2", "122200S", "222000N", "220000N",
 			  "122000NR1", "112200NR2", "122200N",
 			  "122330N", "112233NR3", "112230N", "222330N", "223300N", "333000N", "330000N",
 			  "112233N", "222333N", "223330N", "333300N"};
@@ -114,9 +114,9 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
     sprintf(c1Name, "%s%d", "c1", i);
     c1[i]= new TCanvas(c1Name,slatName[i],10,10,1200,800);     
 
-    Char_t* slatType = slatName[i];
+    const char* slatType = slatName[i];
 
-    AliMpSlat* slat = reader->ReadSlat(slatType, planeType);
+    AliMpSlat* slat = reader->ReadSlat(dataStreams,slatType, planeType);
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(slat);
     painter->Draw(option);
   
@@ -141,8 +141,8 @@ void testGraphicsPCB(const char* pcbName="S2B",
   AliMpDataStreams dataStreams(dataMap);
 
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader* reader = new AliMpSt345Reader(dataStreams, motifMap);
-  AliMpPCB* pcb = reader->ReadPCB(pcbName);
+  AliMpSt345Reader* reader = new AliMpSt345Reader(motifMap);
+  AliMpPCB* pcb = reader->ReadPCB(dataStreams,pcbName);
   if (!pcb) 
   {
     cerr << "PCB " << pcbName << " does not exist" << endl;
