@@ -45,7 +45,7 @@
 
 #endif
 
-void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Double_t padsizey=0.5)
+void testGraphicsMotif(Option_t* motifType = "R43", const char* option = "PT", Double_t padsizex=5.0, Double_t padsizey=0.5)
 {
   // Warning : this function leaks memory. But should be fine as only used 
   // interactively to check a few motifs at once...
@@ -75,7 +75,7 @@ void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Doubl
     return;
   }
   new TCanvas(motifType,motifType);
-  painter->Draw("PT");
+  painter->Draw(option);
 }
 
 //112230N
