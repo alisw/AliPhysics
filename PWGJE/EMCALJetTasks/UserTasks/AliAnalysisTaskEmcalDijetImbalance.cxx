@@ -970,6 +970,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
         hn->SetBinEdges(i, binEdges[i]);
       }
     }
+    
+    // (jet type, jet pT, cluster shift)
+    histname = TString::Format("%s/hCaloJESshift", jets->GetArrayName().Data());
+    htitle = histname + ";type;#it{p}_{T}^{corr} (GeV/#it{c});#Delta_{JES}";
+    fHistManager.CreateTH3(histname.Data(), htitle.Data(), 3, -0.5, 2.5, nPtBins, 0, fMaxPt, 100, 0, 20);
 
   }
   
@@ -2489,6 +2494,26 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
           clus = jet->Cluster(iClus);
           Double_t x[5] = {fCent, clus->E(), GetJetPt(jets, jet), jet->Eta(), jet->Phi_0_2pi()};
           fHistManager.FillTHnSparse(histname, x);
+        }
+        
+        // Loop through clusters, and plot estimated shift in JES due to cluster bump
+        // Only do for 0-10% centrality, and for EMCal/DCal
+        Double_t eclus;
+        Double_t shift;
+        Double_t shiftSum = 0;
+        if (fCent < 10.) {
+          if (GetJetType(jet) > -0.5 && GetJetType(jet) < 1.5) {
+            for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+              clus = jet->Cluster(iClus);
+              eclus = clus->E();
+              if (eclus > 0.5) {
+                shift = 0.79 * TMath::Exp(-0.5 * ((eclus - 3.81) / 1.50)*((eclus - 3.81) / 1.50) );
+                shiftSum += shift;
+              }
+            }
+            histname = TString::Format("%s/hCaloJESshift", jets->GetArrayName().Data());
+            fHistManager.FillTH3(histname, GetJetType(jet), GetJetPt(jets, jet), shiftSum);
+          }
         }
       }
       
