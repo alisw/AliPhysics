@@ -212,8 +212,22 @@ fTreeCascVarV0DecayX(0),
 fTreeCascVarV0DecayY(0),
 fTreeCascVarV0DecayZ(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
+fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
+
+fTreeCascVarDCACascDaughtersClassical(0),
+fTreeCascVarCascPropagationClassical(0),
+
+fTreeCascVarDecayX(0),
+fTreeCascVarDecayY(0),
+fTreeCascVarDecayZ(0),
+fTreeCascVarCascCosPointingAngle(0),
+
+fTreeCascVarInvMassXiMinus(0),
+fTreeCascVarInvMassXiPlus(0),
+fTreeCascVarInvMassOmegaMinus(0),
+fTreeCascVarInvMassOmegaPlus(0),
 
 //Histos
 fHistEventCounter(0),
@@ -339,8 +353,22 @@ fTreeCascVarV0DecayX(0),
 fTreeCascVarV0DecayY(0),
 fTreeCascVarV0DecayZ(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
+fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
+
+fTreeCascVarDCACascDaughtersClassical(0),
+fTreeCascVarCascPropagationClassical(0),
+
+fTreeCascVarDecayX(0),
+fTreeCascVarDecayY(0),
+fTreeCascVarDecayZ(0),
+fTreeCascVarCascCosPointingAngle(0),
+
+fTreeCascVarInvMassXiMinus(0),
+fTreeCascVarInvMassXiPlus(0),
+fTreeCascVarInvMassOmegaMinus(0),
+fTreeCascVarInvMassOmegaPlus(0),
 
 //Histos
 fHistEventCounter(0),
@@ -551,8 +579,22 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
         fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
         fTreeCascade->Branch("fTreeCascVarV0CosineOfPointingAngle",&fTreeCascVarV0CosineOfPointingAngle,"fTreeCascVarV0CosineOfPointingAngle/F");
+        fTreeCascade->Branch("fTreeCascVarDCAV0ToPrimVtx",&fTreeCascVarDCAV0ToPrimVtx,"fTreeCascVarDCAV0ToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarInvMassLambda",&fTreeCascVarInvMassLambda,"fTreeCascVarInvMassLambda/F");
         fTreeCascade->Branch("fTreeCascVarInvMassAntiLambda",&fTreeCascVarInvMassAntiLambda,"fTreeCascVarInvMassAntiLambda/F");
+        
+        fTreeCascade->Branch("fTreeCascVarDCACascDaughtersClassical",&fTreeCascVarDCACascDaughtersClassical,"fTreeCascVarDCACascDaughtersClassical/F");
+        fTreeCascade->Branch("fTreeCascVarCascPropagationClassical",&fTreeCascVarCascPropagationClassical,"fTreeCascVarCascPropagationClassical/O");
+        
+        fTreeCascade->Branch("fTreeCascVarDecayX",&fTreeCascVarDecayX,"fTreeCascVarDecayX/F");
+        fTreeCascade->Branch("fTreeCascVarDecayY",&fTreeCascVarDecayY,"fTreeCascVarDecayY/F");
+        fTreeCascade->Branch("fTreeCascVarDecayZ",&fTreeCascVarDecayZ,"fTreeCascVarDecayZ/F");
+        fTreeCascade->Branch("fTreeCascVarCascCosPointingAngle",&fTreeCascVarCascCosPointingAngle,"fTreeCascVarCascCosPointingAngle/F");
+        
+        fTreeCascade->Branch("fTreeCascVarInvMassXiMinus",&fTreeCascVarInvMassXiMinus,"fTreeCascVarInvMassXiMinus/F");
+        fTreeCascade->Branch("fTreeCascVarInvMassXiPlus",&fTreeCascVarInvMassXiPlus,"fTreeCascVarInvMassXiPlus/F");
+        fTreeCascade->Branch("fTreeCascVarInvMassOmegaMinus",&fTreeCascVarInvMassOmegaMinus,"fTreeCascVarInvMassOmegaMinus/F");
+        fTreeCascade->Branch("fTreeCascVarInvMassOmegaPlus",&fTreeCascVarInvMassOmegaPlus,"fTreeCascVarInvMassOmegaPlus/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1268,6 +1310,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Float_t cpa=vertex.GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
         fTreeCascVarV0CosineOfPointingAngle = cpa;
         
+        //DCA to PV
+        fTreeCascVarDCAV0ToPrimVtx = vertex.GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+        
         //Final step: get estimated masses under different mass hypotheses
         vertex.ChangeMassHypothesis(3122);
         fTreeCascVarInvMassLambda = vertex.GetEffMass();
@@ -1275,6 +1320,52 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarInvMassAntiLambda = vertex.GetEffMass();
         
         //---] Cascade PART [----------------------------------------------
+        
+        //Step 1: propagation (CLASSICAL)
+        AliESDv0 v0(vertex);
+        AliESDv0 *pv0=&v0;
+        AliExternalTrackParam bt(*esdTrackBach), *pbt=&bt;
+        Double_t cascdca = PropagateToDCA(pv0,pbt,lESDevent,lMagneticField);
+        
+        fTreeCascVarDCACascDaughtersClassical = 1e+10;
+        fTreeCascVarCascPropagationClassical = kFALSE;
+        
+        fTreeCascVarDecayX = -100;
+        fTreeCascVarDecayY = -100;
+        fTreeCascVarDecayZ = -100;
+        fTreeCascVarCascCosPointingAngle = -100;
+        
+        fTreeCascVarInvMassXiMinus = -100;
+        fTreeCascVarInvMassXiPlus = -100;
+        fTreeCascVarInvMassOmegaMinus = -100;
+        fTreeCascVarInvMassOmegaPlus = -100;
+        
+        //Check if propagation successful
+        if (cascdca < 1e+32){
+            fTreeCascVarDCACascDaughtersClassical = cascdca;
+            fTreeCascVarCascPropagationClassical = kTRUE;
+            
+            //Construct cascade
+            AliESDcascade cascade(*pv0,*pbt,lCascBachTrackArray[iCasc]);
+            
+            //Decay Position
+            Double_t xcasc,ycasc,zcasc; cascade.GetXYZcascade(xcasc,ycasc,zcasc);
+            fTreeCascVarDecayX = xcasc;
+            fTreeCascVarDecayY = ycasc;
+            fTreeCascVarDecayZ = zcasc;
+            
+            fTreeCascVarCascCosPointingAngle = cascade.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+            
+            Double_t lV0quality  = 0.;
+            cascade.ChangeMassHypothesis(lV0quality , 3312);
+            fTreeCascVarInvMassXiMinus = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality ,-3312);
+            fTreeCascVarInvMassXiPlus = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality , 3334);
+            fTreeCascVarInvMassOmegaMinus = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality ,-3334);
+            fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
+        }
         
     }
     
