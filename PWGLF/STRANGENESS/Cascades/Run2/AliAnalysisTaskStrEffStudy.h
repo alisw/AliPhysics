@@ -418,6 +418,14 @@ private:
     Float_t fTreeCascVarInvMassXiPlus;
     Float_t fTreeCascVarInvMassOmegaMinus;
     Float_t fTreeCascVarInvMassOmegaPlus;
+    
+    Int_t fTreeCascVarPIDPositive;
+    Int_t fTreeCascVarPIDNegative;
+    Int_t fTreeCascVarPIDBachelor;
+    //Set tree variables
+    Int_t fTreeCascVarPID;
+    Float_t fTreeCascVarPtMC;
+    Float_t fTreeCascVarRapMC;
 
 //===========================================================================================
 //   Histograms
