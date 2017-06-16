@@ -86,7 +86,7 @@ class AliJetContainer : public AliParticleContainer {
 
   AliJetContainer();
   AliJetContainer(const char *name);
-  AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
+  AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
   virtual ~AliJetContainer() {;}
   
   void LoadRho(const AliVEvent *event);
