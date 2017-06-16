@@ -1512,6 +1512,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
     Double_t maxChPt = 0;
     Double_t maxNePt = 0;
     Double_t totalNeutralPt = 0;
+    Int_t nConst = 1;
 
     for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
       if (constituents[ic].user_index() == 0) {
@@ -1519,16 +1520,18 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
       }
       else if (constituents[ic].user_index() >= 100) {
         if (constituents[ic].pt() > maxChPt) maxChPt = constituents[ic].pt();
+        nConst++;
       }
       else if (constituents[ic].user_index() <= -100) {
         totalNeutralPt += constituents[ic].pt();
         if (constituents[ic].pt() > maxNePt) maxChPt = constituents[ic].pt();
+        nConst++;
       }
     }
 
     if (isDmesonJet) {
       DmesonJet.fJets[jetDef.GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
-      DmesonJet.fJets[jetDef.GetName()].fNConstituents = constituents.size();
+      DmesonJet.fJets[jetDef.GetName()].fNConstituents = nConst;
       DmesonJet.fJets[jetDef.GetName()].fMaxChargedPt = maxChPt;
       DmesonJet.fJets[jetDef.GetName()].fMaxNeutralPt = maxNePt;
       DmesonJet.fJets[jetDef.GetName()].fNEF = totalNeutralPt / jets_incl[ijet].pt();
@@ -1876,11 +1879,16 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
   TString hname;
   fPartons.clear();
 
-  hname = TString::Format("%s/fHistPrompt", GetName());
-  TH1* histPrompt = static_cast<TH1*>(fHistManager->FindObject(hname));
+  TH1* histAncestor = nullptr;
+  TH1* histPrompt = nullptr;
 
-  hname = TString::Format("%s/fHistAncestor", GetName());
-  TH1* histAncestor = static_cast<TH1*>(fHistManager->FindObject(hname));
+  if (fMCMode == kSignalOnly || fMCMode == kMCTruth) {
+    hname = TString::Format("%s/fHistPrompt", GetName());
+    histPrompt = static_cast<TH1*>(fHistManager->FindObject(hname));
+
+    hname = TString::Format("%s/fHistAncestor", GetName());
+    histAncestor = static_cast<TH1*>(fHistManager->FindObject(hname));
+  }
 
   for (auto& dmeson_pair : fDmesonJets) {
     fCurrentDmesonJetInfo->Set(dmeson_pair.second);
@@ -1902,40 +1910,44 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       accJets++;
     }
     if (accJets > 0) {
-      if (dmeson_pair.second.fParton) {
-        fPartons[dmeson_pair.second.fParton] = dmeson_pair.second.fPartonType;
-        UInt_t absPdgParton = TMath::Abs(dmeson_pair.second.fParton->GetPdgCode());
-        if (absPdgParton == 4) {
-          histPrompt->Fill("Prompt", 1);
-        }
-        else if (absPdgParton == 5) {
-          histPrompt->Fill("Non-Prompt", 1);
+      if (histPrompt) {
+        if (dmeson_pair.second.fParton) {
+          fPartons[dmeson_pair.second.fParton] = dmeson_pair.second.fPartonType;
+          UInt_t absPdgParton = TMath::Abs(dmeson_pair.second.fParton->GetPdgCode());
+          if (absPdgParton == 4) {
+            histPrompt->Fill("Prompt", 1);
+          }
+          else if (absPdgParton == 5) {
+            histPrompt->Fill("Non-Prompt", 1);
+          }
+          else {
+            histPrompt->Fill("Unknown", 1);
+          }
         }
         else {
           histPrompt->Fill("Unknown", 1);
         }
       }
-      else {
-        histPrompt->Fill("Unknown", 1);
-      }
 
-      if (dmeson_pair.second.fAncestor) {
-        UInt_t absPdgAncestor = TMath::Abs(dmeson_pair.second.fAncestor->GetPdgCode());
-        if (absPdgAncestor == 4) {
-          histAncestor->Fill("Charm", 1);
-        }
-        else if (absPdgAncestor == 5) {
-          histAncestor->Fill("Bottom", 1);
-        }
-        else if (absPdgAncestor == 2212) {
-          histAncestor->Fill("Proton", 1);
+      if (histAncestor) {
+        if (dmeson_pair.second.fAncestor) {
+          UInt_t absPdgAncestor = TMath::Abs(dmeson_pair.second.fAncestor->GetPdgCode());
+          if (absPdgAncestor == 4) {
+            histAncestor->Fill("Charm", 1);
+          }
+          else if (absPdgAncestor == 5) {
+            histAncestor->Fill("Bottom", 1);
+          }
+          else if (absPdgAncestor == 2212) {
+            histAncestor->Fill("Proton", 1);
+          }
+          else {
+            histAncestor->Fill("Unknown", 1);
+          }
         }
         else {
           histAncestor->Fill("Unknown", 1);
         }
-      }
-      else {
-        histAncestor->Fill("Unknown", 1);
       }
 
       fTree->Fill();
@@ -1963,21 +1975,23 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
     }
   }
 
-  hname = TString::Format("%s/fHistPartonPt", GetName());
-  TH1* histPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonEta", GetName());
-  TH1* histPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonPhi", GetName());
-  TH1* histPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonType", GetName());
-  TH1* histPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
+  if (fMCMode == kSignalOnly || fMCMode == kMCTruth) {
+    hname = TString::Format("%s/fHistPartonPt", GetName());
+    TH1* histPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonEta", GetName());
+    TH1* histPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonPhi", GetName());
+    TH1* histPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonType", GetName());
+    TH1* histPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
 
-  for (auto parton : fPartons) {
-    if (!parton.first) continue;
-    histPartonPt->Fill(parton.first->Pt());
-    histPartonEta->Fill(parton.first->Eta());
-    histPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
-    histPartonType->Fill(parton.second);
+    for (auto parton : fPartons) {
+      if (!parton.first) continue;
+      histPartonPt->Fill(parton.first->Pt());
+      histPartonEta->Fill(parton.first->Eta());
+      histPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
+      histPartonType->Fill(parton.second);
+    }
   }
 
   return kTRUE;
@@ -1991,11 +2005,16 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
 {
   TString hname;
 
-  hname = TString::Format("%s/fHistPrompt", GetName());
-  TH1* histPrompt = static_cast<TH1*>(fHistManager->FindObject(hname));
+  TH1* histAncestor = nullptr;
+  TH1* histPrompt = nullptr;
 
-  hname = TString::Format("%s/fHistAncestor", GetName());
-  TH1* histAncestor = static_cast<TH1*>(fHistManager->FindObject(hname));
+  if (fMCMode == kSignalOnly || fMCMode == kMCTruth) {
+    hname = TString::Format("%s/fHistPrompt", GetName());
+    histPrompt = static_cast<TH1*>(fHistManager->FindObject(hname));
+
+    hname = TString::Format("%s/fHistAncestor", GetName());
+    histAncestor = static_cast<TH1*>(fHistManager->FindObject(hname));
+  }
 
   fPartons.clear();
   for (auto& dmeson_pair : fDmesonJets) {
@@ -2015,40 +2034,44 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
       accJets++;
     }
     if (accJets > 0) {
-      if (dmeson_pair.second.fParton) {
-        fPartons[dmeson_pair.second.fParton] = dmeson_pair.second.fPartonType;
-        UInt_t absPdgParton = TMath::Abs(dmeson_pair.second.fParton->GetPdgCode());
-        if (absPdgParton == 4) {
-          histPrompt->Fill("Prompt", 1);
-        }
-        else if (absPdgParton == 5) {
-          histPrompt->Fill("Non-Prompt", 1);
+      if (histPrompt) {
+        if (dmeson_pair.second.fParton) {
+          fPartons[dmeson_pair.second.fParton] = dmeson_pair.second.fPartonType;
+          UInt_t absPdgParton = TMath::Abs(dmeson_pair.second.fParton->GetPdgCode());
+          if (absPdgParton == 4) {
+            histPrompt->Fill("Prompt", 1);
+          }
+          else if (absPdgParton == 5) {
+            histPrompt->Fill("Non-Prompt", 1);
+          }
+          else {
+            histPrompt->Fill("Unknown", 1);
+          }
         }
         else {
           histPrompt->Fill("Unknown", 1);
         }
       }
-      else {
-        histPrompt->Fill("Unknown", 1);
-      }
 
-      if (dmeson_pair.second.fAncestor) {
-        UInt_t absPdgAncestor = TMath::Abs(dmeson_pair.second.fAncestor->GetPdgCode());
-        if (absPdgAncestor == 4) {
-          histAncestor->Fill("Charm", 1);
-        }
-        else if (absPdgAncestor == 5) {
-          histAncestor->Fill("Bottom", 1);
-        }
-        else if (absPdgAncestor == 2212) {
-          histAncestor->Fill("Proton", 1);
+      if (histAncestor) {
+        if (dmeson_pair.second.fAncestor) {
+          UInt_t absPdgAncestor = TMath::Abs(dmeson_pair.second.fAncestor->GetPdgCode());
+          if (absPdgAncestor == 4) {
+            histAncestor->Fill("Charm", 1);
+          }
+          else if (absPdgAncestor == 5) {
+            histAncestor->Fill("Bottom", 1);
+          }
+          else if (absPdgAncestor == 2212) {
+            histAncestor->Fill("Proton", 1);
+          }
+          else {
+            histAncestor->Fill("Unknown", 1);
+          }
         }
         else {
           histAncestor->Fill("Unknown", 1);
         }
-      }
-      else {
-        histAncestor->Fill("Unknown", 1);
       }
     }
     else {
@@ -2074,21 +2097,23 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
     }
   }
 
-  hname = TString::Format("%s/fHistPartonPt", GetName());
-  TH1* histPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonEta", GetName());
-  TH1* histPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonPhi", GetName());
-  TH1* histPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
-  hname = TString::Format("%s/fHistPartonType", GetName());
-  TH1* histPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
+  if (fMCMode == kSignalOnly || fMCMode == kMCTruth) {
+    hname = TString::Format("%s/fHistPartonPt", GetName());
+    TH1* histPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonEta", GetName());
+    TH1* histPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonPhi", GetName());
+    TH1* histPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
+    hname = TString::Format("%s/fHistPartonType", GetName());
+    TH1* histPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
 
-  for (auto parton : fPartons) {
-    if (!parton.first) continue;
-    histPartonPt->Fill(parton.first->Pt());
-    histPartonEta->Fill(parton.first->Eta());
-    histPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
-    histPartonType->Fill(parton.second);
+    for (auto parton : fPartons) {
+      if (!parton.first) continue;
+      histPartonPt->Fill(parton.first->Pt());
+      histPartonEta->Fill(parton.first->Eta());
+      histPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
+      histPartonType->Fill(parton.second);
+    }
   }
 
   return kTRUE;
@@ -2570,7 +2595,7 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
   fFastJetWrapper = new AliFJWrapper(fName, fTitle);
 
   // TODO: make this settable
-  fFastJetWrapper->SetAreaType(fastjet::active_area_explicit_ghosts);
+  fFastJetWrapper->SetAreaType(fastjet::active_area);
   fFastJetWrapper->SetGhostArea(0.005);
 
   if (!fAodEvent) {
