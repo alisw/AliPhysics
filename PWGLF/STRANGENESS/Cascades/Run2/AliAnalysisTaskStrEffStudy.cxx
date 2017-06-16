@@ -229,6 +229,13 @@ fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
 
+fTreeCascVarPIDPositive(0),
+fTreeCascVarPIDNegative(0),
+fTreeCascVarPIDBachelor(0),
+fTreeCascVarPID(0),
+fTreeCascVarPtMC(0),
+fTreeCascVarRapMC(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -369,6 +376,13 @@ fTreeCascVarInvMassXiMinus(0),
 fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
+
+fTreeCascVarPIDPositive(0),
+fTreeCascVarPIDNegative(0),
+fTreeCascVarPIDBachelor(0),
+fTreeCascVarPID(0),
+fTreeCascVarPtMC(0),
+fTreeCascVarRapMC(0),
 
 //Histos
 fHistEventCounter(0),
@@ -595,6 +609,13 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarInvMassXiPlus",&fTreeCascVarInvMassXiPlus,"fTreeCascVarInvMassXiPlus/F");
         fTreeCascade->Branch("fTreeCascVarInvMassOmegaMinus",&fTreeCascVarInvMassOmegaMinus,"fTreeCascVarInvMassOmegaMinus/F");
         fTreeCascade->Branch("fTreeCascVarInvMassOmegaPlus",&fTreeCascVarInvMassOmegaPlus,"fTreeCascVarInvMassOmegaPlus/F");
+        
+        fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
+        fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
+        fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
+        fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
+        fTreeCascade->Branch("fTreeCascVarPtMC",&fTreeCascVarPtMC,"fTreeCascVarPtMC/F");
+        fTreeCascade->Branch("fTreeCascVarRapMC",&fTreeCascVarRapMC,"fTreeCascVarRapMC/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1366,6 +1387,30 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             cascade.ChangeMassHypothesis(lV0quality ,-3334);
             fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
         }
+        
+        //-----------------------------------------------------------------
+        //3c: Get perfect MC information for bookkeeping
+        Int_t lblPosCascDghter = (Int_t) TMath::Abs( esdTrackPos->GetLabel() );
+        Int_t lblNegCascDghter = (Int_t) TMath::Abs( esdTrackNeg->GetLabel() );
+        Int_t lblBachCascDghter = (Int_t) TMath::Abs( esdTrackBach->GetLabel() );
+        
+        TParticle* mcPosCascDghter  = lMCstack->Particle( lblPosCascDghter );
+        TParticle* mcNegCascDghter  = lMCstack->Particle( lblNegCascDghter );
+        TParticle* mcBachCascDghter = lMCstack->Particle( lblBachCascDghter );
+        
+        fTreeCascVarPIDPositive = mcPosCascDghter -> GetPdgCode();
+        fTreeCascVarPIDNegative = mcNegCascDghter -> GetPdgCode();
+        fTreeCascVarPIDBachelor = mcNegCascDghter -> GetPdgCode();
+        
+        Int_t lLabelMother = mcBachCascDghter->GetFirstMother();
+        
+        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        
+        //Set tree variables
+        fTreeCascVarPID   = lParticleMother->GetPdgCode(); //PDG Code
+        fTreeCascVarPtMC  = lParticleMother->Pt(); //Perfect Pt
+        fTreeCascVarRapMC = lParticleMother->Y();
         
         //Fill Findable cascade tree
         fTreeCascade->Fill();
