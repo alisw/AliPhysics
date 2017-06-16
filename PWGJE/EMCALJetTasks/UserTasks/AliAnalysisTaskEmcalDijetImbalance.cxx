@@ -94,11 +94,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
-  
-  // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
-  if (fDoTriggerSimulation) {
-    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
-  }
 }
 
 /**
@@ -150,11 +145,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
-  
-  // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
-  if (fDoTriggerSimulation) {
-    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
-  }
 }
 
 /**
@@ -1165,6 +1155,12 @@ void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const ch
 void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
 {
   
+  // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
+  // (Need to call this before base class ExecOnce)
+  if (fDoTriggerSimulation) {
+    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  }
+  
   AliAnalysisTaskEmcalJet::ExecOnce();
 
   fNeedEmcalGeom = kTRUE;
@@ -1196,7 +1192,6 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
       }
     }
   }
-  Printf("here? %d", fDoTriggerSimulation);
   
   // Check if trigger patches are loaded
   if (fDoTriggerSimulation) {
