@@ -841,7 +841,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
   Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
   UShort_t FJNTracks=0,EmcalJetNTracks=0;
-  if (fTrackCont) for (Int_t i=0; /*i<fJet->GetNumberOfTracks()*/i<2; i++) {
+  if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
       JetInvMass += fTrk->M();
       if (!fTrk) continue;
@@ -855,7 +855,6 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
       EmcalJetTrackPhi[i]=fTrk->Phi();
       EmcalJetTrackPt[i]=fTrk->Pt();
       EmcalJetNTracks++;
-      cout<<"Track pt = "<<fTrk->Pt()<<endl;
     }
   fastjet::JetDefinition                *fJetDef;         
   fastjet::ClusterSequence              *fClustSeqSA;
@@ -947,7 +946,6 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   // fastjet::PseudoJet finaljet_antikt = softdrop_antikt(fOutputJets[0]);
   //cout<< finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
   //cout<< finaljet_antikt.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
-  if(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry() == 0 ) cout<< "zg = 0, number of tracks returned ="<< finaljet.constituents().size() <<"groomed pt...jet pt= "<<finaljet.perp()<<"..."<<fJet->Pt()<<endl;
 
   AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
