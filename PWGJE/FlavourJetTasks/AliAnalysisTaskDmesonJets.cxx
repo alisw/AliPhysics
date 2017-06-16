@@ -1398,6 +1398,10 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   AliDmesonJetInfo DmesonJet;
 
+  std::map<AliHFJetDefinition*,Double_t> maxJetPt;
+  for (auto& def : fJetDefinitions) maxJetPt[&def] = 0;
+  Double_t maxDPt = 0;
+
   Int_t nAccCharm[3] = {0};
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
@@ -1407,13 +1411,18 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
     // region of interest + cuts
     if (!fRDHFCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(fCandidatePDG))) continue;
     Int_t nMassHypo = 0; // number of mass hypothesis accepted for this D meson
+    if (charmCand->Pt() > maxDPt) maxDPt = charmCand->Pt();
     for (Int_t im = 0; im < 2; im++)  {  // 2 mass hypothesis (when available)
       DmesonJet.Reset();
       DmesonJet.fDmesonParticle = charmCand;
       DmesonJet.fSelectionType = im + 1;
       if (ExtractRecoDecayAttributes(charmCand, DmesonJet, im)) {
         for (auto& def : fJetDefinitions) {
-          if (!FindJet(charmCand, DmesonJet, def)) {
+          if (FindJet(charmCand, DmesonJet, def)) {
+            Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
+            if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
+          }
+          else {
             AliWarning(Form("Could not find jet '%s' for D meson '%s': pT = %.3f, eta = %.3f, phi = %.3f",
                 def.GetName(), GetName(), DmesonJet.fD.Pt(), DmesonJet.fD.Eta(), DmesonJet.fD.Phi_0_2pi()));
           }
@@ -1435,6 +1444,15 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   } // end of D cand loop
 
   TString hname;
+
+  for (auto& def : fJetDefinitions) {
+    if (!def.fRho) continue;
+    hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, maxJetPt[&def], def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistRhoVsLeadDPt", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, maxDPt, def.fRho->GetVal());
+  }
 
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
   fHistManager->FillTH1(hname, "D", nAccCharm[0]);
@@ -2378,6 +2396,14 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TH1* h = 0;
   Int_t treeSlot = 0;
 
+  Double_t maxRho = 500;
+  if (fForceBeamType == kpp) {
+    maxRho = 100;
+  }
+  else if (fForceBeamType == kpA) {
+    maxRho = 200;
+  }
+
   hname = "fHistCharmPt";
   htitle = hname + ";#it{p}_{T,charm} (GeV/#it{c});counts";
   fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
@@ -2557,6 +2583,16 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       hname = TString::Format("%s/%s/fHistRejectedJetPhi", param.GetName(), jetDef.GetName());
       htitle = hname + ";#it{#phi}_{jet};counts";
       fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
+
+      if (!jetDef.fRhoName.IsNull()) {
+        hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", param.GetName(), jetDef.GetName());
+        htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});#rho (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 150, 0, 150, 1000, 0, maxRho);
+
+        hname = TString::Format("%s/%s/fHistRhoVsLeadDPt", param.GetName(), jetDef.GetName());
+        htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});#rho (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 150, 0, 150, 1000, 0, maxRho);
+      }
     }
     switch (fOutputType) {
     case kTreeOutput:
