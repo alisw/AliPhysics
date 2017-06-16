@@ -96,7 +96,9 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   Dijet_t fMatchingDijet;
   
   // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
-  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  if (fDoTriggerSimulation) {
+    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  }
 }
 
 /**
@@ -150,7 +152,9 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   Dijet_t fMatchingDijet;
   
   // Configure base class to set fTriggerPatchInfo to array of trigger patches, each event
-  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  if (fDoTriggerSimulation) {
+    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  }
 }
 
 /**
@@ -969,12 +973,12 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
         hn->GetAxis(i)->SetTitle(title[i]);
         hn->SetBinEdges(i, binEdges[i]);
       }
+      
+      // (jet type, jet pT, cluster shift)
+      histname = TString::Format("%s/hCaloJESshift", jets->GetArrayName().Data());
+      htitle = histname + ";type;#it{p}_{T}^{corr} (GeV/#it{c});#Delta_{JES}";
+      fHistManager.CreateTH3(histname.Data(), htitle.Data(), 3, -0.5, 2.5, nPtBins, 0, fMaxPt, 100, 0, 20);
     }
-    
-    // (jet type, jet pT, cluster shift)
-    histname = TString::Format("%s/hCaloJESshift", jets->GetArrayName().Data());
-    htitle = histname + ";type;#it{p}_{T}^{corr} (GeV/#it{c});#Delta_{JES}";
-    fHistManager.CreateTH3(histname.Data(), htitle.Data(), 3, -0.5, 2.5, nPtBins, 0, fMaxPt, 100, 0, 20);
 
   }
   
@@ -1164,21 +1168,6 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   AliAnalysisTaskEmcalJet::ExecOnce();
 
   fNeedEmcalGeom = kTRUE;
-  
-  // Check if trigger patches are loaded
-  if (fTriggerPatchInfo) {
-    TString objname(fTriggerPatchInfo->GetClass()->GetName());
-    TClass cls(objname);
-    if (!cls.InheritsFrom("AliEMCALTriggerPatchInfo")) {
-      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEMCALTriggerPatchInfo!",
-                    GetName(), cls.GetName(), "EmcalTriggers"));
-      fTriggerPatchInfo = 0;
-    }
-  }
-  if (!fTriggerPatchInfo) {
-    AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), "EmcalTriggers"));
-    return;
-  }
 
   // Load the PHOS geometry
   if (fDoCaloStudy) {
@@ -1190,9 +1179,9 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
       AliInfo("Creating PHOS geometry!");
       Int_t runNum = InputEvent()->GetRunNumber();
       if(runNum<209122) //Run1
-      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
+        fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
       else
-      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
+        fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
       
       if (fPHOSGeo) {
         AliOADBContainer geomContainer("phosGeo");
@@ -1205,6 +1194,24 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
           ((TGeoHMatrix*)matrixes->At(mod))->Print();
         }
       }
+    }
+  }
+  Printf("here? %d", fDoTriggerSimulation);
+  
+  // Check if trigger patches are loaded
+  if (fDoTriggerSimulation) {
+    if (fTriggerPatchInfo) {
+      TString objname(fTriggerPatchInfo->GetClass()->GetName());
+      TClass cls(objname);
+      if (!cls.InheritsFrom("AliEMCALTriggerPatchInfo")) {
+        AliError(Form("%s: Objects of type %s in %s are not inherited from AliEMCALTriggerPatchInfo!",
+                      GetName(), cls.GetName(), "EmcalTriggers"));
+        fTriggerPatchInfo = 0;
+      }
+    }
+    if (!fTriggerPatchInfo) {
+      AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), "EmcalTriggers"));
+      return;
     }
   }
   
