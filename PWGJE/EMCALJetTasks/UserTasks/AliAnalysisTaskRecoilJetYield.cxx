@@ -947,7 +947,6 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   //cout<< finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
   //cout<< finaljet_antikt.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
 
-
   AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
   Double_t FastjetTrackDelR,EmcalTrackDelR;
