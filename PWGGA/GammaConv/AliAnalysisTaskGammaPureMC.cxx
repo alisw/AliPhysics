@@ -120,7 +120,7 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYPi0FromKGGEMCPCMAcc(nullptr),
   fHistPtYPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtYPi0FromKGGEMCAccDiffPi0(nullptr),
-  fIsK0(1),	
+  fIsK0(1),
   fIsMC(1)
 {
 
@@ -433,27 +433,29 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtAlphaEtaGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPCMPHOAcc);
 
-  fHistPtYPi0FromKGG          		= new TH2F("Pt_Y_Pi0FromKGG","Pt_Y_Pi0FromKGG", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGG->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGG);
-  fHistPtYPi0FromKGGPCMAcc    		= new TH2F("Pt_Y_Pi0FromKGGPCMAcc","Pt_Y_Pi0FromKGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGPCMAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGPCMAcc);
-  fHistPtYPi0FromKGGEMCAcc    		= new TH2F("Pt_Y_Pi0FromKGGEMCAcc","Pt_Y_Pi0FromKGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGEMCAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAcc);
-  fHistPtYPi0FromKGGPCMEMCAcc 		= new TH2F("Pt_Y_Pi0FromKGGPCMEMCAcc","Pt_Y_Pi0FromKGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGPCMEMCAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGPCMEMCAcc);
-  fHistPtYPi0FromKGGEMCPCMAcc 		= new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGEMCPCMAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGEMCPCMAcc);
-  fHistPtYPi0FromKGGEMCAccSamePi0   = new TH2F("Pt_Y_fHistPi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGEMCAccSamePi0->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccSamePi0);
-  fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_fHistPi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
-  fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
+  if (fIsK0 == 1){
+        fHistPtYPi0FromKGG          		= new TH2F("Pt_Y_Pi0FromKGG","Pt_Y_Pi0FromKGG", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGG->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGG);
+        fHistPtYPi0FromKGGPCMAcc    		= new TH2F("Pt_Y_Pi0FromKGGPCMAcc","Pt_Y_Pi0FromKGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGPCMAcc->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGPCMAcc);
+        fHistPtYPi0FromKGGEMCAcc    		= new TH2F("Pt_Y_Pi0FromKGGEMCAcc","Pt_Y_Pi0FromKGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAcc->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGEMCAcc);
+        fHistPtYPi0FromKGGPCMEMCAcc 		= new TH2F("Pt_Y_Pi0FromKGGPCMEMCAcc","Pt_Y_Pi0FromKGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGPCMEMCAcc->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGPCMEMCAcc);
+        fHistPtYPi0FromKGGEMCPCMAcc 		= new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCPCMAcc->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGEMCPCMAcc);
+        fHistPtYPi0FromKGGEMCAccSamePi0    = new TH2F("Pt_Y_fHistPi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccSamePi0->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccSamePi0);
+        fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_fHistPi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
+        fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
+  }
 
 
 
@@ -780,7 +782,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 
     if(fIsK0 == 0) continue;
     if( particle->GetPdgCode() == kPdgK0Short){
-      if (particle->GetNDaughters() != 2) continue;   // only the two particle decays
+      if (particle->GetNDaughters() != 2) continue;   
       UChar_t acceptanceGamma[2] = {0,0};
       Double_t energyGamma[2] = {0,0};
       Bool_t allOK[2] = {kFALSE,kFALSE};
