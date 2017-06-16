@@ -426,6 +426,21 @@ private:
     Int_t fTreeCascVarPID;
     Float_t fTreeCascVarPtMC;
     Float_t fTreeCascVarRapMC;
+    
+    Int_t fTreeCascVarCascPropagationImprovedIterations;
+    Int_t fTreeCascVarCascPropagationImprovedStatus;
+    Float_t fTreeCascVarDCACascDaughtersImproved;
+    
+    Float_t fTreeCascVarImprovedDecayX;
+    Float_t fTreeCascVarImprovedDecayY;
+    Float_t fTreeCascVarImprovedDecayZ;
+    Float_t fTreeCascVarImprovedCascCosPointingAngle;
+    
+    Float_t fTreeCascVarImprovedInvMassXiMinus;
+    Float_t fTreeCascVarImprovedInvMassXiPlus;
+    Float_t fTreeCascVarImprovedInvMassOmegaMinus;
+    Float_t fTreeCascVarImprovedInvMassOmegaPlus;
+    
 
 //===========================================================================================
 //   Histograms

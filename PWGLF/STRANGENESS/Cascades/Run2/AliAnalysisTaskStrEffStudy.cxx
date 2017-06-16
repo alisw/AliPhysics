@@ -229,6 +229,10 @@ fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
 
+fTreeCascVarCascPropagationImprovedIterations(0),
+fTreeCascVarCascPropagationImprovedStatus(0),
+fTreeCascVarDCACascDaughtersImproved(0),
+
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
 fTreeCascVarPIDBachelor(0),
@@ -376,6 +380,10 @@ fTreeCascVarInvMassXiMinus(0),
 fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
+
+fTreeCascVarCascPropagationImprovedIterations(0),
+fTreeCascVarCascPropagationImprovedStatus(0),
+fTreeCascVarDCACascDaughtersImproved(0),
 
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
@@ -597,9 +605,10 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarInvMassLambda",&fTreeCascVarInvMassLambda,"fTreeCascVarInvMassLambda/F");
         fTreeCascade->Branch("fTreeCascVarInvMassAntiLambda",&fTreeCascVarInvMassAntiLambda,"fTreeCascVarInvMassAntiLambda/F");
         
+        //CLASSICAL BACK-PROPAGATION VARIABLES
         fTreeCascade->Branch("fTreeCascVarDCACascDaughtersClassical",&fTreeCascVarDCACascDaughtersClassical,"fTreeCascVarDCACascDaughtersClassical/F");
         fTreeCascade->Branch("fTreeCascVarCascPropagationClassical",&fTreeCascVarCascPropagationClassical,"fTreeCascVarCascPropagationClassical/O");
-        
+
         fTreeCascade->Branch("fTreeCascVarDecayX",&fTreeCascVarDecayX,"fTreeCascVarDecayX/F");
         fTreeCascade->Branch("fTreeCascVarDecayY",&fTreeCascVarDecayY,"fTreeCascVarDecayY/F");
         fTreeCascade->Branch("fTreeCascVarDecayZ",&fTreeCascVarDecayZ,"fTreeCascVarDecayZ/F");
@@ -609,7 +618,24 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarInvMassXiPlus",&fTreeCascVarInvMassXiPlus,"fTreeCascVarInvMassXiPlus/F");
         fTreeCascade->Branch("fTreeCascVarInvMassOmegaMinus",&fTreeCascVarInvMassOmegaMinus,"fTreeCascVarInvMassOmegaMinus/F");
         fTreeCascade->Branch("fTreeCascVarInvMassOmegaPlus",&fTreeCascVarInvMassOmegaPlus,"fTreeCascVarInvMassOmegaPlus/F");
+
+        //IMPROVED BACK-PROPAGATION VARIABLES
+        fTreeCascade->Branch("fTreeCascVarCascPropagationImprovedIterations",&fTreeCascVarCascPropagationImprovedIterations,"fTreeCascVarCascPropagationImprovedIterations/I");
+        fTreeCascade->Branch("fTreeCascVarCascPropagationImprovedStatus",&fTreeCascVarCascPropagationImprovedStatus,"fTreeCascVarCascPropagationImprovedStatus/I");
+        fTreeCascade->Branch("fTreeCascVarDCACascDaughtersImproved",&fTreeCascVarDCACascDaughtersImproved,"fTreeCascVarDCACascDaughtersImproved/F");
         
+        fTreeCascade->Branch("fTreeCascVarImprovedDecayX",&fTreeCascVarImprovedDecayX,"fTreeCascVarImprovedDecayX/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedDecayY",&fTreeCascVarImprovedDecayY,"fTreeCascVarImprovedDecayY/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedDecayZ",&fTreeCascVarImprovedDecayZ,"fTreeCascVarImprovedDecayZ/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedCascCosPointingAngle",&fTreeCascVarImprovedCascCosPointingAngle,"fTreeCascVarImprovedCascCosPointingAngle/F");
+        
+        fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiMinus",&fTreeCascVarImprovedInvMassXiMinus,"fTreeCascVarImprovedInvMassXiMinus/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiPlus",&fTreeCascVarImprovedInvMassXiPlus,"fTreeCascVarImprovedInvMassXiPlus/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedInvMassOmegaMinus",&fTreeCascVarImprovedInvMassOmegaMinus,"fTreeCascVarImprovedInvMassOmegaMinus/F");
+        fTreeCascade->Branch("fTreeCascVarImprovedInvMassOmegaPlus",&fTreeCascVarImprovedInvMassOmegaPlus,"fTreeCascVarImprovedInvMassOmegaPlus/F");
+        
+        
+        //MC VARIABLES
         fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
         fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
         fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
@@ -1276,13 +1302,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                                                            lBestPrimaryVtxPos[1],
                                                            lMagneticField) );
         //DCAz
-        Float_t dz[2];
-        esdTrackPos->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dz );
-        fTreeCascVarPosDz = dz[1];
-        esdTrackNeg->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dz );
-        fTreeCascVarNegDz = dz[1];
-        esdTrackBach->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dz );
-        fTreeCascVarBachDz = dz[1];
+        Float_t dztrack[2];
+        esdTrackPos->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dztrack );
+        fTreeCascVarPosDz = dztrack[1];
+        esdTrackNeg->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dztrack );
+        fTreeCascVarNegDz = dztrack[1];
+        esdTrackBach->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dztrack );
+        fTreeCascVarBachDz = dztrack[1];
         
         //-----------------------------------------------------------------
         //3b: Do V0+cascade combination and see if it works, please
@@ -1387,6 +1413,177 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             cascade.ChangeMassHypothesis(lV0quality ,-3334);
             fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
         }
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //Step 1 IMPROVED: Propagate one to each other using improved techniques
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //Status code
+        fTreeCascVarCascPropagationImprovedStatus = 0; //started
+        fTreeCascVarImprovedDecayX = -100;
+        fTreeCascVarImprovedDecayY = -100;
+        fTreeCascVarImprovedDecayZ = -100;
+        fTreeCascVarImprovedCascCosPointingAngle = -100;
+        
+        fTreeCascVarImprovedInvMassXiMinus = -100;
+        fTreeCascVarImprovedInvMassXiPlus = -100;
+        fTreeCascVarImprovedInvMassOmegaMinus = -100;
+        fTreeCascVarImprovedInvMassOmegaPlus = -100;
+        
+        //Use copy
+        AliESDv0 v0imp(vertex);
+        AliESDv0 *pv0imp=&v0imp;
+        AliExternalTrackParam btimp(*esdTrackBach), *pbtimp=&btimp;
+        
+        //Uncertainties: bachelor track as well as V0
+        Double_t dy2=pbtimp->GetSigmaY2() + esdTrackPos->GetSigmaY2() + esdTrackNeg->GetSigmaY2();
+        Double_t dz2=pbtimp->GetSigmaZ2() + esdTrackPos->GetSigmaZ2() + esdTrackNeg->GetSigmaZ2();
+        Double_t dx2=dy2;
+        
+        //For testing purposes
+        dx2 = dx2;
+        dy2 = dy2;
+        dz2 = dz2;
+        
+        //Create dummy V0 track
+        //V0 properties to get started
+        Double_t xyz[3], pxpypz[3], cv[21];
+        for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
+        
+        pv0imp->GetXYZ(xyz[0],xyz[1],xyz[2]);
+        pv0imp->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
+        
+        //Mockup track for V0 trajectory (no covariance)
+        AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
+        hV0Traj->ResetCovariance(1); //won't use
+        
+        Double_t p1[8]; pbtimp->GetHelixParameters(p1,lMagneticField);
+        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
+        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+        
+        Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+        Evaluate(p1,t1,r1,g1,gg1);
+        Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+        Evaluate(p2,t2,r2,g2,gg2);
+        
+        Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+        Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+        
+        Int_t max=27;
+        while (max--) {
+            Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+            Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+            Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+            (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+            (g1[2]*g1[2] - dz*gg1[2])/dz2;
+            Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+            (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+            (g2[2]*g2[2] + dz*gg2[2])/dz2;
+            Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+            
+            Double_t det=h11*h22-h12*h12;
+            
+            Double_t dt1,dt2;
+            if (TMath::Abs(det)<1.e-33) {
+                //(quasi)singular Hessian
+                dt1=-gt1; dt2=-gt2;
+            } else {
+                dt1=-(gt1*h22 - gt2*h12)/det;
+                dt2=-(h11*gt2 - h12*gt1)/det;
+            }
+            
+            if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+            
+            //check delta(phase1) ?
+            //check delta(phase2) ?
+            
+            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
+                        AliDebug(1," stopped at not a stationary point !");
+                        //Count not stationary point
+                        fTreeCascVarCascPropagationImprovedStatus += 1; //not stationary
+                    }
+                    Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+                    if (lmb < 0.){
+                        
+                        AliDebug(1," stopped at not a minimum !");
+                        //Count stopped at not a minimum
+                        fTreeCascVarCascPropagationImprovedStatus += 10; //not minimum
+                    }
+                    break;
+                }
+            
+            Double_t dd=dm;
+            for (Int_t div=1 ; ; div*=2) {
+                Evaluate(p1,t1+dt1,r1,g1,gg1);
+                Evaluate(p2,t2+dt2,r2,g2,gg2);
+                dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+                dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+                if (dd<dm) break;
+                dt1*=0.5; dt2*=0.5;
+                if (div>512) {
+                    AliDebug(1," overshoot !"); break;
+                    //Count overshoots
+                    fTreeCascVarCascPropagationImprovedStatus += 100; //overshoot!
+                }
+            }
+            dm=dd;
+            
+            t1+=dt1;
+            t2+=dt2;
+            
+        }
+        
+        if (max<=0){
+            AliDebug(1," too many iterations !");
+        }
+        
+        fTreeCascVarCascPropagationImprovedIterations = max;
+        
+        Double_t cs=TMath::Cos(pbtimp->GetAlpha());
+        Double_t sn=TMath::Sin(pbtimp->GetAlpha());
+        Double_t xthis=r1[0]*cs + r1[1]*sn;
+        
+        //Memory cleanup
+        hV0Traj->Delete();
+        hV0Traj=0x0;
+        
+        //Propagate bachelor to the point of DCA
+        if (!pbtimp->PropagateTo(xthis,lMagneticField)) {
+            //AliWarning(" propagation failed !";
+            //HOLY CRAP, propagation failed!
+            fTreeCascVarCascPropagationImprovedStatus += 1000; //failure: add 1000 
+        }
+        
+        if( fTreeCascVarCascPropagationImprovedStatus < 999 ){
+            
+            //V0 distance to bachelor: the desired distance
+            Double_t rBachDCAPt[3]; pbtimp->GetXYZ(rBachDCAPt);
+            fTreeCascVarDCACascDaughtersImproved = pv0imp->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+            
+            //Construct cascade
+            AliESDcascade cascadeimproved(*pv0imp,*pbtimp,lCascBachTrackArray[iCasc]);
+            
+            //Decay Position
+            Double_t xcascimp,ycascimp,zcascimp; cascadeimproved.GetXYZcascade(xcascimp,ycascimp,zcascimp);
+            fTreeCascVarImprovedDecayX = xcascimp;
+            fTreeCascVarImprovedDecayY = ycascimp;
+            fTreeCascVarImprovedDecayZ = zcascimp;
+            
+            fTreeCascVarImprovedCascCosPointingAngle = cascadeimproved.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+            
+            Double_t lV0quality  = 0.;
+            cascadeimproved.ChangeMassHypothesis(lV0quality , 3312);
+            fTreeCascVarImprovedInvMassXiMinus = cascadeimproved.GetEffMassXi();
+            cascadeimproved.ChangeMassHypothesis(lV0quality ,-3312);
+            fTreeCascVarImprovedInvMassXiPlus = cascadeimproved.GetEffMassXi();
+            cascadeimproved.ChangeMassHypothesis(lV0quality , 3334);
+            fTreeCascVarImprovedInvMassOmegaMinus = cascadeimproved.GetEffMassXi();
+            cascadeimproved.ChangeMassHypothesis(lV0quality ,-3334);
+            fTreeCascVarImprovedInvMassOmegaPlus = cascadeimproved.GetEffMassXi();
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         //-----------------------------------------------------------------
         //3c: Get perfect MC information for bookkeeping
