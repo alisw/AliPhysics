@@ -1142,12 +1142,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if( lLabelMother < 0 ) continue;
         
         //Only interested in tracks whose mother was a primary (cascade)
-        if( lMCstack->IsPhysicalPrimary(lLabelMother) ) continue;
+        if( !lMCstack->IsPhysicalPrimary(lLabelMother) ) continue;
         
         TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
-        //Pre-filter on primaries
-        if( ! lMCstack->IsPhysicalPrimary( lLabelMother ) ) continue;
         
         //Skip three-body decays and the like (has to be bach+V0)
         if ( lParticleMother->GetNDaughters()!=2 ) continue;
@@ -1163,6 +1161,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         lBachelorMotherArray  [nBachelorsOfInterest] = lLabelMother;
         nBachelorsOfInterest++;
     }
+    cout<<"Findable bachelors: "<<nBachelorsOfInterest<<endl;
     
     TArrayI lCascPosTrackArray      (lNTracks);
     TArrayI lCascNegTrackArray      (lNTracks);
@@ -1215,6 +1214,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             }
         }
     }
+    cout<<"Findable Cascades: "<<lFindableCascades<<endl;
     
     //____________________________________________________________________________
     //Step 3: Loop over findable cascades and determine their relevant characteristics
@@ -1235,7 +1235,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if( esdTrackNeg->GetInnerParam() )
             fTreeCascVarNegLength = esdTrackNeg->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         if( esdTrackBach->GetInnerParam() )
-            fTreeCascVarNegLength = esdTrackNeg->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+            fTreeCascVarBachLength = esdTrackBach->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         
         fTreeCascVarPosCrossedRows  = esdTrackPos ->GetTPCClusterInfo(2,1);
         fTreeCascVarNegCrossedRows  = esdTrackNeg ->GetTPCClusterInfo(2,1);
@@ -1367,6 +1367,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
         }
         
+        //Fill Findable cascade tree
+        fTreeCascade->Fill();
     }
     
     //--] END CASCADE PART [--------------------------
