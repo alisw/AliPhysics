@@ -1,6 +1,6 @@
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight,Bool_t longlived);
 
-AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1,Float_t ptWeight=0, Bool_t longlived=false)
+AliGenerator* Add_MCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1,Float_t ptWeight=0, Bool_t longlived=false)
 {
   //Add Pythia generator: pt-hard bin or min bias
 
@@ -61,7 +61,10 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
     if(cr==0) genP->SetTune(375);
   }
 
-  if(longlived) static_cast<AliDecayerPythia *>(genP->GetDecayer())->DecayLongLivedParticles();
+  if(longlived) {
+        AliDecayerPythia* decayer = static_cast<AliDecayerPythia *>(genP->GetDecayer());
+        decayer->DecayLongLivedParticles();
+  }
   
   genP->Print();
   return genP;
