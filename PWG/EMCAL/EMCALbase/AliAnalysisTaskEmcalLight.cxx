@@ -66,7 +66,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fCreateHisto(kTRUE),
   fNeedEmcalGeom(kTRUE),
   fCentBins(),
-  fUseNewCentralityEstimation(kFALSE),
+  fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -158,7 +158,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fCreateHisto(kTRUE),
   fNeedEmcalGeom(kTRUE),
   fCentBins(6),
-  fUseNewCentralityEstimation(kFALSE),
+  fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -988,36 +988,42 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
   fBeamType = GetBeamType();
 
   fCent    = 99;
-  fCentBin = 0;
+  fCentBin = -1;
   fEPV0    = -999;
   fEPV0A   = -999;
   fEPV0C   = -999;
 
-  if (fBeamType == kAA || fBeamType == kpA ) {
-    if (fUseNewCentralityEstimation) {
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+  if (fCentralityEstimation == kNewCentrality) {
+    // New centrality estimation (AliMultSelection)
+    // See https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliMultSelectionCalibStatus for calibration status period-by-period)
+    AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+    if (MultSelection) {
+      fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
     }
-    else { // old centrality estimation < 2015
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+    else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
-
-    fCentBin = -1;
+  }
+  else if (fCentralityEstimation == kOldCentrality) {
+    // Old centrality estimation (AliCentrality, works only on Run-1 PbPb and pPb)
+    AliCentrality *aliCent = InputEvent()->GetCentrality();
+    if (aliCent) {
+      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+    }
+    else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+    }
+  }
+  if (!fCentBins.empty()) {
     for (auto cent_it = fCentBins.begin(); cent_it != fCentBins.end() - 1; cent_it++) {
       if (fCent >= *cent_it && fCent < *(cent_it+1)) fCentBin = cent_it - fCentBins.begin();
     }
+  }
+  else {
+    fCentBin = 0;
+  }
 
+  if (fBeamType == kAA || fBeamType == kpA ) {
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
