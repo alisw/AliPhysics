@@ -20,7 +20,7 @@ void AddTask_GammaPureMC(Int_t isK0 = 0 ) {
 	AliAnalysisTaskGammaPureMC *task=NULL;
 	task= new AliAnalysisTaskGammaPureMC("GammaPureMC");
     // if no k0 desired, set to isK0
-    task->SetIsK0(1);
+    task->SetIsK0(isK0);
 
 	
 	//connect containers
