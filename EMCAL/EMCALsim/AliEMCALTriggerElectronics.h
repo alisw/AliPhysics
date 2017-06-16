@@ -38,17 +38,22 @@ public:
   virtual void   Reset();  
   
   virtual AliEMCALTriggerTRU* GetTRU( Int_t iTRU ) {return (AliEMCALTriggerTRU*)fTRU->At(iTRU);}
-  virtual AliEMCALTriggerSTU* GetSTU(            ) {return                      fSTU;          }
+  virtual AliEMCALTriggerSTU* GetSTU( Bool_t isDCAL = false ) {return isDCAL ? fSTUDCAL : fSTU;}
   
 private:
   
   AliEMCALTriggerElectronics(const AliEMCALTriggerElectronics& other);            // Not implemented
   AliEMCALTriggerElectronics& operator=(const AliEMCALTriggerElectronics& other); // Not implemented
   
+  Int_t                 fNTRU;     //< Total number of TRUs
   TClonesArray*         fTRU;      ///< 32 TRU
-  AliEMCALTriggerSTU*   fSTU;      ///<  1 STU
+  AliEMCALTriggerSTU*   fSTU;      ///< 1 STU for EMCAL
   AliEMCALGeometry     *fGeometry; ///< EMCal geometry
-  
+ 
+  Int_t                fMedianMode; // 0 for no median subtraction, 1 for median sub.
+  TClonesArray*        fTRUDCAL;  //< 14 TRU
+  AliEMCALTriggerSTU*  fSTUDCAL;  //< 1 STU for DCAL
+ 
   /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerElectronics,1) ;
   /// \endcond
