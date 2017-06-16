@@ -67,7 +67,7 @@ AliPythia8::AliPythia8():
     fPtScale(0.),
     fNJetMin(0),
     fNJetMax(0),
-	fDecayLonglived(kFALSE)
+    fDecayLonglived(kFALSE)
 {
 // Default Constructor
 //
@@ -91,7 +91,7 @@ AliPythia8::AliPythia8(const AliPythia8& pythia):
     fPtScale(0.),
     fNJetMin(0),
     fNJetMax(0),
-	fDecayLonglived(kFALSE)
+    fDecayLonglived(kFALSE)
 {
     // Copy Constructor
     pythia.Copy(*this);

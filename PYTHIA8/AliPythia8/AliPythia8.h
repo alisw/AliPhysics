@@ -105,7 +105,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     Float_t               fPtScale;           //  ! cut-off joining scale
     Int_t                 fNJetMin;           //  ! min. number of jets
     Int_t                 fNJetMax;           //  ! max. number of jets
-    Bool_t				  fDecayLonglived;	  //    Decay long-lived particles
+    Bool_t                fDecayLonglived;	  //    Decay long-lived particles
     static AliPythia8*    fgAliPythia8;       //    Pointer to single instance
 
     ClassDef(AliPythia8, 1) //ALICE UI to PYTHIA8
