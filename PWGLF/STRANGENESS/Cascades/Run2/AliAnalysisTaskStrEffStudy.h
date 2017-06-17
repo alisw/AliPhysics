@@ -120,6 +120,10 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetSaveGoodTracks ( Bool_t lOpt = kTRUE) {
+        fkSaveGoodTracks = lOpt;
+    }
+
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -306,6 +310,9 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    //Save only decent tracks
+    Bool_t fkSaveGoodTracks;
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 

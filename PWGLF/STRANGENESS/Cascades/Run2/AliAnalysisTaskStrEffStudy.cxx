@@ -139,6 +139,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkSaveGoodTracks( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -297,6 +298,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkSaveGoodTracks( kTRUE ), 
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -1169,6 +1171,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //IMPORTANT: select only physical primaries, please
         if( ! lMCstack->IsPhysicalPrimary( lblMotherV0 ) ) continue; //won't fill TTree
         
+        if( fkSaveGoodTracks ){
+            //...where good -> kTPCrefit, at least length zero (more still needed!)
+            if ((fTreeVariablePosTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeVariableNegTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if(fTreeVariablePosLength<0) continue;
+            if(fTreeVariableNegLength<0) continue;
+        }
+        
         //End step 3: fill findable ttree
         fTreeV0->Fill();
     }
@@ -1630,6 +1640,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarPID   = lParticleMother->GetPdgCode(); //PDG Code
         fTreeCascVarPtMC  = lParticleMother->Pt(); //Perfect Pt
         fTreeCascVarRapMC = lParticleMother->Y();
+        
+        if( fkSaveGoodTracks ){
+            //...where good -> kTPCrefit, at least length zero (more still needed!)
+            if ((fTreeCascVarPosTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeCascVarNegTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeCascVarBachTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if(fTreeCascVarPosLength<0) continue;
+            if(fTreeCascVarNegLength<0) continue;
+            if(fTreeCascVarBachLength<0) continue;
+        }
         
         //Fill Findable cascade tree
         fTreeCascade->Fill();
