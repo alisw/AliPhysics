@@ -432,14 +432,6 @@ private:
     Float_t fTreeCascVarInvMassOmegaMinus;
     Float_t fTreeCascVarInvMassOmegaPlus;
     
-    Int_t fTreeCascVarPIDPositive;
-    Int_t fTreeCascVarPIDNegative;
-    Int_t fTreeCascVarPIDBachelor;
-    //Set tree variables
-    Int_t fTreeCascVarPID;
-    Float_t fTreeCascVarPtMC;
-    Float_t fTreeCascVarRapMC;
-    
     Int_t fTreeCascVarCascPropagationImprovedIterations;
     Int_t fTreeCascVarCascPropagationImprovedStatus;
     Float_t fTreeCascVarDCACascDaughtersImproved;
@@ -454,6 +446,18 @@ private:
     Float_t fTreeCascVarImprovedInvMassOmegaMinus;
     Float_t fTreeCascVarImprovedInvMassOmegaPlus;
     
+    Int_t fTreeCascVarPIDPositive;
+    Int_t fTreeCascVarPIDNegative;
+    Int_t fTreeCascVarPIDBachelor;
+    //Set tree variables
+    Int_t fTreeCascVarPID;
+    Float_t fTreeCascVarPtMC;
+    Float_t fTreeCascVarRapMC;
+    
+    //Super-control vars
+    Float_t fTreeCascVarPosDistanceToTrueDecayPt;
+    Float_t fTreeCascVarNegDistanceToTrueDecayPt;
+    Float_t fTreeCascVarBachDistanceToTrueDecayPt;
 
 //===========================================================================================
 //   Histograms
