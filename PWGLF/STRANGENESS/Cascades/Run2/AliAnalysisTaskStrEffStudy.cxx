@@ -1284,9 +1284,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if( esdTrackBach->GetInnerParam() )
             fTreeCascVarBachLength = esdTrackBach->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         
-        fTreeCascVarPosCrossedRows  = esdTrackPos ->GetTPCClusterInfo(2,1);
-        fTreeCascVarNegCrossedRows  = esdTrackNeg ->GetTPCClusterInfo(2,1);
-        fTreeCascVarBachCrossedRows = esdTrackNeg ->GetTPCClusterInfo(2,1);
+        fTreeCascVarPosCrossedRows  = esdTrackPos  ->GetTPCClusterInfo(2,1);
+        fTreeCascVarNegCrossedRows  = esdTrackNeg  ->GetTPCClusterInfo(2,1);
+        fTreeCascVarBachCrossedRows = esdTrackBach ->GetTPCClusterInfo(2,1);
         //Tracking flags
         fTreeCascVarPosTrackStatus = esdTrackPos->GetStatus();
         fTreeCascVarNegTrackStatus = esdTrackNeg->GetStatus();
