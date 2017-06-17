@@ -401,6 +401,9 @@ private:
     Float_t fTreeCascVarV0DecayX;
     Float_t fTreeCascVarV0DecayY;
     Float_t fTreeCascVarV0DecayZ;
+    Float_t fTreeCascVarV0DecayXMC;
+    Float_t fTreeCascVarV0DecayYMC;
+    Float_t fTreeCascVarV0DecayZMC;
     Float_t fTreeCascVarV0CosineOfPointingAngle;
     Float_t fTreeCascVarDCAV0ToPrimVtx;
     Float_t fTreeCascVarInvMassLambda;
@@ -412,6 +415,9 @@ private:
     Float_t fTreeCascVarDecayX;
     Float_t fTreeCascVarDecayY;
     Float_t fTreeCascVarDecayZ;
+    Float_t fTreeCascVarDecayXMC;
+    Float_t fTreeCascVarDecayYMC;
+    Float_t fTreeCascVarDecayZMC;
     Float_t fTreeCascVarCascCosPointingAngle;
     
     Float_t fTreeCascVarInvMassXiMinus;
