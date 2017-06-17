@@ -247,6 +247,10 @@ fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
 
+fTreeCascVarPosDistanceToTrueDecayPt(0),
+fTreeCascVarNegDistanceToTrueDecayPt(0),
+fTreeCascVarBachDistanceToTrueDecayPt(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -399,6 +403,10 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
+
+fTreeCascVarPosDistanceToTrueDecayPt(0),
+fTreeCascVarNegDistanceToTrueDecayPt(0),
+fTreeCascVarBachDistanceToTrueDecayPt(0),
 
 //Histos
 fHistEventCounter(0),
@@ -656,6 +664,10 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
         fTreeCascade->Branch("fTreeCascVarPtMC",&fTreeCascVarPtMC,"fTreeCascVarPtMC/F");
         fTreeCascade->Branch("fTreeCascVarRapMC",&fTreeCascVarRapMC,"fTreeCascVarRapMC/F");
+        
+        fTreeCascade->Branch("fTreeCascVarPosDistanceToTrueDecayPt",&fTreeCascVarPosDistanceToTrueDecayPt,"fTreeCascVarPosDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1650,6 +1662,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if(fTreeCascVarNegLength<0) continue;
             if(fTreeCascVarBachLength<0) continue;
         }
+        
+        Float_t dzspec[2];
+        esdTrackPos->GetDZ( fTreeCascVarV0DecayXMC, fTreeCascVarV0DecayYMC, fTreeCascVarV0DecayZMC, lMagneticField, dzspec );
+        fTreeCascVarPosDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        esdTrackNeg->GetDZ( fTreeCascVarV0DecayXMC, fTreeCascVarV0DecayYMC, fTreeCascVarV0DecayZMC, lMagneticField, dzspec );
+        fTreeCascVarNegDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        esdTrackBach->GetDZ( fTreeCascVarDecayXMC, fTreeCascVarDecayYMC, fTreeCascVarDecayZMC, lMagneticField, dzspec );
+        fTreeCascVarBachDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
         
         //Fill Findable cascade tree
         fTreeCascade->Fill();
