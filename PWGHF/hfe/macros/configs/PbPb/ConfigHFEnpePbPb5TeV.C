@@ -32,12 +32,12 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   gROOT->cd();
   //int isig = static_cast<int>(sigma * 100.);  // original
   int isig      = static_cast<int>(sigma * 1000.);   
-  int nTOFsigma = static_cast<int>(TOFs);
-  int nITSsigma = static_cast<int>(ITSs);
+  int nTOFsigma = static_cast<int>(TOFs*10);
+  int nITSsigma = static_cast<int>(ITSs*10);
 
   printf("Getting hadron background for the sigma cut: %d\n", isig);
-  printf("Getting hadron background for TOF sigma (INTEGER): %d\n", nTOFsigma);
-  printf("Getting hadron background for ITS sigma (INTEGER): %d\n", nITSsigma);
+  printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
+  printf("Getting hadron background for ITS sigma (INTEGER*10): %d\n", nITSsigma);
   bool status = kTRUE;
 
   for(int icent = 0; icent < 12; icent++){
