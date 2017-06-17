@@ -2564,7 +2564,7 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
   if(fUseAliEveCut){
     
     //Fill the histogram with the number of events per cut
-    if(fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
+    if(fEvtPhysSelected && fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
       hNEvt->Fill(binstart++);
       if(fEventCut.PassedCut(AliEventCuts::kPileUp)) {
         hNEvt->Fill(binstart++);
