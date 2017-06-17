@@ -521,6 +521,7 @@ void AliEventCuts::SetupRun2pp() {
   fUtils.SetMaxPlpChi2MV(5);
   fUtils.SetMinWDistMV(15);
   fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  fPileUpCutMV = true;
 }
 
 void AliEventCuts::SetupLHC15o() {

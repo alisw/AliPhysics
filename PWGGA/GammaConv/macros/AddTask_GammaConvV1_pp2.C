@@ -215,6 +215,8 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010213", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV + past future max rejection
   } else if (trainConfig == 24) {
     cuts.AddCut("00010513", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV + past future medium rejection
+  } else if (trainConfig == 25) {
+    cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
 
   //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
   } else if (trainConfig == 30){

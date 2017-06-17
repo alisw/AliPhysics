@@ -5,6 +5,8 @@
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEventPoolManager.h"
 #include "AliEventCuts.h"
+#include "AliFiducialCut.h"
+#include "AliEMCALRecoUtils.h"
 #include <THn.h>
 #include <THnSparse.h>
 
@@ -22,7 +24,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis, Bool_t InitMCorData);
 virtual ~AliAnalysisTaskGammaHadron();
 
-  //setters for the analysis, currently not many implemented
+  //setters for the analysis
   void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
   void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
@@ -42,11 +44,13 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
  private:
   AliEventCuts                fEventCuts;                   ///< event selection utility
+  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
+  AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
 
  protected:
 
   void                        InitArrays()                                                 ;
-  // overwritten EMCal framework functions
+  // overwritten EMCal base class functions
   Bool_t                      Run()                             	                          ;
   void                        ExecOnce()         									      ;
   Bool_t                      IsEventSelected()											  ;
@@ -56,10 +60,11 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        InitEventMixer()											  ;
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
+  //..Correlate and fill
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
+  void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster);
@@ -152,12 +157,6 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy
-  TH2                      **fHistClusterShape;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape0;       //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape1;       //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape2;       //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape3;       //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape4;       //!<! Cluster shape vs energy
   TH2                       *fHistMatchEtaPhiAllCl2;   //!<! matched track distance for 2 cell clusters
   TH2                       *fHistMatchEtaPhiAllCl3;   //!<! matched track distance for 3 cell clusters
   TH2                       *fHistMatchEtaPhiAllCl4;   //!<! matched track distance for 4 cell clusters

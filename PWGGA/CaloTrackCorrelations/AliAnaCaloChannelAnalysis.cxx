@@ -617,11 +617,15 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma,
 	if(criterion < 3)   histogram = BuildHitAndEnergyMean(criterion, emin, emax);
 	if(criterion == 3)  histogram = BuildTimeMean(criterion, emin, emax); //.. in case of crit 3 emin is tmin and emax is tmax
 
-	if(criterion==1) FlagAsBad(criterion, histogram, nsigma, 400);
+	if(criterion==1)
+	{
+		if(emin>2)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		else      FlagAsBad(criterion, histogram, nsigma, 400);
+	}
 	if(criterion==2)
 	{
-		if(emax>15)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
-		else       FlagAsBad(criterion, histogram, nsigma, 601);
+		if(emin>2)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		else      FlagAsBad(criterion, histogram, nsigma, 601);
 		//FlagAsBad(criterion, histogram, nsigma,601);// ELIANE ELIANE
 		//FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 	}
@@ -752,7 +756,7 @@ void AliAnaCaloChannelAnalysis::FlagAsDead()
 			sumOfExcl++;
 		}
 		//..add here the manual masking
-		if(manualMaskCounter<fManualMask.size() && fManualMask.at(manualMaskCounter)==cell)
+		if(manualMaskCounter<(Int_t)fManualMask.size() && fManualMask.at(manualMaskCounter)==cell)
 		{
 			fFlag[cell] = 2;
 			manualMaskCounter++;
@@ -802,6 +806,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
 	if(crit==2 && inputBins==-1)	dnbins=dmaxVal-dminVal;
+	if(crit==1 && inputBins==-1)	dnbins=400;
 
 	if(crit==2 && inputBins!=-1)
 	{
@@ -986,10 +991,9 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 
 	goodmin = mean - nsigma*sig ;
 	goodmax = mean + nsigma*sig ;
-
 	//..for case 1 and 2 lower than 0 is an unphysical value
 	if(crit<3 && goodmin <0.) goodmin=0.;
-	if(inputBins==-1)          goodmin=-1; //..this is a special case for the very last histogram 3-40 GeV
+	if(inputBins==-1)         goodmin=-1; //..this is a special case for the very last histogram 3-40 GeV
 
 	if(fPrint==1)cout<<"    o Result of fit: "<<endl;
 	if(fPrint==1)cout<<"    o  "<<endl;
@@ -1602,7 +1606,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 				if(version==1)
 				{
 					textA->SetTitle(Form("Excluded by No. %d",fFlag[channelVector.at(i)]));
-					textA->Draw();
+					textA->DrawLatex(0.65,0.62,Form("Excluded by No. %d",fFlag[channelVector.at(i)]));
 				}
 				if(candidate==0 && (version==2 || version==20))
 				{
@@ -1650,7 +1654,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 TH1D* AliAnaCaloChannelAnalysis::BuildMeanFromGood(Int_t warmIn)
 {
 	TH1D* hGoodAmp;
-	TH1D* hgoodMean = hgoodMean = (TH1D*)fCellAmplitude->ProjectionX("hgoodMean");
+	TH1D* hgoodMean = (TH1D*)fCellAmplitude->ProjectionX("hgoodMean");
 	hgoodMean->Reset();
 	Int_t NrGood=0;
 

@@ -2033,6 +2033,18 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
+  case 10: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = 0.;
+    break;
+  case 11: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
+    break;
   default:
     AliError(Form(" EtaCut not defined %d",etaCut));
     return kFALSE;
@@ -2155,7 +2167,10 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
     fMinPhiCut = 2.4; //OROC C08 tightest cut
     break;
-    
+  case 8:
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    fMinPhiCut = 4.54; //PHOS phi
+    break;
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2201,7 +2216,10 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
     fMaxPhiCut = 3.6; //OROC C08 tighest cut
     break;
-    
+  case 8:
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    fMaxPhiCut = 5.59; //PHOS phi
+    break;
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;

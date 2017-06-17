@@ -66,8 +66,7 @@ public:
         //Highly experimental, use with care!
         fkIfImprovedExtraPrecisionFactor = lOpt;
     }
-
-
+    
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}

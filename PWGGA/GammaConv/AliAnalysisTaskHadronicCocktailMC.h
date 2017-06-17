@@ -34,10 +34,10 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     void SetLogBinningXTH2(TH2* histoRebin);
 
     // getters
-    Int_t GetParticlePosLocal(Int_t pdg);
+    Int_t   GetParticlePosLocal(Int_t pdg);
     Float_t GetDecayChannel(AliStack* stack, TParticle* part);
-    void GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
-    void GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
+    void    GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
+    void    GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
 
     // additional functions
     void InitializeDecayChannelHist(TH1F* hist, Int_t np);
@@ -62,9 +62,9 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     Bool_t                      fAnalyzeNeutralPi;                // switch for pi0 analysis
     Bool_t                      fAnalyzeChargedPi;                // switch for pi+- analysis
     Bool_t                      fDoLightOutput;                   // switch for running light
-    Bool_t                      fHasMother[15];                   // mother i produced
+    Bool_t                      fHasMother[24];                   // mother i produced
   
-    // histograms events
+    // nEvent histogram
     TH1F*                       fHistNEvents;                     // number of events histo
   
     // histograms mesons
@@ -90,18 +90,19 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     TH1I*                       fHistPdgInputRest;                //! histo for rest
     TH1I*                       fHistPdgDaughterSourceRest;       //! histo for gamma from rest
   
-    TF1*                        fPtParametrization[15];           //!
+    // generator settings
+    TF1*                        fPtParametrization[24];           //!
     TF1*                        fPtParametrizationProton;         //!
     TF1*                        fPtParametrizationPi0;            //!
     TObjString*                 fCocktailSettings[12];            //!
     TH1D*                       fMtScalingFactors;                //!
-    TH2F*                       fPtYDistributions[15];            //!
+    TH2F*                       fPtYDistributions[24];            //!
   
   private:
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 6);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 7);
 };
 
 #endif

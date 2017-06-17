@@ -180,6 +180,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(Bool_t MCthere,
    // TPC low cut = -0.38 (tpcl4)
    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl4, dEdxhm,  kDefTOFs,  kDefITSs, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+   // TPC low cut = -0.1 (tpcl2) TOF+-2
+   RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  2.,  kDefITSs, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+
  }
 
  
@@ -199,6 +203,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(Bool_t MCthere,
 }
 
 //===============================================================================
+
 //===============================================================================
 AliAnalysisTask *RegisterTaskNPEPbPb(
                                      Int_t centrMin = 0, Int_t centrMax = 100,
@@ -345,7 +350,3 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 
   return NULL;
 }
-
-
-
-

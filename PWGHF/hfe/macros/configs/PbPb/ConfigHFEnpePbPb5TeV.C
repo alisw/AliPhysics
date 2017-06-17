@@ -41,7 +41,6 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   bool status = kTRUE;
 
   for(int icent = 0; icent < 12; icent++){
-
     //functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));        // original
     if(isig<0)  // --- case of negative low TPC cut ---
     {
@@ -280,7 +279,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   // Configure ITS PID
   if (useits>0){
     AliHFEpidITS *itspid = pid->GetDetPID(AliHFEpid::kITSpid);
-    itspid->SetITSnSigma(1.);
+    //itspid->SetITSnSigma(1.);
+    itspid->SetITSnSigma(ITSs); // ***** modified 11/06/2017 (mfaggin)
   }
 
   // To make different upper TOF cut to see contamination effect

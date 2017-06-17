@@ -47,7 +47,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           isLCAnalysis              = kFALSE,
                                                                  TString                triggerName               = "",
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
-                                                                 const Int_t            NContrToPileUp            = 3
+                                                                 const Int_t            NContrToPileUp            = 3,
+								 const Bool_t           lightOutput               = kFALSE
                                                                  )
 {
   Printf("Preparing neutral cluster analysis\n");
@@ -208,6 +209,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetPeriod(periodstr);
   task->SetRejectPileUpEvent(RejectPileUpEvent);
   task->SetNcontributorsToPileUp(NContrToPileUp);
+  task->SetLightenOutput(lightOutput);
 
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   

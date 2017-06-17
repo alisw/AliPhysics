@@ -143,6 +143,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
     rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
     if(tAnalysisConfig.analysisType==AFALK::kXiKchP || tAnalysisConfig.analysisType==AFALK::kAXiKchP ||
        tAnalysisConfig.analysisType==AFALK::kXiKchM || tAnalysisConfig.analysisType==AFALK::kAXiKchM) rdr->SetReadCascade(1);
+    else if(tAnalysisConfig.analysisType==AFALK::kXiK0   || tAnalysisConfig.analysisType==AFALK::kAXiK0) {rdr->SetReadV0(1); rdr->SetReadCascade(1);}
     else if(tAnalysisConfig.analysisType==AFALK::kProtPiM || tAnalysisConfig.analysisType==AFALK::kAProtPiP ||
             tAnalysisConfig.analysisType==AFALK::kPiPPiM) rdr->SetReadV0(0); 
     else rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
@@ -267,6 +268,13 @@ void SetPairCodes(AFALK::AnalysisParams &aAnConfig, MacroParams &aMacroConfig)
     aMacroConfig.pair_codes.push_back(AFALK::kXiKchM);
     aMacroConfig.pair_codes.push_back(AFALK::kAXiKchM);
     aAnConfig.generalAnalysisType = AFALK::kXiTrack;
+    break;
+
+  case AFALK::kXiK0:
+  case AFALK::kAXiK0:
+    aMacroConfig.pair_codes.push_back(AFALK::kXiK0);
+    aMacroConfig.pair_codes.push_back(AFALK::kAXiK0);
+    aAnConfig.generalAnalysisType = AFALK::kXiV0;
     break;
 
   case AFALK::kProtPiM:
@@ -417,6 +425,23 @@ CreateCorrectAnalysis(
     BuildParticleConfiguration(aText,tXiCutConfig);
     BuildParticleConfiguration(aText,tESDCutConfig1);
     tAnalysis = new AliFemtoAnalysisLambdaKaon(aAnParams,aEvCutParams,aPairCutParams,tXiCutConfig,tESDCutConfig1,aDirNameModifier);
+    break;
+
+  case AFALK::kXiV0:
+    switch(aAnType) {
+    case AFALK::kXiK0:
+      tXiCutConfig = AFALK::DefaultXiCutParams();
+      tV0CutConfig1 = AFALK::DefaultK0ShortCutParams();
+      break;
+
+    case AFALK::kAXiK0:
+      tXiCutConfig = AFALK::DefaultAXiCutParams();
+      tV0CutConfig1 = AFALK::DefaultK0ShortCutParams();
+      break;
+    }
+    BuildParticleConfiguration(aText,tXiCutConfig);
+    BuildParticleConfiguration(aText,tV0CutConfig1);
+    tAnalysis = new AliFemtoAnalysisLambdaKaon(aAnParams,aEvCutParams,aPairCutParams,tXiCutConfig,tV0CutConfig1);
     break;
 
   case AFALK::kTrackTrack:

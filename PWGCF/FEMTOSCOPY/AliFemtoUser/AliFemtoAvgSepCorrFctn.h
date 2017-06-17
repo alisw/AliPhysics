@@ -57,7 +57,8 @@ public:
     kTracks = 0,
     kTrackV0 = 1,
     kV0s = 2,
-    kTrackXi = 3
+    kTrackXi = 3,
+    kXiV0 = 4
   };
   typedef enum PairType AliFemtoPairType;
 
@@ -118,8 +119,18 @@ private:
   //In addition to fNumeratorPos, fDenominatorPos, fNumeratorNeg, and
   //fDenominatorNeg, the kTrackXi case also needs histograms for average
   //separation between bachelor pion and track
-  TH1D *fNumeratorBac;       ///< numerator - real pairs
-  TH1D *fDenominatorBac;     ///< denominator - mixed pairs
+  TH1D *fNumeratorBacTrack;       ///< numerator - real pairs
+  TH1D *fDenominatorBacTrack;     ///< denominator - mixed pairs
+
+  //Xi + V0
+  //In addition to fNumeratorPosPos, fDenominatorPosPos,
+  //fNumeratorPosNeg, fDenominatorPosNeg, fNumeratorNegPos, fDenominatorNegPos,
+  //fNumeratorNegNeg, fDenominatorNegNeg, the kXiV0 case also needs histograms 
+  //for average separation between bachelor pion and Xi's V0 daughters
+  TH1D *fNumeratorBacPos;       ///< numerator - real pairs
+  TH1D *fDenominatorBacPos;     ///< denominator - mixed pairs
+  TH1D *fNumeratorBacNeg;       ///< numerator - real pairs
+  TH1D *fDenominatorBacNeg;     ///< denominator - mixed pairs
 
   TH1D *fRatio;              ///< ratio - correlation function
   AliFemtoPairType fPairType;

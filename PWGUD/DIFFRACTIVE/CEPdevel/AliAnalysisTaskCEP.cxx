@@ -648,12 +648,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
   Bool_t isV0DG = isSPD && !(isV0A || isV0C);
+  Bool_t isFMDDG = isSPD && !(isFMDA || isFMDC);
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
 
   if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
   if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(5))->Fill(fRun);
   
   // determine the gap condition using
   // ITS,V0,FMD,AD,ZD
@@ -724,7 +726,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   TArrayI *TTindices  = new TArrayI();
   Int_t nTracksTT = fCEPUtil->countstatus(fTrackStatus,
     fTTmask, fTTpattern, TTindices);
-  printf("Number of selected tracks: %i\n",nTracksTT);
+  // printf("Number of selected tracks: %i\n",nTracksTT);
 
   // get tracks which pass default TPCITS cuts
   //TArrayI *TPCITSindices  = new TArrayI();

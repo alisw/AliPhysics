@@ -149,7 +149,7 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
 
 AliAnalysisTaskHadronicCocktailMC::~AliAnalysisTaskHadronicCocktailMC()
 {
-  for (Int_t i=0; i<9; i++) {
+  for (Int_t i=0; i<12; i++) {
     if (fCocktailSettings[i]) delete fCocktailSettings[i];
   }
 }
@@ -191,7 +191,7 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
     
     // pt parametrizations
     GetAndSetPtParametrizations(fMCCocktailGen);
-    for (Int_t i=0; i<13; i++) {
+    for (Int_t i=0; i<24; i++) {
       if (fHasMother[i]) fUserInfo->Add(fPtParametrization[i]);
     }
     if (fPtParametrizationProton) fUserInfo->Add(fPtParametrizationProton);
@@ -220,19 +220,20 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
 
     // pt-y distributions
     GetAndSetPtYDistributions(fMCCocktailGen);
-    for (Int_t i=0; i<13; i++) {
+    for (Int_t i=0; i<24; i++) {
       if (fHasMother[i]) fUserInfo->Add(fPtYDistributions[i]);
     }
   } else {
-    for (Int_t i=0; i<13; i++) fHasMother[i] = kTRUE;
+    for (Int_t i=0; i<24; i++) fHasMother[i] = kTRUE;
   }
   
   fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1,kTRUE);
   fOutputContainer->Add(fHistNEvents);
   
-  const Int_t nInputParticles         = 15;
-  Int_t   fParticleList_local[]       = {221,310,130,3122,113,331,223,213,-213,333,443,2114,2214,1114,2224};
-  TString fParticleListNames_local[]  = {"Eta","K0s","K0l","Lambda","rho0","EtaPrim","omega","rho+","rho-","phi","J/psi","Delta0","Delta+","Delta-","Delta++"};
+  const Int_t nInputParticles         = 24;
+  Int_t   fParticleList_local[]       = {221,310,130,3122,113,331,223,213,-213,333,443,2114,2214,1114,2224,321,-321,-3334,3334,-3312,3312,3224,3114,313};
+  TString fParticleListNames_local[]  = {"Eta","K0s","K0l","Lambda","rho0","EtaPrim","omega","rho+","rho-","phi","J/psi","Delta0","Delta+","Delta-","Delta++",
+                                          "K+","K-","Omega+","Omega-","Xi+","Xi-","Sigma(1385)+", "Sigma(1385)-","K*(892)0"};
   
   // pi0/eta/pi+- from X
   fParticleList                   = fParticleList_local;
@@ -355,31 +356,40 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtParametrizations(AliGenEMCock
 {
   if (!fMCCocktailGen) return;
   
-  for (Int_t i=0; i<15; i++) fPtParametrization[i] = NULL;
+  for (Int_t i=0; i<24; i++) fPtParametrization[i] = NULL;
   fPtParametrizationProton = NULL;
   fPtParametrizationPi0    = NULL;
   
   TF1* fct        = NULL;
   TString fctName = "";
-  for (Int_t i=0; i<19; i++) {
+  for (Int_t i=0; i<27; i++) {
     fct = (TF1*)fMCCocktailGen->GetPtParametrization(i);
     if (fct) {
       fctName = fct->GetName();
-      if (fctName.BeginsWith("221_pt")  && fHasMother[0])  fPtParametrization[0]   = fct;
-      if (fctName.BeginsWith("310_pt")  && fHasMother[1])  fPtParametrization[1]   = fct;
-      if (fctName.BeginsWith("130_pt")  && fHasMother[2])  fPtParametrization[2]   = fct;
-      if (fctName.BeginsWith("3122_pt") && fHasMother[3])  fPtParametrization[3]   = fct;
-      if (fctName.BeginsWith("113_pt")  && fHasMother[4])  fPtParametrization[4]   = fct;
-      if (fctName.BeginsWith("331_pt")  && fHasMother[5])  fPtParametrization[5]   = fct;
-      if (fctName.BeginsWith("223_pt")  && fHasMother[6])  fPtParametrization[6]   = fct;
-      if (fctName.BeginsWith("213_pt")  && fHasMother[7])  fPtParametrization[7]   = fct;
-      if (fctName.BeginsWith("-213_pt") && fHasMother[8])  fPtParametrization[8]   = fct;
-      if (fctName.BeginsWith("333_pt")  && fHasMother[9])  fPtParametrization[9]   = fct;
-      if (fctName.BeginsWith("443_pt")  && fHasMother[10]) fPtParametrization[10]  = fct;
-      if (fctName.BeginsWith("2114_pt") && fHasMother[11]) fPtParametrization[11]  = fct;
-      if (fctName.BeginsWith("2214_pt") && fHasMother[12]) fPtParametrization[12]  = fct;
-      if (fctName.BeginsWith("1114_pt") && fHasMother[13]) fPtParametrization[13]  = fct;
-      if (fctName.BeginsWith("2224_pt") && fHasMother[14]) fPtParametrization[14]  = fct;
+      if (fctName.BeginsWith("221_pt")    && fHasMother[0])  fPtParametrization[0]   = fct;
+      if (fctName.BeginsWith("310_pt")    && fHasMother[1])  fPtParametrization[1]   = fct;
+      if (fctName.BeginsWith("130_pt")    && fHasMother[2])  fPtParametrization[2]   = fct;
+      if (fctName.BeginsWith("3122_pt")   && fHasMother[3])  fPtParametrization[3]   = fct;
+      if (fctName.BeginsWith("113_pt")    && fHasMother[4])  fPtParametrization[4]   = fct;
+      if (fctName.BeginsWith("331_pt")    && fHasMother[5])  fPtParametrization[5]   = fct;
+      if (fctName.BeginsWith("223_pt")    && fHasMother[6])  fPtParametrization[6]   = fct;
+      if (fctName.BeginsWith("213_pt")    && fHasMother[7])  fPtParametrization[7]   = fct;
+      if (fctName.BeginsWith("-213_pt")   && fHasMother[8])  fPtParametrization[8]   = fct;
+      if (fctName.BeginsWith("333_pt")    && fHasMother[9])  fPtParametrization[9]   = fct;
+      if (fctName.BeginsWith("443_pt")    && fHasMother[10]) fPtParametrization[10]  = fct;
+      if (fctName.BeginsWith("2114_pt")   && fHasMother[11]) fPtParametrization[11]  = fct;
+      if (fctName.BeginsWith("2214_pt")   && fHasMother[12]) fPtParametrization[12]  = fct;
+      if (fctName.BeginsWith("1114_pt")   && fHasMother[13]) fPtParametrization[13]  = fct;
+      if (fctName.BeginsWith("2224_pt")   && fHasMother[14]) fPtParametrization[14]  = fct;
+      if (fctName.BeginsWith("321_pt")    && fHasMother[15]) fPtParametrization[15]  = fct;
+      if (fctName.BeginsWith("-321_pt")   && fHasMother[16]) fPtParametrization[16]  = fct;
+      if (fctName.BeginsWith("-3334_pt")  && fHasMother[17]) fPtParametrization[17]  = fct;
+      if (fctName.BeginsWith("3334_pt")   && fHasMother[18]) fPtParametrization[18]  = fct;
+      if (fctName.BeginsWith("-3312_pt")  && fHasMother[19]) fPtParametrization[19]  = fct;
+      if (fctName.BeginsWith("3312_pt")   && fHasMother[20]) fPtParametrization[20]  = fct;
+      if (fctName.BeginsWith("3224_pt")   && fHasMother[21]) fPtParametrization[21]  = fct;
+      if (fctName.BeginsWith("3114_pt")   && fHasMother[22]) fPtParametrization[22]  = fct;
+      if (fctName.BeginsWith("313_pt")    && fHasMother[23]) fPtParametrization[23]  = fct;
       if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = fct;
       if (fctName.BeginsWith("111_pt"))  fPtParametrizationPi0    = fct;
     }
@@ -391,29 +401,38 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtYDistributions(AliGenEMCockta
 {
   if (!fMCCocktailGen) return;
 
-  for (Int_t i=0; i<15; i++) fPtYDistributions[i] = NULL;
+  for (Int_t i=0; i<24; i++) fPtYDistributions[i] = NULL;
 
   TH2F* tempPtY = NULL;
   TString tempPtYName = "";
-  for (Int_t i=0; i<18; i++) {
+  for (Int_t i=0; i<26; i++) {
     tempPtY = (TH2F*)fMCCocktailGen->GetPtYDistribution(i);
     if (tempPtY) {
       tempPtYName = tempPtY->GetName();
-      if (tempPtYName.BeginsWith("221_pt_y")  && fHasMother[0])  fPtYDistributions[0]   = tempPtY;
-      if (tempPtYName.BeginsWith("310_pt_y")  && fHasMother[1])  fPtYDistributions[1]   = tempPtY;
-      if (tempPtYName.BeginsWith("130_pt_y")  && fHasMother[2])  fPtYDistributions[2]   = tempPtY;
-      if (tempPtYName.BeginsWith("3122_pt_y") && fHasMother[3])  fPtYDistributions[3]   = tempPtY;
-      if (tempPtYName.BeginsWith("113_pt_y")  && fHasMother[4])  fPtYDistributions[4]   = tempPtY;
-      if (tempPtYName.BeginsWith("331_pt_y")  && fHasMother[5])  fPtYDistributions[5]   = tempPtY;
-      if (tempPtYName.BeginsWith("223_pt_y")  && fHasMother[6])  fPtYDistributions[6]   = tempPtY;
-      if (tempPtYName.BeginsWith("213_pt_y")  && fHasMother[7])  fPtYDistributions[7]   = tempPtY;
-      if (tempPtYName.BeginsWith("-213_pt_y") && fHasMother[8])  fPtYDistributions[8]   = tempPtY;
-      if (tempPtYName.BeginsWith("333_pt_y")  && fHasMother[9])  fPtYDistributions[9]   = tempPtY;
-      if (tempPtYName.BeginsWith("443_pt_y")  && fHasMother[10]) fPtYDistributions[10]  = tempPtY;
-      if (tempPtYName.BeginsWith("2114_pt_y") && fHasMother[11]) fPtYDistributions[11]  = tempPtY;
-      if (tempPtYName.BeginsWith("2214_pt_y") && fHasMother[12]) fPtYDistributions[12]  = tempPtY;
-      if (tempPtYName.BeginsWith("1114_pt_y") && fHasMother[13]) fPtYDistributions[13]  = tempPtY;
-      if (tempPtYName.BeginsWith("2224_pt_y") && fHasMother[14]) fPtYDistributions[14]  = tempPtY;
+      if (tempPtYName.BeginsWith("221_pt_y")    && fHasMother[0])  fPtYDistributions[0]   = tempPtY;
+      if (tempPtYName.BeginsWith("310_pt_y")    && fHasMother[1])  fPtYDistributions[1]   = tempPtY;
+      if (tempPtYName.BeginsWith("130_pt_y")    && fHasMother[2])  fPtYDistributions[2]   = tempPtY;
+      if (tempPtYName.BeginsWith("3122_pt_y")   && fHasMother[3])  fPtYDistributions[3]   = tempPtY;
+      if (tempPtYName.BeginsWith("113_pt_y")    && fHasMother[4])  fPtYDistributions[4]   = tempPtY;
+      if (tempPtYName.BeginsWith("331_pt_y")    && fHasMother[5])  fPtYDistributions[5]   = tempPtY;
+      if (tempPtYName.BeginsWith("223_pt_y")    && fHasMother[6])  fPtYDistributions[6]   = tempPtY;
+      if (tempPtYName.BeginsWith("213_pt_y")    && fHasMother[7])  fPtYDistributions[7]   = tempPtY;
+      if (tempPtYName.BeginsWith("-213_pt_y")   && fHasMother[8])  fPtYDistributions[8]   = tempPtY;
+      if (tempPtYName.BeginsWith("333_pt_y")    && fHasMother[9])  fPtYDistributions[9]   = tempPtY;
+      if (tempPtYName.BeginsWith("443_pt_y")    && fHasMother[10]) fPtYDistributions[10]  = tempPtY;
+      if (tempPtYName.BeginsWith("2114_pt_y")   && fHasMother[11]) fPtYDistributions[11]  = tempPtY;
+      if (tempPtYName.BeginsWith("2214_pt_y")   && fHasMother[12]) fPtYDistributions[12]  = tempPtY;
+      if (tempPtYName.BeginsWith("1114_pt_y")   && fHasMother[13]) fPtYDistributions[13]  = tempPtY;
+      if (tempPtYName.BeginsWith("2224_pt_y")   && fHasMother[14]) fPtYDistributions[14]  = tempPtY;
+      if (tempPtYName.BeginsWith("321_pt_y")    && fHasMother[15]) fPtYDistributions[15]  = tempPtY;
+      if (tempPtYName.BeginsWith("-321_pt_y")   && fHasMother[16]) fPtYDistributions[16]  = tempPtY;
+      if (tempPtYName.BeginsWith("-3334_pt_y")  && fHasMother[17]) fPtYDistributions[17]  = tempPtY;
+      if (tempPtYName.BeginsWith("3334_pt_y")   && fHasMother[18]) fPtYDistributions[18]  = tempPtY;
+      if (tempPtYName.BeginsWith("-3312_pt_y")  && fHasMother[19]) fPtYDistributions[19]  = tempPtY;
+      if (tempPtYName.BeginsWith("3312_pt_y")   && fHasMother[20]) fPtYDistributions[20]  = tempPtY;
+      if (tempPtYName.BeginsWith("3224_pt_y")   && fHasMother[21]) fPtYDistributions[21]  = tempPtY;
+      if (tempPtYName.BeginsWith("3114_pt_y")   && fHasMother[22]) fPtYDistributions[22]  = tempPtY;
+      if (tempPtYName.BeginsWith("313_pt_y")    && fHasMother[23]) fPtYDistributions[23]  = tempPtY;
     }
   }
 }
@@ -421,9 +440,9 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtYDistributions(AliGenEMCockta
 //_____________________________________________________________________________
 void AliAnalysisTaskHadronicCocktailMC::SetHasMother(UInt_t selectedMothers) {
   
-  for (Int_t i=0; i<15; i++) fHasMother[i] = kFALSE;
+  for (Int_t i=0; i<24; i++) fHasMother[i] = kFALSE;
   
-  // which particles do decay into pi0s or etas?
+  // selects mother particles according to choice and possible decays (i.e. into pi/pi+-/eta)
   if (                   (selectedMothers&AliGenEMCocktailV2::kGenEta)      && (fAnalyzeNeutralPi || fAnalyzeChargedPi))    fHasMother[0] = kTRUE;
   if (                   (selectedMothers&AliGenEMCocktailV2::kGenK0s)      && (fAnalyzeNeutralPi || fAnalyzeChargedPi))    fHasMother[1] = kTRUE;
   if (                   (selectedMothers&AliGenEMCocktailV2::kGenK0l)      && (fAnalyzeNeutralPi || fAnalyzeChargedPi))    fHasMother[2] = kTRUE;
@@ -439,6 +458,15 @@ void AliAnalysisTaskHadronicCocktailMC::SetHasMother(UInt_t selectedMothers) {
   if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenDeltaPl)    && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[12] = kTRUE;
   if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenDeltaMi)    && fAnalyzeChargedPi)                         fHasMother[13] = kTRUE;
   if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenDeltaPlPl)  && fAnalyzeChargedPi)                         fHasMother[14] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenKPl)        && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[15] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenKMi)        && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[16] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenOmegaPl)    && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[17] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenOmegaMi)    && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[18] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenXiPl)       && fAnalyzeChargedPi)                         fHasMother[19] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenXiMi)       && fAnalyzeChargedPi)                         fHasMother[20] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenSigmaPl)    && fAnalyzeChargedPi)                         fHasMother[21] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenSigmaMi)    && fAnalyzeChargedPi)                         fHasMother[22] = kTRUE;
+  if (!fDoLightOutput && (selectedMothers&AliGenEMCocktailV2::kGenK0star)     && (fAnalyzeNeutralPi || fAnalyzeChargedPi))  fHasMother[23] = kTRUE;
 }
 
 //________________________________________________________________________
@@ -457,31 +485,28 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
       hasMother         = kTRUE;
       particleIsPrimary = kFALSE;
     }
-    TParticle* motherParticle       = NULL;
-    if( hasMother ) motherParticle  = (TParticle *)fMCStack->Particle(particle->GetMother(0));
-    if (motherParticle){
-      hasMother                 = kTRUE;
-    }else{
-      hasMother                 = kFALSE;
-    }
+    TParticle*      motherParticle  = NULL;
+    if (hasMother)  motherParticle  = (TParticle*)fMCStack->Particle(particle->GetMother(0));
+    if (motherParticle) hasMother   = kTRUE;
+    else                hasMother   = kFALSE;
     
     Bool_t motherIsPrimary                                = kFALSE;
     if(hasMother){
       if(motherParticle->GetMother(0)>-1) motherIsPrimary = kFALSE;
-      else motherIsPrimary                                = kTRUE;
+      else                                motherIsPrimary = kTRUE;
     }
     
-    TParticle* motherMotherParticle = NULL;
+    TParticle* grandMotherParticle  = NULL;
     Bool_t motherHasMother          = kFALSE;
     if (hasMother && !motherIsPrimary) {
-      motherMotherParticle          = (TParticle *)fMCStack->Particle(motherParticle->GetMother(0));
+      grandMotherParticle           = (TParticle*)fMCStack->Particle(motherParticle->GetMother(0));
       motherHasMother               = kTRUE;
     }
 
-    Bool_t motherMotherIsPrimary                = kFALSE;
+    Bool_t grandMotherIsPrimary                                      = kFALSE;
     if (motherHasMother) {
-      if(motherMotherParticle->GetMother(0)>-1) motherMotherIsPrimary = kFALSE;
-      else motherMotherIsPrimary                                      = kTRUE;
+      if(grandMotherParticle->GetMother(0)>-1)  grandMotherIsPrimary = kFALSE;
+      else                                      grandMotherIsPrimary = kTRUE;
     }
 
     if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
@@ -591,6 +616,60 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
             fHistPtDaughterPtSourceInput[14]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
             fHistPhiDaughterPhiSourceInput[14]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
             break;
+          case 321:
+            fHistPtYDaughterSource[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[15]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[15]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case -321:
+            fHistPtYDaughterSource[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[16]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[16]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case -3334:
+            fHistPtYDaughterSource[17]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[17]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[17]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[17]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case 3334:
+            fHistPtYDaughterSource[18]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[18]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[18]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[18]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case -3312:
+            fHistPtYDaughterSource[19]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[19]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[19]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[19]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case 3312:
+            fHistPtYDaughterSource[20]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[20]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[20]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[20]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case 3224:
+            fHistPtYDaughterSource[21]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[21]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[21]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[21]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case 3114:
+            fHistPtYDaughterSource[22]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[22]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[22]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[22]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
+          case 313:
+            fHistPtYDaughterSource[23]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiDaughterSource[23]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtDaughterPtSourceInput[23]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+            fHistPhiDaughterPhiSourceInput[23]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            break;
           default:
             fHistPdgDaughterSourceRest->Fill(motherParticle->GetPdgCode());
             break;
@@ -692,6 +771,60 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
           fHistDecayChannelsInput[14]->Fill(0., particle->GetWeight());
           fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
+        case 321:
+          fHistPtYInput[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[15]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case -321:
+          fHistPtYInput[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[16]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case -3334:
+          fHistPtYInput[17]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[17]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[17]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[17]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case 3334:
+          fHistPtYInput[18]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[18]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[18]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[18]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case -3312:
+          fHistPtYInput[19]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[19]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[19]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[19]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case 3312:
+          fHistPtYInput[20]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[20]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[20]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[20]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case 3224:
+          fHistPtYInput[21]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[21]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[21]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[21]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case 3114:
+          fHistPtYInput[22]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[22]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[22]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[22]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
+        case 313:
+          fHistPtYInput[23]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[23]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[23]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[23]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          break;
         default:
           fHistPdgInputRest->Fill(particle->GetPdgCode());
           break;
@@ -700,9 +833,9 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
     
     // gamma from X/pi0 from source
     if (particle->GetPdgCode()==22 && motherHasMother) {
-      if (motherMotherIsPrimary && fHasMother[GetParticlePosLocal(motherMotherParticle->GetPdgCode())]) {
+      if (grandMotherIsPrimary && fHasMother[GetParticlePosLocal(grandMotherParticle->GetPdgCode())]) {
         
-        switch(motherMotherParticle->GetPdgCode()){
+        switch(grandMotherParticle->GetPdgCode()){
           case 310:
             fHistPtYGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
             fHistPtPhiGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
@@ -786,8 +919,8 @@ void AliAnalysisTaskHadronicCocktailMC::SetLogBinningXTH2(TH2* histoRebin){
 void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, Int_t np) {
   
   switch (np) {
-      
-    case 0:
+
+    case 0: // eta
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#gamma #gamma");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #pi^{0} #pi^{0}");
@@ -797,7 +930,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
-    case 1:
+    case 1: // K0s
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{0} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #pi^{-}");
@@ -812,7 +945,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 2:
+    case 2: // K0l
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{0} #pi^{0} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #pi^{-} #pi^{0}");
@@ -830,7 +963,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
-    case 3:
+    case 3: // Lambda
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"p #pi^{-}");
       hist->GetXaxis()->SetBinLabel(3,"n #pi^{0}");
@@ -838,7 +971,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 4:
+    case 4: // rho0
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #gamma");
@@ -850,7 +983,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 5:
+    case 5: // eta'
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-} #eta");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #pi^{0} #eta");
@@ -861,8 +994,8 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(8,"#pi^{+} #pi^{-} e^{+} e^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
-    
-    case 6:
+
+    case 6: // omega
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #gamma");
@@ -874,21 +1007,21 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 7:
+    case 7: // rho+
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 8:
+    case 8: // rho-
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{-} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"#pi^{-} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 9:
+    case 9: // phi
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"K^{+} K^{-}");
       hist->GetXaxis()->SetBinLabel(3,"K^{0}_{L} K^{0}_{S}");
@@ -905,7 +1038,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 10:
+    case 10: // J/psi
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"#pi^{0} X");
       hist->GetXaxis()->SetBinLabel(3,"#eta X");
@@ -914,29 +1047,111 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
-    case 11:
+    case 11: //Delta0
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"n #pi^{0}");
       hist->GetXaxis()->SetBinLabel(3,"p #pi^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
-    case 12:
+    case 12: // Delta+
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"n #pi^{+}");
       hist->GetXaxis()->SetBinLabel(3,"p #pi^{0}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
-    case 13:
+    case 13: // Delta-
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"n #pi^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
-    case 14:
+    case 14: //Delta++
       hist->GetXaxis()->SetBinLabel(1,"all");
       hist->GetXaxis()->SetBinLabel(2,"p #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 15: // K+
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#mu^{+} #nu");
+      hist->GetXaxis()->SetBinLabel(3,"#mu^{+} #nu #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{0} e^{+} #nu");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{0} #mu^{+} #nu");
+      hist->GetXaxis()->SetBinLabel(6,"#pi^{0} #pi^{0} e^{+} #nu");
+      hist->GetXaxis()->SetBinLabel(7,"#pi^{+} #pi^{-} e^{+} #nu");
+      hist->GetXaxis()->SetBinLabel(8,"#pi^{+} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(9,"#pi^{+} #pi^{0} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(10,"#pi^{+} #pi^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 16: // K-
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#mu^{-} #nu");
+      hist->GetXaxis()->SetBinLabel(3,"#mu^{-} #nu #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{0} e^{-} #nu");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{0} #mu^{-} #nu");
+      hist->GetXaxis()->SetBinLabel(6,"#pi^{0} #pi^{0} e^{-} #nu");
+      hist->GetXaxis()->SetBinLabel(7,"#pi^{+} #pi^{-} e^{-} #nu");
+      hist->GetXaxis()->SetBinLabel(8,"#pi^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(9,"#pi^{-} #pi^{0} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(10,"#pi^{+} #pi^{-} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 17: // Omega+
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda K^{+}");
+      hist->GetXaxis()->SetBinLabel(3,"#Xi^{0} #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(4,"#Xi^{+} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(5,"#Xi^{+} #pi^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 18: // Omega-
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda K^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"#Xi^{0} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(4,"#Xi^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(5,"#Xi^{-} #pi^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 19: // Xi+
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 20: // Xi-
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 21: // Sigma(1385)+
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(3,"#Sigma^{0} #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(4,"#Sigma^{+} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 22: // Sigma(1385)-
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"#Sigma^{0} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(4,"#Sigma^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 23: // K*(892)0
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"K^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"K^{-} #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(4,"K^{0} #pi^{0}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
@@ -955,7 +1170,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
   Long64_t tempPdgCode = 0;
   for (Int_t i=0; i<nDaughters; i++) {
     tempPdgCode = (Long64_t)((TParticle*)stack->Particle(part->GetFirstDaughter()+i))->GetPdgCode();
-    if (TMath::Abs(tempPdgCode) == 111 || TMath::Abs(tempPdgCode) == 113 || TMath::Abs(tempPdgCode) == 130 || TMath::Abs(tempPdgCode) == 310 || TMath::Abs(tempPdgCode) == 223 || TMath::Abs(tempPdgCode) == 221 || TMath::Abs(tempPdgCode) == 331 || TMath::Abs(tempPdgCode) == 2112 || TMath::Abs(tempPdgCode) == 3122 || TMath::Abs(tempPdgCode) == 9000111 || TMath::Abs(tempPdgCode) == 9010221)
+    if (TMath::Abs(tempPdgCode) == 111 || TMath::Abs(tempPdgCode) == 113 || TMath::Abs(tempPdgCode) == 130 || TMath::Abs(tempPdgCode) == 310 || TMath::Abs(tempPdgCode) == 223 || TMath::Abs(tempPdgCode) == 221 || TMath::Abs(tempPdgCode) == 331 || TMath::Abs(tempPdgCode) == 2112 || TMath::Abs(tempPdgCode) == 3122 || TMath::Abs(tempPdgCode) == 9000111 || TMath::Abs(tempPdgCode) == 9010221 || TMath::Abs(tempPdgCode) == 3322)
       tempPdgCode = TMath::Abs(tempPdgCode);
     PdgDaughter->at(i) = tempPdgCode;
   }
@@ -1215,12 +1430,136 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
         returnVal = 19.;
       break;
       
+    case 321:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 14)
+        returnVal = 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 14  && PdgDaughter->at(2) == 22)
+        returnVal = 2.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 12  && PdgDaughter->at(2) == 111)
+        returnVal = 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 14  && PdgDaughter->at(2) == 111)
+        returnVal = 4.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 12  && PdgDaughter->at(2) == 111  && PdgDaughter->at(3) == 111)
+        returnVal = 5.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -11 && PdgDaughter->at(2) == 12  && PdgDaughter->at(3) == 211)
+        returnVal = 6.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 211)
+        returnVal = 7.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
+        returnVal = 8.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211 && PdgDaughter->at(2) == 211)
+        returnVal = 9.;
+      else
+        returnVal = 19.;
+      break;
+
+    case -321:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -14 && PdgDaughter->at(1) == 13)
+        returnVal = 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -14 && PdgDaughter->at(1) == 13  && PdgDaughter->at(2) == 22)
+        returnVal = 2.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -12 && PdgDaughter->at(1) == 11  && PdgDaughter->at(2) == 111)
+        returnVal = 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -14 && PdgDaughter->at(1) == 13  && PdgDaughter->at(2) == 111)
+        returnVal = 4.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -12 && PdgDaughter->at(1) == 11  && PdgDaughter->at(2) == 111  && PdgDaughter->at(3) == 111)
+        returnVal = 5.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -12 && PdgDaughter->at(2) == 11  && PdgDaughter->at(3) == 211)
+        returnVal = 6.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111)
+        returnVal = 7.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        returnVal = 8.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -211 && PdgDaughter->at(2) == 211)
+        returnVal = 9.;
+      else
+        returnVal = 19.;
+      break;
+
+    case -3334:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 321 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 3322)
+        returnVal = 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -3312 && PdgDaughter->at(1) == 111)
+        returnVal = 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -3312 && PdgDaughter->at(1) == -211 && PdgDaughter->at(2) == 211)
+        returnVal = 4.;
+      else
+        returnVal = 19.;
+      break;
+
+    case 3334:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -321 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 3322)
+        returnVal = 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 3312)
+        returnVal = 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211 && PdgDaughter->at(2) == 3312)
+        returnVal = 4.;
+      else
+        returnVal = 19.;
+      break;
+
+    case -3312:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else
+        returnVal = 19.;
+      break;
+
+    case 3312:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else
+        returnVal = 19.;
+      break;
+
+    case 3224:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 3212)
+        returnVal = 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 3222)
+        returnVal = 3.;
+      else
+        returnVal = 19.;
+      break;
+
+    case 3114:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 3122)
+        returnVal = 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 3212)
+        returnVal = 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 3112)
+        returnVal = 3.;
+      else
+        returnVal = 19.;
+      break;
+
+    case 313:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 321)
+        returnVal = 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -321 && PdgDaughter->at(1) == 211)
+        returnVal = 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 130)
+        returnVal = 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 310)
+        returnVal = 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 311)
+        returnVal = 3.;
+      else
+        returnVal = 19.;
+      break;
+
     default:
       return -1.;
       break;
   }
-  
+
   delete PdgDaughter;
+
   return returnVal;
 }
 
@@ -1523,7 +1862,7 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
       pdgCodes.clear();
       break;
       
-    case 7:
+    case 7: case 8: // PYTHIA doesn't distinguish between rho+/rho-
       kc            = (AliPythia6::Instance())->Pycomp(213);
       firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
       lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
@@ -1550,35 +1889,7 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
       histo->SetBinContent(1, BRtot);
       pdgCodes.clear();
       break;
-      
-    case 8:
-      kc            = (AliPythia6::Instance())->Pycomp(213);      // is rho- (-213), but Pycomp handels like rho+ (213)
-      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
-      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
-      BRtot         = 0.;
-      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
-        BR          = (AliPythia6::Instance())->GetBRAT(channel);
-        BRtot       = BRtot + BR;
-        nPart       = 0;
-        for (Int_t i=1; i<=5; i++) {
-          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
-            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
-            nPart++;
-          }
-        }
-        std::sort(pdgCodes.begin(), pdgCodes.end());
-        if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 211)
-          histo->SetBinContent(2, BR);
-        else if (nPart == 2 && pdgCodes[0] == 22 && pdgCodes[1] == 211)
-          histo->SetBinContent(3, BR);
-        else
-          histo->SetBinContent(20, BR+histo->GetBinContent(20));
-        pdgCodes.clear();
-      }
-      histo->SetBinContent(1, BRtot);
-      pdgCodes.clear();
-      break;
-      
+
     case 9:
       kc            = (AliPythia6::Instance())->Pycomp(333);
       firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
@@ -1767,7 +2078,201 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
       histo->SetBinContent(1, BRtot);
       pdgCodes.clear();
       break;
+
+    case 15: case 16: // PYTHIA doesn't distinguish between K+/K-
+      kc            = (AliPythia6::Instance())->Pycomp(321);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -13 && pdgCodes[1] == 14)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 3 && pdgCodes[0] == -13 && pdgCodes[1] == 14 && pdgCodes[2] == 22)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 3 && pdgCodes[0] == -11 && pdgCodes[1] == 12 && pdgCodes[2] == 111)
+          histo->SetBinContent(4, BR);
+        else if (nPart == 3 && pdgCodes[0] == -13 && pdgCodes[1] == 14 && pdgCodes[2] == 111)
+          histo->SetBinContent(5, BR);
+        else if (nPart == 4 && pdgCodes[0] == -11 && pdgCodes[1] == 12 && pdgCodes[2] == 111 && pdgCodes[3] == 111)
+          histo->SetBinContent(6, BR);
+        else if (nPart == 4 && pdgCodes[0] == -211 && pdgCodes[1] == -11 && pdgCodes[2] == 12 && pdgCodes[3] == 211)
+          histo->SetBinContent(7, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 211)
+          histo->SetBinContent(8, BR);
+        else if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 211)
+          histo->SetBinContent(9, BR);
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 211 && pdgCodes[2] == 211)
+          histo->SetBinContent(10, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 17: case 18: // PYTHIA doesn't distinguish between Omega-/Omega+
+      kc            = (AliPythia6::Instance())->Pycomp(3334);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -321 && pdgCodes[1] == 3122)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 3322)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 3312)
+          histo->SetBinContent(4, BR);
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 211 && pdgCodes[2] == 3312)
+          histo->SetBinContent(5, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 19: case 20: // PYTHIA doesn't distinguish between Xi-/Xi+
+      kc            = (AliPythia6::Instance())->Pycomp(3312);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 3122)
+          histo->SetBinContent(2, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
       
+    case 21:
+      kc            = (AliPythia6::Instance())->Pycomp(3224);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == 211 && pdgCodes[1] == 3122)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == 211 && pdgCodes[1] == 3212)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 3222)
+          histo->SetBinContent(4, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 22:
+      kc            = (AliPythia6::Instance())->Pycomp(3114);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 3122)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 3212)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 3112)
+          histo->SetBinContent(4, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 23:
+      kc            = (AliPythia6::Instance())->Pycomp(313);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 321)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == -321 && pdgCodes[1] == 211)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 130)
+          histo->SetBinContent(4, BR+histo->GetBinContent(4));
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 310)
+          histo->SetBinContent(4, BR+histo->GetBinContent(4));
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 311)
+          histo->SetBinContent(4, BR+histo->GetBinContent(4));
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
     default:
       break;
   }
@@ -1823,6 +2328,33 @@ Int_t AliAnalysisTaskHadronicCocktailMC::GetParticlePosLocal(Int_t pdg) {
       break;
     case 2224:
       returnVal = 14;
+      break;
+    case 321:
+      returnVal = 15;
+      break;
+    case -321:
+      returnVal = 16;
+      break;
+    case -3334:
+      returnVal = 17;
+      break;
+    case 3334:
+      returnVal = 18;
+      break;
+    case -3312:
+      returnVal = 19;
+      break;
+    case 3312:
+      returnVal = 20;
+      break;
+    case 3224:
+      returnVal = 21;
+      break;
+    case 3114:
+      returnVal = 22;
+      break;
+    case 313:
+      returnVal = 23;
       break;
     default:
       break;

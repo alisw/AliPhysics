@@ -344,34 +344,48 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   } 
   
 
-  if (customQualityCutsID==2){
-    trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");
+
+   if (customQualityCutsID==2){ // DCAxy
+    trkQualityCut->SetDCARPtFormula("0.006+0.020/pt^1.1");
   }
 
-  if (customQualityCutsID==3){
-    trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");
-  }
+   //  if (customQualityCutsID==3){
+   //    trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");
+   //  }
 
 
-  if (customQualityCutsID==4){
-    trkQualityCut->SetDCAZmax(3.2);
-  } 
-
-  if (customQualityCutsID==5) {
-    trkQualityCut->SetDCAZmax(5.0); 
-  }
-
+   if (customQualityCutsID==3){ // DCAz
+     trkQualityCut->SetDCAZmax(0.2);
+   } 
+   
+   if (customQualityCutsID==4) {// DCAZ
+     trkQualityCut->SetDCAZmax(1.0); 
+   }
+   
   
-  if (customQualityCutsID==6){
-    trkQualityCut->SetMinNCrossedRowsTPC(90, kTRUE);
+   if (customQualityCutsID==5){// NCR TPC
+    trkQualityCut->SetMinNCrossedRowsTPC(100, kTRUE);
   }
 
-  if (customQualityCutsID==7){
+   if (customQualityCutsID==6){ // NCR TPC
     trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
   }
 
+   if (customQualityCutsID==7){ // chi 2 track
+    trkQualityCut->SetTrackMaxChi2(2.3);
+  }
   
+   if (customQualityCutsID==8){ // chi2 track
+    trkQualityCut->SetTrackMaxChi2(3.5);
+  }
 
+
+   if (customQualityCutsID==9){
+    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9, kTRUE);
+  }
+
+  
+   /*
 
   if (customQualityCutsID==8){
     trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9, kTRUE);
@@ -380,7 +394,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   if (customQualityCutsID==9){
     trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);
   }
-
+   
 
 
   if (customQualityCutsID==10){
@@ -390,17 +404,10 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   if (customQualityCutsID==11){
     trkQualityCut->SetTPCmaxChi2(6.0);
   }
-  
+   */
 
 
 
-  if (customQualityCutsID==12){
-    trkQualityCut->SetITSmaxChi2(38.0);
-  }
-  
-  if (customQualityCutsID==13){
-    trkQualityCut->SetITSmaxChi2(40.0);
-  }
 
 
 

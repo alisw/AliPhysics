@@ -420,14 +420,13 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 	Int_t nDauOS=0;
 	for(Int_t iDau=0; iDau<3; iDau++){
 		AliAODTrack *trk = (AliAODTrack*)decay3->GetDaughter(iDau);
-		Int_t label = TMath::Abs(trk->GetLabel());
 		Short_t chargedau=trk->Charge();
 		if(chargedau==charge){
-			daughtSorted[tmpIndex]=label;
+		  daughtSorted[tmpIndex]=iDau;
 			tmpIndex=2;
 			nDauLS++;
 		}else{
-			daughtSorted[1]=label;
+		  daughtSorted[1]=iDau;
 			nDauOS++;
 		}
 	}
@@ -443,9 +442,6 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 		daughtSorted[2]=tmp;
 	}
 	
-	Double_t d0prong0 = decay3->Getd0Prong(daughtSorted[0]);
-	Double_t d0prong1 = decay3->Getd0Prong(daughtSorted[1]);
-	Double_t d0prong2 = decay3->Getd0Prong(daughtSorted[2]);
 	
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
@@ -465,6 +461,9 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 		vectorReco[13] = fMultiplicity; // reconstructed multiplicity
 		
 		if(fDecay==kLctopKpi){  
+		        Double_t d0prong0 = decay3->Getd0Prong(daughtSorted[0]);
+		        Double_t d0prong1 = decay3->Getd0Prong(daughtSorted[1]);
+		        Double_t d0prong2 = decay3->Getd0Prong(daughtSorted[2]);
 			Double_t sumd02 =(d0prong0*d0prong0 + d0prong1*d0prong1 + d0prong2*d0prong2); 
 			vectorReco[11] = dist12*1.E4;
 			vectorReco[12] = dist23*1.E4;

@@ -216,7 +216,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
-          model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
+          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          model_manager->AcceptWeightGenerator(weight_gen);
       }
 
       if (analysis_config.is_mc_analysis && macro_config.do_deltaeta_deltaphi_cf) {
