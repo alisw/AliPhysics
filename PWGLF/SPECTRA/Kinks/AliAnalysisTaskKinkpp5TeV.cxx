@@ -60,7 +60,7 @@ AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV()
 {}
 
 //________________________________________________________________________
-AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV(const char *name) 
+AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange) 
   : AliAnalysisTaskSE(name),  fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
 	fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
 	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
