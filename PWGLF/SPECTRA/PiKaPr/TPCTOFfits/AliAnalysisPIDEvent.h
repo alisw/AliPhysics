@@ -102,7 +102,10 @@ public TObject
   };
   static const Char_t *fgkCentralityEstimatorName[kNCentralityEstimators]; // centrality estimator name
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
-
+  static void SetCheckFlag(Int_t);
+  static void AddCheckFlag(EventFlags_t);
+  static void RemoveCheckFlag(EventFlags_t);
+  Bool_t CheckFlag();
 
  private:
 
@@ -153,6 +156,7 @@ public TObject
   static const Char_t *fgTimeZeroTOFCentCorrFormula;
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
+  static Int_t fgFlagToCheck; //! check flag
 
   ClassDef(AliAnalysisPIDEvent, 5);
 };
