@@ -90,6 +90,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
   void SetPlotNeutralJets(Bool_t b)                         { fPlotNeutralJets = b; }
   void SetPlotClustersInJets(Bool_t b)                      { fPlotClustersInJets = b; }
+  void SetPlotClusterTHnSparse(Bool_t b)                    { fPlotClusterTHnSparse = b; }
+  void SetPlotClusWithoutNonLinCorr(Bool_t b)               { fPlotClusWithoutNonLinCorr = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -156,6 +158,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
   Bool_t                      fPlotNeutralJets;                     ///< Set whether to plot neutral jet histo
   Bool_t                      fPlotClustersInJets;                  ///< Set whether to plot histogram of clusters within jets
+  Bool_t                      fPlotClusterTHnSparse;                ///< Set whether to plot cluster thnsparse in calo studies
+  Bool_t                      fPlotClusWithoutNonLinCorr;           ///< If true, use pre-nonlincorr energy in cluster thnsparse
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -187,7 +191,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 10);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 11);
   /// \endcond
 };
 #endif
