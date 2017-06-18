@@ -1,9 +1,10 @@
+//========================================================//
 //Date:11/05/2017
 
 //Author :: Nur Hussain and Buddhadeb Bhattacharjee, Gauhati University 
 // Thanks to Martha Spyropoulou-Stassinaki for her suggestions for the modification
 //purpose::Charged kaon identification using "Kink topology" for pp-5.02 TeV
-
+//========================================================//
 #include "Riostream.h" 
 #include "TChain.h"
 #include "TTree.h"
@@ -254,7 +255,7 @@ void AliAnalysisTaskKinkpp5TeV::UserCreateOutputObjects()
 	fPosiKinkK= new TH2F("fPosiKinkK", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);
   	fPosiKinKXZ= new TH2F("fPosiKinKXZ", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);
   	fPosiKinKYZ= new TH2F("fPosiKinKYZ", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);	
-	fNumberOfEvent = new TH1F("fNumberOfEvent", "the number of events in this run", 20, 0., 10.);
+	fNumberOfEvent = new TH1F("fNumberOfEvent", "the number of events in this run", 40, 0., 20.);
 	fNumberOfEvent_cent = new TH1F("fNumberOfEvent_cent", "the number of events in this run", 10, 0., 6.);
 	fbgCleaningHigh = new TH1F ("fbgCleaningHigh"," BG cleaning histo 1", 300, 0, 300);
 	fTPCSignalPt = new TH2F("fTPCSignalPt"," TPC signal de/dx vs Mom pt,K after all the cut; p_{T}) (GeV/c); dE/dx (a.u.) ",300,0.0,15.0,100, 0., 250.    );
@@ -383,76 +384,84 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
      	return;
   	}	
 // Number ESD tracks 
-   	Int_t nESDTracks =  esd->GetNumberOfTracks();
-      	//fMultiplicity->Fill(nESDTracks);
-      	fNumberOfEvent->Fill(1.5);
-	fMultiplicity->Fill(2);
-// check incomplete event
-	if (esd->IsIncompleteDAQ()) return;
-        //fIncompletEvent ->Fill(esd->GetNumberOfTracks() );
-        fIncompletEvent ->Fill(2 );
-      	fNumberOfEvent->Fill(2.5);
-// check of Pileup   
-       	if (esd->IsPileupFromSPD()) return;
-       //Multpileup->Fill(nESDTracks);
-       	fMultpileup->Fill(2);
-      	fNumberOfEvent->Fill(3.5);
 
-
-	//fESDtrackCuts->SetMinNClustersTPC(70);
-	//fESDtrackCuts->SetMaxChi2PerClusterTPC(4);
-        // fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
-        // fESDtrackCuts->SetRequireTPCRefit(kFALSE);
-
-        // fESDtrackCuts->SetMaxDCAToVertexXY(15);
-        // fESDtrackCuts->SetMaxDCAToVertexZ(6);
-	//fESDtrackCuts->SetMaxDCAToVertexXYPtDep(0.0105 + 0.0350/ 
-	fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
-//	 fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-     	fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-
-
-
-//centrality for Pb-Pb 
-	Float_t cent = -999;
-	if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
-  	AliCentrality *centrality = esd->GetCentrality();
-  	cent = centrality->GetCentralityPercentile("V0M");
-	} else { //New multiplicity/centrality class framework
-  	AliMultSelection *fMultSel = (AliMultSelection *) esd->FindListObject("MultSelection");
-	if (!fMultSel) { 
-  //If you get this warning please check that the AliMultSelectionTask actually ran (before your task) 
-  	AliWarning("AliMultSelection object not found!"); 
-	} else {
-  //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-  	cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
-  	if ((cent < 0) || (cent > 100)) return; //Event selection
-	}
-	}
-	fCent->Fill(cent);
-	 
+	Int_t nESDTracks =  esd->GetNumberOfTracks();
+        //fMultiplicity->Fill(nESDTracks);
+        fNumberOfEvent->Fill(1.5);
+        fMultiplicity->Fill(2);
+        //fESDtrackCuts->SetMaxDCAToVertexXYPtDep(0.0105 + 0.0350/ 
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
+//       fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+        fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+	fNumberOfEvent->Fill(2.5);
+//physics selection
 	UInt_t maskIsSelected =
-     	((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-     	Bool_t isSelected = 0;
-     	isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+        ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+        Bool_t isSelected = 0;
+        isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
          if (!isSelected) {
          ( PostData(1, fOutputList));
             return;
-    	 }
-	fMultV0trigger->Fill(2);
-      	fNumberOfEvent->Fill(4.5);
+         }
+        fMultV0trigger->Fill(2);
+	fNumberOfEvent->Fill(3.5);
 
+//multiplicity/ centrality 
+        Float_t cent = -999;
+        if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
+        AliCentrality *centrality = esd->GetCentrality();
+        cent = centrality->GetCentralityPercentile("V0M");
+        } else { //New multiplicity/centrality class framework
+        AliMultSelection *fMultSel = (AliMultSelection *) esd->FindListObject("MultSelection");
+        if (!fMultSel) {
+  //If you get this warning please check that the AliMultSelectionTask actually ran (before your task) 
+        AliWarning("AliMultSelection object not found!");
+        } else {
+  //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+        cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
+        if ((cent < 0) || (cent > 100)) return; //Event selection
+        }
+        }
+        fCent->Fill(cent);
+	fNumberOfEvent->Fill(4.5);
+
+// check incomplete event
+        if (esd->IsIncompleteDAQ()) return;
+        //fIncompletEvent ->Fill(esd->GetNumberOfTracks() );
+        fIncompletEvent ->Fill(2 );
+        fNumberOfEvent->Fill(5.5);
+// check of Pileup   
+        if (esd->IsPileupFromSPD()) return;
+       //Multpileup->Fill(nESDTracks);
+        fMultpileup->Fill(2);
+        fNumberOfEvent->Fill(6.5);
+
+//tracklet vs cluster cut
+        AliAnalysisUtils *AnalysisUtils = new AliAnalysisUtils();
+        Double_t IsCluVstrk = AnalysisUtils->IsSPDClusterVsTrackletBG(esd);
+        if(IsCluVstrk)
+          return;
+	fNumberOfEvent->Fill(7.5);
+//TPC or SPD vertex check
+        const AliESDVertex * trkVertex = esd->GetPrimaryVertexTracks();
+        const AliESDVertex * spdVertex = esd->GetPrimaryVertexSPD();
+        Bool_t hasSPD = spdVertex->GetStatus();
+        Bool_t hasTrk = trkVertex->GetStatus();
+        //Note that AliVertex::GetStatus checks that N_contributors is > 0
+        if (!(hasSPD && hasTrk)) return;
+
+ 	fNumberOfEvent->Fill(8.5);
 // vertex cut
-	const AliESDVertex *vertex=GetEventVertex(esd);
+        const AliESDVertex *vertex=GetEventVertex(esd);
         if(!vertex) return;
-	Double_t vpos[3];
-  	vertex->GetXYZ(vpos);
-    	fZvertex->Fill(vpos[2]);
-      	if (TMath::Abs( vpos[2] ) > 10. ) return;
-	fEventVertex->Fill(2);
-      	fNumberOfEvent->Fill(5.5);
-	fEventVsCentrality->Fill(cent, 2);
-
+	fNumberOfEvent->Fill(9.5);
+        Double_t vpos[3];
+        vertex->GetXYZ(vpos);
+        fZvertex->Fill(vpos[2]);
+        if (TMath::Abs( vpos[2] ) > 10. ) return;
+        fEventVertex->Fill(2);
+        fNumberOfEvent->Fill(10.5);
+        fEventVsCentrality->Fill(cent, 2);
 
    	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
