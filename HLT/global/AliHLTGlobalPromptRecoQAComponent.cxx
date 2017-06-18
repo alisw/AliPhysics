@@ -1374,7 +1374,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       //gather all per slice/patch cluster blocks in the access arrays
       if ( iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType))
       {
-        HLTInfo("have raw TPC clusters");
+        HLTDebug("have raw TPC clusters");
         Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
         Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
         if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
@@ -1388,7 +1388,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
       if ( iter->fDataType == (AliHLTTPCDefinitions::ClustersXYZDataType()))
       {
-        HLTInfo("have TPC XYZ clusters");
+        HLTDebug("have TPC XYZ clusters");
         Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
         Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
         if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
@@ -1469,7 +1469,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       {
         AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
         const AliHLTUInt8_t* currentTrackPtr = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
-        HLTInfo("filling clusters attached to tracks, ntracks=%i",tracks->fCount);
+        HLTDebug("filling clusters attached to tracks, ntracks=%i",tracks->fCount);
         for (AliHLTUInt32_t i = 0; i < tracks->fCount; i++)
         {
           const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(currentTrackPtr);
@@ -1530,7 +1530,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
           continue;
         }
 
-        HLTInfo("filling raw clusters, n=%i",clusters->fCount);
+        HLTDebug("filling raw clusters, n=%i",clusters->fCount);
         for (unsigned i = 0;i < clusters->fCount;i++)
         {
           AliHLTTPCRawCluster& clusterRAW = clusters->fClusters[i];
