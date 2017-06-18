@@ -1192,7 +1192,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         }
         
         //End step 3: fill findable ttree
-        fTreeV0->Fill();
+        if( fkSaveV0Tree ) fTreeV0->Fill();
     }
 
     //--] END V0 PART [-------------------------------
@@ -1672,7 +1672,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarBachDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
         
         //Fill Findable cascade tree
-        fTreeCascade->Fill();
+        if( fkSaveCascadeTree ) fTreeCascade->Fill();
     }
     
     //--] END CASCADE PART [--------------------------
