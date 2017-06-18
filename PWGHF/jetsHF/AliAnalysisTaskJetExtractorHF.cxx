@@ -877,8 +877,17 @@ void AliAnalysisTaskJetExtractorHF::CalculateInitialCollisionJets()
   if(MCEvent() && (MCEvent()->Stack()))
   {
     AliStack* stack = MCEvent()->Stack();
-    TParticle* parton1 = stack->Particle(6);
-    TParticle* parton2 = stack->Particle(7);
+    TParticle* parton1 = 0;
+    TParticle* parton2 = 0;
+    // PYTHIA: Get LO collision objects
+    if(stack->GetNtrack() >= 8)
+    {
+      parton1 = stack->Particle(6);
+      parton2 = stack->Particle(7);
+    }
+    else if(stack->GetNtrack() >= 7)
+      parton1 = stack->Particle(6);
+
     if(parton1)
     {
       initialParton1_eta = parton1->Eta();
