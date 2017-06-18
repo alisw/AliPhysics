@@ -208,7 +208,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  aniter = ichg*5+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(3);
+	  anetaphitpc[aniter]->SetNumEventsToMix(30);//for MR
+	  //anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
