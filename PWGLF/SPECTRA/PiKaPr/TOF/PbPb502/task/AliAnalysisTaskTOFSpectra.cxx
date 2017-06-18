@@ -637,6 +637,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     }
     else{
       if(fHImode){
@@ -2564,7 +2565,7 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
   if(fUseAliEveCut){
     
     //Fill the histogram with the number of events per cut
-    if(fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
+    if(fEvtPhysSelected && fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
       hNEvt->Fill(binstart++);
       if(fEventCut.PassedCut(AliEventCuts::kPileUp)) {
         hNEvt->Fill(binstart++);
@@ -2578,10 +2579,10 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
     }
     
     //Global cut
-    if (!fEventCut.AcceptEvent(fESD)) {
-      return kFALSE;
-    }
-    else return kTRUE;
+    if (!fEventCut.AcceptEvent(fESD)) return kFALSE;
+    
+    hNEvt->Fill(binstart++);
+    return kTRUE;
     
   }
   
