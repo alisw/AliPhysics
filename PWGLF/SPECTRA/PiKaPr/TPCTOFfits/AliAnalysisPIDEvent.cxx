@@ -519,3 +519,17 @@ void AliAnalysisPIDEvent::RemoveCheckFlag(EventFlags_t av) {
   Int_t flagmask = kAll-av;
   fgFlagToCheck = fgFlagToCheck&flagmask;
 };
+Bool_t AliAnalysisPIDEvent::CheckFlag() {
+  return fEventFlags&fgFlagToCheck==fgFlagToCheck;
+};
+void AliAnalysisPIDEvent::PrintEventSelection() {
+  printf("AliAnalysisPIDEvent::AcceptEvent() requires:\n");
+  printf("Vertex position: %f..%f\n",fgVertexZ_cuts[0],fgVertexZ_cuts[1]);
+  printf("Trigger class: kINT7\n");
+  printf("Not pileup in SPD:   %s\n",(fgFlagToCheck&kNotPileupInSPD)?"Yes":"No");
+  printf("Not pileup in MV:    %s\n",(fgFlagToCheck&kNotPileupInMV)?"Yes":"No");
+  printf("Not pileup in MB:    %s\n",(fgFlagToCheck&kNotPileupInMB)?"Yes":"No");
+  printf("INEL > 0:            %s\n",(fgFlagToCheck&kINELgtZERO)?"Yes":"No");
+  printf("No inconsistent VTX: %s\n",(fgFlagToCheck&kNoInconsistentVtx)?"Yes":"No");
+  printf("No asynn. in V0:    %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
+};
