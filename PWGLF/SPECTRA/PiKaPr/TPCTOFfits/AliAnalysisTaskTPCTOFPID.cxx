@@ -214,7 +214,7 @@ AliAnalysisTaskTPCTOFPID::~AliAnalysisTaskTPCTOFPID()
   if (fTrackCuts2010) delete fTrackCuts2010;
   if (fTrackCuts2011) delete fTrackCuts2011;
   if (fTrackCutsTPCRefit) delete fTrackCutsTPCRefit;
-  if (fTrackCuts2011Sys) delete fTrackCuts2011Sys
+  if (fTrackCuts2011Sys) delete fTrackCuts2011Sys;
   delete fESDpid;
   delete fTOFcalib;
   delete fTOFT0maker;
