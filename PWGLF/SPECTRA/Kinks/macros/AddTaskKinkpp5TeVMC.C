@@ -25,7 +25,7 @@ AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",Float_t 
      //TString outputFileName = AliAnalysisManager::GetCommonFileName();
     
    
-    	AliAnalysisTaskKinkpp5TeVMC  *task = new AliAnalysisTaskKinkpp5TeVMC("AliAnalysisTaskKinkpp5TeVMC");
+    	AliAnalysisTaskKinkpp5TeVMC  *task = new AliAnalysisTaskKinkpp5TeVMC("AliAnalysisTaskKinkpp5TeVMC", lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
    
     //task->SetMC("kFALSE"); // 26/11/12
    
