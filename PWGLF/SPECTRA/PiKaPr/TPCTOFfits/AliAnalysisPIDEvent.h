@@ -106,6 +106,7 @@ public TObject
   static void AddCheckFlag(EventFlags_t);
   static void RemoveCheckFlag(EventFlags_t);
   Bool_t CheckFlag();
+  static void PrintEventSelection();
 
  private:
 
