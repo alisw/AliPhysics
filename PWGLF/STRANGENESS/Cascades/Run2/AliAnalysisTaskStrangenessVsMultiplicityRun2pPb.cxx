@@ -329,11 +329,11 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
     : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
-fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
+fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
-fkDownScaleV0      ( kTRUE  ),
+fkDownScaleV0      ( kFALSE  ),
 fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
@@ -344,7 +344,7 @@ fkDoExtraEvSels(kTRUE),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
-fkDownScaleCascade      ( kTRUE  ),
+fkDownScaleCascade      ( kFALSE  ),
 fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
