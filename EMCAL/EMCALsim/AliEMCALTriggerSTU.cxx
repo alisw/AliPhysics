@@ -275,7 +275,7 @@ Int_t AliEMCALTriggerSTU::GetMedianEnergy(){
 	const int kPatchXSize = 8; // How many FastOR units in X
 	const int kPatchYSize = 8; // How many FastOR units in Y
 
-	vector<int> fPatchEnergies ;
+  std::vector<int> fPatchEnergies ;
 	// How many columns and rows in energy patches.
 	int nX = (int) fRegionSize->X()/kPatchXSize; 
 	int nY = (int) fRegionSize->Y()/kPatchYSize;
