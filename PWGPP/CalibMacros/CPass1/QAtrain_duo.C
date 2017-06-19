@@ -296,7 +296,7 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     {
         AliPerformanceTask *offline_tpconly_QA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, kTRUE, 0, kFALSE, kFALSE, kTRUE, kTRUE); //offline TPC
         offline_tpconly_QA->SelectCollisionCandidates(kTriggerMask);
-        AliPerformanceTask *hlt_tpconly_QA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, kTRUE, 0, kTRUE, kFALSE, kTRUE, kTRUE); //HLT TPC
+        AliPerformanceTask *hlt_tpconly_QA = AddTaskPerformanceTPCdEdxQA(kTRUE, kFALSE, kTRUE, 0, kTRUE, kFALSE, kTRUE, kTRUE); //HLT TPC
         hlt_tpconly_QA->SelectCollisionCandidates(kTriggerMask);
     }
   }  
