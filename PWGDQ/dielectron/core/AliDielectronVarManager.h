@@ -1163,6 +1163,13 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
+  if(Req(kNclsSITS)){
+    Double_t itsNclsS = 0.;
+    for(int i=0; i<6; i++){
+      if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+    }
+    values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+  }
 
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
