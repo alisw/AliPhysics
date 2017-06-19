@@ -21,6 +21,9 @@ public TObject
   Double_t GetIMAL() { return fInvMAL; };//M Antilambda
   Double_t GetDCAV0Daughters() { return fDCAV0Daughters; };
   Double_t GetV0CosinePA() { return fV0CosinePA; };
+  Double_t GetPt() { return fPt; };
+  Double_t GetEta() { return fEta; };
+  Int_t GetMCPdgCode() { return fMCPdgCode; };
  protected:  
   Double_t fInvMK0s,fInvML,fInvMAL;
   Double_t fRadius;
