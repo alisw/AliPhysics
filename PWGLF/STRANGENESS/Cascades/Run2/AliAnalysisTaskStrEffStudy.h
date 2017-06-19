@@ -458,6 +458,7 @@ private:
     Float_t fTreeCascVarPosDistanceToTrueDecayPt;
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;
     Float_t fTreeCascVarBachDistanceToTrueDecayPt;
+    Float_t fTreeCascVarV0DistanceToTrueDecayPt;
 
 //===========================================================================================
 //   Histograms

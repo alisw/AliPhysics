@@ -250,6 +250,7 @@ fTreeCascVarRapMC(0),
 fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
+fTreeCascVarV0DistanceToTrueDecayPt(0),
 
 //Histos
 fHistEventCounter(0),
@@ -407,6 +408,7 @@ fTreeCascVarRapMC(0),
 fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
+fTreeCascVarV0DistanceToTrueDecayPt(0),
 
 //Histos
 fHistEventCounter(0),
@@ -668,6 +670,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosDistanceToTrueDecayPt",&fTreeCascVarPosDistanceToTrueDecayPt,"fTreeCascVarPosDistanceToTrueDecayPt/F");
         fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
         fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarV0DistanceToTrueDecayPt",&fTreeCascVarV0DistanceToTrueDecayPt,"fTreeCascVarV0DistanceToTrueDecayPt/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1663,6 +1666,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if(fTreeCascVarBachLength<0) continue;
         }
         
+        //Check how close the daughter tracks passed to the relevant decay points
         Float_t dzspec[2];
         esdTrackPos->GetDZ( fTreeCascVarV0DecayXMC, fTreeCascVarV0DecayYMC, fTreeCascVarV0DecayZMC, lMagneticField, dzspec );
         fTreeCascVarPosDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
@@ -1670,6 +1674,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarNegDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
         esdTrackBach->GetDZ( fTreeCascVarDecayXMC, fTreeCascVarDecayYMC, fTreeCascVarDecayZMC, lMagneticField, dzspec );
         fTreeCascVarBachDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        
+        //Check how close the reconstructed V0 passed to the actual cascade decay point
+        fTreeCascVarV0DistanceToTrueDecayPt = vertex.GetD(fTreeCascVarDecayXMC,fTreeCascVarDecayYMC,fTreeCascVarDecayZMC);
         
         //Fill Findable cascade tree
         if( fkSaveCascadeTree ) fTreeCascade->Fill();
