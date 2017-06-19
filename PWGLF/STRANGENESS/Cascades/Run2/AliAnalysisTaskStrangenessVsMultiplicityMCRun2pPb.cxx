@@ -130,7 +130,7 @@ fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
-fkDownScaleV0      ( kTRUE  ),
+fkDownScaleV0      ( kFALSE  ),
 fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
@@ -142,7 +142,7 @@ fkDoExtraEvSels( kTRUE ),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
-fkDownScaleCascade      ( kTRUE  ),
+fkDownScaleCascade      ( kFALSE  ),
 fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
