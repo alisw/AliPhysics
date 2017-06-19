@@ -7153,7 +7153,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             Int_t bc = GetReader()->GetInputEvent()->GetBunchCrossNumber();
             
             Float_t  eCellMax = fCaloCells->GetCellAmplitude(absIdMax);  
-            Double_t tCellMax = fCaloCells->GetCellTime(absIdMax);      
+            //Double_t tCellMax = fCaloCells->GetCellTime(absIdMax);      
             
             GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
             //GetCaloUtils()->RecalibrateCellTime     (tCellMax, GetCalorimeter(), absIdMax, bc);    
