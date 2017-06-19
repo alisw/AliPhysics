@@ -62,6 +62,7 @@
 //Double_t ptbinlimits[nbins+1]={1.,2.,3.,4.,5.,6.,8.,12.,16.,24.,36.};
 const Int_t nbins=7;
 Double_t ptbinlimits[nbins+1]={1.,2.,4.,6.,8.,12.,16.,24.};
+Bool_t useExtrapPPref=kFALSE;
 Bool_t isDebug=true;
 
 //const Int_t ptmaxPPRefData[3] = { 16., 24., 24. };
@@ -162,6 +163,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     if(averageOption==kRelativeStatUnc)  foutname+= "_RelStatUncWeight";
     else if(averageOption==kAbsoluteStatUnc)  foutname+= "_AbsStatUncWeight";
     else if(averageOption==kRelativeStatUncorrWoPidSyst) foutname+= "_RelStatUncorrWeight";
+    if(!useExtrapPPref) foutname+= "_NoExtrapBins";
     TDatime d;
     TString ndate = Form("%02d%02d%04d",d.GetDay(),d.GetMonth(),d.GetYear());
     resultFile = fopen( Form("%s_result_%s.txt",foutname.Data(),ndate.Data()),"w");
@@ -462,6 +464,10 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
                 Bool_t flag = hCombinedReferenceFlag[j]->GetBinContent(ippbin);
                 if(isDebug) cout<< " bin="<<j<<" pp ref flag on? "<<flag<<endl;
                 if(flag){ ScalingHigh[j]=0.; ScalingLow[j]=0.; ppTracking[j][ipt]=0.; }
+		if(flag && !useExtrapPPref){ 
+		  weight[j] =0;
+		  cout<<"weight set to 0"<<endl;
+		}
             }
             // Get pp reference systematics minus tracking systematics minus extrapolation uncertainties
             ppSystUncorrLow[j] = TMath::Sqrt( ppSystLow[j]*ppSystLow[j]
@@ -589,7 +595,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         // Printout
         cout<< " pt min (GeV/c),  pt max (GeV/c), Raa(Daverage), +- (stat), + (syst) , - (syst) "<<endl;
         cout<< ptbinlimits[ipt] <<"  "<< ptbinlimits[ipt+1]<< "  "<< average<< "  "<< averageStat<< "  "<< totalUncHigh<<"  "<<totalUncLow<<endl;
-        fprintf(resultFile,"%02.0f   %02.0f   %2.2f   %2.2f   %2.2f   %2.2f\n",ptbinlimits[ipt],ptbinlimits[ipt+1],average,averageStat,totalUncHigh,totalUncLow);
+        fprintf(resultFile,"%02.0f   %02.0f   %5.3f   %5.3f   %5.3f   %5.3f\n",ptbinlimits[ipt],ptbinlimits[ipt+1],average,averageStat,totalUncHigh,totalUncLow);
     } // end loop on pt bins
     
     fclose(resultFile);
@@ -621,7 +627,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     gRAB_DmesonAverage_GlobalSystematics->Draw("2");
     hDmesonAverageRAB->Draw("esame");
     cAvCheck->Update();
-    
+    cAvCheck->SaveAs(Form("%s_result_%s.gif",foutname.Data(),ndate.Data()));
+
     TCanvas *cAv = new TCanvas("cAv","Average Dmeson");
     hDmesonAverageRAB->Draw("e");
     gRAB_DmesonAverage_FeedDownSystematicsElossHypothesis->SetFillStyle(1001);
@@ -634,7 +641,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Now can start saving the output
     //
-    TFile *fout = new TFile(outfile,"recreate");
+    TFile *fout = new TFile(Form("HFPtSpectrumRaa_%s_%s.root",foutname.Data(),ndate.Data()),"recreate");
     hDmesonAverageRAB->Write();
     gRABNorm->Write();
     gRAB_DmesonAverage_GlobalSystematics->Write();
