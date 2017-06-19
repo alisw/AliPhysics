@@ -963,31 +963,55 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   AliDebug(2,Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
-
   for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
+    fHistEventsProcessed->Fill(2.5);
     AliAODRecoDecayHF* charmCandidate=0x0;
     switch (fDecayChannel){
     case 2:{
       charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate)) continue;
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate)){
+	fHistEventsProcessed->Fill(5.5);
+	continue;
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 21:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE)) continue; //DStar
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE)){
+	fHistEventsProcessed->Fill(5.5);
+	continue; //DStar
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 22:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE)) continue; //Cascade
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE)){ 
+	fHistEventsProcessed->Fill(5.5);
+	continue; //Cascade
+      }else{
+	fHistEventsProcessed->Fill(4.5);
+      }
+      break;
     }
     case 31:
     case 32:
     case 33:{
       charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
-      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate)) continue;
-			break;
+      if(charmCandidate->GetIsFilled()!=0) fHistEventsProcessed->Fill(3.5);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate)){
+	fHistEventsProcessed->Fill(5.5);
+	continue;
+      }else{
+	fHistEventsProcessed->Fill(4.5);	
+      }
+      break;
     }
     case 4:{
       charmCandidate = (AliAODRecoDecayHF4Prong*)arrayBranch->At(iCandid);
@@ -1491,9 +1515,13 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",2,0,2) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",6,0,6) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(4,"Candidates already filled");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(5,"Candidates OK in FillRecoCand");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
