@@ -24,7 +24,7 @@ AliAnalysisPIDV0::AliAnalysisPIDV0(const AliAnalysisPIDV0 &source):
   fInvMAL(source.fInvMAL),
   fRadius(source.fRadius) ,
   fDCAV0Daughters(source.fDCAV0Daughters),
-  fV0CosinePA(source.fV0CosinePA)
+  fV0CosinePA(source.fV0CosinePA),
   fPt(source.fPt),
   fMCPdgCode(source.fMCPdgCode),
   fEta(source.fEta)

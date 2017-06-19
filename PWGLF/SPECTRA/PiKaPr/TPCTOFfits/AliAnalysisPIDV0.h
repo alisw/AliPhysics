@@ -12,7 +12,7 @@ public TObject
   AliAnalysisPIDV0(const AliAnalysisPIDV0 &source); //copy const
   AliAnalysisPIDV0 &operator=(const AliAnalysisPIDV0 &source); // operator =
   virtual ~AliAnalysisPIDV0();
-  void Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA);
+  void Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA, Double_t pT, Double_t Eta, Int_t MCPDG);
   AliAnalysisPIDTrack *GetPosAnalysisTrack() { return fPosAnalysisPIDTrack; };
   AliAnalysisPIDTrack *GetNegAnalysisTrack() { return fNegAnalysisPIDTrack; };
   Double_t GetRadius() { return fRadius; };
@@ -26,7 +26,7 @@ public TObject
   Double_t fRadius;
   Double_t fDCAV0Daughters, fV0CosinePA;
   Double_t fPt;
-  Double_t fMCPdgCode;
+  Int_t fMCPdgCode;
   Double_t fEta;
   AliAnalysisPIDTrack *fPosAnalysisPIDTrack;
   AliAnalysisPIDTrack *fNegAnalysisPIDTrack;
