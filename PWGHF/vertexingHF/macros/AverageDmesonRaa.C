@@ -206,6 +206,10 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Get Raa file histos and graphs
     //
+    AliHFSystErr *ppSyst[3];
+    AliHFSystErr *ABSyst[3];
+    Double_t ppTracking[3][nbins], ppSystRawYield[3][nbins], ppSystCutVar[3][nbins], ppSystPid[3][nbins];
+    Double_t ABTracking[3][nbins], ABSystRawYield[3][nbins], ABSystCutVar[3][nbins], ABSystPid[3][nbins];
     for(Int_t j=0; j<3; j++) {
         if(strcmp(filenamesRaa[j],"")==0)  { isDmeson[j]=false; continue; }
         cout<<" Reading file "<<filenamesRaa[j]<<"..."<<endl;
@@ -226,7 +230,84 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         gRABFeedDownSystematicsElossHypothesis[j]->SetName(Form("%s_%s",gRABFeedDownSystematicsElossHypothesis[j]->GetName(),filenamesSuffixes[j]));
         gRAB_GlobalSystematics[j] = (TGraphAsymmErrors*)fDRaa->Get("gRAB_GlobalSystematics");
         gRAB_GlobalSystematics[j]->SetName(Form("%s_%s",gRAB_GlobalSystematics[j]->GetName(),filenamesSuffixes[j]));
+	Bool_t shouldDelete=kFALSE;
+	if(fDRaa->Get("AliHFSystErrPP")){
+	  ppSyst[j]=(AliHFSystErr*)fDRaa->Get("AliHFSystErrPP");
+	  printf("AliHFSystErr object for meson %d in pp (%s) read from HFPtSpectrumRaa output file\n",j,ppSyst[j]->GetTitle());
+	}else{   
+	  printf("Create instance of AliHFSystErr for meson %d in pp \n",j);
+	  ppSyst[j] = new AliHFSystErr(Form("ppSyst_%d",j),Form("ppSyst_%d",j));
+	  ppSyst[j]->SetIsPass4Analysis(kTRUE);
+	  ppSyst[j]->Init(j+1);
+	  shouldDelete=kTRUE;
+	}
+        for(Int_t ipt=0; ipt<nbins; ipt++) {
+	  Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
+	  ppTracking[j][ipt]=0.; ppSystRawYield[j][ipt]=0; ppSystCutVar[j][ipt]=0; ppSystPid[j][ipt]=0.;
+	  ppTracking[j][ipt]    =ppSyst[j]->GetTrackingEffErr(ptval);
+	  ppSystRawYield[j][ipt]=ppSyst[j]->GetRawYieldErr(ptval);
+	  ppSystCutVar[j][ipt]  =ppSyst[j]->GetCutsEffErr(ptval);
+	  ppSystPid[j][ipt]     =ppSyst[j]->GetPIDEffErr(ptval);
+        }
+	if(shouldDelete)  delete ppSyst[j];
+	shouldDelete=kFALSE;
+	if(fDRaa->Get("AliHFSystErrAA")){
+	  ABSyst[j]=(AliHFSystErr*)fDRaa->Get("AliHFSystErrAA");
+	  printf("AliHFSystErr object for meson %d in AA (%s) read from HFPtSpectrumRaa output file\n",j,ppSyst[j]->GetTitle());
+	}else{
+	  printf("Create instance of AliHFSystErr for meson %d in AA \n",j);
+	  ABSyst[j] = new AliHFSystErr(Form("ABSyst_%d",j),Form("ABSyst_%d",j));
+	  ABSyst[j]->SetCollisionType(1); // PbPb by default
+	  if ( cc == k010 ) ABSyst[j]->SetCentrality("010");
+	  else if ( cc == k1020 ) ABSyst[j]->SetCentrality("1020");
+	  else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
+            ABSyst[j]->SetCentrality("2040");
+            ABSyst[j]->SetIsPbPb2010EnergyScan(true);
+	  }
+	  else if ( cc == k3050 ) ABSyst[j]->SetCentrality("3050");
+	  else if ( cc == k4060 || cc == k4050 || cc == k5060 ) ABSyst[j]->SetCentrality("4060");
+	  else if ( cc == k6080 || cc == k5080 ) ABSyst[j]->SetCentrality("6080");
+	  else if ( cc == k4080 ) ABSyst[j]->SetCentrality("4080");
+	  // Going to pPb systematics
+	  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+            ABSyst[j]->SetCollisionType(2);
+            ABSyst[j]->SetRunNumber(16);
+	    if(ccestimator==kV0A) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020V0A");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040V0A");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060V0A");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100V0A");
+            } else if (ccestimator==kZNA) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020ZNA");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040ZNA");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060ZNA");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100ZNA");
+            } else if (ccestimator==kCL1) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020CL1");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040CL1");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060CL1");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100CL1");
+            } else {
+	      if(!(cc == kpPb0100)) {
+		cout <<" Error on the pPb options"<<endl;
+		return;
+	      }
+            }
+	  }
+	  ABSyst[j]->Init(j+1);
+ 	  shouldDelete=kTRUE;
+	}
+	for(Int_t ipt=0; ipt<nbins; ipt++) {
+	  Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
+	  ABTracking[j][ipt]=0.; ABSystRawYield[j][ipt]=0; ABSystCutVar[j][ipt]=0; ABSystPid[j][ipt]=0.;
+	  ABTracking[j][ipt]    =ABSyst[j]->GetTrackingEffErr(ptval);
+	  ABSystRawYield[j][ipt]=ABSyst[j]->GetRawYieldErr(ptval);
+	  ABSystCutVar[j][ipt]  =ABSyst[j]->GetCutsEffErr(ptval);
+	  ABSystPid[j][ipt]     =ABSyst[j]->GetPIDEffErr(ptval);
+        }
+        if(shouldDelete)  delete ABSyst[j];    
     }
+
     //
     // Get pp-reference file histos and graphs
     //
@@ -259,86 +340,6 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         }
     }
     
-    
-    cout<<" Getting instances of AliHFSystErr... "<<endl;
-    AliHFSystErr *ppSyst[3];
-    Double_t ppTracking[3][nbins], ppSystRawYield[3][nbins], ppSystCutVar[3][nbins], ppSystPid[3][nbins];
-    ppSyst[0] = new AliHFSystErr("ppSyst_Dzero","ppSyst_Dzero");
-    ppSyst[1] = new AliHFSystErr("ppSyst_Dplus","ppSyst_Dplus");
-    ppSyst[2] = new AliHFSystErr("ppSyst_Dstar","ppSyst_Dstar");
-    for(Int_t j=0; j<3; j++) {
-        if(!isDmeson[j]) { delete ppSyst[j]; continue; }
-        ppSyst[j]->Init(j+1);
-        for(Int_t ipt=0; ipt<nbins; ipt++) {
-            Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
-            ppTracking[j][ipt]=0.; ppSystRawYield[j][ipt]=0; ppSystCutVar[j][ipt]=0; ppSystPid[j][ipt]=0.;
-            ppTracking[j][ipt]    =ppSyst[j]->GetTrackingEffErr(ptval);
-            ppSystRawYield[j][ipt]=ppSyst[j]->GetRawYieldErr(ptval);
-            ppSystCutVar[j][ipt]  =ppSyst[j]->GetCutsEffErr(ptval);
-            ppSystPid[j][ipt]     =ppSyst[j]->GetPIDEffErr(ptval);
-        }
-        delete ppSyst[j];
-    }
-    
-    AliHFSystErr *ABSyst[3];
-    Double_t ABTracking[3][nbins], ABSystRawYield[3][nbins], ABSystCutVar[3][nbins], ABSystPid[3][nbins];
-    ABSyst[0] = new AliHFSystErr("ABSyst_Dzero","ABSyst_Dzero");
-    ABSyst[1] = new AliHFSystErr("ABSyst_Dplus","ABSyst_Dplus");
-    ABSyst[2] = new AliHFSystErr("ABSyst_Dstar","ABSyst_Dstar");
-    //
-    for(Int_t j=0; j<3; j++) {
-        // PbPb systematics
-        ABSyst[j]->SetCollisionType(1); // PbPb by default
-        if ( cc == k010 ) ABSyst[j]->SetCentrality("010");
-        else if ( cc == k1020 ) ABSyst[j]->SetCentrality("1020");
-        else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
-            ABSyst[j]->SetCentrality("2040");
-            ABSyst[j]->SetIsPbPb2010EnergyScan(true);
-        }
-        else if ( cc == k3050 ) ABSyst[j]->SetCentrality("3050");
-        else if ( cc == k4060 || cc == k4050 || cc == k5060 ) ABSyst[j]->SetCentrality("4060");
-        else if ( cc == k6080 || cc == k5080 ) ABSyst[j]->SetCentrality("6080");
-        else if ( cc == k4080 ) ABSyst[j]->SetCentrality("4080");
-        // Going to pPb systematics
-        else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-            ABSyst[j]->SetCollisionType(2);
-            if(ccestimator==kV0A) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020V0A");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040V0A");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060V0A");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100V0A");
-            } else if (ccestimator==kZNA) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020ZNA");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040ZNA");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060ZNA");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100ZNA");
-            } else if (ccestimator==kCL1) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020CL1");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040CL1");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060CL1");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100CL1");
-            } else {
-                if(!(cc == kpPb0100)) {
-                    cout <<" Error on the pPb options"<<endl;
-                    return;
-                }
-            }
-        }
-        //
-    }
-    for(Int_t j=0; j<3; j++) {
-        if(!isDmeson[j]) { delete ABSyst[j]; continue; }
-        ABSyst[j]->Init(j+1);
-        for(Int_t ipt=0; ipt<nbins; ipt++) {
-            Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
-            ABTracking[j][ipt]=0.; ABSystRawYield[j][ipt]=0; ABSystCutVar[j][ipt]=0; ABSystPid[j][ipt]=0.;
-            ABTracking[j][ipt]    =ABSyst[j]->GetTrackingEffErr(ptval);
-            ABSystRawYield[j][ipt]=ABSyst[j]->GetRawYieldErr(ptval);
-            ABSystCutVar[j][ipt]  =ABSyst[j]->GetCutsEffErr(ptval);
-            ABSystPid[j][ipt]     =ABSyst[j]->GetPIDEffErr(ptval);
-        }
-        delete ABSyst[j];
-    }
     
     //
     // Loop per pt bin
@@ -596,11 +597,15 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Now can start drawing
     //
+    TH2F* hempty=new TH2F("hempty"," ; p_{T} (GeV/c} ; Nucl. modif. fact.",100,0.,ptbinlimits[nbins],100,0.,2.);
+    hempty->SetStats(0);
+
     TCanvas *cAvCheck = new TCanvas("cAvCheck","Average Dmeson check");
+    hempty->Draw();
     hDmesonAverageRAB->SetLineColor(kBlack);
     hDmesonAverageRAB->SetMarkerStyle(20);
     hDmesonAverageRAB->SetMarkerColor(kBlack);
-    hDmesonAverageRAB->Draw("e");
+    hDmesonAverageRAB->Draw("esame");
     for(Int_t j=0; j<3; j++) {
         if(!isDmeson[j]) continue;
         hDmesonRaa[j]->SetLineColor(kBlack);
