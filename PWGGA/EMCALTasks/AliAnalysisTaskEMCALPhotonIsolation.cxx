@@ -1920,7 +1920,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex = 0;
-  TLorentzVector nClust = 0x0;
+  TLorentzVector nClust(0x0);
   AliVCluster *candidate = 0x0;
   
   for(auto it : clusters->accepted()){ // Check the position of other clusters with respect to the trigger cluster
@@ -2103,8 +2103,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex = 0;
+  TLorentzVector nClust(0x0);
   AliVCluster *candidate = 0x0;
-  TLorentzVector nClust = 0x0;
   
   for(auto it : clusters->accepted()){ // Check the position of other clusters with respect to the trigger cluster
     
@@ -2930,7 +2930,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
     else{
       localIndex++;
       
-      TLorentzVector nClust = 0x0;
+      TLorentzVector nClust(0x0);
       coi->GetMomentum(nClust,fVertex);
       
         // Float_t phiClust =nClust.Phi();
