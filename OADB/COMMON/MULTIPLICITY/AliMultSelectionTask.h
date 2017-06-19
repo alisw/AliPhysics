@@ -34,6 +34,7 @@ class TProfile;
 class TVector3;
 class THnSparse;
 class TObject;
+class TRandom3;
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -117,6 +118,9 @@ public:
     void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
     Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
+    //Calibration mode downscaling for manageable output
+    void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
+    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
@@ -146,6 +150,11 @@ private:
     //Default options
     Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
     Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
+    
+    //Downscale factor:
+    //-> if smaller than unity, reduce change of accepting a given event for calib tree
+    Double_t fDownscaleFactor;
+    TRandom3 *fRand; //PRNG (MT) for random downscaling
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
