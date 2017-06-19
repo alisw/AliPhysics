@@ -68,6 +68,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   enum EMode {
      kElephant = 0,   /// heavy configuration, all branches saved
      kMouse = 1};     /// light configuration, subset of branches saved
+ 
+  enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
+     kpPb2013 = 0,
+     kpPb2017 = 1};
   
   AliAnalysisTaskSELc2V0bachelorTMVA();
   AliAnalysisTaskSELc2V0bachelorTMVA(const Char_t* name, AliRDHFCutsLctoV0* cutsA,
@@ -138,6 +142,30 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   void SetSaveMode(Int_t mode){
      fSaveMode = mode;
   }
+  
+  
+  void SetMultVsZProfileLHC13b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC13c(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+
+  void SetMultVsZProfileLHC16q(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16t(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+
+  void SetReferenceMultiplicity(Double_t rmu){fRefMult=rmu;}
+
+  
+
 
  private:
   
@@ -278,7 +306,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenLimAcc;      //!<! histo with MC Lc --> K0S + p
 
   ULong64_t fTriggerMask;			  /// mask to the trigger word returned by the physics selection
-  Int_t fNTracklets;                               /// multiplicity definition with tracklets
 
   TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
@@ -286,6 +313,25 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
   
   Int_t fSaveMode; /// switch to change saving mode for tree (light or heavy)
+  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+  Double_t fRefMult; /// reference multiplicity
+  
+  TList *fListProfiles; ///list of profile histograms for z_vtx correction of mult
+
+  TH2F *fHistNtrVsZvtx; //!<! hist of ntracklets vs. z_vtx
+  TH2F *fHistNtrCorrVsZvtx; //!<! hist of corrected ntracklets vs. z_vtx
+  
+  TH1F* fHistNtrUnCorrEvSel; //!<! hist. of ntracklets for selected events
+  TH1F* fHistNtrUnCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
+  TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
+  TH1F* fHistNtrCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
+
+  AliNormalizationCounter *fCounterC;           //!<!Counter for normalization, corrected multiplicity
+  AliNormalizationCounter *fCounterU;           //!<!Counter for normalization, uncorrected multiplicity
+  AliNormalizationCounter *fCounterCandidates;  //!<!Counter for normalization, corrected multiplicity for candidates
+
+  Int_t fUseNchWeight; /// weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
+  
   
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 12); /// class for Lc->p K0
