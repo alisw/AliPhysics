@@ -33,7 +33,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair,
+   AliRsnCutSet           *PairCutsSame,
+   AliRsnCutSet           *PairCutsMix,
    Bool_t                  ptDep,
    Double_t                pt1,
    Double_t                pt2
@@ -90,13 +91,13 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
-   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not a standard Cut but taken to choose only primary V0s 
+   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not a standard Cut but taken to choose only primary V0s 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(MaxRap);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+   cutK0s->SetSwitch(Switch); // if 1 Competing V0 Rejection cut will be used   
    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
-   cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); 
    cutK0s->SetfLowRadius(radiuslow); 
    cutK0s->SetfHighRadius(radiushigh);
@@ -216,7 +217,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(i <= 1){
+       out->SetPairCuts(PairCutsSame);
+     }
+     else{
+       out->SetPairCuts(PairCutsMix);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -266,7 +272,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -275,24 +281,6 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     
-     // create output
-     AliRsnMiniOutput *out = task->CreateOutput(Form("AKStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
-     // selection settings
-     out->SetDaughter(0, AliRsnDaughter::kKaon0);
-     out->SetDaughter(1, AliRsnDaughter::kPion);
-     out->SetMotherPDG(-323);
-     out->SetMotherMass(0.89166);
-     // pair cuts
-     out->SetPairCuts(cutsPair);
-     // binnings
-     out->AddAxis(imID, 90, 0.6, 1.5);
-     out->AddAxis(ptID, 300, 0.0, 30.0);
-     //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
-     //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     
-     if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-     else out->AddAxis(centID, 100, 0.0, 100.);
      
    }
    

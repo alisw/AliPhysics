@@ -139,6 +139,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkSaveGoodTracks( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -211,6 +212,9 @@ fTreeCascVarV0Radius(0),
 fTreeCascVarV0DecayX(0),
 fTreeCascVarV0DecayY(0),
 fTreeCascVarV0DecayZ(0),
+fTreeCascVarV0DecayXMC(0),
+fTreeCascVarV0DecayYMC(0),
+fTreeCascVarV0DecayZMC(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
 fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
@@ -222,6 +226,9 @@ fTreeCascVarCascPropagationClassical(0),
 fTreeCascVarDecayX(0),
 fTreeCascVarDecayY(0),
 fTreeCascVarDecayZ(0),
+fTreeCascVarDecayXMC(0),
+fTreeCascVarDecayYMC(0),
+fTreeCascVarDecayZMC(0),
 fTreeCascVarCascCosPointingAngle(0),
 
 fTreeCascVarInvMassXiMinus(0),
@@ -239,6 +246,11 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
+
+fTreeCascVarPosDistanceToTrueDecayPt(0),
+fTreeCascVarNegDistanceToTrueDecayPt(0),
+fTreeCascVarBachDistanceToTrueDecayPt(0),
+fTreeCascVarV0DistanceToTrueDecayPt(0),
 
 //Histos
 fHistEventCounter(0),
@@ -291,6 +303,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkSaveGoodTracks( kTRUE ), 
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -391,6 +404,11 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPID(0),
 fTreeCascVarPtMC(0),
 fTreeCascVarRapMC(0),
+
+fTreeCascVarPosDistanceToTrueDecayPt(0),
+fTreeCascVarNegDistanceToTrueDecayPt(0),
+fTreeCascVarBachDistanceToTrueDecayPt(0),
+fTreeCascVarV0DistanceToTrueDecayPt(0),
 
 //Histos
 fHistEventCounter(0),
@@ -600,6 +618,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarV0DecayX",&fTreeCascVarV0DecayX,"fTreeCascVarV0DecayX/F");
         fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
         fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
+        fTreeCascade->Branch("fTreeCascVarV0DecayXMC",&fTreeCascVarV0DecayXMC,"fTreeCascVarV0DecayXMC/F");
+        fTreeCascade->Branch("fTreeCascVarV0DecayYMC",&fTreeCascVarV0DecayYMC,"fTreeCascVarV0DecayYMC/F");
+        fTreeCascade->Branch("fTreeCascVarV0DecayZMC",&fTreeCascVarV0DecayZMC,"fTreeCascVarV0DecayZMC/F");
         fTreeCascade->Branch("fTreeCascVarV0CosineOfPointingAngle",&fTreeCascVarV0CosineOfPointingAngle,"fTreeCascVarV0CosineOfPointingAngle/F");
         fTreeCascade->Branch("fTreeCascVarDCAV0ToPrimVtx",&fTreeCascVarDCAV0ToPrimVtx,"fTreeCascVarDCAV0ToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarInvMassLambda",&fTreeCascVarInvMassLambda,"fTreeCascVarInvMassLambda/F");
@@ -612,6 +633,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDecayX",&fTreeCascVarDecayX,"fTreeCascVarDecayX/F");
         fTreeCascade->Branch("fTreeCascVarDecayY",&fTreeCascVarDecayY,"fTreeCascVarDecayY/F");
         fTreeCascade->Branch("fTreeCascVarDecayZ",&fTreeCascVarDecayZ,"fTreeCascVarDecayZ/F");
+        fTreeCascade->Branch("fTreeCascVarDecayXMC",&fTreeCascVarDecayXMC,"fTreeCascVarDecayXMC/F");
+        fTreeCascade->Branch("fTreeCascVarDecayYMC",&fTreeCascVarDecayYMC,"fTreeCascVarDecayYMC/F");
+        fTreeCascade->Branch("fTreeCascVarDecayZMC",&fTreeCascVarDecayZMC,"fTreeCascVarDecayZMC/F");
         fTreeCascade->Branch("fTreeCascVarCascCosPointingAngle",&fTreeCascVarCascCosPointingAngle,"fTreeCascVarCascCosPointingAngle/F");
         
         fTreeCascade->Branch("fTreeCascVarInvMassXiMinus",&fTreeCascVarInvMassXiMinus,"fTreeCascVarInvMassXiMinus/F");
@@ -642,6 +666,11 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
         fTreeCascade->Branch("fTreeCascVarPtMC",&fTreeCascVarPtMC,"fTreeCascVarPtMC/F");
         fTreeCascade->Branch("fTreeCascVarRapMC",&fTreeCascVarRapMC,"fTreeCascVarRapMC/F");
+        
+        fTreeCascade->Branch("fTreeCascVarPosDistanceToTrueDecayPt",&fTreeCascVarPosDistanceToTrueDecayPt,"fTreeCascVarPosDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
+        fTreeCascade->Branch("fTreeCascVarV0DistanceToTrueDecayPt",&fTreeCascVarV0DistanceToTrueDecayPt,"fTreeCascVarV0DistanceToTrueDecayPt/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1157,8 +1186,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //IMPORTANT: select only physical primaries, please
         if( ! lMCstack->IsPhysicalPrimary( lblMotherV0 ) ) continue; //won't fill TTree
         
+        if( fkSaveGoodTracks ){
+            //...where good -> kTPCrefit, at least length zero (more still needed!)
+            if ((fTreeVariablePosTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeVariableNegTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if(fTreeVariablePosLength<0) continue;
+            if(fTreeVariableNegLength<0) continue;
+        }
+        
         //End step 3: fill findable ttree
-        fTreeV0->Fill();
+        if( fkSaveV0Tree ) fTreeV0->Fill();
     }
 
     //--] END V0 PART [-------------------------------
@@ -1284,9 +1321,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if( esdTrackBach->GetInnerParam() )
             fTreeCascVarBachLength = esdTrackBach->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         
-        fTreeCascVarPosCrossedRows  = esdTrackPos ->GetTPCClusterInfo(2,1);
-        fTreeCascVarNegCrossedRows  = esdTrackNeg ->GetTPCClusterInfo(2,1);
-        fTreeCascVarBachCrossedRows = esdTrackNeg ->GetTPCClusterInfo(2,1);
+        fTreeCascVarPosCrossedRows  = esdTrackPos  ->GetTPCClusterInfo(2,1);
+        fTreeCascVarNegCrossedRows  = esdTrackNeg  ->GetTPCClusterInfo(2,1);
+        fTreeCascVarBachCrossedRows = esdTrackBach ->GetTPCClusterInfo(2,1);
         //Tracking flags
         fTreeCascVarPosTrackStatus = esdTrackPos->GetStatus();
         fTreeCascVarNegTrackStatus = esdTrackNeg->GetStatus();
@@ -1595,6 +1632,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         TParticle* mcNegCascDghter  = lMCstack->Particle( lblNegCascDghter );
         TParticle* mcBachCascDghter = lMCstack->Particle( lblBachCascDghter );
         
+        //Get V0/bachelor decay position
+        //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+        //Creation vertex of any one of the daughters!
+        fTreeCascVarV0DecayXMC = mcPosCascDghter->Vx();
+        fTreeCascVarV0DecayYMC = mcPosCascDghter->Vy();
+        fTreeCascVarV0DecayZMC = mcPosCascDghter->Vz();
+        fTreeCascVarDecayXMC = mcBachCascDghter->Vx();
+        fTreeCascVarDecayYMC = mcBachCascDghter->Vy();
+        fTreeCascVarDecayZMC = mcBachCascDghter->Vz();
+        
         fTreeCascVarPIDPositive = mcPosCascDghter -> GetPdgCode();
         fTreeCascVarPIDNegative = mcNegCascDghter -> GetPdgCode();
         fTreeCascVarPIDBachelor = mcNegCascDghter -> GetPdgCode();
@@ -1609,8 +1656,30 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarPtMC  = lParticleMother->Pt(); //Perfect Pt
         fTreeCascVarRapMC = lParticleMother->Y();
         
+        if( fkSaveGoodTracks ){
+            //...where good -> kTPCrefit, at least length zero (more still needed!)
+            if ((fTreeCascVarPosTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeCascVarNegTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if ((fTreeCascVarBachTrackStatus&AliESDtrack::kTPCrefit)==0) continue;
+            if(fTreeCascVarPosLength<0) continue;
+            if(fTreeCascVarNegLength<0) continue;
+            if(fTreeCascVarBachLength<0) continue;
+        }
+        
+        //Check how close the daughter tracks passed to the relevant decay points
+        Float_t dzspec[2];
+        esdTrackPos->GetDZ( fTreeCascVarV0DecayXMC, fTreeCascVarV0DecayYMC, fTreeCascVarV0DecayZMC, lMagneticField, dzspec );
+        fTreeCascVarPosDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        esdTrackNeg->GetDZ( fTreeCascVarV0DecayXMC, fTreeCascVarV0DecayYMC, fTreeCascVarV0DecayZMC, lMagneticField, dzspec );
+        fTreeCascVarNegDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        esdTrackBach->GetDZ( fTreeCascVarDecayXMC, fTreeCascVarDecayYMC, fTreeCascVarDecayZMC, lMagneticField, dzspec );
+        fTreeCascVarBachDistanceToTrueDecayPt = TMath::Sqrt(dzspec[0]*dzspec[0]+dzspec[1]*dzspec[1]);
+        
+        //Check how close the reconstructed V0 passed to the actual cascade decay point
+        fTreeCascVarV0DistanceToTrueDecayPt = vertex.GetD(fTreeCascVarDecayXMC,fTreeCascVarDecayYMC,fTreeCascVarDecayZMC);
+        
         //Fill Findable cascade tree
-        fTreeCascade->Fill();
+        if( fkSaveCascadeTree ) fTreeCascade->Fill();
     }
     
     //--] END CASCADE PART [--------------------------
