@@ -191,6 +191,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyExoticTrigger()          { fStudyExoticTrigger = kTRUE  ; }
   void         SwitchOffStudyExoticTrigger()         { fStudyExoticTrigger = kFALSE ; }
 
+  void         SwitchOnStudyNCellsCut()              { fStudyNCellsCut     = kTRUE  ; }
+  void         SwitchOffStudyNCellsCut()             { fStudyNCellsCut     = kFALSE ; }
+  
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -246,7 +249,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
   Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
-  Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
@@ -291,9 +293,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNRCutsInCone;                             ///<  Number of track/cluster max R cut to test in cone for sum pT calculation.
   Float_t  fRCutInCone[10];                           ///<  List of track/cluster max R cut to test in cone for sum pT calculation.
 
+  Bool_t   fStudyNCellsCut;                           ///<  Fill histograms with track and cluster pT depending n cells in cluster
   Int_t    fNNCellsInCandidate;                       ///<  Number of cells in cluster selection to test in cone for sum pT calculation.
   Int_t    fNCellsInCandidate[20];                    ///<  List of Number of cells in cluster selection to test in cone for sum pT calculation.
 
+  Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   Int_t    fNExoCutInCandidate;                       ///<  Number of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   Float_t  fExoCutInCandidate[20];                    ///<  List of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   

@@ -59,7 +59,6 @@ fFillEMCALRegionHistograms(0),    fFillUEBandSubtractHistograms(1),
 fFillCellHistograms(0),
 fFillOverlapHistograms(0),                        
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
-fStudyExoticTrigger(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
@@ -76,8 +75,8 @@ fStudyPtCutInCone(0),             fNPtCutsInCone(0),
 fMinPtCutInCone(),                fMaxPtCutInCone(),
 fStudyEtaCutInCone(0),            fNEtaCutsInCone(0),                       fEtaCutInCone(),
 fStudyRCutInCone(0),              fNRCutsInCone(0),                         fRCutInCone(),
-fNNCellsInCandidate(0),           fNCellsInCandidate(), 
-fNExoCutInCandidate(0),           fExoCutInCandidate(),
+fStudyNCellsCut(0),               fNNCellsInCandidate(0),                   fNCellsInCandidate(), 
+fStudyExoticTrigger(0),           fNExoCutInCandidate(0),                   fExoCutInCandidate(),
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
@@ -1366,19 +1365,21 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     }
   }
   
-  if(fStudyExoticTrigger)
+  if(fStudyNCellsCut)
   {
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
       coneptsumClusterPerNCellCut[icut] = 0;
     }
-    
+  }
+  
+  if(fStudyExoticTrigger)
+  {
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
       coneptsumClusterPerExoCut[icut] = 0;
     }
   }
-  
   
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
@@ -1440,7 +1441,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
       }
     }
     
-    if(fStudyExoticTrigger)
+    if(fStudyNCellsCut)
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
@@ -1451,7 +1452,10 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
           if(ptTrig > 10) fhPtClusterInConePerNCellCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight());
         }
       }
-      
+    }
+    
+    if(fStudyExoticTrigger)
+    {
       for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
       {
         if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
@@ -1498,14 +1502,17 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     }
   }
 
-  if(fStudyExoticTrigger)
-  {
+  if(fStudyNCellsCut)
+  { 
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
       fhConeSumPtClusterPerNCellCut->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight());
       if ( ptTrig > 10 ) fhConeSumPtClusterPerNCellCutLargePtTrig->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight());      
     }
-    
+  }
+  
+  if(fStudyExoticTrigger)
+  { 
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
       fhConeSumPtClusterPerExoCut->Fill(icut, coneptsumClusterPerExoCut[icut], GetEventWeight());
@@ -1680,13 +1687,16 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     }
   }
 
-  if(fStudyExoticTrigger)
+  if(fStudyNCellsCut)
   {
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
       coneptsumTrackPerNCellCut[icut] = 0;
     }
-    
+  }
+  
+  if(fStudyExoticTrigger)
+  { 
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
       coneptsumTrackPerExoCut[icut] = 0;
@@ -1773,7 +1783,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
       }
     }
     
-    if(fStudyExoticTrigger)
+    if(fStudyNCellsCut)
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
@@ -1784,7 +1794,10 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
           if(ptTrig > 10) fhPtTrackInConePerNCellCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight());
         }
       }
-      
+    }
+    
+    if(fStudyExoticTrigger)
+    { 
       for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
       {
         if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
@@ -1997,14 +2010,17 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     }
   }
   
-  if(fStudyExoticTrigger)
+  if(fStudyNCellsCut)
   {
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
       fhConeSumPtTrackPerNCellCut->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight());
       if ( ptTrig > 10 ) fhConeSumPtTrackPerNCellCutLargePtTrig->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight());      
     }
-    
+  }
+  
+  if(fStudyExoticTrigger)
+  { 
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
       fhConeSumPtTrackPerExoCut->Fill(icut, coneptsumTrackPerExoCut[icut], GetEventWeight());
@@ -3900,7 +3916,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtClusterInConePerRCutLargePtTrig) ;
       }
       
-      if(fStudyExoticTrigger)
+      if(fStudyNCellsCut)
       {
         fhConeSumPtClusterPerNCellCut = new TH2F
         ("hConePtSumClusterPerNCellCut","Cluster #Sigma #it{p}_{T}, different #it{N}_{cell} cuts",
@@ -3937,8 +3953,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t i = 1; i <= fNNCellsInCandidate; i++)
           fhPtClusterInConePerNCellCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%d",fNCellsInCandidate[i-1]));
         outputContainer->Add(fhPtClusterInConePerNCellCutLargePtTrig) ;
-        
-        
+      }
+      
+      if(fStudyExoticTrigger)
+      {  
         fhConeSumPtClusterPerExoCut = new TH2F
         ("hConePtSumClusterPerExoCut","Cluster #Sigma #it{p}_{T}, different exoticity cuts",
          fNExoCutInCandidate,0.5,fNExoCutInCandidate+0.5,nptsumbins,ptsummin,ptsummax);
@@ -4603,7 +4621,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtTrackInConePerRCutLargePtTrig) ;
       }
       
-      if(fStudyExoticTrigger)
+      if(fStudyNCellsCut)
       {
         fhConeSumPtTrackPerNCellCut = new TH2F
         ("hConePtSumTrackPerNCellCut","Track #Sigma #it{p}_{T}, different #it{N}_{cell} cuts",
@@ -4640,7 +4658,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t i = 1; i <= fNNCellsInCandidate; i++)
           fhPtTrackInConePerNCellCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%d",fNCellsInCandidate[i-1]));
         outputContainer->Add(fhPtTrackInConePerNCellCutLargePtTrig) ;
-        
+      }
+      
+      if(fStudyExoticTrigger)
+      { 
         fhConeSumPtTrackPerExoCut = new TH2F
         ("hConePtSumTrackPerExoCut","Track #Sigma #it{p}_{T}, different exoticity cuts",
          fNExoCutInCandidate,0.5,fNExoCutInCandidate+0.5,nptsumbins,ptsummin,ptsummax);
