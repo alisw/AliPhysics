@@ -75,12 +75,12 @@ fStudyPtCutInCone(0),             fNPtCutsInCone(0),
 fMinPtCutInCone(),                fMaxPtCutInCone(),
 fStudyEtaCutInCone(0),            fNEtaCutsInCone(0),                       fEtaCutInCone(),
 fStudyRCutInCone(0),              fNRCutsInCone(0),                         fRCutInCone(),
-fStudyNCellsCut(0),               fNNCellsInCandidate(0),                   fNCellsInCandidate(), 
+fStudyNCellsCut(0),               fNNCellsInCandidate(0),                   fNCellsInCandidate(),      fNCellsWithWeight(0), 
 fStudyExoticTrigger(0),           fNExoCutInCandidate(0),                   fExoCutInCandidate(),
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
-fCluster(0),                      fClustersArr(0),                          
+fCluster(0),                      fClustersArr(0),                          fCaloCells(0),                
 fIsExoticTrigger(0),              fClusterExoticity(1),
 // Histograms
 fhEIso(0),                        fhPtIso(0),
@@ -1445,7 +1445,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
-        if ( fCluster->GetNCells() >= fNCellsInCandidate[icut] ) 
+        if ( fNCellsWithWeight >= fNCellsInCandidate[icut] ) 
         {
           coneptsumClusterPerNCellCut[icut]+=ptcone;
           fhPtClusterInConePerNCellCut->Fill(icut+1, ptcone, GetEventWeight());
@@ -1787,7 +1787,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
-        if ( fCluster->GetNCells() >= fNCellsInCandidate[icut] ) 
+        if ( fNCellsWithWeight >= fNCellsInCandidate[icut] ) 
         {
           coneptsumTrackPerNCellCut[icut]+=pTtrack;
           fhPtTrackInConePerNCellCut->Fill(icut+1, pTtrack, GetEventWeight());
@@ -7040,15 +7040,15 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Recover original cluster if requested, needed for some studies
     //---------------------------------------------------------------
     if ( fFillOverlapHistograms     || fFillTMHisto || 
-         fFillEMCALRegionHistograms || fStudyExoticTrigger )
+         fFillEMCALRegionHistograms || fStudyExoticTrigger || fStudyNCellsCut)
     {
       Int_t iclus = -1;
       fCluster = 0;
       fIsExoticTrigger = kFALSE;
       fClusterExoticity = 1;
       
-      if     (GetCalorimeter() == kEMCAL) fClustersArr = GetEMCALClusters();
-      else if(GetCalorimeter() == kPHOS ) fClustersArr = GetPHOSClusters();
+      if     (GetCalorimeter() == kEMCAL) { fClustersArr = GetEMCALClusters(); fCaloCells = GetEMCALCells() ; }
+      else if(GetCalorimeter() == kPHOS ) { fClustersArr = GetPHOSClusters (); fCaloCells = GetPHOSCells () ; }
       
       if(fClustersArr)
       {
@@ -7060,21 +7060,22 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         {
           fCluster = FindCluster(fClustersArr,clusterID,iclus);
           
-          if ( GetCalorimeter() == kEMCAL && fStudyExoticTrigger )
+          // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+          Float_t maxCellFraction = 0.;
+          Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),fCluster,maxCellFraction);
+
+          if ( fStudyExoticTrigger )
           {
             Int_t bc = GetReader()->GetInputEvent()->GetBunchCrossNumber();
             
-            // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
-            Float_t maxCellFraction = 0.;
-            Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),fCluster,maxCellFraction);
-            
-            Float_t  eCellMax = GetEMCALCells()->GetCellAmplitude(absIdMax);  
-            Double_t tCellMax = GetEMCALCells()->GetCellTime(absIdMax);      
+            Float_t  eCellMax = fCaloCells->GetCellAmplitude(absIdMax);  
+            Double_t tCellMax = fCaloCells->GetCellTime(absIdMax);      
             
             GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
             //GetCaloUtils()->RecalibrateCellTime     (tCellMax, GetCalorimeter(), absIdMax, bc);    
             
-            fClusterExoticity = 1-GetCaloUtils()->GetEMCALRecoUtils()->GetECross(absIdMax,tCellMax,GetEMCALCells(),bc)/eCellMax;
+            // CHANGE FOR PHOS
+            fClusterExoticity = 1-GetCaloUtils()->GetEMCALRecoUtils()->GetECross(absIdMax,tCellMax,fCaloCells,bc)/eCellMax;
             
             if(fClusterExoticity > 0.97) fIsExoticTrigger = kTRUE ;
             //fIsExoticTrigger = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(absIdMax,GetEMCALCells(),bc);
@@ -7082,10 +7083,34 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             //printf("Isolation: IsExotic? %d, E %f, ncells %d, exoticity %f\n", 
             //       fIsExoticTrigger, aod->E(), fCluster->GetNCells(), exoticity);
           }
-        }
-      }
+          
+          if(fStudyNCellsCut)
+          {
+            // Init for this trigger cluster
+            fNCellsWithWeight = 0;
+            
+            // Loop on cells in cluster to get number of cells with significant energy
+            for (Int_t ipos = 0; ipos < fCluster->GetNCells(); ipos++) 
+            {
+              Int_t   absId = fCluster  ->GetCellsAbsId()[ipos];
+              Float_t eCell = fCaloCells->GetCellAmplitude(absId) ;
+              
+              GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
+              
+              if( absId == absIdMax || eCell < 0.01 ) continue;
+              
+              Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+              
+              if( weight < 0.01 ) continue;
+              
+              fNCellsWithWeight++;
+            } // loop
+          } // study n cells
+        } // cluster found
+        
+      } // cluster array found
     }
-    
+      
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
     //---------------------------------------------------------------
