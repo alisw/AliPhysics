@@ -252,6 +252,26 @@ fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
 
+//Full momentum information
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+fTreeCascVarNegPxMC(0),
+fTreeCascVarNegPyMC(0),
+fTreeCascVarNegPzMC(0),
+fTreeCascVarPosPxMC(0),
+fTreeCascVarPosPyMC(0),
+fTreeCascVarPosPzMC(0),
+fTreeCascVarBachPxMC(0),
+fTreeCascVarBachPyMC(0),
+fTreeCascVarBachPzMC(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -409,6 +429,26 @@ fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
+
+//Full momentum information
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+fTreeCascVarNegPxMC(0),
+fTreeCascVarNegPyMC(0),
+fTreeCascVarNegPzMC(0),
+fTreeCascVarPosPxMC(0),
+fTreeCascVarPosPyMC(0),
+fTreeCascVarPosPzMC(0),
+fTreeCascVarBachPxMC(0),
+fTreeCascVarBachPyMC(0),
+fTreeCascVarBachPzMC(0),
 
 //Histos
 fHistEventCounter(0),
@@ -671,6 +711,26 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
         fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
         fTreeCascade->Branch("fTreeCascVarV0DistanceToTrueDecayPt",&fTreeCascVarV0DistanceToTrueDecayPt,"fTreeCascVarV0DistanceToTrueDecayPt/F");
+        
+        //full momentum info 
+        fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+        fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+        fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+        fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+        fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+        fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+        fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+        fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+        fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+        fTreeCascade->Branch("fTreeCascVarPosPxMC",&fTreeCascVarPosPxMC,"fTreeCascVarPosPxMC/F");
+        fTreeCascade->Branch("fTreeCascVarPosPyMC",&fTreeCascVarPosPyMC,"fTreeCascVarPosPyMC/F");
+        fTreeCascade->Branch("fTreeCascVarPosPzMC",&fTreeCascVarPosPzMC,"fTreeCascVarPosPzMC/F");
+        fTreeCascade->Branch("fTreeCascVarNegPxMC",&fTreeCascVarNegPxMC,"fTreeCascVarNegPxMC/F");
+        fTreeCascade->Branch("fTreeCascVarNegPyMC",&fTreeCascVarNegPyMC,"fTreeCascVarNegPyMC/F");
+        fTreeCascade->Branch("fTreeCascVarNegPzMC",&fTreeCascVarNegPzMC,"fTreeCascVarNegPzMC/F");
+        fTreeCascade->Branch("fTreeCascVarBachPxMC",&fTreeCascVarBachPxMC,"fTreeCascVarBachPxMC/F");
+        fTreeCascade->Branch("fTreeCascVarBachPyMC",&fTreeCascVarBachPyMC,"fTreeCascVarBachPyMC/F");
+        fTreeCascade->Branch("fTreeCascVarBachPzMC",&fTreeCascVarBachPzMC,"fTreeCascVarBachPzMC/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1308,6 +1368,25 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDtrack *esdTrackNeg  = lESDevent->GetTrack( lCascNegTrackArray[iCasc] );
         AliESDtrack *esdTrackBach = lESDevent->GetTrack( lCascBachTrackArray[iCasc] );
         
+        fTreeCascVarNegPx = 0.0;
+        fTreeCascVarNegPy = 0.0;
+        fTreeCascVarNegPz = 0.0;
+        fTreeCascVarPosPx = 0.0;
+        fTreeCascVarPosPy = 0.0;
+        fTreeCascVarPosPz = 0.0;
+        fTreeCascVarBachPx = 0.0;
+        fTreeCascVarBachPy = 0.0;
+        fTreeCascVarBachPz = 0.0;
+        fTreeCascVarNegPxMC = 0.0;
+        fTreeCascVarNegPyMC = 0.0;
+        fTreeCascVarNegPzMC = 0.0;
+        fTreeCascVarPosPxMC = 0.0;
+        fTreeCascVarPosPyMC = 0.0;
+        fTreeCascVarPosPzMC = 0.0;
+        fTreeCascVarBachPxMC = 0.0;
+        fTreeCascVarBachPyMC = 0.0;
+        fTreeCascVarBachPzMC = 0.0;
+        
         //-----------------------------------------------------------------
         //3a: get basic track characteristics
         fTreeCascVarPosLength  = -1;
@@ -1347,6 +1426,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         esdTrackBach->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dztrack );
         fTreeCascVarBachDz = dztrack[1];
         
+
         //-----------------------------------------------------------------
         //3b: Do V0+cascade combination and see if it works, please
         
@@ -1449,6 +1529,21 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarInvMassOmegaMinus = cascade.GetEffMassXi();
             cascade.ChangeMassHypothesis(lV0quality ,-3334);
             fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
+            
+            Double_t lBMom[3], lNMom[3], lPMom[3];
+            cascade.GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+            cascade.GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+            cascade.GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+            
+            fTreeCascVarNegPx = lNMom[0];
+            fTreeCascVarNegPy = lNMom[1];
+            fTreeCascVarNegPz = lNMom[2];
+            fTreeCascVarPosPx = lPMom[0];
+            fTreeCascVarPosPy = lPMom[1];
+            fTreeCascVarPosPz = lPMom[2];
+            fTreeCascVarBachPx = lBMom[0];
+            fTreeCascVarBachPy = lBMom[1];
+            fTreeCascVarBachPz = lBMom[2];
         }
         
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1641,6 +1736,17 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarDecayXMC = mcBachCascDghter->Vx();
         fTreeCascVarDecayYMC = mcBachCascDghter->Vy();
         fTreeCascVarDecayZMC = mcBachCascDghter->Vz();
+        
+        //Get MC information
+        fTreeCascVarNegPxMC = mcNegCascDghter->Px();
+        fTreeCascVarNegPyMC = mcNegCascDghter->Py();
+        fTreeCascVarNegPzMC = mcNegCascDghter->Pz();
+        fTreeCascVarPosPxMC = mcPosCascDghter->Px();
+        fTreeCascVarPosPyMC = mcPosCascDghter->Py();
+        fTreeCascVarPosPzMC = mcPosCascDghter->Pz();
+        fTreeCascVarBachPxMC = mcBachCascDghter->Px();
+        fTreeCascVarBachPyMC = mcBachCascDghter->Py();
+        fTreeCascVarBachPzMC = mcBachCascDghter->Pz();
         
         fTreeCascVarPIDPositive = mcPosCascDghter -> GetPdgCode();
         fTreeCascVarPIDNegative = mcNegCascDghter -> GetPdgCode();
