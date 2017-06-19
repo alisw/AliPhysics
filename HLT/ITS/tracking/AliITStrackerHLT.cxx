@@ -99,8 +99,10 @@ AliITStrackerHLT::AliITStrackerHLT()
    fxOverX0Pipe(-1.),
    fxTimesRhoPipe(-1.), 
    fTracks(0),
+   fITSExtrapTracks(0),
    fITSOutTracks(0),
    fNTracks(0),
+   fNITSExtrapTracks(0),
    fNITSOutTracks(0),
    fLoadTime(0),
    fRecoTime(0),
@@ -123,11 +125,13 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   fxOverX0Pipe(-1.),
   fxTimesRhoPipe(-1.),
   fTracks(0),
+  fITSExtrapTracks(0),
   fITSOutTracks(0),
   fNTracks(0),
+  fNITSExtrapTracks(0),
   fNITSOutTracks(0),
   fLoadTime(0),
-   fRecoTime(0),
+  fRecoTime(0),
   fNEvents(0),
   fClusters(0),
   fNClusters(0)
@@ -239,11 +243,13 @@ AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
  fxOverX0Pipe(tracker.fxOverX0Pipe),
  fxTimesRhoPipe(tracker.fxTimesRhoPipe), 
  fTracks(0),
+ fITSExtrapTracks(0),
  fITSOutTracks(0),
  fNTracks(0),
+ fNITSExtrapTracks(0),
  fNITSOutTracks(0),
-  fLoadTime(0),
-   fRecoTime(0),
+ fLoadTime(0),
+ fRecoTime(0),
  fNEvents(0),
  fClusters(0),
  fNClusters(0)
@@ -278,6 +284,7 @@ AliITStrackerHLT::~AliITStrackerHLT()
   //
   delete[] fLayers;
   delete[] fTracks;
+  delete[] fITSExtrapTracks;
   delete[] fITSOutTracks;
   delete[] fClusters;
 }
@@ -405,10 +412,13 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
 
   Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   delete[] fTracks;
+  delete[] fITSExtrapTracks;
   delete[] fITSOutTracks;
   fTracks = new AliHLTITSTrack[nTPCTracks];
+  fITSExtrapTracks = new AliHLTITSTrack[nTPCTracks];
   fITSOutTracks = new AliHLTITSTrack[nTPCTracks];
   fNTracks = 0;
+  fNITSExtrapTracks = 0;
   fNITSOutTracks = 0;
   for( int itr=0; itr<nTPCTracks; itr++ ){    
 
@@ -420,10 +430,17 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
     t->SetLabel(tracksTPCLab[itr]);
 
     //if (!CorrectForTPCtoITSDeadZoneMaterial(t))  continue;
-      
+
+    {
+      AliHLTITSTrack tinw = *t; 
+      FollowProlongationTree( &tinw, kFALSE ); 
+      TransportToX( &tinw, 0. );
+      fITSExtrapTracks[fNITSExtrapTracks++] = tinw;  
+    }    
+  
     Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
     
-    FollowProlongationTree(t); 
+    FollowProlongationTree(t, kTRUE); 
     int nclu=0;
     for(Int_t i=0; i<6; i++) {
       if( t->GetClusterIndex(i)>=0 ) nclu++; 
@@ -436,8 +453,6 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
       CookLabel(t,.99); //For comparison only
       //cout<<"SG: label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
     }
-
-    CorrectForPipeMaterial(t);
    
     TransportToX(t, 0 );
     fTracks[fNTracks++] = *t;  
@@ -520,7 +535,7 @@ AliCluster *AliITStrackerHLT::GetCluster(Int_t index) const
 
 
 //------------------------------------------------------------------------
-void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track ) 
+void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track, bool pickUpClusters ) 
 {
   // FollowProlongationTree
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
@@ -549,6 +564,8 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
       if (!TransportToPhiX( track, det.GetPhi(), det.GetR() ) ) return;
       CorrectForLayerMaterial(track,ilayer);
     }
+
+    if( !pickUpClusters ) continue; // do transport only    
 
     // DEFINITION OF SEARCH ROAD AND CLUSTERS SELECTION
     
@@ -621,6 +638,9 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
     track->SetClusterIndex(track->GetNumberOfClusters(), (ilayer<<28)+bestIdx);
     track->SetNumberOfClusters(track->GetNumberOfClusters()+1);  
   }
+
+  CorrectForPipeMaterial(track);
+
 }
 
 

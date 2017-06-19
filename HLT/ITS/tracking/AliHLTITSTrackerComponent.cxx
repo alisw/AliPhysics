@@ -125,6 +125,7 @@ int AliHLTITSTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& t
   // see header file for class documentation  
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
+  tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSExtrapolated);
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
   tgtList.push_back( kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS );
   tgtList.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
@@ -135,7 +136,7 @@ void AliHLTITSTrackerComponent::GetOutputDataSize( unsigned long& constBase, dou
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 3.; // size relative to input
+  inputMultiplier = 4.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSTrackerComponent::Spawn()
@@ -467,7 +468,7 @@ int AliHLTITSTrackerComponent::DoEvent
   AliHLTTracksData* outTrackData = 0;
 
   {    
-    for( int iOut=0; iOut<=1; iOut++ ){
+    for( int iOut=0; iOut<=2; iOut++ ){
 
       unsigned int blockSize = 0;
 
@@ -490,6 +491,9 @@ int AliHLTITSTrackerComponent::DoEvent
       if( iOut==0 ){
 	tracks = fTracker->Tracks();
 	nTracks = fTracker->NTracks();
+      } else if( iOut==1 ){
+	tracks = fTracker->ITSExtrapTracks();
+	nTracks = fTracker->NITSExtrapTracks();
       } else{
 	tracks = fTracker->ITSOutTracks();
 	nTracks = fTracker->NITSOutTracks();
@@ -539,7 +543,9 @@ int AliHLTITSTrackerComponent::DoEvent
       resultData.fSize = blockSize;
       if( iOut==0 ){
 	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
-      } else {
+      } else if( iOut==1 ){
+	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITSExtrapolated;
+      } else{
 	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut;
       }
       fBenchmark.AddOutput(resultData.fSize);

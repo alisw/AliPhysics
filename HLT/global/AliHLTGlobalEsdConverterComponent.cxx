@@ -1056,6 +1056,33 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   } // storeTracks
 
+
+  // 3.3. now update ESD tracks with "innerparam" info (TPC tracks, transported through the ITS material )
+  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSExtrapolated);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    fBenchmark.AddInput(pBlock->fSize);
+    vector<AliHLTGlobalBarrelTrack> tracks;
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))
+>0) {
+      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+           element!=tracks.end(); element++) {
+        int tpcID=element->TrackID();
+
+        Int_t esdID = -1;
+        if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
+
+        if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
+
+        AliESDtrack *tESD = pESD->GetTrack( esdID );
+
+        if (!tESD) continue;
+
+        tESD->ResetTrackParamIp( &(*element) );
+
+      }
+    }
+  }
+
   // update with  vertices and vertex-fitted tracks
   // output of the GlobalVertexerComponent
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer);
