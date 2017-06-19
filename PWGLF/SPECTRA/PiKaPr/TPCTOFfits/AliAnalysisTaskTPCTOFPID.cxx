@@ -419,8 +419,7 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
   Double_t IPrimaryVtxChi2 = BestPrimaryVertex->GetChi2toNDF();
   AliAODVertex *PrimaryVertex = new AliAODVertex(IPrimaryVtxPosition,IPrimaryVtxCov,IPrimaryVtxChi2,NULL,-1,AliAODVertex::kPrimary);
 
-  Int_t indecies[3] = {-11,211,2212}; //Electron is negative, so additional - is needed to asign to proper KFParticle
-  Double_t myMasses[] = {0,0.498,1.116,1.116}; //gamma, K0s, lambda, anti-lambda
+
   Double_t InvMasses[4];
   fAnalysisV0TrackArray->Clear();
   for(Int_t iV0=0;iV0<NV0s;iV0++) {
@@ -444,7 +443,7 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
     if(pTrack->GetSign()<0) {
       AliAnalysisPIDTrack *ttr = nTrack;
       nTrack = pTrack;//fESDEvent->GetTrack((UInt_t)TMath::Abs(V0Vertex->GetPindex()));
-      pTrack = nTrack;//fESDEvent->GetTrack((UInt_t)TMath::Abs(V0Vertex->GetNindex()));
+      pTrack = ttr;//nTrack;//fESDEvent->GetTrack((UInt_t)TMath::Abs(V0Vertex->GetNindex()));
       ChargesSwitched=kTRUE;
     };
     Double_t alpha = V0Vertex->AlphaV0(); //Probably save these
@@ -455,36 +454,37 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
     if(IV0Radius>100||IV0Radius<5) continue;
     AliKFVertex PrimaryVtxKF(*PrimaryVertex);
     AliKFParticle::SetField(fESDEvent->GetMagneticField());
-    AliKFParticle *negKF[3] = {0,0,0}; //-el, -pi, -p
-    AliKFParticle *posKF[3] = {0,0,0}; // el,  pi,  p
+
+
+    Int_t indecies[2] = {211,2212}; //pi,p
+    Double_t myMasses[] = {0.498,1.116,1.116}; //K0s, lambda, anti-lambda
+    AliKFParticle *negKF[2] = {0,0}; //-pi, -p
+    AliKFParticle *posKF[2] = {0,0}; // pi,  p
     if(ChargesSwitched)
-      for(Int_t i=0;i<3;i++) {
+      for(Int_t i=0;i<2;i++) {
 	negKF[i] = new AliKFParticle(*(V0Vertex->GetParamP()), -indecies[i]);
 	posKF[i] = new AliKFParticle(*(V0Vertex->GetParamN()), indecies[i]);
       } else
-      for(Int_t i=0;i<3;i++) {
+      for(Int_t i=0;i<2;i++) {
 	negKF[i] = new AliKFParticle(*(V0Vertex->GetParamN()), -indecies[i]);
 	posKF[i] = new AliKFParticle(*(V0Vertex->GetParamP()), indecies[i]);
       };
-
-    AliKFParticle V0KFs[4];
+    AliKFParticle V0KFs[3];
     Bool_t TrashTracks=kTRUE; //Trash tracks if all below inv. mass
-    for(Int_t i=0;i<4;i++) {
-      if(i<2) {
-	V0KFs[i]+=(*posKF[i]);
-	V0KFs[i]+=(*negKF[i]);
-      } else {
-	V0KFs[i]+=(*posKF[4-i]); //2 - (i-2)
-	V0KFs[i]+=(*negKF[i-1]); //1 + (i-2)
-      };
+    for(Int_t i=0;i<3;i++) {
+      V0KFs[i]+=(*posKF[(i==1)?1:0]);
+      V0KFs[i]+=(*negKF[(i==2)?1:0]);
       V0KFs[i].SetProductionVertex(PrimaryVtxKF);
       InvMasses[i] = V0KFs[i].GetMass()-myMasses[i];
-      if(i!=0) //For all but gammas
 	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.06);
-      else TrashTracks = (InvMasses[0]==0)||(TMath::Abs(InvMasses[0])>0.015); //For gammas, also throw away if exacly 0 (= error code)
     };
     if(TrashTracks) continue;
-    fAnalysisV0Track->Update(pTrack,nTrack,InvMasses,IV0Radius,V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle());
+    Double_t lpT = V0Vertex->Pt();
+    Double_t lEta = V0Vertex->Eta();
+    Int_t lMCPDG = 0;
+    if(fMCFlag)
+      lMCPDG = V0Vertex->GetPdgCode();
+    fAnalysisV0Track->Update(pTrack,nTrack,InvMasses,IV0Radius,V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle(),lpT,lEta,lMCPDG);
     new ((*fAnalysisV0TrackArray)[fAnalysisV0TrackArray->GetEntries()]) AliAnalysisPIDV0(*fAnalysisV0Track);
     
   };
