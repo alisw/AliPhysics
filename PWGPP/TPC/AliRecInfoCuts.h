@@ -18,6 +18,7 @@ class AliRecInfoCuts : public AliESDtrackCuts
 public:
   AliRecInfoCuts(TRootIOCtor*);
   AliRecInfoCuts(const Char_t* name="", const Char_t *title ="");
+  AliRecInfoCuts(const AliRecInfoCuts& obj);
   virtual ~AliRecInfoCuts() {;}
  
   // setters 

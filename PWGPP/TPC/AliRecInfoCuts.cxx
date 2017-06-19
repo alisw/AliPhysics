@@ -54,6 +54,15 @@ AliRecInfoCuts::AliRecInfoCuts(const Char_t* name,const Char_t *title) : AliESDt
   InitME();
 }
 
+AliRecInfoCuts::AliRecInfoCuts(const AliRecInfoCuts& obj) : AliESDtrackCuts(obj)
+, fMinTPCsignalN(obj.fMinTPCsignalN)
+, fMaxAbsTanTheta(obj.fMaxAbsTanTheta)
+, fMinNClustersTRD(obj.fMinNClustersTRD)
+, fTPCITSMatchingRadius(obj.fTPCITSMatchingRadius)
+, fTPCTRDMatchingRadius(obj.fTPCTRDMatchingRadius)
+, fMinNTrackletsTRD(obj.fMinNTrackletsTRD)
+{}
+
 //_____________________________________________________________________________
 void AliRecInfoCuts::InitME()
 {
@@ -124,4 +133,3 @@ Long64_t AliRecInfoCuts::Merge(TCollection* list) const
 return count;
 }
 */
-
