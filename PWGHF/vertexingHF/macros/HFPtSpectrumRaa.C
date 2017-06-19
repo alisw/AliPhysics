@@ -1335,7 +1335,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_FeedDownSystematicsElossHypothesis->Write();
   gRAB_GlobalSystematics->Write();
   if(isScaledAndExtrapRef && hCombinedReferenceFlag) hCombinedReferenceFlag->Write();
-
+  systematicsPP->SetName("AliHFSystErrPP");
+  systematicsPP->Write();
+  systematicsAB->SetName("AliHFSystErrAA");
+  systematicsAB->Write();
   out->Write();
 
 }
