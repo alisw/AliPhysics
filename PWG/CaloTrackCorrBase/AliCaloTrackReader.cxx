@@ -129,7 +129,8 @@ fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJ
 fFillInputBackgroundJetBranch(kFALSE), 
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
-fMomentum(),                 fOutputContainer(0x0),           fhEMCALClusterTimeE(0),
+fMomentum(),                 fOutputContainer(0x0),           
+fhEMCALClusterEtaPhi(0),     fhEMCALClusterTimeE(0),
 fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
 {
@@ -777,6 +778,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fhEMCALClusterTimeE->SetXTitle("#it{E} (GeV)");
     fhEMCALClusterTimeE->SetYTitle("#it{time} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
+    
+    fhEMCALClusterEtaPhi  = new TH2F 
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",40,-2, 2,50, 0,10);
+    // Very open limits to check problems
+    fhEMCALClusterEtaPhi->SetXTitle("#eta");
+    fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
+    fOutputContainer->Add(fhEMCALClusterEtaPhi);
   }
   
   if(fFillPHOS)
@@ -1945,7 +1953,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
     
-    //if( (fDebug > 5 && fMomentum.E() > 0.1) || fDebug > 10 )
     AliDebug(5,Form("Correct Non Lin: Old E %3.2f, New E %3.2f",
                     fMomentum.E(),clus->E()));
 
@@ -1955,7 +1962,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     {
       Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
       
-      //if( (fDebug > 5 && fMomentum.E() > 0.1) || fDebug > 10 )
       AliDebug(5,Form("Smear energy: Old E %3.2f, New E %3.2f",clus->E(),rdmEnergy));
     
       clus->SetE(rdmEnergy);
@@ -1963,7 +1969,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   }
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
-
+  fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+  
   // Check effect linearity correction, energy smearing
   fhEMCALClusterCutsE[3]->Fill(clus->E());
 
