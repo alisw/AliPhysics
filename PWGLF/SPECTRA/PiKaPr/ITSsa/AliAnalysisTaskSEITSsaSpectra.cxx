@@ -51,7 +51,7 @@
 #include "AliMultiplicity.h"
 #include "AliMultSelection.h"
 #include "AliPID.h"
-#include "AliStack.h"
+//#include "AliStack.h"
 
 #include "AliAnalysisTaskSEITSsaSpectra.h"
 
@@ -669,7 +669,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
 
   //Fill some histograms before event selection
   //Check Monte Carlo information and other access first:
-  AliStack*   lMCstack = NULL;
+  //AliStack*   lMCstack = NULL;
   AliMCEvent* lMCevent = NULL;
 
   Bool_t lHasGoodVtxGen = kFALSE;
@@ -688,12 +688,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       return;
     }
 
-    lMCstack = lMCevent->Stack();
-    if (!lMCstack) {
-      AliDebug(3, "MC stack not available");
-      PostAllData();
-      return;
-    }
+    //lMCstack = lMCevent->Stack();
+    //if (!lMCstack) {
+    //  AliDebug(3, "MC stack not available");
+    //  PostAllData();
+    //  return;
+    //}
 
     const AliVVertex* lGenVtx = lMCevent->GetPrimaryVertex();
     if (!lGenVtx) {
@@ -711,7 +711,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
   //Event selection
   EEvtCut_Type lastEvtCutPassed = kIsReadable;
   Bool_t lIsEventSelected = IsEventAccepted(lastEvtCutPassed);
-  if (fIsMC) AnalyseMCParticles(lMCstack, lastEvtCutPassed, lHasGoodVtxGen);
+  if (fIsMC) AnalyseMCParticles(lMCevent, lastEvtCutPassed, lHasGoodVtxGen);
   for (int istep = (int)kIsReadable; istep <= (int)lastEvtCutPassed; ++istep) {
     fHistNEvents->Fill(istep);
     if (lHasGoodVtxGen) fHistMCEvents->Fill(istep);
@@ -739,7 +739,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     if (fIsMC) {
       Int_t trkLabel = TMath::Abs(track->GetLabel());
 
-      TParticle* mcTrk = (TParticle*)lMCstack->Particle(trkLabel);
+      TParticle* mcTrk = ((AliMCParticle*)lMCevent->GetTrack(trkLabel))->Particle();
       Int_t pdg = mcTrk->GetPdgCode();
       if (TMath::Abs(pdg) > 1E10) //protection to remove High ionization part
         continue;
@@ -871,7 +871,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       Int_t  lMCspc = AliPID::kElectron;
       if (fIsMC) {
         lMCtrk = TMath::Abs(track->GetLabel());
-        TParticle* trkMC = (TParticle*)lMCstack->Particle(lMCtrk);
+        TParticle* trkMC = ((AliMCParticle*)lMCevent->GetTrack(lMCtrk))->Particle();
         lMCpdg = trkMC->GetPdgCode();
 
         //        if (TMath::Abs(lMCpdg) ==   11 && fPid == AliPID::kPion) lMCspc = AliPID::kPion;
@@ -889,17 +889,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
         //DCA distributions, before the DCAxy cuts from the MC kinematics
         //Filling DCA distribution with MC truth Physics values
         if (fIsMC) {
-          if (lMCstack->IsPhysicalPrimary(lMCtrk))        fHistPrimDCA[lPidIndex][trkPtBin]->Fill(impactXY);
-          if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk)) fHistSstrDCA[lPidIndex][trkPtBin]->Fill(impactXY);
-          if (lMCstack->IsSecondaryFromMaterial(lMCtrk))  fHistSmatDCA[lPidIndex][trkPtBin]->Fill(impactXY);
+          if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistPrimDCA[lPidIndex][trkPtBin]->Fill(impactXY);
+          if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistSstrDCA[lPidIndex][trkPtBin]->Fill(impactXY);
+          if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistSmatDCA[lPidIndex][trkPtBin]->Fill(impactXY);
         }
       }// end lIsGoodTrack
       if (fIsMC && lIsGoodPart) {
         //DCA distributions, before the DCAxy cuts from the MC kinematics
         //Filling DCA distribution with MC truth Physics values
-        if (lMCstack->IsPhysicalPrimary(lMCtrk))        fHistMCtruthPrimDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
-        if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk)) fHistMCtruthSstrDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
-        if (lMCstack->IsSecondaryFromMaterial(lMCtrk))  fHistMCtruthSmatDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistMCtruthPrimDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistMCtruthSstrDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistMCtruthSmatDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
       }// end lIsGoodPart
       //"DCAxy"
       if (!DCAcutXY(impactXY, trkPt)) continue;
@@ -910,15 +910,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       //Filling Histos for Reco Efficiency
       //information from the MC kinematics
       if (fIsMC && lIsGoodPart) {
-        if (lMCstack->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[lMCtIndex]->Fill(trkPt);
-        if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[lMCtIndex]->Fill(trkPt);
-        if (lMCstack->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCevent->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[lMCtIndex]->Fill(trkPt);
       }
 
       Int_t binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
       if (fIsMC && lIsGoodTrack) {
         fHistMCReco[lPidIndex]->Fill(trkPt, binPart);
-        if (lMCstack->IsPhysicalPrimary(lMCtrk))
+        if (lMCevent->IsPhysicalPrimary(lMCtrk))
           fHistMCPrimReco[lPidIndex]->Fill(trkPt, binPart);
       }//end y
 
@@ -1435,15 +1435,15 @@ Double_t AliAnalysisTaskSEITSsaSpectra::Eta2y(Double_t pt, Double_t m, Double_t 
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliStack* lMCstack,
+void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent* lMCevent,
                                                        EEvtCut_Type lastEvtCutPassed,
                                                        bool lHasGoodVtxGen)
 {
   //first loop on stack, and get primary pi,k,p spectra with truth MC values
-  Int_t nTrackMC = (lMCstack) ? lMCstack->GetNtrack() : 0;
+  Int_t nTrackMC = (lMCevent) ? lMCevent->GetNumberOfTracks() : 0;
   for (Int_t i_mcTrk = 0; i_mcTrk < nTrackMC; ++i_mcTrk) {
 
-    TParticle* mcTrk = lMCstack->Particle(i_mcTrk);
+    TParticle* mcTrk = ((AliMCParticle*)lMCevent->GetTrack(i_mcTrk))->Particle();
     Int_t pdg  = mcTrk->GetPdgCode();
 
     Int_t iChg = pdg >= 0 ? 0 : 1; // only works for charged pi,K,p (0 Pos, 1 Neg)
@@ -1460,7 +1460,7 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliStack* lMCstack,
     Double_t mcEta = mcTrk->Eta();
     Double_t mcRap = Eta2y(mcPt, mcTrk->GetMass(), mcEta) + fCMSRapFct;
 
-    Bool_t lIsPhysPrimary = lMCstack->IsPhysicalPrimary(i_mcTrk);
+    Bool_t lIsPhysPrimary = lMCevent->IsPhysicalPrimary(i_mcTrk);
     if (fFillNtuple) {
       //filling MC ntuple
       Float_t xntMC[8];
