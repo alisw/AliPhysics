@@ -152,6 +152,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
+  void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -238,6 +239,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
+  Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
 
   // Service fields
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized

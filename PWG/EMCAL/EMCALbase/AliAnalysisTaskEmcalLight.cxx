@@ -91,6 +91,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -183,6 +184,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -504,37 +506,30 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
-  if (!fLocalInitialized)
-    ExecOnce();
+  if (!fLocalInitialized) ExecOnce();
 
-  if (!fLocalInitialized)
-    return;
+  if (!fLocalInitialized) return;
 
-  if (!RetrieveEventObjects())
-    return;
+  if (!RetrieveEventObjects()) return;
 
-  FillGeneralHistograms(kFALSE);
-
-  if (IsEventSelected()) {
-    if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
-  }
-  else {
-    if (fGeneralHistograms) fHistEventCount->Fill("Rejected",1);
-    return;
-  }
+  Bool_t eventSelected = IsEventSelected();
 
   if (fGeneralHistograms && fCreateHisto) {
-    if (!FillGeneralHistograms(kTRUE))
-      return;
+    if (eventSelected) {
+      fHistEventCount->Fill("Accepted",1);
+    }
+    else {
+      fHistEventCount->Fill("Rejected",1);
+    }
+
+    FillGeneralHistograms(kFALSE);
+    if (eventSelected) FillGeneralHistograms(kTRUE);
   }
 
-  if (!Run())
-    return;
+  Bool_t runOk = kFALSE;
+  if (eventSelected || fEventSelectionAfterRun) runOk = Run();
 
-  if (fCreateHisto) {
-    if (!FillHistograms())
-      return;
-  }
+  if (fCreateHisto && eventSelected && runOk) FillHistograms();
 
   if (fCreateHisto && fOutput) {
     // information for this iteration of the UserExec in the container
