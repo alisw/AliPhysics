@@ -459,6 +459,26 @@ private:
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;
     Float_t fTreeCascVarBachDistanceToTrueDecayPt;
     Float_t fTreeCascVarV0DistanceToTrueDecayPt;
+    
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    
+    Float_t fTreeCascVarNegPxMC; //!
+    Float_t fTreeCascVarNegPyMC; //!
+    Float_t fTreeCascVarNegPzMC; //!
+    Float_t fTreeCascVarPosPxMC; //!
+    Float_t fTreeCascVarPosPyMC; //!
+    Float_t fTreeCascVarPosPzMC; //!
+    Float_t fTreeCascVarBachPxMC; //!
+    Float_t fTreeCascVarBachPyMC; //!
+    Float_t fTreeCascVarBachPzMC; //!
 
 //===========================================================================================
 //   Histograms
