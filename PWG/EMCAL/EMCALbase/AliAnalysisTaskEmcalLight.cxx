@@ -362,7 +362,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fHistZVertexNoSel->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertexNoSel);
 
-  if (fForceBeamType != kpp) {
+  if (fCentralityEstimation != kNoCentrality) {
     fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
@@ -372,7 +372,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fHistCentralityNoSel->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentralityNoSel->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentralityNoSel);
+  }
 
+  if (fForceBeamType != kpp) {
     fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
     fHistEventPlane->GetXaxis()->SetTitle("event plane");
     fHistEventPlane->GetYaxis()->SetTitle("counts");
