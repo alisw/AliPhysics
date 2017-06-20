@@ -254,6 +254,7 @@ void ComputeDmesonYield(){
     
     printf("-- Relative stat errors AA from RAA-PP: Bin %d(%f)---%d Err %f\n",ib,0.5*(binlim[ib]+binlim[ib+1]),hBin,relstaterrPbPb2[ib]);
   }
+  AliHFSystErr *systematicsPP =(AliHFSystErr*)filCnt->Get("AliHFSystErrPP");
 
   TNtuple* ntC=(TNtuple*)filCnt->Get("ntupleRAB");
   Float_t pt,TAB,sigmaPP,invyieldAB,RABCharm,RABBeauty;
@@ -936,7 +937,9 @@ void ComputeDmesonYield(){
   hfPromptMaxNb->Write();
   hfPromptMinfc->Write();
   hfPromptMaxfc->Write();
+  systematicsABcent->SetName("AliHFSystErrAA");
   systematicsABcent->Write();
+  if(systematicsPP) systematicsPP->Write();
   outfil->Close();
 }
 
