@@ -34,10 +34,12 @@
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
 #include "AliLog.h"
+#include "AliPIDResponse.h"
 #include "AliTrackContainer.h"
 #include "AliAnalysisTaskEmcalTriggerJets.h"
 #include "AliVEvent.h"
 
+#include <array>
 #include <iostream>
 
 /// \cond CLASSIMP
@@ -48,6 +50,7 @@ namespace EmcalTriggerJets {
 
 AliAnalysisTaskEmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets():
     AliAnalysisTaskEmcalJet(),
+    fPIDResponse(nullptr),
     fHistos(nullptr)
 {
 
@@ -55,6 +58,7 @@ AliAnalysisTaskEmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets():
 
 AliAnalysisTaskEmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets(const char *name):
     AliAnalysisTaskEmcalJet(name, true),
+    fPIDResponse(nullptr),
     fHistos(nullptr)
 {
 
@@ -67,7 +71,9 @@ AliAnalysisTaskEmcalTriggerJets::~AliAnalysisTaskEmcalTriggerJets() {
 void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  std::vector<TString> kEmcalTriggers = {"INT7", "EJ1", "EJ2", "DJ1", "DJ2"};
+  const std::array<TString, 5> kEmcalTriggers = {"INT7", "EJ1", "EJ2", "DJ1", "DJ2"};
+  const int kNJetPtBins = 9;
+  const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
   fHistos = new THistManager("EmcalJetHistos");
   for(auto t : kEmcalTriggers){
     fHistos->CreateTH1("hEventCount" + t, "Event counter for trigger " + t, 1., 0.5, 1.5);
@@ -83,11 +89,34 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
     fHistos->CreateTH1("hPtRawChargedJetR04DCAL" + t, "Raw pt spectrum for charged jets with R=0.4 in DCAL for trigger " + t, 200, 0., 200);
     fHistos->CreateTH1("hPtRawNeutralJetR02DCAL" + t, "Raw pt spectrum for neutral jets with R=0.2 in DCAL for trigger " + t, 200, 0., 200);
     fHistos->CreateTH1("hPtRawNeutralJetR04DCAL" + t, "Raw pt spectrum for neutral jets with R=0.4 in DCAL for trigger " + t, 200, 0., 200);
+
+    // PID histograms for full jets, R=0.4
+    for(int ib  = 0; ib < kNJetPtBins+1; ib++){
+      fHistos->CreateTH2(TString::Format("hTPCdEdxFullJetMin%dMax%dR04EMCAL", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         TString::Format("TPC dE/dx vs. p for jet constituents for full jets with %d < p_{t} < %d and R=0.4 in EMCAL for trigger ", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         300, 0., 30., 1000., 0., 200.);
+      fHistos->CreateTH2(TString::Format("hTOFBetaFullJetMin%dMax%dR04EMCAL", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         TString::Format("TOF #beta vs. p for jet constituents for full jets with %d < p_{t} < %d and R=0.4 in EMCAL for trigger ", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         300., 0., 30., 120., 0., 1.2);
+      fHistos->CreateTH2(TString::Format("hTPCdEdxFullJetMin%dMax%dR04DCAL", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         TString::Format("TPC dE/dx vs. p for jet constituents for full jets with %d < pt < %d and R=0.4 in DCAL for trigger ", kJetPtBins[ib], kJetPtBins[ib+1]) +t,
+                         300, 0., 30., 1000., 0., 200.);
+      fHistos->CreateTH2(TString::Format("hTOFBetaFullJetMin%dMax%dR04DCAL", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         TString::Format("TOF #beta vs. p for jet constituents for full jets with %d < p_{t} < %d and R=0.4 in EMCAL for trigger ", kJetPtBins[ib], kJetPtBins[ib+1]) + t,
+                         300., 0., 30., 120., 0., 1.2);
+    }
   }
   for(auto h : *(fHistos->GetListOfHistograms())){
     fOutput->Add(h);
   }
   PostData(1, fOutput);
+}
+
+void AliAnalysisTaskEmcalTriggerJets::UserExecOnce() {
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  if(!fPIDResponse){
+    AliErrorStream() << "PID Response not available - PID plots will not be filled" << std::endl;
+  }
 }
 
 bool AliAnalysisTaskEmcalTriggerJets::Run(){
@@ -110,15 +139,45 @@ bool AliAnalysisTaskEmcalTriggerJets::Run(){
                 histnamebase = "hPtRaw" + jt + "Jet" + r + det;
         AliJetContainer *c = this->GetJetContainer(namejcont);
         if(!c) AliErrorStream() << "Not found jet container " << namejcont << std::endl;
+        bool doPID = fPIDResponse && (jt == "Full") && (r == "R04");
         for(auto j : c->accepted()){
           for(auto t : triggers) {
             fHistos->FillTH1(histnamebase + t, TMath::Abs(j->Pt()));
+            if(doPID) FillJetPIDPlots(j, t, det);
           }
         }
       }
     }
   }
   return true;
+}
+
+void AliAnalysisTaskEmcalTriggerJets::FillJetPIDPlots(const AliEmcalJet *jet, const char *trigger, const char *detector){
+  const int kNJetPtBins = 9;
+  const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
+  int jetptbin = -1;
+  for(int ib = 0; ib < kNJetPtBins; ib++){
+    if(TMath::Abs(jet->Pt()) >= kJetPtBins[ib] && TMath::Abs(jet->Pt()) < kJetPtBins[ib+1]) {
+      jetptbin = ib;
+      break;
+    }
+  }
+  if(jetptbin < 0) return;
+  TString histnameTPC = TString::Format("hTPCdEdxFullJetMin%dMax%dR04%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger),
+          histnameTOF = TString::Format("hTOFBetaFullJetMin%dMax%dR04%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger);
+  AliTrackContainer *tc = GetTrackContainer("tracks");
+
+  for(int icharged = 0; icharged < jet->GetNumberOfTracks(); icharged++){
+    AliVTrack *constituent = static_cast<AliVTrack *>(jet->TrackAt(icharged, tc->GetArray()));
+    // Select only constituents with sufficient PID information in both TPC and TOF
+    if(constituent->GetTPCsignalN() < 30) continue;
+    if(!((constituent->GetStatus() & AliVTrack::kTOFout) && (constituent->GetStatus() & AliVTrack::kTIME))) continue;
+    Double_t trtime = (constituent->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetTimeZero()) * 1e-12;
+    Double_t v = constituent->GetIntegratedLength()/(100. * trtime);
+    Double_t beta =  v / TMath::C();
+    fHistos->FillTH2(histnameTPC, TMath::Abs(constituent->P()), constituent->GetTPCsignal());
+    fHistos->FillTH2(histnameTOF, TMath::Abs(constituent->P()), beta);
+  }
 }
 
 AliAnalysisTaskEmcalTriggerJets *AliAnalysisTaskEmcalTriggerJets::AddTaskEmcalTriggerJets(const char *name){
