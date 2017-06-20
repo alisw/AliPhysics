@@ -2126,7 +2126,12 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   // Setters dealing only with the 1st stored TDC hit
   zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
   zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
-
+  
+  zdcAOD->ResetZNAfired();
+  zdcAOD->ResetZNCfired();
+  zdcAOD->ResetZPAfired();
+  zdcAOD->ResetZPCfired();
+ 
   //Taking into account all the 4 hits
   if(esdZDC->IsZNChit()){ 
     zdcAOD->SetZNCfired();
