@@ -400,6 +400,11 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
 {
   TString histname;
 
+  if (fCentBin < 0) {
+    AliError(Form("fCentBin is %d! fCent = %.3f. Fix the centrality bins to include all possible values of centrality.", fCentBin, fCent));
+    return kFALSE;
+  }
+
   for (auto cont_it : fJetCollArray) {
     AliJetContainer* jets = cont_it.second;
     Double_t rhoVal = 0;
