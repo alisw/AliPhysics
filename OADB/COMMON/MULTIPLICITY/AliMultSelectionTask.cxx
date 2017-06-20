@@ -1379,10 +1379,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Only do this bit if the AOD has ZDC data
         if( lAODZDC ){
             for (Int_t j = 0; j < 4; ++j) {
-                if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNATDCm(j) > -998) fZnaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNCTDCm(j) > -998) fZncFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPATDCm(j) > -998) fZpaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPCTDCm(j) > -998) fZpcFired -> SetValueInteger(1);
             }
             
             const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
