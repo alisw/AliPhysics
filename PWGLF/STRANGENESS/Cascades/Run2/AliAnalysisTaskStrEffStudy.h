@@ -210,6 +210,13 @@ public:
         fLambdaMassSigma[3] =-2.58251e+00;
     }
     //---------------------------------------------------------------------------------------
+    void SetPrecisionCutoffCascadeDCA     ( Double_t lPrecision ) {
+        fPrecisionCutoffCascadeDCA = lPrecision;
+    }
+    void SetMaxIterationsCascadeDCA     ( Int_t lMaxIter ) {
+        fMaxIterationsCascadeDCA = lMaxIter;
+    }
+    //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
@@ -324,6 +331,9 @@ private:
 
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
+    
+    Double_t fPrecisionCutoffCascadeDCA; //Precision cutoff for GetDCA numerical recipe
+    Int_t fMaxIterationsCascadeDCA; //Max N Iter for cascade DCA calculation
 
 //===========================================================================================
 //   Variables for Event Tree
