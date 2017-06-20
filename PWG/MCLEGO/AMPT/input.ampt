@@ -6,7 +6,7 @@ A               ! TARG
 82              ! IZP (projectile Z number)
 208             ! IAT (target A number)
 82              ! IZT (target Z number)
-150		! NEVNT (total number of events)
+1000000		! NEVNT (total number of events)
 7.3             ! BMIN (mininum impact parameter in fm) 
 8.9		! BMAX (maximum impact parameter in fm, also see below)
 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
