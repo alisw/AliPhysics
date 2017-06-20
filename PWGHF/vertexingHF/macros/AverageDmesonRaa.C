@@ -67,7 +67,7 @@ Bool_t isDebug=true;
 
 //const Int_t ptmaxPPRefData[3] = { 16., 24., 24. };
 
-enum AverageOption{ kRelativeStatUnc=0, kRelativeStatUncorrWoPidSyst, kRelativeStatUncorrWPidSyst, kRelativeStatGlobalSyst, kAbsoluteStatUnc };
+enum AverageOption{ kRelativeStatUnc=0, kRelativeStatUncorrWoPidSyst, kRelativeStatUncorrWPidSyst, kRelativeStatRawYieldSyst, kRelativeStatGlobalSyst, kAbsoluteStatUnc };
 
 enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
@@ -113,7 +113,9 @@ void FindGraphRelativeUnc(TGraphAsymmErrors *gr, Double_t pt, Double_t &uncLow, 
 //____________________________________________________________
 Double_t GetWeight(Int_t averageoption, Double_t pt,
                    TH1D* hRaa, Double_t raaSystLow, Double_t raaSystHigh,
+		   Double_t ppSystRawYield,
                    Double_t ppSystRawYieldCutVar, Double_t ppSystRawYieldCutVarPid,
+		   Double_t ABSystRawYield,
                    Double_t ABSystRawYieldCutVar, Double_t ABSystRawYieldCutVarPid)
 {
     Double_t weight=1.0;
@@ -130,15 +132,22 @@ Double_t GetWeight(Int_t averageoption, Double_t pt,
         weightStat = stat;
     }
     else if(averageoption==kRelativeStatUncorrWoPidSyst) {
+        weightStat = relativeStat;
         relativeSyst = TMath::Sqrt( ppSystRawYieldCutVar*ppSystRawYieldCutVar + ABSystRawYieldCutVar*ABSystRawYieldCutVar );
     }
     else if(averageoption==kRelativeStatUncorrWPidSyst) {
+        weightStat = relativeStat;
         relativeSyst = TMath::Sqrt( ppSystRawYieldCutVarPid*ppSystRawYieldCutVarPid + ABSystRawYieldCutVar*ABSystRawYieldCutVarPid );
     }
+    else if(averageoption==kRelativeStatRawYieldSyst){
+        weightStat = relativeStat;
+        relativeSyst = TMath::Sqrt( ppSystRawYield*ppSystRawYield + ABSystRawYield*ABSystRawYield );      
+    }
     else if(averageoption==kRelativeStatGlobalSyst) {
+        weightStat = relativeStat;
         relativeSyst = raaSystHigh>raaSystLow ? raaSystHigh : raaSystLow;
     }
-    
+
     //  weight = TMath::Sqrt( relativeStat*relativeStat + relativeSyst*relativeSyst );
     weight = TMath::Sqrt( weightStat*weightStat + relativeSyst*relativeSyst );
     // cout<< endl<<" rel stat "<< relativeStat<<" rel syst "<< relativeSyst<<" weight="<<(1.0/(weight*weight))<<endl;
@@ -163,6 +172,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     if(averageOption==kRelativeStatUnc)  foutname+= "_RelStatUncWeight";
     else if(averageOption==kAbsoluteStatUnc)  foutname+= "_AbsStatUncWeight";
     else if(averageOption==kRelativeStatUncorrWoPidSyst) foutname+= "_RelStatUncorrWeight";
+    else if(averageOption==kRelativeStatRawYieldSyst) foutname+= "_RelStatRawYieldSystWeight";
     if(!useExtrapPPref) foutname+= "_NoExtrapBins";
     TDatime d;
     TString ndate = Form("%02d%02d%04d",d.GetDay(),d.GetMonth(),d.GetYear());
@@ -363,12 +373,14 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         //    Double_t ppTracking[3]={0.,0.,0.};
         Double_t ScalingLow[3]={0.,0.,0.};
         Double_t ScalingHigh[3]={0.,0.,0.};
-        Double_t ppSystRawYieldCutVar[3]={0.,0.,0.};
+	Double_t ppSystRawYieldOnly[3]={0.,0.,0.};
+	Double_t ppSystRawYieldCutVar[3]={0.,0.,0.};
         Double_t ppSystRawYieldCutVarPid[3]={0.,0.,0.};
         Double_t ABSystLow[3]={0.,0.,0.};
         Double_t ABSystHigh[3]={0.,0.,0.};
         Double_t ABSystUncorrLow[3]={0.,0.,0.};
         Double_t ABSystUncorrHigh[3]={0.,0.,0.};
+        Double_t ABSystRawYieldOnly[3]={0.,0.,0.};
         Double_t ABSystRawYieldCutVar[3]={0.,0.,0.};
         Double_t ABSystRawYieldCutVarPid[3]={0.,0.,0.};
         //    Double_t ABTracking[3]={0.,0.,0.};
@@ -392,11 +404,13 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         if(isDebug) cout<<" Retrieving tracking + rawyield systematics"<<endl;
         for(Int_t j=0; j<3; j++) {
             if(!isDmeson[j]) continue;
+	    ppSystRawYieldOnly[j] = ppSystRawYield[j][ipt];
             ppSystRawYieldCutVar[j] = TMath::Sqrt( ppSystRawYield[j][ipt]*ppSystRawYield[j][ipt]
                                                   + ppSystCutVar[j][ipt]*ppSystCutVar[j][ipt] );
             ppSystRawYieldCutVarPid[j] = TMath::Sqrt( ppSystRawYield[j][ipt]*ppSystRawYield[j][ipt]
                                                      + ppSystCutVar[j][ipt]*ppSystCutVar[j][ipt]
                                                      + ppSystPid[j][ipt]*ppSystPid[j][ipt] );
+	    ABSystRawYieldOnly[j] = ABSystRawYield[j][ipt];
             ABSystRawYieldCutVar[j] = TMath::Sqrt( ABSystRawYield[j][ipt]*ABSystRawYield[j][ipt]
                                                   + ABSystCutVar[j][ipt]*ABSystCutVar[j][ipt] );
             ABSystRawYieldCutVarPid[j] = TMath::Sqrt( ABSystRawYield[j][ipt]*ABSystRawYield[j][ipt]
@@ -433,7 +447,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
                 FindGraphRelativeUnc(gDataSystematicsPP[j],ptval,ppSystTotLow,ppSystTotHigh);
                 ppSystRawYieldCutVar[j] = ppSystTotLow > ppSystTotHigh ? ppSystTotLow : ppSystTotHigh ;
                 ppSystRawYieldCutVarPid[j] = ppSystRawYieldCutVar[j];
-            }
+		ppSystRawYieldOnly[j] = ppSystRawYieldCutVar[j];
+	    }
         }
         //
         // Loop per meson to get the Raa values and uncertainties for the given pt bin
@@ -452,8 +467,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             // Evaluate the weight
             weight[j] = GetWeight(averageOption,ptval,hDmesonRaa[j],
                                   RaaDmesonSystLow[j],RaaDmesonSystHigh[j],
-                                  ppSystRawYieldCutVar[j],ppSystRawYieldCutVarPid[j],
-                                  ABSystRawYieldCutVar[j],ABSystRawYieldCutVarPid[j]);
+                                  ppSystRawYieldOnly[j],ppSystRawYieldCutVar[j],ppSystRawYieldCutVarPid[j],
+				  ABSystRawYieldOnly[j],ABSystRawYieldCutVar[j],ABSystRawYieldCutVarPid[j]);
             cout<<" raa "<<filenamesSuffixes[j]<<" meson  = "<<RaaDmeson[j]<<" +-"<<RaaDmesonStat[j]<<"(stat) -> (weight="<<weight[j]<<") ,";
             // Get pp reference relative systematics
             FindGraphRelativeUnc(gDataSystematicsPP[j],ptval,ppSystLow[j],ppSystHigh[j]);
@@ -462,11 +477,11 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             if(isPPRefExtrap[j]){
                 Int_t ippbin = hCombinedReferenceFlag[j]->FindBin(ptval);
                 Bool_t flag = hCombinedReferenceFlag[j]->GetBinContent(ippbin);
-                if(isDebug) cout<< " bin="<<j<<" pp ref flag on? "<<flag<<endl;
+                if(isDebug) cout<< " bin="<<j<<" pp ref flag on? "<<flag;
                 if(flag){ ScalingHigh[j]=0.; ScalingLow[j]=0.; ppTracking[j][ipt]=0.; }
 		if(flag && !useExtrapPPref){ 
 		  weight[j] =0;
-		  cout<<"weight set to 0"<<endl;
+		  cout<<"weight set to 0";
 		}
             }
             // Get pp reference systematics minus tracking systematics minus extrapolation uncertainties
@@ -500,6 +515,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             }
             //
             histoBin = -1;
+	    cout<<endl;
         }
         cout<<endl;
         
