@@ -1504,7 +1504,7 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.148 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.160 , 1.6,  5,nbinsPool-0.5};
     if(fUseSmallSizePlots) {
-       nbinsSparseDStarSB[1]=30;  nbinsSparse[2]=16;
+       nbinsSparseDStarSB[1]=30;  nbinsSparseDStarSB[2]=16;
        binLowLimitSparseDStarSB[1]=0.148;
        binUpLimitSparseDStarSB[1]=0.157; 
    }
