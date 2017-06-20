@@ -21,7 +21,7 @@ using std::vector;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
  public:
 	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis, Bool_t InitMCorData);
+	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
 virtual ~AliAnalysisTaskGammaHadron();
 
   //setters for the analysis
@@ -75,8 +75,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
-  Bool_t                      fDoMixing;                 ///< This option enables mixed events being used in the analysi
-  Bool_t                      fMCorData;                 //<Are we looking at simulations or at the real thing
+  Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Bool_t                      fPlotQA;                   ///< plot additional QA histograms
