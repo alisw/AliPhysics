@@ -2688,7 +2688,7 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
         if (!jetdef.fRho) {
           ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
               "%s: Could not find rho object '%s' for engine '%s'",
-              jetdef.fRhoName.Data(), GetName(), params.GetName());
+              GetName(), jetdef.fRhoName.Data(), params.GetName());
         }
       }
     }
