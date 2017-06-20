@@ -2,7 +2,7 @@
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputGammaOrPi0        = 0,                 //..gamma analysis=0, pi0 analyis=1
-  Bool_t      InputDoMixing          = 0,                 //..same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
+  Bool_t      InputSeMe              = 0,                 //..same event=0 mixed event =1
   Bool_t      InputMCorData          = 0,                 // 0->MC, 1->Data
   Double_t    trackEta               = 0.9,               //..+- eta range for track acceptance
   Double_t    clusterEta             = 0.7,               //..+- eta range for cluster acceptance
@@ -59,7 +59,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  GammaPi0Name += "Pi0H";
   }
   TString SameMixName;
-  if(InputDoMixing == 0)
+  if(InputSeMe == 0)
   {
 	  SameMixName += "SE";
   }
@@ -82,7 +82,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing,InputMCorData);
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputSeMe);
 
   //..Add the containers and set the names
   AnalysisTask->AddClusterContainer(clusName);
