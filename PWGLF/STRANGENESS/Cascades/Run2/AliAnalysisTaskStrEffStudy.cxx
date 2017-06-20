@@ -1407,7 +1407,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarNegDxy = TMath::Abs(esdTrackNeg->GetD(lBestPrimaryVtxPos[0],
                                                           lBestPrimaryVtxPos[1],
                                                           lMagneticField) );
-        fTreeCascVarBachDxy = TMath::Abs(esdTrackNeg->GetD(lBestPrimaryVtxPos[0],
+        fTreeCascVarBachDxy = TMath::Abs(esdTrackBach->GetD(lBestPrimaryVtxPos[0],
                                                            lBestPrimaryVtxPos[1],
                                                            lMagneticField) );
         //DCAz
