@@ -1743,7 +1743,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         fTreeCascVarPIDPositive = mcPosCascDghter -> GetPdgCode();
         fTreeCascVarPIDNegative = mcNegCascDghter -> GetPdgCode();
-        fTreeCascVarPIDBachelor = mcNegCascDghter -> GetPdgCode();
+        fTreeCascVarPIDBachelor = mcBachCascDghter -> GetPdgCode();
         
         Int_t lLabelMother = mcBachCascDghter->GetFirstMother();
         
