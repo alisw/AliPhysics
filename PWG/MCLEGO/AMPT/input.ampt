@@ -1,18 +1,18 @@
-200            ! EFRM (sqrt(S_NN) in GeV if FRAME is CMS)
-CMS            ! FRAME
+5023            ! EFRM (sqrt(S_NN) in GeV if FRAME is CMS)
+CMS             ! FRAME
 A               ! PROJ
 A               ! TARG
-197             ! IAP (projectile A number)
-79              ! IZP (projectile Z number)
-197             ! IAT (target A number)
-79              ! IZT (target Z number)
-10              ! NEVNT (total number of events)
-0.              ! BMIN (mininum impact parameter in fm) 
-3.		! BMAX (maximum impact parameter in fm, also see below)
+208             ! IAP (projectile A number)
+82              ! IZP (projectile Z number)
+208             ! IAT (target A number)
+82              ! IZT (target Z number)
+150		! NEVNT (total number of events)
+7.3             ! BMIN (mininum impact parameter in fm) 
+8.9		! BMAX (maximum impact parameter in fm, also see below)
 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
-150		! NTMAX: number of timesteps (D=150), see below
+1000		! NTMAX: number of timesteps (D=150), see below
 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
-0.55		! PARJ(41): parameter a in Lund symmetric splitting function
+0.3		! PARJ(41): parameter a in Lund symmetric splitting function
 0.15    	! PARJ(42): parameter b in Lund symmetric splitting function
 1	      	! (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
 1.0	      	! PARJ(5) to control BMBbar vs BBbar in popcorn (D=1.0)
@@ -20,17 +20,17 @@ A               ! TARG
 0		! quenching flag (D=0,no; 1,yes)
 2.0		! quenching parameter -dE/dx (GeV/fm) in case quenching flag=1
 2.0		! p0 cutoff in HIJING for minijet productions (D=2.0)
-2.265d0	! parton screening mass in fm^(-1) (D=2.265d0), see below
+2.265d0  	! parton screening mass in fm^(-1) (D=2.265d0)
 0		! IZPC: (D=0 forward-angle parton scatterings; 100,isotropic)
 0.33d0		! alpha in parton cascade (D=0.33d0), see parton screening mass
 1d6		! dpcoal in GeV
 1d6		! drcoal in fm
-0		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
+11		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
 13150909	! random seed for HIJING
 8		! random seed for parton cascade
-0		! flag for K0s weak decays (D=0,no; 1,yes)
+1		! flag for K0s weak decays (D=0,no; 1,yes)
 1		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
-0		! flag for pi0 decays at end of hadron cascade (D=0,no; 1,yes)
+1		! flag for pi0 decays at end of hadron cascade (D=0,no; 1,yes)
 0		! optional OSCAR output (D=0,no; 1,yes; 2&3,more parton info)
 0		! flag for perturbative deuteron calculation (D=0,no; 1or2,yes)
 1		! integer factor for perturbative deuterons(>=1 & <=10000)
@@ -45,7 +45,7 @@ A               ! TARG
 1, 5., 0.       ! nsembd(D=0), psembd (in GeV),tmaxembd (in radian).
 0 		! Flag to enable users to modify shadowing (D=0,no; 1,yes)
 1.d0		! Factor used to modify nuclear shadowing
-0		! Flag for random orientation of reaction plane (D=0,no; 1,yes)
+1		! Flag for random orientation of reaction plane (D=0,no; 1,yes)
 
 %%%%%%%%%% Further explanations:
 BMAX:   the upper limit HIPR1(34)+HIPR1(35)=19.87fm (dAu), 25.60fm(AuAu).
@@ -58,10 +58,10 @@ NTMAX:	number of time-steps for hadron cascade.
 	Use a large value (e.g. 1000) for LHC studies or HBT studies at RHIC.
 	Using NTMAX=3 effectively turns off hadronic cascade.
 parton screening mass (in 1/fm): its square is inversely proportional to 
-        the parton cross section. Use D=2.265d0 for 3mb cross section 
-        when alpha in parton cascade is set to 0.33;
-        (note: 3.2264d0 for 3mb cross section when alpha is set to 0.47).
-        Using 1d4 effectively turns off parton cascade.
+	the parton cross section. Use D=2.265d0 for 3mb cross section 
+	when alpha in parton cascade is set to 0.33;
+	(note: 3.2264d0 for 3mb cross section when alpha is set to 0.47).
+	Using 1d4 effectively turns off parton cascade.
 ihjsed: if =11, take HIJING random seed at runtime so that 
 	every run may be automatically different (see file 'exec').
 iksdcy: flag for K0s weak decays for comparison with data.
