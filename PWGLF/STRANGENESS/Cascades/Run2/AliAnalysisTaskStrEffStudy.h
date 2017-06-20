@@ -383,6 +383,9 @@ private:
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
 //===========================================================================================
+    Int_t fTreeCascVarPosSign;
+    Int_t fTreeCascVarNegSign;
+    Int_t fTreeCascVarBachSign;
     Float_t fTreeCascVarPosLength;
     Float_t fTreeCascVarNegLength;
     Float_t fTreeCascVarBachLength;
