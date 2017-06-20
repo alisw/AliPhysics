@@ -124,7 +124,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
     TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
 
-    ClassDef(AliCaloTrackMatcher,2)
+    ClassDef(AliCaloTrackMatcher,3)
 };
 
 #endif
