@@ -2035,7 +2035,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       }
       else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
 	sumpTConeCharged += eTrack->Pt();
-	if(fIsMC){
+	if(fIsMC && fWho==1){
 	  int tracklabel = TMath::Abs(eTrack->GetLabel());
 	  AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
 	  fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
@@ -2221,7 +2221,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       }
       else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
 	sumpTConeCharged += eTrack->Pt();
-	if(fIsMC){
+	if(fIsMC && fWho==1){
 	  int tracklabel = TMath::Abs(eTrack->GetLabel());
 	  AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
 	  fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
@@ -2340,7 +2340,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
       }
       else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
         sumpTConeCharged += eTrack->Pt();
-        if(fIsMC){
+        if(fIsMC && fWho==1){
           int tracklabel = TMath::Abs(eTrack->GetLabel());
           AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
           fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
@@ -2440,7 +2440,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
       }
       else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
         sumpTConeCharged += eTrack->Pt();
-        if(fIsMC){
+        if(fIsMC && fWho==1){
           int tracklabel = TMath::Abs(eTrack->GetLabel());
           AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
           fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
@@ -2523,7 +2523,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     
     if(dist2Clust<fIsoConeRadius){ // The track is inside the isolation cone -> add the track pT to pT_iso
       sumpTConeCharged += eTrack->Pt();
-      if(fIsMC){
+      if(fIsMC && fWho==1){
         int tracklabel = TMath::Abs(eTrack->GetLabel());
         AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
         fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
@@ -2612,7 +2612,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
     }
     else{                                                                                         // The track is inside the isolation cone -> add the track pT to pT_iso
       sumpTConeCharged += eTrack->Pt();
-      if(fIsMC){
+      if(fIsMC && fWho==1){
         int tracklabel = TMath::Abs(eTrack->GetLabel());
         AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
         fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
