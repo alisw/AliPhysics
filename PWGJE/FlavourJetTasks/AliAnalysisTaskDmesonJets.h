@@ -507,6 +507,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
+    Double_t                           fCent                  ; //!<! Event centrality
 
     friend class AliAnalysisTaskDmesonJets;
 

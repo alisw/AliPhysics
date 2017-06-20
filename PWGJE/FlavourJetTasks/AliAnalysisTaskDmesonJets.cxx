@@ -748,7 +748,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fClusterContainers(),
   fAodEvent(0),
   fFastJetWrapper(0),
-  fHistManager(0)
+  fHistManager(0),
+  fCent(-1)
 {
 }
 
@@ -791,7 +792,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fClusterContainers(),
   fAodEvent(0),
   fFastJetWrapper(0),
-  fHistManager(0)
+  fHistManager(0),
+  fCent(-1)
 {
   SetCandidateProperties(range);
 }
@@ -831,7 +833,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fClusterContainers(source.fClusterContainers),
   fAodEvent(source.fAodEvent),
   fFastJetWrapper(source.fFastJetWrapper),
-  fHistManager(source.fHistManager)
+  fHistManager(source.fHistManager),
+  fCent(-1)
 {
   SetRDHFCuts(source.fRDHFCuts);
 }
@@ -1452,6 +1455,15 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
     hname = TString::Format("%s/%s/fHistRhoVsLeadDPt", GetName(), def.GetName());
     fHistManager->FillTH2(hname, maxDPt, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistRhoVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistLeadJetPtVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, maxJetPt[&def]);
+
+    hname = TString::Format("%s/%s/fHistLeadDPtVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, maxDPt);
   }
 
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
@@ -2402,7 +2414,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 
   Double_t maxRho = 500;
   if (fForceBeamType == kpp) {
-    maxRho = 100;
+    maxRho = 50;
   }
   else if (fForceBeamType == kpA) {
     maxRho = 200;
@@ -2590,12 +2602,24 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 
       if (!jetDef.fRhoName.IsNull()) {
         hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", param.GetName(), jetDef.GetName());
-        htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});#rho (GeV/#it{c});counts";
-        fHistManager.CreateTH2(hname, htitle, 150, 0, 150, 1000, 0, maxRho);
+        htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});#rho (GeV/#it{c} rad^{-1});counts";
+        fHistManager.CreateTH2(hname, htitle, 300, 0, 150, 1000, 0, maxRho);
 
         hname = TString::Format("%s/%s/fHistRhoVsLeadDPt", param.GetName(), jetDef.GetName());
-        htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});#rho (GeV/#it{c});counts";
-        fHistManager.CreateTH2(hname, htitle, 150, 0, 150, 1000, 0, maxRho);
+        htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});#rho (GeV/#it{c} rad^{-1});counts";
+        fHistManager.CreateTH2(hname, htitle, 300, 0, 150, 1000, 0, maxRho);
+
+        hname = TString::Format("%s/%s/fHistRhoVsCent", param.GetName(), jetDef.GetName());
+        htitle = hname + ";Centrality (%);#rho (GeV/#it{c} rad^{-1});counts";
+        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 1000, 0, maxRho);
+
+        hname = TString::Format("%s/%s/fHistLeadJetPtVsCent", param.GetName(), jetDef.GetName());
+        htitle = hname + ";Centrality (%);#it{p}_{T,jet} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 300, 0, 150);
+
+        hname = TString::Format("%s/%s/fHistLeadDPtVsCent", param.GetName(), jetDef.GetName());
+        htitle = hname + ";Centrality (%);#it{p}_{T,D} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 300, 0, 150);
       }
     }
     switch (fOutputType) {
@@ -2776,6 +2800,8 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
   for (auto &eng : fAnalysisEngines) {
     eng.fDmesonJets.clear();
     if (eng.fInhibit) continue;
+
+    eng.fCent = fCent;
 
     //Event selection
     hname = TString::Format("%s/fHistNEvents", eng.GetName());
