@@ -1610,7 +1610,6 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
       DmesonJet.fJets[jetDef.GetName()].fArea = jets_incl[ijet].area();
       DmesonJet.fJets[jetDef.GetName()].fCorrPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt() - jets_incl[ijet].area() * rho;
 
-
       return kTRUE;
     }
   }
@@ -1656,7 +1655,11 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
   Int_t nAccCharm[3] = {0};
 
+  std::map<AliHFJetDefinition*, Double_t> maxJetPt;
+  Double_t maxDPt = 0;
+
   for (auto &jetDef : fJetDefinitions) {
+    maxJetPt[&jetDef] = 0;
     Double_t rho = 0;
     if (jetDef.fRho) rho = jetDef.fRho->GetVal();
     hname = TString::Format("%s/%s/fHistNDmesonsVsNconstituents", GetName(), jetDef.GetName());
@@ -1701,6 +1704,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
           nDmesonsInJet++;
           std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = fDmesonJets.find(iPart);
           if (dMesonJetIt == fDmesonJets.end()) { // This D meson does not exist yet
+            if (part->Pt() > maxDPt) maxDPt = part->Pt();
             std::pair<int, AliDmesonJetInfo> element;
             element.first = iPart;
             dMesonJetIt = fDmesonJets.insert(element).first;
@@ -1732,11 +1736,30 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fNConstituents = jet.constituents().size();
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fArea = jet.area();
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fCorrPt = (*dMesonJetIt).second.fJets[jetDef.GetName()].fMomentum.Pt() - jet.area() * rho;
+          if (jet.perp() > maxJetPt[&jetDef]) maxJetPt[&jetDef] = jet.perp();
         } // if constituent is a D meson
       } // for each constituent
       if (nDmesonsInJet > 0) histNDmesonsVsNconstituents->Fill(jet.constituents().size(), nDmesonsInJet);
     } // for each jet
   } // for each jet definition
+
+  for (auto& def : fJetDefinitions) {
+    if (!def.fRho) continue;
+    hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, maxJetPt[&def], def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistRhoVsLeadDPt", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, maxDPt, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistRhoVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistLeadJetPtVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, maxJetPt[&def]);
+
+    hname = TString::Format("%s/%s/fHistLeadDPtVsCent", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, fCent, maxDPt);
+  }
 
   if (fDmesonJets.size() != nAccCharm[0]+nAccCharm[1]) AliError(Form("I found %lu mesons (%d)?", fDmesonJets.size(), nAccCharm[0]+nAccCharm[1]));
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
