@@ -300,10 +300,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
-  if (fForceBeamType == kpp) fCentBins.clear();
+  if (fCentralityEstimation == kNoCentrality) fCentBins.clear();
 
-  if (!fGeneralHistograms)
-    return;
+  if (!fGeneralHistograms) return;
 
   if (fIsPythia) {
     fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
