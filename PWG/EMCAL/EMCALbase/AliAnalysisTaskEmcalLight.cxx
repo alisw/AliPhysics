@@ -460,10 +460,9 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertex->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentrality->Fill(fCent);
-      fHistEventPlane->Fill(fEPV0);
-    }
+    if (fHistCentrality) fHistCentrality->Fill(fCent);
+    if (fHistEventPlane) fHistEventPlane->Fill(fEPV0);
+
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
@@ -476,10 +475,8 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertexNoSel->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentralityNoSel->Fill(fCent);
-      fHistEventPlaneNoSel->Fill(fEPV0);
-    }
+    if (fHistCentralityNoSel) fHistCentralityNoSel->Fill(fCent);
+    if (fHistEventPlaneNoSel) fHistEventPlaneNoSel->Fill(fEPV0);
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClassesNoSel->Fill(fired_trg.c_str(), 1);
   }
