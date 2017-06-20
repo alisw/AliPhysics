@@ -679,6 +679,8 @@ private:
   TH1F* hNEvt;                                  ///<  Histogram with the number of events and all the events that passed each cut
   TH1F* hEvtMult;                               ///<  Histogram with the event Multiplicity Before any physics selection
   TH1F* hEvtMultAftEvSel;                       ///<  Histogram with the event Multiplicity After the physics selection
+  TH1F* hEvtVtxXYBefSel;                        ///<  Histogram with the linear distance in the XY plane of the primary vertex before any selection on vertex position
+  TH1F* hEvtVtxZBefSel;                         ///<  Histogram with the linear distance along the Z axis of the primary vertex before any selection on vertex position
   TH1F* hEvtVtxXY;                              ///<  Histogram with the linear distance in the XY plane of the primary vertex
   TH1F* hEvtVtxZ;                               ///<  Histogram with the linear distance along the Z axis of the primary vertex
   
