@@ -1007,7 +1007,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
-  if (!fCentBins.empty()) {
+  if (!fCentBins.empty() && fCentralityEstimation != kNoCentrality) {
     for (auto cent_it = fCentBins.begin(); cent_it != fCentBins.end() - 1; cent_it++) {
       if (fCent >= *cent_it && fCent < *(cent_it+1)) fCentBin = cent_it - fCentBins.begin();
     }
