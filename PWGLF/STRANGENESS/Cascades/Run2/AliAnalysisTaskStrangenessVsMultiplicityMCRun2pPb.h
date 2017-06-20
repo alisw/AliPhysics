@@ -22,8 +22,8 @@
 //
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-#ifndef AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb_H
-#define AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb_H
+#ifndef AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb_H
+#define AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb_H
 
 class TList;
 class TH1F;
@@ -50,11 +50,11 @@ class AliExternalTrackParam;
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
-class AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb : public AliAnalysisTaskSE {
+class AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb();
-    AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
-    virtual ~AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb();
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb();
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    virtual ~AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb();
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -229,9 +229,9 @@ public:
         FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
             :eta(_eta), phi(_phi), weight(_weight) {};
     };
-    typedef std::vector<AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb::FMDhit> FMDhits;
+    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhit> FMDhits;
 //---------------------------------------------------------------------------------------
-    AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
 //---------------------------------------------------------------------------------------
     Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b);
     //Helper functions
@@ -610,10 +610,10 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
 
-    AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb(const AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb&);            // not implemented
-    AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb& operator=(const AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb&); // not implemented
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&);            // not implemented
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangnessVsMultiplicityMCRun2pPb, 1);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb, 1);
     //1: first implementation
 };
 
