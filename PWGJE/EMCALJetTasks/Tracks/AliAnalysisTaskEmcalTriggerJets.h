@@ -6,6 +6,7 @@
 #include <AliAnalysisTaskEmcalJet.h>
 
 class AliJetContainer;
+class AliPIDResponse;
 class THistManager;
 class TString;
 
@@ -22,12 +23,16 @@ public:
 protected:
 
   virtual void UserCreateOutputObjects();
+  virtual void UserExecOnce();
   virtual bool Run();
+
+  void FillJetPIDPlots(const AliEmcalJet *jet, const char *trigger, const char *detector);
 
 private:
   AliAnalysisTaskEmcalTriggerJets(const AliAnalysisTaskEmcalTriggerJets &);
   AliAnalysisTaskEmcalTriggerJets &operator=(const AliAnalysisTaskEmcalTriggerJets &);
 
+  AliPIDResponse        *fPIDResponse;        //!<! PID Response handler
   THistManager          *fHistos;             //!<! Histogram handler
 
   /// \cond CLASSIMP

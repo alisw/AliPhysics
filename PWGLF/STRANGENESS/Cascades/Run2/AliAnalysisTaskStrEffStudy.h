@@ -210,6 +210,13 @@ public:
         fLambdaMassSigma[3] =-2.58251e+00;
     }
     //---------------------------------------------------------------------------------------
+    void SetPrecisionCutoffCascadeDCA     ( Double_t lPrecision ) {
+        fPrecisionCutoffCascadeDCA = lPrecision;
+    }
+    void SetMaxIterationsCascadeDCA     ( Int_t lMaxIter ) {
+        fMaxIterationsCascadeDCA = lMaxIter;
+    }
+    //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
@@ -324,6 +331,9 @@ private:
 
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
+    
+    Double_t fPrecisionCutoffCascadeDCA; //Precision cutoff for GetDCA numerical recipe
+    Int_t fMaxIterationsCascadeDCA; //Max N Iter for cascade DCA calculation
 
 //===========================================================================================
 //   Variables for Event Tree
@@ -383,6 +393,10 @@ private:
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
 //===========================================================================================
+    Float_t fTreeCascVarCentrality;
+    Int_t fTreeCascVarPosSign;
+    Int_t fTreeCascVarNegSign;
+    Int_t fTreeCascVarBachSign;
     Float_t fTreeCascVarPosLength;
     Float_t fTreeCascVarNegLength;
     Float_t fTreeCascVarBachLength;
@@ -459,6 +473,26 @@ private:
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;
     Float_t fTreeCascVarBachDistanceToTrueDecayPt;
     Float_t fTreeCascVarV0DistanceToTrueDecayPt;
+    
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    
+    Float_t fTreeCascVarNegPxMC; //!
+    Float_t fTreeCascVarNegPyMC; //!
+    Float_t fTreeCascVarNegPzMC; //!
+    Float_t fTreeCascVarPosPxMC; //!
+    Float_t fTreeCascVarPosPyMC; //!
+    Float_t fTreeCascVarPosPzMC; //!
+    Float_t fTreeCascVarBachPxMC; //!
+    Float_t fTreeCascVarBachPyMC; //!
+    Float_t fTreeCascVarBachPzMC; //!
 
 //===========================================================================================
 //   Histograms
