@@ -22,8 +22,8 @@
 //
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-#ifndef AliAnalysisTaskStrangnessVsMultiplicityRun2pPb_H
-#define AliAnalysisTaskStrangnessVsMultiplicityRun2pPb_H
+#ifndef AliAnalysisTaskStrangenessVsMultiplicityRun2pPb_H
+#define AliAnalysisTaskStrangenessVsMultiplicityRun2pPb_H
 
 class TList;
 class TH1F;
@@ -49,11 +49,11 @@ class AliCascadeResult;
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
-class AliAnalysisTaskStrangnessVsMultiplicityRun2pPb : public AliAnalysisTaskSE {
+class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskStrangnessVsMultiplicityRun2pPb();
-    AliAnalysisTaskStrangnessVsMultiplicityRun2pPb(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
-    virtual ~AliAnalysisTaskStrangnessVsMultiplicityRun2pPb();
+    AliAnalysisTaskStrangenessVsMultiplicityRun2pPb();
+    AliAnalysisTaskStrangenessVsMultiplicityRun2pPb(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    virtual ~AliAnalysisTaskStrangenessVsMultiplicityRun2pPb();
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -213,9 +213,9 @@ public:
         FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
             :eta(_eta), phi(_phi), weight(_weight) {};
     };
-    typedef std::vector<AliAnalysisTaskStrangnessVsMultiplicityRun2pPb::FMDhit> FMDhits;
+    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2pPb::FMDhit> FMDhits;
 //---------------------------------------------------------------------------------------
-   AliAnalysisTaskStrangnessVsMultiplicityRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
+   AliAnalysisTaskStrangenessVsMultiplicityRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
 //---------------------------------------------------------------------------------------
 
 
@@ -470,10 +470,10 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
 
-    AliAnalysisTaskStrangnessVsMultiplicityRun2pPb(const AliAnalysisTaskStrangnessVsMultiplicityRun2pPb&);            // not implemented
-    AliAnalysisTaskStrangnessVsMultiplicityRun2pPb& operator=(const AliAnalysisTaskStrangnessVsMultiplicityRun2pPb&); // not implemented
+    AliAnalysisTaskStrangenessVsMultiplicityRun2pPb(const AliAnalysisTaskStrangenessVsMultiplicityRun2pPb&);            // not implemented
+    AliAnalysisTaskStrangenessVsMultiplicityRun2pPb& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2pPb&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangnessVsMultiplicityRun2pPb, 2);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2pPb, 2);
     //1: first implementation
 };
 
