@@ -126,6 +126,8 @@ fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
+fPrecisionCutoffCascadeDCA(1e-4),
+fMaxIterationsCascadeDCA(27),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -310,6 +312,8 @@ fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
+fPrecisionCutoffCascadeDCA(1e-4),
+fMaxIterationsCascadeDCA(27),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -1601,7 +1605,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
         Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
         
-        Int_t max=27;
+        Int_t max=fMaxIterationsCascadeDCA;
         while (max--) {
             Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
             Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
@@ -1629,8 +1633,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             //check delta(phase1) ?
             //check delta(phase2) ?
             
-            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
-                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < fPrecisionCutoffCascadeDCA)
+                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < fPrecisionCutoffCascadeDCA) {
                     if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
                         AliDebug(1," stopped at not a stationary point !");
                         //Count not stationary point
