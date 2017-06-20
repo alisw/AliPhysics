@@ -61,7 +61,6 @@ public AliAnalysisTaskSE
   void SetSpecificStorageParOffline(Char_t *value) {fSpecificStorageParOffline = value;}; // set specific storage ParOffline
   void SetSpecificStorageRunParams(Char_t *value) {fSpecificStorageRunParams = value;}; // set specific storage RunParams
   void SetSaveCoordinates(Bool_t value = kTRUE) {fSaveCoordinates = value;}; // set flag to save hit coordinates in tree
-  void SetLightMode(Bool_t value = kTRUE) {fLightMode = value;}; // set flag to use "light mode" (don't save track parameters)
 
  protected:
 
@@ -130,7 +129,6 @@ public AliAnalysisTaskSE
   Float_t* fDeltaz;         //[fMaxHits]  delta-z
   Float_t* fDeltat;         //[fMaxHits] delta-t
   Float_t* fDeltaraw;       //[fMaxHits] delta-raw
-  Bool_t fLightMode;
   Bool_t fSaveCoordinates;
 
   TTree* fOutputTree;                 //!<! output tree
