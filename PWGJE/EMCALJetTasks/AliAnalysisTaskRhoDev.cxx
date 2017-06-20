@@ -258,7 +258,7 @@ AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, T
     }
   }
 
-  TString name("AliAnalysisTaskRho");
+  TString name("AliAnalysisTaskRhoDev");
   if (!suffix.IsNull()) {
     name += "_";
     name += suffix;
