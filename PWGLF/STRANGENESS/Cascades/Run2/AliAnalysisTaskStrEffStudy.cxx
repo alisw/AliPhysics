@@ -626,6 +626,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //Create Cascade output tree
     fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
     //-----------BASIC-INFO---------------------------
+    fTreeCascade->Branch("fTreeCascVarPosSign",&fTreeCascVarPosSign,"fTreeCascVarPosSign/I");
+    fTreeCascade->Branch("fTreeCascVarNegSign",&fTreeCascVarNegSign,"fTreeCascVarNegSign/I");
+    fTreeCascade->Branch("fTreeCascVarBachSign",&fTreeCascVarBachSign,"fTreeCascVarBachSign/I");
     fTreeCascade->Branch("fTreeCascVarPosLength",&fTreeCascVarPosLength,"fTreeCascVarPosLength/F");
     fTreeCascade->Branch("fTreeCascVarNegLength",&fTreeCascVarNegLength,"fTreeCascVarNegLength/F");
     fTreeCascade->Branch("fTreeCascVarBachLength",&fTreeCascVarBachLength,"fTreeCascVarBachLength/F");
@@ -1111,11 +1114,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 //This is a findable V0! Yay! Check daughters before indexing
                 AliESDtrack *esdTrack1 = lESDevent->GetTrack( lTrackArray[iTrack] );
                 AliESDtrack *esdTrack2 = lESDevent->GetTrack( lTrackArray[jTrack] );
-                if( esdTrack1->GetSign() < 0. && esdTrack2->GetSign() < 0. ) continue;
-                if( esdTrack1->GetSign() > 0. && esdTrack2->GetSign() > 0. ) continue;
+                if( esdTrack1->GetSign() < 0 && esdTrack2->GetSign() < 0 ) continue;
+                if( esdTrack1->GetSign() > 0 && esdTrack2->GetSign() > 0 ) continue;
                 
                 //1 = Positive, 2 = Negative case
-                if( esdTrack1->GetSign() > 0. && esdTrack2->GetSign() < 0. ){
+                if( esdTrack1->GetSign() > 0 && esdTrack2->GetSign() < 0 ){
                     lPosTrackArray[lFindableV0s] = lTrackArray[iTrack];
                     lNegTrackArray[lFindableV0s] = lTrackArray[jTrack];
                     lFindableV0s++; //add this to findable
@@ -1400,6 +1403,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarPosTrackStatus = esdTrackPos->GetStatus();
         fTreeCascVarNegTrackStatus = esdTrackNeg->GetStatus();
         fTreeCascVarBachTrackStatus = esdTrackBach->GetStatus();
+        //Charge
+        fTreeCascVarPosSign = esdTrackPos -> GetSign();
+        fTreeCascVarNegSign = esdTrackNeg -> GetSign();
+        fTreeCascVarBachSign = esdTrackBach -> GetSign();
         //DCAxy to PV
         fTreeCascVarPosDxy = TMath::Abs(esdTrackPos->GetD(lBestPrimaryVtxPos[0],
                                                           lBestPrimaryVtxPos[1],
