@@ -76,12 +76,12 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     void Set(Double_t cent, Double_t ep);
 
     /// Eta of the jet
-    Double32_t  fCent          ; //[0,128,7]
+    Double32_t  fCent          ; //[-10,118,7]
     /// Phi of the jet
     Double32_t  fEP            ; //[0,2*pi,9]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetEventInfoSummaryPbPb, 1);
+    ClassDef(AliEmcalJetEventInfoSummaryPbPb, 2);
     /// \endcond
   };
 
@@ -158,7 +158,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for Pb-Pb analysis (60 bits)
+   * for Pb-Pb analysis (59 bits)
    */
   class AliEmcalJetInfoSummaryPbPb {
   public:
@@ -170,7 +170,6 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     void Reset();
     void Set(const AliEmcalJetInfo& source);
 
-    /// Transverse momentum of the jet in GeV/c
     Double32_t  fPt            ; //[0,512,9]
     /// Eta of the jet
     Double32_t  fEta           ; //[-1.28,1.28,5]
@@ -181,14 +180,14 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     // Momentum of leading particle
     Double32_t  fLeadingPt     ; //[0,512,9]
     /// Jet area
-    Double32_t  fArea          ; //[0,5.12,8]
+    Double32_t  fArea          ; //[0,1.28,6]
     /// Number of constituents
-    Double32_t  fNConstituents ; //[0,1024,7]
+    Double32_t  fNConstituents ; //[0,1024,9]
     /// Jet corrected pt
-    Double32_t  fCorrPt        ; //[-512,512,10]
+    Double32_t  fCorrPt        ; //[-256,256,9]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPbPb, 4);
+    ClassDef(AliEmcalJetInfoSummaryPbPb, 5);
     /// \endcond
   };
 
@@ -197,7 +196,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for Pb-Pb analysis (55 bits)
+   * for Pb-Pb analysis (54 bits)
    */
   class AliEmcalJetInfoSummaryPbPbCharged {
   public:
@@ -217,14 +216,14 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     // Momentum of leading particle
     Double32_t  fLeadingPt     ; //[0,512,9]
     /// Jet area
-    Double32_t  fArea          ; //[0,5.12,8]
+    Double32_t  fArea          ; //[0,1.28,6]
     /// Number of constituents
-    Double32_t  fNConstituents ; //[0,1024,7]
+    Double32_t  fNConstituents ; //[0,1024,9]
     /// Jet corrected pt
-    Double32_t  fCorrPt        ; //[-512,512,10]
+    Double32_t  fCorrPt        ; //[-256,256,9]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPbPbCharged, 1);
+    ClassDef(AliEmcalJetInfoSummaryPbPbCharged, 2);
     /// \endcond
   };
 

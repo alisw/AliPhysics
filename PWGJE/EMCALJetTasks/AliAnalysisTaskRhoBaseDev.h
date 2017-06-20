@@ -83,21 +83,22 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   AliRhoParameter       *fOutRho;                        //!<!output rho object
   AliRhoParameter       *fOutRhoScaled;                  //!<!output scaled rho object
 
-  TH2                   *fHistJetPtvsCent;               //!<!jet pt vs. centrality
-  TH2                   *fHistJetAreavsCent;             //!<!jet area vs. centrality
-  TH2                   *fHistJetRhovsCent;              //!<!jet pt/area vs. centrality
-  TH2                   *fHistNjetvsCent;                //!<!no. of jets vs. centrality
-  TH2                   *fHistJetPtvsNtrack;             //!<!jet pt vs. no. of tracks
-  TH2                   *fHistJetAreavsNtrack;           //!<!jet area vs. no. of tracks
-  TH2                   *fHistNjetvsNtrack;              //!<!no. of jets vs. no. of tracks
-  TH2                   *fHistJetNconstVsPt[4];          //!<!jet no. of constituents vs. pt
-  TH2                   *fHistJetRhovsEta[4];            //!<!rho vs. eta
-  TH2                   *fHistRhovsCent;                 //!<!rho vs. centrality
-  TH2                   *fHistRhoScaledvsCent;           //!<!rhoscaled vs. centrality
-  TH2                   *fHistRhovsNtrack;               //!<!rho vs. no. of tracks
-  TH2                   *fHistRhoScaledvsNtrack;         //!<!rhoscaled vs. no. of tracks
-  TH2                   *fHistRhovsNcluster;             //!<!rho vs. no. of clusters
-  TH2                   *fHistRhoScaledvsNcluster;       //!<!rhoscaled vs. no. of clusters
+  TH2                   *fHistLeadJetPtVsCent;           //!<!leading jet pt vs. centrality
+  TH2                   *fHistLeadJetPtDensityVsCent;    //!<!leading jet area vs. centrality
+  TH2                   *fHistSubLeadJetPtVsCent;        //!<!leading jet pt/area vs. centrality
+  TH2                   *fHistTotJetAreaVsCent;          //!<!total area covered by jets vs. centrality
+  TH2                   *fHistLeadJetNconstVsCent;       //!<!leading jet constituents vs. cent
+  TH2                  **fHistLeadJetNconstVsPt;         //!<!leading jet constituents vs. pt
+  TH2                   *fHistNtrackVsCent;              //!<!no. of tracks vs. centrality
+  TH2                   *fHistNjetVsCent;                //!<!no. of jets vs. centrality
+  TH2                   *fHistNjetVsNtrack;              //!<!no. of jets vs. no. of tracks
+  TH2                   *fHistRhoVsCent;                 //!<!rho vs. centrality
+  TH2                   *fHistRhoVsLeadJetPt;            //!<!rho vs. leading jet pt
+  TH2                   *fHistRhoVsNtrack;               //!<!rho vs. no. of tracks
+  TH2                   *fHistRhoVsNcluster;             //!<!rho vs. no. of clusters
+  TH2                   *fHistRhoScaledVsCent;           //!<!rhoscaled vs. centrality
+  TH2                   *fHistRhoScaledVsNtrack;         //!<!rhoscaled vs. no. of tracks
+  TH2                   *fHistRhoScaledVsNcluster;       //!<!rhoscaled vs. no. of clusters
 
   AliAnalysisTaskRhoBaseDev(const AliAnalysisTaskRhoBaseDev&);             // not implemented
   AliAnalysisTaskRhoBaseDev& operator=(const AliAnalysisTaskRhoBaseDev&);  // not implemented
