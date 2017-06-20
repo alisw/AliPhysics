@@ -164,6 +164,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliJetInfo* GetJet(std::string n);
     void Reset();
     Double_t GetZ(std::string n) const;
+    Double_t GetCorrZ(std::string n) const;
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(std::string n) const;
     Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
@@ -215,22 +216,25 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information in a very compact data structure (77 bits)
   class AliJetInfoPbPbSummary : public AliJetInfoSummary {
   public:
-    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fArea(0) {;}
+    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fCorrZ(0), fArea(0) {;}
     AliJetInfoPbPbSummary(const AliDmesonJetInfo& source, std::string n);
     virtual ~AliJetInfoPbPbSummary() {}
 
     virtual void Reset();
-    virtual void Set(const AliDmesonJetInfo& source, std::string n) { AliJetInfoSummary::Set(source, n); }
+    virtual void Set(const AliDmesonJetInfo& source, std::string n);
     virtual void Set(const AliJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c after subtracting average background
     Double32_t  fCorrPt    ; //[-409.6,409.6,14]
 
+    /// Z of the D meson after subtracting average background
+    Double32_t  fCorrZ     ; //[0,1.024,10]
+
     /// Area of the jet
     Double32_t  fArea      ; //[0,2.048,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoPbPbSummary, 1);
+    ClassDef(AliJetInfoPbPbSummary, 2);
     /// \endcond
   };
 

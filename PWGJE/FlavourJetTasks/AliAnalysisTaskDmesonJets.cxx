@@ -193,6 +193,36 @@ Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetZ(std::string n) const
   return z;
 }
 
+/// Calculates the parallel fraction
+///
+/// \return the fraction of the momentum of the particle parallel to the jet over the total jet momentum
+Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetCorrZ(std::string n) const
+{
+  std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
+  if (it == fJets.end()) return 0;
+
+  Double_t z = 0;
+
+  if ((*it).second.Pt() > 0) {
+    TVector3 dvect = fD.Vect();
+    TVector3 jvect = (*it).second.fMomentum.Vect();
+    // If the corr pt is < 0, assign 0.
+    Double_t corrpt = (*it).second.fCorrPt > 0 ? (*it).second.fCorrPt : 0.;
+    jvect.SetPerp(corrpt);
+
+    Double_t jetMom = jvect * jvect;
+
+    if (jetMom < 1e-6) {
+      z = 1.0;
+    }
+    else {
+      z = (dvect * jvect) / jetMom;
+    }
+  }
+
+  return z;
+}
+
 /// Calculates the distance between the D meson and the jet axis
 ///
 /// \param n Name of the jet definition
@@ -345,6 +375,7 @@ ClassImp(AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary);
 AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::AliJetInfoPbPbSummary(const AliDmesonJetInfo& source, std::string n) :
   AliJetInfoSummary(),
   fCorrPt(0),
+  fCorrZ(0),
   fArea(0)
 {
   Set(source, n);
@@ -355,6 +386,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::Reset()
 {
   AliJetInfoSummary::Reset();
   fCorrPt = 0;
+  fCorrZ = 0;
   fArea = 0;
 }
 
@@ -366,6 +398,16 @@ void AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::Set(const AliJetInfo& sou
   AliJetInfoSummary::Set(source);
   fArea = source.fArea;
   fCorrPt = source.fCorrPt;
+}
+
+/// Set the current object using an instance of AliDmesonJetInfo as its source
+///
+/// \param source A const reference to a valid AliDmesonJetInfo object
+/// \param i      Index of the jet to be copied
+void AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::Set(const AliDmesonJetInfo& source, std::string n)
+{
+  AliJetInfoSummary::Set(source, n);
+  fCorrZ = source.GetCorrZ(n);
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary
