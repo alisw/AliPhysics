@@ -15,11 +15,11 @@ public:
   AliAODZDC();
   AliAODZDC(const AliAODZDC& zdcAOD);
   AliAODZDC &operator=(const AliAODZDC& zdcAOD);
- 
+
   virtual ~AliAODZDC() {};
- 
-  // Getters  
-   
+
+  // Getters
+
   virtual Short_t  GetZDCParticipants() const {return fZDCParticipants;}
   virtual Short_t  GetZDCPartSideA()	const {return fZDCPartSideA;}
   virtual Short_t  GetZDCPartSideC()	const {return fZDCPartSideC;}
@@ -33,7 +33,7 @@ public:
   virtual Double_t GetZPAEnergy() const {return fZPAEnergy;}
   virtual Double_t GetZEM1Energy() const {return fZEM1Energy;}
   virtual Double_t GetZEM2Energy() const {return fZEM2Energy;}
-  
+
   virtual const Double_t *GetZNCTowerEnergy() const {return fZNCTowerEnergy;}
   virtual const Double_t *GetZNATowerEnergy() const {return fZNATowerEnergy;}
   virtual const Double_t *GetZPCTowerEnergy() const {return fZPCTowerEnergy;}
@@ -42,7 +42,7 @@ public:
   virtual const Double_t *GetZNATowerEnergyLR() const {return fZNATowerEnergyLR;}
   virtual const Double_t *GetZPCTowerEnergyLR() const {return fZPCTowerEnergyLR;}
   virtual const Double_t *GetZPATowerEnergyLR() const {return fZPATowerEnergyLR;}
-  
+
   virtual Bool_t GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]);
   virtual Bool_t GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]);
 
@@ -61,28 +61,28 @@ public:
   virtual Float_t GetZPCTDCm(Int_t i) const {return fZPCTDCm[i];}
   virtual Float_t GetZPATDCm(Int_t i) const {return fZPATDCm[i];}
   //
-  virtual Bool_t GetTDCSum(Float_t sum[4]); 
-  virtual Bool_t GetTDCDiff(Float_t diff[4]); 
+  virtual Bool_t GetTDCSum(Float_t sum[4]);
+  virtual Bool_t GetTDCDiff(Float_t diff[4]);
   //
   virtual Bool_t  IsZNAfired() {return fIsZNAfired;}
   virtual Bool_t  IsZNCfired() {return fIsZNCfired;}
   virtual Bool_t  IsZNANDfired() {if(IsZNAfired() &&IsZNCfired()) return kTRUE;
   				  else return kFALSE;}
 
-  // Setters  
-  
+  // Setters
+
   void  SetZEM1Energy(const Double_t zem1) {fZEM1Energy = zem1;}
   void  SetZEM2Energy(const Double_t zem2) {fZEM2Energy = zem2;}
   void  SetZNCTowers(const Double_t value[5], const Double_t valueLG[5]);
   void  SetZNATowers(const Double_t value[5], const Double_t valueLG[5]);
   void  SetZPCTowers(const Double_t value[5], const Double_t valueLG[5]);
   void  SetZPATowers(const Double_t value[5], const Double_t valueLG[5]);
-  
-  void  SetZDCParticipants(Int_t npart, Int_t npartA, Int_t npartC) 
-  	{fZDCParticipants=npart; fZDCPartSideA=npartA; fZDCPartSideC=npartC;}  
+
+  void  SetZDCParticipants(Int_t npart, Int_t npartA, Int_t npartC)
+  	{fZDCParticipants=npart; fZDCPartSideA=npartA; fZDCPartSideC=npartC;}
   void  SetZDCImpactParameter(Float_t b, Float_t bA, Float_t bC)
   	{fImpactParameter=b; fImpactParamSideA=bA; fImpactParamSideC=bC;}
- 
+
   // Setters dealing only with the 1st stored TDC hit
   void  SetZDCTDCSum(Float_t tdc)  {fZDCTDCSum = tdc;}
   void  SetZDCTDCDiff(Float_t tdc) {fZDCTDCDifference = tdc;}
@@ -102,9 +102,14 @@ public:
   void  SetZNCfired() {fIsZNCfired = kTRUE;}
   void  SetZPAfired() {fIsZPAfired = kTRUE;}
   void  SetZPCfired() {fIsZPCfired = kTRUE;}
- 
+  //
+  void  ResetZNAfired() {fIsZNAfired = kFALSE;}
+  void  ResetZNCfired() {fIsZNCfired = kFALSE;}
+  void  ResetZPAfired() {fIsZPAfired = kFALSE;}
+  void  ResetZPCfired() {fIsZPCfired = kFALSE;}
+
 protected:
-  
+
   mutable Double32_t   fZNCEnergy;    //!E in ZNC
   mutable Double32_t   fZNAEnergy;    //!E in ZNA
   mutable Double32_t   fZPCEnergy;    //!E in ZPC
@@ -131,10 +136,10 @@ protected:
   // These data members deals only with the 1st stored TDC hit
   Float_t   fZDCTDCSum;	   	   // ZDC TDC sum in ns corrected 4 phase shift
   Float_t   fZDCTDCDifference;	   // ZDC TDC diff. in ns corrected 4 phase shift
-  Float_t   fZNCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift        
-  Float_t   fZNATDC;     	   // ZNA TDC in ns corrected 4 phase shift;     
-  Float_t   fZPCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift        
-  Float_t   fZPATDC;     	   // ZNA TDC in ns corrected 4 phase shift;     
+  Float_t   fZNCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift
+  Float_t   fZNATDC;     	   // ZNA TDC in ns corrected 4 phase shift;
+  Float_t   fZPCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift
+  Float_t   fZPATDC;     	   // ZNA TDC in ns corrected 4 phase shift;
   //
   // Jan.2016: propagating multi-hit structure of TDC hits to AODs
   Float_t   fZNCTDCm[4];	// true if ZNC TDC has at least 1 hit
@@ -142,11 +147,11 @@ protected:
   Float_t   fZPCTDCm[4];	// true if ZPC TDC has at least 1 hit
   Float_t   fZPATDCm[4];	// true if ZPA TDC has at least 1 hit
   //
-  Bool_t    fIsZNAfired;	// if true ZNA is fired in the event 
-  Bool_t    fIsZNCfired;	// if true ZNC is fired in the event 
-  Bool_t    fIsZPAfired;	// if true ZPA is fired in the event 
+  Bool_t    fIsZNAfired;	// if true ZNA is fired in the event
+  Bool_t    fIsZNCfired;	// if true ZNC is fired in the event
+  Bool_t    fIsZPAfired;	// if true ZPA is fired in the event
   Bool_t    fIsZPCfired;	// if true ZPC is fired in the event
-  
+
 
   ClassDef(AliAODZDC,4)
 };
