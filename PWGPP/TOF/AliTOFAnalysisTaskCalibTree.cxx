@@ -64,7 +64,6 @@ AliAnalysisTaskSE(name),
   fDeltaz(0),
   fDeltat(0),
   fDeltaraw(0),
-  fLightMode(kFALSE),
   fSaveCoordinates(kFALSE),
   fOutputTree(0x0)             
 
