@@ -189,6 +189,7 @@ fTreeVariablePtMC(0),
 fTreeVariableRapMC(0),
 
 //---> Variables for fTreeCascade
+fTreeCascVarCentrality(0),
 fTreeCascVarPosLength(0),
 fTreeCascVarNegLength(0),
 fTreeCascVarBachLength(0),
@@ -375,6 +376,7 @@ fTreeVariablePtMC(0),
 fTreeVariableRapMC(0),
 
 //---> Variables for fTreeCascade
+fTreeCascVarCentrality(0),
 fTreeCascVarPosLength(0),
 fTreeCascVarNegLength(0),
 fTreeCascVarBachLength(0),
@@ -629,6 +631,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //------------------------------------------------
     //Create Cascade output tree
     fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
+    fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
     //-----------BASIC-INFO---------------------------
     fTreeCascade->Branch("fTreeCascVarPosSign",&fTreeCascVarPosSign,"fTreeCascVarPosSign/I");
     fTreeCascade->Branch("fTreeCascVarNegSign",&fTreeCascVarNegSign,"fTreeCascVarNegSign/I");
@@ -949,6 +952,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
+    
+    //Let's find out why efficiency is so centrality dependent, please 
+    fTreeCascVarCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
