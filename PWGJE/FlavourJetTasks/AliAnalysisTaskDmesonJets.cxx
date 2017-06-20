@@ -2240,6 +2240,8 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fNOutputTrees(0),
   fTrackEfficiency(0),
   fRejectISR(kFALSE),
+  fJetAreaType(fastjet::active_area),
+  fJetGhostArea(0.005),
   fMCContainer(0),
   fAodEvent(0),
   fFastJetWrapper(0)
@@ -2260,6 +2262,8 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOu
   fNOutputTrees(nOutputTrees),
   fTrackEfficiency(0),
   fRejectISR(kFALSE),
+  fJetAreaType(fastjet::active_area),
+  fJetGhostArea(0.005),
   fMCContainer(0),
   fAodEvent(0),
   fFastJetWrapper(0)
@@ -2630,9 +2634,8 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
 
   fFastJetWrapper = new AliFJWrapper(fName, fTitle);
 
-  // TODO: make this settable
-  fFastJetWrapper->SetAreaType(fastjet::active_area);
-  fFastJetWrapper->SetGhostArea(0.005);
+  fFastJetWrapper->SetAreaType((fastjet::AreaType)fJetAreaType);
+  fFastJetWrapper->SetGhostArea(fJetGhostArea);
 
   if (!fAodEvent) {
      AliError(Form("This task need an AOD event (Task '%s'). Expect troubles...", GetName()));

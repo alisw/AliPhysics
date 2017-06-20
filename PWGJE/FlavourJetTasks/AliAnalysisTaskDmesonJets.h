@@ -550,6 +550,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
   void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
   void SetRejectISR(Bool_t b)                     { fRejectISR          = b ; }
+  void SetJetArea(Int_t type,
+      Double_t garea = 0.005)                     { fJetAreaType        = type; fJetGhostArea = garea; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -580,6 +582,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
   Bool_t               fRejectISR                 ; ///<  Reject initial state radiation
+  Int_t                fJetAreaType               ; ///<  Jet area type
+  Double_t             fJetGhostArea              ; ///<  Area of the ghost particles
   AliHFAODMCParticleContainer* fMCContainer       ; //!<! MC particle container
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
@@ -590,7 +594,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 8);
+  ClassDef(AliAnalysisTaskDmesonJets, 9);
   /// \endcond
 };
 
