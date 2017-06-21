@@ -11,7 +11,6 @@ AliAnalysisPIDV0::AliAnalysisPIDV0():
   fDCAV0Daughters(0),
   fV0CosinePA(0),
   fPt(0),
-  fMCPdgCode(0),
   fEta(0)
 {
 };
@@ -26,7 +25,6 @@ AliAnalysisPIDV0::AliAnalysisPIDV0(const AliAnalysisPIDV0 &source):
   fDCAV0Daughters(source.fDCAV0Daughters),
   fV0CosinePA(source.fV0CosinePA),
   fPt(source.fPt),
-  fMCPdgCode(source.fMCPdgCode),
   fEta(source.fEta)
 {
 };
@@ -42,11 +40,10 @@ AliAnalysisPIDV0 &AliAnalysisPIDV0::operator=(const AliAnalysisPIDV0 &source) {
   fDCAV0Daughters = source.fDCAV0Daughters;
   fV0CosinePA = source.fV0CosinePA;
   fPt = source.fPt;
-  fMCPdgCode = source.fMCPdgCode;
   fEta = source.fEta;
   return *this;
 };
-void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA, Double_t pT, Double_t Eta, Int_t MCPDG) {
+void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA, Double_t pT, Double_t Eta) {
   fPosAnalysisPIDTrack = PosTrack;
   fNegAnalysisPIDTrack = NegTrack;
   fInvMK0s=InvMasses[0];
@@ -57,10 +54,17 @@ void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack
   fV0CosinePA = CosinePA;
   fPt = pT;
   fEta = Eta;
-  fMCPdgCode = MCPDG;
 };
 AliAnalysisPIDV0::~AliAnalysisPIDV0()
 {
   delete fPosAnalysisPIDTrack;
   delete fNegAnalysisPIDTrack;
+};
+Int_t AliAnalysisPIDV0::GetMCPdgCode() {
+  if(!fPosAnalysisPIDTrack || !fNegAnalysisPIDTrack) return 0;
+  if(fPosAnalysisPIDTrack->GetMCMotherPdgCode()==0) return 0;
+  if(fPosAnalysisPIDTrack->GetMCMotherPdgCode()==fNegAnalysisPIDTrack->GetMCMotherPdgCode())
+    if(fPosAnalysisPIDTrack->GetMCMotherLabel()==fNegAnalysisPIDTrack->GetMCMotherLabel())
+      return fPosAnalysisPIDTrack->GetMCMotherPdgCode();
+  return 0;
 };
