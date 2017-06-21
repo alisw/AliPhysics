@@ -355,6 +355,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetRhoName(TString n)                            { fRhoName      = n  ; }
     Double_t GetRadius() const { return fRadius; }
+    TString GetRhoName() const { return fRhoName; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
     Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
