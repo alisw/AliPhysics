@@ -198,7 +198,9 @@ Bool_t AliAnalysisTaskRhoDev::Run()
 /**
  * Create an instance of this class and add it to the analysis manager
  * @param trackName name of the track collection
+ * @param trackPtCut minimum pt of the tracks
  * @param clusName name of the calorimeter cluster collection
+ * @param clusECut minimum energy of the calorimeter clustuers
  * @param nRho name of the output rho object
  * @param jetradius Radius of the kt jets used to calculate the background
  * @param acceptance Fiducial acceptance of the kt jets
@@ -208,7 +210,7 @@ Bool_t AliAnalysisTaskRhoDev::Run()
  * @param suffix additional suffix that can be added at the end of the task name
  * @return pointer to the new AliAnalysisTaskRhoDev task
  */
-AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, TString clusName, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
+AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -258,7 +260,7 @@ AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, T
     }
   }
 
-  TString name("AliAnalysisTaskRhoDev");
+  TString name(TString::Format("AliAnalysisTaskRhoDev_%s", nRho.Data()));
   if (!suffix.IsNull()) {
     name += "_";
     name += suffix;
@@ -274,11 +276,12 @@ AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, T
   rhotask->SetOutRhoName(nRho);
 
   AliParticleContainer* partCont = rhotask->AddParticleContainer(trackName.Data());
+  partCont->SetMinPt(trackPtCut);
   AliClusterContainer *clusterCont = rhotask->AddClusterContainer(clusName.Data());
   if (clusterCont) {
     clusterCont->SetClusECut(0.);
     clusterCont->SetClusPtCut(0.);
-    clusterCont->SetClusHadCorrEnergyCut(0.3);
+    clusterCont->SetClusHadCorrEnergyCut(clusECut);
     clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
