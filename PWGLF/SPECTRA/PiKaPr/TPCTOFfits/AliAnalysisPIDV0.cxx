@@ -66,4 +66,5 @@ Int_t AliAnalysisPIDV0::GetMCPdgCode() {
   if(fPosAnalysisPIDTrack->GetMCMotherPdgCode()==fNegAnalysisPIDTrack->GetMCMotherPdgCode())
     if(fPosAnalysisPIDTrack->GetMCMotherLabel()==fNegAnalysisPIDTrack->GetMCMotherLabel())
       return fPosAnalysisPIDTrack->GetMCMotherPdgCode();
+  return 0;
 };
