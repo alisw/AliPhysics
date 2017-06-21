@@ -2956,27 +2956,27 @@ void AliHFSystErr::InitDstartoD0pi2016pPb0100(){
 
   //Normalization
 fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.037); // 4% error on sigmaV0and -
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.02); // Same as D0 and D+
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.011); // 1.1% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.011); // 1.1% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.06);//Dummy for the moment
+  for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.06);//Dummy for the moment
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   fRawYield->SetBinContent(1,1.0);
   fRawYield->SetBinContent(2,0.06);
   fRawYield->SetBinContent(3,0.04);
-  fRawYield->SetBinContent(4,0.025);
-  fRawYield->SetBinContent(5,0.025);
+  fRawYield->SetBinContent(4,0.03);
+  fRawYield->SetBinContent(5,0.03);
   fRawYield->SetBinContent(6,0.02);
   fRawYield->SetBinContent(7,0.02);
   fRawYield->SetBinContent(8,0.02);
-  for(Int_t i=9;i<=24;i++) fRawYield->SetBinContent(i,0.015); 
+  for(Int_t i=9;i<=24;i++) fRawYield->SetBinContent(i,0.02); 
   for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.04);
 
   // Cuts efficiency (from cuts variation)
@@ -2984,15 +2984,15 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
   fCutsEff->SetBinContent(1,0.);
   fCutsEff->SetBinContent(2,0.04);
   fCutsEff->SetBinContent(3,0.02);
-  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.015); // Very conservative first values
+  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.02); // Very conservative first values rounded up
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.); // First value still to be finalised in D2H
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.02); // PID for 2 sigma in TPC
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //Dummy for now
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //No systematic assigned final
 
 
   
