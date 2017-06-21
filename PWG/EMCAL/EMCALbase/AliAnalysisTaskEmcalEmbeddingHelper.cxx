@@ -1001,7 +1001,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Add to the count the number of files which were embedded
   fHistManager.FillTH1("fHistNumberOfFilesEmbedded", 1);
-  fHistManager.FillTH1("fHistFileNumber", (fFileNumber + fFilenameIndex) % fMaxNumberOfFiles);
+  fHistManager.FillTH1("fHistAbsoluteFileNumber", (fFileNumber + fFilenameIndex) % fMaxNumberOfFiles);
 
   // Check for pythia cross section and extract if possible
   // fFileNumber corresponds to the next file
