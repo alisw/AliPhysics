@@ -275,6 +275,17 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *fV0DecayLength;
   TH1D *fV0Eta;
   TH1D *fCosPointingAngle;
+
+  //RhoRho Channel histos.
+  TH1D *fHistNeventsEtaCRhoChannel;
+  TH2D *f2RhoPtVsMinvRho;
+  TH2D *f4PionPtVsMinvRho;
+  TH2D *f2RhoPtVsMinvEtaC;
+  TH2D *f4PionPtVsMinvEtaC;
+
+  //3PiPi Channel histos
+  TH1D *fHistNeventsEtaC3PiPiChannel;
+  TH2D *f3PiPiPtVsMinvEtaC;
     
   TH1D *fHistZDCCuts;
   

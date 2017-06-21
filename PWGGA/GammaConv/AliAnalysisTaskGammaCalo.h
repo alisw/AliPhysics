@@ -239,6 +239,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueSecondaryPi0FromLambdaInvMassPt;            //! array of histos with validated secondary mothers from Lambda, invMass, pt
     TH1F**                fHistoTrueLambdaWithPi0DaughterMCPt;                  //! array of histos with lambda with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueBckGGInvMassPt;                             //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckFullMesonContainedInOneClusterInvMassPt; //! array of histos with pi0 fully contained in one cluster, invMass, pt
+    TH2F**                fHistoTrueBckAsymEClustersInvMassPt;                  //! array of histos with asymmetry energy distributions of clusters, invMass, pt
     TH2F**                fHistoTrueBckContInvMassPt;                           //! array of histos with contamination BG, invMass, pt
     TH2F**                fHistoTruePi0PtY;                                     //! array of histos with validated pi0, pt, Y
     TH2F**                fHistoTrueEtaPtY;                                     //! array of histos with validated eta, pt, Y
@@ -337,6 +339,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fInvMassTreeAlpha;
     Float_t               fInvMassTreeTheta;
     Int_t                 fInvMassTreeMixPool;
+    Float_t               fInvMassTreeZVertex;
+    Float_t               fInvMassTreeEta;
 
     // tree for E/p studies
     TTree**               tClusterEOverP;                                       //! array of trees with tree for E/p studies
@@ -392,7 +396,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 36);
+    ClassDef(AliAnalysisTaskGammaCalo, 37);
 };
 
 #endif

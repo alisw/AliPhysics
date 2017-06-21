@@ -649,7 +649,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoClusMergedNCellsAroundPt[iCut]);
       fHistoClusMergedNCellsAroundAndInPt[iCut]     = new TH2F("ClusMerged_NCellsAroundAndInClus_Pt","ClusMerged_NCellsAroundAndInClus_Pt",100,-0.5,99.5,ptBins, startPt, endPt);
       fESDList[iCut]->Add(fHistoClusMergedNCellsAroundAndInPt[iCut]);
-      fHistoClusMergedEAroundE[iCut]                = new TH2F("ClusMerged_EAroundClus_E","ClusMerged_EAroundClus_E",ptBins, startPt, endPt, ptBins, startPt, endPt);
+      fHistoClusMergedEAroundE[iCut]                = new TH2F("ClusMerged_EAroundClus_E","ClusMerged_EAroundClus_E",ptBinsDefClus, startPtDefClus, endPtDefClus, ptBins, startPt, endPt);
       fESDList[iCut]->Add(fHistoClusMergedEAroundE[iCut]);
   
       if (fIsMC > 0){

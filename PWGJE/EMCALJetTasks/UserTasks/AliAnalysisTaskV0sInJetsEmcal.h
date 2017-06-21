@@ -37,6 +37,8 @@ public:
   // data selection
   void SetIsPbPb(Bool_t val = 1) {fbIsPbPb = val;}
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
+  void SetGeneratorName(TString name) {fsGeneratorName = name;}
+  Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
 
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
@@ -137,6 +139,7 @@ protected:
 private:
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
+  AliMCEvent* fEventMC; //! MC event
   TRandom* fRandom; //! random-number generator
   AliEventPoolManager* fPoolMgr; //! event pool manager
   TList* fOutputListStd; //! Output list for standard analysis results
@@ -147,6 +150,7 @@ private:
   // Data selection
   Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
   Bool_t fbMCAnalysis; // switch: simulated / real data
+  TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
 
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
@@ -247,6 +251,8 @@ private:
   TH1D* fh1QAV0TPCRefit[fgkiNQAIndeces]; //! TPC refit on vs off
   TH1D* fh1QAV0TPCRows[fgkiNQAIndeces]; //! crossed TPC pad rows
   TH1D* fh1QAV0TPCFindable[fgkiNQAIndeces]; //! findable clusters
+  TH2D* fh2QAV0PtNCls[fgkiNQAIndeces]; //! pt vs TPC clusters
+  TH2D* fh2QAV0PtChi[fgkiNQAIndeces]; //! pt vs Chi2/ndf
   TH1D* fh1QAV0TPCRowsFind[fgkiNQAIndeces]; //! ratio rows/clusters
   TH1D* fh1QAV0Eta[fgkiNQAIndeces]; //! pseudorapidity
   TH2D* fh2QAV0EtaRows[fgkiNQAIndeces]; //! pseudorapidity vs TPC rows
@@ -462,7 +468,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 17) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 19) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

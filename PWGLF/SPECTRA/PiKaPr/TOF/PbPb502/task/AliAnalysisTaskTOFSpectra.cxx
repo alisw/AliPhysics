@@ -201,6 +201,8 @@ fESDpid(0x0),
 hNEvt(0x0),
 hEvtMult(0x0),
 hEvtMultAftEvSel(0x0),
+hEvtVtxXYBefSel(0x0),
+hEvtVtxZBefSel(0x0),
 hEvtVtxXY(0x0),
 hEvtVtxZ(0x0),
 hNTrk(0x0),
@@ -637,6 +639,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     }
     else{
       if(fHImode){
@@ -681,6 +684,12 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
     if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(hEvtMultAftEvSel->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMultAftEvSel);
+    
+    hEvtVtxXYBefSel = new TH1F("hEvtVtxXYBefSel", "XY primary vertex distance Before Selection;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
+    fListHist->AddLast(hEvtVtxXYBefSel);
+    
+    hEvtVtxZBefSel = new TH1F("hEvtVtxZBefSel", "Z primary vertex distance Before Selection;Z (cm);Counts", 100, -50., 50.);
+    fListHist->AddLast(hEvtVtxZBefSel);
     
     hEvtVtxXY = new TH1F("hEvtVtxXY", "XY primary vertex distance;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
     fListHist->AddLast(hEvtVtxXY);
@@ -1488,18 +1497,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   UInt_t PhysSelmask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fEvtPhysSelected = (PhysSelmask & fSelectBit);//--> Physics Selection
   
-  //
-  //Physics Selection Cut
-  //
-  if (!fEvtPhysSelected) {
-    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
-    // Post output data.
-    PostAllTheData();
-    return;
-  }
-  
   //   AliInfo(Form("Event %.0f Passed the Phys. Sel. + Trig", hNEvt->GetBinContent(1)));
-  hNEvt->Fill(EvtStart++); //-->Pass Phys. Sel. + Trig
+  if (fEvtPhysSelected) hNEvt->Fill(EvtStart); //-->Pass Phys. Sel. + Trig
+  EvtStart++;
   
   //
   //Event Selection
@@ -1538,9 +1538,29 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
   
   //
+  //Physics Selection Cut
+  //
+  if (!fEvtPhysSelected) {
+    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
+    // Post output data.
+    PostAllTheData();
+    return;
+  }
+  
+  //
   //Filling the Multiplicity histogram before the event selection
   //
   hEvtMult->Fill(fEvtMult);
+  
+  //
+  // monitor vertex position before event selection
+  //
+  const AliESDVertex* vertex = ObtainVertex();
+  if (!vertex && fEventCut.PassedCut(AliEventCuts::kPileUp)){//NOTE do this only if the vertex exists!
+    //Filling XY and Z distribution for vertex
+    hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
+    hEvtVtxZBefSel->Fill(fPrimVertex[2]);
+  }
   
   //
   //Event Selection Cut
@@ -1556,9 +1576,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   //
   //Now events are selected, there cannot be any inconsistency!!!
   //
-  // monitor vertex position
+  // monitor vertex position after event selection
   //
-  const AliESDVertex* vertex = ObtainVertex();
   if (!vertex) {
     // Post output data.
     AliFatal(Form("Event selected for the analysis has vertex status %i (should be 3) and will be rejected!!!", fVertStatus));
@@ -2563,7 +2582,7 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
   if(fUseAliEveCut){
     
     //Fill the histogram with the number of events per cut
-    if(fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
+    if(fEvtPhysSelected && fEventCut.PassedCut(AliEventCuts::kDAQincomplete)) {
       hNEvt->Fill(binstart++);
       if(fEventCut.PassedCut(AliEventCuts::kPileUp)) {
         hNEvt->Fill(binstart++);
@@ -2577,10 +2596,10 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
     }
     
     //Global cut
-    if (!fEventCut.AcceptEvent(fESD)) {
-      return kFALSE;
-    }
-    else return kTRUE;
+    if (!fEventCut.AcceptEvent(fESD)) return kFALSE;
+    
+    hNEvt->Fill(binstart++);
+    return kTRUE;
     
   }
   

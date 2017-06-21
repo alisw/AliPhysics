@@ -119,6 +119,7 @@ protected:
   
   TString           fV0ReaderStrangeName;
   TObjString*       fCutString;                           // cut number used for analysis
+  TString           fCutStringRead;
   
   Bool_t            fIsQA;
   
@@ -165,7 +166,7 @@ protected:
   
 private:
   
-  ClassDef(AliV0CutsStrange,1)
+  ClassDef(AliV0CutsStrange,2)
 };
 
 #endif

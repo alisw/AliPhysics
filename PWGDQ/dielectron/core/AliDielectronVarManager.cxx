@@ -152,6 +152,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPC_nSigma_Kaons",       "n#sigma_{K}^{TPC}",                                  ""},
   {"TPC_nSigma_Protons",     "n#sigma_{p}^{TPC}",                                  ""},
 
+  {"TOF_nSigma_ElectronsRaw","n#sigma_{e}^{TOF} (raw)",                            ""},
   {"TOF_nSigma_Electrons",   "n#sigma_{e}^{TOF}",                                  ""},
   {"TOF_nSigma_Pions",       "n#sigma_{#pi}^{TOF}",                                ""},
   {"TOF_nSigma_Muons",       "n#sigma_{#mu}^{TOF}",                                ""},

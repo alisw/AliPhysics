@@ -29,6 +29,7 @@ public:
 	void SetMultiplicity(TString method,Float_t multiplicity);
 	void SetPhysicsSelectionMask(UShort_t mask){fPhysicsSelectionMask=mask;};
 	void SetIsPileupFromSPD(Bool_t ispileup){fPileupFromSPD=ispileup;};
+	void SetL0TriggerInput(UShort_t L0TriggerInput){fL0TriggerInput=L0TriggerInput;};
 	Double_t GetEventPlane() {return fEventPlane ;};
 	Int_t GetRunNumber() {return fRunNb ;};
 	Double_t GetXVertex() {return fVertex[0] ;};
@@ -38,6 +39,7 @@ public:
 	TString GetTriggerString() {return fTriggerString ;};
 	Int_t GetNVtxContributors(){return fNVtxContributors;};
 	UShort_t GetPhysicsSelectionMask(){return fPhysicsSelectionMask;};
+	UShort_t GetL0TriggerInput(){return fL0TriggerInput;};
 	Float_t GetMultiplicity(TString method);
 	Bool_t IsPileupFromSPD(){return fPileupFromSPD;};
 	
@@ -64,6 +66,7 @@ private:
 	Int_t fRunNb;
 	Short_t fNMuons;
 	UShort_t fPhysicsSelectionMask;
+	UShort_t fL0TriggerInput;
 	Double_t fVertex[3];
 	Int_t fNVtxContributors;
 	TString fTriggerString;
@@ -74,4 +77,3 @@ private:
 };
 
 #endif
-

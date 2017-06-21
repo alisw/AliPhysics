@@ -1,8 +1,6 @@
 ///
-/// \class AliFemtoModelWeightGeneratorBasic
-/// \brief Basic femtoscopic weight generator only return a simple
-/// \author Adam Kisiel <kisiel@mps.ohio-state.edu>
-///
+/// \file AliFemtoModelWeightGeneratorBasic.cxx
+/// \author Adam Kisiel kisiel@mps.ohio-state.edu
 ///
 
 #ifdef __ROOT__
@@ -16,13 +14,15 @@
 
 //________________________
 AliFemtoModelWeightGeneratorBasic::AliFemtoModelWeightGeneratorBasic():
-  AliFemtoModelWeightGenerator()
+  AliFemtoModelWeightGenerator(),
+  fPrintEmptyParticleNotification(true)
 {
   /* no-op */
 }
 //________________________
 AliFemtoModelWeightGeneratorBasic::AliFemtoModelWeightGeneratorBasic(const AliFemtoModelWeightGeneratorBasic &aModel) :
-  AliFemtoModelWeightGenerator(aModel)
+  AliFemtoModelWeightGenerator(aModel),
+  fPrintEmptyParticleNotification(aModel.fPrintEmptyParticleNotification)
 {
   /* no-op */
 }
@@ -38,6 +38,8 @@ AliFemtoModelWeightGeneratorBasic& AliFemtoModelWeightGeneratorBasic::operator=(
   if (this != &aModel) {
     AliFemtoModelWeightGenerator::operator=(aModel);
   }
+
+  fPrintEmptyParticleNotification = aModel.fPrintEmptyParticleNotification;
 
   return *this;
 }
@@ -88,7 +90,9 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   Double_t tM  = (tMt - tPt > 0.0) ? sqrt(tMt - tPt) : 0.0;
 
   if (tMt == 0 || tE == 0 || tM == 0 || tPt == 0 ) {
-    cout << " weight generator zero tPt || tMt || tM || tPt " << tM1 << " " << tM2 << endl;
+    if (fPrintEmptyParticleNotification) {
+      cout << " weight generator zero tPt || tMt || tM || tPt " << tM1 << " " << tM2 << endl;
+    }
     return 0;
   }
 
@@ -101,7 +105,7 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   Double_t pX=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x();
   Double_t pY=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y();
   Double_t pZ=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z();
-	   
+
 
   // Boost to LCMS
   Double_t tBeta = tPz/tE;
@@ -169,7 +173,7 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
 */
 
  Double_t tDX =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->x();
-  
+
   Double_t tDY =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->y();
 
  Double_t tRLong =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->z();

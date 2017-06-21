@@ -17,7 +17,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
  public:
   	AliAnalysisTaskKinkpp5TeVMC();
-	AliAnalysisTaskKinkpp5TeVMC(const char *name);
+	AliAnalysisTaskKinkpp5TeVMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange);
   	virtual ~AliAnalysisTaskKinkpp5TeVMC() {}
   
   	virtual void   UserCreateOutputObjects();

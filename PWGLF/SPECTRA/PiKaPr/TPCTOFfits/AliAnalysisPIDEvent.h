@@ -15,7 +15,6 @@ public TObject
   AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source); // copy constructor
   AliAnalysisPIDEvent &operator=(const AliAnalysisPIDEvent &source); // operator=
   virtual ~AliAnalysisPIDEvent(); // default destructor
-
   Bool_t IsCollisionCandidate() const {return fIsCollisionCandidate;}; // getter
   Bool_t HasVertex() const {return fHasVertex;}; // getter
   Float_t GetVertexZ() const {return fVertexZ;}; // getter
@@ -42,7 +41,9 @@ public TObject
   void SetTimeZeroT0(Int_t i, Float_t value) {fTimeZeroT0[i] = value;}; // setter
   void SetMCTimeZero(Float_t value) {fMCTimeZero = value;}; // setter
   void SetV0Mmultiplicity(Float_t multi) { fV0Mmultiplicity = multi;}; // setter
-  void SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias);
+  void SetEventFlags(Int_t NewFlag) { fEventFlags = NewFlag; };
+  Int_t GetEventFlags() { return fEventFlags; };
+  Bool_t HasEventFlag(Int_t CheckFlag) { return (fEventFlags&CheckFlag)==CheckFlag; };
   void SetMagneticField(Double_t MagneticFieldValue) { fMagneticField = MagneticFieldValue; };
   void SetRunNumber(Int_t RunNo) { fRunNo = RunNo; };
 
@@ -90,9 +91,22 @@ public TObject
     kCentEst_ZNA, /* ZNA */
     kNCentralityEstimators
   };
+  enum EventFlags_t {
+    kNotPileupInSPD = 1,
+    kNotPileupInMV = 2,
+    kNotPileupInMB = 4,
+    kINELgtZERO = 8,
+    kNoInconsistentVtx = 16,
+    kNoV0Asym = 32,
+    kAll = 63
+  };
   static const Char_t *fgkCentralityEstimatorName[kNCentralityEstimators]; // centrality estimator name
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
-
+  static void SetCheckFlag(Int_t);
+  static void AddCheckFlag(EventFlags_t);
+  static void RemoveCheckFlag(EventFlags_t);
+  Bool_t CheckFlag();
+  static void PrintEventSelection();
 
  private:
 
@@ -116,11 +130,7 @@ public TObject
   /*** MC info ***/
   Float_t fMCTimeZero; // MC time-zero
   //Some flags from PPVsMultUtils class
-  Bool_t fIsNotPileUpFromSPDInMultBins;
-  Bool_t fIsINELgtZERO;
-  Bool_t fIsAcceptedVertexPosition;
-  Bool_t fHasNoInconsistentSPDandTrackVertices;
-  Bool_t fIsMinimumBias;
+  Int_t fEventFlags;
   Double_t fMagneticField;
   Int_t fRunNo;
 
@@ -147,8 +157,9 @@ public TObject
   static const Char_t *fgTimeZeroTOFCentCorrFormula;
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
+  static Int_t fgFlagToCheck; //! check flag
 
-  ClassDef(AliAnalysisPIDEvent, 4);
+  ClassDef(AliAnalysisPIDEvent, 5);
 };
 
 #endif /* ALIANALYSISPIDEVENT_H */

@@ -55,6 +55,7 @@ fhTrackResolution(0),
 fhPtVtxOutBC0(0),  fhEtaPhiVtxOutBC0(0),
 fhPtVtxInBC0(0),   fhEtaPhiVtxInBC0(0),
 fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
+fhEtaPhiSPDRefit(0),     fhEtaPhiNoSPDRefit(0),     fhEtaPhiNoSPDNoRefit(0),
 fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
 fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
 // TOF
@@ -400,6 +401,12 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiSPDRefitPt02->SetYTitle("#varphi (rad)");
   outputContainer->Add(fhEtaPhiSPDRefitPt02);
   
+  fhEtaPhiSPDRefit= new TH2F ("hEtaPhiSPDRefit","#eta vs #varphi of tracks with SPD and ITS refit",
+                                    netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiSPDRefit->SetXTitle("#eta ");
+  fhEtaPhiSPDRefit->SetYTitle("#varphi (rad)");
+  outputContainer->Add(fhEtaPhiSPDRefit);
+  
   fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","#eta vs #varphi of tracks with SPD and ITS refit, #it{p}_{T}> 3 GeV/#it{c}",
                                    netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiSPDRefitPt3->SetXTitle("#eta ");
@@ -410,6 +417,12 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                               nptbins,ptmin,ptmax);
   fhPtNoSPDRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoSPDRefit);
+  
+  fhEtaPhiNoSPDRefit  = new TH2F ("hEtaPhiNoSPDRefit","#eta vs #varphi of constrained tracks no SPD and with ITSRefit",
+                                      netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDRefit->SetXTitle("#eta ");
+  fhEtaPhiNoSPDRefit->SetYTitle("#varphi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDRefit);
   
   fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","#eta vs #varphi of constrained tracks no SPD and with ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
                                       netabins,etamin,etamax, nphibins,phimin,phimax);
@@ -427,6 +440,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                                 nptbins,ptmin,ptmax);
   fhPtNoSPDNoRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoSPDNoRefit);
+  
+  fhEtaPhiNoSPDNoRefit  = new TH2F ("hEtaPhiNoSPDNoRefit",
+                                        "#eta vs #varphi of constrained tracks with no SPD requierement and without ITSRefit",
+                                        netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDNoRefit->SetXTitle("#eta ");
+  fhEtaPhiNoSPDNoRefit->SetYTitle("#varphi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDNoRefit);
   
   fhEtaPhiNoSPDNoRefitPt02  = new TH2F ("hEtaPhiNoSPDNoRefitPt02",
                                         "#eta vs #varphi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
@@ -1294,6 +1314,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       if(bITSRefit)
       {
         fhPtNoSPDRefit->Fill(pt, GetEventWeight());
+        fhEtaPhiNoSPDRefit->Fill(eta, phi, GetEventWeight());
         if(pt < 2)fhEtaPhiNoSPDRefitPt02->Fill(eta, phi, GetEventWeight());
         if(pt > 3)fhEtaPhiNoSPDRefitPt3 ->Fill(eta, phi, GetEventWeight());
         
@@ -1311,6 +1332,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       else
       {
         fhPtNoSPDNoRefit->Fill(pt, GetEventWeight());
+        fhEtaPhiNoSPDNoRefit->Fill(eta, phi, GetEventWeight());
         if(pt < 2)fhEtaPhiNoSPDNoRefitPt02->Fill(eta, phi, GetEventWeight());
         if(pt > 3)fhEtaPhiNoSPDNoRefitPt3 ->Fill(eta, phi, GetEventWeight());
         
@@ -1329,6 +1351,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     else
     {
       fhPtSPDRefit->Fill(pt, GetEventWeight());
+      fhEtaPhiSPDRefit->Fill(eta, phi, GetEventWeight());
       if(pt < 2)fhEtaPhiSPDRefitPt02->Fill(eta, phi, GetEventWeight());
       if(pt > 3)fhEtaPhiSPDRefitPt3 ->Fill(eta, phi, GetEventWeight());
       

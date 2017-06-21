@@ -118,6 +118,8 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh04);
   TH1F* fhh05 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
   lhh->Add(fhh05);
+  TH1F* fhh06 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
+  lhh->Add(fhh06);
   
   return lhh;
   
@@ -372,6 +374,10 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     Bool_t hasSPD = spdVertex->GetStatus();
     Bool_t hasTrk = trkVertex->GetStatus();
   
+    // SPD/track vertex?
+    if (hasSPD) fVtxType |= AliCEPBase::kVtxSPD;
+    if (hasTrk) fVtxType |= AliCEPBase::kVtxTracks;
+    
     // Note that AliVertex::GetStatus checks that N_contributors is > 0
     // reject events if both are explicitly requested and none is available
     if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
@@ -380,31 +386,25 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     if (hasSPD) {
       if (spdVertex->IsFromVertexerZ() &&
         !(spdVertex->GetDispersion()<0.04 &&
-        spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxErrRes;
+        spdVertex->GetZRes()<0.25)) fVtxType |= AliCEPBase::kVtxErrRes;
     }
   
-    // reject events if none between the SPD or track verteces are available
-    // if no trk vertex, try to fall back to SPD vertex;
-    if (hasTrk) {
-      fVtxType |= AliCEPBase::kVtxTracks;
-      if (hasSPD) {
-        fVtxType |= AliCEPBase::kVtxSPD;
-        // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
-        if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxErrDif;
-      }
-      
-    } else {
-      fVtxType |= AliCEPBase::kVtxSPD;
+    // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+    if (hasSPD && hasTrk) {
+      if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5)
+        fVtxType |= AliCEPBase::kVtxErrDif;
     }
   
   }
   
   // Cut on the vertex z position
   const AliVVertex *vertex = Event->GetPrimaryVertex();
-  if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxErrZ;
+  if (vertex->GetStatus()) {
+    if (TMath::Abs(vertex->GetZ())>10) fVtxType |= AliCEPBase::kVtxErrZ;
   
-  // set the vertex position fVtxPos
-  fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+    // set the vertex position fVtxPos
+    fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+  }
   
   return fVtxType;
   
@@ -1300,19 +1300,18 @@ void AliCEPUtils::DetermineMCprocessType (
 		  
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
-      //printf("MC generator name: %s\n",fMCGenerator.Data());
+      // printf("MC generator name: %s\n",fMCGenerator.Data());
       Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
 			if (fMCGenerator == "Pythia") {
 				fMCProcess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				//printf("Pythia process type: %i\n",fMCProcess);
+				printf("Pythia process type: %i\n",fMCProcess);
         switch(fMCProcess) {
-				case 92:
-				case 93:
-				case 94:
-				case 104: fMCProcessType = AliCEPBase::kProctypeSD; break;
+				case 101: fMCProcessType = AliCEPBase::kProctypeMB; break;
+				case 103: fMCProcessType = AliCEPBase::kProctypeSDA; break;
+				case 104: fMCProcessType = AliCEPBase::kProctypeSDB; break;
 				case 105: fMCProcessType = AliCEPBase::kProctypeDD; break;
 				case 106: fMCProcessType = AliCEPBase::kProctypeCD; break;
 				default:  fMCProcessType = AliCEPBase::kProctypeND; break;
@@ -1332,9 +1331,11 @@ void AliCEPUtils::DetermineMCprocessType (
 				//printf("DPMjet process type: %i\n",fMCProcess);
 				switch(fMCProcess) {
 				case 1:  fMCProcessType = AliCEPBase::kProctypeND; break;
-				case 3:  fMCProcessType = AliCEPBase::kProctypeSD; break;
-				case 4:  fMCProcessType = AliCEPBase::kProctypeDD; break;
-				case 5:  fMCProcessType = AliCEPBase::kProctypeCD; break;
+				case 2:  fMCProcessType = AliCEPBase::kProctypeEL; break;
+				case 4:  fMCProcessType = AliCEPBase::kProctypeCD; break;
+				case 5:  fMCProcessType = AliCEPBase::kProctypeSDA; break;
+				case 6:  fMCProcessType = AliCEPBase::kProctypeSDB; break;
+				case 7:  fMCProcessType = AliCEPBase::kProctypeDD; break;
 				default: fMCProcessType = AliCEPBase::kProctypeND; break;
 				}
 			}

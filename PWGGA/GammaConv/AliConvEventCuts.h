@@ -168,9 +168,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
-        kLHC16h3,         // anchored LHC15n pass2 - jet-jet first chunck
-        kLHC16h3b,        // anchored LHC15n pass2 - jet-jet second chunck
-        kLHC16h3_bis,     // anchored LHC15n pass2 - jet-jet extra sample
+        kLHC16h3,         // anchored LHC15n pass4 - jet-jet MC Pythia8 reproduction
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
         kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
@@ -186,6 +184,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2016
         kLHC16kl,         // pp 13 TeV
         kLHC16q,          // pPb 5 TeV
+	kLHC16r,          // pPb 8 TeV
+	kLHC16s,          // pPb 8 TeV
+	kLHC16t,          // pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
         kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
@@ -515,8 +516,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            // period selector
       EnergyVar                   fEnergyEnum;                            // energy selector
-      
+
       TObjString*                 fCutString;                             // cut number used for analysis
+      TString                     fCutStringRead;
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
       Bool_t                      fDoEtaShift;                            // Flag for Etashift
@@ -590,7 +592,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,31)
+      ClassDef(AliConvEventCuts,32)
 };
 
 

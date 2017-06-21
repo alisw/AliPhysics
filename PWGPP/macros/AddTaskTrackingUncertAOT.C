@@ -11,7 +11,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           Double_t MaxDCAz  = 3.2,
                                           Double_t MaxEta   = 0.8,
                                           Double_t CrossRowsOverFndCltTPC = 0.8,
-                                          AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny) {
+                                          AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny,
+                                          Bool_t useGenPt = kFALSE) {
     
   //
   // add task of tracking uncertainty
@@ -52,6 +53,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetUseCentrality(centrSel);
   task->SetMinCentrality(minCentrality);
   task->SetMaxCentrality(maxCentrality);
+  task->SetUseGeneratedPt(useGenPt);
     
   mgr->AddTask(task);
   ULong64_t SPeciee = task->GetSpecie();

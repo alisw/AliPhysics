@@ -37,31 +37,32 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisType                 (const char* analysisType            = "ESD"  ) { fAnalysisType                   = analysisType;                 }
-  void SetCollidingSystem              (Int_t  collidingSystem              = 0      ) { fCollidingSystem                = collidingSystem;              }
-  void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType     ) { fkTriggerClass                  = trigType;                     }
-  void SetEventSelSDDstatus            (Bool_t eventselSDDstatus            = kFALSE ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
-  void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete        = kTRUE  ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
-  void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet = kTRUE  ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; }
-  void SetEventSelPileup               (Bool_t eventselPileup               = kTRUE  ) { fApplyEvSelPileup               = eventselPileup;               }
-  void SetEventSelPhysicsSel           (Bool_t eventselPhysicsSel           = kTRUE  ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
-  void SetEventSelNoTPConlyPrimVtx     (Bool_t eventselNoTPConlyPrimVtx     = kTRUE  ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
-  void SetEventSelSPDvtxres            (Bool_t eventselSPDvtxres            = kTRUE  ) { fApplyEvSelSPDvtxres            = eventselSPDvtxres;            }
-  void SetEventSelVtxProximity         (Bool_t eventselVtxProximity         = kTRUE  ) { fApplyEvSelVtxProximity         = eventselVtxProximity;         }
-  void SetEventSelZprimVtxPos          (Bool_t eventselZprimVtxPos          = kTRUE  ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
-  void SetRelaunchV0CascVertexers      (Bool_t rerunV0CascVertexers         = kFALSE ) { fRerunV0CascVertexers           = rerunV0CascVertexers;         }
-  void SetWithSDDOn                    (Bool_t withsddOn                    = kTRUE  ) { fwithSDD                        = withsddOn;                    }
-  void SetTrackQualityCutTPCrefit      (Bool_t trackqualityCutTPCrefit      = kTRUE  ) { fTrackQualityCutTPCrefit        = trackqualityCutTPCrefit;      }
-  void SetTrackQualityCutnTPCcls       (Bool_t trackqualityCutnTPCcls       = kTRUE  ) { fTrackQualityCutnTPCcls         = trackqualityCutnTPCcls;       }
-  void SetQualityCutMinnTPCcls         (Int_t  minnTPCcls                   = 70     ) { fMinnTPCcls                     = minnTPCcls;                   }
-  void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax     ) { fVtxRangeMax = vtxrangemax;     fVtxRangeMin = vtxrangemin;     }
-  void SetApplyAccCut                  (Bool_t  acccut                      = kFALSE ) { fApplyAccCut                    = acccut;                       }
-  void SetMinptCutOnDaughterTracks     (Float_t minptdaughtrks              = 0.0    ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
-  void SetExtraSelections              (Bool_t  extraSelections             = kFALSE ) { fkExtraSelections               = extraSelections;              }
-  void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                = 0.8    ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
-  void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors    = 3      ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
-  void SetNumTPCPIDsigma               (Double_t ftpcpidsigma               = 4      ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
-  void SetSuffix                       (const char* suffix                  = ""     ) { fSuffix                         = suffix;                       }
+  void SetAnalysisType                  (const char* analysisType            = "ESD"  ) { fAnalysisType                   = analysisType;                 }
+  void SetCollidingSystem               (Int_t  collidingSystem              = 0      ) { fCollidingSystem                = collidingSystem;              }
+  void SetSelectedTriggerClass          (AliVEvent::EOfflineTriggerTypes trigType     ) { fkTriggerClass                  = trigType;                     }
+  void SetEventSelSDDstatus             (Bool_t eventselSDDstatus            = kFALSE ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
+  void SetEventSelDAQIncomplete         (Bool_t eventselDAQincomplete        = kTRUE  ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
+  void SetEventSelSPDclustervstracklet  (Bool_t eventselSPDclustervstracklet = kTRUE  ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; }
+  void SetEventSelPileup                (Bool_t eventselPileup               = kTRUE  ) { fApplyEvSelPileup               = eventselPileup;               }
+  void SetEventSelPhysicsSel            (Bool_t eventselPhysicsSel           = kTRUE  ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
+  void SetEventSelNoTPConlyPrimVtx      (Bool_t eventselNoTPConlyPrimVtx     = kTRUE  ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
+  void SetEventSelSPDvtxres             (Bool_t eventselSPDvtxres            = kTRUE  ) { fApplyEvSelSPDvtxres            = eventselSPDvtxres;            }
+  void SetEventSelVtxProximity          (Bool_t eventselVtxProximity         = kTRUE  ) { fApplyEvSelVtxProximity         = eventselVtxProximity;         }
+  void SetEventSelZprimVtxPos           (Bool_t eventselZprimVtxPos          = kTRUE  ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
+  void SetRelaunchV0CascVertexers       (Bool_t rerunV0CascVertexers         = kFALSE ) { fRerunV0CascVertexers           = rerunV0CascVertexers;         }
+  void SetWithSDDOn                     (Bool_t withsddOn                    = kTRUE  ) { fwithSDD                        = withsddOn;                    }
+  void SetTrackQualityCutTPCrefit       (Bool_t trackqualityCutTPCrefit      = kTRUE  ) { fTrackQualityCutTPCrefit        = trackqualityCutTPCrefit;      }
+  void SetTrackQualityCutnTPCcls        (Bool_t trackqualityCutnTPCcls       = kTRUE  ) { fTrackQualityCutnTPCcls         = trackqualityCutnTPCcls;       }
+  void SetQualityCutMinnTPCcls          (Int_t  minnTPCcls                   = 70     ) { fMinnTPCcls                     = minnTPCcls;                   }
+  void SetQualityCutClusterOverFindable (Float_t minTPCcrossrawoverfindable  = 0.8    ) { fMinTPCcrossrawoverfindable     = minTPCcrossrawoverfindable;   }
+  void SetVertexRange                   (Float_t vtxrangemin, Float_t vtxrangemax     ) { fVtxRangeMax = vtxrangemax;     fVtxRangeMin = vtxrangemin;     }
+  void SetApplyAccCut                   (Bool_t  acccut                      = kFALSE ) { fApplyAccCut                    = acccut;                       }
+  void SetMinptCutOnDaughterTracks      (Float_t minptdaughtrks              = 0.0    ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
+  void SetExtraSelections               (Bool_t  extraSelections             = kFALSE ) { fkExtraSelections               = extraSelections;              }
+  void SetEtaCutOnDaughterTracks        (Float_t etadaughtrks                = 0.8    ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
+  void SetSPDPileUpminContributors      (Int_t   spdpileupmincontributors    = 3      ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
+  void SetNumTPCPIDsigma                (Double_t ftpcpidsigma               = 4      ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
+  void SetSuffix                        (const char* suffix                  = ""     ) { fSuffix                         = suffix;                       }
   //Setters for the V0 and cascade Vertexer Parameters
   void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -105,6 +106,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
         Bool_t            fTrackQualityCutTPCrefit;        //
         Bool_t            fTrackQualityCutnTPCcls;         //
         Int_t             fMinnTPCcls;                     // Minimum number of TPC cluster for daughter tracks
+        Float_t           fMinTPCcrossrawoverfindable;     // Minimum value for clusters/findable ratio 
         Bool_t            fkExtraSelections;               // Boolean : kTRUE = apply tighter selections, before starting the analysis
         Float_t           fVtxRangeMax;                    // to select events with |zvtx|<fVtxRange cm
         Float_t           fVtxRangeMin;                    // to select events with |zvtx|>fVtxRangeMin cm

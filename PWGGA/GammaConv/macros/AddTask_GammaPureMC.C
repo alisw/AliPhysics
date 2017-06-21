@@ -1,4 +1,4 @@
-void AddTask_GammaPureMC( ) {
+void AddTask_GammaPureMC(Int_t isK0 = 0 ) {
 
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,6 +19,8 @@ void AddTask_GammaPureMC( ) {
 	//            find input container
 	AliAnalysisTaskGammaPureMC *task=NULL;
 	task= new AliAnalysisTaskGammaPureMC("GammaPureMC");
+    // if no k0 desired, set to isK0
+    task->SetIsK0(isK0);
 
 	
 	//connect containers

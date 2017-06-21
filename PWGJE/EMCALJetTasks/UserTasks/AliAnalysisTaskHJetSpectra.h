@@ -239,11 +239,15 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
 
-   TH2F     *fhJetPhi[kCAll];   //! gc jet phi vs jet pT
-   TH2F     *fhJetPhiGen[kCAll];   //! gc jet phi vs jet pT
+   TH2F     *fhJetPhi[kCAll][kTT];   //! gc jet phi vs jet pT
+   TH2F     *fhJetPhiGen[kCAll][kTT];   //! gc jet phi vs jet pT
    TH2F     *fhTrackPhi[kCAll]; //! gc track phi vs track pT
-   TH2F     *fhJetEta[kCAll];   //! jet eta vs jet pT 
-   TH2F     *fhJetEtaGen[kCAll];   //! jet eta vs jet pT 
+   TH2F     *fhJetEta[kCAll][kTT];   //! jet eta vs jet pT 
+   TH2F     *fhJetEtaGen[kCAll][kTT];   //! jet eta vs jet pT
+   TH2F     *fhJetEtaRecoil[kCAll][kTT];//!minimum bias eta fore recoil jets 
+   TH2F     *fhJetEtaRecoilGen[kCAll][kTT];//!minimum bias eta for recoil jets gen 
+   TH2F     *fhJetPhiRecoil[kCAll][kTT];//!minimum bias phi for recoil jets 
+   TH2F     *fhJetPhiRecoilGen[kCAll][kTT];//!minimum bias phi for recoil jets gen
    TH2F     *fhTrackEta[kCAll]; //! track eta vs track pT
    TH1F     *fhTrackPt[kCAll]; //! gc X=centrality; Y= track pT
    TH1F     *fhTrackPtGen[kCAll]; //!   gc X=centrality; Y= track pT
@@ -340,7 +344,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 24); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 25); // Charged jet analysis for pA
 
 };
 #endif

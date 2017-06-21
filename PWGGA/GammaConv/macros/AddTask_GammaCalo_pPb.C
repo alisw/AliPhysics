@@ -239,7 +239,7 @@ void AddTask_GammaCalo_pPb(
   //-----------------------------------------------------------------------------------------------
   // Standard cuts
   //-----------------------------------------------------------------------------------------------  
-  } else if (trainConfig == 10){ // default cutstring and first set of variations nonlinearity, smaller openangle 17 mrad
+  } else if (trainConfig == 10){ // default cutstring smaller openangle 17 mrad
     cuts.AddCut("80000113","1111141057032230000","0163103100000060"); // default with 17mrad
     cuts.AddCut("80000113","1111141057032230000","0163103100000050"); // default with 20mrad
   } else if (trainConfig == 11){ // new default cut
@@ -254,13 +254,13 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000413","1111141057032230000","0163103100000060"); // 250ns protected
     cuts.AddCut("80000513","1111141057032230000","0163103100000060"); // 1.075 \mus protected
   } else if (trainConfig == 14){ // testing past future protection, timing 1000ns
-    cuts.AddCut("80000313","1111141051032230000","0163103100000060"); // 100ns protected
-    cuts.AddCut("80000413","1111141051032230000","0163103100000060"); // 250ns protected
-    cuts.AddCut("80000513","1111141051032230000","0163103100000060"); // 1.075 \mus protected
+    cuts.AddCut("80000313","1111141017032230000","0163103100000060"); // 100ns protected
+    cuts.AddCut("80000413","1111141017032230000","0163103100000060"); // 250ns protected
+    cuts.AddCut("80000513","1111141017032230000","0163103100000060"); // 1.075 \mus protected
   } else if (trainConfig == 15){ // testing past future protection timing 100ns
-    cuts.AddCut("80000313","1111141054032230000","0163103100000060"); // 100ns protected
-    cuts.AddCut("80000413","1111141054032230000","0163103100000060"); // 250ns protected
-    cuts.AddCut("80000513","1111141054032230000","0163103100000060"); // 1.075 \mus protected
+    cuts.AddCut("80000313","1111141047032230000","0163103100000060"); // 100ns protected
+    cuts.AddCut("80000413","1111141047032230000","0163103100000060"); // 250ns protected
+    cuts.AddCut("80000513","1111141047032230000","0163103100000060"); // 1.075 \mus protected
   //-----------------------------------------------------------------------------------------------
   // Standard cuts cent dependent
   //-----------------------------------------------------------------------------------------------      
@@ -298,6 +298,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86000413","1111144017032230000","0163103100000060"); // 250ns protected
     cuts.AddCut("86000513","1111144017032230000","0163103100000060"); // 1.075 \mus protected
 
+  } else if (trainConfig == 21){ // default cutstring, 1cell distance lead cell
+    cuts.AddCut("80000113","1111141057032230000","01631031000000a0"); // 1 cell lead cell
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // 1 cell lead cell, 17mrad open
+    cuts.AddCut("80000113","1111141057032230000","01631031000000b0"); // 1 cell lead cell, 15mrad open
+    
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB
   //-----------------------------------------------------------------------------------------------
@@ -323,11 +328,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","1111141057032230000","0163106100000060"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCut("80000113","1111141057032230000","0163105100000060"); // alpha meson variation 2  0<alpha<0.75
   } else if (trainConfig == 34){ // opening angle variations
-    cuts.AddCut("80000113","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80000113","1111141053032230000","0163103100000050"); // min opening angle 0.0202
-    cuts.AddCut("80000113","1111141053032230000","0163103100000070"); // min opening angle 0.016
-    cuts.AddCut("80000113","1111141053032230000","0163103100000080"); // min opening angle 0.018
-    cuts.AddCut("80000113","1111141053032230000","0163103100000090"); // min opening angle 0.018
+    cuts.AddCut("80000113","1111141057032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80000113","1111141057032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80000113","1111141057032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("80000113","1111141057032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("80000113","1111141057032230000","0163103100000090"); // min opening angle 0.018
   } else if (trainConfig == 35){ // TM variations
     cuts.AddCut("80000113","1111141053032230000","0163103100000060"); // fixed window
     cuts.AddCut("80000113","1111141056032230000","0163103100000060"); // tm pt dependent var 1
@@ -339,7 +344,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","1111143057032230000","0163103100000060"); // CCRF testbeam nonlin
     cuts.AddCut("80000113","1111144057032230000","0163103100000060"); // CRF testbeam nonlin
     cuts.AddCut("80000113","1111102057032230000","0163103100000060"); // testbeam nonlin
-    
+
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 0-20
   //-----------------------------------------------------------------------------------------------
@@ -365,11 +370,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80200113","1111141057032230000","0163106100000060"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCut("80200113","1111141057032230000","0163105100000060"); // alpha meson variation 2  0<alpha<0.75
   } else if (trainConfig == 44){ // opening angle variations
-    cuts.AddCut("80200113","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("80200113","1111141053032230000","0163103100000050"); // min opening angle 0.0202
-    cuts.AddCut("80200113","1111141053032230000","0163103100000070"); // min opening angle 0.016
-    cuts.AddCut("80200113","1111141053032230000","0163103100000080"); // min opening angle 0.018
-    cuts.AddCut("80200113","1111141053032230000","0163103100000090"); // min opening angle 0.018
+    cuts.AddCut("80200113","1111141057032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("80200113","1111141057032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("80200113","1111141057032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("80200113","1111141057032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("80200113","1111141057032230000","0163103100000090"); // min opening angle 0.018
   } else if (trainConfig == 45){ // TM variations
     cuts.AddCut("80200113","1111141053032230000","0163103100000060"); // fixed window
     cuts.AddCut("80200113","1111141056032230000","0163103100000060"); // tm pt dependent var 1
@@ -407,11 +412,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("82400113","1111141057032230000","0163106100000060"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCut("82400113","1111141057032230000","0163105100000060"); // alpha meson variation 2  0<alpha<0.75
   } else if (trainConfig == 54){ // opening angle variations
-    cuts.AddCut("82400113","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("82400113","1111141053032230000","0163103100000050"); // min opening angle 0.0202
-    cuts.AddCut("82400113","1111141053032230000","0163103100000070"); // min opening angle 0.016
-    cuts.AddCut("82400113","1111141053032230000","0163103100000080"); // min opening angle 0.018
-    cuts.AddCut("82400113","1111141053032230000","0163103100000090"); // min opening angle 0.018
+    cuts.AddCut("82400113","1111141057032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("82400113","1111141057032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("82400113","1111141057032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("82400113","1111141057032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("82400113","1111141057032230000","0163103100000090"); // min opening angle 0.018
   } else if (trainConfig == 55){ // TM variations
     cuts.AddCut("82400113","1111141053032230000","0163103100000060"); // fixed window
     cuts.AddCut("82400113","1111141056032230000","0163103100000060"); // tm pt dependent var 1
@@ -449,11 +454,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84600113","1111141057032230000","0163106100000060"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCut("84600113","1111141057032230000","0163105100000060"); // alpha meson variation 2  0<alpha<0.75
   } else if (trainConfig == 64){ // opening angle variations
-    cuts.AddCut("84600113","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("84600113","1111141053032230000","0163103100000050"); // min opening angle 0.0202
-    cuts.AddCut("84600113","1111141053032230000","0163103100000070"); // min opening angle 0.016
-    cuts.AddCut("84600113","1111141053032230000","0163103100000080"); // min opening angle 0.018
-    cuts.AddCut("84600113","1111141053032230000","0163103100000090"); // min opening angle 0.018
+    cuts.AddCut("84600113","1111141057032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("84600113","1111141057032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("84600113","1111141057032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("84600113","1111141057032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("84600113","1111141057032230000","0163103100000090"); // min opening angle 0.018
   } else if (trainConfig == 65){ // TM variations
     cuts.AddCut("84600113","1111141053032230000","0163103100000060"); // fixed window
     cuts.AddCut("84600113","1111141056032230000","0163103100000060"); // tm pt dependent var 1
@@ -491,11 +496,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86000113","1111141057032230000","0163106100000060"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCut("86000113","1111141057032230000","0163105100000060"); // alpha meson variation 2  0<alpha<0.75
   } else if (trainConfig == 74){ // opening angle variations
-    cuts.AddCut("86000113","1111141053032230000","0163103100000040"); // min opening angle 0.0152
-    cuts.AddCut("86000113","1111141053032230000","0163103100000050"); // min opening angle 0.0202
-    cuts.AddCut("86000113","1111141053032230000","0163103100000070"); // min opening angle 0.016
-    cuts.AddCut("86000113","1111141053032230000","0163103100000080"); // min opening angle 0.018
-    cuts.AddCut("86000113","1111141053032230000","0163103100000090"); // min opening angle 0.018
+    cuts.AddCut("86000113","1111141057032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCut("86000113","1111141057032230000","0163103100000050"); // min opening angle 0.0202
+    cuts.AddCut("86000113","1111141057032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCut("86000113","1111141057032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCut("86000113","1111141057032230000","0163103100000090"); // min opening angle 0.018
   } else if (trainConfig == 75){ // TM variations
     cuts.AddCut("86000113","1111141053032230000","0163103100000060"); // fixed window
     cuts.AddCut("86000113","1111141056032230000","0163103100000060"); // tm pt dependent var 1
@@ -718,6 +723,7 @@ void AddTask_GammaCalo_pPb(
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
+    analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);

@@ -37,13 +37,14 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10,
 							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=1,
                                                                       
-                                                                      Bool_t LoadEffFromMaps = kFALSE, // flag to allow laoding the maps not from the cut file but directly from input map files (kTRUE)
-                                                                      TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c
-                                                                      TString effDstarnameb = "DStarEff_From_b_wLimAcc_2d.root",// eff map name from b
-                                                                      TString effName= "3D_eff_Std.root"
+                                                           Bool_t LoadEffFromMaps = kFALSE, // flag to allow laoding the maps not from the cut file but directly from input map files (kTRUE)
+                                                           TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c
+                                                           TString effDstarnameb = "DStarEff_From_b_wLimAcc_2d.root",// eff map name from b
+                                                           TString effName= "3D_eff_Std.root",
+                                                           Bool_t useSmallSizePlots=kFALSE //reduce number of bins in THnSparse (use for heavy datasets)
                                                                       
                                                                       
-                                                                      )
+                                                           )
 { 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -275,6 +276,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
     task->SetUseMCEventType(UseMCEventType);
     task->SetAODMismatchProtection(AODprot);
+    task->SetUseSmallSizePlots(useSmallSizePlots);
 
     if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);

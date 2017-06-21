@@ -162,6 +162,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsPureCalo(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
+  fCutStringRead(""),
   fHistCutIndex(NULL),
   fHistAcceptanceCuts(NULL),
   fHistClusterIdentificationCuts(NULL),
@@ -331,6 +332,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fIsPureCalo(ref.fIsPureCalo),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
+  fCutStringRead(""),
   fHistCutIndex(NULL),
   fHistAcceptanceCuts(NULL),
   fHistClusterIdentificationCuts(NULL),
@@ -538,9 +540,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistograms->Add(fHistClusterEtavsPhiAfterQA);
   } else if( fClusterType == 2 ){ //PHOS
     const Int_t nPhosEtaBins        = 56;
-    const Int_t nPhosPhiBins        = 192;
+    const Int_t nPhosPhiBins        = 256;
     const Float_t PhosEtaRange[2]   = {-0.16, 0.16};
-    const Float_t PhosPhiRange[2]   = {4.5, 5.6};
+    const Float_t PhosPhiRange[2]   = {4.355, 5.6};
 
     if(!fDoLightOutput){
       fHistClusterEtavsPhiBeforeAcc = new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
@@ -2916,6 +2918,8 @@ Bool_t AliCaloPhotonCuts::UpdateCutString() {
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+
   // Initialize Cuts from a given Cut string
   AliInfo(Form("Set CaloCut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -3285,6 +3289,10 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
     if( !fUsePhiCut ) fUsePhiCut=1;
     fMinPhiCut = 4.54;//DCal acceptance
     break;
+  case 6:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMinPhiCut = 4.36;//PHOS acceptance RUN2
+    break;
 
   default:
     AliError(Form("MinPhi Cut not defined %d",minPhi));
@@ -3320,6 +3328,10 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
   case 5:
     if( !fUsePhiCut ) fUsePhiCut=1;
     fMaxPhiCut = 5.59;//DCal acceptance
+    break;
+  case 6:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 5.59;//PHOS acceptance RUN2
     break;
     
   default:
@@ -3709,6 +3721,14 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
         case 6:
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=0.9;
+          break;
+        case 7:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.2;
+          break;
+        case 8:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.4;
           break;
         default:
           AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
@@ -4263,6 +4283,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k16k5b ) {
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974173, -4.07732, -0.570223);
           if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.981417, -2.772002, -0.955616);
+
+        // pass4
+        } else if( fCurrentMC==k17e2 ) {
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.973141, -4.34463, -0.298265);
+          if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.980211, -4.374598, -0.171988);
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -4320,7 +4345,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.960074, -3.31954, -1.14748);
-
+        //pass4
+        } else if( fCurrentMC==k17e2 ){
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.958994, -4.48233, -0.0314569);
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -4421,6 +4448,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9989127547, -0.0256032769, -0.4999999322, 1.0441588769, -0.0539505719, -0.3038522827));
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9842689920, 0.9150246921, -3.6796298486, 1.0113148506, 0.6876891951, -3.1672234730));
+        //pass4
+        } else if( fCurrentMC==k17e2 ){
+          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9989127547, -0.0256032769, -0.4999999322, 1.0441588769, -0.0539505719, -0.3038522827));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -4464,6 +4494,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9747084556, 1.3652950049, -1.7832191813, 1.0039014622, 1.3657547071, -1.7852900827));
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0193460981, -0.0851635674, -0.4984580141, 1.0588985795, -0.0957023147, -0.4999999998));
+        //pass4
+        } else if( fCurrentMC==k17e2 ){
+          if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9747084556, 1.3652950049, -1.7832191813, 1.0039014622, 1.3657547071, -1.7852900827));
         } else fPeriodNameAvailable = kFALSE;
       }    
       break;
@@ -4951,11 +4984,7 @@ Double_t AliCaloPhotonCuts::GetDistanceBetweenClusters(AliVCluster* cluster1, Al
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){
    // returns TString with current cut number
-   TString a(kNCuts);
-   for(Int_t ii=0;ii<kNCuts;ii++){
-      a.Append(Form("%d",fCuts[ii]));
-   }
-   return a;
+   return fCutStringRead;
 }
 
 

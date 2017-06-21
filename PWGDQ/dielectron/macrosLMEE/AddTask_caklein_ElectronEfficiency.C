@@ -4,14 +4,14 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
                                                      Char_t* outputFileName="cklein_ElectronEfficiency.root",
                                                      Bool_t forcePhysSelAndTrigMask=kTRUE, // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
-                                                     Int_t triggerNames=(AliVEvent::kINT7),
-                                                     Int_t collCands=AliVEvent::kINT7
+                                                     Int_t triggerNames=(AliVEvent::kMB),
+                                                     Int_t collCands=AliVEvent::kMB
                                                      )
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_ElectronEfficiency", "No analysis manager found.");
+    Error("AddTask_caklein_ElectronEfficiency", "No analysis manager found.");
     return 0;
   }
 
@@ -28,6 +28,12 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
+  TString configLMEECutLib("LMEECutLib_caklein.C");
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+  if (gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0) {
+    std::cout << "loading LMEECutLib: " << configLMEECutLibPath.Data() << std::endl;
+    gROOT->LoadMacro(configLMEECutLibPath.Data());
+  } else std::cout << "LMEECutLib not found: " << configLMEECutLibPath.Data() << std::endl;
   TString configFilePath(configBasePath+configFile);
   if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
     std::cout << "loading config: " << configFilePath.Data() << std::endl;
@@ -36,12 +42,6 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
     std::cout << "config not found: " << configFilePath.Data() << std::endl;
     return 0x0; // if return is not called, the job will fail instead of running without this task... (good for local tests, bad for train)
   }
-  TString configLMEECutLib("LMEECutLib_caklein.C");
-  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
-  if (gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0) {
-    std::cout << "loading config: " << configLMEECutLibPath.Data() << std::endl;
-    gROOT->LoadMacro(configLMEECutLibPath.Data());
-  } else std::cout << "config not found: " << configLMEECutLibPath.Data() << std::endl;
 
   std::cout << "computing binning..." << std::endl;
   Double_t EtaBins[nBinsEta+1];
@@ -142,7 +142,9 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   SetupMCSignals(task);
 
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, bESDANA); // main function in config file
+    TString cutDefinition(arrNames->At(i)->GetName());
+    std::cout << "CUT NAME: " << cutDefinition << std::endl;
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(cutDefinition, bESDANA); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     if (isPrefilterCutset) {
       Int_t success = SetupPrefilterPairCuts(i);

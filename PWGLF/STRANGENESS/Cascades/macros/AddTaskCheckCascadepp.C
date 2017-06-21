@@ -20,6 +20,7 @@
 AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( Int_t    collidingSystem                     = 0,
                                                       AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7, 
                                                       Int_t    minnTPCcls                          = 70,
+                                                      Float_t  minTPCcrossrawoverfindable          = 0.8,
                                                       Float_t  vtxlimmax                           = 10.0,
                                                       Float_t  vtxlimmin                           = 0.0,
                                                       Bool_t   ksddselection                       = kFALSE,
@@ -53,20 +54,21 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( Int_t    collidingSystem  
    const Char_t *sddstatus = "";
    if      (collidingSystem == 0 && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
    else if (collidingSystem == 0 && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
-   TString taskname = Form("TaskCheckCascadepp_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString taskname = Form("TaskCheckCascadepp_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    taskname.Append(Form("%s",suffix.Data()));
 
    AliAnalysisTaskCheckCascadepp *taskcheckcascadepp = new AliAnalysisTaskCheckCascadepp(taskname);
-     taskcheckcascadepp->SetAnalysisType               (type);                   // "ESD" or "AOD"
-     taskcheckcascadepp->SetCollidingSystem            (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
-     taskcheckcascadepp->SetSelectedTriggerClass       (triggerclass);           // trigger selection
-     taskcheckcascadepp->SetEventSelSDDstatus          (ksddselection);
-     taskcheckcascadepp->SetWithSDDOn                  (kwithsdd);
-     taskcheckcascadepp->SetQualityCutMinnTPCcls       (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
-     taskcheckcascadepp->SetVertexRange                (vtxlimmin,vtxlimmax);
-     taskcheckcascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
-     taskcheckcascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
-     taskcheckcascadepp->SetSuffix                     (suffix);
+     taskcheckcascadepp->SetAnalysisType                 (type);                   // "ESD" or "AOD"
+     taskcheckcascadepp->SetCollidingSystem              (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
+     taskcheckcascadepp->SetSelectedTriggerClass         (triggerclass);           // trigger selection
+     taskcheckcascadepp->SetEventSelSDDstatus            (ksddselection);
+     taskcheckcascadepp->SetWithSDDOn                    (kwithsdd);
+     taskcheckcascadepp->SetQualityCutMinnTPCcls         (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
+     taskcheckcascadepp->SetQualityCutClusterOverFindable(minTPCcrossrawoverfindable); //
+     taskcheckcascadepp->SetVertexRange                  (vtxlimmin,vtxlimmax);
+     taskcheckcascadepp->SetMinptCutOnDaughterTracks     (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
+     taskcheckcascadepp->SetEtaCutOnDaughterTracks       (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
+     taskcheckcascadepp->SetSuffix                       (suffix);
 
    mgr->AddTask(taskcheckcascadepp);
 
@@ -77,12 +79,12 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( Int_t    collidingSystem  
    // Directory name
    TString outputFileName = Form("%s:PWGLFStrangeness.outputCheckCascade", AliAnalysisManager::GetCommonFileName());
    // Objects name
-   TString outputname0 = Form("clistCasc_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputname1 = Form("cfcontPIDXiM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputname2 = Form("cfcontPIDXiP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputname3 = Form("cfcontPIDOmegaM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputname4 = Form("cfcontPIDOmegaP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputname5 = Form("cfcontCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname0 = Form("clistCasc_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname1 = Form("cfcontPIDXiM_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname2 = Form("cfcontPIDXiP_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname3 = Form("cfcontPIDOmegaM_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname4 = Form("cfcontPIDOmegaP_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputname5 = Form("cfcontCuts_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    outputname0.Append(Form("%s",suffix.Data()));
    outputname1.Append(Form("%s",suffix.Data()));
    outputname2.Append(Form("%s",suffix.Data()));

@@ -40,6 +40,7 @@ Float_t AliAnalysisPIDEvent::fgTimeZeroSpread = 196.7;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_AND_sigma = 3.87264325235363032e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_A_sigma = 8.27180042372880706e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_C_sigma = 9.73209262235003933e+01;
+Int_t AliAnalysisPIDEvent::fgFlagToCheck = 63;
 
 //___________________________________________________________
 
@@ -58,11 +59,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
   fMCTimeZero(0.),
-  fIsNotPileUpFromSPDInMultBins(kTRUE),
-  fIsINELgtZERO(kTRUE),
-  fIsAcceptedVertexPosition(kTRUE),
-  fHasNoInconsistentSPDandTrackVertices(kTRUE),
-  fIsMinimumBias(kTRUE),
+  fEventFlags(0),
   fMagneticField(0.),
   fRunNo(0)
 {
@@ -103,11 +100,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
   fMCTimeZero(source.fMCTimeZero),
-  fIsNotPileUpFromSPDInMultBins(source.fIsNotPileUpFromSPDInMultBins),
-  fIsINELgtZERO(source.fIsINELgtZERO),
-  fIsAcceptedVertexPosition(source.fIsAcceptedVertexPosition),
-  fHasNoInconsistentSPDandTrackVertices(source.fHasNoInconsistentSPDandTrackVertices),
-  fIsMinimumBias(source.fIsMinimumBias),
+  fEventFlags(source.fEventFlags),
   fMagneticField(source.fMagneticField),
   fRunNo(source.fRunNo)
 {
@@ -123,6 +116,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
 
     fReferenceMultiplicity = source.fReferenceMultiplicity;
+    fV0Mmultiplicity = source.fV0Mmultiplicity;
 }
 
 //___________________________________________________________
@@ -144,6 +138,7 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   fVertexZ = source.fVertexZ;
   fCentralityQuality = source.fCentralityQuality;
   fReferenceMultiplicity = source.fReferenceMultiplicity;
+  fV0Mmultiplicity = source.fV0Mmultiplicity;
   fMCMultiplicity = source.fMCMultiplicity;
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = source.fTimeZeroTOF[i];
@@ -152,11 +147,7 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   for (Int_t i = 0; i < 3; i++) 
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
   fMCTimeZero = source.fMCTimeZero;
-  fIsNotPileUpFromSPDInMultBins=source.fIsNotPileUpFromSPDInMultBins;
-  fIsINELgtZERO=source.fIsINELgtZERO;
-  fIsAcceptedVertexPosition=source.fIsAcceptedVertexPosition;
-  fHasNoInconsistentSPDandTrackVertices=source.fHasNoInconsistentSPDandTrackVertices;
-  fIsMinimumBias=source.fIsMinimumBias;
+  fEventFlags = source.fEventFlags;
   fMagneticField=source.fMagneticField;
   fRunNo=source.fRunNo;
   return *this;
@@ -191,7 +182,7 @@ AliAnalysisPIDEvent::Reset()
   fReferenceMultiplicity = 0;
   fMCMultiplicity = 0;
   fV0Mmultiplicity = 0;
-  fIsMinimumBias=0;
+  fEventFlags = 0;
   fMagneticField=0;
   fRunNo=0;
   for (Int_t i = 0; i < 10; i++) {
@@ -231,7 +222,7 @@ AliAnalysisPIDEvent::AcceptEvent(Int_t type) const
   if (!AcceptVertex()) return kFALSE;
   if (fCentralityQuality != 0) return kFALSE;
   if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
-
+  if(fEventFlags&fgFlagToCheck!=fgFlagToCheck) return kFALSE;
   if (type > 0) {
     if (fIsPileupFromSPD) return kFALSE;
     if (!(fIsEventSelected & AliVEvent::kMB)) return kFALSE;
@@ -514,15 +505,31 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 }
 
 //___________________________________________________________
-
-void
-AliAnalysisPIDEvent::SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias) {
-  /*
-    Setting up some flags from AliPPVsMultUtils
-  */
-  fIsNotPileUpFromSPDInMultBins = IsNotPileUpFromSPDInMultBins;
-  fIsINELgtZERO = IsINELgtZERO;
-  fIsAcceptedVertexPosition = IsAcceptedVertexPosition;
-  fHasNoInconsistentSPDandTrackVertices = HasNoInconsistentSPDandTrackVertices;
-  fIsMinimumBias = IsMinimumBias;
+void AliAnalysisPIDEvent::SetCheckFlag(Int_t newval) {
+  if(newval>63||newval<0) {
+    printf("Flag value %i not defined!\n",newval);
+    return;
+  };
+  fgFlagToCheck = newval;
+};
+void AliAnalysisPIDEvent::AddCheckFlag(EventFlags_t av) {
+  fgFlagToCheck = fgFlagToCheck|av;
+};
+void AliAnalysisPIDEvent::RemoveCheckFlag(EventFlags_t av) {
+  Int_t flagmask = kAll-av;
+  fgFlagToCheck = fgFlagToCheck&flagmask;
+};
+Bool_t AliAnalysisPIDEvent::CheckFlag() {
+  return fEventFlags&fgFlagToCheck==fgFlagToCheck;
+};
+void AliAnalysisPIDEvent::PrintEventSelection() {
+  printf("AliAnalysisPIDEvent::AcceptEvent() requires:\n");
+  printf("Vertex position: %f..%f\n",fgVertexZ_cuts[0],fgVertexZ_cuts[1]);
+  printf("Trigger class: kINT7\n");
+  printf("Not pileup in SPD:   %s\n",(fgFlagToCheck&kNotPileupInSPD)?"Yes":"No");
+  printf("Not pileup in MV:    %s\n",(fgFlagToCheck&kNotPileupInMV)?"Yes":"No");
+  printf("Not pileup in MB:    %s\n",(fgFlagToCheck&kNotPileupInMB)?"Yes":"No");
+  printf("INEL > 0:            %s\n",(fgFlagToCheck&kINELgtZERO)?"Yes":"No");
+  printf("No inconsistent VTX: %s\n",(fgFlagToCheck&kNoInconsistentVtx)?"Yes":"No");
+  printf("No asynn. in V0:    %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
 };

@@ -673,6 +673,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeight(AliHFCorrelationBranchD *br
   if(fMapEffTr->IsBinUnderflow(binTr)||fMapEffTr->IsBinOverflow(binTr))return 1.;
   effTr = fMapEffTr->GetBinContent(binTr);
 
+  if(effD*effTr==0) return 1.; //safety fix
   return 1./(effD*effTr);
 }
 
@@ -685,6 +686,7 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeightDOnly(AliHFCorrelationBranch
   if(fMapEffD->IsBinUnderflow(binD)||fMapEffD->IsBinOverflow(binD))return 1.;
   effD = fMapEffD->GetBinContent(binD);
 
+  if(effD==0) return 1.; //safety fix
   return 1./(effD);
 }
 

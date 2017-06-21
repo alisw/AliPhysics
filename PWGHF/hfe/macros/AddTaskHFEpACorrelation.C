@@ -72,8 +72,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     if(pTBin ==2)
     {
-        Float_t pTBinsCorrelation[] = {1,2,4,6};
-        task->SetpTBins(4,pTBinsCorrelation);
+        Float_t pTBinsCorrelation[] = {0.5,1,2,4,6};
+        task->SetpTBins(5,pTBinsCorrelation);
     }
     
     else if (pTBin ==3)

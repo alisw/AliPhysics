@@ -220,6 +220,7 @@ public:
     kTPCnSigmaKao,           // number of sigmas to the dE/dx kaon line in the TPC
     kTPCnSigmaPro,           // number of sigmas to the dE/dx proton line in the TPC
 
+    kTOFnSigmaEleRaw,        // raw number of sigmas to the electron line in the TOF
     kTOFnSigmaEle,           // number of sigmas to the electron line in the TOF
     kTOFnSigmaPio,           // number of sigmas to the pion line in the TOF
     kTOFnSigmaMuo,           // number of sigmas to the muon line in the TOF
@@ -1084,7 +1085,11 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
   values[AliDielectronVarManager::kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
 
-  values[AliDielectronVarManager::kTOFnSigmaEle]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kTOFnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron)
+                                                      -AliDielectronPID::GetCntrdCorrTOF(particle)
+                                                      ) / AliDielectronPID::GetWdthCorrTOF(particle);
+
   values[AliDielectronVarManager::kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
   values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
@@ -1163,6 +1168,13 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
+  if(Req(kNclsSITS)){
+    Double_t itsNclsS = 0.;
+    for(int i=0; i<6; i++){
+      if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+    }
+    values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+  }
 
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
@@ -1243,6 +1255,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTPCnSigmaKao]=0;
   values[AliDielectronVarManager::kTPCnSigmaPro]=0;
 
+  values[AliDielectronVarManager::kTOFnSigmaEleRaw]=0;
   values[AliDielectronVarManager::kTOFnSigmaEle]=0;
   values[AliDielectronVarManager::kTOFnSigmaPio]=0;
   values[AliDielectronVarManager::kTOFnSigmaMuo]=0;
@@ -1315,7 +1328,9 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     if(Req(kITSnSigmaKao)) values[kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
     if(Req(kITSnSigmaPro)) values[kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
 
-    if(Req(kTOFnSigmaEle)) values[kTOFnSigmaEle]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+    if(Req(kTOFnSigmaEleRaw)) values[kTOFnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+    if(Req(kTOFnSigmaEle))    values[kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle)) / AliDielectronPID::GetWdthCorrTOF(particle);
+
     if(Req(kTOFnSigmaPio)) values[kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
     if(Req(kTOFnSigmaMuo)) values[kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
     if(Req(kTOFnSigmaKao)) values[kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
@@ -1640,8 +1655,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
-  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
-  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
+  //values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  //values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
 
@@ -2619,7 +2634,7 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   if (AliDielectronMC::Instance()->HasMC()){
     if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC) || Req(kXvPrimMCtruth) || Req(kYvPrimMCtruth) || Req(kZvPrimMCtruth)) {
       AliMCEvent* mcevent = AliDielectronMC::Instance()->GetMCEvent();
-      const AliVVertex* mcvtx = mcevent->GetPrimaryVertex();
+      const AliVVertex* mcvtx = (mcevent ? mcevent->GetPrimaryVertex() : 0);
       values[AliDielectronVarManager::kXvPrimMCtruth] = (mcvtx ? mcvtx->GetX() : 0.0);
       values[AliDielectronVarManager::kYvPrimMCtruth] = (mcvtx ? mcvtx->GetY() : 0.0);
       values[AliDielectronVarManager::kZvPrimMCtruth] = (mcvtx ? mcvtx->GetZ() : 0.0);
@@ -2964,7 +2979,7 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC13b", "LHC13c", "LHC16l"};
+  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l", "LHC13b", "LHC13c"};
   TFile* file=TFile::Open(filename);
   if(!file) return;
 

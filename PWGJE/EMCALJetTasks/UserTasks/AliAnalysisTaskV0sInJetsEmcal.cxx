@@ -37,6 +37,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliMCEvent.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -85,6 +86,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   AliAnalysisTaskEmcalJet(),
   fAODIn(0),
   fAODOut(0),
+  fEventMC(0),
   fRandom(0),
   fPoolMgr(0),
   fOutputListStd(0),
@@ -94,6 +96,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fbIsPbPb(0),
   fbMCAnalysis(0),
+  fsGeneratorName(""),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -169,6 +172,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1QAV0TPCRefit[i] = 0;
     fh1QAV0TPCRows[i] = 0;
     fh1QAV0TPCFindable[i] = 0;
+    fh2QAV0PtNCls[i] = 0;
+    fh2QAV0PtChi[i] = 0;
     fh1QAV0TPCRowsFind[i] = 0;
     fh1QAV0Eta[i] = 0;
     fh2QAV0EtaRows[i] = 0;
@@ -367,6 +372,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fAODIn(0),
   fAODOut(0),
+  fEventMC(0),
   fRandom(0),
   fPoolMgr(0),
   fOutputListStd(0),
@@ -376,6 +382,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fbIsPbPb(0),
   fbMCAnalysis(0),
+  fsGeneratorName(""),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -451,6 +458,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1QAV0TPCRefit[i] = 0;
     fh1QAV0TPCRows[i] = 0;
     fh1QAV0TPCFindable[i] = 0;
+    fh2QAV0PtNCls[i] = 0;
+    fh2QAV0PtChi[i] = 0;
     fh1QAV0TPCRowsFind[i] = 0;
     fh1QAV0Eta[i] = 0;
     fh2QAV0EtaRows[i] = 0;
@@ -1136,6 +1145,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh1QAV0TPCRefit[i] = new TH1D(Form("fh1QAV0TPCRefit_%d", i), "QA: TPC refit", 2, 0, 2);
     fh1QAV0TPCRows[i] = new TH1D(Form("fh1QAV0TPCRows_%d", i), "QA: TPC Rows", 160, 0, 160);
     fh1QAV0TPCFindable[i] = new TH1D(Form("fh1QAV0TPCFindable_%d", i), "QA: TPC Findable", 160, 0, 160);
+    fh2QAV0PtNCls[i] = new TH2D(Form("fh2QAV0PtNCls_%d", i), "QA: Daughter Pt vs TPC clusters;pt;# TPC clusters", 100, 0, 10, 160, 0, 160);
+    fh2QAV0PtChi[i] = new TH2D(Form("fh2QAV0PtChi_%d", i), "QA: Daughter Pt vs Chi2/ndf;pt;Chi2/ndf", 100, 0, 10, 100, 0, 100);
     fh1QAV0TPCRowsFind[i] = new TH1D(Form("fh1QAV0TPCRowsFind_%d", i), "QA: TPC Rows/Findable", 100, 0, 2);
     fh1QAV0Eta[i] = new TH1D(Form("fh1QAV0Eta_%d", i), "QA: Daughter Eta", 200, -2, 2);
     fh2QAV0EtaRows[i] = new TH2D(Form("fh2QAV0EtaRows_%d", i), "QA: Daughter Eta vs TPC rows;#eta;TPC rows", 200, -2, 2, 160, 0, 160);
@@ -1183,6 +1194,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListQA->Add(fh1QAV0TPCRefit[i]);
     fOutputListQA->Add(fh1QAV0TPCRows[i]);
     fOutputListQA->Add(fh1QAV0TPCFindable[i]);
+    fOutputListQA->Add(fh2QAV0PtNCls[i]);
+    fOutputListQA->Add(fh2QAV0PtChi[i]);
     fOutputListQA->Add(fh1QAV0TPCRowsFind[i]);
     fOutputListQA->Add(fh1QAV0Eta[i]);
     fOutputListQA->Add(fh2QAV0EtaRows[i]);
@@ -1373,6 +1386,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   printf("-------------------------------------------------------\n");
   printf("collision system: %s\n", fbIsPbPb ? "Pb+Pb" : "p+p");
   printf("data type: %s\n", fbMCAnalysis ? "MC" : "real");
+  if(fbMCAnalysis)
+    printf("MC generator: %s\n", fsGeneratorName.Length() ? fsGeneratorName.Data() : "any");
   if(fbIsPbPb)
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
@@ -1468,10 +1483,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   // Simulation info
   if(fbMCAnalysis)
   {
+    fEventMC = MCEvent();
     arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC)
+    if(!arrayMC || !fEventMC)
     {
-      AliError("No MC array found!");
+      AliError("No MC array/event found!");
       return kFALSE;
     }
     if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
@@ -2696,6 +2712,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           continue;
       }
 
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iIndexMotherPos))
+        continue;
+
       // Is MC mother particle physical primary? Attention!! Definition of IsPhysicalPrimary may change!!
 //          Bool_t bV0MCIsPrimary = particleMCMother->IsPhysicalPrimary();
       // Get the MC mother particle of the MC mother particle
@@ -2898,11 +2918,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
       // Fill Xi spectrum (3322 - Xi0, 3312 - Xi-)
 //          if ( (iPdgCodeParticleMC==3322) || (iPdgCodeParticleMC==3312) )
-      if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5))
+      if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC))
       {
         fh1V0XiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
-      if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5))
+      else if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC))
       {
         fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
@@ -2964,6 +2984,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
 
+      // Select only primary-like MC V0 particles
+      if(!bV0MCIsPrimaryDist)
+        continue;
+
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iPartMC))
+        continue;
+
       // Check whether the MC V0 particle is in a MC jet
       AliAODJet* jetMC = 0;
       Bool_t bIsMCV0InJet = kFALSE;
@@ -2983,10 +3011,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       }
 
-      // Select only primary-like MC V0 particles
       // K0s
 //          if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
-      if(bV0MCIsK0s && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsK0s) // well reconstructed candidates
       {
         fh1V0K0sPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0K0sEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
@@ -2999,7 +3026,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       // Lambda
 //          if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
-      if(bV0MCIsLambda && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsLambda) // well reconstructed candidates
       {
         fh1V0LambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0LambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
@@ -3012,7 +3039,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       // anti-Lambda
 //          if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
-      if(bV0MCIsALambda && bV0MCIsPrimaryDist) // well reconstructed candidates
+      if(bV0MCIsALambda) // well reconstructed candidates
       {
         fh1V0ALambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0ALambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
@@ -3081,6 +3108,8 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
     fh2QAV0PhiRows[iIndexHisto]->Fill(track->Phi(), nCrossedRowsTPC);
     fh2QAV0NClRows[iIndexHisto]->Fill(findable, nCrossedRowsTPC);
     fh2QAV0EtaNCl[iIndexHisto]->Fill(track->Eta(), findable);
+    fh2QAV0PtNCls[iIndexHisto]->Fill(track->Pt(), track->GetTPCNcls());
+    fh2QAV0PtChi[iIndexHisto]->Fill(track->Pt(), track->Chi2perNDF());
 //    }
 
     // Daughters: transverse momentum cut
@@ -3505,4 +3534,21 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::MassPeakSigmaOld(Double_t pt, Int_t part
 bool AliAnalysisTaskV0sInJetsEmcal::CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2)
 {
   return (cluster1[1] > cluster2[1]);
+}
+
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsFromGoodGenerator(Int_t index)
+{
+  if(!fEventMC)
+  {
+    AliError("No MC event!");
+    return kFALSE;
+  }
+  if(fsGeneratorName.Length())
+  {
+    TString sGenName = "";
+    Bool_t bCocktailOK = fEventMC->GetCocktailGenerator(index, sGenName);
+    if(!bCocktailOK || !sGenName.Contains(fsGeneratorName.Data()))
+      return kFALSE;
+  }
+  return kTRUE;
 }
