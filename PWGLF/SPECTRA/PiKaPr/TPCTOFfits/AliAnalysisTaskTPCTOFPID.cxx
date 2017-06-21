@@ -482,8 +482,11 @@ void AliAnalysisTaskTPCTOFPID::ProcessV0s() {
     Double_t lpT = V0Vertex->Pt();
     Double_t lEta = V0Vertex->Eta();
     Int_t lMCPDG = 0;
-    if(fMCFlag)
-      lMCPDG = V0Vertex->GetPdgCode();
+    if(fMCFlag) {
+      if(pTrack->GetMCMotherPdgCode()==nTrack->GetMCMotherPdgCode())
+	if(pTrack->GetMCMotherLabel()==nTrack->GetMCMotherLabel())
+	  lMCPDG = pTrack->GetMCMotherPdgCode();
+    };
     fAnalysisV0Track->Update(pTrack,nTrack,InvMasses,IV0Radius,V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle(),lpT,lEta,lMCPDG);
     new ((*fAnalysisV0TrackArray)[fAnalysisV0TrackArray->GetEntries()]) AliAnalysisPIDV0(*fAnalysisV0Track);
     
