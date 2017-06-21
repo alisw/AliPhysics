@@ -683,6 +683,8 @@ private:
   TH1F* hEvtVtxZBefSel;                         ///<  Histogram with the linear distance along the Z axis of the primary vertex before any selection on vertex position
   TH1F* hEvtVtxXY;                              ///<  Histogram with the linear distance in the XY plane of the primary vertex
   TH1F* hEvtVtxZ;                               ///<  Histogram with the linear distance along the Z axis of the primary vertex
+  TH1F* hEvtVtxZGenerated;                      ///<  Histogram with the linear distance along the Z axis of the primary vertex of generated MC events
+  TH1F* hEvtVtxZPhysSel;                        ///<  Histogram with the linear distance along the Z axis of the primary vertex after physics selection
   
   //Track Info
   TH1F* hNTrk;                                  ///<  Histogram with the number of tracks and all the tracks that passed each cut
