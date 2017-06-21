@@ -78,7 +78,6 @@ using namespace std;            // std namespace: so you can do things like 'cou
 //using namespace BSchaefer_devel;
 
 //ofstream fout;
-Int_t NEvents            = 0;
 //Int_t NTracks            = 0;
 //Int_t NGoodTracks        = 0;
 //Int_t NAssociatedTracks  = 0;
@@ -427,7 +426,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 {
 
 //    	Double_t pi = 3.1415926535897932384626434;
-    NEvents++;
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
@@ -1129,8 +1127,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
                                                         // the output manager which will take care of writing
                                                         // it to a file
 
-//    NEvents++;
-
 }
 
 
@@ -1141,13 +1137,6 @@ void AliAnalysisTaskCorPIDTOFQA::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
-    cout<<endl<<endl;
-//    cout<<"total number deuteron candidates:  "<<DeuteronCandidates<<endl;
-    cout<<"total number of events analyzed:   "<<NEvents<<endl;
-//    cout<<"total number of tracks analyzed:   "<<NTracks<<endl;
-//    cout<<"total number of good tracks:       "<<NGoodTracks<<endl;
-//    cout<<"tracks from events with deut: "<<NAssociatedTracks<<endl;
-    cout<<endl<<endl;
 }
 //_____________________________________________________________________________
 
