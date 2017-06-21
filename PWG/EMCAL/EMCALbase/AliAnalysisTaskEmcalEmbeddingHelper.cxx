@@ -1030,7 +1030,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 /**
  * Extract pythia information from a cross section file. Modified from AliAnalysisTaskEmcal::PythiaInfoFromFile().
  *
- * @param filename Path to the pythia cross section file.
+ * @param pythiaFileName Path to the pythia cross section file.
  *
  * @return True if the information has been successfully extracted.
  */
