@@ -95,6 +95,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
+  fNumberOfTPCoutTracks(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -595,7 +596,11 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();
+  CountTracks();  
+
+  //Count Tracks with TPCout flag 
+  CountTPCoutTracks();
+
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
@@ -1374,6 +1379,27 @@ void AliV0ReaderV1::CountTracks(){
       fNumberOfPrimaryTracks++;
     }
   }
+
+  return;
+}
+
+///________________________________________________________________________
+void AliV0ReaderV1::CountTPCoutTracks(){
+  fNumberOfTPCoutTracks = 0;
+
+  for (Int_t itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++) {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itrk));
+
+    if (trk != NULL) {
+      /* the initial method of counting TPC out tracks */
+      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+        if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+          fNumberOfTPCoutTracks++;
+        }
+      }
+    }
+  }
+
 
   return;
 }
