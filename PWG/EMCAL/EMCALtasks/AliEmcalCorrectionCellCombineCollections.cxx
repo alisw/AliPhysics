@@ -199,6 +199,7 @@ void AliEmcalCorrectionCellCombineCollections::AddCellsToCombinedCellObject(AliV
 /**
  * Add object to event. Adapted from AliAnalysisTaskEmcal.
  * @param[in] obj Object to be added
+ * @param[in] event Event to which the object is added
  * @param[in] attempt If true don't handle error
  */
 void AliEmcalCorrectionCellCombineCollections::AddObjectToEvent(TObject *obj, AliVEvent * event, Bool_t attempt)
