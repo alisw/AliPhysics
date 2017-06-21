@@ -205,6 +205,8 @@ hEvtVtxXYBefSel(0x0),
 hEvtVtxZBefSel(0x0),
 hEvtVtxXY(0x0),
 hEvtVtxZ(0x0),
+hEvtVtxZGenerated(0x0),
+hEvtVtxZPhysSel(0x0),
 hNTrk(0x0),
 hPadDist(0x0),
 hTOFDist(0x0),
@@ -696,6 +698,14 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hEvtVtxZ = new TH1F("hEvtVtxZ", "Z primary vertex distance;Z (cm);Counts", 100, -50., 50.);
     fListHist->AddLast(hEvtVtxZ);
+    
+    if(fMCmode){
+      hEvtVtxZGenerated = new TH1F("hEvtVtxZGenerated", "Z MC vertex distance;Z (cm);Counts", 100, -50., 50.);
+      fListHist->AddLast(hEvtVtxZGenerated);
+      
+      hEvtVtxZPhysSel = new TH1F("hEvtVtxZPhysSel", "Z MC vertex distance Selected;Z (cm);Counts", 100, -50., 50.);
+      fListHist->AddLast(hEvtVtxZPhysSel);
+    }
     
     binstart = 1;
     
@@ -2417,6 +2427,8 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   
   Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
   if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
+  hEvtVtxZGenerated->Fill(MCvtx->GetZ());
+  if(fEvtPhysSelected) hEvtVtxZPhysSel->Fill(MCvtx->GetZ());
   
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
