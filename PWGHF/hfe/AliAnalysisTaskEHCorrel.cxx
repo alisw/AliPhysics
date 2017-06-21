@@ -1167,9 +1167,9 @@ Double_t AliAnalysisTaskEHCorrel::GetElecEffi(AliVTrack *track){
     Int_t bin10 = fHistElecEffi->FindBin(10);
     
     if(fHistElecEffi->IsBinUnderflow(bin)||fHistElecEffi->IsBinOverflow(bin)) return 1.0;
-    if(track->Pt()>50) return fHistElecEffi->GetBinContent(bin10);
-    else
-        return fHistElecEffi->GetBinContent(bin);
+    if(track->Pt()>10) return fHistElecEffi->GetBinContent(bin10);
+    
+    return fHistElecEffi->GetBinContent(bin);
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtrack, AliVTrack *track, THnSparse *SparseEHCorrlNoPartner)
