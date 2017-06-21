@@ -149,7 +149,7 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
   }
 
   if (fJetCollArray.size() > 0) {
-    fHistRhoVsLeadJetPt = new TH2F("fHistRhoVsLeadJetPt", "fHistRhoVsLeadJetPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistRhoVsLeadJetPt = new TH2F("fHistRhoVsLeadJetPt", "fHistRhoVsLeadJetPt", fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
     fHistRhoVsLeadJetPt->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
     fHistRhoVsLeadJetPt->GetYaxis()->SetTitle("#rho (GeV/#it{c} rad^{-1})");
     fOutput->Add(fHistRhoVsLeadJetPt);
@@ -273,8 +273,10 @@ Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
       subLeadJet = jet;
     }
 
-    NjetAcc++;
-    totJetArea += jet->Area();
+    if (!jet->IsGhost()) {
+      NjetAcc++;
+      totJetArea += jet->Area();
+    }
   }
 
   if (leadJet) {
