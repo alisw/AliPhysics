@@ -82,7 +82,7 @@ public:
 
   void            Print(Option_t *o = "") const;         // *MENU*
   // Bool_t          MakeShape(TObjArray* tracks);
-  Bool_t          MakeDirectivity(TObjArray* tracks);
+  void            MakeDirectivity(TObjArray* tracks);
   Bool_t          MakeThrust(TObjArray* tracks);
   Bool_t          MakeSphericity(TObjArray* tracks);
   Bool_t          MakeRecoil(TObjArray* tracks);
