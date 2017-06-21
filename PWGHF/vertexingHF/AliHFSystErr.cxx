@@ -6185,54 +6185,6 @@ void AliHFSystErr::InitDstoKKpi2015PbPb010() {
   return;
 }
 //--------------------------------------------------------------------------
-void AliHFSystErr::InitDstoKKpi2015PbPb010() {
-  //
-  //  D+s->Kpipi syst errors. Responsible: A.Barbano
-  //  2015 PbPb sample, 0-10% CC
-  //
-    
-  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 0-10 CC");
-  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2015PbPb010");
-    
-  // Normalization
-  fNorm = new TH1F("fNorm","fNorm",16,0,16);
-  for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
-    
-  // Branching ratio
-  fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.035); // 0.08/2.27 PDG2017
-    
-  // Tracking efficiency -- to be updated with new values!!!
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
-  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.065);
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.070);
-    
-  // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",16,0,16);
-  for(Int_t i=1;i<=16;i++) fRawYield->SetBinContent(i,0.06);
-    
-  // Cuts efficiency (from cuts variation + phi selection cuts)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
-    
-  // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
-  for(Int_t i=1;i<=8;i++) fPIDEff->SetBinContent(i,0.03);
-  for(Int_t i=9;i<=16;i++) fPIDEff->SetBinContent(i,0.00);
-    
-  // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
-  for(Int_t i=1;i<=6;i++) fMCPtShape->SetBinContent(i,0.07);
-  for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.00);
-    
-  return;
-}
-//--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2015PbPb3050() {
   //
   // D+s->Kpipi syst errors. Responsible: A.Barbano
@@ -6287,59 +6239,6 @@ void AliHFSystErr::InitDstoKKpi2015PbPb3050() {
   return;
 }
 
-//--------------------------------------------------------------------------
-void AliHFSystErr::InitDstoKKpi2015PbPb6080() {
-  //
-  // D+s->Kpipi syst errors. Responsible: A.Barbano
-  // 2015 PbPb sample, 60-80% CC
-  //
-  
-  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 60-80 CC");
-  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2015PbPb6080");
-  
-  // Normalization
-  fNorm = new TH1F("fNorm","fNorm",16,0,16);
-  for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm 
-  
-  // Branching ratio
-  fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.035); // 0.08/2.27 PDG2017
-  
-  // Tracking efficiency -- to be updated with new values!!!
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
-  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.065);
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.070);
-  
-  // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",16,0,16);
-  for(Int_t i=1;i<=4;i++) fRawYield->SetBinContent(i,0.10);
-  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.06);
-  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.06);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.05);
-  
-  
-  // Cuts efficiency (from cuts variation + phi selection cuts)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
-  
-  // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.03);
-  
-  // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
-  for(Int_t i=1;i<=4;i++) fMCPtShape->SetBinContent(i,0.06);
-  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.01);
-  
-  return;
-}
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2015PbPb6080() {
   //
