@@ -1490,6 +1490,14 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   TString hname;
 
+  Int_t ntracks = 0;
+
+  for (auto track_cont : fTrackContainers) {
+    AliHFTrackContainer* hftrack_cont = dynamic_cast<AliHFTrackContainer*>(track_cont);
+    if (hftrack_cont) hftrack_cont->SetDMesonCandidate(nullptr);
+    ntracks += track_cont->GetNAcceptEntries();
+  }
+
   for (auto& def : fJetDefinitions) {
     if (!def.fRho) continue;
     hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", GetName(), def.GetName());
@@ -1506,6 +1514,15 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
     hname = TString::Format("%s/%s/fHistLeadDPtVsCent", GetName(), def.GetName());
     fHistManager->FillTH2(hname, fCent, maxDPt);
+
+    hname = TString::Format("%s/%s/fHistRhoVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, ntracks, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistLeadJetPtVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, ntracks, maxJetPt[&def]);
+
+    hname = TString::Format("%s/%s/fHistLeadDPtVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, ntracks, maxDPt);
   }
 
   hname = TString::Format("%s/fHistNTotAcceptedDmesons", GetName());
@@ -1514,8 +1531,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   fHistManager->FillTH1(hname, "Both", nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
-  Int_t ntracks = 0;
-  for (auto track_cont : fTrackContainers) ntracks += track_cont->GetNAcceptedTracks();
   fHistManager->FillTH2(hname, ntracks, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
@@ -1743,6 +1758,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
     } // for each jet
   } // for each jet definition
 
+  Int_t npart = fMCContainer->GetNAcceptedParticles();
+
   for (auto& def : fJetDefinitions) {
     if (!def.fRho) continue;
     hname = TString::Format("%s/%s/fHistRhoVsLeadJetPt", GetName(), def.GetName());
@@ -1759,6 +1776,15 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
     hname = TString::Format("%s/%s/fHistLeadDPtVsCent", GetName(), def.GetName());
     fHistManager->FillTH2(hname, fCent, maxDPt);
+
+    hname = TString::Format("%s/%s/fHistRhoVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, npart, def.fRho->GetVal());
+
+    hname = TString::Format("%s/%s/fHistLeadJetPtVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, npart, maxJetPt[&def]);
+
+    hname = TString::Format("%s/%s/fHistLeadDPtVsNTracks", GetName(), def.GetName());
+    fHistManager->FillTH2(hname, npart, maxDPt);
   }
 
   if (fDmesonJets.size() != nAccCharm[0]+nAccCharm[1]) AliError(Form("I found %lu mesons (%d)?", fDmesonJets.size(), nAccCharm[0]+nAccCharm[1]));
@@ -1768,7 +1794,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   fHistManager->FillTH1(hname, "Both", nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNAcceptedDmesonsVsNtracks", GetName());
-  fHistManager->FillTH2(hname, fMCContainer->GetNAcceptedParticles(), nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
+  fHistManager->FillTH2(hname, npart, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]);
 
   hname = TString::Format("%s/fHistNDmesons", GetName());
   fHistManager->FillTH1(hname, nAccCharm[0]+nAccCharm[1]+nAccCharm[2]); // same as the number of accepted D mesons, since no selection is performed
@@ -2477,12 +2503,15 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TH1* h = 0;
   Int_t treeSlot = 0;
 
+  Int_t maxTracks = 6000;
   Double_t maxRho = 500;
   if (fForceBeamType == kpp) {
     maxRho = 50;
+    maxTracks = 200;
   }
   else if (fForceBeamType == kpA) {
     maxRho = 200;
+    maxTracks = 500;
   }
 
   hname = "fHistCharmPt";
@@ -2685,6 +2714,18 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
         hname = TString::Format("%s/%s/fHistLeadDPtVsCent", param.GetName(), jetDef.GetName());
         htitle = hname + ";Centrality (%);#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 300, 0, 150);
+
+        hname = TString::Format("%s/%s/fHistRhoVsNTracks", param.GetName(), jetDef.GetName());
+        htitle = hname + ";no. of tracks;#rho (GeV/#it{c} rad^{-1});counts";
+        fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 1000, 0, maxRho);
+
+        hname = TString::Format("%s/%s/fHistLeadJetPtVsNTracks", param.GetName(), jetDef.GetName());
+        htitle = hname + ";no. of tracks;#it{p}_{T,jet} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
+
+        hname = TString::Format("%s/%s/fHistLeadDPtVsNTracks", param.GetName(), jetDef.GetName());
+        htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
       }
     }
     switch (fOutputType) {
