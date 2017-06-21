@@ -53,6 +53,8 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   fdNdPtAnalysisPbPb->SetAnalysisMode(AlidNdPtHelper::kTPCITS);
   if(stControlString.Contains("V0Mminus05")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mminus05");}
   else if(stControlString.Contains("V0Mplus05")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mplus05");}
+  else if(stControlString.Contains("CL1")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL1");}
+  else if(stControlString.Contains("CL0")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL0");}
   else {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");}
   if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kINT7);
   else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);
