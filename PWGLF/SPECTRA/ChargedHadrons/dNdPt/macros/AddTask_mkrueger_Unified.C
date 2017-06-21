@@ -1,5 +1,6 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 120)
 {
+  // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105) (105,111), (111,116), (116,120)
 
   // settings:
   UInt_t offlineTriggerMask = AliVEvent::kINT7;
@@ -8,6 +9,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
   
   Int_t nBinsMultiplicity = 100; 
   Float_t etaCut = 0.8;
+  if(controlstring.Contains("eta03")) etaCut = 0.3;  
+  
   Float_t upperPtCut = 10.; 
   Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
@@ -47,7 +50,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
   char taskName[100] = ""; 
 
   
-  for(Int_t cutMode = 100; cutMode < 120; cutMode++){
+  for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
     sprintf(taskName, "mkrueger_%s_mult_%d_eta_%.2f_cutMode_%d", colsys.c_str(), multNbins, etaCut, cutMode);
     
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(taskName);
@@ -101,7 +104,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
     // task->SetMinCrossedRowsTPC(120);
     
-    
+//MC1--    
       if(cutMode == 100) mainTask = task; // has no particular use... just to return task with nominal cut setting in macro
     
     // cut-variation:
@@ -110,7 +113,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
 
       if(cutMode == 103) {task->SetMaxchi2perTPCclu(3); }
       if(cutMode == 104) {task->SetMaxchi2perTPCclu(5); }
-	
+//MC2--	
       if(cutMode == 105) {task->SetRatioCrossedRowsOverFindableClustersTPC(0.7);}
       if(cutMode == 106) {task->SetRatioCrossedRowsOverFindableClustersTPC(0.9);}
 	
@@ -119,7 +122,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
 	
       if(cutMode == 109) {task->SetMaxChi2TPCConstrained(25.);}
       if(cutMode == 110) {task->SetMaxChi2TPCConstrained(49.);}
-
+//MC3--	
       if(cutMode == 111) {task->SetDCAtoVertexXYPtDep("0.0104+0.0200/pt^1.01");}
       if(cutMode == 112) {task->SetDCAtoVertexXYPtDep("0.0260+0.0500/pt^1.01");}
 	
@@ -127,7 +130,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring)
       if(cutMode == 114) {task->SetDCAtoVertexZ(5.0);}
 
       if(cutMode == 115) {task->SetClusterReqITS(kFALSE);}
-	  
+//MC4--		  
       if(cutMode == 116) {task->SetGeometricalCut(kTRUE,3,120,1.5,0.85,0.7);}	
       if(cutMode == 117) {task->SetGeometricalCut(kTRUE,3,140,1.5,0.85,0.7);}	
 
