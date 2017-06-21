@@ -283,9 +283,9 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   //  massD0Task->SetWriteVariableTree(kTRUE);
 
   massD0Task->SetPtAssocLim(ptAssocLim);
-  massD0Task->PrintBinsAndLimits();
   massD0Task->SetSpeed(speed);
   massD0Task->SetMergePools(mergepools);
+  massD0Task->PrintBinsAndLimits();
 
   mgr->AddTask(massD0Task);
   

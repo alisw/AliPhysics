@@ -60,6 +60,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetTriggerMask(ULong64_t mask=0)     {fTriggerMask  = mask;}
   void           SetSpecie(ULong64_t specie=0)        {fspecie = specie;}
   void           SetRequireTrackVtx(Bool_t flag)      {fRequireVtxTracks = flag;}
+  void           SetUseGeneratedPt(Bool_t flag)       {fUseGenPt = flag;}
   void           SetUsePtLogScale(Bool_t flag)        {fUsePtLogAxis = flag;}
   void           SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   void           SetSPDRequirement(AliESDtrackCuts::ITSClusterRequirement  spdlayreq)   {fSPDlayerReq = spdlayreq;}                   
@@ -108,7 +109,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
-  Bool_t fDoCutV0multTPCout;        //flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t   fUseGenPt;               //flag to use generated pt in match. eff. sparse
+  Bool_t   fDoCutV0multTPCout;      //flag to activate cut on V0mult vs #tracks TPCout
 
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
 
@@ -119,7 +121,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 5);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 6);
 };
 
 #endif

@@ -42,7 +42,7 @@ private:
 
   /// Helper functions
   Double_t EvalGraph(Double_t x,const TGraph *graph,const TGraph *graphSA=0) const; 
-  void SmearTrack(AliAODTrack *track,const TClonesArray *mcs);
+  void SmearTrack(AliAODTrack *track,const TClonesArray *mcs, Double_t bz);
   AliESDVertex* RecalculateVertex(const AliVVertex *old,TObjArray *tracks,Double_t bField);
   Int_t PhiBin(Double_t phi) const;
 
@@ -52,9 +52,9 @@ private:
   TGraph *fD0RPResPCur; /// old pt dep. d0 res. in rphi for protons
   TGraph *fD0RPResKCur; /// old pt dep. d0 res. in rphi for kaons
   TGraph *fD0RPResPiCur; /// old pt dep. d0 res. in rphi for pions
-  TGraph *fD0RPMeanPCur[4]; /// old pt dep. d0 mean. in rphi for protons in 4 phi regions
-  TGraph *fD0RPMeanKCur[4]; /// old pt dep. d0 mean. in rphi for kaons in 4 phi regions
-  TGraph *fD0RPMeanPiCur[4]; /// old pt dep. d0 mean. in rphi for pions in 4 phi regions
+  TGraph *fD0RPMeanPCur[2][4]; /// old pt dep. d0 mean. in rphi for protons in 4 phi regions
+  TGraph *fD0RPMeanKCur[2][4]; /// old pt dep. d0 mean. in rphi for kaons in 4 phi regions
+  TGraph *fD0RPMeanPiCur[2][4]; /// old pt dep. d0 mean. in rphi for pions in 4 phi regions
   TGraph *fPt1ResPCur  ; /// old pt dep. 1/pt res. for protons
   TGraph *fPt1ResKCur  ; /// old pt dep. 1/pt res. for kaons
   TGraph *fPt1ResPiCur ; /// old pt dep. 1/pt res. for pions
@@ -64,9 +64,9 @@ private:
   TGraph *fD0RPResPUpg; /// new pt dep. d0 res. in rphi for protons
   TGraph *fD0RPResKUpg; /// new pt dep. d0 res. in rphi for kaons
   TGraph *fD0RPResPiUpg; /// new pt dep. d0 res. in rphi for pions
-  TGraph *fD0RPMeanPUpg[4]; /// new pt dep. d0 mean in rphi for protons in 4 phi regions
-  TGraph *fD0RPMeanKUpg[4]; /// new pt dep. d0 mean in rphi for kaons in 4 phi regions
-  TGraph *fD0RPMeanPiUpg[4]; /// new pt dep. d0 mean in rphi for pions in 4 phi regions
+  TGraph *fD0RPMeanPUpg[2][4]; /// new pt dep. d0 mean in rphi for protons in 4 phi regions
+  TGraph *fD0RPMeanKUpg[2][4]; /// new pt dep. d0 mean in rphi for kaons in 4 phi regions
+  TGraph *fD0RPMeanPiUpg[2][4]; /// new pt dep. d0 mean in rphi for pions in 4 phi regions
   TGraph *fPt1ResPUpg  ; /// new pt dep. 1/pt res. for protons
   TGraph *fPt1ResKUpg  ; /// new pt dep. 1/pt res. for kaons
   TGraph *fPt1ResPiUpg ; /// new pt dep. 1/pt res. for pions
@@ -98,7 +98,7 @@ private:
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,5);
+  ClassDef(AliAnalysisTaskSEImproveITS,6);
   /// \endcond
 };
 

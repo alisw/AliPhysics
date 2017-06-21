@@ -151,6 +151,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 
 	// Histograms
 	TObjString *fCutString; // cut number used for analysis
+  TString fCutStringRead;
 	TH1F *fHistCutIndex; // bookkeeping for cuts
 	TH1F *fHistdEdxCuts;  // bookkeeping for dEdx cuts
 	TH2F *fHistITSdEdxbefore; // ITS dEdx before cuts
@@ -176,7 +177,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-	ClassDef(AliPrimaryPionCuts,3)
+	ClassDef(AliPrimaryPionCuts,4)
 };
 
 #endif

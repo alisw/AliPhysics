@@ -231,15 +231,15 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
   if(runNo>121693 && runNo<126439) period = 2; // LHC10d PASS4 2015
 //  if(runNo>127711 && runNo<130841) period = 3; Org Fred Kramer Analysis
   if(runNo>127102 && runNo<130851) period = 3; // LHC10e PASS4 2015
-											   //pp 13 TeV CJ
-  if(runNo>258883 && runNo<260187) period = 4; // LHC16l pass1 2016 CJ analysis
+//pp 13 TeV CJ
+  if(runNo>254124 && runNo<264035) period = 4; // LHC16l,16k,16i,16j,16o pass1 2016 CJ analysis
 
   if(period<0 || period>4) return uncorrectedNacc;
 
   if(type<0 || type>8) return uncorrectedNacc;
   if(type == 0) refMult = 5.0;         // SPD tracklets in |eta|<0.5 
   if(type == 1 && period!=4) refMult = 9.5;         // SPD tracklets in |eta|<1.0
-  if(type == 1 && period==4) refMult = 11.0;        // SPD tracklets in |eta|<1.0 refMulti for period 4 (LHC16l) //CJ analysis
+  if(type == 1 && period==4) refMult = 12.0;        // SPD tracklets in |eta|<1.0 refMulti for period 4 (LHC16l) //CJ analysis
   if(type == 2) refMult = 13.0;        // SPD tracklets in |eta|<1.6
   if(type == 3) refMult = 6.0;         // ITSTPC+ in |eta|<0.5
   if(type == 4) refMult = 12.0;        // ITSTPC+ in |eta|<1.0

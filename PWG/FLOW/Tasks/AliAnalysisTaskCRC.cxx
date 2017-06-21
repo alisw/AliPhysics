@@ -134,8 +134,11 @@ fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
+fUseTracklets(kFALSE),
 fMinMulZN(1),
 fMaxDevZN(5.),
 fZDCGainAlpha(0.395)
@@ -290,8 +293,11 @@ fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
+fAvEZDCCRbRPro(NULL),
+fAvEZDCARbRPro(NULL),
 fPhiExclZoneHist(NULL),
 fQAZDCCuts(kFALSE),
+fUseTracklets(kFALSE),
 fMinMulZN(1),
 fMaxDevZN(5.),
 fZDCGainAlpha(0.395)
@@ -378,6 +384,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
+  if(fDataSet.EqualTo("2015pidfix")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015pidfix);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
@@ -405,6 +412,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetDivSigma(fDivSigma);
   fQC->SetInvertZDC(fInvertZDC);
   fQC->SetQAZDCCuts(fQAZDCCuts);
+  fQC->SetUseTracklets(fUseTracklets);
   fQC->SetMinMulZN(fMinMulZN);
   fQC->SetMaxDevZN(fMaxDevZN);
   fQC->SetTestSin(fCRCTestSin);
@@ -459,6 +467,9 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
   if(fRefMultRbRPro) fQC->SetRefMultRbRPro(fRefMultRbRPro);
+  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
+    fQC->SetAvEZDCRbRPro(fAvEZDCCRbRPro,fAvEZDCARbRPro);
+  }
   if(fPhiExclZoneHist) fQC->SetPhiExclZoneHist(fPhiExclZoneHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {
@@ -569,6 +580,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
+  if(fDataSet.EqualTo("2015pidfix")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015pidfix);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);

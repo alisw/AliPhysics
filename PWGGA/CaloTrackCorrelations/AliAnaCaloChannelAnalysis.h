@@ -49,10 +49,11 @@ public:
 	  void Run(Bool_t mergeOnly=0);
 
       //Setters
-	  void SetExternalMergedFile(TString inputName)     {fExternalFileName = inputName;}
-      void SetQAChecks(Bool_t inputBool)                {fTestRoutine      = inputBool;}
-      void SetPrintOutput(Bool_t inputBool)             {fPrint            = inputBool;}
-
+	  void SetExternalMergedFile(TString inputName)        {fExternalFileName = inputName;}
+      void SetQAChecks(Bool_t inputBool)                   {fTestRoutine      = inputBool;}
+      void SetPrintOutput(Bool_t inputBool)                {fPrint            = inputBool;}
+      void SetStartEndCell(Int_t start, Int_t end)         {fStartCell = start; fNoOfCells = end;}
+      void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
 	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 
@@ -71,7 +72,7 @@ protected:
 
 	  void SummarizeResultsByFlag();
 	  void SummarizeResults();
-	  TH1D *BuildMeanFromGood();
+	  TH1D *BuildMeanFromGood(Int_t warmIn=0);
 	  Bool_t CheckDistribution(TH1* ratio, TH1* reference);
 	  Bool_t IsCoveredByTRD(Int_t row, Int_t collumn);
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
@@ -86,6 +87,7 @@ protected:
 	  TString fTrigger;                     ///< Selected trigger for the analysis
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
 	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
+	  Int_t   fStartCell;                   ///< ID of the first cell you want to check
 
 	  //Genergal paths
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder
@@ -116,6 +118,7 @@ protected:
 	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria) start at 0 (cellID 0 = histobin 1)
 	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
 	  Bool_t *fWarmCell;                    //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
+	  std::vector<Int_t> fManualMask;       //!<! Is a list of cells that should be addidionally masked by hand.
 
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs

@@ -71,13 +71,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const int cKt=2;
 
   //-------Single track cuts------------------------------------------------->
-  double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
-  double DCAz =3.0;//cm // our standard is 0.15 cm;
+  double DCAxy=0.3;//cm // our standard is 0.20 cm; super narrow was 0.015cm
+  double DCAz =0.3;//cm // our standard is 0.15 cm;
   //-------Single track cuts-------------------------------------------------<
   //=======Double track cuts=================================================>
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
-  double PhiStarDifferenceMinimum=0.;//0.02; //[radian]
-  double EtaDifferenceMinimum=0.;//0.04; //[radian]
+  double PhiStarDifferenceMinimum=0.02; //[radian]
+  double EtaDifferenceMinimum=0.04; //[radian]
   //=======Double track cuts=================================================<
 
   // Switches for QA analyses
@@ -121,7 +121,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     Reader->SetReadMC(kTRUE);
     Reader->SetDCAglobalTrack(kTRUE);//proverit'!!!
     //
-////////    Reader->SetKaonAnalysis(kTRUE);// new set to choose Kaon by PDG code (7Nov2016)
+    Reader->SetKaonAnalysis(kTRUE);// new set to choose Kaon by PDG code (7Nov2016)
 
 
 /*
@@ -144,7 +144,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 
     //Generate freeze-out coordinates as a 3D gaussian sphere in PRF
     AliFemtoModelGausRinvFreezeOutGenerator *tFreeze = new AliFemtoModelGausRinvFreezeOutGenerator();
-    tFreeze->SetSizeInv(3.0*TMath::Sqrt(2.0));//r_0=3fm it should be time to sqrt(2) !!!!KM
+    tFreeze->SetSizeInv(5.0*TMath::Sqrt(2.0));//r_0=3fm it should be time to sqrt(2) !!!!KM
     
     
     AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
@@ -518,7 +518,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 
            // model--------------
            
-             cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctn(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+             cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctn(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),100, 0.0,0.2);
 
 	      cqinvkttpcmodel[ktm]->SetPairSelectionCut(ktpcuts[ktm]);//add kT bins
 	      cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);//Special MC analysis for K selected by PDG code -->

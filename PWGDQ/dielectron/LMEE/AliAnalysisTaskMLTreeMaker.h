@@ -1,15 +1,19 @@
-
-
 #ifndef ALIANALYSISTASKMLTREEMAKER_H
 #define ALIANALYSISTASKMLTREEMAKER_H
 class TH1F;
 class TList;
 class TH2D;
 class TH3D;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 
 
 #include "AliAnalysisTaskSE.h"
+#include "AliDielectronVarCuts.h"
+#include "AliDielectronTrackCuts.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronPID.h"
+#include "AliAnalysisFilter.h"
+#include "AliDielectronEventCuts.h"
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
@@ -20,14 +24,31 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskMLTreeMaker(const char *name);
   AliAnalysisTaskMLTreeMaker();
-  virtual ~AliAnalysisTaskMLTreeMaker(){} 
-   
+  ~AliAnalysisTaskMLTreeMaker(); 
+  
+
+  AliDielectronEventCuts* eventCuts;
+  AliDielectronVarCuts *eventplaneCuts;
+  AliAnalysisFilter* evfilter;
+  
+  AliDielectronVarCuts* trcuts;
+  AliDielectronTrackCuts *trfilter;
+  AliDielectronPID *pidcuts;
+  AliDielectronCutGroup* cuts;
+  AliAnalysisFilter* filter; 
+  
+  // need this to use PID in dielectron framework
+  AliDielectronVarManager* varManager;
+     
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
 //~ 
-
+  
+  void SetupTrackCuts();
+  void SetupEventCuts();
+  
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
@@ -173,9 +194,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Bool_t fPionSigmas; 
   Bool_t fKaonSigmas;
 
-  Int_t fFilterBit;// track cut bit from track selection (default = 96)
+  Int_t fFilterBit;// track cut bit from track selection (default = kTPCqualSPDany)
 
-  AliESDtrackCuts* fESDTrackCuts;
+//  AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
@@ -200,6 +221,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> MCeta;
   std::vector<Double_t> MCphi;
   
+  std::vector<Double_t> MCvertx;
+  std::vector<Double_t> MCverty;
+  std::vector<Double_t> MCvertz;
+  
   std::vector<Float_t> dcar;    //DCA
   std::vector<Float_t> dcaz;
   
@@ -210,9 +235,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
   std::vector<Double_t> chi2ITS;
-  std::vector<Double_t> chi2TPC;
-  std::vector<Double_t> chi2Global;
-  std::vector<Double_t> chi2GlobalvsTPC;
+//  std::vector<Double_t> chi2TPC;
+  std::vector<Double_t> chi2GlobalPerNDF;
+//  std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
   std::vector<Int_t> pdg;
@@ -239,4 +264,3 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
 
 #endif
-

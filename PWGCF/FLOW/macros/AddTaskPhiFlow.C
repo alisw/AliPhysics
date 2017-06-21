@@ -19,8 +19,9 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         Bool_t VZERO_SP = kTRUE, // use vzero sp method
         Float_t centrMin = 20., // centrality selection
         Float_t centrMax = 40.,
-        Int_t harm = 3, // harmonic vn
+        TString suffixName = "UniqueID", // unique id for output objects
         Double_t ITSsigma = 3., // pid mode (see task implementation)
+        Int_t harm = 2, // harmonic vn
         UInt_t poi_filter = 32, // aod filterbits
         Float_t POIPtMin = 0.2,  // pt of daughters
         Float_t POIPtMax = 5., // max pt of daughterp particles
@@ -31,7 +32,6 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         Double_t TPCrange = 0.,
         Double_t ITScontrol = -1.,
         Double_t Bpurity = 0.3,
-        TString suffixName = "UniqueID", // unique id for output objects
         Bool_t bCentralTrigger = kTRUE, // trigger selection
         Float_t EtaGap = 0., // eta gap for SPSUB
         TString DCA = "pt", // dca mode (see task implementation)
@@ -91,6 +91,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     // create the main task
     AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
     task->SetHarmonic(harm);
+    task->SetQA(kTRUE);
     if(debug) cout << " === AliAnalysisTaskPhiFlow === " << task << endl;
     if(!task) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
@@ -376,7 +377,6 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         if(EP3sub) cout << " --> Launched VZERO subevent analysis alongside reconstruction - USE WITH CAUTION!" << endl;
         cout << " ************************************************ " << endl;
         TString condit = "";
-        (task->SetQA(kFALSE)) ? condit+= " --> Enabled QA plots <-- " : condit+= " --> Disabled QA plots <-- ";
         (task->SetIsMC(kFALSE)) ? condit+= " --> MC mode <-- " : condit+= " --> DATA mode <-- ";
         (task->UseEventMixing(event_mixing, kTRUE)) ? condit+= " --> Using EVENT MIXING <--" : condit+= "--> Combinatorial background <--";
         cout << condit << endl;
@@ -501,7 +501,6 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     if(EP3sub) cout << " --> Launched VZERO subevent analysis alongside reconstruction - USE WITH CAUTION!" << endl;
     cout << " ************************************************ " << endl;
     TString condit = "";
-    (task->SetQA(kFALSE)) ? condit+= " --> Enabled QA plots <-- " : condit+= " --> Disabled QA plots <-- ";
     (task->SetIsMC(kFALSE)) ? condit+= " --> MC mode <-- " : condit+= " --> DATA mode <-- ";
     (task->UseEventMixing(event_mixing, kTRUE)) ? condit+= " --> Using EVENT MIXING <--" : condit+= "--> Combinatorial background <--";
     cout << condit << endl;

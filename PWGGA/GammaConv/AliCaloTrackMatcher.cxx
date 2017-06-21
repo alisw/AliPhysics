@@ -51,6 +51,7 @@ ClassImp(AliCaloTrackMatcher)
 AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType) : AliAnalysisTaskSE(name),
   fClusterType(clusterType),
   fV0ReaderName(""),
+  fAnalysisTrainMode("Grid"),
   fMatchingWindow(200),
   fMatchingResidual(0.2),
   fRunNumber(-1),
@@ -91,8 +92,10 @@ AliCaloTrackMatcher::~AliCaloTrackMatcher(){
 
     if(fHistControlMatches) delete fHistControlMatches;
     if(fSecHistControlMatches) delete fSecHistControlMatches;
-    if(fListHistos != NULL){
-      delete fListHistos;
+    if(fAnalysisTrainMode.EqualTo("Grid")){
+        if(fListHistos != NULL){
+            delete fListHistos;
+        }
     }
 }
 

@@ -666,6 +666,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(AliEmcalContainerUtils::InputObj
  *
  * @param[in] component The correction component to which the input objects will be added
  * @param[in] inputObjectType The type of input object to add to the component
+ * @param[in] checkObjectExists If true, check if the object exists before adding it to the component
  */
 void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists)
 {
@@ -880,7 +881,7 @@ void AliEmcalCorrectionTask::SetupContainer(AliEmcalContainerUtils::InputObject_
     }
   }
   // Embedded
-  result = AliEmcalCorrectionComponent::GetProperty("IsEmbedded", tempBool, userNode, defaultNode, false, containerName);
+  result = AliEmcalCorrectionComponent::GetProperty("embedding", tempBool, userNode, defaultNode, false, containerName);
   if (result) {
     AliDebugStream(2) << cont->GetName() << ": Setting embedding to " << (tempBool ? "enabled" : "disabled") << std::endl;
     cont->SetIsEmbedding(tempBool);
@@ -1656,7 +1657,7 @@ void AliEmcalCorrectionTask::PrintRequestedContainersInformation(AliEmcalContain
     AliEmcalContainer * cont = 0;
     for (auto containerInfo : (inputObjectType == AliEmcalContainerUtils::kCluster ? fClusterCollArray : fParticleCollArray) ) {
       cont = static_cast<AliEmcalContainer *>(containerInfo);
-      stream << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << "\tIsEmbedding:" << std::boolalpha << cont->GetIsEmbedding() << std::endl;
+      stream << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << "\tIsEmbedding: " << std::boolalpha << cont->GetIsEmbedding() << std::endl;
     }
   }
   else {

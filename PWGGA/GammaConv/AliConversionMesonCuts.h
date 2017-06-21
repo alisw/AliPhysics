@@ -15,6 +15,7 @@
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "AliAODMCParticle.h"
+#include "AliCaloPhotonCuts.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -78,7 +79,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TString GetCutNumber();
 
     // Cut Selection
-    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0.);
+    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0., Int_t leadingCellID1 = 0, Int_t leadingCellID2 = 0);
     Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
@@ -105,6 +106,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
+
+    void SetCaloMesonCutsObject(AliCaloPhotonCuts* cuts){fCaloPhotonCuts = cuts;}
 
     // Set Individual Cuts
     Bool_t SetRCut(Int_t RCut);
@@ -153,6 +156,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TList*    fHistograms;
     Bool_t    fDoLightOutput;             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fMode;                      // running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
+
+    AliCaloPhotonCuts* fCaloPhotonCuts;   // CaloPhotonCutObject belonging to same main task
+
     //cuts
     Int_t     fMesonKind;
     Int_t     fIsMergedClusterCut;        // flag for merged cluster and di cluster analysis
@@ -173,6 +179,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t     fNumberOfBGEvents;          //
     Float_t   fOpeningAngle;              // min opening angle for meson
     Bool_t    fEnableMinOpeningAngleCut;  // flag to enable min opening angle cut
+    Bool_t    fEnableOneCellDistCut;      // flag to enable 1 cell dist cut
     Bool_t    fDoToCloseV0sCut;           //
     Double_t  fminV0Dist;                 //
     Bool_t    fDoSharedElecCut;           //
@@ -202,6 +209,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     
     // Histograms
     TObjString* fCutString;                     // cut number used for analysis
+    TString     fCutStringRead;
     TH2F*       fHistoMesonCuts;                // bookkeeping for meson cuts
     TH2F*       fHistoMesonBGCuts;              // bookkeeping for meson bg cuts
     TH1F*       fHistoDCAGGMesonBefore;         //
@@ -215,7 +223,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,17)
+    ClassDef(AliConversionMesonCuts,19)
 };
 
 

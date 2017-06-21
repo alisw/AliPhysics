@@ -55,6 +55,8 @@ TH1     *AliDielectronPID::fgFunCntrdCorr=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorr=0x0;
 TH1     *AliDielectronPID::fgFunCntrdCorrITS=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorrITS=0x0;
+TH1     *AliDielectronPID::fgFunCntrdCorrTOF=0x0;
+TH1     *AliDielectronPID::fgFunWdthCorrTOF=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
@@ -337,6 +339,16 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetZaxis()->GetUniqueID(), kTRUE);
   }
+  if(fgFunCntrdCorrTOF)  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorrTOF)  {
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
+  }
   
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
@@ -570,6 +582,13 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
+
+  // post pid corrections ("eta corrections")
+  if (fPartType[icut]==AliPID::kElectron){
+    // via functions (1-3D)
+    numberOfSigmas-=GetCntrdCorrTOF(part);
+    numberOfSigmas/=GetWdthCorrTOF(part);
+  }
   
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;

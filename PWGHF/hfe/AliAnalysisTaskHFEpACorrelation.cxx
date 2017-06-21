@@ -2028,11 +2028,13 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
     fNonHFE->SetAlgorithm("DCA"); //KF
     
-    fNonHFE->SetUseGlobalTracks();
+    //Remove strong cuts
+    //fNonHFE->SetUseGlobalTracks();
     //fNonHFE->SetNClustITS(2); Remove ITS cut from the partner. It generates aditional problems for NonID Background subtraction.
-    fNonHFE->SetDCAPartnerCuts(fDCAcutr, fDCAcutz);
-    fNonHFE->SetEtaCutForPart(fEtaCutMin, fEtaCutMax);
-    fNonHFE->SetTPCNclsForPID(60);
+    //fNonHFE->SetDCAPartnerCuts(fDCAcutr, fDCAcutz);
+    //fNonHFE->SetEtaCutForPart(fEtaCutMin, fEtaCutMax);
+    //fNonHFE->SetTPCNclsForPID(60);
+    fNonHFE->SetUseITSTPCRefit(kFALSE);
     
     
     fNonHFE->SetPIDresponse(fPidResponse);

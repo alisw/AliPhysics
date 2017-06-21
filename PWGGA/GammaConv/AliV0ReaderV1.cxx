@@ -87,6 +87,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fUseOwnXYZCalculation(kTRUE),
   fUseConstructGamma(kFALSE),
   kUseAODConversionPhoton(kTRUE),
+  kAddv0sInESDFilter(kFALSE),
   fCreateAOD(kFALSE),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
@@ -94,6 +95,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
+  fNumberOfTPCoutTracks(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -146,11 +148,13 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fImpactParamTree(NULL),
   fVectorFoundGammas(0),
   fCurrentFileName(""),
-  fMCFileChecked(kFALSE)
+  fMCFileChecked(kFALSE),
+  fPCMv0BitField(NULL)
 {
   // Default constructor
 
   DefineInput(0, TChain::Class());
+  DefineOutput(1,TBits::Class());
 }
 
 //________________________________________________________________________
@@ -238,6 +242,8 @@ void AliV0ReaderV1::UserCreateOutputObjects()
   // Create AODs
 
   if(fCreateAOD){
+    fPCMv0BitField = new TBits();
+    
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -575,6 +581,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   //Reset the TClonesArray
   fConversionGammas->Delete();
 
+  //Clear TBits object with accepted v0s from previous event
+  if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
+
   fInputEvent = inputEvent;
   fMCEvent    = mcEvent;
 
@@ -587,7 +596,11 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();
+  CountTracks();  
+
+  //Count Tracks with TPCout flag 
+  CountTPCoutTracks();
+
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
@@ -627,6 +640,7 @@ void AliV0ReaderV1::FillAODOutput()
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
     if(fCreateAOD) {
+      PostData(1, fPCMv0BitField);
       AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
       if (aodhandler && aodhandler->GetFillAOD()) {
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
@@ -711,6 +725,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
+	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -719,6 +734,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
         fCurrentMotherKFCandidate=NULL;
       }
     }
+    if(kAddv0sInESDFilter){fPCMv0BitField->Compact();}
   }
   return kTRUE;
 }
@@ -1363,6 +1379,27 @@ void AliV0ReaderV1::CountTracks(){
       fNumberOfPrimaryTracks++;
     }
   }
+
+  return;
+}
+
+///________________________________________________________________________
+void AliV0ReaderV1::CountTPCoutTracks(){
+  fNumberOfTPCoutTracks = 0;
+
+  for (Int_t itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++) {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itrk));
+
+    if (trk != NULL) {
+      /* the initial method of counting TPC out tracks */
+      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+        if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+          fNumberOfTPCoutTracks++;
+        }
+      }
+    }
+  }
+
 
   return;
 }

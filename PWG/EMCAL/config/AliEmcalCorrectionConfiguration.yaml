@@ -90,7 +90,6 @@ Clusterizer:                                        # Clusterizer component
     setCellMCLabelFromCluster: 0                    # Enables setting the cell MC label from the cluster. There are different modes depending on the value
     diffEAggregation: 0.03                          # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
     useTestPatternForInput: false                   # Use test pattern for input instead of cells. Intended for testing and debugging.
-    embeddedCellEnergyType: kNonEmbedded            # Select which part of the embedded energy to use for clusterization. Disabled by default.
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

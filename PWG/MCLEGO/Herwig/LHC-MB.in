@@ -1,0 +1,52 @@
+# -*- ThePEG-repository -*-
+
+################################################################################
+# This file contains our best tune to UE data from ATLAS at 7 TeV. More recent
+# tunes and tunes for other centre-of-mass energies as well as more usage
+# instructions can be obtained from this Herwig wiki page:
+# http://projects.hepforge.org/herwig/trac/wiki/MB_UE_tunes
+################################################################################
+
+##################################################
+# Technical parameters for this run
+##################################################
+cd /Herwig/Generators
+set LHCGenerator:NumberOfEvents 10000000
+set LHCGenerator:RandomNumberGenerator:Seed 31122001
+set LHCGenerator:PrintEvent 10
+set LHCGenerator:MaxErrors 1000000
+
+set LHCGenerator:DebugLevel 0
+set LHCGenerator:DumpPeriod -1
+set LHCGenerator:DebugEvent 0
+
+
+##################################################
+# LHC physics parameters (override defaults here) 
+##################################################
+set LHCGenerator:EventHandler:LuminosityFunction:Energy 13000.0
+
+# Intrinsic pT tune extrapolated to LHC energy
+set /Herwig/Shower/Evolver:IntrinsicPtGaussian 2.2*GeV
+
+##################################################
+# Matrix Elements for hadron-hadron collisions 
+##################################################
+cd /Herwig/MatrixElements/
+insert SimpleQCD:MatrixElements[0] MEMinBias
+
+
+# MPI model settings
+set /Herwig/UnderlyingEvent/MPIHandler:IdenticalToUE 0
+cd /Herwig/Generators
+
+# Change to have no pT cuts for MinBias
+set LHCGenerator:EventHandler:Cuts /Herwig/Cuts/MinBiasCuts
+
+insert LHCGenerator:AnalysisHandlers 0 /Herwig/Analysis/HepMCFile
+set /Herwig/Analysis/HepMCFile:Format GenEvent
+set /Herwig/Analysis/HepMCFile:Units GeV_mm
+set /Herwig/Analysis/HepMCFile:Filename output.hepmc
+
+run LHC-MB LHCGenerator
+

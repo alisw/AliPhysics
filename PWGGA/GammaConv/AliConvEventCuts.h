@@ -168,9 +168,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
-        kLHC16h3,         // anchored LHC15n pass2 - jet-jet first chunck
-        kLHC16h3b,        // anchored LHC15n pass2 - jet-jet second chunck
-        kLHC16h3_bis,     // anchored LHC15n pass2 - jet-jet extra sample
+        kLHC16h3,         // anchored LHC15n pass4 - jet-jet MC Pythia8 reproduction
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
         kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
@@ -186,6 +184,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2016
         kLHC16kl,         // pp 13 TeV
         kLHC16q,          // pPb 5 TeV
+	kLHC16r,          // pPb 8 TeV
+	kLHC16s,          // pPb 8 TeV
+	kLHC16t,          // pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
         kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
@@ -273,7 +274,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    UpdateCutString();
       static const char * fgkCutNames[kNCuts];
 
-      // Seters
+      // Setters
       Bool_t    SetCutIds (TString cutString); 
       Bool_t    SetCut (cutIds cutID, Int_t cut);
       Bool_t    SetIsHeavyIon (Int_t isHeavyIon);
@@ -362,6 +363,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
+      Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -442,6 +445,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
+      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
       Bool_t    VertexZCut(AliVEvent *fInputEvent);
       Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
       Float_t   GetPtHard(AliVEvent *MCEvent);
@@ -499,6 +503,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fSpecialTrigger;                        // flag
       Int_t                       fSpecialSubTrigger;                     // flag
       Bool_t                      fRemovePileUp;                          // flag
+      Int_t                       fPastFutureRejectionLow;                // sets bunch crossing event rejection in past
+      Int_t                       fPastFutureRejectionHigh;               // sets bunch crossing event rejection in future
       Int_t                       fRejectExtraSignals;                    //
       UInt_t                      fOfflineTriggerMask;                    // Task processes collision candidates only
       Bool_t                      fHasV0AND;                              // V0AND Offline Trigger
@@ -510,8 +516,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            // period selector
       EnergyVar                   fEnergyEnum;                            // energy selector
-      
+
       TObjString*                 fCutString;                             // cut number used for analysis
+      TString                     fCutStringRead;
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
       Bool_t                      fDoEtaShift;                            // Flag for Etashift
@@ -530,6 +537,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameFitDataK0s;                        // Fit name for fit to spectrum of k0s in Data
       // Histograms
       TH1F*                       fHistoEventCuts;                        // bookkeeping for event selection cuts
+      TH1F*                       fHistoPastFutureBits;                   // bookkeeping for event selection cuts
       TH1F*                       hCentrality;                            // centrality distribution for selected events
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
@@ -584,7 +592,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,30)
+      ClassDef(AliConvEventCuts,32)
 };
 
 

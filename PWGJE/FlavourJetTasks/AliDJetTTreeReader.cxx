@@ -98,7 +98,7 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotEffScale()
   tree->SetBranchAddress(fJetBranchName,&brJet);
 
   TString hname = TString::Format("invMass_JetPt_%.0f_%.0f", fpTmin, fpTmax);
-  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax);
+  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth / fMassRebin, fmassmin, fmassmax);
   fMassPlot->Sumw2();
 
   for (int k = 0; k < tree->GetEntries(); k++) {
@@ -135,7 +135,7 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotSideband()
   tree->SetBranchAddress(fJetBranchName,&brJet);
 
   TString hname = TString::Format("invMass_DPt_%.0f_%.0f", fpTmin, fpTmax);
-  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax);
+  fMassPlot = new TH1D(hname,hname, (fmassmax-fmassmin) / fmasswidth / fMassRebin, fmassmin, fmassmax);
   fMassPlot->Sumw2();
 
   fMassVsJetPtPlot = new TH2D("hInvMassJetPt", "hInvMassJetPt", (fmassmax-fmassmin) / fmasswidth, fmassmin, fmassmax, fnJetbins, fJetbinpTedges);

@@ -1,12 +1,15 @@
 #ifndef AliAnalysisTaskTOFSpectra_H
 #define AliAnalysisTaskTOFSpectra_H
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// This analysis extracts pT-spectra of charged kaons, protons, and pions.  //
-// It is based on particles identifation via the TOF signal.                //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///                                                                          //
+/// This analysis extracts pT-spectra of charged kaons, protons, and pions.  //
+/// It is based on particles identifation via the TOF signal.                //
+///                                                                          //
+///                                                                          //
+/// Authors:                                                                 //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                           //
+///////////////////////////////////////////////////////////////////////////////
 
 class TH1;
 class TH1F;
@@ -502,6 +505,7 @@ private:
   Bool_t fChannelmode;          ///<  Flag to set the analysis only on channel TOF
   Bool_t fCutmode;              ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
   const Int_t fSimpleCutmode;   ///<  Index to set simple configuration of the track cuts
+  const Bool_t fUseAliEveCut;   ///<  Index to set the usage of the AliEventCuts class from OADB to select events
   const Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
   const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
   const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
@@ -556,6 +560,7 @@ private:
   TArrayF fMultiplicityBin;  ///<  Array of the Event Multiplicity bins
   
   //Cut values
+  const Double_t fVtxZCut;     ///<  Max Z displacement of the vertex position
   const Double_t fTOFmax;      ///<  Max TOF time mesured for tracks
   const Double_t fTOFmin;      ///<  Min TOF time mesured for tracks
   const Double_t fLengthmin;   ///<  Min length for tracks
@@ -674,6 +679,8 @@ private:
   TH1F* hNEvt;                                  ///<  Histogram with the number of events and all the events that passed each cut
   TH1F* hEvtMult;                               ///<  Histogram with the event Multiplicity Before any physics selection
   TH1F* hEvtMultAftEvSel;                       ///<  Histogram with the event Multiplicity After the physics selection
+  TH1F* hEvtVtxXYBefSel;                        ///<  Histogram with the linear distance in the XY plane of the primary vertex before any selection on vertex position
+  TH1F* hEvtVtxZBefSel;                         ///<  Histogram with the linear distance along the Z axis of the primary vertex before any selection on vertex position
   TH1F* hEvtVtxXY;                              ///<  Histogram with the linear distance in the XY plane of the primary vertex
   TH1F* hEvtVtxZ;                               ///<  Histogram with the linear distance along the Z axis of the primary vertex
   
@@ -759,8 +766,10 @@ private:
   TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
   TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency numerator with kTIME, kTRDOut flags
   TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags
-  TH1F* hDenTrkVertMultTrk[2][3];                              ///<  Matching efficiency denominator with MC truth for events that passed Vertex Cuts
-  TH1F* hDenTrkTriggerMultTrk[2][3];                           ///<  Matching efficiency denominator with MC truth for events that passed Physics Selection
+  TH1F* hDenTrkTrigger[2][3];                                  ///<  Generated particles with MC truth on PID for events that passed Physics Selection
+  TH1F* hDenTrkMCVertexZ[2][3];                                ///<  Generated particles with MC truth on PID for events that passed Physics Selection
+  TH1F* hDenTrkVertex[2][3];                                   ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH1F* hDenTrkVertexMCVertexZ[2][3];                          ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
   TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];                    ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
   TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];                  ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
   TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];                 ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
@@ -806,7 +815,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 7);
+  ClassDef(AliAnalysisTaskTOFSpectra, 7); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif

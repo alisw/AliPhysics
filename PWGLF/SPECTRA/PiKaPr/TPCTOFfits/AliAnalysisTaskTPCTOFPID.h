@@ -28,7 +28,7 @@ class AliAnalysisPIDParticle;
 class TClonesArray;
 class AliCentrality;
 class AliPIDResponse;
-class AliPPVsMultUtils;
+class AliMultSelection;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class TTree;
@@ -93,7 +93,6 @@ public AliAnalysisTaskSE
   TH1D *fEvHist;
   /* ESD analysis */
   AliPIDResponse *fPIDResponse; //! PID object
-  AliPPVsMultUtils *fMultiUtils; //! V0M Multi utils
   AliAnalysisUtils *fAnUtils; //! Analysis Utils
   Int_t fRunNumber; // run number
   UInt_t fStartTime; // start time
@@ -104,6 +103,7 @@ public AliAnalysisTaskSE
   AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
   AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
   AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit
+  AliESDtrackCuts *fTrackCuts2011Sys; //! TPC only track cuts + refit 
   AliESDpid *fESDpid; // ESD PID
   Bool_t fIsCollisionCandidate; // is collision candidate
   UInt_t fIsEventSelected; // is event selected

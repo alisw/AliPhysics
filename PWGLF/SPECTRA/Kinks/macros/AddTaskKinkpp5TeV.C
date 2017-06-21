@@ -25,7 +25,7 @@ AliAnalysisTaskKinkpp5TeV* AddTaskKinkpp5TeV(TString lCustomName="", Float_t lRa
      //TString outputFileName = AliAnalysisManager::GetCommonFileName();
      //outputFileName += ":PWG2SpectraTOF";
    
-    	AliAnalysisTaskKinkpp5TeV  *task = new AliAnalysisTaskKinkpp5TeV("AliAnalysisTaskKinkpp5TeV");
+    	AliAnalysisTaskKinkpp5TeV  *task = new AliAnalysisTaskKinkpp5TeV("AliAnalysisTaskKinkpp5TeV", lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
    
     //task->SetMC("kFALSE"); // 26/11/12
         task->SetKinkRadius(lRadiusKLow, lRadiusKUp);

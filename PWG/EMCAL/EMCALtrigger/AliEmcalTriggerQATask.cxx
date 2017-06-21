@@ -27,6 +27,7 @@
 #include <AliAnalysisManager.h>
 
 #include "AliEMCALTriggerOfflineQAPP.h"
+#include "AliEMCALTriggerOfflineLightQAPP.h"
 #include "AliEmcalTriggerQATask.h"
 
 using namespace EMCALTrigger;
@@ -57,7 +58,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
  * Named constructor.
  * \param name Name of the trigger QA task
  */
-AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamType, Bool_t online) :
+AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamType, ETriggerAnalysisType_t anaType) :
   AliAnalysisTaskEmcalLight(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(),
@@ -73,14 +74,21 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamT
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
 
-  if (beamType == kpp) {
+  if (beamType == kpp || beamType == kpA) {
     AliInfo("Setting up the task for pp collisions.");
     SetForceBeamType(AliAnalysisTaskEmcalLight::kpp);
-    if (online){
+    switch (anaType) {
+    case kTriggerOnlineAnalysis:
       fEMCALTriggerQA.push_back(new AliEMCALTriggerOnlineQAPP(name));
-    }
-    else {
+      break;
+    case kTriggerOfflineExpertAnalysis:
       fEMCALTriggerQA.push_back(new AliEMCALTriggerOfflineQAPP(name));
+      break;
+    case kTriggerOfflineLightAnalysis:
+      fEMCALTriggerQA.push_back(new AliEMCALTriggerOfflineLightQAPP(name));
+      break;
+    default:
+      break;
     }
   }
   else {
@@ -288,7 +296,7 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
  * \param sudbir directory inside of the root file where the output objects will be stored
  * \return a pointer to the new instance of the class
  */
-AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString triggerPatchesName, TString cellsName, TString triggersName, EBeamType_t beamType, Bool_t online, TString subdir, TString suffix)
+AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString triggerPatchesName, TString cellsName, TString triggersName, EBeamType_t beamType, ETriggerAnalysisType_t anaType, TString subdir, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -310,7 +318,7 @@ AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString trig
     taskName += "_";
     taskName += suffix;
   }
-  AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, beamType, online);
+  AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, beamType, anaType);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   if(triggersName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
@@ -365,8 +373,34 @@ void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
   for (auto triggerClass : triggerClasses) {
     TString suffix(triggerClass.c_str());
     suffix.ReplaceAll("-", "_");
-    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", beam, kFALSE, "CaloQA_default", suffix);
-    task->AddAcceptedTriggerClass(triggerClass.c_str());
+    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", beam, kTriggerOfflineLightAnalysis, "CaloQA_default", suffix);
     task->SetForceBeamType(beam);
+    task->AddAcceptedTriggerClass(triggerClass.c_str());
+    if (runnumber > 197692) {
+      task->SetCentralityEstimation(kNewCentrality);
+    }
+
+    if (triggerClass.find("CINT7") != std::string::npos) {
+      for (auto triggerQA : task->fEMCALTriggerQA) {
+        triggerQA->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+        triggerQA->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+        triggerQA->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
+      }
+    }
+    else {
+      EMCALTrigger::EMCalTriggerType_t triggerType = EMCALTrigger::kTMEMCalLevel0;
+      if (triggerClass.find("CEMC7") != std::string::npos || triggerClass.find("CDMC7") != std::string::npos) {
+        triggerType = EMCALTrigger::kTMEMCalLevel0;
+      }
+      else if (triggerClass.find("EG") != std::string::npos || triggerClass.find("DG") != std::string::npos) {
+        triggerType = EMCALTrigger::kTMEMCalGammaH;
+      }
+      else if (triggerClass.find("EJ") != std::string::npos || triggerClass.find("DJ") != std::string::npos) {
+        triggerType = EMCALTrigger::kTMEMCalJetH;
+      }
+      for (auto triggerQA : task->fEMCALTriggerQA) {
+        triggerQA->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, triggerType, kTRUE);
+      }
+    }
   }
 }

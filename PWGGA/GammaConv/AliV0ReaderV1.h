@@ -58,7 +58,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                      return NULL;}
     TString                   GetCurrentFileName()                  {return fCurrentFileName;}
     // Set Options
+    void	       SetAddv0sInESDFilter(Bool_t addv0s)	{kAddv0sInESDFilter = addv0s;}
     void               CountTracks();
+    void               CountTPCoutTracks();
     void               SetConversionCuts(const TString cut);
     void               SetConversionCuts(AliConversionPhotonCuts *cuts) {fConversionCuts=cuts; return;}
     void               SetEventCuts(const TString cut);
@@ -88,6 +90,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TString            GetPeriodName()                                  {return fPeriodName;}
     Int_t              GetPtHardFromFile()                              {return fPtHardBin;}
     Int_t              GetNumberOfPrimaryTracks()                       {return fNumberOfPrimaryTracks;}
+    Int_t              GetNumberOfTPCoutTracks()                        {return fNumberOfTPCoutTracks;}
     void               SetUseMassToZero (Bool_t b)                      {if(b){ cout<<"enable set mass to zero for AliAODConversionPhoton"<<endl;}
                                                                          else { cout<<"disable set mass to zero for AliAODConversionPhoton "<<endl;}
                                                                          fUseMassToZero=b; return;}
@@ -136,7 +139,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t               GetConversionPoint(const AliExternalTrackParam *pparam, const AliExternalTrackParam *nparam, Double_t convpos[3], Double_t dca[2]);
     Bool_t               GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2]);
     Double_t             GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam, const AliExternalTrackParam *negativeparam, const Double_t convpos[3]) const;
-
+    Bool_t 	   kAddv0sInESDFilter; 	          // Add PCM v0s to AOD created in ESD filter
+    TBits		     *fPCMv0BitField;	  // Pointer to bitfield of PCM v0s
     AliConversionPhotonCuts  *fConversionCuts;    // Pointer to the ConversionCut Selection
     AliConvEventCuts         *fEventCuts;         // Pointer to the ConversionCut Selection
     TClonesArray             *fConversionGammas;  // TClonesArray holding the reconstructed photons
@@ -151,6 +155,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Int_t          fPreviousV0ReaderPerformsAODRelabeling; // 0->not set, meaning V0Reader has not yet determined if it should do AODRelabeling, 1-> V0Reader perfomrs relabeling, 2-> previous V0Reader in list perfomrs relabeling
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
+    Int_t          fNumberOfTPCoutTracks;        // Number of TPC Tracks with TPCout flag
     TString        fPeriodName;
     Int_t          fPtHardBin;                    // ptHard bin from file
     Bool_t         fUseMassToZero;                // switch on setting the mass to 0 for AODConversionPhotons
@@ -210,7 +215,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 14)
+    ClassDef(AliV0ReaderV1, 16)
 
 };
 

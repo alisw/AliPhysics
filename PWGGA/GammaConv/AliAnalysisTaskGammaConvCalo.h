@@ -339,6 +339,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueSecondaryPi0FromLambdaInvMassPt;          //! array of histos with validated secondary mothers from Lambda, invMass, pt
     TH1F**                  fHistoTrueLambdaWithPi0DaughterMCPt;                //! array of histos with lambda with reconstructed pi0 as daughter, pt
     TH2F**                  fHistoTrueBckGGInvMassPt;                           //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                  fHistoTrueBckFullMesonContainedInOneClusterInvMassPt; //! array of histos with pi0 fully contained in one cluster, invMass, pt
+    TH2F**                  fHistoTrueBckAsymEClustersInvMassPt;                  //! array of histos with asymmetry energy distributions of clusters, invMass, pt
     TH2F**                  fHistoTrueBckContInvMassPt;                         //! array of histos with contamination BG, invMass, pt
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
     TH2F**                  fHistoTrueEtaPtY;                                   //! array of histos with validated eta, pt, Y
@@ -478,7 +480,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 39);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 40);
 };
 
 #endif

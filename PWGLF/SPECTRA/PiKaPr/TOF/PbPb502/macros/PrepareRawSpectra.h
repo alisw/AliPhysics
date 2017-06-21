@@ -1,4 +1,4 @@
-void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDataHisto.root", TString fitprefix = "", UInt_t iCharge = 0, UInt_t iSpecies = 0,  UInt_t iMult = 11, UInt_t fitmode = 0, TString prefix = "", const Bool_t fitsigma = kTRUE){
+void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDataHisto.root", TString fitprefix = "", UInt_t iCharge = 0, UInt_t iSpecies = 0,  UInt_t iMult = 11, UInt_t fitmode = 0, TString prefix = "", const Bool_t fitsigma = kTRUE, const Bool_t save = kFALSE){
   Infomsg("PrepareRawSpectra", Form("TString dirname %s, TString dataname %s, TString fitprefix %s, const UInt_t iCharge %i, const UInt_t iSpecies %i, const UInt_t iMult %i, UInt_t fitmode %i, TString prefix %s, const Bool_t fitsigma %i", dirname.Data(), dataname.Data(), fitprefix.Data(), iCharge, iSpecies, iMult, fitmode, prefix.Data(), fitsigma));
   
   if(iCharge >= kCharges) Fatalmsg("PrepareRawSpectra", Form("Wrong charge: %i", iCharge));
@@ -16,7 +16,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   const Bool_t showchi2 = kFALSE;//Flag to write the chi2 of the fit on each plot
   const Bool_t showratiomean = kFALSE;//Flag to write the mean and other parameters of the ratio between the fit and the data
   const Bool_t limitrange = kTRUE;//Flag to limit the plotting range of the th2 to the requested range
-  const Bool_t showtemplateusage = kFALSE;//Flag to show the template usage for each pt bin
+  const Bool_t showtemplateusage = kTRUE;//Flag to show the template usage for each pt bin
+  const Bool_t T0fillOnly = dataname.Contains("0T0") ? kTRUE : dataname.Contains("_T0") ? kTRUE : kFALSE;//Flag to check if the file has T0 fill only, in this case it should work as for peripheral Pb--Pb
   
   gROOT->SetStyle("Plain");
   gStyle->SetOptTitle(0);
@@ -49,13 +50,14 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   //Common path for macro output
   const TString outpath = Form("./Spectra/%s/Yields/%s%s/", systemString[optpp].Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data());
   
-  TFile *fout = GetFile(Form("%sYield%s%s_%s_%s%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), fitmodes[fitmode].Data(), MultBinString[iMult].Data(), prefix.Data()), "RECREATE");
+  TFile *fout = 0x0;
+  if(save) fout = GetFile(Form("%sYield%s%s_%s_%s%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), fitmodes[fitmode].Data(), MultBinString[iMult].Data(), prefix.Data()), "RECREATE");
   
   TFile *foutfits = 0x0;
-  if(!fitprefix.EqualTo("")){
+  if(save && !fitprefix.EqualTo("")){
     foutfits = GetFile(Form("%sFits/Fits%s%s_%s_%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), fitprefix.Data()), "RECREATE");
   }
-  fout->cd();
+  if(fout) fout->cd();
   
   TList *lHistograms = new TList();
   lHistograms->SetOwner();
@@ -116,6 +118,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   if(outputintolists) GetHistogram(linData, hname, fEntries);
   else GetHistogram(finData, hname, fEntries);
   fEntries->SetDirectory(0);
+  lHistograms->Add(fEntries);
   
   for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
     hname = Form("hTOF%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[iMult].Data());
@@ -1150,7 +1153,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //   evtnorm = 1./hEvtMult->GetEffectiveEntries()
   }
   
-  //Compute the normalization from the ist of analysed tracks
+  //Compute the normalization from the list of analysed tracks
   const Double_t norm = 1./fEntries->GetBinContent(1);
   
   if(geteventinfo && norm != evtnorm){
@@ -1249,50 +1252,56 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   
   
   if(!fitprefix.EqualTo("")){//Save fitted histos to file for fits
-    foutfits->cd();
+    if(foutfits) foutfits->cd();
     for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){
       TH1F *auxihisto = fitsigma ? hTOFSigma[ptbin] : hTOF[ptbin];
       auxihisto->SetName(Form("TOFData%s%s%s_pt%i", pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
       auxihisto->SetTitle(Form("TOF for %s %s in %s ptbin %i [%.2f,%.2f]", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]));
-      auxihisto->Write(auxihisto->GetName());
+      if(foutfits) auxihisto->Write(auxihisto->GetName());
       
       hFitted[ptbin]->SetName(Form("TOFFitted%s%s%s_pt%i", pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
       hFitted[ptbin]->SetTitle(Form("Fitted TOF for %s %s in %s ptbin %i [%.2f,%.2f]", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]));
-      hFitted[ptbin]->Write(hFitted[ptbin]->GetName());
+      if(foutfits) hFitted[ptbin]->Write(hFitted[ptbin]->GetName());
       
       hMismatchFitted[ptbin]->SetName(Form("TOFFitted_Mismatch_%s%s%s_pt%i", pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
       hMismatchFitted[ptbin]->SetTitle(Form("Fitted TOF Mismatch for %s %s in %s ptbin %i [%.2f,%.2f]", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]));
-      if(hMismatchFitted[ptbin]->GetEffectiveEntries() > 1) hMismatchFitted[ptbin]->Write(hMismatchFitted[ptbin]->GetName());
+      if(hMismatchFitted[ptbin]->GetEffectiveEntries() > 1 && foutfits) hMismatchFitted[ptbin]->Write(hMismatchFitted[ptbin]->GetName());
       
       for(Int_t species = 0; species < kExpSpecies; species++){
         hExpectedFitted[ptbin][species]->SetName(Form("TOFFitted_%s_%s%s%s_pt%i", pS_all[species].Data(), pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
         hExpectedFitted[ptbin][species]->SetTitle(Form("Fitted TOF %s for %s %s in %s ptbin %i [%.2f,%.2f]", pSpecies[species].Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]));
         if(hExpectedFitted[ptbin][species]->GetEffectiveEntries() <= 1) continue;
-        hExpectedFitted[ptbin][species]->Write(hExpectedFitted[ptbin][species]->GetName());
-        
+        if(foutfits) hExpectedFitted[ptbin][species]->Write(hExpectedFitted[ptbin][species]->GetName());
       }
       
       hRatioToFitted[ptbin]->SetName(Form("TOFFitted_Ratio_%s%s%s_pt%i", pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
       hRatioToFitted[ptbin]->SetTitle(Form("Fitted TOF Mismatch for %s %s in %s ptbin %i [%.2f,%.2f]", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]));
-      hRatioToFitted[ptbin]->Write(hRatioToFitted[ptbin]->GetName());
+      if(foutfits) hRatioToFitted[ptbin]->Write(hRatioToFitted[ptbin]->GetName());
       
     }
     
-    foutfits->Close();
-    delete foutfits;
+    if(foutfits){
+      foutfits->Close();
+      delete foutfits;
+    }
     
   }
   
-  fout->cd();
-  lCanvas->Write(Form("lCanvasRawSpectra%s%s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), 1);
-  lHistograms->Write(Form("lHistogramsRawSpectra%s%s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), 1);
+  if(fout){
+    fout->cd();
+    lCanvas->Write(Form("lCanvasRawSpectra%s%s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), 1);
+    lHistograms->Write(Form("lHistogramsRawSpectra%s%s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), 1);
+  }
+  
   if(productionmode){
     if(lHistograms) delete lHistograms;
     if(lCanvas) delete lCanvas;
   }
   
-  fout->Close();
-  delete fout;
-  if(linData) delete linData;
+  if(fout){
+    fout->Close();
+    delete fout;
+  }
+  // if(linData) delete linData;
   
 }

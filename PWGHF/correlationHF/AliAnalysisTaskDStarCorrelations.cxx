@@ -91,6 +91,7 @@ fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
 fRemoveMoreThanOneDmesonCandidate(kFALSE),
 fLimitAcceptanceForMC(kFALSE),
+fUseSmallSizePlots(kFALSE),
 fMultiplicityEstimator(kNtrk10),
 fDoVZER0ParamVertexCorr(1), 
 fPhiBins(32),
@@ -152,6 +153,7 @@ fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
 fRemoveMoreThanOneDmesonCandidate(kFALSE),
 fLimitAcceptanceForMC(kFALSE),
+fUseSmallSizePlots(kFALSE),
 fMultiplicityEstimator(kNtrk10),
 fDoVZER0ParamVertexCorr(1), 
 fPhiBins(32),
@@ -1461,8 +1463,8 @@ Bool_t AliAnalysisTaskDStarCorrelations::IsDDaughter(AliAODMCParticle* d, AliAOD
 void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     
     Double_t Pi = TMath::Pi();
-	Int_t nbinscorr = fPhiBins;
-	Double_t lowcorrbin = -0.5*Pi ;
+    Int_t nbinscorr = fPhiBins;
+    Double_t lowcorrbin = -0.5*Pi ;
     Double_t upcorrbin = 1.5*Pi ;
     
     
@@ -1488,10 +1490,10 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     //Double_t binLowLimitSparse[5]={lowcorrbin,0.14314 ,-1.6,  0,-0.5};
     //Double_t binUpLimitSparse[5]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5};
     
-    Int_t nbinsSparse[5]=         {nbinscorr ,     50 ,  32, 10,nbinsPool};
+    Int_t nbinsSparse[5]=      {nbinscorr, 50 ,  32, 10,nbinsPool};
     Double_t binLowLimitSparse[5]={lowcorrbin,0.142 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparse[5]= {upcorrbin ,0.1495 , 1.6,  5,nbinsPool-0.5};
-
+    if(fUseSmallSizePlots) nbinsSparse[1]=25; nbinsSparse[2]=16;
     
     
   //  Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     27 ,  32, 10,nbinsPool};
@@ -1501,7 +1503,11 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     80 ,  32, 10,nbinsPool};
     Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.148 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.160 , 1.6,  5,nbinsPool-0.5};
-
+    if(fUseSmallSizePlots) {
+       nbinsSparseDStarSB[1]=30;  nbinsSparseDStarSB[2]=16;
+       binLowLimitSparseDStarSB[1]=0.148;
+       binUpLimitSparseDStarSB[1]=0.157; 
+   }
     
    // Int_t nbinsSparseMC[6]=         {nbinscorr ,     32 ,  32, 10,nbinsPool,3};
    // Double_t binLowLimitSparseMC[6]={lowcorrbin,0.14314 ,-1.6,  0,-0.5,-0.5};
@@ -1511,10 +1517,8 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Int_t nbinsSparseMC[6]=         {nbinscorr ,  50 ,  32, 10,nbinsPool,3};
     Double_t binLowLimitSparseMC[6]={lowcorrbin,0.142 ,-1.6, 0,-0.5,-0.5};
     Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.1495 , 1.6, 5,nbinsPool-0.5,2.5};
-    
-
-    
-    
+    if(fUseSmallSizePlots) nbinsSparseMC[1]=25; nbinsSparse[2]=16;
+  
     
     TString signalSparseName = "";
     TString bkgSparseName = "";
@@ -1916,10 +1920,14 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
             D0massWeighted = new TH1F(nameDZeroMass.Data(), Form("D^{0} invariant mass in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,1.75,1.95);
             
           //  DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
-            
+
+	if(!fUseSmallSizePlots) {
             DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
-            
             DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
+	} else {
+            DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.13,0.19);
+            DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.13,0.19);
+	}              
 
         //  DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
             

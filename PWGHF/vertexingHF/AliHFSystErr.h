@@ -63,29 +63,29 @@ class AliHFSystErr : public TNamed
   }
   void SetIsLowEnergy(Bool_t flag) { 
     fIsLowEnergy = flag; 
-    AliInfo(" Settings for the low energy run");
+    if(flag) AliInfo(" Settings for the low energy run");
   }
   void SetIsLowPtAnalysis(Bool_t flag){
     fIsLowPtAnalysis = flag;
-    AliInfo("Settings for the low pt analysis");  
+    if(flag) AliInfo("Settings for the low pt analysis");  
   }
   void SetIsPass4Analysis(Bool_t flag){
     fIsPass4Analysis = flag;
-    AliInfo("Settings for the pass4 analysis");  
+    if(flag) AliInfo("Settings for the pass4 analysis");  
   }
   void SetIs5TeVAnalysis(Bool_t flag){
-   fIs5TeVAnalysis = flag;
-   AliInfo("Settings for the 5TeV analysis");  
+    fIs5TeVAnalysis = flag;
+    if(flag) AliInfo("Settings for the 5TeV analysis");  
   }
   void SetIsBDTAnalysis(Bool_t flag){
     fIsBDTAnalysis = flag;
-    AliInfo("Settings for the Lc BDT analysis");  
+    if(flag) AliInfo("Settings for the Lc BDT analysis");  
   }
 
 
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
-    AliInfo(" Settings for the PbPb 2010 energy scan");
+    if(flag) AliInfo(" Settings for the PbPb 2010 energy scan");
   }
 
   /// Settings of rapidity ranges for pPb 0-100% CC
@@ -95,7 +95,7 @@ class AliHFSystErr : public TNamed
   }
   void SetIspPb2011RapidityScan(Bool_t flag){
     fIsRapidityScan = flag; 
-    AliInfo("Settings for the pPb vs y measurement");
+    if(flag) AliInfo("Settings for the pPb vs y measurement");
   }
 
   /// Function to initialize the variables/histograms
@@ -223,7 +223,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb3050(); 
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
+  void InitD0toKpi2016pPb0100();
   void InitD0toKpi2013pPb0100LowPtAn();
+  void InitD0toKpi2016pPb0100LowPtAn();
 
   void InitDplustoKpipi2010pp();
   void InitDplustoKpipi2010ppPass4();
@@ -235,6 +237,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2011PbPb3050();
   void InitDplustoKpipi2011PbPb010();
   void InitDplustoKpipi2013pPb0100();
+  void InitDplustoKpipi2016pPb0100();
 
   void InitDstartoD0pi2010pp();
   void InitDstartoD0pi2010ppLowEn();
@@ -246,6 +249,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb3050();
   void InitDstartoD0pi2011PbPb010();
   void InitDstartoD0pi2013pPb0100();
+  void InitDstartoD0pi2016pPb0100();
   void InitDstartoD0pi2010ppPass4();
  
   void InitDstoKKpi2010pp();
@@ -254,6 +258,7 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2011PbPb010();
   void InitDstoKKpi2011PbPb2050();
   void InitDstoKKpi2013pPb0100();
+  void InitDstoKKpi2016pPb0100();
 
   void InitLctopKpi2010pp();
   void InitLctopKpi2010ppBDT();
@@ -264,10 +269,21 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
 
+  void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
+  void InitD0toKpi2015PbPb6080();
+  
+  void InitDplustoKpipi2015PbPb010();
   void InitDplustoKpipi2015PbPb3050();
+  void InitDplustoKpipi2015PbPb6080();
+
+  void InitDstoKKpi2015PbPb010();
   void InitDstoKKpi2015PbPb3050();
+  void InitDstoKKpi2015PbPb6080();
+
+  void InitDstartoD0pi2015PbPb010();
   void InitDstartoD0pi2015PbPb3050();
+  void InitDstartoD0pi2015PbPb6080();
 
 
   TH1F* ReflectHisto(TH1F *hin) const;
@@ -284,7 +300,7 @@ class AliHFSystErr : public TNamed
   Int_t fRunNumber;        /// Run Number (year)
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
   TString fCentralityClass;  /// Centrality class
-                           /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
+  /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
   TString fRapidityRange;  /// Rapidity range fot y measurements 
 
   Bool_t fIsLowEnergy;     /// flag for the low energy (2.76TeV) run

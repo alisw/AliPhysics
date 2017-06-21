@@ -68,6 +68,7 @@ public:
     k2011,
     k2015,
     k2015v6,
+    k2015pidfix,
     kAny
   };
   
@@ -754,6 +755,7 @@ public:
   Bool_t GetInvertZDC() const {return this->fInvertZDC;};
   void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
   Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
   void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
@@ -881,6 +883,7 @@ public:
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
   void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = B;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -1107,8 +1110,8 @@ public:
   TH1D* GetMultHist() const {return this->fMultHist;}
   void SetCenHist(TH1D* const TH) {this->fCenHist = TH;};
   TH1D* GetCenHist() const {return this->fCenHist;}
-  void SetVtxHist(TH2F* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
-  TH2F* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
+  void SetVtxHist(TH3D* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
+  TH3D* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
   void SetRunNumber(Int_t const n) {this->fRunNum = n;};
   Int_t GetRunNumber() const {return this->fRunNum;}
   void SetDataSet(DataSet set) {this->fDataSet = set;};
@@ -1479,7 +1482,6 @@ private:
   Double_t fCRCEtaMax;
   Int_t fRunNum;
   Int_t fCachedRunNum;
-  Int_t fRbREventCounter;
   Int_t fRunBin;
   Int_t fCenBin;
   CorrelationWeights fCorrWeightTPC;
@@ -1549,6 +1551,7 @@ private:
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
+  TH2D* fCRCQVecPtHistMagField; //!
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
 //  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
 //  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
@@ -1584,6 +1587,8 @@ private:
   TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
   TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
   TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile2D *fhAvQMCRbR; //!
+  TProfile2D *fhAvQMARbR; //!
   TProfile *fhAvAbsOrbit; //!
   TProfile3D *fCRCTPCQVecCenEtaRefMulTot[2][4]; //!
   TProfile2D *fCRCTPCQVecCenRefMulTotCheck[2][4]; //!
@@ -1596,10 +1601,16 @@ private:
   TH3D *fZDCVtxFitHist2[4]; //!
   TH1D *fZDCVtxFitCenProjHist2[4][3]; //!
   TH3D *fZDCBinsCenRefMult[10]; //!
-  TH2D *fZDCBinsCenRefMultRbR[4]; //!
-  TH2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile2D *fZDCBinsCenRefMultRbR[4]; //!
+  TProfile2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile *fZDCBinsCenRefMultRbRProf[10][4]; //!
+  TProfile *fZDCBinsCenRefMultTotProf[10][4]; //!
   TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
+  TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
+  TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
+  TH3D *fZDCQVecVtxCenEZDCFit0; //!
+  TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1626,10 +1637,14 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
 //  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
+  const static Int_t fknEZDCBins = 10;
+  TProfile3D *fCRCZDCQVecVtxCenEZDC3D[fCRCMaxnCen][fknEZDCBins][fkCRCnCQVecVtxPos]; //!
+  TH1D* fCRCZDCQVecDummyEZDCBins[fCRCMaxnCen]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 11;
+  const static Int_t fkNsteps = 12;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1781,6 +1796,7 @@ private:
   const static Int_t fkNHistv1eta = 14;
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta];
   const static Int_t fkNHistv1etaCov = 13;
   TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
   TH1D *fFlowSPZDCv1etaCovHist[fCRCMaxnCen][fkNHistv1etaCov]; //!
@@ -1910,9 +1926,11 @@ private:
   TH1D *fV0MMultHist; //! V0M Multiplicity distribution
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
-  TH2F *fVtxHist[3]; //! primary vertex
+  TH3D *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
+  TProfile2D* fAvEZDCCRbRPro; //! run-by-run average EZDC-C
+  TProfile2D* fAvEZDCARbRPro; //! run-by-run average EZDC-A
   TH2D* fPhiExclZoneHist; //!
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
@@ -1936,6 +1954,7 @@ private:
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
   TH1F* fMultCutAv; //!
+  TH1F* fRMSRefMulCenBins[10]; //!
   TH1F* fEZNCutMin; //!
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
@@ -1959,13 +1978,14 @@ private:
   TH1D *fZDCESECutsHist[fZDCESEnPol]; //!
   
   Bool_t fQAZDCCuts;
+  Bool_t fUseTracklets;
   Bool_t fQAZDCCutsFlag;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,53);
+  ClassDef(AliFlowAnalysisCRC,57);
   
 };
 

@@ -21,6 +21,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Bool_t                  enableMonitor,
    TString                 monitorOpt,
    Float_t                 massTol,
+   Float_t                 MaxRap,
    Float_t                 massTolVeto, 
    Float_t                 pLife, 
    Float_t                 radiuslow,
@@ -32,8 +33,11 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair,
-   Bool_t                  ptDep
+   AliRsnCutSet           *PairCutsSame,
+   AliRsnCutSet           *PairCutsMix,
+   Bool_t                  ptDep,
+   Double_t                pt1,
+   Double_t                pt2
 )
 {
    // manage suffix
@@ -71,12 +75,10 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetRequireTPCRefit(); // Standard
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
-   //esdTrackCuts->SetMaxChi2PerClusterTPC(4.); //not standard Cut 
-
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
 
    if(ptDep){
-     esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+     esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
    }else
      esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
   
@@ -89,13 +91,13 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
-   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not in the standard Cut 
+   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not a standard Cut but taken to choose only primary V0s 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
-   cutK0s->SetMaxRapidity(0.5);
+   cutK0s->SetMaxRapidity(MaxRap);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+   cutK0s->SetSwitch(Switch); // if 1 Competing V0 Rejection cut will be used   
    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
-   cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); 
    cutK0s->SetfLowRadius(radiuslow); 
    cutK0s->SetfHighRadius(radiushigh);
@@ -104,7 +106,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    if(enableSys)
      {
 
-       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+       if(Sys==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");}
+       else if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
        else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
        else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
        else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
@@ -214,7 +217,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(i <= 1){
+       out->SetPairCuts(PairCutsSame);
+     }
+     else{
+       out->SetPairCuts(PairCutsMix);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -264,7 +272,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -282,7 +290,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(-323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);

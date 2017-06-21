@@ -17,7 +17,6 @@
 #include "TH3F.h"
 #include <vector>
 #include <map>
-#include <fstream>
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   public:
@@ -109,6 +108,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
 
+    void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
 
@@ -239,6 +239,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueSecondaryPi0FromLambdaInvMassPt;            //! array of histos with validated secondary mothers from Lambda, invMass, pt
     TH1F**                fHistoTrueLambdaWithPi0DaughterMCPt;                  //! array of histos with lambda with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueBckGGInvMassPt;                             //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckFullMesonContainedInOneClusterInvMassPt; //! array of histos with pi0 fully contained in one cluster, invMass, pt
+    TH2F**                fHistoTrueBckAsymEClustersInvMassPt;                  //! array of histos with asymmetry energy distributions of clusters, invMass, pt
     TH2F**                fHistoTrueBckContInvMassPt;                           //! array of histos with contamination BG, invMass, pt
     TH2F**                fHistoTruePi0PtY;                                     //! array of histos with validated pi0, pt, Y
     TH2F**                fHistoTrueEtaPtY;                                     //! array of histos with validated eta, pt, Y
@@ -337,6 +339,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fInvMassTreeAlpha;
     Float_t               fInvMassTreeTheta;
     Int_t                 fInvMassTreeMixPool;
+    Float_t               fInvMassTreeZVertex;
+    Float_t               fInvMassTreeEta;
 
     // tree for E/p studies
     TTree**               tClusterEOverP;                                       //! array of trees with tree for E/p studies
@@ -387,13 +391,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
-    fstream               fOutputLocalDebug;                                    // debug output
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 35);
+    ClassDef(AliAnalysisTaskGammaCalo, 37);
 };
 
 #endif

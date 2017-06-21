@@ -38,6 +38,7 @@
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
+#include "AliTOFTriggerMask.h"
 
 // my headers
 #include "AliAnalysisTaskUpcNano_MB.h"
@@ -69,7 +70,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTOFPIDProton(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0) 
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0),
+	fTOFmask(0) 
 
 {
 
@@ -98,7 +101,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hTOFPIDProton(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0)  
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0),
+	fTOFmask(0)  
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -157,6 +162,8 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
+  fTreeJPsi ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -190,6 +197,8 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeRho ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
+  fTreeRho ->Branch("fTOFmask", &fTOFmask);
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -270,6 +279,9 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  hNLooseTracks = new TH1D("hNLooseTracks"," ",10000,0,10000);
+  fOutputList->Add(hNLooseTracks);
+  
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -287,6 +299,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(isMC) RunMC(aod);
   
   for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
+  
+  const AliTOFHeader *tofH = aod->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
     
   TString trigger = aod->GetFiredTriggerClasses();
   fHistEvents->Fill(1);
@@ -330,6 +345,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t MeanPt = -1;
   Int_t nSpdHits = 0;
   
+  fNLooseTracks = aod->GetNumberOfESDTracks();
+  if(trigger.Contains("CCUP8-B"))hNLooseTracks->Fill(fNLooseTracks);
+  
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   //Track loop
   for(Int_t iTrack=0; iTrack<aod ->GetNumberOfTracks(); iTrack++) {
@@ -340,7 +358,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     
     if(cutEta && TMath::Abs(trk->Eta())>0.9)continue;
     
-    if(!(trk->TestFilterBit(1<<4))) goodTPCTrack = kFALSE;
+    if(!(trk->TestFilterBit(1<<5))) goodTPCTrack = kFALSE;
     else{
     	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     	}

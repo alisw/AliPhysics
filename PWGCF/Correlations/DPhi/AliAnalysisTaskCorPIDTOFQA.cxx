@@ -785,12 +785,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    Double_t deut_phi = track->Phi();
 	    Double_t deut_mom = track->P();
+	    Double_t deut_pt  = track->Pt();
 	    Short_t  charge   = track->Charge();
 	    Double_t deut_eta = track->Eta();
 
 	    Double_t deut_ket = 0.0;
 	    
-	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
+	    deut_ket = sqrt(pow(deut_pt,2) + pow(1.87561,2)) - 1.87561;
+
+//	    prot_ket = sqrt(pow(prot_pt,2) + pow(0.93827,2)) - 0.93827;
 	    
 	    conductor = root->next;
 	    if (conductor != 0)
@@ -887,12 +890,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    Double_t deut_phi = track->Phi();
 	    Double_t deut_mom = track->P();
+	    Double_t deut_pt  = track->Pt();
 	    Short_t  charge   = track->Charge();
 	    Double_t deut_eta = track->Eta();
 
 	    Double_t deut_ket = 0.0;
 	    
-	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
+//	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
+
+	    deut_ket = sqrt(pow(deut_pt,2) + pow(1.87561,2)) - 1.87561;
 	    
 	    conductor = root->next;
 	    if (conductor != 0)
@@ -1003,13 +1009,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    Double_t deut_phi = track->Phi();
 	    Double_t deut_mom = track->P();
+	    Double_t deut_pt  = track->Pt();
 	    Short_t  charge   = track->Charge();
 	    Double_t deut_eta = track->Eta();
 
 	    Double_t deut_ket = 0.0;
 	    
-	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
-	    
+//	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
+	    deut_ket = sqrt(pow(deut_pt,2) + pow(1.87561,2)) - 1.87561;
+
 	    conductor = root->next;
 	    if (conductor != 0)
 	    {

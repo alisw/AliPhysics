@@ -1001,7 +1001,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   else rap = -999.;
   
-  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
   
   if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
@@ -1027,7 +1027,7 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   }
   else rap = -999;
   
-  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
   if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
   
   return kTRUE;

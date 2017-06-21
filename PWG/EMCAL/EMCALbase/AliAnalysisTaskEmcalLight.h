@@ -90,6 +90,16 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
     kpA       = 2  //!< Proton-Nucleus
   };
 
+  /**
+   * @enum ECentralityEstimation_t
+   * @brief Switch for the centrality estimation
+   */
+  enum ECentralityEstimation_t {
+    kNoCentrality  = 0, //!< No centrality estimation
+    kNewCentrality = 1, //!< New centrality estimation (AliMultSelection, see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliMultSelectionCalibStatus for calibration status period-by-period)
+    kOldCentrality = 2  //!< Old centrality estimation (AliCentrality, works only on Run-1 PbPb and pPb)
+  };
+
   AliAnalysisTaskEmcalLight();
   AliAnalysisTaskEmcalLight(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskEmcalLight();
@@ -115,7 +125,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetForceBeamType(EBeamType_t f)                       { fForceBeamType     = f                              ; }
 
   // Task configuration
-  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
+  void                        SetCentralityEstimation(ECentralityEstimation_t b)    { fCentralityEstimation = b                     ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetCentBins(const std::vector<double>& bins)          { fCentBins = std::vector<double>(bins)               ; }
@@ -142,6 +152,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
+  void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -196,7 +207,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   Bool_t                      fNeedEmcalGeom;              ///< whether or not the task needs the emcal geometry
   std::vector<double>         fCentBins;                   ///< how many centrality bins
-  Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
+  ECentralityEstimation_t     fCentralityEstimation;       ///< Centrality estimation
 
   // Input data
   Bool_t                      fIsPythia;                   ///< if it is a PYTHIA production
@@ -228,6 +239,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
+  Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
 
   // Service fields
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized

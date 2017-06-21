@@ -30,7 +30,19 @@
 
 using namespace RooFit;
 
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Utilities for template fitting e.g. yield extraction                  //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
+
 Double_t CHI2 = -1;
+TCanvas *cFit = 0x0;//TCanvas of the single fit
+
 //Utilities
 //_________________________________________________________________________________________________
 Double_t ComputeChi2(const TH1 *hdata, const TH1 *hfit, const Double_t xlow, const Double_t xhigh){//Macro to compute chi2
@@ -275,15 +287,18 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_
   Int_t StopSign = 0;//Check if the fit is feasible
   
   TVirtualPad *currpad = gPad;
-  TCanvas *cFit = 0x0;
   if(showfit){//TCanvas for debug purposes
     TLine linemin(minx, 0, minx, hData->GetMaximum());
     TLine linemax(maxx, 0, maxx, hData->GetMaximum());
     linemin.SetLineColor(kRed);
     linemax.SetLineColor(kRed);
     
-    cFit = new TCanvas("TemplateRooFit", "Fit with roofit");
+    if(cFit == 0x0){
+      cFit = new TCanvas("TemplateRooFit", "Fit with roofit");
+    }
+    cFit->Clear();
     cFit->Divide(2);
+    
     cFit->cd(1);
     gPad->SetLogy();
     hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
@@ -296,7 +311,6 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_
     else hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
     linemin.DrawClone();
     linemax.DrawClone();
-    
   }
   
   //Define xvariable
@@ -330,6 +344,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_
         htemplates[temp]->DrawCopy("same");
         cFit->cd(2);
         htemplates[temp]->DrawNormalized("same");
+        cFit->Flush();
+        cFit->Update();
+        gSystem->ProcessEvents();
       }
     }
     else{//RooAbsPdf
@@ -366,7 +383,6 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_
   
   if(StopSign < 0){
     for(Int_t temp = 0; temp < ntemplates; temp++) if(ftemplates[temp]) delete ftemplates[temp];
-    if(cFit) delete cFit;
     return kFALSE;
   }
   
@@ -599,7 +615,6 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_
     if(roohPdf[temp]) delete roohPdf[temp];
     if(frac[temp]) delete frac[temp];
   }
-  if(cFit) delete cFit;
   
   return kTRUE;
   
@@ -752,8 +767,6 @@ Bool_t PerformFitWithFunctions(TH1F* hData, TObjArray *func, TF1 *funcsum, Doubl
   }
   Infomsgcolor("PerformFitWithFunctions", Form("Fractions from fit     :  %s\n", f.Data()), cyanTxt);
   cout<<"Entries : "<<hData->GetEntries()<<endl;
-  
-  if(cFit) delete cFit;
   
   return kTRUE;
   #else 

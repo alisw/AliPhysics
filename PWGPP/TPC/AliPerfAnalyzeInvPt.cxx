@@ -76,7 +76,7 @@ ClassImp(AliPerfAnalyzeInvPt)
 
 // fit functions
 //____________________________________________________________________________________________________________________________________________
-   Double_t AliPerfAnalyzeInvPt::Polynomial(Double_t *x, const Double_t *par)
+   Double_t AliPerfAnalyzeInvPt::Polynomial(Double_t *x, Double_t *par)
 {
    // fit function for fitting of 1/pt with a polynomial of 4th order, rejecting points between  +/-par[4]
 
@@ -90,7 +90,7 @@ ClassImp(AliPerfAnalyzeInvPt)
 
 }
 //____________________________________________________________________________________________________________________________________________
-Double_t AliPerfAnalyzeInvPt::PolynomialRejP(Double_t *x, const Double_t *par)
+Double_t AliPerfAnalyzeInvPt::PolynomialRejP(Double_t *x, Double_t *par)
 {
    // fit function for fitting of 1/pt with a polynomial of 4th order to improve result (fit range and rejection zone is adjusted to first guess of minimum position)
      
@@ -108,7 +108,7 @@ Double_t AliPerfAnalyzeInvPt::PolynomialRejP(Double_t *x, const Double_t *par)
  
 }
 //____________________________________________________________________________________________________________________________________________
-Double_t AliPerfAnalyzeInvPt::InvGauss(Double_t *x, const Double_t *par)
+Double_t AliPerfAnalyzeInvPt::InvGauss(Double_t *x, Double_t *par)
 {
    // fit function for fitting of 1/pt with gaussian, rejecting points between  +/-par[4]
    if (x[0] > -par[6] && x[0] < par[6]) {
@@ -119,7 +119,7 @@ Double_t AliPerfAnalyzeInvPt::InvGauss(Double_t *x, const Double_t *par)
    return par[3]+par[0]*(TMath::Exp(-0.5*(TMath::Power((x[0]-par[1])/par[2], 2.0)))+par[4]*pow((x[0]-par[1]),2)+par[5]*pow((x[0]-par[1]),4)) ;
 }
 //____________________________________________________________________________________________________________________________________________
-Double_t AliPerfAnalyzeInvPt::InvGaussRejP(Double_t *x, const Double_t *par)
+Double_t AliPerfAnalyzeInvPt::InvGaussRejP(Double_t *x, Double_t *par)
 {
    // fit function for fitting of 1/pt with gaussian to improve result (fit range and rejection zone is adjusted to first guess of minimum position)
    Double_t pos  = par[7];//0.12;

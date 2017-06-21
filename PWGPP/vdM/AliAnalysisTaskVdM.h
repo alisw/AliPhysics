@@ -144,7 +144,7 @@ private:
   TString          fFiredTriggerClasses; //!
   TreeData         fTreeData;            //!
 
-  ClassDef(AliAnalysisTaskVdM, 1);
+  ClassDef(AliAnalysisTaskVdM, 2);
 } ;
 
 #endif // ALIANALYSISTASKVDM_H
