@@ -314,6 +314,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJetLight::UserCreateOutputObjects();
 
+  Int_t maxTracks = 6000;
   Int_t constituentsNbins = 250;
   Double_t constituentsMax = 249.5;
   Double_t maxRho = 500;
@@ -322,11 +323,13 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
     constituentsNbins = 50;
     constituentsMax = 49.5;
     maxRho = 50;
+    maxTracks = 200;
   }
   else if (fForceBeamType == kpA) {
     constituentsNbins = 100;
     constituentsMax = 99.5;
     maxRho = 200;
+    maxTracks = 500;
   }
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
@@ -391,10 +394,18 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
     title = histname + ";Centrality (%);#it{p}_{T,jet} (GeV/#it{c});counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 102, -1, 101, nPtBins, 0, fMaxPt);
 
+    histname = TString::Format("%s/fHistLeadJetPtVsNTracks", jets->GetArrayName().Data());
+    title = histname + ";no. of tracks;#it{p}_{T,jet} (GeV/#it{c});counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, maxTracks, nPtBins, 0, fMaxPt);
+
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
       title = histname + ";Centrality (%);#rho (GeV/#it{c} rad^{-1});counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 102, -1, 101, 1000, 0, maxRho);
+
+      histname = TString::Format("%s/fHistRhoVsNTracks", jets->GetArrayName().Data());
+      title = histname + ";no. of tracks;#rho (GeV/#it{c} rad^{-1});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, maxTracks, 1000, 0, maxRho);
 
       histname = TString::Format("%s/fHistRhoVsLeadJetPt", jets->GetArrayName().Data());
       title = histname + ";#it{p}_{T,jet} (GeV/#it{c});#rho (GeV/#it{c} rad^{-1});counts";
@@ -513,12 +524,21 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
       }
     } //jet loop
 
+    Int_t ntracks = 0;
+    for (auto cont : this->fParticleCollArray) ntracks += cont.second->GetNAcceptEntries();
+
     histname = TString::Format("%s/fHistLeadJetPtVsCent", jets->GetArrayName().Data());
     fHistManager.FillTH2(histname.Data(), fCent, leadJetPt);
+
+    histname = TString::Format("%s/fHistLeadJetPtVsNTracks", jets->GetArrayName().Data());
+    fHistManager.FillTH2(histname.Data(), ntracks, leadJetPt);
 
     if (jets->GetRhoParameter()) {
       histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
+
+      histname = TString::Format("%s/fHistRhoVsNTracks", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), ntracks, rhoVal);
 
       histname = TString::Format("%s/fHistRhoVsLeadJetPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), leadJetPt, rhoVal);
