@@ -742,6 +742,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histTitle = "Number of files which contributed events to be embedded";
   fHistManager.CreateTH1(histName, histTitle, 1, 0, 2);
 
+  // File number which was embedded
+  histName = "fHistAbsoluteFileNumber";
+  histTitle = "Number of times each absolute file number was embedded";
+  fHistManager.CreateTH1(histName, histTitle, fMaxNumberOfFiles, 0, fMaxNumberOfFiles);
+
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -996,6 +1001,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Add to the count the number of files which were embedded
   fHistManager.FillTH1("fHistNumberOfFilesEmbedded", 1);
+  fHistManager.FillTH1("fHistFileNumber", (fFileNumber + fFilenameIndex) % fMaxNumberOfFiles);
 
   // Check for pythia cross section and extract if possible
   // fFileNumber corresponds to the next file
