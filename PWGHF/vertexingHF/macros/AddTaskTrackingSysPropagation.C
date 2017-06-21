@@ -3,7 +3,8 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
                                                                      TString filename = "",
                                                                      TString filenameHistME = "",
                                                                      TString filenameHistTrEff = "",
-                                                                     TString postname = "")
+                                                                     TString postname = "",
+                                                                     Double_t maxPt=60.)
 {
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -67,6 +68,7 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
     
   AliAnalysisTaskTrackingSysPropagation *Task = new AliAnalysisTaskTrackingSysPropagation(ch, analysiscuts, histoME, histoTrEff);
     
+  Task->SetMaximumPt(maxPt);
   Task->SetDebugLevel(1);
   mgr->AddTask(Task);
     
