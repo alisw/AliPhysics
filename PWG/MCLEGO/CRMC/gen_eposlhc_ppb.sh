@@ -13,7 +13,7 @@ source /cvmfs/alice.cern.ch/etc/login.sh
 eval $(alienv printenv CRMC::v1.5.4-3)
 
 # force path to requested output
-sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"# ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template.param > crmc.param
+sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"# ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template_ppb.param > crmc.param
 
 # run CRMC
-crmc -o hepmc -p 3500 -P-3500 -n 10000000 -m 0 -f $1
+crmc -o hepmc -p 3998 -P-1576 -i 822080 -n 10000000 -m 0 -f $1
