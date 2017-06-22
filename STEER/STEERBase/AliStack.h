@@ -81,6 +81,7 @@ class AliStack : public TVirtualMCStack
     TParticle*  ParticleFromTreeK(Int_t id) const;
     Int_t       TreeKEntry(Int_t id) const;
     Bool_t      IsPhysicalPrimary(Int_t i);
+    Bool_t      IsPhysicalPrimaryOld(Int_t i);
     Bool_t      IsSecondaryFromWeakDecay(Int_t index);
     Bool_t      IsSecondaryFromMaterial (Int_t index);
     Int_t       TrackLabel(Int_t label) const {return fTrackLabelMap[label];}
