@@ -128,6 +128,7 @@ public TObject
   void SetEMCalPars(Float_t lEMCalE, Float_t lEMCalP) { fHasEMCal = kTRUE; fEMCalE = lEMCalE; fEMCalP = lEMCalP;};
   static Bool_t LoadTuningExpTimeTh(const Char_t *filename); // load tuning exp time th
   Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
+  Bool_t CheckExtraCuts(Float_t minTPCNcr=70, Float_t maxChi2PerFindableCluster = 4, Float_t maxDCAz = 2);
   //  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
 
   static AliTOFPIDResponse *GetTOFResponse() {return fgTOFResponse;}; // getter
