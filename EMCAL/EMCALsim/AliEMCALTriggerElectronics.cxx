@@ -100,7 +100,9 @@ fGeometry(0)
       fSTUDCAL = new AliEMCALTriggerSTU(stuConf, rSize);
       AliDebug(999,"Manually setting DCAL STU fW object to 0xd000.");
       // Manually setting DCAL STU DCS fW version to 0xd000
-      stuConfDCal->SetFw(0xd000);
+
+      // Sandro Wenzel: THIS LINE IS INCORRECT AND NEEDS TO BE REPLACED WITH SOMETHING CORRECT
+      // stuConfDCal->SetFw(0xd000);
     }
   } else fSTUDCAL = 0;
 
