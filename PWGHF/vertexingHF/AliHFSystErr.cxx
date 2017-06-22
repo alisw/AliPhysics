@@ -5984,13 +5984,15 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb010() {
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  fTrackingEff->SetBinContent(3,0.065);
-  for(Int_t i=4; i<=5; i++) fTrackingEff->SetBinContent(i,0.070);
-  for(Int_t i=6; i<=8; i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=9; i<=16; i++) fTrackingEff->SetBinContent(i,0.070);
-  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=24; i<=36; i++) fTrackingEff->SetBinContent(i,0.085);
-  
+  fTrackingEff->SetBinContent(3,0.085);
+  fTrackingEff->SetBinContent(4,0.090);
+  fTrackingEff->SetBinContent(5,0.100);
+  for(Int_t i=6; i<=10; i++) fTrackingEff->SetBinContent(i,0.110);
+  for(Int_t i=11; i<=12; i++) fTrackingEff->SetBinContent(i,0.100);
+  for(Int_t i=13; i<=16; i++) fTrackingEff->SetBinContent(i,0.090);
+  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i,0.080);
+  for(Int_t i=25; i<=36; i++) fTrackingEff->SetBinContent(i,0.080);
+
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.12);
@@ -6105,12 +6107,15 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb6080() {
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  fTrackingEff->SetBinContent(3,0.065);
-  for(Int_t i=4; i<=5; i++) fTrackingEff->SetBinContent(i,0.070);
-  for(Int_t i=6; i<=8; i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=9; i<=16; i++) fTrackingEff->SetBinContent(i,0.070);
-  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i,0.075);
-  for(Int_t i=24; i<=36; i++) fTrackingEff->SetBinContent(i,0.085);
+  fTrackingEff->SetBinContent(3,0.085);
+  fTrackingEff->SetBinContent(4,0.090);
+  fTrackingEff->SetBinContent(5,0.100);
+  fTrackingEff->SetBinContent(6,0.105);
+  for(Int_t i=7; i<=8; i++) fTrackingEff->SetBinContent(i,0.110);
+  for(Int_t i=9; i<=10; i++) fTrackingEff->SetBinContent(i,0.105);
+  for(Int_t i=11; i<=12; i++) fTrackingEff->SetBinContent(i,0.100);
+  for(Int_t i=13; i<=16; i++) fTrackingEff->SetBinContent(i,0.090);
+  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i,0.080);
   
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
