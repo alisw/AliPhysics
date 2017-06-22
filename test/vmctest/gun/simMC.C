@@ -14,7 +14,7 @@ void simMC(Int_t nev=3, const TString& config) {
   simulator.SetRunQA(":") ; 
   simulator.SetRunHLT("") ; 
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   

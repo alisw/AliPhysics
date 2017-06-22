@@ -16,7 +16,7 @@ void sim(Int_t nev=5) {
   simulator.SetMakeDigitsFromHits("ITS TPC");
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
  
