@@ -21,7 +21,7 @@ UInt_t dif(UInt_t stop, UInt_t start){
 };
 
 TObjArray GetClasses(Int_t run, TString ocdbStorage, TString &partition, TString &activeDetectors, Double_t& run_duration, 
-    ULong64_t* LMB, ULong64_t* LMA, ULong64_t* L0B, ULong64_t* L0A, ULong64_t* L1B, ULong64_t* L1A, ULong64_t* L2B, ULong64_t* L2A){
+    ULong64_t* LMB, ULong64_t* LMA, ULong64_t* L0B, ULong64_t* L0A, ULong64_t* L1B, ULong64_t* L1A, ULong64_t* L2B, ULong64_t* L2A,ULong64_t* class_duration){
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbStorage.Data());
   man->SetRun(run);
@@ -33,10 +33,12 @@ TObjArray GetClasses(Int_t run, TString ocdbStorage, TString &partition, TString
   activeDetectors = cfg->GetActiveDetectors();
   
   TObjArray classes = cfg->GetClasses();
+  
   AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers")->GetObject();
   if (!scalers) { printf("No GRP/CTP/Scalers object for run %i\n",run); return TObjArray(); }
   Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
   
+  ULong64_t previousL2A[100];
   for (Int_t r=0;r<nEntries-1;r++){
     // Get SOR and EOR scaler records
     AliTriggerScalersRecord* record1 = scalers->GetScalersRecord(r);
@@ -59,6 +61,9 @@ TObjArray GetClasses(Int_t run, TString ocdbStorage, TString &partition, TString
       L1A[i] += dif(scaler2->GetL1CA(),scaler1->GetL1CA());
       L2B[i] += dif(scaler2->GetL2CB(),scaler1->GetL2CB());
       L2A[i] += dif(scaler2->GetL2CA(),scaler1->GetL2CA());
+      if (L2A[i]==previousL2A[i]) continue;
+      previousL2A[i]=L2A[i];
+      class_duration[i]+=dif(record2->GetTimeStamp()->GetSeconds(),record1->GetTimeStamp()->GetSeconds());
     }
   }
   UInt_t t1 = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
