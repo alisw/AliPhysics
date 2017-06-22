@@ -539,6 +539,11 @@ Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
 {
   // Fill histograms.
 
+  if (fCentBin < 0) {
+    AliError(Form("fCentBin is %d! fCent = %.3f. Fix the centrality bins to include all possible values of centrality.", fCentBin, fCent));
+    return kFALSE;
+  }
+
   EventQA_t eventQA;
 
   DoTrackLoop();
