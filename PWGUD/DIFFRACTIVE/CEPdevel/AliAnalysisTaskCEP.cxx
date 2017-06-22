@@ -840,11 +840,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if ( isToSave ) {
     
     // update fhStatsFlow
-    if (isToSaveDG)  fhStatsFlow->Fill(AliCEPBase::kBinDG);
-    if (isToSaveNDG) fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     ((TH1F*)flQArnum->At(3))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
-
+    if (isToSaveDG) {
+      ((TH1F*)flQArnum->At(6))->Fill(fRun);
+      fhStatsFlow->Fill(AliCEPBase::kBinDG);
+    }
+    if (isToSaveNDG) {
+      ((TH1F*)flQArnum->At(7))->Fill(fRun);
+      fhStatsFlow->Fill(AliCEPBase::kBinNDG);
+    }
+    
     // fill the CEPEventBuffer
     fCEPEvent->Reset();
     
