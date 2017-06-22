@@ -989,3 +989,10 @@ AliAnalysisPIDTrack::AcceptTrack(Bool_t selPrimaries)
   /* accept track */
   return kTRUE;
 }
+
+Bool_t AliAnalysisPIDTrack::CheckExtraCuts(Float_t minTPCNcr, Float_t maxChi2PerFindableCluster, Float_t maxDCAz) {
+  if(fTPCNcr<minTPCNcr) return kFALSE;
+  if(fTPCchi2/fTPCNclsF > maxChi2PerFindableCluster) return kFALSE;
+  if(TMath::Abs(fImpactParameter[0])>maxDCAz) return kFALSE;
+  return kTRUE;
+};
