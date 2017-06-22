@@ -657,11 +657,30 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 130) {
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
     cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
+  } else if (trainConfig == 130) {
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //standard cut from 7TeV ana
+    cuts.AddCut("00000113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
+    // minimum pT studies on electrons and photons
   } else if (trainConfig == 131) {
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
     cuts.AddCut("00010113", "00200099227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
     cuts.AddCut("00010113", "002000a9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
     cuts.AddCut("00010113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 132) {
+    cuts.AddCut("00010113", "002000c9227300008250404000", "0152103500000000"); // 8 TeV std, but min electron pT > 0.6 for all configs
+    cuts.AddCut("00010113", "002000d9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00010113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 133) {
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //standard cut from 7TeV ana
+    cuts.AddCut("00000113", "00200099227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00000113", "002000a9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00000113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 134) {
+    cuts.AddCut("00000113", "002000c9227300008250404000", "0152103500000000"); // 7 TeV std, but min electron pT > 0.6 for all configs
+    cuts.AddCut("00000113", "002000d9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
 
     // -------- Material weights -several configs with same sets for running with various mat weights ----------
   } else if (trainConfig == 160) { // like last last two in 70 and dalitz standard 7TeV
