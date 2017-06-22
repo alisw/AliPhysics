@@ -800,8 +800,11 @@ void AliAnalysisTaskAllPtcv2::UserExec(Option_t *)
   Float_t percentile = -999;
   // AliMultSelection *fMultSelection = 0x0; 
 
-  percentile = fEventCuts.GetCentrality(0);
-
+  if(fCentrality == "V0M")
+    percentile = fEventCuts.GetCentrality(0);
+  else if(fCentrality == "CL1")
+    percentile = fEventCuts.GetCentrality(1);
+  
   Int_t TrackNumber = fevent->GetNumberOfTracks();
   fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
   
