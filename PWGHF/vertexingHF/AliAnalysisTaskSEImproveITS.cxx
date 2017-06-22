@@ -378,13 +378,13 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v12->GetXYZ(pos);
-      
+      v12->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
-      //!!!!TODO: covariance matrix
-
       // update d0 
       Double_t d0z0[2],covd0z0[3];
       Double_t d0[2],d0err[2];
@@ -493,10 +493,12 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v123->GetXYZ(pos);
+      v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
-      //TODO: covariance matrix
 
       // update d0 for all progs
       Double_t d0z0[2],covd0z0[3];
