@@ -698,7 +698,7 @@ CITE_BIB_FILES         =
 # messages are off.
 # The default value is: NO.
 
-QUIET                  = NO
+QUIET                  = YES
 
 # The WARNINGS tag can be used to turn on/off the warning messages that are
 # generated to standard error (stderr) by doxygen. If WARNINGS is set to YES
@@ -714,7 +714,7 @@ WARNINGS               = YES
 # will automatically be disabled.
 # The default value is: YES.
 
-WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_UNDOCUMENTED   = YES
 
 # If the WARN_IF_DOC_ERROR tag is set to YES, doxygen will generate warnings for
 # potential errors in the documentation, such as not documenting some parameters
@@ -730,7 +730,7 @@ WARN_IF_DOC_ERROR      = YES
 # parameter documentation, but not about the absence of documentation.
 # The default value is: NO.
 
-WARN_NO_PARAMDOC       = NO
+WARN_NO_PARAMDOC       = YES
 
 # The WARN_FORMAT tag determines the format of the warning messages that doxygen
 # can produce. The string should contain the $file, $line, and $text tags, which
@@ -842,7 +842,8 @@ RECURSIVE              = NO
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/dndeta/README.md
+EXCLUDE         = @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/dndeta/README.md \
+		  @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/doc/External.C
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -876,7 +877,12 @@ EXCLUDE_SYMBOLS        =
 # command).
 
 EXAMPLE_PATH           = @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/gse/ \
-                         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/trains
+                         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/trains \
+			 @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/scripts/ \
+		         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/tests/ \
+		         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/qa/ \
+		         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/corrs/ \
+		         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/trains
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -897,6 +903,7 @@ EXAMPLE_RECURSIVE      = NO
 # \image command).
 
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/picts \
+		         @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/doc \
                          @CMAKE_SOURCE_DIR@/TPC/TPCbase/imgdoc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
@@ -1155,7 +1162,7 @@ HTML_STYLESHEET        =
 # list). For an example see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  =
+HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/custom.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1718,7 +1725,7 @@ LATEX_FOOTER           =
 # list).
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_EXTRA_STYLESHEET =
+LATEX_EXTRA_STYLESHEET = 
 
 # The LATEX_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the LATEX_OUTPUT output
@@ -2010,7 +2017,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and
@@ -2090,13 +2097,13 @@ SKIP_FUNCTION_MACROS   = YES
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
 
-TAGFILES               =
+TAGFILES               = @ALIROOT@/doxygen/aliroot.tags=@ALIROOT@/doxygen/
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       =
+GENERATE_TAGFILE       = aliphysics.tags
 
 # If the ALLEXTERNALS tag is set to YES, all external class will be listed in
 # the class index. If set to NO, only the inherited external classes will be

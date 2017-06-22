@@ -1,0 +1,354 @@
+/* The standard CSS for doxygen 1.8.13 */
+/* latin */
+@font-face {
+    font-family: 'Ubuntu Condensed';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Ubuntu Condensed'), local('UbuntuCondensed-Regular'), url(https://fonts.gstatic.com/s/ubuntucondensed/v7/DBCt-NXN57MTAFjitYxdrDAdhzWOYhqHvOZMRGaEyPo.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+}body, table, div, p, dl {
+    font: 400 14px/22px Roboto,sans-serif;
+    margin: 3px;
+}
+
+
+.navpath ul
+{
+    background-image: none;
+    height:30px;
+    line-height:30px;
+    margin:0px;
+    padding:0px;
+    border: none;
+}
+
+.navpath li
+{
+    background-image: none;
+}
+.navpath li ::after
+{
+    content: " >";
+    color: #ef7b0b;
+}
+
+.navpath li.navelem a
+{
+    height:32px;
+    display:block;
+    text-decoration: none;
+}
+
+.navpath li.navelem a:hover
+{
+    text-decoration: none;
+    color: #ef7b0b;
+}
+
+#top {
+    margin-bottom: -25px;
+    font-family: 'Ubuntu Condensed', 'Fira Sans Condensed';
+    font-weight:500;
+    font-stretch:condensed;
+}		    
+#projectlogo
+{
+    text-align: center;
+    vertical-align: bottom;
+    border-collapse: separate;
+    width: 100px;
+}
+
+#projectlogo img
+{ 
+    border: 0px none;
+    width: 100px;
+    height: 135px;
+    padding-right: 20px;
+    
+}
+
+#projectalign
+{
+    vertical-align: top;
+    margin-left: 20px;
+}
+
+#projectname
+{
+    vertical-align: bottom;
+    display: inline-block;
+    font-size: 300%;
+    font-family: 'Ubuntu Condensed', 'Fira Sans Condensed', "Arial", sans-serif;
+    font-weight:500;
+    font-stretch:condensed;
+    margin: 0px;
+    width: 50%;
+    height: 50px;
+    border-bottom: solid medium #e30613;
+    padding: 0;
+}
+
+#projectbrief
+{
+    vertical-align: bottom;
+    display: inline-block;
+    font-size: 200%;
+    font-family: 'Ubuntu Condensed', 'Fira Sans Condensed', "Arial", sans-serif;
+    font-stretch:condensed;
+    margin: 0px;
+    padding: 0px;
+    width: 50%;
+    float: right;
+    text-align: right;
+    height: 50px;
+    border-bottom: solid medium #e30613;
+}
+
+#projectnumber
+{
+    font-size: 100%;
+    font-family: 'Ubuntu Condensed', 'Fira Sans Condensed', "Arial", sans-serif;
+    font-weight:500;
+    font-stretch:condensed;
+    margin: 0px;
+    padding: 0px;
+}
+
+#titlearea
+{
+    position: relative;
+    top: 0;
+    left: 0;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    border-bottom: none;
+    /* border-bottom: 1px solid #979A9F;*/
+}
+#titlearea table
+{
+    width: 100%;
+}
+#titlearea tr
+{
+    vertical-align: top;
+}
+#main-nav
+{
+    position: relative;
+    left: 0px;
+    top: -80px;
+    padding-left: 120px;
+}   
+#nav-path
+{
+    position: relative;
+    left: 0;
+    top: -80px;
+    padding-left: 120px;
+    /* border-bottom: thin solid #ef7b0b; */
+}   
+#navrow1
+{
+    width: initial;
+    position: relative;
+    left: 0;
+    top: -80px;
+    padding-left: 120px;
+    background-image: none;
+    /* border-bottom: thin solid #ef7b0b; */
+}
+#navrow2 {
+}
+#navrow2, #navrow3, #navrow4 {
+    width: initial;
+    padding: 0;
+    position: relative;
+    left: 0;
+    top: -80px;
+    padding-left: 120px;
+    background-image: none;
+}
+.tabs, .tabs2, .tabs3 {
+    width: initial;
+    background-image: none;
+}
+.tablist li {
+    background-image: none;
+    line-height: initial;
+}
+.tablist a {
+    background-image: none;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.tablist a:hover {
+    background-image: none;
+    color:  #ef7b0b;		
+    text-shadow: none;
+}
+.tablist li {
+    border-right: solid thin  #e30613;			 
+}
+.tablist li.current a {
+    background-image: none;
+    border-right: solid thin  #e30613;			 
+    color:  #2f3c47;	 
+    color:  #ef7b0b;		
+    text-shadow: none;
+}
+#MSearchField {
+    position: initial;
+    background: none;
+
+}
+#MSearchBox .left {
+    position: initial;
+    left: 0px;
+    width: initial;
+    height: initial;
+    background: none;
+    border: thin #e30613 solid;
+}
+#MSearchBox .right {
+    display: none;
+    background: none;
+    border-top: thin #e30613 solid;
+    border-bottom: thin #e30613 solid;
+    border-right: thin #e30613 solid;
+}
+
+.sm-dox {
+    background-image: none;
+    padding: 0px;
+    margin: right: 10px;
+}
+
+.sm-dox a {
+    background-image: none;
+    border-right: solid thin  #e30613;			 
+    color:  #2f3c47;	 
+}
+.sm-dox a:hover {
+    background-image: none;
+    color:  #cc4645;
+    color:  #ef7b0b;		
+    text-shadow: none;
+}
+.sm-dox ul a:hover {
+    background-image: none;
+    color:  #cc4645;
+    color:  #ef7b0b;		
+    text-shadow: none;
+}
+
+
+div.header {
+    background-image: none;
+    background-color: initial;
+    border-bottom: solid thin #2f3c47;			 
+}
+div.directory {
+    background-image: none;
+    background-color: initial;
+    border-bottom: solid thin #2f3c47;			 
+    border-top: solid thin #2f3c47;			 
+}
+
+.directory .levels span {
+    color:  #ef7b0b;		
+}
+a	{
+    color: #2f3c47;
+}      
+a:visited {
+    color: #2f3c47;
+}      
+.contents a:visited {
+    color: #2f3c47;
+}      
+a:hover {
+    color: #2f3c47;
+}
+
+.icon {
+    background-color:#ef7b0b;
+    border-radius: 2px;
+}
+span.mlabel {
+    background-color:#ef7b0b;
+    border-radius: 2px;
+    border: thin solid #ef7b0b;
+}
+
+h2.groupheader {
+    border-bottom: solid thin #2f3c47;
+    color: #2f3c47;
+}
+.memtitle {
+    background-image: none;
+    background-color: initial;
+    border: none;
+}
+.memitem {
+    transition: none;
+    /*	margin-left: 50px; */
+    border: thin solid #2f3c47;
+}
+.memitem.glow {
+    box-shadow: none;
+}
+.memproto {
+    border: none;
+    border-bottom: thin solid #ef7b0b;
+    background-color: initial;
+    background-image: none;
+    text-shadow: none;
+}
+.memdoc {
+    border: none;
+    background-image: none;
+    background-color: initial;
+}
+div.ah, span.ah {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    background-image: none;
+    background-color: #ef7b0b;
+    border: none;	 		
+    color: white; /* #2f3c47; */
+    
+}
+.memproto, dl.reflist dt
+{
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+.memdoc, dl.reflist dd {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+table.fieldtable {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+/* .paramname {
+	   color: #e30613;
+	   } */
+.arrow {
+    color: #ef7b0b;
+}
+div.qindex {
+    background-color: initial;
+    border: none;
+    border-bottom: solid thin #e30613; /* #ef7b0b; */
+}
+
+.memItemLeft, .memItemRight, .mdescLeft, .mdescRight
+{
+    background-color: white;
+}
+hr { border-top: thin solid #cc4645; }
+img.footer:after { content: "Doxygen" }
+/* @end */
