@@ -156,7 +156,7 @@ void AliAnalysisTaskUpcEtaC::Init()
   	fTrigger[i] = kFALSE;
 	fTriggerInputsMC[i] = kFALSE;
 	}
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<7; i++) {
 	fPIDTPCMuon[i] = -666;
 	fPIDTPCElectron[i] = -666;
 	fPIDTPCPion[i] = -666;
@@ -171,7 +171,7 @@ void AliAnalysisTaskUpcEtaC::Init()
 	
 	fIsVtxContributor[i] = kFALSE;
 	}
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<7; i++) {
 	fPIDTPCMuonPos[i] = -666;
 	fPIDTPCElectronPos[i] = -666;
 	fPIDTPCPionPos[i] = -666;
