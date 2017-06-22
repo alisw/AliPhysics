@@ -99,7 +99,8 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     {
       TString rppath;
       if (det->TestBit(kReadFromArchiveBIT)) {
-	if (fPathName->EndsWith("root_archive.zip"))
+	// if (fPathName->EndsWith("root_archive.zip"))
+	if (fPathName->Contains("root_archive"))
 	  rppath.Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName());
 	else
 	  rppath.Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName());
