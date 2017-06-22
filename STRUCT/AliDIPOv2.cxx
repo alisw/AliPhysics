@@ -824,9 +824,9 @@ TGeoVolume * AliDIPOv2::CreateMagnetYoke()
   TGeoVolumeAssembly * voMagnet = new TGeoVolumeAssembly("DCM0");
   voMagnet->SetName("DCM0");
   TGeoRotation * Ry180 = new TGeoRotation("Ry180", 180., 180.,   0.);  
-  TGeoMedium * kMedAlu     = gGeoManager->GetMedium("DCM0_ALU_C0");
-  TGeoMedium * kMedCooper  = gGeoManager->GetMedium("DCM0_Cu_C0");
-  TGeoMedium * kMedIron    = gGeoManager->GetMedium("DCM0_FE_C0");
+  TGeoMedium * kMedAlu     = gGeoManager->GetMedium("DIPO_ALU_C0");
+  TGeoMedium * kMedCooper  = gGeoManager->GetMedium("DIPO_Cu_C0");
+  TGeoMedium * kMedIron    = gGeoManager->GetMedium("DIPO_FE_C0");
 
   new TGeoBBox("shMagnetYokeOuter"   , 116.4/2.0 , 90.2/2.0 , 250.0/2.0 ); 
   new TGeoBBox("shMagnetYokeInnerUp" ,   8.0/2.0 , 32.2/2.0 , 250.0/1.0  ); 
