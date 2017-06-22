@@ -5641,7 +5641,7 @@ void AliHFSystErr::InitD0toKpi2015PbPb010() {
     
     // Normalization
     fNorm = new TH1F("fNorm","fNorm",50,0,50);
-    for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.07); // TAA and pp norm
+    for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
     
     // Branching ratio
     fBR = new TH1F("fBR","fBR",50,0,50);
@@ -5649,56 +5649,56 @@ void AliHFSystErr::InitD0toKpi2015PbPb010() {
     
     // Tracking efficiency
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);
-    fTrackingEff->SetBinContent(1,4.5*0.01); // Jacek, 5% per track
-    fTrackingEff->SetBinContent(2,4.5*0.01);
-    fTrackingEff->SetBinContent(3,4.8*0.01);
-    fTrackingEff->SetBinContent(4,5.3*0.01);
-    fTrackingEff->SetBinContent(5,5.3*0.01);
-    fTrackingEff->SetBinContent(6,5.1*0.01);
-    fTrackingEff->SetBinContent(7,4.9*0.01);
-    fTrackingEff->SetBinContent(8,4.8*0.01);
-    fTrackingEff->SetBinContent(9,4.8*0.01);
-    fTrackingEff->SetBinContent(10,4.8*0.01);
-    fTrackingEff->SetBinContent(11,4.8*0.01);
-    fTrackingEff->SetBinContent(12,4.8*0.01);
-    fTrackingEff->SetBinContent(13,5.1*0.01);
-    fTrackingEff->SetBinContent(14,5.1*0.01);
-    fTrackingEff->SetBinContent(15,5.1*0.01);
-    fTrackingEff->SetBinContent(16,5.1*0.01);
-    fTrackingEff->SetBinContent(17,5.5*0.01);
-    fTrackingEff->SetBinContent(18,5.5*0.01);
-    fTrackingEff->SetBinContent(19,5.5*0.01);
-    fTrackingEff->SetBinContent(20,5.5*0.01);
-    fTrackingEff->SetBinContent(21,5.5*0.01);
-    fTrackingEff->SetBinContent(22,5.5*0.01);
-    fTrackingEff->SetBinContent(23,5.5*0.01);
-    fTrackingEff->SetBinContent(24,5.5*0.01);
-    fTrackingEff->SetBinContent(25,6.3*0.01);
-    fTrackingEff->SetBinContent(26,6.3*0.01);
-    fTrackingEff->SetBinContent(27,6.3*0.01);
-    fTrackingEff->SetBinContent(28,6.3*0.01);
-    fTrackingEff->SetBinContent(29,6.3*0.01);
-    fTrackingEff->SetBinContent(30,6.3*0.01);
-    fTrackingEff->SetBinContent(31,6.3*0.01);
-    fTrackingEff->SetBinContent(32,6.3*0.01);
-    fTrackingEff->SetBinContent(33,6.3*0.01);
-    fTrackingEff->SetBinContent(34,6.3*0.01);
-    fTrackingEff->SetBinContent(35,6.3*0.01);
-    fTrackingEff->SetBinContent(36,6.3*0.01);
-    fTrackingEff->SetBinContent(37,6.3*0.01);
-    fTrackingEff->SetBinContent(38,6.3*0.01);
-    fTrackingEff->SetBinContent(39,6.3*0.01);
-    fTrackingEff->SetBinContent(40,6.3*0.01);
-    fTrackingEff->SetBinContent(41,6.3*0.01);
-    fTrackingEff->SetBinContent(42,6.3*0.01);
-    fTrackingEff->SetBinContent(43,6.3*0.01);
-    fTrackingEff->SetBinContent(44,6.3*0.01);
-    fTrackingEff->SetBinContent(45,6.3*0.01);
-    fTrackingEff->SetBinContent(46,6.3*0.01);
-    fTrackingEff->SetBinContent(47,6.3*0.01);
-    fTrackingEff->SetBinContent(48,6.3*0.01);
-    fTrackingEff->SetBinContent(49,6.3*0.01);
-    fTrackingEff->SetBinContent(50,6.3*0.01);
+    fTrackingEff->SetBinContent(1,6.0*0.01); // Jacek, 5% per track
+    fTrackingEff->SetBinContent(2,6.0*0.01);
+    fTrackingEff->SetBinContent(3,6.5*0.01);
+    fTrackingEff->SetBinContent(4,7.5*0.01);
+    fTrackingEff->SetBinContent(5,8.0*0.01);
+    fTrackingEff->SetBinContent(6,8.0*0.01);
+    fTrackingEff->SetBinContent(7,7.5*0.01);
+    fTrackingEff->SetBinContent(8,7.0*0.01);
+    fTrackingEff->SetBinContent(9,6.5*0.01);
+    fTrackingEff->SetBinContent(10,6.0*0.01);
+    fTrackingEff->SetBinContent(11,6.0*0.01);
+    fTrackingEff->SetBinContent(12,5.5*0.01);
+    fTrackingEff->SetBinContent(13,5.0*0.01);
+    fTrackingEff->SetBinContent(14,5.0*0.01);
+    fTrackingEff->SetBinContent(15,4.5*0.01);
+    fTrackingEff->SetBinContent(16,4.5*0.01);
+    fTrackingEff->SetBinContent(17,4.5*0.01);
+    fTrackingEff->SetBinContent(18,4.0*0.01);
+    fTrackingEff->SetBinContent(19,4.0*0.01);
+    fTrackingEff->SetBinContent(20,4.0*0.01);
+    fTrackingEff->SetBinContent(21,4.0*0.01);
+    fTrackingEff->SetBinContent(22,4.0*0.01);
+    fTrackingEff->SetBinContent(23,3.5*0.01);
+    fTrackingEff->SetBinContent(24,3.5*0.01);
+    fTrackingEff->SetBinContent(25,3.5*0.01);
+    fTrackingEff->SetBinContent(26,3.5*0.01);
+    fTrackingEff->SetBinContent(27,3.5*0.01);
+    fTrackingEff->SetBinContent(28,3.5*0.01);
+    fTrackingEff->SetBinContent(29,3.5*0.01);
+    fTrackingEff->SetBinContent(30,3.5*0.01);
+    fTrackingEff->SetBinContent(31,3.5*0.01);
+    fTrackingEff->SetBinContent(32,3.5*0.01);
+    fTrackingEff->SetBinContent(33,3.5*0.01);
+    fTrackingEff->SetBinContent(34,3.5*0.01);
+    fTrackingEff->SetBinContent(35,3.5*0.01);
+    fTrackingEff->SetBinContent(36,3.5*0.01);
+    fTrackingEff->SetBinContent(37,3.5*0.01);
+    fTrackingEff->SetBinContent(38,3.5*0.01);
+    fTrackingEff->SetBinContent(39,3.5*0.01);
+    fTrackingEff->SetBinContent(40,3.5*0.01);
+    fTrackingEff->SetBinContent(41,3.5*0.01);
+    fTrackingEff->SetBinContent(42,3.5*0.01);
+    fTrackingEff->SetBinContent(43,3.0*0.01);
+    fTrackingEff->SetBinContent(44,3.0*0.01);
+    fTrackingEff->SetBinContent(45,3.0*0.01);
+    fTrackingEff->SetBinContent(46,3.0*0.01);
+    fTrackingEff->SetBinContent(47,3.0*0.01);
+    fTrackingEff->SetBinContent(48,3.0*0.01);
+    fTrackingEff->SetBinContent(49,3.0*0.01);
+    fTrackingEff->SetBinContent(50,3.0*0.01);
  
     
     
@@ -5869,7 +5869,7 @@ void AliHFSystErr::InitD0toKpi2015PbPb6080() {
     
     // Normalization
     fNorm = new TH1F("fNorm","fNorm",36,0,36);
-    for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.07); // TAA and pp norm
+    for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
     
     // Branching ratio
     fBR = new TH1F("fBR","fBR",36,0,36);
@@ -5877,42 +5877,42 @@ void AliHFSystErr::InitD0toKpi2015PbPb6080() {
     
     // Tracking efficiency
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-    fTrackingEff->SetBinContent(1,4.5*0.01); // Jacek, 5% per track
-    fTrackingEff->SetBinContent(2,4.5*0.01);
-    fTrackingEff->SetBinContent(3,4.8*0.01);
-    fTrackingEff->SetBinContent(4,5.3*0.01);
-    fTrackingEff->SetBinContent(5,5.3*0.01);
-    fTrackingEff->SetBinContent(6,5.1*0.01);
-    fTrackingEff->SetBinContent(7,4.9*0.01);
-    fTrackingEff->SetBinContent(8,4.8*0.01);
-    fTrackingEff->SetBinContent(9,4.8*0.01);
-    fTrackingEff->SetBinContent(10,4.8*0.01);
-    fTrackingEff->SetBinContent(11,4.8*0.01);
-    fTrackingEff->SetBinContent(12,4.8*0.01);
-    fTrackingEff->SetBinContent(13,5.1*0.01);
-    fTrackingEff->SetBinContent(14,5.1*0.01);
-    fTrackingEff->SetBinContent(15,5.1*0.01);
-    fTrackingEff->SetBinContent(16,5.1*0.01);
-    fTrackingEff->SetBinContent(17,5.5*0.01);
-    fTrackingEff->SetBinContent(18,5.5*0.01);
-    fTrackingEff->SetBinContent(19,5.5*0.01);
-    fTrackingEff->SetBinContent(20,5.5*0.01);
-    fTrackingEff->SetBinContent(21,5.5*0.01);
-    fTrackingEff->SetBinContent(22,5.5*0.01);
-    fTrackingEff->SetBinContent(23,5.5*0.01);
-    fTrackingEff->SetBinContent(24,5.5*0.01);
-    fTrackingEff->SetBinContent(25,6.3*0.01);
-    fTrackingEff->SetBinContent(26,6.3*0.01);
-    fTrackingEff->SetBinContent(27,6.3*0.01);
-    fTrackingEff->SetBinContent(28,6.3*0.01);
-    fTrackingEff->SetBinContent(29,6.3*0.01);
-    fTrackingEff->SetBinContent(30,6.3*0.01);
-    fTrackingEff->SetBinContent(31,6.3*0.01);
-    fTrackingEff->SetBinContent(32,6.3*0.01);
-    fTrackingEff->SetBinContent(33,6.3*0.01);
-    fTrackingEff->SetBinContent(34,6.3*0.01);
-    fTrackingEff->SetBinContent(35,6.3*0.01);
-    fTrackingEff->SetBinContent(36,6.3*0.01);
+    fTrackingEff->SetBinContent(1,6.0*0.01); // Jacek, 5% per track
+    fTrackingEff->SetBinContent(2,6.0*0.01);
+    fTrackingEff->SetBinContent(3,6.5*0.01);
+    fTrackingEff->SetBinContent(4,7.5*0.01);
+    fTrackingEff->SetBinContent(5,8.0*0.01);
+    fTrackingEff->SetBinContent(6,8.0*0.01);
+    fTrackingEff->SetBinContent(7,7.5*0.01);
+    fTrackingEff->SetBinContent(8,7.0*0.01);
+    fTrackingEff->SetBinContent(9,6.5*0.01);
+    fTrackingEff->SetBinContent(10,6.0*0.01);
+    fTrackingEff->SetBinContent(11,6.0*0.01);
+    fTrackingEff->SetBinContent(12,5.5*0.01);
+    fTrackingEff->SetBinContent(13,5.0*0.01);
+    fTrackingEff->SetBinContent(14,5.0*0.01);
+    fTrackingEff->SetBinContent(15,4.5*0.01);
+    fTrackingEff->SetBinContent(16,4.5*0.01);
+    fTrackingEff->SetBinContent(17,4.0*0.01);
+    fTrackingEff->SetBinContent(18,4.0*0.01);
+    fTrackingEff->SetBinContent(19,4.0*0.01);
+    fTrackingEff->SetBinContent(20,4.0*0.01);
+    fTrackingEff->SetBinContent(21,4.0*0.01);
+    fTrackingEff->SetBinContent(22,4.0*0.01);
+    fTrackingEff->SetBinContent(23,3.5*0.01);
+    fTrackingEff->SetBinContent(24,3.5*0.01);
+    fTrackingEff->SetBinContent(25,3.5*0.01);
+    fTrackingEff->SetBinContent(26,3.5*0.01);
+    fTrackingEff->SetBinContent(27,3.5*0.01);
+    fTrackingEff->SetBinContent(28,3.5*0.01);
+    fTrackingEff->SetBinContent(29,3.5*0.01);
+    fTrackingEff->SetBinContent(30,3.5*0.01);
+    fTrackingEff->SetBinContent(31,3.5*0.01);
+    fTrackingEff->SetBinContent(32,3.5*0.01);
+    fTrackingEff->SetBinContent(33,3.5*0.01);
+    fTrackingEff->SetBinContent(34,3.5*0.01);
+    fTrackingEff->SetBinContent(35,3.5*0.01);
+    fTrackingEff->SetBinContent(36,3.5*0.01);
     
     // Raw yield extraction
     fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
