@@ -2271,6 +2271,21 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.050;
     fPtCut       = 0.200;
     break;
+  case 12:  // 0.060 GeV
+    fSinglePtCut = 0.060;
+    break;
+  case 13:  // 0.060 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.100;
+    break;
+  case 14:  // 0.060 GeV + min gamma pT cut of 150 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.150;
+    break;
+  case 15:  // 0.060 GeV + min gamma pT cut of 200 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.200;
+    break;
   default:
     AliError(Form("singlePtCut not defined %d",singlePtCut));
     return kFALSE;
