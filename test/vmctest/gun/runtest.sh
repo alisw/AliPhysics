@@ -8,7 +8,7 @@ if [ ! -f gen/galice.root ]; then
   ./rungen.sh
 fi
 
-NEVENTS=5
+NEVENTS=1
 G3CONFIG="$ALICE_ROOT/test/vmctest/gun/g3Config.C" 
 G4CONFIG="$ALICE_ROOT/test/vmctest/gun/g4Config.C" 
 
