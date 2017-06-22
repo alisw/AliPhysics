@@ -120,6 +120,10 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh05);
   TH1F* fhh06 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
   lhh->Add(fhh06);
+  TH1F* fhh07 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  lhh->Add(fhh07);
+  TH1F* fhh08 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  lhh->Add(fhh08);
   
   return lhh;
   
