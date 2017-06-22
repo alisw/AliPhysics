@@ -2905,6 +2905,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   if (trackType == kTracklets)
   {
     const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
+    if (!spdmult) return 0;
     for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
     {
       if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange)
@@ -2951,6 +2952,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   const Int_t kSecBit = BIT(16); // set this bit in global tracks if it is secondary according to a cut
 
   for(Int_t itracks=0; itracks < nESDTracks; itracks++) {
+    if (!esd->GetTrack(itracks)) continue;
     esd->GetTrack(itracks)->ResetBit(kSecBit|kRejBit); //reset bits used for flagging secondaries and rejected tracks in case they were changed before this analysis
   }
   const Int_t maxid = nESDTracks; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
@@ -2968,7 +2970,8 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   // get multiplicity from global tracks
   for(Int_t itracks = 0; itracks < nESDTracks; itracks++) { // flag the tracks
     AliESDtrack* track = esd->GetTrack(itracks);
-
+    if (!track) continue;
+    
     // if track is a secondary from a V0, flag as a secondary
     if (track->IsOn(AliESDtrack::kMultInV0)) {
       track->SetBit(kSecBit);
@@ -3024,6 +3027,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   //*******************************************************************************************************
   // get multiplicity from ITS tracklets to complement TPC+ITS, and ITSpureSA
   const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
+  if (spdmult) {
   for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) {
     if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange) continue; // eta selection for tracklets
 
@@ -3073,6 +3077,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 
 	    if ( bUsedInPureITS < 0 ) ++trackletsITSSA_complementary; //no associated track, just count the tracklet
     }
+  }
   }
 
   //*******************************************************************************************************
