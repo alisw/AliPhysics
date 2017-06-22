@@ -41,42 +41,44 @@ if [ -z "${value}" ]; then
   let error=error+1
 fi
 
-# check ESD in check.log
-value=`grep "check of ESD was successful" g3/check.log`
-if [ -z "${value}" ]; then
-  echo "ESD not successful"
-  let error=error+1
-fi
-value=`grep "check of ESD was successful" g4/check.log`
-if [ -z "${value}" ]; then
-  echo "ESD not successful"
-  let error=error+1
-fi
+if [[ $WITHESDCHECK ]]; then
+  # check ESD in check.log
+  value=`grep "check of ESD was successful" g3/check.log`
+  if [ -z "${value}" ]; then
+    echo "ESD not successful"
+    let error=error+1
+  fi
+  value=`grep "check of ESD was successful" g4/check.log`
+  if [ -z "${value}" ]; then
+    echo "ESD not successful"
+    let error=error+1
+  fi
 
 # check efficiency
 line=`grep "I-CheckESD: eff" g3/check.log`
-if [ -z "${value}" ]; then
-  echo "ESD efficiency missing"
-  let error=error+1
-else
-  eff=`awk '/I-CheckESD: eff/{print $4}' g3/check.log | sed 's/(//'`
-  intpart=${eff%.*}
-  if (( intpart < 90 )); then
-    echo "ESD efficiency less than 90"
+  if [ -z "${value}" ]; then
+    echo "ESD efficiency missing"
     let error=error+1
+  else
+    eff=`awk '/I-CheckESD: eff/{print $4}' g3/check.log | sed 's/(//'`
+    intpart=${eff%.*}
+    if (( intpart < 90 )); then
+      echo "ESD efficiency less than 90"
+      let error=error+1
+    fi
   fi
-fi
 
-line=`grep "I-CheckESD: eff" g4/check.log`
-if [ -z "${value}" ]; then
-  echo "ESD efficiency missing"
-  let error=error+1
-else
-  eff=`awk '/I-CheckESD: eff/{print $4}' g4/check.log | sed 's/(//'`
-  intpart=${eff%.*}
-  if (( intpart < 90 )); then
-    echo "ESD efficiency less than 90"
+  line=`grep "I-CheckESD: eff" g4/check.log`
+  if [ -z "${value}" ]; then
+    echo "ESD efficiency missing"
     let error=error+1
+  else
+    eff=`awk '/I-CheckESD: eff/{print $4}' g4/check.log | sed 's/(//'`
+    intpart=${eff%.*}
+    if (( intpart < 90 )); then
+      echo "ESD efficiency less than 90"
+      let error=error+1
+    fi
   fi
 fi
 
