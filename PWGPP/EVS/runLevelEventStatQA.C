@@ -50,7 +50,8 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=272399, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -610,15 +611,29 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
-    alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
-    alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    if (hHistStat->GetNbinsX()!=19) { 
+      // old stat histo without ZDC background monitoring
+      // setting ZDCBG step equal to V0AND and take other steps shifted by 1
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j)); 
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+    } else {
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    }
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
