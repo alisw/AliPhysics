@@ -265,7 +265,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB");
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
 //  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
@@ -905,8 +905,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-    hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
-    hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
+    hAccStep1Fraction->SetMinimum(elmin-0.1*(elmax-elmin));
+    hAccStep1Fraction->SetMaximum(1.0);
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
     // hAcceptedFraction->Draw();
     hAccStep1Fraction->Draw();
