@@ -4,7 +4,7 @@ void sim(Int_t embrun)
   if (embrun == 4) {
     AliCDBManager *cdbm = AliCDBManager::Instance();
     cdbm->SetRun(atoi(gSystem->Getenv("DC_RUN")));
-    cdbm->SetDefaultStorage("local://$ALICE_ROOT/OCDB");     
+    cdbm->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");     
     cdbm->SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
     sim.SetMakeSDigits("ITS TPC TRD TOF VZERO");  
 
@@ -27,11 +27,11 @@ void sim(Int_t embrun)
   if (embrun == 1)
     sim.MergeWith("../BackgroundSDigits/galice.root",1);
 
-  sim.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  sim.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   sim.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   sim.SetRunQA(":") ; 
-  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
+  AliQA::SetQARefStorage("local://$ALIROOT_OCDB_ROOT/OCDB") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     sim.SetQACycles(det, 1) ;

@@ -31,13 +31,13 @@ void rec(Bool_t useIonTail, Double_t crossTalkCorrection, Int_t nrowsBelow=2) {
   // stard reco setting
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   man->SetSpecificStorage("TPC/Calib/RecoParam/",recoStorage);
   man->SetRun(run);
   AliReconstruction reco;
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  reco.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
   reco.SetRunPlaneEff(kTRUE);
