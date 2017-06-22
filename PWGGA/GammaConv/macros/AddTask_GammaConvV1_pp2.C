@@ -217,14 +217,29 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010513", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV + past future medium rejection
   } else if (trainConfig == 25) {
     cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
-
+  } else if (trainConfig == 26) {
+    cuts.AddCut("00010113", "002000c9227300008250404000", "0152103500000000"); // 8 TeV std, but min electron pT > 0.6 for all configs
+  } else if (trainConfig == 27) {
+    cuts.AddCut("00010113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+  } else if (trainConfig == 28) {
+    cuts.AddCut("00010113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+  } else if (trainConfig == 29) {
+    cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
   //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
-  } else if (trainConfig == 30){
+  } else if (trainConfig == 30) {
     cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut pp 7 TeV direct photon
-  } else if (trainConfig == 31){
+  } else if (trainConfig == 31) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 7 TeV
-  } else if (trainConfig == 32){
+  } else if (trainConfig == 32) {
     cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //old standard cut pp 7 TeV
+  } else if (trainConfig == 33) {
+    cuts.AddCut("00000113", "002000c9227300008250404000", "0152103500000000"); // 7 TeV std, but min electron pT > 0.6 for all configs
+  } else if (trainConfig == 34) {
+    cuts.AddCut("00000113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+  } else if (trainConfig == 35) {
+    cuts.AddCut("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+  } else if (trainConfig == 36) {
+    cuts.AddCut("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
 
   //----------------------------- configuration for run 2 analysis 13 TeV ----------------------------------------------------
   } else if (trainConfig == 40){
