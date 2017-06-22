@@ -281,7 +281,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 //    if (!lhcState->String().Contains("STABLE")) continue;
 //    if (!lhcPeriod->String().Contains("LHC15o")) continue;
     Double_t thr = 0;
-    if (0) {
+    if (1) {
       man->SetRun(run);
       AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
       AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
@@ -905,11 +905,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-//    hAcceptedFraction->Draw();
+    hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
+    hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
-    //FIXME
-    //hAccStep1Fraction->SetMinimum(hAccStep9Fraction->GetMinimum()*0.9);
-    hAccStep1Fraction->SetMinimum(0.75);
+    // hAcceptedFraction->Draw();
     hAccStep1Fraction->Draw();
     hAccStep2Fraction->Draw("same");
     hAccStep3Fraction->Draw("same");
