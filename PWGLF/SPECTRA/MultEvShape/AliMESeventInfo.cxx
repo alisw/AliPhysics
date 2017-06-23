@@ -50,11 +50,12 @@ void AliMESeventInfo::Clear(Option_t *)
 // directivity
 void AliMESeventInfo::MakeDirectivity(TObjArray* tracks){
 
+  Double_t rv[2] = {-2., -2.};
+
   if(!tracks->GetEntries()){
     AliDebug(2, "Failed event shape estimation. No tracks in event.");
-    // return kFALSE;
+    return;
   }
-  Double_t rv[2] = {-2., -2.};
   if((rv[0] = Directivity(tracks, kTRUE)) < 0. ){
     AliDebug(2, "Failed D+ estimation");
     // return kFALSE;
@@ -86,20 +87,21 @@ Bool_t AliMESeventInfo::MakeThrust(TObjArray* tracks){
 }
 
 // sphericity
-Bool_t AliMESeventInfo::MakeSphericity(TObjArray* tracks){
+void AliMESeventInfo::MakeSphericity(TObjArray* tracks){
+
+    Double_t rv = -1.;
 
     if(!tracks->GetEntries()){
-      AliInfo("Failed event shape estimation. No tracks in event.");
-      return kFALSE;
+      AliDebug(2, "Failed event shape estimation. No tracks in event.");
+      return;
     }
-    Double_t rv = 0.;
     if((rv = Sphericity(tracks)) < 0. ){
-    AliInfo("Failed Sphericity estimation");
-    //return kFALSE;
+        AliDebug(2, "Failed Sphericity estimation");
+        //return kFALSE;
     }
     fEvShape.fSphericity = rv;
 
-    return kTRUE;
+    return;
 }
 
 // recoil
@@ -259,9 +261,11 @@ Double_t AliMESeventInfo::Sphericity(TObjArray* tracks)
   if(!(ntracks=tracks->GetEntries())) return -1.;
 
   Double_t a(0.), b(0.), c(0.), d(0.);
-  AliVParticle *track(NULL);
+  AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-    if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
+    if(!(track = dynamic_cast<AliMEStrackInfo*> (tracks->At(iTracks)))) continue;
+    if(! track->HasOrigin(AliMEStrackInfo::kPrimary) ) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
     a+=track->Px()*track->Px();
     b+=track->Px()*track->Py();
     d+=track->Py()*track->Py();
