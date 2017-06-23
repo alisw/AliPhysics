@@ -162,15 +162,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
       return;
     } 
 
-	//Check for MC
-	if(man->GetMCtruthEventHandler() != 0x0){
-        Printf("MC handler found");
-		fIsMC = kTRUE;
-	}else{
-        Printf("MC handler not found");
-		fIsMC = kFALSE;	
-	}
-    
     fStream = new TTreeStream("tracks");
     fTree   = dynamic_cast<TTree*>(fStream->GetTree());
 
@@ -222,7 +213,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
     if(!event) {
         AliError("No event");
-    return;
+        return;
     } 
     fQAhist->Fill("Events_check",1);
     
@@ -232,19 +223,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
     fQAhist->Fill("Events_accepted",1);
 
-    // Process MC truth  
-    AliMCEvent* mcEvent = 0x0;
-    if(fIsMC){
-
-        AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-        mcEvent = mcHandler->MCEvent();
-
-        if(!mcEvent){
-            AliError("Could not retrieve MC event");
-            return;
-        }
+    //Check if running on MC files
+    AliMCEvent* mcEvent = MCEvent();
+    if(mcEvent){
+        fIsMC = kTRUE;
         fQAhist->Fill("Events_MCcheck",1);
     }
+    else{
+        fIsMC = kFALSE;
+    }
+    
     eventNum += 1;
 
     
@@ -270,6 +258,22 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     else{
         nMultiplicity = multSelection->GetMultiplicityPercentile("V0M");
     }
+
+    //Check if ESD or AOD analysis
+    //Get ClassName from file and check it
+    TString className = static_cast<TString>(event->ClassName());
+    if(className.Contains("AOD")){
+        fIsAOD = kTRUE;
+        Printf("AOD file");
+    }
+    else if(className.Contains("ESD")){
+        fIsAOD = kFALSE;
+        Printf("ESD file");
+    }
+    else{
+        Printf("Analysis type not known...");
+        return;
+    }
     
 
     Int_t eventTracks = event->GetNumberOfTracks();
@@ -289,19 +293,18 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             fQAhist->Fill("Tracks_all",1);
 
             //Declare MC variables
-            Double_t mcEta   = -99;
-            Double_t mcPhi   = -99;
-            Double_t mcPt    = -99;
+            Double_t mcEta     = -99;
+            Double_t mcPhi     = -99;
+            Double_t mcPt      = -99;
 			Double_t mcVert[3] = {-99,-99,-99};
-            Int_t iPdg       = -9999;
-            Int_t iPdgMother = -9999;
-			Bool_t HasMother = kFALSE; 
-            Int_t motherLabel = -9999; //Needed to determine whether tracks have same mother in evet with many ee pairs
+            Int_t iPdg         = -9999;
+            Int_t iPdgMother   = -9999;
+			Bool_t HasMother   = kFALSE; 
+            Int_t motherLabel  = -9999; //Needed to determine whether tracks have same mother in evet with many ee pairs
             //Bool_t IsEnhanced = kFALSE;
 
             //Get MC information
             if(fIsMC){
-                mcEvent = MCEvent();
                 AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
                 //Check valid pointer has been returned. If not, disregard track. 
