@@ -11,7 +11,7 @@ void rec() {
 
   reco.SetRunQA("ALL:ALL") ;
   
-  reco.SetQARefDefaultStorage("local://$ALIROOT_OCDB_ROOT/QAref") ;
+  reco.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles((AliQAv1::DETECTORINDEX_t)det, 999) ;

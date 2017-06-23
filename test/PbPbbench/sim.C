@@ -20,7 +20,7 @@ void sim(Int_t nev=1) {
   simulator.SetSpecificStorage("VZERO/Calib/Data",
 			       "local://$ALIROOT_OCDB_ROOT/OCDB/VZERO/PbPb");
   simulator.SetRunQA("ALL:ALL") ; 
-  simulator.SetQARefDefaultStorage("local://$ALIROOT_OCDB_ROOT/QAref") ;
+  simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simulator.SetQACycles((AliQAv1::DETECTORINDEX_t)det, nev+1) ;
