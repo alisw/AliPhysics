@@ -2705,15 +2705,15 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 
         hname = TString::Format("%s/%s/fHistRhoVsCent", param.GetName(), jetDef.GetName());
         htitle = hname + ";Centrality (%);#rho (GeV/#it{c} rad^{-1});counts";
-        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 1000, 0, maxRho);
+        fHistManager.CreateTH2(hname, htitle, 100, 0, 100, 1000, 0, maxRho);
 
         hname = TString::Format("%s/%s/fHistLeadJetPtVsCent", param.GetName(), jetDef.GetName());
         htitle = hname + ";Centrality (%);#it{p}_{T,jet} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 300, 0, 150);
+        fHistManager.CreateTH2(hname, htitle, 100, 0, 100, 300, 0, 150);
 
         hname = TString::Format("%s/%s/fHistLeadDPtVsCent", param.GetName(), jetDef.GetName());
         htitle = hname + ";Centrality (%);#it{p}_{T,D} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(hname, htitle, 101, -1, 100, 300, 0, 150);
+        fHistManager.CreateTH2(hname, htitle, 100, 0, 100, 300, 0, 150);
 
         hname = TString::Format("%s/%s/fHistRhoVsNTracks", param.GetName(), jetDef.GetName());
         htitle = hname + ";no. of tracks;#rho (GeV/#it{c} rad^{-1});counts";

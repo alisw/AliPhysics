@@ -124,7 +124,7 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
   //set multiplicity related axes to a smaller max value
   if (fBeamType != kAA) Ntrackrange[1] = 200.;
   
-  fHistRhoVsCent = new TH2F("fHistRhoVsCent", "fHistRhoVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt);
+  fHistRhoVsCent = new TH2F("fHistRhoVsCent", "fHistRhoVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt);
   fHistRhoVsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhoVsCent->GetYaxis()->SetTitle("#rho (GeV/#it{c} rad^{-1})");
   fOutput->Add(fHistRhoVsCent);
@@ -135,7 +135,7 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
     fHistRhoVsNtrack->GetYaxis()->SetTitle("#rho (GeV/#it{c} rad^{-1})");
     fOutput->Add(fHistRhoVsNtrack);
 
-    fHistNtrackVsCent = new TH2F("fHistNtrackVsCent", "fHistNtrackVsCent", 101, -1,  100, 200, Ntrackrange[0], Ntrackrange[1]);
+    fHistNtrackVsCent = new TH2F("fHistNtrackVsCent", "fHistNtrackVsCent", 100, 0,  100, 200, Ntrackrange[0], Ntrackrange[1]);
     fHistNtrackVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistNtrackVsCent->GetYaxis()->SetTitle("No. of tracks");
     fOutput->Add(fHistNtrackVsCent);
@@ -154,22 +154,22 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
     fHistRhoVsLeadJetPt->GetYaxis()->SetTitle("#rho (GeV/#it{c} rad^{-1})");
     fOutput->Add(fHistRhoVsLeadJetPt);
 
-    fHistLeadJetPtVsCent = new TH2F("fHistLeadJetPtVsCent", "fHistLeadJetPtVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistLeadJetPtVsCent = new TH2F("fHistLeadJetPtVsCent", "fHistLeadJetPtVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt*2);
     fHistLeadJetPtVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistLeadJetPtVsCent->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
     fOutput->Add(fHistLeadJetPtVsCent);
 
-    fHistSubLeadJetPtVsCent = new TH2F("fHistSubLeadJetPtVsCent", "fHistSubLeadJetPtVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistSubLeadJetPtVsCent = new TH2F("fHistSubLeadJetPtVsCent", "fHistSubLeadJetPtVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt*2);
     fHistSubLeadJetPtVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistSubLeadJetPtVsCent->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/#it{c})");
     fOutput->Add(fHistSubLeadJetPtVsCent);
 
-    fHistLeadJetPtDensityVsCent = new TH2F("fHistLeadJetPtDensityVsCent", "fHistLeadJetPtDensityVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*4);
+    fHistLeadJetPtDensityVsCent = new TH2F("fHistLeadJetPtDensityVsCent", "fHistLeadJetPtDensityVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt*4);
     fHistLeadJetPtDensityVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistLeadJetPtDensityVsCent->GetYaxis()->SetTitle("#it{p}_{T,jet} / #it{A}_{jet} (GeV/#it{c})");
     fOutput->Add(fHistLeadJetPtDensityVsCent);
 
-    fHistLeadJetNconstVsCent = new TH2F("fHistLeadJetNconstVsCent", "fHistLeadJetNconstVsCent", 101, -1,  100, 150, -0.5, 149.5);
+    fHistLeadJetNconstVsCent = new TH2F("fHistLeadJetNconstVsCent", "fHistLeadJetNconstVsCent", 100, 0,  100, 150, -0.5, 149.5);
     fHistLeadJetNconstVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistLeadJetNconstVsCent->GetYaxis()->SetTitle("No. of constituents");
     fOutput->Add(fHistLeadJetNconstVsCent);
@@ -186,12 +186,12 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
       }
     }
 
-    fHistTotJetAreaVsCent = new TH2F("fHistTotJetAreaVsCent", "fHistTotJetAreaVsCent", 101, -1, 100, 500, 0, 15);
+    fHistTotJetAreaVsCent = new TH2F("fHistTotJetAreaVsCent", "fHistTotJetAreaVsCent", 100, 0, 100, 500, 0, 15);
     fHistTotJetAreaVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistTotJetAreaVsCent->GetYaxis()->SetTitle("Jet area");
     fOutput->Add(fHistTotJetAreaVsCent);
 
-    fHistNjetVsCent = new TH2F("fHistNjetVsCent",  "fHistNjetVsCent", 101, -1, 100, 150, -0.5, 149.5);
+    fHistNjetVsCent = new TH2F("fHistNjetVsCent",  "fHistNjetVsCent", 100, 0, 100, 150, -0.5, 149.5);
     fHistNjetVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistNjetVsCent->GetYaxis()->SetTitle("No. of jets");
     fOutput->Add(fHistNjetVsCent);
@@ -205,7 +205,7 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
   }
 
   if (fScaleFunction) {
-    fHistRhoScaledVsCent = new TH2F("fHistRhoScaledVsCent", "fHistRhoScaledVsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt);
+    fHistRhoScaledVsCent = new TH2F("fHistRhoScaledVsCent", "fHistRhoScaledVsCent", 100, 0, 100, fNbins, fMinBinPt , fMaxBinPt);
     fHistRhoScaledVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistRhoScaledVsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/#it{c} rad^{-1})");
     fOutput->Add(fHistRhoScaledVsCent);
