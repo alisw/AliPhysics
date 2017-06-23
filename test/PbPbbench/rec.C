@@ -11,7 +11,7 @@ void rec() {
 			  "local://$ALIROOT_OCDB_ROOT/OCDB/VZERO/PbPb");
   reco.SetRunQA("ALL:ALL") ;
   
-  reco.SetQARefDefaultStorage("local://$ALIROOT_OCDB_ROOT/QAref") ;
+  reco.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   reco.SetRunPlaneEff(kTRUE);
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
