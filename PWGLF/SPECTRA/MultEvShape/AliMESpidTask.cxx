@@ -66,22 +66,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);  	// combined multiplicity with |eta| < 0.8
   Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);   		// V0M percentile
-  /*
-  if(ESDmult > 0.){
-	  if(ESDmult < 0.01) ESDmult = 1;
-	  else if(ESDmult < 0.1) ESDmult = 2;
-	  else if(ESDmult < 1.) ESDmult = 3;
-	  else if(ESDmult < 5.) ESDmult = 4;   // 1-5 bin
-	  else if(ESDmult < 10.) ESDmult = 8;   // 5-10 bin
-	  else if(ESDmult < 15.) ESDmult = 12;   // 10-15 bin
-	  else if(ESDmult < 20.) ESDmult = 18;   // 15-20 bin
-	  else if(ESDmult < 30.) ESDmult = 25;   // 20-30 bin
-	  else if(ESDmult < 40.) ESDmult = 35;   // 30-40 bin
-	  else if(ESDmult < 50.) ESDmult = 45;   // 40-50 bin
-	  else if(ESDmult < 70.) ESDmult = 60;   // 50-70 bin
-	  else ESDmult = 90;   // 70-100 bin
-  }
-*/
   Double_t mult_comb0408 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
 
   // event shape for data (from ESD)
@@ -216,9 +200,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   THnSparseD *hMultEst = (THnSparseD*)fHistosQA->At(0);
   Double_t vec_hMultEst[8]; // vector used to fill hMultEst
-//   vec_hMultEst[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
-//   vec_hMultEst[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);
-//   vec_hMultEst[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
   vec_hMultEst[0] = mult_comb08;
   vec_hMultEst[1] = mult_V0M;
   // vec_hMultEst[2] = mult_comb0408;
@@ -275,10 +256,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 	// ---------------------------
 	// get ESD multiplicity
-// 	vec_hAllESD[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
-// 	vec_hAllESD[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);
-// 	vec_hAllESD[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
-// 	vec_hAllESD[0] = mult_comb08;
 	vec_hAllESD[l_comb08] = mult_comb08;
 // 	AliInfo(Form("mult ESD = %g",vec_hAllESD[0]));
 	vec_hAllESD[l_V0M] = mult_V0M;
