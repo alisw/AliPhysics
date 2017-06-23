@@ -205,8 +205,9 @@ hEvtVtxXYBefSel(0x0),
 hEvtVtxZBefSel(0x0),
 hEvtVtxXY(0x0),
 hEvtVtxZ(0x0),
-hEvtVtxZGenerated(0x0),
-hEvtVtxZPhysSel(0x0),
+hEvtVtxZMCGen(0x0),
+hEvtVtxZMCPhysSel(0x0),
+hEvtVtxZMCReco(0x0),
 hNTrk(0x0),
 hPadDist(0x0),
 hTOFDist(0x0),
@@ -700,11 +701,14 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     fListHist->AddLast(hEvtVtxZ);
     
     if(fMCmode){
-      hEvtVtxZGenerated = new TH1F("hEvtVtxZGenerated", "Z MC vertex distance;Z (cm);Counts", 100, -50., 50.);
-      fListHist->AddLast(hEvtVtxZGenerated);
+      hEvtVtxZMCGen = new TH1F("hEvtVtxZMCGen", "Z MC vertex distance;Z (cm);Counts", 100, -50., 50.);
+      fListHist->AddLast(hEvtVtxZMCGen);
       
-      hEvtVtxZPhysSel = new TH1F("hEvtVtxZPhysSel", "Z MC vertex distance Selected;Z (cm);Counts", 100, -50., 50.);
-      fListHist->AddLast(hEvtVtxZPhysSel);
+      hEvtVtxZMCPhysSel = new TH1F("hEvtVtxZMCPhysSel", "Z MC vertex distance Selected;Z (cm);Counts", 100, -50., 50.);
+      fListHist->AddLast(hEvtVtxZMCPhysSel);
+      
+      hEvtVtxZMCReco = new TH1F("hEvtVtxZMCReco", "Z MC vertex distance Selected;Z (cm);Counts", 100, -50., 50.);
+      fListHist->AddLast(hEvtVtxZMCReco);
     }
     
     binstart = 1;
@@ -1545,6 +1549,17 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
   StopTimePerformance(3);
   
+  
+  //
+  // monitor vertex position before event and physics selection
+  //
+  const AliESDVertex* vertex = ObtainVertex();
+  if (!vertex && fEventCut.PassedCut(AliEventCuts::kPileUp)){//NOTE do this only if the vertex exists!
+    //Filling XY and Z distribution for vertex
+    hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
+    hEvtVtxZBefSel->Fill(fPrimVertex[2]);
+  }
+  
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
   
   //
@@ -1561,16 +1576,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   //Filling the Multiplicity histogram before the event selection
   //
   hEvtMult->Fill(fEvtMult);
-  
-  //
-  // monitor vertex position before event selection
-  //
-  const AliESDVertex* vertex = ObtainVertex();
-  if (!vertex && fEventCut.PassedCut(AliEventCuts::kPileUp)){//NOTE do this only if the vertex exists!
-    //Filling XY and Z distribution for vertex
-    hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
-    hEvtVtxZBefSel->Fill(fPrimVertex[2]);
-  }
   
   //
   //Event Selection Cut
@@ -2427,8 +2432,9 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   
   Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
   if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
-  hEvtVtxZGenerated->Fill(MCvtx->GetZ());
-  if(fEvtPhysSelected) hEvtVtxZPhysSel->Fill(MCvtx->GetZ());
+  hEvtVtxZMCGen->Fill(MCvtx->GetZ());
+  if(fEvtPhysSelected) hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
+  if(fVertStatus > 0) hEvtVtxZMCReco->Fill(MCvtx->GetZ());
   
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
