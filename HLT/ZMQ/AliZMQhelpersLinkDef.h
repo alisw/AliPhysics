@@ -6,9 +6,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliZMQhelpers::BaseDataTopic+;
-#pragma link C++ class AliZMQhelpers::DataTopic+;
-
 #ifdef ZMQ
 #pragma link C++ class AliZMQhelpers::BaseDataTopic+;
 #pragma link C++ class AliZMQhelpers::DataTopic+;
