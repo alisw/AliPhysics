@@ -65,7 +65,7 @@ void AliAnalysisTaskRhoDev::UserCreateOutputObjects()
 
   AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects();
 
-  fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 2);
+  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent", 100, 0, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 }
 
