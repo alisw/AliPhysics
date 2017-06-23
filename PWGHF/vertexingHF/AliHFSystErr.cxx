@@ -1178,7 +1178,10 @@ void AliHFSystErr::InitD0toKpi2016pPb0100(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); // 2% per track //to be updated
+  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); // 
+  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); // 
+  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); // 
+  for(Int_t i=24;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); // 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
@@ -1191,8 +1194,7 @@ void AliHFSystErr::InitD0toKpi2016pPb0100(){
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
   fCutsEff->SetBinContent(1,0.0);
-  for(Int_t i=2;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
-  for(Int_t i=10;i<=36;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=2;i<=36;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
@@ -1201,7 +1203,7 @@ void AliHFSystErr::InitD0toKpi2016pPb0100(){
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
   fMCPtShape->SetBinContent(1,0.0);
-  fMCPtShape->SetBinContent(2,0.02);
+  fMCPtShape->SetBinContent(2,0.00);
   for(Int_t i=3;i<=36;i++) fMCPtShape->SetBinContent(i,0.0);//to be updated
 
   // particle-antiparticle
