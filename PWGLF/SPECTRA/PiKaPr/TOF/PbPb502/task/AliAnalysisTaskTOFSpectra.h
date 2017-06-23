@@ -683,8 +683,9 @@ private:
   TH1F* hEvtVtxZBefSel;                         ///<  Histogram with the linear distance along the Z axis of the primary vertex before any selection on vertex position
   TH1F* hEvtVtxXY;                              ///<  Histogram with the linear distance in the XY plane of the primary vertex
   TH1F* hEvtVtxZ;                               ///<  Histogram with the linear distance along the Z axis of the primary vertex
-  TH1F* hEvtVtxZGenerated;                      ///<  Histogram with the linear distance along the Z axis of the MC vertex of generated MC events
-  TH1F* hEvtVtxZPhysSel;                        ///<  Histogram with the linear distance along the Z axis of the MC vertex after physics selection
+  TH1F* hEvtVtxZMCGen;                          ///<  Histogram with the linear distance along the Z axis of the MC vertex of generated MC events
+  TH1F* hEvtVtxZMCPhysSel;                      ///<  Histogram with the linear distance along the Z axis of the MC vertex after physics selection
+  TH1F* hEvtVtxZMCReco;                         ///<  Histogram with the linear distance along the Z axis of the MC vertex of the events with reconstructed vertex
   
   //Track Info
   TH1F* hNTrk;                                  ///<  Histogram with the number of tracks and all the tracks that passed each cut
@@ -817,7 +818,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 7); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 8); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
