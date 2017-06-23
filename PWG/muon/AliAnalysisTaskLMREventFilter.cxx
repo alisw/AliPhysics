@@ -562,7 +562,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   Bool_t isMuonINT7selected  = fSelectMask&fSelectedMaskMuonINT7; 
   Bool_t isMuonC0TVXselected = fSelectMask&fSelectedMaskMuonINT8; 
 
-  if(fSelectMask&AliVEvent::kINT7)
+  if(fSelectMask&(AliVEvent::kINT7|AliVEvent::kINT7inMUON))
     physicsSelectionMask|=1<<1;
   if(fSelectMask&AliVEvent::kINT8)
     physicsSelectionMask|=1<<2;
@@ -586,7 +586,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   if(is0MLLfired)
     L0TriggerInput|=1<<4;
 
-  if(fSelectMask&AliVEvent::kINT7)
+  if(fSelectMask&(AliVEvent::kINT7|AliVEvent::kINT7inMUON))
     {
       for(Int_t i=0;i<3;i++)
 	{

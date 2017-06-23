@@ -45,6 +45,9 @@
 #pragma link C++ class AliAnalysisTaskDiMuonCorrelations+;
 #pragma link C++ class AliAnalysisTaskContMC+;
 #pragma link C++ class AliAnalysisTaskCorPIDTOFQA+;
+#pragma link C++ class AliAnalysisTaskCorPIDTOFdeut+;
+#pragma link C++ class AliAnalysisTaskCorPIDTOFprot+;
+#pragma link C++ class AliAnalysisTaskCorPIDTOFhadr+;
 #pragma link C++ class AliAnalysisTaskPIDCORR+;
 #pragma link C++ class AliPIDCorrParticle+;
 #pragma link C++ class AliTwoParticlePIDCorr+;

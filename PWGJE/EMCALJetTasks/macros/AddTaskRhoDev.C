@@ -8,7 +8,9 @@
 
 AliAnalysisTaskRhoDev* AddTaskRhoDev(
     TString        nTracks                        = "usedefault",
+    Double_t       trackPtCut                     = 0.15,
     TString        nClusters                      = "usedefault",
+    Double_t       clusECut                       = 0.30,
     TString        nRho                           = "Rho",
     Double_t       jetradius                      = 0.2,
     UInt_t         acceptance                     = AliEmcalJet::kTPCfid,
@@ -18,5 +20,5 @@ AliAnalysisTaskRhoDev* AddTaskRhoDev(
     TString        suffix                         = ""
 )
 {  
- return AliAnalysisTaskRhoDev::AddTaskRhoDev(nTracks, nClusters, nRho, jetradius, acceptance, jetType, rscheme, histo, suffix);
+ return AliAnalysisTaskRhoDev::AddTaskRhoDev(nTracks, trackPtCut, nClusters, clusECut, nRho, jetradius, acceptance, jetType, rscheme, histo, suffix);
 }

@@ -91,6 +91,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -183,6 +184,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
+  fEventSelectionAfterRun(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -298,10 +300,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
-  if (fForceBeamType == kpp) fCentBins.clear();
+  if (fCentralityEstimation == kNoCentrality) fCentBins.clear();
 
-  if (!fGeneralHistograms)
-    return;
+  if (!fGeneralHistograms) return;
 
   if (fIsPythia) {
     fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
@@ -360,7 +361,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fHistZVertexNoSel->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertexNoSel);
 
-  if (fForceBeamType != kpp) {
+  if (fCentralityEstimation != kNoCentrality) {
     fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
@@ -370,7 +371,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fHistCentralityNoSel->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentralityNoSel->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentralityNoSel);
+  }
 
+  if (fForceBeamType != kpp) {
     fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
     fHistEventPlane->GetXaxis()->SetTitle("event plane");
     fHistEventPlane->GetYaxis()->SetTitle("counts");
@@ -456,10 +459,9 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertex->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentrality->Fill(fCent);
-      fHistEventPlane->Fill(fEPV0);
-    }
+    if (fHistCentrality) fHistCentrality->Fill(fCent);
+    if (fHistEventPlane) fHistEventPlane->Fill(fEPV0);
+
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
@@ -472,10 +474,8 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 
     fHistZVertexNoSel->Fill(fVertex[2]);
 
-    if (fForceBeamType != kpp) {
-      fHistCentralityNoSel->Fill(fCent);
-      fHistEventPlaneNoSel->Fill(fEPV0);
-    }
+    if (fHistCentralityNoSel) fHistCentralityNoSel->Fill(fCent);
+    if (fHistEventPlaneNoSel) fHistEventPlaneNoSel->Fill(fEPV0);
 
     for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClassesNoSel->Fill(fired_trg.c_str(), 1);
   }
@@ -504,37 +504,30 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
-  if (!fLocalInitialized)
-    ExecOnce();
+  if (!fLocalInitialized) ExecOnce();
 
-  if (!fLocalInitialized)
-    return;
+  if (!fLocalInitialized) return;
 
-  if (!RetrieveEventObjects())
-    return;
+  if (!RetrieveEventObjects()) return;
 
-  FillGeneralHistograms(kFALSE);
-
-  if (IsEventSelected()) {
-    if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
-  }
-  else {
-    if (fGeneralHistograms) fHistEventCount->Fill("Rejected",1);
-    return;
-  }
+  Bool_t eventSelected = IsEventSelected();
 
   if (fGeneralHistograms && fCreateHisto) {
-    if (!FillGeneralHistograms(kTRUE))
-      return;
+    if (eventSelected) {
+      fHistEventCount->Fill("Accepted",1);
+    }
+    else {
+      fHistEventCount->Fill("Rejected",1);
+    }
+
+    FillGeneralHistograms(kFALSE);
+    if (eventSelected) FillGeneralHistograms(kTRUE);
   }
 
-  if (!Run())
-    return;
+  Bool_t runOk = kFALSE;
+  if (eventSelected || fEventSelectionAfterRun) runOk = Run();
 
-  if (fCreateHisto) {
-    if (!FillHistograms())
-      return;
-  }
+  if (fCreateHisto && eventSelected && runOk) FillHistograms();
 
   if (fCreateHisto && fOutput) {
     // information for this iteration of the UserExec in the container
@@ -1014,7 +1007,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
-  if (!fCentBins.empty()) {
+  if (!fCentBins.empty() && fCentralityEstimation != kNoCentrality) {
     for (auto cent_it = fCentBins.begin(); cent_it != fCentBins.end() - 1; cent_it++) {
       if (fCent >= *cent_it && fCent < *(cent_it+1)) fCentBin = cent_it - fCentBins.begin();
     }

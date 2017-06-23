@@ -35,6 +35,9 @@ set(SRCS
     AliAnalysisTask3PCorrelations.cxx
     AliAnalysisTaskContMC.cxx
     AliAnalysisTaskCorPIDTOFQA.cxx
+    AliAnalysisTaskCorPIDTOFdeut.cxx
+    AliAnalysisTaskCorPIDTOFprot.cxx
+    AliAnalysisTaskCorPIDTOFhadr.cxx
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AlianalysisTaskDptPIDpPb.cxx    

@@ -378,13 +378,13 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v12->GetXYZ(pos);
-      
+      v12->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
-      //!!!!TODO: covariance matrix
-
       // update d0 
       Double_t d0z0[2],covd0z0[3];
       Double_t d0[2],d0err[2];
@@ -405,16 +405,18 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       decay->SetDCA(dca);
 
       
-      delete v12;
 
       Double_t px[2],py[2],pz[2];
       for (Int_t i=0;i<2;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam et;
+        et.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        et.PropagateToDCA(v12,bz,100.,d0z0,covd0z0);
+        px[i]=et.Px();
+        py[i]=et.Py();
+        pz[i]=et.Pz();
       }
       decay->SetPxPyPzProngs(2,px,py,pz);
+      delete v12;
     }
   }
 
@@ -493,10 +495,12 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v123->GetXYZ(pos);
+      v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
-      //TODO: covariance matrix
 
       // update d0 for all progs
       Double_t d0z0[2],covd0z0[3];
@@ -534,16 +538,19 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
                                         +(v23->GetY()-pos[1])*(v23->GetY()-pos[1])
                                         +(v23->GetZ()-pos[2])*(v23->GetZ()-pos[2])));
  
-      delete v123;delete v12;delete v23;
 
       Double_t px[3],py[3],pz[3];
       for (Int_t i=0;i<3;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam et;
+        et.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        et.PropagateToDCA(v123,bz,100.,d0z0,covd0z0);
+        px[i]=et.Px();
+        py[i]=et.Py();
+        pz[i]=et.Pz();
       }
       decay->SetPxPyPzProngs(3,px,py,pz);
+
+      delete v123;delete v12;delete v23;
     }
   }
   delete vHF;

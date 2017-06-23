@@ -78,7 +78,6 @@ using namespace std;            // std namespace: so you can do things like 'cou
 //using namespace BSchaefer_devel;
 
 //ofstream fout;
-Int_t NEvents            = 0;
 //Int_t NTracks            = 0;
 //Int_t NGoodTracks        = 0;
 //Int_t NAssociatedTracks  = 0;
@@ -157,7 +156,9 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     dphi_ket_deut_A(0),         // 46
     dphi_ket_deut_B(0),         // 47
 
-    deltat_channel(0)           // 48
+    deltat_channel(0),          // 48
+
+    deut_ket_count(0)           // 49    
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -224,7 +225,9 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     dphi_ket_deut_A(0),         // 46
     dphi_ket_deut_B(0),         // 47
 
-    deltat_channel(0)           // 48
+    deltat_channel(0),          // 48
+
+    deut_ket_count(0)           // 49
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -331,6 +334,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     dphi_ket_deut_B       = new TH2F("dphi_ket_deut_B",       "dphi_ket_deut_B",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 47 // dphi, ket
 
     deltat_channel        = new TProfile("deltat_channel",    "deltat_channel",       4800,     0,   4800,    -0.6,     0.6);            // 48 // tof channel and deltat
+
+    deut_ket_count        = new TH1F("deut_ket_count",        "deut_ket_count",         46, 0.445,  2.745);                              // 49
     
 //    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
 //    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
@@ -394,6 +399,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(dphi_ket_deut_B);        // 47
     
     fOutputList->Add(deltat_channel);         // 48
+
+    fOutputList->Add(deut_ket_count);               // 49
+
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -418,7 +426,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 {
 
 //    	Double_t pi = 3.1415926535897932384626434;
-    NEvents++;
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
@@ -793,7 +800,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	    deut_ket = sqrt(pow(deut_pt,2) + pow(1.87561,2)) - 1.87561;
 
-//	    prot_ket = sqrt(pow(prot_pt,2) + pow(0.93827,2)) - 0.93827;
+	    deut_ket_count->Fill(deut_ket);
+
 	    
 	    conductor = root->next;
 	    if (conductor != 0)
@@ -896,8 +904,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	    Double_t deut_ket = 0.0;
 	    
-//	    deut_ket = sqrt(pow(deut_mom,2) + pow(2.224,2)) - 2.224;
-
 	    deut_ket = sqrt(pow(deut_pt,2) + pow(1.87561,2)) - 1.87561;
 	    
 	    conductor = root->next;
@@ -1121,8 +1127,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
                                                         // the output manager which will take care of writing
                                                         // it to a file
 
-//    NEvents++;
-
 }
 
 
@@ -1133,13 +1137,6 @@ void AliAnalysisTaskCorPIDTOFQA::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
-    cout<<endl<<endl;
-//    cout<<"total number deuteron candidates:  "<<DeuteronCandidates<<endl;
-    cout<<"total number of events analyzed:   "<<NEvents<<endl;
-//    cout<<"total number of tracks analyzed:   "<<NTracks<<endl;
-//    cout<<"total number of good tracks:       "<<NGoodTracks<<endl;
-//    cout<<"tracks from events with deut: "<<NAssociatedTracks<<endl;
-    cout<<endl<<endl;
 }
 //_____________________________________________________________________________
 

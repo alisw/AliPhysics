@@ -164,6 +164,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliJetInfo* GetJet(std::string n);
     void Reset();
     Double_t GetZ(std::string n) const;
+    Double_t GetCorrZ(std::string n) const;
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(std::string n) const;
     Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
@@ -215,22 +216,25 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information in a very compact data structure (77 bits)
   class AliJetInfoPbPbSummary : public AliJetInfoSummary {
   public:
-    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fArea(0) {;}
+    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fCorrZ(0), fArea(0) {;}
     AliJetInfoPbPbSummary(const AliDmesonJetInfo& source, std::string n);
     virtual ~AliJetInfoPbPbSummary() {}
 
     virtual void Reset();
-    virtual void Set(const AliDmesonJetInfo& source, std::string n) { AliJetInfoSummary::Set(source, n); }
+    virtual void Set(const AliDmesonJetInfo& source, std::string n);
     virtual void Set(const AliJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c after subtracting average background
     Double32_t  fCorrPt    ; //[-409.6,409.6,14]
 
+    /// Z of the D meson after subtracting average background
+    Double32_t  fCorrZ     ; //[0,1.024,10]
+
     /// Area of the jet
     Double32_t  fArea      ; //[0,2.048,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoPbPbSummary, 1);
+    ClassDef(AliJetInfoPbPbSummary, 2);
     /// \endcond
   };
 
@@ -351,6 +355,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetRhoName(TString n)                            { fRhoName      = n  ; }
     Double_t GetRadius() const { return fRadius; }
+    TString GetRhoName() const { return fRhoName; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
     Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
@@ -507,6 +512,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
+    Double_t                           fCent                  ; //!<! Event centrality
 
     friend class AliAnalysisTaskDmesonJets;
 
@@ -550,6 +556,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
   void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
   void SetRejectISR(Bool_t b)                     { fRejectISR          = b ; }
+  void SetJetArea(Int_t type,
+      Double_t garea = 0.005)                     { fJetAreaType        = type; fJetGhostArea = garea; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -580,6 +588,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
   Bool_t               fRejectISR                 ; ///<  Reject initial state radiation
+  Int_t                fJetAreaType               ; ///<  Jet area type
+  Double_t             fJetGhostArea              ; ///<  Area of the ghost particles
   AliHFAODMCParticleContainer* fMCContainer       ; //!<! MC particle container
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
@@ -590,7 +600,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 8);
+  ClassDef(AliAnalysisTaskDmesonJets, 9);
   /// \endcond
 };
 

@@ -35,6 +35,7 @@ class AliAnalysisTaskSE;
 #include "AliVVertex.h"
 
 #include "AliAnalysisManager.h"
+#include "AliFlowEvent.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
@@ -72,6 +73,7 @@ class AliAnalysisTaskSE;
 #include "AliCentrality.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskZDCGainEq.h"
+#include "AliFlowVector.h"
 
 using std::endl;
 using std::cout;
@@ -193,6 +195,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   }
 
   DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
+  DefineInput(2, AliFlowEventSimple::Class()); // Input slot #2 for ZDC flow event
+
+
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
 
@@ -885,6 +890,19 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
   fEvent           = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
 
+  AliFlowEvent* anEvent = dynamic_cast<AliFlowEvent*>(GetInputData(2));
+
+  AliFlowVector vQarray[2];
+
+  if(anEvent) {
+  // Get Q vectors for the subevents
+   anEvent->GetZDC2Qsub(vQarray);
+  }
+  //I left here. I need to print ZDC q vectors from vQarray. See the class structure.
+  //how does it takes care of run by run events?
+
+
+
 
   if(!aod){
     printf("\n ... ::UserExec = no aod found.....  \n");
@@ -1167,7 +1185,14 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   }
 
 
+  if(!fcheckOnce && fAnalysisSet=="DoGainEq") {
+    fHist_ChanWgt_ZDCC = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCC_ChannelWgt_Run%d",runNumber));
+    fHist_ChanWgt_ZDCA = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCA_ChannelWgt_Run%d",runNumber));
 
+    fcheckOnce++;
+    fOldRunNum = runNumber;
+  }
+  /*
   if(!fcheckOnce && fAnalysisSet=="DoGainEq") {
     fHist_ChanWgt_ZDCC = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCC_ChannelWgt_Run%d",runNumber));
     fHist_ChanWgt_ZDCA = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCA_ChannelWgt_Run%d",runNumber));
@@ -1194,9 +1219,10 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
        }
      }
     }
+
     fcheckOnce++;
     fOldRunNum = runNumber;
-  }
+  } */
 
 
 
@@ -1208,6 +1234,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Int_t iWgtBin = -1;
   Int_t iCommon = -1;
 
+  
   if(fAnalysisSet=="DoGainEq") {
     if(fHist_ChanWgt_ZDCC && fHist_ChanWgt_ZDCA){
 
@@ -1216,12 +1243,6 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
         ChanWgtZDCC[ich-1] = fHist_ChanWgt_ZDCC->GetBinContent(iWgtBin);
         ChanWgtZDCA[ich-1] = fHist_ChanWgt_ZDCA->GetBinContent(iWgtBin);
       }
-      /*for(int ich=1; ich<=4;  ich++){
-        iWgtBin = 5*(iCentBin-1) + ich;
-        iCommon = 5*(iCentBin-1) + 1;  
-        ChanWgtZDCC[ich-1] = (1./4*fHist_ChanWgt_ZDCC->GetBinContent(iCommon))/fHist_ChanWgt_ZDCC->GetBinContent(iWgtBin+1);
-        ChanWgtZDCA[ich-1] = (1./4*fHist_ChanWgt_ZDCA->GetBinContent(iCommon))/fHist_ChanWgt_ZDCA->GetBinContent(iWgtBin+1);
-      }*/
     }
     else{
       //printf("\n\n **WARNING**\n ZDC Channel Weights not found. Using weights = 1.0 \n\n");
@@ -1562,7 +1583,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   
   //Apply the recentering:
-
+  /*
   if(bApplyRecent) {
    Int_t tVertexBin2 = (indexVy-1)*vxBin + indexVx; 
     if(fListZDCQxy) {
@@ -1571,13 +1592,20 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
       meanAx = fHist_Recenter_ZDCAx[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
       meanAy = fHist_Recenter_ZDCAy[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
     }
-  }
+  }  
 
   xyZNC[0] = xyZNC[0] - meanCx;
   xyZNC[1] = xyZNC[1] - meanCy;
   xyZNA[0] = xyZNA[0] - meanAx;
   xyZNA[1] = xyZNA[1] - meanAy;
+  */
 
+  //use Jacopo's flowEvent ZDC Q-vectors:
+  xyZNC[0] = vQarray[0].Px();
+  xyZNC[1] = vQarray[0].Py();
+  xyZNA[0] = vQarray[1].Px();
+  xyZNA[1] = vQarray[1].Py();
+  
 
   double Psi1C = TMath::ATan2(xyZNC[1],xyZNC[0]);
   if(Psi1C<0){
@@ -1588,8 +1616,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
      Psi1A += 2.*TMath::Pi();
   }
  
-  if(Psi1C==0 && Psi1A==0)
-     return;
+  if(Psi1C==0 && Psi1A==0)  return;
 
   fHist_Event_count->Fill(stepCount);
   stepCount++;
@@ -1646,7 +1673,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
      dEta      =          pTrack->Eta();
    //dChrg     =       pTrack->Charge();
      if(fabs(dEta) > 0.8)      continue;
-     if(dPt<0.20 || dPt>10.0)  continue;
+     if(dPt<0.20 || dPt>50.0)  continue;
      if(!pTrack->IsPOItype(1)) continue;
      nRefMult++;
 
@@ -1749,7 +1776,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   //if(fievent%10==0) {
     //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
-    //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
+    //std::cout<<" Cx = "<<vQarray[0].Px()<<"\t Cy = "<<vQarray[0].Py()<<"\t Ax = "<<vQarray[1].Px()<<"\t Ay = "<<vQarray[1].Py()<<std::endl;
   //}
 
 

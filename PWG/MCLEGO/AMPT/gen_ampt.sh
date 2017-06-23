@@ -23,6 +23,7 @@ then
     rm -rf ana/
 fi
 mkdir ana
+cp ${ALICE_PHYSICS}/PWG/MCLEGO/AMPT/input.ampt .
 cp input.ampt ana/
 
 mkfifo ana/ampt.dat

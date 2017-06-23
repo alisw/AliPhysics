@@ -1,8 +1,9 @@
 AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
-				    TString cfg="ConfigJpsi_jb_PbPb.C",
+				    TString cfg="ConfigJpsi_pd_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kAnyINT
+				    ULong64_t triggers=AliVEvent::kAnyINT,
+						TString period=""
 				    ){
 
   //get the current analysis manager
@@ -99,7 +100,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
       printf("================================================\n Skip config %02d\n",i); continue; }
 
     // load configuration
-    AliDielectron *jpsi=ConfigJpsi_pd_pp(i,hasMC,"");
+    AliDielectron *jpsi=ConfigJpsi_pd_pp(i,hasMC,period);
     if(!jpsi) continue;
 
     // create unique title

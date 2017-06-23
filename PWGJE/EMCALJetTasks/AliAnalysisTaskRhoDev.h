@@ -43,7 +43,9 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
 
   static AliAnalysisTaskRhoDev* AddTaskRhoDev(
      TString        nTracks                        = "usedefault",
+     Double_t       trackPtCut                     = 0.15,
      TString        nClusters                      = "usedefault",
+     Double_t       clusECut                       = 0.30,
      TString        nRho                           = "Rho",
      Double_t       jetradius                      = 0.2,
      UInt_t         acceptance                     = AliEmcalJet::kTPCfid,
