@@ -260,18 +260,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
 
     //Check if ESD or AOD analysis
-    //Get ClassName from file and check it
+    //Get ClassName from file and set appropriate ESD or AOD flag
     TString className = static_cast<TString>(event->ClassName());
     if(className.Contains("AOD")){
         fIsAOD = kTRUE;
-        Printf("AOD file");
     }
     else if(className.Contains("ESD")){
         fIsAOD = kFALSE;
-        Printf("ESD file");
     }
     else{
-        Printf("Analysis type not known...");
+        AliError("-----!! Analysis type unknown !!--------");
         return;
     }
     
@@ -279,6 +277,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     Int_t eventTracks = event->GetNumberOfTracks();
     Int_t runNumber = event->GetRunNumber();
     Int_t numV0s = event->GetNumberOfV0s();
+
+    AliVParticle* mcTrack = 0x0;
+    AliVParticle* motherMCtrack = 0x0;
 
     //Loop over tracks for event
     if(!fIsV0tree){
@@ -305,11 +306,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
             //Get MC information
             if(fIsMC){
-                AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+                if(fIsAOD){
+                    mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
-                //Check valid pointer has been returned. If not, disregard track. 
-                if(!mcTrack){
-                    continue;
+                    //Check valid pointer has been returned. If not, disregard track. 
+                    if(!mcTrack){
+                        continue;
+                    }
+                }else{
+                    mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+
+                    //Check valid pointer has been returned. If not, disregard track. 
+                    if(!mcTrack){
+                        continue;
+                    }
+
                 }
                 
             	fQAhist->Fill("Tracks_MCcheck", 1);
@@ -324,11 +335,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 Int_t gMotherIndex = mcTrack->GetMother();
 				
 				if(!(gMotherIndex < 0)){
-                	AliAODMCParticle* motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
-					//Check for mother particle. 
-					if(!motherMCtrack){
-						continue;
-					}
+                    if(fIsAOD){
+                	    motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }else{
+                	    motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }
 					HasMother = kTRUE;
                 	iPdgMother = motherMCtrack->PdgCode();
                     motherLabel = TMath::Abs(motherMCtrack->GetLabel());
