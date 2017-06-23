@@ -1226,7 +1226,9 @@ void AliHFSystErr::InitD0toKpi2016pPb0100LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04); // dummy for the moment
+  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); // 
+  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); // 
+  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); // 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
