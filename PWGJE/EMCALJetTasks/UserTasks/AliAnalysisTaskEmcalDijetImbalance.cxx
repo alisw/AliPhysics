@@ -857,8 +857,8 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
     
     if (fPlotExotics) {
       histname = TString::Format("%s/hFcrossEMCal", cont->GetArrayName().Data());
-      htitle = histname + ";Fcross;#it{E}_{clus} (GeV/)";
-      TH2* hist = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nExBins, exBins, fNPtHistBins, fPtHistBins);
+      htitle = histname + ";Centrality (%);Fcross;#it{E}_{clus} (GeV/)";
+      TH3* hist = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, nExBins, exBins, fNPtHistBins, fPtHistBins);
     }
   }
 
@@ -2376,7 +2376,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         if (fPlotExotics) {
           histname = TString::Format("%s/hFcrossEMCal", clusters->GetArrayName().Data());
           Double_t Fcross = GetFcross(it->second, fCaloCells);
-          fHistManager.FillTH2(histname, Fcross, it->second->E());
+          fHistManager.FillTH3(histname, fCent, Fcross, it->second->E());
         }
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
@@ -2620,8 +2620,9 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetFcross(AliVCluster *cluster, Ali
     }
   }
   
-  if (Eseed < 1e-9)
+  if (Eseed < 1e-9) {
     return 100;
+  }
   
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
   fGeom->GetCellIndex(AbsIdseed,imod,iTower,iIphi,iIeta);
@@ -2632,9 +2633,13 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetFcross(AliVCluster *cluster, Ali
   Int_t absID1 = -1;
   Int_t absID2 = -1;
   
-  if (iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
-  if (iphi > 0)                                 absID2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
-  
+  if (iphi < AliEMCALGeoParams::fgkEMCALRows-1) {
+    absID1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  }
+  if (iphi > 0) {
+    absID2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+  }
+    
   // In case of cell in eta = 0 border, depending on SM shift the cross cell index
   
   Int_t absID3 = -1;
@@ -2649,10 +2654,12 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetFcross(AliVCluster *cluster, Ali
     absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1);
   }
   else {
-    if (ieta < AliEMCALGeoParams::fgkEMCALCols-1)
+    if (ieta < AliEMCALGeoParams::fgkEMCALCols-1) {
       absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-    if (ieta > 0)
+    }
+    if (ieta > 0) {
       absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
+    }
   }
   
   Double_t  ecell1 = cells->GetCellAmplitude(absID1);
