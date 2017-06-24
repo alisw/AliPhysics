@@ -1581,10 +1581,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Double_t dz2=pbtimp->GetSigmaZ2() + esdTrackPos->GetSigmaZ2() + esdTrackNeg->GetSigmaZ2();
         Double_t dx2=dy2;
         
-        //For testing purposes
-        dx2 = dx2;
-        dy2 = dy2;
-        dz2 = dz2;
+        //For testing purposes: try geometric criterion only, disregard uncertainties
+        if( fkIfImprovedExtraPrecisionFactor<0.9){
+            dx2 = fkIfImprovedExtraPrecisionFactor;
+            dy2 = fkIfImprovedExtraPrecisionFactor;
+            dz2 = fkIfImprovedExtraPrecisionFactor;
+        }
         
         //Create dummy V0 track
         //V0 properties to get started
