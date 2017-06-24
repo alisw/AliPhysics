@@ -84,16 +84,21 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   AliRhoParameter       *fOutRhoScaled;                  //!<!output scaled rho object
 
   TH2                   *fHistLeadJetPtVsCent;           //!<!leading jet pt vs. centrality
+  TH2                   *fHistLeadTrackPtVsCent;         //!<!leading track pt vs. centrality
+  TH2                   *fHistLeadClusterEVsCent;        //!<!leading cluster energy vs. centrality
   TH2                   *fHistLeadJetPtDensityVsCent;    //!<!leading jet area vs. centrality
   TH2                   *fHistSubLeadJetPtVsCent;        //!<!leading jet pt/area vs. centrality
   TH2                   *fHistTotJetAreaVsCent;          //!<!total area covered by jets vs. centrality
   TH2                   *fHistLeadJetNconstVsCent;       //!<!leading jet constituents vs. cent
   TH2                  **fHistLeadJetNconstVsPt;         //!<!leading jet constituents vs. pt
   TH2                   *fHistNtrackVsCent;              //!<!no. of tracks vs. centrality
+  TH2                   *fHistNclusterVsCent;            //!<!no. of cluster vs. centrality
   TH2                   *fHistNjetVsCent;                //!<!no. of jets vs. centrality
   TH2                   *fHistNjetVsNtrack;              //!<!no. of jets vs. no. of tracks
   TH2                   *fHistRhoVsCent;                 //!<!rho vs. centrality
   TH2                   *fHistRhoVsLeadJetPt;            //!<!rho vs. leading jet pt
+  TH2                   *fHistRhoVsLeadTrackPt;          //!<!rho vs. leading track pt
+  TH2                   *fHistRhoVsLeadClusterE;         //!<!rho vs. leading cluster energy
   TH2                   *fHistRhoVsNtrack;               //!<!rho vs. no. of tracks
   TH2                   *fHistRhoVsNcluster;             //!<!rho vs. no. of clusters
   TH2                   *fHistRhoScaledVsCent;           //!<!rhoscaled vs. centrality
