@@ -3079,7 +3079,7 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.011); // 1.1% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
