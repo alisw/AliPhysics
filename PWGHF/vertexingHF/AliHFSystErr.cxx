@@ -154,8 +154,10 @@ void AliHFSystErr::Init(Int_t decay){
 	  else InitD0toKpi2013pPb0100();
 	}
       }
+      if(fRunNumber==16 || fRunNumber==2016){
       if (fCentralityClass=="010ZNA") InitD0toKpi2016pPb010ZNA();
-      
+      else if(fCentralityClass=="60100ZNA") InitD0toKpi2016pPb60100ZNA();
+      }else{
       if (fCentralityClass=="020V0A") InitD0toKpi2013pPb020V0A();
       if (fCentralityClass=="2040V0A") InitD0toKpi2013pPb2040V0A();
       if (fCentralityClass=="4060V0A") InitD0toKpi2013pPb4060V0A();
@@ -164,10 +166,8 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCentralityClass=="020ZNA") InitD0toKpi2013pPb020ZNA();
       if (fCentralityClass=="2040ZNA") InitD0toKpi2013pPb2040ZNA();
       if (fCentralityClass=="4060ZNA") InitD0toKpi2013pPb4060ZNA();
-      if (fCentralityClass=="60100ZNA"){
-          InitD0toKpi2013pPb60100ZNA();
-           if(fRunNumber==16 || fRunNumber==2016)InitD0toKpi2016pPb60100ZNA();
-         }
+      if (fCentralityClass=="60100ZNA")InitD0toKpi2013pPb60100ZNA();
+         
       if (fCentralityClass=="020CL1") InitD0toKpi2013pPb020CL1();
       if (fCentralityClass=="2040CL1") InitD0toKpi2013pPb2040CL1();
       if (fCentralityClass=="4060CL1") InitD0toKpi2013pPb4060CL1();
@@ -181,6 +181,7 @@ void AliHFSystErr::Init(Int_t decay){
 	if (fRapidityRange == "0408") InitD0toKpi2013pPb0100RapScan0408();
       }
     }
+   } 
     else AliFatal("Not yet implemented");
     break;
     
