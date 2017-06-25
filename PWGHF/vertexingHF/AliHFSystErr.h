@@ -170,6 +170,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2013pPb2040ZNA();
   void InitD0toKpi2013pPb4060ZNA();
   void InitD0toKpi2013pPb60100ZNA();
+
+  void InitD0toKpi2016pPb010ZNA();
+  void InitD0toKpi2016pPb60100ZNA();
   
   void InitD0toKpi2013pPb020CL1();
   void InitD0toKpi2013pPb2040CL1();
