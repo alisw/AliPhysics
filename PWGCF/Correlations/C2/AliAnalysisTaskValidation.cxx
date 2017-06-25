@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <numeric>
+#include <random>
+#include <algorithm>
 
 #include "TH1F.h"
 #include "TH3F.h"

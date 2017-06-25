@@ -134,6 +134,38 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
         else if(collType == 29){
           hRatio = (TH1F*)weightFile->Get(Form("hRatio_11b10b_to_12e6_%s",backNameMC[iSpecies]));
         }
+        else if(collType == 40){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8a_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 41){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8a_tu_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 42){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8a_td_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 43){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8a_tued_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 44){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8a_tdeu_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 45){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 46){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_tu_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 47){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_td_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 48){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_tued_%s",backNameMC[iSpecies]));
+        }
+        else if(collType == 49){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_tdeu_%s",backNameMC[iSpecies]));
+        }
+
+
         else if(collType == 2){
           if((iCent == 1)||(iCent == 4)){
             hRatio = (TH1F*)weightFile->Get(Form("hRatio%s%d",backNameMC[iSpecies],iCent-1));

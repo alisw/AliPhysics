@@ -33,8 +33,8 @@ TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
 TPRegexp regTreeDeltaAlpha("(his|qahis|matchhis).*alphaVDist$");
-TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis).*logTracks5Dist$");
-TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis).*_dalphaQDist$");
+TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis)*.*ogTracks5Dist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis)*.*_dalphaQDist$");
 
 TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha,*treeLogTrack5;
 TTree * treesmdEdx=0;

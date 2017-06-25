@@ -395,6 +395,14 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
 //  fhTMEtaResidualExoticityAllSameTCard[i]  = 0;
   }
   
+  for(Int_t i = 0; i < 8; i++)
+  {
+    fhEMaxESecCellSMLowM02 [i] = 0;   
+    fhEMaxECrossSMLowM02   [i] = 0;  
+    fhEMaxESecCellSMHighM02[i] = 0;   
+    fhEMaxECrossSMHighM02  [i] = 0;  
+  }
+  
   InitParameters();
 }
 
@@ -1416,7 +1424,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhESecCellEClusterM02SM->Fill(fracClus, smMax, m02, GetEventWeight());
       fhESecCellLogM02SM     ->Fill(logECell, smMax, m02, GetEventWeight());
       fhESecCellWeightM02SM  ->Fill(weight  , smMax, m02, GetEventWeight());
-      
+
       Int_t rowDiff = -100, colDiff = -100;
       Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
       if(sameTCard)
@@ -1425,6 +1433,20 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         fhESecCellEClusterM02SMSameTCard->Fill(fracClus, smMax, m02, GetEventWeight());
         fhESecCellLogM02SMSameTCard     ->Fill(logECell, smMax, m02, GetEventWeight());
         fhESecCellWeightM02SMSameTCard  ->Fill(weight  , smMax, m02, GetEventWeight());
+      }
+    }
+    
+    if(energy > fEMinShape && energy < fEMaxShape && nCell >= 2 && nCell < 10)
+    {
+      if ( m02 > 0.1 && m02 < 0.3 )
+      {
+        fhEMaxESecCellSMLowM02 [nCell-2]->Fill(eCellMax, eCell     , smMax, GetEventWeight());
+        fhEMaxECrossSMLowM02   [nCell-2]->Fill(eCellMax, eCrossFrac, smMax, GetEventWeight());
+      }
+      else if  ( m02 > 0.6 && m02 < 2 )
+      {
+        fhEMaxESecCellSMHighM02[nCell-2]->Fill(eCellMax, eCell     , smMax, GetEventWeight());
+        fhEMaxECrossSMHighM02  [nCell-2]->Fill(eCellMax, eCrossFrac, smMax, GetEventWeight());
       }
     }
     
@@ -3758,6 +3780,50 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     fhESecCellWeightM02SMSameTCard->SetYTitle("SM number");
     fhESecCellWeightM02SMSameTCard->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
     outputContainer->Add(fhESecCellWeightM02SMSameTCard);  
+    
+    for(Int_t i = 0; i < 8; i++)
+    {
+      fhEMaxESecCellSMLowM02[i]  = new TH3F 
+      (Form("hEMaxESecCellSMLowM02_NCell%d",i+2),
+       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs SM number vs 0.1 < #lambda_{0}^{2} < 0.3, "
+            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
+       24,0,12, 48,0,12,fNModules,-0.5,fNModules-0.5); 
+      fhEMaxESecCellSMLowM02[i]->SetZTitle("SM number");
+      fhEMaxESecCellSMLowM02[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
+      fhEMaxESecCellSMLowM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxESecCellSMLowM02[i]);      
+      
+      fhEMaxECrossSMLowM02[i]  = new TH3F 
+      (Form("hEMaxECrossSMLowM02_NCell%d",i+2),
+       Form("#it{E}_{cell}^{max} vs exoticity vs SM number vs 0.1 < #lambda_{0}^{2} < 0.3, "
+            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
+       24,0,12, 40,0.6,1.,fNModules,-0.5,fNModules-0.5); 
+      fhEMaxECrossSMLowM02[i]->SetZTitle("SM number");
+      fhEMaxECrossSMLowM02[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
+      fhEMaxECrossSMLowM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxECrossSMLowM02[i]); 
+      
+      
+      fhEMaxESecCellSMHighM02[i]  = new TH3F 
+      (Form("hEMaxESecCellSMHighM02_NCell%d",i+2),
+       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs SM number vs 0.6 < #lambda_{0}^{2} < 2, "
+            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
+       24,0,12, 48,0,12,fNModules,-0.5,fNModules-0.5); 
+      fhEMaxESecCellSMHighM02[i]->SetZTitle("SM number");
+      fhEMaxESecCellSMHighM02[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
+      fhEMaxESecCellSMHighM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxESecCellSMHighM02[i]);      
+      
+      fhEMaxECrossSMHighM02[i]  = new TH3F 
+      (Form("hEMaxECrossSMHighM02_NCell%d",i+2),
+       Form("#it{E}_{cell}^{max} vs exoticity vs SM number vs 0.6 < #lambda_{0}^{2} < 2, "
+            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
+       24,0,12, 40,0.6,1.,fNModules,-0.5,fNModules-0.5); 
+      fhEMaxECrossSMHighM02[i]->SetZTitle("SM number");
+      fhEMaxECrossSMHighM02[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
+      fhEMaxECrossSMHighM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxECrossSMHighM02[i]);    
+    }
     
     for(Int_t imatch = 0; imatch < 3; imatch++)
     {      
