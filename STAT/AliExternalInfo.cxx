@@ -806,16 +806,18 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
 
     TObjString sprodname;           // variables that will be written into dumptree 
     TObjString spassname;
+    TObjString soutputpath;
     TObjString saliroot;
     TObjString saliphysics;
     
     TString soutputdir;
     TObjArray *subStrL;
 
-    dumptree->Branch("aliroot",&saliroot);
-    dumptree->Branch("aliphysics",&saliphysics);
-    dumptree->Branch("prodName",&sprodname);
-    dumptree->Branch("passName",&spassname);
+    TBranch* braliroot= dumptree->Branch("aliroot",&saliroot);
+    TBranch* braliphys= dumptree->Branch("aliphysics",&saliphysics);
+    TBranch* brprodname= dumptree->Branch("prodName",&sprodname);
+    TBranch* brpassname= dumptree->Branch("passName",&spassname);
+    TBranch* broutputpath= dumptree->Branch("outputPath",&soutputpath);   
 
     Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
@@ -823,14 +825,14 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       AliInfo(TString::Format("Getting ProdCyle ID: %d",id));
       TTree * tree= GetTreeProdCycleByID(TString::Format("%d",id));         //get tree with production info for each ID
 
-      if (tree==NULL) continue;
+      if (tree==NULL) cout<<"err0"<<endl;
       if (tree->GetBranch("app_aliphysics")==NULL) continue;
-      tree->GetBranch("app_aliphysics")->SetAddress(&paliphysics);      // set prod info branch addresses
-      tree->GetBranch("app_aliroot")->SetAddress(&paliroot);
-      tree->GetBranch("outputdir")->SetAddress(&poutputdir);
+      tree->SetBranchAddress("app_aliphysics",&paliphysics);      // set prod info branch addresses
+      tree->SetBranchAddress("app_aliroot",&paliroot);
+      tree->SetBranchAddress("outputdir",&poutputdir);
 
       tree->GetEntry(0);                                            // read prod info tree entry
-
+      
       soutputdir= TString::Format("%s",poutputdir);                 // extract production name from outputdir
 
       subStrL = TPRegexp("(?=LHC)(.*?)(?=/)").MatchS(soutputdir);
@@ -846,8 +848,14 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
 
       saliroot = TObjString(paliroot);
       saliphysics = TObjString(paliphysics);
-
-      dumptree->Fill();                                     
+      soutputpath= TObjString(poutputdir);
+      
+      braliroot->Fill();
+      braliphys->Fill();
+      brprodname->Fill(); 
+      brpassname->Fill(); 
+      broutputpath->Fill();
+      
       delete tree;
     }
     outfile->cd();
@@ -885,9 +893,9 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    char prunlist[50000];
    char pdescr[50000];
    
-   dumptree->GetBranch("anchorProdTag")->SetAddress(&panchprodname);
-   dumptree->GetBranch("runList")->SetAddress(&prunlist);
-   dumptree->GetBranch("Description")->SetAddress(&pdescr);
+   dumptree->SetBranchAddress("anchorProdTag",&panchprodname);
+   dumptree->SetBranchAddress("runList",&prunlist);
+   dumptree->SetBranchAddress("Description",&pdescr);
 
    TObjString sMCanchprodname; 
    TObjString sMCdescr;
@@ -899,10 +907,10 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TString sanprod;
    TObjArray *subStrL;
    
-   dumptree->Branch("anchorProdTag_ForGuess",&sMCanchprodname);
-   dumptree->Branch("First_Run",&first);
-   dumptree->Branch("Last_Run",&last);
-   dumptree->Branch("Description",&sMCdescr);
+   TBranch* brMCanchprodname= dumptree->Branch("anchorProdTag_ForGuess",&sMCanchprodname);
+   TBranch* brfirst= dumptree->Branch("First_Run",&first);
+   TBranch* brlast= dumptree->Branch("Last_Run",&last);
+   TBranch* brMCdescr= dumptree->Branch("Description",&sMCdescr);
    
    Int_t entries=dumptree->GetEntries();  
    for (Int_t i=0; i<entries; i++){             //loop overall MC production
@@ -932,7 +940,11 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
      first=sfirst.Atoi();
      last=slast.Atoi();
           
-     dumptree->Fill();
+     brMCanchprodname->Fill();
+     brfirst->Fill();
+     brlast->Fill();
+     brMCdescr->Fill();
+     
    }
    outfile->cd();
    dumptree->Write("dumptree_MC");
