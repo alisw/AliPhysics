@@ -365,7 +365,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   {
     SetTagBit(tag,kMCPhoton);
     
-    if(pPdg == 111)
+    if      ( pPdg == 111 )
     {
       SetTagBit(tag,kMCPi0Decay);
       
@@ -382,7 +382,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       
       //printf("Bit set is Merged %d, Pair in calo %d, Lost %d\n",CheckTagBit(tag, kMCPi0),CheckTagBit(tag,kMCDecayPairInCalo),CheckTagBit(tag,kMCDecayPairLost));
     }
-    else if (pPdg == 221)
+    else if ( pPdg == 221 )
     {
       SetTagBit(tag, kMCEtaDecay);
       
@@ -394,6 +394,12 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCEta) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
         CheckLostDecayPair(arrayCluster,iMom, iParent, mcevent, tag);
+    }
+    else if ( pPdg >  100 )
+    {
+      SetTagBit(tag,kMCOtherDecay);
+      
+      AliDebug(2,Form("Generator decay photon from parent pdg %d",pPdg));
     }
     else if( mom->IsPhysicalPrimary() && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
     {
@@ -407,10 +413,25 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       {
         SetTagBit(tag, kMCISR); //Initial state radiation
       }
-      else SetTagBit(tag,kMCUnknown);
+      else if ( pPdg <  23 )
+      {
+        SetTagBit(tag,kMCFragmentation);
+        
+        AliDebug(2,Form("Generator fragmentation photon from parent pdg %d",pPdg));
+      }
+      else 
+      {
+        AliDebug(2,Form("Generator physical primary (pythia/herwig) unknown photon from parent pdg %d",pPdg));
+
+        SetTagBit(tag,kMCUnknown);
+      }
     }//Physical primary
-    else SetTagBit(tag,kMCOtherDecay);
-    
+    else 
+    {
+      AliDebug(2,Form("Generator unknown photon from parent pdg %d",pPdg));
+
+      SetTagBit(tag,kMCUnknown);
+    }
 //    //Old Herwig selection for ESDs, maybe should be considered.
 //    if(fMCGenerator == kHerwig)
 //    {
@@ -1390,10 +1411,11 @@ void AliMCAnalysisUtils::PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t n
     
     Int_t pdg = primary->PdgCode();
     
-    printf("generation %d, label %d, %s, pdg %d, status %d, phys prim %d, pT %2.2f, eta %2.2f, phi %2.2f" 
+    printf("generation %d, label %d, %s, pdg %d, status %d, phys prim %d, E %2.2f, pT %2.2f, p(%2.2f,%2.2f,%2.2f) eta %2.2f, phi %2.2f" 
            " mother %d, n daughters %d, d1 %d, d2 %d\n",
            gener,index,TDatabasePDG::Instance()->GetParticle(pdg)->GetName(),pdg,primary->MCStatusCode(),primary->IsPhysicalPrimary(),
-           primary->Pt(),eta,primary->Phi()*TMath::RadToDeg(),
+           primary->E(),primary->Pt(),primary->Px(),primary->Py(),primary->Pz(),
+           eta,primary->Phi()*TMath::RadToDeg(),
            primary->GetMother(),primary->GetNDaughters(),primary->GetDaughterLabel(0), primary->GetDaughterLabel(1));
     
     gener++;
