@@ -1353,34 +1353,95 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
   printf(" \n");
 } 
 
+//________________________________________________________
+/// Print info of generated particles, for different generations
+/// If no generation specified, all ancestry is printed
+///
+/// \param mcevent access to AliVMCEvent
+/// \param label index of generated particle under investigation
+/// \param nGenerMax limit to the number of generations back to the particle under investigation
+///
+//________________________________________________________
+void AliMCAnalysisUtils::PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t nGenerMax) const
+{
+  AliVParticle * primary = 0;
+  Int_t index = label;
+  Int_t gener = 0;
+  
+  AliInfo("*********** Start");
+  while ( index > 0 )
+  {
+    primary = mcevent->GetTrack(index);
+   
+    if(!primary)
+    {
+      AliWarning("primary pointer not available!!");
+      return;
+    }
+    
+    Float_t eta = 0;
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  
+      eta = -999; 
+    else 
+      eta = primary->Eta();
+    
+    Int_t pdg = primary->PdgCode();
+    
+    printf("generation %d, label %d, %s, pdg %d, status %d, phys prim %d, pT %2.2f, eta %2.2f, phi %2.2f" 
+           " mother %d, n daughters %d, d1 %d, d2 %d\n",
+           gener,index,TDatabasePDG::Instance()->GetParticle(pdg)->GetName(),pdg,primary->MCStatusCode(),primary->IsPhysicalPrimary(),
+           primary->Pt(),eta,primary->Phi()*TMath::RadToDeg(),
+           primary->GetMother(),primary->GetNDaughters(),primary->GetDaughterLabel(0), primary->GetDaughterLabel(1));
+    
+    gener++;
+    index = primary->GetMother();
+    if ( nGenerMax < gener ) index = -1; // stop digging ancestry
+  } // while
+  
+  AliInfo("*********** End");
+} 
+
+
 //__________________________________________________
 /// Print the assigned origins to this particle.
 //__________________________________________________
 void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
 {  
-  printf("AliMCAnalysisUtils::PrintMCTag() - tag %d \n    photon %d, conv %d, prompt %d, frag %d, isr %d, \n    pi0 decay %d, eta decay %d, other decay %d  pi0 %d,  eta %d \n    electron %d, muon %d,pion %d, proton %d, neutron %d, \n    kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d\n",
-         tag,
-         CheckTagBit(tag,kMCPhoton),
-         CheckTagBit(tag,kMCConversion),
-         CheckTagBit(tag,kMCPrompt),
-         CheckTagBit(tag,kMCFragmentation),
-         CheckTagBit(tag,kMCISR),
-         CheckTagBit(tag,kMCPi0Decay),
-         CheckTagBit(tag,kMCEtaDecay),
-         CheckTagBit(tag,kMCOtherDecay),
-         CheckTagBit(tag,kMCPi0),
-         CheckTagBit(tag,kMCEta),
-         CheckTagBit(tag,kMCElectron),
-         CheckTagBit(tag,kMCMuon), 
-         CheckTagBit(tag,kMCPion),
-         CheckTagBit(tag,kMCProton), 
-         CheckTagBit(tag,kMCAntiNeutron),
-         CheckTagBit(tag,kMCKaon), 
-         CheckTagBit(tag,kMCAntiProton), 
-         CheckTagBit(tag,kMCAntiNeutron),
-         CheckTagBit(tag,kMCUnknown),
-         CheckTagBit(tag,kMCBadLabel)
-         );
+  AliInfo
+  (
+   Form
+   ("Tag %d: photon %d, conv %d, prompt %d, frag %d, isr %d,\n"
+    "        pi0 decay %d, eta decay %d, other decay %d, lost decay %d, in calo decay %d,  pi0 %d,  eta %d,\n"
+    "        electron %d, muon %d,pion %d, proton %d, neutron %d,\n"
+    "        kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d",
+    tag,
+    CheckTagBit(tag,kMCPhoton),
+    CheckTagBit(tag,kMCConversion),
+    CheckTagBit(tag,kMCPrompt),
+    CheckTagBit(tag,kMCFragmentation),
+    CheckTagBit(tag,kMCISR),
+    CheckTagBit(tag,kMCPi0Decay),
+    CheckTagBit(tag,kMCEtaDecay),
+    CheckTagBit(tag,kMCOtherDecay),
+    CheckTagBit(tag,kMCDecayPairLost),
+    CheckTagBit(tag,kMCDecayPairInCalo),
+    CheckTagBit(tag,kMCPi0),
+    CheckTagBit(tag,kMCEta),
+    CheckTagBit(tag,kMCElectron),
+    CheckTagBit(tag,kMCMuon), 
+    CheckTagBit(tag,kMCPion),
+    CheckTagBit(tag,kMCProton), 
+    CheckTagBit(tag,kMCAntiNeutron),
+    CheckTagBit(tag,kMCKaon), 
+    CheckTagBit(tag,kMCAntiProton), 
+    CheckTagBit(tag,kMCAntiNeutron),
+    CheckTagBit(tag,kMCUnknown),
+    CheckTagBit(tag,kMCBadLabel)
+    )
+   );
 } 
 
 //__________________________________________________
