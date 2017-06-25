@@ -3067,15 +3067,18 @@ void AliHFSystErr::InitDstartoD0pi2016pPb0100(){
 
   //Normalization
 fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.02); // Same as D0 and D+
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.037); // Same as D0 low pt?
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.011); // 1.1% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.06);//Dummy for the moment
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=10;i++) fTrackingEff->SetBinContent(i,0.037);//new version
+  for(Int_t i=11;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
+	
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
@@ -3092,10 +3095,22 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+	// For now uncertainty added as if we use average with full improver as uncertainty
   fCutsEff->SetBinContent(1,0.);
-  fCutsEff->SetBinContent(2,0.04);
-  fCutsEff->SetBinContent(3,0.02);
-  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.02); // Very conservative first values rounded up
+  fCutsEff->SetBinContent(2,0.08);
+  fCutsEff->SetBinContent(3,0.06);
+  fCutsEff->SetBinContent(4,0.06);
+  fCutsEff->SetBinContent(5,0.07);
+  fCutsEff->SetBinContent(6,0.07);
+  fCutsEff->SetBinContent(7,0.05);
+  fCutsEff->SetBinContent(8,0.04);
+for(Int_t i=9;i<=16;i++)fCutsEff->SetBinContent(i,0.03);
+for(Int_t i=17;i<=24;i++)fCutsEff->SetBinContent(i,0.04);
+for(Int_t i=25; i<=36;i++)fCutsEff->SetBinContent(i,0.05);
+	
+ // fCutsEff->SetBinContent(2,0.04); Original values without adding the uncertainty for the improver
+  //fCutsEff->SetBinContent(3,0.02);
+  //for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.02); // Very conservative first values rounded up
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
