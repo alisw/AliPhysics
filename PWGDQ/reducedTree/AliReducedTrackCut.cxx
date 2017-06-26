@@ -91,7 +91,8 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
          if(!fUseANDonITShitMap && (eval==0)) return kFALSE;
       }
    }
-   if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0) || ((AliReducedBaseTrack*)obj)->IsKink(1) || ((AliReducedBaseTrack*)obj)->IsKink(2))) return kFALSE;
+   //if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0) || ((AliReducedBaseTrack*)obj)->IsKink(1) || ((AliReducedBaseTrack*)obj)->IsKink(2))) return kFALSE;
+   if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0))) return kFALSE;
    if(fRejectTaggedGamma && ((AliReducedBaseTrack*)obj)->IsGammaLeg()) return kFALSE;
    if(fRejectTaggedPureGamma && ((AliReducedBaseTrack*)obj)->IsPureGammaLeg()) return kFALSE;
    
