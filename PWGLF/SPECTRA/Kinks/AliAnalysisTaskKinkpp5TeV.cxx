@@ -40,6 +40,7 @@
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisUtils.h"
 //#include "AliMultSelectionCuts.h"
 
 ClassImp(AliAnalysisTaskKinkpp5TeV)
