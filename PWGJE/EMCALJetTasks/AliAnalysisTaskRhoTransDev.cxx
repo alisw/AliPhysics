@@ -118,13 +118,11 @@ void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
   }
 
   for (auto jetCont : fJetCollArray) {
-    std::string jetName = jetCont.second->GetArrayName().Data();
-
-    name = TString::Format("%s_fHistB2BRhoVsLeadJetPt", jetName.c_str());
-    fHistB2BRhoVsLeadJetPt[jetName] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistB2BRhoVsLeadJetPt[jetName]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
-    fHistB2BRhoVsLeadJetPt[jetName]->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
-    fOutput->Add(fHistB2BRhoVsLeadJetPt[jetName]);
+    name = TString::Format("%s_fHistB2BRhoVsLeadJetPt", jetCont.first.c_str());
+    fHistB2BRhoVsLeadJetPt[jetCont.first] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadJetPt[jetCont.first]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
+    fHistB2BRhoVsLeadJetPt[jetCont.first]->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
+    fOutput->Add(fHistB2BRhoVsLeadJetPt[jetCont.first]);
   }
 
   if (fScaleFunction) {
@@ -235,7 +233,6 @@ Bool_t AliAnalysisTaskRhoTransDev::IsB2BEvent()
     if (jet->Pt() < fMaxMomentumThridJet && (b2bJet || jet->Pt() < minB2Bpt)) break;
     itJet++;
   }
-
   return b2bJet && !thirdJetOverThreshold;
 }
 
@@ -271,7 +268,6 @@ Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
       if (fHistB2BRhoScaledVsNcluster) fHistRhoScaledVsNcluster->Fill(fNclusters,  fOutRhoScaled->GetVal());
     }
   }
-
   return kTRUE;
 }
 
