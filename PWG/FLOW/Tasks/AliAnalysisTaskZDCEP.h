@@ -69,7 +69,13 @@ private:
   TProfile* fZDCQHist[4];         //!
   TProfile3D* fZDCVtxHist[4];     //!
   TProfile2D* fZDCEcomTotHist[4]; //!
+  TH3D *fZDCVtxFitHist[4];        //!
+  TH1D *fZDCVtxFitCenProjHist[4][3]; //!
+  TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! 
   TProfile3D* fZDCVtxCenHist[10][4]; //!
+  TH1D* fCRCZDCQVecDummyEZDCBins[10]; //!
+  
+  TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
   TH1D *fTowerGainEq[2][5];       //!
   
   AliFlowVector* fZDCFlowVect[2]; //! ZDC q-vectors
@@ -80,12 +86,13 @@ private:
   TArrayD fAvVtxPosX;             // average vx position vs run number
   TArrayD fAvVtxPosY;             // average vy position vs run number
   TArrayD fAvVtxPosZ;             // average vz position vs run number
+  Bool_t fbFlagIsPosMagField;     //
   AliFlowEvent* fFlowEvent;       // flowevent
   
   AliAnalysisUtils* fAnalysisUtils; //!
   AliMultSelection* fMultSelection; //!
   
-  ClassDef(AliAnalysisTaskZDCEP,1);
+  ClassDef(AliAnalysisTaskZDCEP,2);
 };
 
 #endif
