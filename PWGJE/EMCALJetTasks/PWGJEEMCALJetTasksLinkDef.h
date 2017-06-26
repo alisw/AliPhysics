@@ -15,6 +15,7 @@
 #pragma link C++ class AliAnalysisTaskLocalRho+;
 #pragma link C++ class AliAnalysisTaskRhoBaseDev+;
 #pragma link C++ class AliAnalysisTaskRhoDev+;
+#pragma link C++ class AliAnalysisTaskRhoTransDev+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJetByJetCorrection+;
