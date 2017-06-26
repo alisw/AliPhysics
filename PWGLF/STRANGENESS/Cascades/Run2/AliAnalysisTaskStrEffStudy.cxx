@@ -220,6 +220,7 @@ fTreeCascVarV0DecayYMC(0),
 fTreeCascVarV0DecayZMC(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
 fTreeCascVarDCAV0ToPrimVtx(0),
+fTreeCascVarDCAxyV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
 
@@ -242,6 +243,18 @@ fTreeCascVarInvMassOmegaPlus(0),
 fTreeCascVarCascPropagationImprovedIterations(0),
 fTreeCascVarCascPropagationImprovedStatus(0),
 fTreeCascVarDCACascDaughtersImproved(0),
+
+fTreeCascVarImprovedDecayX(0),
+fTreeCascVarImprovedDecayY(0),
+fTreeCascVarImprovedDecayZ(0),
+fTreeCascVarImprovedCascCosPointingAngle(0),
+fTreeCascVarImprovedCascDCAxyToPV(0),
+fTreeCascVarImprovedCascDCAzToPV(0),
+
+fTreeCascVarImprovedInvMassXiMinus(0),
+fTreeCascVarImprovedInvMassXiPlus(0),
+fTreeCascVarImprovedInvMassOmegaMinus(0),
+fTreeCascVarImprovedInvMassOmegaPlus(0),
 
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
@@ -404,6 +417,7 @@ fTreeCascVarV0DecayY(0),
 fTreeCascVarV0DecayZ(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
 fTreeCascVarDCAV0ToPrimVtx(0),
+fTreeCascVarDCAxyV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
 
@@ -423,6 +437,18 @@ fTreeCascVarInvMassOmegaPlus(0),
 fTreeCascVarCascPropagationImprovedIterations(0),
 fTreeCascVarCascPropagationImprovedStatus(0),
 fTreeCascVarDCACascDaughtersImproved(0),
+
+fTreeCascVarImprovedDecayX(0),
+fTreeCascVarImprovedDecayY(0),
+fTreeCascVarImprovedDecayZ(0),
+fTreeCascVarImprovedCascCosPointingAngle(0),
+fTreeCascVarImprovedCascDCAxyToPV(0),
+fTreeCascVarImprovedCascDCAzToPV(0),
+
+fTreeCascVarImprovedInvMassXiMinus(0),
+fTreeCascVarImprovedInvMassXiPlus(0),
+fTreeCascVarImprovedInvMassOmegaMinus(0),
+fTreeCascVarImprovedInvMassOmegaPlus(0),
 
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
@@ -666,6 +692,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarV0DecayZMC",&fTreeCascVarV0DecayZMC,"fTreeCascVarV0DecayZMC/F");
     fTreeCascade->Branch("fTreeCascVarV0CosineOfPointingAngle",&fTreeCascVarV0CosineOfPointingAngle,"fTreeCascVarV0CosineOfPointingAngle/F");
     fTreeCascade->Branch("fTreeCascVarDCAV0ToPrimVtx",&fTreeCascVarDCAV0ToPrimVtx,"fTreeCascVarDCAV0ToPrimVtx/F");
+    fTreeCascade->Branch("fTreeCascVarDCAxyV0ToPrimVtx",&fTreeCascVarDCAxyV0ToPrimVtx,"fTreeCascVarDCAxyV0ToPrimVtx/F");
     fTreeCascade->Branch("fTreeCascVarInvMassLambda",&fTreeCascVarInvMassLambda,"fTreeCascVarInvMassLambda/F");
     fTreeCascade->Branch("fTreeCascVarInvMassAntiLambda",&fTreeCascVarInvMassAntiLambda,"fTreeCascVarInvMassAntiLambda/F");
     
@@ -695,6 +722,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarImprovedDecayY",&fTreeCascVarImprovedDecayY,"fTreeCascVarImprovedDecayY/F");
     fTreeCascade->Branch("fTreeCascVarImprovedDecayZ",&fTreeCascVarImprovedDecayZ,"fTreeCascVarImprovedDecayZ/F");
     fTreeCascade->Branch("fTreeCascVarImprovedCascCosPointingAngle",&fTreeCascVarImprovedCascCosPointingAngle,"fTreeCascVarImprovedCascCosPointingAngle/F");
+    fTreeCascade->Branch("fTreeCascVarImprovedCascDCAxyToPV",&fTreeCascVarImprovedCascDCAxyToPV,"fTreeCascVarImprovedCascDCAxyToPV/F");
+    fTreeCascade->Branch("fTreeCascVarImprovedCascDCAzToPV",&fTreeCascVarImprovedCascDCAzToPV,"fTreeCascVarImprovedCascDCAzToPV/F");
     
     fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiMinus",&fTreeCascVarImprovedInvMassXiMinus,"fTreeCascVarImprovedInvMassXiMinus/F");
     fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiPlus",&fTreeCascVarImprovedInvMassXiPlus,"fTreeCascVarImprovedInvMassXiPlus/F");
@@ -1486,6 +1515,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         //DCA to PV
         fTreeCascVarDCAV0ToPrimVtx = vertex.GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+        fTreeCascVarDCAxyV0ToPrimVtx = vertex.GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1]);
         
         //Final step: get estimated masses under different mass hypotheses
         vertex.ChangeMassHypothesis(3122);
@@ -1565,6 +1595,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarImprovedDecayY = -100;
         fTreeCascVarImprovedDecayZ = -100;
         fTreeCascVarImprovedCascCosPointingAngle = -100;
+        fTreeCascVarImprovedCascDCAxyToPV = -100;
+        fTreeCascVarImprovedCascDCAzToPV = -100;
         
         fTreeCascVarImprovedInvMassXiMinus = -100;
         fTreeCascVarImprovedInvMassXiPlus = -100;
@@ -1716,6 +1748,23 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarImprovedDecayZ = zcascimp;
             
             fTreeCascVarImprovedCascCosPointingAngle = cascadeimproved.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+            
+            
+            //V0 properties to get started
+            Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
+            for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
+            
+            Int_t lChargeCascade = -1;
+            if ( fTreeCascVarBachSign > 0 ) lChargeCascade = +1;
+            
+            AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+            
+            fTreeCascVarImprovedCascDCAxyToPV = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
+                                                                            lBestPrimaryVtxPos[1],
+                                                                            lMagneticField) );
+            Float_t dzcascade[2];
+            hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+            fTreeCascVarImprovedCascDCAzToPV = dzcascade[1];
             
             Double_t lV0quality  = 0.;
             cascadeimproved.ChangeMassHypothesis(lV0quality , 3312);
