@@ -82,6 +82,7 @@ fTowerEqList(0x0),
 fCachedRunNum(0),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
+fbFlagIsPosMagField(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -91,11 +92,30 @@ fFlowEvent(NULL)
     for(Int_t c=0; c<10; c++) {
       fZDCVtxCenHist[c][k] = NULL;
     }
+    fZDCVtxFitHist[k] = NULL;
+    for(Int_t i=0; i<3; i++) {
+      fZDCVtxFitCenProjHist[k][i] = NULL;
+    }
+  }
+  for(Int_t c=0; c<10; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fZDCVtxCenHistMagPol[c][k] = NULL;
+    }
+  }
+  for(Int_t i=0; i<10; i++) {
+    for(Int_t z=0; z<10; z++) {
+      for(Int_t k=0; k<4; k++) {
+        fZDCQVecVtxCenEZDC3D[i][z][k] = NULL;
+      }
+    }
   }
   for(Int_t c=0; c<2; c++) {
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] =  NULL;
     }
+  }
+  for (Int_t i=0; i<10; i++) {
+    fCRCZDCQVecDummyEZDCBins[i] = NULL;
   }
   for (Int_t i=0; i<2; i++) fZDCFlowVect[i] = NULL;
   
@@ -123,6 +143,7 @@ fTowerEqList(0x0),
 fCachedRunNum(0),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
+fbFlagIsPosMagField(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -132,11 +153,30 @@ fFlowEvent(NULL)
     for(Int_t c=0; c<10; c++) {
       fZDCVtxCenHist[c][k] = NULL;
     }
+    fZDCVtxFitHist[k] = NULL;
+    for(Int_t i=0; i<3; i++) {
+      fZDCVtxFitCenProjHist[k][i] = NULL;
+    }
+  }
+  for(Int_t c=0; c<10; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fZDCVtxCenHistMagPol[c][k] = NULL;
+    }
+  }
+  for(Int_t i=0; i<10; i++) {
+    for(Int_t z=0; z<10; z++) {
+      for(Int_t k=0; k<4; k++) {
+        fZDCQVecVtxCenEZDC3D[i][z][k] = NULL;
+      }
+    }
   }
   for(Int_t c=0; c<2; c++) {
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] =  NULL;
     }
+  }
+  for (Int_t i=0; i<10; i++) {
+    fCRCZDCQVecDummyEZDCBins[i] = NULL;
   }
   for (Int_t i=0; i<2; i++) fZDCFlowVect[i] = NULL;
   
@@ -194,12 +234,38 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
       fZDCVtxCenHist[c][k] = new TProfile3D();
       fHistList->Add(fZDCVtxCenHist[c][k]);
     }
+    fZDCVtxFitHist[k] = new TH3D();
+    fHistList->Add(fZDCVtxFitHist[k]);
+    for(Int_t i=0; i<3; i++) {
+      fZDCVtxFitCenProjHist[k][i] = new TH1D();
+      fHistList->Add(fZDCVtxFitCenProjHist[k][i]);
+    }
+  }
+  for(Int_t c=0; c<10; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fZDCVtxCenHistMagPol[c][k] = new TProfile3D();
+      fHistList->Add(fZDCVtxCenHistMagPol[c][k]);
+    }
+  }
+  for(Int_t i=0; i<10; i++) {
+    for(Int_t z=0; z<10; z++) {
+      for(Int_t k=0; k<4; k++) {
+        fZDCQVecVtxCenEZDC3D[i][z][k] = new TH3D();
+        fHistList->Add(fZDCQVecVtxCenEZDC3D[i][z][k]);
+      }
+    }
   }
   for(Int_t c=0; c<2; c++) {
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] = new TH1D();
       fHistList->Add(fTowerGainEq[c][i]);
     }
+  }
+  
+  Double_t DummyEZDCBins[10][11] = {{-3.000000e+02, -4.008000e+01, -2.658000e+01, -1.686000e+01, -8.520000e+00, -7.200000e-01, 7.080000e+00, 1.542000e+01, 2.520000e+01, 3.888000e+01, 3.000000e+02},{-3.000000e+02, -3.690000e+01, -2.436000e+01, -1.530000e+01, -7.560000e+00, -3.000000e-01, 6.960000e+00, 1.476000e+01, 2.388000e+01, 3.666000e+01, 3.000000e+02},{-3.000000e+02, -3.522000e+01, -2.316000e+01, -1.446000e+01, -7.020000e+00, -6.000000e-02, 6.900000e+00, 1.434000e+01, 2.310000e+01, 3.534000e+01, 3.000000e+02},{-3.000000e+02, -3.528000e+01, -2.322000e+01, -1.452000e+01, -7.080000e+00, -1.200000e-01, 6.840000e+00, 1.434000e+01, 2.310000e+01, 3.528000e+01, 3.000000e+02},{-3.000000e+02, -3.666000e+01, -2.412000e+01, -1.506000e+01, -7.320000e+00, -6.000000e-02, 7.200000e+00, 1.500000e+01, 2.412000e+01, 3.684000e+01, 3.000000e+02},{-3.000000e+02, -3.936000e+01, -2.580000e+01, -1.602000e+01, -7.680000e+00, 1.200000e-01, 7.920000e+00, 1.632000e+01, 2.616000e+01, 3.990000e+01, 3.000000e+02},{-3.000000e+02, -4.416000e+01, -2.880000e+01, -1.776000e+01, -8.280000e+00, 5.400000e-01, 9.420000e+00, 1.890000e+01, 3.000000e+01, 4.554000e+01, 3.000000e+02},{-3.000000e+02, -5.262000e+01, -3.384000e+01, -2.028000e+01, -8.700000e+00, 2.100000e+00, 1.296000e+01, 2.454000e+01, 3.816000e+01, 5.712000e+01, 3.000000e+02},{-3.000000e+02, -6.588000e+01, -4.122000e+01, -2.340000e+01, -8.160000e+00, 6.060000e+00, 2.028000e+01, 3.552000e+01, 5.340000e+01, 7.830000e+01, 3.000000e+02},{-3.000000e+02, -8.844000e+01, -5.556000e+01, -3.186000e+01, -1.158000e+01, 7.380000e+00, 2.634000e+01, 4.662000e+01, 7.038000e+01, 1.034400e+02, 3.000000e+02}};
+  for (Int_t i=0; i<10; i++) {
+    fCRCZDCQVecDummyEZDCBins[i] = new TH1D(Form("fCRCZDCQVecDummyEZDCBins[%d]",i),Form("fCRCZDCQVecDummyEZDCBins[%d]",i),10,DummyEZDCBins[i]);
+    fHistList->Add(fCRCZDCQVecDummyEZDCBins[i]);
   }
   
   fAnalysisUtils = new AliAnalysisUtils;
@@ -232,20 +298,20 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   if(RunBin==-1) return;
   Int_t fCenBin = GetCenBin(Centrality);
   
+  if(RunNum!=fCachedRunNum) {
+    fbFlagIsPosMagField = kFALSE;
+    Int_t dRun15hPos[] = {246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424};
+    for (Int_t i=0; i<40; i++) {
+      if(RunNum==dRun15hPos[i]) fbFlagIsPosMagField = kTRUE;
+    }
+  }
+  
   // get primary vertex position
   Double_t fVtxPos[3]={0.,0.,0.};
   fVtxPos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
   fVtxPos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
   fVtxPos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
   Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[RunBin],fVtxPos[1]-fAvVtxPosY[RunBin],fVtxPos[2]-fAvVtxPosZ[RunBin]};
-  
-  // event cuts
-  //  const AliVVertex* pvtx = aod->GetPrimaryVertex();
-  //  Double_t pvtxz = 0.;
-  //  Int_t ncontrib = 0;
-  //  if(pvtx) pvtxz = pvtx->GetZ();
-  //  if(fabs(pvtxz)>10.)  return;
-  //  if(fAnalysisUtils->IsPileUpEvent(InputEvent()))  return;
   
   // zdc selection
   AliAODZDC *aodZDC = aod->GetZDCData();
@@ -340,6 +406,24 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   fZDCFlowVect[0]->SetMult(denZNC);
   fZDCFlowVect[1]->SetMult(denZNA);
   
+  // RE-CENTER ZDC Q-VECTORS ***************************************************
+  
+  Int_t qb[4] = {0};
+  if(fbFlagIsPosMagField) { qb[0]=0; qb[1]=1; qb[2]=4; qb[3]=5; }
+  else                    { qb[0]=2; qb[1]=3; qb[2]=6; qb[3]=7; }
+  
+  // get re-centered QM*
+//  Double_t QMCrec = denZNC;
+//  Double_t QMArec = denZNA;
+//  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
+//    Int_t runbin = fAvEZDCCRbRPro->GetXaxis()->FindBin(Form("%d",RunNum));
+//    Int_t cenbin = fAvEZDCCRbRPro->GetYaxis()->FindBin(Centrality);
+//    QMCrec -= fAvEZDCCRbRPro->GetBinContent(runbin,cenbin);
+//    QMArec -= fAvEZDCARbRPro->GetBinContent(runbin,cenbin);
+//  }
+  
+  Bool_t IsGoodEvent = kTRUE;
+  
   if(fZDCCalibList) {
     if(RunNum!=fCachedRunNum) {
       // get histos of run
@@ -349,7 +433,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       fZDCQHist[3] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fCRCZDCQVecA[%d][%d]",RunNum,1)));
       
       for(Int_t k=0; k<4; k++) {
-        fZDCVtxHist[k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fCRCZDCQVecVtxPos[%d][%d]",RunNum,k)));
+        fZDCVtxHist[k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fCRCZDCQVecVtxPos540[%d][%d]",RunNum,k)));
         
         fZDCEcomTotHist[k] = (TProfile2D*)(fZDCCalibList->FindObject(Form("fCRCZDCQVecEComTot[%d]",k)));
       }
@@ -359,6 +443,34 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
           fZDCVtxCenHist[c][k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("fCRCZDCQVecVtxPosCen[%d][%d]",c,k)));
         }
       }
+      
+      for(Int_t k=0; k<4; k++) {
+        fZDCVtxFitHist[k] = (TH3D*)fZDCCalibList->FindObject(Form("TH3SlopeRunCenVtx[%d]",k));
+        if(fZDCVtxFitHist[k]) {
+          fZDCVtxFitHist[k]->Sumw2(kFALSE);
+          Int_t runbin = fZDCVtxFitHist[k]->GetXaxis()->FindBin(Form("%d",RunNum));
+          fZDCVtxFitHist[k]->GetXaxis()->SetRange(runbin,runbin);
+          for(Int_t i=0; i<3; i++) {
+            fZDCVtxFitHist[k]->GetZaxis()->SetRange(i+1,i+1);
+            fZDCVtxFitCenProjHist[k][i] = (TH1D*)fZDCVtxFitHist[k]->Project3D("y")->Clone(Form("proj[%d][%d]",k,i));
+          }
+        }
+      }
+      
+      for(Int_t c=0; c<10; c++) {
+        for(Int_t k=0; k<8; k++) {
+          fZDCVtxCenHistMagPol[c][k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("fZDCVtxCenHistMagPol[%d][%d]",c,k)));
+        }
+      }
+      
+//      for(Int_t i=0; i<10; i++) {
+//        for(Int_t z=0; z<10; z++) {
+//          for(Int_t k=0; k<4; k++) {
+//            fZDCQVecVtxCenEZDC3D[i][z][k] = (TH3D*)(fZDCCalibList->FindObject(Form("ZDCQVecVtxCenEZDC3D[%d][%d][%d]",i,z,qb[k])));
+//          }
+//        }
+//      }
+      
     }
     
     // ZDCN-C
@@ -406,9 +518,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       if(fVtxPosCor[1] < fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmax()) pass = kFALSE;
       if(fVtxPosCor[2] < fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmax()) pass = kFALSE;
       if(!pass) {
-        fZDCFlowVect[0]->Set(0.,0.);
-        fZDCFlowVect[1]->Set(0.,0.);
-        return;
+        IsGoodEvent = kFALSE;
       } else {
         QCReR -= fZDCVtxCenHist[fCenBin][0]->GetBinContent(fZDCVtxCenHist[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
         QCImR -= fZDCVtxCenHist[fCenBin][1]->GetBinContent(fZDCVtxCenHist[fCenBin][1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
@@ -441,12 +551,93 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       fZDCFlowVect[1]->Set(QAReR,QAImR);
     }
     
+    // STEP #5: re-center vs vtx vs cen vs run number (through fits)
+    
+    if(fZDCVtxFitHist[0]) {
+      for (Int_t i=0; i<3; i++) {
+        QCReR -= fVtxPosCor[i]*fZDCVtxFitCenProjHist[0][i]->Interpolate(Centrality);
+        QCImR -= fVtxPosCor[i]*fZDCVtxFitCenProjHist[1][i]->Interpolate(Centrality);
+        QAReR -= fVtxPosCor[i]*fZDCVtxFitCenProjHist[2][i]->Interpolate(Centrality);
+        QAImR -= fVtxPosCor[i]*fZDCVtxFitCenProjHist[3][i]->Interpolate(Centrality);
+      }
+      fZDCFlowVect[0]->Set(QCReR,QCImR);
+      fZDCFlowVect[1]->Set(QAReR,QAImR);
+    }
+    
+    // second iteration (2D)
+    
+    if (fZDCVtxCenHistMagPol[fCenBin][0]) {
+      if(fbFlagIsPosMagField) {
+        QCReR -= fZDCVtxCenHistMagPol[fCenBin][0]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QCImR -= fZDCVtxCenHistMagPol[fCenBin][1]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QAReR -= fZDCVtxCenHistMagPol[fCenBin][4]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][4]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QAImR -= fZDCVtxCenHistMagPol[fCenBin][5]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][5]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      } else {
+        QCReR -= fZDCVtxCenHistMagPol[fCenBin][2]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][2]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QCImR -= fZDCVtxCenHistMagPol[fCenBin][3]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][3]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QAReR -= fZDCVtxCenHistMagPol[fCenBin][6]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][6]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+        QAImR -= fZDCVtxCenHistMagPol[fCenBin][7]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][7]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      }
+      fZDCFlowVect[0]->Set(QCReR,QCImR);
+      fZDCFlowVect[1]->Set(QAReR,QAImR);
+    }
+    
+    // STEP #6: re-center vs centrality vs total energy vs vtx
+    
+//    Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
+//    Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
+//    
+//    if(fZDCQVecVtxCenEZDC3D[0][0][0]) {
+//      printf("doing step 6 \n");
+//      Bool_t pass2=kTRUE;
+//      // exclude events with vtx outside of range
+//      if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
+//      if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
+//      if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
+//      // exclude events with very low or very high total energy
+//      if(fabs(QMCrec)>100. || fabs(QMArec)>100.) pass2 = kFALSE;
+//      // get EZDC bin
+//      Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
+//      Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
+//      if(EZDCCBin<0) EZDCCBin=0;
+//      if(EZDCCBin>9) EZDCCBin=9;
+//      if(EZDCABin<0) EZDCABin=0;
+//      if(EZDCABin>9) EZDCABin=9;
+//      if(pass2) {
+//        // check if possible to interpolate
+//        Bool_t bInterp = kTRUE;
+//        Int_t bx = fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->FindBin(fVtxPosCor[0]);
+//        Int_t by = fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->FindBin(fVtxPosCor[1]);
+//        Int_t bz = fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->FindBin(fVtxPosCor[2]);
+//        if(bx==1 || bx==fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetNbins()) bInterp = kFALSE;
+//        if(by==1 || by==fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetNbins()) bInterp = kFALSE;
+//        if(bz==1 || bz==fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetNbins()) bInterp = kFALSE;
+//        if(bInterp) {
+//          QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//          QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//          QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//          QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//        } else {
+//          QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->GetBinContent(bx,by,bz);
+//          QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->GetBinContent(bx,by,bz);
+//          QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->GetBinContent(bx,by,bz);
+//          QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->GetBinContent(bx,by,bz);
+//        }
+//      } else {
+//        IsGoodEvent = kFALSE;
+//      }
+//    }
+    
   } else {
     printf("WARNING: no list provided for ZDC Q-vector re-centering ! \n");
   }
   
   Double_t xyZNCfinal[2]={fZDCFlowVect[0]->X(),fZDCFlowVect[0]->Y()};
   Double_t xyZNAfinal[2]={-fZDCFlowVect[1]->X(),fZDCFlowVect[1]->Y()}; // this is not a bug: QAReR --> -QAReR
+  if(!IsGoodEvent) {
+    xyZNCfinal[0]=0.; xyZNCfinal[1]=0.;
+    xyZNAfinal[0]=0.; xyZNAfinal[1]=0.;
+  }
   fFlowEvent->SetZDC2Qsub(xyZNCfinal,denZNC,xyZNAfinal,denZNA);
   
   // save run number
