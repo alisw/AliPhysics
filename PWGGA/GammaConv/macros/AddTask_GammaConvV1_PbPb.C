@@ -77,7 +77,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
                                 Bool_t    doMultiplicityWeighting         = kFALSE,                         //
                                 TString   fileNameInputForMultWeighing    = "Multiplicity.root",            //
                                 TString   periodNameAnchor                = "",
-                                Int_t     runLightOutput                  = 0,                         // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput                 = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
                                 Int_t     enableMatBudWeightsPi0          = 0,                              // 1 = three radial bins, 2 = 10 radial bins
                                 TString   filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
                                 Bool_t    processAODcheckForV0s           = kFALSE,                         // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
