@@ -545,6 +545,10 @@ if(fUseMCInfo && fBuildRMEff){
       continue;
     }
 
+     Int_t decay = CheckDecayChannel(charmPart, fMCarray);
+    if( TMath::Abs(charmPart->GetPdgCode()) == 413 && decay != kDecayDStartoKpipi) continue;
+    if( TMath::Abs(charmPart->GetPdgCode()) == 421 && decay != kDecayD0toKpi) continue;
+
     fHistStat->Fill(3);
     
     if (fNCand==fAnalyseCand){  
@@ -555,6 +559,7 @@ if(fUseMCInfo && fBuildRMEff){
         AliAODRecoCascadeHF* dstar = 0;
         
         // loop over reco D candidates to find a match to MC
+        Int_t isRecoD = kFALSE;
         for (Int_t icharm = 0; icharm < nD; icharm++) {  
  
           charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
@@ -579,7 +584,7 @@ if(fUseMCInfo && fBuildRMEff){
           if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
           else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
 
-          if(mcLabel == iMCcharm) break; 
+          if(mcLabel == iMCcharm) { isRecoD = kTRUE; break; }
         }
         
          if (!charmCand) break;
@@ -1495,6 +1500,7 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDm
         if (DDaughter->GetNDaughters()>0) {
             //Printf("Daughter pT = %.3f --> ", track->Pt());
             pt += AddMCDaughters(DDaughter, mcdaughters, mcArray);
+            mcdaughters.AddLast(DDaughter);
         }
         else {
             //Printf("Daughter pT = %.3f", track->Pt());
