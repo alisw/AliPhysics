@@ -54,6 +54,7 @@
 #include <TPad.h>
 #include <TROOT.h>
 
+#include "AliLog.h"
 /// \cond CLASSIMP
 ClassImp(AliMpVPainter)
 /// \endcond
@@ -236,10 +237,18 @@ void AliMpVPainter::InitGraphContext()
   gVirtualX->SetFillColor(fColor);
   gVirtualX->SetTextColor(1);
   gVirtualX->SetLineColor(1);
+
+
+  AliDebug(1,Form("%s gpad pos %f %f gpad dim %f %f real pos %f %f real dim %f %f",
+              ClassName(),
+              fPadPosition.X(),fPadPosition.Y(),
+              fPadDimensions.X(),fPadDimensions.Y(),
+              GetPosition().X(),GetPosition().Y(),
+              GetDimensions().X(),GetDimensions().Y()));
 }
 
 //_______________________________________________________________________
-void AliMpVPainter::PaintWholeBox(Bool_t fill)
+void AliMpVPainter::PaintWholeBox(Bool_t fill, Bool_t center)
 {
   /// Paint the box around the total pad area given in this painter
   /// fill it or bnot following the parameter value
@@ -255,6 +264,12 @@ void AliMpVPainter::PaintWholeBox(Bool_t fill)
   gPad->PaintBox(x1,y1,x2,y2);
   gVirtualX->SetFillStyle(0);
   gPad->PaintBox(x1,y1,x2,y2);
+
+  if (center) {
+      gVirtualX->SetLineColor(2);
+      gPad->PaintLine(x1,y1,x2,y2);
+      gPad->PaintLine(x1,y2,x2,y1);
+  }
   gVirtualX->SetFillStyle(sty);
 }
 
