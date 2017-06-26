@@ -477,6 +477,10 @@ private:
     Float_t fTreeCascVarBachDistanceToTrueDecayPt;
     Float_t fTreeCascVarV0DistanceToTrueDecayPt;
     
+    //DCA propagation control distances
+    Float_t fTreeCascVarBachPropagationParameterClassical;
+    Float_t fTreeCascVarBachPropagationParameterImproved;
+    
     Float_t fTreeCascVarNegPx; //!
     Float_t fTreeCascVarNegPy; //!
     Float_t fTreeCascVarNegPz; //!
