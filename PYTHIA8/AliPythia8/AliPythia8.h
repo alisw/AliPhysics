@@ -55,6 +55,21 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
 			       Int_t ngmax = 30);
     virtual void SwitchHadronisationOff();
     virtual void SwitchHadronisationOn();
+
+    /**
+     * @brief Switching on decays of long-lived particles which are normally suppressed by AliPythia8
+     *
+     * Particles for which the decays are enabled by this switch
+     * - K0short
+     * - Lambda
+     * - Sigma
+     * - Omega
+     * - Xi
+     *
+     * @param doDecay If true the particles listed here are decayed
+     */
+    void SetDecayLonglived(Bool_t doDecay = kTRUE) { fDecayLonglived = doDecay; }
+
     //
     // Common Getters
     virtual void    GetXandQ(Float_t& x1, Float_t& x2, Float_t& q);
@@ -62,6 +77,15 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     virtual Float_t GetPtHard();
     virtual Int_t GetNMPI() { return fLastNMPI; }
     virtual Int_t GetNSuperpositions() { return fLastNSuperposition; }
+
+    /**
+     * @brief Get status of the decayer for long-lived particles
+     *
+     * See @ref SetDecayLonglived for the list of supported particles
+     *
+     * @return Decayer status (if true then long-lived particles are decayed)
+     */
+    Bool_t IsDecayLonglived() const { return fDecayLonglived; }
 
     //
     //
@@ -104,6 +128,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     Float_t               fPtScale;           //  ! cut-off joining scale
     Int_t                 fNJetMin;           //  ! min. number of jets
     Int_t                 fNJetMax;           //  ! max. number of jets
+    Bool_t                fDecayLonglived;	  ///<    Decay long-lived particles (see @ref SetDecayLonglived for list of supported particles)
     static AliPythia8*    fgAliPythia8;       //    Pointer to single instance
 
     ClassDef(AliPythia8, 1) //ALICE UI to PYTHIA8

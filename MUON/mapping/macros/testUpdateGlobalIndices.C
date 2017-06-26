@@ -26,8 +26,8 @@ void testUpdateGlobalIndices()
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpSectorReader r(dataStreams, AliMq::kStation1, AliMp::kNonBendingPlane);
-  AliMpSector* sector = r.BuildSector();
+  AliMpSectorReader r(AliMq::kStation1, AliMp::kNonBendingPlane);
+  AliMpSector* sector = r.BuildSector(dataStreams);
 
   sector->GetMotifMap()->UpdateGlobalIndices("motif_map.dat");  
   

@@ -37,8 +37,8 @@ void testExistingPads2(AliMq::Station12Type station, AliMp::PlaneType plane,
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
-  AliMpSectorReader r(dataStreams, station, plane);
-  AliMpSector* sector = r.BuildSector();
+  AliMpSectorReader r(station, plane);
+  AliMpSector* sector = r.BuildSector(dataStreams);
 
   // Segmentation
   AliMpVSegmentation* segmentation;

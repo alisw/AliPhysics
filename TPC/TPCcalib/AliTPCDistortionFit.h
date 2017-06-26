@@ -15,7 +15,7 @@ public:
   static TString   LoadDistortionTree(const char *chinput);
   static void  SetMetadata(TTree * tree, TString friendName,Int_t run);
   static void  PrintMap(TPRegexp *filter=NULL);
-  static void MakeFitExample1(Int_t run, const char * chinput);
+  static void MakeFitExample1(Int_t run, const char * chinput, const char * ocdbPath);
   //
   static void   RegisterMap(TString mapName,  AliTPCChebCorr *map);
   static Int_t  GetNameHash(string name){  return fgkMapNameHash[name];}

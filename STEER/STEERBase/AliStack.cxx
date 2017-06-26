@@ -55,7 +55,8 @@ AliStack::AliStack():
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fTrackLabelMap(0)
+  fTrackLabelMap(0),
+  fMCEmbeddingFlag(kFALSE)
 {
   //
   // Default constructor
@@ -77,7 +78,8 @@ AliStack::AliStack(Int_t size, const char* /*evfoldname*/):
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fTrackLabelMap(0)
+  fTrackLabelMap(0),
+  fMCEmbeddingFlag(kFALSE)
 {
   //
   //  Constructor
@@ -100,7 +102,8 @@ AliStack::AliStack(const AliStack& st):
     fCurrentPrimary(-1),
     fHgwmk(0),
     fLoadPoint(0),
-    fTrackLabelMap(0)
+    fTrackLabelMap(0),
+    fMCEmbeddingFlag(kFALSE)
 {
     // Copy constructor
 }
@@ -951,6 +954,79 @@ void AliStack::ConnectTree(TTree* tree)
     AliWarning("Branch Dir is NOT SET");
 }
 
+// Some utilities used 
+namespace {
+    /** 
+   * Check the heaviest flavour of a particle.  Note, the original
+   * implementation is
+   *
+   *@f$f =  \left\lfloor\frac{c}{10^{\lfloor\log_{10}c\rfloor}}\right\rfloor@f$
+   * 
+   * since it will return 1 for @f$\Upsilon(2\mathrm{S})@f$ (@f$ c=100553@f$). 
+   * 
+   * The coding convention for PDG numbers is 
+   *
+   * @f$ n n_r n_L n_{q1} n_{q2} n_{q3} n_J@f$ 
+   *
+   * which means to guage the quark content we need only the 4
+   * right-most digits.  The most optimal way to extract these is to
+   * format the modulo of the passed number to @f$10\,000@f$, format
+   * that remainder as a string and then take the first character and
+   * convert that to a number by subtracting off the character @c '0'.
+   * 
+   * @param pdg 
+   * 
+   * @return 
+   */
+  Int_t HeaviestFlavour(Int_t pdg)
+  {
+    Int_t apdg = TMath::Abs(pdg);
+    // Special codes for bosons and leptons 
+    if (apdg < 100 && apdg > 6) return 0;
+    // Special codes for nuclei
+    // Ion/nucleus with format 10LZZZAAAI - take the 10L part modulo
+    // 10 to get the L part.  Hyper nucleons with np protons, nn
+    // neutrons, and nl Lambdas have
+    //
+    //    AAA = np+nn
+    //    ZZZ = np
+    //    L   = nl
+    //    I   = isomer level
+    //
+    // Deutron: 1000010020
+    // U(235):  1000922350
+    // 
+    if (apdg > 1000000000) return ((apdg/10000000) % 10) != 0 ? kStrange : kUp;
+    // Take lower 4 digits 
+    Int_t mpdg = apdg % 10000;
+    // Special case for K0L
+    if (mpdg == kK0Long) return kStrange;
+    // If a baryon (>999) then the 4th digit, other wise the 3rd 
+    return mpdg > 999 ? mpdg/1000 : mpdg / 100;
+  }
+  /** 
+   * Check if a particle is heavy flavoured 
+   * 
+   * @param pdg Particle identification code 
+   * 
+   * @return True if the heaviest quark is a charm, bottom, or top
+   */
+  Bool_t IsHeavyFlavour(Int_t pdg)
+  {
+    return HeaviestFlavour(pdg) >= kCharm;
+  }
+  /** 
+   * Check if particle is strange 
+   * 
+   * @param pdg Particle identification code 
+   * 
+   * @return true if heaviest quark is a strange 
+   */
+  Bool_t IsStrange(Int_t pdg)
+  {
+    return HeaviestFlavour(pdg) == kStrange;
+  }
+}
 //_____________________________________________________________________________
 
 Bool_t AliStack::GetEvent()
@@ -970,49 +1046,100 @@ Bool_t AliStack::IsStable(Int_t pdg) const
   //
   // Decide whether particle (pdg) is stable
   //
-  
+  Int_t apdg = TMath::Abs(pdg);
   
   // All ions/nucleons are considered as stable
   // Nuclear code is 10LZZZAAAI
-  if(pdg>1000000000)return kTRUE;
+  if(apdg>1000000000)return kTRUE;
 
-  const Int_t kNstable = 18;
-  Int_t i;
-  
-  Int_t pdgStable[kNstable] = {
-    kGamma,             // Photon
-    kElectron,          // Electron
-    kMuonPlus,          // Muon 
-    kPiPlus,            // Pion
-    kKPlus,             // Kaon
-    kK0Short,           // K0s
-    kK0Long,            // K0l
-    kProton,            // Proton 
-    kNeutron,           // Neutron
-    kLambda0,           // Lambda_0
-    kSigmaMinus,        // Sigma Minus
-    kSigmaPlus,         // Sigma Plus
-    3312,               // Xsi Minus 
-    3322,               // Xsi 
-    3334,               // Omega
-    kNuE,               // Electron Neutrino 
-    kNuMu,              // Muon Neutrino
-    kNuTau              // Tau Neutrino
-  };
-    
-  Bool_t isStable = kFALSE;
-  for (i = 0; i < kNstable; i++) {
-    if (pdg == TMath::Abs(pdgStable[i])) {
-      isStable = kTRUE;
-      break;
-    }
+  switch (apdg) {
+  case kGamma:             // 22   Photon
+  case kElectron:          // 11   Electron
+  case kMuonMinus:         // 13   Muon 
+  case kPiPlus:            // 211  Pion
+  case kKPlus:             // 321  Kaon
+  case kK0Short:           // 310  K0s
+  case kK0Long:            // 130  K0l
+  case kProton:            // 2212 Proton 
+  case kNeutron:           // 2112 Neutron
+  case kLambda0:           // 3122 Lambda_0
+  case kSigmaMinus:        // 3112 Sigma Minus
+  case kSigmaPlus:         // 3222 Sigma Plus
+  case kXiMinus:           // 3312 Xi Minus 
+  case 3322:               //      Xi 0 
+  case kOmegaMinus:        // 3334 Omega
+  case kNuE:               // 12   Electron Neutrino 
+  case kNuMu:              // 14   Muon Neutrino
+  case kNuTau:             // 16   Tau Neutrino
+    return true;
   }
-  
-  return isStable;
+  return false;
 }
+
 
 //_____________________________________________________________________________
 Bool_t AliStack::IsPhysicalPrimary(Int_t index)
+{
+  // Check wether a given particle is a primary according to the
+  // definition adopted by ALICE:
+  //
+  //   A primary particle is a particle with a mean proper lifetime
+  //   tau than 1cm/c, which is either a) produced directly in the
+  //   interaction, or b) from decays of particles with tau smaller
+  //   than 1cm/c, restricted to decay chains leading to the interaction.
+  //
+  // See also ALICE-PUBLIC-2017-005 at
+  //
+  //   https://cds.cern.ch/record/2270008
+  //
+  // for more on this
+  TParticle* p = Particle(index);
+
+  // Check if this particle has tau >= 1cm/c 
+  if (!IsStable(p->GetPdgCode())) return false;
+
+  // Check if this comes from a primary process (i.e., decay or the
+  // generator)
+  switch (p->GetUniqueID()) {
+  case kPDecay:
+  case kPNoProcess:
+  case kPNull:
+  case kPPrimary:
+    break;
+  default:
+    return false;
+  }
+
+  // Loop back over all mothers
+  TParticle* m  = p;
+  Int_t      mi = 0;
+  while ((mi = m->GetFirstMother()) >= 0) {
+    // Get (grand)mother 
+    m = Particle(mi);
+
+    // If (grand)mother has tau >= 1cm/c, then this (p) isn't a
+    // primary
+    if (IsStable(m->GetPdgCode())) return false;
+
+    // Check that the (grand)mother comes from a primary process e.g.,
+    // decay or from the generator
+    switch (m->GetUniqueID()) {
+    case kPDecay:
+    case kPNoProcess:
+    case kPNull:
+    case kPPrimary:
+      break;
+    default:
+      return false;
+    }
+  }
+  // If we get here, all (grand)mothers were short lived and came from
+  // primary processes.
+  return true;
+}
+
+//_____________________________________________________________________________
+Bool_t AliStack::IsPhysicalPrimaryOld(Int_t index)
 {
     //
     // Test if a particle is a physical primary according to the following definition:
@@ -1024,7 +1151,10 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
     Int_t ist = p->GetStatusCode();
     
     //
-    // Initial state particle
+    // Initial state particle - note, this is tricky - it depends on
+    // what the EG defines as final state (status=1) particles.  Could
+    // be very late in the game if particles are allowed to decay late
+    // in the EG.
     if (ist > 1) return kFALSE;
     
     Int_t pdg = TMath::Abs(p->GetPdgCode());
@@ -1051,10 +1181,10 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	if ((mpdg == kPi0) && (imo < GetNprimary()))   return kTRUE; 
 
 // Check if this is a heavy flavor decay product
-	Int_t mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+	Int_t mfl  = HeaviestFlavour(mpdg);
 	//
 	// Light hadron
-	if (mfl < 4) return kFALSE;
+	if (mfl < kCharm) return kFALSE;
 	
 	//
 	// Heavy flavor hadron produced by generator
@@ -1069,9 +1199,9 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	    pm  =  Particle(imo);
 	}
 	mpdg = TMath::Abs(pm->GetPdgCode());
-	mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+	mfl  = HeaviestFlavour(mpdg);
 
-	if (mfl < 4) {
+	if (mfl < kCharm) {
 	    return kFALSE;
 	} else {
 	    return kTRUE;
@@ -1095,16 +1225,11 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
   // mass of the flavour
   Int_t mfl = 0;
   // Protect the "rootino" case when codemoth is 0
-  if (TMath::Abs(codemoth)>0) mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+  if (TMath::Abs(codemoth)>0) mfl = HeaviestFlavour(codemoth);
   
-  if(mfl == 3 && uniqueID == kPDecay) return kTRUE;// The first mother is strange and it's a decay
+  if(mfl == kStrange && uniqueID == kPDecay) return kTRUE;// The first mother is strange and it's a decay
   if(codemoth == 211 && uniqueID == kPDecay) return kTRUE;// pion+- decay products
   if(codemoth == 13 && uniqueID == kPDecay) return kTRUE;// muon decay products
-
-  /// Hypernuclei case
-  if (TMath::Abs(moth->GetPdgCode()) > 1000000000 && uniqueID == kPDecay) {
-    if ((moth->GetPdgCode() / 10000000) % 10 != 0) return kTRUE; /// Number of lambdas in the hypernucleus != 0
-  }
 
   return kFALSE;
   

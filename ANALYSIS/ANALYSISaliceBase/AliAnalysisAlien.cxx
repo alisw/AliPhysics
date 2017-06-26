@@ -2946,11 +2946,18 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
       }
       // Iterate grid collection
       while (coll->Next()) {
-         TString fname = gSystem->DirName(coll->GetTURL());
-         fname += "/";
-         fname += inputFile;      
+         TString fname = coll->GetTURL();
+         if (!fname.BeginsWith("alien:") && fname.EndsWith(".zip", TString::kIgnoreCase)) {
+           fname += "#" + inputFile;
+           isGrid = kFALSE; // tells TFileMerger to not use TFile::Cp (which does not support anchors)
+         }
+         else {
+           fname = gSystem->DirName(fname);
+           fname += "/";
+           fname += inputFile;
+         }
          listoffiles->Add(new TNamed(fname.Data(),""));
-      }   
+      }
    } else if (sbasedir.Contains(".txt")) {
       // The file having the .txt extension is expected to contain a list of
       // folders where the output files will be looked. For alien folders,

@@ -29,7 +29,7 @@ void testReadMotifType(AliMq::Station12Type station, AliMp::PlaneType plane)
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpMotifReader r(dataStreams, AliMp::kStation12, station, plane);
+  AliMpMotifReader r(AliMp::kStation12, station, plane);
   //r.SetVerboseLevel(2);
 
   TString names;
@@ -55,14 +55,14 @@ void testReadMotifType(AliMq::Station12Type station, AliMp::PlaneType plane)
   }  
     
   for (Int_t i=0;i<names.Length();++i){
-     r.BuildMotifType(names[i])->Print("G");
+     r.BuildMotifType(dataStreams,names[i])->Print("G");
   }
   
   // motifs a1, b1, ..., u1, v1
   for (Int_t i2=0;i2<names2.Length();++i2){
     TString mtName = names2[i2];
     mtName += "1";
-    r.BuildMotifType(mtName)->Print("G");
+    r.BuildMotifType(dataStreams,mtName)->Print("G");
   }
   
   // motifs v2, ..., v5, v6
@@ -70,7 +70,7 @@ void testReadMotifType(AliMq::Station12Type station, AliMp::PlaneType plane)
   for (Int_t i3=2;i3<nv+1;++i3) { 
       TString mtName = "v";
       mtName += i3;
-      r.BuildMotifType(mtName)->Print("G");
+      r.BuildMotifType(dataStreams,mtName)->Print("G");
   }
 }
 

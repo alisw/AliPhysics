@@ -120,7 +120,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   
   if ( !fGeom ) AliFatal(Form("Could not get geometry!"));
   else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
-  
+
   //---------------------------
   // Initialize AliEMCALRawUtils 
   // It must be done after the geometry is initialized since there is a geometry
@@ -453,9 +453,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   // Note: fgTriggerProcessor reset done at the end of this method
   
-  // TO DO: Run2 emulation
-  if(esd->GetRunNumber() < 200000) // Enable trigger emulation for Run1
-    fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
+  fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");

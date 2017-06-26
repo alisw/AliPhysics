@@ -25,9 +25,12 @@ do
   $TESTNAME();
   .q
 EOF
-
+if [ "$?" ] 
+then
+echo "$TESTNAME failed"
+fi
 done
 
-mv testExistingPads.*.out $OUTDIR
-
 cd $CURDIR
+unset CURDIR TESTNAME OUTDIR
+

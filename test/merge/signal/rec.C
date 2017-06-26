@@ -4,7 +4,7 @@ void rec() {
   reco.SetWriteAlignmentData();
 
   // Use the GRP from the backgr
-  reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  reco.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s/../backgr",gSystem->pwd()));
   reco.SetRunPlaneEff(kTRUE);

@@ -17,7 +17,7 @@ void rec(Int_t embrun=0) {
 //   reco.SetRunQA(kFALSE);
 //   reco.SetRunGlobalQA(kFALSE);
 
-  reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  reco.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   if (embrun == 1) {
     reco.SetSpecificStorage("GRP/GRP/Data",
 			    Form("local://%s/../BackgroundFull",gSystem->pwd()));
@@ -29,7 +29,7 @@ void rec(Int_t embrun=0) {
   reco.SetRunPlaneEff(kTRUE);
   reco.SetRunQA("ALL:ALL") ;
   
-  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
+  AliQA::SetQARefStorage("local://$ALIROOT_OCDB_ROOT/OCDB") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 999) ;

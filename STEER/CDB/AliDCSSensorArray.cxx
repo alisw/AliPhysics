@@ -477,8 +477,11 @@ void AliDCSSensorArray::RemoveGraphDuplicates(Double_t tolerance){
     Double_t x=-999.,y=-999., x0=-999.,y0=-999.;
     if (graph) {
       Int_t npoints=graph->GetN();
-      if (npoints>1) {
-        for (Int_t i=npoints-1;i>0;i--) {
+
+// Keep first and last point anyway ( i.e. npoints-2 ...)
+
+      if (npoints>2) {
+        for (Int_t i=npoints-2;i>0;i--) {
 	   graph->GetPoint(i,x,y);
 	   graph->GetPoint(i-1,x0,y0);
 	   if ( TMath::Abs(y-y0) < TMath::Abs(tolerance*y0) ) graph->RemovePoint(i);

@@ -203,10 +203,9 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
     fTriggerMapping = new AliEMCALTriggerMappingV2(52, this);
     AliLog::Message(AliLog::kInfo, "EMCAL Trigger Mapping Version V2 Enabled",
                     MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);
-  } 
-  else 
-  { 
-    fTriggerMapping = new AliEMCALTriggerMappingV1(32, this);
+  } else { 
+    if ((fEMCGeometry->GetGeoName()).Contains("12SM")) fTriggerMapping = new AliEMCALTriggerMappingV1(32, this);
+    else fTriggerMapping = new AliEMCALTriggerMappingV1(30, this);
     AliLog::Message(AliLog::kInfo, "EMCAL Trigger Mapping Version V1 Enabled",
                     MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);
   }
@@ -275,7 +274,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text
                                                 const Text_t* mcname, const Text_t* mctitle )
 {
   AliEMCALGeometry * rv = 0; 
-  
+
   if ( fgGeom == 0 ) 
   {
     if ( strcmp(name,"") == 0 ) 
@@ -304,6 +303,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text
     {
       printf("\n current geometry is %s : ", fgGeom->GetName());
       printf(" you should not call %s \n",name);
+		
     } // end 
     
     rv = (AliEMCALGeometry *) fgGeom; 

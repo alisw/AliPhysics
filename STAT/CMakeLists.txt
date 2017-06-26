@@ -24,6 +24,7 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
+
 # Sources in alphabetical order
 set(SRCS
     AliTMinuitToolkit.cxx
@@ -36,12 +37,21 @@ set(SRCS
     AliNDLocalRegression.cxx
     AliExternalInfo.cxx
     AliFFTsmoother.cxx
-    AliTreePlayer.cxx
     AliTreeTrending.cxx
     AliNDFormulaBrowser.cxx
     AliDrawStyle.cxx
-        AliElasticSearchRoot.cxx
-  )
+    AliElasticSearchRoot.cxx)
+
+# Dependencies (libraries)
+set(LIBDEPS Gui STEERBase Graf Tree TreePlayer GeomBuilder)
+
+if(ROOT_HASHTTP)
+  # ROOT's HTTP library contains the JSON parser required by AliTreePlayer.
+  # Definition is for the LinkDef.
+  list(APPEND SRCS "AliTreePlayer.cxx")
+  list(APPEND LIBDEPS "RHTTP")
+  add_definitions("-DROOT_HAS_HTTP")
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -52,8 +62,6 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
-# Dependecies
-set(LIBDEPS Gui STEERBase Graf Tree TreePlayer GeomBuilder)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries

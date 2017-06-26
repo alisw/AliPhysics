@@ -28,7 +28,7 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
   : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
   fRunNumber(0),fRefPMTA(12), fRefPMTC(0),
-   fEvent(0)
+  fEvent(0),fStartTime(0), fEndTime(0)
 {
   // Constructor
 
@@ -55,7 +55,8 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-    fRunNumber(0),fRefPMTA(12), fRefPMTC(0), fEvent(0)
+    fRunNumber(0),fRefPMTA(12), fRefPMTC(0), fEvent(0),
+    fStartTime(0), fEndTime(0)
 {
   // Constructor
  
@@ -124,15 +125,20 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
 void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
 {
   // Create histograms
-  Float_t low = fCDBcfds[fRefPMTC] - 500;
-  Float_t high = fCDBcfds[fRefPMTA] + 500;
+  Float_t low = fCDBcfds[fRefPMTC] - 400;
+  Float_t high = fCDBcfds[fRefPMTA] + 400;
   printf (" AliT0CalibOffsetChannelsTask %f %f \n",low,high);
+  
+  Float_t timestart = Float_t (fStartTime - 300);
+  Float_t timeend = Float_t (fEndTime +300);
+  Int_t nTimeBins = (fEndTime - fStartTime+600)/600;
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",150, -300, 300);
     fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250,low, high);//6000, 7000);
-    fCFDvsTimestamp[i] = new TH2F();
-    fCFDvsTimestamp[i]->SetName(Form("hCFDvsTimestamp%i", i+1));
-    fCFDvsTimestamp[i]->SetTitle(Form("CFD vs timestamp%i", i+1));
+    // fCFDvsTimestamp[i] = new TH2F( Form("hCFDvsTimestamp%i", i+1), Form("CFD vs timestamp%i", i+1), nTimeBins, timestart,  timeend,250,low, high );
+    fCFDvsTimestamp[i] = new TH2F( Form("hCFDvsTimestamp%i", i+1), Form("CFD vs timestamp%i", i+1), nTimeBins,fStartTime - 300,  fEndTime +300 ,250,low, high );
+    // fCFDvsTimestamp[i]->SetName(Form("hCFDvsTimestamp%i", i+1));
+    // fCFDvsTimestamp[i]->SetTitle(Form("CFD vs timestamp%i", i+1));
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-4000,4000);   //or A plus or C 
@@ -180,9 +186,9 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     return;
   }
   UInt_t timestamp=fESD->GetTimeStamp();
-  if (fEvent==0 ) 
+  /*  if (fEvent==0 ) 
     for (int iii=0; iii<24; iii++)
-      fCFDvsTimestamp[iii]->SetBins(121, timestamp-60, timestamp+72000, 250,fCDBcfds[fRefPMTC]-500, fCDBcfds[fRefPMTA] + 500);
+    fCFDvsTimestamp[iii]->SetBins(121, timestamp-60, timestamp+72000, 250,fCDBcfds[fRefPMTC]-500, fCDBcfds[fRefPMTA] + 500); */
    fEvent++;
  
             
@@ -258,4 +264,7 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   
    // Called once at the end of the query
 }
- 
+/* 
+@@@@ start 1495913485 end 1495916316
+@@  start 1495913344.000000 end 1495916672.000000 bins 5 
+*/

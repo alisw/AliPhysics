@@ -24,7 +24,7 @@ void testSt345ReadSlat()
   AliMpDataStreams dataStreams(dataMap);
 
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader r(dataStreams, motifMap);
+  AliMpSt345Reader r(motifMap);
 
   Int_t ok(0);
   
@@ -33,8 +33,8 @@ void testSt345ReadSlat()
     TString slat(slatTypeNames[i]);
     
     cout << "Trying to read " << slat << endl;
-    AliMpSlat* b = r.ReadSlat(slat.Data(),AliMp::kBendingPlane);
-    AliMpSlat* nb = r.ReadSlat(slat.Data(),AliMp::kNonBendingPlane);
+    AliMpSlat* b = r.ReadSlat(dataStreams,slat.Data(),AliMp::kBendingPlane);
+    AliMpSlat* nb = r.ReadSlat(dataStreams,slat.Data(),AliMp::kNonBendingPlane);
     if ( !b ) cout << " Missing BENDING !" << endl;
     if ( !nb ) cout << " Missing NONBENDING !" << endl;
     if ( b && nb )

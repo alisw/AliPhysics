@@ -18,7 +18,7 @@
 
 void testDE() 
 {
-  AliMpCDB::LoadMpSegmentation2();
+  AliMpCDB::LoadMpSegmentation2("local://$ALIROOT_OCDB_ROOT/OCDB");
 
   AliMpDEIterator it;
   for ( it.First(); ! it.IsDone(); it.Next() ) {

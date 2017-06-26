@@ -72,3 +72,13 @@ void AliITSCorrMap1DSDD::Set1DMap(TH1F* hmap){
   }
 }
 
+void AliITSCorrMap1DSDD::SetCellContent(Int_t /*iAn*/, Int_t iTb, Float_t devMicron)
+{
+    double val = devMicron*10.+0.5;
+    // check for short overflow
+    if (TMath::Abs(val)>=SHRT_MAX) {
+      printf("Truncating channel %d to avoid sign flip: %e -> %e\n",iTb,val,TMath::Sign(double(SHRT_MAX),val));
+      val=TMath::Sign(double(SHRT_MAX),val);
+    }
+    if(CheckDriftBounds(iTb)) fCorrMap[iTb]=(Short_t)(val);
+}

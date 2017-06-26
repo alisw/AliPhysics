@@ -32,9 +32,9 @@ void testIndicesLimits(AliMq::Station12Type station,AliMp::PlaneType plane)
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSectorReader r(station, plane);
 
-  AliMpSector *sector=r.BuildSector();
+  AliMpSector *sector=r.BuildSector(dataStreams);
   AliMpSectorSegmentation segmentation(sector);
 
   // Loop over rows

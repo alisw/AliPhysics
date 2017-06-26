@@ -2,7 +2,7 @@ void merge(Int_t run=117048)
 {
   AliCDBManager *cdbm = AliCDBManager::Instance();
   cdbm->SetRun(run);
-  cdbm->SetDefaultStorage("local://$ALICE_ROOT/OCDB");     
+  cdbm->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");     
   cdbm->SetSpecificStorage("GRP/GRP/Data",Form("local://%s","$ALICE_ROOT/test/rawmerge"));  
   //cdbm->SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));  
 

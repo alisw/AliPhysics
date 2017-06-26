@@ -13,7 +13,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-
+#include <limits.h>
 #include<TNamed.h>
 
 class TH1F;
@@ -29,10 +29,7 @@ class AliITSCorrMap1DSDD : public AliITSCorrMapSDD {
 
   virtual void ResetMap();
   virtual void Set1DMap(TH1F* hmap);
-  virtual void SetCellContent(Int_t /*iAn*/, Int_t iTb, Float_t devMicron){
-    if(CheckDriftBounds(iTb)) fCorrMap[iTb]=(Short_t)(devMicron*10.+0.5);
-  }
-
+  virtual void SetCellContent(Int_t /*iAn*/, Int_t iTb, Float_t devMicron);
   virtual Float_t GetCellContent(Int_t /*iAn*/, Int_t iTb) const {
     if(CheckDriftBounds(iTb)) return (Float_t)fCorrMap[iTb]/10.;
     else return 0.;

@@ -66,7 +66,8 @@ AliPythia8::AliPythia8():
     fYScale(0.),
     fPtScale(0.),
     fNJetMin(0),
-    fNJetMax(0)
+    fNJetMax(0),
+    fDecayLonglived(kFALSE)
 {
 // Default Constructor
 //
@@ -89,7 +90,8 @@ AliPythia8::AliPythia8(const AliPythia8& pythia):
     fYScale(0.),
     fPtScale(0.),
     fNJetMin(0),
-    fNJetMax(0)
+    fNJetMax(0),
+    fDecayLonglived(kFALSE)
 {
     // Copy Constructor
     pythia.Copy(*this);
@@ -106,13 +108,15 @@ void AliPythia8::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfu
     fStrucFunc = strucfunc;
     ReadString("111:mayDecay  = on");
 //...Switch off decay of K0L, Lambda, Sigma+-, Xi0-, Omega-.
-    ReadString("310:mayDecay  = off");
-    ReadString("3122:mayDecay = off");
-    ReadString("3112:mayDecay = off");
-    ReadString("3222:mayDecay = off");
-    ReadString("3312:mayDecay = off");
-    ReadString("3322:mayDecay = off");
-    ReadString("3334:mayDecay = off");
+    if(!fDecayLonglived){
+        ReadString("310:mayDecay  = off");
+        ReadString("3122:mayDecay = off");
+        ReadString("3112:mayDecay = off");
+        ReadString("3222:mayDecay = off");
+        ReadString("3312:mayDecay = off");
+        ReadString("3322:mayDecay = off");
+        ReadString("3334:mayDecay = off");
+    }
     // Select structure function 
     //          ReadString("PDF:useLHAPDF = on");
     //	  ReadString(Form("PDF:LHAPDFset = %s", AliStructFuncType::PDFsetName(fStrucFunc).Data()));

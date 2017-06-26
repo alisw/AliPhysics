@@ -9,5 +9,5 @@ void aod(){
     gSystem->Load("libTender");
     gSystem->Load("libPWGPP");
 
-    gROOT->Macro("${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C(\"AliESDs.root\",\"AliAOD.root\",\"local://$ALICE_ROOT/OCDB\",\"local://.\")");
+    gROOT->Macro("${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C(\"AliESDs.root\",\"AliAOD.root\",\"local://$ALIROOT_OCDB_ROOT/OCDB\",\"local://.\")");
 }

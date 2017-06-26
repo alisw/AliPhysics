@@ -35,7 +35,7 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
 
   if (nev<0){
     AliCDBManager * man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
     man->SetSpecificStorage("TPC/Calib/RecoParam/",recoStorage);
     man->SetRun(run);
     AliCDBEntry* e = man->Get("TPC/Calib/RecoParam/",run); // get default
@@ -52,7 +52,7 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
   //simulator.SetMakeDigitsFromHits( "ITS TPC");
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDBsim";
   simulator.SetSpecificStorage("TPC/Calib/RecoParam/",localStorage.Data());

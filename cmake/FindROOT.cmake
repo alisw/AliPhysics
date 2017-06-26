@@ -37,6 +37,7 @@
 # - ROOT_HASXML - ROOT was built with XML support
 # - ROOT_HASMONALISA - ROOT was built with MonAlisa support - needed by SHUTTLE
 # - ROOT_HASLDAP - ROOT was built with ldap support - needed by SHUTTLE
+# - ROOT_HASHTTP - ROOT was built with HTTP support
 # - ROOT_FORTRAN - fortran compiler
 
 set(ROOT_FOUND FALSE)
@@ -292,7 +293,7 @@ if(ROOTSYS)
     # Checking for Vc from Root
     execute_process(COMMAND ${ROOT_CONFIG} --has-vc OUTPUT_VARIABLE ROOT_HASVC ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was built with VCt: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with VC: ${error}")
     endif(error)
 
     if(ROOT_HASVC)
@@ -303,6 +304,23 @@ if(ROOTSYS)
             set(ROOT_HASVC FALSE)
         endif()
     endif()
+
+    execute_process(COMMAND ${ROOT_CONFIG} --has-http
+                    OUTPUT_VARIABLE _root_feature
+                    ERROR_VARIABLE _root_feature_error
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(_root_feature_error)
+      message(FATAL_ERROR "Error checking for ROOT feature --has-http: ${_root_feature_error}")
+    endif()
+    if(_root_feature)
+      if(_root_feature MATCHES "yes")
+        set(ROOT_HASHTTP TRUE)
+      else()
+        set(ROOT_HASHTTP FALSE)
+      endif()
+    endif()
+    unset(_root_feature)
+    unset(_root_feature_error)
 
     # Checking for fortran compiler
     execute_process(COMMAND ${ROOT_CONFIG} --f77 OUTPUT_VARIABLE ROOT_FORTRAN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
