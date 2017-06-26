@@ -3104,21 +3104,11 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
 	// For now uncertainty added as if we use average with full improver as uncertainty
-  fCutsEff->SetBinContent(1,0.);
-  fCutsEff->SetBinContent(2,0.08);
-  fCutsEff->SetBinContent(3,0.06);
-  fCutsEff->SetBinContent(4,0.06);
-  fCutsEff->SetBinContent(5,0.07);
-  fCutsEff->SetBinContent(6,0.07);
-  fCutsEff->SetBinContent(7,0.05);
-  fCutsEff->SetBinContent(8,0.04);
-for(Int_t i=9;i<=16;i++)fCutsEff->SetBinContent(i,0.03);
-for(Int_t i=17;i<=24;i++)fCutsEff->SetBinContent(i,0.04);
-for(Int_t i=25; i<=36;i++)fCutsEff->SetBinContent(i,0.05);
-	
- // fCutsEff->SetBinContent(2,0.04); Original values without adding the uncertainty for the improver
-  //fCutsEff->SetBinContent(3,0.02);
-  //for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.02); // Very conservative first values rounded up
+  fCutsEff->SetBinContent(2,0.04);// Original values are higher then effect improver in most bins
+  fCutsEff->SetBinContent(3,0.02);
+  for(Int_t i=4;i<=16;i++) fCutsEff->SetBinContent(i,0.02);// Very conservative first values rounded up
+  for(Int_t i=17;i<24;i++) fCutsEff->SetBinContent(i,0.03);// a little higher due to variations in d0 only
+  for(Int_t i=25;i<36;i++) fCutsEff->SetBinContent(i,0.02);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
