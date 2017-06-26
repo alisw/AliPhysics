@@ -2434,7 +2434,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
   hEvtVtxZMCGen->Fill(MCvtx->GetZ());
   if(fEvtPhysSelected) hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
-  if(fVertStatus > 0) hEvtVtxZMCReco->Fill(MCvtx->GetZ());
+  if(fVertStatus > 1) hEvtVtxZMCReco->Fill(MCvtx->GetZ());
   
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
