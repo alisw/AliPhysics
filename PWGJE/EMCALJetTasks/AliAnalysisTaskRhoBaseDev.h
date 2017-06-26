@@ -98,13 +98,13 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   // Event properties
   Int_t                               fNtracks;                       //!<!number of tracks
   Int_t                               fNclusters;                     //!<!number of clusters
-  std::map<std::string, Int_t>        fNjets;
+  std::map<std::string, Int_t>        fNjets;                         //!<!number of jets
 
-  std::map<std::string, Double_t>     fTotJetArea;
+  std::map<std::string, Double_t>     fTotJetArea;                    //!<!total area covered by jets
 
-  AliVParticle                       *fLeadingParticle;
-  AliVCluster                        *fLeadingCluster;
-  std::map<std::string, AliEmcalJet*> fLeadingJet;
+  AliVParticle                       *fLeadingParticle;               //!<!leading particle
+  AliVCluster                        *fLeadingCluster;                //!<!leading cluster
+  std::map<std::string, AliEmcalJet*> fLeadingJet;                    //!<!leading jet
 
   std::map<std::string, std::list<AliEmcalJet*> >
                                       fSortedJets;                    //!<!jets sorted by momentum
