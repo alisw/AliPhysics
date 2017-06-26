@@ -921,6 +921,50 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       if(TMath::Abs(p->MCPdg(0))==443)
          values[kRapMC] = p->RapidityMC(3.1);   // TODO: use correct PDG mass
    }
+   
+   // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
+   // NOTE: this may be different from the kinematics of the mother, if not all decay legs are considered / tracked
+   Bool_t requestMCfromLegs = kFALSE;
+   if(fgUsedVars[kPtMCfromLegs] || fgUsedVars[kPMCfromLegs] || 
+      fgUsedVars[kPxMCfromLegs] || fgUsedVars[kPyMCfromLegs] || fgUsedVars[kPzMCfromLegs] ||
+      fgUsedVars[kThetaMCfromLegs] || fgUsedVars[kEtaMCfromLegs] || fgUsedVars[kPhiMCfromLegs] ||
+      fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs]) 
+      requestMCfromLegs = kTRUE;
+   if(leg1 && leg2 && requestMCfromLegs) {
+      values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
+      values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
+      values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+      values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
+      values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
+      values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
+      values[kEtaMCfromLegs] = TMath::Tan(0.5*values[kThetaMCfromLegs]);
+      values[kEtaMCfromLegs] = (values[kEtaMCfromLegs]>1.0e-6 ? -1.0*TMath::Log(values[kEtaMCfromLegs]) : 0.0);
+      values[kPhiMCfromLegs] = TMath::ATan2(values[kPyMCfromLegs],values[kPxMCfromLegs]);
+      values[kPhiMCfromLegs] = (values[kPhiMCfromLegs]<0.0 ? (TMath::TwoPi()+values[kPhiMCfromLegs]) : values[kPhiMCfromLegs]);
+      if(TMath::Abs(p->MCPdg(0))==443) {
+         Float_t m1 = fgkParticleMass[kElectron];
+         Float_t m2 = fgkParticleMass[kElectron];
+         values[kMassMCfromLegs] = m1*m1+m2*m2 + 
+         2.0*(TMath::Sqrt(m1*m1+leg1->P()*leg1->P())*TMath::Sqrt(m2*m2+leg2->P()*leg2->P()) - 
+         leg1->Px()*leg2->Px() - leg1->Py()*leg2->Py() - leg1->Pz()*leg2->Pz());
+         if(values[kMassMCfromLegs]<0.0) {
+            cout << "FillMCTruthInfo(mother, values, track1, track2): Warning: Very small squared mass found. "
+            << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
+            cout << "   mass^2: " << values[kMassMCfromLegs] << endl;
+            cout << "p1(p,x,y,z): " << leg1->P() << ", " << leg1->Px() << ", " << leg1->Py() << ", " << leg1->Pz() << endl;
+            cout << "p2(p,x,y,z): " << leg2->P() << ", " << leg2->Px() << ", " << leg2->Py() << ", " << leg2->Pz() << endl;
+            values[kMassMCfromLegs] = 0.0;
+         }
+         else
+            values[kMassMCfromLegs] = TMath::Sqrt(values[kMassMCfromLegs]);
+         
+         Float_t e = TMath::Sqrt(values[kPMCfromLegs]*values[kPMCfromLegs] + values[kMassMCfromLegs] * values[kMassMCfromLegs]);
+         Float_t factor = e - values[kPzMCfromLegs];
+         values[kRapMCfromLegs] = (TMath::Abs(factor)>1.0e-6 ? (e+values[kPzMCfromLegs])/factor : 0.0);
+         values[kRapMCfromLegs] = (values[kRapMCfromLegs]>1.0e-6 ? 0.5*TMath::Log(values[kRapMCfromLegs]) : 0.0);
+      }
+   }
+   
    values[kPdgMC] = p->MCPdg(0);
    values[kPdgMC+1] = p->MCPdg(1);
    values[kPdgMC+2] = p->MCPdg(2);
@@ -2081,20 +2125,28 @@ void AliReducedVarManager::SetDefaultVarNames() {
   
   fgVariableNames[kPt]    = "p_{T}";   fgVariableUnits[kPt]    = "GeV/c";
   fgVariableNames[kPtMC]    = "p^{MC}_{T}";   fgVariableUnits[kPtMC]    = "GeV/c";
+  fgVariableNames[kPtMCfromLegs]    = "p^{MC-legs}_{T}";   fgVariableUnits[kPtMCfromLegs]    = "GeV/c";
   fgVariableNames[kP]     = "p";       fgVariableUnits[kP]     = "GeV/c";
   fgVariableNames[kPMC]     = "p^{MC}";       fgVariableUnits[kPMC]     = "GeV/c";
+  fgVariableNames[kPMCfromLegs]     = "p^{MC-legs}";       fgVariableUnits[kPMCfromLegs]     = "GeV/c";
   fgVariableNames[kPx]    = "p_{x}";   fgVariableUnits[kPx]    = "GeV/c";
   fgVariableNames[kPxMC]    = "p^{MC}_{x}";   fgVariableUnits[kPxMC]    = "GeV/c";
+  fgVariableNames[kPxMCfromLegs]    = "p^{MC-legs}_{x}";   fgVariableUnits[kPxMCfromLegs]    = "GeV/c";
   fgVariableNames[kPy]    = "p_{y}";   fgVariableUnits[kPy]    = "GeV/c";
   fgVariableNames[kPyMC]    = "p^{MC}_{y}";   fgVariableUnits[kPyMC]    = "GeV/c";
+  fgVariableNames[kPyMCfromLegs]    = "p^{MC-legs}_{y}";   fgVariableUnits[kPyMCfromLegs]    = "GeV/c";
   fgVariableNames[kPz]    = "p_{z}";   fgVariableUnits[kPz]    = "GeV/c";
   fgVariableNames[kPzMC]    = "p^{MC}_{z}";   fgVariableUnits[kPzMC]    = "GeV/c";
+  fgVariableNames[kPzMCfromLegs]    = "p^{MC-legs}_{z}";   fgVariableUnits[kPzMCfromLegs]    = "GeV/c";
   fgVariableNames[kTheta] = "#theta";  fgVariableUnits[kTheta] = "rad.";
   fgVariableNames[kThetaMC] = "#theta^{MC}";  fgVariableUnits[kThetaMC] = "rad.";
+  fgVariableNames[kThetaMCfromLegs] = "#theta^{MC-legs}";  fgVariableUnits[kThetaMCfromLegs] = "rad.";
   fgVariableNames[kEta]   = "#eta";    fgVariableUnits[kEta]   = "";
   fgVariableNames[kEtaMC]   = "#eta^{MC}";    fgVariableUnits[kEtaMC]   = "";
+  fgVariableNames[kEtaMCfromLegs]   = "#eta^{MC-legs}";    fgVariableUnits[kEtaMCfromLegs]   = "";
   fgVariableNames[kPhi]   = "#varphi"; fgVariableUnits[kPhi]   = "rad.";
   fgVariableNames[kPhiMC]   = "#varphi^{MC}"; fgVariableUnits[kPhiMC]   = "rad.";
+  fgVariableNames[kPhiMCfromLegs]   = "#varphi^{MC-legs}"; fgVariableUnits[kPhiMCfromLegs]   = "rad.";
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
     fgVariableNames[kCosNPhi+iHarmonic] = Form("cos(%d#varphi)",iHarmonic+1); fgVariableUnits[kCosNPhi+iHarmonic] = "";
     fgVariableNames[kSinNPhi+iHarmonic] = Form("sin(%d#varphi)",iHarmonic+1); fgVariableUnits[kSinNPhi+iHarmonic] = "";
@@ -2103,8 +2155,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kOneOverSqrtPt] = "1/sqrt(p_{T})"; fgVariableUnits[kOneOverSqrtPt] = "GeV^{-1/2}";
   fgVariableNames[kMass]      = "m";         fgVariableUnits[kMass]        = "GeV/c^{2}";
   fgVariableNames[kMassMC]      = "m^{MC}";         fgVariableUnits[kMassMC]        = "GeV/c^{2}";
+  fgVariableNames[kMassMCfromLegs]      = "m^{MC-legs}";         fgVariableUnits[kMassMCfromLegs]        = "GeV/c^{2}";
   fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";  
   fgVariableNames[kRapMC]       = "y^{MC}";         fgVariableUnits[kRapMC]         = "";  
+  fgVariableNames[kRapMCfromLegs]       = "y^{MC-legs}";         fgVariableUnits[kRapMCfromLegs]         = "";  
   fgVariableNames[kPdgMC]       = "PDG code";          fgVariableUnits[kPdgMC]         = "";
   fgVariableNames[kPdgMC+1]  = "mother's PDG code";     fgVariableUnits[kPdgMC+1]         = "";
   fgVariableNames[kPdgMC+2]  = "grand-mother's PDG code";     fgVariableUnits[kPdgMC+2]         = "";
