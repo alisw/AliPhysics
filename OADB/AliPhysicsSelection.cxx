@@ -256,18 +256,22 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
   // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
   // Fills the statistics histogram, if booked at row i
   TString trigger(triggerLogic);
-  
-  // add space after each token (to use ReplaceAll later)
+
+  // add space after each token (to use ReplaceAll later); AFAIKT, the
+  // regex matches on 0 or more \w, though?
+  // Eg: Before: "V0A && V0C && ZDCTime && !TPCHVdip"
+  //      After: "V0A && V0C && ZDCTime && !TPCHVdip "
   fRegexp->Substitute(trigger, "$1 ", "g");
-  
+
   while (1) {
     AliDebug(AliLog::kDebug, trigger.Data());
     
     TArrayI pos;
+    // Match alphanumerical thing succedded by whitespace
     Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-    
+    // All triggers treated;
     if (nMatches <= 0) break;
-    
+    // Extract the name of the trigger; eg "V0A"
     TString token(trigger(pos[0], pos[1]-pos[0]+1));
 
     TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
@@ -290,10 +294,11 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
       bit |= AliTriggerAnalysis::kOfflineFlag;
     
     if(event && triggerAnalysis) {
+      // Replace the current trigger name with 0 or 1, base on AliTriggerAnalysis::EvaluateTrigger
       trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
     }
   }
-  
+  // The final modified trigger string now might look something like: "1 && 1 && 1 && !0"
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
   // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
   // as the v6 version produces a large amount of warnings at runtime.
@@ -303,6 +308,9 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
 #endif
   if (formula.Compile() > 0)
     AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
+  // Check if all constituents of the trigger string evaluate to
+  // `true`; the "function" is constant, so the value in `Eval` does
+  // not matter
   Bool_t result = formula.Eval(0);
   
   AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
