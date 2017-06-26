@@ -794,11 +794,9 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     
     Int_t id=0;
     char tag[1000];
-    char description[1000];
-    Int_t firstrun=-1;
-    Int_t lastrun=-1;
     
-    dumptree->GetBranch("ID")->SetAddress(&id);
+    dumptree->SetBranchAddress("ID",&id);
+    dumptree->SetBranchAddress("Tag",&tag);
     
     char paliroot[1000];            // variables that will hold information read of the tree: GetTreeProdCycleByID(TString::Format("%d",id))
     char paliphysics[1000];
@@ -809,6 +807,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     TObjString soutputpath;
     TObjString saliroot;
     TObjString saliphysics;
+    Bool_t consist;
     
     TString soutputdir;
     TObjArray *subStrL;
@@ -817,7 +816,8 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     TBranch* braliphys= dumptree->Branch("aliphysics",&saliphysics);
     TBranch* brprodname= dumptree->Branch("prodName",&sprodname);
     TBranch* brpassname= dumptree->Branch("passName",&spassname);
-    TBranch* broutputpath= dumptree->Branch("outputPath",&soutputpath);   
+    TBranch* broutputpath= dumptree->Branch("outputPath",&soutputpath);
+    TBranch* brconsist= dumptree->Branch("nameconsistency",&consist);
 
     Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
@@ -850,11 +850,15 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       saliphysics = TObjString(paliphysics);
       soutputpath= TObjString(poutputdir);
       
+      if(TString::Format("%s",tag).Contains(sprodname.GetString())) consist=kTRUE;
+      else consist = kFALSE;
+      
       braliroot->Fill();
       braliphys->Fill();
       brprodname->Fill(); 
       brpassname->Fill(); 
       broutputpath->Fill();
+      brconsist->Fill();
       
       delete tree;
     }
