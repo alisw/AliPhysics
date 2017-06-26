@@ -137,6 +137,9 @@ class AliEmcalContainer : public TObject {
   Double_t                    GetMaxEta()                     const { return fMaxEta ; }
   Double_t                    GetMinPhi()                     const { return fMinPhi ; }
   Double_t                    GetMaxPhi()                     const { return fMaxPhi ; }
+  Double_t                    GetEtaSwing()                   const { return fMaxEta - fMinEta; }
+  Double_t                    GetPhiSwing()                   const { return fMaxPhi - fMinPhi; }
+  Double_t                    GetAcceptance()                 const { return GetEtaSwing() * GetPhiSwing(); }
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
