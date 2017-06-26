@@ -88,6 +88,7 @@ set(SRCS
     AliV0ReaderStrange.cxx
     AliV0CutsStrange.cxx
     AliV0ParticleStrange.cxx
+    AliConversionCutHandler.cxx
    )
 
 # Headers from sources
