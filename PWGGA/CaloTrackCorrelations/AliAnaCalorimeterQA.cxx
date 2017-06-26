@@ -528,8 +528,9 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     if ( amp > fCellAmpMin )
     {
       ncellsCut++    ;
-      nCellsInModule[nModule]++    ;
-            
+      nCellsInModule[nModule]++   ;
+      eCellsInModule[nModule]+=amp;
+      
       fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
       fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
       
