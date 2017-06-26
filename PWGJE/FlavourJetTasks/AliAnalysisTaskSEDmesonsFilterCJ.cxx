@@ -587,6 +587,7 @@ if(fUseMCInfo && fBuildRMEff){
           if(mcLabel == iMCcharm) { isRecoD = kTRUE; break; }
         }
         
+          if (!isRecoD) break;
          if (!charmCand) break;
          if (fCandidateType == kDstartoKpipi &&  !dstar) break;
         
