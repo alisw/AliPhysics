@@ -5839,13 +5839,17 @@ void AliHFSystErr::InitD0toKpi2015PbPb010() {
     fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
     fCutsEff->SetBinContent(1,0.);
     fCutsEff->SetBinContent(2,0.10);
-    fCutsEff->SetBinContent(3,0.05);
+    fCutsEff->SetBinContent(3,0.06);
     fCutsEff->SetBinContent(4,0.05);
     fCutsEff->SetBinContent(5,0.05);
     fCutsEff->SetBinContent(6,0.05);
-    for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
-    for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
-    for(Int_t i=17;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
+    fCutsEff->SetBinContent(7,0.05);
+    fCutsEff->SetBinContent(8,0.06);
+    for(Int_t i=9;i<=10;i++) fCutsEff->SetBinContent(i,0.05);
+    for(Int_t i=11;i<=12;i++) fCutsEff->SetBinContent(i,0.06);
+    for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.07);
+    for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.07);
+    for(Int_t i=25;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
     for(Int_t i=37;i<=50;i++) fCutsEff->SetBinContent(i,0.05);
     
     
