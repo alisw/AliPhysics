@@ -41,7 +41,7 @@ Class for fitting of distortion maps using phsyical models
 #include "AliTPCRecoParam.h"
 #include "TLine.h"
 #include "AliExternalInfo.h"
-
+#include "AliLHCData.h"
 #include "AliTPCDistortionFit.h"
 using namespace std;
  
@@ -188,6 +188,7 @@ Int_t AliTPCDistortionFit::LoadDistortionMaps(Int_t run, const char *storage){
   AliCDBEntry* entryC = man->Get("TPC/Calib/CorrectionMapsRef");  
   TObjArray *referenceCheb=(TObjArray *)entryC->GetObject();
   AliTPCChebCorr *cheb=(grp->GetL3Polarity()<=0) ?(AliTPCChebCorr *)referenceCheb->At(0) : (AliTPCChebCorr *)referenceCheb->At(1);
+  if (cheb==NULL) cheb=(AliTPCChebCorr *)referenceCheb->At(0); // what is the logic- why sometimes 2 maps somtimes 1 map???? to aks Ruben
   RegisterMap(mapRefName,cheb);
   cheb->Init();
   //
@@ -628,22 +629,24 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
 
 }
 
-void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
+void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput, const char * ocdbPath){
   /*
-    Int_t run=245683; const char * chinput="/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root"
+    Int_t run=245683; const char * chinput="/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root", ocdbPath="local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/"
     AliTPCDistortionFit::MakeFitExample1(run,chinput);
   */
   TTreeSRedirector *pcstream = new TTreeSRedirector("makeFit1D.root","recreate");
   // 1 line fitter  - working for sectors with one hotspots
   //
   AliTPCDistortionFit::RegisterFitters();
-  AliTPCDistortionFit::LoadDistortionMaps(run, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
+  AliTPCDistortionFit::LoadDistortionMaps(run, ocdbPath);
   TString fName =AliTPCDistortionFit::LoadDistortionTree(chinput);
+  
   TObjString oName(fName.Data());
   Int_t hashID=fName.Hash();
   AliTMinuitToolkit * fitter = AliTMinuitToolkit::GetPredefinedFitter("fitterLine1");
   TGraph * lumiGraphMap = AliLumiTools::GetLumiGraph(AliTPCRecoParam::kCorrMapNoScaling,run);
   const AliTPCChebCorr *cheb = AliTPCDistortionFit::GetCheb(fName.Data());
+  AliLHCData* fLHCDataBckg = (AliLHCData*)((AliCDBEntry*)(AliCDBManager::Instance()->Get("GRP/GRP/LHCData")))->GetObject();
   Double_t polarity=0;
   if (cheb->GetFieldType()== AliTPCChebCorr::kFieldPos) polarity=1;
   if (cheb->GetFieldType()== AliTPCChebCorr::kFieldNeg) polarity=-1;
@@ -788,6 +791,19 @@ void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
     Double_t tB=cheb->GetTimeStampStart();
     Double_t tE= cheb->GetTimeStampEnd();
     Double_t lumi = cheb->GetLuminosityCOG(lumiGraphMap,tB,tE);
+    //
+    const Int_t nBGs = AliLHCData::kNBGs;
+    Double_t bckg[5]={0};
+    for (Int_t ibg=0;ibg<nBGs;ibg++){
+      Int_t counter=0;
+      for (Int_t it=tB;it<tE; it++){ // get mean bckg
+	bckg[ibg] += fLHCDataBckg->GetBckgAlice(ibg,Double_t(it));  // function returns differnt values in case of calling with interger and case of double invocation
+	counter++;
+      }
+      bckg[ibg]/=counter;
+    }
+ 
+    //
     pcstream->GetFile()->cd();
     {
       (*pcstream)<<"fit1D"<<
@@ -802,8 +818,12 @@ void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
 	"tC="<<tC<<
 	"tB="<<tB<<
 	"tE="<<tE<<
-	"lumi="<<lumi<<
-	"\n";      
+	"lumi="<<lumi;
+      for (Int_t ibg=0;ibg<5;ibg++){
+	(*pcstream)<<"fit1D"<<
+	  TString::Format("bckg%d=",ibg)<<bckg[ibg]<<
+	  "\n";      
+      }
     }
   } 
   (((*pcstream)<<"fit1D").GetTree())->Write();
@@ -968,7 +988,9 @@ void DrawSummary(const char * period, const char *pass){
   TFile *ff = TFile::Open("makeFitExample1.root");
   TTree * tree = (TTree*)ff->Get("fit1D");
   AliExternalInfo info;
-  TTree * treeLogbook= info.GetTree("Logbook",period,"");
+  TTree * treeLogbook0= info.GetTree("Logbook",period,"");
+  TTree * treeLogbook= info.GetChain("Logbook","LHC***","");
+  treeLogbook->BuildIndex("run");
   tree->AddFriend(treeLogbook,"Logbook");
   TLine lineGap, lineROC, lineMedian;
   lineGap.SetLineStyle(2); lineGap.SetLineWidth(2);  lineGap.SetLineColor(3);
