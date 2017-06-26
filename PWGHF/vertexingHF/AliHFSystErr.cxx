@@ -2356,20 +2356,20 @@ void AliHFSystErr::InitDplustoKpipi2016pPb0100(){
   
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
-  fRawYield->SetBinContent(1,0.03);
-  fRawYield->SetBinContent(2,0.01);
+  fRawYield->SetBinContent(2,0.03);
   fRawYield->SetBinContent(3,0.01);
   fRawYield->SetBinContent(4,0.01);
-   for(Int_t i=5;i<=12;i++) fRawYield->SetBinContent(i,0.02);
+  fRawYield->SetBinContent(5,0.01);
+  for(Int_t i=6;i<=12;i++) fRawYield->SetBinContent(i,0.02);
   for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.03);
   for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.04);
   
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  fCutsEff->SetBinContent(1,0.12);
-  fCutsEff->SetBinContent(2,0.07);
-    for(Int_t i=3;i<=16;i++) fCutsEff->SetBinContent(i,0.04);
+  fCutsEff->SetBinContent(2,0.12);
+  fCutsEff->SetBinContent(3,0.07);
+  for(Int_t i=4;i<=16;i++) fCutsEff->SetBinContent(i,0.04);
   for(Int_t i=17;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
   
 
@@ -3099,8 +3099,8 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
   fCutsEff->SetBinContent(2,0.04);// Original values are higher then effect improver in most bins
   fCutsEff->SetBinContent(3,0.02);
   for(Int_t i=4;i<=16;i++) fCutsEff->SetBinContent(i,0.02);// Very conservative first values rounded up
-  for(Int_t i=17;i<24;i++) fCutsEff->SetBinContent(i,0.03);// a little higher due to variations in d0 only
-  for(Int_t i=25;i<36;i++) fCutsEff->SetBinContent(i,0.02);
+  for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.03);// a little higher due to variations in d0 only
+  for(Int_t i=25;i<=36;i++) fCutsEff->SetBinContent(i,0.02);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
@@ -6694,6 +6694,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   hFrame->SetAxisRange(1.,35.9,"X");
   if(fIsLowPtAnalysis) hFrame->SetAxisRange(0.,24.,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
+  if(fCollisionType==2 && (fRunNumber==16 || fRunNumber==2016)) hFrame->SetAxisRange(-0.15,0.15,"Y");
   hFrame->Draw();
 
   TLegend *leg = new TLegend(0.69,0.44,0.98,0.86,NULL,"brNDC");
