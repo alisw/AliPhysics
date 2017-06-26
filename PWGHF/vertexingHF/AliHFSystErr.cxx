@@ -2036,51 +2036,61 @@ void AliHFSystErr::InitDstoKKpi2013pPb0100(){
 
 //_________________________________________________________________________
 void AliHFSystErr::InitDstoKKpi2016pPb0100(){
-  //
-  // Dstar syst
-  AliInfo(" Settings for Ds --> K K pi, p-Pb collisions at 5.023 TeV - 2016 run"); 
+  // Ds systematics in pPb 2016 MB
+  // Responsible: J. Hamon
+
+  AliInfo(" Settings for Ds --> K K pi, p-Pb collisions at 5.023 TeV - 2016 run");
   SetNameTitle("AliHFSystErr","SystErrDstoKKpi2016pPb0100");
- 
-  //Normalization
+
+  // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=3;i<=12;i++) fNorm->SetBinContent(i,0.00); // 
-  
-  // Branching ratio 
-  fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=3;i<=12;i++) fBR->SetBinContent(i,0.053); // 0.12/2.28 PDG2012
+  for(Int_t i=1; i<=24; i++) fNorm->SetBinContent(i, 0.037); // Same as D0 low pt?
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.035); // PDG 2016: BR = 2.27 +/- 0.08
 
   // Tracking efficiency
+  //   From C. Terrevoli's studies:  3.7 in 2-12GeV/c, 4 in 12-24 GeV/c
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=3;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 3% per track
+  for(Int_t i=1;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.037);
+  for(Int_t i=13; i<=24; i++) fTrackingEff->SetBinContent(i, 0.040);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  for(Int_t i=3; i<=4; i++) fRawYield->SetBinContent(i,0.10);
-  for(Int_t i=5; i<=6; i++) fRawYield->SetBinContent(i,0.08);
-  for(Int_t i=7; i<=8; i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=9; i<=24; i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
+  for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.03); // [2-4]
+  for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.01); // [4-6]
+  for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.01); // [6-8]
+  for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.01); // [8-12]
+  for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.03); // [12-16]
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.06); // [16-24]
 
-  // Cuts efficiency (from cuts variation)
+  // Cuts efficiency (envelope of cuts variation syst. and ImproverTask syst.)
+  //   ImproverTask syst. = ImproverTask_d0Mean / ImproverTask_Old
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  for(Int_t i=3;i<=24;i++) fCutsEff->SetBinContent(i,0.15); //
+  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 1.00); // [0-2]
+  for(Int_t i=3;  i<=4;  i++) fCutsEff->SetBinContent(i, 0.11); // [2-4]
+  for(Int_t i=5;  i<=6;  i++) fCutsEff->SetBinContent(i, 0.08); // [4-6]
+  for(Int_t i=7;  i<=8;  i++) fCutsEff->SetBinContent(i, 0.07); // [6-8]
+  for(Int_t i=9;  i<=12; i++) fCutsEff->SetBinContent(i, 0.09); // [8-12]
+  for(Int_t i=13; i<=16; i++) fCutsEff->SetBinContent(i, 0.07); // [12-16]
+  for(Int_t i=17; i<=24; i++) fCutsEff->SetBinContent(i, 0.07); // [16-24]
 
-  // PID efficiency (from PID/noPID)
+  // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  for(Int_t i=3;i<=4;i++) fPIDEff->SetBinContent(i,0.10); 
-  for(Int_t i=5;i<=24;i++) fPIDEff->SetBinContent(i,0.05); 
+  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 1.00); // [0-2]
+  for(Int_t i=3;  i<=4;  i++) fCutsEff->SetBinContent(i, 0.00); // [2-4] - StrongPID
+  for(Int_t i=5;  i<=6;  i++) fCutsEff->SetBinContent(i, 0.00); // [4-6] - StrongPID
+  for(Int_t i=7;  i<=8;  i++) fCutsEff->SetBinContent(i, 0.00); // [6-8] - StrongPID
+  for(Int_t i=9;  i<=12; i++) fCutsEff->SetBinContent(i, 0.00); // [8-12] - StrongPID
+  for(Int_t i=13; i<=16; i++) fCutsEff->SetBinContent(i, 0.09); // [12-16] - ConservativePID
+  for(Int_t i=17; i<=24; i++) fCutsEff->SetBinContent(i, 0.09); // [16-24] - ConservativePID
 
-  // MC dN/dpt  
+  // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0.04);
+  for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.00); // No assigned systematics
 
-  // particle-antiparticle
-  /*
-    fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
-    fPartAntipart->SetBinContent(1,1);
-    fPartAntipart->SetBinContent(2,1);
-    fPartAntipart->SetBinContent(3,0.12);
-    for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
-  */
   return;
 }
 
