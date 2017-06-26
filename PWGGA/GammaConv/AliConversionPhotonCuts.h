@@ -36,8 +36,6 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 
 
-using namespace std;
-
 class AliConversionPhotonCuts : public AliAnalysisCuts {
       
   public: 

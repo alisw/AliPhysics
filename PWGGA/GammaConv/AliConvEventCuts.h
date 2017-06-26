@@ -31,8 +31,6 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 
-using namespace std;
-
 class AliConvEventCuts : public AliAnalysisCuts {
     
     public: 
