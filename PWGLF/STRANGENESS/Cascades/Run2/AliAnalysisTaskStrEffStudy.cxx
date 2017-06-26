@@ -268,6 +268,9 @@ fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
 
+fTreeCascVarBachPropagationParameterClassical(0),
+fTreeCascVarBachPropagationParameterImproved(0),
+
 //Full momentum information
 fTreeCascVarNegPx(0),
 fTreeCascVarNegPy(0),
@@ -461,6 +464,9 @@ fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
+
+fTreeCascVarBachPropagationParameterClassical(0),
+fTreeCascVarBachPropagationParameterImproved(0),
 
 //Full momentum information
 fTreeCascVarNegPx(0),
@@ -743,6 +749,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
     fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
     fTreeCascade->Branch("fTreeCascVarV0DistanceToTrueDecayPt",&fTreeCascVarV0DistanceToTrueDecayPt,"fTreeCascVarV0DistanceToTrueDecayPt/F");
+    
+    fTreeCascade->Branch("fTreeCascVarBachPropagationParameterClassical",&fTreeCascVarBachPropagationParameterClassical,"fTreeCascVarBachPropagationParameterClassical/F");
+    fTreeCascade->Branch("fTreeCascVarBachPropagationParameterImproved",&fTreeCascVarBachPropagationParameterImproved,"fTreeCascVarBachPropagationParameterImproved/F");
     
     //full momentum info
     fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
@@ -1472,6 +1481,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //---] V0 PART [---------------------------------------------------
         //Step 1: propagate to DCA
         fTreeCascVarDcaV0Daughters = -1;
+        
         Double_t xn, xp, dca=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
         
         //Correct for beam pipe material
@@ -1533,6 +1543,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         fTreeCascVarDCACascDaughtersClassical = 1e+10;
         fTreeCascVarCascPropagationClassical = kFALSE;
+        fTreeCascVarBachPropagationParameterClassical = -100;
         
         fTreeCascVarDecayX = -100;
         fTreeCascVarDecayY = -100;
@@ -1548,6 +1559,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if (cascdca < 1e+32){
             fTreeCascVarDCACascDaughtersClassical = cascdca;
             fTreeCascVarCascPropagationClassical = kTRUE;
+            fTreeCascVarBachPropagationParameterClassical = pbt->GetX();
             
             //Construct cascade
             AliESDcascade cascade(*pv0,*pbt,lCascBachTrackArray[iCasc]);
@@ -1597,6 +1609,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarImprovedCascCosPointingAngle = -100;
         fTreeCascVarImprovedCascDCAxyToPV = -100;
         fTreeCascVarImprovedCascDCAzToPV = -100;
+        fTreeCascVarBachPropagationParameterImproved = -100;
         
         fTreeCascVarImprovedInvMassXiMinus = -100;
         fTreeCascVarImprovedInvMassXiPlus = -100;
@@ -1720,6 +1733,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Double_t cs=TMath::Cos(pbtimp->GetAlpha());
         Double_t sn=TMath::Sin(pbtimp->GetAlpha());
         Double_t xthis=r1[0]*cs + r1[1]*sn;
+        fTreeCascVarBachPropagationParameterImproved = xthis;
         
         //Memory cleanup
         hV0Traj->Delete();
