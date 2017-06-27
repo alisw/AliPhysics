@@ -1609,6 +1609,7 @@ private:
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
   TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
+  TH2D *fZDCQVecQModCen[10][8]; //!
   TH3D *fZDCQVecVtxCenEZDCFit0; //!
   TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
@@ -1636,6 +1637,7 @@ private:
   const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec run by run
+  TProfile2D *fCRCZDCQVecQModCenRbR[fCRCMaxnRun][fCRCMaxnCen][4]; //!
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
   TProfile2D *fCRCZDCQVecQModCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //!
   TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
@@ -1645,7 +1647,7 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 12;
+  const static Int_t fkNsteps = 13;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1878,7 +1880,7 @@ private:
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
   TH1D *fFlowQCRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
-  TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
+  TH1D *fFlowQCRefCorFinal[fFlowNHarm][4]; //!
   
   TH2D *fFlowQCSpectra; //!
   TH2D *fFlowQCSpectraCharge[2]; //!
@@ -1995,7 +1997,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,59);
+  ClassDef(AliFlowAnalysisCRC,60);
   
 };
 
