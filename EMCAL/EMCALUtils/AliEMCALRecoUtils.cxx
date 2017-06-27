@@ -440,10 +440,10 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 
   // Check columns/eta
   Int_t iEtaLast = 48;
-  if(!fNoEMCALBorderAtEta0 || geom->IsDCALSM(iSM)) 
+  if ( !fNoEMCALBorderAtEta0 || geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard ) 
   {
     // consider inner border
-    if ( geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  iEtaLast = iEtaLast*2/3;        
+    if ( geom->IsDCALSM(iSM) ) iEtaLast = iEtaLast*2/3;        
   
     if ( ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder ) okcol = kTRUE;  
   } 
