@@ -55,7 +55,9 @@ class iostream;
 
 using namespace std;
 
+/// \cond CLASSIMP
 ClassImp(AliConvEventCuts)
+/// \endcond
 
 
 const char* AliConvEventCuts::fgkCutNames[AliConvEventCuts::kNCuts] = {
