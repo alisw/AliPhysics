@@ -156,21 +156,22 @@ void AliAnalysisTaskJetUE::SortJets()
  * 1) The event contains a jet whose azimuthal angle difference with the leading jet is > 5/6 pi (the "back-to-back" jet), and
  * 2) the back-to-back jet carries a minimum fraction (fBackToBackJetPtFraction) of the leading jet momentum, and
  * 3) there are no jets with momentum greater than a given threshold (fMaxMomentumThridJet) that have an azimuthal angle difference smaller than 5/6 pi with the leading jet.
+ * @param jetCollName name of the jet collection used to establish the back-to-back nature of the event
  * @return A boolean indicating whether the event is classified as back-to-back (true) or not (false).
  */
-Bool_t AliAnalysisTaskJetUE::IsB2BEvent()
+Bool_t AliAnalysisTaskJetUE::IsB2BEvent(std::string jetCollName)
 {
   static Float_t minPhi = (5.0/6.0) * TMath::Pi();
 
   Bool_t b2bJet = kFALSE;
   Bool_t thirdJetOverThreshold = kFALSE;
 
-  auto itJet = fSortedJets["Signal"].begin();
-  if (itJet == fSortedJets["Signal"].end()) return kFALSE;
+  auto itJet = fSortedJets[jetCollName].begin();
+  if (itJet == fSortedJets[jetCollName].end()) return kFALSE;
   AliEmcalJet* leadingJet = *itJet;
   Double_t minB2Bpt = leadingJet->Pt() * fBackToBackJetPtFraction;
   itJet++;
-  while (itJet != fSortedJets["Signal"].end()) {
+  while (itJet != fSortedJets[jetCollName].end()) {
     auto jet = *itJet;
     Double_t phidiff = TMath::Abs(AliEmcalContainer::RelativePhi(jet->Phi(), leadingJet->Phi()));
     if (phidiff > minPhi) {

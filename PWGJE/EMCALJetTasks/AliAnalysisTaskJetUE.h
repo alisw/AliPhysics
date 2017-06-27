@@ -46,7 +46,7 @@ class AliAnalysisTaskJetUE : public AliAnalysisTaskEmcalJetLight {
  protected:
   virtual void                        CalculateEventProperties();
   void                                SortJets();
-  Bool_t                              IsB2BEvent();
+  Bool_t                              IsB2BEvent(std::string jetCollName = "Signal");
   Bool_t                              AreJetsOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
 
   Double_t                            fBackToBackJetPtFraction;       ///< Minimum pt fraction of the back-to-back jet
