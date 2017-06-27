@@ -1306,7 +1306,7 @@ void AliHFSystErr::InitD0toKpi2016pPb60100ZNA(){
   fRawYield->SetBinContent(2,0.06);
   for(Int_t i=3;i<=10;i++) fRawYield->SetBinContent(i,0.02);
   for(Int_t i=11;i<=16;i++) fRawYield->SetBinContent(i,0.03);
-  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=16;i<=36;i++) fRawYield->SetBinContent(i,0.06);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
