@@ -346,7 +346,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t nSpdHits = 0;
   
   fNLooseTracks = aod->GetNumberOfESDTracks();
-  hNLooseTracks->Fill(fNLooseTracks);
+  if(trigger.Contains("CCUP8-B"))hNLooseTracks->Fill(fNLooseTracks);
   
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   //Track loop

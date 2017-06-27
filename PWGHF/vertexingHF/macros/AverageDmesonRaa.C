@@ -62,11 +62,12 @@
 //Double_t ptbinlimits[nbins+1]={1.,2.,3.,4.,5.,6.,8.,12.,16.,24.,36.};
 const Int_t nbins=7;
 Double_t ptbinlimits[nbins+1]={1.,2.,4.,6.,8.,12.,16.,24.};
+Bool_t useExtrapPPref=kFALSE;
 Bool_t isDebug=true;
 
 //const Int_t ptmaxPPRefData[3] = { 16., 24., 24. };
 
-enum AverageOption{ kRelativeStatUnc=0, kRelativeStatUncorrWoPidSyst, kRelativeStatUncorrWPidSyst, kRelativeStatGlobalSyst, kAbsoluteStatUnc };
+enum AverageOption{ kRelativeStatUnc=0, kRelativeStatUncorrWoPidSyst, kRelativeStatUncorrWPidSyst, kRelativeStatRawYieldSyst, kRelativeStatGlobalSyst, kAbsoluteStatUnc };
 
 enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
@@ -112,7 +113,9 @@ void FindGraphRelativeUnc(TGraphAsymmErrors *gr, Double_t pt, Double_t &uncLow, 
 //____________________________________________________________
 Double_t GetWeight(Int_t averageoption, Double_t pt,
                    TH1D* hRaa, Double_t raaSystLow, Double_t raaSystHigh,
+		   Double_t ppSystRawYield,
                    Double_t ppSystRawYieldCutVar, Double_t ppSystRawYieldCutVarPid,
+		   Double_t ABSystRawYield,
                    Double_t ABSystRawYieldCutVar, Double_t ABSystRawYieldCutVarPid)
 {
     Double_t weight=1.0;
@@ -129,15 +132,22 @@ Double_t GetWeight(Int_t averageoption, Double_t pt,
         weightStat = stat;
     }
     else if(averageoption==kRelativeStatUncorrWoPidSyst) {
+        weightStat = relativeStat;
         relativeSyst = TMath::Sqrt( ppSystRawYieldCutVar*ppSystRawYieldCutVar + ABSystRawYieldCutVar*ABSystRawYieldCutVar );
     }
     else if(averageoption==kRelativeStatUncorrWPidSyst) {
+        weightStat = relativeStat;
         relativeSyst = TMath::Sqrt( ppSystRawYieldCutVarPid*ppSystRawYieldCutVarPid + ABSystRawYieldCutVar*ABSystRawYieldCutVarPid );
     }
+    else if(averageoption==kRelativeStatRawYieldSyst){
+        weightStat = relativeStat;
+        relativeSyst = TMath::Sqrt( ppSystRawYield*ppSystRawYield + ABSystRawYield*ABSystRawYield );      
+    }
     else if(averageoption==kRelativeStatGlobalSyst) {
+        weightStat = relativeStat;
         relativeSyst = raaSystHigh>raaSystLow ? raaSystHigh : raaSystLow;
     }
-    
+
     //  weight = TMath::Sqrt( relativeStat*relativeStat + relativeSyst*relativeSyst );
     weight = TMath::Sqrt( weightStat*weightStat + relativeSyst*relativeSyst );
     // cout<< endl<<" rel stat "<< relativeStat<<" rel syst "<< relativeSyst<<" weight="<<(1.0/(weight*weight))<<endl;
@@ -162,6 +172,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     if(averageOption==kRelativeStatUnc)  foutname+= "_RelStatUncWeight";
     else if(averageOption==kAbsoluteStatUnc)  foutname+= "_AbsStatUncWeight";
     else if(averageOption==kRelativeStatUncorrWoPidSyst) foutname+= "_RelStatUncorrWeight";
+    else if(averageOption==kRelativeStatRawYieldSyst) foutname+= "_RelStatRawYieldSystWeight";
+    if(!useExtrapPPref) foutname+= "_NoExtrapBins";
     TDatime d;
     TString ndate = Form("%02d%02d%04d",d.GetDay(),d.GetMonth(),d.GetYear());
     resultFile = fopen( Form("%s_result_%s.txt",foutname.Data(),ndate.Data()),"w");
@@ -206,6 +218,10 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Get Raa file histos and graphs
     //
+    AliHFSystErr *ppSyst[3];
+    AliHFSystErr *ABSyst[3];
+    Double_t ppTracking[3][nbins], ppSystRawYield[3][nbins], ppSystCutVar[3][nbins], ppSystPid[3][nbins];
+    Double_t ABTracking[3][nbins], ABSystRawYield[3][nbins], ABSystCutVar[3][nbins], ABSystPid[3][nbins];
     for(Int_t j=0; j<3; j++) {
         if(strcmp(filenamesRaa[j],"")==0)  { isDmeson[j]=false; continue; }
         cout<<" Reading file "<<filenamesRaa[j]<<"..."<<endl;
@@ -226,7 +242,84 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         gRABFeedDownSystematicsElossHypothesis[j]->SetName(Form("%s_%s",gRABFeedDownSystematicsElossHypothesis[j]->GetName(),filenamesSuffixes[j]));
         gRAB_GlobalSystematics[j] = (TGraphAsymmErrors*)fDRaa->Get("gRAB_GlobalSystematics");
         gRAB_GlobalSystematics[j]->SetName(Form("%s_%s",gRAB_GlobalSystematics[j]->GetName(),filenamesSuffixes[j]));
+	Bool_t shouldDelete=kFALSE;
+	if(fDRaa->Get("AliHFSystErrPP")){
+	  ppSyst[j]=(AliHFSystErr*)fDRaa->Get("AliHFSystErrPP");
+	  printf("AliHFSystErr object for meson %d in pp (%s) read from HFPtSpectrumRaa output file\n",j,ppSyst[j]->GetTitle());
+	}else{   
+	  printf("Create instance of AliHFSystErr for meson %d in pp \n",j);
+	  ppSyst[j] = new AliHFSystErr(Form("ppSyst_%d",j),Form("ppSyst_%d",j));
+	  ppSyst[j]->SetIsPass4Analysis(kTRUE);
+	  ppSyst[j]->Init(j+1);
+	  shouldDelete=kTRUE;
+	}
+        for(Int_t ipt=0; ipt<nbins; ipt++) {
+	  Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
+	  ppTracking[j][ipt]=0.; ppSystRawYield[j][ipt]=0; ppSystCutVar[j][ipt]=0; ppSystPid[j][ipt]=0.;
+	  ppTracking[j][ipt]    =ppSyst[j]->GetTrackingEffErr(ptval);
+	  ppSystRawYield[j][ipt]=ppSyst[j]->GetRawYieldErr(ptval);
+	  ppSystCutVar[j][ipt]  =ppSyst[j]->GetCutsEffErr(ptval);
+	  ppSystPid[j][ipt]     =ppSyst[j]->GetPIDEffErr(ptval);
+        }
+	if(shouldDelete)  delete ppSyst[j];
+	shouldDelete=kFALSE;
+	if(fDRaa->Get("AliHFSystErrAA")){
+	  ABSyst[j]=(AliHFSystErr*)fDRaa->Get("AliHFSystErrAA");
+	  printf("AliHFSystErr object for meson %d in AA (%s) read from HFPtSpectrumRaa output file\n",j,ppSyst[j]->GetTitle());
+	}else{
+	  printf("Create instance of AliHFSystErr for meson %d in AA \n",j);
+	  ABSyst[j] = new AliHFSystErr(Form("ABSyst_%d",j),Form("ABSyst_%d",j));
+	  ABSyst[j]->SetCollisionType(1); // PbPb by default
+	  if ( cc == k010 ) ABSyst[j]->SetCentrality("010");
+	  else if ( cc == k1020 ) ABSyst[j]->SetCentrality("1020");
+	  else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
+            ABSyst[j]->SetCentrality("2040");
+            ABSyst[j]->SetIsPbPb2010EnergyScan(true);
+	  }
+	  else if ( cc == k3050 ) ABSyst[j]->SetCentrality("3050");
+	  else if ( cc == k4060 || cc == k4050 || cc == k5060 ) ABSyst[j]->SetCentrality("4060");
+	  else if ( cc == k6080 || cc == k5080 ) ABSyst[j]->SetCentrality("6080");
+	  else if ( cc == k4080 ) ABSyst[j]->SetCentrality("4080");
+	  // Going to pPb systematics
+	  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+            ABSyst[j]->SetCollisionType(2);
+            ABSyst[j]->SetRunNumber(16);
+	    if(ccestimator==kV0A) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020V0A");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040V0A");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060V0A");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100V0A");
+            } else if (ccestimator==kZNA) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020ZNA");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040ZNA");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060ZNA");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100ZNA");
+            } else if (ccestimator==kCL1) {
+	      if(cc == kpPb020) ABSyst[j]->SetCentrality("020CL1");
+	      else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040CL1");
+	      else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060CL1");
+	      else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100CL1");
+            } else {
+	      if(!(cc == kpPb0100)) {
+		cout <<" Error on the pPb options"<<endl;
+		return;
+	      }
+            }
+	  }
+	  ABSyst[j]->Init(j+1);
+ 	  shouldDelete=kTRUE;
+	}
+	for(Int_t ipt=0; ipt<nbins; ipt++) {
+	  Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
+	  ABTracking[j][ipt]=0.; ABSystRawYield[j][ipt]=0; ABSystCutVar[j][ipt]=0; ABSystPid[j][ipt]=0.;
+	  ABTracking[j][ipt]    =ABSyst[j]->GetTrackingEffErr(ptval);
+	  ABSystRawYield[j][ipt]=ABSyst[j]->GetRawYieldErr(ptval);
+	  ABSystCutVar[j][ipt]  =ABSyst[j]->GetCutsEffErr(ptval);
+	  ABSystPid[j][ipt]     =ABSyst[j]->GetPIDEffErr(ptval);
+        }
+        if(shouldDelete)  delete ABSyst[j];    
     }
+
     //
     // Get pp-reference file histos and graphs
     //
@@ -260,86 +353,6 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     }
     
     
-    cout<<" Getting instances of AliHFSystErr... "<<endl;
-    AliHFSystErr *ppSyst[3];
-    Double_t ppTracking[3][nbins], ppSystRawYield[3][nbins], ppSystCutVar[3][nbins], ppSystPid[3][nbins];
-    ppSyst[0] = new AliHFSystErr("ppSyst_Dzero","ppSyst_Dzero");
-    ppSyst[1] = new AliHFSystErr("ppSyst_Dplus","ppSyst_Dplus");
-    ppSyst[2] = new AliHFSystErr("ppSyst_Dstar","ppSyst_Dstar");
-    for(Int_t j=0; j<3; j++) {
-        if(!isDmeson[j]) { delete ppSyst[j]; continue; }
-        ppSyst[j]->Init(j+1);
-        for(Int_t ipt=0; ipt<nbins; ipt++) {
-            Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
-            ppTracking[j][ipt]=0.; ppSystRawYield[j][ipt]=0; ppSystCutVar[j][ipt]=0; ppSystPid[j][ipt]=0.;
-            ppTracking[j][ipt]    =ppSyst[j]->GetTrackingEffErr(ptval);
-            ppSystRawYield[j][ipt]=ppSyst[j]->GetRawYieldErr(ptval);
-            ppSystCutVar[j][ipt]  =ppSyst[j]->GetCutsEffErr(ptval);
-            ppSystPid[j][ipt]     =ppSyst[j]->GetPIDEffErr(ptval);
-        }
-        delete ppSyst[j];
-    }
-    
-    AliHFSystErr *ABSyst[3];
-    Double_t ABTracking[3][nbins], ABSystRawYield[3][nbins], ABSystCutVar[3][nbins], ABSystPid[3][nbins];
-    ABSyst[0] = new AliHFSystErr("ABSyst_Dzero","ABSyst_Dzero");
-    ABSyst[1] = new AliHFSystErr("ABSyst_Dplus","ABSyst_Dplus");
-    ABSyst[2] = new AliHFSystErr("ABSyst_Dstar","ABSyst_Dstar");
-    //
-    for(Int_t j=0; j<3; j++) {
-        // PbPb systematics
-        ABSyst[j]->SetCollisionType(1); // PbPb by default
-        if ( cc == k010 ) ABSyst[j]->SetCentrality("010");
-        else if ( cc == k1020 ) ABSyst[j]->SetCentrality("1020");
-        else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
-            ABSyst[j]->SetCentrality("2040");
-            ABSyst[j]->SetIsPbPb2010EnergyScan(true);
-        }
-        else if ( cc == k3050 ) ABSyst[j]->SetCentrality("3050");
-        else if ( cc == k4060 || cc == k4050 || cc == k5060 ) ABSyst[j]->SetCentrality("4060");
-        else if ( cc == k6080 || cc == k5080 ) ABSyst[j]->SetCentrality("6080");
-        else if ( cc == k4080 ) ABSyst[j]->SetCentrality("4080");
-        // Going to pPb systematics
-        else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-            ABSyst[j]->SetCollisionType(2);
-            if(ccestimator==kV0A) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020V0A");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040V0A");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060V0A");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100V0A");
-            } else if (ccestimator==kZNA) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020ZNA");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040ZNA");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060ZNA");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100ZNA");
-            } else if (ccestimator==kCL1) {
-                if(cc == kpPb020) ABSyst[j]->SetCentrality("020CL1");
-                else if(cc == kpPb2040) ABSyst[j]->SetCentrality("2040CL1");
-                else if(cc == kpPb4060) ABSyst[j]->SetCentrality("4060CL1");
-                else if(cc == kpPb60100) ABSyst[j]->SetCentrality("60100CL1");
-            } else {
-                if(!(cc == kpPb0100)) {
-                    cout <<" Error on the pPb options"<<endl;
-                    return;
-                }
-            }
-        }
-        //
-    }
-    for(Int_t j=0; j<3; j++) {
-        if(!isDmeson[j]) { delete ABSyst[j]; continue; }
-        ABSyst[j]->Init(j+1);
-        for(Int_t ipt=0; ipt<nbins; ipt++) {
-            Double_t ptval = ptbinlimits[ipt] + (ptbinlimits[ipt+1]-ptbinlimits[ipt])/2.;
-            ABTracking[j][ipt]=0.; ABSystRawYield[j][ipt]=0; ABSystCutVar[j][ipt]=0; ABSystPid[j][ipt]=0.;
-            ABTracking[j][ipt]    =ABSyst[j]->GetTrackingEffErr(ptval);
-            ABSystRawYield[j][ipt]=ABSyst[j]->GetRawYieldErr(ptval);
-            ABSystCutVar[j][ipt]  =ABSyst[j]->GetCutsEffErr(ptval);
-            ABSystPid[j][ipt]     =ABSyst[j]->GetPIDEffErr(ptval);
-        }
-        delete ABSyst[j];
-    }
-    
     //
     // Loop per pt bin
     //
@@ -360,12 +373,14 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         //    Double_t ppTracking[3]={0.,0.,0.};
         Double_t ScalingLow[3]={0.,0.,0.};
         Double_t ScalingHigh[3]={0.,0.,0.};
-        Double_t ppSystRawYieldCutVar[3]={0.,0.,0.};
+	Double_t ppSystRawYieldOnly[3]={0.,0.,0.};
+	Double_t ppSystRawYieldCutVar[3]={0.,0.,0.};
         Double_t ppSystRawYieldCutVarPid[3]={0.,0.,0.};
         Double_t ABSystLow[3]={0.,0.,0.};
         Double_t ABSystHigh[3]={0.,0.,0.};
         Double_t ABSystUncorrLow[3]={0.,0.,0.};
         Double_t ABSystUncorrHigh[3]={0.,0.,0.};
+        Double_t ABSystRawYieldOnly[3]={0.,0.,0.};
         Double_t ABSystRawYieldCutVar[3]={0.,0.,0.};
         Double_t ABSystRawYieldCutVarPid[3]={0.,0.,0.};
         //    Double_t ABTracking[3]={0.,0.,0.};
@@ -389,11 +404,13 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         if(isDebug) cout<<" Retrieving tracking + rawyield systematics"<<endl;
         for(Int_t j=0; j<3; j++) {
             if(!isDmeson[j]) continue;
+	    ppSystRawYieldOnly[j] = ppSystRawYield[j][ipt];
             ppSystRawYieldCutVar[j] = TMath::Sqrt( ppSystRawYield[j][ipt]*ppSystRawYield[j][ipt]
                                                   + ppSystCutVar[j][ipt]*ppSystCutVar[j][ipt] );
             ppSystRawYieldCutVarPid[j] = TMath::Sqrt( ppSystRawYield[j][ipt]*ppSystRawYield[j][ipt]
                                                      + ppSystCutVar[j][ipt]*ppSystCutVar[j][ipt]
                                                      + ppSystPid[j][ipt]*ppSystPid[j][ipt] );
+	    ABSystRawYieldOnly[j] = ABSystRawYield[j][ipt];
             ABSystRawYieldCutVar[j] = TMath::Sqrt( ABSystRawYield[j][ipt]*ABSystRawYield[j][ipt]
                                                   + ABSystCutVar[j][ipt]*ABSystCutVar[j][ipt] );
             ABSystRawYieldCutVarPid[j] = TMath::Sqrt( ABSystRawYield[j][ipt]*ABSystRawYield[j][ipt]
@@ -430,7 +447,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
                 FindGraphRelativeUnc(gDataSystematicsPP[j],ptval,ppSystTotLow,ppSystTotHigh);
                 ppSystRawYieldCutVar[j] = ppSystTotLow > ppSystTotHigh ? ppSystTotLow : ppSystTotHigh ;
                 ppSystRawYieldCutVarPid[j] = ppSystRawYieldCutVar[j];
-            }
+		ppSystRawYieldOnly[j] = ppSystRawYieldCutVar[j];
+	    }
         }
         //
         // Loop per meson to get the Raa values and uncertainties for the given pt bin
@@ -449,8 +467,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             // Evaluate the weight
             weight[j] = GetWeight(averageOption,ptval,hDmesonRaa[j],
                                   RaaDmesonSystLow[j],RaaDmesonSystHigh[j],
-                                  ppSystRawYieldCutVar[j],ppSystRawYieldCutVarPid[j],
-                                  ABSystRawYieldCutVar[j],ABSystRawYieldCutVarPid[j]);
+                                  ppSystRawYieldOnly[j],ppSystRawYieldCutVar[j],ppSystRawYieldCutVarPid[j],
+				  ABSystRawYieldOnly[j],ABSystRawYieldCutVar[j],ABSystRawYieldCutVarPid[j]);
             cout<<" raa "<<filenamesSuffixes[j]<<" meson  = "<<RaaDmeson[j]<<" +-"<<RaaDmesonStat[j]<<"(stat) -> (weight="<<weight[j]<<") ,";
             // Get pp reference relative systematics
             FindGraphRelativeUnc(gDataSystematicsPP[j],ptval,ppSystLow[j],ppSystHigh[j]);
@@ -459,8 +477,12 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             if(isPPRefExtrap[j]){
                 Int_t ippbin = hCombinedReferenceFlag[j]->FindBin(ptval);
                 Bool_t flag = hCombinedReferenceFlag[j]->GetBinContent(ippbin);
-                if(isDebug) cout<< " bin="<<j<<" pp ref flag on? "<<flag<<endl;
+                if(isDebug) cout<< " bin="<<j<<" pp ref flag on? "<<flag;
                 if(flag){ ScalingHigh[j]=0.; ScalingLow[j]=0.; ppTracking[j][ipt]=0.; }
+		if(flag && !useExtrapPPref){ 
+		  weight[j] =0;
+		  cout<<"weight set to 0";
+		}
             }
             // Get pp reference systematics minus tracking systematics minus extrapolation uncertainties
             ppSystUncorrLow[j] = TMath::Sqrt( ppSystLow[j]*ppSystLow[j]
@@ -493,6 +515,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
             }
             //
             histoBin = -1;
+	    cout<<endl;
         }
         cout<<endl;
         
@@ -588,7 +611,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
         // Printout
         cout<< " pt min (GeV/c),  pt max (GeV/c), Raa(Daverage), +- (stat), + (syst) , - (syst) "<<endl;
         cout<< ptbinlimits[ipt] <<"  "<< ptbinlimits[ipt+1]<< "  "<< average<< "  "<< averageStat<< "  "<< totalUncHigh<<"  "<<totalUncLow<<endl;
-        fprintf(resultFile,"%02.0f   %02.0f   %2.2f   %2.2f   %2.2f   %2.2f\n",ptbinlimits[ipt],ptbinlimits[ipt+1],average,averageStat,totalUncHigh,totalUncLow);
+        fprintf(resultFile,"%02.0f   %02.0f   %5.3f   %5.3f   %5.3f   %5.3f\n",ptbinlimits[ipt],ptbinlimits[ipt+1],average,averageStat,totalUncHigh,totalUncLow);
     } // end loop on pt bins
     
     fclose(resultFile);
@@ -596,11 +619,15 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Now can start drawing
     //
+    TH2F* hempty=new TH2F("hempty"," ; p_{T} (GeV/c} ; Nucl. modif. fact.",100,0.,ptbinlimits[nbins],100,0.,2.);
+    hempty->SetStats(0);
+
     TCanvas *cAvCheck = new TCanvas("cAvCheck","Average Dmeson check");
+    hempty->Draw();
     hDmesonAverageRAB->SetLineColor(kBlack);
     hDmesonAverageRAB->SetMarkerStyle(20);
     hDmesonAverageRAB->SetMarkerColor(kBlack);
-    hDmesonAverageRAB->Draw("e");
+    hDmesonAverageRAB->Draw("esame");
     for(Int_t j=0; j<3; j++) {
         if(!isDmeson[j]) continue;
         hDmesonRaa[j]->SetLineColor(kBlack);
@@ -616,7 +643,8 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     gRAB_DmesonAverage_GlobalSystematics->Draw("2");
     hDmesonAverageRAB->Draw("esame");
     cAvCheck->Update();
-    
+    cAvCheck->SaveAs(Form("%s_result_%s.gif",foutname.Data(),ndate.Data()));
+
     TCanvas *cAv = new TCanvas("cAv","Average Dmeson");
     hDmesonAverageRAB->Draw("e");
     gRAB_DmesonAverage_FeedDownSystematicsElossHypothesis->SetFillStyle(1001);
@@ -629,7 +657,7 @@ void AverageDmesonRaa( const char* fD0Raa="",    const char* fD0ppRef="",
     //
     // Now can start saving the output
     //
-    TFile *fout = new TFile(outfile,"recreate");
+    TFile *fout = new TFile(Form("HFPtSpectrumRaa_%s_%s.root",foutname.Data(),ndate.Data()),"recreate");
     hDmesonAverageRAB->Write();
     gRABNorm->Write();
     gRAB_DmesonAverage_GlobalSystematics->Write();

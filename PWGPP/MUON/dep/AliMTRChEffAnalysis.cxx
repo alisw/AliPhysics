@@ -340,6 +340,17 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
 }
 
 //________________________________________________________________________
+Int_t AliMTRChEffAnalysis::Check () const
+{
+  /// Check initialization. Return 0 if everything is ok
+  if ( fRunMap.empty() ) {
+    AliError("The list of trigger efficiency object is not initialized. Please use either InitFromLocal, InitFromGrid or InitFromWeb");
+    return 1;
+  }
+  return 0;
+}
+
+//________________________________________________________________________
 Int_t AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
@@ -768,6 +779,8 @@ Bool_t AliMTRChEffAnalysis::CopyLocally ( const char* runList, const char* path,
 void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers, Double_t minEff, Double_t maxEff ) const
 {
   /// Draw trenidng
+  if ( Check() ) return;
+
   TString baseNames[3] = {"Chamber","RPC","Board"};
   TString base = baseNames[itype] + "Eff";
   if ( itype == AliTrigChEffOutput::kHboardEff ) {
@@ -1665,6 +1678,7 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
 TGraphAsymmErrors* AliMTRChEffAnalysis::GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const
 {
   /// Get trending histogram
+  if ( Check() ) return NULL;
   if ( icount == AliTrigChEffOutput::kAllTracks ) {
     AliWarning("Chose either bending plane, non-bending plane or both planes");
     return NULL;

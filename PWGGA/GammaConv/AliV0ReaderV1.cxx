@@ -95,6 +95,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
+  fNumberOfTPCoutTracks(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -165,6 +166,29 @@ AliV0ReaderV1::~AliV0ReaderV1()
     fConversionGammas->Delete();// Clear Objects
     delete fConversionGammas;
     fConversionGammas=0x0;
+  }
+}
+
+/**
+ * @brief Array index operator
+ *
+ * Access to the photon at a given index in the V0 reader, treated as container
+ *
+ * @param index Index of the photon inside the container
+ * @return Pointer to photon (if the container has at least one photon), otherwise nullptr
+ */
+AliConversionPhotonBase *AliV0ReaderV1::operator[](int index) const {
+  if(fConversionGammas && (index < fConversionGammas->GetEntriesFast())) {
+    TObject *tmp = fConversionGammas->At(index);
+    if(tmp->IsA() == AliAODConversionPhoton::Class()){
+      AliAODConversionPhoton *photon = static_cast<AliAODConversionPhoton *>(tmp);
+      return photon;
+    } else {
+      AliKFConversionPhoton *photon = static_cast<AliKFConversionPhoton *>(tmp);
+      return photon;
+    }
+  } else {
+    return nullptr;
   }
 }
 
@@ -595,7 +619,11 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();
+  CountTracks();  
+
+  //Count Tracks with TPCout flag 
+  CountTPCoutTracks();
+
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
@@ -1379,6 +1407,27 @@ void AliV0ReaderV1::CountTracks(){
 }
 
 ///________________________________________________________________________
+void AliV0ReaderV1::CountTPCoutTracks(){
+  fNumberOfTPCoutTracks = 0;
+
+  for (Int_t itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++) {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itrk));
+
+    if (trk != NULL) {
+      /* the initial method of counting TPC out tracks */
+      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+        if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+          fNumberOfTPCoutTracks++;
+        }
+      }
+    }
+  }
+
+
+  return;
+}
+
+///________________________________________________________________________
 Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
   // MonteCarlo Photon Selection
   if(!MCStack)return kFALSE;
@@ -1748,4 +1797,68 @@ Bool_t AliV0ReaderV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobech
 void AliV0ReaderV1::Terminate(Option_t *)
 {
 
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1 *reader, AliV0ReaderV1::iterator::Direction_t dir, int position):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(),
+    fkData(reader),
+    fCurrentIndex(position),
+    fDirection(dir)
+{
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1::iterator &other):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(other),
+    fkData(other.fkData),
+    fCurrentIndex(other.fCurrentIndex),
+    fDirection(other.fDirection)
+{
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator=(const AliV0ReaderV1::iterator &other){
+  if(this != &other){
+    fkData = other.fkData;
+    fCurrentIndex = other.fCurrentIndex;
+    fDirection = other.fDirection;
+  }
+  return *this;
+}
+
+bool AliV0ReaderV1::iterator::operator!=(AliV0ReaderV1::iterator &other) const{
+  if(fkData != other.fkData) return false;
+  return fCurrentIndex == other.fCurrentIndex;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator++(int index){
+  iterator tmp(*this);
+  operator++();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator++(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator--(int){
+  iterator tmp(*this);
+  operator--();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator--(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliConversionPhotonBase *AliV0ReaderV1::iterator::operator*(){
+  return (*fkData)[fCurrentIndex];
 }

@@ -29,6 +29,7 @@ class AliAODv0;
 
 #include <iostream>
 
+#include <TGrid.h>
 #include "TList.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -317,7 +318,8 @@ void AliAnalysisTaskNucleiv2pPb::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
- 
+
+
   Info("AliAnalysisTaskNucleiv2pPb","Starting UserExec");  
   fHistEventMultiplicity->Fill(1);
   AliVEvent *event = InputEvent();
@@ -715,6 +717,8 @@ void AliAnalysisTaskNucleiv2pPb::OpenInfoCalbration(Int_t run)
 {
   
   TFile* foadb = 0;
+  if (!gGrid) TGrid::Connect("alien");
+
   if (fRecPass == 0)
     foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibpPb2016/calibV0Fast.root");
   else if (fRecPass == 1)

@@ -50,6 +50,7 @@ class AliESDAD; //AD
 #include "TLegend.h"
 #include "TObjectTable.h"
 #include "TSystem.h"
+#include "TRandom3.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -100,6 +101,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+      fDownscaleFactor(2.0), //2.0: no downscaling
+      fRand(0),
       fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
       fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
       //don't change the default, or we'll be in big trouble!
@@ -227,6 +230,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+      fDownscaleFactor(2.0), //2.0: no downscaling
+      fRand(0),
       fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
       fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
       //don't change the default, or we'll be in big trouble!
@@ -394,6 +399,10 @@ AliMultSelectionTask::~AliMultSelectionTask()
     if ( fUtils) {
         delete fUtils;
         fUtils = 0x0;
+    }
+    if (fRand) {
+        delete fRand;
+        fRand = 0x0;
     }
 }
 
@@ -615,6 +624,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     if(! fUtils ) {
         fUtils = new AliAnalysisUtils();
+    }
+    
+    if(! fRand ){
+        fRand = new TRandom3();
+        // From TRandom3 reference:
+        // if seed is 0 (default value) a TUUID is generated and
+        // used to fill the first 8 integers of the seed array
+        fRand->SetSeed(0);
     }
     
     // Multiplicity
@@ -1362,10 +1379,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Only do this bit if the AOD has ZDC data
         if( lAODZDC ){
             for (Int_t j = 0; j < 4; ++j) {
-                if (lAODZDC->GetZNATDCm(j) != 0) fZnaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZNCTDCm(j) != 0) fZncFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPATDCm(j) != 0) fZpaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPCTDCm(j) != 0) fZpcFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNATDCm(j) > -998) fZnaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZNCTDCm(j) > -998) fZncFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPATDCm(j) > -998) fZpaFired -> SetValueInteger(1);
+                if (lAODZDC->GetZPCTDCm(j) > -998) fZpcFired -> SetValueInteger(1);
             }
             
             const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
@@ -1627,7 +1644,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
             if(lVerbose) Printf( "--- FILLTREE --- ");
             if(lVerbose) fInput -> Print("V") ;
-            fTreeEvent->Fill() ;
+            
+            //fill only if passing downscale test
+            //Downscale logic:
+            // (1) randomly generate number from 0-1
+            // (2) check if smaller than fDownscaleFactor
+            // (3) save only if smaller
+            if( fRand->Uniform() < fDownscaleFactor ) fTreeEvent->Fill() ;
         }
     }
 

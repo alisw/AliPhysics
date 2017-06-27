@@ -1609,6 +1609,7 @@ private:
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
   TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
+  TH2D *fZDCQVecQModCen[10][8]; //!
   TH3D *fZDCQVecVtxCenEZDCFit0; //!
   TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
@@ -1635,8 +1636,10 @@ private:
   TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
-//  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
+  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec run by run
+  TProfile2D *fCRCZDCQVecQModCenRbR[fCRCMaxnRun][fCRCMaxnCen][4]; //!
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile2D *fCRCZDCQVecQModCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //!
   TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
   const static Int_t fknEZDCBins = 10;
   TProfile3D *fCRCZDCQVecVtxCenEZDC3D[fCRCMaxnCen][fknEZDCBins][fkCRCnCQVecVtxPos]; //!
@@ -1644,7 +1647,7 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 12;
+  const static Int_t fkNsteps = 13;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1654,9 +1657,14 @@ private:
   Double_t fEvPlDPsiA;
   
   // test
-//  TProfile2D *fCRCZDCQVecResvsEAsym; //!
-//  TProfile2D *fCRCZDCQVecResvsETot; //!
-//  TProfile2D *fCRCZDCQVecResvsESum; //!
+  TProfile3D *fCRCZDCQVecResVtx[2][3]; //!
+  TProfile2D *fCRCZDCQVecResEZDC[2][3]; //!
+  TProfile2D *fCRCZDCQVecResv1QA[2][3]; //!
+  TProfile2D *fCRCZDCQVecResv1QC[2][3]; //!
+  TProfile2D *fCRCZDCQVecResv1Cross[2][3]; //!
+  
+  TProfile2D *fCRCZDCQVecResCrossC[2][3]; //!
+  TProfile2D *fCRCZDCQVecResCrossA[2][3]; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1755,6 +1763,9 @@ private:
   TH1D *fPOIPhiDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH2D *fPOIPhiEtaDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   TH1D *fEtaDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
@@ -1836,6 +1847,7 @@ private:
   TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //!
   TProfile *fFlowQCCorProPhi[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
+  TProfile2D *fFlowQCCorProPhiEta[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! vn vs phi vs eta [CRCBin][eg]
   
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
   const static Int_t fkFlowQCnVtx = 6;
@@ -1868,7 +1880,7 @@ private:
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
   TH1D *fFlowQCRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
-  TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
+  TH1D *fFlowQCRefCorFinal[fFlowNHarm][4]; //!
   
   TH2D *fFlowQCSpectra; //!
   TH2D *fFlowQCSpectraCharge[2]; //!
@@ -1985,7 +1997,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,57);
+  ClassDef(AliFlowAnalysisCRC,60);
   
 };
 

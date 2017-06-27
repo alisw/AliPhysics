@@ -59,3 +59,9 @@ install(DIRECTORY Herwig
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.in"
   )
+
+# install AMPT configurations
+install(DIRECTORY AMPT
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.ampt"
+  )

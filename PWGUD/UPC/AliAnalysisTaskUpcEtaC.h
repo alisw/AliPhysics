@@ -72,42 +72,42 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   Bool_t fIsPhysicsSelected;
 
   //PID for EtC->Pi+Pi-K+K- Channel  
-  Double_t fPIDTPCMuon[4];
-  Double_t fPIDTPCElectron[4];
-  Double_t fPIDTPCPion[4];
-  Double_t fPIDTPCKaon[4];
-  Double_t fPIDTPCProton[4];
+  Double_t fPIDTPCMuon[7];
+  Double_t fPIDTPCElectron[7];
+  Double_t fPIDTPCPion[7];
+  Double_t fPIDTPCKaon[7];
+  Double_t fPIDTPCProton[7];
   
-  Double_t fPIDTOFMuon[4];
-  Double_t fPIDTOFElectron[4];
-  Double_t fPIDTOFPion[4];
-  Double_t fPIDTOFKaon[4];
-  Double_t fPIDTOFProton[4];
+  Double_t fPIDTOFMuon[7];
+  Double_t fPIDTOFElectron[7];
+  Double_t fPIDTOFPion[7];
+  Double_t fPIDTOFKaon[7];
+  Double_t fPIDTOFProton[7];
 
   //PID for EtC->K0s K+- Pi-+ Channel
-  Double_t fPIDTPCMuonPos[4];
-  Double_t fPIDTPCElectronPos[4];
-  Double_t fPIDTPCPionPos[4];
-  Double_t fPIDTPCKaonPos[4];
-  Double_t fPIDTPCProtonPos[4];
+  Double_t fPIDTPCMuonPos[7];
+  Double_t fPIDTPCElectronPos[7];
+  Double_t fPIDTPCPionPos[7];
+  Double_t fPIDTPCKaonPos[7];
+  Double_t fPIDTPCProtonPos[7];
   
-  Double_t fPIDTOFMuonPos[4];
-  Double_t fPIDTOFElectronPos[4];
-  Double_t fPIDTOFPionPos[4];
-  Double_t fPIDTOFKaonPos[4];
-  Double_t fPIDTOFProtonPos[4];
+  Double_t fPIDTOFMuonPos[7];
+  Double_t fPIDTOFElectronPos[7];
+  Double_t fPIDTOFPionPos[7];
+  Double_t fPIDTOFKaonPos[7];
+  Double_t fPIDTOFProtonPos[7];
  
-  Double_t fPIDTPCMuonNeg[4];
-  Double_t fPIDTPCElectronNeg[4];
-  Double_t fPIDTPCPionNeg[4];
-  Double_t fPIDTPCKaonNeg[4];
-  Double_t fPIDTPCProtonNeg[4];
+  Double_t fPIDTPCMuonNeg[7];
+  Double_t fPIDTPCElectronNeg[7];
+  Double_t fPIDTPCPionNeg[7];
+  Double_t fPIDTPCKaonNeg[7];
+  Double_t fPIDTPCProtonNeg[7];
   
-  Double_t fPIDTOFMuonNeg[4];
-  Double_t fPIDTOFElectronNeg[4];
-  Double_t fPIDTOFPionNeg[4];
-  Double_t fPIDTOFKaonNeg[4];
-  Double_t fPIDTOFProtonNeg[4];
+  Double_t fPIDTOFMuonNeg[7];
+  Double_t fPIDTOFElectronNeg[7];
+  Double_t fPIDTOFPionNeg[7];
+  Double_t fPIDTOFKaonNeg[7];
+  Double_t fPIDTOFProtonNeg[7];
   
   Int_t fVtxContrib;
   Double_t fVtxPos[3];
@@ -275,6 +275,17 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *fV0DecayLength;
   TH1D *fV0Eta;
   TH1D *fCosPointingAngle;
+
+  //RhoRho Channel histos.
+  TH1D *fHistNeventsEtaCRhoChannel;
+  TH2D *f2RhoPtVsMinvRho;
+  TH2D *f4PionPtVsMinvRho;
+  TH2D *f2RhoPtVsMinvEtaC;
+  TH2D *f4PionPtVsMinvEtaC;
+
+  //3PiPi Channel histos
+  TH1D *fHistNeventsEtaC3PiPiChannel;
+  TH2D *f3PiPiPtVsMinvEtaC;
     
   TH1D *fHistZDCCuts;
   

@@ -6,6 +6,7 @@
 #include "AliEventPoolManager.h"
 #include "AliEventCuts.h"
 #include "AliFiducialCut.h"
+#include "AliEMCALRecoUtils.h"
 #include <THn.h>
 #include <THnSparse.h>
 
@@ -20,7 +21,7 @@ using std::vector;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
  public:
 	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis, Bool_t InitMCorData);
+	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
 virtual ~AliAnalysisTaskGammaHadron();
 
   //setters for the analysis
@@ -43,7 +44,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
  private:
   AliEventCuts                fEventCuts;                   ///< event selection utility
-  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal
+  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
+  AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
 
  protected:
 
@@ -71,10 +73,10 @@ virtual ~AliAnalysisTaskGammaHadron();
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
+  void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
-  Bool_t                      fDoMixing;                 ///< This option enables mixed events being used in the analysi
-  Bool_t                      fMCorData;                 //<Are we looking at simulations or at the real thing
+  Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Bool_t                      fPlotQA;                   ///< plot additional QA histograms
@@ -149,9 +151,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
   TH1 					   **fHistBinCheckXi;          //!<! plot Xi distribution for ideal binning
-//  TH2					   **fHistDEtaDPhiG[3][10];    //!<! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
-//  TH2					   **fHistDEtaDPhiZT[3][8];    //!<! No of g-h pairs in the deta eta delta phi plane for certain zT values
-//  TH2					   **fHistDEtaDPhiXI[3][9];    //!<! No of g-h pairs in the deta eta delta phi plane for certain Xi values
+  TH1 					   **fHistFiducialCheck;       //!<! plot energy distribution under different fiducial cuts
   TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy

@@ -1168,6 +1168,13 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
+  if(Req(kNclsSITS)){
+    Double_t itsNclsS = 0.;
+    for(int i=0; i<6; i++){
+      if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+    }
+    values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+  }
 
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
@@ -1648,8 +1655,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
-  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
-  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
+  //values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  //values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
 

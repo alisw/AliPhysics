@@ -698,9 +698,11 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
         Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multEvent};
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
-	// multPt hist for MC closure test and generator comparison
-	Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
-	fHistMCMultPt->Fill(mcMultPt);
+	// multPt hist for MC closure test
+	if(multEvent > 0.1){
+	  Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
+	  fHistMCMultPt->Fill(mcMultPt);
+	}
 
       }
       if(IsChargedPrimaryOrLambda(iParticle))

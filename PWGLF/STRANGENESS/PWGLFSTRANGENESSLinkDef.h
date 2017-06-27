@@ -30,6 +30,8 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb+;
 #pragma link C++ class AliAnalysisTaskPPVsMultCrossCheckMC+;
 #pragma link C++ class AliAnalysisTaskpANormalizationCheckMC+;
 #pragma link C++ class AliAnalysisTaskLambdaOverK0sJets+;

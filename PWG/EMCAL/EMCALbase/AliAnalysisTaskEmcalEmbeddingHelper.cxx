@@ -33,6 +33,7 @@
 #include <TKey.h>
 #include <TProfile.h>
 #include <TH1F.h>
+#include <TRandom3.h>
 
 #include <AliLog.h>
 #include <AliAnalysisManager.h>
@@ -382,8 +383,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
   // This determines which file is added first to the TChain, thus determining the order of processing
   // Random file access. Only do this if the user has no set the filename index and request random file access
   if (fFilenameIndex == -1 && fRandomFileAccess) {
-    // - 1 ensures that we it doesn't overflow
-    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
+    // Floor ensures that we it doesn't overflow
+    TRandom3 rand(0);
+    fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -739,8 +741,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 
   // Number of files embedded
   histName = "fHistNumberOfFilesEmbedded";
-  histTitle = "Number of files which contributed events to be embeeded";
+  histTitle = "Number of files which contributed events to be embedded";
   fHistManager.CreateTH1(histName, histTitle, 1, 0, 2);
+
+  // File number which was embedded
+  histName = "fHistAbsoluteFileNumber";
+  histTitle = "Number of times each absolute file number was embedded";
+  fHistManager.CreateTH1(histName, histTitle, fMaxNumberOfFiles, 0, fMaxNumberOfFiles);
 
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
@@ -979,7 +986,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   // Jump ahead at random if desired
   // Determines the offset into the tree
   if (fRandomEventNumberAccess) {
-    fOffset = TMath::Nint(gRandom->Rndm()*(fUpperEntry-fLowerEntry))-1;
+    TRandom3 rand(0);
+    fOffset = TMath::Nint(rand.Rndm()*(fUpperEntry-fLowerEntry))-1;
   }
   else {
     fOffset = 0;
@@ -996,6 +1004,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Add to the count the number of files which were embedded
   fHistManager.FillTH1("fHistNumberOfFilesEmbedded", 1);
+  fHistManager.FillTH1("fHistAbsoluteFileNumber", (fFileNumber + fFilenameIndex) % fMaxNumberOfFiles);
 
   // Check for pythia cross section and extract if possible
   // fFileNumber corresponds to the next file
@@ -1030,7 +1039,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 /**
  * Extract pythia information from a cross section file. Modified from AliAnalysisTaskEmcal::PythiaInfoFromFile().
  *
- * @param filename Path to the pythia cross section file.
+ * @param pythiaFileName Path to the pythia cross section file.
  *
  * @return True if the information has been successfully extracted.
  */

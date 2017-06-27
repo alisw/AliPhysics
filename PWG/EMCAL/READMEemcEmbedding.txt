@@ -27,19 +27,27 @@ AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbe
 // Set the file pattern. This example uses ptHardBin 4 of LHC12a15e_fix.
 // The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
 // See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
-embeddingHelper->SetFilePattern("/alice/sim/2012/LHC12a15e_fix/169838/4/AOD149");
+embeddingHelper->SetFilePattern("/alice/sim/2012/LHC12a15e_fix/169838/%d/AOD149");
 // If the embedded file is an ESD, then set:
 embeddingHelper->SetESD();
 // Add additional configure as desired.
-// For example, randomly select which file to start from:
+// For some examples...
+// ... randomly select which file to start from:
 embeddingHelper->SetRandomFileAccess(kTRUE);
-// Start from a random event within each file
+// ... Start from a random event within each file
 embeddingHelper->SetRandomEventNumberAccess(kTRUE);
+// ... Set pt hard bin properties
+embeddingHelper->SetPtHardBin(4);
+embeddingHelper->SetNPtHardBins(11);
 // etc..
+// As your last step, always initialize the helper!
+embeddingHelper->Initialize();
 ~~~
 
-There are a large number of configuration options, including event selection, which are available as
-options for the embedding helper. See AliAnalysisTaskEmcalEmbeddingHelper.
+There are a large number of configuration options, including event selection and MC outlier rejection, which
+are available as options for the embedding helper. See AliAnalysisTaskEmcalEmbeddingHelper. Regardless of the
+options set, always be certain to call AliAnalysisTaskEmcalEmbeddingHelper::Initialize() when you are done
+configuring the task!
 
 Once the embedding helper has been created, it will manage access to the file. Then, the basic ideas is that
 users access the embedded input objects via AliEmcalContainer derived classes (AliClusterContainer,
@@ -49,17 +57,19 @@ track container would look like:
 ~~~{.cxx}
 // Create the new track container
 AliTrackContainer * trackCont = new AliTrackContainer("tracks");
-// Tell the track container that it should be based on e
+// Tell the track container that it should get the tracks from the embedded event
 trackCont->SetIsEmbedding(kTRUE);
 ~~~
 
 Although there are some details to understand, that's roughly all there is to it from the user perspective - it
-should just work! (Recall again that AliEmcalContainers are not required, although they substantially simplify
+should just work! (Recall again that AliEmcalContainers are __not__ required, although they substantially simplify
 the user experience - see [below](\ref emcEmbeddingAdvancedTopics) for more information if you don't want to use them.)
 
-With these basics in mind, there are two major cases to discuss:
-- [Charged input objects (charged tracks)](\ref emcEmbeddingChargedInputObjects)
-- [Full (charged + neutral) input objects (cells, clusters, and tracks)](\ref emcEmbeddingFullInputObjects)
+With these basics in mind, there are a few main topics to discuss:
+- [Embedding charged input objects (charged tracks)](\ref emcEmbeddingChargedInputObjects)
+- [Embedding full (charged + neutral) input objects (cells, clusters, and tracks)](\ref emcEmbeddingFullInputObjects)
+- [Recording Embedded Event properties](\ref emcEmbeddingQA)
+- [Supporting multiple EMCal containers](\ref emcEmbeddingMultipleContainerSupport)
 
 # Charged input objects (charged tracks)            {#emcEmbeddingChargedInputObjects}
 
@@ -69,61 +79,17 @@ is embedding. To repeat from above:
 ~~~{.cxx}
 // Create the new track container
 AliTrackContainer * trackCont = new AliTrackContainer("tracks");
-// Tell the track container that it should be based on e
+// Tell the track container that it should get the tracks from the embedded event
 trackCont->SetIsEmbedding(kTRUE);
 ~~~
 
 That is all there is to it - the embedded tracks are now available!
 
-Although this process is quite straightforward, for this to be useful, we need to make check on some additional
+Although this process is quite straightforward, for this to be useful, we need to check on some additional
 details. In particular, to actually embed the tracks in another event, that means that we will need to add at
 least two track containers - one corresponding the input event, and one to the embedded event. Thus, it is
-imperative that whatever task you are adding the containers to supports multiple containers explicitly. There
-are two parts to this support: 1) Adding multiple containers to the task. 2) Properly utilizing multiple
-containers. Fortunately, adding multiple containers often comes for free: any classes that inherit from
-AliAnalysisTaskEmcal (and by extension AliAnalysisTaskEmcalJet) supports adding multiple containers
-automatically.
-
-Properly supporting multiple containers can be a bit more complicated. There are two relevant groups here:
-1) Core framework and embedding relevant classes. 2) The user's own analysis task.
-
-In the case of the core framework and embedding relevant classes, most of them already support
-multiple containers. Examples include
-- AliEmcalJetTask
-- All EMCal cluster and track corrections (except for the clusterizer) - see more
-  [below](\ref emcEmbeddingFullInputObjects)
-- AliAnalysisTaskEmcalQGTagging
-- AliJetResponseMaker
-
-In the case of the user's own task needs access to multiple containers, it is often as simple as adding
-just a few lines of code to loop over container collections. For AliAnalysisTaskEmcal derived tasks, it should
-look something like this:
-
-~~~{.cxx}
-// Assuming that we want to loop over clusters
-AliClusterContainer * clusCont = 0;
-TIter nextClusCont(&fClusterCollArray);
-while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
-    // A cluster container called cont is available.
-    // It can be used as normal. That might look like:
-    for (auto clusterIter = clusCont->all_momentum()) {
-        // Get the cluster
-        AliVCluster * cluster = clusterIter.second;
-    }
-
-    // Alternatively, if the index of the cluster is needed, use:
-    auto clusItCont = clusCont->accepted_momentum();
-    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
-        // Get the cluster
-        AliVCluster * cluster = clusterIter.second;
-        // Get the cluster index
-        int clusterIndex = clusIterator.current_index();
-    }
-}
-~~~
-
-Looping over multiple track containers is extremely similar. Once you've setup a loop for both, your class
-is ready to go! It is up to you on how to handle it from here.
+imperative that whatever task you are adding the containers to actually supports multiple containers explicitly.
+Many base classes already do. For more information, see [below](\ref emcEmbeddingMultipleContainerSupport).
 
 # Full (charged + neutral) input objects (cells, clusters, and tracks)      {#emcEmbeddingFullInputObjects}
 
@@ -247,7 +213,6 @@ TIter next(&correctionTasks);
 while (( tempCorrectionTask = static_cast<AliEmcalCorrectionTask *>(next())))
 {
     tempCorrectionTask->SelectCollisionCandidates(kPhysSel);
-    tempCorrectionTask->SetRunPeriod(sRunPeriod.Data());
     // Local configuration
     tempCorrectionTask->SetUserConfigurationFilename("userConfiguration.yaml");
     // Initialize the configuration
@@ -285,10 +250,84 @@ Simply add each relevant track container to the relevant task. Make sure to mark
 as embedded for cluster corrections which require tracks. Everything will just work, as in the charged track
 example above.
 
-__Note on the Hadronic Correction__: Due to technical limitations, when working with AOD files, the track
+__Note on the Hadronic Correction__: Due to technical limitations when working with AOD files, the track
 selection of the first particle container is applied to __all__ particles from __all__ particle containers.
 This should not matter for most users, but it is important to be aware of it. A warning will be thrown when
 running with such a configuration.
+
+# Multiple Container Support                       {#emcEmbeddingMultipleContainerSupport}
+
+To actually embed into another event, the user must add at least two EMCal containers to the task:
+one corresponding the input event, and one to the embedded event. Thus, that task must support multiple containers.
+There are two parts to this support:
+
+ 1. Adding multiple containers to the task.
+ 2. Properly utilizing multiple containers.
+
+Fortunately, adding multiple containers often comes for free: any classes that inherit from
+AliAnalysisTaskEmcal (and by extension AliAnalysisTaskEmcalJet) supports adding multiple containers
+automatically.
+
+Properly utilizing multiple containers can be a bit more complicated. There are two relevant groups here:
+
+1. Core framework and embedding relevant classes.
+2. The user's own analysis task.
+
+In the case of the core framework and embedding relevant classes, most of them already support
+multiple containers. Examples include
+- AliEmcalJetTask
+- All EMCal cluster and track corrections (except for the clusterizer) - see the
+  [section on full input objects](\ref emcEmbeddingFullInputObjects) for more.
+- AliAnalysisTaskEmcalQGTagging
+- AliJetResponseMaker
+
+In the case of the user's own task needing access to multiple containers, it is often as simple as adding
+just a few lines of code to loop over container collections. For AliAnalysisTaskEmcal derived tasks, it should
+look something like this:
+
+~~~{.cxx}
+// Assuming that we want to loop over clusters
+AliClusterContainer * clusCont = 0;
+TIter nextClusCont(&fClusterCollArray);
+while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    // A cluster container called cont is available.
+    // It can be used as normal. That might look like:
+    for (auto clusterIter = clusCont->all_momentum()) {
+        // Get the cluster
+        AliVCluster * cluster = clusterIter.second;
+    }
+
+    // Alternatively, if the index of the cluster is needed, use:
+    auto clusItCont = clusCont->accepted_momentum();
+    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
+        // Get the cluster
+        AliVCluster * cluster = clusterIter.second;
+        // Get the cluster index
+        int clusterIndex = clusIterator.current_index();
+    }
+}
+~~~
+
+Looping over multiple track containers is extremely similar. Once you've setup a loop for both, your class
+is ready to go! It is up to you on how to handle it from here.
+
+# Recording of Embedded Events Properties                                   {#emcEmbeddingQA}
+
+The embedding helper will automatically store the properties of the embedded events such as cross section
+and number of trials. These properties are recorded before event selection is applied to either the embedded
+events or the data. However, it is often helpful to record those same properties after both the embedded and
+data event selections. For such a case, there is an additional class, AliEmcalEmbeddingQA.
+
+To use this case requires a few simple steps. First, an AliEmcalEmbeddingQA object should be added to your task.
+Next, it must be initialized via AliEmcalEmbeddingQA::Initialize(). This should usually be done when other
+histograms are being created and configured, such as in ``UserCreateOutputObjects()``. This histograms that are
+created in this class should be added to your tasks output list via AliEmcalEmbeddingQA::AddQAPlotsToList().
+Lastly, the properties should be recorded by calling AliEmcalEmbeddingQA::RecordEmbeddedEventProperties() after
+the event selection has been performed in your task. The properties of the embedded events will then be available
+in your tasks output.
+
+Note that for compatibility reasons, AliAnalysisTaskEmcal::IsPythia() should be set to __false__ if you task
+inherits from that class. Otherwise, histogram names will conflict.
 
 # Note on jets and jet finding
 

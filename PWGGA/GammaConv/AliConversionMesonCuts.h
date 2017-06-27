@@ -30,8 +30,6 @@ class TList;
 class AliAnalysisManager;
 
 
-using namespace std;
-
 class AliConversionMesonCuts : public AliAnalysisCuts {
   
   public: 

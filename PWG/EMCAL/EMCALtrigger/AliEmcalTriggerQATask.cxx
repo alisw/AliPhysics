@@ -377,7 +377,7 @@ void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
     task->SetForceBeamType(beam);
     task->AddAcceptedTriggerClass(triggerClass.c_str());
     if (runnumber > 197692) {
-      task->SetUseNewCentralityEstimation(kTRUE);
+      task->SetCentralityEstimation(kNewCentrality);
     }
 
     if (triggerClass.find("CINT7") != std::string::npos) {

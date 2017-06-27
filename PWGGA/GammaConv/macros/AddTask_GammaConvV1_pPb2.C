@@ -223,6 +223,12 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 20) {   
     cuts.AddCut("86000213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
 
+  // configurations for eta cuts
+  } else if (trainConfig == 21) {   
+    cuts.AddCut("80000113", "0a200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 
+  } else if (trainConfig == 22) {     
+    cuts.AddCut("80000113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
+    
   //Run 2 pPb
   } else if (trainConfig == 100) {
     cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV

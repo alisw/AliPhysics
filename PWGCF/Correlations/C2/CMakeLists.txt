@@ -28,12 +28,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisC2NanoTrack.cxx
   AliAnalysisC2Settings.cxx
   AliAnalysisC2Utils.cxx
   AliAnalysisTaskC2.cxx
-  AliAnalysisTaskC2Base.cxx
   AliAnalysisTaskMCSmearing.cxx
+  AliAnalysisTaskValidation.cxx
   )
 
 # Headers from sources
@@ -49,7 +48,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB PWGLFforward2)
+set(LIBDEPS ANALYSISalice OADB PWGLFforward2 pythia6)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

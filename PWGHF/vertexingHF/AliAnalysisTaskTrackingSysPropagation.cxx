@@ -53,8 +53,8 @@ ClassImp(AliAnalysisTaskTrackingSysPropagation)
 /* $Id$ */
 
 //________________________________________________________________________
-  AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation():
-  AliAnalysisTaskSE("taskTrackingSysProp"),
+AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation():
+AliAnalysisTaskSE("taskTrackingSysProp"),
   fPartName(""),
   fOutput(0x0),
   fAnalysisCuts(0),
@@ -65,7 +65,8 @@ ClassImp(AliAnalysisTaskTrackingSysPropagation)
   fhSystMatchEffD(0x0),
   fDecayChannel(AliAnalysisTaskTrackingSysPropagation::kDplustoKpipi),
   fPDGcode(411),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMaxPt(60.)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -84,7 +85,8 @@ AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation(Ali
   fhSystMatchEffD(0x0),
   fDecayChannel(ch),
   fPDGcode(411),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMaxPt(60.)
 {
   fHistMESyst = new TH1F(*(static_cast<TH1F*>(HistMESys)));
   fHistTrEffSyst = new TH1F(*(static_cast<TH1F*>(HistTrEffSys)));
@@ -137,9 +139,10 @@ void AliAnalysisTaskTrackingSysPropagation::UserCreateOutputObjects(){
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
-    
-  fhSystMatchEffD = new TH2F("fhSystMatchEffD","Matching Efficiency; p_{T} D; syst. (\%)",400,0.,40.,10,0.,10.);
-  fhPtDauVsD      = new TH2F("fhPtDauVsD","Pt Dau vs D; p_{T} D; p_{T} daugh",400,0.,40.,400,0.,40.);
+   
+  int nbins = (int)(10*fMaxPt);
+  fhSystMatchEffD = new TH2F("fhSystMatchEffD","Matching Efficiency; p_{T} D; syst. (\%)",nbins,0.,fMaxPt,50,0.,25.);
+  fhPtDauVsD      = new TH2F("fhPtDauVsD","Pt Dau vs D; p_{T} D; p_{T} daugh",nbins,0.,fMaxPt,nbins,0.,fMaxPt);
     
   fOutput->Add(fHistMESyst);
   fOutput->Add(fHistTrEffSyst);

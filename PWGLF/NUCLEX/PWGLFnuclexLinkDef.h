@@ -43,6 +43,7 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
+#pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 
@@ -59,6 +60,7 @@
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
+#pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
 /// Utils

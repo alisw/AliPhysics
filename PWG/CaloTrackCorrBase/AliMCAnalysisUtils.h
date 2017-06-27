@@ -120,6 +120,7 @@ class AliMCAnalysisUtils : public TObject {
   TString GetMCGeneratorString()  const { return fMCGeneratorString ; }
   
   void    Print(const Option_t * opt) const;
+  void    PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t nGenerMax = 1000) const;
   void    PrintMCTag(Int_t tag) const;
 
  private:

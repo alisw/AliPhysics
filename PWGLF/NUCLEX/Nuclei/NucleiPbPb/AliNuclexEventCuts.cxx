@@ -521,6 +521,7 @@ void AliNuclexEventCuts::SetupRun2pp() {
   fUtils.SetMaxPlpChi2MV(5);
   fUtils.SetMinWDistMV(15);
   fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  fPileUpCutMV = true;
 }
 
 void AliNuclexEventCuts::SetupLHC15o() {

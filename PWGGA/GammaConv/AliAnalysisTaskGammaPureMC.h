@@ -38,7 +38,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
       kPdgPhi = 333,           //!< kPdgPhi
       kPdgJPsi = 443,          //!< kPdgJPsi
       kPdgDeltaMinus = 1114,   //!< kPdgDeltaMinus
-      kPdgDelta0 = 2114,       //!< kPdgDelta0
+      kPdgDelta0 = 2114,       //!< kPdgDelta0s
       kPdgDeltaPlus = 2214,    //!< kPdgDeltaPlus
       kPdgDeltaPlusPlus = 2224,//!< kPdgDeltaPlusPlus
       kPdgSigmaMinus = 3112,   //!< kPdgSigmaMinus
@@ -67,16 +67,15 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);
     void SetLogBinningXTH2(TH2* histoRebin);
+    void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     
   protected:
-    AliVEvent*            fInputEvent;                // current event
-    AliMCEvent*           fMCEvent;                   // corresponding MC event
-    AliStack*             fMCStack;                   // stack belonging to MC event
-    TList*                fOutputContainer;           // Output container
+    AliStack*             fMCStack;                   //! stack belonging to MC event
+    TList*                fOutputContainer;           //! Output container
     // histograms events
-    TH1F*                 fHistNEvents;               // number of events histo
-    TH1D*                 fHistXSection;              // xSection
-    TH1F*                 fHistPtHard;                // ptHard 
+    TH1F*                 fHistNEvents;               //! number of events histo
+    TH1D*                 fHistXSection;              //! xSection
+    TH1F*                 fHistPtHard;                //! ptHard 
     // histograms mesons
     TH2F*                 fHistPtYPi0;                //! histo for Pi0s
     TH2F*                 fHistPtYPiPl;               //! histo for Pi+s 
@@ -135,6 +134,16 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtYEtaPrimGGPCMEMCAcc; //! histo for EtaPrims gamma gamma channel, PCM-EMCal acceptance 
     TH2F*                 fHistPtYEtaPrimGGPCMPHOAcc; //! histo for Pi0s gamma gamma channel, PCM-PHOS acceptance
 
+    TH2F*                 fHistPtYPi0FromKGG;         //! histo for Pi0 from K gamma gamma channel
+    TH2F*                 fHistPtYPi0FromKGGPCMAcc;   //! histo for Pi0 from K gamma gamma channel, PCM acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCAcc;   //! histo for Pi0 from K gamma gamma channel, EMC acceptance
+    TH2F*                 fHistPtYPi0FromKGGPCMEMCAcc;//! histo for Pi0 from K gamma gamma channel, PCM-EMC acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCPCMAcc;//! histo for Pi0 from K gamma gamma channel, EMC-PCM acceptance
+    TH2F*                 fHistPtYPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0
+    TH2F*                 fHistPtYPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance
+    
+    
+	Int_t				  fIsK0;					  // k0 flag		
     Int_t                 fIsMC;                      // MC flag
 
     

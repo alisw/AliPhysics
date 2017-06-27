@@ -73,7 +73,7 @@ Bool_t AliDJetTHnReader::ExtractInputMassPlotEffScale()
 
   TList *histList = dynamic_cast<TList*>(dir->Get(Form("%s0", fListName.Data())));
   THnSparseF *sparse = dynamic_cast<THnSparseF*>(histList->FindObject(fObjectName.Data()));
-  sparse->GetAxis(0)->SetRangeUser(fzmin, fzmax);
+  sparse->GetAxis(0)->SetRangeUser(fJetzBinEdges[0], fJetzBinEdges[fnJetzbins]);
   TH3D* hInvMassptD = static_cast<TH3D*>(sparse->Projection(3, 1, 2));
   hInvMassptD->SetName("hInvMassptD");
 
@@ -116,7 +116,7 @@ Bool_t AliDJetTHnReader::ExtractInputMassPlotSideband()
 
   TList *histList = dynamic_cast<TList*>(dir->Get(Form("%s0", fListName.Data())));
   THnSparseF *sparse = dynamic_cast<THnSparseF*>(histList->FindObject(fObjectName.Data()));
-  sparse->GetAxis(0)->SetRangeUser(fzmin, fzmax);
+  sparse->GetAxis(0)->SetRangeUser(fJetzBinEdges[0], fJetzBinEdges[fnJetzbins]);
   sparse->GetAxis(1)->SetRangeUser(jetmin, jetmax);
   sparse->GetAxis(2)->SetRangeUser(fpTmin, fpTmax);
 

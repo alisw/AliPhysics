@@ -33,7 +33,8 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair,
+   AliRsnCutSet           *PairCutsSame,
+   AliRsnCutSet           *PairCutsMix,
    Bool_t                  ptDep,
    Double_t                pt1,
    Double_t                pt2
@@ -94,7 +95,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma //Standard
-   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
+   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(MaxRap); //Standrd
@@ -111,6 +112,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
 
    if(enableSys){
 
+     if(Sys==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");}
      if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
      else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
      else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
@@ -222,7 +224,12 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(i <= 1){
+       out->SetPairCuts(PairCutsSame);
+     }
+     else{
+       out->SetPairCuts(PairCutsMix);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -273,7 +280,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -291,7 +298,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(-323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);

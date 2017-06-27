@@ -253,6 +253,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoNGammaCandidates;                          //!
     TH2F**                            fHistoNGoodESDTracksVsNGammaCandidates;          //!
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
+    TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
@@ -307,7 +308,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 40);
+    ClassDef(AliAnalysisTaskGammaConvV1, 41);
 };
 
 #endif

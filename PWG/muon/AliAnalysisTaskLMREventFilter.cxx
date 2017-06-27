@@ -80,8 +80,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   // Default constructor
   //
   fNTrigClass=13;
-  for(Int_t i=0;i<fNTrigClass;i++)
-    fTriggerMask[i]=1<<i;
   fTriggerClasses[0]="-B-";
   fTriggerClasses[1]="CMSL7";
   fTriggerClasses[2]="CMSH7";
@@ -122,8 +120,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
 {
   // Constructor
   fNTrigClass=13;
-  for(Int_t i=0;i<fNTrigClass;i++)
-    fTriggerMask[i]=1<<i;
   fTriggerClasses[0]="-B-";
   fTriggerClasses[1]="CMSL7";
   fTriggerClasses[2]="CMSH7";
@@ -188,11 +184,11 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
   
-  fhTriggers = new TH1D("hTriggers","L2 Triggers",43,0,fNTrigClass);
+  fhTriggers = new TH1D("hTriggers","L2 Triggers",46,0,fNTrigClass);
   fOutputList->Add(fhTriggers);	  
   fhTriggers->Sumw2();
 
-  fhNMu = new TH2D("hNMu","Number of Muon",20,0,20,43,0,fNTrigClass);
+  fhNMu = new TH2D("hNMu","Number of Muon",20,0,20,46,0,fNTrigClass);
   fOutputList->Add(fhNMu);
   fhNMu->Sumw2();
 
@@ -232,11 +228,11 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   Int_t CINT8Shift=CINT7Shift+4;
   for(Int_t i=1;i<5;i++) 
     {
-      fhTriggers->GetXaxis()->SetBinLabel(i+CINT7Shift,Form("%s (PS CINT7)",fTriggerClasses[i].Data()));
-      fhNMu->GetYaxis()->SetBinLabel(i+CINT7Shift,Form("%s (PS CINT7)",fTriggerClasses[i].Data()));
+      fhTriggers->GetXaxis()->SetBinLabel(i+CINT7Shift,Form("%s (PS)",fTriggerClasses[i].Data()));
+      fhNMu->GetYaxis()->SetBinLabel(i+CINT7Shift,Form("%s (PS)",fTriggerClasses[i].Data()));
       
-      fhTriggers->GetXaxis()->SetBinLabel(i+CINT8Shift,Form("%s (PS CINT8)",fTriggerClasses[i+4].Data()));
-      fhNMu->GetYaxis()->SetBinLabel(i+CINT8Shift,Form("%s (PS CINT8)",fTriggerClasses[i+4].Data()));
+      fhTriggers->GetXaxis()->SetBinLabel(i+CINT8Shift,Form("%s (PS)",fTriggerClasses[i+4].Data()));
+      fhNMu->GetYaxis()->SetBinLabel(i+CINT8Shift,Form("%s (PS)",fTriggerClasses[i+4].Data()));
     }
   
   fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+5,Form("%s (PS)",fTriggerClasses[9].Data()));
@@ -281,20 +277,26 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+20,Form("%s &0MSL (PS)",fTriggerClasses[12].Data()));
   fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+20,Form("%s &0MSL (PS)",fTriggerClasses[12].Data()));
   
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+21,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+21,Form("%s &0TVX (PS)",fTriggerClasses[10].Data()));
   fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+21,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10].Data()));
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+22,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10].Data()));
-  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+22,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+22,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+22,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+23,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+23,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10].Data()));
 
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+23,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[11].Data()));
-  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+23,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[11].Data()));
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+24,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[11].Data()));
-  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+24,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[11].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+24,Form("%s &0TVX (PS)",fTriggerClasses[11].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+24,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[11].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+25,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[11].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+25,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[11].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+26,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[11].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+26,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[11].Data()));
     
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+25,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[12].Data()));
-  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+25,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[12].Data()));
-  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+26,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
-  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+26,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+27,Form("%s &0TVX (PS)",fTriggerClasses[12].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+27,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[12].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+28,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[12].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+28,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[12].Data()));
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+29,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+29,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
     
   PostData(1, fOutputList);
   PostData(2, fEventTree);
@@ -361,103 +363,11 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   if (!fAOD) 
     return;
 
-  UInt_t evtTrigSelect=0;
   UShort_t physicsSelectionMask=1<<0;
   UShort_t L0TriggerInput=1<<0;
   
-  if (!IsSelectedTrigger(fAOD, kTRUE,evtTrigSelect,physicsSelectionMask,L0TriggerInput)) 
+  if (!IsSelectedTrigger(fAOD, kTRUE,physicsSelectionMask,L0TriggerInput)) 
     return; 
-  
-  if (!fAOD->GetNumberOfTracks())
-    return;
-  
-  Int_t nmu = fAOD->GetNumberOfMuonTracks();
-  
-  if(evtTrigSelect&fTriggerMask[0])
-    {
-      fhNMu->Fill(nmu,fTriggerClasses[0],1);
-      PostData(1, fOutputList); 
-      return;
-    }
-
-  fhNMu->Fill(nmu,fTriggerClasses[0],1);
-  for(Int_t i=10;i<fNTrigClass;i++)
-    {
-      if(evtTrigSelect&fTriggerMask[i])
-	{
-	  fhNMu->Fill(nmu,fTriggerClasses[i],1);
-	  if(physicsSelectionMask&(1<<1))
-	    {
-	      fhNMu->Fill(nmu,Form("%s (PS)",fTriggerClasses[i].Data()),1);
-	      if(L0TriggerInput&(1<<1))
-		{
-		  fhNMu->Fill(nmu,Form("%s &0TVX (PS)",fTriggerClasses[i].Data()),1);
-		  if(L0TriggerInput&(1<<2))
-		    fhNMu->Fill(nmu,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[i].Data()),1);
-		  if(L0TriggerInput&(1<<3))
-		    fhNMu->Fill(nmu,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[i].Data()),1);
-		}
-	      if(L0TriggerInput&(1<<2))
-		fhNMu->Fill(nmu,Form("%s &0MSL (PS)",fTriggerClasses[i].Data()),1);
-	      if(L0TriggerInput&(1<<3))
-		fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[i].Data()),1);
-	    }
-	}
-    }
-  
-  if(evtTrigSelect&fTriggerMask[9])
-    {
-      fhNMu->Fill(nmu,fTriggerClasses[9],1);
-      if(physicsSelectionMask&(1<<2))
-	{
-	  fhNMu->Fill(nmu,Form("%s (PS)",fTriggerClasses[9].Data()),1);
-	  if(L0TriggerInput&(1<<2))
-	    fhNMu->Fill(nmu,Form("%s &0MSL (PS)",fTriggerClasses[9].Data()),1);
-	  if(L0TriggerInput&(1<<3))
-	    fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
-	}
-    }
-
-  if(evtTrigSelect&fTriggerMask[1])
-    {
-      fhNMu->Fill(nmu,fTriggerClasses[1],1);
-      if(physicsSelectionMask&(1<<3))
-	{
-	  fhNMu->Fill(nmu,Form("%s (PS CINT7)",fTriggerClasses[1].Data()),1);
-	  if(L0TriggerInput&(1<<3))
-	    fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
-	  if(L0TriggerInput&(1<<4))
-	    fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
-	}
-    }
-  if(evtTrigSelect&fTriggerMask[5])
-    {
-      fhNMu->Fill(nmu,fTriggerClasses[5],1);
-      if(physicsSelectionMask&(1<<4))
-	{
-	  fhNMu->Fill(nmu,Form("%s (PS CINT8)",fTriggerClasses[1].Data()),1);
-	  if(L0TriggerInput&(1<<3))
-	    fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
-	  if(L0TriggerInput&(1<<4))
-	    fhNMu->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
-	}
-    }
-  
-  for(Int_t i=2;i<5;i++)
-    {
-      fhNMu->Fill(nmu,fTriggerClasses[i],1);
-      if(evtTrigSelect&fTriggerMask[i])
-	{
-	  if(physicsSelectionMask&(1<<3))
-	    fhNMu->Fill(nmu,Form("%s (PS CINT7)",fTriggerClasses[i].Data()),1);
-	}
-      if(evtTrigSelect&fTriggerMask[i+4])
-	{
-	  if(physicsSelectionMask&(1<<4))
-	    fhNMu->Fill(nmu,Form("%s (PS CINT8)",fTriggerClasses[i+4].Data()),1);
-	}
-    }
-  
   TString triggerWord(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   // ---
 
@@ -533,6 +443,9 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetL0TriggerInput(L0TriggerInput);
   fAliLMREvent->SetPhysicsSelectionMask(physicsSelectionMask);
   fAliLMREvent->SetIsPileupFromSPD(fAOD->IsPileupFromSPD(fminContributorsPileUp));
+  Int_t nmu=0;
+  if(fAOD->GetNumberOfTracks())
+     nmu= fAOD->GetNumberOfMuonTracks();
   if (nmu>0)
     {
       Int_t ntotTr = fAOD->GetNumberOfTracks(); 
@@ -544,7 +457,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
     
 	  Double_t p[3];
     
-	  Int_t charge = track->Charge(); 
+	  Short_t charge = track->Charge(); 
 	  track->GetPxPyPz(p);
 	  Double_t chi2Match = track->GetChi2MatchTrigger();
 	  Int_t match = track->GetMatchTrigger();	
@@ -554,9 +467,8 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  TVector3 dcaAtVz  = fMuonTrackCuts->GetCorrectedDCA(track);
 	  Double_t pTotMean = fMuonTrackCuts->GetAverageMomentum(track);
 	  Double_t pDca = pTotMean * dcaAtVz.Mag();
-    
 	  // Create new Muon
-	  trk = fAliLMREvent->AddMuon();
+	  trk=fAliLMREvent->AddMuon();
 	  trk->SetMomentum(p[0],p[1],p[2]);
 	  trk->SetCharge(charge);
 	  trk->SetChi2Match(chi2Match);
@@ -566,15 +478,16 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetTriggerMatch(match);
 	  trk->SetSelectionMask(fMuonTrackCuts->GetSelectionMask(track));
 	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
-	}
+	  }
     }
   
  
  fEventTree->Fill();
  fAliLMREvent->Clear("");
-  
+
  PostData(1, fOutputList); 
  PostData(2, fEventTree);
+ // fAOD=NULL;
 
 }
 
@@ -594,26 +507,31 @@ void AliAnalysisTaskLMREventFilter::Terminate(Option_t *)
 
 //====================================================================================================================================================
 
-Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UInt_t &evtTrigSelect,UShort_t &physicsSelectionMask,UShort_t &L0TriggerInput)
+Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &physicsSelectionMask,UShort_t &L0TriggerInput)
 {
   Bool_t evtToBeProcessed = kFALSE;
+  Bool_t goodTrig = kFALSE;
+  Int_t nmu=0;
+   if (fAOD->GetNumberOfTracks())
+     nmu= fAOD->GetNumberOfMuonTracks();
   // -- Check Trigger 
   TString trigStr(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   TObjArray * tokens = trigStr.Tokenize(" ");
   Int_t ntokens = tokens->GetEntriesFast();
-  UInt_t mask=0,tmpMask=0;
-  Bool_t goodTrig = kFALSE;
   for (Int_t itoken = 0; itoken < ntokens; ++itoken)
     {
       if ((((TObjString*)tokens->At(itoken))->String()).Contains(fTriggerClasses[0])) //for -B-
 	{
 	  goodTrig = kTRUE;
-	  mask=1<<0;
+	  fhNMu->Fill(nmu,fTriggerClasses[0],1);
 	  break;
 	}
     }
   if(!goodTrig)
-    return evtToBeProcessed;
+    {
+      delete tokens;
+      return evtToBeProcessed;
+    }
   evtToBeProcessed = kTRUE;
 
   if (fillHisto) 
@@ -628,7 +546,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	  if ((((TObjString*)tokens->At(itoken))->String()).Contains(fTriggerClasses[i])) 
 	    {
 	      goodTrig = kTRUE;
-	      tmpMask|=fTriggerMask[i];
+	      fhNMu->Fill(nmu,fTriggerClasses[i],1);
 	      break;
 	    }
 	}
@@ -644,7 +562,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   Bool_t isMuonINT7selected  = fSelectMask&fSelectedMaskMuonINT7; 
   Bool_t isMuonC0TVXselected = fSelectMask&fSelectedMaskMuonINT8; 
 
-  if(fSelectMask&AliVEvent::kINT7)
+  if(fSelectMask&(AliVEvent::kINT7|AliVEvent::kINT7inMUON))
     physicsSelectionMask|=1<<1;
   if(fSelectMask&AliVEvent::kINT8)
     physicsSelectionMask|=1<<2;
@@ -654,11 +572,11 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
     physicsSelectionMask|=1<<4;
 
   UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
-  L0TriggerInput;
   Int_t is0TVXfired = (inpmask & (1<<(fL0TriggerInputTVX-1)));
   Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
   Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
   Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
+
   if(is0TVXfired)
     L0TriggerInput|=1<<1;
   if(is0MSLfired)
@@ -668,26 +586,38 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   if(is0MLLfired)
     L0TriggerInput|=1<<4;
 
-  if(fSelectMask&AliVEvent::kINT7)
+  if(fSelectMask&(AliVEvent::kINT7|AliVEvent::kINT7inMUON))
     {
       for(Int_t i=0;i<3;i++)
 	{
 	  if(trigStr.Contains(fTriggerClasses[10+i].Data()))
 	    {
 	      fhTriggers->Fill(Form("%s (PS)",fTriggerClasses[10+i].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s (PS)",fTriggerClasses[10+i].Data()),1);
 	      if(is0TVXfired)
-		fhTriggers->Fill(Form("%s &0TVX (PS)",fTriggerClasses[10+i].Data()),1);
+		{
+		  fhTriggers->Fill(Form("%s &0TVX (PS)",fTriggerClasses[10+i].Data()),1);
+		  fhNMu ->Fill(nmu,Form("%s &0TVX (PS)",fTriggerClasses[10+i].Data()),1);
+		}
 	      if(is0MSLfired)
 		{	 
 		  fhTriggers->Fill(Form("%s &0MSL (PS)",fTriggerClasses[10+i].Data()),1);
+		  fhNMu ->Fill(nmu,Form("%s &0MSL (PS)",fTriggerClasses[10+i].Data()),1);
 		  if(is0TVXfired)
-		    fhTriggers->Fill(Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10+i].Data()),1);
+		    {
+		      fhTriggers->Fill(Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10+i].Data()),1);
+		      fhNMu ->Fill(nmu,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[10+i].Data()),1);
+		    }
 		}
 	      if(is0MULfired)
 		{	 
 		  fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[10+i].Data()),1);
+		  fhNMu ->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[10+i].Data()),1);
 		  if(is0TVXfired)
-		    fhTriggers->Fill(Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10+i].Data()),1);
+		    {
+		      fhTriggers->Fill(Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10+i].Data()),1);
+		      fhNMu ->Fill(nmu,Form("%s &0TVX &0MUL (PS)",fTriggerClasses[10+i].Data()),1);
+		    }
 		}
 	    }
 	}
@@ -697,47 +627,68 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
       if(trigStr.Contains(fTriggerClasses[9].Data()))
 	{
 	  fhTriggers->Fill(Form("%s (PS)",fTriggerClasses[9].Data()),1);
+	  fhNMu ->Fill(nmu,Form("%s (PS)",fTriggerClasses[9].Data()),1);
 	  if(is0MSLfired)
-	    fhTriggers->Fill(Form("%s &0MSL (PS)",fTriggerClasses[9].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MSL (PS)",fTriggerClasses[9].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MSL (PS)",fTriggerClasses[9].Data()),1);
+	    }
 	  if(is0MULfired)
-	    fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
+	    }
 	}
     }
   if(isMuonINT7selected)
     {
-      for(Int_t i=2;i<5;i++) 
+      for(Int_t i=1;i<5;i++) 
 	{
 	  if(trigStr.Contains(fTriggerClasses[i].Data()))
-	    fhTriggers->Fill(Form("%s (PS CINT7)",fTriggerClasses[i].Data()),1);
-	}
+	    {
+	      fhTriggers->Fill(Form("%s (PS)",fTriggerClasses[i].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s (PS)",fTriggerClasses[i].Data()),1);
+	    }
+	 }
       if(trigStr.Contains("CMSL7"))
 	{
 	  if(is0MULfired)
-	    fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[1].Data()),1);
+	    }
 	  if(is0MLLfired)
-	    fhTriggers->Fill(Form("%s &0MLL (PS)",fTriggerClasses[1].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MLL (PS)",fTriggerClasses[1].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MLL (PS)",fTriggerClasses[1].Data()),1);
+	    }
 	}
     }
   if(isMuonC0TVXselected)
     {
-      for(Int_t i=6;i<9;i++) 
+      for(Int_t i=5;i<9;i++) 
 	{
 	  if(trigStr.Contains(fTriggerClasses[i].Data()))
-	    fhTriggers->Fill(Form("%s (PS CINT8)",fTriggerClasses[i].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s (PS)",fTriggerClasses[i].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s (PS)",fTriggerClasses[i].Data()),1);
+	    }
 	}
       if(trigStr.Contains("CMSL8"))
 	{
 	  if(is0MULfired)
-	    fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[5].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[5].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[5].Data()),1);
+	    }
 	  if(is0MLLfired)
-	    fhTriggers->Fill(Form("%s &0MLL (PS)",fTriggerClasses[5].Data()),1);
+	    {
+	      fhTriggers->Fill(Form("%s &0MLL (PS)",fTriggerClasses[5].Data()),1);
+	      fhNMu ->Fill(nmu,Form("%s &0MLL (PS)",fTriggerClasses[5].Data()),1);
+	    }
 	}
     }
   delete tokens;
-  if(tmpMask!=0)
-    mask=tmpMask;
 
-  evtTrigSelect=mask;
   return evtToBeProcessed;
-  
 }

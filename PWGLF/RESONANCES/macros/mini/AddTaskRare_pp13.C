@@ -1090,6 +1090,15 @@ Bool_t Config_kxk0
    /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+   
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -1127,7 +1136,14 @@ Bool_t Config_kxk0
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(TrackCutsK0 & 1024){
+       out->SetPairCuts(cutsPair);
+     }else if(TrackCutsK0 & 2048){
+       out->SetPairCuts(cutsPair2);
+     }else{
+       if(i==0 || i==1 || i==4 || i==5) out->SetPairCuts(cutsPair2);
+       else out->SetPairCuts(cutsPair);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 1005, 0.99, 3.);
@@ -2180,6 +2196,15 @@ Bool_t Config_pk0
    /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+   
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -2217,7 +2242,14 @@ Bool_t Config_pk0
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(TrackCutsK & 1024){
+       out->SetPairCuts(cutsPair);
+     }else if(TrackCutsK & 2048){
+       out->SetPairCuts(cutsPair2);
+     }else{
+       if(i==0 || i==1 || i==4 || i==5) out->SetPairCuts(cutsPair2);
+       else out->SetPairCuts(cutsPair);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 785, 1.43, 3.);
@@ -2577,6 +2609,16 @@ Bool_t Config_Lambdapi
    /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+   
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -2614,7 +2656,14 @@ Bool_t Config_Lambdapi
       out->SetMotherPDG(ipdg[i]);
       out->SetMotherMass(mass[i]);
       // pair cuts
-      out->SetPairCuts(cutsPair);
+      if(TrackCutsLambda & 1024){
+	out->SetPairCuts(cutsPair);
+      }else if(TrackCutsLambda & 2048){
+	out->SetPairCuts(cutsPair2);
+      }else{
+	if(!(i>=4 && i<=7)) out->SetPairCuts(cutsPair2);
+	else out->SetPairCuts(cutsPair);
+      }
       // axis X: invmass
       if (useIM[i]) 
              out->AddAxis(imID, 875, 1.25, 3.);
@@ -3126,7 +3175,17 @@ Bool_t Config_Lambdakx
    /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
    
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
+
    //
    // -- Create all needed outputs -----------------------------------------------------------------
    //
@@ -3163,7 +3222,14 @@ Bool_t Config_Lambdakx
       out->SetMotherPDG(ipdg[i]);
       out->SetMotherMass(mass[i]);
       // pair cuts
-      out->SetPairCuts(cutsPair);
+      if(TrackCutsLambda & 1024){
+	out->SetPairCuts(cutsPair);
+      }else if(TrackCutsLambda & 2048){
+	out->SetPairCuts(cutsPair2);
+      }else{
+	if(!(i>=4 && i<=7)) out->SetPairCuts(cutsPair2);
+	else out->SetPairCuts(cutsPair);
+      }
       // axis X: invmass
       if (useIM[i]) 
              out->AddAxis(imID, 700, 1.6, 3.);
@@ -3666,7 +3732,17 @@ Bool_t Config_Lambdak0
    /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
    
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
+
    //
    // -- Create all needed outputs -----------------------------------------------------------------
    //
@@ -3703,7 +3779,14 @@ Bool_t Config_Lambdak0
       out->SetMotherPDG(ipdg[i]);
       out->SetMotherMass(mass[i]);
       // pair cuts
-      out->SetPairCuts(cutsPair);
+       if(TrackCutsLambda & 1024){
+	out->SetPairCuts(cutsPair);
+      }else if(TrackCutsLambda & 2048){
+	out->SetPairCuts(cutsPair2);
+      }else{
+	if(i<=1) out->SetPairCuts(cutsPair2);
+	else out->SetPairCuts(cutsPair);
+      }
       // axis X: invmass
       if (useIM[i]) 
              out->AddAxis(imID, 700, 1.6, 3.);
@@ -4195,7 +4278,17 @@ Bool_t Config_Lambdap
    /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.5,0.5);
+
+   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
    
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->AddCut(cutV0);
+   cutsPair2->SetCutScheme(TString::Format("%s&(!%s)",cutY2->GetName(),cutV0->GetName()).Data());
+
    //
    // -- Create all needed outputs -----------------------------------------------------------------
    //
@@ -4232,7 +4325,14 @@ Bool_t Config_Lambdap
       out->SetMotherPDG(ipdg[i]);
       out->SetMotherMass(mass[i]);
       // pair cuts
-      out->SetPairCuts(cutsPair);
+      if(TrackCutsLambda & 1024){
+	out->SetPairCuts(cutsPair);
+      }else if(TrackCutsLambda & 2048){
+	out->SetPairCuts(cutsPair2);
+      }else{
+	if(!(i>=4 && i<=7)) out->SetPairCuts(cutsPair2);
+	else out->SetPairCuts(cutsPair);
+      }
       // axis X: invmass
       if (useIM[i]) 
              out->AddAxis(imID, 975, 2.05, 4.);

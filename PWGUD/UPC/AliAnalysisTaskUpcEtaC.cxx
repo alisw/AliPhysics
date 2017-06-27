@@ -89,6 +89,8 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
   fTPCdEdxVsTOFbetaAll(0),fTPCdEdxVsTOFbetaPionsWithPID(0),fTPCdEdxVsTOFbetaKaonsWithPID(0),
   fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
+  fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
+  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),//f3PiPi3RhoPtVsMinvRho(0),f3PiPi2RhoPtVsMinvEtaC(0),f3PiPi1RhoPtVsMinvEtaC(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -123,6 +125,8 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   fTPCdEdxVsTOFbetaAll(0),fTPCdEdxVsTOFbetaPionsWithPID(0),fTPCdEdxVsTOFbetaKaonsWithPID(0),
   fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
+  fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
+  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),//f3PiPi3RhoPtVsMinvRho(0),f3PiPi2RhoPtVsMinvEtaC(0),f3PiPi1RhoPtVsMinvEtaC(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -152,7 +156,7 @@ void AliAnalysisTaskUpcEtaC::Init()
   	fTrigger[i] = kFALSE;
 	fTriggerInputsMC[i] = kFALSE;
 	}
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<7; i++) {
 	fPIDTPCMuon[i] = -666;
 	fPIDTPCElectron[i] = -666;
 	fPIDTPCPion[i] = -666;
@@ -167,7 +171,7 @@ void AliAnalysisTaskUpcEtaC::Init()
 	
 	fIsVtxContributor[i] = kFALSE;
 	}
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<7; i++) {
 	fPIDTPCMuonPos[i] = -666;
 	fPIDTPCElectronPos[i] = -666;
 	fPIDTPCPionPos[i] = -666;
@@ -535,6 +539,47 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   for (Int_t i = 0; i<15; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
   fListHist->Add(fHistNeventsEtaC);
 
+  TString CutNameEtaCRhoChannel[13] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+			     "Four Pions","non-zero net charge","zero net charge","no sets of #rho's","one set of #rho's",
+			     "two sets of #rho's","#eta_{C}->#rho#rho candidates"};
+
+  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",13,0.5,13.5);
+  for (Int_t i = 0; i<13; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
+  fListHist->Add(fHistNeventsEtaCRhoChannel);
+
+  f2RhoPtVsMinvEtaC = new TH2D("f2RhoPtVsMinvEtaC","f2RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
+  fListHist->Add(f2RhoPtVsMinvEtaC);
+
+  f4PionPtVsMinvEtaC = new TH2D("f4PionPtVsMinvEtaC","f4PionPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
+  fListHist->Add(f4PionPtVsMinvEtaC);
+
+  f2RhoPtVsMinvRho = new TH2D("f2RhoPtVsMinvRho","f2RhoPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
+  fListHist->Add(f2RhoPtVsMinvRho);
+
+  f4PionPtVsMinvRho = new TH2D("f4PionPtVsMinvRho","f4PionPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
+  fListHist->Add(f4PionPtVsMinvRho);
+
+  //3PiPi channel
+  TString CutNameEtaC3PiPiChannel[9] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
+					"Six Pions","non-zero net charge","0 charge, candidate"};
+
+  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",13,0.5,13.5);
+  for (Int_t i = 0; i<13; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
+  fListHist->Add(fHistNeventsEtaC3PiPiChannel);
+
+  f3PiPiPtVsMinvEtaC = new TH2D("f3PiPiPtVsMinvEtaC","f3PiPiPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
+  fListHist->Add(f3PiPiPtVsMinvEtaC);
+
+  //f3PiPi3RhoPtVsMinvEtaC = new TH2D("f3PiPi3RhoPtVsMinvEtaC","f3PiPi3RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
+  //fListHist->Add(f3PiPi3RhoPtVsMinvEtaC);
+
+  //f3PiPi2RhoPtVsMinvRho = new TH2D("f3PiPi2RhoPtVsMinvRho","f3PiPi2RhoPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
+  //fListHist->Add(f3PiPi2RhoPtVsMinvRho);
+
+  //f3PiPi1RhoPtVsMinvRho = new TH2D("f3PiPi1RhoPtVsMinvRho","f3PiPi1RhoPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
+  //fListHist->Add(f3PiPi1RhoPtVsMinvRho);
+
+
   //  cout << "##### After fHistNevents... stuff is completed" << endl;
 
   fMPiKvsMPiK = new TH2D("fMPiKvsMPiK","fMPiKvsMPiK",4000, 0.0, 40., 4000, 0.0, 40.);
@@ -552,9 +597,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(f2KstarTPCsignalPion);
   f2KstarTPCsignalKaon = new TH2D("f2KstarTPCsignalKaon","f2KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
   fListHist->Add(f2KstarTPCsignalKaon);
-  f2KstarDedxVsPtPion = new TH2D("f2KstarDedxVsPtPion","f2KstarDedxVsPtPion",3000,0.,300., 3000,0.,300.);
+  f2KstarDedxVsPtPion = new TH2D("f2KstarDedxVsPtPion","f2KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f2KstarDedxVsPtPion);
-  f2KstarDedxVsPtKaon = new TH2D("f2KstarDedxVsPtKaon","f2KstarDedxVsPtKaon",3000,0.,300., 3000,0.,300.);
+  f2KstarDedxVsPtKaon = new TH2D("f2KstarDedxVsPtKaon","f2KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f2KstarDedxVsPtKaon);
   f2KstarPtVsMinvFirstKstar = new TH2D("f2KstarPtVsMinvFirstKstar","f2KstarPtVsMinvFirstKstar",1000, 0., 10., 1000, 0., 10.);
   fListHist->Add(f2KstarPtVsMinvFirstKstar);
@@ -581,9 +626,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(f1KstarTPCsignalPion);
   f1KstarTPCsignalKaon = new TH2D("f1KstarTPCsignalKaon","f1KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
   fListHist->Add(f1KstarTPCsignalKaon);
-  f1KstarDedxVsPtPion = new TH2D("f1KstarDedxVsPtPion","f1KstarDedxVsPtPion",3000,0.,300., 3000,0.,300.);
+  f1KstarDedxVsPtPion = new TH2D("f1KstarDedxVsPtPion","f1KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f1KstarDedxVsPtPion);
-  f1KstarDedxVsPtKaon = new TH2D("f1KstarDedxVsPtKaon","f1KstarDedxVsPtKaon",3000,0.,300., 3000,0.,300.);
+  f1KstarDedxVsPtKaon = new TH2D("f1KstarDedxVsPtKaon","f1KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f1KstarDedxVsPtKaon);
   f1KstarPtVsMinvKstar = new TH2D("f1KstarPtVsMinvKstar","f1KstarPtVsMinvKstar",1000, 0., 10.,1000, 0., 10.);
   fListHist->Add(f1KstarPtVsMinvKstar);
@@ -610,9 +655,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(f0KstarTPCsignalPion);
   f0KstarTPCsignalKaon = new TH2D("f0KstarTPCsignalKaon","f0KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
   fListHist->Add(f0KstarTPCsignalKaon);
-  f0KstarDedxVsPtPion = new TH2D("f0KstarDedxVsPtPion","f0KstarDedxVsPtPion",3000,0.,300., 3000,0.,300.);
+  f0KstarDedxVsPtPion = new TH2D("f0KstarDedxVsPtPion","f0KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f0KstarDedxVsPtPion);
-  f0KstarDedxVsPtKaon = new TH2D("f0KstarDedxVsPtKaon","f0KstarDedxVsPtKaon",3000,0.,300., 3000,0.,300.);
+  f0KstarDedxVsPtKaon = new TH2D("f0KstarDedxVsPtKaon","f0KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
   fListHist->Add(f0KstarDedxVsPtKaon);
   f0KstarPtVsMinvFirstPiKcombo = new TH2D("f0KstarPtVsMinvFirstPiKcombo","f0KstarPtVsMinvFirstPiKcombo",1000, 0., 10., 1000, 0., 10.);
   fListHist->Add(f0KstarPtVsMinvFirstPiKcombo);
@@ -640,17 +685,17 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(fNSigmaKaonTPCvsNSigmaKaonTOFMidPt);
   fNSigmaKaonTPCvsNSigmaKaonTOFHighPt = new TH2D("fNSigmaKaonTPCvsNSigmaKaonTOFHighPt","fNSigmaKaonTPCvsNSigmaKaonTOFHighPt",900,-30,60,900,-30,60);
   fListHist->Add(fNSigmaKaonTPCvsNSigmaKaonTOFHighPt);
-  fTPCdEdxVsTOFbetaAll = new TH2D("fTPCdEdxVsTOFbetaAll","fTPCdEdxVsTOFbetaAll",3000,0.,300.,200,0.,2.);
+  fTPCdEdxVsTOFbetaAll = new TH2D("fTPCdEdxVsTOFbetaAll","fTPCdEdxVsTOFbetaAll",200,0.,2.,3000,0.,300.);
   fListHist->Add(fTPCdEdxVsTOFbetaAll);
-  fTPCdEdxVsTOFbetaPionsWithPID = new TH2D("fTPCdEdxVsTOFbetaPionsWithPID","fTPCdEdxVsTOFbetaPionsWithPID",3000,0.,300.,200,0.,2.);
+  fTPCdEdxVsTOFbetaPionsWithPID = new TH2D("fTPCdEdxVsTOFbetaPionsWithPID","fTPCdEdxVsTOFbetaPionsWithPID",200,0.,2.,3000,0.,300.);
   fListHist->Add(fTPCdEdxVsTOFbetaPionsWithPID);
-  fTPCdEdxVsTOFbetaKaonsWithPID = new TH2D("fTPCdEdxVsTOFbetaKaonsWithPID","fTPCdEdxVsTOFbetaKaonsWithPID",3000,0.,300.,200,0.,2.);
+  fTPCdEdxVsTOFbetaKaonsWithPID = new TH2D("fTPCdEdxVsTOFbetaKaonsWithPID","fTPCdEdxVsTOFbetaKaonsWithPID",200,0.,2.,3000,0.,300.);
   fListHist->Add(fTPCdEdxVsTOFbetaKaonsWithPID);
-  fTOFTimeVsTPCdEdxAll = new TH2D("fTOFTimeVsTPCdEdxAll","fTOFTimeVsTPCdEdxAll",3000,0.,300.,2000,-200.,200.);
+  fTOFTimeVsTPCdEdxAll = new TH2D("fTOFTimeVsTPCdEdxAll","fTOFTimeVsTPCdEdxAll",3000,0.,300.,5000,0.,50000.); //Time in picoseconds
   fListHist->Add(fTOFTimeVsTPCdEdxAll);
-  fTOFTimeVsTPCdEdxPionsWithPID = new TH2D("fTOFTimeVsTPCdEdxPionsWithPID","fTOFTimeVsTPCdEdxPionsWithPID",3000,0.,300.,2000,-200.,200.);
+  fTOFTimeVsTPCdEdxPionsWithPID = new TH2D("fTOFTimeVsTPCdEdxPionsWithPID","fTOFTimeVsTPCdEdxPionsWithPID",3000,0.,300.,5000,0.,50000.);
   fListHist->Add(fTOFTimeVsTPCdEdxPionsWithPID);
-  fTOFTimeVsTPCdEdxKaonsWithPID = new TH2D("fTOFTimeVsTPCdEdxKaonsWithPID","fTOFTimeVsTPCdEdxKaonsWithPID",3000,0.,300.,2000,-200.,200.);
+  fTOFTimeVsTPCdEdxKaonsWithPID = new TH2D("fTOFTimeVsTPCdEdxKaonsWithPID","fTOFTimeVsTPCdEdxKaonsWithPID",3000,0.,300.,5000,0.,50000.);
   fListHist->Add(fTOFTimeVsTPCdEdxKaonsWithPID);
   fNTracksWithTOFPIDPerEvent = new TH1D("fNTracksWithTOFPIDPerEvent","fNTracksWithTOFPIDPerEvent",10,0.,10.);
   fListHist->Add(fNTracksWithTOFPIDPerEvent);
@@ -932,6 +977,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Double_t k0ShortMass = partK0short->Mass();
   Double_t k0ShortWidth = partK0short->Width();
 
+  TParticlePDG *partRho = pdgdat->GetParticle( 113 );
+  Double_t rhoMass = partRho->Mass();
+  Double_t rhoWidth = partRho->Width();
+
   //  cout << "mPi " << pionMass << ", mK " << kaonMass << ", mKstar " << kStarMass << ", wKstar " << kStarWidth << ", mk0s " << k0ShortMass << ", wk0s " << k0ShortWidth << endl;
 
   //input event
@@ -942,6 +991,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   fHistNeventsEtaCK0sChannel->Fill(1);
   fHistNeventsEtaC->Fill(1);
+  fHistNeventsEtaCRhoChannel->Fill(1);
+  fHistNeventsEtaC3PiPiChannel->Fill(1);
 
   //AliAODpidUtil
   //AliAODpidUtil *pidres = new AliAODpidUtil;
@@ -956,6 +1007,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   
   fHistNeventsEtaCK0sChannel->Fill(2);
   fHistNeventsEtaC->Fill(2);
+  fHistNeventsEtaCRhoChannel->Fill(2);
+  fHistNeventsEtaC3PiPiChannel->Fill(2);
   
   AliAODZDC *fZDCdata = aod->GetZDCData();
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
@@ -975,6 +1028,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   
   fHistNeventsEtaCK0sChannel->Fill(3);
   fHistNeventsEtaC->Fill(3);
+  fHistNeventsEtaCRhoChannel->Fill(3);
+  fHistNeventsEtaC3PiPiChannel->Fill(3);
 
   //VZERO, ZDC
   AliAODVZERO *fV0data = aod ->GetVZEROData();
@@ -986,12 +1041,16 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   
   fHistNeventsEtaCK0sChannel->Fill(4);
   fHistNeventsEtaC->Fill(4);
+  fHistNeventsEtaCRhoChannel->Fill(4);
+  fHistNeventsEtaC3PiPiChannel->Fill(4);
 
   if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
   
   fHistNeventsEtaCK0sChannel->Fill(5);
   fHistNeventsEtaC->Fill(5); 
-  
+  fHistNeventsEtaCRhoChannel->Fill(5);
+  fHistNeventsEtaC3PiPiChannel->Fill(5);
+
   //Systematics - cut variation
   if(fRunSystematics) RunAODsystematics(aod);
 
@@ -1001,10 +1060,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Int_t missingTOFPID[5] = {-1,-1,-1,-1,-1};
   Int_t missingTOFPIDK0s[5] = {-1,-1,-1,-1,-1};
   
-  TLorentzVector vPion[4], vKaon[4], vK0sPion[4], vK0sKaon[4], vKPiK0sChannel, vK0s, vKstar[2], vCandidate;
-  Short_t qKaon[4], qPion[4], qK0sPion[4], qK0sKaon[4];
+  TLorentzVector vPion[6], vKaon[6], vK0sPion[6], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4];
+  Short_t qKaon[6], qPion[6], qK0sPion[6];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
-  Double_t fRecTPCsignalPion[5], fRecTPCsignalKaon[5], fRecTPCsignalK0sPion[5];
+  Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
   Double_t trackPt[5]={0,0,0,0,0};
   
@@ -1032,7 +1091,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
       trackPt[nGoodTracks] = trk->Pt();
       nGoodTracks++;
 				  
-      if(nGoodTracks > 4) break;  
+      if(nGoodTracks > 6) break;  //CHANGED
   }//Track loop
 
   //Diagnostic figures regarding nSigma TOF vs TPC, etc.  
@@ -1092,12 +1151,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	fTPCdEdxVsTOFbetaAll->Fill(beta,trk->GetTPCsignal());
 	fTOFbetaVsPtAll->Fill(trk->Pt(),beta);
 	fTOFTimeVsTPCdEdxAll->Fill(trk->GetTPCsignal(),(trk->GetTOFsignal()-eventStartTime)); //time diff in ps. //(1e-12 converts ps to sec)
-	if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >=0.6 && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() > 3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) {
+	if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >=0.6 && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() > 3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) {
 	  fTPCdEdxVsTOFbetaPionsWithPID->Fill(beta,trk->GetTPCsignal());
 	  fTOFbetaVsPtPionsWithPID->Fill(trk->Pt(),beta);
 	  fTOFTimeVsTPCdEdxPionsWithPID->Fill(trk->GetTPCsignal(),(trk->GetTOFsignal()-eventStartTime)); //time diff in ps. //(1e-12 converts ps to sec)
 	}
-	if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >=0.6 && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() > 3. && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.)) {
+	if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >=0.6 && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCKaon[i]) < 3.) || (trk->Pt() > 3. && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.)) {
 	  fTPCdEdxVsTOFbetaKaonsWithPID->Fill(beta,trk->GetTPCsignal());
 	  fTOFbetaVsPtKaonsWithPID->Fill(trk->Pt(),beta);
 	  fTOFTimeVsTPCdEdxKaonsWithPID->Fill(trk->GetTPCsignal(),(trk->GetTOFsignal()-eventStartTime)); //time diff in ps. //(1e-12 converts ps to sec)
@@ -1109,6 +1168,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
     fNTracksMissingDueToTOFPerEvent->Fill(nGoodTracks-nLowPtTracks-nTracksWithTOFPID);
   }
 
+
+  //Kstar and 2pi2k channels
   nKaon=0; nPion=0;
   Int_t nTracksWithoutTOFinfo = 0;
 
@@ -1145,20 +1206,20 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 		//Here I need to identify Pions and Kaons. This block is for the 2pi2k final state
 		//if(trk->GetMostProbablePID() == 2) { //Pions
-		if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >=3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) { 
+		if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >=3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) { 
 		  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		  qPion[nPion] = trk->Charge();
 		  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 		  nPion++;
 		}
 		//else if(trk->GetMostProbablePID() == 3) { //Kaons
-		else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 2. && fabs(fPIDTPCPion[i]) < 3.)) {
+		else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCKaon[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 2. && fabs(fPIDTPCPion[i]) < 3.)) {
 		  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 		  qKaon[nKaon] = trk->Charge();
 		  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 		  nKaon++;
 		} 
-		else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999.) {
+		else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && (fabs(fPIDTPCPion[i]) < 3. || fabs(fPIDTPCKaon[i]) < 3.)) {
 		  missingTOFPID[i] = trackIndex[i];
 		  nTracksWithoutTOFinfo++; //Track index if TOF misses a track. Maybe due to missing TOF signal
 		}
@@ -1168,11 +1229,13 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	    for(int i=0;i<4;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
 	      if(nPion == 2 && nKaon == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 		qKaon[nKaon] = trk->Charge();
 		vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 		nKaon++;
 	      } else if(nKaon == 2 && nPion == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		qPion[nPion] = trk->Charge();
 		vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 		nPion++;
@@ -1348,6 +1411,274 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		}
 	  }
   }
+  //End Kstar Channel
+
+
+  //EtaC->RhoRho Channel
+  nKaon=0; nPion=0;
+  nTracksWithoutTOFinfo = 0;
+  Int_t nPiMinus=0;
+  Int_t nPiPlus=0;
+  Int_t nRhoPairs=0;
+  Int_t caseOne=0;
+  Int_t caseTwo=0;
+ if(nGoodTracks == 4 && nSpdHits>1){
+  	  fHistNeventsEtaCRhoChannel->Fill(6);
+  	  for(Int_t i=0; i<4; i++){
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+
+		//		cout << "#################### Before PID block 1" << endl;
+
+		//Get nsigma info for PID
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trk) == AliPIDResponse::kDetPidOk) { //3 = kTOF
+		  fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		  fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		  fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		  fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		  fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+		} else {
+		  fPIDTOFMuon[i] = -999.;
+		  fPIDTOFElectron[i] = -999.;
+		  fPIDTOFPion[i] = -999.;
+		  fPIDTOFKaon[i] = -999.;
+		  fPIDTOFProton[i] = -999.;
+		}
+
+		//		cout << "#################### After PID block 1" << endl;
+
+		//Here I need to identify Pions and Kaons. This block is for the 2pi2k final state
+		//if(trk->GetMostProbablePID() == 2) { //Pions
+		if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >=3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) { 
+		  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		  qPion[nPion] = trk->Charge();
+		  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		  nPion++;
+		}
+		//else if(trk->GetMostProbablePID() == 3) { //Kaons
+		//else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 2. && fabs(fPIDTPCPion[i]) < 3.)) {
+		//  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+		//  qKaon[nKaon] = trk->Charge();
+		//  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+		//  nKaon++;
+		//} 
+		else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && fabs(fPIDTPCPion[i]) < 3.) {
+		  missingTOFPID[i] = trackIndex[i];
+		  nTracksWithoutTOFinfo++; //Track index if TOF misses a track. Maybe due to missing TOF signal
+		}
+
+		if(nPion > 4) break;
+	  }
+	    for(int i=0;i<4;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
+	      //if(nPion == 2 && nKaon == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      //AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+	      //qKaon[nKaon] = trk->Charge();
+	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+	      //nKaon++;
+	      //} else 
+	      if(nPion == 3 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		qPion[nPion] = trk->Charge();
+		vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		nPion++;
+	      }
+	    }
+	    
+	  //Analyze good events, fill the histos.
+	  if( (nPion == 4) ) {
+	    fHistNeventsEtaCRhoChannel->Fill(7);
+	    if((qPion[0]+qPion[1]+qPion[2]+qPion[3]) != 0) fHistNeventsEtaCRhoChannel->Fill(8); //non-zero net charge
+	    //if(qPion[0]*qPion[1] > 0) fHistNeventsEtaC->Fill(9);
+	    //if((qKaon[0]*qKaon[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsEtaC->Fill(10);
+	    if((qPion[0]+qPion[1]+qPion[2]+qPion[3]) == 0) { 
+	      fHistNeventsEtaCRhoChannel->Fill(9); //zero net charge
+	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
+		vCandidate = vPion[0] + vPion[1] + vPion[2] + vPion[3];
+		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+
+		  
+		//Get masses of potential intermediate Rho's
+		if(qPion[0] < 0) {
+		  vPionMinus[nPiMinus]=vPion[0];
+		  nPiMinus++;
+		} else {
+		  vPionPlus[nPiPlus]=vPion[0];
+		  nPiPlus++;
+		}
+		if(qPion[1] < 0) {
+		  vPionMinus[nPiMinus]=vPion[1];
+		  nPiMinus++;
+		} else {
+		  vPionPlus[nPiPlus]=vPion[1];
+		  nPiPlus++;
+		}
+		if(qPion[2] < 0) {
+		  vPionMinus[nPiMinus]=vPion[2];
+		  nPiMinus++;
+		} else {
+		  vPionPlus[nPiPlus]=vPion[2];
+		  nPiPlus++;
+		}
+		if(qPion[3] < 0) {
+		  vPionMinus[nPiMinus]=vPion[3];
+		  nPiMinus++;
+		} else {
+		  vPionPlus[nPiPlus]=vPion[3];
+		  nPiPlus++;
+		}
+		//Either 0 and 1 are rho's or 2 and 3. If both sets are rho's choose best set.
+		vRho[0] = vPionMinus[0]+vPionPlus[0];
+		vRho[1] = vPionMinus[1]+vPionPlus[1];
+		vRho[2] = vPionMinus[1]+vPionPlus[0];
+		vRho[3] = vPionMinus[0]+vPionPlus[1];
+
+		if(vRho[0].M() < (rhoMass+rhoWidth) && vRho[0].M() > (rhoMass-rhoWidth) && 
+		   vRho[1].M() < (rhoMass+rhoWidth) && vRho[1].M() > (rhoMass-rhoWidth)) { nRhoPairs++; caseOne=1; }
+		if(vRho[2].M() < (rhoMass+rhoWidth) && vRho[2].M() > (rhoMass-rhoWidth) && 
+		   vRho[3].M() < (rhoMass+rhoWidth) && vRho[3].M() > (rhoMass-rhoWidth)) { nRhoPairs++; caseTwo=1; }
+
+		if(nRhoPairs == 2) {
+		  if((fabs(vRho[0].M() - rhoMass) + fabs(vRho[1].M() - rhoMass)) < (fabs(vRho[2].M() - rhoMass) + fabs(vRho[3].M() - rhoMass))) {
+		    f2RhoPtVsMinvRho->Fill(vRho[0].M(),vRho[0].Pt());
+		    f2RhoPtVsMinvRho->Fill(vRho[1].M(),vRho[1].Pt());
+		  } else {
+		    f2RhoPtVsMinvRho->Fill(vRho[2].M(),vRho[2].Pt());
+		    f2RhoPtVsMinvRho->Fill(vRho[3].M(),vRho[3].Pt());
+		  }
+		} else if (nRhoPairs == 1 && caseOne == 1) {
+		  f2RhoPtVsMinvRho->Fill(vRho[0].M(),vRho[0].Pt());
+		  f2RhoPtVsMinvRho->Fill(vRho[1].M(),vRho[1].Pt());
+		} else if (nRhoPairs == 1 && caseTwo == 1) {
+		  f2RhoPtVsMinvRho->Fill(vRho[2].M(),vRho[2].Pt());
+		  f2RhoPtVsMinvRho->Fill(vRho[3].M(),vRho[3].Pt());
+		} else if(nRhoPairs == 0) {
+		  f4PionPtVsMinvRho->Fill(vRho[0].M(),vRho[0].Pt());
+		  f4PionPtVsMinvRho->Fill(vRho[1].M(),vRho[1].Pt());
+		}
+
+		if(nRhoPairs == 0) fHistNeventsEtaCRhoChannel->Fill(10);
+		if(nRhoPairs == 1) fHistNeventsEtaCRhoChannel->Fill(11);
+		if(nRhoPairs == 2) fHistNeventsEtaCRhoChannel->Fill(12);
+
+		if(nRhoPairs > 0) {
+		  fHistNeventsEtaCRhoChannel->Fill(13);
+		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
+		}
+		f4PionPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //All 4Pi final states.
+
+		  
+		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
+		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
+		  //else fMPiKvsMPiK->Fill(pow(vRho[1].M(),2),pow(vRho[0].M(),2));
+		  
+	    }
+	  }
+ }
+ //End EtaC->RhoRho Channel
+
+
+
+  //EtaC->3(pi+pi-) Channel
+  nKaon=0; nPion=0;
+  nTracksWithoutTOFinfo = 0;
+  if(nGoodTracks == 6 && nSpdHits>1){
+  	  fHistNeventsEtaC3PiPiChannel->Fill(6);
+  	  for(Int_t i=0; i<6; i++){
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+
+		//		cout << "#################### Before PID block 1" << endl;
+
+		//Get nsigma info for PID
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trk) == AliPIDResponse::kDetPidOk) { //3 = kTOF
+		  fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		  fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		  fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		  fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		  fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+		} else {
+		  fPIDTOFMuon[i] = -999.;
+		  fPIDTOFElectron[i] = -999.;
+		  fPIDTOFPion[i] = -999.;
+		  fPIDTOFKaon[i] = -999.;
+		  fPIDTOFProton[i] = -999.;
+		}
+
+		//		cout << "#################### After PID block 1" << endl;
+
+		//Here I need to identify Pions and Kaons. This block is for the 2pi2k final state
+		//if(trk->GetMostProbablePID() == 2) { //Pions
+		if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >=3. && fabs(fPIDTPCPion[i]) < 2. && fabs(fPIDTPCKaon[i]) > 2.)) { 
+		  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		  qPion[nPion] = trk->Charge();
+		  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		  nPion++;
+		}
+		//else if(trk->GetMostProbablePID() == 3) { //Kaons
+		//else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 2. && fabs(fPIDTPCPion[i]) < 3.)) {
+		//  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+		//  qKaon[nKaon] = trk->Charge();
+		//  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+		//  nKaon++;
+		//} 
+		else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && fabs(fPIDTPCPion[i]) < 3.) {
+		  missingTOFPID[i] = trackIndex[i];
+		  nTracksWithoutTOFinfo++; //Track index if TOF misses a track. Maybe due to missing TOF signal
+		}
+
+		if(nPion > 6) break;
+	  }
+	    for(int i=0;i<6;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
+	      //if(nPion == 2 && nKaon == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      //AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+	      //qKaon[nKaon] = trk->Charge();
+	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+	      //nKaon++;
+	      //} else 
+	      if(nPion == 3 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		qPion[nPion] = trk->Charge();
+		vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		nPion++;
+	      }
+	    }
+	    
+	  //Analyze good events, fill the histos.
+	  if( (nPion == 6) ) {
+	    fHistNeventsEtaC3PiPiChannel->Fill(7); //6 pions
+	    if((qPion[0]+qPion[1]+qPion[2]+qPion[3]+qPion[4]+qPion[5]) != 0) fHistNeventsEtaC3PiPiChannel->Fill(8); //non-zero net charge
+	    //if(qPion[0]*qPion[1] > 0) fHistNeventsEtaC->Fill(9);
+	    //if((qKaon[0]*qKaon[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsEtaC->Fill(10);
+	    if((qPion[0]+qPion[1]+qPion[2]+qPion[3]+qPion[4]+qPion[5]) == 0) { 
+	      fHistNeventsEtaC3PiPiChannel->Fill(9); //zero net charge, candidate
+	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
+		vCandidate = vPion[0] + vPion[1] + vPion[2] + vPion[3] + vPion[4] + vPion[5];
+		f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+
+		  
+		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
+		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
+		  //else fMPiKvsMPiK->Fill(pow(vRho[1].M(),2),pow(vRho[0].M(),2));
+		  
+	    }
+	  }
+ }
+ //End EtaC->3(pi+pi-) Channel
 
 
   //K0short case (using V0s)
@@ -1534,10 +1865,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
       //fRecTPCsignalPion[nPion] = prongTrackPos->GetTPCsignal();
       //qK0sPion[nPion] = prongTrackPos->Charge();
       //vK0sPion[nPion].SetPtEtaPhiM(prongTrackPos->Pt(),prongTrackPos->Eta(),prongTrackPos->Phi(),pionMass);
-    if((prongTrackPos->Pt() < 0.6 && fabs(fPIDTPCPionPos[i]) < 3. && fabs(fPIDTPCKaonPos[i]) > 3.) || (prongTrackPos->Pt() >= 0.6 && prongTrackPos->Pt() < 3. && fabs(fPIDTOFPionPos[i]) < 3. && fabs(fPIDTOFKaonPos[i]) > 3. && fPIDTOFPionPos[i] > -999.) || (prongTrackPos->Pt() >= 3. && fabs(fPIDTPCPionPos[i]) < 2. && fabs(fPIDTPCKaonPos[i]) > 2.)) {
+    if((prongTrackPos->Pt() < 0.6 && fabs(fPIDTPCPionPos[i]) < 3. && fabs(fPIDTPCKaonPos[i]) > 3.) || (prongTrackPos->Pt() >= 0.6 && prongTrackPos->Pt() < 3. && fabs(fPIDTOFPionPos[i]) < 3. && fabs(fPIDTOFKaonPos[i]) > 3. && fPIDTOFPionPos[i] > -999. && fabs(fPIDTPCPionPos[i]) < 3.) || (prongTrackPos->Pt() >= 3. && fabs(fPIDTPCPionPos[i]) < 2. && fabs(fPIDTPCKaonPos[i]) > 2.)) {
       goodPiPlus = kTRUE;
       //nPion++;
-    } else if(prongTrackPos->Pt() >= 0.6 && prongTrackPos->Pt() < 3. && fPIDTOFPionPos[i] == -999. && nMissingDaughters == 0) {
+    } else if(prongTrackPos->Pt() >= 0.6 && prongTrackPos->Pt() < 3. && fPIDTOFPionPos[i] == -999.  && fabs(fPIDTPCPionPos[i]) < 3. && nMissingDaughters == 0) {
       goodPiPlus = kTRUE; //This may be redundant. Maybe just assume the daughter is a pion. Or if prongTrackNeg has PID as a pion assume this is a positive pion.
       nMissingDaughters++;
     }
@@ -1546,10 +1877,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
       //fRecTPCsignalPion[nPion] = prongTrackNeg->GetTPCsignal();
       //qK0sPion[nPion] = prongTrackNeg->Charge();
       //vK0sPion[nPion].SetPtEtaPhiM(prongTrackNeg->Pt(),prongTrackNeg->Eta(),prongTrackNeg->Phi(),pionMass);
-    if((prongTrackNeg->Pt() < 0.6 && fabs(fPIDTPCPionNeg[i]) < 3. && fabs(fPIDTPCKaonNeg[i]) > 3.) || (prongTrackNeg->Pt() >= 0.6 && prongTrackNeg->Pt() < 3. && fabs(fPIDTOFPionNeg[i]) < 3. && fabs(fPIDTOFKaonNeg[i]) > 3. && fPIDTOFKaonNeg[i] > -999.) || (prongTrackNeg->Pt() >= 3. && fabs(fPIDTPCPionNeg[i]) < 2. && fabs(fPIDTPCKaonNeg[i]) > 2.)) {
+    if((prongTrackNeg->Pt() < 0.6 && fabs(fPIDTPCPionNeg[i]) < 3. && fabs(fPIDTPCKaonNeg[i]) > 3.) || (prongTrackNeg->Pt() >= 0.6 && prongTrackNeg->Pt() < 3. && fabs(fPIDTOFPionNeg[i]) < 3. && fabs(fPIDTOFKaonNeg[i]) > 3. && fPIDTOFKaonNeg[i] > -999. && fabs(fPIDTPCPionNeg[i]) < 3.) || (prongTrackNeg->Pt() >= 3. && fabs(fPIDTPCPionNeg[i]) < 2. && fabs(fPIDTPCKaonNeg[i]) > 2.)) {
       goodPiMinus = kTRUE;
       //nPion++;
-      } else if(prongTrackNeg->Pt() >= 0.6 && prongTrackNeg->Pt() < 3. && fPIDTOFPionNeg[i] == -999. && nMissingDaughters == 0) {
+      } else if(prongTrackNeg->Pt() >= 0.6 && prongTrackNeg->Pt() < 3. && fPIDTOFPionNeg[i] == -999.  && fabs(fPIDTPCPionNeg[i]) < 3. && nMissingDaughters == 0) {
 	goodPiMinus = kTRUE;
 	nMissingDaughters++;
       }
@@ -1762,7 +2093,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	if(i == posTrackIndex) {
 	  //	  if(fabs(fPIDTPCPion[i]) < 4 && fabs(fPIDTPCPion[i]) < fabs(fPIDTPCKaon[i])) { 
 	    //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCKaon[i] > 2 && fPIDTPCProton[i] > 2) {
-	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
+	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
 	    fRecTPCsignalK0sPion[0] = trk->GetTPCsignal();
 	    qK0sPion[0] = trk->Charge();
 	    vK0sPion[0].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
@@ -1772,7 +2103,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	else if(i == negTrackIndex) {
 	  //	  if(fabs(fPIDTPCPion[i]) < 4 && fabs(fPIDTPCPion[i]) < fabs(fPIDTPCKaon[i])) { 
 	    //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCKaon[i] > 2 && fPIDTPCProton[i] > 2) {
-	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
+	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
 	    fRecTPCsignalK0sPion[1] = trk->GetTPCsignal();
 	    qK0sPion[1] = trk->Charge();
 	    vK0sPion[1].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
@@ -1781,7 +2112,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	}
 	//	else if(fabs(fPIDTPCPion[i]) < 4 && fabs(fPIDTPCPion[i]) < fabs(fPIDTPCKaon[i])) { 
 	  //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCKaon[i] > 2 && fPIDTPCProton[i] > 2) {
-	else if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
+	else if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
 	  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 	  qPion[nPion] = trk->Charge();
 	  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
@@ -1789,7 +2120,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	}
 	//	else if(fabs(fPIDTPCKaon[i]) < 4 && fabs(fPIDTPCKaon[i]) < fabs(fPIDTPCPion[i])) { 
 	  //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCPion[i] > 2 && fPIDTPCProton[i] > 2) {
-	else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 1. && fabs(fPIDTPCPion[i]) > 1.)) {
+	else if((trk->Pt() < 0.6 && fabs(fPIDTPCKaon[i]) < 3. && fabs(fPIDTPCPion[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFKaon[i]) < 3. && fabs(fPIDTOFPion[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCKaon[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCKaon[i]) < 1. && fabs(fPIDTPCPion[i]) > 1.)) {
 	  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 	  qKaon[nKaon] = trk->Charge();
 	  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
@@ -1798,7 +2129,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	//***********************************
 	//Must add code to cound number of missing tracks, accounting for those that might already be missing from the K0s daughters. Then add code outside the loop to assign the appropriate mass and increment counter (using which of nKaon, nPion, and UsedNMissingDaughter to determing what mass to assume for the missing track. If UsedNMissing Daughter is 1 then no more tracks can be missing but if it is zero then either the kaon or pion may be assumed depending on nPion and nKaon.
 	//***********************************
-	else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999.) { //assume missing track is pion.
+	else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && (fabs(fPIDTPCPion[i]) < 3. || fabs(fPIDTPCKaon[i]) < 3.)) { //assume missing track is pion.
 	  missingTOFPIDK0s[i] = trackIndex[i];
 	  nTracksWithoutTOFinfoK0s++; //Track index if TOF misses a track. Maybe due to missing TOF signal
 	}
@@ -1808,11 +2139,13 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
       for(int i=0;i<4;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
 	if(nK0sPion == 2 && nPion == 1 && nKaon == 0 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 1) {
 	  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 	  qKaon[nKaon] = trk->Charge();
 	  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	  nKaon++;
 	} else if(((nKaon == 1 && nK0sPion == 1 && nPion == 1) || (nKaon == 1 && nK0sPion == 2 && nPion == 0)) && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 1) {
 	  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 	  qPion[nPion] = trk->Charge();
 	  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 	  nPion++;
@@ -1847,7 +2180,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  fPionK0sChannelPt->Fill(vPion[0].Pt());
 	  fKaonK0sChannelPt->Fill(vKaon[0].Pt());
 	  //Compute K0s info
-	  vK0s = vK0sPion[0] + vK0sKaon[1];
+	  vK0s = vK0sPion[0] + vK0sPion[1];
 	  fK0sPtVsMinv->Fill(vK0s.M(),vK0s.Pt());
 	  //fK0sMinv->Fill(vK0s.M());
 	  //Compute PiK info
@@ -1857,7 +2190,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  //Dalitz plot K0s vs PiK combo
 	  fMK0sVsMKPiK0sChannel->Fill(vKPiK0sChannel.M(),vK0s.M());
 	  //Compute EtaC info
-	  vCandidate = vK0sPion[0] + vK0sKaon[1] + vPion[0] + vKaon[0];
+	  vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
 	  fEtaCPtVsMinvK0sChannel->Fill(vCandidate.M(),vCandidate.Pt());
 	  //fEtaCMinvK0sChannel->Fill(vCandidate.M());
 	  fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
@@ -1866,6 +2199,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
     }
   }
   
+
 
   //  cout << "##### End of RunAODHist()" << endl;
 

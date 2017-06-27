@@ -839,6 +839,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       if(mother && TMath::Abs(mother->PdgCode())==421) acceptParticle = kTRUE;
       if(mother && TMath::Abs(mother->PdgCode())==431) acceptParticle = kTRUE;
       if(mother && TMath::Abs(mother->PdgCode())==4122) acceptParticle = kTRUE;      
+      if(TMath::Abs(particle->PdgCode())==11 && particle->Pt()>0.5) acceptParticle = kTRUE;
       if(!acceptParticle) continue;
       
       TClonesArray& tracks = *(fReducedEvent->fTracks);

@@ -384,7 +384,7 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
   if(fProfileContainingMaterialBudgetWeights){
       delete fProfileContainingMaterialBudgetWeights;
       fProfileContainingMaterialBudgetWeights = 0x0;
-  }  
+  }
 }
 
 //________________________________________________________________________
@@ -614,9 +614,9 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
 
     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
       return kFALSE;
-    if(fEtaCutMin>-0.1){
-      if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
-        return kFALSE;
+        if(fEtaCutMin>-0.1){
+            if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
+                return kFALSE;
     }
 
     if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
@@ -894,11 +894,11 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
         photonQuality = DeterminePhotonQualityAOD(photonAOD, event);
       } else {
         photonQuality = photonAOD->GetPhotonQuality();
-      }	
+      }
       if (fDoPhotonQualitySelectionCut && photonQuality != fPhotonQualityCut){
         if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
         return kFALSE;
-      }	
+      }
   } 
   cutIndex++; //12
   if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
@@ -1096,10 +1096,10 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
         if( photonPhi > fMinPhiCut && photonPhi < fMaxPhiCut+2*TMath::Pi() ) {
           if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
           return kFALSE;
-        }	
-      }	
+        }
+      }
     }
-  }	
+  }
   cutIndex++;
   
 
@@ -1368,7 +1368,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
           if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
           return kFALSE;
         }
-      }  
+      }
     }
     if(fHistoITSSigafter)fHistoITSSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
   }
@@ -1709,7 +1709,7 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
           UpdateCutString();
           return kTRUE;
         } else return kFALSE;
-      }  
+      }
     case kpidedxSigmaCut:
       if (!fSwitchToKappa){
         if( SetTPCdEdxCutPionLine(value)) {
@@ -1720,7 +1720,7 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
       } else {
         fCuts[kpidedxSigmaCut] = 0;
         return kTRUE;
-      }  
+      }
     case kpiMomdedxSigmaCut:
       if (!fSwitchToKappa){
         if( SetMinMomPiondEdxCut(value)) {
@@ -1887,7 +1887,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
     if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{p,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
   } else {
     printf("\t accept: %3.2f <= Kappa_{TPC} < %3.2f\n", fKappaMinCut, fKappaMaxCut );
-  }  
+  }
   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
   if (fUseITSpid) printf("\t accept: %3.2f < n sigma_{e,ITS} < %3.2f\n -- up to pT %3.2f", fITSPIDnSigmaBelowElectronLine, fITSPIDnSigmaAboveElectronLine, fMaxPtPIDITS);
   
@@ -1904,7 +1904,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   } else {
     printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion ); 
     printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut ); 
-  }	      
+  }
   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
@@ -2032,6 +2032,18 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
+    break;
+  case 10: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = 0.;
+    break;
+  case 11: // 0.2-0.9
+    fEtaCut     = 0.9;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = 0.2;
+    fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
     break;
   default:
     AliError(Form(" EtaCut not defined %d",etaCut));
@@ -2246,6 +2258,33 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     break;
   case 8:  // 0.02 GeV ; equivalent to .05 for the low B field runs 
     fSinglePtCut = 0.02;
+    break;
+  case 9:  // 0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.100;
+    break;
+  case 10:  // 0.050 GeV + min gamma pT cut of 150 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.150;
+    break;
+  case 11:  // 0.050 GeV + min gamma pT cut of 200 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.200;
+    break;
+  case 12:  // 0.060 GeV
+    fSinglePtCut = 0.060;
+    break;
+  case 13:  // 0.060 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.100;
+    break;
+  case 14:  // 0.060 GeV + min gamma pT cut of 150 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.150;
+    break;
+  case 15:  // 0.060 GeV + min gamma pT cut of 200 MeV
+    fSinglePtCut = 0.060;
+    fPtCut       = 0.200;
     break;
   default:
     AliError(Form("singlePtCut not defined %d",singlePtCut));
@@ -3365,7 +3404,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
       Double_t OpeningAngle=v1.Angle(v2);
       if( OpeningAngle < fOpenAngle && TMath::Abs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
         if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
-      }      
+      }
     }
 
   }
@@ -3432,7 +3471,7 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
   }
   if(negTrack->Charge() == posTrack->Charge()){
       return 0;
-  }   
+  } 
   Int_t nClusterITSneg = negTrack->GetITSNcls();
   Int_t nClusterITSpos = posTrack->GetITSNcls();
   //    cout << nClusterITSneg << "\t" << nClusterITSpos <<endl;

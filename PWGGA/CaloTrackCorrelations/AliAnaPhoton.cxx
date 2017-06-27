@@ -988,7 +988,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     primary = GetMC()->GetTrack(i);
     if(!primary)
     {
-      AliWarning("ESD primaries pointer not available!!");
+      AliWarning("primaries pointer not available!!");
       continue;
     }
     
@@ -1188,7 +1188,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //      primary = GetMC()->Particle(i) ;
 //      if(!primary)
 //      {
-//        AliWarning("ESD primaries pointer not available!!");
+//        AliWarning("primaries pointer not available!!");
 //        continue;
 //      }
 //      
@@ -4581,6 +4581,25 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
           
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
+      
+//      if( calo->E() > 2 &&
+//         ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)    ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ||
+//          ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) 
+//           )
+//          )  
+//         )
+//      {
+//        GetMCAnalysisUtils()->PrintMCTag(tag);
+//        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());//,10);
+//      }
+      
     }// Work with stack also
     
     //-----------------------------
