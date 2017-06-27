@@ -57,7 +57,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
-fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
+fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistFiducialCheck(0),
 
 fHistMatchEtaPhiAllCl2(0),fHistMatchEtaPhiAllCl3(0),fHistMatchEtaPhiAllCl4(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
@@ -86,7 +86,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
-fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
+fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistFiducialCheck(0),
 
 fHistMatchEtaPhiAllCl2(0),fHistMatchEtaPhiAllCl3(0),fHistMatchEtaPhiAllCl4(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
@@ -302,6 +302,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fHistBinCheckPt       = new TH1*[kNIdentifier];
 	fHistBinCheckZt       = new TH1*[kNIdentifier];
 	fHistBinCheckXi       = new TH1*[kNIdentifier];
+	fHistFiducialCheck    = new TH1*[kNIdentifier];
 	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+3]; //Why +2?? -> because I want more than 3 QA versions
 	fHistDEtaDPhiTrackQA  = new TH2*[kNIdentifier+3];
 	fHistCellsCluster     = new TH2*[kNIdentifier+3];
@@ -336,64 +337,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckXi[identifier]);
 
-		/*
-		for(Int_t i=0; i<kNoGammaBins; i++)
-		{
-			for(Int_t j=0; j<kNvertBins; j++)
-			{
-				fHistDEtaDPhiG[identifier][i][j] = new TH2F(Form("fHistDEtaDPhiG%d_Id%d_V%d",i,identifier,j),Form("fHistDEtaDPhiG%d_Id%d_V%d",i,identifier,j),nbins[2],min[2],max[2],nbins[3],min[3],max[3]);
-				fHistDEtaDPhiG[identifier][i][j]->GetXaxis()->SetTitle(Form("#Delta #varphi^{#gamma-h} %0.1f<p_{T}^{#gamma}<%0.1f",fArray_G_Bins[i],fArray_G_Bins[i+1]));
-				fHistDEtaDPhiG[identifier][i][j]->GetYaxis()->SetTitle("#Delta #eta^{#gamma-h}");
-				fOutputListGamma->Add(fHistDEtaDPhiG[identifier][i][j]);
-			}
-			fHistptAssHadronG[identifier][i] = new TH1F(Form("fHistPtAssHadronG%d_Id%d",i,identifier),Form("fHistPtAssHadronG%d_Id%d",i,identifier), nbins[1], min[1], max[1]);
-			fHistptAssHadronG[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{assoc. h} %0.1f<p_{T}^{#gamma}<%0.1f",fArray_G_Bins[i],fArray_G_Bins[i+1]));
-			fHistptAssHadronG[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptAssHadronG[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptAssHadronG[identifier][i]);
-
-			fHistptTriggG[identifier][i] = new TH1F(Form("fHistptTriggG%d_Id%d",i,identifier),Form("fHistptTriggG%d_Id%d",i,identifier), nbins[0], min[0], max[0]);
-			fHistptTriggG[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{cluster} %0.1f<p_{T}^{#gamma}<%0.1f",fArray_G_Bins[i],fArray_G_Bins[i+1]));
-			fHistptTriggG[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptAssHadronG[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptTriggG[identifier][i]);
-		}
-		for(Int_t i=0; i<kNoZtBins; i++)
-		{
-			for(Int_t j=0; j<kNvertBins; j++)
-			{
-				fHistDEtaDPhiZT[identifier][i][j] = new TH2F(Form("fHistDEtaDPhiZT%d_Id%d_V%d",i,identifier,j),Form("fHistDEtaDPhiZT%d_Id%d_V%d",i,identifier,j),nbins[2],min[2],max[2],nbins[3],min[3],max[3]);
-				fHistDEtaDPhiZT[identifier][i][j]->GetXaxis()->SetTitle(Form("#Delta #varphi^{#gamma-h} %0.1f<z_{T}<%0.1f",fArray_ZT_Bins[i],fArray_ZT_Bins[i+1]));
-				fHistDEtaDPhiZT[identifier][i][j]->GetYaxis()->SetTitle("#Delta #eta^{#gamma-h}");
-				fOutputListZeta->Add(fHistDEtaDPhiZT[identifier][i][j]);
-			}
-			fHistptAssHadronZt[identifier][i] = new TH1F(Form("fHistPtAssHadronZt%d_Id%d",i,identifier),Form("fHistPtAssHadronZt%d_Id%d",i,identifier), nbins[1], min[1], max[1]);
-			fHistptAssHadronZt[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{assoc. h} %0.1f<z_{T}<%0.1f",fArray_ZT_Bins[i],fArray_ZT_Bins[i+1]));
-			fHistptAssHadronZt[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptAssHadronZt[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptAssHadronZt[identifier][i]);
-
-			fHistptTriggZt[identifier][i] = new TH1F(Form("fHistptTriggZt%d_Id%d",i,identifier),Form("fHistptTriggZt%d_Id%d",i,identifier), nbins[0], min[0], max[0]);
-			fHistptTriggZt[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{cluster} %0.1f<z_{T}<%0.1f",fArray_ZT_Bins[i],fArray_ZT_Bins[i+1]));
-			fHistptTriggZt[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptTriggZt[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptTriggZt[identifier][i]);
-		}
-		for(Int_t i=0; i<kNoXiBins; i++)
-		{
-			for(Int_t j=0; j<kNvertBins; j++)
-			{
-				fHistDEtaDPhiXI[identifier][i][j] = new TH2F(Form("fHistDEtaDPhiXI%d_Id%d_V%d",i,identifier,j),Form("fHistDEtaDPhiXI%d_Id%d_V%d",i,identifier,j),nbins[2],min[2],max[2],nbins[3],min[3],max[3]);
-				fHistDEtaDPhiXI[identifier][i][j]->GetXaxis()->SetTitle(Form("#Delta #varphi^{#gamma-h} %0.1f<#xi<%0.1f",fArray_XI_Bins[i],fArray_XI_Bins[i+1]));
-				fHistDEtaDPhiXI[identifier][i][j]->GetYaxis()->SetTitle("#Delta #eta^{#gamma-h}");
-				fOutputListXi->Add(fHistDEtaDPhiXI[identifier][i][j]);
-			}
-			fHistptAssHadronXi[identifier][i] = new TH1F(Form("fHistPtAssHadronXi%d_Id%d",i,identifier),Form("fHistPtAssHadronXi%d_Id%d",i,identifier), nbins[1], min[1], max[1]);
-			fHistptAssHadronXi[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{assoc. h} %0.1f<#xi<%0.1f",fArray_XI_Bins[i],fArray_XI_Bins[i+1]));
-			fHistptAssHadronXi[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptAssHadronXi[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptAssHadronXi[identifier][i]);
-
-			fHistptTriggXi[identifier][i] = new TH1F(Form("fHistptTriggXi%d_Id%d",i,identifier),Form("fHistptTriggXi%d_Id%d",i,identifier), nbins[0], min[0], max[0]);
-			fHistptTriggXi[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{cluster} %0.1f<#xi<%0.1f",fArray_XI_Bins[i],fArray_XI_Bins[i+1]));
-			fHistptTriggXi[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptTriggXi[identifier][i]->GetBinWidth(1)));
-			fOutputListTrAs->Add(fHistptTriggXi[identifier][i]);
-		}*/
+		fHistFiducialCheck[identifier] = new TH1F(Form("fHistFiducialCheck_%0d",identifier),Form("fHistFiducialCheck_%0d",identifier), nbins[0], min[0], max[0]);
+		fHistFiducialCheck[identifier]->GetXaxis()->SetTitle("p_{T}^{#gamma}");
+		fHistFiducialCheck[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistFiducialCheck[identifier]);
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Test THn Sparse for the 2D histograms
@@ -548,6 +495,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t distanceArray[10+1];
     binEdgesThnQA[dimThnQA] = distanceArray;
     GenerateFixedBinArray(10,0,10,distanceArray);
+    minThnQA[dimThnQA] = 0;
+    maxThnQA[dimThnQA] = 10;
+    dimThnQA++;
+
+    titleThnQA[dimThnQA] = "cell distance to SM edge";
+    nbinsThnQA[dimThnQA] = 10;
+    Double_t distanceArray2[10+1];
+    binEdgesThnQA[dimThnQA] = distanceArray2;
+    GenerateFixedBinArray(10,0,10,distanceArray2);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 10;
     dimThnQA++;
@@ -1125,15 +1081,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 
 		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(0);
 		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
+		fHistFiducialCheck[0]->Fill(CaloClusterVec.Pt());
 		if(SameMix==1)FillQAHisograms(1,clusters,cluster,trackNULL);
-
-		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1);
-		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
-		if(SameMix==1)FillQAHisograms(2,clusters,cluster,trackNULL);
-
-		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(2);
-		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
-		if(SameMix==1)FillQAHisograms(3,clusters,cluster,trackNULL);
 		//------------------------------------------------
 
 		//...........................................
@@ -1199,6 +1148,18 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 				FillGhHisograms(0,aliCaloClusterVec,track,5,Weight);
 			}
 		}
+		//...........................................
+		//..Additional histograms
+		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1);
+		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
+		fHistFiducialCheck[1]->Fill(CaloClusterVec.Pt());
+		if(SameMix==1)FillQAHisograms(2,clusters,cluster,trackNULL);
+
+		fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(2);
+		if(!AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
+		fHistFiducialCheck[2]->Fill(CaloClusterVec.Pt());
+		if(SameMix==1)FillQAHisograms(3,clusters,cluster,trackNULL);
+
 	}
 	return GammaCounter;
 }
@@ -1413,44 +1374,11 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
 	if(G_PT_Value>=ClusterEcut)
 	{
 		fCorrVsManyThings  ->Fill(valueArray,Weight);
-		//if(identifier==0)fCorrVsManyThingsME->Fill(valueArray,Weight);
 
 		//..Histograms to test the binning
 		fHistBinCheckPt[identifier] ->Fill(G_PT_Value,Weight);
 		fHistBinCheckZt[identifier] ->Fill(ZT_Value,Weight);
 		fHistBinCheckXi[identifier] ->Fill(XI_Value,Weight);
-
-	/*
-	 * This part is old and now substituted by the fCorrVsManyThings THn
-	 *
-	 * //..Fill 2D Histograms for certain event conditions
-		for(Int_t i=0;i<10;i++)
-		{
-			for(Int_t j=0;j<kNvertBins;j++)
-			{
-			//no	if(i<kNoGammaBins && G_PT_Value>=fArray_G_Bins[i] && G_PT_Value<fArray_G_Bins[i+1])
-				if(i<kNoGammaBins && G_PT_Value>fArray_G_Bins[i] && G_PT_Value<=fArray_G_Bins[i+1])
-				{
-					if(zVertex>fArrayNVertBins[j] && zVertex<=fArrayNVertBins[j+1])fHistDEtaDPhiG[identifier][i][j]->Fill(deltaPhi,deltaEta,Weight);
-					//if(j==0 && i ==0 && identifier==1)fCorrVsManyThings->Fill(valueArray);
-					if(j==0)fHistptAssHadronG[identifier][i]->Fill(TrackVec->Pt(),Weight);
-					if(j==0)fHistptTriggG[identifier][i]    ->Fill(G_PT_Value,Weight);
-				}
-				if(i<kNoZtBins && ZT_Value>=fArray_ZT_Bins[i]  && ZT_Value<fArray_ZT_Bins[i+1])
-				{
-					if(zVertex>=fArrayNVertBins[j] && zVertex<fArrayNVertBins[j+1])fHistDEtaDPhiZT[identifier][i][j]   ->Fill(deltaPhi,deltaEta,Weight);
-					if(j==0)fHistptAssHadronZt[identifier][i]->Fill(TrackVec->Pt(),Weight);
-					if(j==0)fHistptTriggZt[identifier][i]    ->Fill(G_PT_Value,Weight);
-				}
-				if(i<kNoXiBins && XI_Value>=fArray_XI_Bins[i]  && XI_Value<fArray_XI_Bins[i+1])
-				{
-					if(zVertex>=fArrayNVertBins[j] && zVertex<fArrayNVertBins[j+1])fHistDEtaDPhiXI[identifier][i][j]   ->Fill(deltaPhi,deltaEta,Weight);
-					if(j==0)fHistptAssHadronXi[identifier][i]->Fill(TrackVec->Pt(),Weight);
-					if(j==0)fHistptTriggXi[identifier][i]    ->Fill(G_PT_Value,Weight);
-				}
-			}
-		}
-		*/
 	}
 }
 //________________________________________________________________________
@@ -1463,6 +1391,14 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	//..Get leading cluster
 	AliVCluster* leadingClus = clusters->GetLeadingCluster("");  //"e" is energy, "" is Et
 
+	Int_t etaCellDist;
+	Int_t phiCellDist;
+	GetDistanceToSMBorder(caloCluster,etaCellDist,phiCellDist);
+	Int_t minCellDistance=etaCellDist;
+	if(etaCellDist>phiCellDist)minCellDistance=phiCellDist;
+	//cout<<"min cell distance: "<<minCellDistance<<endl;
+
+
 	//..ID array -  1 - leading, 2- track matched, 3 - leading & track matched
 	Int_t gammaInfo=0;
 	if(caloCluster==leadingClus)gammaInfo=1;
@@ -1470,13 +1406,22 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	if(gammaInfo==2 && caloCluster==leadingClus)gammaInfo=3;
 
 	//Eg, lambda0,NLM, ncells, distance to bad ,e/p, Mgg
-	Double_t valueArray[6];
+	Double_t valueArray[7];
 	valueArray[0]=caloCluster->GetNonLinCorrEnergy();
 	valueArray[1]=caloCluster->GetM02();
 	valueArray[2]=caloCluster->GetNExMax();
 	valueArray[3]=caloCluster->GetNCells();
 	valueArray[4]=caloCluster->GetDistanceToBadChannel();
-	valueArray[5]=gammaInfo;
+	valueArray[5]=minCellDistance;
+	valueArray[6]=gammaInfo;
+
+	/*
+	cout<<"A distance to bad channel: "<<caloCluster->GetDistanceToBadChannel()<<endl;
+	cout<<"A distance recalculatd?: "<<fFiducialCellCut->IsDistanceToBadChannelRecalculated()<<endl;
+	fFiducialCellCut->RecalculateClusterDistanceToBadChannel(fGeom,fCaloCells,caloCluster);
+	cout<<"B distance to bad channel: "<<caloCluster->GetDistanceToBadChannel()<<endl;
+	cout<<"B distance recalculatd?: "<<fFiducialCellCut->IsDistanceToBadChannelRecalculated()<<endl;
+	*/
 	//valueArray[5]=0;//E/p
 	//valueArray[6]=130;//m_gg
 	//aliCaloClusterVec.Phi_0_2pi()*fRtoD
@@ -1538,7 +1483,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	//-----------------------------
 	//..Fiducial volume cut. If it is located neither in EMCal nor in DCal reject
 	 if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL) &&
-			 !fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)
+		!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)
 	 )
 	 {
 		 return 0;
@@ -1644,6 +1589,57 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		}
 	}
 	return foundTrackMatched;
+}
+//
+// Calculate the distance to a supermodule border
+// calculated is the smaller distance in either direction of the max. energy cell of the cluster
+//
+//________________________________________________________________________
+void AliAnalysisTaskGammaHadron::GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist)
+{
+	etaCellDist=-1;
+	phiCellDist=-1;
+
+	//..partially copied from RecoUtils
+	Int_t absIdMax  = -1, iSM =-1, ieta = -1, iphi = -1;
+	Bool_t shared = kFALSE;
+	fFiducialCellCut->GetMaxEnergyCell(fGeom, fCaloCells, caloCluster, absIdMax,  iSM, ieta, iphi, shared);
+	if (absIdMax==-1) cout<<"In GetDistanceToSMBorder  why??"<<endl;
+
+	//cout<<"max cell eta collumn: "<<ieta<<", max cell phi row: "<<iphi<<endl;
+	//..Define Borders
+	Int_t lastRow,firstRow;
+	Int_t lastCollumn,firstCollumn;
+	//..phi
+	firstRow=0;     //..eli eli does it start from 0 or 1
+	lastRow=24;
+	if      (fGeom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half) lastRow /= 2;
+	else if (fGeom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd ) lastRow /= 3;// 1/3 sm case
+    //..eta
+	firstCollumn=0; //..eli eli does it start from 0 or 1
+	lastCollumn=48;
+	if(fGeom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  lastCollumn = lastCollumn*2/3;
+
+	//..Calculate smallest distance
+	//..phi
+	phiCellDist=iphi; //eli in case it starts from 1
+    if((iphi-firstRow)>=(lastRow-iphi))phiCellDist=lastRow-iphi;
+
+    //..eta
+    if(iSM%2==0)
+    {
+    	  //..only outer border (not at eta=0) except DCal modules
+      etaCellDist=ieta;
+      if(lastCollumn<48 && (ieta-firstCollumn)>=(lastCollumn-ieta))etaCellDist=lastCollumn-ieta;
+    }
+    else
+    {
+    	  //..only outer border (not at eta=0) except DCal modules
+    	  etaCellDist=lastCollumn-ieta;
+      if(lastCollumn<48 && (ieta-firstCollumn)<=(lastCollumn-ieta))etaCellDist=ieta-firstCollumn;
+    }
+    //cout<<"supermodule: "<<iSM<<", last collumn: "<<lastCollumn<<endl;
+    //cout<<"eta distance: "<<etaCellDist<<" phi distance: "<<phiCellDist<<endl;
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskGammaHadron::GetEff(AliTLorentzVector ClusterVec)
