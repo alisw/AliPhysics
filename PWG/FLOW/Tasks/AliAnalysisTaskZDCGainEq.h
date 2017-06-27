@@ -68,6 +68,7 @@ public:
   void    SetFillZDCQA(Bool_t const fillzdcQAon)      {this->bFillZDCQAon       =  fillzdcQAon;}
   void    SetFillQnRunAverage(Bool_t const runAvg)    {this->bRunAveragedQn     =       runAvg;}
   void    SetApplyZDCRecenter(Bool_t const brecent)   {this->bApplyRecent       =      brecent;}
+  void    SetCentCutShift(Bool_t const bCutShift)     {this->bCentCutShift      =    bCutShift;}
 
 
 
@@ -113,6 +114,7 @@ private:
   Bool_t                bFillZDCQAon;    //
   Bool_t              bRunAveragedQn;    //
   Bool_t                bApplyRecent;    //
+  Bool_t               bCentCutShift;    //
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
   Float_t                   VyCut[2];    //
@@ -142,6 +144,10 @@ private:
   TH2F           *fHist_Recenter_ZDCCy[20]; //!
   TH2F           *fHist_Recenter_ZDCAx[20]; //!
   TH2F           *fHist_Recenter_ZDCAy[20]; //!
+
+  TH2F              *fHist_Vxy_RunAveraged; //!
+
+
 
   TH1F               *fHist_Vx_ArrayFinder; //!
   TH1F               *fHist_Vy_ArrayFinder; //!
@@ -191,6 +197,12 @@ private:
 
   TProfile2D  *fHist_ZDCC_En_CommonCh[20];   //!
   TProfile2D  *fHist_ZDCA_En_CommonCh[20];   //!
+
+  TProfile2D     *fHist_ZDCC_AvgCS_Vxy[2];    //!
+  TProfile2D     *fHist_ZDCA_AvgCS_Vxy[2];    //!
+
+  TProfile      *fHist_ZDCC_AvgCS_Cent[2];    //!
+  TProfile      *fHist_ZDCA_AvgCS_Cent[2];    //!
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };
