@@ -220,9 +220,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_alpha = 0.0;
     double max_alpha = 0.5;
 
-    int nbins_dR = 200;
-    double min_dR = -0.2;
-    double max_dR = 1.0;
+    int nbins_dR = 220;
+    double min_dR = 0.0;
+    double max_dR = 0.11;
     
     int nbins_DisToBad = 6;
     double min_DisToBad = -0.5;
@@ -309,12 +309,16 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 10;
+    const int nbins_Cluster = 12;
     
     axisNames = "Cluster THnSparse; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMatchedTracks; nMaxima;";
-    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, nbins_nMaxima};
-    double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima};
-    double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima};
+    axisNames = axisNames + "Distance to Border; dR to track;";
+    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
+                                      nbins_nMaxima, nbins_DisToBad, nbins_dR};
+    double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima, 
+					 min_DisToBad, min_dR};
+    double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima, 
+					 max_DisToBad, max_dR};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
@@ -448,7 +452,7 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust)
   Double_t dR=999.;
   Double_t dR_temp;
   
-  if (nMatched <1 ) return -0.1;
+  if (nMatched <1 ) return 0.109;
 
   for(Int_t i=0;i< nMatched;i++){
 
@@ -508,39 +512,27 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     tracks   = GetParticleContainer(0);
     //    fFiducialCellCut->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, cluster);
 
-
-    if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0,1,1); }//correlate with same event }
+    if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
     AliEventPool* pool = 0x0;
     pool = fPoolMgr->GetEventPool(fCent, zVertex);
-   if (!pool)
-	{
-		return kFALSE;
-	}
-	if(pool->IsReady() && PassedGammaTrigger)
-	{
-		int nMix = pool->GetCurrentNEvents();
-		for(int jMix=0; jMix<nMix; jMix++)
-		{
-			TObjArray* bgTracks=0x0;
-			bgTracks = pool->GetEvent(jMix);
-			if(!bgTracks)
-			{
-				cout<<"could not retrieve TObjArray from EventPool!"<<endl;
-			}
-			CorrelateClusterAndTrack(0,bgTracks,0,1.0/nMix);//correlate with mixed event
-		}
-	}
-    if(PassedMinBiasTrigger && !PassedGammaTrigger )
-	{
+    if (!pool)	return kFALSE;
+    if(pool->IsReady() && PassedGammaTrigger)
+    {
+    int nMix = pool->GetCurrentNEvents();
+    for(int jMix=0; jMix<nMix; jMix++)  {
+        TObjArray* bgTracks=0x0;
+        bgTracks = pool->GetEvent(jMix);
+        if(!bgTracks)  std::cout<<"could not retrieve TObjArray from EventPool!"<< std::endl;
+        CorrelateClusterAndTrack(0,bgTracks,kTRUE,1.0/nMix);//correlate with mixed event
+       }
+    }
+    if(PassedMinBiasTrigger && !PassedGammaTrigger ){
         TObjArray* tracksClone=0x0;
-		tracksClone = CloneToCreateTObjArray(tracks);
-		if(pool && tracksClone && !pool->GetLockFlag())
-		{
-          pool->UpdatePool(tracksClone);
-		}
-	}
-   
+	tracksClone = CloneToCreateTObjArray(tracks);
+	if(pool && tracksClone && !pool->GetLockFlag())	pool->UpdatePool(tracksClone);
+    }
+  return kTRUE;
 }
 
 TObjArray* AliAnalysisTaskEMCALPi0GammaCorr::CloneToCreateTObjArray(AliParticleContainer* tracks)
@@ -562,7 +554,7 @@ TObjArray* AliAnalysisTaskEMCALPi0GammaCorr::CloneToCreateTObjArray(AliParticleC
 	return tracksClone;
 }
 
-int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracksArray,Bool_t SameMix, double InputWeight)
+int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracksArray,Bool_t MixedEvent, double InputWeight)
 {
     AliClusterContainer* clusters  = GetClusterContainer(0);  
     if (!clusters) return 0;
@@ -575,62 +567,59 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     AliVParticle* track=0;
     Weight=InputWeight; //..for mixed events normalize per events in pool
 
-    if(SameMix!=0){ //if same event, then fill track histo
+    if(!MixedEvent){ //if same event, then fill track histo
         for(int NoTrack = 0; NoTrack < tracks->GetNParticles(); NoTrack++){ //correlate pion with tracks
-	        track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
-            if(!track) continue;
-            if(track->Pt()<0.5) continue;
-            double entries[3] = {track->Pt(), track->Eta(), TVector2::Phi_mpi_pi(track->Phi())};
-            h_Track->Fill(entries);
+        track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
+        if(!track) continue;
+        if(track->Pt()<0.5) continue;
+        double entries[3] = {track->Pt(), track->Eta(), TVector2::Phi_mpi_pi(track->Phi())};
+        h_Track->Fill(entries);
         }    
     }
     
-	for(int NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ ) // Loop over clusters
+    for(int NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ ) // Loop over clusters
 	{   
         cluster=(AliVCluster*) clusters->GetCluster(NoCluster1); // //it was GetAcceptCluster->GetCluster(NoCluster1);
      	if(!cluster) continue;
         if(!PassedCuts(cluster))continue ;
-        if(SameMix==0){
-            
-		    for( int ibg=0; ibg<bgTracksArray->GetEntries(); ibg++){//correlate cluster with tracks
-	    	    AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
-		        if(!track) continue;
+        if(MixedEvent){
+            for( int ibg=0; ibg<bgTracksArray->GetEntries(); ibg++){//correlate cluster with tracks
+    	        AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
+                if(!track) continue;
                 FillPhotonCorrelation(cluster, track, h_ClusterTrack_Mixed, Weight);
-            }
-        }
+	    }//end loop over tracks
+        }// end if mixed events
         else{
             FillClusterHisto(cluster, h_Cluster); //filling photon histogram
-        
             for(int NoTrack = 0; NoTrack < tracks->GetNParticles(); NoTrack++){ //correlate cluster with tracks
-			    track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
+	        track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
                 if(!track) continue;
                 FillPhotonCorrelation(cluster, track, h_ClusterTrack, Weight);
-             }
-        }
+            } //end loop over tracks
+        }//end same event loop.
         
-        for( int NoCluster2 = NoCluster1+1; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
-        {
+        for( int NoCluster2 = NoCluster1+1; NoCluster2 < NoOfClustersInEvent; NoCluster2++ ) {
             cluster2=(AliVCluster*) clusters->GetCluster(NoCluster2);
 	    if(!cluster2) continue;
             if(!PassedCuts(cluster2))continue ;
-            FillPionHisto(cluster, cluster2, h_Pi0); //filling Pion histogram
-            if(SameMix==0){
-		        for( int ibg=0; ibg<bgTracksArray->GetEntries(); ibg++){
-	    	        AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
-		            if(!track) continue;
+            if(MixedEvent){
+	        for(int ibg=0; ibg<bgTracksArray->GetEntries(); ibg++){
+       	            AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
+                    if(!track) continue;
                     FillPionCorrelation(cluster, cluster2, track, h_Pi0Track_Mixed, Weight);
-                }
-            }
+		} //end loop over tracks
+            } // end mixed event loop 
             else{
+                FillPionHisto(cluster, cluster2, h_Pi0);
                 for(int NoTrack = 0; NoTrack < tracks->GetNParticles(); NoTrack++){ //correlate pion with tracks
-				    track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
+	            track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
                     if(!track) continue;
                     FillPionCorrelation(cluster, cluster2, track, h_Pi0Track, Weight);
-                    }
-            }
-        } //end 2 loop over clusters
+                } //end loop over tracks
+            }//end same event 
+          } //end 2 loop over clusters
 	} //end  1 loop over clusters
-	return 1; //return number of accepted gammas
+   return 1; 
 }
 
 
@@ -795,7 +784,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     TLorentzVector ph;
     clusters->GetMomentum(ph, cluster);
     if(cluster->E()< 5.0) return;
-    double entries[10] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax())};
+    Double_t dRmin = ClustTrackMatching(cluster);
+
+    double entries[12] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), static_cast<double>(GetMaxDistanceFromBorder(cluster)), dRmin };
     histo->Fill(entries);
     return;
 }
