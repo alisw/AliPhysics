@@ -49,6 +49,7 @@ set(SRCS
     AliAnalysisTaskRhoMass.cxx
     AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
+    AliAnalysisTaskJetUE.cxx
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx

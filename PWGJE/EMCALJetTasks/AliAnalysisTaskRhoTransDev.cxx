@@ -35,8 +35,6 @@ ClassImp(AliAnalysisTaskRhoTransDev);
  */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
   AliAnalysisTaskRhoBaseDev(),
-  fBackToBackJetPtFraction(0.6),
-  fMaxMomentumThridJet(12),
   fHistB2BRhoVsCent(0),
   fHistB2BRhoVsLeadJetPt(),
   fHistB2BRhoVsLeadTrackPt(0),
@@ -57,8 +55,6 @@ AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
  */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
-  fBackToBackJetPtFraction(0.6),
-  fMaxMomentumThridJet(12),
   fHistB2BRhoVsCent(0),
   fHistB2BRhoVsLeadJetPt(),
   fHistB2BRhoVsLeadTrackPt(0),
@@ -201,42 +197,6 @@ void AliAnalysisTaskRhoTransDev::CalculateRho()
 }
 
 /**
- * Determines whether the current event is a "back-to-back" event, using the following definition.
- * An event is back-to-back if:
- * 1) The event contains a jet whose azimuthal angle difference with the leading jet is > 5/6 pi (the "back-to-back" jet), and
- * 2) the back-to-back jet carries a minimum fraction (fBackToBackJetPtFraction) of the leading jet momentum, and
- * 3) there are no jets with momentum greater than a given threshold (fMaxMomentumThridJet) that have an azimuthal angle difference smaller than 5/6 pi with the leading jet.
- * @return A boolean indicating whether the event is classified as back-to-back (true) or not (false).
- */
-Bool_t AliAnalysisTaskRhoTransDev::IsB2BEvent()
-{
-  static Float_t minPhi = (5.0/6.0) * TMath::Pi();
-
-  Bool_t b2bJet = kFALSE;
-  Bool_t thirdJetOverThreshold = kFALSE;
-
-  auto itJet = fSortedJets["Signal"].begin();
-  if (itJet == fSortedJets["Signal"].end()) return kFALSE;
-  AliEmcalJet* leadingJet = *itJet;
-  Double_t minB2Bpt = leadingJet->Pt() * fBackToBackJetPtFraction;
-  itJet++;
-  while (itJet != fSortedJets["Signal"].end()) {
-    auto jet = *itJet;
-    Double_t phidiff = TMath::Abs(AliEmcalContainer::RelativePhi(jet->Phi(), leadingJet->Phi()));
-    if (phidiff > minPhi) {
-      if (jet->Pt() > minB2Bpt) b2bJet = kTRUE;
-    }
-    else if (jet->Pt() > fMaxMomentumThridJet) {
-      thirdJetOverThreshold = kTRUE;
-      break;
-    }
-    if (jet->Pt() < fMaxMomentumThridJet && (b2bJet || jet->Pt() < minB2Bpt)) break;
-    itJet++;
-  }
-  return b2bJet && !thirdJetOverThreshold;
-}
-
-/**
  * Fill histograms.
  */
 Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
@@ -255,7 +215,7 @@ Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
       fHistB2BRhoVsLeadClusterE->Fill(fLeadingCluster->E(), fOutRho->GetVal());
     }
 
-    if (fHistB2BRhoVsNtrack) fHistRhoVsNtrack->Fill(fNtracks, fOutRho->GetVal());
+    if (fHistB2BRhoVsNtrack) fHistB2BRhoVsNtrack->Fill(fNtracks, fOutRho->GetVal());
     if (fHistB2BRhoVsNcluster) fHistRhoVsNcluster->Fill(fNclusters, fOutRho->GetVal());
 
     for (auto jetCont : fJetCollArray) {

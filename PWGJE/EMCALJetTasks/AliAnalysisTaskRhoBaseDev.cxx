@@ -40,7 +40,7 @@ ClassImp(AliAnalysisTaskRhoBaseDev);
  * Default constructor. Needed by ROOT I/O
  */
 AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev() :
-  AliAnalysisTaskEmcalJetLight(),
+  AliAnalysisTaskJetUE(),
   fOutRhoName(),
   fOutRhoScaledName(),
   fRhoFunction(0),
@@ -50,14 +50,6 @@ AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev() :
   fMinBinPt(0),
   fMaxBinPt(500),
   fTaskConfigured(kFALSE),
-  fNtracks(0),
-  fNclusters(0),
-  fNjets(),
-  fTotJetArea(),
-  fLeadingParticle(0),
-  fLeadingCluster(0),
-  fLeadingJet(),
-  fSortedJets(),
   fOutRho(0),
   fOutRhoScaled(0),
   fHistRhoVsCent(0),
@@ -90,7 +82,7 @@ AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev() :
  * @param[in] histo If kTRUE, the task will also produce QA histograms
  */
 AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev(const char *name, Bool_t histo) :
-  AliAnalysisTaskEmcalJetLight(name, histo),
+  AliAnalysisTaskJetUE(name, histo),
   fOutRhoName(),
   fOutRhoScaledName(),
   fRhoFunction(0),
@@ -100,14 +92,6 @@ AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev(const char *name, Bool_t hi
   fMinBinPt(0),
   fMaxBinPt(500),
   fTaskConfigured(kFALSE),
-  fNtracks(0),
-  fNclusters(0),
-  fNjets(),
-  fTotJetArea(),
-  fLeadingParticle(0),
-  fLeadingCluster(0),
-  fLeadingJet(),
-  fSortedJets(),
   fOutRho(0),
   fOutRhoScaled(0),
   fHistRhoVsCent(0),
@@ -281,76 +265,6 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
   }
 }
 
-/**
- * Calculates event properties such as number of tracks, cluster, jets, leading track, cluster, jets etc.
- */
-void AliAnalysisTaskRhoBaseDev::CalculateEventProperties()
-{
-  fNtracks = 0;
-  fNclusters = 0;
-  fLeadingParticle = nullptr;
-  fLeadingCluster = nullptr;
-
-  // Loop over all possible containers
-  for (auto partCont : fParticleCollArray) {
-    for (auto track : partCont.second->accepted()) {
-      if (!fLeadingParticle || track->Pt() > fLeadingParticle->Pt()) fLeadingParticle = track;
-      fNtracks++;
-    }
-  }
-
-  // Loop over all possible containers
-  for (auto clusCont : fClusterCollArray) {
-    for (auto clus : clusCont.second->accepted()) {
-      if (!fLeadingCluster || clus->E() > fLeadingCluster->E()) fLeadingCluster = clus;
-      fNclusters++;
-    }
-  }
-
-  SortJets();
-}
-
-/**
- * Sort jets according to their transverse momentum
- */
-void AliAnalysisTaskRhoBaseDev::SortJets()
-{
-  for (auto jetCont : fJetCollArray) {
-    fLeadingJet[jetCont.first] = nullptr;
-    fNjets[jetCont.first] = 0;
-    fTotJetArea[jetCont.first] = 0;
-    auto itSortedJets = fSortedJets.find(jetCont.first);
-    if (itSortedJets == fSortedJets.end()) {
-      auto res = fSortedJets.emplace(jetCont.first, std::list<AliEmcalJet*>());
-      if (res.second) {
-        itSortedJets = res.first;
-      }
-      else {
-        AliError(Form("Error while trying to insert in the map fSortedJets for jet collection %s", jetCont.first.c_str()));
-        continue;
-      }
-    }
-    else {
-      itSortedJets->second.clear();
-    }
-    for (auto jet1 : jetCont.second->accepted()) {
-      if (!jet1->IsGhost()) {
-        fNjets[jetCont.first]++;
-        fTotJetArea[jetCont.first] += jet1->Area();
-      }
-      std::list<AliEmcalJet*>::iterator itJet2 = itSortedJets->second.begin();
-      while (itJet2 != itSortedJets->second.end()) {
-        AliEmcalJet* jet2 = *itJet2;
-        if (jet1->Pt() > jet2->Pt()) break;
-        itJet2++;
-      }
-      itSortedJets->second.insert(itJet2, jet1);
-    }
-    if (!itSortedJets->second.empty()) fLeadingJet[jetCont.first] = *(itSortedJets->second.begin());
-  }
-
-
-}
 
 /**
  * Calculates the average background using a given parametrization
@@ -383,26 +297,6 @@ Bool_t AliAnalysisTaskRhoBaseDev::Run()
 }
 
 /**
- * Fill jet histograms.
- */
-void AliAnalysisTaskRhoBaseDev::FillJetHistograms()
-{
-  for (auto jetCont : fJetCollArray) {
-    fHistTotJetAreaVsCent[jetCont.first]->Fill(fCent, fTotJetArea[jetCont.first]);
-    if (fLeadingJet[jetCont.first]) {
-      fHistLeadJetPtVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->Pt());
-      fHistLeadJetPtDensityVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->Pt() / fLeadingJet[jetCont.first]->Area());
-      fHistLeadJetNconstVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->GetNumberOfConstituents());
-      fHistRhoVsLeadJetPt[jetCont.first]->Fill(fLeadingJet[jetCont.first]->Pt(), fOutRho->GetVal());
-      if (fCentBin >=0 && fCentBin < fCentBins.size()-1 && fHistLeadJetNconstVsPt[jetCont.first]) fHistLeadJetNconstVsPt[jetCont.first][fCentBin]->Fill(fLeadingJet[jetCont.first]->Pt(), fLeadingJet[jetCont.first]->GetNumberOfConstituents());
-    }
-    if (fHistNjetVsCent[jetCont.first]) fHistNjetVsCent[jetCont.first]->Fill(fCent, fNjets[jetCont.first]);
-
-    if (fHistNjetVsNtrack[jetCont.first]) fHistNjetVsNtrack[jetCont.first]->Fill(fNtracks, fNjets[jetCont.first]);
-  }
-}
-
-/**
  * Fill histograms.
  */
 Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
@@ -432,7 +326,19 @@ Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
     if (fHistRhoScaledVsNcluster) fHistRhoScaledVsNcluster->Fill(fNclusters,  fOutRhoScaled->GetVal());
   }
 
-  FillJetHistograms();
+  for (auto jetCont : fJetCollArray) {
+    fHistTotJetAreaVsCent[jetCont.first]->Fill(fCent, fTotJetArea[jetCont.first]);
+    if (fLeadingJet[jetCont.first]) {
+      fHistLeadJetPtVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->Pt());
+      fHistLeadJetPtDensityVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->Pt() / fLeadingJet[jetCont.first]->Area());
+      fHistLeadJetNconstVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->GetNumberOfConstituents());
+      fHistRhoVsLeadJetPt[jetCont.first]->Fill(fLeadingJet[jetCont.first]->Pt(), fOutRho->GetVal());
+      if (fCentBin >=0 && fCentBin < fCentBins.size()-1 && fHistLeadJetNconstVsPt[jetCont.first]) fHistLeadJetNconstVsPt[jetCont.first][fCentBin]->Fill(fLeadingJet[jetCont.first]->Pt(), fLeadingJet[jetCont.first]->GetNumberOfConstituents());
+    }
+    if (fHistNjetVsCent[jetCont.first]) fHistNjetVsCent[jetCont.first]->Fill(fCent, fNjets[jetCont.first]);
+
+    if (fHistNjetVsNtrack[jetCont.first]) fHistNjetVsNtrack[jetCont.first]->Fill(fNtracks, fNjets[jetCont.first]);
+  }
 
   return kTRUE;
 }      
