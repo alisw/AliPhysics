@@ -80,7 +80,7 @@ private:
   
   AliFlowVector* fZDCFlowVect[2]; //! ZDC q-vectors
   Int_t fCachedRunNum;            //
-  const static Int_t fnRun = 90;  //
+  const static Int_t fnRun = 125; //
   Int_t fRunList[fnRun];          // run list
   TList *fQVecListRun[fnRun];     //! run-by-run list
   TArrayD fAvVtxPosX;             // average vx position vs run number
@@ -92,7 +92,7 @@ private:
   AliAnalysisUtils* fAnalysisUtils; //!
   AliMultSelection* fMultSelection; //!
   
-  ClassDef(AliAnalysisTaskZDCEP,2);
+  ClassDef(AliAnalysisTaskZDCEP,3);
 };
 
 #endif
