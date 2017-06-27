@@ -6137,7 +6137,7 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb010() {
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
   for(Int_t i=3;i<=3;i++) fCutsEff->SetBinContent(i,0.15);
   for(Int_t i=4;i<=4;i++) fCutsEff->SetBinContent(i,0.12);
-  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(5,0.09);
+  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.09);
   for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
   
