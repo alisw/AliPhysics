@@ -6332,10 +6332,8 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb010() {
   
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
-  fCutsEff->SetBinContent(4,0.12);
-  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.10); 
-  for(Int_t i=9;i<=36;i++) fCutsEff->SetBinContent(i,0.05); 
-  for(Int_t i=37;i<=50;i++) fCutsEff->SetBinContent(i,0.0); 
+  for(Int_t i=4;i<=5;i++) fCutsEff->SetBinContent(i,0.13); 
+  for(Int_t i=6;i<=50;i++) fCutsEff->SetBinContent(i,0.10);  
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
