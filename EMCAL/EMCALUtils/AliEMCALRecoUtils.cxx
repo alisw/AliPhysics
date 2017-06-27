@@ -407,7 +407,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
     return kFALSE;
   }
   
-  //If the distance to the border is 0 or negative just exit accept all clusters
+  // If the distance to the border is 0 or negative just exit accept all clusters
   if (cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) 
     return kTRUE;
   
@@ -420,45 +420,56 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   
   if (absIdMax==-1) return kFALSE;
   
-  //Check if the cell is close to the borders:
+  // Check if the cell is close to the borders:
   Bool_t okrow = kFALSE;
   Bool_t okcol = kFALSE;
   
-  if (iSM < 0 || iphi < 0 || ieta < 0 ) {
+  if (iSM < 0 || iphi < 0 || ieta < 0 ) 
+  {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
     return kFALSE; // trick coverity
   }
   
-  //Check rows/phi
+  // Check rows/phi
   Int_t iPhiLast = 24;
-   if( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
-   else if (  geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd ) iPhiLast /= 3;// 1/3 sm case
+   if      ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
+   else if ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd  ) iPhiLast /= 3;// 1/3 sm case
   
   if(iphi >= fNCellsFromEMCALBorder && iphi < iPhiLast - fNCellsFromEMCALBorder) okrow = kTRUE; 
 
-  //Check columns/eta
+  // Check columns/eta
   Int_t iEtaLast = 48;
-  if(!fNoEMCALBorderAtEta0 || geom->IsDCALSM(iSM)) {// conside inner border
-     if(  geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  iEtaLast = iEtaLast*2/3;        
-     if(ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder) okcol = kTRUE;  
-  } else {
-    if (iSM%2==0) {
-     if (ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;  
-    } else {
-     if(ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE; 
+  if ( !fNoEMCALBorderAtEta0 || geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard ) 
+  {
+    // consider inner border
+    if ( geom->IsDCALSM(iSM) ) iEtaLast = iEtaLast*2/3;        
+  
+    if ( ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder ) okcol = kTRUE;  
+  } 
+  else 
+  {
+    if (iSM%2==0) 
+    {
+     if (ieta >= fNCellsFromEMCALBorder)           okcol = kTRUE;  
+    } 
+    else 
+    {
+     if (ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE; 
     }
   }//eta 0 not checked
   
   AliDebug(2,Form("EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d:  column? %d, row? %d\nq",
                   fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
   
-  if (okcol && okrow) {
-    //printf("Accept\n");
+  if (okcol && okrow) 
+  {
     return kTRUE;
-  } else  {
-    //printf("Reject\n");
+  } 
+  else
+  {
     AliDebug(2,Form("Reject cluster in border, max cell : ieta %d, iphi %d, SM %d\n",ieta, iphi, iSM));
+    
     return kFALSE;
   }
 }  
