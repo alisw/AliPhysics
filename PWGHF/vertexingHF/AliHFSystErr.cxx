@@ -5935,7 +5935,8 @@ void AliHFSystErr::InitDstoKKpi2015PbPb010() {
     
   // Cuts efficiency (from cuts variation + phi selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
+  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.13);
+  for(Int_t i=7;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
     
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
@@ -6043,8 +6044,12 @@ void AliHFSystErr::InitDstoKKpi2015PbPb6080() {
   
   // Cuts efficiency (from cuts variation + phi selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
-  
+  for(Int_t i=1;i<=4;i++) fCutsEff->SetBinContent(i,0.14);
+  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.10);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.12);
+  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.10);
+  for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.12);
+
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
   for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.03);
