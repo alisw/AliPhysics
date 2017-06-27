@@ -1775,6 +1775,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             Int_t lChargeCascade = -1;
             if ( fTreeCascVarBachSign > 0 ) lChargeCascade = +1;
             
+            //Don't forget: set properties, please...
+            cascadeimproved.GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
+            cascadeimproved.GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+            
             AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
             
             fTreeCascVarImprovedCascDCAxyToPV = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
