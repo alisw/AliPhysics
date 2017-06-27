@@ -625,8 +625,12 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
   Int_t nclusters = fCaloClusters->GetEntriesFast();
   for (Int_t icluster=0; icluster < nclusters; ++icluster) {
     AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
-    if (!clust)
+    if (!clust) {
       continue;
+    }
+    if (!clust->IsEMCAL()) {
+      continue;
+    }
     
     // SHOWER SHAPE -----------------------------------------------
     if (fRecalShowerShape)
