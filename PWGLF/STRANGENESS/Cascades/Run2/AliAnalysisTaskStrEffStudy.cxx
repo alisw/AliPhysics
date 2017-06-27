@@ -1622,8 +1622,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliExternalTrackParam btimp(*esdTrackBach), *pbtimp=&btimp;
         
         //Uncertainties: bachelor track as well as V0
-        Double_t dy2=pbtimp->GetSigmaY2() + esdTrackPos->GetSigmaY2() + esdTrackNeg->GetSigmaY2();
-        Double_t dz2=pbtimp->GetSigmaZ2() + esdTrackPos->GetSigmaZ2() + esdTrackNeg->GetSigmaZ2();
+        //Harmonic mean-like: errors as weights to combine the errors (approx)
+        Double_t dy2V0 = TMath::Power(1/(esdTrackPos->GetSigmaY2()+1e-8)+1/(esdTrackNeg->GetSigmaY2()+1e-8)+1e-8,-1);
+        Double_t dz2V0 = TMath::Power(1/(esdTrackPos->GetSigmaZ2()+1e-8)+1/(esdTrackNeg->GetSigmaZ2()+1e-8)+1e-8,-1);
+        
+        Double_t dy2=pbtimp->GetSigmaY2() + dy2V0;
+        Double_t dz2=pbtimp->GetSigmaZ2() + dz2V0;
         Double_t dx2=dy2;
         
         //For testing purposes: try geometric criterion only, disregard uncertainties
