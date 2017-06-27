@@ -5840,11 +5840,11 @@ void AliHFSystErr::InitD0toKpi2015PbPb010() {
     fRawYield->SetBinContent(8,0.05);
     fRawYield->SetBinContent(9,0.05);
     fRawYield->SetBinContent(10,0.05);
-    fRawYield->SetBinContent(11,0.065);
-    fRawYield->SetBinContent(12,0.1);
-    for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.1);
+    fRawYield->SetBinContent(11,0.05);
+    fRawYield->SetBinContent(12,0.05);
+    for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.065);
     for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.1);
-    for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.1);
+    for(Int_t i=25;i<=50;i++) fRawYield->SetBinContent(i,0.1);
     
     fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
     fCutsEff->SetBinContent(1,0.);
