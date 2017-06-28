@@ -449,10 +449,10 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
         fHistPtYPi0FromKGGEMCPCMAcc 		= new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCPCMAcc);
-        fHistPtYPi0FromKGGEMCAccSamePi0    = new TH2F("Pt_Y_fHistPi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccSamePi0    = new TH2F("Pt_Y_Pi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAccSamePi0->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccSamePi0);
-        fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_fHistPi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_Pi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
   }
@@ -808,7 +808,9 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         }
       }
 
-      fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
+      if(allOK[1] && allOK[2]){
+            fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
+      }
 
       if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
 

@@ -138,9 +138,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         void setFilterBitSelection(Int_t filterBit){
             fFilterBit = filterBit;
         }
-        void useAODs(Bool_t answer){
-            fIsAOD = answer;
-        }
+       
 
         Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 

@@ -13,7 +13,7 @@ class AliAODTrack;
 //class AliEmcalTrackSelection;
 
 //namespace BSchaefer_devel{
-
+    
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
     public:
@@ -86,6 +86,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                   dphi_ket_deut_A;        // 46
 	TH2F*                   dphi_ket_deut_B;        // 47
 	TProfile*               deltat_channel;         // 48
+
+	TH1F*                   deut_ket_count;         // 49
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented

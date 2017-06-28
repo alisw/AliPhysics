@@ -169,6 +169,29 @@ AliV0ReaderV1::~AliV0ReaderV1()
   }
 }
 
+/**
+ * @brief Array index operator
+ *
+ * Access to the photon at a given index in the V0 reader, treated as container
+ *
+ * @param index Index of the photon inside the container
+ * @return Pointer to photon (if the container has at least one photon), otherwise nullptr
+ */
+AliConversionPhotonBase *AliV0ReaderV1::operator[](int index) const {
+  if(fConversionGammas && (index < fConversionGammas->GetEntriesFast())) {
+    TObject *tmp = fConversionGammas->At(index);
+    if(tmp->IsA() == AliAODConversionPhoton::Class()){
+      AliAODConversionPhoton *photon = static_cast<AliAODConversionPhoton *>(tmp);
+      return photon;
+    } else {
+      AliKFConversionPhoton *photon = static_cast<AliKFConversionPhoton *>(tmp);
+      return photon;
+    }
+  } else {
+    return nullptr;
+  }
+}
+
 /*
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(AliV0ReaderV1 &original) : AliAnalysisTaskSE(original),
@@ -1774,4 +1797,68 @@ Bool_t AliV0ReaderV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobech
 void AliV0ReaderV1::Terminate(Option_t *)
 {
 
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1 *reader, AliV0ReaderV1::iterator::Direction_t dir, int position):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(),
+    fkData(reader),
+    fCurrentIndex(position),
+    fDirection(dir)
+{
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1::iterator &other):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(other),
+    fkData(other.fkData),
+    fCurrentIndex(other.fCurrentIndex),
+    fDirection(other.fDirection)
+{
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator=(const AliV0ReaderV1::iterator &other){
+  if(this != &other){
+    fkData = other.fkData;
+    fCurrentIndex = other.fCurrentIndex;
+    fDirection = other.fDirection;
+  }
+  return *this;
+}
+
+bool AliV0ReaderV1::iterator::operator!=(AliV0ReaderV1::iterator &other) const{
+  if(fkData != other.fkData) return false;
+  return fCurrentIndex == other.fCurrentIndex;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator++(int index){
+  iterator tmp(*this);
+  operator++();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator++(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator--(int){
+  iterator tmp(*this);
+  operator--();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator--(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliConversionPhotonBase *AliV0ReaderV1::iterator::operator*(){
+  return (*fkData)[fCurrentIndex];
 }

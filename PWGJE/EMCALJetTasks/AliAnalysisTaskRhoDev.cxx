@@ -34,9 +34,10 @@ ClassImp(AliAnalysisTaskRhoDev);
  * Default constructor. Needed by ROOT I/O
  */
 AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev() :
-  AliAnalysisTaskRhoBaseDev("AliAnalysisTaskRhoDev"),
+  AliAnalysisTaskRhoBaseDev(),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
+  fOccupancyFactor(1.),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -51,6 +52,7 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
+  fOccupancyFactor(1.),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -65,7 +67,7 @@ void AliAnalysisTaskRhoDev::UserCreateOutputObjects()
 
   AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects();
 
-  fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 2);
+  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent", 100, 0, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 }
 
@@ -76,21 +78,16 @@ void AliAnalysisTaskRhoDev::UserCreateOutputObjects()
 std::pair<AliEmcalJet*, AliEmcalJet*> AliAnalysisTaskRhoDev::GetLeadingJets()
 {
   std::pair<AliEmcalJet*, AliEmcalJet*> maxJets = {nullptr, nullptr};
+  if (fNExclLeadJets <= 0) return maxJets;
 
-  AliJetContainer * bkgJetCont = fJetCollArray["Background"];
-  for (auto jet : bkgJetCont->accepted()) {
-    if (!maxJets.first || jet->Pt() > maxJets.first->Pt()) {
-      maxJets.second = maxJets.first;
-      maxJets.first = jet;
-    }
-    else if (!maxJets.second || jet->Pt() > maxJets.second->Pt()) {
-      maxJets.second = jet;
-    }
+  auto itJet = fSortedJets["Signal"].begin();
 
+  maxJets.first = *itJet;
+  if (fNExclLeadJets > 1) {
+    itJet++;
+    if (itJet != fSortedJets["Signal"].end()) maxJets.second = *itJet;
   }
 
-  if (fNExclLeadJets < 2) maxJets.second = nullptr;
-  if (fNExclLeadJets < 1) maxJets.first = nullptr;
   return maxJets;
 }
 
@@ -115,10 +112,12 @@ Bool_t AliAnalysisTaskRhoDev::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* j
 /**
  * Calculates the average background using the median approach
  * as proposed in https://arxiv.org/pdf/0707.1378.pdf.
- * Values are stored in fOutRho and fOutRhoScaled.
+ * Rho is stored in fOutRho.
  */
 void AliAnalysisTaskRhoDev::CalculateRho()
 {
+  if (fJetCollArray.empty()) return;
+
   auto maxJets = GetLeadingJets();
 
   static Double_t rhovec[999];
@@ -166,31 +165,37 @@ void AliAnalysisTaskRhoDev::CalculateRho()
     Double_t rho = TMath::Median(NjetAcc, rhovec);
 
     // Occupancy correction for sparse event described in https://arxiv.org/abs/1207.2392
-    Double_t OccCorr = 0.;
-    if (TotaljetArea > 0) OccCorr = TotaljetAreaPhys / TotaljetArea;
-    fHistOccCorrvsCent->Fill(fCent, OccCorr);
-    if (fRhoSparse) rho = rho * OccCorr;
+    if (TotaljetArea > 0) fOccupancyFactor = TotaljetAreaPhys / TotaljetArea;
+
+    if (fRhoSparse) rho = rho * fOccupancyFactor;
 
     fOutRho->SetVal(rho);
-
-    if (fOutRhoScaled) {
-      Double_t rhoScaled = rho * GetScaleFactor(fCent);
-      fOutRhoScaled->SetVal(rhoScaled);
-    }
   }
 }
 
 /**
- * Run the analysis.
+ * Fill histograms.
  */
-Bool_t AliAnalysisTaskRhoDev::Run()
+Bool_t AliAnalysisTaskRhoDev::FillHistograms()
 {
-  fOutRho->SetVal(0);
-  if (fOutRhoScaled) fOutRhoScaled->SetVal(0);
+  Bool_t r = AliAnalysisTaskRhoBaseDev::FillHistograms();
+  if (!r) return kFALSE;
 
-  if (fJetCollArray.empty()) return kFALSE;
+  fHistOccCorrvsCent->Fill(fCent, fOccupancyFactor);
 
-  CalculateRho();
+  return kTRUE;
+}
+
+/**
+ * Verify that the required particle, cluster and jet containers were provided.
+ * @return kTRUE if all requirements are satisfied, kFALSE otherwise
+ */
+Bool_t AliAnalysisTaskRhoDev::VerifyContainers()
+{
+  if (fJetCollArray.count("Background") == 0) {
+    AliError("No signal jet collection found. Task will not run!");
+    return kFALSE;
+  }
 
   return kTRUE;
 }

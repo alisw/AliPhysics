@@ -51,6 +51,7 @@ set(SRCS
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
+    AliAnalysisTaskRhoTransDev.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalPicoTrackInGridMaker.cxx

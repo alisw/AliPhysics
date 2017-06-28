@@ -488,6 +488,12 @@ public:
   TH3F *   fhEMaxCellTimeM02SM  ;                 //!<! m02 vs SM number vs max cell time
   TH3F *   fhEMaxCellTimeNCellSM  ;               //!<! n cell vs SM number vs max cell time
 
+  TH3F *   fhEMaxESecCellSMLowM02[8];                   //!<! E cell max vs E cell secondary vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, for 2<= nCell <= 9 
+  TH3F *   fhEMaxECrossSMLowM02  [8];                   //!<! E cell max vs E cross vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, for 2<= nCell <= 9
+  
+  TH3F *   fhEMaxESecCellSMHighM02[8];                  //!<! E cell max vs E cell secondary vs SM for clusters 8 < E < 12 GeV, 0.6 < M02 < 3, for 2<= nCell <= 9 
+  TH3F *   fhEMaxECrossSMHighM02  [8];                  //!<! E cell max vs E cross vs SM for clusters 8 < E < 12 GeV, 0.6 < M02 < 2, for 2<= nCell <= 9
+
   //
   // Weight studies
   //

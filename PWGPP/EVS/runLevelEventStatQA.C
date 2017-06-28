@@ -50,7 +50,8 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=272399, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -80,6 +81,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   ULong64_t class_l1a[NMAXCLASSES]         = {0};
   ULong64_t class_l2b[NMAXCLASSES]         = {0};
   ULong64_t class_l2a[NMAXCLASSES]         = {0};
+  ULong64_t class_duration[NMAXCLASSES]    = {0};
   Double_t  class_lifetime[NMAXCLASSES]    = {0};
   Double_t  class_lumi[NMAXCLASSES]        = {0};
   Double_t  class_ds[NMAXCLASSES]          = {0};
@@ -93,6 +95,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   ULong64_t alias_acc_step5[NBITS]         = {0};
   ULong64_t alias_acc_step6[NBITS]         = {0};
   ULong64_t alias_acc_step7[NBITS]         = {0};
+  ULong64_t alias_acc_step8[NBITS]         = {0};
+  ULong64_t alias_acc_step9[NBITS]         = {0};
   Double_t alias_l0b_rate[NBITS]           = {0};
   Double_t alias_lifetime[NBITS]           = {0};
   Double_t alias_lumi_recorded[NBITS]      = {0};
@@ -151,6 +155,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("class_l1a",&class_l1a,Form("class_l1a[%i]/l",NMAXCLASSES));
   t->Branch("class_l2b",&class_l2b,Form("class_l2b[%i]/l",NMAXCLASSES));
   t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
+  t->Branch("class_duration",&class_duration,Form("class_duration[%i]/l",NMAXCLASSES));
   t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
   t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
   t->Branch("class_ds",&class_ds,Form("class_ds[%i]/D",NMAXCLASSES));
@@ -164,7 +169,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("alias_acc_step5",&alias_acc_step5,Form("alias_acc_step5[%i]/l",NBITS));
   t->Branch("alias_acc_step6",&alias_acc_step6,Form("alias_acc_step6[%i]/l",NBITS));
   t->Branch("alias_acc_step7",&alias_acc_step7,Form("alias_acc_step7[%i]/l",NBITS));
-
+  t->Branch("alias_acc_step8",&alias_acc_step6,Form("alias_acc_step8[%i]/l",NBITS));
+  t->Branch("alias_acc_step9",&alias_acc_step7,Form("alias_acc_step9[%i]/l",NBITS));
   t->Branch("alias_l0b_rate",&alias_lifetime,Form("alias_l0b_rate[%i]/D",NBITS));
   t->Branch("alias_lifetime",&alias_lifetime,Form("alias_lifetime[%i]/D",NBITS));
   t->Branch("alias_lumi_recorded",&alias_lumi_recorded,Form("alias_lumi_recorded[%i]/D",NBITS));
@@ -292,7 +298,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   TString lhcPeriod;
   TString activeDetectorsString;
   //Int_t run, TString ocdbStorage, TString &partition, TString &activeDetectorsString, Double_t& run_duration, 
-  classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
+  classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a,class_duration);
   activeDetectors.SetString(activeDetectorsString.Data());
   objPartition.SetString(partition.Data());
   Int_t status = triggerInfo(run,ocdbStorage,lhcPeriod,lhcState,fill,nBCsPerOrbit,timeStart,timeEnd);
@@ -355,7 +361,43 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     }
   }
 
-  // special treatment for DG
+  // special treatment for INT11
+  if (run>=252235 && run<=255011 && run!=253434 && run!=253437) {
+    AliTriggerClass* clINT11 = (AliTriggerClass*) classes.FindObject("CINT11-B-NOPF-CENTNOTRD");
+    AliTriggerClass* cl0TVX  = (AliTriggerClass*) classes.FindObject("C0TVX-B-NOPF-CENTNOTRD");
+    if (clINT11 && cl0TVX) {
+      Int_t iCINT11 = classes.IndexOf(clINT11);
+      Int_t iC0TVX  = classes.IndexOf(cl0TVX);
+      class_lifetime[iCINT11] = class_lifetime[iC0TVX];
+      class_lumi[iCINT11]     = class_lumi[iC0TVX];
+    }
+  }
+  
+  // special treatment for CUP2
+  if (run>=255276 && run<=256418) {
+    Int_t iCUP2=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCVHMV0M=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP2-B-SPD1-CENTNOTRD")   ) iCUP2=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CVHMV0M-B-NOPF-CENTNOTRD") ) iCVHMV0M=i;
+    }
+    Int_t iREF = iCVHMV0M>=0 ? iCVHMV0M : iCTRUE_NOPF;
+    if (iCUP2>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
+      class_lifetime[iCUP2] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
+      class_lifetime[iCUP2]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP2]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP2]*=class_ds[iCUP2];
+      class_lumi[iCUP2] = lumi_seen*class_lifetime[iCUP2];
+    }
+    if (iCUP2>=0) printf("lumi=%f\n",class_lumi[iCUP2]);
+  }
+  
+  // special treatment for CUP13
   if (run>=256504) {
     Int_t iCUP13=-1;
     Int_t iCTRUE_NOPF=-1;
@@ -378,11 +420,35 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
       class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
     }
-    if (iCUP13>=0) printf("lumi=%f\n",class_lumi[iCUP13]);
+  }
+  
+  // special treatment for CUP25
+  if (run>=272151) {
+    Int_t iCUP25=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCEMC7=-1;
+    Int_t iCPHI7=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP25-B-SPD1-CENTNOTRD")  ) iCUP25=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CEMC7EG1-B-NOPF-CENTNOTRD")) iCEMC7=i;
+      if (TString(cl->GetName()).EqualTo("CPHI7-B-NOPF-CENTNOTRD"))    iCPHI7=i;
+    }
+    Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
+    if (iCUP25>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
+      class_lifetime[iCUP25] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
+      class_lifetime[iCUP25]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP25]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP25]*=class_ds[iCUP25];
+      class_lumi[iCUP25] = lumi_seen*class_lifetime[iCUP25];
+    }
   }
   
   // special treatment for UPC central barrel in p-Pb
-  if (run>=265589) {
+  if (run>=265589 && run<=267166) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
       if (!cl) continue;
@@ -538,20 +604,36 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     Int_t ibit = TMath::Nint(TMath::Log2(mask));
 
     // FIXME
-//    if (!bitNames[ibit].EqualTo("kINT7")) continue;
+    // if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
 
     if (ibit>=NBITS) continue;
 //    if (alias_recorded[ibit]) break; 
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+    if (hHistStat->GetNbinsX()!=19) { 
+      // old stat histo without ZDC background monitoring
+      // setting ZDCBG step equal to V0AND and take other steps shifted by 1
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j)); 
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+    } else {
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    }
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +

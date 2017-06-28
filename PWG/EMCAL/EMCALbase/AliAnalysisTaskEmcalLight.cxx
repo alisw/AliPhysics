@@ -362,12 +362,12 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fOutput->Add(fHistZVertexNoSel);
 
   if (fCentralityEstimation != kNoCentrality) {
-    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 100, 0, 100);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
 
-    fHistCentralityNoSel = new TH1F("fHistCentralityNoSel","Event centrality distribution (no event selection)", 101, 0, 101);
+    fHistCentralityNoSel = new TH1F("fHistCentralityNoSel","Event centrality distribution (no event selection)", 100, 0, 100);
     fHistCentralityNoSel->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentralityNoSel->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentralityNoSel);

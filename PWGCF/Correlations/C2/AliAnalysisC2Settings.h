@@ -46,9 +46,9 @@ class AliAnalysisC2Settings : public TObject {
   // Number of bins used along Z_vtx
   Int_t fNZvtxBins;
   // Max tangential distance of closest approach to primary vertex in order to be still valid
-  Double_t fMaxDcaTang;
+  // Double_t fMaxDcaTang;
   // Max longitudinal distance of closest approach to primary vertex in order to be still valid
-  Double_t fMaxDcaLong;
+  // Double_t fMaxDcaLong;
   // Multiplicity estimator used for this analysis
   TString fMultEstimator;
   // Options for MultEstimator. This would be better down in a subclass, but CINT chokes on that...
@@ -57,20 +57,26 @@ class AliAnalysisC2Settings : public TObject {
   TString fMultEstimatorV0M;
   TString fMultEstimatorRefMult08;
   TString fMultEstimatorValidTracks;
+
   // Require this trigger in the event selection. This is needed to
   // mitigate the missing physics selection in the ITS stand alone
   // runs (eg. 15j, at the time of writing)
-  TString fTrigger_str;
+  // TString fTrigger_str;
   // Predefined strings of triggers. Use these to set the trigger for this analysis like:
   //     fTrigger = fTriggerCint7;
-  TString fTriggerCint7;
-  TString fTriggerVhmV0M;
+  // TString fTriggerCint7;
+  // TString fTriggerVhmV0M;
 
   // If availible, trigger selection should be done throught the physics selection trigger mass
   UInt_t fTriggerMask;
   // Is the AliAODForwardMult object needed (ie., is the fmd needed?)
   Bool_t fUseFMD;
- private:
+  // Is the AliAODCentralMult object needed (ie., is the fmd needed?)
+  Bool_t fUseSPclusters;
+  // Instead of clusters, we can also run on SPD tracklets.
+  Bool_t fUseSPtracklets;
+
+private:
   ClassDef(AliAnalysisC2Settings, 1);
 };
 #endif

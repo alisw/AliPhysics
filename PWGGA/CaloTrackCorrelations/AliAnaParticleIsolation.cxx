@@ -3346,7 +3346,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
       
       for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
-      {
+      {        
         fhPtLeadConeBin[ibin]  = new TH1F
         (Form("hPtLeadCone_Bin%d",ibin),
          Form("cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
@@ -3364,13 +3364,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhSumPtConeBin[ibin]) ;
         
         if(fFillUEBandSubtractHistograms)
-        fhSumPtConeAfterEtaBandUESubBin[ibin]  = new TH1F
-        (Form("hSumPtConeAfterEtaBandUESub_Bin%d",ibin),
-         Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
-              fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax);
-        fhSumPtConeAfterEtaBandUESubBin[ibin]->SetYTitle("d #it{N} / d #it{p}_{T}");
-        fhSumPtConeAfterEtaBandUESubBin[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhSumPtConeAfterEtaBandUESubBin[ibin]) ;
+        {
+          fhSumPtConeAfterEtaBandUESubBin[ibin]  = new TH1F
+          (Form("hSumPtConeAfterEtaBandUESub_Bin%d",ibin),
+           Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
+                fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax);
+          fhSumPtConeAfterEtaBandUESubBin[ibin]->SetYTitle("d #it{N} / d #it{p}_{T}");
+          fhSumPtConeAfterEtaBandUESubBin[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhSumPtConeAfterEtaBandUESubBin[ibin]) ;
+        }
         
         if(fFillTaggedDecayHistograms)
         {
@@ -3395,7 +3397,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhSumPtConeBinDecay[bindecay]) ;
           }
         }
-        
+
         if(IsDataMC())
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
@@ -3418,13 +3420,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhSumPtConeBinMC[binmc]) ;
             
             if(fFillUEBandSubtractHistograms)
+            {
               fhSumPtConeAfterEtaBandUESubBinMC[binmc]  = new TH1F
-            (Form("hSumPtConeAfterEtaBandUESub_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-             Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
-                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),nptbins,ptmin,ptmax);
-            fhSumPtConeAfterEtaBandUESubBinMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
-            fhSumPtConeAfterEtaBandUESubBinMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinMC[binmc]) ;
+              (Form("hSumPtConeAfterEtaBandUESub_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
+               Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
+                    fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),nptbins,ptmin,ptmax);
+              fhSumPtConeAfterEtaBandUESubBinMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
+              fhSumPtConeAfterEtaBandUESubBinMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinMC[binmc]) ;
+            }
           } // MC particle loop
         }
         
@@ -3447,13 +3451,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhSumPtConeBinLambda0[ibin]) ;
           
           if(fFillUEBandSubtractHistograms)
+          {
             fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]  = new TH2F
-          (Form("hSumPtConeAfterEtaBandUESubLambda0_Bin%d",ibin),
-           Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
-                fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
-          fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]) ;
+            (Form("hSumPtConeAfterEtaBandUESubLambda0_Bin%d",ibin),
+             Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
+                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
+            fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinLambda0[ibin]) ;
+          }
           
           if(IsDataMC())
           {
@@ -3477,16 +3483,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               outputContainer->Add(fhSumPtConeBinLambda0MC[binmc]) ;
               
               if(fFillUEBandSubtractHistograms)
+              {
                 fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]  = new TH2F
                 (Form("hSumPtConeAfterEtaBandUESubLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
                  Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
                       fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
-              fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-              outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]) ;
+                fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+                outputContainer->Add(fhSumPtConeAfterEtaBandUESubBinLambda0MC[binmc]) ;
+              }
             } // MC particle loop
           }
         } // shower shape on
+
       } // pt in cone bin loop
     } // bkg cone pt bin histograms
 

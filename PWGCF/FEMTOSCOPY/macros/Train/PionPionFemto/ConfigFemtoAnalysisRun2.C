@@ -30,6 +30,8 @@ bool DEFAULT_DO_KT = kFALSE;
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
+  std::vector<float> kt_ranges;
+
   float qinv_bin_size_MeV;
   float qinv_max_GeV;
 
@@ -50,6 +52,8 @@ struct MacroParams {
   bool do_avg_sep_cf;
   bool do_trueq_cf;
   bool do_trueq3d_cf;
+
+  bool do_kt_trueq3d_cf;
 
   bool do_kt_q3d;
   bool do_kt_qinv;
@@ -83,6 +87,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
+  macro_config.do_kt_trueq3d_cf = DEFAULT_DO_KT;
+
   macro_config.do_ylm_cf = false;
   macro_config.do_trueq_cf = true;
   macro_config.do_trueq3d_cf = true;
@@ -103,6 +109,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
+
+  // Update Configurations
+  macro_config.do_kt_trueq3d_cf &&= analysis_config.is_mc_analysis;
 
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
@@ -265,7 +274,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(binned);
       }
 
-      if (macro_config.do_kt_q3d) {
+      if (macro_config.do_kt_q3d && !macro_config.do_kt_trueq3d_cf) {
         TString q3d_cf_name = TString("_q3D_") + pair_type_str;
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
           new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
@@ -276,6 +285,19 @@ ConfigFemtoAnalysis(const TString& param_str="")
         kt_q3d->AddKtRange(0.6, 0.8);
         kt_q3d->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(kt_q3d);
+      }
+
+      if (macro_config.do_kt_trueq3d_cf) {
+        TString q3d_cf_name = TString("_Trueq3D_") + pair_type_str;
+        AliFemtoKtBinnedCorrFunc *kt_true_q3d = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D",
+          new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        for (size_t kt_idx=0; kt_idx < macro_conf.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_conf.kt_ranges[kt_idx],
+                hight = macro_conf.kt_ranges[kt_idx+1];
+          kt_true_q3d->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_true_q3d);
       }
 
       if (macro_config.do_ylm_cf) {
@@ -371,6 +393,37 @@ BuildConfiguration(const TString &text,
     }
     continue;
 
+    case '(':
+    {
+      UInt_t rangeend = text.Index(")");
+      if (rangeend == -1) {
+        rangeend = line.Length();
+      }
+      TString kt_ranges = line(1, rangeend - 1);
+      TObjArray *range_groups = kt_ranges.Tokenize(",");
+
+      TIter next_range_group(range_groups);
+      TObjString *range_group = NULL;
+
+      while (range_group = (TObjString*)next_range_group()) {
+        TObjArray *subrange = range_group->String().Tokenize(":");
+        TIter next_subrange(subrange);
+        TObjString *subrange_it = (TObjString *)next_subrange();
+        TString prev = TString::Format("%0.6e", subrange_it->String().Atof());
+        while (subrange_it = (TObjString *)next_subrange()) {
+          TString next = TString::Format("%0.6e", subrange_it->String().Atof());
+
+          cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";
+          gROOT->ProcessLineFast(cmd);
+
+          cmd = macro_varname + ".kt_ranges.push_back(" + next + ");";
+          gROOT->ProcessLineFast(cmd);
+          prev = next;
+        }
+      }
+    }
+
+    continue;
     case '+':
       if (line == "+p") {
         cmd = macro_varname + ".pair_codes.push_back(1)";

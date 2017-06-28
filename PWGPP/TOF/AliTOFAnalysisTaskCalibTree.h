@@ -60,6 +60,7 @@ public AliAnalysisTaskSE
   void SetUseLHCClockPhase(Bool_t value = kTRUE) {fUseLHCClockPhase = value;}; // setter
   void SetSpecificStorageParOffline(Char_t *value) {fSpecificStorageParOffline = value;}; // set specific storage ParOffline
   void SetSpecificStorageRunParams(Char_t *value) {fSpecificStorageRunParams = value;}; // set specific storage RunParams
+  void SetSpecificStorageFineSlewing(Char_t *value) {fSpecificStorageFineSlewing = value;}; // set specific storage FineSlewing
   void SetSaveCoordinates(Bool_t value = kTRUE) {fSaveCoordinates = value;}; // set flag to save hit coordinates in tree
 
  protected:
@@ -108,6 +109,7 @@ public AliAnalysisTaskSE
   // TOF related stuff
   TString fSpecificStorageParOffline; // specific storage ParOffline
   TString fSpecificStorageRunParams;  // specific storage RunParams
+  TString fSpecificStorageFineSlewing; // specific storage FineSlewing
   Float_t fTimeResolution;            // time resolution
   AliTOFcalib *fTOFcalib;             //!<! TOF calib
   AliTOFT0maker *fTOFT0maker;         //!<! TOF-T0 maker
@@ -125,15 +127,15 @@ public AliAnalysisTaskSE
   Float_t* ftime;           //[fMaxHits] time
   Float_t* ftot;            //[fMaxHits] time over threshold
   Float_t* ftexp;           //[fMaxHits] texp
-  Float_t* fDeltax;         //[fMaxHits]  delta-x
-  Float_t* fDeltaz;         //[fMaxHits]  delta-z
+  Float_t* fDeltax;         //[fMaxHits] delta-x
+  Float_t* fDeltaz;         //[fMaxHits] delta-z
   Float_t* fDeltat;         //[fMaxHits] delta-t
   Float_t* fDeltaraw;       //[fMaxHits] delta-raw
   Bool_t fSaveCoordinates;
 
   TTree* fOutputTree;                 //!<! output tree
 
-  ClassDef(AliTOFAnalysisTaskCalibTree, 3);
+  ClassDef(AliTOFAnalysisTaskCalibTree, 4);
 };
 
 #endif /* ALIANALYSISTASKTOFCOMPACTCALIB_H */

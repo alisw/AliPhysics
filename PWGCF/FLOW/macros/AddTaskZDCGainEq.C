@@ -9,6 +9,7 @@
  Bool_t bSetGainEq = kFALSE, TString sGainEqFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  Bool_t bApplyRecent= kFALSE,TString sRecentFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
+ Bool_t bCentCutShift = kFALSE,
  const char *suffix = "")
 {
 
@@ -154,6 +155,9 @@
   mgr->ConnectInput( taskFE, 0, cinput); 	//connect the input data (AOD) to the flow event task
   mgr->ConnectOutput(taskFE, 1, coutputFE); 	//get the output of taskFE to a exchange container.
 
+
+
+
   TString taskFEQA = file;      // file is the common outfile filename
   taskFEQA   += ":QAcharge";
   //taskFEQA   += suffix;    should I do this or not?
@@ -198,7 +202,7 @@
   taskQC_prot->SetAnalysisSet(sAnalysisDef); 
   taskQC_prot->SetRejectPileUp(bPileUp);  
   taskQC_prot->SetRejectPileUpTight(bPileUpTight); //kTRUE:700,kFALSE:15000
-
+  taskQC_prot->SetCentCutShift(bCentCutShift);
 
 
   if(bSetGainEq){
@@ -271,8 +275,10 @@
 
 
   mgr->AddTask(taskQC_prot);            // connect the task to the analysis manager
-  mgr->ConnectInput(taskQC_prot, 0, cinput);      // AOD event.!!
-  mgr->ConnectInput(taskQC_prot, 1, coutputFE);   // connect the output of the flow event task to the flow analysis task
+  mgr->ConnectInput(taskQC_prot, 0, cinput);      // give AOD event to my Task..!!
+  mgr->ConnectInput(taskQC_prot, 1, coutputFE);   // give FlowEvent object to my Task..!!
+
+  mgr->ConnectInput(taskQC_prot, 2,(AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"));
 
 
 
