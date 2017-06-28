@@ -1214,15 +1214,22 @@ Bool_t AliGenPythiaPlus::CheckTrigger(const TParticle* jet1, const TParticle* je
         Int_t status = jets[ig]->GetStatusCode();
         Int_t index  = jets[ig]->GetDaughter(0);
         Int_t pdg    = jets[ig]->GetPdgCode();
+        Int_t np     = fParticles.GetEntriesFast();
         
         //printf("Search physical photon...\n");
         TParticle * photon = 0;
         while ( status!=1 )
         {
+          if ( pdg!=kGamma || index < 0 || index >= np)
+          {
+            AliWarning(Form("Photon with daughter PDG <%d> or negative/large index <%d>/<%d>, skip event",pdg,index,np));
+            return kFALSE;
+          }
+          
           //printf("\t daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
           photon = (TParticle*) fParticles.At(index);
           if(!photon) return kFALSE;
-
+          
           status = photon->GetStatusCode();
           index  = photon->GetDaughter(0);
           pdg    = photon->GetPdgCode();
