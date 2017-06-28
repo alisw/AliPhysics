@@ -306,14 +306,14 @@ int AliHLTSimulation::RunHLTSystem(AliHLTSystem* pSystem, AliRunLoader* pRunLoad
   int iResult=0;
 
   // Note: the rawreader is already placed at the first event
-  if ((iResult=pSystem->Reconstruct(1, pRunLoader, pRawReader))>=0) {
+  if ((iResult=pSystem->Reconstruct(1, pRunLoader, pRawReader, 0))>=0) {
     pSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
       if (pRawReader && !pRawReader->NextEvent()) {
 	AliError("mismatch in event count, rawreader corrupted");
 	break;
       }
-      pSystem->Reconstruct(1, pRunLoader, pRawReader);
+      pSystem->Reconstruct(1, pRunLoader, pRawReader, i);
       pSystem->FillESD(i, pRunLoader, NULL);
     }
     // send specific 'event' to execute the stop sequence

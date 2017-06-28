@@ -112,6 +112,12 @@ AliHLTUInt32_t AliHLTMisc::GetTimeStamp(AliRawReader* /*rawReader*/) const
   return kMaxUInt;
 }
 
+AliHLTUInt32_t AliHLTMisc::GetTimeStamp(AliRunLoader* /*runLoader*/, int /*evtNo*/) const
+{
+  // default method, functionality is implemented in the child class
+  return kMaxUInt;
+}
+
 AliHLTUInt32_t AliHLTMisc::GetEventType(AliRawReader* /*rawReader*/) const
 {
   // default method, functionality is implemented in the child class

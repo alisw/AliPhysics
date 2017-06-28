@@ -31,6 +31,8 @@
 #include "AliCDBEntry.h"
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
+#include "AliRunLoader.h"
+#include "AliHeader.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliTracker.h"
 #include "AliESDtrack.h"
@@ -249,6 +251,16 @@ AliHLTUInt32_t AliHLTMiscImplementation::GetTimeStamp(AliRawReader* rawReader) c
   const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
   if (!eventHeader) return kMaxUInt;
   return eventHeader->Get("Timestamp");
+}
+
+AliHLTUInt32_t AliHLTMiscImplementation::GetTimeStamp(AliRunLoader* runLoader, int evtNo) const
+{
+  // extract time stamp of the event from the event header
+  if (!runLoader) return kMaxUInt;
+  runLoader->GetEvent(evtNo);
+  const AliHeader* eventHeader = runLoader->GetHeader();
+  if (!eventHeader) return kMaxUInt;
+  return eventHeader->GetTimeStamp();
 }
 
 AliHLTUInt32_t AliHLTMiscImplementation::GetEventType(AliRawReader* rawReader) const

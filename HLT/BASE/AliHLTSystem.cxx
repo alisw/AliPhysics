@@ -824,7 +824,7 @@ int AliHLTSystem::AllocEventDoneData( void* /*param*/, AliHLTEventID_t /*eventID
 }
 
 int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader, 
-			      AliRawReader* rawReader)
+			      AliRawReader* rawReader, int evtNo)
 {
   // see header file for class documentation
   int iResult=0;
@@ -834,9 +834,9 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
       if (nofEvents==0) {
 	// special case to close the reconstruction
 	if (!CheckStatus(kError)) {
-	StopTasks();
-	DeinitTasks();
-	CleanupHLTOUTHandlers();
+	  StopTasks();
+	  DeinitTasks();
+	  CleanupHLTOUTHandlers();
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
@@ -852,12 +852,18 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	  trgMask=AliHLTMisc::Instance().GetTriggerMask(rawReader);
 
 	  // get the timestamp and type of the event from the raw reader
-	  // this is currently only meaningfull for reconstruction (runloader==NULL)
+	  // eventtype is currently only meaningfull for reconstruction (runloader==NULL)
 	  timestamp=AliHLTMisc::Instance().GetTimeStamp(rawReader);
 	  eventtype=AliHLTMisc::Instance().GetEventType(rawReader);
 	}
+	else if (evtNo != -1)
+	{
+	  //For the runLoader, we have to pass the event number since it is not preset automatically
+	  timestamp=AliHLTMisc::Instance().GetTimeStamp(runLoader, evtNo);
+	}
 	// the system always remains started after event processing, a specific
 	// call with nofEvents==0 is needed to execute the stop sequence
+	printf("AAAAAAA AliHLTSystem-Rec time %lld\n", (long long int) timestamp);
 	if ((iResult=Run(nofEvents, 0, trgMask, timestamp, eventtype))<0) SetStatusFlags(kError);
       }
       }

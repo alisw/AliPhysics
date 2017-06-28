@@ -295,6 +295,13 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
+  
+  Long_t eventTimeStamp = GetTimeStamp();
+  int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
+  if (err != 0){
+    HLTError(Form("Cannot set time stamp, AliHLTTPCClusterTransformation returns %d",err));
+    return(-ENOENT);
+  }
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
     
