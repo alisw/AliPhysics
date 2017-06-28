@@ -57,7 +57,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   void                        FillPionHisto(AliVCluster* cluster1, AliVCluster* cluster2, THnSparse* histo);
   void                        FillPionCorrelation(AliVCluster* cluster1, AliVCluster* cluster2, AliVParticle* track, THnSparse* histo, double weight);
   void                        FillPhotonCorrelation(AliVCluster* cluster, AliVParticle* track, THnSparse* histo, double weight);
-  int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, double Weight);
+  int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t MixedEvent, double Weight);
   Bool_t                      PassedCuts(AliVCluster* caloCluster);
   double                      GetIsolation_Track(AliVCluster* cluster);
   Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
