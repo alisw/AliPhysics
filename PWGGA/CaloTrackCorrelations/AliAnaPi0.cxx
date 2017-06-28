@@ -217,6 +217,14 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhPrimEtaPhiPerGenerator  [igen] = 0;
     fhPrimEtaYPerGenerator    [igen] = 0;
   }
+
+  for(Int_t i=0;i<10;i++){
+    fhMCPi0Radius [i] = 0;
+  }
+  for(Int_t i=0;i<6;i++){
+    fhMCEtaRadius [i] = 0;
+  }
+  
 }
 
 //_____________________
@@ -1426,6 +1434,28 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
+
+      //Production vertex of reconstructed mesons for mother origin
+      TString originTitlePi0[] = {"Status 21","Quark","qq Resonances","#rho","#omega","K","Other","#eta","#eta prime"};
+      for (Int_t iorg=0;iorg<10;iorg++) {
+	fhMCPi0Radius[iorg]    = new TH2F
+	  (Form("hPrimPi0Radius_%d",iorg),
+	   Form("Production radius of reconstructed pair from generated #pi^{0}, origin %s",originTitlePi0[iorg].Data()),
+	   200,0,20,1000,0,500) ;
+        fhMCPi0Radius[iorg]->SetYTitle("#it{R} (cm)");
+        fhMCPi0Radius[iorg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPi0Radius[iorg]) ;
+      }
+      TString originTitleEta[] = {"Status 21","Quark","qq Resonances","Resonances","Other","#eta prime"};
+      for (Int_t iorg=0;iorg<6;iorg++) {
+	fhMCEtaRadius[iorg]    = new TH2F
+	  (Form("hPrimEtaRadius_%d",iorg),
+	   Form("Production radius of reconstructed pair from generated #eta, origin %s",originTitleEta[iorg].Data()),
+	   200,0,20,1000,0,500) ;
+        fhMCEtaRadius[iorg]->SetYTitle("#it{R} (cm)");
+        fhMCEtaRadius[iorg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCEtaRadius[iorg]) ;
+      }
       
       // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
       TString ancestorTitle[] = {"Photon","Electron","Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
@@ -2272,7 +2302,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPrimPi0PhiPerGenerator[igen-1]->SetYTitle("#varphi (deg)");
         fhPrimPi0PhiPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPrimPi0PhiPerGenerator[igen-1]) ;
-        
+
         if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
         {
           fhPrimPi0PtInCaloPerGenerator[igen-1]     = new TH1F
@@ -3174,21 +3204,51 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
             fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
             
-            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-            else if(mompdg     > 2100  && mompdg   < 2210)
+            if     (momstatus  == 21) {
+	      fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
+	      fhMCPi0Radius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg     < 22 ) {
+	      fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+	      fhMCPi0Radius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg     > 2100  && mompdg   < 2210) {
               fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
-            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
-            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
-            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
-            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
-            else if(mompdg    >= 310   && mompdg    <= 323)
+	      fhMCPi0Radius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+	    else if(mompdg    == 221) {
+	      fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
+	      fhMCPi0Radius[8]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    == 331) {
+	      fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
+	      fhMCPi0Radius[9]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    == 213) {
+	      fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
+	      fhMCPi0Radius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    == 223) {
+	      fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
+	      fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    >= 310   && mompdg    <= 323) {
               fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
-            else if(momstatus == 11 || momstatus  == 12 )
+	      fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    == 130) {
+	      fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
+	      fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(momstatus == 11 || momstatus  == 12 ) {
               fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-            else                      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
-            
+	      fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+	    else {
+	      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
+	      fhMCPi0Radius[7]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+	    
             if(status!=11)
             {
               if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
@@ -3297,14 +3357,30 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           {
             fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight()*weightPt);
             
-            if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-            else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-            else if(mompdg    > 2100  && mompdg  < 2210)
+            if     (momstatus == 21 ) {
+	      fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
+	      fhMCEtaRadius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    < 22  ) {
+	      fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+	      fhMCEtaRadius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    > 2100  && mompdg  < 2210) {
               fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);//qq resonances
-            else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
-            else if(momstatus == 11 || momstatus == 12 )
+	      fhMCEtaRadius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(mompdg    == 331) {
+	      fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
+	      fhMCEtaRadius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else if(momstatus == 11 || momstatus == 12 ) {
               fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-            else                      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions?
+	      fhMCEtaRadius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
+            else {
+	      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions?
+	      fhMCEtaRadius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	    }
             //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
           }
           
@@ -3881,6 +3957,78 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //-------------------------------------------------------------------------------------------------
       // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
       //-------------------------------------------------------------------------------------------------
+      if ( a < fAsymCuts[0] && fFillSMCombinations &&
+          module1 >=0 && module1<fNModules        && 
+          module2 >=0 && module2<fNModules           )
+      {
+        if ( !fPairWithOtherDetector )
+        {
+          if ( module1==module2 )
+          {
+            fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
+            if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+          }
+          else if ( GetCalorimeter()==kEMCAL )
+          {
+            // Same sector
+            Int_t isector1 = module1/2;
+            Int_t isector2 = module2/2;
+            if ( isector1==isector2 ) 
+            {
+              fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
+            }
+            // Same side
+            else if ( TMath::Abs(isector2-isector1) == 1 )
+            {
+              Int_t iside1 = module1;
+              Int_t iside2 = module2;
+              // skip EMCal/DCal combination
+              if(module1 > 11) iside1-=2; 
+              if(module2 > 11) iside2-=2;
+              
+              if     ( module1 < module2 && module2-module1==2 ) 
+                fhMiSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
+              else if( module2 < module1 && module1-module2==2 ) 
+                fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
+            }
+          } // EMCAL
+          else
+          { // PHOS
+            if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==4) || (module1==4 && module2==0)) fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==4) || (module1==4 && module2==1)) fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==2 && module2==4) || (module1==4 && module2==2)) fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==3 && module2==4) || (module1==4 && module2==3)) fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
+          } // PHOS
+        }
+        else
+        {
+          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+          Bool_t etaside = 0;
+          if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+             || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+          
+          if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320))  fhMiSameSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight());
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(280) && phi1 < DegToRad(280) && phi2 < DegToRad(300)) 
+                   || (phi1 > DegToRad(280) && phi2 > DegToRad(260) && phi1 < DegToRad(300) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());  
+          else if (   (phi1 > DegToRad(280) && phi2 > DegToRad(300) && phi1 < DegToRad(300) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhMiDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
+          else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
+        }            
+      } //  different SM combinations
+
+      
+      
       if ( a < fAsymCuts[0] && fFillSMCombinations &&
            module1 >=0 && module1<fNModules        && 
            module2 >=0 && module2<fNModules           )
