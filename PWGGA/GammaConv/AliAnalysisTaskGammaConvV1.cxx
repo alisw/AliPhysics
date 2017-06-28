@@ -733,7 +733,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
     if (fIsMC > 1){
-      fHistoNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight","NEventsWOWeight",13,-0.5,12.5);
+      fHistoNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight","NEventsWOWeight",14,-0.5,13.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -753,6 +753,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
       fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
     }  
     if (fIsMC == 2){  
@@ -763,7 +764,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fhJetJetNTrials[iCut]);
     }
     if(fDoCentralityFlat > 0){  
-      fHistoNEventsWeighted[iCut]        = new TH1F("NEvents","NEvents",13,-0.5,12.5);//weighted histogram!!
+      fHistoNEventsWeighted[iCut]        = new TH1F("NEvents","NEvents",14,-0.5,13.5);//weighted histogram!!
       fHistoNEventsWeighted[iCut]->Sumw2();
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
@@ -784,6 +785,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+      fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
       fESDList[iCut]->Add(fHistoNEventsWeighted[iCut]);
     }
     
