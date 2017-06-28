@@ -49,6 +49,7 @@ set(SRCS
     AliAnalysisTaskRhoMass.cxx
     AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
+    AliAnalysisTaskJetUE.cxx
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx
@@ -130,6 +131,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
+    UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx

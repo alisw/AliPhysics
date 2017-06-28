@@ -15,6 +15,8 @@
 #ifndef ALIANALYSISTASKRHODEV_H
 #define ALIANALYSISTASKRHODEV_H
 
+#include <utility>
+
 #include "AliAnalysisTaskRhoBaseDev.h"
 
 /** \class AliAnalysisTaskRhoDev
@@ -58,9 +60,6 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
  protected:
   void          CalculateRho();
   Bool_t        FillHistograms();
-
-  Bool_t        IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
-
   Bool_t        VerifyContainers();
 
   std::pair<AliEmcalJet*, AliEmcalJet*>

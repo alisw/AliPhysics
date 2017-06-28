@@ -22,10 +22,9 @@ class TH3F;
 class AliRhoParameter;
 
 #include <map>
-#include <list>
 #include <string>
 
-#include "AliAnalysisTaskEmcalJetLight.h"
+#include "AliAnalysisTaskJetUE.h"
 
 
 /** \class AliAnalysisTaskRhoBaseDev
@@ -36,7 +35,7 @@ class AliRhoParameter;
  * This is a development version. The stable version of this class
  * is AliAnalysisTaskRhoBase.
  */
-class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
+class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
  public:
   AliAnalysisTaskRhoBaseDev();
   AliAnalysisTaskRhoBaseDev(const char *name, Bool_t histo=kFALSE);
@@ -75,11 +74,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   virtual Bool_t                      VerifyContainers() { return kTRUE; }
 
   virtual void                        CalculateRho();
-  virtual void                        CalculateEventProperties();
-
-
-  void                                FillJetHistograms();
-  void                                SortJets();
 
   virtual Double_t                    GetRhoFactor(Double_t cent);
   virtual Double_t                    GetScaleFactor(Double_t cent);
@@ -94,20 +88,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   Double_t                            fMaxBinPt;                      ///< max pt in histograms
 
   Bool_t                              fTaskConfigured;                //!<!kTRUE if the task is properly configured
-
-  // Event properties
-  Int_t                               fNtracks;                       //!<!number of tracks
-  Int_t                               fNclusters;                     //!<!number of clusters
-  std::map<std::string, Int_t>        fNjets;
-
-  std::map<std::string, Double_t>     fTotJetArea;
-
-  AliVParticle                       *fLeadingParticle;
-  AliVCluster                        *fLeadingCluster;
-  std::map<std::string, AliEmcalJet*> fLeadingJet;
-
-  std::map<std::string, std::list<AliEmcalJet*> >
-                                      fSortedJets;                    //!<!jets sorted by momentum
 
   // Exported background density
   AliRhoParameter                    *fOutRho;                        //!<!output rho object
