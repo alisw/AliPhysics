@@ -221,7 +221,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
-  /// Ignore the vertex position and vertex 
+  /// Ignore the vertex position and vertex
   unsigned long allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
   bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
   if (allcuts) fFlag |= BIT(kAllCuts);
@@ -236,7 +236,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   array <unsigned long,4> norm_masks {
     BIT(kNoCuts),
     allcuts_mask ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
-    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexQuality)),
+    allcuts_mask ^ BIT(kVertexPosition),
     allcuts_mask
   };
   for (int iC = 0; iC < 4; ++iC) {
