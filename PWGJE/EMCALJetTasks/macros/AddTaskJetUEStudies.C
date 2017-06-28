@@ -8,8 +8,8 @@
 
 AliAnalysisTaskJetUEStudies* AddTaskJetUEStudies(
     TString        nTracks                        = "usedefault",
-    Double_t       trackPtCut                     = 0.15,
     TString        nClusters                      = "usedefault",
+    Double_t       trackPtCut                     = 0.15,
     Double_t       clusECut                       = 0.30,
     TString        suffix                         = ""
 )
