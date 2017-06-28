@@ -849,7 +849,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
     
     if(fIsHeavyIon == 1) 
-      fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks","V0Mult vs TPCout Tracks",3000,0,15000,3000,0,40000);
+      fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks","V0Mult vs TPCout Tracks",1000,0,15000,1000,0,40000);
     else if(fIsHeavyIon == 2) 
       fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks","V0Mult vs TPCout Tracks",1000,0,1000,2500,0,2500);
     else
