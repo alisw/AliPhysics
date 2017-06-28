@@ -2943,6 +2943,7 @@ Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutS
   for(Int_t ii=0;ii<kNCuts;ii++){
     if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
   }
+  
   PrintCutsWithValues();
   return kTRUE;
 }
