@@ -9,7 +9,7 @@
  Bool_t bSetGainEq = kFALSE, TString sGainEqFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  Bool_t bApplyRecent= kFALSE,TString sRecentFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
- Bool_t bCentCutShift = kFALSE,
+ Bool_t bCentCutShift = kFALSE, Bool_t bShiftVsCent = kTRUE, Bool_t bApplyShift = kFALSE,
  const char *suffix = "")
 {
 
@@ -203,6 +203,10 @@
   taskQC_prot->SetRejectPileUp(bPileUp);  
   taskQC_prot->SetRejectPileUpTight(bPileUpTight); //kTRUE:700,kFALSE:15000
   taskQC_prot->SetCentCutShift(bCentCutShift);
+  taskQC_prot->SetApplyShiftCorr(bApplyShift);
+  taskQC_prot->SetShiftVsCent(bShiftVsCent);
+
+
 
 
   if(bSetGainEq){
