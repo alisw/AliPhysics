@@ -92,6 +92,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fRemovePileUp(kFALSE),
   fPastFutureRejectionLow(0),
   fPastFutureRejectionHigh(0),
+  fDoPileUpRejectV0MTPCout(0),
+  fFPileUpRejectV0MTPCout(0),
   fRejectExtraSignals(0),
   fOfflineTriggerMask(0),
   fHasV0AND(kTRUE),
@@ -203,6 +205,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fRemovePileUp(ref.fRemovePileUp),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
+  fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
+  fFPileUpRejectV0MTPCout(ref.fFPileUpRejectV0MTPCout),
   fRejectExtraSignals(ref.fRejectExtraSignals),
   fOfflineTriggerMask(ref.fOfflineTriggerMask),
   fHasV0AND(ref.fHasV0AND),
@@ -1016,7 +1020,14 @@ void AliConvEventCuts::PrintCutsWithValues() {
   }
   if (fEnableVertexCut) printf("\t Vertex cut with |Z_{vtx}| <%2.2f \n",fMaxVertexZ);
     else printf("\t No vertex cut \n");
-    
+
+  if (fRemovePileUp ==1 ) {
+     printf("\t Doing pile up removal  \n");
+     if (fDoPileUpRejectV0MTPCout ==1 ){
+       printf("\t Doing extra pile up removal V0M vs TPCout  \n");
+     }
+  }
+
   printf("MC event cuts: \n");
   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
@@ -1596,6 +1607,58 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fPastFutureRejectionLow = -40;
     fPastFutureRejectionHigh=  43;
     break;
+  case 6:
+    fRemovePileUp           = kTRUE;
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,0.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,0.);
+    if (fIsHeavyIon==1){
+      if(fPeriodEnum == kLHC15o){
+         fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+         break;
+      }else{
+         fFPileUpRejectV0MTPCout->SetParameter(0,-1500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,3.0);
+         break;
+      }
+    } else  if(fIsHeavyIon == 2){
+       fFPileUpRejectV0MTPCout->SetParameter(0,-200.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,2.0);
+       break;
+    }else{
+       fFPileUpRejectV0MTPCout->SetParameter(0,-300.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,4.0);
+       break;
+    }
+   break;
+  case 7:
+    fRemovePileUp           = kTRUE;
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,0.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,0.);
+    if (fIsHeavyIon==1){
+      if(fPeriodEnum == kLHC15o){
+         fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+         break;
+      }else{
+         fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,3.0);
+         break;
+      }
+    } else  if(fIsHeavyIon == 2){
+       fFPileUpRejectV0MTPCout->SetParameter(0,-300.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,1.5);
+       break;
+    }else{
+       fFPileUpRejectV0MTPCout->SetParameter(0,-300.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,3.0);
+       break;
+    }
+    break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;
@@ -1965,7 +2028,28 @@ Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *InputEvent)
   }
   return isOutOfBunchPileup;
 }
+//________________________________________________________________________
 
+Bool_t AliConvEventCuts::IsPileUpV0MTPCout(AliVEvent *InputEvent)
+{
+  Bool_t isPileUpV0MTPCout=0;
+
+  Double_t multV0M;
+  Double_t valFunc;  
+  if (fIsHeavyIon==2){
+      multV0M =  InputEvent->GetVZEROData()->GetMTotV0A();
+  }else{
+      multV0M = InputEvent->GetVZEROData()->GetMTotV0A() + InputEvent->GetVZEROData()->GetMTotV0C() ;
+  }
+ 
+  if ( fFPileUpRejectV0MTPCout != 0x0 ){
+  valFunc= fFPileUpRejectV0MTPCout->Eval(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfTPCoutTracks());
+    if (multV0M < valFunc  ) isPileUpV0MTPCout=1;
+  }
+
+  return isPileUpV0MTPCout;
+
+}
 //________________________________________________________________________
 Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
   // returns number of contributors to the vertex
@@ -3375,7 +3459,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
     }
   }
 
-    
+  if(GetIsFromPileup() && GetDoPileUpRejectV0MTPCout() ){
+     if( IsPileUpV0MTPCout(InputEvent) ){
+       return 13;
+     }
+  }
+  
   if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 
   if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
