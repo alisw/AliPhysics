@@ -391,6 +391,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
+      Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -472,6 +473,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
+      Bool_t    IsPileUpV0MTPCout(AliVEvent *fInputEvent);
       Bool_t    VertexZCut(AliVEvent *fInputEvent);
       Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
       Float_t   GetPtHard(AliVEvent *MCEvent);
@@ -531,6 +533,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fRemovePileUp;                          ///< flag
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
       Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
       Bool_t                      fHasV0AND;                              ///< V0AND Offline Trigger
@@ -619,7 +623,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,32)
+      ClassDef(AliConvEventCuts,33)
       /// \endcond
 };
 
