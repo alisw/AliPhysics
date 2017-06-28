@@ -1205,6 +1205,34 @@ Bool_t AliGenPythiaPlus::CheckTrigger(const TParticle* jet1, const TParticle* je
 	    ij = 1;
 	    ig = 0;
 	}
+      
+      // Search the physical direct photon
+      // and recover its eta and phi
+      if ( fProcess == kPyDirectGamma )      
+      {
+        const TParticle * jets[] = {jet1,jet2};
+        Int_t status = jets[ig]->GetStatusCode();
+        Int_t index  = jets[ig]->GetDaughter(0);
+        Int_t pdg    = jets[ig]->GetPdgCode();
+        
+        //printf("Search physical photon...\n");
+        TParticle * photon = 0;
+        while ( status!=1 )
+        {
+          //printf("\t daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+          photon = (TParticle*) fParticles.At(index);
+          if(!photon) return kFALSE;
+
+          status = photon->GetStatusCode();
+          index  = photon->GetDaughter(0);
+          pdg    = photon->GetPdgCode();
+          eta[ig]= photon->Eta();
+          phi[ig]= photon->Phi();
+        }
+        //printf("final:   daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+        //printf("...found\n");
+      }
+      
 	//Check eta range first...
 	if ((eta[ij] < fEtaMaxJet   && eta[ij] > fEtaMinJet) &&
 	    (eta[ig] < fEtaMaxGamma && eta[ig] > fEtaMinGamma))
