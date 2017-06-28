@@ -59,10 +59,10 @@ class AliAnalysisTaskJetUEStudies : public AliAnalysisTaskJetUE {
   Int_t SumParticles(Double_t& pt, Double_t eta, Double_t phi, Double_t maxD2, std::map<std::string, T*>& CollArray, std::array<Int_t, MAX_CONSTITUENTS>& ConstList);
 
   std::map<TString, AliRhoParameter*>
-                              fAlternativeRho;              ///<  Alternative average background estimations
+                              fAlternativeRho;              ///< Alternative average background estimations
+  THistManager                fHistManager;                 ///< Histogram manager
 
   std::set<TString>           fDefaultRhoNames;             //!<! Default rho names
-  THistManager                fHistManager;                 //!<! Histogram manager
   TRandom                    *fRandom;                      //!<! Random number generator
 
  private:
