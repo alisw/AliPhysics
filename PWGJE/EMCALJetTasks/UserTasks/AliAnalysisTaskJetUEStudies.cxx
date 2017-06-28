@@ -128,6 +128,17 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
     fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, nPtBins, 0, fMaxPt);
 
     for (auto rho : fAlternativeRho) {
+      for (auto rho2 : fAlternativeRho) {
+        if (rho.first == rho2.first) continue;
+        histname = TString::Format("%s/%s/fHistB2BDelta%sOverRhoVsCent", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
+        title = TString::Format("%s;Centrality (%%);2#frac{%s - %s}{%s + %s};counts", histname.Data(), rho.first.Data(), rho2.first.Data(), rho.first.Data(), rho2.first.Data());
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, 500, -2.5, 2.5);
+
+        histname = TString::Format("%s/%s/fHistB2BDelta%sVsRho", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
+        title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho.first.Data(), rho2.first.Data(), rho.first.Data(), rho2.first.Data());
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+      }
+
       histname = TString::Format("%s/%s/fHistLeadingJetCorrPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
       title = histname + ";Centrality (%);#it{p}_{T,jet}^{lead} - #it{A}_{jet}#rho (GeV/#it{c});counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, nCorrPtBins, minCorrPt, fMaxPt);
@@ -342,6 +353,14 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
         else {
           histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
           fHistManager.FillTH2(histname, fCent, 0);
+        }
+        for (auto rho2 : fAlternativeRho) {
+          if (rho == rho2) continue;
+          histname = TString::Format("%s/%s/fHistB2BDelta%sOverRhoVsCent", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
+          fHistManager.FillTH2(histname, fCent, 2.0 * (rho.second->GetVal() - rho2.second->GetVal()) / (rho.second->GetVal() + rho2.second->GetVal()));
+
+          histname = TString::Format("%s/%s/fHistB2BDelta%sVsRho", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
+          fHistManager.FillTH2(histname, (rho.second->GetVal() + rho2.second->GetVal()) / 2, rho.second->GetVal() - rho2.second->GetVal());
         }
       }
     }
