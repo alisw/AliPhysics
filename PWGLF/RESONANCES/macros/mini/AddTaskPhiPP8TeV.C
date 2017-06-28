@@ -200,7 +200,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP8TeV
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
-  gROOT->LoadMacro("ConfigPhiPP8TeV.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP8TeV.C");
   if(!ConfigPhiPP8TeV(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
