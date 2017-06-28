@@ -444,7 +444,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimPi0AccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimPi0PhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0YPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
-  
 
   TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
   TH1F *   fhPrimEtaPtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with eta in calo
@@ -452,7 +451,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimEtaAccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimEtaPhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimEtaYPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
-
+  
   // Pair origin
   // Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles,
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
@@ -518,9 +517,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCEtaProdVertex;          //!<! Spectrum of selected eta vs production vertex
   TH2F *   fhPrimPi0ProdVertex;        //!<! Spectrum of primary pi0 vs production vertex
   TH2F *   fhPrimEtaProdVertex;        //!<! Spectrum of primary eta vs production vertex
-
-  TH2F *   fhMCPi0Radius[10] ;         //!<! reconstructed Pi0 production vertex vs pT for mother origin
-  TH2F *   fhMCEtaRadius[10] ;         //!<! reconstructed Eta production vertex vs pT for mother origin
   
   TH2F *   fhReMCFromConversion ;      //!<! Invariant mass of 2 clusters originated in conversions
   TH2F *   fhReMCFromNotConversion ;   //!<! Invariant mass of 2 clusters not originated in conversions
