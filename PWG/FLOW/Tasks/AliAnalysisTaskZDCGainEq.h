@@ -69,6 +69,9 @@ public:
   void    SetFillQnRunAverage(Bool_t const runAvg)    {this->bRunAveragedQn     =       runAvg;}
   void    SetApplyZDCRecenter(Bool_t const brecent)   {this->bApplyRecent       =      brecent;}
   void    SetCentCutShift(Bool_t const bCutShift)     {this->bCentCutShift      =    bCutShift;}
+  void    SetShiftVsCent(Bool_t const bVsCent)        {this->bShiftCorrOnCent   =      bVsCent;}
+  void    SetApplyShiftCorr(Bool_t const bDoShift)    {this->bApplyShiftCorr    =     bDoShift;}
+
 
 
 
@@ -115,6 +118,8 @@ private:
   Bool_t              bRunAveragedQn;    //
   Bool_t                bApplyRecent;    //
   Bool_t               bCentCutShift;    //
+  Bool_t            bShiftCorrOnCent;    //
+  Bool_t             bApplyShiftCorr;    //
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
   Float_t                   VyCut[2];    //
@@ -147,6 +152,10 @@ private:
 
   TH2F              *fHist_Vxy_RunAveraged; //!
 
+  TH2F             *fHist_Shift_CS_ZDCC_Vxy[2]; //!
+  TH2F             *fHist_Shift_CS_ZDCA_Vxy[2]; //!
+  TH1F            *fHist_Shift_CS_ZDCC_Cent[2]; //!
+  TH1F            *fHist_Shift_CS_ZDCA_Cent[2]; //!
 
 
   TH1F               *fHist_Vx_ArrayFinder; //!
@@ -160,6 +169,9 @@ private:
   TH1F            *fHist_Psi1_ZDCA_wGainCorr;  //!
   TH1F            *fHist_Psi1_ZDCC_wRectCorr;  //!
   TH1F            *fHist_Psi1_ZDCA_wRectCorr;  //!
+  TH1F            *fHist_Psi1_ZDCC_wCorrFull;  //!
+  TH1F            *fHist_Psi1_ZDCA_wCorrFull;  //!
+
 
   TProfile     *fHist_Qx_vs_Obs_woCorr[4][5];  //!
   TProfile     *fHist_XX_vs_Obs_woCorr[4][5];  //!
