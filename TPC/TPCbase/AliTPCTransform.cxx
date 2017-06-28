@@ -649,7 +649,8 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 							  fCurrentRecoParam->GetUseDriftCorrectionGY());
       }
       //
-      if (calib->IsTrgL0()) {
+      static bool hltMode = getenv("HLT_ONLINE_MODE") && atoi(getenv("HLT_ONLINE_MODE"));
+      if (!hltMode && calib->IsTrgL0()) {
 	// by defualt we assume L1 trigger is used - make a correction in case of  L0
 	AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
 	if (ctp) { //for TPC standalone runs no ctp info
