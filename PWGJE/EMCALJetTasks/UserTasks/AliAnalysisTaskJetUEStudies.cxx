@@ -269,9 +269,9 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
 
     AliJetContainer* jets = cont_it.second;
 
-    shared_ptr<AliEmcalJet> random_cone(GetRandomCone(jets));
-    shared_ptr<AliEmcalJet> random_cone_perp(nullptr);
-    shared_ptr<AliEmcalJet> random_cone_excl_lead(nullptr);
+    std::shared_ptr<AliEmcalJet> random_cone(GetRandomCone(jets));
+    std::shared_ptr<AliEmcalJet> random_cone_perp(nullptr);
+    std::shared_ptr<AliEmcalJet> random_cone_excl_lead(nullptr);
     AliEmcalJet* leadingJet = fLeadingJet[cont_it.first];
 
     if (leadingJet) {
