@@ -118,7 +118,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   Int_t fSpdVtxContrib;
   Double_t fSpdVtxPos[3];
   
-  Bool_t fIsVtxContributor[4];
+  Bool_t fIsVtxContributor[7];
   
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
