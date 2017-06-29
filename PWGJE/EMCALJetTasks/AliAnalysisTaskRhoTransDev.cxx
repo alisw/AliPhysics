@@ -79,35 +79,45 @@ void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
 
   TString name;
 
-  //ranges for PbPb
-  Float_t Ntrackrange[2] = {0, 6000};
-  //set multiplicity related axes to a smaller max value
-  if (fBeamType != kAA) Ntrackrange[1] = 200.;
+  Int_t maxTracks = 6000;
+  Double_t maxRho = 500;
+  Int_t nRhoBins = 500;
 
-  fHistB2BRhoVsCent = new TH2F("fHistB2BRhoVsCent", "fHistB2BRhoVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt);
+  if (fForceBeamType == kpp) {
+    maxRho = 50;
+    maxTracks = 200;
+  }
+  else if (fForceBeamType == kpA) {
+    maxRho = 200;
+    maxTracks = 500;
+  }
+
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+
+  fHistB2BRhoVsCent = new TH2F("fHistB2BRhoVsCent", "fHistB2BRhoVsCent", 100, 0,  100, nRhoBins, 0, maxRho);
   fHistB2BRhoVsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistB2BRhoVsCent->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
   fOutput->Add(fHistB2BRhoVsCent);
 
   if (fParticleCollArray.size() > 0) {
-    fHistB2BRhoVsNtrack = new TH2F("fHistB2BRhoVsNtrack", "fHistB2BRhoVsNtrack", 200, Ntrackrange[0], Ntrackrange[1], fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsNtrack = new TH2F("fHistB2BRhoVsNtrack", "fHistB2BRhoVsNtrack", 200, 0, maxTracks, nRhoBins, 0, maxRho);
     fHistB2BRhoVsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistB2BRhoVsNtrack->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsNtrack);
 
-    fHistB2BRhoVsLeadTrackPt = new TH2F("fHistB2BRhoVsLeadTrackPt", "fHistB2BRhoVsLeadTrackPt", fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadTrackPt = new TH2F("fHistB2BRhoVsLeadTrackPt", "fHistB2BRhoVsLeadTrackPt", nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
     fHistB2BRhoVsLeadTrackPt->GetXaxis()->SetTitle("#it{p}_{T,track} (GeV/c)");
     fHistB2BRhoVsLeadTrackPt->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsLeadTrackPt);
   }
 
   if (fClusterCollArray.size()>0) {
-    fHistB2BRhoVsNcluster = new TH2F("fHistB2BRhoVsNcluster", "fHistB2BRhoVsNcluster", 50, Ntrackrange[0] / 4, Ntrackrange[1] / 4, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsNcluster = new TH2F("fHistB2BRhoVsNcluster", "fHistB2BRhoVsNcluster", 50, 0, maxTracks / 4, nRhoBins, 0, maxRho);
     fHistB2BRhoVsNcluster->GetXaxis()->SetTitle("No. of clusters");
     fHistB2BRhoVsNcluster->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsNcluster);
 
-    fHistB2BRhoVsLeadClusterE = new TH2F("fHistB2BRhoVsLeadClusterE", "fHistB2BRhoVsLeadClusterE", fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadClusterE = new TH2F("fHistB2BRhoVsLeadClusterE", "fHistB2BRhoVsLeadClusterE", nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
     fHistB2BRhoVsLeadClusterE->GetXaxis()->SetTitle("#it{p}_{T,track} (GeV/c)");
     fHistB2BRhoVsLeadClusterE->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsLeadClusterE);
@@ -115,27 +125,27 @@ void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
 
   for (auto jetCont : fJetCollArray) {
     name = TString::Format("%s_fHistB2BRhoVsLeadJetPt", jetCont.first.c_str());
-    fHistB2BRhoVsLeadJetPt[jetCont.first] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadJetPt[jetCont.first] = new TH2F(name, name, nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
     fHistB2BRhoVsLeadJetPt[jetCont.first]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
     fHistB2BRhoVsLeadJetPt[jetCont.first]->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsLeadJetPt[jetCont.first]);
   }
 
   if (fScaleFunction) {
-    fHistB2BRhoScaledVsCent = new TH2F("fHistB2BRhoScaledVsCent", "fHistB2BRhoScaledVsCent", 100, 0, 100, fNbins, fMinBinPt , fMaxBinPt);
+    fHistB2BRhoScaledVsCent = new TH2F("fHistB2BRhoScaledVsCent", "fHistB2BRhoScaledVsCent", 100, 0, 100, nRhoBins, 0, maxRho);
     fHistB2BRhoScaledVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistB2BRhoScaledVsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoScaledVsCent);
 
     if (fParticleCollArray.size() > 0) {
-      fHistB2BRhoScaledVsNtrack = new TH2F("fHistB2BRhoScaledVsNtrack", "fHistB2BRhoScaledVsNtrack", 200, Ntrackrange[0], Ntrackrange[1], fNbins, fMinBinPt, fMaxBinPt);
+      fHistB2BRhoScaledVsNtrack = new TH2F("fHistB2BRhoScaledVsNtrack", "fHistB2BRhoScaledVsNtrack", 200, 0, maxTracks, nRhoBins, 0, maxRho);
       fHistB2BRhoScaledVsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistB2BRhoScaledVsNtrack->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
       fOutput->Add(fHistB2BRhoScaledVsNtrack);
     }
 
     if (fClusterCollArray.size() > 0) {
-      fHistB2BRhoScaledVsNcluster = new TH2F("fHistB2BRhoScaledVsNcluster", "fHistB2BRhoScaledVsNcluster", 50, Ntrackrange[0] / 4, Ntrackrange[1] / 4, fNbins, fMinBinPt, fMaxBinPt);
+      fHistB2BRhoScaledVsNcluster = new TH2F("fHistB2BRhoScaledVsNcluster", "fHistB2BRhoScaledVsNcluster", 50, 0, maxTracks / 4, nRhoBins, 0, maxRho);
       fHistB2BRhoScaledVsNcluster->GetXaxis()->SetTitle("No. of clusters");
       fHistB2BRhoScaledVsNcluster->GetYaxis()->SetTitle("#rho_{scaled} (GeV/#it{c} #times rad^{-1})");
       fOutput->Add(fHistB2BRhoScaledVsNcluster);
