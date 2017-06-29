@@ -49,7 +49,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf      ;                   }
   TF1*                   LoadRhoFunction(const char* path, const char* name);
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a       ;                   }
-  void                   SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
 
   const char*            GetOutRhoName() const                                 { return fOutRhoName.Data()       ;                   }
   const char*            GetOutRhoScaledName() const                           { return fOutRhoScaledName.Data() ;                   }
@@ -83,9 +82,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
   TF1                                *fRhoFunction;                   ///< pre-computed rho as a function of centrality
   TF1                                *fScaleFunction;                 ///< pre-computed scale factor as a function of centrality
   Bool_t                              fAttachToEvent;                 ///< whether or not attach rho to the event objects list
-  Int_t                               fNbins;                         ///< no. of pt bins
-  Double_t                            fMinBinPt;                      ///< min pt in histograms
-  Double_t                            fMaxBinPt;                      ///< max pt in histograms
 
   Bool_t                              fTaskConfigured;                //!<!kTRUE if the task is properly configured
 
@@ -123,7 +119,7 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
   AliAnalysisTaskRhoBaseDev& operator=(const AliAnalysisTaskRhoBaseDev&);  // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskRhoBaseDev, 1);
+  ClassDef(AliAnalysisTaskRhoBaseDev, 2);
   /// \endcond
 };
 #endif
