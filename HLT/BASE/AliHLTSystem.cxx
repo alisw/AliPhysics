@@ -863,7 +863,6 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	}
 	// the system always remains started after event processing, a specific
 	// call with nofEvents==0 is needed to execute the stop sequence
-	printf("AAAAAAA AliHLTSystem-Rec time %lld\n", (long long int) timestamp);
 	if ((iResult=Run(nofEvents, 0, trgMask, timestamp, eventtype))<0) SetStatusFlags(kError);
       }
       }
