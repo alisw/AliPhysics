@@ -110,6 +110,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fSetEmcalJetFlavour(0),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
@@ -156,6 +157,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fSetEmcalJetFlavour(0),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
@@ -737,6 +739,9 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
     else if ((pdg >= 500 && pdg <= 600) || (pdg >= 5000 && pdg <= 6000)) typeHM = 5;
   }
 
+  // Set flavour of AliEmcalJet object (set ith bit while i corresponds to type)
+  if(fSetEmcalJetFlavour)
+    jet->AddFlavourTag(static_cast<Int_t>(TMath::Power(2, typeHM)));
 }
 
 
