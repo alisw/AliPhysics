@@ -60,6 +60,8 @@ AliAnalysisTaskJetUEStudies::AliAnalysisTaskJetUEStudies(const char *name) :
 /// Overloads base class method. Creates output objects
 void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
 {
+  AliInfo(Form("CreateOutputObjects of task %s", GetName()));
+
   AliAnalysisTaskEmcalJetLight::UserCreateOutputObjects();
 
   Int_t maxTracks = 6000;
@@ -184,21 +186,42 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
     }
 
-    for (Int_t i = 0; i < fCentBins.size()-1; i++) {
-      histname = TString::Format("%s/fHistJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+    if (fCentBins.size() > 1) {
+      for (Int_t i = 0; i < fCentBins.size()-1; i++) {
+        histname = TString::Format("%s/fHistJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+        title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});counts";
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
+
+        histname = TString::Format("%s/fHistB2BJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+        title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});counts";
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
+
+        for (auto rho : fAlternativeRho) {
+          histname = TString::Format("%s/%s/fHistJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+          title = histname + ";#it{p}_{T,jet}^{lead} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+          fHistManager.CreateTH1(histname.Data(), title.Data(), nCorrPtBins, minCorrPt, fMaxPt);
+
+          histname = TString::Format("%s/%s/fHistB2BJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+          title = histname + ";#it{p}_{T,jet}^{lead} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+          fHistManager.CreateTH1(histname.Data(), title.Data(), nCorrPtBins, minCorrPt, fMaxPt);
+        }
+      }
+    }
+    else {
+      histname = TString::Format("%s/fHistJetPt", jets->GetArrayName().Data());
       title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
-      histname = TString::Format("%s/fHistB2BJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+      histname = TString::Format("%s/fHistB2BJetPt", jets->GetArrayName().Data());
       title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
       for (auto rho : fAlternativeRho) {
-        histname = TString::Format("%s/%s/fHistJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+        histname = TString::Format("%s/%s/fHistJetCorrPt", jets->GetArrayName().Data(), rho.first.Data());
         title = histname + ";#it{p}_{T,jet}^{lead} - #it{A}_{jet}#rho (GeV/#it{c});counts";
         fHistManager.CreateTH1(histname.Data(), title.Data(), nCorrPtBins, minCorrPt, fMaxPt);
 
-        histname = TString::Format("%s/%s/fHistB2BJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[i]), TMath::CeilNint(fCentBins[i+1]));
+        histname = TString::Format("%s/%s/fHistB2BJetCorrPt", jets->GetArrayName().Data(), rho.first.Data());
         title = histname + ";#it{p}_{T,jet}^{lead} - #it{A}_{jet}#rho (GeV/#it{c});counts";
         fHistManager.CreateTH1(histname.Data(), title.Data(), nCorrPtBins, minCorrPt, fMaxPt);
       }
@@ -366,21 +389,42 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
     }
 
     for (auto jet : jets->accepted()) {
-      histname = TString::Format("%s/fHistJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
-      fHistManager.FillTH1(histname, jet->Pt());
-
-      if (isB2B) {
-        histname = TString::Format("%s/fHistB2BJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
+      if (fCentBins.size() > 1) {
+        histname = TString::Format("%s/fHistJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
         fHistManager.FillTH1(histname, jet->Pt());
-      }
-
-      for (auto rho : fAlternativeRho) {
-        histname = TString::Format("%s/%s/fHistJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
-        fHistManager.FillTH1(histname, jet->Pt() - jet->Area() * rho.second->GetVal());
 
         if (isB2B) {
-          histname = TString::Format("%s/%s/fHistB2BJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
+          histname = TString::Format("%s/fHistB2BJetPt_Cent%d_%d", jets->GetArrayName().Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
+          fHistManager.FillTH1(histname, jet->Pt());
+        }
+
+        for (auto rho : fAlternativeRho) {
+          histname = TString::Format("%s/%s/fHistJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
           fHistManager.FillTH1(histname, jet->Pt() - jet->Area() * rho.second->GetVal());
+
+          if (isB2B) {
+            histname = TString::Format("%s/%s/fHistB2BJetCorrPt_Cent%d_%d", jets->GetArrayName().Data(), rho.first.Data(), TMath::CeilNint(fCentBins[fCentBin]), TMath::CeilNint(fCentBins[fCentBin+1]));
+            fHistManager.FillTH1(histname, jet->Pt() - jet->Area() * rho.second->GetVal());
+          }
+        }
+      }
+      else {
+        histname = TString::Format("%s/fHistJetPt", jets->GetArrayName().Data());
+        fHistManager.FillTH1(histname, jet->Pt());
+
+        if (isB2B) {
+          histname = TString::Format("%s/fHistB2BJetPt", jets->GetArrayName().Data());
+          fHistManager.FillTH1(histname, jet->Pt());
+        }
+
+        for (auto rho : fAlternativeRho) {
+          histname = TString::Format("%s/%s/fHistJetCorrPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH1(histname, jet->Pt() - jet->Area() * rho.second->GetVal());
+
+          if (isB2B) {
+            histname = TString::Format("%s/%s/fHistB2BJetCorrPt", jets->GetArrayName().Data(), rho.first.Data());
+            fHistManager.FillTH1(histname, jet->Pt() - jet->Area() * rho.second->GetVal());
+          }
         }
       }
     }
