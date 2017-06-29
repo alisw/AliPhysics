@@ -182,6 +182,7 @@ Double_t AliAnalysisTaskRhoTransDev::GetPerpPtDensity(AliEmcalContainer* cont, A
 void AliAnalysisTaskRhoTransDev::CalculateRho()
 {
   AliEmcalJet* leadingJet = fLeadingJet["Signal"];
+  if (!leadingJet) return;
 
   Double_t perpPtDensity = 0;
 
