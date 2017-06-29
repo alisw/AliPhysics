@@ -490,7 +490,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 
 
 //	  if (cent>=0 && cent<5) {
-      	fNumberOfEvent->Fill(6.5);
 	fNumberOfEvent_cent->Fill(3);
 
 	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
