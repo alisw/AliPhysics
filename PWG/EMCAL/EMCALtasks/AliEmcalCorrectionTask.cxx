@@ -1336,6 +1336,7 @@ Bool_t AliEmcalCorrectionTask::Run()
     component->SetMCEvent(MCEvent());
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
+    component->SetVertex(fVertex);
 
     component->Run();
   }
