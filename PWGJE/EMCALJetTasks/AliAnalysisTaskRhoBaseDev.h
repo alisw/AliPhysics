@@ -21,7 +21,10 @@ class TH2F;
 class TH3F;
 class AliRhoParameter;
 
-#include "AliAnalysisTaskEmcalJetLight.h"
+#include <map>
+#include <string>
+
+#include "AliAnalysisTaskJetUE.h"
 
 
 /** \class AliAnalysisTaskRhoBaseDev
@@ -32,7 +35,7 @@ class AliRhoParameter;
  * This is a development version. The stable version of this class
  * is AliAnalysisTaskRhoBase.
  */
-class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
+class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
  public:
   AliAnalysisTaskRhoBaseDev();
   AliAnalysisTaskRhoBaseDev(const char *name, Bool_t histo=kFALSE);
@@ -46,7 +49,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf      ;                   }
   TF1*                   LoadRhoFunction(const char* path, const char* name);
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a       ;                   }
-  void                   SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
 
   const char*            GetOutRhoName() const                                 { return fOutRhoName.Data()       ;                   }
   const char*            GetOutRhoScaledName() const                           { return fOutRhoScaledName.Data() ;                   }
@@ -64,47 +66,60 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   );
 
  protected:
-  void                   ExecOnce();
-  Bool_t                 Run();
-  Bool_t                 FillHistograms();
+  void                                ExecOnce();
+  Bool_t                              Run();
+  Bool_t                              FillHistograms();
 
-  virtual Double_t       GetRhoFactor(Double_t cent);
-  virtual Double_t       GetScaleFactor(Double_t cent);
+  virtual Bool_t                      VerifyContainers() { return kTRUE; }
 
-  TString                fOutRhoName;                    ///< name of output rho object
-  TString                fOutRhoScaledName;              ///< name of output scaled rho object
-  TF1                   *fRhoFunction;                   ///< pre-computed rho as a function of centrality
-  TF1                   *fScaleFunction;                 ///< pre-computed scale factor as a function of centrality
-  Bool_t                 fAttachToEvent;                 ///< whether or not attach rho to the event objects list
-  Int_t                  fNbins;                         ///< no. of pt bins
-  Double_t               fMinBinPt;                      ///< min pt in histograms
-  Double_t               fMaxBinPt;                      ///< max pt in histograms
+  virtual void                        CalculateRho();
 
-  AliRhoParameter       *fOutRho;                        //!<!output rho object
-  AliRhoParameter       *fOutRhoScaled;                  //!<!output scaled rho object
+  virtual Double_t                    GetRhoFactor(Double_t cent);
+  virtual Double_t                    GetScaleFactor(Double_t cent);
 
-  TH2                   *fHistLeadJetPtVsCent;           //!<!leading jet pt vs. centrality
-  TH2                   *fHistLeadJetPtDensityVsCent;    //!<!leading jet area vs. centrality
-  TH2                   *fHistSubLeadJetPtVsCent;        //!<!leading jet pt/area vs. centrality
-  TH2                   *fHistTotJetAreaVsCent;          //!<!total area covered by jets vs. centrality
-  TH2                   *fHistLeadJetNconstVsCent;       //!<!leading jet constituents vs. cent
-  TH2                  **fHistLeadJetNconstVsPt;         //!<!leading jet constituents vs. pt
-  TH2                   *fHistNtrackVsCent;              //!<!no. of tracks vs. centrality
-  TH2                   *fHistNjetVsCent;                //!<!no. of jets vs. centrality
-  TH2                   *fHistNjetVsNtrack;              //!<!no. of jets vs. no. of tracks
-  TH2                   *fHistRhoVsCent;                 //!<!rho vs. centrality
-  TH2                   *fHistRhoVsLeadJetPt;            //!<!rho vs. leading jet pt
-  TH2                   *fHistRhoVsNtrack;               //!<!rho vs. no. of tracks
-  TH2                   *fHistRhoVsNcluster;             //!<!rho vs. no. of clusters
-  TH2                   *fHistRhoScaledVsCent;           //!<!rhoscaled vs. centrality
-  TH2                   *fHistRhoScaledVsNtrack;         //!<!rhoscaled vs. no. of tracks
-  TH2                   *fHistRhoScaledVsNcluster;       //!<!rhoscaled vs. no. of clusters
+  TString                             fOutRhoName;                    ///< name of output rho object
+  TString                             fOutRhoScaledName;              ///< name of output scaled rho object
+  TF1                                *fRhoFunction;                   ///< pre-computed rho as a function of centrality
+  TF1                                *fScaleFunction;                 ///< pre-computed scale factor as a function of centrality
+  Bool_t                              fAttachToEvent;                 ///< whether or not attach rho to the event objects list
+
+  Bool_t                              fTaskConfigured;                //!<!kTRUE if the task is properly configured
+
+  // Exported background density
+  AliRhoParameter                    *fOutRho;                        //!<!output rho object
+  AliRhoParameter                    *fOutRhoScaled;                  //!<!output scaled rho object
+
+  // Histograms
+  TH2                                *fHistRhoVsCent;                 //!<!rho vs. centrality
+
+  std::map<std::string, TH2*>         fHistRhoVsLeadJetPt;            //!<!rho vs. leading jet pt
+  std::map<std::string, TH2*>         fHistLeadJetPtVsCent;           //!<!leading jet pt vs. centrality
+  std::map<std::string, TH2*>         fHistLeadJetPtDensityVsCent;    //!<!leading jet area vs. centrality
+  std::map<std::string, TH2*>         fHistTotJetAreaVsCent;          //!<!total area covered by jets vs. centrality
+  std::map<std::string, TH2*>         fHistLeadJetNconstVsCent;       //!<!leading jet constituents vs. cent
+  std::map<std::string, TH2**>        fHistLeadJetNconstVsPt;         //!<!leading jet constituents vs. pt
+  std::map<std::string, TH2*>         fHistNjetVsCent;                //!<!no. of jets vs. centrality
+  std::map<std::string, TH2*>         fHistNjetVsNtrack;              //!<!no. of jets vs. no. of tracks
+
+  TH2                                *fHistRhoVsLeadTrackPt;          //!<!rho vs. leading track pt
+  TH2                                *fHistRhoVsNtrack;               //!<!rho vs. no. of tracks
+  TH2                                *fHistLeadTrackPtVsCent;         //!<!leading track pt vs. centrality
+  TH2                                *fHistNtrackVsCent;              //!<!no. of tracks vs. centrality
+
+  TH2                                *fHistRhoVsLeadClusterE;         //!<!rho vs. leading cluster energy
+  TH2                                *fHistRhoVsNcluster;             //!<!rho vs. no. of clusters
+  TH2                                *fHistLeadClusterEVsCent;        //!<!leading cluster energy vs. centrality
+  TH2                                *fHistNclusterVsCent;            //!<!no. of cluster vs. centrality
+
+  TH2                                *fHistRhoScaledVsCent;           //!<!rhoscaled vs. centrality
+  TH2                                *fHistRhoScaledVsNtrack;         //!<!rhoscaled vs. no. of tracks
+  TH2                                *fHistRhoScaledVsNcluster;       //!<!rhoscaled vs. no. of clusters
 
   AliAnalysisTaskRhoBaseDev(const AliAnalysisTaskRhoBaseDev&);             // not implemented
   AliAnalysisTaskRhoBaseDev& operator=(const AliAnalysisTaskRhoBaseDev&);  // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskRhoBaseDev, 1);
+  ClassDef(AliAnalysisTaskRhoBaseDev, 2);
   /// \endcond
 };
 #endif

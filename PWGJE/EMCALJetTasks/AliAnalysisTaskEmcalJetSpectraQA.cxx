@@ -392,7 +392,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 
     histname = TString::Format("%s/fHistLeadJetPtVsCent", jets->GetArrayName().Data());
     title = histname + ";Centrality (%);#it{p}_{T,jet} (GeV/#it{c});counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 102, -1, 101, nPtBins, 0, fMaxPt);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, nPtBins, 0, fMaxPt);
 
     histname = TString::Format("%s/fHistLeadJetPtVsNTracks", jets->GetArrayName().Data());
     title = histname + ";no. of tracks;#it{p}_{T,jet} (GeV/#it{c});counts";
@@ -401,7 +401,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
       title = histname + ";Centrality (%);#rho (GeV/#it{c} rad^{-1});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 102, -1, 101, 1000, 0, maxRho);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, 1000, 0, maxRho);
 
       histname = TString::Format("%s/fHistRhoVsNTracks", jets->GetArrayName().Data());
       title = histname + ";no. of tracks;#rho (GeV/#it{c} rad^{-1});counts";

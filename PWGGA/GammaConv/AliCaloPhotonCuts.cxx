@@ -3865,6 +3865,14 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
     if (!fUseM02) fUseM02=1;
     fMaxM02=0.27;
     break;
+  case 7: // PHOS cuts
+    if (!fUseM02) fUseM02=1;
+    fMaxM02=1.3;
+    break;
+  case 8: // PHOS cuts
+    if (!fUseM02) fUseM02=1;
+    fMaxM02=2.5;
+    break;
   default:
     AliError(Form("Max M02 Cut not defined %d",maxM02));
     return kFALSE;
@@ -4286,7 +4294,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
         // pass4
         } else if( fCurrentMC==k17e2 ) {
-          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.973141, -4.34463, -0.298265);
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.972156, -4.20614, -0.332627);
           if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.980211, -4.374598, -0.171988);
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -4450,7 +4458,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9842689920, 0.9150246921, -3.6796298486, 1.0113148506, 0.6876891951, -3.1672234730));
         //pass4
         } else if( fCurrentMC==k17e2 ){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9989127547, -0.0256032769, -0.4999999322, 1.0441588769, -0.0539505719, -0.3038522827));
+          if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9852998485, 0.8627034282, -3.5997332171, 1.0112438213, 0.6736433144, -3.2027393141));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;

@@ -211,12 +211,11 @@ void ComputeDmesonYield(){
   if(!systematicsABcent){
     printf("AliHFSysstErr generated on the fly\n");
     systematicsABcent=new AliHFSystErr("AliHFSystErr","on the fly");
-    systematicsABcent->SetCollisionType(2);
     if(collSyst=="p-Pb"){
-      systematicsABcent->Init(2);
+      systematicsABcent->SetCollisionType(2);
       systematicsABcent->SetRunNumber(16);
     }else{
-      systematicsABcent->Init(1);
+      systematicsABcent->SetCollisionType(1);
     }
     systematicsABcent->SetCentrality(centralityNoDash.Data());
     systematicsABcent->Init(mesCode);

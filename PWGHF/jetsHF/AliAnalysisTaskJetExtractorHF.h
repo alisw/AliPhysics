@@ -54,6 +54,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        SetCalculateSecondaryVertices(Bool_t val)  { fCalculateSecondaryVertices = val; }
   void                        SetUseJetTaggingHFMethod(Bool_t val)  { fUseJetTaggingHFMethod = val; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)  { fVertexerCuts = val; }
+  void                        SetSetEmcalJetFlavour(Bool_t val) { fSetEmcalJetFlavour = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -108,6 +109,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0sig, Double_t& z0sig);
   void                        AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
   void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
+  Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
 
 
   // ################## BASIC EVENT VARIABLES
@@ -142,7 +144,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   Double_t                    fExtractionPercentage;                    ///< Percentage of extracted jets
   std::vector<Int_t>          fExtractionListPIDsHM;                    ///< list of PIDs (hadron matching) that will be accepted
   std::vector<Int_t>          fExtractionListPIDsIC;                    ///< list of PIDs (initial collision) that will be accepted
-
+  Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
 
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
@@ -172,7 +174,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractorHF, 5) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 7) // Jet extraction task
   /// \endcond
 };
 

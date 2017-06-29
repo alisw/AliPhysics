@@ -532,7 +532,6 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
       delete tokens;
       return evtToBeProcessed;
     }
-  evtToBeProcessed = kTRUE;
 
   if (fillHisto) 
     fhTriggers->Fill(fTriggerClasses[0].Data(),1);
@@ -547,6 +546,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	    {
 	      goodTrig = kTRUE;
 	      fhNMu->Fill(nmu,fTriggerClasses[i],1);
+	      evtToBeProcessed = kTRUE;
 	      break;
 	    }
 	}
@@ -642,7 +642,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
     }
   if(isMuonINT7selected)
     {
-      for(Int_t i=2;i<5;i++) 
+      for(Int_t i=1;i<5;i++) 
 	{
 	  if(trigStr.Contains(fTriggerClasses[i].Data()))
 	    {
@@ -666,7 +666,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
     }
   if(isMuonC0TVXselected)
     {
-      for(Int_t i=6;i<9;i++) 
+      for(Int_t i=5;i<9;i++) 
 	{
 	  if(trigStr.Contains(fTriggerClasses[i].Data()))
 	    {
