@@ -68,7 +68,7 @@ AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation()
 }
 
 
-int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, bool isMC )
+int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, bool isMC, int useOrigTransform )
 {
   // Initialisation
   
@@ -155,7 +155,7 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, boo
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
   // set current time stamp and initialize the fast transformation
-  int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp );
+  int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp, useOrigTransform );
 
   if( err!=0 ){
     return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );

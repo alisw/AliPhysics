@@ -91,6 +91,7 @@ private:
   bool fInitialized;	//Are we initialized?
   bool fTPCPresent;	//Is TPC present in GRP, if not skip init
   bool fIsMC; //Are we processing MC
+  bool fUseOrigTransform; //Use original TPC transform instead of fast HLT transform map
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 

@@ -48,7 +48,7 @@ class AliHLTTPCClusterTransformation{
   virtual ~AliHLTTPCClusterTransformation();
 
   /** Initialisation  */
-  Int_t  Init( double FieldBz, Long_t TimeStamp, bool isMC );
+  Int_t  Init( double FieldBz, Long_t TimeStamp, bool isMC, int useOrigTransform );
  
   /** Initialisation  */
   Int_t  Init( const AliHLTTPCFastTransformObject &obj );

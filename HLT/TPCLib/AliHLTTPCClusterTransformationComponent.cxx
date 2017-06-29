@@ -60,6 +60,7 @@ fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
 fIsMC(0),
+fUseOrigTransform(0),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
@@ -138,7 +139,11 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
     
-  if (AliHLTTPCFastTransform::GetUseOrigTransform()) fOfflineMode = 1;
+  if (fUseOrigTransform)
+  {
+    fOfflineMode = 1;
+    fInitializeByObjectInDoEvent = 0;
+  }
 
   AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
   if(!calib){
@@ -156,7 +161,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
-      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC );
+      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC, fUseOrigTransform );
 	  fInitialized = true;
     } else {
        const char* defaultNotify = "";
@@ -230,6 +235,10 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
     } else if (argument.CompareTo("-do-mc")==0){
       fIsMC = 1;
       HLTDebug("Processing Monte Carlo Data.");
+      iRet++;
+  } else if (argument.CompareTo("-use-orig-transform")==0){
+      fUseOrigTransform = 1;
+      HLTInfo("Running unmodified original TPC transformation.");
       iRet++;
     } else {
       iRet = -EINVAL;
