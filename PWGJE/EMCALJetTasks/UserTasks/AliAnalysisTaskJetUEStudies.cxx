@@ -101,16 +101,16 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
     fAlternativeRho.insert(std::make_pair(jets->GetRhoName(), nullptr));
   }
 
-  for (auto rho1 : fDefaultRhoNames) {
+  for (auto rho1 : fAlternativeRho) {
     for (auto rho2 : fAlternativeRho) {
-      if (rho1 == rho2.first) continue;
-      histname = TString::Format("%s/fHistDelta%sOverRhoVsCent", rho1.Data(), rho2.first.Data());
-      title = TString::Format("%s;Centrality (%%);2#frac{%s - %s}{%s + %s};counts", histname.Data(), rho1.Data(), rho2.first.Data(), rho1.Data(), rho2.first.Data());
+      if (rho1.first == rho2.first) continue;
+      histname = TString::Format("%s/fHistDelta%sOverRhoVsCent", rho1.first.Data(), rho2.first.Data());
+      title = TString::Format("%s;Centrality (%%);2#frac{%s - %s}{%s + %s};counts", histname.Data(), rho1.first.Data(), rho2.first.Data(), rho1.first.Data(), rho2.first.Data());
       fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, 500, -2.5, 2.5);
 
-      histname = TString::Format("%s/fHistDelta%sVsRho", rho1.Data(), rho2.first.Data());
-      title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.Data(), rho2.first.Data(), rho1.Data(), rho2.first.Data());
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+      histname = TString::Format("%s/fHistDelta%sVsRho", rho1.first.Data(), rho2.first.Data());
+      title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.first.Data(), rho2.first.Data(), rho1.first.Data(), rho2.first.Data());
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*4, minCorrPt*2, -minCorrPt*2);
     }
   }
 
@@ -138,7 +138,7 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
 
         histname = TString::Format("%s/%s/fHistB2BDelta%sVsRho", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
         title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho.first.Data(), rho2.first.Data(), rho.first.Data(), rho2.first.Data());
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*4, minCorrPt*2, -minCorrPt*2);
       }
 
       histname = TString::Format("%s/%s/fHistLeadingJetCorrPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
@@ -276,7 +276,6 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
   }
 
   for (auto rho1 : fAlternativeRho) {
-    if (fDefaultRhoNames.count(rho1.first) == 0) continue;
     for (auto rho2 : fAlternativeRho) {
       if (rho1 == rho2) continue;
       histname = TString::Format("%s/fHistDelta%sOverRhoVsCent", rho1.first.Data(), rho2.first.Data());
