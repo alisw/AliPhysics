@@ -828,9 +828,9 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                      iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));
   } else if (assMinPt!=0.1) {
     Int_t iMinPt = assMinPt*100;
-    TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%dChi%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
-                                     tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,Chi2perTPCcluster,assTPCcl,assTPCPIDcl,assITS,
-                                     iassDCAr,iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
+    TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
+                                     tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+                                     iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
   } else if (tpchigh[1]!=3000) {
     TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTPCtop%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
                                      tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
@@ -860,36 +860,36 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                              assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus,
                                              assTPCSplus,assITSpid,assTOFpid, useCat1Tracks, useCat2Tracks, weightlevelback,
                                              HadronContFunc, Chi2perTPCcluster);
-
+  
   if(isAOD)
     task->SetAODAnalysis();
   else
     task->SetESDAnalysis();
-
+  
   if (useMC)	task->SetHasMCData(kTRUE);
   else		task->SetHasMCData(kFALSE);
-
+  
   task->SelectCollisionCandidates(AliVEvent::kINT7);
-
+  
   if(useMC && weightlevelback>=0) {
     ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5.root");
   }
-
+  
   //create data containers
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
   containerName += appendix.Data();
   printf("container name: %s\n", containerName.Data());
-
-
+  
+  
   task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(),
                                               AliAnalysisManager::kOutputContainer, containerName.Data()));
   task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(),
                                               AliAnalysisManager::kOutputContainer, containerName.Data()));
-
+  
   mgr->ConnectInput(task,  0, cinput );
-
+  
   mgr->AddTask(task);
-
+  
   return NULL;
 }
