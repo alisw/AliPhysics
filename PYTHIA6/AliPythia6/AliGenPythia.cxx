@@ -1028,8 +1028,7 @@ Int_t  AliGenPythia::GenerateMB()
 
     Int_t* pParent = new Int_t[np];
     for (i=0; i< np; i++) pParent[i] = -1;
-    if ((fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyBeautyJets || fProcess == kPyBeautyppMNRwmi || fProcess == kPyJetsPWHG || fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG)
-	&& fEtMinJet > 0.) {
+    if ((fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyBeautyJets || fProcess == kPyBeautyppMNRwmi || fProcess == kPyJetsPWHG || fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG)) {
  	TParticle* jet1 = (TParticle *) fParticles.At(6);
 	TParticle* jet2 = (TParticle *) fParticles.At(7);
 	

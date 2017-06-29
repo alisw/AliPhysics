@@ -860,8 +860,9 @@ Int_t  AliGenPythiaPlus::GenerateMB()
     for (i=0; i< np; i++) pParent[i] = -1;
     if (fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyJetsPWHG || 
         fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG ) {
-	TParticle* jet1 = (TParticle *) fParticles.At(6);
-	TParticle* jet2 = (TParticle *) fParticles.At(7);
+       // 6,7 particles in PYTHIA6
+       TParticle* jet1 = (TParticle *) fParticles.At(4);
+       TParticle* jet2 = (TParticle *) fParticles.At(5);
 	if (!CheckTrigger(jet1, jet2)) {
 	  delete [] pParent;
 	  return 0;
