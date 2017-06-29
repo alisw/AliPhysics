@@ -33,7 +33,7 @@
 // p-p collisions
 ////////////////////////////////////////////////////////////////
 
-const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 300;
+const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 500;
 const Int_t    AliITSVertexer3D::fgkMaxNumOfClRebinDefault = 500;
 const Int_t    AliITSVertexer3D::fgkMaxNumOfClDownscaleDefault = 1000;
 const Float_t  AliITSVertexer3D::fgk3DBinSizeDefault = 0.1;
@@ -1375,6 +1375,9 @@ void AliITSVertexer3D::PrintStatus() const {
   printf("Pileup algo: %d\n",fPileupAlgo);
   printf("Min DCA to 1st vertex for pileup (algo 0 and 1): %f\n",fDCAforPileup);
   printf("Cut on distance between pair-vertices  (algo 2): %f\n",fCutOnPairs);
+  printf("========= High multiplicity settings =========================\n");
+  printf("High multiplicity algorithmn %d\n",fHighMultAlgo);
+  printf("Maximum number of clusters on L1 or L2 for high mult algo: %d\n",fMaxNumOfCl);
   printf("Maximum number of clusters on L1 or L2 for downscale: %d\n",fMaxNumOfClForDownScale);
   printf("Maximum number of clusters on L1 or L2 for histo rebin: %d\n",fMaxNumOfClForRebin);
   printf("=======================================================\n");

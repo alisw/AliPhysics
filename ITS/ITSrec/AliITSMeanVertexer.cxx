@@ -188,6 +188,7 @@ Bool_t AliITSMeanVertexer::Init() {
     alias->SetDCACut(0.1);
     alias->SetPileupAlgo(3);
     alias->SetFallBack(6000);
+    alias->SetMaxNumOfClustersForHighMult(300);
     fVertexer->SetComputeMultiplicity(kFALSE);
   }
   return kTRUE;

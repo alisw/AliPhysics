@@ -860,8 +860,9 @@ Int_t  AliGenPythiaPlus::GenerateMB()
     for (i=0; i< np; i++) pParent[i] = -1;
     if (fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyJetsPWHG || 
         fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG ) {
-	TParticle* jet1 = (TParticle *) fParticles.At(6);
-	TParticle* jet2 = (TParticle *) fParticles.At(7);
+       // 6,7 particles in PYTHIA6
+       TParticle* jet1 = (TParticle *) fParticles.At(4);
+       TParticle* jet2 = (TParticle *) fParticles.At(5);
 	if (!CheckTrigger(jet1, jet2)) {
 	  delete [] pParent;
 	  return 0;
@@ -1204,6 +1205,41 @@ Bool_t AliGenPythiaPlus::CheckTrigger(const TParticle* jet1, const TParticle* je
 	    ij = 1;
 	    ig = 0;
 	}
+      
+      // Search the physical direct photon
+      // and recover its eta and phi
+      if ( fProcess == kPyDirectGamma )      
+      {
+        const TParticle * jets[] = {jet1,jet2};
+        Int_t status = jets[ig]->GetStatusCode();
+        Int_t index  = jets[ig]->GetDaughter(0);
+        Int_t pdg    = jets[ig]->GetPdgCode();
+        Int_t np     = fParticles.GetEntriesFast();
+        
+        //printf("Search physical photon...\n");
+        TParticle * photon = 0;
+        while ( status!=1 )
+        {
+          if ( pdg!=kGamma || index < 0 || index >= np)
+          {
+            AliWarning(Form("Photon with daughter PDG <%d> or negative/large index <%d>/<%d>, skip event",pdg,index,np));
+            return kFALSE;
+          }
+          
+          //printf("\t daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+          photon = (TParticle*) fParticles.At(index);
+          if(!photon) return kFALSE;
+          
+          status = photon->GetStatusCode();
+          index  = photon->GetDaughter(0);
+          pdg    = photon->GetPdgCode();
+          eta[ig]= photon->Eta();
+          phi[ig]= photon->Phi();
+        }
+        //printf("final:   daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+        //printf("...found\n");
+      }
+      
 	//Check eta range first...
 	if ((eta[ij] < fEtaMaxJet   && eta[ij] > fEtaMinJet) &&
 	    (eta[ig] < fEtaMaxGamma && eta[ig] > fEtaMinGamma))
