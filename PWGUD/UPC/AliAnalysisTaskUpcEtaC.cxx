@@ -90,7 +90,7 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
   fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
-  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),//f3PiPi3RhoPtVsMinvRho(0),f3PiPi2RhoPtVsMinvEtaC(0),f3PiPi1RhoPtVsMinvEtaC(0),
+  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -126,7 +126,7 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
-  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),//f3PiPi3RhoPtVsMinvRho(0),f3PiPi2RhoPtVsMinvEtaC(0),f3PiPi1RhoPtVsMinvEtaC(0),
+  fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -558,15 +558,16 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   f4PionPtVsMinvRho = new TH2D("f4PionPtVsMinvRho","f4PionPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
   fListHist->Add(f4PionPtVsMinvRho);
-
+  
   //3PiPi channel
   TString CutNameEtaC3PiPiChannel[9] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
-					"Six Pions","non-zero net charge","0 charge, candidate"};
+					"Six Pions","non-zero net charge","candidate (0 net charge)"};
 
-  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",13,0.5,13.5);
-  for (Int_t i = 0; i<13; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
+  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",9,0.5,9.5);
+  for (Int_t i = 0; i<9; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
   fListHist->Add(fHistNeventsEtaC3PiPiChannel);
 
+  
   f3PiPiPtVsMinvEtaC = new TH2D("f3PiPiPtVsMinvEtaC","f3PiPiPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
   fListHist->Add(f3PiPiPtVsMinvEtaC);
 
@@ -578,7 +579,7 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   //f3PiPi1RhoPtVsMinvRho = new TH2D("f3PiPi1RhoPtVsMinvRho","f3PiPi1RhoPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
   //fListHist->Add(f3PiPi1RhoPtVsMinvRho);
-
+  
 
   //  cout << "##### After fHistNevents... stuff is completed" << endl;
 
@@ -1056,16 +1057,16 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //Two tracks loop
   Int_t nGoodTracks = 0;
-  Int_t trackIndex[5] = {-1,-1,-1,-1,-1};
-  Int_t missingTOFPID[5] = {-1,-1,-1,-1,-1};
-  Int_t missingTOFPIDK0s[5] = {-1,-1,-1,-1,-1};
+  Int_t trackIndex[7] = {-1,-1,-1,-1,-1,-1,-1};
+  Int_t missingTOFPID[7] = {-1,-1,-1,-1,-1,-1,-1};
+  Int_t missingTOFPIDK0s[7] = {-1,-1,-1,-1,-1,-1,-1};
   
-  TLorentzVector vPion[6], vKaon[6], vK0sPion[6], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4];
-  Short_t qKaon[6], qPion[6], qK0sPion[6];
+  TLorentzVector vPion[7], vKaon[7], vK0sPion[7], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4];
+  Short_t qKaon[7], qPion[7], qK0sPion[7];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
   Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
-  Double_t trackPt[5]={0,0,0,0,0};
+  Double_t trackPt[7]={0,0,0,0,0,0,0};
   
    
   //Four track loop
@@ -1584,7 +1585,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
  //End EtaC->RhoRho Channel
 
 
-
+ 
   //EtaC->3(pi+pi-) Channel
   nKaon=0; nPion=0;
   nTracksWithoutTOFinfo = 0;
@@ -1648,7 +1649,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	      //nKaon++;
 	      //} else 
-	      if(nPion == 3 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      if(nPion == 5 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		qPion[nPion] = trk->Charge();
@@ -1679,7 +1680,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  }
  }
  //End EtaC->3(pi+pi-) Channel
-
+ 
 
   //K0short case (using V0s)
 
