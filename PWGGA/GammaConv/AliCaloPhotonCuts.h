@@ -41,8 +41,6 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 
-using namespace std;
-
 class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   public: 

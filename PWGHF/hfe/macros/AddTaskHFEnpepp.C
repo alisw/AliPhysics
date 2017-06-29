@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
-                                  Bool_t isAOD,
+                                  Bool_t isAOD = kTRUE,
                                   Bool_t kNPERef = kTRUE,
-                                  Bool_t kNPERefTPConly = kFALSE
+                                  Bool_t kNPERefTPConly = kTRUE
                                   ){
 
    // Default settings (TOF-TPC pp)
@@ -78,7 +78,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
    Int_t kWei = -1;
 
    // For 5 TeV analysis, Feb 20, 2017: no re-weighting at all, for the moment
-   // if (MCthere) kWei = 0;
+    if (MCthere) kWei = 0;
 
    enum {
       // Keep some examples from the 2.76 TeV analysis. To be replaced.
@@ -90,7 +90,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
    int kWeiData;
    // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
    // from min bias MC for statistics reasons. Therefore the default is put for min bias MC.
-   kWeiData = kWeiLHC12e6;
+   kWeiData = 50;
 
 
    if(kNPERef){
@@ -100,13 +100,13 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
       //
       // **************************************************************
 
-      if (!MCthere){
-         // TPC lower cut at 0 sigma
-
-         RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
-                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-      }
+//      if (!MCthere){
+//         // TPC lower cut at 0 sigma
+//
+//         RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+//                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+//                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+//      }
 
       // Reference (for MC with reference weight LHC12e6 for pass2)
       RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
@@ -115,10 +115,10 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 
       // SPD selection
       // kFirst
-      RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
-                        dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                        kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-
+//      RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+//                        dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+//                        kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+   }
       if(kNPERefTPConly){
          // **************************************************************
          //
@@ -212,7 +212,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
       task->SelectCollisionCandidates(AliVEvent::kINT7);
 
       if(useMC && weightlevelback>=0) {
-         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect.root");
+         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13LowB.root");
       }
 
       //create data containers

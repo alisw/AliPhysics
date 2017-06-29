@@ -15,6 +15,8 @@
 #ifndef ALIANALYSISTASKRHODEV_H
 #define ALIANALYSISTASKRHODEV_H
 
+#include <utility>
+
 #include "AliAnalysisTaskRhoBaseDev.h"
 
 /** \class AliAnalysisTaskRhoDev
@@ -56,15 +58,17 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
   );
 
  protected:
-  Bool_t        Run();
-  Bool_t        IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
   void          CalculateRho();
+  Bool_t        FillHistograms();
+  Bool_t        VerifyContainers();
+
   std::pair<AliEmcalJet*, AliEmcalJet*>
                 GetLeadingJets();
 
   UInt_t           fNExclLeadJets;                 ///< number of leading jets to be excluded from the median calculation
   Bool_t           fRhoSparse;                     ///< flag to run CMS method as described in https://arxiv.org/abs/1207.2392
 
+  Double_t         fOccupancyFactor;               //!<!occupancy correction factor for sparse events
   TH2F            *fHistOccCorrvsCent;             //!<!occupancy correction vs. centrality
 
   AliAnalysisTaskRhoDev(const AliAnalysisTaskRhoDev&);             // not implemented

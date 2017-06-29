@@ -391,7 +391,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 		fESDList[iCut]->SetName(Form("%s_%s_%s_%s ESD histograms",cutstringEvent.Data(),cutstringGamma.Data(),cutstringPion.Data(),cutstringMeson.Data()));
 		fESDList[iCut]->SetOwner(kTRUE);
 
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",13,-0.5,12.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",14,-0.5,13.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -404,6 +404,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problems");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
 
 		if(fIsHeavyIon) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);

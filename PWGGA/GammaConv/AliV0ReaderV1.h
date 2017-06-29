@@ -12,6 +12,7 @@
 #include "AliESDEvent.h"
 #include "AliKFParticle.h"
 #include "TParticle.h"
+#include <iterator>
 #include <vector>
 #include "AliESDpid.h"
 #include "TF1.h"
@@ -34,6 +35,31 @@ using namespace std;
 class AliV0ReaderV1 : public AliAnalysisTaskSE {
 
   public:
+
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase> {
+    public:
+      enum Direction_t {
+        kForwardDirection = 0,
+        kBackwardDirection = 1
+      };
+      iterator(const AliV0ReaderV1 *reader, Direction_t dir, int position);
+      iterator(const iterator &other);
+      iterator &operator=(const iterator &other);
+      virtual ~iterator() {}
+
+      bool operator!=(iterator &other) const;
+      iterator operator++(int);
+      iterator &operator++();
+      iterator operator--(int);
+      iterator &operator--();
+      AliConversionPhotonBase *operator*();
+
+    private:
+      const AliV0ReaderV1     *fkData;          ///< V0 reader used to iterate over
+      int                      fCurrentIndex;   ///< Index of the current element
+      Direction_t              fDirection;      ///< Iterator in forward direction
+    };
+
     AliV0ReaderV1(const char *name="V0ReaderV1");
     virtual                    ~AliV0ReaderV1();                            //virtual destructor
 
@@ -47,8 +73,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t                    IsEventSelected()                     {return fEventIsSelected;}
 
     // Return Reconstructed Gammas
-    TClonesArray*             GetReconstructedGammas()              {return fConversionGammas;}
-    Int_t                     GetNReconstructedGammas()             {if(fConversionGammas){return fConversionGammas->GetEntriesFast();} else{ return 0;}}
+    TClonesArray*             GetReconstructedGammas() const        {return fConversionGammas;}
+    Int_t                     GetNReconstructedGammas() const       {if(fConversionGammas){return fConversionGammas->GetEntriesFast();} else{ return 0;}}
+    AliConversionPhotonBase *operator[](int index) const;
 
     AliConversionPhotonCuts*  GetConversionCuts()                   {return fConversionCuts;}
     AliConvEventCuts*         GetEventCuts()                        {return fEventCuts;}
@@ -117,7 +144,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               SetImprovedPsiPair(Int_t p)                      {fImprovedPsiPair=p;return;}
     Int_t              GetImprovedPsiPair()                             {return fImprovedPsiPair;}
   
-
+    iterator           begin() const                                    {return iterator(this, iterator::kForwardDirection, 0);}
+    iterator           end() const                                      {return iterator(this, iterator::kForwardDirection, GetNReconstructedGammas());}
+    iterator           rbegin() const                                   {return iterator(this, iterator::kBackwardDirection, GetNReconstructedGammas() -1); }
+    iterator           rend() const                                     {return iterator(this, iterator::kBackwardDirection, -1);}
 
   protected:
     // Reconstruct Gammas

@@ -45,6 +45,7 @@ AliAnalysisTaskSE(name),
   fGRPObject(NULL),     
   fSpecificStorageParOffline(), 
   fSpecificStorageRunParams(),  
+  fSpecificStorageFineSlewing(),
   fTimeResolution(80.),
   fTOFcalib(new AliTOFcalib()),             
   fTOFT0maker(new AliTOFT0maker(fESDpid, fTOFcalib)),         
@@ -294,6 +295,8 @@ Bool_t AliTOFAnalysisTaskCalibTree::InitRun() {
     cdb->SetSpecificStorage("TOF/Calib/ParOffline", fSpecificStorageParOffline.Data());
   if (!fSpecificStorageRunParams.IsNull())
     cdb->SetSpecificStorage("TOF/Calib/RunParams", fSpecificStorageRunParams.Data());
+  if (!fSpecificStorageFineSlewing.IsNull())
+    cdb->SetSpecificStorage("TOF/Calib/FineSlewing", fSpecificStorageFineSlewing.Data());
   cdb->SetRun(runNb);
   
   // init TOF calib

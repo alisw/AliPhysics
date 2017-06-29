@@ -7,6 +7,8 @@
 #include <THn.h>
 #include "AliStaObjects.h"
 #include "AliEventCuts.h"
+#include "AliFiducialCut.h"
+#include "AliEMCALRecoUtils.h"
 
 class TH1;
 class TH2;
@@ -50,16 +52,18 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
   Bool_t                      FillHistograms()                                              ;
   
+  Float_t                     ClustTrackMatching(AliVCluster *clust);
   void                        FillClusterHisto(AliVCluster* cluster, THnSparse* histo);
   void                        FillPionHisto(AliVCluster* cluster1, AliVCluster* cluster2, THnSparse* histo);
   void                        FillPionCorrelation(AliVCluster* cluster1, AliVCluster* cluster2, AliVParticle* track, THnSparse* histo, double weight);
   void                        FillPhotonCorrelation(AliVCluster* cluster, AliVParticle* track, THnSparse* histo, double weight);
-  int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, double Weight);
+  int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t MixedEvent, double Weight);
   Bool_t                      PassedCuts(AliVCluster* caloCluster);
   double                      GetIsolation_Track(AliVCluster* cluster);
+  Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
   
   TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
-  double                    GetEff(AliTLorentzVector ParticleVec)                         ;
+  double                      GetEff(AliTLorentzVector ParticleVec)                         ;
 
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
@@ -94,6 +98,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   THnSparse                 *h_Pi0Track_Mixed;                 //!<!
 
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
+  AliEMCALRecoUtils          *fFiducialCellCut;        //!<!     
  // TList                      *OutputList;            //!<! Output list
   
   const static int nEvt      =   10;//30; // mixing "depth"

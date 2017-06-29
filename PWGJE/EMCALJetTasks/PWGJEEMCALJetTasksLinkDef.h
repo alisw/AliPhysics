@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskJetUE+;
+#pragma link C++ class AliAnalysisTaskJetUEStudies+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoFlow+;
@@ -15,6 +17,7 @@
 #pragma link C++ class AliAnalysisTaskLocalRho+;
 #pragma link C++ class AliAnalysisTaskRhoBaseDev+;
 #pragma link C++ class AliAnalysisTaskRhoDev+;
+#pragma link C++ class AliAnalysisTaskRhoTransDev+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJetByJetCorrection+;

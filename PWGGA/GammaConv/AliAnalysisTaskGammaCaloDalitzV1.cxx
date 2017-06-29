@@ -744,7 +744,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
     
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",13,-0.5,12.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",14,-0.5,13.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -764,6 +764,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);

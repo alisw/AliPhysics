@@ -68,12 +68,14 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster);
+  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
+  void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
+  AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
@@ -134,14 +136,6 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   // Histograms -
 
-  TH1  					    *fHistNoClusPt;            //!<! ?No of calorimeter Clusters as a function of p_T
-//  TH1					   **fHistptAssHadronG[3];     //!<! pt distr. of the associated hadron as a function of Eg
-//  TH1					   **fHistptAssHadronZt[3];    //!<! pt distr. of the associated hadron as a function of Zt
-//  TH1					   **fHistptAssHadronXi[3];    //!<! pt distr. of the associated hadron as a function of Xi
-//  TH1					   **fHistptTriggG[3];         //!<! pt distr. of the trigger as a function of Eg
-//  TH1					   **fHistptTriggZt[3];        //!<! pt distr. of the trigger as a function of Zt
-//  TH1					   **fHistptTriggXi[3];        //!<! pt distr. of the trigger as a function of Xi
-
   TH2                       *fHistClusPairInvarMasspT; //!<! Tyler's histogram
   TH1 					    *fHistPi0;                 //!<! Tyler's histogram
   TH2                       *fMAngle;                  //!<! Tyler's histogram
@@ -155,18 +149,10 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
   TH1 					   **fHistBinCheckXi;          //!<! plot Xi distribution for ideal binning
-//  TH2					   **fHistDEtaDPhiG[3][10];    //!<! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
-//  TH2					   **fHistDEtaDPhiZT[3][8];    //!<! No of g-h pairs in the deta eta delta phi plane for certain zT values
-//  TH2					   **fHistDEtaDPhiXI[3][9];    //!<! No of g-h pairs in the deta eta delta phi plane for certain Xi values
   TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
-  TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy
-  TH2                       *fHistMatchEtaPhiAllCl2;   //!<! matched track distance for 2 cell clusters
-  TH2                       *fHistMatchEtaPhiAllCl3;   //!<! matched track distance for 3 cell clusters
-  TH2                       *fHistMatchEtaPhiAllCl4;   //!<! matched track distance for 4 cell clusters
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
   THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
-  THnSparseF                *fCorrVsManyThingsME;      //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
   THnSparseF                *fClusterProp;             //!<! Thn sparse filled with cluster properties
   TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
   //

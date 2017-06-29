@@ -517,6 +517,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCEtaProdVertex;          //!<! Spectrum of selected eta vs production vertex
   TH2F *   fhPrimPi0ProdVertex;        //!<! Spectrum of primary pi0 vs production vertex
   TH2F *   fhPrimEtaProdVertex;        //!<! Spectrum of primary eta vs production vertex
+
+  TH2F *   fhMCPi0Radius[10] ;         //!<! reconstructed Pi0 production vertex vs pT for mother origin
+  TH2F *   fhMCEtaRadius[6] ;          //!<! reconstructed Eta production vertex vs pT for mother origin
+
   
   TH2F *   fhReMCFromConversion ;      //!<! Invariant mass of 2 clusters originated in conversions
   TH2F *   fhReMCFromNotConversion ;   //!<! Invariant mass of 2 clusters not originated in conversions
