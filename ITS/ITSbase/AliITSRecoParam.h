@@ -123,6 +123,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetSPDVertexerPileupAlgo3DOneShot(){fVtxr3DPileupAlgo=2;}
   void SetSPDVertexerHighMultAlgoDownscale(){fVtxr3DHighMultAlgo=0;}
   void SetSPDVertexerHighMultAlgoTraces(){fVtxr3DHighMultAlgo=1;}
+  void SetSPDVertexerNclustersForHighMultAlgo(Int_t nc){fVtxr3DNclustersForHighMultAlgo=nc;}
   //
   Bool_t   GetSelectBestMIP03()                 const {return fSelectBestMIP03;}
   Bool_t   GetFlagFakes()                       const {return fFlagFakes;}
@@ -140,6 +141,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t  GetVertexer3DDCACut() const {return fVtxr3DDCACut;}
   Int_t    GetSPDVertexerPileupAlgo() const {return fVtxr3DPileupAlgo;}
   UChar_t  GetSPDVertexerHighMultAlgo() const {return fVtxr3DHighMultAlgo;}
+  Int_t    GetSPDVertexerNclustersForHighMultAlgo() const {return fVtxr3DNclustersForHighMultAlgo;}
 
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
@@ -576,7 +578,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fVtxr3DDCACut;      // cut on tracklet-to-tracklet DCA in vertexer3D
   Int_t   fVtxr3DPileupAlgo;  // pileup algorithm (0 = VtxZ, 1 = 3D - 2 step, 2 = 3D all in once)
   UChar_t fVtxr3DHighMultAlgo; // downscaling if 0 - traces if 1
-
+  Int_t   fVtxr3DNclustersForHighMultAlgo; // threshold on n SPD clusters to swicth to high mult. algo
   Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
   // spatial resolutions of the detectors
@@ -820,7 +822,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,57) // ITS reco parameters
+  ClassDef(AliITSRecoParam,58) // ITS reco parameters
 };
 
 #endif
