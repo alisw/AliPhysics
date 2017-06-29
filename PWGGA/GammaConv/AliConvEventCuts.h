@@ -31,6 +31,26 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 
+/***
+ * @class AliConvEventCuts
+ * @brief Event selection for conversion photon (and mother meson) analysis
+ * @ingroup GammaConv
+ *
+ * The cut configuration is set as a string with an 8 digit number.
+ * Each digit in the string corresponds to a certain cut type, while
+ * its values represent the cut values. The cut configuration is listed here:
+ *
+ * | Position in the cut string (from the end) | Cut type                     |
+ * |--------------------------------------------------------------------------|
+ * |                  0                        | HeavyIon                     |
+ * |                  1                        | CentralityMin                |
+ * |                  2                        | CentralityMax                |
+ * |                  3                        | SelectSpecialTrigger         |
+ * |                  4                        | SelectSpecialSubTriggerClass |
+ * |                  5                        | RemovePileUp                 |
+ * |                  6                        | RejectExtraSignals           |
+ * |                  7                        | VertexCut                    |
+ */
 class AliConvEventCuts : public AliAnalysisCuts {
     
     public: 
@@ -55,207 +75,215 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kL0       = 5,
       };
       
+      /**
+       * @enum PeriodVar
+       * @brief Collection of supported periods
+       */
       enum PeriodVar {
         // data periods
-        kNoPeriod=0,
+        kNoPeriod=0,  //!< kNoPeriod
         // 2010
-        kLHC10bg,         // pp 7 TeV (LHC10c incl 900 GeV)
-        kLHC10h,          // PbPb 2.76TeV
+        kLHC10bg,         //!< pp 7 TeV (LHC10c incl 900 GeV)
+        kLHC10h,          //!< PbPb 2.76TeV
         // MC's corresponding to 2010 data
-        kLHC10d1,         // anchored LHC10b pass 2
-        kLHC10d2,         // anchored LHC10b pass 2
-        kLHC10d4a,        // anchored LHC10c pass 2
-        kLHC10d4,         // anchored LHC10c pass 2
-        kLHC10e12,        // anchored LHC10c pass 2
-        kLHC10e13,        // anchored LHC10c pass 2
-        kLHC10f6a,        // anchored LHC10d pass 2
-        kLHC10f6,         // anchored LHC10d pass 2
-        kLHC10e20,        // anchored LHC10e pass 2
-        kLHC10e21,        // anchored LHC10e pass 2
-        kLHC14j4,         // anchored LHC10[b-g] pass 4
-        kLHC13d2,         // anchored LHC10h pass 2
-        kLHC13d2b,        // anchored LHC10h pass 2
-        kLHC12a11a,       // anchored LHC10h pass 2
-        kLHC12a11b,       // anchored LHC10h pass 2
-        kLHC12a11c,       // anchored LHC10h pass 2
-        kLHC12a11d,       // anchored LHC10h pass 2
-        kLHC12a11e,       // anchored LHC10h pass 2
-        kLHC12a11f,       // anchored LHC10h pass 2
+        kLHC10d1,         //!< anchored LHC10b pass 2
+        kLHC10d2,         //!< anchored LHC10b pass 2
+        kLHC10d4a,        //! anchored LHC10c pass 2
+        kLHC10d4,         //! anchored LHC10c pass 2
+        kLHC10e12,        //! anchored LHC10c pass 2
+        kLHC10e13,        //! anchored LHC10c pass 2
+        kLHC10f6a,        //! anchored LHC10d pass 2
+        kLHC10f6,         //!< anchored LHC10d pass 2
+        kLHC10e20,        //!< anchored LHC10e pass 2
+        kLHC10e21,        //!< anchored LHC10e pass 2
+        kLHC14j4,         //!< anchored LHC10[b-g] pass 4
+        kLHC13d2,         //!< anchored LHC10h pass 2
+        kLHC13d2b,        //!< anchored LHC10h pass 2
+        kLHC12a11a,       //!< anchored LHC10h pass 2
+        kLHC12a11b,       //!< anchored LHC10h pass 2
+        kLHC12a11c,       //!< anchored LHC10h pass 2
+        kLHC12a11d,       //!< anchored LHC10h pass 2
+        kLHC12a11e,       //!< anchored LHC10h pass 2
+        kLHC12a11f,       //!< anchored LHC10h pass 2
         
         // 2011
-        kLHC11a,          // pp 2.76TeV (part 7TeV)
-        kLHC11b,          // pp 7TeV
-        kLHC11cg,         // pp 7TeV
-        kLHC11h,          // PbPb 2.76TeV
+        kLHC11a,          //!< pp 2.76TeV (part 7TeV)
+        kLHC11b,          //!< pp 7TeV
+        kLHC11cg,         //!< pp 7TeV
+        kLHC11h,          //!< PbPb 2.76TeV
         // MC's corresponding to 2011 data
-        kLHC12a15c,       // anchored LHC11a pass 2 - JJ
-        kLHC12f1a,        // anchored LHC11a pass 4
-        kLHC12f1b,        // anchored LHC11a pass 4
-        kLHC12i3,         // anchored LHC11a pass 4
-        kLHC15g1a,        // anchored LHC11a pass 4 - JJ
-        kLHC15g1b,        // anchored LHC11a pass 4 - JJ
-        kLHC13e4,         // anchored LHC11c pass 1 - GJ
-        kLHC13e5,         // anchored LHC11c pass 1 - JJ
-        kLHC14k1a,        // anchored LHC11[c-d] pass 1 - JJ
-        kLHC14k1b,        // anchored LHC11[c-d] pass 1 - JJ
-        kLHC12a15f,       // anchored LHC11d pass 1 - JJ
-        kLHC12a15g,       // anchored LHC11d pass 1 - GJ
-        kLHC12f2a,        // anchored LHC11d pass 1 - JJ
-        kLHC14a1a,        // anchored LHC11h pass 2
-        kLHC14a1b,        // anchored LHC11h pass 2
-        kLHC14a1c,        // anchored LHC11h pass 2
+        kLHC12a15c,       //!< anchored LHC11a pass 2 - JJ
+        kLHC12f1a,        //!< anchored LHC11a pass 4
+        kLHC12f1b,        //!< anchored LHC11a pass 4
+        kLHC12i3,         //!< anchored LHC11a pass 4
+        kLHC15g1a,        //!< anchored LHC11a pass 4 - JJ
+        kLHC15g1b,        //!< anchored LHC11a pass 4 - JJ
+        kLHC13e4,         //!< anchored LHC11c pass 1 - GJ
+        kLHC13e5,         //!< anchored LHC11c pass 1 - JJ
+        kLHC14k1a,        //!< anchored LHC11[c-d] pass 1 - JJ
+        kLHC14k1b,        //!< anchored LHC11[c-d] pass 1 - JJ
+        kLHC12a15f,       //!< anchored LHC11d pass 1 - JJ
+        kLHC12a15g,       //!< anchored LHC11d pass 1 - GJ
+        kLHC12f2a,        //!< anchored LHC11d pass 1 - JJ
+        kLHC14a1a,        //!< anchored LHC11h pass 2
+        kLHC14a1b,        //!< anchored LHC11h pass 2
+        kLHC14a1c,        //!< anchored LHC11h pass 2
         
         // 2012
-        kLHC12,           // pp 8TeV
+        kLHC12,           //!< pp 8TeV
         // MC's corresponding to 2012 data
-        kLHC14e2a,        // anchored LHC12[a-h] pass 1
-        kLHC14e2b,        // anchored LHC12[a-h] pass 1
-        kLHC14e2c,        // anchored LHC12[a-h] pass 1
-        kLHC15h1,         // anchored LHC12[a-h] pass 2
-        kLHC15h2,         // anchored LHC12[a-h] pass 2
-        kLHC16c2,         // anchored LHC12[a-h] pass 2 - JJ
-        kLHC16c2_plus,    // anchored LHC12[a-h] pass 2 - JJ - additional stat
+        kLHC14e2a,        //!< anchored LHC12[a-h] pass 1
+        kLHC14e2b,        //!< anchored LHC12[a-h] pass 1
+        kLHC14e2c,        //!< anchored LHC12[a-h] pass 1
+        kLHC15h1,         //!< anchored LHC12[a-h] pass 2
+        kLHC15h2,         //!< anchored LHC12[a-h] pass 2
+        kLHC16c2,         //!< anchored LHC12[a-h] pass 2 - JJ
+        kLHC16c2_plus,    //!< anchored LHC12[a-h] pass 2 - JJ - additional stat
         
         // 2013
-        kLHC13bc,         // pPb 5.023TeV
-        kLHC13de,         // pPb 5.023TeV
-        kLHC13f,          // Pbp 5.023TeV
-        kLHC13g,          // pp 2.76TeV
+        kLHC13bc,         //!< pPb 5.023TeV
+        kLHC13de,         //!< pPb 5.023TeV
+        kLHC13f,          //!< Pbp 5.023TeV
+        kLHC13g,          //!< pp 2.76TeV
         // MC's corresponding to 2013 data
-        kLHC13b2_efix,    // anchored LHC13[b-c] pass 2
-        kLHC13e7,         // anchored LHC13[b-c] pass 2
-        kLHC14b2,         // anchored LHC13[b-c] pass 2
-        kLHC13b4_fix,     // anchored LHC13[b-c] pass 2 - JJ
-        kLHC13b4_plus,    // anchored LHC13[b-c] pass 2 - JJ
-        kLHC16c3a,        // anchored LHC13[d-e] pass 2 - JJ
-        kLHC16c3b,        // anchored LHC13[d-e] pass 2 - JJ
-        kLHC16c3c,        // anchored LHC13[d-e] pass 2 - GJ 
-        kLHC15g2,         // anchored LHC13g pass 1
-        kLHC15a3a,        // anchored LHC13g pass 1 - JJ
-        kLHC15a3a_plus,   // anchored LHC13g pass 1 - JJ
-        kLHC15a3b,        // anchored LHC13g pass 1 - JJ
-        kLHC15d3a,        // anchored LHC13g pass 1
-        kLHC15d3b,        // anchored LHC13g pass 1
+        kLHC13b2_efix,    //!< anchored LHC13[b-c] pass 2
+        kLHC13e7,         //!< anchored LHC13[b-c] pass 2
+        kLHC14b2,         //!< anchored LHC13[b-c] pass 2
+        kLHC13b4_fix,     //!< anchored LHC13[b-c] pass 2 - JJ
+        kLHC13b4_plus,    //!< anchored LHC13[b-c] pass 2 - JJ
+        kLHC16c3a,        //!< anchored LHC13[d-e] pass 2 - JJ
+        kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
+        kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
+        kLHC15g2,         //!< anchored LHC13g pass 1
+        kLHC15a3a,        //!< anchored LHC13g pass 1 - JJ
+        kLHC15a3a_plus,   //!< anchored LHC13g pass 1 - JJ
+        kLHC15a3b,        //!< anchored LHC13g pass 1 - JJ
+        kLHC15d3a,        //!< anchored LHC13g pass 1
+        kLHC15d3b,        //!< anchored LHC13g pass 1
         
         // 2015
-        kLHC15fm,         // pp 13 TeV
-        kLHC15n,          // pp 5 TeV
-        kLHC15o,          // PbPb 5 TeV
+        kLHC15fm,         //!< pp 13 TeV
+        kLHC15n,          //!< pp 5 TeV
+        kLHC15o,          //!< PbPb 5 TeV
         // MC's corresponding to 2015 data
-        kLHC15g3a3,       // anchored LHC15f pass 1
-        kLHC15g3a,        // anchored LHC15f pass 1
-        kLHC15g3c2,       // anchored LHC15f pass 1
-        kLHC15g3c3,       // anchored LHC15f pass 1
-        kLHC15g3,         // anchored LHC15f pass 1
-        kLHC16a2a,        // anchored LHC15h pass 1
-        kLHC16a2b,        // anchored LHC15h pass 1
-        kLHC16a2c,        // anchored LHC15h pass 1
-        kLHC15l1a2,       // anchored LHC15n pass 1
-        kLHC15l1b2,       // anchored LHC15n pass 1
-        kLHC15k1a1,       // LHC15o low IR firstPhysics
-        kLHC15k1a2,       // LHC15o low IR firstPhysics
-        kLHC15k1a3,       // LHC15o low IR firstPhysics
-        kLHC16j7,         // LHC15o low IR pass4
-        kLHC16g1,         // anchored LHC15o pass1 - general purpose
-        kLHC16g1a,        // anchored LHC15o pass1 - general purpose 0-10%
-        kLHC16g1b,        // anchored LHC15o pass1 - general purpose 10-50%
-        kLHC16g1c,        // anchored LHC15o pass1 - general purpose 50-90%
-        kLHC16g2,         // anchored LHC15o pass1 - general purpose EPOS-LHC
-        kLHC16g3,         // anchored LHC15o pass1 - general purpose DPMJET
-        kLHC16h4,         // anchored LHC15o pass1 - injected signals 0-100%
-        kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
-        kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
-        kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
-        kLHC16h3,         // anchored LHC15n pass4 - jet-jet MC Pythia8 reproduction
-        kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
-        kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
-        kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
-        kLHC16k3b,        // anchored LHC15o pass3 - gen. purpose Pyt6wpileup
-        kLHC16k3a2,       // anchored LHC15n pass2 - gen. purpose Pyt6wopileup
-        kLHC16k3b2,       // anchored LHC15o pass3 - gen. purpose Pyt6wopileup
-        kLHC16k5a,        // anchored LHC15n pass3 - general purpose Pythia8
-        kLHC16k5b,        // anchored LHC15n pass3 - general purpose Pythia6
-        kLHC17e2,         // anchored LHC15n pass4 - general purpose Pythia8
+        kLHC15g3a3,       //!< anchored LHC15f pass 1
+        kLHC15g3a,        //!< anchored LHC15f pass 1
+        kLHC15g3c2,       //!< anchored LHC15f pass 1
+        kLHC15g3c3,       //!< anchored LHC15f pass 1
+        kLHC15g3,         //!< anchored LHC15f pass 1
+        kLHC16a2a,        //!< anchored LHC15h pass 1
+        kLHC16a2b,        //!< anchored LHC15h pass 1
+        kLHC16a2c,        //!< anchored LHC15h pass 1
+        kLHC15l1a2,       //!< anchored LHC15n pass 1
+        kLHC15l1b2,       //!< anchored LHC15n pass 1
+        kLHC15k1a1,       //!< LHC15o low IR firstPhysics
+        kLHC15k1a2,       //!< LHC15o low IR firstPhysics
+        kLHC15k1a3,       //!< LHC15o low IR firstPhysics
+        kLHC16j7,         //!< LHC15o low IR pass4
+        kLHC16g1,         //!< anchored LHC15o pass1 - general purpose
+        kLHC16g1a,        //!< anchored LHC15o pass1 - general purpose 0-10%
+        kLHC16g1b,        //!< anchored LHC15o pass1 - general purpose 10-50%
+        kLHC16g1c,        //!< anchored LHC15o pass1 - general purpose 50-90%
+        kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
+        kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
+        kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
+        kLHC16h2a,        //!< anchored LHC15o pass1 - jet-jet 0-10%
+        kLHC16h2b,        //!< anchored LHC15o pass1 - jet-jet 10-50%
+        kLHC16h2c,        //!< anchored LHC15o pass1 - jet-jet 50-90%
+        kLHC16h3,         //!< anchored LHC15n pass4 - jet-jet MC Pythia8 reproduction
+        kLHC16h8a,        //!< anchored LHC15n pass2 - general purpose Pythia8
+        kLHC16h8b,        //!< anchored LHC15n pass2 - general purpose Pythia6
+        kLHC16k3a,        //!< anchored LHC15n pass2 - gen. purpose Pyt6wpileup
+        kLHC16k3b,        //!< anchored LHC15o pass3 - gen. purpose Pyt6wpileup
+        kLHC16k3a2,       //!< anchored LHC15n pass2 - gen. purpose Pyt6wopileup
+        kLHC16k3b2,       //!< anchored LHC15o pass3 - gen. purpose Pyt6wopileup
+        kLHC16k5a,        //!< anchored LHC15n pass3 - general purpose Pythia8
+        kLHC16k5b,        //!< anchored LHC15n pass3 - general purpose Pythia6
+        kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
         // MC upgrade
-        kLHC13d19,        // upgrade 5.5TeV PbPb
+        kLHC13d19,        //!< upgrade 5.5TeV PbPb
         
         // 2016
-        kLHC16kl,         // pp 13 TeV
-        kLHC16q,          // pPb 5 TeV
-	kLHC16r,          // pPb 8 TeV
-	kLHC16s,          // pPb 8 TeV
-	kLHC16t,          // pPb 5 TeV
+        kLHC16kl,         //!< pp 13 TeV
+        kLHC16q,          //!< pPb 5 TeV
+	kLHC16r,          //!< pPb 8 TeV
+	kLHC16s,          //!< pPb 8 TeV
+	kLHC16t,          //!< pPb 5 TeV
         // MC's corresponding to 2016 data
-        kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
-        kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
-        kLHC16j2a2,       // anchored LHC16l pass 1 - general purpose Pythia8
-        kLHC16j2b2,       // anchored LHC16l pass 1 - general purpose EPOSLHC
-        kLHC17a2a,            // anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17a2a_fast,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a2a_cent,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a2a_cent_woSDD, // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a2b,            // anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17a2b_fast,       // anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17a2b_cent,       // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17a2b_cent_woSDD, // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17a3a,            // anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17a3a_fast,       // anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a3a_cent,       // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a3a_cent_woSDD, // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a3b,            // anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17a3b_fast,       // anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17a3b_cent,       // anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17a3b_cent_woSDD, // anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17a4a,            // anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17a4a_fast,       // anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a4a_cent,       // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a4a_cent_woSDD, // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a4b,            // anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17a4b_fast,       // anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17a4b_cent,       // anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17a4b_cent_woSDD, // anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC16j2a1,       //!< anchored LHC16k pass 1 - general purpose Pythia8
+        kLHC16j2b1,       //!< anchored LHC16k pass 1 - general purpose EPOSLHC
+        kLHC16j2a2,       //!< anchored LHC16l pass 1 - general purpose Pythia8
+        kLHC16j2b2,       //!< anchored LHC16l pass 1 - general purpose EPOSLHC
+        kLHC17a2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
+        kLHC17a2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC17a2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
+        kLHC17a2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
+        kLHC17a2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
+        kLHC17a3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17a3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
+        kLHC17a3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
+        kLHC17a3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
+        kLHC17a4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
+        kLHC17a4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17a4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
+        kLHC17a4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
+        kLHC17a4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
 
-        kLHC17f2a,            // anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17f2a_fast,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f2a_cent,       // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f2a_cent_woSDD, // anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17f2b,            // anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17f2b_fast,       // anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17f2b_cent,       // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17f2b_cent_woSDD, // anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17f3a,            // anchored LHC16r pass 1 - general purpose EPOSLHC
-        kLHC17f3a_fast,       // anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f3a_cent,       // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f3a_cent_woSDD, // anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17f3b,            // anchored LHC16r pass 1 - general purpose DPMJET
-        kLHC17f3b_fast,       // anchored LHC16r pass 1 - general purpose DPMJET,  fast only
-        kLHC17f3b_cent,       // anchored LHC16r pass 1 - general purpose DPMJET,  CENT
-        kLHC17f3b_cent_woSDD, // anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
-        kLHC17f4a,            // anchored LHC16s pass 1 - general purpose EPOSLHC
-        kLHC17f4a_fast,       // anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
-        kLHC17f4a_cent,       // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
-        kLHC17f4a_cent_woSDD, // anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17f4b,            // anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17f4b_fast,       // anchored LHC16s pass 1 - general purpose DPMJET,  fast only
-        kLHC17f4b_cent,       // anchored LHC16s pass 1 - general purpose DPMJET,  CENT
-        kLHC17f4b_cent_woSDD, // anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
+        kLHC17f2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
+        kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
+        kLHC17f2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
+        kLHC17f3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f3a_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17f3b_fast,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  fast only
+        kLHC17f3b_cent,       //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT
+        kLHC17f3b_cent_woSDD, //!< anchored LHC16r pass 1 - general purpose DPMJET,  CENT woSDD
+        kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
+        kLHC17f4a_fast,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, fast only
+        kLHC17f4a_cent,       //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT
+        kLHC17f4a_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17f4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
+        kLHC17f4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
+        kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
 
         // 
-        kUnknownPeriod
+        kUnknownPeriod//!< kUnknownPeriod
       };
 
+      /**
+       * @enum EnergyVar
+       * @brief Supported collision systems
+       */
       enum EnergyVar {
-        kUnset        = 0,  // not defined  
-        k900GeV       = 1,  // pp 900 GeV
-        k2760GeV      = 2,  // pp 2.76TeV
-        k5TeV         = 3,  // pp 5 TeV
-        k7TeV         = 4,  // pp 7 TeV
-        k8TeV         = 5,  // pp 8 TeV
-        k13TeV        = 6,  // pp 13 TeV
-        kpPb5TeV      = 7,  // pPb 5 TeV
-        kpPb8TeV      = 8,  // pPb 8 TeV
-        kPbPb2760GeV  = 9,  // PbPb 2.76TeV
-        kPbPb5TeV     = 10, // PbPb 5 TeV
+        kUnset        = 0,  //!< not defined
+        k900GeV       = 1,  //!< pp 900 GeV
+        k2760GeV      = 2,  //!< pp 2.76TeV
+        k5TeV         = 3,  //!< pp 5 TeV
+        k7TeV         = 4,  //!< pp 7 TeV
+        k8TeV         = 5,  //!< pp 8 TeV
+        k13TeV        = 6,  //!< pp 13 TeV
+        kpPb5TeV      = 7,  //!< pPb 5 TeV
+        kpPb8TeV      = 8,  //!< pPb 8 TeV
+        kPbPb2760GeV  = 9,  //!< PbPb 2.76TeV
+        kPbPb5TeV     = 10, //!< PbPb 5 TeV
       };
 
       
@@ -363,6 +391,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
+      Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -444,6 +473,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
+      Bool_t    IsPileUpV0MTPCout(AliVEvent *fInputEvent);
       Bool_t    VertexZCut(AliVEvent *fInputEvent);
       Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
       Float_t   GetPtHard(AliVEvent *MCEvent);
@@ -484,113 +514,117 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                   Bool_t isConversion );
       
     protected:
-      TList*                      fHistograms;
-      TList*                      fHeaderList;
+      TList*                      fHistograms;                            ///<
+      TList*                      fHeaderList;                            ///<
 
-      Bool_t                      fDoLightOutput;                         // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-      Int_t                       fEventQuality;                          // EventQuality
+      Bool_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+      Int_t                       fEventQuality;                          ///< EventQuality
       //cuts
-      Int_t                       fIsHeavyIon;                            // flag for heavy ion
-      Int_t                       fDetectorCentrality;                    // centrality detecotor V0M or CL1
-      Int_t                       fModCentralityClass;                    // allows to select smaller centrality classes
-      Bool_t                      fEnableVertexCut;                       // enable vertex cut
-      Double_t                    fMaxVertexZ;                            // max z offset of vertex
-      Int_t                       fCentralityMin;                         // centrality selection lower bin value
-      Int_t                       fCentralityMax;                         // centrality selection upper bin value
-      Int_t                       fMultiplicityMethod;                    // selected multiplicity method
-      Int_t                       fSpecialTrigger;                        // flag
-      Int_t                       fSpecialSubTrigger;                     // flag
-      Bool_t                      fRemovePileUp;                          // flag
-      Int_t                       fPastFutureRejectionLow;                // sets bunch crossing event rejection in past
-      Int_t                       fPastFutureRejectionHigh;               // sets bunch crossing event rejection in future
-      Int_t                       fRejectExtraSignals;                    //
-      UInt_t                      fOfflineTriggerMask;                    // Task processes collision candidates only
-      Bool_t                      fHasV0AND;                              // V0AND Offline Trigger
-      Bool_t                      fIsSDDFired;                            // SDD FIRED to select with SDD events
-      TRandom3                    fRandom;                                //
-      Int_t                       fnHeaders;                              // Number of Headers
+      Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
+      Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
+      Int_t                       fModCentralityClass;                    ///< allows to select smaller centrality classes
+      Bool_t                      fEnableVertexCut;                       ///< enable vertex cut
+      Double_t                    fMaxVertexZ;                            ///< max z offset of vertex
+      Int_t                       fCentralityMin;                         ///< centrality selection lower bin value
+      Int_t                       fCentralityMax;                         ///< centrality selection upper bin value
+      Int_t                       fMultiplicityMethod;                    ///< selected multiplicity method
+      Int_t                       fSpecialTrigger;                        ///< flag
+      Int_t                       fSpecialSubTrigger;                     ///< flag
+      Bool_t                      fRemovePileUp;                          ///< flag
+      Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
+      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
+      Int_t                       fRejectExtraSignals;                    ///<
+      UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
+      Bool_t                      fHasV0AND;                              ///< V0AND Offline Trigger
+      Bool_t                      fIsSDDFired;                            ///< SDD FIRED to select with SDD events
+      TRandom3                    fRandom;                                ///<
+      Int_t                       fnHeaders;                              ///< Number of Headers
       Int_t*                      fNotRejectedStart;                      //[fnHeaders]
       Int_t*                      fNotRejectedEnd;                        //[fnHeaders]
       TString*                    fGeneratorNames;                        //[fnHeaders]
-      PeriodVar                   fPeriodEnum;                            // period selector
-      EnergyVar                   fEnergyEnum;                            // energy selector
+      PeriodVar                   fPeriodEnum;                            ///< period selector
+      EnergyVar                   fEnergyEnum;                            ///< energy selector
 
-      TObjString*                 fCutString;                             // cut number used for analysis
-      TString                     fCutStringRead;
-      AliAnalysisUtils*           fUtils;
-      Double_t                    fEtaShift;
-      Bool_t                      fDoEtaShift;                            // Flag for Etashift
-      Int_t                       fDoCentralityFlat;
-      TString                     fNameHistoNotFlatCentrality;
-      TString                     fPathWeightsFlatCent;
-      Bool_t                      fDoReweightHistoMCPi0;                  // Flag for reweighting Pi0 input with histogram
-      Bool_t                      fDoReweightHistoMCEta;                  // Flag for reweighting Eta input with histogram
-      Bool_t                      fDoReweightHistoMCK0s;                  // Flag for reweighting K0s input with histogram
-      TString                     fPathTrFReweighting;                    // Path for file used in reweighting
-      TString                     fNameHistoReweightingPi0;               // Histogram name for reweighting Pi0
-      TString                     fNameHistoReweightingEta;               // Histogram name for reweighting Eta
-      TString                     fNameHistoReweightingK0s;               // Histogram name for reweighting K0s
-      TString                     fNameFitDataPi0;                        // Fit name for fit to spectrum of pi0s in Data
-      TString                     fNameFitDataEta;                        // Fit name for fit to spectrum of etas in Data
-      TString                     fNameFitDataK0s;                        // Fit name for fit to spectrum of k0s in Data
+      TObjString*                 fCutString;                             ///< cut number used for analysis
+      TString                     fCutStringRead;                         ///<
+      AliAnalysisUtils*           fUtils;                                 ///<
+      Double_t                    fEtaShift;                              ///<
+      Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
+      Int_t                       fDoCentralityFlat;                      ///<
+      TString                     fNameHistoNotFlatCentrality;            ///<
+      TString                     fPathWeightsFlatCent;                   ///<
+      Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
+      Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
+      Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
+      TString                     fPathTrFReweighting;                    ///< Path for file used in reweighting
+      TString                     fNameHistoReweightingPi0;               ///< Histogram name for reweighting Pi0
+      TString                     fNameHistoReweightingEta;               ///< Histogram name for reweighting Eta
+      TString                     fNameHistoReweightingK0s;               ///< Histogram name for reweighting K0s
+      TString                     fNameFitDataPi0;                        ///< Fit name for fit to spectrum of pi0s in Data
+      TString                     fNameFitDataEta;                        ///< Fit name for fit to spectrum of etas in Data
+      TString                     fNameFitDataK0s;                        ///< Fit name for fit to spectrum of k0s in Data
       // Histograms
-      TH1F*                       fHistoEventCuts;                        // bookkeeping for event selection cuts
-      TH1F*                       fHistoPastFutureBits;                   // bookkeeping for event selection cuts
-      TH1F*                       hCentrality;                            // centrality distribution for selected events
-      TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
-      //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
-      TH1F*                       hVertexZ;                               // vertex z distribution for selected events
-      TH1F*                       hNPileupVertices;                       // number of SPD pileup vertices
-      TH1F*                       hPileupVertexToPrimZ;                   // distance of SPD pileup vertex to prim vertex in z
-      TH1F*                       hPileupVertexToPrimZSPDPileup;          // distance of SPD pileup vertex to prim vertex in z for SPD pileup flagged events
-      TH1F*                       hPileupVertexToPrimZTrackletvsHits;     // distance of SPD pileup vertex to prim vertex in z for Tracklet vs Hits flagged events
-      TH1F*                       hEventPlaneAngle;                       //
-      Double_t                    fEventPlaneAngle;                       // EventPlaneAngle
-      TH1F*                       hTriggerClass;                          // fired offline trigger class
-      TH1F*                       hTriggerClassSelected;                  // selected fired offline trigger class
-      TH1F*                       hTriggerClassesCorrelated;              // selected trigger class correlation with others
-      TH1D*                       hReweightMCHistPi0;                     // histogram input for reweighting Pi0
-      TH1D*                       hReweightMCHistEta;                     // histogram input for reweighting Eta
-      TH1D*                       hReweightMCHistK0s;                     // histogram input for reweighting K0s
-      TF1*                        fFitDataPi0;                            // fit to pi0 spectrum in Data
-      TF1*                        fFitDataEta;                            // fit to eta spectrum in Data
-      TF1*                        fFitDataK0s;                            // fit to K0s spectrum in Data
+      TH1F*                       fHistoEventCuts;                        ///< bookkeeping for event selection cuts
+      TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
+      TH1F*                       hCentrality;                            ///< centrality distribution for selected events
+      TH1D*                       hCentralityNotFlat;                     ///< centrality distribution loaded for cent. flattening
+      //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    ///< centrality distribution for selected events
+      TH1F*                       hVertexZ;                               ///< vertex z distribution for selected events
+      TH1F*                       hNPileupVertices;                       ///< number of SPD pileup vertices
+      TH1F*                       hPileupVertexToPrimZ;                   ///< distance of SPD pileup vertex to prim vertex in z
+      TH1F*                       hPileupVertexToPrimZSPDPileup;          ///< distance of SPD pileup vertex to prim vertex in z for SPD pileup flagged events
+      TH1F*                       hPileupVertexToPrimZTrackletvsHits;     ///< distance of SPD pileup vertex to prim vertex in z for Tracklet vs Hits flagged events
+      TH1F*                       hEventPlaneAngle;                       ///<
+      Double_t                    fEventPlaneAngle;                       ///< EventPlaneAngle
+      TH1F*                       hTriggerClass;                          ///< fired offline trigger class
+      TH1F*                       hTriggerClassSelected;                  ///< selected fired offline trigger class
+      TH1F*                       hTriggerClassesCorrelated;              ///< selected trigger class correlation with others
+      TH1D*                       hReweightMCHistPi0;                     ///< histogram input for reweighting Pi0
+      TH1D*                       hReweightMCHistEta;                     ///< histogram input for reweighting Eta
+      TH1D*                       hReweightMCHistK0s;                     ///< histogram input for reweighting K0s
+      TF1*                        fFitDataPi0;                            ///< fit to pi0 spectrum in Data
+      TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
+      TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
       TString                     fSpecialTriggerName;                    // Name of the Special Triggers
       TString                     fSpecialSubTriggerName;                 // Name of the Special Triggers
       Int_t                       fNSpecialSubTriggerOptions;
-      TH2F*                       hSPDClusterTrackletBackgroundBefore;    // SPD tracklets vs SPD clusters for background-correction before cut
-      TH2F*                       hSPDClusterTrackletBackground;          // SPD tracklets vs SPD clusters for background-correction
+      TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
+      TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
       // trigger information
-      TString                     fV0ReaderName;                          // Name of V0Reader
-      AliVCaloTrigger*            fCaloTriggers;                          //! calo triggers
-      TClonesArray*               fTriggerPatchInfo;                      //! trigger patch info array
-      AliEMCALTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 // main trigger patch, will be cached after first call
-      TString                     fCaloTriggersName;                      // name of calo triggers collection
-      TString                     fCaloTriggerPatchInfoName;              // trigger patch info array name
-      ULong_t                     fTriggersEMCAL;                         // list of fired EMCAL triggers
-      ULong_t                     fTriggersEMCALSelected;                 // list of accepted triggers
-      Bool_t                      fEMCALTrigInitialized;                  // EMCAL triggers initialized
+      TString                     fV0ReaderName;                          ///< Name of V0Reader
+      AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
+      TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
+      AliEMCALTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 ///< main trigger patch, will be cached after first call
+      TString                     fCaloTriggersName;                      ///< name of calo triggers collection
+      TString                     fCaloTriggerPatchInfoName;              ///< trigger patch info array name
+      ULong_t                     fTriggersEMCAL;                         ///< list of fired EMCAL triggers
+      ULong_t                     fTriggersEMCALSelected;                 ///< list of accepted triggers
+      Bool_t                      fEMCALTrigInitialized;                  ///< EMCAL triggers initialized
       // Primary secondary distinction
-      Double_t                    fSecProdBoundary;                       // 3D radius of production (cm) for primary-secodary distinction
-      Float_t                     fMaxPtJetMC;                            // maximum jet pt in event
-      Float_t                     fMaxFacPtHard;                          // maximum factor between maximum jet pt and pt hard generated
-      Float_t                     fMaxFacPtHardSingleParticle;            // maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
-      Bool_t                      fMimicTrigger;                          // enable trigger mimiking
-      Bool_t                      fRejectTriggerOverlap;                  // enable trigger overlap rejections
+      Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
+      Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
+      Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
+      Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
+      Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
+      Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       // 
-      Bool_t                      fDoMultiplicityWeighting;               // Flag for multiplicity weighting
-      TString                     fPathReweightingMult;                   // Path for file used in multiplicity reweighting
-      TString                     fNameHistoReweightingMultData;          // Histogram name for reweighting Pi0
-      TString                     fNameHistoReweightingMultMC;            // Histogram name for reweighting Eta
-      TH1D*                       hReweightMultData;                      // histogram input for reweighting Eta
-      TH1D*                       hReweightMultMC;                        // histogram input for reweighting Pi0
-      Int_t                       fDebugLevel;                            // debug level for interactive debugging
+      Bool_t                      fDoMultiplicityWeighting;               ///< Flag for multiplicity weighting
+      TString                     fPathReweightingMult;                   ///< Path for file used in multiplicity reweighting
+      TString                     fNameHistoReweightingMultData;          ///< Histogram name for reweighting Pi0
+      TString                     fNameHistoReweightingMultMC;            ///< Histogram name for reweighting Eta
+      TH1D*                       hReweightMultData;                      ///< histogram input for reweighting Eta
+      TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
+      Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
-      ClassDef(AliConvEventCuts,32)
+      /// \cond CLASSIMP
+      ClassDef(AliConvEventCuts,33)
+      /// \endcond
 };
 
 

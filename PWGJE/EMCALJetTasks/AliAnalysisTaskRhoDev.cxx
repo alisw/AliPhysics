@@ -92,24 +92,6 @@ std::pair<AliEmcalJet*, AliEmcalJet*> AliAnalysisTaskRhoDev::GetLeadingJets()
 }
 
 /**
- * Verify whether two jets have any track in common.
- * @param jet1 First jet
- * @param jet2 Second jet
- * @return kTRUE if the two jets have at least a track in common, kFALSE otherwise
- */
-Bool_t AliAnalysisTaskRhoDev::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2)
-{
-  for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i) {
-    Int_t jet1Track = jet1->TrackAt(i);
-    for (Int_t j = 0; j < jet2->GetNumberOfTracks(); ++j) {
-      Int_t jet2Track = jet2->TrackAt(j);
-      if (jet1Track == jet2Track) return kTRUE;
-    }
-  }
-  return kFALSE;
-}
-
-/**
  * Calculates the average background using the median approach
  * as proposed in https://arxiv.org/pdf/0707.1378.pdf.
  * Rho is stored in fOutRho.
@@ -146,7 +128,7 @@ void AliAnalysisTaskRhoDev::CalculateRho()
     Bool_t overlapsWithSignal = kFALSE;
     if (sigJetCont) {
       for (auto sigJet : sigJetCont->accepted()) {
-        if (IsJetOverlapping(jet, sigJet)) {
+        if (AreJetsOverlapping(jet, sigJet)) {
           overlapsWithSignal = kTRUE;
           break;
         }
