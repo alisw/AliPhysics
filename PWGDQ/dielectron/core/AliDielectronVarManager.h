@@ -2417,6 +2417,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
     TList *qnlist = flowQnVectorMgr->GetQnVectorList();
     if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
+    else{
+      for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
+        values[i] = -999.;
+      }
+    }
   }
 
   // ep angle interval [todo, fill]
@@ -2760,7 +2765,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     // TPC
 
     TList *qnlist = (TList*) event->FindListObject("qnVectorList");
-    if(Req(kQnTPCrpH2) && qnlist ==NULL){
+    if((Req(kQnTPCrpH2) || Req(kQnV0rpH2)) && qnlist == NULL){
       for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
         values[i] = -999.;
       }
