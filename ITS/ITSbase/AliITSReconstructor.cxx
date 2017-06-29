@@ -225,6 +225,8 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     vtxr->SetPileupAlgo(pileupAlgo);
     UChar_t highmultAlgo=GetRecoParam()->GetSPDVertexerHighMultAlgo();
     vtxr->SetHighMultAlgo(highmultAlgo);
+    Int_t clHM=GetRecoParam()->GetSPDVertexerNclustersForHighMultAlgo();
+    vtxr->SetMaxNumOfClustersForHighMult(clHM);
     AliDebug(1,Form("AliITSVertexer3D with pileup algo %d has been selected",pileupAlgo));
     vtxr->SetFallBack(500); // fall back to vertexerZ is SPD-0 clusters>500
     vptr = vtxr;
