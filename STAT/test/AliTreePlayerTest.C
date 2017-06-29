@@ -1,7 +1,7 @@
 /*
   Test suit for the AliTreePlayer:
 
-  aliroot -b -q   $ALICE_ROOT/../src/STAT/test/AliTreePlayerTest.C+ > AliTreePlayerTest.log
+  aliroot -b -q   $AliRoot_SRC/STAT/test/AliTreePlayerTest.C+ > AliTreePlayerTest.log
   cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
 
   Test should be integrated to AliRoot test suit (not cmake test as it need access to the external files)
