@@ -118,7 +118,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 //      RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
 //                        dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 0, kassITS, kassTPCcl, kassTPCPIDcl,
 //                        kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-
+   }
       if(kNPERefTPConly){
          // **************************************************************
          //
