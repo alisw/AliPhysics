@@ -221,7 +221,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
-  /// Ignore the vertex position and vertex 
+  /// Ignore the vertex position and vertex
   unsigned long allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
   bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
   if (allcuts) fFlag |= BIT(kAllCuts);
@@ -236,7 +236,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   array <unsigned long,4> norm_masks {
     BIT(kNoCuts),
     allcuts_mask ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
-    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexQuality)),
+    allcuts_mask ^ BIT(kVertexPosition),
     allcuts_mask
   };
   for (int iC = 0; iC < 4; ++iC) {
@@ -577,7 +577,6 @@ void AliEventCuts::SetupLHC15o() {
 
   array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
-  fUseStrongVarCorrelationCut = false;
 
   if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
   fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
