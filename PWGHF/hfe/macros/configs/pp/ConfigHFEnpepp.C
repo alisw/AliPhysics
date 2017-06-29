@@ -12,7 +12,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
                                    Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
                                    Double_t assITSpid=-3., Double_t assTOFs=3.,
                                    Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
-                                   Int_t weightlevelback = -1)
+                                   Int_t weightlevelback = -1, Int_t HadronContFunc=0 , Int_t Chi2perTPCcluster=4)
 {
 
    //***************************************//
