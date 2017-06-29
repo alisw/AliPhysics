@@ -128,9 +128,19 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fHist_v2xV1_ZDN_Norm_All(NULL),
   fHist_v2xV1_ZDN_Refm_All(NULL),
   fHist_v2xV1_ZDN_Cent_All(NULL),
+  fHist_v3xV1_ZDN_Norm_Comb1(NULL),
+  fHist_v3xV1_ZDN_Norm_Comb2(NULL),
+  fHist_v3xV1_ZDN_Cent_Comb1(NULL),
+  fHist_v3xV1_ZDN_Cent_Comb2(NULL),
+  fHist_v4xV1_ZDN_Norm_Comb1(NULL),
+  fHist_v4xV1_ZDN_Cent_Comb1(NULL),
   fHist_ZDN_resol_Norm_All(NULL),     
   fHist_ZDN_resol_Cent_All(NULL),
   fHist_ZDN_resol_Refm_All(NULL),
+  fHist_ZDN_resol_Norm_XX(NULL),
+  fHist_ZDN_resol_Norm_YY(NULL),
+  fHist_ZDN_resol_Cent_XX(NULL),
+  fHist_ZDN_resol_Cent_YY(NULL),
   fHist_Vx_vs_runnum(NULL),
   fHist_Vy_vs_runnum(NULL),
   fHist_Vz_vs_runnum(NULL),
@@ -181,6 +191,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   for(int i=0;i<10;i++){
     fFB_Efficiency_Cent[i] = NULL;
     fHist_v2xV1_ZDN_pTDiff_All[i] = NULL;
+    fHist_v4xV1_ZDN_pTDiff_All[i] = NULL;
+    fHist_v3xV1_ZDN_EtaDiff_Comb1[i]= NULL;
+    fHist_v3xV1_ZDN_EtaDiff_Comb2[i]= NULL;
 
     for(int j=0;j<4;j++){
       fHist_v1xV1_ZDN_EtaDiff[j][i] = NULL;
@@ -270,9 +283,19 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fHist_v2xV1_ZDN_Norm_All(NULL),
   fHist_v2xV1_ZDN_Refm_All(NULL),
   fHist_v2xV1_ZDN_Cent_All(NULL),
+  fHist_v3xV1_ZDN_Norm_Comb1(NULL),
+  fHist_v3xV1_ZDN_Norm_Comb2(NULL),
+  fHist_v3xV1_ZDN_Cent_Comb1(NULL),
+  fHist_v3xV1_ZDN_Cent_Comb2(NULL),
+  fHist_v4xV1_ZDN_Norm_Comb1(NULL),
+  fHist_v4xV1_ZDN_Cent_Comb1(NULL),
   fHist_ZDN_resol_Norm_All(NULL),     
   fHist_ZDN_resol_Cent_All(NULL),
   fHist_ZDN_resol_Refm_All(NULL),
+  fHist_ZDN_resol_Norm_XX(NULL),
+  fHist_ZDN_resol_Norm_YY(NULL),
+  fHist_ZDN_resol_Cent_XX(NULL),
+  fHist_ZDN_resol_Cent_YY(NULL),
   fHist_Vx_vs_runnum(NULL),
   fHist_Vy_vs_runnum(NULL),
   fHist_Vz_vs_runnum(NULL),
@@ -323,6 +346,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   for(int i=0;i<10;i++){
     fFB_Efficiency_Cent[i] = NULL;
     fHist_v2xV1_ZDN_pTDiff_All[i] = NULL;
+    fHist_v4xV1_ZDN_pTDiff_All[i] = NULL;
+    fHist_v3xV1_ZDN_EtaDiff_Comb1[i]= NULL;
+    fHist_v3xV1_ZDN_EtaDiff_Comb2[i]= NULL;
 
     for(int j=0;j<4;j++){
       fHist_v1xV1_ZDN_EtaDiff[j][i] = NULL;
@@ -712,6 +738,29 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    fHist_v2xV1_ZDN_Refm_All->Sumw2();
    fListHistos->Add(fHist_v2xV1_ZDN_Refm_All);
 
+   //v3 integrated:
+   fHist_v3xV1_ZDN_Norm_Comb1  = new TProfile("fHist_v3xV1_ZDN_Norm_Comb1","v3 X V1^2 (ZDC) all terms",11,centRange,"");
+   fHist_v3xV1_ZDN_Norm_Comb1->Sumw2();
+   fListHistos->Add(fHist_v3xV1_ZDN_Norm_Comb1);
+   fHist_v3xV1_ZDN_Cent_Comb1  = new TProfile("fHist_v3xV1_ZDN_Cent_Comb1","v3 X V1^2 (ZDC) all terms",100, 0,  100,"");
+   fHist_v3xV1_ZDN_Cent_Comb1->Sumw2();
+   fListHistos->Add(fHist_v3xV1_ZDN_Cent_Comb1);
+   fHist_v3xV1_ZDN_Norm_Comb2  = new TProfile("fHist_v3xV1_ZDN_Norm_Comb2","v3 X V1^2 (ZDC) all terms",11,centRange,"");
+   fHist_v3xV1_ZDN_Norm_Comb2->Sumw2();
+   fListHistos->Add(fHist_v3xV1_ZDN_Norm_Comb2);
+   fHist_v3xV1_ZDN_Cent_Comb2  = new TProfile("fHist_v3xV1_ZDN_Cent_Comb2","v3 X V1^2 (ZDC) all terms",100, 0,  100,"");
+   fHist_v3xV1_ZDN_Cent_Comb2->Sumw2();
+   fListHistos->Add(fHist_v3xV1_ZDN_Cent_Comb2);
+
+   //v4 integrated:
+   fHist_v4xV1_ZDN_Norm_Comb1  = new TProfile("fHist_v4xV1_ZDN_Norm_Comb1","v4 X V1^2 (ZDC) all terms",11,centRange,"");
+   fHist_v4xV1_ZDN_Norm_Comb1->Sumw2();
+   fListHistos->Add(fHist_v4xV1_ZDN_Norm_Comb1);
+   fHist_v4xV1_ZDN_Cent_Comb1  = new TProfile("fHist_v4xV1_ZDN_Cent_Comb1","v4 X V1^2 (ZDC) all terms",100, 0,  100,"");
+   fHist_v4xV1_ZDN_Cent_Comb1->Sumw2();
+   fListHistos->Add(fHist_v4xV1_ZDN_Cent_Comb1);
+
+   //Summed ZDC resolution:
    fHist_ZDN_resol_Norm_All  = new TProfile("fHist_ZDN_resol_Norm_All","Resol. V1^2(ZDC) All",11,centRange,"");
    fHist_ZDN_resol_Norm_All->Sumw2();
    fListHistos->Add(fHist_ZDN_resol_Norm_All);
@@ -721,6 +770,21 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    fHist_ZDN_resol_Refm_All  = new TProfile("fHist_ZDN_resol_Refm_All","Resol. V1^2(ZDC) All",40, 0, 4000,"");
    fHist_ZDN_resol_Refm_All->Sumw2();
    fListHistos->Add(fHist_ZDN_resol_Refm_All);  
+
+   //Individual ZDC resolutions vs cent:
+   fHist_ZDN_resol_Norm_XX  = new TProfile("fHist_ZDN_resol_Norm_XX","Resol. V1^2(ZDC) XX",11,centRange,"");
+   fHist_ZDN_resol_Norm_XX->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Norm_XX);
+   fHist_ZDN_resol_Norm_YY  = new TProfile("fHist_ZDN_resol_Norm_YY","Resol. V1^2(ZDC) YY",11,centRange,"");
+   fHist_ZDN_resol_Norm_YY->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Norm_YY);
+   fHist_ZDN_resol_Cent_XX  = new TProfile("fHist_ZDN_resol_Cent_XX","Resol. V1^2(ZDC) XX",100, 0,  100,"");
+   fHist_ZDN_resol_Cent_XX->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Cent_XX);
+   fHist_ZDN_resol_Cent_YY  = new TProfile("fHist_ZDN_resol_Cent_YY","Resol. V1^2(ZDC) YY",100, 0,  100,"");
+   fHist_ZDN_resol_Cent_YY->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Cent_YY);
+
 
 
    //v1 integrated, 4 terms, normal bin, fine Centr bin
@@ -759,6 +823,27 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
      fHist_v2xV1_ZDN_pTDiff_All[i]->Sumw2();
      fListHistos->Add(fHist_v2xV1_ZDN_pTDiff_All[i]);
    }
+
+  //v3 differential Eta:
+   for(int i=0; i<10; i++) {
+     sprintf(name,"fHist_v3xV1_ZDN_EtaDiff_Comb1_Cent%d",i);
+     fHist_v3xV1_ZDN_EtaDiff_Comb1[i]  = new TProfile(name,"v3 X V1^2 Etadiff",10,-0.8,0.8);
+     fHist_v3xV1_ZDN_EtaDiff_Comb1[i]->Sumw2();
+     fListHistos->Add(fHist_v3xV1_ZDN_EtaDiff_Comb1[i]);
+     sprintf(name,"fHist_v3xV1_ZDN_EtaDiff_Comb2_Cent%d",i);
+     fHist_v3xV1_ZDN_EtaDiff_Comb2[i]  = new TProfile(name,"v3 X V1^2 Etadiff",10,-0.8,0.8);
+     fHist_v3xV1_ZDN_EtaDiff_Comb2[i]->Sumw2();
+     fListHistos->Add(fHist_v3xV1_ZDN_EtaDiff_Comb2[i]);
+   }
+
+  //v4 differential pT:
+   for(int i=0; i<10; i++) {
+     sprintf(name,"fHist_v4xV1_ZDN_pTDiff_Cent%d",i);
+     fHist_v4xV1_ZDN_pTDiff_All[i]  = new TProfile(name,"v4 X V1^2 pTdiff",fPtDiffNBins,pTRange);
+     fHist_v4xV1_ZDN_pTDiff_All[i]->Sumw2();
+     fListHistos->Add(fHist_v4xV1_ZDN_pTDiff_All[i]);
+   }
+
 
    //v1 differential Eta, pT: not needed now.
    /*   for(int i=0; i<10; i++) {
@@ -1817,8 +1902,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   Int_t iTracks = fEvent->NumberOfTracks();
   AliFlowTrackSimple*   pTrack = NULL;
-  Double_t         Qnx_TPC[3]  = {0,};
-  Double_t         Qny_TPC[3]  = {0,};
+  Double_t         Qnx_TPC[4]  = {0,};
+  Double_t         Qny_TPC[4]  = {0,};
   Double_t         psi2,dPhi,dPt,dEta;
   Double_t               pTwgt  = 1.0;
   Double_t               npoiMult = 0;
@@ -1835,6 +1920,14 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   else{
    cIndex  =  abs(EvtCent/10.0)  +  1;
   }
+
+  //Use Jacopo's notation:
+  Double_t    Qtot, QRe, QIm;
+  Double_t ZARe =   xyZNA[0];
+  Double_t ZAIm =   xyZNA[1];
+  Double_t ZCRe =   xyZNC[0];
+  Double_t ZCIm =   xyZNC[1];
+
 
   Double_t fullTerm =    0;
   Double_t fullReso =    0; 
@@ -1856,32 +1949,54 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
      ipTBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt);
      pTwgt  = 1.0/fFB_Efficiency_Cent[cIndex]->GetBinContent(ipTBin);
 
-     /*
      dUx   =     cos(dPhi);
      dUy   =     sin(dPhi);
+     Qnx_TPC[0] += dUx*pTwgt; 
+     Qny_TPC[0] += dUy*pTwgt;
 
+     /*
      fHist_v1xV1_ZDN_EtaDiff[0][cIndex]->Fill(dEta, dUx*xyZNC[0], pTwgt); //uxCx
      fHist_v1xV1_ZDN_EtaDiff[1][cIndex]->Fill(dEta, dUy*xyZNC[1], pTwgt); //uyCy
      fHist_v1xV1_ZDN_EtaDiff[2][cIndex]->Fill(dEta, dUx*xyZNA[0], pTwgt); //uxAx
      fHist_v1xV1_ZDN_EtaDiff[3][cIndex]->Fill(dEta, dUy*xyZNA[1], pTwgt); //uyAy
-
      fHist_v1xV1_ZDN_pTDiff[0][cIndex]->Fill(dPt, dUx*xyZNC[0], pTwgt); //uxCx
      fHist_v1xV1_ZDN_pTDiff[1][cIndex]->Fill(dPt, dUy*xyZNC[1], pTwgt); //uyCy
      fHist_v1xV1_ZDN_pTDiff[2][cIndex]->Fill(dPt, dUx*xyZNA[0], pTwgt); //uxAx
      fHist_v1xV1_ZDN_pTDiff[3][cIndex]->Fill(dPt, dUy*xyZNA[1], pTwgt); //uyAy */
 
-     Qnx_TPC[0] += dUx*pTwgt; 
-     Qny_TPC[0] += dUy*pTwgt;
-
 
      dUx   =   cos(2.*dPhi);
      dUy   =   sin(2.*dPhi);
-
-     fullTerm = dUx*xyZNA[0]*xyZNC[0]-dUx*xyZNA[1]*xyZNC[1]+dUy*xyZNA[0]*xyZNC[1]+dUy*xyZNA[1]*xyZNC[0];
-     fHist_v2xV1_ZDN_pTDiff_All[cIndex]->Fill(dPt,fullTerm,pTwgt);
+     if(cIndex<6){
+       fullTerm = dUx*xyZNA[0]*xyZNC[0]-dUx*xyZNA[1]*xyZNC[1]+dUy*xyZNA[0]*xyZNC[1]+dUy*xyZNA[1]*xyZNC[0];
+       fHist_v2xV1_ZDN_pTDiff_All[cIndex]->Fill(dPt,fullTerm,pTwgt);
+     }
 
      Qnx_TPC[1] += dUx*pTwgt;
      Qny_TPC[1] += dUy*pTwgt;
+
+
+     QRe   =   cos(3.*dPhi);
+     QIm   =   sin(3.*dPhi);
+     Qnx_TPC[2] += QRe*pTwgt;
+     Qny_TPC[2] += QIm*pTwgt;
+     if(cIndex<6){
+       Qtot = QRe*(ZARe*ZARe*ZCRe-2.*ZARe*ZAIm*ZCIm-ZCRe*ZAIm*ZAIm) + QIm*(-ZAIm*ZAIm*ZCIm+2.*ZAIm*ZARe*ZCRe+ZCIm*ZARe*ZARe);
+       fHist_v3xV1_ZDN_EtaDiff_Comb1[cIndex]->Fill(dEta,Qtot,pTwgt);
+       Qtot = QRe*(ZCRe*ZCRe*ZARe-2.*ZCRe*ZCIm*ZAIm-ZARe*ZCIm*ZCIm) + QIm*(-ZCIm*ZCIm*ZAIm+2.*ZCIm*ZCRe*ZARe+ZAIm*ZCRe*ZCRe);
+       fHist_v3xV1_ZDN_EtaDiff_Comb2[cIndex]->Fill(dEta,Qtot,pTwgt);
+     }
+
+     QRe   =   cos(4.*dPhi);
+     QIm   =   sin(4.*dPhi);
+     Qnx_TPC[3] += QRe*pTwgt;
+     Qny_TPC[3] += QIm*pTwgt;
+
+     if(cIndex<6){
+       Qtot = QRe*((ZARe*ZARe-ZAIm*ZAIm)*(ZCRe*ZCRe-ZCIm*ZCIm)-(ZAIm*ZARe+ZARe*ZAIm)*(ZCIm*ZCRe+ZCRe*ZCIm)) 
+            + QIm*((ZAIm*ZARe+ZARe*ZAIm)*(ZCRe*ZCRe-ZCIm*ZCIm)+(ZCIm*ZCRe+ZCRe*ZCIm)*(ZARe*ZARe-ZAIm*ZAIm));
+       fHist_v4xV1_ZDN_pTDiff_All[cIndex]->Fill(dPt,Qtot,pTwgt);
+     }
 
      //cout<<"i = "<<i<<" iCent = "<<cIndex<<" pTBin "<<ipTBin<<" pt = "<<dPt<<"\t wgt = "<<pTwgt<<endl;
      npoiMult   +=     pTwgt;
@@ -1891,13 +2006,13 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
   if(npoiMult>0){
-   for(int i=0;i<2;i++){
+   for(int i=0;i<4;i++){
       Qnx_TPC[i] = Qnx_TPC[i]/npoiMult;
       Qny_TPC[i] = Qny_TPC[i]/npoiMult;
     }
   }
   else{
-   for(int i=0;i<2;i++){
+   for(int i=0;i<4;i++){
       Qnx_TPC[i] = 0;
       Qny_TPC[i] = 0;
     }
@@ -1942,7 +2057,35 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     fHist_ZDN_resol_Norm_All->Fill( EvtCent, fullReso, CentWgt);
     fHist_ZDN_resol_Cent_All->Fill( EvtCent, fullReso, CentWgt);    
     fHist_ZDN_resol_Refm_All->Fill(nRefMult, fullReso, CentWgt);  
+
+    fHist_ZDN_resol_Norm_XX->Fill( EvtCent, xyZNA[0]*xyZNC[0], CentWgt);
+    fHist_ZDN_resol_Cent_XX->Fill( EvtCent, xyZNA[0]*xyZNC[0], CentWgt);   
+    fHist_ZDN_resol_Norm_YY->Fill( EvtCent, xyZNA[1]*xyZNC[1], CentWgt);
+    fHist_ZDN_resol_Cent_YY->Fill( EvtCent, xyZNA[1]*xyZNC[1], CentWgt);   
+
+
+    QRe  = Qnx_TPC[2];
+    QIm  = Qny_TPC[2];
+    //integrated v3:
+    Qtot = QRe*(ZARe*ZARe*ZCRe-2.*ZARe*ZAIm*ZCIm-ZCRe*ZAIm*ZAIm) + QIm*(-ZAIm*ZAIm*ZCIm+2.*ZAIm*ZARe*ZCRe+ZCIm*ZARe*ZARe);
+    fHist_v3xV1_ZDN_Norm_Comb1->Fill( EvtCent, Qtot, CentWgt);
+    fHist_v3xV1_ZDN_Cent_Comb1->Fill( EvtCent, Qtot, CentWgt);
+
+    Qtot = QRe*(ZCRe*ZCRe*ZARe-2.*ZCRe*ZCIm*ZAIm-ZARe*ZCIm*ZCIm) + QIm*(-ZCIm*ZCIm*ZAIm+2.*ZCIm*ZCRe*ZARe+ZAIm*ZCRe*ZCRe);
+    fHist_v3xV1_ZDN_Norm_Comb2->Fill( EvtCent, Qtot, CentWgt);
+    fHist_v3xV1_ZDN_Cent_Comb2->Fill( EvtCent, Qtot, CentWgt);
+
+
+    QRe  = Qnx_TPC[3];
+    QIm  = Qny_TPC[3];
+    //integrated v4:
+    Qtot = QRe*((ZARe*ZARe-ZAIm*ZAIm)*(ZCRe*ZCRe-ZCIm*ZCIm)-(ZAIm*ZARe+ZARe*ZAIm)*(ZCIm*ZCRe+ZCRe*ZCIm)) 
+         + QIm*((ZAIm*ZARe+ZARe*ZAIm)*(ZCRe*ZCRe-ZCIm*ZCIm)+(ZCIm*ZCRe+ZCRe*ZCIm)*(ZARe*ZARe-ZAIm*ZAIm));
+    fHist_v4xV1_ZDN_Norm_Comb1->Fill( EvtCent, Qtot, CentWgt);
+    fHist_v4xV1_ZDN_Cent_Comb1->Fill( EvtCent, Qtot, CentWgt);
+
   }
+
 
 
 
