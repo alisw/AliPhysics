@@ -108,6 +108,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0sig, Double_t& z0sig);
   void                        AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
   void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
+  Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
 
 
   // ################## BASIC EVENT VARIABLES
@@ -172,7 +173,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractorHF, 5) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 6) // Jet extraction task
   /// \endcond
 };
 
