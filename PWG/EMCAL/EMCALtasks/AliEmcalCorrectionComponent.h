@@ -95,6 +95,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetCentralityBin(Int_t bin) { fCentBin = bin; }
   void SetCentrality(Double_t cent) { fCent = cent; }
   void SetNcentralityBins(Int_t n) { fNcentBins = n; }
+  void SetVertex(Double_t * vertex) { fVertex[0] = vertex[0]; fVertex[1] = vertex[1]; fVertex[2] = vertex[2]; }
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
