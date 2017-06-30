@@ -64,6 +64,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t Weight);
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
@@ -139,6 +140,10 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1 					    *fHistPi0;                 //!<! Tyler's histogram
   TH2                       *fMAngle;                  //!<! Tyler's histogram
   TH2                       *fPtAngle;                 //!<! Tyler's histogram
+
+  TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
+  THnSparseF  *fPi0Cands; //!<! Michael's THnSparse for pi0 Candidates
+
 
   TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
