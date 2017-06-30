@@ -2393,73 +2393,6 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           fhPtTrigBinSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, GetEventWeight());
           fhPtTrigBinSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, GetEventWeight());
         }
-        
-        if(fFillSSHisto)
-        {
-          fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt    , m02, GetEventWeight());
-          fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum     , m02, GetEventWeight());
-          
-          if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
-          {
-            fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-            fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
-          }
-        }
-        
-        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-        {
-          ptTrigBinMC = ptTrigBin+kmcPhoton*fNPtTrigBin;
-          
-          fhPtTrigBinPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt, GetEventWeight());
-          fhPtTrigBinSumPtConeMC [ptTrigBinMC]->Fill(coneptsum , GetEventWeight());
-          
-          if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
-          {
-            fhPtTrigBinSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, GetEventWeight());
-            fhPtTrigBinSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, GetEventWeight());
-          }  
-          
-          if(fFillSSHisto)
-          {
-            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt, m02, GetEventWeight());
-            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum , m02, GetEventWeight());
-            
-            if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
-            {
-              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
-            }
-          }
-        } // photon MC
-        
-        // decays with lost pair
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-        {
-          if     ( mcIndex == kmcPi0Decay ) ptTrigBinMC = ptTrigBin+kmcPi0DecayLostPair*fNPtTrigBin;
-          else if( mcIndex == kmcEtaDecay ) ptTrigBinMC = ptTrigBin+kmcEtaDecayLostPair*fNPtTrigBin;
-          
-          fhPtTrigBinPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt    , GetEventWeight());
-          fhPtTrigBinSumPtConeMC [ptTrigBinMC]->Fill(coneptsum     , GetEventWeight());
-          
-          if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
-          {
-            fhPtTrigBinSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, GetEventWeight());
-            fhPtTrigBinSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, GetEventWeight());
-          }
-          
-          if(fFillSSHisto)
-          {
-            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt    , m02, GetEventWeight());
-            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum     , m02, GetEventWeight());
-           
-            if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
-            {
-              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
-            }
-          }
-        } // lost decays MC
-        
       } // MC
       
     } // proper pT bin found 
@@ -2612,8 +2545,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         
         if ( ptTrigBin >= 0 )
         {
-          fhPtTrigBinLambda0vsSumPtConeMC[ptTrigBinMC]->Fill(coneptsum, m02, GetEventWeight());
-          
+          fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum , m02, GetEventWeight());
+          fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt, m02, GetEventWeight());
+
           if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
           {
             fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
@@ -2622,8 +2556,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC[ptTrigBinMCPhoton]->Fill(coneptsum, m02, GetEventWeight());
-            
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPhoton]->Fill(coneptsum , m02, GetEventWeight());
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPhoton]->Fill(coneleadpt, m02, GetEventWeight());
+
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
               fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight());
@@ -2633,8 +2568,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           
           if( mcIndex == kmcPi0Decay )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC[ptTrigBinMCPi0Lost]->Fill(coneptsum, m02, GetEventWeight());
-            
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPi0Lost]->Fill(coneptsum , m02, GetEventWeight());
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPi0Lost]->Fill(coneleadpt, m02, GetEventWeight());
+
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
               fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight());
@@ -2644,8 +2580,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           
           if( mcIndex == kmcEtaDecay )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC[ptTrigBinMCEtaLost]->Fill(coneptsum, m02, GetEventWeight());
-            
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCEtaLost]->Fill(coneptsum , m02, GetEventWeight());
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCEtaLost]->Fill(coneleadpt, m02, GetEventWeight());
+
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
               fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight());
