@@ -173,6 +173,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::string toString(bool includeFileList = false) const;
   /* @} */
 
+  /**
+   * Returns the external event by overloading InputEvent()
+   * Not the preferred method! Only for internal use! Instead use GetExternalEvent();
+   * @return The external event
+   */
+  AliVEvent* InputEvent()                                   const { return GetExternalEvent(); }
+
  protected:
   bool            GetFilenames()        ;
   std::string     GenerateUniqueFileListFilename();
