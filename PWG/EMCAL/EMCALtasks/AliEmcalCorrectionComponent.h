@@ -89,7 +89,6 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetCaloCells(AliVCaloCells * cells) { fCaloCells = cells; }
   void SetRecoUtils(AliEMCALRecoUtils *ru) { fRecoUtils = ru; }
 
-  void SetEvent(AliVEvent * event) { fEvent = event; }
   void SetInputEvent(AliVEvent * event) { fEventManager.SetInputEvent(event); }
   void SetMCEvent(AliMCEvent * mcevent) { fMCEvent = mcevent; }
   /**
@@ -137,7 +136,6 @@ class AliEmcalCorrectionComponent : public TNamed {
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number
   Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
-  AliVEvent              *fEvent;                         //!<! Pointer to event
   AliEmcalCorrectionEventManager fEventManager;           ///< Minimal task which inherits from AliAnalysisTaskSE and manages access to the event
   Bool_t                  fEsdMode;                       ///< flag for ESD
   AliMCEvent             *fMCEvent;                       //!<! MC
@@ -164,7 +162,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 2); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 3); // EMCal correction component
   /// \endcond
 };
 

@@ -1225,14 +1225,14 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
     // Setup geometry
     component->SetEMCALGeometry(fGeom);
 
+    // Add the requested cells to the component
+    AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
+
     // Set the input events. This is redundant to where it is set during Run(), but the events need to be
     // available to components, and they are only called one extra time.
     component->SetInputEvent(InputEvent());
-    component->SetEvent(InputEvent());
+    //component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
-
-    // Add the requested cells to the component
-    AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
 
     // Component ExecOnce()
     component->ExecOnce();
@@ -1349,7 +1349,7 @@ Bool_t AliEmcalCorrectionTask::Run()
   for (auto component : fCorrectionComponents)
   {
     component->SetInputEvent(InputEvent());
-    component->SetEvent(InputEvent());
+    //component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);

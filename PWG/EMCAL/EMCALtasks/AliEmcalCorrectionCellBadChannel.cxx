@@ -76,7 +76,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::Run()
 {
   AliEmcalCorrectionComponent::Run();
   
-  if (!fEvent) {
+  if (!fEventManager.InputEvent()) {
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
@@ -129,7 +129,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::CheckIfRunChanged()
       AliWarning("InitBadChannels OK");
     }
     if (fInitBC>1) {
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      AliWarning(Form("No external hot channel set: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
     }
   }
   return runChanged;
