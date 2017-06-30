@@ -20,6 +20,7 @@
 #include "TDirectory.h"
 #include "TFileMerger.h"
 #include "TGComboBox.h"
+#include "TObjArray.h"
 
 #include "AliTPCMonitor.h"
 #include "AliTPCMonitorMappingHandler.h"
@@ -228,7 +229,7 @@ void MonitorGui(AliTPCMonitor */*fMon*/)
     }
   
   TGLabel*      flab  = new TGLabel(fFrameMain, new TGHotString("Next Ev.ID"));
-  TGTextBuffer* ftbuf = new TGTextBuffer(10); ftbuf->AddText(0, "1");
+  TGTextBuffer* ftbuf = new TGTextBuffer(10); ftbuf->AddText(0, "0");
   fTextEvId = new TGTextEntry(fFrameMain, ftbuf);
   fTextEvId->SetTextColor(200);
   
