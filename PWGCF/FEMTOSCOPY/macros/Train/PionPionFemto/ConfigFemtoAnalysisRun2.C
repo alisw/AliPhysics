@@ -111,7 +111,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
 
   // Update Configurations
-  macro_config.do_kt_trueq3d_cf &&= analysis_config.is_mc_analysis;
+  macro_config.do_kt_trueq3d_cf &= analysis_config.is_mc_analysis;
 
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
