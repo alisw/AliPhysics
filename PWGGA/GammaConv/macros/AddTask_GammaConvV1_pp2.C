@@ -218,13 +218,13 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   } else if (trainConfig == 25) {
     cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
   } else if (trainConfig == 26) {
-    cuts.AddCut("00010113", "002000c9227300008250404000", "0152103500000000"); // 8 TeV std, but min electron pT > 0.6 for all configs
+    cuts.AddCut("00010613", "00200009227300008250404000", "0152103500000000"); //V0M vs TPCout cut6
   } else if (trainConfig == 27) {
-    cuts.AddCut("00010113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00010113", "002000j9227300008250404000", "0152103500000000"); //asym pT cut: 0.100 GeV and 0.075 GeV
   } else if (trainConfig == 28) {
-    cuts.AddCut("00010113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00010113", "002000l9227300008250404000", "0152103500000000"); //asym pT cut: 0.200 GeV and 0.075 GeV
   } else if (trainConfig == 29) {
-    cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+    cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); //gamma pT > 0.2 GeV/c
   //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
   } else if (trainConfig == 30) {
     cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut pp 7 TeV direct photon

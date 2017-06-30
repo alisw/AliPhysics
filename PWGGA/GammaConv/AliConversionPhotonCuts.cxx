@@ -110,6 +110,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fDoShrinkTPCAcceptance(kFALSE),
   fPtCut(0.02),
   fSinglePtCut(0),
+  fSinglePtCut2(0),
+  fDoAsymPtCut(kFALSE),
   fMaxZ(1000),
   fMinClsTPC(0.),
   fMinClsTPCToF(0.),
@@ -244,6 +246,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fDoShrinkTPCAcceptance(ref.fDoShrinkTPCAcceptance),
   fPtCut(ref.fPtCut),
   fSinglePtCut(ref.fSinglePtCut),
+  fSinglePtCut2(ref.fSinglePtCut2),
+  fDoAsymPtCut(ref.fDoAsymPtCut),
   fMaxZ(ref.fMaxZ),
   fMinClsTPC(ref.fMinClsTPC),
   fMinClsTPCToF(ref.fMinClsTPCToF),
@@ -652,8 +656,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
       return kFALSE;
     }
 
-    if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-      return kFALSE; // no reconstruction below the Pt cut
+    if(fDoAsymPtCut){
+      if((ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut2) && (ePos->Pt()<fSinglePtCut2 || eNeg->Pt()<fSinglePtCut) ){
+        return kFALSE; // no reconstruction below the Pt cut (both (pos and neg) require minimum pT)
+      }
+    } else {
+      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
+        return kFALSE; // no reconstruction below the Pt cut
+      }
     }
 
     if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
@@ -741,8 +751,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
       return kFALSE;
     }
 
-    if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-      return kFALSE; // no reconstruction below the Pt cut
+    if(fDoAsymPtCut){
+      if((ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut2) && (ePos->Pt()<fSinglePtCut2 || eNeg->Pt()<fSinglePtCut) ){
+        return kFALSE; // no reconstruction below the Pt cut (both (pos and neg) require minimum pT)
+      }
+    } else {
+      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
+        return kFALSE; // no reconstruction below the Pt cut
+      }
     }
 
     if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
@@ -1203,9 +1219,16 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   cutIndex++;
 
   // Single Pt Cut
-  if( negTrack->Pt()< fSinglePtCut || posTrack->Pt()< fSinglePtCut){
-    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
-    return kFALSE;
+  if(fDoAsymPtCut){
+    if((posTrack->Pt()<fSinglePtCut || negTrack->Pt()<fSinglePtCut2) && (posTrack->Pt()<fSinglePtCut2 || negTrack->Pt()<fSinglePtCut) ){
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
+  } else {
+    if(posTrack->Pt()<fSinglePtCut || negTrack->Pt()<fSinglePtCut){
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
   }
   cutIndex++;
 
@@ -1581,9 +1604,15 @@ Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * e
     }
   }
 
-  if( ePos->Pt()< fSinglePtCut ||  eNeg->Pt()< fSinglePtCut){
-    return kFALSE;
-  }
+  if(fDoAsymPtCut){
+      if((ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut2) && (ePos->Pt()<fSinglePtCut2 || eNeg->Pt()<fSinglePtCut) ){
+        return kFALSE;
+      }
+    } else {
+      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
+        return kFALSE;
+      }
+    }
 
   if(particle->Pt()<fPtCut){
     return kFALSE;
@@ -1875,7 +1904,10 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
     else printf("\t eta_{e} < %3.2f\n", fEtaCut );
   printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);	
-  printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
+  if(fDoAsymPtCut)
+    printf("\t Asymmetric cut: p_{T,e1} > %3.2f and p_{T,e2} > %3.2f\n", fSinglePtCut, fSinglePtCut2 );
+  else
+    printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
   printf("\t TPC refit \n");
   printf("\t no kinks \n");
   if (!fSwitchToKappa){
@@ -2263,28 +2295,55 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.050;
     fPtCut       = 0.100;
     break;
-  case 10:  // 0.050 GeV + min gamma pT cut of 150 MeV
+  case 10:  //a: 0.050 GeV + min gamma pT cut of 150 MeV
     fSinglePtCut = 0.050;
     fPtCut       = 0.150;
     break;
-  case 11:  // 0.050 GeV + min gamma pT cut of 200 MeV
+  case 11:  //b: 0.050 GeV + min gamma pT cut of 200 MeV
     fSinglePtCut = 0.050;
     fPtCut       = 0.200;
     break;
-  case 12:  // 0.060 GeV
+  case 12:  //c: 0.060 GeV
     fSinglePtCut = 0.060;
     break;
-  case 13:  // 0.060 GeV + min gamma pT cut of 100 MeV
+  case 13:  //d: 0.060 GeV + min gamma pT cut of 100 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.100;
     break;
-  case 14:  // 0.060 GeV + min gamma pT cut of 150 MeV
+  case 14:  //e: 0.060 GeV + min gamma pT cut of 150 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.150;
     break;
-  case 15:  // 0.060 GeV + min gamma pT cut of 200 MeV
+  case 15:  //f: 0.060 GeV + min gamma pT cut of 200 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.200;
+    break;
+  case 16:  //g: 0.075 GeV + min gamma pT cut of 150 MeV
+    fSinglePtCut = 0.075;
+    fPtCut       = 0.150;
+    break;
+  case 17:  //h: 0.100 GeV + min gamma pT cut of 200 MeV
+    fSinglePtCut = 0.100;
+    fPtCut       = 0.200;
+    break;
+  case 18:  //i: 0.150 GeV + min gamma pT cut of 300 MeV
+    fSinglePtCut = 0.150;
+    fPtCut       = 0.300;
+    break;
+  case 19:  //j: asym: 0.100 GeV and 0.075 GeV
+    fSinglePtCut = 0.100;
+    fDoAsymPtCut = kTRUE;
+    fSinglePtCut2= 0.075;
+    break;
+  case 20:  //k: asym: 0.150 GeV and 0.075 GeV
+    fSinglePtCut = 0.150;
+    fDoAsymPtCut = kTRUE;
+    fSinglePtCut2= 0.075;
+    break;
+  case 21:  //l: asym: 0.200 GeV and 0.075 GeV
+    fSinglePtCut = 0.200;
+    fDoAsymPtCut = kTRUE;
+    fSinglePtCut2= 0.075;
     break;
   default:
     AliError(Form("singlePtCut not defined %d",singlePtCut));
