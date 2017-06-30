@@ -424,7 +424,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 
   if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
-    fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,100);
+    fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
     fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
     fOutput->Add(fClusEnergy);
   }
@@ -450,12 +450,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 800;
+    nBinsThnPi0[dimThnPi0] = 500;
     Double_t mGGArray[800+1];
     binEdgesThnPi0[dimThnPi0] = mGGArray;
-    GenerateFixedBinArray(800,0,2,mGGArray);
+    GenerateFixedBinArray(800,0,1,mGGArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 2;
+    maxThnPi0[dimThnPi0] = 1;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
@@ -1249,7 +1249,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Double_t Weight;    //weight to normalize mixed and same event distributions individually
 
 
-  Double_t ClusterEnergyCut = 0.3; // On top of cuts in GetAcceptCluster,AccClusterForAna
+  Double_t ClusterEnergyCut = 1; // On top of cuts in GetAcceptCluster,AccClusterForAna
 
 	AliVCluster* cluster = 0;
 	AliVCluster* cluster2= 0;
