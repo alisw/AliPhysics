@@ -2131,7 +2131,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   zdcAOD->ResetZNCfired();
   zdcAOD->ResetZPAfired();
   zdcAOD->ResetZPCfired();
- 
+  
+  const Float_t kNoEntry = -999.;
   //Taking into account all the 4 hits
   if(esdZDC->IsZNChit()){ 
     zdcAOD->SetZNCfired();
@@ -2143,6 +2144,7 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
       }
     }
   }
+  else for(int i=0; i<4; i++)  zdcAOD->SetZNCTDCm(i, kNoEntry);
   if(esdZDC->IsZNAhit()){
     zdcAOD->SetZNAfired();
     int znach = esdZDC->GetZNATDCChannel();
@@ -2153,6 +2155,7 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
       }
     }
   }
+  else for(int i=0; i<4; i++)  zdcAOD->SetZNATDCm(i, kNoEntry);
   if(esdZDC->IsZPChit()){
     zdcAOD->SetZPCfired();
     int zpcch = esdZDC->GetZPCTDCChannel();
@@ -2163,6 +2166,7 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
       }
     }
   }
+  else for(int i=0; i<4; i++)  zdcAOD->SetZPCTDCm(i, kNoEntry);
   if(esdZDC->IsZPAhit()){
     zdcAOD->SetZPAfired();
     int zpach = esdZDC->GetZPATDCChannel();
@@ -2173,6 +2177,7 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
        }
     }
   }
+  else for(int i=0; i<4; i++)  zdcAOD->SetZPATDCm(i, kNoEntry);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)
