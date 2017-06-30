@@ -596,9 +596,9 @@ void AliEmcalCorrectionTask::InitializeComponents()
     AddContainersToComponent(component, AliEmcalContainerUtils::kTrack, true);
 
     // Initialize each component
-    component->Initialize();
+    bool initialized = component->Initialize();
 
-    if (component)
+    if (component && initialized)
     {
       AliInfo(TString::Format("Successfully added correction task: %s", componentName.c_str()));
       fCorrectionComponents.push_back(component);
