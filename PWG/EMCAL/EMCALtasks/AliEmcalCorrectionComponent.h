@@ -25,6 +25,7 @@ class AliVEvent;
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalCorrectionEventManager.h"
 
 /**
  * @class AliEmcalCorrectionComponent
@@ -89,7 +90,15 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetRecoUtils(AliEMCALRecoUtils *ru) { fRecoUtils = ru; }
 
   void SetEvent(AliVEvent * event) { fEvent = event; }
+  void SetInputEvent(AliVEvent * event) { fEventManager.SetInputEvent(event); }
   void SetMCEvent(AliMCEvent * mcevent) { fMCEvent = mcevent; }
+  /**
+   * If we are using standard input event then the embedded event should not be used!
+   * We store whether the embedding event should be used, so we invert the bool here.
+   * Then, if it is only set when we see the standard input event, then any single input
+   * with the standard input event will be enough to disable the embedded event.
+   */
+  void SetUsingInputEvent(bool b = true) { fEventManager.SetUseEmbeddingEvent(!b); }
 
   void SetEMCALGeometry(AliEMCALGeometry * geometry ) { fGeom = geometry; }
   void SetCentralityBin(Int_t bin) { fCentBin = bin; }
@@ -129,6 +138,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   TString                 fFilepass;                      ///< Input data pass number
   Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
   AliVEvent              *fEvent;                         //!<! Pointer to event
+  AliEmcalCorrectionEventManager fEventManager;           ///< Minimal task which inherits from AliAnalysisTaskSE and manages access to the event
   Bool_t                  fEsdMode;                       ///< flag for ESD
   AliMCEvent             *fMCEvent;                       //!<! MC
   Double_t                fCent;                          //!<! Event centrality
