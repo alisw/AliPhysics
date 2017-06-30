@@ -471,28 +471,23 @@ public:
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
-  // ncell > 4, 8 < E < 12 GeV
-  TH3F *   fhESecCellEMaxCellM02SM;               //!<! m02 vs SM number vs E cell / E cell max 
-  TH3F *   fhESecCellEClusterM02SM;               //!<! m02 vs SM number vs E cluster - E cell / E cluster
-  TH3F *   fhESecCellLogM02SM     ;               //!<! m02 vs SM number vs log E cell 
-  TH3F *   fhESecCellWeightM02SM  ;               //!<! m02 vs SM number vs cell weight
-
-  TH3F *   fhESecCellEMaxCellM02SMSameTCard;      //!<! m02 vs SM number vs E cell / E cell max, cell in same TCard as max
-  TH3F *   fhESecCellEClusterM02SMSameTCard;      //!<! m02 vs SM number vs E cluster - E cell / E cluster, cell in same TCard as max
-  TH3F *   fhESecCellLogM02SMSameTCard     ;      //!<! m02 vs SM number vs log E cell, cell in same TCard as max 
-  TH3F *   fhESecCellWeightM02SMSameTCard  ;      //!<! m02 vs SM number vs cell weight, cell in same TCard as max
-
-  TH3F *   fhEMaxCellEClusterM02SM;               //!<! m02 vs SM number vs E cluster - E max cell / E cluster
-  TH3F *   fhEMaxCellLogM02SM     ;               //!<! m02 vs SM number vs log E max cell 
-  TH3F *   fhEMaxCellWeightM02SM  ;               //!<! m02 vs SM number vs max cell weight
   TH3F *   fhEMaxCellTimeM02SM  ;                 //!<! m02 vs SM number vs max cell time
-  TH3F *   fhEMaxCellTimeNCellSM  ;               //!<! n cell vs SM number vs max cell time
+  TH3F *   fhEMaxCellTimeNCellSM;                 //!<! n cell vs SM number vs max cell time
+  TH3F *   fhESecCellTimeNCellSM;                 //!<! n cell vs SM number vs secondary cell time
 
-  TH3F *   fhEMaxESecCellSMLowM02[8];                   //!<! E cell max vs E cell secondary vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, for 2<= nCell <= 9 
-  TH3F *   fhEMaxECrossSMLowM02  [8];                   //!<! E cell max vs E cross vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, for 2<= nCell <= 9
+  // 8 < E < 12 GeV per SM
+  TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
+  TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
+  TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
+
+  TH3F *   fhEMaxCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E max cell / E cluster
+  TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
+
+  TH3F *   fhEMaxESecCellNCellLowM02PerSM [20];   //!<! E cell max vs E cell secondary vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3
+  TH3F *   fhEMaxECrossNCellLowM02PerSM   [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3
   
-  TH3F *   fhEMaxESecCellSMHighM02[8];                  //!<! E cell max vs E cell secondary vs SM for clusters 8 < E < 12 GeV, 0.6 < M02 < 3, for 2<= nCell <= 9 
-  TH3F *   fhEMaxECrossSMHighM02  [8];                  //!<! E cell max vs E cross vs SM for clusters 8 < E < 12 GeV, 0.6 < M02 < 2, for 2<= nCell <= 9
+  TH3F *   fhEMaxESecCellNCellHighM02PerSM[20];   //!<! E cell max vs E cell vs ncells secondary vs SM for clusters 8 < E < 12 GeV, 0.5 < M02 < 2 
+  TH3F *   fhEMaxECrossNCellHighM02PerSM  [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.5 < M02 < 2
 
   //
   // Weight studies
