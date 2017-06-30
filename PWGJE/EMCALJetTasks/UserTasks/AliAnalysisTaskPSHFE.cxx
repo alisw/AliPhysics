@@ -89,7 +89,8 @@ fHistTestInvMassElecUnLike(0),
 fHistTestInvMassPionLike(0),
 fHistTestInvMassPionUnLike(0),
 fHistTestDPhiSpeNoSec(0),
-fHistTestDPhiNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
 fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
@@ -328,7 +329,8 @@ fHistTestInvMassElecUnLike(0),
 fHistTestInvMassPionLike(0),
 fHistTestInvMassPionUnLike(0),
 fHistTestDPhiSpeNoSec(0),
-fHistTestDPhiNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
 fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
@@ -1701,7 +1703,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestDPhiSpeNoSec);
     fOutputMB->Add(fHistTestDPhiType);
     fOutputMB->Add(fHistTestDPhi18Sec);
-    fOUtputMB->Add(fHistTestDPhi18NoSec);
+    fOutputMB->Add(fHistTestDPhi18NoSec);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
