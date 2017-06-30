@@ -295,15 +295,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistNEvents = new TH1I("fHistNEvents", "Number of processed events;Ev. Sel. Step;Counts", kNEvtCuts, .5, (kNEvtCuts + .5));
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsReadable, "Readable");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsSDDIn, "HasSDDIn");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
+  fHistNEvents->GetXaxis()->SetBinLabel(kIsReadable,  "Readable");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, "PassIncDAQ");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsNotPileup, Form("IsNotPileup_%s", plpName[fPlpType].Data()));
-  fHistNEvents->GetXaxis()->SetBinLabel(kHasRecVtx, "HasVertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
+  fHistNEvents->GetXaxis()->SetBinLabel(kCorrelation, "Correlation");	
+  fHistNEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
   fHistNEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     "HasSDDIn");
+  fHistNEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
   fOutput->Add(fHistNEvents);
 
   fHistMCEvents = new TH1I("fHistMCEvents", "Number of processed events;Ev. Sel. Step;Counts", kNEvtCuts, .5, (kNEvtCuts + .5));
@@ -311,13 +313,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistMCEvents->SetMinimum(0);
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsReadable, "Readable");
   fHistMCEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsSDDIn, "HasSDDIn");
   fHistMCEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, "PassIncDAQ");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsNotPileup, Form("IsNotPileup_%s", plpName[fPlpType].Data()));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kHasRecVtx, "HasVertex");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kCorrelation, "Correlation");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
   fHistMCEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     "HasSDDIn");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "HasSDDIn");
   fOutput->Add(fHistMCEvents);
 
   Int_t kNMultBin = 115;
@@ -712,7 +716,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
   EEvtCut_Type lastEvtCutPassed = kIsReadable;
   Bool_t lIsEventSelected = IsEventAccepted(lastEvtCutPassed);
   if (fIsMC) AnalyseMCParticles(lMCevent, lastEvtCutPassed, lHasGoodVtxGen);
-  for (int istep = (int)kIsReadable; istep <= (int)lastEvtCutPassed; ++istep) {
+  for (int istep = (int)kIsReadable; istep < (int)lastEvtCutPassed; ++istep) {
     fHistNEvents->Fill(istep);
     if (lHasGoodVtxGen) fHistMCEvents->Fill(istep);
   }
@@ -722,6 +726,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     PostAllData();
     return;
   }
+	fHistNEvents->Fill(kNEvtCuts);
+  if (lHasGoodVtxGen) fHistMCEvents->Fill(kNEvtCuts);
 
   if (fDoMultSel) //Fill fHistMultAftEvtSel after the event Selection
     fHistMultAftEvtSel->Fill(fEvtMult);
@@ -1035,113 +1041,138 @@ void AliAnalysisTaskSEITSsaSpectra::SetMVPileUpSelection(Int_t cont, Float_t chi
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
 {
-  evtSel = kIsReadable;
-
-  UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  maskPhysSel &= fTriggerSel;
-  if (!maskPhysSel) {
-    AliDebugF(3, "Event doesn't pass physics evt. sel. for trigger %d", fTriggerSel);
-    PostAllData();
-    return kFALSE;
-  }
-  evtSel = kPassTrig;
-
-  if (fChkIsSDDIn && !fIsMC) {
-    TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
-    if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
-      AliDebug(3, "Event Rejected: SDD out trigger cluster");
-      PostAllData();
-      return kFALSE;
-    }
-  }
-  evtSel = kIsSDDIn;
-
-  if (fDoMultSel && IsMultSelected()) {
-    if ((fLowMult > -1 && fEvtMult < fLowMult) || (fUpMult > -1 && fEvtMult > fUpMult)) {
-      AliDebugF(3, "Event with multiplicity = %.2f outside range [%.2f,%.2f]", fEvtMult, fLowMult, fUpMult);
-      PostAllData();
-      return kFALSE;
-    }
-    fHistMultBefEvtSel->Fill(fEvtMult);
-  }
-  evtSel = kPassMultSel;
-
+  
   if (fExtEventCuts) {
     if (fEventCuts.AcceptEvent(fESD)) {
-      evtSel = kHasGoodVtxZ;
-      return kTRUE;
+    	//Check if has SDD info (if requiered)
+			if (fChkIsSDDIn && !fIsMC) {
+				TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
+    		if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
+					AliDebug(3, "Event dont accepted by AliEventCuts");
+      		AliDebug(3, "Event Rejected: SDD out trigger cluster");
+      		PostAllData();
+					evtSel = kIsSDDIn;
+      		return kFALSE;
+    		}
+			}
+			evtSel = kNEvtCuts;
+			return kTRUE;
     }
     AliDebug(3, "Event dont accepted by AliEventCuts");
 
     if (!fEventCuts.PassedCut(AliEventCuts::kDAQincomplete)) {
       AliDebug(3, "Event with incomplete DAQ");
       PostAllData();
+    	evtSel = kIsNotIncDAQ;
       return kFALSE;
     }
-    evtSel = kIsNotIncDAQ;
+		
+		if (!fEventCuts.PassedCut(AliEventCuts::kTrigger)) {
+    	AliDebug(3, "Event doesn't pass physics evt. sel. for trigger");
+    	PostAllData();
+  		evtSel = kPassTrig;			
+    	return kFALSE;
+  	}
 
     if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
       AliDebug(3, "Event with PileUp");
       PostAllData();
+	    evtSel = kIsNotPileup;		
       return kFALSE;
     }
-    evtSel = kIsNotPileup;
 
-    if (!fEventCuts.PassedCut(AliEventCuts::kVertexQuality)) {
-      AliDebug(3, "Event doesn't pass vtx quality sel");
+		if (!fEventCuts.PassedCut(AliEventCuts::kCorrelations)) {
+      AliDebug(3, "Event with PileUp");
       PostAllData();
+    	evtSel = kCorrelation;
       return kFALSE;
     }
-    evtSel = kHasRecVtx;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kVertex) || !fEventCuts.PassedCut(AliEventCuts::kVertexQuality)) {
+      AliDebug(3, "Event doesn't pass has good vtx sel");
+      PostAllData();
+      evtSel = kHasRecVtx;
+      return kFALSE;
+    }
 
     if (!fEventCuts.PassedCut(AliEventCuts::kVertexPosition)) {
       AliDebugF(3, "Vertex with Z>%f cm", fMaxVtxZCut);
       PostAllData();
+    	evtSel = kHasGoodVtxZ;
       return kFALSE;
     }
-    evtSel = kHasGoodVtxZ;
-
+		evtSel = kNEvtCuts;
+		return kFALSE;
   } else {
-
-    if (fRejIncDAQ && fESD->IsIncompleteDAQ()) {
+		if (fRejIncDAQ && fESD->IsIncompleteDAQ()) {
       AliDebug(3, "Event with incomplete DAQ");
       PostAllData();
+    	evtSel = kIsNotIncDAQ;
       return kFALSE;
     }
-    evtSel = kIsNotIncDAQ;
+
+		UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  maskPhysSel &= fTriggerSel;
+  	if (!maskPhysSel) {
+    	AliDebugF(3, "Event doesn't pass physics evt. sel. for trigger %d", fTriggerSel);
+    	PostAllData();
+	  	evtSel = kPassTrig;
+    	return kFALSE;
+  	}
+
+  	if (fDoMultSel && IsMultSelected()) {
+    	if ((fLowMult > -1 && fEvtMult < fLowMult) || (fUpMult > -1 && fEvtMult > fUpMult)) {
+      AliDebugF(3, "Event with multiplicity = %.2f outside range [%.2f,%.2f]", fEvtMult, fLowMult, fUpMult);
+      PostAllData();
+  		evtSel = kPassMultSel;
+      return kFALSE;
+    	}
+    	fHistMultBefEvtSel->Fill(fEvtMult);
+  	}
 
     if (fDoSPDCvsTCut) {
       AliAnalysisUtils utils;
       if (utils.IsSPDClusterVsTrackletBG(fESD)) {
         AliDebug(3, "Event with incompatible SPD clusters and tracklet");
         PostAllData();
+    		evtSel = kPassSPDclsVsTCut;
         return kFALSE;
       }
     }
-    evtSel = kPassSPDclsVsTCut;
 
     if (IsPileUp()) {
       AliDebug(3, "Event with PileUp");
       PostAllData();
+    	evtSel = kIsNotPileup;
       return kFALSE;
     }
-    evtSel = kIsNotPileup;
 
     if (!IsVtxReconstructed()) {
       AliDebug(3, "Event doesn't pass vtx quality sel");
       PostAllData();
+    	evtSel = kHasRecVtx;
       return kFALSE;
     }
-    evtSel = kHasRecVtx;
 
     if (!IsGoodVtxZ()) {
       AliDebugF(3, "Vertex with Z>%f cm", fMaxVtxZCut);
       PostAllData();
+    	evtSel = kHasGoodVtxZ;
       return kFALSE;
     }
-    evtSel = kHasGoodVtxZ;
-  }
 
+		if (fChkIsSDDIn && !fIsMC) {
+    	TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
+    	if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
+      	AliDebug(3, "Event Rejected: SDD out trigger cluster");
+      	PostAllData();
+  			evtSel = kIsSDDIn;
+      	return kFALSE;
+    	}
+  	}
+	}
+
+	evtSel = kNEvtCuts;
   return kTRUE;
 }
 
