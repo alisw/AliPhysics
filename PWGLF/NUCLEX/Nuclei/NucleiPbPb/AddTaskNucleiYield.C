@@ -48,11 +48,11 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   float cent[14] = {-1000.f,0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,1000.f};
   deu->SetCentBins(13, cent);
   deu->SetUseFlattening(false);
-  float pt[19] = {
+  float pt[20] = {
     0.5f,0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,1.2f,1.4f,1.6f,
-    1.8f,2.0f,2.2f,2.6f,3.0f,3.8f,4.4f,5.0f,6.0f
+    1.8f,2.0f,2.2f,2.6f,3.0f,3.4f,3.8f,4.4f,5.0f,6.0f
   };
-  deu->SetPtBins(18,pt);
+  deu->SetPtBins(19,pt);
 
   float dcabins[35] = {
     -1.30,-1.20,-1.10,-1.00,-0.90,-0.80,-0.70,-0.60,-0.50,-0.40,
