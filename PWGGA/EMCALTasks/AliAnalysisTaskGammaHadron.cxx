@@ -412,25 +412,27 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
      	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
-
-    fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
-    for(Int_t i=0;i<dimThn;i++)
+    if(fPlotQA!=1)
     {
-		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
-		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
+    	fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
+    	for(Int_t i=0;i<dimThn;i++)
+    	{
+    		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
+    		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
+    	}
+    	//fCorrVsManyThings->Sumw2();
+    	fOutput->Add(fCorrVsManyThings);
     }
-    //fCorrVsManyThings->Sumw2();
-    fOutput->Add(fCorrVsManyThings);
 
 
-  if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
-    fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
-    fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
-    fOutput->Add(fClusEnergy);
-  }
+    if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
+    	fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
+    	fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
+    	fOutput->Add(fClusEnergy);
+    }
 
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the Pi0 Candidates
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Int_t dimThnPi0 = 0;
@@ -499,6 +501,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the Cluster properties
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //   THn Sparse for the Cluster properties
 	//   Dimensions are Cluster Energy
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	Int_t dimThnQA = 0;
@@ -1463,7 +1467,7 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
 
 	if(G_PT_Value>=ClusterEcut)
 	{
-		if(identifier==0)fCorrVsManyThings  ->Fill(valueArray,Weight);
+		if(identifier==0 && fPlotQA!=1)fCorrVsManyThings  ->Fill(valueArray,Weight);
 
 		//..Histograms to test the binning
 		fHistBinCheckPt[identifier] ->Fill(G_PT_Value,Weight);
