@@ -1,10 +1,14 @@
-#ifndef ALIANACALOCHANNELANALYSIS_H
-#define ALIANACALOCHANNELANALYSIS_H
+#ifndef BADCHANNELANA_H
+#define BADCHANNELANA_H
 
-/// \class AliAnaCaloChannelAnalysis
+/// \class BadChannelAna
+/// \ingroup EMCALPerformanceMacros
 /// \brief Analyses cell properties and identifies bad cells
 ///
 /// This is used for bad channel identification in EMCal and DCal.
+/// It maks bad channels in several energy intervals and plots output with various
+/// information for cross checks.
+///
 /// The class builds a mean distribution of certain cell observables
 /// and compares single cell properties to this mean.
 /// That way bad channels (far off the mean) are identified and flagged.
@@ -13,12 +17,14 @@
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
 /// \author Chiara Bianchin <chiara.bianchin@cern.ch>, Wayne State University
-/// based on the work from
-/// \author Alexis Mas <aleximas@if.usp.br> and
+/// based on the work from:
+/// \author Alexis Mas <aleximas@if.usp.br>, SUBATECH
+/// and
 /// \author Marie Germain <Marie.Germain@subatech.in2p3.fr>, SUBATECH
 /// which is in turn based on getCellsRunQA.C from
 /// \author Olga Driga, SUBATECH
-/// \date Jun 24, 2016
+
+/// \date June 29, 2017
 
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice
@@ -39,12 +45,12 @@ class TList;
 class AliCalorimeterUtils;
 
 
-class AliAnaCaloChannelAnalysis : public TObject {
+class BadChannelAna : public TObject {
 	
 public:
-      AliAnaCaloChannelAnalysis() ;                // default ctor
-	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
-	  AliAnaCaloChannelAnalysis(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName);
+      BadChannelAna() ;                // default ctor
+	  virtual ~BadChannelAna()  { ; }  // virtual dtor
+	  BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName);
 
 	  void Run(Bool_t mergeOnly=0);
 
@@ -136,15 +142,15 @@ protected:
 	  TList* fOutputListGoodRatio;          //!<! list with good channel amplitude ratios, stored in fRootFile
 	  
 private:
-	  AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
-	  AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
+	  BadChannelAna           (const BadChannelAna&); // not implemented
+	  BadChannelAna &operator=(const BadChannelAna&); // not implemented
 
 	  TH1F* fAvgNHitPerEvVsCellId;          //!<! being discussed
 	  TH1F* fAvgEngPerHitVsCellId;          //!<! being discussed
 	  
 	
 	/// \cond CLASSIMP
-	ClassDef(AliAnaCaloChannelAnalysis, 1);
+	ClassDef(BadChannelAna, 1);
 	/// \endcond
 };
 #endif

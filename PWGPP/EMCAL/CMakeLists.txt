@@ -39,7 +39,7 @@ set(SRCS
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
     AliAnalysisTaskEMCALTimeCalib.cxx
-    AliAnaCaloChannelAnalysis.cxx
+    BadChannelAna.cxx
    )
 
 # Headers from sources
