@@ -11,6 +11,6 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEMCALTimeCalib+;
-#pragma link C++ class AliAnaCaloChannelAnalysis+;
+#pragma link C++ class BadChannelAna+;
 
 #endif

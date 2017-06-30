@@ -13,13 +13,17 @@
 /// root [2] Run_BadChannel(1,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
 /// root [2] Run_BadChannel(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
+/// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
+///
+/// \date June 29, 2017
+
 
 // --- ROOT system ---
 #include <TStopwatch.h>
 #include <TROOT.h>
 
 // --- ANALYSIS system ---
-#include "AliAnaCaloChannelAnalysis.h" //include when compile
+#include "BadChannelAna.h" //include when compile
 
 ///definition of methods
 ///________________________________________________________________________
@@ -73,8 +77,8 @@ void Run_BadChannel(Int_t nversion = -1, TString period = "LHC15n", TString trai
 	TStopwatch watch;
 	watch.Start();
 
-	AliAnaCaloChannelAnalysis* Analysis;
-	Analysis=new AliAnaCaloChannelAnalysis(period,train,trigger,runNum,nversion,workDir,listName);
+	BadChannelAna* Analysis;
+	Analysis=new BadChannelAna(period,train,trigger,runNum,nversion,workDir,listName);
 
 	//..Settings
 	Analysis->SetExternalMergedFile(externalFile);
