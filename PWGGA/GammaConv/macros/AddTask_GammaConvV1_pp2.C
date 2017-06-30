@@ -220,9 +220,9 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   } else if (trainConfig == 26) {
     cuts.AddCut("00010613", "00200009227300008250404000", "0152103500000000"); //V0M vs TPCout cut6
   } else if (trainConfig == 27) {
-    cuts.AddCut("00010113", "002000g9227300008250404000", "0152103500000000"); //0.075 GeV + min gamma pT cut of 150 MeV
+    cuts.AddCut("00010113", "002000j9227300008250404000", "0152103500000000"); //asym pT cut: 0.100 GeV and 0.075 GeV
   } else if (trainConfig == 28) {
-    cuts.AddCut("00010113", "002000i9227300008250404000", "0152103500000000"); //0.150 GeV + min gamma pT cut of 300 MeV
+    cuts.AddCut("00010113", "002000l9227300008250404000", "0152103500000000"); //asym pT cut: 0.200 GeV and 0.075 GeV
   } else if (trainConfig == 29) {
     cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); //gamma pT > 0.2 GeV/c
   //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
