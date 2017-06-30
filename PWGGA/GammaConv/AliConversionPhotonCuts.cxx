@@ -2263,28 +2263,43 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.050;
     fPtCut       = 0.100;
     break;
-  case 10:  // 0.050 GeV + min gamma pT cut of 150 MeV
+  case 10:  //a: 0.050 GeV + min gamma pT cut of 150 MeV
     fSinglePtCut = 0.050;
     fPtCut       = 0.150;
     break;
-  case 11:  // 0.050 GeV + min gamma pT cut of 200 MeV
+  case 11:  //b: 0.050 GeV + min gamma pT cut of 200 MeV
     fSinglePtCut = 0.050;
     fPtCut       = 0.200;
     break;
-  case 12:  // 0.060 GeV
+  case 12:  //c: 0.060 GeV
     fSinglePtCut = 0.060;
     break;
-  case 13:  // 0.060 GeV + min gamma pT cut of 100 MeV
+  case 13:  //d: 0.060 GeV + min gamma pT cut of 100 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.100;
     break;
-  case 14:  // 0.060 GeV + min gamma pT cut of 150 MeV
+  case 14:  //e: 0.060 GeV + min gamma pT cut of 150 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.150;
     break;
-  case 15:  // 0.060 GeV + min gamma pT cut of 200 MeV
+  case 15:  //f: 0.060 GeV + min gamma pT cut of 200 MeV
     fSinglePtCut = 0.060;
     fPtCut       = 0.200;
+    break;
+  case 16:  //g: 0.075 GeV + min gamma pT cut of 150 MeV
+    fSinglePtCut = 0.075;
+    fPtCut       = 0.150;
+    break;
+  case 17:  //h: 0.100 GeV + min gamma pT cut of 200 MeV
+    fSinglePtCut = 0.100;
+    fPtCut       = 0.200;
+    break;
+  case 18:  //i: 0.150 GeV + min gamma pT cut of 300 MeV
+    fSinglePtCut = 0.150;
+    fPtCut       = 0.300;
+    break;
+  case 19:  //j: 0.150 GeV
+    fSinglePtCut = 0.150;
     break;
   default:
     AliError(Form("singlePtCut not defined %d",singlePtCut));
