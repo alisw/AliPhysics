@@ -111,15 +111,37 @@ AliFMDPedestalDA::OpenFiles(Bool_t appendRun)
     Error("OpenFiles", "Failed to open pedestal file");
     return false;
   }
-  Rotate("ddl3072.csv", 10);
-  fZSfileFMD1.open("ddl3072.csv");
-  Rotate("ddl3073.csv", 10);
-  fZSfileFMD2.open("ddl3073.csv");
-  Rotate("ddl3074.csv", 10);
-  fZSfileFMD3.open("ddl3074.csv");  
   return true;
 }
 
+//_____________________________________________________________________
+void AliFMDPedestalDA::InstallFile(Int_t d)
+{
+  Int_t          ddl = 3072+(d-1);
+  std::ofstream& out = (d==1 ? fZSfileFMD1 : d==2 ? fZSfileFMD2 : fZSfileFMD3);
+  TString        base; base.Form("ddl%d.csv", ddl);
+  TString        tmp;  tmp.Form("%s.tmp", base.Data());
+  if (out.is_open()) {
+    out.write("# EOF\n", 6);    
+    out.close();
+  }
+  if (!fSeenDetectors[d-1]) {
+    gSystem->Unlink(tmp.Data());
+    return;
+  }
+
+  Rotate(base, 10);
+  if (!gSystem->AccessPathName(tmp.Data())) 
+    gSystem->Rename(tmp.Data(), base.Data());
+}
+//_____________________________________________________________________
+void AliFMDPedestalDA::CloseFiles()
+{
+  AliFMDBaseDA::CloseFiles();
+  InstallFile(1);
+  InstallFile(2);
+  InstallFile(3);
+}
 //_____________________________________________________________________
 void AliFMDPedestalDA::Init() 
 { 
@@ -127,8 +149,6 @@ void AliFMDPedestalDA::Init()
   SetRequiredEvents(1000);
   fMinTimebin.Reset(1024);
   fMaxTimebin.Reset(-1);
-
-
 }
 
 //_____________________________________________________________________
@@ -384,67 +404,6 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
     fPedSummary.Write();
     fNoiseSummary.Write();
   }
-  AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
-  for (Int_t i = 0; i < 3; i++) { 
-    std::ofstream& out = (i == 0 ? fZSfileFMD1 : 
-			  i == 1 ? fZSfileFMD2 : 
-			  fZSfileFMD3);
-    if (out.is_open() && fSeenDetectors[i]) { 
-      FillinTimebins(out, map->Detector2DDL(i+1));
-    }
-    if (!fSeenDetectors[i]) {
-      TString n(Form("ddl%d.csv",3072+map->Detector2DDL(i+1)));
-      gSystem->Unlink(n.Data());
-    }
-  }
-  
-}
-
-//_____________________________________________________________________
-void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t /*ddl*/)
-{
-  // 
-  // Fill missing timebins
-  //
-#if 0
-  unsigned short  boards[] = { 0x0, 0x1, 0x10, 0x11, 0xFFFF };
-  unsigned short* board    = boards;
-  while ((*boards) != 0xFFFF) { 
-    for (UShort_t altro = 0; altro < 3; altro++) { 
-      for (UShort_t channel = 0; channel < 16; channel++) { 
-	Int_t idx = HWIndex(ddl, *board, altro, channel);
-	if (idx < 0) { 
-	  AliWarningF("Invalid index for %4d/0x%02x/0x%x/0x%x: %d", 
-		      ddl, *board, altro, channel, idx);
-	  continue;
-	}
-	Short_t min = fMinTimebin[idx];
-	Short_t max = fMaxTimebin[idx];
-	
-	// Channel not seen at all. 
-	if (min > 1023 || max < 0) continue;
-
-	out << "# Extra timebins for 0x" << std::hex 
-	    << board << ',' << altro << ',' << channel 
-	    << " got time-bins " << min << " to " << max-1 
-	    << std::dec << std::endl;
-	
-	for (UShort_t t = 15; t < min; t++) 
-	  // Write a phony line 
-	  out << board << "," << altro << "," << channel << "," 
-	      << t << "," << 1023 << "," << 0 << std::endl;
-
-	for (UShort_t t = max; t < 1024; t++) 
-	  // Write a phony line 
-	  out << board << "," << altro << "," << channel << "," 
-	      << t << "," << 1023 << "," << 0 << std::endl;
-      } // channel loop
-    } // altro loop
-  } // board loop
-  // Write trailer, and close 
-#endif
-  out.write("# EOF\n", 6);
-  out.close();
 }
 
 //_____________________________________________________________________
@@ -468,6 +427,10 @@ void AliFMDPedestalDA::WriteHeaderToFile()
 		    "Sigma, "
 		    "Chi2/NDF \n", 71);
 
+  fZSfileFMD1.open("ddl3072.csv.tmp");
+  fZSfileFMD2.open("ddl3073.csv.tmp");
+  fZSfileFMD3.open("ddl3074.csv.tmp");  
+  
   std::ostream* zss[] = { &fZSfileFMD1, &fZSfileFMD2, &fZSfileFMD3, 0 };
   for (size_t i = 0; i < 3; i++)  {
     *(zss[i]) << "# FMD " << (i+1) << " pedestals \n"
