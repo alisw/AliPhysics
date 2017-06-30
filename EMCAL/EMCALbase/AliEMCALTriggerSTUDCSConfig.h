@@ -87,6 +87,8 @@ public:
   
   TClonesArray *GetErrorCountsForTRU(Int_t itru) const;
   AliEMCALTriggerSTUDCSConfig           (const AliEMCALTriggerSTUDCSConfig &cd);
+
+protected:
   AliEMCALTriggerSTUDCSConfig &operator=(const AliEMCALTriggerSTUDCSConfig &cd);
 
 private:
