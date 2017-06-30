@@ -46,14 +46,15 @@ public:
   enum EPileup_Type    {kNoPileup, kPileupSPD, kPileupMV};
   enum EEvtCut_Type {
     kIsReadable = 1,
-    kPassTrig,
-    kIsSDDIn,
-    kPassMultSel,
     kIsNotIncDAQ,
-    kPassSPDclsVsTCut,
+    kPassTrig,
+    kPassMultSel,
     kIsNotPileup,
+    kPassSPDclsVsTCut,
+		kCorrelation,
     kHasRecVtx,
     kHasGoodVtxZ,
+    kIsSDDIn,
     kNEvtCuts
   };// event selection criteria
   enum ETrkCut_Type {
