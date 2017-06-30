@@ -233,6 +233,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fDoShrinkTPCAcceptance;               // Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               // pt cut
     Double_t          fSinglePtCut;                         // pt cut for electron/positron
+    Double_t          fSinglePtCut2;                        // second pt cut for electron/positron if asymmetric cut is chosen
+    Bool_t            fDoAsymPtCut;                         // Flag for setting asymmetric pT cut on electron/positron
     Double_t          fMaxZ;                                // z cut
     Double_t          fMinClsTPC;                           // minimum clusters in the TPC
     Double_t          fMinClsTPCToF;                        // minimum clusters to findable clusters
@@ -346,7 +348,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,14)
+    ClassDef(AliConversionPhotonCuts,15)
 };
 
 #endif
