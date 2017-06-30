@@ -71,7 +71,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
  
   enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
      kpPb2013 = 0,
-     kpPb2017 = 1};
+     kpPb2016 = 1};
   
   AliAnalysisTaskSELc2V0bachelorTMVA();
   AliAnalysisTaskSELc2V0bachelorTMVA(const Char_t* name, AliRDHFCutsLctoV0* cutsA,
@@ -142,6 +142,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   void SetSaveMode(Int_t mode){
      fSaveMode = mode;
   }
+
+  void SetAnalysisType(Int_t mode){
+     fAnalysisType = mode;
+  }
   
   
   void SetMultVsZProfileLHC13b(TProfile* hprof){
@@ -163,7 +167,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   }
 
   void SetReferenceMultiplicity(Double_t rmu){fRefMult=rmu;}
-
+  
   
 
 
@@ -182,6 +186,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 
   AliAnalysisTaskSELc2V0bachelorTMVA(const AliAnalysisTaskSELc2V0bachelorTMVA &source);
   AliAnalysisTaskSELc2V0bachelorTMVA& operator=(const AliAnalysisTaskSELc2V0bachelorTMVA& source); 
+  TProfile* GetEstimatorHistogram(const AliVEvent *event);
   
   Bool_t fUseMCInfo;          /// Use MC info
   TList *fOutput;             //!<! User output1: list of trees
@@ -195,6 +200,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 5
   TList *fListCuts;                  /// list of cuts
   TList *fListWeight;                /// list of weights
+  TList *fListCounters;              /// list of counters on output slot 2
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           /// flag for event selected
 
@@ -311,8 +317,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
   TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
-  
+ 
   Int_t fSaveMode; /// switch to change saving mode for tree (light or heavy)
+  Int_t fAnalysisType; /// switch to change system/year in use for loading of mult. estimators
+  Int_t fNTracklets; /// tracklet multiplicity in event
   TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
   Double_t fRefMult; /// reference multiplicity
   

@@ -3,7 +3,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
 							    Bool_t onTheFly=kFALSE,
 							    Bool_t keepingOnlyHIJINGbkd=kFALSE,
 							    TString suffixName="",
-                         Int_t savemode=AliAnalysisTaskSELc2V0bachelorTMVA::kElephant){
+                         Int_t savemode=AliAnalysisTaskSELc2V0bachelorTMVA::kElephant, Int_t system=AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -48,6 +48,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
   task->SetSaveMode(savemode);
+  task->SetAnalysisType(system);
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
@@ -56,7 +57,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
 
   output1name = Form("treeList%s", suffixName.Data());
-  output2name = Form("Lc2pK0Scounter%s", suffixName.Data());
+  output2name = Form("listCounters%s", suffixName.Data());
   output3name = Form("Lc2pK0SCuts%s", suffixName.Data());
   output4name = Form("treeSgn%s", suffixName.Data());
   output5name = Form("treeBkg%s", suffixName.Data());
@@ -67,7 +68,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
   mgr->ConnectOutput(task, 1, coutput1);
   
-  AliAnalysisDataContainer *coutputLc2 = mgr->CreateContainer(output2name, AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
+  AliAnalysisDataContainer *coutputLc2 = mgr->CreateContainer(output2name,TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
   mgr->ConnectOutput(task, 2, coutputLc2);
   
   AliAnalysisDataContainer *coutputLc3 = mgr->CreateContainer(output3name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // cuts

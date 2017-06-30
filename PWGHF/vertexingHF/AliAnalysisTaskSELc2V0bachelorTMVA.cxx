@@ -32,6 +32,7 @@
 #include <TParticlePDG.h>
 #include <TH1F.h>
 #include <TH1I.h>
+#include <TProfile.h>
 #include <TH2F.h>
 #include <TTree.h>
 #include "TROOT.h"
@@ -88,6 +89,7 @@ AliAnalysisTaskSE(),
   fCounter(0),
   fAnalCuts(0),
   fListCuts(0),
+  fListCounters(0),
   fListWeight(0),
   fHistoMCNch(0x0),
   fUseOnTheFlyV0(kFALSE),
@@ -200,6 +202,7 @@ AliAnalysisTaskSE(),
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
   fSaveMode(kElephant),
+  fNTracklets(0),
   fRefMult(0),
   fListProfiles(0),
   fHistNtrVsZvtx(0x0),
@@ -230,6 +233,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCounter(0),
   fAnalCuts(analCuts),
   fListCuts(0),
+  fListCounters(0),
   fListWeight(0),
   fHistoMCNch(0x0),
   fUseOnTheFlyV0(useOnTheFly),
@@ -342,8 +346,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
-  fNTracklets(0),
   fSaveMode(kElephant),
+  fNTracklets(0),
   fRefMult(0),
   fListProfiles(0),
   fHistNtrVsZvtx(0x0),
@@ -404,6 +408,10 @@ AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
   if (fListCuts) {
     delete fListCuts;
     fListCuts = 0;
+  }
+  if (fListCounters) {
+    delete fListCounters;
+    fListCounters = 0;
   }
 
   if (fListWeight) {
@@ -798,10 +806,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fListCounters = new TList();
   fListCounters->SetOwner();
   fListCounters->SetName("ListCounters");
-  fListCounters->Add("fCounter");
-  fListCounters->Add("fCounterU");
-  fListCounters->Add("fCounterC");
-  
+  fListCounters->Add(fCounter);
+  fListCounters->Add(fCounterU);
+  fListCounters->Add(fCounterC);
+ 
   PostData(2, fListCounters);
 
 
@@ -1067,8 +1075,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
     // multiplicity definition with tracklets
     fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
 
-    // multiplicity definition with tracklets
-    fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
 
     //Printf("Filling MC histo");
     FillMCHisto(mcArray);
@@ -1098,6 +1104,24 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 			    array3Prong, mcHeader);
   }
   fCounter->StoreCandidates(aodEvent,nSelectedAnal,kFALSE);
+
+
+
+  //Method to get tracklet multiplicity from event
+
+  Double_t countTreta1corr = fNTracklets;
+  
+  //get corrected tracklet multiplicity
+  TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+    if(estimatorAvg) {
+       countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,fNTracklets,fVtx1->GetZ(),fRefMult));
+       } 
+
+    fCounterU->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo,fNTracklets);
+    fCounterC->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo,countTreta1corr); 
+  
+
+
 
   PostData(1, fOutput);
   PostData(2, fCounter);
@@ -1716,20 +1740,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
   
 
-  if (fMultAnalysis) FillMultHistos(); ///!TODO
-
-  //Method to get tracklet multiplicity from event
-
-  Double_t countTreta1corr = fNTracklets;
-  
-  //get corrected tracklet multiplicity
-  fVtx1->GetZ();
-  TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
-    if(estimatorAvg) {
-       countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,fNtracklets,fVtx1->GetZ(),fRefMult));
-       }
-    fCounterC->StoreEvent(aod,fRDCutsAnalysis,fUseMCInfo,countTreta1corr); 
-  
 
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
