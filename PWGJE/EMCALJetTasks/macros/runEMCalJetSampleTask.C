@@ -41,9 +41,9 @@ AliAnalysisManager* runEMCalJetSampleTask(
     // 0 = only prepare the analysis manager but do not start the analysis
     // 1 = prepare the analysis manager and start the analysis
     // 2 = launch a grid analysis
-    Int_t         iStartAnalysis = 1,
+    Int_t         iStartAnalysis = 2,
     const UInt_t  iNumFiles      = 100,                                     // number of files analyzed locally
-    const char   *cGridMode      = "test"
+    const char   *cGridMode      = "full"
 )
 {
   TString sRunPeriod(cRunPeriod);
@@ -319,7 +319,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   plugin->SetRunMode(gridMode);
 
   // Here you can set the (Ali)PHYSICS version you want to use
-  plugin->SetAliPhysicsVersion("vAN-20160203-1");
+  plugin->SetAliPhysicsVersion("vAN-20170628-1");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory
