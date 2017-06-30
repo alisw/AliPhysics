@@ -1659,6 +1659,60 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
        break;
     }
     break;
+  case 8:
+    fRemovePileUp           = kTRUE;
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,0.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,0.);
+    if (fIsHeavyIon==1){
+      if(fPeriodEnum == kLHC15o){
+         fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+         break;
+      }else{
+         fFPileUpRejectV0MTPCout->SetParameter(0,-1500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,3.0);
+         break;
+      }
+    } else  if(fIsHeavyIon == 2){
+       fFPileUpRejectV0MTPCout->SetParameter(0,-200.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,1.5);
+       break;
+    }else{
+       fFPileUpRejectV0MTPCout->SetParameter(0,-300.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,4.0);
+       break;
+    }
+   break;
+  case 9:
+    fRemovePileUp           = kTRUE;
+    fPastFutureRejectionLow =-89;
+    fPastFutureRejectionHigh= 89;
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,0.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,0.);
+    if (fIsHeavyIon==1){
+      if(fPeriodEnum == kLHC15o){
+         fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+         break;
+      }else{
+         fFPileUpRejectV0MTPCout->SetParameter(0,-1500.);
+         fFPileUpRejectV0MTPCout->SetParameter(1,3.0);
+         break;
+      }
+    } else  if(fIsHeavyIon == 2){
+       fFPileUpRejectV0MTPCout->SetParameter(0,-200.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,1.5);
+       break;
+    }else{
+       fFPileUpRejectV0MTPCout->SetParameter(0,-300.);
+       fFPileUpRejectV0MTPCout->SetParameter(1,4.0);
+       break;
+    }
+   break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;
