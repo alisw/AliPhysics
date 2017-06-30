@@ -26,7 +26,8 @@ protected:
   virtual void UserExecOnce();
   virtual bool Run();
 
-  void FillJetPIDPlots(const AliEmcalJet *jet, const char *trigger, const char *detector);
+  void FillJetPIDPlots(const AliEmcalJet *jet, double radius, const char *trigger, const char *detector);
+  void FillJetPIDPlotsLeading(const AliVTrack *leading, double ptjet, double radius, const char *trigger, const char *detector);
 
 private:
   AliAnalysisTaskEmcalTriggerJets(const AliAnalysisTaskEmcalTriggerJets &);
