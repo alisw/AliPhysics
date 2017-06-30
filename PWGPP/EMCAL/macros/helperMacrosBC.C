@@ -13,6 +13,10 @@
 /// root [0] Get_RowCollumnID(244917,-1,4,16,4)         <br>
 /// root [0] Get_RowCollumnID(244917,2001,-1,-1,-1)     <br>
 /// root [0] Compare2Blocks("LHC16l",803,3,5)           <br>
+///
+/// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
+///
+/// \date June 29, 2017
 
 // --- ROOT system ---
 #include <Riostream.h>

@@ -1,17 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
 
 // --- ROOT system ---
 #include <TFile.h>
@@ -41,7 +27,7 @@
 // --- ANALYSIS system ---
 #include <AliCalorimeterUtils.h>
 #include <AliEMCALGeometry.h>
-#include <AliAnaCaloChannelAnalysis.h>
+#include <BadChannelAna.h>
 #include <AliAODEvent.h>
 
 using std::vector;
@@ -52,14 +38,14 @@ using std::flush;
 using std::ios;
 
 /// \cond CLASSIMP
-ClassImp(AliAnaCaloChannelAnalysis);
+ClassImp(BadChannelAna);
 /// \endcond
 
 ///
 /// Default constructor
 ///
 //________________________________________________________________________
-AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis():
+BadChannelAna::BadChannelAna():
 TObject(),
 	fCurrentRunNumber(-1),
 	fPeriod(),
@@ -110,7 +96,7 @@ TObject(),
 /// Constructor
 ///
 //________________________________________________________________________
-AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName):
+BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName):
 	TObject(),
 	fCurrentRunNumber(-1),
 	fPeriod(),
@@ -161,7 +147,7 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString tra
 /// Initialize default parameters
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Init()
+void BadChannelAna::Init()
 {
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //Does not work -
 	//......................................................
@@ -261,7 +247,7 @@ void AliAnaCaloChannelAnalysis::Init()
 /// It calls SummarizeResults() to store all information in output files (.gif .txt .pdf)
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Run(Bool_t mergeOnly)
+void BadChannelAna::Run(Bool_t mergeOnly)
 {
 //	cout<<"fired trigger class"<<AliAODEvent::GetFiredTriggerClasses()<<endl;
 
@@ -357,7 +343,7 @@ void AliAnaCaloChannelAnalysis::Run(Bool_t mergeOnly)
 /// The output file contains three histograms hCellAmplitude, hCellTime and hNEventsProcessedPerRun
 ///
 //________________________________________________________________________
-TString AliAnaCaloChannelAnalysis::MergeRuns()
+TString BadChannelAna::MergeRuns()
 {
 	cout<<"o o o Start conversion process o o o"<<endl;
 	cout<<"o o o period: " << fPeriod << ", pass: " << fTrainNo << ",  trigger: "<<fTrigger<< endl;
@@ -541,7 +527,7 @@ TString AliAnaCaloChannelAnalysis::MergeRuns()
 /// and passes it to the period analyis for execution.
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::BCAnalysis()
+void BadChannelAna::BCAnalysis()
 {
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. BAD CELLS
@@ -569,7 +555,7 @@ void AliAnaCaloChannelAnalysis::BCAnalysis()
 /// \param emin     -- minimum energy. Perform this test only for a given energy range. This sets the minimum E
 /// \param emax     -- maximum energy. Perform this test only for a given energy range. This sets the maximum E
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax)
+void BadChannelAna::AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax)
 {
 	TArrayD periodArray;
 	periodArray.Set(4);
@@ -595,7 +581,7 @@ void AliAnaCaloChannelAnalysis::AddPeriodAnalysis(Int_t criteria, Double_t nsigm
 /// \param emax -- max. energy for cell amplitudes
 ///
 //____________________________________________________________________
-void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t emin, Double_t emax)
+void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t emin, Double_t emax)
 {
 	//.. criterion should be between 1-4
 	if(fPrint==1)cout<<"o o o o o o o o o o o o o o o o o o o o o o o o o"<<endl;
@@ -641,7 +627,7 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma,
 /// \param emax -- max. energy for cell amplitudes
 ///
 //_________________________________________________________________________
-TH1F* AliAnaCaloChannelAnalysis::BuildHitAndEnergyMean(Int_t crit, Double_t emin, Double_t emax)
+TH1F* BadChannelAna::BuildHitAndEnergyMean(Int_t crit, Double_t emin, Double_t emax)
 {
 	if(fPrint==1)cout<<"    o Calculate average cell hit per event and average cell energy per hit "<<endl;
 	TH1F *histogram;
@@ -686,7 +672,7 @@ TH1F* AliAnaCaloChannelAnalysis::BuildHitAndEnergyMean(Int_t crit, Double_t emin
 /// Possibility to add there a check on the cell time too, if the time is calibrated for the period
 ///
 //_________________________________________________________________________
-TH1F* AliAnaCaloChannelAnalysis::BuildTimeMean(Int_t crit, Double_t tmin, Double_t tmax)
+TH1F* BadChannelAna::BuildTimeMean(Int_t crit, Double_t tmin, Double_t tmax)
 {
 	if(fPrint==1)cout<<"    o Calculate maximum of cell time distribution "<<endl;
 	TString name;
@@ -728,7 +714,7 @@ TH1F* AliAnaCaloChannelAnalysis::BuildTimeMean(Int_t crit, Double_t tmin, Double
 /// It flags them by setting the fFlag[CellID] to 1.
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::FlagAsDead()
+void BadChannelAna::FlagAsDead()
 {
 	Int_t sumOfExcl=0;
 	Int_t manualMaskCounter=0;
@@ -781,7 +767,7 @@ void AliAnaCaloChannelAnalysis::FlagAsDead()
 /// \param dnbins  -- number of bins in distribution;
 /// \param dmaxVal -- maximum value on distribution histogram.
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double_t dnbins)
+void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double_t dnbins)
 {  
     gStyle->SetOptStat(0); //..Do not plot stat boxes
 	gStyle->SetOptFit(0);  //
@@ -1086,7 +1072,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 /// A .txt file with dead and bad channel IDs is created for each check
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
+void BadChannelAna::SummarizeResultsByFlag()
 {
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. RESULTS
@@ -1162,7 +1148,7 @@ void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
 /// .gif files with a 2D map of bad, dead and good channels
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::SummarizeResults()
+void BadChannelAna::SummarizeResults()
 {
 	Int_t cellID, nDeadDCalCells = 0, nDeadEMCalCells = 0, nDCalCells = 0, nEMCalCells = 0;
 	Double_t perDeadEMCal,perDeadDCal,perBadEMCal,perBadDCal,perWarmEMCal,perWarmDCal;
@@ -1501,7 +1487,7 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 ///
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName)
+void BadChannelAna::SaveBadCellsToPDF(Int_t version, TString pdfName)
 {
 	gROOT->SetStyle("Plain");
 	gStyle->SetOptStat(0);
@@ -1651,7 +1637,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 //// Build the mean cell amplitude distribution of all good cells
 ////
 //_________________________________________________________________________
-TH1D* AliAnaCaloChannelAnalysis::BuildMeanFromGood(Int_t warmIn)
+TH1D* BadChannelAna::BuildMeanFromGood(Int_t warmIn)
 {
 	TH1D* hGoodAmp;
 	TH1D* hgoodMean = (TH1D*)fCellAmplitude->ProjectionX("hgoodMean");
@@ -1683,7 +1669,7 @@ TH1D* AliAnaCaloChannelAnalysis::BuildMeanFromGood(Int_t warmIn)
 /// \param reference  -- good reference histogram
 ///
 //_________________________________________________________________________
-Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* histogram, TH1* reference)
+Bool_t BadChannelAna::CheckDistribution(TH1* histogram, TH1* reference)
 {
 	TString Name = Form("%s_ratio",histogram->GetName());
 	TH1* ratio=(TH1*)histogram->Clone(Name);
@@ -1815,7 +1801,7 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* histogram, TH1* referen
 /// \param collumn -- absolute cullumn No. of the cell
 ///
 //_________________________________________________________________________
-Bool_t AliAnaCaloChannelAnalysis::IsCoveredByTRD(Int_t row, Int_t collumn)
+Bool_t BadChannelAna::IsCoveredByTRD(Int_t row, Int_t collumn)
 {
 	//..TRD support structure
 	//..(determined by eye, could be improved, but is already very acurate):
@@ -1841,7 +1827,7 @@ Bool_t AliAnaCaloChannelAnalysis::IsCoveredByTRD(Int_t row, Int_t collumn)
 /// \param flag3 -- plot the cells that have fFlag[cell]==flag3
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
+void BadChannelAna::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
 	//..build two dimensional histogram with values row vs. column
 	TString histoName;
@@ -1903,7 +1889,7 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd
 /// This function saves all good cells amplitudes to a root file
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::SaveHistoToFile()
+void BadChannelAna::SaveHistoToFile()
 {
 	char name[100];
 	for(Int_t cell=fStartCell;cell<fNoOfCells;cell++)
