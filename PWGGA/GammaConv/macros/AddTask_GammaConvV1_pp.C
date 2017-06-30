@@ -681,6 +681,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "002000d9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
     cuts.AddCut("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
     cuts.AddCut("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 136) { // 8 TeV
+    cuts.AddCut("00010113", "002000g9227300008250404000", "0152103500000000"); // 0.075 GeV + min gamma pT cut of 150 MeV
+    cuts.AddCut("00010113", "002000h9227300008250404000", "0152103500000000"); // 0.100 GeV + min gamma pT cut of 200 MeV
+    cuts.AddCut("00010113", "002000i9227300008250404000", "0152103500000000"); // 0.150 GeV + min gamma pT cut of 300 MeV
+    cuts.AddCut("00010113", "002000j9227300008250404000", "0152103500000000"); // 0.150 GeV
+  } else if (trainConfig == 137) { // 7 TeV
+    cuts.AddCut("00000113", "002000g9227300008250404000", "0152103500000000"); // 0.075 GeV + min gamma pT cut of 150 MeV
+    cuts.AddCut("00000113", "002000h9227300008250404000", "0152103500000000"); // 0.100 GeV + min gamma pT cut of 200 MeV
+    cuts.AddCut("00000113", "002000i9227300008250404000", "0152103500000000"); // 0.150 GeV + min gamma pT cut of 300 MeV
+    cuts.AddCut("00000113", "002000j9227300008250404000", "0152103500000000"); // 0.150 GeV
 
     // -------- Material weights -several configs with same sets for running with various mat weights ----------
   } else if (trainConfig == 160) { // like last last two in 70 and dalitz standard 7TeV
