@@ -59,7 +59,7 @@ class AliMpVPainter : public TObject
           /// Return the owned object's dimensions
   virtual TVector2 GetDimensions() const=0;
   void InitGraphContext();
-  void PaintWholeBox(Bool_t fill=kTRUE);
+  void PaintWholeBox(Bool_t fill=kTRUE, Bool_t center=kFALSE);
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
   TVector2 RealToPad(const TVector2& realPos);
 
