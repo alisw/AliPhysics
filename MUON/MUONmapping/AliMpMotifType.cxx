@@ -114,10 +114,15 @@ AliMpMotifType::operator=(const AliMpMotifType& rhs)
 
 //______________________________________________________________________________
 TObject*
-AliMpMotifType::Clone(const char* /*newname*/) const 
+AliMpMotifType::Clone(const char* newname) const 
 {
   /// Returns a full copy of this object
-  return new AliMpMotifType(*this);
+  AliMpMotifType* mt = new AliMpMotifType(*this);
+
+  if ( strlen(newname) ) {
+    mt->fID = newname;
+  }
+  return mt;
 }
 
 //______________________________________________________________________________
