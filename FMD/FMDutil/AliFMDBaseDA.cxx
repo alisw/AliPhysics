@@ -228,6 +228,17 @@ AliFMDBaseDA::OpenFiles(Bool_t appendRun)
 }
 
 //_____________________________________________________________________
+void
+AliFMDBaseDA::CloseFiles()
+{
+  // If we have an output file, close it  
+  if(!fOutputFile.is_open()) return;
+
+  fOutputFile.write("# EOF\n",6);
+  fOutputFile.close();
+}
+
+//_____________________________________________________________________
 Bool_t AliFMDBaseDA::HaveEnough(Int_t nEvents) const
 {
   // if (!fAll) return nEvents > GetRequiredEvents();
@@ -391,12 +402,8 @@ AliFMDBaseDA::Run(AliRawReader* reader, Bool_t appendRun, Bool_t isBase)
       std::cout << "done" << std::endl;
     }
   }
-  
-  // If we have an output file, close it  
-  if(fOutputFile.is_open()) {
-    fOutputFile.write("# EOF\n",6);
-    fOutputFile.close();
-  }
+  // Close output files
+  CloseFiles();
   
   // Do final stuff on the diagnostics file 
   Terminate(diagFile);

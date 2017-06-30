@@ -193,6 +193,11 @@ protected:
    */
   virtual Bool_t OpenFiles(Bool_t appendRun=false);
   /** 
+   * Close output files
+   * 
+   */
+  virtual void CloseFiles();
+  /** 
    * Initialize 
    */  
   virtual void Init()  {};
