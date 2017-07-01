@@ -84,8 +84,14 @@ fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
-fHistTestInvMass(0),
+fHistTestInvMassElecLike(0),
+fHistTestInvMassElecUnLike(0),
+fHistTestInvMassPionLike(0),
+fHistTestInvMassPionUnLike(0),
 fHistTestDPhiSpeNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
+fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -318,8 +324,14 @@ fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
-fHistTestInvMass(0),
+fHistTestInvMassElecLike(0),
+fHistTestInvMassElecUnLike(0),
+fHistTestInvMassPionLike(0),
+fHistTestInvMassPionUnLike(0),
 fHistTestDPhiSpeNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
+fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -1600,37 +1612,49 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistPtTag_EMCJet = new TH1F("fHistPtTag_EMCJet", "Pt distribution for electron candidates", 100,0, 15);
     fHistPtTag_EMCJet->GetXaxis()->SetTitle("Pt(Gev)");
     fHistPtTag_EMCJet->GetYaxis()->SetTitle("Count");
-    
+
     //test histos
     fHistTestDCA = new TH1F("fHistTestDCA", "DCA distribution for all tracks with DPhi to any candidate electron <0.1 rad", 100,-15, 15);
     fHistTestDCA->GetXaxis()->SetTitle("DCA(cm)");
     fHistTestDCA->GetYaxis()->SetTitle("Count");
-    
+
     fHistTestEMCEnergy = new TH1F("fHistTestEMCEnergy", "Energy from EMCal for all tracks with DPhi to any candidate electron <0.1 rad", 100, 0, 10);
     fHistTestEMCEnergy->GetXaxis()->SetTitle("EMC Energy[GeV]");
     fHistTestEMCEnergy->GetYaxis()->SetTitle("Counts");
-    
+
     fHistTestTPCdEdx = new TH2F("fHistTestTPCdEdx", "TPC dE/dx for all tracks with DPhi to any candidate electron <0.1 rad", 300, -30, 180, 100, 0,8);
     fHistTestTPCdEdx->GetXaxis()->SetTitle("TPC dE/dx[a.u.]");
     fHistTestTPCdEdx->GetYaxis()->SetTitle("pT[GeV/c]");
-    
+
     fHistTestEOP = new TH1F("fHistTestEOP", "E/p for all tracks with DPhi to any candidate electron <0.1 rad", 30, 0, 1.5);
     fHistTestEOP->GetXaxis()->SetTitle("E/p[c]");
     fHistTestEOP->GetYaxis()->SetTitle("Counts");
-    
+
     fHistTestOGDPhi = new TH1F("fHistTestOGDPhi", "Original DPhi before periodicity correction", 100, -2*TMath::Pi(), 2*TMath::Pi());
     fHistTestOGDPhi->GetXaxis()->SetTitle("DPhi[rad]");
     fHistTestOGDPhi->GetYaxis()->SetTitle("Counts");
-    
+
     fHistTestPt = new TH1F("fHistTestPt", "Pt distribution for associated particles nearly on top of tagged particle", 30, 0, 8);
     fHistTestPt->GetXaxis()->SetTitle("Pt[Gev/c]");
     fHistTestPt->GetYaxis()->SetTitle("Cts");
-    
-    fHistTestInvMass = new TH1F("fHistTestInvMass", "Invariant Mass distribution for associated particles nearly on top of tagged particle", 30, 0, 8);
-    fHistTestInvMass->GetXaxis()->SetTitle("Mass[Gev/c^2]");
-    fHistTestInvMass->GetYaxis()->SetTitle("Cts");
-    
-    //DPhi by dEdx for triggered particles 2-8 gev and assoc. particles >2gev
+
+    fHistTestInvMassElecLike = new TH1F("fHistTestInvMassElecLike", "Invariant Mass distribution for associated electrons of like sign in |DPhi|<0.1rad", 30, 0, 8);
+    fHistTestInvMassElecLike->GetXaxis()->SetTitle("Mass[Gev/c^2]");
+    fHistTestInvMassElecLike->GetYaxis()->SetTitle("Cts");
+
+    fHistTestInvMassElecUnLike = new TH1F("fHistTestInvMassElecUnLike", "Invariant Mass distribution for associated electrons of unlike sign with |DPhi|<0.1rad", 30, 0, 8);
+    fHistTestInvMassElecUnLike->GetXaxis()->SetTitle("Mass[Gev/c^2]");
+    fHistTestInvMassElecUnLike->GetYaxis()->SetTitle("Cts");
+
+    fHistTestInvMassPionLike = new TH1F("fHistTestInvMassPionLike", "Invariant Mass distribution for associated pions with |DPhi|<0.1rad", 30, 0, 8);
+    fHistTestInvMassPionLike->GetXaxis()->SetTitle("Mass[Gev/c^2]");
+    fHistTestInvMassPionLike->GetYaxis()->SetTitle("Cts");
+
+    fHistTestInvMassPionUnLike = new TH1F("fHistTestInvMassPionUnLike", "Invariant Mass distribution for associated pions with |DPhi|<0.1rad", 30, 0, 8);
+    fHistTestInvMassPionUnLike->GetXaxis()->SetTitle("Mass[Gev/c^2]");
+    fHistTestInvMassPionUnLike->GetYaxis()->SetTitle("Cts");
+
+    //DPhi by dEdx for triggered particles 1-8 gev and assoc. particles >.3gev
     fHistTestDPhiSpeNoSec = new TH2F("fHistTestDPhiSpeNoSec", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev with no secondary tracks", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistTestDPhiSpeNoSec->GetXaxis()->SetTitle("Delta-Phi");
     fHistTestDPhiSpeNoSec->GetYaxis()->SetTitle("Species");
@@ -1642,7 +1666,26 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(6, "Proton");
     fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistTestDPhiSpeNoSec->GetZaxis()->SetTitle("Cts");
-    
+
+    //DPhi by track type to test for tpconly tracks for triggered particles 1-8 gev and assoc. particles >.3gev
+    fHistTestDPhiType = new TH2F("fHistTestDPhiType", "Delta-Phi by track type for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 4, 0, 4);
+    fHistTestDPhiSpeNoSec->GetXaxis()->SetTitle("Delta-Phi");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetTitle("Track Type");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(1, "Hybrid");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(2, "Complementary");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(3, "TPC Only");
+    fHistTestDPhiSpeNoSec->GetZaxis()->SetTitle("Cts");
+
+    //DPhi for candidate electrons 1-8 gev and assoc. particles >.3gev with secondaries
+    fHistTestDPhi18Sec = new TH1F("fHistTestDPhi18Sec", "Delta-Phi for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistTestDPhi18Sec->GetXaxis()->SetTitle("Delta-Phi");
+    fHistTestDPhi18Sec->GetYaxis()->SetTitle("Cts");
+
+    //DPhi for candidate electrons 1-8 gev and assoc. particles >.3gev without secondaries
+    fHistTestDPhi18NoSec = new TH1F("fHistTestDPhi18NoSec", "Delta-Phi for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistTestDPhi18NoSec->GetXaxis()->SetTitle("Delta-Phi");
+    fHistTestDPhi18NoSec->GetYaxis()->SetTitle("Cts");
+
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistNElecPerEvent);
@@ -1653,8 +1696,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestEOP);
     fOutputMB->Add(fHistTestOGDPhi);
     fOutputMB->Add(fHistTestPt);
-    fOutputMB->Add(fHistTestInvMass);
+    fOutputMB->Add(fHistTestInvMassElecLike);
+    fOutputMB->Add(fHistTestInvMassElecUnLike);
+    fOutputMB->Add(fHistTestInvMassPionLike);
+    fOutputMB->Add(fHistTestInvMassPionUnLike);
     fOutputMB->Add(fHistTestDPhiSpeNoSec);
+    fOutputMB->Add(fHistTestDPhiType);
+    fOutputMB->Add(fHistTestDPhi18Sec);
+    fOutputMB->Add(fHistTestDPhi18NoSec);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
@@ -2562,8 +2611,8 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
 
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
-        
-        
+
+
         Int_t PID=0;
         cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
         switch(aodtrackassoc->GetMostProbablePID()){
@@ -2604,17 +2653,53 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
             break;
         }
-        
-        if(aodtrackassoc->GetType()==AliAODTrack::kPrimary&&MBtrg){fHistTestDPhiSpeNoSec->Fill(DPhi, PID);}
-        
-        
-        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1&&aodtrackassoc->GetType()==AliAODTrack::kPrimary){
-            aodtrackassoc->Print();
+
+        if(aodtrackassoc->GetType()==AliAODTrack::kPrimary){
+
+            if(aodtrack->Pt()<8&&aodtrack->Pt()>1&&aodtrackassoc->Pt()>0.3)
+            {
+                fHistTestDPhi18NoSec->Fill(DPhi);
+            }
+
+            fHistTestDPhiSpeNoSec->Fill(DPhi, PID);
+
+        }else{
+            if(aodtrack->Pt()<8&&aodtrack->Pt()>1&&aodtrackassoc->Pt()>0.3)
+            {
+                fHistTestDPhi18Sec->Fill(DPhi);
+            }
+        }
+
+
+
+        //Fill DPhi by Type here
+        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()&&!(aodtrackassoc->IsGlobalConstrained())) fHistTestDPhiType->Fill(DPhi, 1);
+
+        if((aodtrackassoc->IsGlobalConstrained())) fHistTestDPhiType->Fill(DPhi, 2);
+
+        if((aodtrackassoc->IsTPCOnly())) fHistTestDPhiType->Fill(DPhi, 3);
+
+
+        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1){
+
+
+            Int_t partOneID = 0;
+            Int_t partTwoID = 0;
+
+            if(aodtrackassoc->GetMostProbablePID()==AliAODTrack::kElectron) partOneID=1;
+
+            if(aodtrackassoc->GetMostProbablePID()==AliAODTrack::kPion) partOneID=2;
+
+
             for(Int_t k=0;k<ntracks;k++){
                 if(i==k || j==k){continue;}
-                
+
                 AliAODTrack* aodtrackassoc2 = (AliAODTrack*)aod->GetTrack(k);
-                
+
+                if(aodtrackassoc2->GetMostProbablePID()==AliAODTrack::kElectron) partTwoID=1;
+
+                if(aodtrackassoc2->GetMostProbablePID()==AliAODTrack::kPion) partTwoID=2;
+
                 Double_t DPhi=aodtrackassoc2->Phi()-aodtrack->Phi();
 
                 if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
@@ -2622,38 +2707,83 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
 
                 Double_t DEta=aodtrackassoc2->Eta()-aodtrack->Eta();
-                
-                
-                
+
+                Double_t ElecMass=.000511;
+
                 Double_t PionMass=.139;
                 //fill inv mass plot
 
-                Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
-                Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+PionMass*PionMass);
+                if(partOneID==1&&partTwoID==1&&aodtrackassoc->Charge()==aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0) 
+                {
+                    Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+ElecMass*ElecMass);
+                    Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+ElecMass*ElecMass);
 
-                TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), assocE1);
-                TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), assocE2);
+                    TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), assocE1);
+                    TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), assocE2);
 
-                Double_t InvMass=(assoc1+assoc2).M();
+                    Double_t InvMass=(assoc1+assoc2).M();
 
-                fHistTestInvMass->Fill(InvMass);
-            }
-                //Fill other plots
-                Int_t cid = aodtrackassoc->GetEMCALcluster();
-                if(cid > 0){
-                    AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
-                    fHistTestPt->Fill(aodtrackassoc->Pt());
-                    fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
-                    fHistTestDCA->Fill(aodtrackassoc->DCA());
-                    fHistTestEMCEnergy->Fill(aodcl->E());
-                    fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
-                    fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
+                    fHistTestInvMassElecLike->Fill(InvMass);   
                 }
-                else{cout<<"No EMCal cluster for this anamolous Peak\n";}
-            
-             
-        
-            
+                
+                if(partOneID==1&&partTwoID==1&&aodtrackassoc->Charge()!=aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0&&aodtrackassoc2->Charge()!=0) 
+                {
+                    Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+ElecMass*ElecMass);
+                    Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+ElecMass*ElecMass);
+
+                    TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), assocE1);
+                    TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), assocE2);
+
+                    Double_t InvMass=(assoc1+assoc2).M();
+
+                    fHistTestInvMassElecUnLike->Fill(InvMass);   
+                }
+                
+                if(partOneID==2&&partTwoID==2&&aodtrackassoc->Charge()==aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0) 
+                {
+                    Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
+                    Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+PionMass*PionMass);
+
+                    TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), assocE1);
+                    TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), assocE2);
+
+                    Double_t InvMass=(assoc1+assoc2).M();
+
+                    fHistTestInvMassPionLike->Fill(InvMass);   
+                }
+                
+                if(partOneID==2&&partTwoID==2&&aodtrackassoc->Charge()!=aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0&&aodtrackassoc2->Charge()!=0) 
+                {
+                    Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
+                    Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+PionMass*PionMass);
+
+                    TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), assocE1);
+                    TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), assocE2);
+
+                    Double_t InvMass=(assoc1+assoc2).M();
+
+                    fHistTestInvMassPionUnLike->Fill(InvMass);   
+                }
+
+
+
+            }
+            //Fill other plots
+            Int_t cid = aodtrackassoc->GetEMCALcluster();
+            if(cid > 0){
+                AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
+                fHistTestPt->Fill(aodtrackassoc->Pt());
+                fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
+                fHistTestDCA->Fill(aodtrackassoc->DCA());
+                fHistTestEMCEnergy->Fill(aodcl->E());
+                fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
+                fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
+            }
+            else{cout<<"No EMCal cluster for this anamolous Peak\n";}
+
+
+
+
         }
 
         if(PID==1||PID==2||PID==0){continue;}
