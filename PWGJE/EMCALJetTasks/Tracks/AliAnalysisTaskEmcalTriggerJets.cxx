@@ -101,7 +101,7 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
                   200, 0., 200., 200, 0., 200.);
               fHistos->CreateTH2("hLeading" + constituent + "ZFullJetR" + TString::Format("%02d", radius) + det + t,
                   "z vs. p_{t, jet} for leading " + constituent + " constituents in full jets with R=" + TString::Format("%.1f", double(radius)/10.) + " in " + det + " for trigger " + t,
-                  200, 0., 200., 100, 0., 100.);
+                  200, 0., 200., 100, 0., 1.);
               fHistos->CreateTH2("hLeading" + constituent + "PtrelFullJetR" + TString::Format("%02d", radius) + det + t,
                   "p_{t,rel} vs. p_{t, jet} for leading " + constituent + " constituents in full jets with R=" + TString::Format("%.1f", double(radius)/10.) + " in " + det + " for trigger " + t,
                   200., 0., 200., 100, 0., 1.);
