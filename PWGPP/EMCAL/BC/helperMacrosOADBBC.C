@@ -1,5 +1,5 @@
 /// \file helperMacrosOADBBC.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALOfflineMacros
 /// \brief Macro to test the files on OADB and provide a run range to be committed to OADB
 ///
 ///

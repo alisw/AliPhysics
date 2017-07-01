@@ -1,5 +1,5 @@
 /// \file helperMacrosBC.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALOfflineMacros
 /// \brief small collection of helper functions
 ///
 ///

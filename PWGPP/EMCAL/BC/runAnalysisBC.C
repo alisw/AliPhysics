@@ -1,5 +1,5 @@
 /// \file runAnalysisBC.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALOfflineMacros
 /// \brief Main function to run the bad channel analysis
 ///
 ///
