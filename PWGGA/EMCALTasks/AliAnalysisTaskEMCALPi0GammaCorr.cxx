@@ -224,11 +224,14 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_dR = 0.0;
     double max_dR = 0.11;
     
-    int nbins_DisToBad = 6;
-    double min_DisToBad = -0.5;
-    double max_DisToBad = 5.5;
+    int nbins_DisToBorder = 6;
+    double min_DisToBorder = -0.5;
+    double max_DisToBorder = 5.5;
 
-    
+    int nbins_DisToBad = 10;
+    double min_DisToBad = -0.5;
+    double max_DisToBad = 9.5;    
+
     //Pion-hadron correlations
     const int nbins_PionCorr = 24;
     
@@ -284,41 +287,41 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_ClusterTrack_Mixed);
     
     ///////////////Pi0////////////////////////////////////
-    const int nbins_Pi = 29;
+    const int nbins_Pi = 31;
     axisNames = "Pion THnSparse; Centrality; Z vertex ;#pion Mass; #pionpT; #pion Eta; #pion phi; #pion E;";
     axisNames = axisNames+ "ph1_E; ph2_E; Asymmetry; ph1_pT; ph2_pT; ph1 #eta; ph2 #eta; ph1 #phi; ph2 #phi; #Delta#phi;";
     axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ph1 nCells; ph2 nCells; ph1 nMatchedTracks; ph2 nMatchedTracks; ph1 nMaxima; ph2 nMaxima;";
-    axisNames = axisNames+ "ph1 dR; ph2 dR; ph1 DisToBorder; ph2 DisToBorder;";
+    axisNames = axisNames+ "ph1 dR; ph2 dR; ph1 DisToBorder; ph2 DisToBorder; ph1 DisToBadChannel; ph2 DisToBadChannel;";
 
     int binsPi0[nbins_Pi] = {nbins_Centrality, nbins_zvertex, nbins_Mass, nbins_Pt, nbins_eta, nbins_phi, nbins_E, 
                          nbins_E, nbins_E, nbins_Asymmetry, nbins_Pt, nbins_Pt, nbins_eta, nbins_eta, nbins_phi, nbins_phi, nbins_alpha, 
 			     nbins_M02, nbins_M02, nbins_Ncells, nbins_Ncells, nbins_nMatchedTracks, nbins_nMatchedTracks, nbins_nMaxima, nbins_nMaxima, nbins_dR,nbins_dR,
-			     nbins_DisToBad, nbins_DisToBad};
+			     nbins_DisToBorder, nbins_DisToBorder, nbins_DisToBad, nbins_DisToBad};
                             
     double xminPi0[nbins_Pi] = {min_Centrality, min_zvertex, min_Mass, min_Pt, min_eta, min_phi , min_E,
                                 min_E, min_E, min_Asymmetry, min_Pt, min_Pt, min_eta, min_eta, min_phi, min_phi, min_alpha,
                                 min_M02, min_M02 , min_Ncells, min_Ncells, min_nMatchedTracks, min_nMatchedTracks, min_nMaxima, min_nMaxima, min_dR, min_dR,
-                                min_DisToBad, min_DisToBad};
+                                min_DisToBorder, min_DisToBorder, min_DisToBad, min_DisToBad};
     double xmaxPi0[nbins_Pi] = {max_Centrality, max_zvertex, max_Mass, max_Pt, max_eta , max_phi , max_E,
                                 max_E, max_E, max_Asymmetry, max_Pt, max_Pt, max_eta, max_eta, max_phi, max_phi, max_alpha,
                                 max_M02, max_M02, max_Ncells, max_Ncells, max_nMatchedTracks, max_nMatchedTracks, max_nMaxima, max_nMaxima, max_dR, max_dR,
-                                max_DisToBad, max_DisToBad};
+                                max_DisToBorder, max_DisToBorder, max_DisToBad, max_DisToBad};
                                 
     h_Pi0= new THnSparseD("h_Pi0", axisNames, nbins_Pi, binsPi0, xminPi0, xmaxPi0);
     h_Pi0->Sumw2();
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 12;
+    const int nbins_Cluster = 13;
     
     axisNames = "Cluster THnSparse; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMatchedTracks; nMaxima;";
-    axisNames = axisNames + "Distance to Border; dR to track;";
-    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
-                                      nbins_nMaxima, nbins_DisToBad, nbins_dR};
+    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track;";
+    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, 10*nbins_eta, 10*nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
+                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR};
     double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima, 
-					 min_DisToBad, min_dR};
+					 min_DisToBorder, min_DisToBad, min_dR};
     double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima, 
-					 max_DisToBad, max_dR};
+					 max_DisToBorder, max_DisToBad, max_dR};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
@@ -510,7 +513,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     double zVertex = fVertex[2];
     AliParticleContainer* tracks =0x0;
     tracks   = GetParticleContainer(0);
-    //    fFiducialCellCut->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, cluster);
+    
 
     if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
@@ -766,13 +769,20 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     if( pi0.M()  > 1.0) return;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
-    double entries[29] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Eta(), pi0.Phi(), pi0.E(), 
+
+    double disToBad_1 = static_cast<double>(cluster_lead->GetDistanceToBadChannel());
+    if(disToBad_1>9) disToBad_1 = 9.0;
+    double disToBad_2 = static_cast<double>(cluster_sub->GetDistanceToBadChannel());
+    if(disToBad_2>9) disToBad_2 = 9.0;
+
+    double entries[31] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Eta(), pi0.Phi(), pi0.E(), 
                           ph_lead.E(), ph_sub.E(), asym, ph_lead.Pt(), ph_sub.Pt(), ph_lead.Eta(), ph_sub.Eta(), ph_lead.Phi(), ph_sub.Phi() , 
 			  std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())),  cluster_lead->GetM02(), cluster_sub->GetM02(), 
 			  static_cast<double>(cluster_lead->GetNCells()), static_cast<double>(cluster_sub->GetNCells()), 
 			  static_cast<double>(cluster_lead->GetNTracksMatched()), static_cast<double>(cluster_sub->GetNTracksMatched()),
                           static_cast<double>(cluster_lead->GetNExMax()), static_cast<double>(cluster_sub->GetNExMax()), dRmin_1, dRmin_2,
-                          static_cast<double>(GetMaxDistanceFromBorder(cluster_lead)), static_cast<double>(GetMaxDistanceFromBorder(cluster_sub)) };
+                          static_cast<double>(GetMaxDistanceFromBorder(cluster_lead)), static_cast<double>(GetMaxDistanceFromBorder(cluster_sub)), 
+                          disToBad_1, disToBad_2};
 
     histo->Fill(entries);
     return;
@@ -785,8 +795,11 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     clusters->GetMomentum(ph, cluster);
     if(cluster->E()< 5.0) return;
     Double_t dRmin = ClustTrackMatching(cluster);
+    Double_t disToBad = static_cast<double>(cluster->GetDistanceToBadChannel());
+    Double_t disToBorder = static_cast<double>(GetMaxDistanceFromBorder(cluster));
 
-    double entries[12] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), static_cast<double>(GetMaxDistanceFromBorder(cluster)), dRmin };
+    double entries[13] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+                         static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin };
     histo->Fill(entries);
     return;
 }
