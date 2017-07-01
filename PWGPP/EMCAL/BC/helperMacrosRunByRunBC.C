@@ -1,5 +1,5 @@
 /// \file helperMacrosRunByRunBC.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALOfflineMacros
 /// \brief This macro is used for a run-by-run evaluation of the bad channels and finding the best period splitting for long runlists
 ///
 ///

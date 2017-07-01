@@ -15,23 +15,34 @@
  * \defgroup EMCALPerformanceMacros EMCALPerformanceMacros
  * \ingroup EMCALPerformance EMCALPerformance
  * \brief Analysis task configuration macros for EMCal performance package
- *
+ */
+
+/**
+ * \defgroup EMCALOfflineMacros EMCALOfflineMacros
+ * \ingroup EMCALPerformance EMCALPerformance
+ * \brief Macros used for data analysis of train outputs for EMCal calibration *
  * This is a collection of analysis macros and general code used for EMCal QA and Calibration.
- * Besides the AddTask macros there are several standalone macros for a post
- * processing analysis. They are grouped below.
+ * They are grouped in the following folder structure.
+ *
+ * + QA contains macros for a run-by-run quality assurance of the EMcal performance
+ * + TiC contains macros for time calibration of the EMCal cell signals
+ * + TeC contains macros for temperature of the EMCal cell signals
+ * + EC contains macros for energy calibration of the EMCal
+ * + BC contains macros for masking bad cells in the EMCal
+ * 
  *
  * QA code
  * ---------------------
- * + macro1QA.C  
- * + macro2QA.C  
- * + macro3QA.C  
+ * + macro1.C
+ * + macro2.C
+ * + macro3.C
  *
  * Time Calibration code
  * ---------------------
  * 
- * + macro1TiC.C  
- * + macro2TiC.C  
- * + macro3TiC.C
+ * + macro1.C
+ * + macro2.C
+ * + macro3.C
  *
  * Bad Channel Analysis code
  * ---------------------
@@ -48,18 +59,15 @@
  * Energy Calibration code
  * ---------------------
  *
- * + macro1EC.C  
- * + macro2EC.C  
- * + macro3EC.C
+ * + macro1.C
+ * + macro2.C
+ * + macro3.C
  *
  * Temperature Calibration code
  * ---------------------
  *
- * + macro1TeC.C
- * + macro2TeC.C
- * + macro3TeC.C
- *
- * 
- *
+ * + macro1.C
+ * + macro2.C
+ * + macro3.C
  *
  */
