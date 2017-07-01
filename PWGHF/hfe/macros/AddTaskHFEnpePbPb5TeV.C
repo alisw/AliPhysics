@@ -50,7 +50,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 
   Int_t kWei = -1;
   
-  if (MCthere) kWei = 1;    // default Pb-Pb
+  if (MCthere) kWei = 9;    // default Pb-Pb
   enum {
 
     k11a10abisweiData = 6,  // LHC11a10abis weights 
