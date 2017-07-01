@@ -1825,8 +1825,8 @@ AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator=(const AliV0ReaderV1:
 }
 
 bool AliV0ReaderV1::iterator::operator!=(AliV0ReaderV1::iterator &other) const{
-  if(fkData != other.fkData) return false;
-  return fCurrentIndex == other.fCurrentIndex;
+  if(fkData != other.fkData) return true;
+  return fCurrentIndex != other.fCurrentIndex;
 }
 
 AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator++(int index){
