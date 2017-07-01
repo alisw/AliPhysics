@@ -1142,10 +1142,12 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
         Double_t dx2=dy2;
         
-        //For testing purposes
-        dx2 = dx2/fkIfImprovedExtraPrecisionFactor;
-        dy2 = dy2/fkIfImprovedExtraPrecisionFactor;
-        dz2 = dz2/fkIfImprovedExtraPrecisionFactor;
+        if( TMath::Abs(fkIfImprovedExtraPrecisionFactor-1.0)>1e-4 ){
+            //For testing purposes: override uncertainties, please
+            dx2 = fkIfImprovedExtraPrecisionFactor;
+            dy2 = fkIfImprovedExtraPrecisionFactor;
+            dz2 = fkIfImprovedExtraPrecisionFactor;
+        }
         
         //Create dummy V0 track
         //V0 properties to get started
