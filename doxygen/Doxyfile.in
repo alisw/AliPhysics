@@ -759,11 +759,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
-                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
-                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWGCF/FLOW/Documentation/doxygen \
-                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
-                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGJE/doc \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/Tracks \
@@ -787,14 +783,22 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/tests \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/trains \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/doc \
-                         @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \
+                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
+                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/BC \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TeC \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TiC \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/EC \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
+                         @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
