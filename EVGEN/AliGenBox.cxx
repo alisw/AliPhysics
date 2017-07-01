@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -31,6 +32,7 @@
 #include "AliGenEventHeader.h"
 #include "TDatabasePDG.h"
 #include "AliPDG.h"
+#include "AliLog.h"
 
 ClassImp(AliGenBox)
 
@@ -51,7 +53,12 @@ AliGenBox::AliGenBox(Int_t npart)
     :AliGenerator(npart),
      fIpart(kProton),
      fEtaMin(0),
-     fEtaMax(0)
+     fEtaMax(0),
+     fRandomOffset(kFALSE),
+     fRMinOffset(0),
+     fRMaxOffset(0),
+     fZMinOffset(0),
+     fZMaxOffset(0)
 {
   //
   // Standard constructor
@@ -90,7 +97,7 @@ void AliGenBox::GenerateN(Int_t ntimes)
   //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
     time = fTimeOrigin;
-    if(fVertexSmear==kPerEvent) {
+    if(fVertexSmear==kPerEvent && !fRandomOffset) {
 	Vertex();
 	for (j=0;j<3;j++) origin[j]=fVertex[j];
 	time = fTime;
@@ -141,11 +148,20 @@ void AliGenBox::GenerateN(Int_t ntimes)
 	    p[2] = pmom*TMath::Cos(theta);
 	}
 
-	if(fVertexSmear==kPerTrack) {
-	    Rndm(random,6);
-	    for (j=0;j<3;j++) {
+	if(fVertexSmear==kPerTrack || fRandomOffset) {
+	    if (fRandomOffset) {
+	      Rndm(random,2);
+	      float roffs = random[0]*(fRMaxOffset-fRMinOffset) + fRMinOffset;
+	      origin[0] = fOrigin[0] + roffs*TMath::Cos(phi);
+	      origin[1] = fOrigin[1] + roffs*TMath::Sin(phi);
+	      origin[2] = fOrigin[2] + random[1]*(fZMaxOffset-fZMinOffset)+fZMinOffset;
+	    }
+	    else {
+	      Rndm(random,6);
+	      for (j=0;j<3;j++) {
 		origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	      }
 	    }
 
 	    Rndm(random,2);
@@ -183,5 +199,18 @@ void AliGenBox::Init()
     Fatal("Init","You should only set the range of one of these variables: y, eta or theta\n");
   if((!TestBit(kYRange)) && (!TestBit(kEtaRange)) && (!TestBit(kThetaRange)) )
     Fatal("Init","You should set the range of one of these variables: y, eta or theta\n");
+}
+
+void AliGenBox::SetRandomOffset(float rmin, float rmax, float zmin, float zmax)
+{
+  if (rmin<0 || rmin>rmax) AliFatalF("Wrong random R offset request: RMin: %.3f RMax: %.3f",rmin,rmax);
+  if (zmin>zmax) AliFatalF("Wrong random Z offset request: ZMin: %.3f ZMax: %.3f",zmin,zmax);
+  fRMaxOffset = rmax;
+  fRMinOffset = rmin;
+  fZMaxOffset = zmax;
+  fZMinOffset = zmin;
+  fRandomOffset = kTRUE;
+  AliInfoF("Origin of every track will be randomly shifted by %.2f<R<%.2f and %.2f<Z<%.2f",
+	   fRMinOffset, fRMaxOffset, fZMinOffset, fZMaxOffset);
 }
 
