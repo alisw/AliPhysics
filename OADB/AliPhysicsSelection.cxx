@@ -256,11 +256,15 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
 
 //______________________________________________________________________________
 Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline){
-  // evaluates trigger logic. If called with no event
-  // pointer/triggerAnalysis pointer, it just caches the tokens Fills
-  // the statistics histogram, if booked at row i
+  // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
+  // Fills the statistics histogram, if booked at row i
   TString trigger(triggerLogic);
 
+  // add space after each token (to use ReplaceAll later); AFAIKT, the
+  // regex matches on 0 or more \w, though?
+  // Eg: Before: "V0A && V0C && ZDCTime && !TPCHVdip"
+  //      After: "V0A && V0C && ZDCTime && !TPCHVdip "
+  fRegexp->Substitute(trigger, "$1 ", "g");
   // Split the trigger string at the `&`; Note: we still have to strip whitespaces
   TObjArray* dirty_tokens = trigger.Tokenize("&&");
   // collect all the trigger results in this vector which we can later
@@ -307,9 +311,64 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
       }
     }
   }
+  while (1) {
+    AliDebug(AliLog::kDebug, trigger.Data());
+    
+    TArrayI pos;
+    // Match alphanumerical thing succedded by whitespace
+    Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
+    // All triggers treated;
+    if (nMatches <= 0) break;
+    // Extract the name of the trigger; eg "V0A"
+    TString token(trigger(pos[0], pos[1]-pos[0]+1));
+
+    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
+    if (!param) {
+      TInterpreter::EErrorCode error;
+      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
+      
+      if (error > 0) AliFatal(Form("Trigger token %s unknown", token.Data()));
+      
+      param = new TParameter<Int_t>(token, bit);
+      fCashedTokens->Add(param);
+      AliDebug(AliLog::kDebug, "Added token");
+    }
+    
+    Long64_t bit = param->GetVal();
+    
+    AliDebug(AliLog::kDebug, Form("Tok %d %d %s %lld", pos[0], pos[1], token.Data(), bit));
+    
+    if (offline) 
+      bit |= AliTriggerAnalysis::kOfflineFlag;
+    
+    if(event && triggerAnalysis) {
+      // Replace the current trigger name with 0 or 1, base on AliTriggerAnalysis::EvaluateTrigger
+      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
+    }
+  }
+
+  // The final modified trigger string now might look something like: "1 && 1 && 1 && !0"
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
+  // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
+  // as the v6 version produces a large amount of warnings at runtime.
+  ROOT::v5::TFormula formula("formula",trigger);
+#else
+  TFormula formula("formula", trigger);
+#endif
+  if (formula.Compile() > 0)
+    AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
+  // Check if all constituents of the trigger string evaluate to
+  // `true`; the "function" is constant, so the value in `Eval` does
+  // not matter
+  Bool_t result = formula.Eval(0);
   // Fold the vector with the individual trigger results by requiring all to be true
-  Bool_t result
+  Bool_t new_result
     = std::all_of(trigger_results.begin(), trigger_results.end(), [](Bool_t t){return t == true;});
+  if (result != new_result) {
+    AliFatal("Old and new method do not aggree!");
+  }
+  AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
   return result;
 }
 
