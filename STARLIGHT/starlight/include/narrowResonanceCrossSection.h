@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 211                         $: revision of last commit
-// $Author:: butter                   $: author of last commit
-// $Date:: 2015-08-10 04:05:09 +0200 #$: date of last commit
+// $Rev:: 286                         $: revision of last commit
+// $Author:: jnystrand                $: author of last commit
+// $Date:: 2017-05-03 22:32:03 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -50,6 +50,8 @@ public:
 private:
 	
 	double _Ep;
+	double _gamma1;
+	double _gamma2;
 	double _narrowYmax;
 	double _narrowYmin;
 	int    _narrowNumY;

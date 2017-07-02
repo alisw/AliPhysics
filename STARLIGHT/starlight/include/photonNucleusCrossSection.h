@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 280                         $: revision of last commit
+// $Rev:: 284                         $: revision of last commit
 // $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-12-12 20:38:20 +0100 #$: date of last commit
+// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -87,6 +87,7 @@ protected:
 	double _photonNucleusSigma; 
 
         int    _printDef; 
+        int    _impulseSelected;
 	
 private:
 

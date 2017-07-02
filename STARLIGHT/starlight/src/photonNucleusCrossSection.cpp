@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 283                         $: revision of last commit
+// $Rev:: 284                         $: revision of last commit
 // $Author:: jnystrand                $: author of last commit
-// $Date:: 2017-03-07 18:17:50 +0100 #$: date of last commit
+// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -59,6 +59,7 @@ photonNucleusCrossSection::photonNucleusCrossSection(const inputParameters& inpu
           _productionMode    (inputParametersInstance.productionMode()    ),
 	  _sigmaNucleus      (_bbs.beam2().A()          )
 {
+         _impulseSelected = inputParametersInstance.impulseVM();
 	switch(_particleType) {
 	case RHO:
 		_slopeParameter = 11.0;  // [(GeV/c)^{-2}]
@@ -215,6 +216,9 @@ photonNucleusCrossSection::getcsgA(const double Egamma,
 	   csgA = sigmagp(Wgp);
 	} else {
 	   // coherent AA interactions
+           int A_1 = _bbs.beam1().A(); 
+           int A_2 = _bbs.beam2().A(); 
+
 	   // Calculate V.M.+proton cross section
            // cs = sqrt(16. * pi * _vmPhotonCoupling * _slopeParameter * hbarc * hbarc * sigmagp(Wgp) / alpha); 
            cs = sigma_N(Wgp); //Use member function instead 
@@ -222,13 +226,18 @@ photonNucleusCrossSection::getcsgA(const double Egamma,
 	   // Calculate V.M.+nucleus cross section
 	   cvma = sigma_A(cs,beam); 
 
+           // Do impulse approximation here
+           if( _impulseSelected == 1){
+             if( beam == 1 ){
+	       cvma = A_1*cs;
+	     } else if ( beam == 2 ){
+               cvma = A_2*cs;
+	     }   
+           }	   
+
 	   // Calculate Av = dsigma/dt(t=0) Note Units: fm**s/Gev**2
 	   Av = (alpha * cvma * cvma) / (16. * pi * _vmPhotonCoupling * hbarc * hbarc);
 
-           // Check if one or both beams are nuclei 
-           int A_1 = _bbs.beam1().A(); 
-           int A_2 = _bbs.beam2().A(); 
-   
 	   tmax   = tmin + 0.25;
 	   ax     = 0.5 * (tmax - tmin);
 	   bx     = 0.5 * (tmax + tmin);
