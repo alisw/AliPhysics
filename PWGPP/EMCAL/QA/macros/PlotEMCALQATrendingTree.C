@@ -23,6 +23,7 @@
 
 ///
 /// \file PlotEMCALQATrendingTree.C
+/// \ingroup EMCALOfflineMacros
 /// \brief QA at run level
 ///
 /// This macro produces periodLevelQA for EMCAL from a trending tree.
