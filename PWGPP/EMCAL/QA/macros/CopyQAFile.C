@@ -11,6 +11,7 @@
 
 ///
 /// \file copyQAFile.C
+/// \ingroup EMCALOfflineMacros
 /// \brief copy a QAresult.root file from alien to a local directory and check it.
 ///
 /// copy a QAresult.root file from alien to a local directory and check it. 

@@ -22,6 +22,7 @@
 
 ///
 /// \file CreateEMCALRunQA.C
+/// \ingroup EMCALOfflineMacros
 /// \brief QA at run level
 ///
 /// This macro produces runLevelQA for EMCal from a QAresults.root file.
