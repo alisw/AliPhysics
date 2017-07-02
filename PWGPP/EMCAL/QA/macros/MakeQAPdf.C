@@ -12,6 +12,7 @@
 
 ///
 /// \file MakeQAPdf.C
+/// \ingroup EMCALOfflineMacros
 /// \brief QA to PDF files
 ///
 /// Make a pdf with all QA plots
