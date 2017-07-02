@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 280                         $: revision of last commit
+// $Rev:: 286                         $: revision of last commit
 // $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-12-12 20:38:20 +0100 #$: date of last commit
+// $Date:: 2017-05-03 22:32:03 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -53,6 +53,8 @@ wideResonanceCrossSection::wideResonanceCrossSection(const inputParameters& inpu
 	_wideYmin = -1.0 * _wideYmax;
 	_wideNumY = inputParametersInstance.nmbRapidityBins(); 
 	_Ep       = inputParametersInstance.protonEnergy();
+	_gamma1     = inputParametersInstance.beam1LorentzGamma();
+	_gamma2     = inputParametersInstance.beam2LorentzGamma();
 	_printDef = inputParametersInstance.printVM();	
 }
 
@@ -76,16 +78,24 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 	double csgA1,csgA2,csgA12,int_r,dR;
 	double Eth;
 	int    I,J,NW,NY,beam;
+        double yprintcm,egaprint,Wgpprint,csgAprint; 
         std::vector<double> yVal(_wideNumY);
         std::vector<double> dsigdyVal(_wideNumY);
+        std::vector<double> w1Val(_wideNumY);
         std::vector<double> Egamma1Val(_wideNumY);
         std::vector<double> ngamma1Val(_wideNumY);
         std::vector<double> sigGA1Val(_wideNumY);
         std::vector<double> dsigdy1Val(_wideNumY);
+        std::vector<double> w2Val(_wideNumY);
         std::vector<double> Egamma2Val(_wideNumY);
         std::vector<double> ngamma2Val(_wideNumY);
         std::vector<double> sigGA2Val(_wideNumY);
         std::vector<double> dsigdy2Val(_wideNumY);
+
+	// Get the Collider (lab) frame kinematics for printing of the differential cross section 
+        double ybeam1 = acosh(_gamma1);
+	double ybeam2 = -acosh(_gamma2);
+        double ycm = (ybeam1+ybeam2)/2.;
 
 	double bwnorm = bwnormsave; //used to transfer the bwnorm from the luminosity tables
         double mvm = getChannelMass();
@@ -118,38 +128,25 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
         // Do this first for the case when the first beam is the photon emitter 
         // Treat pA separately with defined beams 
         // The variable beam (=1,2) defines which nucleus is the target 
-	for(J=0;J<=NY-1;J++){
+        if( ( A_1 == 1 && A_2 != 1 ) || (A_2 > 1 && A_1 > 1) || (A_1 == 1 && A_2 == 1) ){
+	  for(J=0;J<=NY-1;J++){
 
 	    y1  = _wideYmin + double(J)*dY;
 	    y2  = _wideYmin + double(J+1)*dY;
 	    y12 = 0.5*(y1+y2);
+            yVal[J] = y12; 
+	    yprintcm = y12 - ycm;
+            beam = 2;
             double localdsig=0.0;
 	    
 	    for(I=0;I<=NW-1;I++){
     
 		W = _wideWmin + double(I)*dW + 0.5*dW;
-    
-                if( A_2 == 1 && A_1 != 1 ){
-                  // pA, first beam is the nucleus and is in this case the target  
-                  // Egamma = 0.5*W*exp(-Y); 
-                  ega1  = 0.5*W*exp(-y1);
-                  ega2  = 0.5*W*exp(-y2);
-                  ega12 = 0.5*W*exp(-y12);
-                  beam = 1; 
-                } else if( A_1 ==1 && A_2 != 1){
-                  // pA, second beam is the nucleus and is in this case the target 
-                  ega1  = 0.5*W*exp(y1);
-                  ega2  = 0.5*W*exp(y2);
-                  ega12 = 0.5*W*exp(y12);
-                  beam = 2; 
-                } else {
-                  ega1  = 0.5*W*exp(y1);
-                  ega2  = 0.5*W*exp(y2);
-                  ega12 = 0.5*W*exp(y12);
-                  beam = 2; 
-                }
-      
-      
+	        ega1  = 0.5*W*exp(y1);
+	        ega2  = 0.5*W*exp(y2);
+	        ega12 = 0.5*W*exp(y12);
+	        egaprint = 0.5*W*exp(yprintcm);
+
 	        if(ega1 < Eth || ega2 < Eth) continue;
 		if(ega2 > maxPhotonEnergy()) continue;
           
@@ -160,36 +157,47 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 
 		//         >> Second Point                      =====>>>
 		csgA2=getcsgA(ega2,W,beam);
-      
+
+ 		// Print Point
+		csgAprint=getcsgA(egaprint,W,beam);
+     
 		//>> Sum the contribution for this W,Y. The 2 accounts for the 2 beams
 		dR  = ega1*photonFlux(ega1,beam)*csgA1;
 		dR  = dR + 4.*ega12*photonFlux(ega12,beam)*csgA12;
 		dR  = dR + ega2*photonFlux(ega2,beam)*csgA2;
 		dR  = dR*(dY/6.)*breitWigner(W,bwnorm)*dW;
-                localdsig += dR;
+                //localdsig += dR;
+                localdsig += egaprint*photonFlux(egaprint,beam)*csgAprint*dY*breitWigner(W,bwnorm)*dW;
 		
 		int_r = int_r+dR;  
 	    }
 
-	    yVal[J] = y12; 
-            ega12 = 0.5*mvm*exp(y12);
-            Egamma1Val[J] = ega12;
-	    ngamma1Val[J] = ega12*photonFlux(ega12,beam);
-	    sigGA1Val[J] = 10.*getcsgA(ega12,mvm,beam); //This is sigma(gamma+A) in millibarn 
-	    dsigdy1Val[J] = 10.*localdsig/dY; 
+	    //Take the printed Wgp and photon flux at the mass of the VM
+	    egaprint = 0.5*mvm*exp(yprintcm);
+            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
+		               +starlightConstants::protonMass*starlightConstants::protonMass);
+            dsigdyVal[J]  = 10.*localdsig/dY; //This is dsig/dy in millibarn 
+            w1Val[J] = Wgpprint; 
+            Egamma1Val[J] = egaprint;
+	    ngamma1Val[J] = egaprint*photonFlux(egaprint,beam);
+	    sigGA1Val[J]  = 10.*getcsgA(egaprint,mvm,beam); //This is sigma(gamma+A) in millibarn 
+ 	    dsigdy1Val[J] = 10.*localdsig/dY; 
             
-	}
+	  }
+        }  
 
         // Repeat the loop for the case when the second beam is the photon emitter. 
-        // Don't repeat for pA
-        if( !( (A_2 == 1 && A_1 != 1) || (A_1 == 1 && A_2 != 1) ) ){ 
+        // For pA, do it here or above
+        if( ( A_2 == 1 && A_1 != 1 ) || (A_2 > 1 && A_1 > 1) || (A_1 == 1 && A_2 == 1) ){ 
 
-          beam = 1; 
 	  for(J=0;J<=NY-1;J++){
 
 	    y1  = _wideYmin + double(J)*dY;
 	    y2  = _wideYmin + double(J+1)*dY;
 	    y12 = 0.5*(y1+y2);
+            yVal[J] = y12; 
+	    yprintcm = y12 - ycm;
+            beam = 1;
             double localdsig=0.0;
 
 	    for(I=0;I<=NW-1;I++){
@@ -199,6 +207,7 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 		ega1  = 0.5*W*exp(-y1);
 		ega2  = 0.5*W*exp(-y2);
 		ega12 = 0.5*W*exp(-y12);
+	        egaprint = 0.5*W*exp(-yprintcm);
       
 		if(ega1< Eth || ega2 < Eth) continue;
 		if(ega1 > maxPhotonEnergy()) continue;
@@ -210,34 +219,37 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 
 		//         >> Second Point                      =====>>>
 		csgA2=getcsgA(ega2,W,beam);
+
+ 		// Print Point
+		csgAprint=getcsgA(egaprint,W,beam);
       
 		//>> Sum the contribution for this W,Y. The 2 accounts for the 2 beams
 		dR  = ega1*photonFlux(ega1,beam)*csgA1;
 		dR  = dR + 4.*ega12*photonFlux(ega12,beam)*csgA12;
 		dR  = dR + ega2*photonFlux(ega2,beam)*csgA2;
 		dR  = dR*(dY/6.)*breitWigner(W,bwnorm)*dW;
-                localdsig += dR;
+                //localdsig += dR;
+                localdsig += egaprint*photonFlux(egaprint,beam)*csgAprint*dY*breitWigner(W,bwnorm)*dW;
       
-		//For identical beams, we double.  Either may emit photon/scatter
-		//For large differences in Z, we approx, that only beam1 emits photon
-		//and beam2 scatters, eg d-Au where beam1=au and beam2=d
-		// if(getbbs().beam1().A()==getbbs().beam2().A()){
-		//	dR  = 2.*dR;
-		// }
 		int_r = int_r+dR;  
 	     }
 
-	    //            dsigdyVal[J] = 10.*localdsig/dY; //This is dsig/dy in millibarn
-            ega12 = 0.5*mvm*exp(-y12);
-            Egamma2Val[J] = ega12;
-	    ngamma2Val[J] = ega12*photonFlux(ega12,beam);
-	    sigGA2Val[J] = 10.*getcsgA(ega12,mvm,beam); //This is sigma(gamma+A) in millibarn 
-	    dsigdy2Val[J] = 10.*localdsig/dY; 
-            dsigdyVal[J] = dsigdy1Val[J] + dsigdy2Val[J];
+	    //Take the printed Wgp and photon flux at the mass of the rho0
+	    egaprint = 0.5*mvm*exp(-yprintcm);
+            Wgpprint = sqrt(2.*egaprint*(_Ep+sqrt(_Ep*_Ep-starlightConstants::protonMass*starlightConstants::protonMass))
+		               +starlightConstants::protonMass*starlightConstants::protonMass);
+            dsigdyVal[J]  += 10.*localdsig/dY; //This is dsig/dy in millibarn 
+            w2Val[J] = Wgpprint; 
+            Egamma2Val[J] = egaprint;
+	    ngamma2Val[J] = egaprint*photonFlux(egaprint,beam);
+	    sigGA2Val[J]  = 10.*getcsgA(egaprint,mvm,beam); //This is sigma(gamma+A) in millibarn 
+ 	    dsigdy2Val[J] = 10.*localdsig/dY; 
+
 	  }
         }
 
 	cout<<endl;
+	if( _impulseSelected == 1 )cout<<" Using impulse approximation. Nuclear effects removed."<<endl; 
 	if (0.01*int_r > 1.){
 	  cout<< " Total cross section: "<<0.01*int_r<<" barn."<<endl;
 	} else if (10.*int_r > 1.){
@@ -259,18 +271,16 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 
 	  if(  _printDef == 2 ){
             printf("Printing detailed information from the vector meson cross section calculation.  \n \n");
-	    printf("First column gives the rapidity. Second and third column give the photon energy \n");
-	    printf("and photon flux (k*(dn/dk)) from the first beam (defined by BEAM_1_Z, BEAM_1_A  \n");
-	    printf("etc.). Photon energies are given in GeV in the center of mass frame. The fourth \n"); 
-            printf("column gives the gamma+A cross section with the second beam as target. The      \n");
-	    printf("fifth column gives the contribution to the cross section (dsig/dy) for this     \n");
-	    printf("combination. The 6th - 9th columns give the corresponding information for the   \n");
-	    printf("other configuration (the beam defined by BEAM_2_Z etc. emits the photon). The   \n");
-	    printf("last (10th) column gives the total dsig/dy. \n \n");
-	    printf("Note: When using wide resonances, the simple relation k*(dn/dk)*sig(gam+A) = \n");
-	    printf("dsig/dy does no longer hold exactly. When integrating over the invariant mass \n");
-	    printf("it is no longer possible to umambiguously separate dn/dk and sig(gam+A). \n \n"); 
+	    printf("First column gives the rapidity in the lab frame. Second and third column give  \n");
+	    printf("the gamma-nucleon center of mass energy and photon flux (k*(dn/dk))from the     \n");
+	    printf("first beam (defined by BEAM_1_Z, BEAM_1_A etc.). The fourth column gives the    \n"); 
+            printf("gamma+A cross section with the second beam as target. The  fifth column gives   \n");
+	    printf("the contribution to the cross section (dsig/dy) for this combination. The 6th - \n");
+	    printf("9th columns give the corresponding information for the opposite combination     \n");
+	    printf("(the beam defined by BEAM_2_Z etc. emits the photon). The last (10th) column    \n");
+	    printf("gives the total dsig/dy. \n");
 	  }
+
 	  double maxVal = 0.0; for(I=0;I<=(NY-1);I++){if(dsigdyVal[I] > maxVal)maxVal=dsigdyVal[I];}
           double scaleFactor = 0.0; 
           if( maxVal > 1.0 ){
@@ -311,15 +321,15 @@ wideResonanceCrossSection::crossSectionCalculation(const double bwnormsave)
 	  }
 
           if( _printDef == 2 ){
-            printf(" y      Egamma1     k*(dn_1/dk) sigma_2(gam+A) dsig_1/dy  Egamma2     k*(dn_2/dk) sigma_1(gam+A) dsig_2/dy    dsig/dy \n");
+             printf(" y       Wgp(1) (GeV) k*(dn_1/dk)  sigma_2(gam+A)  dsig_1/dy  Wgp(2) (GeV) k*(dn_2/dk) sigma_1(gam+A)  dsig_2/dy    dsig/dy \n");
 	  }
 	  
 	  for(J=0;J<=(NY-1);J++){
             if( _printDef == 1){ 
               printf("%+6.2f          %10.4f \n",yVal[J],scaleFactor*dsigdyVal[J]);
 	    } else if ( _printDef == 2 ){
-              printf("%+5.1f   %.4E  %.4E  %.4E    %9.4f   ",yVal[J],Egamma1Val[J],ngamma1Val[J],scaleFactor*sigGA1Val[J],scaleFactor*dsigdy1Val[J]); 
-              printf("%.4E  %.4E  %.4E    %9.4f    %9.4f \n",Egamma2Val[J],ngamma2Val[J],scaleFactor*sigGA2Val[J],scaleFactor*dsigdy2Val[J],scaleFactor*dsigdyVal[J]); 
+              printf("%+6.2f   %.4E   %.4E   %.4E   %9.4f     ",yVal[J],w1Val[J],ngamma1Val[J],scaleFactor*sigGA1Val[J],scaleFactor*dsigdy1Val[J]); 
+              printf("%.4E   %.4E  %.4E   %9.4f    %9.4f \n",w2Val[J],ngamma2Val[J],scaleFactor*sigGA2Val[J],scaleFactor*dsigdy2Val[J],scaleFactor*dsigdyVal[J]); 
 	    }
 	  }
           printf("\n");

@@ -135,7 +135,7 @@ class TStarLight : public TGenerator {
   inputParameters  fInputParameters;  //   simulation input information.
   upcEvent         fEvent;            //!  object holding STARlight simulated event.
 
-  ClassDef(TStarLight,2); // STARlight interface to ROOT's Virtual Monte Carlo
+  ClassDef(TStarLight,3); // STARlight interface to ROOT's Virtual Monte Carlo
 } ;
 
 #endif

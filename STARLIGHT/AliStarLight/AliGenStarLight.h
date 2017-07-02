@@ -61,7 +61,7 @@ public:
 
   AliSLEventHeader *fHeader;      //!
 
-  ClassDef(AliGenStarLight,5);
+  ClassDef(AliGenStarLight,6);
 } ;
 
 #endif
