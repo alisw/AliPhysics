@@ -82,8 +82,12 @@ void recraw_local(const char *filename,
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  if (struri.CompareTo("") == 0) man->SetDefaultStorage(cdbURI);
-  
+  if (struri.CompareTo("") != 0)
+  {
+    //printf("Setting CDB storage: %s\n", cdbURI);
+    man->SetDefaultStorage(cdbURI);
+  }
+
   //if found, configure any specific storages
   //same logic as in CPassX and benchmark
   if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
