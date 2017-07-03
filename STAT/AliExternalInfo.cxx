@@ -672,9 +672,10 @@ const TString AliExternalInfo::Curl(TString& mifFilePath, const TString& interna
   mifFilePath = rootFileName.ReplaceAll(".log", ".mif");
   mifFilePath.Prepend(internalLocation);
 
-  command = TString::Format("curl --remote-time -k --tlsv1 --cert %s --key %s -o %s 2>%s \"%s\"",
-                                     certificate.Data(), privateKey.Data(),
+  command = TString::Format("curl -z %s -k --tlsv1 --cert %s --key %s -o %s 2>%s \"%s\"",
+                                     mifFilePath.Data(), certificate.Data(), privateKey.Data(),
                                      mifFilePath.Data(), logFileName.Data(), externalLocation.Data());
+
   return command;
 }
 
