@@ -58,6 +58,7 @@ set(SRCS
     AliAnalysisTaskMaterialHistos.cxx
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
     AliAnalysisTaskOmegaToPiZeroGamma.cxx
+    AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx

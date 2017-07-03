@@ -83,7 +83,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     };
 
 
-    Bool_t SetCutIds(TString cutString); 
+    Bool_t SetCutIds(TString cutString);
     Int_t fCuts[kNCuts];
     Bool_t SetCut(cutIds cutID, Int_t cut);
     Bool_t UpdateCutString();
