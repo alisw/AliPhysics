@@ -18,6 +18,7 @@
 
 #include <AliAnalysisCuts.h>
 #include <TList.h>
+#include <TFormula.h>
 #include "TObjString.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -34,6 +35,8 @@ class AliOADBPhysicsSelection;
 class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
+
+typedef std::map<std::string, TFormula> StringToTFormula;
 
 class AliPhysicsSelection : public AliAnalysisCuts{
 public:
@@ -110,8 +113,9 @@ protected:
 
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list
+  StringToTFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
 
-  ClassDef(AliPhysicsSelection, 22)
+  ClassDef(AliPhysicsSelection, 23)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);
