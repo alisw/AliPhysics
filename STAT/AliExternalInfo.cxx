@@ -243,8 +243,8 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         externalLocation = TString::Format(externalLocation.Data(), period.Data());
       }
 
-      TString mifFilePath = ""; // Gets changed in Wget command
-      TString command = Wget(mifFilePath, internalLocation, rootFileName, externalLocation);
+      TString mifFilePath = ""; // Gets changed in Curl command
+      TString command = Curl(mifFilePath, internalLocation, rootFileName, externalLocation);
 
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
@@ -657,9 +657,9 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
 /// \param internalLocation Directory where the root file is stored
 /// \param rootFileName Location of the newly created root file
 /// \param externalLocation Location specified in the config file
-/// Composes the wget-command in a TString which afterwards then can be executed
-/// \return wget-command in a TString
-const TString AliExternalInfo::Wget(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation){
+/// Composes the curl-command in a TString which afterwards then can be executed
+/// \return curl-command in a TString
+const TString AliExternalInfo::Curl(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation){
   TString command = "";
   TString certificate("$HOME/.globus/usercert.pem");
   TString privateKey("$HOME/.globus/userkey.pem");
@@ -672,9 +672,10 @@ const TString AliExternalInfo::Wget(TString& mifFilePath, const TString& interna
   mifFilePath = rootFileName.ReplaceAll(".log", ".mif");
   mifFilePath.Prepend(internalLocation);
 
-  command = TString::Format("wget --no-check-certificate --secure-protocol=TLSv1 --certificate=%s --private-key=%s -o %s -O %s \"%s\"",
-                                     certificate.Data(), privateKey.Data(), logFileName.Data(),
-                                     mifFilePath.Data(), externalLocation.Data());
+  command = TString::Format("curl -z %s -k --tlsv1 --cert %s --key %s -o %s 2>%s \"%s\"",
+                                     mifFilePath.Data(), certificate.Data(), privateKey.Data(),
+                                     mifFilePath.Data(), logFileName.Data(), externalLocation.Data());
+
   return command;
 }
 
