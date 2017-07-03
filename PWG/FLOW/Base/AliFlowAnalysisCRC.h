@@ -1606,7 +1606,6 @@ private:
   TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
   TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
   TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
-  TH2D *fZDCQVecQModCen[10][8]; //!
   TH3D *fZDCQVecVtxCenEZDCFit0; //!
   TH3D *fZDCQVecVtxCenEZDCFit1; //!
   
@@ -1634,9 +1633,7 @@ private:
   const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec run by run
-  TProfile2D *fCRCZDCQVecQModCenRbR[fCRCMaxnRun][fCRCMaxnCen][4]; //!
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
-  TProfile2D *fCRCZDCQVecQModCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //!
   TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
   const static Int_t fknEZDCBins = 10;
   TProfile3D *fCRCZDCQVecVtxCenEZDC3D[fCRCMaxnCen][fknEZDCBins][fkCRCnCQVecVtxPos]; //!
@@ -1654,14 +1651,15 @@ private:
   Double_t fEvPlDPsiA;
   
   // test
-  TProfile3D *fCRCZDCQVecResVtx[2][3]; //!
-  TProfile2D *fCRCZDCQVecResEZDC[2][3]; //!
-  TProfile2D *fCRCZDCQVecResv1QA[2][3]; //!
-  TProfile2D *fCRCZDCQVecResv1QC[2][3]; //!
-  TProfile2D *fCRCZDCQVecResv1Cross[2][3]; //!
-  
-  TProfile2D *fCRCZDCQVecResCrossC[2][3]; //!
-  TProfile2D *fCRCZDCQVecResCrossA[2][3]; //!
+//  TProfile3D *fCRCZDCQVecResVtx[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResEZDC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1QA[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1QC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1Cross[2][3]; //!
+//  
+//  TProfile2D *fCRCZDCQVecResCrossC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResCrossA[2][3]; //!
+  TH2D* fCRCZDCQVecDis[2][fCRCMaxnCen][2]; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1995,7 +1993,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,60);
+  ClassDef(AliFlowAnalysisCRC,61);
   
 };
 
