@@ -12,7 +12,7 @@
  */
 
 /**
- * \defgroup EMCALPerformanceMacros EMCALPerformanceMacros
+ * \defgroup EMCALPerfAddTaskMacros EMCALPerfAddTaskMacros
  * \ingroup EMCALPerformance EMCALPerformance
  * \brief Analysis task configuration macros for EMCal performance package
  */
@@ -20,7 +20,8 @@
 /**
  * \defgroup EMCALOfflineMacros EMCALOfflineMacros
  * \ingroup EMCALPerformance EMCALPerformance
- * \brief Macros used for data analysis of train outputs for EMCal calibration *
+ * \brief Macros used for data analysis of train outputs for EMCal calibration
+ *
  * This is a collection of analysis macros and general code used for EMCal QA and Calibration.
  * They are grouped in the following folder structure.
  *
@@ -33,9 +34,11 @@
  *
  * QA code
  * ---------------------
- * + macro1.C
- * + macro2.C
- * + macro3.C
+ * + runEMCALQA.pl
+ * + PlotEMCALQATrendingTree.C
+ * + MakeQAPdf.C
+ * + CreateEMCALRunQA.C
+ * + CopyQAFile.C
  *
  * Time Calibration code
  * ---------------------
