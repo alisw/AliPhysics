@@ -111,8 +111,6 @@ protected:
   AliOADBFillingScheme*    fFillOADB;    // Filling scheme OADB object
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
-  TPRegexp* fRegexp;        //! regular expression for trigger tokens
-  TList* fCashedTokens;     //! trigger token lookup list
   StringToTFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
 
   ClassDef(AliPhysicsSelection, 23)

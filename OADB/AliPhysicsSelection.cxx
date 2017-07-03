@@ -81,10 +81,15 @@
 #include <TParameter.h>
 #include <TInterpreter.h>
 
+// In case of ROOT6 it is necessary to stay for the moment with the v5
+// version of TFormula as the v6 version produces a large amount of
+// warnings at runtime.
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
 #include <v5/TFormula.h>
+typedef ROOT::v5::TFormula R5TFormula;
 #else
 #include <TFormula.h>
+typedef TFormula R5TFormula;
 #endif
 
 #include "AliPhysicsSelection.h"
@@ -111,6 +116,7 @@
 #include "AliVZEROTriggerData.h"
 #include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliITSTriggerConditions.h"
+
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
@@ -131,8 +137,6 @@ fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(NULL),
 fTriggerToFormula()
 {
   // constructor
@@ -163,8 +167,6 @@ AliPhysicsSelection::AliPhysicsSelection(const char *name) :
  fPSOADB(0),
  fFillOADB(0),
  fTriggerOADB(0),
- fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
- fCashedTokens(NULL),
  fTriggerToFormula()
  {
    // constructor
@@ -180,8 +182,6 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fPSOADB)       delete fPSOADB;
   if (fFillOADB)     delete fFillOADB;
   if (fTriggerOADB)  delete fTriggerOADB;
-  delete fRegexp;
-  delete fCashedTokens;
   delete fTriggerToFormula;
 }
 
@@ -271,27 +271,12 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
 						 AliTriggerAnalysis* triggerAnalysis,
 						 const char* triggerLogic, Bool_t offline){
   using namespace std;
-  // Helper function to create a TFormula from the current trigger string
-  auto make_formula =
-    [this, triggerLogic](const char* name, const char* trigger) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
-      // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
-      // as the v6 version produces a large amount of warnings at runtime.
-      ROOT::v5::TFormula formula(name, trigger);
-#else
-      TFormula formula(name, trigger);
-#endif
-      if (formula.Compile() > 0)
-	AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger));
-      return formula;
-    };
-
   // split the trigger logic on the individual trigger names and replace them
   // with TFormula parameters
   string trg_logic_orig(triggerLogic);
-  // Do we have a TFormula for this trigger already?
-  // Regex identifying the trigger (>=1 alphanumeric and _)
+  // Regex identifying the trigger (>=1; alphanumeric and _)
   regex trg_re("\\w+");
+  // Do we have a TFormula for this trigger already?
   if (fTriggerToFormula->count(trg_logic_orig) == 0) {
     string trg_logic_formated;
     // Create an iterator on all the _not_ mached things in the trigger string
@@ -304,10 +289,14 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
       iter++;
       nparam++;
     }
-    // Insert this new TFormula to the hashmap
-    fTriggerToFormula->insert({trg_logic_orig,
-			       make_formula(Form("dummy_name_%zu", fTriggerToFormula->size()),
-					    trg_logic_formated.c_str())});
+    // Make a Root5 TFormula and insert to the hashmap
+    R5TFormula formula(Form("dummy_name_%zu", fTriggerToFormula->size()),
+		       trg_logic_formated.c_str());
+    if (formula.Compile() > 0) {
+      AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)",
+		    triggerLogic, trg_logic_formated.c_str()));
+    }
+    fTriggerToFormula->insert({trg_logic_orig, formula});
   }
   // Get the values for each individual trigger in the trigger logic string;
   // These values are the parameters of the TFormula
@@ -329,59 +318,7 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
   // the function
   auto trg_formula = fTriggerToFormula->at(trg_logic_orig);
   trg_formula.SetParameters(&paras[0]);
-  Bool_t new_result = trg_formula.Eval(0);
-
-  // Old code
-  // evaluates trigger logic. If called with no event
-  // pointer/triggerAnalysis pointer, it just caches the tokens Fills
-  // the statistics histogram, if booked at row i
-  TString trigger(triggerLogic);
-
-  while (1) {
-    AliDebug(AliLog::kDebug, trigger.Data());
-    
-    TArrayI pos;
-    // Match alphanumerical thing succedded by whitespace
-    Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-    // All triggers treated;
-    if (nMatches <= 0) break;
-    // Extract the name of the trigger; eg "V0A"
-    TString token(trigger(pos[0], pos[1]-pos[0]+1));
-
-    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
-    if (!param) {
-      TInterpreter::EErrorCode error;
-      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
-      
-      if (error > 0) AliFatal(Form("Trigger token %s unknown", token.Data()));
-      
-      param = new TParameter<Int_t>(token, bit);
-      fCashedTokens->Add(param);
-      AliDebug(AliLog::kDebug, "Added token");
-    }
-    
-    Long64_t bit = param->GetVal();
-    
-    AliDebug(AliLog::kDebug, Form("Tok %d %d %s %lld", pos[0], pos[1], token.Data(), bit));
-    
-    if (offline) 
-      bit |= AliTriggerAnalysis::kOfflineFlag;
-    
-    if(event && triggerAnalysis) {
-      // Replace the current trigger name with 0 or 1, base on AliTriggerAnalysis::EvaluateTrigger
-      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
-    }
-  }
-  // Check if all constituents of the trigger string evaluate to
-  // `true`; the "function" is constant, so the value in `Eval` does
-  // not matter
-  Bool_t result = make_formula("name", trigger).Eval(0);
-
-  if (result != new_result) {
-    AliFatal(Form("Old and new method do not aggree! Trigger logic: %s", triggerLogic));
-  }
-  AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
-  return result;
+  return trg_formula.Eval(0);
 }
 
 //______________________________________________________________________________
@@ -583,10 +520,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
-  }
-  if(!fCashedTokens){
-    fCashedTokens = new TList();
-    fCashedTokens->SetOwner();
   }
   
   fCurrentRun = runNumber;
