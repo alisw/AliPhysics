@@ -26,6 +26,7 @@ class TRandom3;
 class AliEventCuts;
 class AliESDEvent;
 class AliESDVertex;
+class AliESDtrack;
 class AliITSPidParams;
 class AliITSPIDResponse;
 class AliMCEvent;
@@ -130,6 +131,8 @@ public:
   //Setters for pileup settings
   void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8);
   void SetMVPileUpSelection(Int_t cont = 5, Float_t chi2 = 5, Float_t wgthZdiff = 15., Bool_t chkDiffBC = kFALSE);
+
+	AliEventCuts* GetAliEventCuts() { return &fEventCuts; }
 
   //Setters for smearing settings
   void SetSmearMC(Double_t smearp, Double_t smeardedx)
