@@ -62,6 +62,7 @@ fGeometry(0)
   }
     
   fNTRU = fGeometry->GetNTotalTRU() ;
+
   AliDebug(999,TString::Format("fGeometry <<%s>> has %d TRUs; dcsConf has %d TRUs.\n",fGeometry->GetName(),fNTRU,dcsConf->GetTRUArr()->GetSize()));
   TString fGeometryName = fGeometry->GetName();
 
@@ -96,13 +97,15 @@ fGeometry(0)
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
       AliDebug(999,TString::Format("Found DCAL STU firmware %x.",stuConfDCal->GetFw()));
     } else {
-      AliError("No DCS Config found for DCAL!  Using EMCAL DCS config for now.");
-      fSTUDCAL = new AliEMCALTriggerSTU(stuConf, rSize);
-      AliDebug(999,"Manually setting DCAL STU fW object to 0xd000.");
-      // Manually setting DCAL STU DCS fW version to 0xd000
+      AliError("No DCS Config found for DCAL, but Run 2 Geometry requested!  Cloning EMCAL STU config.");
+      stuConfDCal = new AliEMCALTriggerSTUDCSConfig(*stuConf);
+      AliDebug(999,"Manually setting DCAL STU fW object to 0xd007.");
+      // Manually setting DCAL STU DCS fW version to 0xd007 (Don't count blank PHOS patches)
+      stuConfDCal->SetFw(0xd007);
+      // Patchsize for DCAL should be 0 (8x8 jet patch)
+      stuConfDCal->SetPatchSize(0);
 
-      // Sandro Wenzel: THIS LINE IS INCORRECT AND NEEDS TO BE REPLACED WITH SOMETHING CORRECT
-      // stuConfDCal->SetFw(0xd000);
+      fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
     }
   } else fSTUDCAL = 0;
 
@@ -505,19 +508,6 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
         // Setting threshold for DCAL.
         fSTUDCAL->ComputeThFromV0(kL1GammaHigh + ithr, V0M); 
         fSTUDCAL->ComputeThFromV0(kL1JetHigh + ithr,   V0M);
-
-/*
-        if (runNumber > 244640 && runNumber < 247173) {
-          // Hard Code LHC15o thresholds
-          fSTUDCAL->SetThreshold(kL1GammaHigh + ithr, 128);
-          fSTUDCAL->SetThreshold(kL1JetHigh + ithr, 255);
-        } else {
-          // Hard Code LHC13f thresholds
-          fSTUDCAL->SetThreshold(kL1GammaHigh + ithr, 89 + 51*ithr);
-          fSTUDCAL->SetThreshold(kL1JetHigh + ithr, 127 + 133*ithr);
-        }
-*/
-
 
        AliDebug(999, Form("STU DCAL THR %d EGA %d EJE %d", ithr, fSTUDCAL->GetThreshold(kL1GammaHigh + ithr), fSTUDCAL->GetThreshold(kL1JetHigh + ithr)));
       }

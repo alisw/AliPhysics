@@ -98,6 +98,8 @@ class AliMpSegmentation : public  TObject {
     const AliMpTrigger* GetTriggerByElectronics(Int_t detElemId, Int_t elCardID, 
                                   Bool_t warn = true) const;
   
+    void Print(Option_t*) const;
+
   private:
     AliMpSegmentation(const AliMpDataStreams& dataStreams);
     /// Not implemented

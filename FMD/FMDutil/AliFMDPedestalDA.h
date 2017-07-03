@@ -72,6 +72,11 @@ public:
    */
   Bool_t OpenFiles(Bool_t appendRun=false);
   /** 
+   * Close output files
+   * 
+   */
+  void CloseFiles();
+  /** 
    * Initialiser
    * 
    */  
@@ -176,7 +181,10 @@ private:
    */
   Int_t HWIndex(UShort_t ddl, UShort_t board, UShort_t altro, 
 		UShort_t chan) const;
-  void FillinTimebins(std::ofstream& out, UShort_t ddl);
+  /**
+   * Move ddl files into place 
+   */
+  void InstallFile(Int_t d);
   /** Current strip */ 
   Int_t fCurrentChannel;                           //The current channel
   /** Pedestal summary */ 

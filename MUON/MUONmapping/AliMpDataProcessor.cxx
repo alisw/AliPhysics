@@ -70,11 +70,8 @@ AliMpDataProcessor::AliMpDataProcessor()
     fHeaderFile(),
     fImplFile()
 {
-/// Default and standar constructor
+/// Default and standard constructor
 
-  fHeaderFile.open(GetHeaderFileName().Data(), std::ios::out);
-  fImplFile.open(GetImplFileName().Data(), std::ios::out);
-  
   // Add check
 
 }
@@ -375,6 +372,10 @@ Bool_t AliMpDataProcessor::GenerateCode(AliMpDataMap* dataMap)
     string path = it->first;
     string data = it->second; 
 */
+
+  fHeaderFile.open(GetHeaderFileName().Data(), std::ios::out);
+  fImplFile.open(GetImplFileName().Data(), std::ios::out);
+
 
   const TMap& kMap = dataMap->GetMap();
   TMapIter it(&kMap);

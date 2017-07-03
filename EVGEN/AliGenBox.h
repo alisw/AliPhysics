@@ -27,12 +27,19 @@ class AliGenBox : public AliGenerator
   virtual void SetPart(Int_t part) {fIpart=part;}
   virtual void SetParticleType(Int_t part) {SetPart(part);}
   virtual void SetSeed(UInt_t /*seed*/) {;}
+
+  void SetRandomOffset(float rmin, float rmax, float zmin,float zmax);
 protected:
 
   Int_t fIpart; // Particle type
   Float_t fEtaMin;  // Minimum eta 
   Float_t fEtaMax;  // Maximum eta
-  ClassDef(AliGenBox,2) // Square box random generator
+  Bool_t fRandomOffset; // add random offset to origin per track
+  Float_t fRMinOffset;   // min R of the offset
+  Float_t fRMaxOffset;   // max R of the offset
+  Float_t fZMinOffset;   // max Z of the offset
+  Float_t fZMaxOffset;   // max Z of the offset
+  ClassDef(AliGenBox,3) // Square box random generator
 };
 
 #endif

@@ -86,10 +86,9 @@ public:
   void    GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const;
   
   TClonesArray *GetErrorCountsForTRU(Int_t itru) const;
-  
-protected:
-  
   AliEMCALTriggerSTUDCSConfig           (const AliEMCALTriggerSTUDCSConfig &cd);
+
+protected:
   AliEMCALTriggerSTUDCSConfig &operator=(const AliEMCALTriggerSTUDCSConfig &cd);
 
 private:

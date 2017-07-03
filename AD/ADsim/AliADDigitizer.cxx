@@ -563,7 +563,10 @@ void AliADDigitizer::DigitizeSDigits()
 
 void AliADDigitizer::AdjustPulseShapeADC()
 {
-  TClonesArray *f_Int[2] = { NULL, NULL };
+  TClonesArray *f_Int[2] = {
+    new TClonesArray("TF1", 21),
+    new TClonesArray("TF1", 21)
+  };
   Float_t extrapolationThresholds[kADNClocks];
   Bool_t  doExtrapolation[kADNClocks];
   fTS->SetBranchAddress("f_Int0", &f_Int[0]);

@@ -54,6 +54,50 @@ fMedian(0)
 }
 
 ///
+/// Copy constructor.
+//_____________________________________________________________________________
+AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig(const AliEMCALTriggerSTUDCSConfig &obj) : TObject(),
+fGetRawData(1),
+fRegion(0xFFFFFFFF),
+fFw(0x2A012),
+fPatchSize(0),
+fMedian(0)
+{
+  for (int i = 0; i < 3; i++) 
+  {
+    for (int j = 0; j < 2; j++) 
+    {
+      fG[i][j] = obj.GetG(i,j);
+      fJ[i][j] = obj.GetJ(i,j);
+    }
+  }
+  
+  memset(fPHOSScale, 0, sizeof(Int_t) * 4);
+  memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 68);
+  
+  SetRawData(obj.GetRawData());
+  SetRegion(obj.GetRegion());
+  SetFw(obj.GetFw());
+  for (int i = 0; i < 4; i++) {
+    SetPHOSScale(i,obj.GetPHOSScale(i));
+  }
+  for (int i = 0; i < 68 ; i++) {
+    TClonesArray * gTRUErrorCounts = obj.GetErrorCountsForTRU(i);
+    if (!gTRUErrorCounts) continue;
+    for (int j = 0; j < gTRUErrorCounts->GetEntries(); j++) {
+      AliEMCALTriggerSTUTRUErrorCount * fErrorCount = (AliEMCALTriggerSTUTRUErrorCount *) gTRUErrorCounts->At(j);
+      if (fErrorCount) {
+        SetTRUErrorCounts(i,fErrorCount->GetTime(),fErrorCount->GetErrorCount());
+      }
+    }
+  }
+
+  SetPatchSize(obj.GetPatchSize());
+  SetMedianMode(obj.GetMedianMode());
+}
+
+
+///
 /// Destructor.
 //_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig()

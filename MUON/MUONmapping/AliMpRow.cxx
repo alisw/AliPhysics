@@ -441,4 +441,22 @@ AliMpVRowSegment* AliMpRow::GetRowSegment(Int_t i) const
   
   return (AliMpVRowSegment*)fSegments.At(i);  
 }
- 
+
+//_____________________________________________________________________________
+void AliMpRow::Print(Option_t* opt)  const
+{
+    std::cout << opt << Form("AliMpRow %2d ",GetID());
+    std::cout << Form("left,right=(%7.2f,%7.2f) bottom,top=(%7.2f,%7.2f)",
+            GetPositionX()-GetDimensionX(),
+            GetPositionX()+GetDimensionX(),
+            GetPositionY()-GetDimensionY(),
+            GetPositionY()+GetDimensionY());
+    std::cout << Form(" has %2d row segments",GetNofRowSegments()) << std::endl;
+    std::string sopt(opt);
+    sopt += "   ";
+    for ( int i = 0; i < GetNofRowSegments(); ++i ) 
+    {
+        AliMpVRowSegment* rs = GetRowSegment(i);
+        rs->Print(sopt.c_str());
+    }
+}

@@ -88,6 +88,8 @@ class AliMpVRowSegment : public AliMpVIndexed
     virtual AliMpVMotif*  GetMotif(Int_t i) const = 0;
     /// Return the i-th motif position Id of this row segment.
     virtual Int_t      GetMotifPositionId(Int_t i) const = 0;
+
+    void Print(Option_t* opt) const;
     
   ClassDef(AliMpVRowSegment,1)  //Row segment
 };
