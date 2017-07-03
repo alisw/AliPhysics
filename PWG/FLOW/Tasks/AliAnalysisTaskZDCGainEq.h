@@ -172,6 +172,10 @@ private:
   TH1F            *fHist_Psi1_ZDCC_wCorrFull;  //!
   TH1F            *fHist_Psi1_ZDCA_wCorrFull;  //!
 
+  TH2F            *fHist_Psi1_ZDCC_RunByRun;  //!
+  TH2F            *fHist_Psi1_ZDCA_RunByRun;  //!
+
+  TProfile      *fHist_Qx_wiCorr_RunByRun[4];  //!
 
   TProfile     *fHist_Qx_vs_Obs_woCorr[4][5];  //!
   TProfile     *fHist_XX_vs_Obs_woCorr[4][5];  //!
