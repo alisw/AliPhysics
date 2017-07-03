@@ -90,7 +90,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
    int kWeiData;
    // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
    // from min bias MC for statistics reasons. Therefore the default is put for min bias MC.
-   kWeiData = 50;
+   kWeiData = 50; //d12 for the low magnetic field case
 
 
    if(kNPERef){
@@ -133,6 +133,12 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
          RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                            dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                            kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+          
+          RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                            dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                            kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+
+          
       }
       return NULL;
    }
