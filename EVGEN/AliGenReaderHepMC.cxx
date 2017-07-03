@@ -98,10 +98,17 @@ Int_t AliGenReaderHepMC::NextEvent()
 TParticle* AliGenReaderHepMC::NextParticle()
 {
    // Read next particle
+    
    TParticle * particle = (TParticle*)fParticleIterator->Next();
    if (particle && particle->GetStatusCode()==1) {
       particle->SetBit(kTransportBit);
    }
+   //
+   // convert time from [cm/c] to [s] 
+   const Double_t conv = 0.01 / 2.99792458e8; 
+   particle->SetProductionVertex(particle->Vx(), particle->Vy(), particle->Vz(),
+				 particle->T() * conv);
+   //
    return particle;
 }
 
