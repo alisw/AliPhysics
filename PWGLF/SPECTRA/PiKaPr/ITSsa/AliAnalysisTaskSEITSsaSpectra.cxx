@@ -1257,7 +1257,7 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
 	}
   if (!fMultMethod) return kTRUE; 		// skip multiplicity check
 
-  if (fMultEstimator == 1) { //New multiplicity/centrality class framework
+  if (fMultMethod == 1) { //New multiplicity/centrality class framework
   	AliMultSelection* fMultSel = (AliMultSelection*) fESD->FindListObject("MultSelection");
     if (!fMultSel) {
       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -1267,23 +1267,23 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
       //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
       fEvtMult = fMultSel->GetMultiplicityPercentile(fMultEstimator.Data(), kFALSE);
     }
-	} else if (fMultEstimator == 2) { //OLD multiplicity/centrality class framework
+	} else if (fMultMethod == 2) { //OLD multiplicity/centrality class framework
     AliCentrality* centrality = fESD->GetCentrality();
     fEvtMult = centrality->GetCentralityPercentile(fMultEstimator.Data());
- 	} else if (fMultEstimator == 3){ //selection on the event multiplicity based on global tracks
+ 	} else if (fMultMethod == 3){ //selection on the event multiplicity based on global tracks
 		// tracks+tracklets
     fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-  } else if (fMultEstimator == 4) {
+  } else if (fMultMethod == 4) {
     // tracklets
     fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8);
-  } else if (fMultEstimator == 5) {
+  } else if (fMultMethod == 5) {
     // clusters in SPD1
     const AliMultiplicity* mult = fESD->GetMultiplicity();
     Float_t nClu1 = (Float_t)mult->GetNumberOfITSClusters(1);
     fEvtMult = AliESDUtils::GetCorrSPD2(nClu1, fESD->GetPrimaryVertexSPD()->GetZ()) + 0.5;
   }
 
-	if (fEvtMult < fLowMult && fEvtMult >= fUpMult)
+	if (fEvtMult < fLowMult || fEvtMult >= fUpMult)
 		return kFALSE;
 
   return kTRUE;
