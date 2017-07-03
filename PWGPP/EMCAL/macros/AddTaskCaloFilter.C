@@ -1,5 +1,5 @@
 /// \file AddTaskCaloFilter.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration analysis task filtering events and calorimeter data into AOD format.
 ///
 /// The parameters for the analysis are:
