@@ -1436,7 +1436,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhMCEtaProdVertex) ;
 
       //Production vertex of reconstructed mesons for mother origin
-      TString originTitlePi0[] = {"Status 21","Quark","qq Resonances","#rho","#omega","K","Other","#eta","#eta prime"};
+      TString originTitlePi0[] = {"Status 21","Quark","qq Resonances","Resonances","#rho","#omega","K","Other","#eta","#eta prime"};
       for (Int_t iorg=0;iorg<10;iorg++) {
 	fhMCPi0Radius[iorg]    = new TH2F
 	  (Form("hPrimPi0Radius_%d",iorg),
