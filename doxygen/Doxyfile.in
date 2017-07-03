@@ -786,6 +786,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
+                         @CMAKE_SOURCE_DIR@/PWGGA/GammaConv \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
