@@ -1151,10 +1151,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   Double_t tpcNclsS=  tpcSharedMap.CountBits(0)-tpcSharedMap.CountBits(159);
 
   // Reset AliESDtrack interface specific information
-  if(Req(kNclsITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
+  if(Req(kNclsITS) || Req(kNclsSFracITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
   if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
-  if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
-  if(Req(kNclsSTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
+  if(Req(kNclsTPC) || Req(kNclsSFracTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
+  if(Req(kNclsSTPC) || Req(kNclsSFracTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   if(Req(kNclsTPCiter1)) values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   if(Req(kNFclsTPC)  || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
@@ -1168,13 +1168,15 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
-  if(Req(kNclsSITS)){
+  if(Req(kNclsSITS) || Req(kNclsSFracITS)){
     Double_t itsNclsS = 0.;
     for(int i=0; i<6; i++){
       if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
     }
     values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+    if(Req(kNclsSFracITS)) values[AliDielectronVarManager::kNclsSFracITS] = itsNclsS > 0. ? itsNclsS / particle->GetITSNcls() : 0.;
   }
+
 
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
