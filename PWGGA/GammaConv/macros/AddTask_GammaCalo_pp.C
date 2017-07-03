@@ -1221,6 +1221,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
    // ************************************* DCal cuts ****************************************************
   } else if (trainConfig == 601){ // DCAL clusters pp 5.02 TeV
     cuts.AddCut("00010113","3115511081041220000","0163103100000050"); // std
+    cuts.AddCut("00055113","3115511081041220000","0163103100000050"); // std
   } else if (trainConfig == 602){ // timing Cut variation  std -20+50ns
     cuts.AddCut("00010113","3115511071041220000","0163103100000050"); //     +-25   ns
     cuts.AddCut("00010113","3115511091041220000","0163103100000050"); //     +-12.5 ns
