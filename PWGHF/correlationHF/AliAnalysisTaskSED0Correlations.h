@@ -202,7 +202,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,143); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,14); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
