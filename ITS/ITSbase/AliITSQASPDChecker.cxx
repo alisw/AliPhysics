@@ -300,6 +300,11 @@ void AliITSQASPDChecker::MaskFastOrChips(TH2F *hFOmap, Int_t iLayer)
   AliITSTriggerConditions *triCd = 0x0;
   Int_t sect = 999;
   Int_t chipbin = 999;
+  //
+  if(!hFOmap) {
+    AliWarning("Unable to retrieve histogram!");
+    return;
+  }
   
   // Read PIT trigger conditions
   AliCDBManager *man = AliCDBManager::Instance();
@@ -523,10 +528,8 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	  gPad->SetGridy();
 	  hist->SetObjectStat(0);
 	  hist->SetOption("colz") ;
-	  TH2F hFOinClone;
-	  hist->Copy(hFOinClone);
-	  MaskFastOrChips(&hFOinClone,0);
-	  hFOinClone.DrawCopy();
+	  MaskFastOrChips(dynamic_cast<TH2F*>(hist),0);
+	  hist->DrawCopy();
 	}
 	if(name.Contains("SPDFastOrMapStaveOuter")){
 	  fImage[esIndex]->cd(6) ; 
@@ -538,10 +541,8 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	  gPad->SetGridy();
 	  hist->SetObjectStat(0);
 	  hist->SetOption("colz") ;
-	  TH2F hFOoutClone;
-	  hist->Copy(hFOoutClone);
-	  MaskFastOrChips(&hFOoutClone,1);        
-	  hFOoutClone.DrawCopy();            
+	  MaskFastOrChips(dynamic_cast<TH2F*>(hist),1);        
+	  hist->DrawCopy();
 	}
 
       }
