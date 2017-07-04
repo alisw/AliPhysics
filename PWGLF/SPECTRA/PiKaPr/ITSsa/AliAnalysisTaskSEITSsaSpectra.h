@@ -26,6 +26,7 @@ class TRandom3;
 class AliEventCuts;
 class AliESDEvent;
 class AliESDVertex;
+class AliESDtrack;
 class AliITSPidParams;
 class AliITSPIDResponse;
 class AliMCEvent;
@@ -48,13 +49,13 @@ public:
     kIsReadable = 1,
     kIsNotIncDAQ,
     kPassTrig,
-    kPassMultSel,
     kIsNotPileup,
-    kPassSPDclsVsTCut,
 		kCorrelation,
     kHasRecVtx,
     kHasGoodVtxZ,
     kIsSDDIn,
+		kPassSPDclsVsTCut,
+		kPassMultSel,
     kNEvtCuts
   };// event selection criteria
   enum ETrkCut_Type {
@@ -111,12 +112,8 @@ public:
   void SetDCACuts(Double_t nsxy = 7., Double_t nsz = 7.) { fNSigmaDCAxy = nsxy; fNSigmaDCAz  = nsz; }
 
   //Setters for mult sel.
-  void SetCentEst(TString centEst = "V0M") {fCentEstimator = centEst;}
-
-  void SetUseTrackMultiplicityEstimator()        {fMultEstimator = 0;}
-  void SetUseTrackletsMultiplicityEstimator()    {fMultEstimator = 1;}
-  void SetUseClustersSPD1MultiplicityEstimator() {fMultEstimator = 2;}
-
+	void SetMultMethod(unsigned int meth=0) {fMultMethod = meth;}
+  void SetMultEstimator(TString centEst = "V0M") {fMultEstimator = centEst;}
   void SetMultiplicityCut(Float_t low, Float_t up)
   {
     if ((up > low) && (!(low < 0.)) && (!(up > 100.))) {
@@ -128,13 +125,14 @@ public:
   void SetPidTech(Int_t tech) {fPidMethod = static_cast<EPID_Type>(tech);}
   void SetUseDefaultPriors(Bool_t flag = kTRUE) { fUseDefaultPriors = flag; }
   void SetIsMC            (Bool_t flag = kTRUE) { fIsMC       = flag; }
-  void SetDoMultSel       (Bool_t flag = kTRUE) { fDoMultSel  = flag; }
   void SetFillNtuple      (Bool_t flag = kTRUE) { fFillNtuple = flag;}
   void SetFillIntDistHist () { fFillIntDistHist = kTRUE; }
 
   //Setters for pileup settings
   void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8);
   void SetMVPileUpSelection(Int_t cont = 5, Float_t chi2 = 5, Float_t wgthZdiff = 15., Bool_t chkDiffBC = kFALSE);
+
+	AliEventCuts* GetAliEventCuts() { return &fEventCuts; }
 
   //Setters for smearing settings
   void SetSmearMC(Double_t smearp, Double_t smeardedx)
@@ -151,6 +149,7 @@ public:
 
 protected:
   Bool_t   IsEventAccepted(EEvtCut_Type& evtSel);
+	Bool_t 	 CheckExtraEvtSelStep(EEvtCut_Type& evtSel);
   Bool_t   IsMultSelected();
   Bool_t   IsPileUp();
   Bool_t   IsGoodVtxZ();
@@ -164,7 +163,7 @@ protected:
 
   Double_t CookdEdx(Double_t* s) const;
   Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
-
+	
   void     AnalyseMCParticles(AliMCEvent* lMCevent, EEvtCut_Type step, bool lHasGoodVtxGen);
   void     CreateDCAcutFunctions();
   void     PostAllData();
@@ -309,11 +308,11 @@ private:
   Double_t fNSigmaDCAz;      // DCA cut along z
 
   //mult sel.
-  TString fCentEstimator; // centrality/multiplicity framework estimator name
-  Int_t   fMultEstimator; // multiplicty estimator
-  Float_t fLowMult;       // low Centrality cut
-  Float_t fUpMult;        // up  Centrality cut
-  Float_t fEvtMult;       // event multiplicity -0.5 by default
+  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD 	
+  TString      fMultEstimator; // centrality/multiplicity framework estimator name
+  Float_t      fLowMult;       // low Centrality cut
+  Float_t      fUpMult;        // up  Centrality cut
+  Float_t      fEvtMult;       // event multiplicity -0.5 by default
 
   //Global setting
   Int_t  fYear;           // FIXME Year (2009, 2010)
@@ -321,7 +320,6 @@ private:
 
   Bool_t fUseDefaultPriors; // flag to use default(equal) priors
   Bool_t fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
-  Bool_t fDoMultSel;        // flag to switch on centrality/multiplicity selection
   Bool_t fFillNtuple;       // flag to fill ntuples
   Bool_t fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
 

@@ -102,8 +102,8 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fMaxChi2Clu(2.5),
   fNSigmaDCAxy(7.),
   fNSigmaDCAz(7.),
-  fCentEstimator("V0M"),
-  fMultEstimator(-1),
+  fMultMethod(0),
+  fMultEstimator("V0M"),
   fLowMult(-1.),
   fUpMult(-1.),
   fEvtMult(-999),
@@ -111,7 +111,6 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fPidMethod(kMeanCut),
   fUseDefaultPriors(kTRUE),
   fIsMC(kFALSE),
-  fDoMultSel(kFALSE),
   fFillNtuple(kFALSE),
   fFillIntDistHist(kFALSE),
   fPlpType(kNoPileup),
@@ -298,13 +297,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(kIsReadable,  "Readable");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, "PassIncDAQ");
   fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsNotPileup, Form("IsNotPileup_%s", plpName[fPlpType].Data()));
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
-  fHistNEvents->GetXaxis()->SetBinLabel(kCorrelation, "Correlation");	
+  fHistNEvents->GetXaxis()->SetBinLabel(kCorrelation, "Correlation");
   fHistNEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
   fHistNEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     "HasSDDIn");
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistNEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
   fOutput->Add(fHistNEvents);
 
@@ -313,15 +312,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistMCEvents->SetMinimum(0);
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsReadable, "Readable");
   fHistMCEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, "PassIncDAQ");
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsNotPileup, Form("IsNotPileup_%s", plpName[fPlpType].Data()));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
   fHistMCEvents->GetXaxis()->SetBinLabel(kCorrelation, "Correlation");
   fHistMCEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
   fHistMCEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
   fHistMCEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     "HasSDDIn");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "HasSDDIn");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
+  fHistMCEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
   fOutput->Add(fHistMCEvents);
 
   Int_t kNMultBin = 115;
@@ -647,8 +646,8 @@ void AliAnalysisTaskSEITSsaSpectra::Init()
   AliInfoF(" y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
            fCMSRapFct, fMinRapCut, fMaxRapCut, fAbsEtaCut, fNSigmaDCAxy, fNSigmaDCAz, fMaxChi2Clu, fMinSPDPts, fMinNdEdxSamples);
 
-  if (fDoMultSel)
-    AliInfoF("Cent. %.f %.f %s", fLowMult, fUpMult, fCentEstimator.Data());
+  if (fMultMethod)
+    AliInfoF("Cent. %.f %.f %s", fLowMult, fUpMult, fMultEstimator.Data());
 
   CreateDCAcutFunctions(); //Creating kParamContainer data
   // Post parameter data container
@@ -729,7 +728,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
 	fHistNEvents->Fill(kNEvtCuts);
   if (lHasGoodVtxGen) fHistMCEvents->Fill(kNEvtCuts);
 
-  if (fDoMultSel) //Fill fHistMultAftEvtSel after the event Selection
+  if (fMultMethod) //Fill fHistMultAftEvtSel after the event Selection
     fHistMultAftEvtSel->Fill(fEvtMult);
 
   if (!fITSPIDResponse)
@@ -1036,25 +1035,57 @@ void AliAnalysisTaskSEITSsaSpectra::SetMVPileUpSelection(Int_t cont, Float_t chi
   fCheckPlpFromDifferentBCMV = chkDiffBC;
 }
 
+
+//
+//
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEITSsaSpectra::CheckExtraEvtSelStep(EEvtCut_Type& evtSel)
+{
+	//Check if has SDD info (if requiered)
+	if (fChkIsSDDIn && !fIsMC) {
+		TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
+    if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
+			AliDebug(3, "Event dont accepted by AliEventCuts");
+      AliDebug(3, "Event Rejected: SDD out trigger cluster");
+      PostAllData();
+			evtSel = kIsSDDIn;
+      return kFALSE;
+    }
+	}
+
+  if (fDoSPDCvsTCut) {
+    AliAnalysisUtils utils;
+    if (utils.IsSPDClusterVsTrackletBG(fESD)) {
+    	AliDebug(3, "Event with incompatible SPD clusters and tracklet");
+      PostAllData();
+    	evtSel = kPassSPDclsVsTCut;
+      return kFALSE;
+    }
+  }
+
+	if (fMultEstimator >= 0 && !IsMultSelected()){
+		AliDebug(3, "Event doesn't pass multiplicity selection");
+    PostAllData();
+    evtSel = kPassMultSel;
+    return kFALSE;
+	}
+	else {
+		fHistMultBefEvtSel->Fill(fEvtMult);
+	}
+
+	return kTRUE;
+}
+
 //
 //
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
 {
-  
+
   if (fExtEventCuts) {
     if (fEventCuts.AcceptEvent(fESD)) {
-    	//Check if has SDD info (if requiered)
-			if (fChkIsSDDIn && !fIsMC) {
-				TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
-    		if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
-					AliDebug(3, "Event dont accepted by AliEventCuts");
-      		AliDebug(3, "Event Rejected: SDD out trigger cluster");
-      		PostAllData();
-					evtSel = kIsSDDIn;
-      		return kFALSE;
-    		}
-			}
+			if (!CheckExtraEvtSelStep(evtSel))
+				return kFALSE;
 			evtSel = kNEvtCuts;
 			return kTRUE;
     }
@@ -1066,18 +1097,18 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
     	evtSel = kIsNotIncDAQ;
       return kFALSE;
     }
-		
+
 		if (!fEventCuts.PassedCut(AliEventCuts::kTrigger)) {
     	AliDebug(3, "Event doesn't pass physics evt. sel. for trigger");
     	PostAllData();
-  		evtSel = kPassTrig;			
+  		evtSel = kPassTrig;
     	return kFALSE;
   	}
 
     if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
       AliDebug(3, "Event with PileUp");
       PostAllData();
-	    evtSel = kIsNotPileup;		
+	    evtSel = kIsNotPileup;
       return kFALSE;
     }
 
@@ -1120,16 +1151,6 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
     	return kFALSE;
   	}
 
-  	if (fDoMultSel && IsMultSelected()) {
-    	if ((fLowMult > -1 && fEvtMult < fLowMult) || (fUpMult > -1 && fEvtMult > fUpMult)) {
-      AliDebugF(3, "Event with multiplicity = %.2f outside range [%.2f,%.2f]", fEvtMult, fLowMult, fUpMult);
-      PostAllData();
-  		evtSel = kPassMultSel;
-      return kFALSE;
-    	}
-    	fHistMultBefEvtSel->Fill(fEvtMult);
-  	}
-
     if (fDoSPDCvsTCut) {
       AliAnalysisUtils utils;
       if (utils.IsSPDClusterVsTrackletBG(fESD)) {
@@ -1161,15 +1182,8 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
       return kFALSE;
     }
 
-		if (fChkIsSDDIn && !fIsMC) {
-    	TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
-    	if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
-      	AliDebug(3, "Event Rejected: SDD out trigger cluster");
-      	PostAllData();
-  			evtSel = kIsSDDIn;
-      	return kFALSE;
-    	}
-  	}
+		if (!CheckExtraEvtSelStep(evtSel))
+			return kFALSE;
 	}
 
 	evtSel = kNEvtCuts;
@@ -1182,7 +1196,7 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
 void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun1()
 {
   fChkIsSDDIn   = kTRUE;
-  fDoMultSel    = kFALSE;
+  fMultMethod   = 0;
   fExtEventCuts = kFALSE;
   fRejIncDAQ    = kFALSE;
   fDoSPDCvsTCut = kFALSE;
@@ -1200,7 +1214,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun1()
 void AliAnalysisTaskSEITSsaSpectra::SetupEventCutsForRun1pPb()
 {
   fChkIsSDDIn   = kTRUE;
-  fDoMultSel    = kTRUE;
+  fMultMethod   = 2;
   fExtEventCuts = kFALSE;
   fRejIncDAQ    = kFALSE;
   fDoSPDCvsTCut = kFALSE;
@@ -1218,7 +1232,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetupEventCutsForRun1pPb()
 void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun2()
 {
   fChkIsSDDIn   = kTRUE;
-  fDoMultSel    = kFALSE;
+  fMultMethod   = 0;
   fExtEventCuts = kFALSE;
   fRejIncDAQ    = kTRUE;
   fDoSPDCvsTCut = kTRUE;
@@ -1237,36 +1251,40 @@ void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun2()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEITSsaSpectra::IsMultSelected()
 {
-  fEvtMult = -999;
-  if (fMultEstimator < 0) { //Centrality and/or multiplicity framework
-    if (fESD->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
-      AliCentrality* centrality = fESD->GetCentrality();
-      fEvtMult = centrality->GetCentralityPercentile(fCentEstimator.Data());
-    } else { //New multiplicity/centrality class framework
-      AliMultSelection* fMultSel = (AliMultSelection*) fESD->FindListObject("MultSelection");
-      if (!fMultSel) {
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
-        return kFALSE;
-      } else {
-        //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-        fEvtMult = fMultSel->GetMultiplicityPercentile(fCentEstimator.Data(), kTRUE);
-      }
+	if (fMultMethod > 5) {
+		AliWarning(". Skipping multiplicity selection");
+		fMultMethod = 0;
+	}
+  if (!fMultMethod) return kTRUE; 		// skip multiplicity check
+
+  if (fMultMethod == 1) { //New multiplicity/centrality class framework
+  	AliMultSelection* fMultSel = (AliMultSelection*) fESD->FindListObject("MultSelection");
+    if (!fMultSel) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+      return kFALSE;
+    } else {
+      //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+      fEvtMult = fMultSel->GetMultiplicityPercentile(fMultEstimator.Data(), kFALSE);
     }
-  } else { //selection on the event multiplicity based on global tracks
-    if (fMultEstimator == 0) {
-      // tracks+tracklets
-      fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-    } else if (fMultEstimator == 1) {
-      // tracklets
-      fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8);
-    } else if (fMultEstimator == 2) {
-      // clusters in SPD1
-      const AliMultiplicity* mult = fESD->GetMultiplicity();
-      Float_t nClu1 = (Float_t)mult->GetNumberOfITSClusters(1);
-      fEvtMult = AliESDUtils::GetCorrSPD2(nClu1, fESD->GetPrimaryVertexSPD()->GetZ()) + 0.5;
-    }
+	} else if (fMultMethod == 2) { //OLD multiplicity/centrality class framework
+    AliCentrality* centrality = fESD->GetCentrality();
+    fEvtMult = centrality->GetCentralityPercentile(fMultEstimator.Data());
+ 	} else if (fMultMethod == 3){ //selection on the event multiplicity based on global tracks
+		// tracks+tracklets
+    fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+  } else if (fMultMethod == 4) {
+    // tracklets
+    fEvtMult = (float)AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8);
+  } else if (fMultMethod == 5) {
+    // clusters in SPD1
+    const AliMultiplicity* mult = fESD->GetMultiplicity();
+    Float_t nClu1 = (Float_t)mult->GetNumberOfITSClusters(1);
+    fEvtMult = AliESDUtils::GetCorrSPD2(nClu1, fESD->GetPrimaryVertexSPD()->GetZ()) + 0.5;
   }
+
+	if (fEvtMult < fLowMult || fEvtMult >= fUpMult)
+		return kFALSE;
 
   return kTRUE;
 }

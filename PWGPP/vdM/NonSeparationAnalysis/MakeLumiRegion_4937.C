@@ -1,5 +1,4 @@
 // -*- C++ -*-
-// $Id$
 
 #include <sstream>
 
@@ -10,7 +9,7 @@ void MakeLumiRegion()
 {
   AliVdMData d(AliVdMData::GetFileName("4937/4937.xml"));
 
-  const TString vtxFileName = "4269/4269_vtx.root";
+  const TString vtxFileName = "4937/4937_vtx.root";
   const TCut    vtxCuts     = "ntrksTRKnc>=11 && chi2/ntrksTRKnc<2";
   const Int_t   bcidSel     = -1; // all BCIDs
 

@@ -241,6 +241,7 @@ set ( SRCS20
   )
 set ( SRCS21
   vdM/AliAnalysisTaskVdM.cxx
+  vdM/AliXMLEngine.cxx
   )
 
 list ( APPEND SRCS
@@ -402,6 +403,6 @@ install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
 	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 install(FILES vdM/AddAnalysisTaskVdM.C
-	      DESTINATION PWGPP/vdM)
+              DESTINATION PWGPP/vdM)
 
 message(STATUS "PWGPP enabled")

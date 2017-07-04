@@ -2,6 +2,8 @@
 // $Id$
 
 #include <TCut.h>
+#include <TDirectory.h>
+#include <TEventList.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TMath.h>
@@ -82,7 +84,10 @@ Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
     sigma(1,1) += par[9]*par[9]*fCov[2][i]; //vtx_cyy[i];
     sigma(0,1) += par[9]*par[9]*fCov[1][i]; //vtx_cxy[i];
     sigma(1,0) += par[9]*par[9]*fCov[1][i]; //vtx_cxy[i];
-//     }
+    // if (fCov[0][i] > 2e-4 ||
+    //     fCov[2][i] > 2e-4)
+    //   continue;
+    //     }
     Double_t det(0);
     sigma.InvertFast(&det);
     Double_t sum = TMath::Log(TMath::Power(TMath::TwoPi(), 1.5));
@@ -103,11 +108,12 @@ void AliLuminousRegionFit::ComputeMoments(TTree *t,
 					  const TCut& sel, const TVectorD &mu, const TMatrixDSym &cov,
 					  TVectorD &x, TMatrixDSym &cx, Double_t &llRatio)
 {
-  fN = t->Draw("xTRKnc:yTRKnc:zTRKnc:covMtxXX:covMtxXY:covMtxYY", sel, "PARA GOFF");
+  fN = t->Draw("xTRKnc:yTRKnc:zTRKnc:covMtxXX:covMtxXY:covMtxYY:chi2", sel, "PARA GOFF");
   for (Int_t i=0; i<3; ++i) {
     fX[i]   = t->GetVal(  i);
     fCov[i] = t->GetVal(3+i);
   }
+  fChi2 = t->GetVal(6);
   ROOT::Math::Functor fcn(this, &AliLuminousRegionFit::MinuitFunction, 10);
   TMinuitMinimizer m("minimize", 10);
   m.UseStaticMinuit(kTRUE);
@@ -234,12 +240,10 @@ TTree* AliLuminousRegionFit::RemoveOutliersOld(TTree *t, TCut &sel, TVectorD &mu
 }
 
 Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
-				   Double_t tMin, Double_t tMax,
 				   Int_t    scanType,
 				   Double_t offset,
-				   Int_t    bcSel,
-				   Bool_t   selV0AND,
-				   Bool_t   selV0M)
+                                   const TCut& cut,
+                                   Int_t    bcSel)
 {
   const char* graphNamesMoment[9] = {  "gX", "gY", "gZ",  "gSX", "gSY", "gSZ",  "gCXY", "gCXZ", "gCYZ" };
   const char* graphNamesModel[10] = { "geX","geY","geZ", "geSX","geSY","geSZ", "geCXY", "gesX","gesY","gek" };
@@ -256,54 +260,63 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   for (Int_t i=0; i<10; ++i)
     gModel[i] = ConfGraphErr(new TGraphErrors, graphNamesModel[i]);
 
-  fTE->SetBranchStatus("*",         0);
-  fTE->SetBranchStatus("timestamp", 1);
-  fTE->SetBranchStatus("*TRK*",     1);
-  fTE->SetBranchStatus("isV0and",   selV0AND);
-  fTE->SetBranchStatus("isV0M",     selV0M);
-  fTE->SetBranchStatus("covMtx*",   1);
-  fTE->SetBranchStatus("bx",        1);
+  // fTE->SetBranchStatus("*",         1);
+  // fTE->SetBranchStatus("timestamp", 1);
+  // fTE->SetBranchStatus("*TRK*",     1);
+  // fTE->SetBranchStatus("isV0and",   1);
+  // fTE->SetBranchStatus("isV0M",     1);
+  // fTE->SetBranchStatus("covMtx*",   1);
+  // fTE->SetBranchStatus("bx",        1);
+  // fTE->SetBranchStatus("chi2",   1);
 
   UInt_t   timeStamp(0);
-  UShort_t ntrksTRKnc(0);
+  Short_t  ntrksTRKnc(0);
   Bool_t   isV0and(0);
   Bool_t   isV0M(0);
   UInt_t   bcid(0);
+  Float_t  chi2(0);
   fTE->SetBranchAddress("timestamp",  &timeStamp);
   fTE->SetBranchAddress("ntrksTRKnc", &ntrksTRKnc);
   fTE->SetBranchAddress("isV0and",    &isV0and);
   fTE->SetBranchAddress("isV0M",      &isV0M);
   fTE->SetBranchAddress("bx",         &bcid);
+  fTE->SetBranchAddress("chi2",       &chi2);
 
-  const TCut cut(TString::Format("timeStart > %f && timeEnd < %f", tMin, tMax));
-
-  const Int_t n = fTSep->Draw("timeStart:timeEnd:sep",cut, "GOFF");
+  const Int_t n = fTSep->Draw("timeStart:timeEnd:sep", "", "GOFF");
+  Printf("n=%d / %lld", n, fTSep->GetEntries());
   const Double_t *timeStart = fTSep->GetV1();
   const Double_t *timeEnd   = fTSep->GetV2();
   const Double_t *sep       = fTSep->GetV3();
   TTree **tTemp = new TTree*[n];
   for (Int_t i=0; i<n; ++i) {
-    AliInfoF("CloneTree for sep=%+.3f mm", sep[i]);
+    AliInfoF("CloneTree for sep=%+.3f mm (%.0f - %.0f) (%.0f)", sep[i], timeStart[i], timeEnd[i], timeEnd[i]-timeStart[i]);
     tTemp[i] = fTE->CloneTree(0);
-    tTemp[i]->SetDirectory(NULL);
+    tTemp[i]->SetDirectory(0);
   }
 
   const Double_t ttMin = TMath::MinElement(n, timeStart);
   const Double_t ttMax = TMath::MaxElement(n, timeEnd);
 
-  for (Long64_t j=0, m=fTE->GetEntries(); j<m; ++j) {
-    fTE->GetEntry(j);
-    if (timeStamp < ttMin) continue;
-    if (timeStamp > ttMax) continue;
+  fTE->LoadBaskets(2000*1000*1000);
+
+  TCut cutTime(TString::Format("timestamp>=%.0f && timestamp<=%.0f", ttMin, ttMax));
+  Printf("START >>elist");
+  if (bcSel >= 0) {
+    TCut cutBCID(TString::Format("bx==%d", bcSel));
+    cutTime *= cutBCID;
+  }
+  fTE->Draw(">>elist", cutTime*cut);
+  TEventList *elist = (TEventList*)gDirectory->Get("elist");
+  Printf("STOP >>elist %p %d/%lld", elist, elist->GetN(), fTE->GetEntries());
+  elist->Print();
+
+  for (Long64_t j=0, m=elist->GetN(); j<m; ++j) {
+    fTE->GetEntry(elist->GetEntry(j));
+    if ((j%(100*1000)) == 0)
+      Printf("%7lld/%lld %d", j, m, timeStamp);
     for (Long64_t i=0; i<n; ++i) {
-      if (timeStamp  >  timeStart[i]          &&
-	  timeStamp  <  timeEnd[i]            &&
-	  ntrksTRKnc >= fMinNumberOfTracks    &&
-	  (bcSel < 0 || (Int_t)bcid == bcSel) &&
-	  (!selV0AND || isV0and)              &&
-	  (!selV0M   || isV0M)) {
+      if (timeStamp > timeStart[i] && timeStamp < timeEnd[i])
 	tTemp[i]->Fill();
-      }
     }
   }
 
@@ -331,10 +344,11 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
     TCut sel("1");
 //     tTemp[i] = RemoveOutliersRobust(tTemp[i], mu, cov);
     // old version of outlier removal:
+#if 1
     tTemp[i] = RemoveOutliersOld(tTemp[i], sel, mu, cov);
     if (NULL == tTemp[i])
       continue;
-
+#endif
     const Int_t idx[3][2] = { {0,1}, {0,2}, {1,2} };
     for (Int_t j=0; j<3; ++j) {
       gMoments[  j]->SetPoint(gMoments[  j]->GetN(), sep[i],
@@ -375,7 +389,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   fListSave->Write();
   fSave->Write();
   fSave->Close();
-  delete fListSave; fListSave=NULL;
+  SafeDelete(fListSave);
 
   fTE->ResetBranchAddresses();
   return kTRUE;
