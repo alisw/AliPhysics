@@ -222,7 +222,7 @@ AliAnalysisPIDEvent::AcceptEvent(Int_t type) const
   if (!AcceptVertex()) return kFALSE;
   if (fCentralityQuality != 0) return kFALSE;
   if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
-  if(fEventFlags&fgFlagToCheck!=fgFlagToCheck) return kFALSE;
+  if((fEventFlags&fgFlagToCheck)!=fgFlagToCheck) return kFALSE;
   if (type > 0) {
     if (fIsPileupFromSPD) return kFALSE;
     if (!(fIsEventSelected & AliVEvent::kMB)) return kFALSE;
