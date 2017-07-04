@@ -37,10 +37,10 @@ class AliXMLEngine : private TXMLEngine {
     const char* GetData(AliXMLEngine *xml, ptr_type attrPtr) const { return xml->GetAttrValue(attrPtr); }
     ptr_type    GetNext(AliXMLEngine *xml, ptr_type attrPtr) const { return xml->GetNextAttr(attrPtr); }
   } ;
-  // generic iterator (for now const) to be used for nodes and attributes
-  template<typename Policy>
+  // generic iterator for nodes and attributes
+  template<class Policy>
   class IteratorBase
-    : private Policy
+    : protected Policy
     , private std::iterator<std::forward_iterator_tag,  // iterator_category
                             IteratorBase<Policy>,       // value_type
                             std::ptrdiff_t,             // difference_type
@@ -50,6 +50,10 @@ class AliXMLEngine : private TXMLEngine {
   public:
     typedef IteratorBase<Policy> base_type;
     typedef typename base_type::reference reference;
+    typedef typename base_type::pointer pointer;
+    IteratorBase(AliXMLEngine *xml, pointer ptr)
+      : fXML(xml)
+      , fPtr(ptr) {}
     virtual ~IteratorBase() {}
 
     const char* GetName() const { return Policy::GetName(fXML, fPtr); }
@@ -61,41 +65,38 @@ class AliXMLEngine : private TXMLEngine {
     }
     bool      operator!=(reference other) const { return fPtr != other.fPtr; }
     reference operator*() const { return *this; }
+
   protected:
-    typedef typename base_type::pointer pointer;
-    IteratorBase(AliXMLEngine *xml, pointer ptr)
-      : fXML(xml)
-      , fPtr(ptr) {}
     pointer   operator&() const { return fPtr; }
-  private:
     AliXMLEngine *fXML; //!
+  private:
     pointer       fPtr; //!
   } ;
 
-  // iterator for attributes: typedef is enough
+  // iterator for attributes: a typedef is enough
   typedef IteratorBase<AttrPolicy> Attr;
 
   // iterator for nodes: we need a derived class in order to have Get{Child*,Attr*} methods
-  class Node : public IteratorBase<NodePolicy> {
-  public:
-    typedef IteratorBase<NodePolicy> NodeIterator;
+  typedef IteratorBase<NodePolicy> NodeIterator;
 
-    Node(const NodeIterator& b)
-      : NodeIterator(b) {}
+  class Node : public NodeIterator {
+  public:
+    Node(const NodeIterator& nodeIter)
+      : NodeIterator(nodeIter) {}
     Node(AliXMLEngine *xml, XMLNodePointer_t nodePtr)
       : NodeIterator(xml, nodePtr) {}
     virtual ~Node() {}
 
-    NodeIterator GetChildBegin() const { return {fXML, fXML->GetChild(&*this)}; }
-    NodeIterator GetChildEnd()   const { return {fXML, nullptr}; }
-    NodeIterator GetChild(TString name) const {
-      return std::find_if(GetChildBegin(), GetChildEnd(), [name](const Node& n) { return (name == n.GetName()); });
+    Node GetChildBegin() const { return {fXML, fXML->GetChild(&*this)}; }
+    Node GetChildEnd()   const { return {fXML, nullptr}; }
+    Node GetChild(const TString& name) const {
+      return std::find_if(GetChildBegin(), GetChildEnd(), [&name](const Node& n) { return (name == n.GetName()); });
     }
 
     Attr GetAttrBegin() const { return {fXML, fXML->GetFirstAttr(&*this)}; }
     Attr GetAttrEnd()   const { return {fXML, nullptr}; }
-    Attr GetAttr(TString name) const {
-      return std::find_if(GetAttrBegin(), GetAttrEnd(), [name](const Attr& n) { return (name == n.GetName()); });
+    Attr GetAttr(const TString& name) const {
+      return std::find_if(GetAttrBegin(), GetAttrEnd(), [&name](const Attr& n) { return (name == n.GetName()); });
     }
   protected:
   private:
