@@ -1610,7 +1610,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
   case 6:
     fRemovePileUp           = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
-    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
     fFPileUpRejectV0MTPCout->SetParameter(1,0.);
     if (fIsHeavyIon==1){
@@ -1636,7 +1636,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
   case 7:
     fRemovePileUp           = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
-    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
     fFPileUpRejectV0MTPCout->SetParameter(1,0.);
     if (fIsHeavyIon==1){
@@ -1662,7 +1662,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
   case 8:
     fRemovePileUp           = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
-    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
     fFPileUpRejectV0MTPCout->SetParameter(1,0.);
     if (fIsHeavyIon==1){
@@ -1690,7 +1690,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fPastFutureRejectionLow =-89;
     fPastFutureRejectionHigh= 89;
     fDoPileUpRejectV0MTPCout = kTRUE;
-    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,4000.);
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
     fFPileUpRejectV0MTPCout->SetParameter(1,0.);
     if (fIsHeavyIon==1){
