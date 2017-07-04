@@ -82,6 +82,8 @@
 #pragma link C++ class  AliCheb2DStackF+;
 #pragma link C++ class  AliCheb2DStackS+;
 
+#pragma link C++ class  AliMagFast+;
+
 #pragma link C++ class  AliNeutralTrackParam+;
 
 #pragma link C++ class AliCodeTimer+;
