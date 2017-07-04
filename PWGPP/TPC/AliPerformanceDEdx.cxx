@@ -304,8 +304,9 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
 
   //Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
   Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
-  fDeDxHisto->Fill(vDeDxHisto); 
-
+  if(fUseSparse) fDeDxHisto->Fill(vDeDxHisto);
+  else  FilldEdxHisotgram(vDeDxHisto);
+    
   if(!mcev) return;
 }
 
