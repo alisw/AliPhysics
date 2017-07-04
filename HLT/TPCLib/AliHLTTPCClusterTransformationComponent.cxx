@@ -157,7 +157,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-    if ( fInitializeByObjectInDoEvent == 1 ) {
+    if ( fInitializeByObjectInDoEvent == 1 ) {//Only if equal to 1!
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
@@ -305,11 +305,15 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
   
-  Long_t eventTimeStamp = GetTimeStamp();
-  int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
-  if (err != 0){
-    HLTError(Form("Cannot set time stamp, AliHLTTPCClusterTransformation returns %d",err));
-    return(-ENOENT);
+  if( fOfflineMode && !fInitializeByObjectInDoEvent )
+  {
+    Long_t eventTimeStamp = GetTimeStamp();
+    int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
+    if (err != 0)
+    {
+      HLTError(Form("Cannot set time stamp, AliHLTTPCClusterTransformation returns %d",err));
+      return(-ENOENT);
+    }
   }
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
