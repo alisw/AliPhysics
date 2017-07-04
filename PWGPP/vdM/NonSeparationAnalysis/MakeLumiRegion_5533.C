@@ -1,5 +1,4 @@
 // -*- C++ -*-
-// $Id$
 
 #include <sstream>
 
@@ -8,9 +7,9 @@
 
 void MakeLumiRegion()
 {
-  AliVdMData d(AliVdMData::GetFileName("4937/4937.xml"));
+  AliVdMData d(AliVdMData::GetFileName("5533/5533.xml"));
 
-  const TString vtxFileName = "4269/4269_vtx.root";
+  const TString vtxFileName = "5533/5533_vtx.root";
   const TCut    vtxCuts     = "ntrksTRKnc>=11 && chi2/ntrksTRKnc<2";
   const Int_t   bcidSel     = -1; // all BCIDs
 
@@ -21,7 +20,7 @@ void MakeLumiRegion()
                              iss);
       f.DoFit(AliVdMData::GetScanName(n),
               AliVdMData::GetScanType(n),
-              std::stoi(n.GetAttr("offset_um").GetData()),
+              std::stod(n.GetAttr("offset_um").GetData()),
               vtxCuts,
               bcidSel);
     });
