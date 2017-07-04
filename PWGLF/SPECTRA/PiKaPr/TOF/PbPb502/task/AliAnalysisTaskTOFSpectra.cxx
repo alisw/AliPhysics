@@ -868,39 +868,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTOFDist = new TH2F("hTOFDist", "Distribution in the TOF;Sector;Strip", 18, 0, 18, 91, 0, 91);
     fListHist->AddLast(hTOFDist);
     
-    if(fPerformance){
-      const Int_t Bnbins      = 4000;
-      const Double_t Blim[2]  = {0., 1.5};
-      const Double_t Bplim[2] = {0., 10.};
-      
-      hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBeta);
-      
-      hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatch);
-      
-      hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchEtaCut);
-      
-      hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchEtaCutOut);
-      
-      hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaCentral);
-      
-      hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentral);
-      
-      hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
-      
-      hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
-      
-      hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
-      fListHist->AddLast(hTPCdEdx);
-    }
-    
+    DefinePerformanceHistograms();
+
     hCutVariation = new TH1F("hCutVariation", "CutCounter;CutSet;Tracks", 20, 0. -.5, 20. -.5);
     fListHist->AddLast(hCutVariation);
     
@@ -932,7 +901,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTimeOfFlightResNoMismatch = new TH1F("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
     fListHist->AddLast(hTimeOfFlightResNoMismatch);
     
-    if(fFineTOFReso){
+    if(fFineTOFReso){//Histogram with the TOF resolution as a function of the number of TOF matched tracks
       hTimeOfFlightResFine = new TH2F("hTimeOfFlightResFine", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500, 100, 0, 100);
       fListHist->AddLast(hTimeOfFlightResFine);
       
@@ -3167,4 +3136,40 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   
   return kTRUE;
   
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
+  if(fPerformance){
+    const Int_t Bnbins      = 4000;
+    const Double_t Blim[2]  = {0., 1.5};
+    const Double_t Bplim[2] = {0., 10.};
+    
+    hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBeta);
+    
+    hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatch);
+    
+    hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchEtaCut);
+    
+    hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchEtaCutOut);
+    
+    hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaCentral);
+    
+    hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentral);
+    
+    hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
+    
+    hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
+    
+    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
+    fListHist->AddLast(hTPCdEdx);
+  }
 }
