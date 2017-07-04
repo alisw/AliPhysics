@@ -27,6 +27,7 @@ class AliXRDPROOFtoolkit : public TObject
   static void JoinTreesIndex(const char * outputFile, const char * outputTree, const char *indexName, const char *inputTrees, Int_t debugLevel);
   static void   MakeTreeFromList(const char *fout, const char * treeOut, const char * treeIn, const char * flist, Bool_t debug);
   static void CacheFileList(const char * fileIn, const char* cachePrefix);
+  static Int_t  TestFile(const char*fileName,const char*keyNames);
  private:
   Int_t         fVerbose;          ///< verbso mode  - print command
   TString       fUserName;         ///< user name

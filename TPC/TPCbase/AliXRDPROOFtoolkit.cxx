@@ -57,7 +57,9 @@
 #include "AliXRDPROOFtoolkit.h"
 #include <iostream>
 #include <iomanip>
-
+#include "TKey.h"
+#include "AliSysInfo.h"
+#include "TPRegexp.h"
 using namespace std;
 
 
@@ -284,21 +286,19 @@ TDSet* AliXRDPROOFtoolkit::MakeSetRandom(const char*fileIn, const char * treeNam
 
 
 
-
-
 Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeName, Int_t debugLevel, const char *branchName){
   /// Check the tree in file
   /// fileName   - the name of the file with tree
   /// treeName   - the name of file
-  /// debugLevel - 0 check the existance of the file -  1 make loop over entries
-  /// branchName - if debugLevel>0 the branch is chcecked
-  /// if brnachName =0 the content of full tree is chcecked
+  /// debugLevel - 0 check the existence of the file -  1 make loop over entries
+  /// branchName - if debugLevel>0 the branch is checked
+  /// if brnachName =0 the content of full tree is checked
   /// return value = 0 - Check things  OK
-  /// -1 - file not exist or not accesible
+  /// -1 - file not exist or not accessible
   /// -2 - file is zombie
   /// -3 - tree not present
   /// -4 - branch not present
-  /// -5  - no branhes
+  /// -5  - no branches
   TFile * file = TFile::Open(fileName);
   if (!file) { return -1;}
   if (file->IsZombie()) {file->Close(); delete file; return -2;};
@@ -313,6 +313,21 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
   if (!tree) {file->Close(); delete file; return -3;}
   if (tree->GetListOfBranches()==NULL) return -5;
   if (tree->GetListOfBranches()->GetEntries()==0) return -5;
+  // check all TProcessID as they are automaitcally loaded
+  TList * keys= file->GetListOfKeys();
+  Bool_t keysOK=kTRUE;
+  for (Int_t i=0; i<keys->GetEntries(); i++) { // check TProcesIDs as they are always used in TTree merging (sometimes failed)
+    TKey * key = (TKey*)keys->At(i);
+    if (TString(key->GetClassName())=="TProcessID"){
+      TObject * o = file->Get(key->GetName());
+      if (TString(o->GetName()).Length()==0){
+        ::Error("AliXRDPROOFtoolkit::CheckTreeInFile()","Wring process ID:%s\t%s\n",fileName,key->GetName());
+        keysOK=kFALSE;
+        delete file;
+        return -6;
+      }
+    }
+  }
 
   TBranch * branch = 0;
   if (branchName) {
@@ -853,3 +868,90 @@ void   AliXRDPROOFtoolkit::MakeTreeFromList(const char *fout, const char * treeO
   fileOut->Close();
   delete fileOut;
 }
+
+/// Test selected entries (keynames)  in input file
+///    - Read/Write/CopyTree/Delete tested
+///    - tests in try/catch block but root error handling is not full
+///    -- preferable to run process per file ()
+/// \param fileName   - input file Name
+/// \param keyNames   - : separated list of keys (regular expression)
+/// \return  0 is OK >0 error code
+///          testIndex of failure in case failure was catched
+/// ```
+///     fileName="/lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2015/LHC15o/alice/cern.ch/user/p/pwg_pp/ESDFilteringWithPlugin/sub1/output/000246153/408/AnalysisResults.root"
+///        Int_t status = AliXRDPROOFtoolkit::TestFile(fileName, "highPt");
+/// ```
+Int_t  AliXRDPROOFtoolkit::TestFile(const char*fileName,const char*keyNames) {
+    //
+    Int_t statusAll=0;
+    gEnv->SetValue("TFile.Recover", 0);
+    TFile * f    = TFile::Open(fileName);
+    TFile * fout = TFile::Open("tmp.root","recreate");
+    if (f==NULL) return 1;
+    TObjArray * keyMaskArray = TString(keyNames).Tokenize(":");
+    TList * list = (TList*)f->GetListOfKeys();
+    Int_t test=0;
+    for (Int_t ikey=0; ikey<list->GetEntries(); ikey++) {
+        Int_t status=0;
+        Bool_t isSelected = kFALSE;
+        for (Int_t jkey = 0; jkey < keyMaskArray->GetEntriesFast(); jkey++) {
+            TPRegexp reg(keyMaskArray->At(jkey)->GetName());
+            if (reg.Match(list->At(ikey)->GetName())) {
+                isSelected = kTRUE;
+            }
+        }
+        if (isSelected == kFALSE) continue;
+        TString oname = list->At(ikey)->GetName();
+        ::Info("AliXRDPROOFtoolkit::TestFile", "Selected key %s", oname.Data());
+        TKey *key = (TKey *) list->At(ikey);
+        AliSysInfo::AddStamp(oname.Data(), 1, ikey);
+        try {
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestRead", "Begin-%s", oname.Data());
+            test=1;
+            TObject *o = f->Get(oname.Data());
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestRead", "End-%s", oname.Data());
+            AliSysInfo::AddStamp(oname.Data(), 2, ikey);
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestWrite", "Begin-%s", oname.Data());
+            fout->cd();
+            test=2;
+            o->Write();
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestWrite", "End-%s", oname.Data());
+            AliSysInfo::AddStamp(oname.Data(), 3, ikey);
+            if ((TString(key->GetClassName()) == "TTree")) {
+                TTree *otree = (TTree *) o;
+                fout->cd();
+                test=8;
+                ::Info("AliXRDPROOFtoolkit::TestFile.TestCopyTree", "Begin-%s/%s", fileName,oname.Data());
+                TTree *tout = otree->CopyTree("1");
+                ::Info("AliXRDPROOFtoolkit::TestFile.TestCopyTree", "End-%s/%s", fileName,oname.Data());
+                AliSysInfo::AddStamp(oname.Data(), 13, ikey);
+                test=16;
+                delete tout;
+                AliSysInfo::AddStamp(oname.Data(), 14, ikey);
+            }
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestDelete", "Begin-%s", oname.Data());
+            test=4;
+            delete o;
+            ::Info("AliXRDPROOFtoolkit::TestFile.TestDelete", "End-%s", oname.Data());
+            AliSysInfo::AddStamp(oname.Data(), 4, ikey);
+            status=0;
+        }
+        catch (...) {
+          ::Error("AliXRDPROOFtoolkit::TestFile.TestAllFailed", "%s/%s/TestStatusKey_%d", fileName, oname.Data(), test);
+          status = test;
+        }
+        if (status==0) {
+          ::Info("AliXRDPROOFtoolkit::TestFile.TestKey", "%s/%s/ TestStatus_%d", fileName, oname.Data(), status);
+        }else{
+          ::Error("AliXRDPROOFtoolkit::TestFile.TestKey", "%s/%s/ TestStatus_%d", fileName, oname.Data(), status);
+        }
+        statusAll|=status;
+    }
+    if (statusAll==0) {
+      ::Info("AliXRDPROOFtoolkit::TestFile.TestAll", "%s/ TestStatusAll_%d", fileName, statusAll);
+    }else{
+       ::Error("AliXRDPROOFtoolkit::TestFile.TestAll", "%s/ TestStatusAll_%d", fileName, statusAll);
+    }
+    return statusAll;
+}
+
