@@ -47,6 +47,7 @@
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDs.h"
 #include "AliVertexingHFUtils.h"
+#include "AliMultSelection.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSEDs);
@@ -80,6 +81,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fPtProng2Hist3D(0x0),
   fNtupleDs(0),
   fFillNtuple(0),
+  fUseCentrAxis(0),
   fSystem(0),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
@@ -106,7 +108,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fnSparse(0),
   fnSparseIP(0),
   fImpParSparse(0x0),
-  fImpParSparseMC(0x0)
+  fImpParSparseMC(0x0),
+  fMultSelectionObjectName("MultSelection"),
+  fCentEstName("off")
 {
   /// Default constructor
     
@@ -179,6 +183,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fPtProng2Hist3D(0x0),
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
+  fUseCentrAxis(0),
   fSystem(0),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
@@ -205,7 +210,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fnSparse(0),
   fnSparseIP(0),
   fImpParSparse(0x0),
-  fImpParSparseMC(0x0)
+  fImpParSparseMC(0x0),
+  fMultSelectionObjectName("MultSelection"),
+  fCentEstName("off")
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -368,6 +375,22 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   delete fCounter;
   delete fAnalysisCuts;
     
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEDs::SetFillCentralityAxis(Int_t flag) {
+  //
+  // set centrality estimator
+  //
+  fUseCentrAxis = flag;
+  if(fUseCentrAxis<kCentOff||fUseCentrAxis>=kCentInvalid) AliWarning("Centrality estimator not valid");
+  if(fUseCentrAxis) {
+    if(fUseCentrAxis==1) fCentEstName = "V0M";
+    if(fUseCentrAxis==2) fCentEstName = "V0A";
+    if(fUseCentrAxis==3) fCentEstName = "CL1";
+    if(fUseCentrAxis==4) fCentEstName = "ZNA";
+  }
+  return;
 }
 
 //________________________________________________________________________
@@ -630,11 +653,13 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     
   Int_t nTrklBins = 1;
   if(fUseTrkl) nTrklBins = 300;
+  Int_t nCentrBins = 1;
+  if(fUseCentrAxis) nCentrBins = 101;
 
-  Int_t nBinsReco[knVarForSparse]   = {nInvMassBins,  20,     30,     14,    14,   20,    10,   10,     14,     6,     6,   12,  nTrklBins};
-  Double_t xminReco[knVarForSparse] = {minMass,       0.,     0.,     0.,    0.,   0.,   90.,   90.,    0.,    7.,    0.,   0.,         1.};
-  Double_t xmaxReco[knVarForSparse] = {maxMass,      20.,     15,    70.,   70.,  10.,  100.,  100.,   70.,   10.,    3.,   6.,       301.};
-  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","N tracklets"};
+  Int_t nBinsReco[knVarForSparse]   = {nInvMassBins,  20,     30,     14,    14,   20,    10,   10,     14,     6,     6,   12,  nTrklBins, nCentrBins};
+  Double_t xminReco[knVarForSparse] = {minMass,       0.,     0.,     0.,    0.,   0.,   90.,   90.,    0.,    7.,    0.,   0.,         1.,         0.};
+  Double_t xmaxReco[knVarForSparse] = {maxMass,      20.,     15,    70.,   70.,  10.,  100.,  100.,   70.,   10.,    3.,   6.,       301.,       101.};
+  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","N tracklets",Form("Percentile (%s)",fCentEstName.Data())};
   if(fSystem == 1) { //pPb,PbPb
     nInvMassBins=(Int_t)(0.45/fMassBinSize+0.5);
     minMass=massDs-0.5*nInvMassBins*fMassBinSize;
@@ -1202,9 +1227,23 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
 	Double_t normIPprong[nProng];        //to store IP of k,k,pi
 	Double_t nTracklets = (Double_t)AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
-          
+        
 	Double_t ptWeight = 1.;
 	if(fFillSparse) {
+        
+	  AliMultSelection *multSelection = (AliMultSelection*)aod->FindListObject(fMultSelectionObjectName);
+	  if(!multSelection){
+            Printf("AliMultSelection could not be found in the esd event list of objects");
+            return;
+	  }
+	  Double_t cent = -999;
+	  if(fUseCentrAxis) {
+            cent = multSelection->GetMultiplicityPercentile(Form("%s",fCentEstName.Data()));
+            Int_t qual = multSelection->GetEvSelCode();
+            if(qual == 199 ) cent=-999;
+	  }
+	  else cent = 0.5;
+        
 	  if (fUseWeight && fHistoPtWeight){
 	    AliDebug(2,"Using Histogram as Pt weight function");
 	    ptWeight = GetPtWeightFromHistogram(ptCand);
@@ -1231,7 +1270,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[2] = tmpNormIP[2];
                         
 	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
-						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets};
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent};
           
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
@@ -1270,7 +1309,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[2] = tmpNormIP[0];
                         
 	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
-						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets};
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP),nTracklets,cent};
           
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
