@@ -105,6 +105,7 @@ public TObject
   static void SetCheckFlag(Int_t);
   static void AddCheckFlag(EventFlags_t);
   static void RemoveCheckFlag(EventFlags_t);
+  static Int_t GetCheckFlag() { return fgFlagToCheck; }; 
   Bool_t CheckFlag();
   static void PrintEventSelection();
 
