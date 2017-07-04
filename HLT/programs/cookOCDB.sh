@@ -1,6 +1,6 @@
 #!/bin/bash
 SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB
-TARGET=/opt/HLT/data/HCDB_new_2016-09-02
+TARGET=/opt/HLT/data/HCDB_new_tmp#
 FUTURE_RUN=500000
 SOURCE_RUN=260014
 UPDATE_MAGNETIC_FIELD=0
@@ -25,6 +25,14 @@ if [ "0$5" == "01" ]; then
     echo Setting update of magnetic field
     UPDATE_MAGNETIC_FIELD=1
 fi
+
+if [ "0$TARGET" == "0" ]; then
+    echo No target set
+    exit 1
+fi
+
+rm -Rf $TARGET/*
+mkdir -p $TARGET
 
 #Download default CDB entries for future run
 aliroot -l -b -q $ALICE_SOURCE/HLT/programs/downloadCDB.C"($FUTURE_RUN,\"local://$SOURCE\",\"local://$TARGET/tmp\",\"*/*/*\")"
@@ -119,12 +127,35 @@ fi
 #Use all TPC Compression objects from cvmfs, to have correct behavior for all runs
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressor/*
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/*
-cp $SOURCE/HLT/ConfigTPC/TPCDataCompressor/* $TARGET/HLT/ConfigTPC/TPCDataCompressor
-cp $SOURCE/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/* $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
+mkdir -p $TARGET/HLT/ConfigTPC/TPCDataCompressor
+mkdir -p $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
+
+#First object used in 2010, replaced by updated objects below
+#cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressor/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressor
+#cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
 
 #Create a default huffman table with diffential compression to match HLT settings in data replay, will have low version number, so it is overwritten by new tables for new runs
-aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
-aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/ConfigTPC/TPCDataCompressor/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2016/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2016/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressor/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+
+#Year from which to take the OCDB objects. First objects would be from 2010, but we overwrite all these objects with a default object from 2016 that has differential compression enabled.
+#STARTYEAR=2010
+STARTYEAR=2016
+
+CURYEAR=`date +%Y`
+VERCONF=2
+VERTABLE=2
+for i in `seq $STARTYEAR $CURYEAR`; do
+    TMPSOURCE=`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/$i/OCDB,g"`
+    for j in `ls $TMPSOURCE/HLT/ConfigTPC/TPCDataCompressor | grep -v Run0`; do
+        aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TMPSOURCE/HLT/ConfigTPC/TPCDataCompressor/$j\", \"local://$TARGET\", -1, -1, $VERCONF)"
+        let VERCONF=$VERCONF+1
+    done
+    for j in `ls $TMPSOURCE/HLT/ConfigTPC/TPCDataCompressorHuffmanTables | grep -v Run0`; do
+        aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TMPSOURCE/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/$j\", \"local://$TARGET\", -1, -1, $VERTABLE)"
+        let VERTABLE=$VERTABLE+1
+    done
+done
 
 #copy old GRP entries
 cp -n $ALIHLT_HCDBDIR/GRP/GRP/Data/* $TARGET/GRP/GRP/Data
