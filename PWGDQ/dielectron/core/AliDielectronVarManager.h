@@ -585,6 +585,7 @@ public:
     // Flow estimators for measured Jpsis
 
     kQnDeltaPhiTPCrpH2,
+    kQnDeltaPhiTrackTPCrpH2, // Track delta phi for cross-checks
     kQnDeltaPhiV0ArpH2,
     kQnDeltaPhiV0CrpH2,
     kQnDeltaPhiV0rpH2,
@@ -977,8 +978,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       // Fill distance of primary vertex to secondary vertex (as an alternative to the IP)
       // Pure MC variable by intention, no reconstucted value filled.
       if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
-        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
-                                                                             + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2) + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
         values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
       }
     }
@@ -1145,6 +1145,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   FillVarVParticle(particle, values);
   Double_t tpcNcls=particle->GetTPCNcls();
 
+  if(Req(kQnDeltaPhiTrackTPCrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnTPCrpH2]);
   //GetNclsS not present in AODtrack
   //Replace with method as soon as available
   TBits tpcSharedMap = particle->GetTPCSharedMap();

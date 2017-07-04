@@ -561,6 +561,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDAy_FMDCyCorrH2",       "FMDA^{Qn}_{y} * FMDC^{Qn}_{y}",               ""},
 //
   {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiTrackTPCrpH2",    "#phi^{Track}-#Psi^{TPC}",                     ""},
   {"QnDeltaPhiV0ArpH2",         "#phi^{pair}-#Psi^{V0A}",                     ""},
   {"QnDeltaPhiV0CrpH2",         "#phi^{pair}-#Psi^{V0C}",                     ""},
   {"QnDeltaPhiV0rpH2",          "#phi^{pair}-#Psi^{V0}",                      ""},
