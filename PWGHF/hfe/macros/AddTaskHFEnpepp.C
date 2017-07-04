@@ -221,7 +221,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
       task->SelectCollisionCandidates(AliVEvent::kINT7);
 
       if(useMC && weightlevelback>=0) {
-         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13LowB.root");
+         ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5.root");
       }
 
       //create data containers
