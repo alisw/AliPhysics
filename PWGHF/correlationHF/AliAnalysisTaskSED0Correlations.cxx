@@ -3054,11 +3054,10 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     fDaughTrigNum.push_back(fNtrigD);
     fDaughTrackID.push_back(((AliVTrack*)d->GetDaughter(1))->GetID());
     fDaughTrigNum.push_back(fNtrigD);
-
-    if(!fTrackArrayFilled) {
-      fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, needed for soft pion rejection (for the first trigger only)
-      fTrackArrayFilled = kTRUE;
-    }
+    
+    if(fTrackArrayFilled) fTrackArray->Clear(); //need to recreate the array for each trigger, since softpi associations change!
+    fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, needed for soft pion rejection (for the first trigger only)
+    fTrackArrayFilled = kTRUE;
  
     //soft pion rejection (for SE, in ME it's done in the AliHFOfflineCorrelator class
     for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++) { // looping on track candidates
