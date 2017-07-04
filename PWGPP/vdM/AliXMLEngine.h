@@ -49,8 +49,12 @@ class AliXMLEngine : private TXMLEngine {
                             > {
   public:
     typedef IteratorBase<Policy> base_type;
-    typedef typename base_type::reference reference;
-    typedef typename base_type::pointer pointer;
+    typedef typename base_type::iterator_category iterator_category;
+    typedef typename base_type::value_type        value_type;
+    typedef typename base_type::difference_type   difference_type;
+    typedef typename base_type::pointer           pointer;
+    typedef typename base_type::reference         reference;
+
     IteratorBase(AliXMLEngine *xml, pointer ptr)
       : fXML(xml)
       , fPtr(ptr) {}
