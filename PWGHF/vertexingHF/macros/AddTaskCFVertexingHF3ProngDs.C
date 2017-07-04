@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2, Bool_t useNtrkWeight=kFALSE)
 //AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -561,7 +561,25 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 			task->GetWeightFunction()->Print();
 		}
 	}
-
+    
+    if(useNtrkWeight){
+        TH1F *hNtrkMC;
+        TH1F *hNtrkMeasured;
+        hNtrkMC = (TH1F*)fileCuts->Get("hNtrkMC");
+        hNtrkMeasured = (TH1F*)fileCuts->Get("hNtrkMeasured");
+        if(hNtrkMC) task->SetMCNchHisto(hNtrkMC);
+        else {
+            AliFatal("Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        if(hNtrkMeasured) task->SetMeasuredNchHisto(hNtrkMeasured);
+        else {
+            AliFatal("Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        task->SetUseNchTrackletsWeight(kTRUE);
+    }
+    
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
