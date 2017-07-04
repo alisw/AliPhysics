@@ -1062,8 +1062,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
-    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))
->0) {
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks)) > 0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
            element!=tracks.end(); element++) {
         int tpcID=element->TrackID();
@@ -1077,7 +1076,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
         if (!tESD) continue;
 
-        tESD->ResetTrackParamIp( &(*element) );
+        tESD->ResetTrackParamTPCInner( &(*element) );
 
       }
     }
