@@ -17,15 +17,15 @@
 #include <TVectorD.h>
 #include <TMatrixD.h>
 
+#include "AliLog.h"
+
 class AliLuminousRegionFit : public TObject {
 public:
   AliLuminousRegionFit(Int_t   fillNumber,
-		       Int_t   minNumberOfTracks,
 		       TString vtxFileName,
 		       TString sepFileName)
     : TObject()
     , fFillNumber(fillNumber)
-    , fMinNumberOfTracks(minNumberOfTracks)
     , f(TFile::Open(vtxFileName))
     , fL(NULL)
     , fTE(NULL)
@@ -37,48 +37,65 @@ public:
     f->cd("Vertex_Performance");
 
     fL  = dynamic_cast<TList*>(gDirectory->Get("cOutputVtxESD"));
-    if (NULL == fL)  AliFatal("NULL == fL");
-
-    fTE = dynamic_cast<TTree*>(fL->FindObject("fTreeBeamSpot"));
+    if (NULL == fL) {
+      fTE = dynamic_cast<TTree*>(gDirectory->Get("cOutputVtxESD"));
+    } else {
+      fTE = dynamic_cast<TTree*>(fL->FindObject("fTreeBeamSpot"));
+    }
     if (NULL == fTE) AliFatal("NULL == fTE");
 
-    if (!SetupTreeSep(sepFileName))
+    if (!fTSep->ReadFile(sepFileName))
+      AliFatal("SetupTreeSep failed");
+  }
+
+  AliLuminousRegionFit(Int_t   fillNumber,
+		       TString vtxFileName,
+		       std::istream& sepStream)
+    : TObject()
+    , fFillNumber(fillNumber)
+    , f(TFile::Open(vtxFileName))
+    , fL(NULL)
+    , fTE(NULL)
+    , fTSep(new TTree)
+    , fN(0)
+    , fListSave(NULL)
+  {
+    if (NULL == f)   AliFatal("NULL == f");
+    f->cd("Vertex_Performance");
+
+    fL  = dynamic_cast<TList*>(gDirectory->Get("cOutputVtxESD"));
+    if (NULL == fL) {
+      fTE = dynamic_cast<TTree*>(gDirectory->Get("cOutputVtxESD"));
+    } else {
+      fTE = dynamic_cast<TTree*>(fL->FindObject("fTreeBeamSpot"));
+    }
+    if (NULL == fTE) AliFatal("NULL == fTE");
+
+    if (!fTSep->ReadStream(sepStream))
       AliFatal("SetupTreeSep failed");
   }
 
   virtual ~AliLuminousRegionFit() {
-    if (fTSep) {
+    if (fTSep)
       fTSep->ResetBranchAddresses();
-      delete fTSep;
-      fTSep = NULL;
-    }
-    if (fL) {
-      delete fL;
-      fL = NULL;
-    }
-    if (f) f->Close();
-    if (fListSave) {
-      delete fListSave;
-      fListSave = NULL;
-    }
+    SafeDelete(fTSep);
+    if (!fL)
+      SafeDelete(fTE);
+    SafeDelete(fL);
+    if (f)
+      f->Close();
+    SafeDelete(fListSave);
   }
 
   Bool_t DoFit(TString  scanName,
-	       Double_t tMin, Double_t tMax,
 	       Int_t    scanType,
 	       Double_t offset,
-	       Int_t    bcSel    = -1,       // <0: no selection on BCID
-	       Bool_t   selV0AND = kFALSE,   //
-	       Bool_t   selV0M   = kFALSE);  //
+               const TCut& cut,
+               Int_t    bcSel=-1); // bcSel<0  ->  no selection on BCID
 
   Double_t MinuitFunction(const Double_t *par);
 
 protected:
-  Bool_t SetupTreeSep(TString sepFileName) {
-    if (!fTSep->ReadFile(sepFileName, "timeStart/D:timeEnd:sep"))
-      return kFALSE;
-    return kTRUE;
-  }
   void ComputeMoments(TTree *t,
 		      const TCut& sel, const TVectorD &mu, const TMatrixDSym &cov,
 		      TVectorD &x, TMatrixDSym &cx, Double_t &llRatio);
@@ -98,7 +115,6 @@ private:
   AliLuminousRegionFit operator=(const AliLuminousRegionFit&);
 
   Int_t   fFillNumber;        //
-  Int_t   fMinNumberOfTracks; //
 
   TFile *f;            //
   TList *fL;           //
@@ -108,6 +124,7 @@ private:
   Int_t     fN;        //!
   Double_t *fX[3];     //!
   Double_t *fCov[3];   //!
+  Double_t *fChi2;     //!
 
   TList    *fListSave; //! list of TGraph{,Errors}s
 
