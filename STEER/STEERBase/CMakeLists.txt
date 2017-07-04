@@ -74,6 +74,7 @@ set(SRCS
     AliLog.cxx
     AliMagF.cxx
     AliMagWrapCheb.cxx
+    AliMagFast.cxx
     AliMathBase.cxx
     AliMCEvent.cxx
     AliMCEventHandler.cxx
