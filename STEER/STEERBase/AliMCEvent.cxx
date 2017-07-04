@@ -1070,4 +1070,21 @@ Int_t AliMCEvent::Raw2MergedLabel(int lbRaw) const
   return lb;
 }
 
+//_____________________________________________________________________________
+Int_t AliMCEvent::GetPrimary(Int_t id)
+{
+  //
+  // Return number of primary that has generated track
+  //
+  
+  int current, parent;
+  //
+  parent=id;
+  while (1) {
+    current=parent;
+    parent=Particle(current)->GetFirstMother();
+    if(parent<0) return current;
+  }
+}
+
 ClassImp(AliMCEvent)
