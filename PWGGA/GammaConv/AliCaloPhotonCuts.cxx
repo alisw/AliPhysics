@@ -3448,6 +3448,11 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-12.5e-9;
     fMaxTimeDiff=13e-9;
     break;
+  case 11:
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-130e-9;
+    fMaxTimeDiff=130e-9;
+    break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));
     return kFALSE;
