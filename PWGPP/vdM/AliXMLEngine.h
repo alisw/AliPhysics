@@ -3,39 +3,40 @@
 #define _ALI_XML_ENGINE_H
 #include <algorithm>
 
+#include <TObject.h>
 #include <TXMLEngine.h>
 #include <TString.h>
 
 #include "AliLog.h"
 
 // wrapper for TXMLEngine
-class AliXMLEngine : private TXMLEngine {
+class AliXMLEngine : public TObject {
  public:
   AliXMLEngine(const char* fileName)
-    : TXMLEngine()
-    , fXMLDoc(ParseFile(fileName)) {
+    : fXML()
+    , fXMLDoc(fXML.ParseFile(fileName)) {
     if (!fXMLDoc)
       AliFatalF("TXMLEngine::ParseFile(\"%s\") returned nullptr", fileName);
   }
   virtual ~AliXMLEngine() {
     if (fXMLDoc)
-      FreeDoc(fXMLDoc);
+      fXML.FreeDoc(fXMLDoc);
     fXMLDoc = nullptr;
   }
 
   // policy class for adapting XMLNodePointer_t to an iterator
   struct NodePolicy {
     typedef XMLNodePointer_t ptr_type;
-    const char* GetName(AliXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNodeName(nodePtr); }
-    const char* GetData(AliXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNodeContent(nodePtr); }
-    ptr_type    GetNext(AliXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNext(nodePtr); }
+    const char* GetName(TXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNodeName(nodePtr); }
+    const char* GetData(TXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNodeContent(nodePtr); }
+    ptr_type    GetNext(TXMLEngine *xml, ptr_type nodePtr) const { return xml->GetNext(nodePtr); }
   } ;
   // policy class for adapting XMLAttrPointer_t to an iterator
   struct AttrPolicy {
     typedef XMLAttrPointer_t ptr_type;
-    const char* GetName(AliXMLEngine *xml, ptr_type attrPtr) const { return xml->GetAttrName(attrPtr); }
-    const char* GetData(AliXMLEngine *xml, ptr_type attrPtr) const { return xml->GetAttrValue(attrPtr); }
-    ptr_type    GetNext(AliXMLEngine *xml, ptr_type attrPtr) const { return xml->GetNextAttr(attrPtr); }
+    const char* GetName(TXMLEngine *xml, ptr_type attrPtr) const { return xml->GetAttrName(attrPtr); }
+    const char* GetData(TXMLEngine *xml, ptr_type attrPtr) const { return xml->GetAttrValue(attrPtr); }
+    ptr_type    GetNext(TXMLEngine *xml, ptr_type attrPtr) const { return xml->GetNextAttr(attrPtr); }
   } ;
   // generic iterator for nodes and attributes
   template<class Policy>
@@ -55,7 +56,7 @@ class AliXMLEngine : private TXMLEngine {
     typedef typename base_type::pointer           pointer;
     typedef typename base_type::reference         reference;
 
-    IteratorBase(AliXMLEngine *xml, pointer ptr)
+    IteratorBase(TXMLEngine *xml, pointer ptr)
       : fXML(xml)
       , fPtr(ptr) {}
     virtual ~IteratorBase() {}
@@ -72,7 +73,7 @@ class AliXMLEngine : private TXMLEngine {
 
   protected:
     pointer   operator&() const { return fPtr; }
-    AliXMLEngine *fXML; //!
+    TXMLEngine   *fXML; //!
   private:
     pointer       fPtr; //!
   } ;
@@ -87,7 +88,7 @@ class AliXMLEngine : private TXMLEngine {
   public:
     Node(const NodeIterator& nodeIter)
       : NodeIterator(nodeIter) {}
-    Node(AliXMLEngine *xml, XMLNodePointer_t nodePtr)
+    Node(TXMLEngine *xml, XMLNodePointer_t nodePtr)
       : NodeIterator(xml, nodePtr) {}
     virtual ~Node() {}
 
@@ -106,7 +107,7 @@ class AliXMLEngine : private TXMLEngine {
   private:
   } ;
 
-  Node GetRootNode() { return {this, DocGetRootElement(fXMLDoc)}; }
+  Node GetRootNode() { return {&fXML, fXML.DocGetRootElement(fXMLDoc)}; }
 
 protected:
 private:
@@ -114,6 +115,7 @@ private:
   AliXMLEngine(const AliXMLEngine&);
   AliXMLEngine& operator=(const AliXMLEngine&);
 
+  TXMLEngine      fXML;    //!
   XMLDocPointer_t fXMLDoc; //!
 
   ClassDef(AliXMLEngine, 1);
