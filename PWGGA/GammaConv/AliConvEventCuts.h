@@ -31,9 +31,11 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 
-/***
+/**
  * @class AliConvEventCuts
- * @brief Event selection for conversion photon (and mother meson) analysis
+ * @brief Class handling all kinds of selection cuts for Gamma Conversion analysis
+ * @author Friederike Bock
+ * @author Daniel Muehlheim
  * @ingroup GammaConv
  *
  * The cut configuration is set as a string with an 8 digit number.
@@ -41,7 +43,7 @@ class AliEMCALTriggerPatchInfo;
  * its values represent the cut values. The cut configuration is listed here:
  *
  * | Position in the cut string (from the end) | Cut type                     |
- * |--------------------------------------------------------------------------|
+ * |-------------------------------------------|------------------------------|
  * |                  0                        | HeavyIon                     |
  * |                  1                        | CentralityMin                |
  * |                  2                        | CentralityMax                |
