@@ -170,7 +170,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer("K0toPiPi0", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPiPi0",AliAnalysisManager::GetCommonFileName()));
+  mgr->CreateContainer("K0toPi0Pi0", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0",AliAnalysisManager::GetCommonFileName()));
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
