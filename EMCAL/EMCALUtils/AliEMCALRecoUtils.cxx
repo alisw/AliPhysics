@@ -435,7 +435,8 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   Int_t iPhiLast = 24;
    if      ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
    else if ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd  ) iPhiLast /= 3;// 1/3 sm case
-  
+   else if ( geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Ext   ) iPhiLast /= 3;// 1/3 sm case
+
   if(iphi >= fNCellsFromEMCALBorder && iphi < iPhiLast - fNCellsFromEMCALBorder) okrow = kTRUE; 
 
   // Check columns/eta
