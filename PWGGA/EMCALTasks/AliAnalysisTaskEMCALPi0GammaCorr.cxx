@@ -158,12 +158,8 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 	
     //Initializing the histograms to be saved. For the moment, only pT of clusters and Mgammagamma.
     int nbins_Mass = 500;
-    int nbins_Pt   = 100;
     int nbins_E    = 100;
-    int nbins_dphi     = 18;
-    int nbins_deta     = 30;
-    int nbins_phi     = 36;
-    int nbins_eta     = 40;
+  
     int nbins_zt      = 50;
     int nbins_xi      = 50;
     int nbins_M02     = 50;
@@ -173,10 +169,15 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_Asymmetry = 40;
 
     
-    double min_Mass = 0;
+    double min_Mass = 0.0;
     double max_Mass = 1.0;
-    double min_Pt = 0;
-    double max_Pt = 50.0;
+
+    int    nbins_Pt =  200;
+    double min_Pt   =  0.0;
+    double max_Pt   =  100.0;
+
+    int nbins_dphi     = 18;
+    int nbins_phi     = 400;
     double min_dphi = -0.5; // rads
     double max_dphi = 1.5; // rads 
     double min_phi = -1.0*TMath::Pi();
@@ -184,8 +185,12 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 
     double min_zvertex = -10;
     double max_zvertex = +10;
+
+
+    int nbins_eta = 160;
+    int nbins_deta= 30;
     double max_deta = 1.5;
-    double max_eta =  1.0;
+    double max_eta =  1.2;
     double min_deta = -max_deta;
     double min_eta =  -max_eta;
     
@@ -231,6 +236,15 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_DisToBad = 10;
     double min_DisToBad = -0.5;
     double max_DisToBad = 9.5;    
+
+    int nbins_Exoticity  = 100;
+    double min_Exoticity = 0.0;
+    double max_Exoticity = 1.0;
+
+    int nbins_time = 200;
+    double min_time = -100;
+    double max_time = +100;
+    
 
     //Pion-hadron correlations
     const int nbins_PionCorr = 24;
@@ -312,25 +326,25 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 13;
+    const int nbins_Cluster = 15;
     
     axisNames = "Cluster THnSparse; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMatchedTracks; nMaxima;";
-    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track;";
-    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, 10*nbins_eta, 10*nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
-                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR};
+    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns];";
+    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
+                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time};
     double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima, 
-					 min_DisToBorder, min_DisToBad, min_dR};
+					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time};
     double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima, 
-					 max_DisToBorder, max_DisToBad, max_dR};
+					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
     
     ///////////////////Tracks////////////////////////////////////////////////
     axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi;";
-    int    binsTrack[3] = {nbins_Pt*2, nbins_eta, nbins_phi};
+    int    binsTrack[3] = {nbins_Pt, nbins_eta, nbins_phi};
     double xminTrack[3] = {min_Pt, min_eta, min_phi};
-    double xmaxTrack[3] = {max_Pt*2, max_eta, max_phi};
+    double xmaxTrack[3] = {max_Pt, max_eta, max_phi};
     h_Track = new THnSparseD("h_Track", axisNames, 3, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
     //fOutput->Add(h_Track);
@@ -441,6 +455,91 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
 
    return kTRUE;
 }
+
+Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
+{
+  // Calculate the energy of cross cells around the leading cell.
+
+  AliVCaloCells *cells = fCaloCells;
+  if (!cells)
+    return 0;
+
+  if (!fGeom)
+    return 0;
+
+  Int_t iSupMod = -1;
+  Int_t iTower  = -1;
+  Int_t iIphi   = -1;
+  Int_t iIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
+  Int_t iphis   = -1;
+  Int_t ietas   = -1;
+
+  Double_t crossEnergy = 0;
+
+  fGeom->GetCellIndex(idmax,iSupMod,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphis,ietas);
+
+  Int_t ncells = cluster->GetNCells();
+  for (Int_t i=0; i<ncells; i++) {
+    Int_t cellAbsId = cluster->GetCellAbsId(i);
+    fGeom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
+    Int_t aphidiff = TMath::Abs(iphi-iphis);
+    if (aphidiff>1)
+      continue;
+    Int_t aetadiff = TMath::Abs(ieta-ietas);
+    if (aetadiff>1)
+      continue;
+    if ( (aphidiff==1 && aetadiff==0) ||
+	 (aphidiff==0 && aetadiff==1) ) {
+      crossEnergy += cells->GetCellAmplitude(cellAbsId);
+    }
+  }
+
+  return crossEnergy;
+}
+
+
+
+
+Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
+{
+  // Get maximum energy of attached cell.
+
+  id = -1;
+
+  AliVCaloCells *cells = fCaloCells;
+  if(!cells)
+    return 0;
+
+  Double_t maxe = 0;
+  Int_t ncells = cluster->GetNCells();
+  for (Int_t i=0; i<ncells; i++) {
+    Double_t e = cells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
+    if (e>maxe) {
+      maxe = e;
+      id   = cluster->GetCellAbsId(i);
+    }
+  }
+  return maxe;
+}
+
+
+Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetExoticity(AliVCluster *c)
+{
+  Short_t id = -1;
+  Double_t Emax = GetMaxCellEnergy( c, id);
+  Double_t Ecross = GetCrossEnergy( c, id);
+ 
+  Double_t exo = 1-Ecross/Emax;
+  if(exo>1.0) exo=1.0;
+  if(exo<0.0) exo=0.0;
+  return exo;
+}
+
+
 
 Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust) {
   // Check if the cluster match to a track
@@ -797,9 +896,14 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     Double_t dRmin = ClustTrackMatching(cluster);
     Double_t disToBad = static_cast<double>(cluster->GetDistanceToBadChannel());
     Double_t disToBorder = static_cast<double>(GetMaxDistanceFromBorder(cluster));
+    Double_t exoticity = GetExoticity(cluster);
+    Double_t time = cluster->GetTOF()*1000000000; //in ns
+    if (time<-100) time = -100;
+    if (time>1000) time = +100;
 
-    double entries[13] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
-                         static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin };
+
+    double entries[15] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+			  static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time};
     histo->Fill(entries);
     return;
 }
