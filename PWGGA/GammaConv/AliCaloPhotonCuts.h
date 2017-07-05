@@ -1,9 +1,6 @@
 #ifndef ALICALOPHOTONCUTS_H
 #define ALICALOPHOTONCUTS_H
 
-// Class handling all kinds of selection cuts for Gamma Calo analysis
-// Authors: Friederike Bock, Daniel Muehlheim
-
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
 #include "AliAODTrack.h"
@@ -42,8 +39,11 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 
 
-/***
+/**
  * @class AliCaloPhotonCuts
+ * @brief Class handling all kinds of selection cuts for Gamma Calo analysis
+ * @author Friederike Bock
+ * @author Daniel Muehlheim
  * @ingroup GammaConv
  *
  * The cut configuration is set as a string with an 19 digit number.
@@ -51,6 +51,7 @@ class AliAODMCParticle;
  * its values represent the cut values. The cut configuration is listed here:
  *
  * | Position in the cut string (from the end) | Cut type               |
+ * |-------------------------------------------|------------------------|
  * |                  0                        | Cluster Type           |
  * |                  1                        | Eta Min                | 
  * |                  2                        | Eta Max                |
