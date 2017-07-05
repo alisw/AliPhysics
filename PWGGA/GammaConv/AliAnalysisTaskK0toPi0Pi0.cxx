@@ -98,16 +98,9 @@ AliAnalysisTaskK0toPi0Pi0::~AliAnalysisTaskK0toPi0Pi0() {
 }
 
 void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
-
-   // Create output 
-  if(fOutput != NULL){
-    delete fOutput;
-    fOutput        = NULL;
-  }
-  if(fOutput == NULL){
-    fOutput        = new TList();
-    fOutput->SetOwner(kTRUE);
-  }
+  fOutput        = new TList();
+  fOutput->SetOwner(kTRUE);
+  
   
   // Connecting input V0 reader
   fV0Reader=dynamic_cast<AliV0ReaderV1*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()));
@@ -115,8 +108,8 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
     AliFatal("Error: No V0 Reader");
   }// GetV0Reader
 
-  fEventCuts = fV0Reader->GetEventCuts();
-
+ // fEventCuts = fV0Reader->GetEventCuts();
+ 
   
   
   // Define histograms
@@ -164,16 +157,16 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   }
   
   for(auto hist : *(fHistos->GetListOfHistograms())) fOutput->Add(hist);
-  fOutput->Add(fV0Reader->GetEventCutHistograms());
-  fOutput->Add(fV0Reader->GetCutHistograms());
   
   // Adding cut QA
+  
   TList *qaV0reader = new TList;
   qaV0reader->SetName("QA_V0reader");
   qaV0reader->SetOwner(kTRUE);
   qaV0reader->Add(fV0Reader->GetEventCutHistograms());
   qaV0reader->Add(fV0Reader->GetCutHistograms());
   fOutput->Add(qaV0reader);
+  
   fOutput->Add(fEventCuts->GetCutHistograms());
   fOutput->Add(fConvPhotonCuts->GetCutHistograms());
   fOutput->Add(fCaloPhotonCuts->GetCutHistograms());
@@ -262,7 +255,7 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   
    
   
-
+  PostData(1, fOutput);
 }
 
 std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeCaloPhotonCandidates(const AliClusterContainer &inputcont, AliCaloPhotonCuts &cuts){
