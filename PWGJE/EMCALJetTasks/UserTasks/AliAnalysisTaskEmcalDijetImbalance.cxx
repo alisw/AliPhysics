@@ -40,6 +40,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -92,6 +93,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fPlotClusterTHnSparse(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fEmbeddingQA(),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -146,6 +148,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fPlotClusterTHnSparse(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fEmbeddingQA(),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -226,6 +229,15 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   // Load eta-phi background scale factors from histogram on AliEn
   if (fLoadBackgroundScalingWeights) {
     LoadBackgroundScalingHistogram();
+  }
+  
+  // Initialize embedding QA
+  const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingHelper) {
+    bool res = fEmbeddingQA.Initialize();
+    if (res) {
+      fEmbeddingQA.AddQAPlotsToList(fOutput);
+    }
   }
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -1355,6 +1367,14 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
   // Do the constituent threshold and geometrical matching study (if requested)
   if (fDoGeometricalMatching) {
     DoGeometricalMatching();
+  }
+  
+  // Only fill the embedding qa plots if:
+  //  - We are using the embedding helper
+  //  - The class has been initialized
+  //  - Both jet collections are available
+  if (fEmbeddingQA.IsInitialized()) {
+    fEmbeddingQA.RecordEmbeddedEventProperties();
   }
 
   return kTRUE;
