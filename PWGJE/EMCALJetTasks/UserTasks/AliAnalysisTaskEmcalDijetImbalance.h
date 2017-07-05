@@ -20,6 +20,7 @@ class AliPHOSGeometry;
 
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEmcalEmbeddingQA.h"
 
 class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
  public:
@@ -182,6 +183,9 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
   Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
+  
+  // Embedding parameters
+  AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   
   // Phos geometry (only needed for cluster studies)
   AliPHOSGeometry*            fPHOSGeo;                             //!<! phos geometry
