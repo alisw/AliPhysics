@@ -1037,9 +1037,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     AliFatal("MultSelection not found in input event");
   
   if (fEventClass=="Multiplicity") {
-
-        Printf("quiiiiiiiiiiii");
-
     
     if (fUseUncheckedCentrality)
       gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
