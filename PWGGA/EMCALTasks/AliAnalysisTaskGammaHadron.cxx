@@ -55,7 +55,7 @@ fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrac
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
-fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
+fEventCutList(0),
 
 fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
@@ -82,7 +82,7 @@ fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrac
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
-fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
+fEventCutList(0),
 
 fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fMAngle(0),fPtAngle(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
@@ -186,7 +186,7 @@ AliAnalysisTaskGammaHadron::~AliAnalysisTaskGammaHadron()
 	// (the list is owner and will clean-up these histograms). Protect in PROOF case.
 	if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
 	{
-		delete fOutputList1;
+		//delete fOutputList1;
 	}
 	//copied from hanseul
 	/*if (fPoolMgr)
@@ -256,9 +256,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Define sublists/folders for a better organisation of the figures
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	fOutputList1    = new TList();
-	fOutputList1    ->SetOwner();
-	fOutputList1    ->SetName("pT_distributions_of_the_gamma");
 	fOutputListQA   = new TList();
 	fOutputListQA   ->SetOwner();
 	fOutputListQA   ->SetName("QA_histograms");
@@ -291,38 +288,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//    Histograms for common use
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	//..Initialize
-	fHistBinCheckPt       = new TH1*[kNIdentifier];
-	fHistBinCheckZt       = new TH1*[kNIdentifier];
-	fHistBinCheckXi       = new TH1*[kNIdentifier];
-	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+3]; //Why +2?? -> because I want more than 3 QA versions
-	fHistDEtaDPhiTrackQA  = new TH2*[kNIdentifier+3];
-	fHistClusterTime      = new TH2*[kNIdentifier+3];
-
-	//..by the identifier different histograms can be filled under different cut conditions
-	//..Can eg. later be modified to contain certain delta phi or centrality bins
-	for(Int_t identifier=0;identifier<kNIdentifier;identifier++)
-	{
-		fHistBinCheckPt[identifier] = new TH1F(Form("fHistBinCheckPt_%0d",identifier),Form("fHistBinCheckPt_%0d",identifier), nbins[0], min[0], max[0]);
-		fHistBinCheckPt[identifier]->GetXaxis()->SetTitle("p_{T}^{#gamma}");
-		fHistBinCheckPt[identifier]->GetYaxis()->SetTitle("Entries");
-		fOutput->Add(fHistBinCheckPt[identifier]);
-
-		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 1500, 0, 60);
-		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_{T}^{#gamma-h}");
-		fHistBinCheckZt[identifier]->GetYaxis()->SetTitle("Entries");
-		fOutput->Add(fHistBinCheckZt[identifier]);
-
-		fHistBinCheckXi[identifier] = new TH1F(Form("fHistBinCheckXi_%0d",identifier),Form("fHistBinCheckXi_%0d",identifier), 500, -20, 20);
-		fHistBinCheckXi[identifier]->GetXaxis()->SetTitle("#xi^{#gamma-h}");
-		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
-		fOutput->Add(fHistBinCheckXi[identifier]);
-	}
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//   Test THn Sparse for the 2D histograms
+	//   THn Sparse for the 2D histograms
 	//   Dimensions are eta,phi
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -414,28 +380,20 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     }
     if(fPlotQA!=1)
     {
-    	fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
-    	for(Int_t i=0;i<dimThn;i++)
-    	{
-    		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
-    		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
-    	}
-    	//fCorrVsManyThings->Sumw2();
-    	fOutput->Add(fCorrVsManyThings);
+     	fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
+     	for(Int_t i=0;i<dimThn;i++)
+     	{
+     		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
+     		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
+     	}
+     	//fCorrVsManyThings->Sumw2();
+     	fOutput->Add(fCorrVsManyThings);
     }
-
-
-    if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
-    	fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
-    	fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
-    	fOutput->Add(fClusEnergy);
-    }
-
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the Pi0 Candidates
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  Int_t dimThnPi0 = 0;
+    Int_t dimThnPi0 = 0;
     TString titleThnPi0[10];
     Int_t nBinsThnPi0[10] = {0};
     Double_t minThnPi0[10] = {0.};
@@ -488,7 +446,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 2;
     dimThnPi0++;
 
-    if ( fGammaOrPi0 ) {
+    if ( fGammaOrPi0  && fPlotQA==1) {
       fPi0Cands= new THnSparseF("Pi0Cands", "Pi0Cands", dimThnPi0, nBinsThnPi0, minThnPi0, maxThnPi0);
       for(Int_t i=0;i<dimThnPi0;i++)
       {
@@ -500,10 +458,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//   THn Sparse for the Cluster properties
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     //   THn Sparse for the Cluster properties
-	//   Dimensions are Cluster Energy
+	//   Dimensions are Cluster Energy, ...
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	Int_t dimThnQA = 0;
     TString titleThnQA[11];
@@ -632,7 +588,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
         dimThnQA++;
     */
     //..additional things to put inside: time , number of Cells, hit position eta-phi
-    if(fPlotQA==1)
+    if(fPlotQA==1 &&  !fGammaOrPi0)
     {
     		fClusterProp= new THnSparseF("ClusterProp", "ClusterProp", dimThnQA, nbinsThnQA, minThnQA, maxThnQA);
     		for(Int_t i=0;i<dimThnQA;i++)
@@ -642,7 +598,74 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     		}
     		fOutput->Add(fClusterProp);
     }
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//    Histograms for common use
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	//..Initialize
+	fHistBinCheckPt       = new TH1*[kNIdentifier];
+	fHistBinCheckZt       = new TH1*[kNIdentifier];
+	fHistBinCheckXi       = new TH1*[kNIdentifier];
+	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+3]; //Why +2?? -> because I want more than 3 QA versions
+	fHistDEtaDPhiTrackQA  = new TH2*[kNIdentifier+3];
+	fHistClusterTime      = new TH2*[kNIdentifier+3];
+
+	//..by the identifier different histograms can be filled under different cut conditions
+	//..Can eg. later be modified to contain certain delta phi or centrality bins
+	for(Int_t identifier=0;identifier<kNIdentifier;identifier++)
+	{
+		fHistBinCheckPt[identifier] = new TH1F(Form("fHistBinCheckPt_%0d",identifier),Form("fHistBinCheckPt_%0d",identifier), nbins[0], min[0], max[0]);
+		fHistBinCheckPt[identifier]->GetXaxis()->SetTitle("p_{T}^{#gamma}");
+		fHistBinCheckPt[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckPt[identifier]);
+
+		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 1500, 0, 60);
+		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_{T}^{#gamma-h}");
+		fHistBinCheckZt[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckZt[identifier]);
+
+		fHistBinCheckXi[identifier] = new TH1F(Form("fHistBinCheckXi_%0d",identifier),Form("fHistBinCheckXi_%0d",identifier), 500, -20, 20);
+		fHistBinCheckXi[identifier]->GetXaxis()->SetTitle("#xi^{#gamma-h}");
+		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckXi[identifier]);
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//   Special QA histograms (also to get more info what is going on in mixed event for trigger data)
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	for(Int_t identifier=0;identifier<kNIdentifier+3;identifier++)
+	{
+		//..geometrical hit distribution of clusters
+		fHistDEtaDPhiGammaQA[identifier] = new TH2F(Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),142,-0.71,0.71,311,75.9,331.1);
+		fHistDEtaDPhiGammaQA[identifier]->GetXaxis()->SetTitle("#eta^{#gamma}");
+		fHistDEtaDPhiGammaQA[identifier]->GetYaxis()->SetTitle("#varphi^{#gamma}");
+		fOutputListQA->Add(fHistDEtaDPhiGammaQA[identifier]);
+
+		//..geometrical hit distribution of tracks
+		fHistDEtaDPhiTrackQA[identifier] = new TH2F(Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),182,-0.91,0.91,360,0,360);
+		fHistDEtaDPhiTrackQA[identifier]->GetXaxis()->SetTitle("#eta^{hadron}");
+		fHistDEtaDPhiTrackQA[identifier]->GetYaxis()->SetTitle("#varphi^{hadron}");
+		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
+
+		//..Time information
+		fHistClusterTime[identifier] = new TH2F(Form("fHistClusterTime%d_Id%d",0,identifier),Form("fHistClusterTime%d_Id%d",0,identifier),2000,-100,100,200,0,40);
+		fHistClusterTime[identifier]->GetXaxis()->SetTitle("time [ns]");
+		fHistClusterTime[identifier]->GetYaxis()->SetTitle("pT");
+		fOutputListQA->Add(fHistClusterTime[identifier]);
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //   Michael's Special Histograms
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    if ( fGammaOrPi0 ) {  // Don't necessarily need this for Gamma analysis
+    	fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
+    	fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
+    	fOutput->Add(fClusEnergy);
+    }
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     //   Tyler's Special Histograms
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     fHistClusPairInvarMasspT= new TH2F("fHistClusPairInvarMasspT","fHistClusPairInvarMasspT", 3000, 0, 20.0, 250, 0, 50);
@@ -674,38 +697,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fHistPi0->GetYaxis()->SetTitle("Entries");
 	fOutput->Add(fHistPi0);
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//   Special QA histograms (also to get more info what is going on in mixed event for trigger data)
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	for(Int_t identifier=0;identifier<kNIdentifier+3;identifier++)
-	{
-		//..geometrical hit distribution of clusters
-		fHistDEtaDPhiGammaQA[identifier] = new TH2F(Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiGammaQA%d_Id%d",0,identifier),142,-0.71,0.71,311,75.9,331.1);
-		fHistDEtaDPhiGammaQA[identifier]->GetXaxis()->SetTitle("#eta^{#gamma}");
-		fHistDEtaDPhiGammaQA[identifier]->GetYaxis()->SetTitle("#varphi^{#gamma}");
-		fOutputListQA->Add(fHistDEtaDPhiGammaQA[identifier]);
-
-		//..geometrical hit distribution of tracks
-		fHistDEtaDPhiTrackQA[identifier] = new TH2F(Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),Form("fHistDEtaDPhiTrackQA%d_Id%d",0,identifier),182,-0.91,0.91,360,0,360);
-		fHistDEtaDPhiTrackQA[identifier]->GetXaxis()->SetTitle("#eta^{hadron}");
-		fHistDEtaDPhiTrackQA[identifier]->GetYaxis()->SetTitle("#varphi^{hadron}");
-		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
-
-		//..Time information
-		fHistClusterTime[identifier] = new TH2F(Form("fHistClusterTime%d_Id%d",0,identifier),Form("fHistClusterTime%d_Id%d",0,identifier),2000,-100,100,200,0,40);
-		fHistClusterTime[identifier]->GetXaxis()->SetTitle("time [ns]");
-		fHistClusterTime[identifier]->GetYaxis()->SetTitle("pT");
-		fOutputListQA->Add(fHistClusterTime[identifier]);
-
-		//..
-	}
-
 	//..The END
-	fOutput->Add(fOutputList1);
-	fOutput->Add(fOutputListTrAs);
-	fOutput->Add(fOutputListGamma);
-	fOutput->Add(fOutputListZeta);
-	fOutput->Add(fOutputListXi);
 	fOutput->Add(fOutputListQA);
 
 	PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -1482,7 +1474,7 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(caloClusterVec); //..can acess phi from
 
-	if(identifier==0 && fPlotQA==1)
+	if(identifier==0 && fPlotQA==1 && fGammaOrPi0==0)
 	{
 		//..Get leading cluster
 		AliVCluster* leadingClus = GetLeadingCluster("Pt",clusters);
@@ -1505,6 +1497,7 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 		//cout<<"cluster ID: "<<caloCluster->GetID()<<", lead cluster ID: "<<leadingClus->GetID()<<endl;
 		if(DetermineMatchedTrack(caloCluster,etaDistMatched,phiDistMatched))gammaInfo=2;
 		if(gammaInfo==2 && caloCluster==leadingClus)gammaInfo=3;
+		//cout<<"eta distance matched: "<<etaDistMatched<<", phi dist matched: "<<phiDistMatched<<endl;
 
 		//Eg, lambda0,NLM, ncells, distance to bad ,e/p, Mgg
 		Double_t valueArray[11];
@@ -1660,8 +1653,8 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		TVector3 cpos(pos);
 		Double_t ceta     = cpos.Eta();
 		Double_t cphi     = cpos.Phi();
-		Double_t etadiff=veta-ceta;
-		Double_t phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+		etadiff=veta-ceta;
+		phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 
 		//?  // check if track also points to cluster
 		//?   Int_t cid = track->GetEMCALcluster();
@@ -1686,6 +1679,8 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist)
 {
+	//..celldist 0 means it is at the border of the EMCal
+	//..celldist 1 means there is one row/collum between the cell and the border
 	etaCellDist=-1;
 	phiCellDist=-1;
 	//..partially copied from RecoUtils
@@ -1703,10 +1698,14 @@ void AliAnalysisTaskGammaHadron::GetDistanceToSMBorder(AliVCluster* caloCluster,
 	lastRow=24;
 	if      (fGeom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half) lastRow /= 2;
 	else if (fGeom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd ) lastRow /= 3;// 1/3 sm case
-    //..eta
-	firstCollumn=0; //..eli eli does it start from 0 or 1
+	else if (fGeom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Ext  ) lastRow /= 3;// 1/3 sm case
+	//..eta
+	firstCollumn=0;
 	lastCollumn=48;
 	if(fGeom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  lastCollumn = lastCollumn*2/3;
+
+	lastRow    =lastRow-1;      //..range starts from 0 and only goes up to 23
+	lastCollumn=lastCollumn-1;  //..range starts from 0
 
 	//..Calculate smallest distance
 	//..phi
@@ -1718,13 +1717,13 @@ void AliAnalysisTaskGammaHadron::GetDistanceToSMBorder(AliVCluster* caloCluster,
     {
     	  //..only outer border (not at eta=0) except DCal modules
       etaCellDist=ieta;
-      if(lastCollumn<48 && (ieta-firstCollumn)>=(lastCollumn-ieta))etaCellDist=lastCollumn-ieta;
+      if(lastCollumn<47 && (ieta-firstCollumn)>=(lastCollumn-ieta))etaCellDist=lastCollumn-ieta;
     }
     else
     {
     	  //..only outer border (not at eta=0) except DCal modules
     	  etaCellDist=lastCollumn-ieta;
-      if(lastCollumn<48 && (ieta-firstCollumn)<=(lastCollumn-ieta))etaCellDist=ieta-firstCollumn;
+      if(lastCollumn<47 && (ieta-firstCollumn)<=(lastCollumn-ieta))etaCellDist=ieta-firstCollumn;
     }
     //cout<<"supermodule: "<<iSM<<", last collumn: "<<lastCollumn<<endl;
     //cout<<"eta distance: "<<etaCellDist<<" phi distance: "<<phiCellDist<<endl;

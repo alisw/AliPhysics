@@ -127,11 +127,6 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   // Other stuff
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
-  TList                      *fOutputList1;            //!<! Output list
-  TList                      *fOutputListTrAs;         //!<! Output list
-  TList                      *fOutputListGamma;        //!<! Output list
-  TList                      *fOutputListXi;           //!<! Output list
-  TList                      *fOutputListZeta;         //!<! Output list
   TList                      *fOutputListQA;           //!<! Output list
 
   // Histograms -
