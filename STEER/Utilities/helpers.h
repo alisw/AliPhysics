@@ -8,6 +8,7 @@
 struct MergeInput {
   MergeInput(const std::string &f, int order)
   : filename(f),
+    cost(0),
     order(order)
   {}
   std::string filename;

@@ -7,6 +7,7 @@
   Syntax:
 
        hadd targetfile source1 source2 ...
+       hadd targetfile source1 source2 ...
     or
        hadd -f targetfile source1 source2 ...
          (targetfile is overwritten if it exists)
@@ -41,6 +42,7 @@
     character of the file indicates an indirect file. An indirect file
     is a text file containing a list of other files, including other
     indirect files, one line per file).
+
 
   If the sources and and target compression levels are identical (default),
   the program uses the TChain::Merge function with option "fast", ie
@@ -79,6 +81,7 @@
 #include "TSystem.h"
 
 #include "TFileMerger.h"
+#include "TTree.h"
 #include "helpers.h"
 
 static const char *USAGE = 
@@ -124,7 +127,7 @@ static int gVerbosity = 0;
 // Helper to print out verbosity aware messages.
 void log(int level, const char *fmt, ...)
 {
-  if (level > gVerbosity)
+  if (level < gVerbosity)
     return;
 
   va_list args;
@@ -307,6 +310,12 @@ int main( int argc, char **argv )
         {
           const char *keyName = key->GetName();
           int cost  = key->GetNbytes();
+          if (strcmp(key->GetClassName(),"TTree")==0){
+            TTree * tree = (TTree*)f->Get(key->GetName());
+            cost+=tree->GetZipBytes();
+            delete tree;
+          }
+
           TString keyNameS(keyName); 
 
           if (gIncludeRE.empty())
@@ -375,7 +384,8 @@ int main( int argc, char **argv )
     if ((costAcc < gCostLimit)
         || ((range.second - range.first) > gMaxFilesPerJob))
       continue;
-
+    costAcc=0;
+    log(1,"Range %d\t%d\t%lld\n",range.first,range.second, Long64_t(costAcc));
     splitting.push_back(std::make_pair(range.second, range.second));
   }
 
