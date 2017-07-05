@@ -34,6 +34,8 @@ class AliAnalysisUtils;
 
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
+  enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
+  
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
   virtual ~AliAnalysisTaskBFPsi(); 
    
@@ -147,6 +149,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseMultiplicity = kTRUE;
     fNumberOfAcceptedTracksMin = min;
     fNumberOfAcceptedTracksMax = max;}
+
+  //percentile
+  void SetPercentileRange(Double_t min, Double_t max) { 
+    fCentralityPercentileMin=min;
+    fCentralityPercentileMax=max;
+  }
   
   // additional event cuts (default = kFALSE)
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
@@ -354,7 +362,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
   TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks
-
+  TH2F *fHistMultvsPercent;//hisot to store the multiplicity vs centrality percentile
+    
+  
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
@@ -410,7 +420,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 7); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 8); // example of analysis
 };
 
 
