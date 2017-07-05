@@ -1232,12 +1232,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	if(fFillSparse) {
         
 	  AliMultSelection *multSelection = (AliMultSelection*)aod->FindListObject(fMultSelectionObjectName);
-	  if(!multSelection){
-            Printf("AliMultSelection could not be found in the esd event list of objects");
-            return;
-	  }
 	  Double_t cent = -999;
-	  if(fUseCentrAxis) {
+	  if(multSelection && fUseCentrAxis) {
             cent = multSelection->GetMultiplicityPercentile(Form("%s",fCentEstName.Data()));
             Int_t qual = multSelection->GetEvSelCode();
             if(qual == 199 ) cent=-999;
