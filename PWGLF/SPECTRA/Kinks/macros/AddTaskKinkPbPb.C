@@ -32,12 +32,27 @@ AliAnalysisTaskKinkPbPb* AddTaskKinkPbPb(TString lCustomName="", Float_t lRadius
 	   
 	mgr->AddTask(task);
 
-	TString outputFileName = AliAnalysisManager::GetCommonFileName();
-	outputFileName += ":PWGLFkinksData";
-	outputFileName += "_PbPb";
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Kinkpbpb5tev", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );	
-	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(task, 1, coutput1);
-     	return task;
-     
+        TString outputFileName = Form("%s:PWGLFSpectra.kinkPbPb", AliAnalysisManager::GetCommonFileName());
+        TString outputname0 = Form("fListDefault_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+        TString outputname1 = Form("fListSysCluster_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+        TString outputname2 = Form("fListSysQt_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+        TString outputname3 = Form("fListSysradius_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+
+        outputname0.Append(Form("%s",lCustomName.Data()));
+        outputname1.Append(Form("%s",lCustomName.Data()));
+        outputname2.Append(Form("%s",lCustomName.Data()));
+        outputname3.Append(Form("%s",lCustomName.Data()));
+
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+        AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outputname1, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(outputname2, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+        AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(outputname3, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+
+        mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+        mgr->ConnectOutput(task, 1, coutput1);
+        mgr->ConnectOutput(task, 2, coutput2);
+        mgr->ConnectOutput(task, 3, coutput3);
+        mgr->ConnectOutput(task, 4, coutput4);
+
+        return task; 
    }
