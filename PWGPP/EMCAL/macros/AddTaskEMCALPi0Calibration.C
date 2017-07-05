@@ -1,5 +1,5 @@
 /// \file AddTaskEMCALPi0Calibration.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of task AliAnalysisTaskEMCALPi0CalibSelection.
 ///
 /// Configuration of task AliAnalysisTaskEMCALPi0CalibSelection, which fills invariant mass

@@ -1,6 +1,6 @@
 
 /// \file AddTaskESDFilterEMCALEventSelect.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of EMCal filtering task.
 ///
 /// This task reclusterizes on the fly EMCal clusters, creates a new
