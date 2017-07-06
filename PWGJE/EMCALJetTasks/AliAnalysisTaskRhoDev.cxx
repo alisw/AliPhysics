@@ -82,12 +82,12 @@ std::pair<AliEmcalJet*, AliEmcalJet*> AliAnalysisTaskRhoDev::GetLeadingJets()
   std::pair<AliEmcalJet*, AliEmcalJet*> maxJets = {nullptr, nullptr};
   if (fNExclLeadJets <= 0) return maxJets;
 
-  auto itJet = fSortedJets["Signal"].begin();
+  auto itJet = fSortedJets["Background"].begin();
 
   maxJets.first = *itJet;
   if (fNExclLeadJets > 1) {
     itJet++;
-    if (itJet != fSortedJets["Signal"].end()) maxJets.second = *itJet;
+    if (itJet != fSortedJets["Background"].end()) maxJets.second = *itJet;
   }
 
   return maxJets;
