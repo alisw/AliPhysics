@@ -415,7 +415,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
     Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
     if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
       class_lifetime[iCUP13] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
-      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1]>0 ? class_l2a[iCTRUE_SPD1] : 1;
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
       class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
       class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
@@ -440,7 +440,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
     Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
     if (iCUP25>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
       class_lifetime[iCUP25] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
-      class_lifetime[iCUP25]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP25]*=class_l2a[iCTRUE_SPD1]>0 ? class_l2a[iCTRUE_SPD1] : 1;
       class_lifetime[iCUP25]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
       class_lifetime[iCUP25]*=class_ds[iCUP25];
       class_lumi[iCUP25] = lumi_seen*class_lifetime[iCUP25];
