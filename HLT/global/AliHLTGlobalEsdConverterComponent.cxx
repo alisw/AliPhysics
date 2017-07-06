@@ -744,12 +744,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	if( iTrack < ndEdxTPC ){
 	  AliHLTFloat32_t *val = &(dEdxTPC[3*iTrack]);
 	  iotrack.SetTPCsignal( val[0], val[1], (UChar_t) val[2] ); 
-	  //AliTPCseed s;
-	  //s.Set( element->GetX(), element->GetAlpha(),
-	  //element->GetParameter(), element->GetCovariance() );
-	  //s.SetdEdx( val[0] );
-	  //s.CookPID();
-	  //iotrack.SetTPCpid(s.TPCrPIDs() );
 	} else {
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
@@ -815,12 +809,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 	  tTPC.SetNumberOfClusters(nClustersSet);
   
-	  // Cook dEdx
-	  
-	  //AliTPCseed *seed = &(tTPC);      
-	  //fSeedArray->AddAt( seed, TMath::Abs(seed->GetLabel()) );
-	  //fdEdx->Fill( seed->P()*seed->Charge(), seed->CookdEdx(0.02, 0.6) );
-
 	  AliESDfriendTrack friendTrack;
 	  friendTrack.AddCalibObject(&tTPC);
 	  friendTrack.SetTPCOut( outPar);
@@ -1001,7 +989,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  // there can be a decay. The ITS label should then be the better one, the
 	  // TPC label is saved in a member of AliESDtrack
 	  if (mcLabel>=0) {
-	    // upadte only if the ITS label is available, otherwise keep TPC label
+	    // update only if the ITS label is available, otherwise keep TPC label
 	    element->SetLabel( mcLabel );
 	  } else {
 	    // bugfix https://savannah.cern.ch/bugs/?69713
@@ -1204,7 +1192,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
 	tESD->SetStatus(AliESDtrack::kTRDin);
 	tESD->SetTRDpid(TRDpid);
-  tESD->SetTRDntracklets(trdTrack.GetNtracklets() << 3);
+	tESD->SetTRDntracklets(trdTrack.GetNtracklets() << 3);
 
 	if( pESDfriend ) { 
 	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
