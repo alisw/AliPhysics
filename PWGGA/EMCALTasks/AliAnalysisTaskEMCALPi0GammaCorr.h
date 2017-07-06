@@ -64,7 +64,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   Double_t                    GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t                    GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
   Double_t                    GetExoticity(AliVCluster *c);
-  
+  Int_t                       FormatRunNumber(Int_t runnumber);  
   TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
   double                      GetEff(AliTLorentzVector ParticleVec)                         ;
 
