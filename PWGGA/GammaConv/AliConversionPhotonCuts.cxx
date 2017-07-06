@@ -2917,6 +2917,9 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
   case 9:
     fChi2CutConversion = 15.;
     break;
+  case 10:
+    fChi2CutConversion = 25.;
+    break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
     return kFALSE;
