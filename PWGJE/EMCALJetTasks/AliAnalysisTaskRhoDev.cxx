@@ -37,6 +37,7 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev() :
   AliAnalysisTaskRhoBaseDev(),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
+  fExclJetOverlap(),
   fOccupancyFactor(1.),
   fHistOccCorrvsCent(nullptr)
 {
@@ -52,6 +53,7 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
+  fExclJetOverlap(),
   fOccupancyFactor(1.),
   fHistOccCorrvsCent(nullptr)
 {
@@ -110,8 +112,10 @@ void AliAnalysisTaskRhoDev::CalculateRho()
 
   AliJetContainer* bkgJetCont = fJetCollArray["Background"];
   AliJetContainer* sigJetCont = nullptr;
-  auto sigJetContIt = fJetCollArray.find("Signal");
-  if (sigJetContIt != fJetCollArray.end()) sigJetCont = sigJetContIt->second;
+  if (!fExclJetOverlap.IsNull()) {
+    auto sigJetContIt = fJetCollArray.find(fExclJetOverlap.Data());
+    if (sigJetContIt != fJetCollArray.end()) sigJetCont = sigJetContIt->second;
+  }
 
   // push all jets within selected acceptance into stack
   for (auto jet : bkgJetCont->accepted()) {
