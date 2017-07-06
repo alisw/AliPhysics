@@ -2897,7 +2897,7 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     break;
   case 4:
     if (fIsHeavyIon==1){
-      fChi2CutConversion = 25.;
+      fChi2CutConversion = 7.;
     } else {
       fChi2CutConversion = 500.;
     }
@@ -2918,7 +2918,7 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     fChi2CutConversion = 15.;
     break;
   case 10:
-    fChi2CutConversion = 7.;
+    fChi2CutConversion = 25.;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
