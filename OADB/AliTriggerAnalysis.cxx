@@ -112,85 +112,12 @@ fHistFMDSum(0),
 fHistT0(0),
 fHistOFOvsTKLAcc(0),
 fHistV0MOnVsOfAcc(0),
-fTriggerClasses(new TMap),
-fTriggerToEnum()
+fTriggerClasses(new TMap)
 {
   // constructor
   fHistList->SetName("histos");
   fHistList->SetOwner();
   fTriggerClasses->SetOwner();
-
-  // Setup Hashmap for efficient mapping between trigger strings and enums
-  fTriggerToEnum.insert({"AcceptAll", kAcceptAll});
-  fTriggerToEnum.insert({"MB1", kMB1});
-  fTriggerToEnum.insert({"MB2", kMB2});
-  fTriggerToEnum.insert({"MB3", kMB3});
-  fTriggerToEnum.insert({"SPDGFO", kSPDGFO});
-  fTriggerToEnum.insert({"SPDGFOBits", kSPDGFOBits});
-  fTriggerToEnum.insert({"V0A", kV0A});
-  fTriggerToEnum.insert({"V0C", kV0C});
-  fTriggerToEnum.insert({"V0OR", kV0OR});
-  fTriggerToEnum.insert({"V0AND", kV0AND});
-  fTriggerToEnum.insert({"V0ABG", kV0ABG});
-  fTriggerToEnum.insert({"V0CBG", kV0CBG});
-  fTriggerToEnum.insert({"ZDC", kZDC});
-  fTriggerToEnum.insert({"ZDCA", kZDCA});
-  fTriggerToEnum.insert({"ZDCC", kZDCC});
-  fTriggerToEnum.insert({"ZNA", kZNA});
-  fTriggerToEnum.insert({"ZNC", kZNC});
-  fTriggerToEnum.insert({"ZNABG", kZNABG});
-  fTriggerToEnum.insert({"ZNCBG", kZNCBG});
-  fTriggerToEnum.insert({"FMDA", kFMDA});
-  fTriggerToEnum.insert({"FMDC", kFMDC});
-  fTriggerToEnum.insert({"FPANY", kFPANY});
-  fTriggerToEnum.insert({"NSD1", kNSD1});
-  fTriggerToEnum.insert({"MB1Prime", kMB1Prime});
-  fTriggerToEnum.insert({"SPDGFOL0", kSPDGFOL0});
-  fTriggerToEnum.insert({"SPDGFOL1", kSPDGFOL1});
-  fTriggerToEnum.insert({"ZDCTDCA", kZDCTDCA});
-  fTriggerToEnum.insert({"ZDCTDCC", kZDCTDCC});
-  fTriggerToEnum.insert({"ZDCTime", kZDCTime});
-  fTriggerToEnum.insert({"CTPV0A", kCTPV0A});
-  fTriggerToEnum.insert({"CTPV0C", kCTPV0C});
-  fTriggerToEnum.insert({"TPCLaserWarmUp", kTPCLaserWarmUp});
-  fTriggerToEnum.insert({"SPDClsVsTrkBG", kSPDClsVsTrkBG});
-  fTriggerToEnum.insert({"Central", kCentral});
-  fTriggerToEnum.insert({"SemiCentral", kSemiCentral});
-  fTriggerToEnum.insert({"T0", kT0});
-  fTriggerToEnum.insert({"T0BG", kT0BG});
-  fTriggerToEnum.insert({"T0Pileup", kT0Pileup});
-  fTriggerToEnum.insert({"TPCHVdip", kTPCHVdip});
-  fTriggerToEnum.insert({"TRDHCO", kTRDHCO});
-  fTriggerToEnum.insert({"TRDHJT", kTRDHJT});
-  fTriggerToEnum.insert({"TRDHSE", kTRDHSE});
-  fTriggerToEnum.insert({"TRDHQU", kTRDHQU});
-  fTriggerToEnum.insert({"TRDHEE", kTRDHEE});
-  fTriggerToEnum.insert({"EMCAL", kEMCAL});
-  fTriggerToEnum.insert({"EmcalL0", kEmcalL0});
-  fTriggerToEnum.insert({"EmcalL1GammaHigh", kEmcalL1GammaHigh});
-  fTriggerToEnum.insert({"EmcalL1GammaLow", kEmcalL1GammaLow});
-  fTriggerToEnum.insert({"EmcalL1JetHigh", kEmcalL1JetHigh});
-  fTriggerToEnum.insert({"EmcalL1JetLow", kEmcalL1JetLow});
-  fTriggerToEnum.insert({"IncompleteEvent", kIncompleteEvent});
-  fTriggerToEnum.insert({"V0MOnVsOfPileup", kV0MOnVsOfPileup});
-  fTriggerToEnum.insert({"SPDOnVsOfPileup", kSPDOnVsOfPileup});
-  fTriggerToEnum.insert({"V0PFPileup", kV0PFPileup});
-  fTriggerToEnum.insert({"SPDVtxPileup", kSPDVtxPileup});
-  fTriggerToEnum.insert({"V0Casym", kV0Casym});
-  fTriggerToEnum.insert({"V0C012vsTklBG", kV0C012vsTklBG});
-  fTriggerToEnum.insert({"VHM", kVHM});
-  fTriggerToEnum.insert({"V0M", kV0M});
-  fTriggerToEnum.insert({"SH1", kSH1});
-  fTriggerToEnum.insert({"SH2", kSH2});
-  fTriggerToEnum.insert({"TKL", kTKL});
-  fTriggerToEnum.insert({"ADA", kADA});
-  fTriggerToEnum.insert({"ADC", kADC});
-  fTriggerToEnum.insert({"ADABG", kADABG});
-  fTriggerToEnum.insert({"ADCBG", kADCBG});
-  fTriggerToEnum.insert({"StartOfFlags", kStartOfFlags});
-  fTriggerToEnum.insert({"OfflineFlag", kOfflineFlag});
-  fTriggerToEnum.insert({"OneParticle", kOneParticle});
-  fTriggerToEnum.insert({"OneTrack", kOneTrack});
 }
 
 //-------------------------------------------------------------------------------------------------
