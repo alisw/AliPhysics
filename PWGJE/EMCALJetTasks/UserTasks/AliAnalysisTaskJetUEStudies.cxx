@@ -241,11 +241,15 @@ void AliAnalysisTaskJetUEStudies::ExecOnce()
 {
   AliAnalysisTaskEmcalJetLight::ExecOnce();
 
-  for (auto& rho : fAlternativeRho) {
-    if (rho.second) continue;
-    rho.second = dynamic_cast<AliRhoParameter*>(fInputEvent->FindListObject(rho.first));
-    if (!rho.second) {
-      AliError(Form("%s: Could not retrieve rho %s! This rho name will be ignored", GetName(), rho.first.Data()));
+  for (auto rhoIt = fAlternativeRho.begin(); rhoIt != fAlternativeRho.end();) {
+    if (rhoIt->second) continue;
+    rhoIt->second = dynamic_cast<AliRhoParameter*>(fInputEvent->FindListObject(rhoIt->first));
+    if (rhoIt->second) {
+      rhoIt++;
+    }
+    else {
+      AliError(Form("%s: Could not retrieve rho %s! This rho name will be ignored", GetName(), rhoIt->first.Data()));
+      rhoIt = fAlternativeRho.erase(rhoIt);
     }
   }
 
