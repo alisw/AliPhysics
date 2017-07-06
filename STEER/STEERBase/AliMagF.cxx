@@ -20,6 +20,7 @@
 #include <TPRegexp.h>
 
 #include "AliMagF.h"
+#include "AliMagFast.h"
 #include "AliMagWrapCheb.h"
 #include "AliLog.h"
 
@@ -67,6 +68,7 @@ const UShort_t AliMagF::fgkPolarityConvention = AliMagF::kConvLHC;
 AliMagF::AliMagF():
   TVirtualMagField(),
   fMeasuredMap(0),
+  fFastField(0),
   fMapType(k5kG),
   fSolenoid(0),
   fBeamType(kNoBeamField),
@@ -95,6 +97,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
 		 BMap_t maptype, BeamType_t bt, Double_t be,Int_t integ, Double_t fmax, const char* path):
   TVirtualMagField(name),
   fMeasuredMap(0),
+  fFastField(0),
   fMapType(maptype),
   fSolenoid(0),
   fBeamType(bt),
@@ -154,6 +157,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
 AliMagF::AliMagF(const AliMagF &src):
   TVirtualMagField(src),
   fMeasuredMap(0),
+  fFastField(0),
   fMapType(src.fMapType),
   fSolenoid(src.fSolenoid),
   fBeamType(src.fBeamType),
@@ -172,12 +176,14 @@ AliMagF::AliMagF(const AliMagF &src):
   fParNames(src.fParNames)
 {
   if (src.fMeasuredMap) fMeasuredMap = new AliMagWrapCheb(*src.fMeasuredMap);
+  if (src.fFastField) fFastField = new AliMagFast(GetFactorSol(),fMapType==k2kG ? 2:5);
 }
 
 //_______________________________________________________________________
 AliMagF::~AliMagF()
 {
   delete fMeasuredMap;
+  delete fFastField;
 }
 
 //_______________________________________________________________________
@@ -210,6 +216,7 @@ void AliMagF::Field(const Double_t *xyz, Double_t *b)
   // Method to calculate the field at point  xyz
   //
   //  b[0]=b[1]=b[2]=0.0;
+  if (fFastField && fFastField->Field(xyz,b)) return;
   if (fMeasuredMap && xyz[2]>fMeasuredMap->GetMinZ() && xyz[2]<fMeasuredMap->GetMaxZ()) {
     fMeasuredMap->Field(xyz,b);
     if (xyz[2]>fgkSol2DipZ || fDipoleOFF) for (int i=3;i--;) b[i] *= fFactorSol;
@@ -224,6 +231,10 @@ Double_t AliMagF::GetBz(const Double_t *xyz) const
 {
   // Method to calculate the field at point  xyz
   //
+  if (fFastField) {
+    double bz=0;
+    if (fFastField->GetBz(xyz,bz)) return bz;
+  }
   if (fMeasuredMap && xyz[2]>fMeasuredMap->GetMinZ() && xyz[2]<fMeasuredMap->GetMaxZ()) {
     double bz = fMeasuredMap->GetBz(xyz);
     return (xyz[2]>fgkSol2DipZ || fDipoleOFF) ? bz*fFactorSol : bz*fFactorDip;    
@@ -239,6 +250,10 @@ AliMagF& AliMagF::operator=(const AliMagF& src)
       if (fMeasuredMap) delete fMeasuredMap;
       fMeasuredMap = new AliMagWrapCheb(*src.fMeasuredMap);
     }
+    if (src.fFastField) { 
+      if (fFastField) delete fFastField;
+      fFastField = new AliMagFast(*src.fFastField);
+    }    
     SetName(src.GetName());
     fSolenoid    = src.fSolenoid;
     fBeamType    = src.fBeamType;
@@ -426,6 +441,7 @@ void AliMagF::SetFactorSol(Float_t fc)
   case kConvLHC    : fFactorSol = -fc; break;
   default          : fFactorSol =  fc; break;  // case kConvMap2005: fFactorSol =  fc; break;
   }
+  if (fFastField) fFastField->SetFactorSol(GetFactorSol());
 }
 
 //_______________________________________________________________________
@@ -583,5 +599,17 @@ void AliMagF::Print(Option_t *opt) const
 		 GetBeamTypeText(),
 		 fBeamEnergy,fQuadGradient,fDipoleField));
     AliInfo(Form("Uses %s of %s",GetParamName(),GetDataFileName()));
+  }
+}
+
+//_____________________________________________________________________________
+void AliMagF::AllowFastField(Bool_t v)
+{
+  if (v) {
+    if (!fFastField) fFastField = new AliMagFast(GetFactorSol(),fMapType==k2kG ? 2:5);
+  }
+  else {
+    delete fFastField;
+    fFastField = 0;
   }
 }

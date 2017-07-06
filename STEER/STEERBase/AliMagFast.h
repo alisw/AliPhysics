@@ -23,14 +23,24 @@ class AliMagFast : public TObject
   typedef SolParam SolParam_t;
 
   AliMagFast(const char* inpFName=0);
+  AliMagFast(Float_t factor, Int_t nomField = 5, const char* inpFmt="$(ALICE_ROOT)/data/maps/sol%dk.txt");
+  AliMagFast(const AliMagFast& src);
+  AliMagFast& operator=(const AliMagFast& src);
+  
   Bool_t LoadData(const char* inpFName);
   virtual ~AliMagFast() {}
 
   Bool_t Field(const double xyz[3], double bxyz[3]) const;
-  Bool_t GetBz(const double xyz[3], double& bz) const;
+  Bool_t GetBz(const double xyz[3], double& bz)     const;
+  Bool_t Field(const float  xyz[3], float bxyz[3])  const;
+  Bool_t GetBz(const float  xyz[3], float& bz)      const;
+
+  void    SetFactorSol(float v=1.f)                       {fFactorSol = v;}
+  Float_t GetFactorSol()                            const {return fFactorSol;}
   
  protected:
-  
+
+  Bool_t GetSegment(const float xyz[3], int& zSeg,int &rSeg, int &quadrant) const;  
   static const float fgkSolR2Max[kNSolRRanges];       // Rmax2 of each range
   static const float fgkSolZMax;                      // max |Z| for solenoid parametrization
 
@@ -42,7 +52,8 @@ class AliMagFast : public TObject
   }
   
   float CalcPol(const float* cf, float x,float y, float z) const;
-  
+
+  Float_t fFactorSol; // scaling factor
   SolParam_t fSolPar[kNSolRRanges][kNSolZRanges][kNQuadrants];
   
   ClassDef(AliMagFast,1)

@@ -10,6 +10,8 @@
 //
 #include "AliMagFast.h"
 #include "AliLog.h"
+#include <TString.h>
+#include <TSystem.h>
 #include <math.h>
 #include <fstream>
 #include <sstream>
@@ -21,7 +23,8 @@ const float AliMagFast::fgkSolZMax = 260.0f;
 
 ClassImp(AliMagFast)
 
-AliMagFast::AliMagFast(const char* inpFName)
+AliMagFast::AliMagFast(const char* inpFName) :
+fFactorSol(1.f)
 {
   // c-tor
   memset(fSolPar,0,sizeof(SolParam_t)*kNSolRRanges*kNSolZRanges*kNQuadrants);
@@ -30,12 +33,42 @@ AliMagFast::AliMagFast(const char* inpFName)
   }
 }
 
+AliMagFast::AliMagFast(Float_t factor, Int_t nomField, const char* inpFmt) :
+fFactorSol(factor)
+{
+  // c-tor
+  if (nomField!=2 && nomField!=5) {
+    AliFatalF("No parametrization for nominal field of %d kG",nomField);
+  }
+  TString pth = Form(inpFmt,nomField);
+  memset(fSolPar,0,sizeof(SolParam_t)*kNSolRRanges*kNSolZRanges*kNQuadrants);
+  if (!LoadData(pth.Data())) {
+    AliFatalF("Failed to initialize from %s",pth.Data());
+  }
+}
+
+//_______________________________________________________________________
+AliMagFast::AliMagFast(const AliMagFast &src):
+  fFactorSol(src.fFactorSol)
+{
+  memcpy(fSolPar,src.fSolPar, kNSolRRanges*kNSolZRanges*kNQuadrants*sizeof(SolParam_t));
+}
+
+AliMagFast& AliMagFast::operator=(const AliMagFast& src)
+{
+  if (this != &src) {
+    fFactorSol = src.fFactorSol;
+    memcpy(fSolPar,src.fSolPar, kNSolRRanges*kNSolZRanges*kNQuadrants*sizeof(SolParam_t));
+  }
+  return *this;
+}
+
 
 Bool_t AliMagFast::LoadData(const char* inpFName)
 {
   // load field from text file
 
-  std::ifstream in(inpFName,std::ifstream::in);
+  std::ifstream in(gSystem->ExpandPathName(inpFName),std::ifstream::in);
   if (in.bad()) {
     AliFatalF("Failed to open input file %s",inpFName);
     return kFALSE;
@@ -78,64 +111,70 @@ Bool_t AliMagFast::LoadData(const char* inpFName)
   
 Bool_t AliMagFast::Field(const double xyz[3], double bxyz[3]) const
 {
-  float x(xyz[0]),y(xyz[1]),z(xyz[2]);
-
-  // Z segment
-  int zSeg = -1;
-  if (z<fgkSolZMax) {
-    if (zSeg>-fgkSolZMax) zSeg = z<0.f ? 0:1; // solenoid params
-    else { // need to check dipole params
-      return kFALSE;
-    }
-  }
-  // R segment
-  float xx = x*x, yy = y*y, rr = xx+yy;
-  int rSeg;
-
-  for (rSeg=0;rSeg<kNSolRRanges;rSeg++) if (rr < fgkSolR2Max[rSeg]) break;
-  if (rSeg==kNSolRRanges) { // redefine to max allowed radius
-    float scl2Bond = sqrtf(fgkSolR2Max[kNSolRRanges-1]/rr);
-    x *= scl2Bond;
-    y *= scl2Bond;
-  }
-
-  // quadrant
-  int quadrant = GetQuadrant(x,y);
+  // get field
+  const float fxyz[3]={float(xyz[0]),float(xyz[1]),float(xyz[2])};
+  int zSeg,rSeg,quadrant;
+  if (!GetSegment(fxyz,zSeg,rSeg,quadrant)) return kFALSE;
   const SolParam_t *par = &fSolPar[rSeg][zSeg][quadrant];
-  bxyz[kX] = CalcPol(par->mParBxyz[kX],x,y,z);
-  bxyz[kY] = CalcPol(par->mParBxyz[kY],x,y,z);
-  bxyz[kZ] = CalcPol(par->mParBxyz[kZ],x,y,z);
+  bxyz[kX] = CalcPol(par->mParBxyz[kX],fxyz[kX],fxyz[kY],fxyz[kZ])*fFactorSol;
+  bxyz[kY] = CalcPol(par->mParBxyz[kY],fxyz[kX],fxyz[kY],fxyz[kZ])*fFactorSol;
+  bxyz[kZ] = CalcPol(par->mParBxyz[kZ],fxyz[kX],fxyz[kY],fxyz[kZ])*fFactorSol;
   //
   return kTRUE;
 }
 
 Bool_t AliMagFast::GetBz(const double xyz[3], double& bz) const
 {
-  float x(xyz[0]),y(xyz[1]),z(xyz[2]);
+  // get field
+  const float fxyz[3]={float(xyz[0]),float(xyz[1]),float(xyz[2])};
+  int zSeg,rSeg,quadrant;
+  if (!GetSegment(fxyz,zSeg,rSeg,quadrant)) return kFALSE;
+  const SolParam_t *par = &fSolPar[rSeg][zSeg][quadrant];
+  bz = CalcPol(par->mParBxyz[kZ],fxyz[kX],fxyz[kY],fxyz[kZ])*fFactorSol;
+  //
+  return kTRUE;
+}
+  
+Bool_t AliMagFast::Field(const float xyz[3], float bxyz[3]) const
+{
+  // get field
+  int zSeg,rSeg,quadrant;
+  if (!GetSegment(xyz,zSeg,rSeg,quadrant)) return kFALSE;
+  const SolParam_t *par = &fSolPar[rSeg][zSeg][quadrant];
+  bxyz[kX] = CalcPol(par->mParBxyz[kX],xyz[kX],xyz[kY],xyz[kZ])*fFactorSol;
+  bxyz[kY] = CalcPol(par->mParBxyz[kY],xyz[kX],xyz[kY],xyz[kZ])*fFactorSol;
+  bxyz[kZ] = CalcPol(par->mParBxyz[kZ],xyz[kX],xyz[kY],xyz[kZ])*fFactorSol;
+  //
+  return kTRUE;
+}
 
-  // Z segment
-  int zSeg = -1;
+Bool_t AliMagFast::GetBz(const float xyz[3], float& bz) const
+{
+  // get field
+  int zSeg,rSeg,quadrant;
+  if (!GetSegment(xyz,zSeg,rSeg,quadrant)) return kFALSE;
+  const SolParam_t *par = &fSolPar[rSeg][zSeg][quadrant];
+  bz = CalcPol(par->mParBxyz[kZ],xyz[kX],xyz[kY],xyz[kZ])*fFactorSol;
+  //
+  return kTRUE;
+}
+
+Bool_t AliMagFast::GetSegment(const float xyz[3], int& zSeg,int &rSeg, int &quadrant) const
+{
+  // get segment of point location
+  const float &x = xyz[kX], &y = xyz[kY], &z = xyz[kZ];
+  zSeg = -1;
   if (z<fgkSolZMax) {
-    if (zSeg>-fgkSolZMax) zSeg = z<0.f ? 0:1; // solenoid params
+    if (z>-fgkSolZMax) zSeg = z<0.f ? 0:1; // solenoid params
     else { // need to check dipole params
       return kFALSE;
     }
   }
+  else return kFALSE;
   // R segment
   float xx = x*x, yy = y*y, rr = xx+yy;
-  int rSeg;
-
   for (rSeg=0;rSeg<kNSolRRanges;rSeg++) if (rr < fgkSolR2Max[rSeg]) break;
-  if (rSeg==kNSolRRanges) { // redefine to max allowed radius
-    float scl2Bond = sqrtf(fgkSolR2Max[kNSolRRanges-1]/rr);
-    x *= scl2Bond;
-    y *= scl2Bond;
-  }
-
-  // quadrant
-  int quadrant = GetQuadrant(x,y);
-  const SolParam_t *par = &fSolPar[rSeg][zSeg][quadrant];
-  bz = CalcPol(par->mParBxyz[kZ],x,y,z);
-  //
+  if (rSeg==kNSolRRanges) return kFALSE;
+  quadrant = GetQuadrant(x,y);
   return kTRUE;
 }
