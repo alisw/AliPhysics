@@ -1376,6 +1376,27 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CEMC8";
       break;
+    case 4: // CDMC1 - V0OR and DCAL fired
+      fOfflineTriggerMask=AliVEvent::kEMC1;
+      fSpecialTriggerName="AliVEvent::kEMC1";
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CDMC1";
+      break;
+    case 5: // CDMC7 - V0AND and DCAL fired 
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kEMC7;
+      fSpecialTriggerName="AliVEvent::kEMC7";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CDMC7";
+      break;
+    case 6: // CDMC8  - T0OR and DCAL fired
+      fOfflineTriggerMask=AliVEvent::kEMC8;
+      fSpecialTriggerName="AliVEvent::kEMC8";
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CDMC8";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -1502,6 +1523,49 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
+    case 7: // 7DGA - CINT7 DGA
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DGA";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 8: // 8DGA - CINT8 DGA
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DGA";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 9: // 7DG1 - CINT7 DG1
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DG1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 10: // 8DG1 - CINT8 DG1
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DG1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 11: // 7DG2 - CINT7 DG2
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 12: // 8DG2 - CINT8 DG2
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -1555,6 +1619,35 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
+   case 7: // 7DJ1 - CINT7 DJ1
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DJ1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ1);
+      break;
+    case 8: // 8DJ1 - CINT8 DJ1
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DJ1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ1);
+      break;
+    case 9: // 7DJ2 - CINT7 DJ2
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DJ2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ2);
+      break;
+    case 10: // 8DJ2 - CINT8 DJ2
+      fSpecialSubTrigger=1; 
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DJ2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ2);
+      break;
+
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
