@@ -201,7 +201,7 @@ Bool_t AliAnalysisTaskRhoDev::VerifyContainers()
  * @param suffix additional suffix that can be added at the end of the task name
  * @return pointer to the new AliAnalysisTaskRhoDev task
  */
-AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
+AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType, AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
