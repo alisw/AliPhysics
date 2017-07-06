@@ -33,7 +33,7 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   AnalysisTask->AddClusterContainer("usedefault");
   AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer("usedefault");
   //AliWarning("Setting FilterHybridTracks");
- //trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
+  trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
 
   //-------------------------------------------------------
   // Add some selection criteria

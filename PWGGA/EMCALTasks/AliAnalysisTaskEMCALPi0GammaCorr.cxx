@@ -244,7 +244,14 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_time = 200;
     double min_time = -100;
     double max_time = +100;
+
+    int nbins_RunNumber = 20;
+    double min_RunNumber = -0.5;
+    double max_RunNumber = 19.5;
     
+    int nbins_BCID     = 3600;
+    double min_BCID    = -0.5;
+    double max_BCID    = 3599.5;
 
     //Pion-hadron correlations
     const int nbins_PionCorr = 24;
@@ -326,15 +333,15 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 15;
+    const int nbins_Cluster = 17;
     
-    axisNames = "Cluster THnSparse; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMatchedTracks; nMaxima;";
+    axisNames = "Cluster THnSparse; RunNumber; Bunch Crossing ID; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMatchedTracks; nMaxima;";
     axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns];";
-    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
+    int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_BCID, nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells, nbins_nMatchedTracks, 
                                       nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time};
-    double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima, 
+    double xminCluster[nbins_Cluster] = {min_RunNumber, min_BCID, min_Centrality, min_zvertex, min_E, min_Pt, min_eta, min_phi, min_M02, min_Ncells, min_nMatchedTracks, min_nMaxima, 
 					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time};
-    double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima, 
+    double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_BCID, max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMatchedTracks, max_nMaxima, 
 					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
@@ -753,9 +760,9 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     
     //////////////////Selection/////////////////////////////////////////////
     // if( cluster_lead->E()<6.0) return; //at least one photon with 6 GeV of energy, this is lowest threshold trigger in pPb data.
-    if( pi0.Pt() < 6.0 ) return;
-    if( pi0.M()  > 1.0 ) return;
-    if( track->Pt()<0.5 ) return;
+    if( pi0.Pt() < 8.0 ) return;
+    if( pi0.M()  > 0.2 ) return;
+    if( track->Pt()< 1.0) return;
     //if( asym > 0.7 ) return;
     //if( cluster1->GetM02()>0.4 || cluster2->GetM02()>0.4 ) return;
     /////////////////////////////////////////////////////////////////////////
@@ -799,8 +806,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
     TLorentzVector ph;
     clusters->GetMomentum(ph, cluster);
    
-    if( track->Pt()<0.5 ) return;
-    if( cluster->E()< 6.0) return;
+    if( track->Pt()<1.0) return;
+    if( ph.Pt() < 8.0) return;
     
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi;
@@ -864,7 +871,7 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
 
     pi0 = ph_lead + ph_sub;
     //////////////////Selection/////////////////////////////////////////
-    if( pi0.Pt() < 6.0) return;
+    if( pi0.Pt() < 8.0) return;
     if( pi0.M()  > 1.0) return;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.E()-ph_sub.E())/(ph_lead.E()+ph_sub.E());
@@ -901,8 +908,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     if (time<-100) time = -100;
     if (time>1000) time = +100;
 
-
-    double entries[15] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+    Double_t RunNumber = static_cast<double>(FormatRunNumber(fInputEvent->GetRunNumber()));
+    Double_t BCID      = static_cast<double>(fInputEvent->GetBunchCrossNumber());
+    double entries[17] = {RunNumber, BCID, fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNTracksMatched()), static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time};
     histo->Fill(entries);
     return;
@@ -956,4 +964,22 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PassedCuts(AliVCluster* cluster)
 double AliAnalysisTaskEMCALPi0GammaCorr::GetEff(AliTLorentzVector ClusterVec)
 {
 	return 1;
+}
+
+Int_t AliAnalysisTaskEMCALPi0GammaCorr::FormatRunNumber(Int_t runnumber)
+{
+  //This is the list for LHC13d pPb 5 TeV pass4. 
+  switch (runnumber) {
+  case  195872 : return 10;
+  case  195871 : return 9;
+  case  195867 : return 8;
+  case  195831 : return 7;
+  case  195829 : return 6;
+  case  195787 : return 5;
+  case  195783 : return 4;
+  case  195767 : return 3;
+  case  195760 : return 2;
+  case  195724 : return 1;
+  default : return 0;
+  }
 }
