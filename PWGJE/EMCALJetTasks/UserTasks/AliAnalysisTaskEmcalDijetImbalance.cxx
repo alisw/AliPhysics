@@ -1146,9 +1146,9 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
 }
 
 /**
- * Load histogram of eta-phi background scale factors from AliEn
+ * Load histograms of eta-phi background scale factors from AliEn
  */
-void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const char* path, const char* name)
+void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const char* path, const char* name1, const char* name2)
 {
   
   TString fname(path);
@@ -1163,17 +1163,31 @@ void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const ch
     return;
   }
   
-  TH2D* h = dynamic_cast<TH2D*>(file->Get(name));
+  // Open background scale factor histogram
+  TH2D* h1 = dynamic_cast<TH2D*>(file->Get(name1));
   
-  if (h) {
-    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram %s loaded from file %s.", name, path);
+  if (h1) {
+    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram %s loaded from file %s.", name1, path);
   }
   else {
-    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram  %s not found in file %s.", name, path);
+    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram  %s not found in file %s.", name1, path);
     return;
   }
   
-  fBackgroundScalingWeights = static_cast<TH2D*>(h->Clone());
+  fBackgroundScalingWeights = static_cast<TH2D*>(h1->Clone());
+  
+  // Open jet pT scale factor histogram
+  TH2D* h2 = dynamic_cast<TH2D*>(file->Get(name2));
+  
+  if (h2) {
+    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Jet pT scaling histogram %s loaded from file %s.", name2, path);
+  }
+  else {
+    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Jet pT scaling histogram  %s not found in file %s.", name2, path);
+    return;
+  }
+  
+  fGapJetScalingWeights = static_cast<TH2D*>(h2->Clone());
   
   file->Close();
   delete file;
@@ -1866,16 +1880,16 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
 Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet)
 {
   
-  Double_t rho = jetCont->GetRhoVal();
-  
-  // Get eta-phi dependent background scale factor
-  if (fBackgroundScalingWeights) {
-    Double_t sf = fBackgroundScalingWeights->GetBinContent(fBackgroundScalingWeights->FindBin(jet->Eta(), jet->Phi_0_2pi()));
-    rho = sf * rho;
+  // Get eta-phi dependent jet pT scale factor
+  Double_t jetPt = jet->Pt();
+  if (fGapJetScalingWeights) {
+    Double_t sf = fGapJetScalingWeights->GetBinContent(fGapJetScalingWeights->FindBin(jet->Eta(), jet->Phi_0_2pi()));
+    jetPt = jetPt * (1 + sf * jet->NEF());
   }
   
-  // Compute pT
-  Double_t pT = jet->Pt() - rho * jet->Area();
+  // Compute pTcorr
+  Double_t rho = jetCont->GetRhoVal();
+  Double_t pT = jetPt - rho * jet->Area();
   
   // If hard-core jet, don't subtract background
   TString jetContName = jetCont->GetName();
