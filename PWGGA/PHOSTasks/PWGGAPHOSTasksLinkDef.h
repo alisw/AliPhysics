@@ -69,6 +69,7 @@
 #pragma link C++ class AliCaloClusterInfo+;
 #pragma link C++ class AliPHOSpPbPi0Header+;
 #pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
+#pragma link C++ class AliAnalysisPHOSClusterTask+;
 
 //PHOS_Correlations
 #pragma link C++ class AliPHOSCorrelations+;
