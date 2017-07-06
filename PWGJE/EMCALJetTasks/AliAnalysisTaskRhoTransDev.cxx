@@ -353,7 +353,7 @@ AliAnalysisTaskRhoTransDev* AliAnalysisTaskRhoTransDev::AddTaskRhoTransDev(TStri
 
   AliJetContainer *jetCont = new AliJetContainer(jetType, AliJetContainer::antikt_algorithm, rscheme, jetradius, partCont, clusterCont);
   if (jetCont) {
-    jetCont->SetJetPtCut(0);
+    jetCont->SetJetPtCut(1);
     jetCont->SetJetAcceptanceType(acceptance);
     jetCont->SetName("Signal");
     rhotask->AdoptJetContainer(jetCont);
