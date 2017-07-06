@@ -66,7 +66,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskEmcalDijetImbalance()                                 ;
 
   void UserCreateOutputObjects()                                                ;
-  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name = "hEtaPhiSFCorrection");
+  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name1 = "hEtaPhiSFCorrection", const char* name2 = "hEtaPhiJetPtCorrection");
   
   // Setters
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
