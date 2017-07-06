@@ -70,9 +70,9 @@ class AliXMLEngine : public TObject {
     }
     bool      operator!=(reference other) const { return fPtr != other.fPtr; }
     reference operator*() const { return *this; }
+    pointer   operator&() const { return fPtr; }
 
   protected:
-    pointer   operator&() const { return fPtr; }
     TXMLEngine   *fXML; //!
   private:
     pointer       fPtr; //!
