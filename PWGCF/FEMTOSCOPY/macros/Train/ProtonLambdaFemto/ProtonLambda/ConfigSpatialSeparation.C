@@ -14,7 +14,6 @@ enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton };
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
-AliFemtoEventAnalysis* GetAnalysis();
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
 AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
@@ -37,10 +36,10 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
     Manager->SetEventReader(Reader2011);
   }
   
-  AliFemtoEventAnalysis    *femtoAnalysis1 = GetAnalysis();
-  AliFemtoEventAnalysis    *femtoAnalysis2 = GetAnalysis();
-  AliFemtoEventAnalysis    *femtoAnalysis3 = GetAnalysis();
-  AliFemtoEventAnalysis    *femtoAnalysis4 = GetAnalysis();
+  AliFemtoEventAnalysis *femtoAnalysis1 = new AliFemtoEventAnalysis();
+  AliFemtoEventAnalysis *femtoAnalysis2 = new AliFemtoEventAnalysis();
+  AliFemtoEventAnalysis *femtoAnalysis3 = new AliFemtoEventAnalysis();
+  AliFemtoEventAnalysis *femtoAnalysis4 = new AliFemtoEventAnalysis();
   
   AliFemtoBasicEventCut         *eventCut = GetEventCut();
 
@@ -120,12 +119,6 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
-}
-
-AliFemtoVertexMultAnalysis* GetAnalysis()
-{
-  AliFemtoEventAnalysis *analysis = new AliFemtoEventAnalysis();
-  return analysis;
 }
 
 AliFemtoBasicEventCut* GetEventCut()

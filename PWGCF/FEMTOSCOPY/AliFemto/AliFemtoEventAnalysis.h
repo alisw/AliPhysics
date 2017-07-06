@@ -55,7 +55,8 @@ public:
   int GetNeventsProcessed() const;
 
   virtual void Finish();
-
+  virtual TList* ListSettings(){return nullptr;}
+  
 protected:
 
   void AddEventProcessed();

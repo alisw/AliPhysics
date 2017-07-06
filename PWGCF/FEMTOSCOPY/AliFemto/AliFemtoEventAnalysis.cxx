@@ -26,25 +26,6 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
-template <class TrackCollectionType, class TrackCutType>
-void DoFillParticleCollection(TrackCutType *cut,
-                              TrackCollectionType *track_collection,
-                              AliFemtoParticleCollection *output)
-{
-  // lets's just name the iterator type
-  typedef typename TrackCollectionType::iterator TrackCollectionIterType;
-  
-  for (TrackCollectionIterType pIter = track_collection->begin();
-       pIter != track_collection->end();
-       pIter++) {
-    const Bool_t track_passes = cut->Pass(*pIter);
-    cut->FillCutMonitor(*pIter, track_passes);
-    if (track_passes) {
-      output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
-    }
-  }
-}
-
 AliFemtoEventAnalysis::AliFemtoEventAnalysis():
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
