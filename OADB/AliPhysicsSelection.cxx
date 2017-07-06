@@ -128,14 +128,15 @@ fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
 fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(NULL)
+fCashedTokens(NULL),
+fTriggerToFunction()
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
-  
+  fTriggerToFunction = new StringToFunction();  
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
@@ -158,14 +159,16 @@ fCashedTokens(NULL)
  fFillOADB(0),
  fTriggerOADB(0),
  fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
- fCashedTokens(NULL)
+ fCashedTokens(NULL),
+ fTriggerToFunction()
  {
    // constructor
    fCollTrigClasses.SetOwner(1);
    fBGTrigClasses.SetOwner(1);
    fTriggerAnalysis.SetOwner(1);
    fHistList.SetOwner(1);
-
+   fTriggerToFunction = new StringToFunction();
+   
    AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
  }
 
@@ -175,6 +178,7 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fTriggerOADB)  delete fTriggerOADB;
   delete fRegexp;
   delete fCashedTokens;
+  delete fTriggerToFunction;
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
@@ -253,6 +257,14 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
 
 //______________________________________________________________________________
 Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline){
+  // Do we already have a function for this trigger logic? Add to hashmap if not
+  if (fTriggerToFunction->count(triggerLogic) == 0) {
+    auto trg_fn = this->TriggerLogicToFunction(triggerLogic);
+    fTriggerToFunction->insert({triggerLogic, trg_fn});
+  }
+  auto trg_fn = fTriggerToFunction->at(triggerLogic);
+  Bool_t new_result = trg_fn(event, triggerAnalysis, offline);
+  // old code
   // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
   // Fills the statistics histogram, if booked at row i
   TString trigger(triggerLogic);
@@ -314,8 +326,10 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
   Bool_t result = formula.Eval(0);
   
   AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
-  
-  return result;
+  if (new_result != result) {
+    AliFatal(Form("New and old results do not match %s", triggerLogic));
+  }
+  return new_result;
 }
 
 //______________________________________________________________________________
@@ -858,4 +872,41 @@ void AliPhysicsSelection::DetectPassName(){
   
   AliInfo(Form("pass name: %s\n",passName.Data()));
   fPassName = passName;
+}
+
+/// Convert a given trigger logic into a compiled function
+///
+/// \param triggerLogic Trigger logic to be compiled, e.g. "(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG && ZDCTime && !TPCHVdip"
+///
+/// \return Function pointer with signature (const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, bool offline)
+fn_t AliPhysicsSelection::TriggerLogicToFunction(const char* triggerLogic) {
+  static Long_t counter = 0;
+
+  TString trigger(triggerLogic);
+
+  fRegexp->Substitute(trigger, "triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::k$1 | (offline ? AliTriggerAnalysis::kOfflineFlag : 0)) )", "g");
+
+  TString tmpfilenam = "__trig_tmpfile";
+  tmpfilenam += counter++;
+  TString fnam = tmpfilenam;
+  tmpfilenam += ".cxx";
+  FILE* tmpfile = fopen(tmpfilenam, "w");
+
+  fputs("#include <AliVEvent.h>\n", tmpfile);
+  fputs("#include <AliTriggerAnalysis.h>\n\n", tmpfile);
+  fprintf(tmpfile, "extern \"C\" bool %s(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, bool offline)\n{\n", fnam.Data());
+  fprintf(tmpfile, "\treturn %s;\n}\n", trigger.Data());
+  fclose(tmpfile);
+
+  int ret = gSystem->CompileMacro(tmpfilenam, "Os");
+  if (!ret)
+    AliFatal(Form("Could not create function from trigger logic %s", triggerLogic));
+
+  fn_t pfn = reinterpret_cast<fn_t>(gInterpreter->FindSym(fnam));
+  if (!pfn)
+    AliFatal(Form("Could not create function from trigger logic %s", triggerLogic));
+
+  unlink(tmpfilenam);
+  unlink(tmpfilenam.ReplaceAll(".cxx", "_cxx") + ".d");
+  return pfn;
 }

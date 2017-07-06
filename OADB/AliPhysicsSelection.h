@@ -35,6 +35,9 @@ class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
 
+typedef bool (*fn_t)(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, bool offline);
+typedef std::map<std::string, fn_t> StringToFunction;
+
 class AliPhysicsSelection : public AliAnalysisCuts{
 public:
   // These enums are deprecated
@@ -113,6 +116,9 @@ protected:
 
   ClassDef(AliPhysicsSelection, 22)
 private:
+  StringToFunction *fTriggerToFunction; //! Map trigger strings to Function pointers
+  fn_t TriggerLogicToFunction(const char* triggerLogic);
+
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);
 };
