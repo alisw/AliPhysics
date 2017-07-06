@@ -139,6 +139,7 @@ void recraw_local(const char *filename,
   rec.SetRunMultFinder(strModules.Contains("ITS"));
   rec.SetInput(filename);
   rec.SetOption("HLT", hltOptions);
+  rec.SetFractionHLTESD(1.0);
 
   rec.SetRunPlaneEff(kFALSE);
 
