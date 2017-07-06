@@ -990,9 +990,9 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     tFemtoTrack->SetZatDCA(tAodTrack->ZAtDCA());
   }
 
-  tFemtoTrack->SetCdd(covmat[0]);
-  tFemtoTrack->SetCdz(covmat[1]);
-  tFemtoTrack->SetCzz(covmat[2]);
+//  tFemtoTrack->SetCdd(covmat[0]);
+//  tFemtoTrack->SetCdz(covmat[1]);
+//  tFemtoTrack->SetCzz(covmat[2]);
   tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
   tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());

@@ -48,9 +48,6 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     AliFemtoVertexMultAnalysis    *femtoAnalysis[nMult];
     AliFemtoModelCorrFctn         *modelCF[nMult];
     
-    AliFemtoPairOriginMonitor       *pairOriginPass[nMult];
-    AliFemtoPairOriginMonitor       *pairOriginFail[nMult];
-    
     // setup analysis
     int anIter = 0;
     for (int imult=0; imult<nMult; imult++)
@@ -71,19 +68,11 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         femtoAnalysis[imult]->SetEventCut(eventCut);
         
         
-        
         // set other analysis options and cuts
         femtoAnalysis[imult]->SetFirstParticleCut(new AliFemtoMCTrackCut());
         femtoAnalysis[imult]->SetSecondParticleCut(new AliFemtoMCTrackCut());
-        
-        pairOriginPass[imult] = new AliFemtoPairOriginMonitor(Form("PasstpcM%i", imult));
-        pairOriginFail[imult] = new AliFemtoPairOriginMonitor(Form("FailtpcM%i", imult));
         femtoAnalysis[imult]->SetEnablePairMonitors(true);
-        
-        AliFemtoDummyPairCut *pairCut = new AliFemtoDummyPairCut();
-        pairCut->AddCutMonitor(pairOriginPass[imult], pairOriginFail[imult]);
-
-        femtoAnalysis[imult]->SetPairCut(pairCut);
+        femtoAnalysis[imult]->SetPairCut(new AliFemtoDummyPairCut());
         
         // add correlation function on model data
         modelCF[imult] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_M%i",imult),100,0.0,2.0);
