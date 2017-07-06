@@ -112,7 +112,6 @@ protected:
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
-  TList* fCashedTokens;     //! trigger token lookup list
 
   ClassDef(AliPhysicsSelection, 22)
 private:
