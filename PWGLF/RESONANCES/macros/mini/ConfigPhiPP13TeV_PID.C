@@ -76,6 +76,13 @@ Bool_t ConfigPhiPP13TeV_PID
   /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
   /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
   /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
+  Double_t multbins[200];
+  int j,nmult=0;
+  for(j=0;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+  for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  //for(j=1;j<=18;j++){multbins[nmult]=10+5*j; nmult++;}
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -88,7 +95,7 @@ Bool_t ConfigPhiPP13TeV_PID
   Int_t   useIM  [11]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  2      , 2           ,0       , 1        , 1        };
   TString name   [11]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","TruesMM","TruesFineMM","Res"   ,"MixingPP","MixingMM"};
   TString comp   [11]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"   ,"TRUE"       ,"TRUE"  ,"MIX"     ,"MIX"     };
-  TString output [11]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE" ,"SPARSE"     ,"SPARSE","SPARSE"  ,"SPARSE"  };
+  TString output [11]={"HIST","HIST","HIST","HIST","HIST","HIST"   ,"HIST" ,"HIST"     ,"HIST","HIST"  ,"HIST"  };
   Int_t   pdgCode[11]={333     , 333    ,333     ,333     , 333    , 333       ,333      ,333          ,333     , 333      ,333       };
   Char_t  charge1[11]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'      , '+'         ,'+'     ,'+'       ,'-'       };
   Char_t  charge2[11]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'      , '-'         ,'-'     ,'+'       ,'-'       };
@@ -120,8 +127,8 @@ Bool_t ConfigPhiPP13TeV_PID
     else out->AddAxis(ptID,200,0.,20.);//default use mother pt
 
     // axis Z: centrality-multiplicity
-    if(!isPP || MultBins) out->AddAxis(centID,100,0.,100.);
-    else out->AddAxis(centID,161,-0.5,160.5);
+    //if(!isPP || MultBins) out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,100,0.,100.);
+    //else out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,161,-0.5,160.5);
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
