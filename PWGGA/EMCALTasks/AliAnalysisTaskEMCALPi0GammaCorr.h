@@ -61,6 +61,9 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   Bool_t                      PassedCuts(AliVCluster* caloCluster);
   double                      GetIsolation_Track(AliVCluster* cluster);
   Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
+  Double_t                    GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
+  Double_t                    GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
+  Double_t                    GetExoticity(AliVCluster *c);
   
   TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
   double                      GetEff(AliTLorentzVector ParticleVec)                         ;
