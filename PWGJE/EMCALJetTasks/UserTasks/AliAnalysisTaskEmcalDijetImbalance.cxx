@@ -40,6 +40,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -92,6 +93,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fPlotClusterTHnSparse(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fEmbeddingQA(),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -146,6 +148,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fPlotClusterTHnSparse(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fEmbeddingQA(),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -226,6 +229,15 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   // Load eta-phi background scale factors from histogram on AliEn
   if (fLoadBackgroundScalingWeights) {
     LoadBackgroundScalingHistogram();
+  }
+  
+  // Initialize embedding QA
+  const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingHelper) {
+    bool res = fEmbeddingQA.Initialize();
+    if (res) {
+      fEmbeddingQA.AddQAPlotsToList(fOutput);
+    }
   }
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -1134,9 +1146,9 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
 }
 
 /**
- * Load histogram of eta-phi background scale factors from AliEn
+ * Load histograms of eta-phi background scale factors from AliEn
  */
-void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const char* path, const char* name)
+void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const char* path, const char* name1, const char* name2)
 {
   
   TString fname(path);
@@ -1151,17 +1163,31 @@ void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const ch
     return;
   }
   
-  TH1D* h = dynamic_cast<TH1D*>(file->Get(name));
+  // Open background scale factor histogram
+  TH2D* h1 = dynamic_cast<TH2D*>(file->Get(name1));
   
-  if (h) {
-    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram %s loaded from file %s.", name, path);
+  if (h1) {
+    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram %s loaded from file %s.", name1, path);
   }
   else {
-    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram  %s not found in file %s.", name, path);
+    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram  %s not found in file %s.", name1, path);
     return;
   }
   
-  fBackgroundScalingWeights = static_cast<TH1D*>(h->Clone());
+  fBackgroundScalingWeights = static_cast<TH2D*>(h1->Clone());
+  
+  // Open jet pT scale factor histogram
+  TH2D* h2 = dynamic_cast<TH2D*>(file->Get(name2));
+  
+  if (h2) {
+    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Jet pT scaling histogram %s loaded from file %s.", name2, path);
+  }
+  else {
+    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Jet pT scaling histogram  %s not found in file %s.", name2, path);
+    return;
+  }
+  
+  fGapJetScalingWeights = static_cast<TH2D*>(h2->Clone());
   
   file->Close();
   delete file;
@@ -1355,6 +1381,14 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
   // Do the constituent threshold and geometrical matching study (if requested)
   if (fDoGeometricalMatching) {
     DoGeometricalMatching();
+  }
+  
+  // Only fill the embedding qa plots if:
+  //  - We are using the embedding helper
+  //  - The class has been initialized
+  //  - Both jet collections are available
+  if (fEmbeddingQA.IsInitialized()) {
+    fEmbeddingQA.RecordEmbeddedEventProperties();
   }
 
   return kTRUE;
@@ -1650,7 +1684,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   //   (1) Compute scale factor for full jets
   //   (2) Compute delta-pT for full jets, with the random cone method
   // For both the scale factor and delta-pT, we compute only one histogram each for EMCal.
-  // But for DCal, we bin in eta-phi, in order to account for the DCal vs. PHOS vs. gap
+  // And then we bin in eta-phi, in order to compute and perform a corretion to account for the DCal vs. PHOS vs. gap
   
   // Define the acceptance boundaries for the TPC and EMCal/DCal/PHOS
   Double_t etaTPC = 0.9;
@@ -1682,7 +1716,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
   Double_t phiEMCalRC = r->Uniform(phiMinEMCalfid, phiMaxEMCalfid);
   
-  // For DCalRegion, generate random eta, phi in each eta/phi bin, to be used as center of random cone
+  // For eta-phi correction, generate random eta, phi in each eta/phi bin, to be used as center of random cone
   Double_t etaDCalRC[fNEtaBins]; // array storing the RC eta values
   Double_t etaStep = 1./fNEtaBins;
   Double_t etaMin;
@@ -1716,7 +1750,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   
   // Loop over tracks. Sum the track pT:
   // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
-  // (4) in the DCalRegion in a random cone at each eta-phi
+  // (4) in a random cone at each eta-phi
   AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
   AliTLorentzVector track;
   Double_t trackEta;
@@ -1760,7 +1794,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   }
   
   // Loop over clusters. Sum the cluster ET:
-  // (1) in the EMCal, (2) in the EMCal random cone, (3) in the DCalRegion in a random cone at each eta-phi
+  // (1) in the EMCal, (2) in the EMCal random cone, (3) in a random cone at each eta-phi
   AliClusterContainer* clusCont = GetClusterContainer(0);
   AliTLorentzVector clus;
   Double_t clusEta;
@@ -1804,7 +1838,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
   fHistManager.FillTH2(histname, fCent, scaleFactor);
   
-  // Compute the scale factor for DCalRegion in each eta-phi bin, as a function of centrality
+  // Compute the scale factor in each eta-phi bin, as a function of centrality
   for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
     for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
       numerator = (trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin]) / accRC;
@@ -1821,12 +1855,12 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
   fHistManager.FillTH2(histname, fCent, deltaPt);
   
-  // Compute delta pT for DCalRegion in each eta-phi bin, as a function of centrality
+  // Compute delta pT in each eta-phi bin, as a function of centrality
   Double_t sf;
   for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
     for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
       if (fBackgroundScalingWeights) {
-        sf = fBackgroundScalingWeights->GetBinContent(etaDCalRC[etaBin], phiDCalRC[phiBin]);
+        sf = fBackgroundScalingWeights->GetBinContent(fBackgroundScalingWeights->FindBin(etaDCalRC[etaBin], phiDCalRC[phiBin]));
         rho = sf * rho;
       }
       deltaPt = trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin] - rho * accRC;
@@ -1846,16 +1880,16 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
 Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet)
 {
   
-  Double_t rho = jetCont->GetRhoVal();
-  
-  // Get eta-phi dependent scale factor
-  if (fBackgroundScalingWeights) {
-    Double_t sf = fBackgroundScalingWeights->GetBinContent(jet->Eta(), jet->Phi_0_2pi());
-    rho = sf * rho;
+  // Get eta-phi dependent jet pT scale factor
+  Double_t jetPt = jet->Pt();
+  if (fGapJetScalingWeights) {
+    Double_t sf = fGapJetScalingWeights->GetBinContent(fGapJetScalingWeights->FindBin(jet->Eta(), jet->Phi_0_2pi()));
+    jetPt = jetPt * (1 + sf * jet->NEF());
   }
   
-  // Compute pT
-  Double_t pT = jet->Pt() - rho * jet->Area();
+  // Compute pTcorr
+  Double_t rho = jetCont->GetRhoVal();
+  Double_t pT = jetPt - rho * jet->Area();
   
   // If hard-core jet, don't subtract background
   TString jetContName = jetCont->GetName();

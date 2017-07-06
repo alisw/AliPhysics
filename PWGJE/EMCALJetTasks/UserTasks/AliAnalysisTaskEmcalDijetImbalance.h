@@ -20,6 +20,7 @@ class AliPHOSGeometry;
 
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEmcalEmbeddingQA.h"
 
 class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
  public:
@@ -65,7 +66,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskEmcalDijetImbalance()                                 ;
 
   void UserCreateOutputObjects()                                                ;
-  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/BackgroundScalingWeights.root", const char* name = "hBackgroundScalingWeights");
+  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name1 = "hEtaPhiSFCorrection", const char* name2 = "hEtaPhiJetPtCorrection");
   
   // Setters
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
@@ -144,8 +145,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Dijet_t                     fMatchingDijet;                       //!<! low-threshold matching dijet, for matching study
   Int_t                       fNEtaBins;                            ///< Number of eta bins in DCal region (for background/correction)
   Int_t                       fNPhiBins;                            ///< Number of phi bins in DCal region (for background/correction)
-  TH1D*                       fBackgroundScalingWeights;            ///< Histogram storing eta-phi weights for full-jet background scale factors
-  TH1D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
+  TH2D*                       fBackgroundScalingWeights;            ///< Histogram storing eta-phi weights for full-jet background scale factors
+  TH2D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
@@ -183,6 +184,9 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
   Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
   
+  // Embedding parameters
+  AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
+  
   // Phos geometry (only needed for cluster studies)
   AliPHOSGeometry*            fPHOSGeo;                             //!<! phos geometry
   
@@ -194,7 +198,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 11);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 12);
   /// \endcond
 };
 #endif
