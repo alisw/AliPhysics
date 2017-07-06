@@ -4506,8 +4506,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= (FunctionNL_DPOW(energy, 1.1251817141, -0.8420328354, -0.0800008954, 0.9562653194, -0.6683378769, -0.1064755375));
             energy /= FunctionNL_kSDM(energy, 0.977706, -4.21058, -0.0938915) ;
           }
+          if( fCurrentMC==k16k5a && fClusterType==3) energy /= (FunctionNL_DPOW(energy, 1.1457031146, -0.1999998162, -0.1803434179, 1.0296671681, -0.0980184491, -0.4999999972));
+          if( fCurrentMC==k17e2 && fClusterType==3) energy /= (FunctionNL_DPOW(energy, 1.1450239667, -0.1999995715, -0.1823053734, 1.1429149228, -0.1999994013, -0.0954303330));
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= (FunctionNL_DExp(energy, 0.9842689920, 0.9150246921, -3.6796298486, 1.0113148506, 0.6876891951, -3.1672234730));
+          if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 1.1457031146, -0.1999998162, -0.1803434179, 1.0242312094, -0.0769436406, -0.0813456893));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
