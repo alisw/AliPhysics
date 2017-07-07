@@ -1470,6 +1470,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
     valueArray[5]=fAssym;
     valueArray[6]=1;
 
+    fPi0Cands->Fill(valueArray,Weight);
   } 
 }
 ///
