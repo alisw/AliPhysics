@@ -1120,7 +1120,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
         fOutputList->Add(fPoolNevents);
         
-        Int_t trackDepth = 2000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
+        Int_t trackDepth = 100000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
         Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
         
         Int_t nCentralityBins  = 15;
