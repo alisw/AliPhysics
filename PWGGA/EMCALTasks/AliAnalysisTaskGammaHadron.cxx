@@ -1428,6 +1428,56 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
   valueArray[6]=0;
   
   fPi0Cands->Fill(valueArray,Weight);
+
+
+  // Rotational Background
+  const Int_t nSamples = 3;
+  const Double_t fOpeningAngleCut = 0.017;
+
+  //const Double_t gEMCALMin = 80; 
+  //const Double_t gEMCALMax = 187;
+  //const Double_t gDCALMin = 260;
+  //const Double_t gDCALMax = 327; 
+
+  TRandom3 * gRand = new TRandom3(0);
+
+
+  for (int i = 0; i < nSamples; i++) {
+    Double_t fEta,fPhi;
+    Double_t fOpeningAngle;
+    while (true) {
+      fEta = gRand->Uniform(-0.7,0.7);  // change to eta cut
+      // GetClusterContainer("caloClusters")->SetMinEta() 
+      // GetClusterContainer("caloClusters")->SetMaxEta() 
+      fPhi = gRand->Uniform(80,254); // pretend DCAL next to EMCAL
+      if(fPhi > 187) {
+        // Check PHOS hole
+        if (TMath::Abs(fEta) < .22) continue;
+        fPhi+= 73;  // shift DCAL points
+      } 
+      fPhi = fPhi * 3.141592653589793 / 180.;
+      // Opening Angle Cut
+      CaloClusterVec2.SetPhi(fPhi);
+      CaloClusterVec2.SetTheta(2.*TMath::ATan(TMath::Exp(-fEta)));
+      fOpeningAngle = CaloClusterVec.Angle(CaloClusterVec2.Vect());
+      if (fOpeningAngle < fOpeningAngleCut) continue;
+      break;
+    }
+
+    CaloClusterVec2.SetPhi(fPhi);
+    CaloClusterVec2.SetTheta(2.*TMath::ATan(TMath::Exp(-fEta)));
+
+    CaloClusterVecPi0=CaloClusterVec+CaloClusterVec2;
+
+    valueArray[0]=CaloClusterVecPi0.Pt();
+    valueArray[1]=CaloClusterVecPi0.M();
+    valueArray[2]=fOpeningAngle;
+    valueArray[3]=fMaxClusM02;
+    valueArray[4]=TMath::Min(fE1,fE2);
+    valueArray[5]=fAssym;
+    valueArray[6]=1;
+
+  } 
 }
 ///
 /// Fill histograms with cluster and track information
