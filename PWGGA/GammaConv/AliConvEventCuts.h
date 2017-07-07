@@ -162,8 +162,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15a3b,        //!< anchored LHC13g pass 1 - JJ
         kLHC15d3a,        //!< anchored LHC13g pass 1
         kLHC15d3b,        //!< anchored LHC13g pass 1
-        
-        // 2015
+	// 2015
         kLHC15fm,         //!< pp 13 TeV
         kLHC15n,          //!< pp 5 TeV
         kLHC15o,          //!< PbPb 5 TeV
@@ -207,6 +206,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
         
         // 2016
         kLHC16kl,         //!< pp 13 TeV
+	kLHC16d,          //!< pp 13 TeV
+	kLHC16e,          //!< pp 13 TeV
+	kLHC16f,          //!< pp 13 TeV
+	kLHC16g,          //!< pp 13 TeV
+	kLHC16h,          //!< pp 13 TeV
+	kLHC16i,          //!< pp 13 TeV
+	kLHC16j,          //!< pp 13 TeV
+	kLHC16o,          //!< pp 13 TeV
+	kLHC16p,          //!< pp 13 TeV        
         kLHC16q,          //!< pPb 5 TeV
 	kLHC16r,          //!< pPb 8 TeV
 	kLHC16s,          //!< pPb 8 TeV
@@ -216,6 +224,27 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16j2b1,       //!< anchored LHC16k pass 1 - general purpose EPOSLHC
         kLHC16j2a2,       //!< anchored LHC16l pass 1 - general purpose Pythia8
         kLHC16j2b2,       //!< anchored LHC16l pass 1 - general purpose EPOSLHC
+	// General purpose pp-13TeV
+	kLHC17f6,         //!< anchored LHC16d pass 1 - general purpose Pythia8  
+	kLHC17f9,         //!< anchored LHC16e pass 1 - general purpose Pythia8  
+	kLHC17d1,         //!< anchored LHC16f pass 1 - general purpose Pythia8 Nominal/LowB field 
+	kLHC17d17,         //!< anchored LHC16g pass 1 - general purpose Pythia8  
+	kLHC17f5,         //!< anchored LHC16h pass 1 - general purpose Pythia8  
+	kLHC17d3,         //!< anchored LHC16i pass 1 - general purpose Pythia8  
+	kLHC17e5,         //!< anchored LHC16j pass 1 - general purpose Pythia8  
+	kLHC17d20a1,         //!< anchored LHC16k pass 1 - general purpose Pythia8  
+	kLHC17d20a1_extra,   //!< anchored LHC16k pass 1 - general purpose Pythia8  
+	kLHC17d20a2,         //!< anchored LHC16l pass 1 - general purpose Pythia8  
+	kLHC17d20a2_extra,   //!< anchored LHC16l pass 1 - general purpose Pythia8  
+	kLHC17d16,         //!< anchored LHC16o pass 1 - general purpose Pythia8  
+	kLHC17d18,         //!< anchored LHC16p pass 1 - general purpose Pythia8  
+	// Pythia +JJ pp-13TeV
+	kLHC17f8a,         //!< anchored LHC16k,l pass 1 - Pythia8+JJ  
+	kLHC17f8b,         //!< anchored LHC16f pass 1 - Pythia8+JJ Nominal field 
+	kLHC17f8c,         //!< anchored LHC16g pass 1 - Pythia8+JJ  
+	kLHC17f8d,         //!< anchored LHC16j pass 1 - Pythia8+JJ 
+	kLHC17f8e,         //!< anchored LHC16o pass 1 - Pythia8+JJ   
+	//General purpose- pPb
         kLHC17a2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17a2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
         kLHC17a2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
