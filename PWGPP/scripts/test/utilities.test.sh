@@ -127,3 +127,5 @@ test_all(){
     test_paranoidCopy;
     test_parseConfig;
 }
+
+main()($@)
