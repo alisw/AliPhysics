@@ -510,7 +510,13 @@ AliEmcalJet* AliAnalysisTaskJetUEStudies::GetJetCone(Double_t radius, Double_t e
 AliEmcalJet* AliAnalysisTaskJetUEStudies::GetRandomCone(AliJetContainer* jetCont)
 {
   Double_t eta = fRandom->Uniform(jetCont->GetMinEta() + jetCont->GetJetRadius(), jetCont->GetMaxEta() - jetCont->GetJetRadius());
-  Double_t phi = fRandom->Uniform(jetCont->GetMinPhi(), jetCont->GetMaxPhi());
+  Double_t phi = 0;
+  if (jetCont->GetMinPhi() == -10 && jetCont->GetMaxPhi() == 10) {
+    phi = fRandom->Uniform(0, TMath::TwoPi());
+  }
+  else {
+    phi = fRandom->Uniform(jetCont->GetMinPhi() + jetCont->GetJetRadius(), jetCont->GetMaxPhi() - jetCont->GetJetRadius());
+  }
 
   return GetJetCone(jetCont->GetJetRadius(), eta, phi);
 }
@@ -550,7 +556,13 @@ AliEmcalJet* AliAnalysisTaskJetUEStudies::GetRandomConePerp(AliJetContainer* jet
 AliEmcalJet* AliAnalysisTaskJetUEStudies::GetRandomConeExclLead(AliJetContainer* jetCont, AliEmcalJet* leadJet)
 {
   Double_t eta = fRandom->Uniform(jetCont->GetMinEta() + jetCont->GetJetRadius(), jetCont->GetMaxEta() - jetCont->GetJetRadius());
-  Double_t phi = fRandom->Uniform(jetCont->GetMinPhi(), jetCont->GetMaxPhi());
+  Double_t phi = 0;
+  if (jetCont->GetMinPhi() == -10 && jetCont->GetMaxPhi() == 10) {
+    phi = fRandom->Uniform(0, TMath::TwoPi());
+  }
+  else {
+    phi = fRandom->Uniform(jetCont->GetMinPhi() + jetCont->GetJetRadius(), jetCont->GetMaxPhi() - jetCont->GetJetRadius());
+  }
 
   const Int_t MAX_ITER = 20;
   AliEmcalJet* jet = nullptr;
