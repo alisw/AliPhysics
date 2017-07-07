@@ -1,0 +1,1 @@
+add_test("test.utilities" utilities.test.sh)
