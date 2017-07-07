@@ -30,6 +30,34 @@ class TList;
 class AliAnalysisManager;
 
 
+/***
+ * @class AliConversionMesonCuts
+ * @ingroup GammaConv
+ *
+ * The cut configuration is set as a string with an 19 digit number.
+ * Each digit in the string corresponds to a certain cut type, while
+ * its values represent the cut values. The cut configuration is listed here:
+ *
+ * | Position in the cut string (from the end) | Cut type                 |
+ * |                  0                        | MesonKind                |
+ * |                  1                        | BackgroundScheme         | 
+ * |                  2                        | NumberOfBGEvents         |
+ * |                  3                        | DegreesForRotationMethod |
+ * |                  4                        | RapidityMesonCut         |
+ * |                  5                        | RCut                     |
+ * |                  6                        | AlphaMesonCut            |
+ * |                  7                        | SelectionWindow          |
+ * |                  8                        | SharedElectronCuts       |
+ * |                  9                        | RejectToCloseV0s         |
+ * |                  10                       | UseMCPSmearing           |
+ * |                  11                       | DcaGammaGamma            |
+ * |                  12                       | DcaRPrimVtx              |
+ * |                  13                       | DcaZPrimVtx              |
+ * |                  14                       | MinOpanMesonCut          |
+ * |                  15                       | MaxOpanMesonCut          |
+*/
+
+
 class AliConversionMesonCuts : public AliAnalysisCuts {
   
   public: 
@@ -73,6 +101,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+    virtual Bool_t CheckWhetherInMassRange(Double_t mass){ return mass>fSelectionLow && mass < fSelectionHigh;}
 
     TString GetCutNumber();
 
