@@ -487,19 +487,19 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThnQA[11] = {0};
 
     titleThnQA[dimThnQA] = "E_{#gamma}";
-    nbinsThnQA[dimThnQA] = 240;
-    Double_t EgArray[240+1];
+    nbinsThnQA[dimThnQA] = 150;
+    Double_t EgArray[150+1];
     binEdgesThnQA[dimThnQA] = EgArray;
-    GenerateFixedBinArray(240,0,30,EgArray);
+    GenerateFixedBinArray(150,0,30,EgArray);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 30;
     dimThnQA++;
 
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 750;
-    Double_t ShapeArray[750+1];
+    nbinsThnQA[dimThnQA] = 300;
+    Double_t ShapeArray[300+1];
     binEdgesThnQA[dimThnQA] = ShapeArray;
-    GenerateFixedBinArray(750,0,4,ShapeArray);
+    GenerateFixedBinArray(300,0,4,ShapeArray);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 4;
     dimThnQA++;
@@ -512,7 +512,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 4;
     dimThnQA++;
-
+/*
     titleThnQA[dimThnQA] = "#Cells";
     nbinsThnQA[dimThnQA] = 10;
     Double_t nCellsArray[10+1];
@@ -521,7 +521,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 10;
     dimThnQA++;
-
+*/
     titleThnQA[dimThnQA] = "cell distance to bad channel";
     nbinsThnQA[dimThnQA] = 5;
     Double_t distanceArray[5+1];
@@ -1519,18 +1519,18 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 		//cout<<"eta distance matched: "<<etaDistMatched<<", phi dist matched: "<<phiDistMatched<<endl;
 
 		//Eg, lambda0,NLM, ncells, distance to bad ,e/p, Mgg
-		Double_t valueArray[9];
+		Double_t valueArray[8];
 		valueArray[0] = caloCluster->GetNonLinCorrEnergy();
 		valueArray[1] = caloCluster->GetM02();
 		valueArray[2] = caloCluster->GetNExMax();
-		valueArray[3] = caloCluster->GetNCells();
-		valueArray[4] = caloCluster->GetDistanceToBadChannel();
-		valueArray[5] = minCellDistance;
+		//valueArray[3] = caloCluster->GetNCells();
+		valueArray[3] = caloCluster->GetDistanceToBadChannel();
+		valueArray[4] = minCellDistance;
 		//valueArray[6] = phiDistMatched;
 		//valueArray[7] = etaDistMatched;
-		valueArray[6] = caloClusterVec.Eta();
-		valueArray[7] = aliCaloClusterVec.Phi_0_2pi()*fRtoD;
-		valueArray[8]= gammaInfo;
+		valueArray[5] = caloClusterVec.Eta();
+		valueArray[6] = aliCaloClusterVec.Phi_0_2pi()*fRtoD;
+		valueArray[7] = gammaInfo;
 
 		//valueArray[5]=0;//E/p
 		//valueArray[6]=130;//m_gg
