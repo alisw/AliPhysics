@@ -795,9 +795,8 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t thrMax) {
 
-  if(fSubtractSoftPiME && fReadTreeME) {
-    printf("Fake softPi subtraction in ME via extraction code MUST BE DISABLED for offline ME! Exiting...\n");
-    return kFALSE;
+  if(fSubtractSoftPiME) {
+    printf("Fake softPi subtraction in ME via extraction code is enabled!\n");
   }
 
   if(!fCorrectPoolsSeparately && (fReadTreeSE || fReadTreeME)) {
@@ -1546,7 +1545,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
   switch(fDmesonSpecies) {
 
     case (kD0toKpi): {  //in this case, it can also extract fake softpions from ME analysis (from online correl analysis only)
-      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       break;
     } //end case D0
@@ -1822,15 +1821,18 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB,
 }
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 //For TTree case, no need to differentiate the code btw SE and ME cases (histograms names and structures is the same, the only difference is the input file)
+
+  TString suffixforsoftpiME = "";
 
   TH2D* h2D = new TH2D(); //pointer to be returned
 
   TH3D* h3D; //for projecting the TH2Sparse onto
+  if(softPiME) suffixforsoftpiME = "_softpiME";
   if(!fIntegratePtBins) {
-    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
-    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));
+    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));
   } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
   if(!h3D) {printf("ERROR! Input histogram not found! Check the macro configuration!\n"); return 0x0;}
   Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
