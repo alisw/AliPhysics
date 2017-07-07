@@ -85,9 +85,16 @@ void AliFemtoSpatialSeparationFunction::CalculateAnglesForEvent()
   double mod1 = sqrt( p1[0]*p1[0] + p1[1]*p1[1] + p1[2]*p1[2] );
   double mod2 = sqrt( p2[0]*p2[0] + p2[1]*p2[1] + p2[2]*p2[2] );
   
+  if(fabs(mod1) < 0.0000001 || fabs(mod2) < 0.0000001) return;
+  
   double alpha = acos((p1[0]*p2[0] + p1[1]*p2[1] + p1[2]*p2[2])/(mod1*mod2));
   
   fAlpha->Fill(fabs(alpha));
+  
+  for(int i=0;i<3;i++){
+    p1[i] = 0.0;
+    p2[i] = 0.0;
+  }
 }
 
 void AliFemtoSpatialSeparationFunction::WriteHistos()
