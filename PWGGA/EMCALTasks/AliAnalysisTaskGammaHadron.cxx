@@ -1422,9 +1422,9 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
   Double_t fE2 = CaloClusterVec2.E();
   Double_t fAssym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero
 
-  valueArray[3]=fAssym;
-  valueArray[4]=fMaxClusM02;
-  valueArray[5]=TMath::Min(fE1,fE2);
+  valueArray[3]=fMaxClusM02;
+  valueArray[4]=TMath::Min(fE1,fE2);
+  valueArray[5]=fAssym;
   valueArray[6]=0;
   
   fPi0Cands->Fill(valueArray,Weight);
