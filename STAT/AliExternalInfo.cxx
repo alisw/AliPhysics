@@ -694,7 +694,7 @@ const TString AliExternalInfo::CurlTree(const TString internalFilename, const TS
   TString privateKey("$HOME/.globus/userkey.pem");
 
 
-  command = TString::Format("curl -Lk --tlsv1 --cert %s --key %s -o %s \"%s\"",     //-L option required to get files from redirected 
+  command = TString::Format("curl -Lk --tlsv1 --cert %s --key %s -o %s \"%s\"",     //-L option required to get files from redirected URL
                                      certificate.Data(), privateKey.Data(),
                                      internalFilename.Data(), externalLocation.Data());
 
