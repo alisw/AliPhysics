@@ -21,7 +21,7 @@ add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
-
+add_subdirectory(scripts)
 #Module
 set(MODULE PWGPP)
 add_definitions(-D_MODULE_="${MODULE}")

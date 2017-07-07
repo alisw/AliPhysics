@@ -257,6 +257,14 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   AddParticles("first", collection1);
   AddParticles("second", collection2);
   
+  for (AliFemtoCorrFctnIterator tCorrFctnIter = fCorrFctnCollection->begin();
+       tCorrFctnIter != fCorrFctnCollection->end();
+       ++tCorrFctnIter)
+  {
+    AliFemtoCorrFctn *tCorrFctn = (*tCorrFctnIter);
+    tCorrFctn->CalculateAnglesForEvent();
+  }
+
   
   cout << "AliFemtoEventAnalysis::ProcessEvent() - reals done ";
   
@@ -282,8 +290,6 @@ void AliFemtoEventAnalysis::AddParticles(const char* typeIn, AliFemtoParticleCol
       if (type == "first")      tCorrFctn->AddFirstParticle(particle);
       else if(type == "second") tCorrFctn->AddSecondParticle(particle);
     }
-    
-    tCorrFctn->CalculateAnglesForEvent();
   }
 }
 
