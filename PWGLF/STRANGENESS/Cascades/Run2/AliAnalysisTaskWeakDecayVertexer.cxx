@@ -1158,7 +1158,8 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
         
         //Mockup track for V0 trajectory (no covariance)
-        AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+        //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+        AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
         hV0Traj->ResetCovariance(1); //won't use
         
         Double_t p1[8]; t->GetHelixParameters(p1,b);
