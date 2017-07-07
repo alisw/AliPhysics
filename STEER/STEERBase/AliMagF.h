@@ -13,6 +13,8 @@
 
 //#include <TGeoGlobalMagField.h>
 #include <TVirtualMagField.h>
+
+class AliMagFast;
 class AliMagWrapCheb;
 
 class AliMagF : public TVirtualMagField
@@ -38,6 +40,8 @@ class AliMagF : public TVirtualMagField
   void       GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const;
   Double_t   GetBz(const Double_t *xyz)                          const;
   //
+  void        AllowFastField(Bool_t v=kTRUE);
+  AliMagFast* GetFastField()                                    const {return fFastField;}
   AliMagWrapCheb* GetMeasuredMap()                              const {return fMeasuredMap;}
   //
   // former AliMagF methods or their aliases
@@ -82,6 +86,7 @@ class AliMagF : public TVirtualMagField
   //
  protected:
   AliMagWrapCheb*  fMeasuredMap;     //! Measured part of the field map
+  AliMagFast*      fFastField;       //! optional fast param
   BMap_t           fMapType;         // field map type
   Double_t         fSolenoid;        // Solenoid field setting
   BeamType_t       fBeamType;        // Beam type: A-A (fBeamType=0) or p-p (fBeamType=1)
@@ -93,6 +98,7 @@ class AliMagF : public TVirtualMagField
   Double_t         fFactorDip;       // Multiplicative factor for dipole
   Double_t         fMax;             // Max Field as indicated in Geant
   Bool_t           fDipoleOFF;       // Dipole ON/OFF flag
+  Bool_t           fAllowFastField;  // allow optional fast field param
   //
   Double_t         fQuadGradient;    // Gradient field for inner triplet quadrupoles
   Double_t         fDipoleField;     // Field value for D1 and D2 dipoles

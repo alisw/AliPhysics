@@ -14,7 +14,7 @@
 //
 ///// To run full test
 /////  \code
-// aliroot -b -q $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c >AliElasticSearchRootTest.log
+// aliroot -b -q $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c |tee AliElasticSearchRootTest.log
 //    Parse output
 //    cat AliElasticSearchRootTest.log | grep "I-AliElasticSearchRoot.*Key"
 //I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-Begin

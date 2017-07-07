@@ -23,6 +23,7 @@
 #include <TChain.h>
 #include <TF1.h>
 #include <TSpline.h>
+#include <TProfile2D.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
@@ -731,9 +732,8 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
     // ---| Basic case |--------------------------------------------------------
     else {
 //       printf("   PID %d\n", pidInTracking);
-      TH2 *hPIDtracking = (TH2*)sublist->At(offsetPIDtracking);
-      const Int_t bin=hPIDtracking->FindBin(mom, sigStd);
-      hPIDtracking->SetBinContent(bin, Double_t(pidInTracking+1));
+      TProfile2D *hPIDtracking = (TProfile2D*)sublist->At(offsetPIDtracking);
+      hPIDtracking->Fill(mom, sigStd, Double_t(pidInTracking+1));
 
       TH2 *hPIDtrackingTrackedAs = (TH2*)sublist->At(offsetPIDtracking + 1 + pidInTracking);
       hPIDtrackingTrackedAs->Fill(mom, sigStd);
@@ -2617,7 +2617,7 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *sc
   else {
     // basic case
     {
-      TH2F *hSigP = new TH2F("hSigP_TPC_PIDinTracking",
+      TProfile2D *hSigP = new TProfile2D("hSigP_TPC_PIDinTracking",
                              "TPC signal vs. p vs. PID in tracking (AliPID::EParticleType + 1);p (GeV/c); TPC signal (arb. units); PID in tracking (AliPID::EParticleType + 1)",
                              vX->GetNrows()-1,vX->GetMatrixArray(),
                              binsSignal, 0, signalMax);

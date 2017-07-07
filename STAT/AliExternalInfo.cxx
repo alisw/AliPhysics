@@ -684,7 +684,9 @@ const TString AliExternalInfo::CurlMif(TString& mifFilePath, const TString& inte
   command = TString::Format("curl -z %s -k --tlsv1 --cert %s --key %s -o %s 2>%s \"%s\"",
                                      mifFilePath.Data(), certificate.Data(), privateKey.Data(),
                                      mifFilePath.Data(), logFileName.Data(), externalLocation.Data());
-
+  if ((fVerbose&0x4)>0) {
+    ::Info("AliExternalInfo::Curl","%s",command.Data());
+  }
   return command;
 }
 
