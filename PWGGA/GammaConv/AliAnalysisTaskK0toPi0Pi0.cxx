@@ -235,8 +235,7 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   
                                       
   // get K0Short candidates
-  // ------- ADDED----------
-  /*
+  
   std::vector<AliAODConversionMother> allPCM = MakeK0ShortCandidates(&samePi0PCM, nullptr, *fK0Cuts); 
   std::vector<AliAODConversionMother> allEMC = MakeK0ShortCandidates(&samePi0EMCAL, nullptr, *fK0Cuts);
   std::vector<AliAODConversionMother> PCMEMC = MakeK0ShortCandidates(&samePi0PCM, &mixedPi0, *fK0Cuts);
@@ -251,7 +250,7 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   MakeK0ShortQA(EMCPCM,"CaloConvo");
   MakeK0ShortQA(mixedSame, "SameMixed");
   MakeK0ShortQA(mixedDiff, "DiffMixed");
-  */
+  
   
    
   
@@ -348,6 +347,7 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
     for(auto primphoton : *primaryLeg){
       for(auto secphoton : *secondaryLeg) {
         AliAODConversionMother candidate(&primphoton, &secphoton);
+        if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
         // Do Pi0 selection
         if(!cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;      // Rapidity shift needed when going to asymmetric systems
         candidates.push_back(candidate);
@@ -358,6 +358,7 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
     for(auto primiter = primaryLeg->begin(); primiter != primaryLeg->end(); ++primiter){
       for(auto seciter = primiter + 1; seciter != primaryLeg->end(); ++seciter){
         AliAODConversionMother candidate(&(*primiter), &(*seciter));
+        if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
         // Do pi0 selection
         if(cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;      // Rapidity shift needed when going to asymmetric systems
         candidates.push_back(candidate);
@@ -432,4 +433,6 @@ AliClusterContainer *AliAnalysisTaskK0toPi0Pi0::AddClusterContainer(const char *
   fClusterContainer = new AliClusterContainer(name);
   return fClusterContainer;
 }
+
+
 
