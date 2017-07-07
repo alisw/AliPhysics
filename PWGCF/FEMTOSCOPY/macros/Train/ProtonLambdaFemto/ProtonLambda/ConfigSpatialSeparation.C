@@ -36,12 +36,12 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
     Manager->SetEventReader(Reader2011);
   }
   
-  AliFemtoEventAnalysis *femtoAnalysis1 = new AliFemtoEventAnalysis();
-  AliFemtoEventAnalysis *femtoAnalysis2 = new AliFemtoEventAnalysis();
-  AliFemtoEventAnalysis *femtoAnalysis3 = new AliFemtoEventAnalysis();
-  AliFemtoEventAnalysis *femtoAnalysis4 = new AliFemtoEventAnalysis();
+  AliFemtoEventAnalysis *femtoAnalysis1 = new AliFemtoEventAnalysis(); // PL
+  AliFemtoEventAnalysis *femtoAnalysis2 = new AliFemtoEventAnalysis(); // APL
+  AliFemtoEventAnalysis *femtoAnalysis3 = new AliFemtoEventAnalysis(); // APAL
+  AliFemtoEventAnalysis *femtoAnalysis4 = new AliFemtoEventAnalysis(); // PAL
   
-  AliFemtoBasicEventCut         *eventCut = GetEventCut();
+  AliFemtoBasicEventCut *eventCut = GetEventCut();
 
   AliFemtoSpatialSeparationFunction *separationFunction1;
   AliFemtoSpatialSeparationFunction *separationFunction2;
