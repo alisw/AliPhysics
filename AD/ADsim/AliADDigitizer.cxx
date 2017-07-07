@@ -163,6 +163,16 @@ AliADDigitizer::~AliADDigitizer()
   }
 }
 
+struct TClonesArrayGuard {
+  TClonesArrayGuard(TClonesArray *a)
+    : fA(a) {}
+  ~TClonesArrayGuard() {
+    if (fA)
+      fA->Delete();
+  }
+  TClonesArray* fA;
+} ;
+
 Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 {
   const AliADRecoParam p; // for now tail begin does not depend on the type of recoparam obj
@@ -203,6 +213,9 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
   for (Int_t ch=0; ch<16; ++ch) {
     fTS->GetEntry(ch);
 
+    TClonesArrayGuard guardInt0(f_Int[0]);
+    TClonesArrayGuard guardInt1(f_Int[1]);
+
     fTailVsTotalCharge[ch][0] = new TGraph;
     fTailVsTotalCharge[ch][1] = new TGraph;
 
@@ -231,8 +244,6 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
     }
-    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
-    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
@@ -577,6 +588,10 @@ void AliADDigitizer::AdjustPulseShapeADC()
   // fAdc contains not yet quantized (Float_t) and not yet clipped (at 1024) ADC values without pedestal shift and noise
   for (Int_t ch=0; ch<16; ++ch) {
     fTS->GetEntry(ch);
+
+    TClonesArrayGuard guardInt0(f_Int[0]);
+    TClonesArrayGuard guardInt1(f_Int[1]);
+
     Float_t totalCharge=0.0f;
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
       totalCharge += fAdc[ch][bc];
@@ -634,8 +649,6 @@ void AliADDigitizer::AdjustPulseShapeADC()
     AliDebugF(5, "Ch%02d: totalCharge,newCharge= %f %f  (tail=%f)", ch, totalCharge, newCharge, tail);
     if (TMath::Abs(totalCharge - newCharge) > 2.0f)
       AliWarningF("Ch%02d: difference between totalCharge=%f and newCharge=%f is too large (tail=%f)", ch, totalCharge, newCharge, tail);
-    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
-    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
