@@ -1622,9 +1622,9 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTestEMCEnergy->GetXaxis()->SetTitle("EMC Energy[GeV]");
     fHistTestEMCEnergy->GetYaxis()->SetTitle("Counts");
 
-    fHistTestTPCdEdx = new TH2F("fHistTestTPCdEdx", "TPC dE/dx for all tracks with DPhi to any candidate electron <0.1 rad", 300, -30, 180, 100, 0,8);
-    fHistTestTPCdEdx->GetXaxis()->SetTitle("TPC dE/dx[a.u.]");
-    fHistTestTPCdEdx->GetYaxis()->SetTitle("pT[GeV/c]");
+    fHistTestTPCdEdx = new TH2F("fHistTestTPCdEdx", "TPC dE/dx for all tracks with DPhi to any candidate electron <0.1 rad", 100, 0,8, 300, -30, 180);
+    fHistTestTPCdEdx->GetYaxis()->SetTitle("TPC dE/dx[a.u.]");
+    fHistTestTPCdEdx->GetXaxis()->SetTitle("pT[GeV/c]");
 
     fHistTestEOP = new TH1F("fHistTestEOP", "E/p for all tracks with DPhi to any candidate electron <0.1 rad", 30, 0, 1.5);
     fHistTestEOP->GetXaxis()->SetTitle("E/p[c]");
@@ -1669,12 +1669,12 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     //DPhi by track type to test for tpconly tracks for triggered particles 1-8 gev and assoc. particles >.3gev
     fHistTestDPhiType = new TH2F("fHistTestDPhiType", "Delta-Phi by track type for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 4, 0, 4);
-    fHistTestDPhiSpeNoSec->GetXaxis()->SetTitle("Delta-Phi");
-    fHistTestDPhiSpeNoSec->GetYaxis()->SetTitle("Track Type");
-    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(1, "Hybrid");
-    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(2, "Complementary");
-    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(3, "TPC Only");
-    fHistTestDPhiSpeNoSec->GetZaxis()->SetTitle("Cts");
+    fHistTestDPhiType->GetXaxis()->SetTitle("Delta-Phi");
+    fHistTestDPhiType->GetYaxis()->SetTitle("Track Type");
+    fHistTestDPhiType->GetYaxis()->SetBinLabel(1, "Hybrid");
+    fHistTestDPhiType->GetYaxis()->SetBinLabel(2, "Complementary");
+    fHistTestDPhiType->GetYaxis()->SetBinLabel(3, "TPC Only");
+    fHistTestDPhiType->GetZaxis()->SetTitle("Cts");
 
     //DPhi for candidate electrons 1-8 gev and assoc. particles >.3gev with secondaries
     fHistTestDPhi18Sec = new TH1F("fHistTestDPhi18Sec", "Delta-Phi for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
@@ -1972,16 +1972,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
     switch(trigVal){
         case(EMC7):
-        fHistNevents_EMC7->Fill("Events",1);
-        break;
+            fHistNevents_EMC7->Fill("Events",1);
+            break;
 
         case(EMCEGA):
-        fHistNevents_EMCEGA->Fill("Events",1);
-        break;
+            fHistNevents_EMCEGA->Fill("Events",1);
+            break;
 
         case(EMCJE):
-        fHistNevents_EMCJet->Fill("Events",1);
-        break;
+            fHistNevents_EMCJet->Fill("Events",1);
+            break;
     }
 
     //Initialize energy variable and tagging flags
@@ -2035,14 +2035,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         switch(trigVal){
             case(EMC7):
-            fHistEtaPhi_EMC7->Fill(aodtrack->Eta(),aodtrack->Phi());
-            break;
+                fHistEtaPhi_EMC7->Fill(aodtrack->Eta(),aodtrack->Phi());
+                break;
             case(EMCEGA):
-            fHistEtaPhi_EMCEGA->Fill(aodtrack->Eta(),aodtrack->Phi());
-            break;
+                fHistEtaPhi_EMCEGA->Fill(aodtrack->Eta(),aodtrack->Phi());
+                break;
             case(EMCJE):
-            fHistEtaPhi_EMCJet->Fill(aodtrack->Eta(),aodtrack->Phi());
-            break;
+                fHistEtaPhi_EMCJet->Fill(aodtrack->Eta(),aodtrack->Phi());
+                break;
         }
         //do Cut level histograms
         if(MBtrg){
@@ -2053,25 +2053,25 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         switch(trigVal){
             case(EMC7):
-            if(aodtrack->GetTPCncls()>0){
-                fHistTPCNClus_EMC7->Fill(aodtrack->GetTPCncls());
-            }
-            fHistITSNClus_EMC7->Fill(aodtrack->GetNcls(0));
-            break;
+                if(aodtrack->GetTPCncls()>0){
+                    fHistTPCNClus_EMC7->Fill(aodtrack->GetTPCncls());
+                }
+                fHistITSNClus_EMC7->Fill(aodtrack->GetNcls(0));
+                break;
 
             case(EMCEGA):
-            if(aodtrack->GetTPCncls()>0){
-                fHistTPCNClus_EMCEGA->Fill(aodtrack->GetTPCncls());
-            }
-            fHistITSNClus_EMCEGA->Fill(aodtrack->GetNcls(0));
-            break;
+                if(aodtrack->GetTPCncls()>0){
+                    fHistTPCNClus_EMCEGA->Fill(aodtrack->GetTPCncls());
+                }
+                fHistITSNClus_EMCEGA->Fill(aodtrack->GetNcls(0));
+                break;
 
             case(EMCJE):
-            if(aodtrack->GetTPCncls()>0){
-                fHistTPCNClus_EMCJet->Fill(aodtrack->GetTPCncls());
-            }
-            fHistITSNClus_EMCJet->Fill(aodtrack->GetNcls(0)); 
-            break;
+                if(aodtrack->GetTPCncls()>0){
+                    fHistTPCNClus_EMCJet->Fill(aodtrack->GetTPCncls());
+                }
+                fHistITSNClus_EMCJet->Fill(aodtrack->GetNcls(0)); 
+                break;
         }
 
         //Impact parameter
@@ -2085,16 +2085,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         switch(trigVal){
             case(EMC7):
-            fHistImpPar_EMC7->Fill(xy);
-            break;
+                fHistImpPar_EMC7->Fill(xy);
+                break;
 
             case(EMCEGA):
-            fHistImpPar_EMCEGA->Fill(xy);
-            break;
+                fHistImpPar_EMCEGA->Fill(xy);
+                break;
 
             case(EMCJE):
-            fHistImpPar_EMCJet->Fill(xy);
-            break;
+                fHistImpPar_EMCJet->Fill(xy);
+                break;
         }
 
         FillPhotoElecHistos(aod, aodtrack, fPIDResponse, i);
@@ -2124,16 +2124,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
             switch(trigVal){
                 case(EMC7):
-                fHistImpParTag_EMC7->Fill(xy);
-                break;
+                    fHistImpParTag_EMC7->Fill(xy);
+                    break;
 
                 case(EMCEGA):
-                fHistImpParTag_EMCEGA->Fill(xy);
-                break;
+                    fHistImpParTag_EMCEGA->Fill(xy);
+                    break;
 
                 case(EMCJE):
-                fHistImpParTag_EMCJet->Fill(xy);
-                break;
+                    fHistImpParTag_EMCJet->Fill(xy);
+                    break;
             }
 
             //Pt distribution
@@ -2143,16 +2143,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
             switch(trigVal){
                 case(EMC7):
-                fHistPtTag_EMC7->Fill(aodtrack->Pt());
-                break;
+                    fHistPtTag_EMC7->Fill(aodtrack->Pt());
+                    break;
 
                 case(EMCEGA):
-                fHistPtTag_EMCEGA->Fill(aodtrack->Pt());
-                break;
+                    fHistPtTag_EMCEGA->Fill(aodtrack->Pt());
+                    break;
 
                 case(EMCJE):
-                fHistPtTag_EMCJet->Fill(aodtrack->Pt());
-                break;
+                    fHistPtTag_EMCJet->Fill(aodtrack->Pt());
+                    break;
             }
             FillDPhiHistos(aod, aodtrack, i);//Fill DPhi histos
 
@@ -2162,14 +2162,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistPhotoMismatch_EMC7->Fill(0);
-                    break;
+                        fHistPhotoMismatch_EMC7->Fill(0);
+                        break;
                     case(EMCEGA):
-                    fHistPhotoMismatch_EMCEGA->Fill(0);
-                    break;
+                        fHistPhotoMismatch_EMCEGA->Fill(0);
+                        break;
                     case(EMCJE):
-                    fHistPhotoMismatch_EMCJet->Fill(0);
-                    break;
+                        fHistPhotoMismatch_EMCJet->Fill(0);
+                        break;
                 }
             }
 
@@ -2223,14 +2223,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         switch(trigVal){
             case(EMC7):
-            fHistPtSumTag_EMC7->Fill(PtSum);
-            break;
+                fHistPtSumTag_EMC7->Fill(PtSum);
+                break;
             case(EMCEGA):
-            fHistPtSumTag_EMCEGA->Fill(PtSum);
-            break;
+                fHistPtSumTag_EMCEGA->Fill(PtSum);
+                break;
             case(EMCJE):
-            fHistPtSumTag_EMCJet->Fill(PtSum);
-            break;
+                fHistPtSumTag_EMCJet->Fill(PtSum);
+                break;
         }
     }else{
         if(MBtrg){
@@ -2238,14 +2238,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         switch(trigVal){
             case(EMC7):
-            fHistPtSum_EMC7->Fill(PtSum);
-            break;
+                fHistPtSum_EMC7->Fill(PtSum);
+                break;
             case(EMCEGA):
-            fHistPtSum_EMCEGA->Fill(PtSum);
-            break;
+                fHistPtSum_EMCEGA->Fill(PtSum);
+                break;
             case(EMCJE):
-            fHistPtSum_EMCJet->Fill(PtSum);
-            break;
+                fHistPtSum_EMCJet->Fill(PtSum);
+                break;
         }
     }
 
@@ -2254,14 +2254,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
     switch(trigVal){
         case(EMC7):
-        fHistPtSumEMC_EMC7->Fill(PtSumEMC);
-        break;
+            fHistPtSumEMC_EMC7->Fill(PtSumEMC);
+            break;
         case(EMCEGA):
-        fHistPtSumEMC_EMCEGA->Fill(PtSumEMC);
-        break;
+            fHistPtSumEMC_EMCEGA->Fill(PtSumEMC);
+            break;
         case(EMCJE):
-        fHistPtSumEMC_EMCJet->Fill(PtSumEMC);
-        break;
+            fHistPtSumEMC_EMCJet->Fill(PtSumEMC);
+            break;
     }
 
     //Fill Nevent histos
@@ -2271,14 +2271,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }  
         switch(trigVal){
             case(EMC7):
-            fHistNevents_EMC7->Fill("Events containing candidates",1);
-            break;
+                fHistNevents_EMC7->Fill("Events containing candidates",1);
+                break;
             case(EMCEGA):
-            fHistNevents_EMCEGA->Fill("Events containing candidates",1);
-            break;
+                fHistNevents_EMCEGA->Fill("Events containing candidates",1);
+                break;
             case(EMCJE):
-            fHistNevents_EMCJet->Fill("Events containing candidates",1);
-            break;
+                fHistNevents_EMCJet->Fill("Events containing candidates",1);
+                break;
         }
     }
 
@@ -2290,14 +2290,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
             switch(trigVal){
                 case(EMC7):
-                fHistEtaPhiTag_EMC7->Fill(Eta[i],Phi[i]);
-                break;
+                    fHistEtaPhiTag_EMC7->Fill(Eta[i],Phi[i]);
+                    break;
                 case(EMCEGA):
-                fHistEtaPhiTag_EMCEGA->Fill(Eta[i],Phi[i]);
-                break;
+                    fHistEtaPhiTag_EMCEGA->Fill(Eta[i],Phi[i]);
+                    break;
                 case(EMCJE):
-                fHistEtaPhiTag_EMCJet->Fill(Eta[i],Phi[i]);
-                break;
+                    fHistEtaPhiTag_EMCJet->Fill(Eta[i],Phi[i]);
+                    break;
             }
         }
     }
@@ -2416,16 +2416,16 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistTPC_EMCTRD_EMC7[i]->Fill(aodtrack->Pt(), nSigmaTPC);
-                    break;
+                        fHistTPC_EMCTRD_EMC7[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                        break;
 
                     case(EMCEGA):
-                    fHistTPC_EMCTRD_EMCEGA[i]->Fill(aodtrack->Pt(), nSigmaTPC);
-                    break;
+                        fHistTPC_EMCTRD_EMCEGA[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                        break;
 
                     case(EMCJE):
-                    fHistTPC_EMCTRD_EMCJet[i]->Fill(aodtrack->Pt(), nSigmaTPC);
-                    break;
+                        fHistTPC_EMCTRD_EMCJet[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                        break;
                 }
             }
 
@@ -2440,16 +2440,16 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
+                            break;
 
                         case(EMCEGA):
-                        fHistEMC_TPCTRD_EMCEGA[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMCEGA[i]->Fill(EOP);
+                            break;
 
                         case(EMCJE):
-                        fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
+                            break;
                     }
                 }else{
                     if(MBtrg){
@@ -2457,16 +2457,16 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
+                            break;
 
                         case(EMCEGA):
-                        fHistEMC_TPCTRD_EMCEGA[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMCEGA[i]->Fill(EOP);
+                            break;
 
                         case(EMCJE):
-                        fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
-                        break;
+                            fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
+                            break;
                     }
                 }
             }
@@ -2481,16 +2481,16 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistTRD_TPCEMC_EMC7[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
-                    break;
+                        fHistTRD_TPCEMC_EMC7[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                        break;
 
                     case(EMCEGA):
-                    fHistTRD_TPCEMC_EMCEGA[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
-                    break;
+                        fHistTRD_TPCEMC_EMCEGA[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                        break;
 
                     case(EMCJE):
-                    fHistTRD_TPCEMC_EMCJet[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
-                    break;
+                        fHistTRD_TPCEMC_EMCJet[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                        break;
                 }
             }
         }
@@ -2591,16 +2591,16 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         }
         switch(trigVal){
             case(EMC7):
-            fHistPtAssoc_EMC7->Fill(aodtrackassoc->Pt());
-            break;
+                fHistPtAssoc_EMC7->Fill(aodtrackassoc->Pt());
+                break;
 
             case(EMCEGA):
-            fHistPtAssoc_EMCEGA->Fill(aodtrackassoc->Pt());
-            break;
+                fHistPtAssoc_EMCEGA->Fill(aodtrackassoc->Pt());
+                break;
 
             case(EMCJE):
-            fHistPtAssoc_EMCJet->Fill(aodtrackassoc->Pt());
-            break;
+                fHistPtAssoc_EMCJet->Fill(aodtrackassoc->Pt());
+                break;
         }
 
         //Fill Delta Phi variable and correct for periodicity
@@ -2617,26 +2617,26 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
         switch(aodtrackassoc->GetMostProbablePID()){
             case AliAODTrack::kElectron:
-            PID=1;
-            break;
+                PID=1;
+                break;
             case AliAODTrack::kMuon:
-            PID=2;
-            break;
+                PID=2;
+                break;
             case AliAODTrack::kPion:
-            PID=3;
-            break;
+                PID=3;
+                break;
             case AliAODTrack::kKaon:
-            PID=4;
-            break;
+                PID=4;
+                break;
             case AliAODTrack::kProton:
-            PID=5;
-            break;
+                PID=5;
+                break;
             case AliAODTrack::kDeuteron:
-            PID=6;
-            break;
+                PID=6;
+                break;
             case AliAODTrack::kUnknown:
-            PID=0;
-            break;
+                PID=0;
+                break;
         }
 
         if(MBtrg){
@@ -2644,14 +2644,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         }
         switch(trigVal){
             case(EMC7):
-            fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
-            break;
+                fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                break;
             case(EMCEGA):
-            fHistDPhi18Spe_EMCEGA->Fill(DPhi, PID);
-            break;
+                fHistDPhi18Spe_EMCEGA->Fill(DPhi, PID);
+                break;
             case(EMCJE):
-            fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
-            break;
+                fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                break;
         }
 
         if(aodtrackassoc->GetType()==AliAODTrack::kPrimary){
@@ -2673,7 +2673,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
 
         //Fill DPhi by Type here
-        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()&&!(aodtrackassoc->IsGlobalConstrained())) fHistTestDPhiType->Fill(DPhi, 1);
+        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()) fHistTestDPhiType->Fill(DPhi, 1);
 
         if((aodtrackassoc->IsGlobalConstrained())) fHistTestDPhiType->Fill(DPhi, 2);
 
@@ -2681,6 +2681,11 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
 
         if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1){
+
+            fHistTestPt->Fill(aodtrackassoc->Pt());
+            fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
+            fHistTestDCA->Fill(aodtrackassoc->DCA());
+            fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
 
 
             Int_t partOneID = 0;
@@ -2725,7 +2730,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
                     fHistTestInvMassElecLike->Fill(InvMass);   
                 }
-                
+
                 if(partOneID==1&&partTwoID==1&&aodtrackassoc->Charge()!=aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0&&aodtrackassoc2->Charge()!=0) 
                 {
                     Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+ElecMass*ElecMass);
@@ -2738,7 +2743,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
                     fHistTestInvMassElecUnLike->Fill(InvMass);   
                 }
-                
+
                 if(partOneID==2&&partTwoID==2&&aodtrackassoc->Charge()==aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0) 
                 {
                     Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
@@ -2751,7 +2756,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
                     fHistTestInvMassPionLike->Fill(InvMass);   
                 }
-                
+
                 if(partOneID==2&&partTwoID==2&&aodtrackassoc->Charge()!=aodtrackassoc2->Charge()&&aodtrackassoc->Charge()!=0&&aodtrackassoc2->Charge()!=0) 
                 {
                     Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
@@ -2772,12 +2777,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             Int_t cid = aodtrackassoc->GetEMCALcluster();
             if(cid > 0){
                 AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
-                fHistTestPt->Fill(aodtrackassoc->Pt());
-                fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
-                fHistTestDCA->Fill(aodtrackassoc->DCA());
+
                 fHistTestEMCEnergy->Fill(aodcl->E());
                 fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
-                fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
             }
             else{cout<<"No EMCal cluster for this anamolous Peak\n";}
 
@@ -2798,14 +2800,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi300_500_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi300_500_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2816,14 +2818,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi500_800_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi500_800_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2834,14 +2836,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi800_1_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi800_1_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2852,14 +2854,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi1_2_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi1_2_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2870,14 +2872,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi2_3_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi2_3_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi2_3_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi2_3_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2888,14 +2890,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi3_4_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi3_4_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi3_4_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi3_4_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2906,14 +2908,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi4_EMC7[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi4_EMC7[0]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi4_EMCEGA[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi4_EMCEGA[0]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi4_EMCJet[0]->Fill(DPhi);
-                    break;
+                        fHistDPhi4_EMCJet[0]->Fill(DPhi);
+                        break;
                 }
             }
         }
@@ -2928,14 +2930,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi300_500_EMC7[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMC7[1]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi300_500_EMCEGA[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCEGA[1]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2946,14 +2948,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi500_800_EMC7[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMC7[1]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi500_800_EMCEGA[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCEGA[1]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2964,14 +2966,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi800_1_EMC7[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMC7[1]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi800_1_EMCEGA[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCEGA[1]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -2982,14 +2984,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi1_2_EMC7[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMC7[1]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi1_2_EMCEGA[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCEGA[1]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -3002,20 +3004,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi2_3_EMC7[1]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMC7[1]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi2_3_EMCEGA[1]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }
 
@@ -3028,20 +3030,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi3_4_EMC7[1]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMC7[1]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi3_4_EMCEGA[1]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }
 
@@ -3054,20 +3056,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi4_EMC7[1]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMC7[1]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi4_EMCEGA[1]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi4_EMCJet[1]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }                    
         }
@@ -3082,14 +3084,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi300_500_EMC7[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMC7[2]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi300_500_EMCEGA[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCEGA[2]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -3100,14 +3102,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi500_800_EMC7[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMC7[2]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi500_800_EMCEGA[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCEGA[2]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -3118,14 +3120,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi800_1_EMC7[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMC7[2]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi800_1_EMCEGA[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCEGA[2]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -3136,14 +3138,14 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi1_2_EMC7[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMC7[2]->Fill(DPhi);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi1_2_EMCEGA[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCEGA[2]->Fill(DPhi);
+                        break;
                     case(EMCJE):
-                    fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
-                    break;
+                        fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
+                        break;
                 }
             }
 
@@ -3156,20 +3158,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi2_3_EMC7[2]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMC7[2]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi2_3_EMCEGA[2]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }
 
@@ -3182,20 +3184,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi3_4_EMC7[2]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMC7[2]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi3_4_EMCEGA[2]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }
 
@@ -3208,20 +3210,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 switch(trigVal){
                     case(EMC7):
-                    fHistDPhi4_EMC7[2]->Fill(DPhi);
-                    fHistDPhi28_EMC7->Fill(DPhi);
-                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMC7[2]->Fill(DPhi);
+                        fHistDPhi28_EMC7->Fill(DPhi);
+                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                        break;
                     case(EMCEGA):
-                    fHistDPhi4_EMCEGA[2]->Fill(DPhi);
-                    fHistDPhi28_EMCEGA->Fill(DPhi);
-                    fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi28_EMCEGA->Fill(DPhi);
+                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
+                        break;
                     case(EMCJE):
-                    fHistDPhi4_EMCJet[2]->Fill(DPhi);
-                    fHistDPhi28_EMCJet->Fill(DPhi);
-                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    break;
+                        fHistDPhi4_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                        break;
                 }
             }
         }
@@ -3365,19 +3367,19 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
             }
             switch(trigVal){
                 case(EMC7):
-                fHistInvMassElecLike_EMC7->Fill(InvMass);
-                fHistOpAngElecLike_EMC7->Fill(OpAng);
-                break;
+                    fHistInvMassElecLike_EMC7->Fill(InvMass);
+                    fHistOpAngElecLike_EMC7->Fill(OpAng);
+                    break;
 
                 case(EMCEGA):
-                fHistInvMassElecLike_EMCEGA->Fill(InvMass);
-                fHistOpAngElecLike_EMCEGA->Fill(OpAng);
-                break;
+                    fHistInvMassElecLike_EMCEGA->Fill(InvMass);
+                    fHistOpAngElecLike_EMCEGA->Fill(OpAng);
+                    break;
 
                 case(EMCJE):
-                fHistInvMassElecLike_EMCJet->Fill(InvMass);
-                fHistOpAngElecLike_EMCJet->Fill(OpAng);
-                break;
+                    fHistInvMassElecLike_EMCJet->Fill(InvMass);
+                    fHistOpAngElecLike_EMCJet->Fill(OpAng);
+                    break;
             }
 
         }else if(aodtrack->Charge()!=aodtrackassoc->Charge()&&aodtrack->Charge()!=0&&aodtrackassoc->Charge()!=0){
@@ -3388,19 +3390,19 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
             }
             switch(trigVal){
                 case(EMC7):
-                fHistInvMassElecUnLike_EMC7->Fill(InvMass);
-                fHistOpAngElecUnLike_EMC7->Fill(OpAng);
-                break;
+                    fHistInvMassElecUnLike_EMC7->Fill(InvMass);
+                    fHistOpAngElecUnLike_EMC7->Fill(OpAng);
+                    break;
 
                 case(EMCEGA):
-                fHistInvMassElecUnLike_EMCEGA->Fill(InvMass);
-                fHistOpAngElecUnLike_EMCEGA->Fill(OpAng);
-                break;
+                    fHistInvMassElecUnLike_EMCEGA->Fill(InvMass);
+                    fHistOpAngElecUnLike_EMCEGA->Fill(OpAng);
+                    break;
 
                 case(EMCJE):
-                fHistInvMassElecUnLike_EMCJet->Fill(InvMass);
-                fHistOpAngElecUnLike_EMCJet->Fill(OpAng);
-                break;
+                    fHistInvMassElecUnLike_EMCJet->Fill(InvMass);
+                    fHistOpAngElecUnLike_EMCJet->Fill(OpAng);
+                    break;
             }
         }
     }//end loop over tracks
@@ -3463,16 +3465,16 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
             }
             switch(trigVal){
                 case(EMC7):
-                fHistPtAssocMix_EMC7->Fill(aodtrackassoc->Pt());
-                break;
+                    fHistPtAssocMix_EMC7->Fill(aodtrackassoc->Pt());
+                    break;
 
                 case(EMCEGA):
-                fHistPtAssocMix_EMCEGA->Fill(aodtrackassoc->Pt());
-                break;
+                    fHistPtAssocMix_EMCEGA->Fill(aodtrackassoc->Pt());
+                    break;
 
                 case(EMCJE):
-                fHistPtAssocMix_EMCJet->Fill(aodtrackassoc->Pt());
-                break;
+                    fHistPtAssocMix_EMCJet->Fill(aodtrackassoc->Pt());
+                    break;
             }
 
             //Fill Delta Phi variable and correct for periodicity
@@ -3494,14 +3496,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix300_500_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix300_500_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix300_500_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3512,14 +3514,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix500_800_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix500_800_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix500_800_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3530,14 +3532,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix800_1_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix800_1_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix800_1_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3548,14 +3550,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix1_2_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix1_2_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix1_2_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3566,14 +3568,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){                       
                         case(EMC7):
-                        fHistDPhiMix2_3_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix2_3_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix2_3_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix2_3_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix2_3_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix2_3_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3584,14 +3586,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){                        
                         case(EMC7):
-                        fHistDPhiMix3_4_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix3_4_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix3_4_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix3_4_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix3_4_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix3_4_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3602,14 +3604,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix4_EMC7[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix4_EMC7[0]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix4_EMCEGA[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix4_EMCEGA[0]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix4_EMCJet[0]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix4_EMCJet[0]->Fill(DPhi);
+                            break;
                     }
                 }
             }
@@ -3624,14 +3626,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix300_500_EMC7[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMC7[1]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix300_500_EMCEGA[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCEGA[1]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix300_500_EMCJet[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCJet[1]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3642,14 +3644,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix500_800_EMC7[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMC7[1]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix500_800_EMCEGA[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCEGA[1]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix500_800_EMCJet[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCJet[1]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3660,14 +3662,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix800_1_EMC7[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMC7[1]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix800_1_EMCEGA[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCEGA[1]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix800_1_EMCJet[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCJet[1]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3678,14 +3680,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix1_2_EMC7[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMC7[1]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix1_2_EMCEGA[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCEGA[1]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix1_2_EMCJet[1]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCJet[1]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3698,20 +3700,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix2_3_EMC7[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix2_3_EMCEGA[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix2_3_EMCJet[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }
 
@@ -3724,20 +3726,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix3_4_EMC7[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix3_4_EMCEGA[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix3_4_EMCJet[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }
 
@@ -3750,20 +3752,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix4_EMC7[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix4_EMCEGA[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix4_EMCJet[1]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }                    
             }
@@ -3778,14 +3780,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix300_500_EMC7[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMC7[2]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix300_500_EMCEGA[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCEGA[2]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix300_500_EMCJet[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix300_500_EMCJet[2]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3796,14 +3798,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix500_800_EMC7[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMC7[2]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix500_800_EMCEGA[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCEGA[2]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix500_800_EMCJet[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix500_800_EMCJet[2]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3814,14 +3816,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix800_1_EMC7[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMC7[2]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix800_1_EMCEGA[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCEGA[2]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix800_1_EMCJet[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix800_1_EMCJet[2]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3832,14 +3834,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix1_2_EMC7[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMC7[2]->Fill(DPhi);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix1_2_EMCEGA[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCEGA[2]->Fill(DPhi);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix1_2_EMCJet[2]->Fill(DPhi);
-                        break;
+                            fHistDPhiMix1_2_EMCJet[2]->Fill(DPhi);
+                            break;
                     }
                 }
 
@@ -3852,20 +3854,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix2_3_EMC7[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix2_3_EMCEGA[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix2_3_EMCJet[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix2_3_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }
 
@@ -3878,20 +3880,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix3_4_EMC7[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix3_4_EMCEGA[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix3_4_EMCJet[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix3_4_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }
 
@@ -3904,20 +3906,20 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     }
                     switch(trigVal){
                         case(EMC7):
-                        fHistDPhiMix4_EMC7[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMC7->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMC7->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                            break;
                         case(EMCEGA):
-                        fHistDPhiMix4_EMCEGA[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
+                            break;
                         case(EMCJE):
-                        fHistDPhiMix4_EMCJet[2]->Fill(DPhi);
-                        fHistDPhiMix28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                        break;
+                            fHistDPhiMix4_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix28_EMCJet->Fill(DPhi);
+                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                            break;
                     }
                 }
             }
