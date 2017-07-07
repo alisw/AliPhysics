@@ -45,8 +45,8 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   deu->SetDCABins(80,-0.5,0.5);
 
   deu->SetRequireTPCpidSigmas(3.f);
-  float cent[14] = {-1000.f,0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,1000.f};
-  deu->SetCentBins(13, cent);
+  float cent[12] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  deu->SetCentBins(11, cent);
   deu->SetUseFlattening(false);
   float pt[20] = {
     0.5f,0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,1.2f,1.4f,1.6f,
@@ -75,4 +75,3 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   mgr->ConnectOutput (deu,  1, deuCont);
   return deu;
 }
-
