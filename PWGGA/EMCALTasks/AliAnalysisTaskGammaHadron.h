@@ -139,6 +139,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                       *fMAngle;                  //!<! Tyler's histogram
   TH2                       *fPtAngle;                 //!<! Tyler's histogram
 
+
+  TRandom3    *fRand;//!<! Random number generator.  Initialzed by rot background
   TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
   Bool_t       fDoRotBkg; //!<! Whether or not to calculate the rotational background
   Int_t        fNRotBkgSamples; //!<! How many samples to use in the rotational background

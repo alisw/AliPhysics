@@ -64,7 +64,7 @@ fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 fCorrVsManyThings(0), fClusterProp(0x0),
-fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0)
+fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0),fRand(0)
 {
 	//..Initialize by defult for
 	//..AliAnalysisTaskGammaHadron(0,0);
@@ -91,7 +91,7 @@ fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 fCorrVsManyThings(0), fClusterProp(0x0),
-fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0)
+fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0),fRand(0)
 {
 	InitArrays();
 	//..set input variables
@@ -1431,24 +1431,18 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
   if (!fDoRotBkg) return;
   // Rotational Background
- // const Int_t nSamples = 3;
   const Double_t fOpeningAngleCut = 0.017;
 
-  //const Double_t gEMCALMin = 80; 
-  //const Double_t gEMCALMax = 187;
-  //const Double_t gDCALMin = 260;
-  //const Double_t gDCALMax = 327; 
-
-  TRandom3 * gRand = new TRandom3(0);
+  if (!fRand) fRand = new TRandom3(0);
 
   for (int i = 0; i < fNRotBkgSamples; i++) {
     Double_t fEta,fPhi;
     Double_t fOpeningAngle;
     while (true) {
-      fEta = gRand->Uniform(-0.7,0.7);  // change to eta cut
+      fEta = fRand->Uniform(-0.7,0.7);  // change to eta cut maybe
       // GetClusterContainer("caloClusters")->SetMinEta() 
       // GetClusterContainer("caloClusters")->SetMaxEta() 
-      fPhi = gRand->Uniform(80,254); // pretend DCAL next to EMCAL
+      fPhi = fRand->Uniform(80,254); // pretend DCAL next to EMCAL
       if(fPhi > 187) {
         // Check PHOS hole
         if (TMath::Abs(fEta) < .22) continue;
