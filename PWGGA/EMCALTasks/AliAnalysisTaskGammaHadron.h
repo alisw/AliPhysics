@@ -36,6 +36,9 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
+  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
+  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -137,6 +140,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                       *fPtAngle;                 //!<! Tyler's histogram
 
   TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
+  Bool_t       fDoRotBkg; //!<! Whether or not to calculate the rotational background
+  Int_t        fNRotBkgSamples; //!<! How many samples to use in the rotational background
   THnSparseF  *fPi0Cands; //!<! Michael's THnSparse for pi0 Candidates
 
 

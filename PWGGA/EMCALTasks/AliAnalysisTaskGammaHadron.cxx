@@ -64,7 +64,7 @@ fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 fCorrVsManyThings(0), fClusterProp(0x0),
-fHPoolReady(0x0),fPi0Cands(0),fClusEnergy(0)
+fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0)
 {
 	//..Initialize by defult for
 	//..AliAnalysisTaskGammaHadron(0,0);
@@ -91,7 +91,7 @@ fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 fCorrVsManyThings(0), fClusterProp(0x0),
-fHPoolReady(0x0),fPi0Cands(0),fClusEnergy(0)
+fHPoolReady(0x0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fClusEnergy(0)
 {
 	InitArrays();
 	//..set input variables
@@ -1429,9 +1429,9 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
   
   fPi0Cands->Fill(valueArray,Weight);
 
-
+  if (!fDoRotBkg) return;
   // Rotational Background
-  const Int_t nSamples = 3;
+ // const Int_t nSamples = 3;
   const Double_t fOpeningAngleCut = 0.017;
 
   //const Double_t gEMCALMin = 80; 
@@ -1441,8 +1441,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
   TRandom3 * gRand = new TRandom3(0);
 
-
-  for (int i = 0; i < nSamples; i++) {
+  for (int i = 0; i < fNRotBkgSamples; i++) {
     Double_t fEta,fPhi;
     Double_t fOpeningAngle;
     while (true) {
