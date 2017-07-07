@@ -320,6 +320,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F        *fEtaTracksVSclustPt;            //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
+  TH1D        *fPtTracks;                      //!<!
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output // Isolation on pTMax
