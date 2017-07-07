@@ -89,8 +89,9 @@ parseConfig()
         value="${opt}"
         unset expectPosixOptionValue
       else
-        echo "badly formatted option ${var}, should be: option=value (or -var value) stopping..."
-        return 1
+        continue;  # non option string should be allowed - e.g parsing parameters for alihadd
+        #echo "badly formatted option ${var}, should be: option=value (or -var value) stopping..."
+        #return 1
       fi
     else
       var="${opt%%=*}"
