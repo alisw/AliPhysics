@@ -411,11 +411,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
     nBinsThnPi0[dimThnPi0] = 500;
-    Double_t mGGArray[800+1];
+    Double_t mGGArray[500+1];
     binEdgesThnPi0[dimThnPi0] = mGGArray;
-    GenerateFixedBinArray(800,0,1,mGGArray);
+    GenerateFixedBinArray(500,0,0.5,mGGArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 1;
+    maxThnPi0[dimThnPi0] = 0.5;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
@@ -425,6 +425,24 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
     minThnPi0[dimThnPi0] = 0;
     maxThnPi0[dimThnPi0] = TMath::Pi();
+    dimThnPi0++;
+
+    titleThnPi0[dimThnPi0] = "Max Lambda_{0}^{2}";
+    nBinsThnPi0[dimThnPi0] = 5;
+    Double_t MaxM02Array[5+1] = {0.1,0.26,0.3,0.37,0.85,4};
+    binEdgesThnPi0[dimThnPi0] = MaxM02Array;
+   // GenerateFixedBinArray(5,0,);
+    minThnPi0[dimThnPi0] = 0.1;
+    maxThnPi0[dimThnPi0] = 4;
+    dimThnPi0++;
+
+    titleThnPi0[dimThnPi0] = "Min Cluster Energy";
+    nBinsThnPi0[dimThnPi0] = 4;
+    Double_t MinClusEnergyArray[4+1] = {0.3,0.4,0.5,1,2};
+    binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
+   // GenerateFixedBinArray(5,0,);
+    minThnPi0[dimThnPi0] = 0.1;
+    maxThnPi0[dimThnPi0] = 4;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
@@ -1244,8 +1262,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Double_t EffWeight_Hadron;
 	Double_t Weight;    //weight to normalize mixed and same event distributions individually
 
-
-  Double_t ClusterEnergyCut = 1; // On top of cuts in GetAcceptCluster,AccClusterForAna
+ // Double_t ClusterEnergyCut = 1; // On top of cuts in GetAcceptCluster,AccClusterForAna
 
 	AliVCluster* cluster = 0;
 	AliVCluster* cluster2= 0;
@@ -1282,23 +1299,23 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 					TLorentzVector CaloClusterVec2;
 					TLorentzVector CaloClusterVecpi0;
+          Double_t fMaxClusM02 = TMath::Max(cluster->GetM02(),cluster2->GetM02());
 
 					//old framework				cluster2->GetMomentum(CaloClusterVec2, fVertex);
 					clusters->GetMomentum(CaloClusterVec2, cluster2);
 				//	if(cluster2->E()>2 && cluster->E()>2)
-          if(cluster2->GetNonLinCorrEnergy()>ClusterEnergyCut && cluster->GetNonLinCorrEnergy()>ClusterEnergyCut)
-					{
+         // if(cluster2->GetNonLinCorrEnergy()>ClusterEnergyCut && cluster->GetNonLinCorrEnergy()>ClusterEnergyCut)
+				//	{
 						CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 						fHistPi0->Fill(CaloClusterVecpi0.M());
-            FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,Weight);
-						fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt(),0.5);  //eventually divide by 2
+            FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight);
+						fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
 						fMAngle->Fill(CaloClusterVecpi0.M(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						fPtAngle->Fill(CaloClusterVecpi0.Pt(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
 							nAccPi0Clusters++; //need eventually to divide by 2, otherwise double counting the pi0's
 						}
-					}
-//				}
+				//	}
 			}
 		}
 	}
@@ -1394,9 +1411,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 /// To Do: add in rotation method
 ///
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t Weight) {
+void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t fMaxClusM02, Double_t Weight) {
 
-  Double_t valueArray[5];
+  Double_t valueArray[7];
   valueArray[0]=CaloClusterVecPi0.Pt();
   valueArray[1]=CaloClusterVecPi0.M();
   valueArray[2]=CaloClusterVec.Angle(CaloClusterVec2.Vect());
@@ -1406,7 +1423,9 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
   Double_t fAssym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero
 
   valueArray[3]=fAssym;
-  valueArray[4]=0;
+  valueArray[4]=fMaxClusM02;
+  valueArray[5]=TMath::Min(fE1,fE2);
+  valueArray[6]=0;
   
   fPi0Cands->Fill(valueArray,Weight);
 }
