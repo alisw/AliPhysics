@@ -122,7 +122,8 @@ public:
   void SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
                       TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString &indexName);
   const TString GetYearFromPeriod(const TString& period);
-  const TString Curl(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation);
+  const TString CurlMif(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation);
+  const TString CurlTree(const TString internalFilename, const TString& externalLocation);
   const TString CreatePath(TString type, TString period, TString pass);
   Bool_t IsDownloadNeeded(TString file, TString type);
   Int_t fVerbose;                                   ///< verbosity flag 
