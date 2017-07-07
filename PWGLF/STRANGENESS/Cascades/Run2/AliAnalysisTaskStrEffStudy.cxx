@@ -1610,6 +1610,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarImprovedCascDCAxyToPV = -100;
         fTreeCascVarImprovedCascDCAzToPV = -100;
         fTreeCascVarBachPropagationParameterImproved = -100;
+        fTreeCascVarDCACascDaughtersImproved = -100;
         
         fTreeCascVarImprovedInvMassXiMinus = -100;
         fTreeCascVarImprovedInvMassXiPlus = -100;
