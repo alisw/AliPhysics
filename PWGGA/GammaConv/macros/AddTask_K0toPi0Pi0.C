@@ -27,7 +27,8 @@
 
 void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE, 
 						TString periodName = "",
-						TString periodNameV0Reader = "") {
+						TString periodNameV0Reader = "",
+						TString triggerConfig = "MB") {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -47,7 +48,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   //================================================
   //            find input container
   AliAnalysisTaskK0toPi0Pi0 *task=NULL;
-  task = new AliAnalysisTaskK0toPi0Pi0("TaskK0toPi0Pi0");
+  task = new AliAnalysisTaskK0toPi0Pi0("TaskK0toPi0Pi0" + triggerConfig);
   
 
    //=========  Set Cutnumber for V0Reader ================================
@@ -110,8 +111,12 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
   // now for the default cuts for 8 TeV
   TString defaultEventCut = "00010113";
-  //TString defaultEventCut = "00052113"; // EMC7
-  //TString defaultEventCut = "00081113"; // EGA
+  if(triggerConfig == "EMC7"){
+  	defaultEventCut = "00052113"; // EMC7
+  }
+  else if(triggerConfig == "EGA"){
+    defaultEventCut = "00081113"; // EGA
+  }
   TString defaultConvPhotonCut = "00200009327000008250400000";
   TString defaultCaloPhotonCut = "1111111067032230000";
   TString defaultPi0Cut = "0163103100000010"; 
@@ -170,7 +175,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer("K0toPi0Pi0", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0",AliAnalysisManager::GetCommonFileName()));
+  mgr->CreateContainer("K0toPi0Pi0" + triggerConfig, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0%s",AliAnalysisManager::GetCommonFileName(),triggerConfig.Data()));
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
