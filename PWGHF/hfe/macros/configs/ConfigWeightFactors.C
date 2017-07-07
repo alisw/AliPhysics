@@ -165,7 +165,7 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
                     hRatio = (TH1F*)weightFile->Get(Form("hRatio_16h8b_tdeu_%s",backNameMC[iSpecies]));
                 }
                 else if(collType == 50){
-                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_d12_%s",backNameMC[iSpecies]));
+                    hRatio = (TH1F*)weightFile->Get(Form("hRatio_d1_%s",backNameMC[iSpecies]));
                 }
  
                 
