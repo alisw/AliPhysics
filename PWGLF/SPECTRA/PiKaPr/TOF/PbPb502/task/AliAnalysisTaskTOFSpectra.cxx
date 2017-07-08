@@ -211,6 +211,7 @@ hEvtVtxZMCReco(0x0),
 hNTrk(0x0),
 hPadDist(0x0),
 hTOFDist(0x0),
+//Beta Performance Plots
 hBeta(0x0),
 hBetaNoMismatch(0x0),
 hBetaNoMismatchEtaCut(0x0),
@@ -440,7 +441,6 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     
   }
   
-  
   for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
     for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
       for(Int_t species = 0; species < 3; species++){//Species loop
@@ -559,7 +559,6 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   }
   #endif
   
-  
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
       for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
@@ -574,6 +573,10 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     }
   }
   
+  for(Int_t species = 0; species < kExpSpecies; species++){//Species loop
+    hBetaExpected[species] = 0x0;
+  }
+
   AliDebug(2, "Init()\t END");
 }
 
@@ -3152,6 +3155,11 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
     
     hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBeta);
+    
+    for(Int_t i = 0; i < kExpSpecies; i++){
+      hBetaExpected[i] = new TH2I(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+      fListHist->AddLast(hBetaExpected[i]);
+    }
     
     hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBetaNoMismatch);
