@@ -705,8 +705,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s",label[i].Data()),Form("MC nSparse (Acc.Step)- %s",label[i].Data()),
 				       knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-    fnSparseMC[i]->GetAxis(1)->SetTitle("y");
-    fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
+	fnSparseMC[i]->GetAxis(1)->SetTitle("y");
+	fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
 	fOutput->Add(fnSparseMC[i]);
                 
 	//Dplus
@@ -715,7 +715,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 					      knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	  fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
 	  fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
-      fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
+	  fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
 	  fOutput->Add(fnSparseMCDplus[i]);
 	}
       }
