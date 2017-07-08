@@ -688,9 +688,9 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     xmaxReco[7]  = 100.;
   }
     
-  Int_t nBinsAcc[knVarForSparseAcc]   = {20,   20};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -10.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {20,  10.};
+  Int_t nBinsAcc[knVarForSparseAcc]   = {20,   20,  nTrklBins};
+  Double_t xminAcc[knVarForSparseAcc] = {0., -10.,         1.};
+  Double_t xmaxAcc[knVarForSparseAcc] = {20,  10.,       301.};
     
   Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
   Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
@@ -700,12 +700,13 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   if(fFillSparse) {
         
     if(fReadMC) {
-      TString label[knVarForSparseAcc] = {"fromC","fromB"};
+      TString label[2] = {"fromC","fromB"};
       for (Int_t i=0; i<2; i++) {
 	fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s",label[i].Data()),Form("MC nSparse (Acc.Step)- %s",label[i].Data()),
 				       knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-	fnSparseMC[i]->GetAxis(1)->SetTitle("y");
+    fnSparseMC[i]->GetAxis(1)->SetTitle("y");
+    fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
 	fOutput->Add(fnSparseMC[i]);
                 
 	//Dplus
@@ -714,6 +715,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 					      knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	  fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
 	  fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
+      fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
 	  fOutput->Add(fnSparseMCDplus[i]);
 	}
       }
@@ -899,7 +901,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     }
   }
     
-    
+  Double_t nTracklets = (Double_t)AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+
   if(fReadMC && fFillSparse){
     if(aod->GetTriggerMask()==0 && (runNumber>=195344 && runNumber<=195677))
       // protection for events with empty trigger mask in p-Pb
@@ -910,7 +913,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) > fAnalysisCuts->GetMaxVtxZ())
       return;
-    FillMCGenAccHistos(arrayMC, mcHeader);
+    FillMCGenAccHistos(arrayMC, mcHeader, nTracklets);
   }
     
   if(!isEvSel)return;
@@ -1226,7 +1229,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t cosPiKPhi=-99.;
 	Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
 	Double_t normIPprong[nProng];        //to store IP of k,k,pi
-	Double_t nTracklets = (Double_t)AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
         
 	Double_t ptWeight = 1.;
 	if(fFillSparse) {
@@ -1528,7 +1530,7 @@ void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
 }
 
 //_________________________________________________________________
-void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader){
+void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets){
   /// Fill MC histos for cuts study at GenLimAccStep and AccStep
     
   Int_t nProng = 3;
@@ -1537,7 +1539,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
     for(Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++){
             
       AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
-            
+        
       if(TMath::Abs(mcPart->GetPdgCode()) == 431) {
 	Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,kTRUE);//Prompt = 4, FeedDown = 5
                 
@@ -1559,7 +1561,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  isDaugInAcc = CheckDaugAcc(arrayMC,nProng,labDau);
         
 	  if(isFidAcc) {
-	    Double_t var4nSparseAcc[2] = {pt,rapid*10};
+	    Double_t var4nSparseAcc[knVarForSparseAcc] = {pt,rapid*10,nTracklets};
 	    if(isDaugInAcc) {
 	      Double_t ptWeight = 1.;
 	      if (fUseWeight && fHistoPtWeight){
@@ -1594,7 +1596,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  isDaugInAcc = CheckDaugAcc(arrayMC,nProng,labDau);
      
 	  if(isFidAcc) {
-	    Double_t var4nSparseAcc[2] = {pt,rapid*10};
+	    Double_t var4nSparseAcc[knVarForSparseAcc] = {pt,rapid*10,nTracklets};
 	    if(isDaugInAcc) {
 	      Double_t ptWeight = 1.;
 	      if (fUseWeight && fHistoPtWeight){
