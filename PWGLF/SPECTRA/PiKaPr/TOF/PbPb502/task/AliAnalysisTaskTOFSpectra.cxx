@@ -641,6 +641,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kDAQincomplete");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed Has fVertStatus > 1");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     }
@@ -1510,15 +1511,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   }
   StopTimePerformance(1);
   
-  StartTimePerformance(2);
-  fEvtSelected = SelectEvents(EvtStart);
-  StopTimePerformance(2);
-  
-  StartTimePerformance(3);
-  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
-  StopTimePerformance(3);
-  
-  
   //
   // monitor vertex position before event and physics selection
   //
@@ -1528,6 +1520,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
     hEvtVtxZBefSel->Fill(fPrimVertex[2]);
   }
+  
+  StartTimePerformance(2);
+  fEvtSelected = SelectEvents(EvtStart);
+  StopTimePerformance(2);
+  
+  StartTimePerformance(3);
+  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
+  StopTimePerformance(3);
+  
+  
   
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
   
@@ -2575,8 +2577,11 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
         hNEvt->Fill(binstart++);
         if(fEventCut.PassedCut(AliEventCuts::kVertexQuality)) {
           hNEvt->Fill(binstart++);
-          if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+          if(fVertStatus > 1) {
             hNEvt->Fill(binstart++);
+            if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+              hNEvt->Fill(binstart++);
+            }
           }
         }
       }
