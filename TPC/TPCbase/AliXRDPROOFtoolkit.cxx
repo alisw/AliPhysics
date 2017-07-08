@@ -883,6 +883,10 @@ void   AliXRDPROOFtoolkit::MakeTreeFromList(const char *fout, const char * treeO
 /// ```
 Int_t  AliXRDPROOFtoolkit::TestFile(const char*fileName,const char*keyNames) {
     //
+    if (TString(fileName).Contains("alien://")){
+      if (gGrid==NULL) TGrid::Connect("alien");
+    }
+
     Int_t statusAll=0;
     gEnv->SetValue("TFile.Recover", 0);
     TFile * f    = TFile::Open(fileName);
@@ -922,11 +926,19 @@ Int_t  AliXRDPROOFtoolkit::TestFile(const char*fileName,const char*keyNames) {
                 fout->cd();
                 test=8;
                 ::Info("AliXRDPROOFtoolkit::TestFile.TestCopyTree", "Begin-%s/%s", fileName,oname.Data());
-                TTree *tout = otree->CopyTree("1");
+                Int_t tentries=otree->GetEntries();
+                for (Int_t j=0; j<tentries; j++){
+                  Int_t val=otree->GetEntry(j);
+                  if (val<0){
+                    ::Error("AliXRDPROOFtoolkit::TestFile.TestKey", "%s/%s/ TestStatus_%d", fileName, oname.Data(), 8);
+                    ::Error("AliXRDPROOFtoolkit::TestFile.TestAll", "%s TestStatusAll_%d", fileName, 8);
+                    return 8;
+                  }
+                }
                 ::Info("AliXRDPROOFtoolkit::TestFile.TestCopyTree", "End-%s/%s", fileName,oname.Data());
                 AliSysInfo::AddStamp(oname.Data(), 13, ikey);
                 test=16;
-                delete tout;
+                //delete tout;
                 AliSysInfo::AddStamp(oname.Data(), 14, ikey);
             }
             ::Info("AliXRDPROOFtoolkit::TestFile.TestDelete", "Begin-%s", oname.Data());
@@ -948,9 +960,9 @@ Int_t  AliXRDPROOFtoolkit::TestFile(const char*fileName,const char*keyNames) {
         statusAll|=status;
     }
     if (statusAll==0) {
-      ::Info("AliXRDPROOFtoolkit::TestFile.TestAll", "%s/ TestStatusAll_%d", fileName, statusAll);
+      ::Info("AliXRDPROOFtoolkit::TestFile.TestAll", "%s TestStatusAll_%d", fileName, statusAll);
     }else{
-       ::Error("AliXRDPROOFtoolkit::TestFile.TestAll", "%s/ TestStatusAll_%d", fileName, statusAll);
+       ::Error("AliXRDPROOFtoolkit::TestFile.TestAll", "%s TestStatusAll_%d", fileName, statusAll);
     }
     return statusAll;
 }
