@@ -345,6 +345,10 @@ public:
   /// Method to define the histograms used for the Performance
   void DefinePerformanceHistograms();
   
+  ///
+  /// Method to fill the histograms used for the Performance
+  void FillPerformanceHistograms();
+  
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE){fHImode = mode;};
   void SetMCFlag(Bool_t mode = kTRUE){fMCmode = mode;};

@@ -2084,31 +2084,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       
       
       //Performance plots
-      if(fPerformance){
-        //TOF
-        const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
-        hBeta->Fill(fP, beta);
-        if(fNTOFClusters < 2){
-          hBetaNoMismatch->Fill(fP, beta);
-          if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchEtaCut->Fill(fP, beta);
-          if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchEtaCutOut->Fill(fP, beta);
-          
-        }
-        
-        if(fEvtMult <= 30.0 && fEvtMult >= 0.0){//Central collisions
-          hBetaCentral->Fill(fP, beta);
-          if(fNTOFClusters < 2){
-            hBetaNoMismatchCentral->Fill(fP, beta);
-            if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
-            if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
-          }
-          
-        }
-        
-        //TPC
-        hTPCdEdx->Fill(fP, fTPCSignal);
-        
-      }
+      FillPerformanceHistograms();
       
       //fine plot test matching efficiency
       hPadDist->Fill(fTOFImpactDX, fTOFImpactDZ);
@@ -3185,4 +3161,37 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
     hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
     fListHist->AddLast(hTPCdEdx);
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(){
+  if(fPerformance){
+    //TOF
+    const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+    hBeta->Fill(fP, beta);
+    for(Int_t i = 0; i < kExpSpecies; i++){
+      const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
+      hBetaExpected[i]->Fill(fP, betaHypo);
+    }
+    if(fNTOFClusters < 2){
+      hBetaNoMismatch->Fill(fP, beta);
+      if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchEtaCut->Fill(fP, beta);
+      if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchEtaCutOut->Fill(fP, beta);
+    }
+    
+    if(fEvtMult <= 30.0 && fEvtMult >= 0.0){//Central collisions
+      hBetaCentral->Fill(fP, beta);
+      if(fNTOFClusters < 2){
+        hBetaNoMismatchCentral->Fill(fP, beta);
+        if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
+        if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
+      }
+      
+    }
+    
+    //TPC
+    hTPCdEdx->Fill(fP, fTPCSignal);
+    
+  }
+  
 }
