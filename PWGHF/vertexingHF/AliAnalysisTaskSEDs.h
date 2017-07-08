@@ -57,7 +57,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetFillCentralityAxis(Int_t flag=0);    /// see enum
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   Bool_t GetUseWeight() const {return fUseWeight;}
-  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
   
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
@@ -87,7 +87,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
     
-  enum {kMaxPtBins=20,knVarForSparse=14,knVarForSparseAcc=2,knVarForSparseIP=6};
+  enum {kMaxPtBins=20,knVarForSparse=14,knVarForSparseAcc=3,knVarForSparseIP=6};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
