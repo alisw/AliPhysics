@@ -98,7 +98,6 @@ class AliMagF : public TVirtualMagField
   Double_t         fFactorDip;       // Multiplicative factor for dipole
   Double_t         fMax;             // Max Field as indicated in Geant
   Bool_t           fDipoleOFF;       // Dipole ON/OFF flag
-  Bool_t           fAllowFastField;  // allow optional fast field param
   //
   Double_t         fQuadGradient;    // Gradient field for inner triplet quadrupoles
   Double_t         fDipoleField;     // Field value for D1 and D2 dipoles
