@@ -111,6 +111,11 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
       histname = TString::Format("%s/fHistDelta%sVsRho", rho1.first.Data(), rho2.first.Data());
       title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.first.Data(), rho2.first.Data(), rho1.first.Data(), rho2.first.Data());
       fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*4, minCorrPt*2, -minCorrPt*2);
+
+      histname = TString::Format("%s/fHist%sVs%s", rho1.first.Data(), rho2.first.Data(), rho1.first.Data());
+      title = TString::Format("%s;%s (GeV/#it{c} #times rad^{-1}); %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.first.Data(), rho2.first.Data());
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, 500, 0, maxRho);
+
     }
   }
 
@@ -335,6 +340,9 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
 
       histname = TString::Format("%s/fHistDelta%sVsRho", rho1.first.Data(), rho2.first.Data());
       fHistManager.FillTH2(histname, (rho1.second->GetVal() + rho2.second->GetVal()) / 2, rho1.second->GetVal() - rho2.second->GetVal());
+
+      histname = TString::Format("%s/fHist%sVs%s", rho1.first.Data(), rho2.first.Data(), rho1.first.Data());
+      fHistManager.FillTH2(histname, rho1.second->GetVal(), rho2.second->GetVal());
     }
   }
 
