@@ -195,7 +195,6 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
-fPtTracks(0),
 fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
@@ -373,7 +372,6 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
-fPtTracks(0),
 fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
@@ -955,10 +953,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fphietaOthers = new TH3D("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
     // fOutput->Add(fphietaOthers);
   
-  fPtTracks = new TH1D ("hTrackPtSpec","Inclusive charged particle spectrum",150,0.,30.);
-  fPtTracks->Sumw2();
-  fOutput->Add(fPtTracks);
-
   fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
   fPtTracksVSpTNC->Sumw2();
   fOutput->Add(fPtTracksVSpTNC);
@@ -1266,16 +1260,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     
     if(fQA)  FillQAHistograms(coi,vecCOI);
     
-    // Retrieving the track pT spectrum before any selection on clusters
-    for(auto it : tracksANA->accepted()){
-      AliVTrack *trIncl = static_cast<AliVTrack*>(it);
-      if(!trIncl){
-	AliError("No track found");
-	return kFALSE;
-      }
-      fPtTracks->Fill(trIncl->Pt());
-    }
-
+    
     Bool_t isSelected = SelectCandidate(coi);
     
     if(isSelected){
@@ -1313,16 +1298,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       if(fQA)  FillQAHistograms(coi,vecCOI);
       
-      // Retrieving the track pT spectrum before any selection on clusters
-      for(auto it : tracksANA->accepted()){
-	AliVTrack *trIncl = static_cast<AliVTrack*>(it);
-	if(!trIncl){
-	  AliError("No track found");
-	  return kFALSE;
-	}
-	fPtTracks->Fill(trIncl->Pt());
-      }
-
       Bool_t isSelected = SelectCandidate(coi);
       
       if(isSelected){
