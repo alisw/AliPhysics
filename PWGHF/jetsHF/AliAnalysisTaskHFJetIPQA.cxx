@@ -558,6 +558,50 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             double jetprob = CalculateJetProb(jetrec);
 
             //Printf("JetProbability %e", jetprob);
+            const char * subtype_jp [4] = {"","udsg","c","b"};
+
+            if(jetflavour!=0 && fIsPythia){
+                    if(jetprob >0.5){
+                            FillHist(Form("fh1dJetRecPt_0_5JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.6){
+                           FillHist(Form("fh1dJetRecPt_0_6JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.7){
+                            FillHist(Form("fh1dJetRecPt_0_7JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.8){
+                            FillHist(Form("fh1dJetRecPt_0_8JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.9){
+                            FillHist(Form("fh1dJetRecPt_0_9JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.95){
+                           FillHist(Form("fh1dJetRecPt_0_95JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                        }
+                }
+
+
+            if(jetflavour!=0 ){
+                    if(jetprob >0.5){
+                            FillHist(Form("fh1dJetRecPt_0_5JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.6){
+                            FillHist(Form("fh1dJetRecPt_0_6JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.7){
+                            FillHist(Form("fh1dJetRecPt_0_7JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.8){
+                           FillHist(Form("fh1dJetRecPt_0_8JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.9){
+                            FillHist(Form("fh1dJetRecPt_0_9JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                    else if (jetprob >0.95){
+                            FillHist(Form("fh1dJetRecPt_0_95JP_%sAccepted","all"),jetpt,this->fXsectionWeightingFactor);
+                        }
+                }
 
             for(Int_t itrack = 0; itrack < InputEvent()->GetNumberOfTracks(); ++itrack)
                 {
@@ -614,36 +658,26 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             if(jetprob >0.5){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_5JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_5JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_5JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
                                 }
                             else if (jetprob >0.6){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_6JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_6JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_6JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
                                 }
                             else if (jetprob >0.7){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_7JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_7JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_7JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-
                                 }
                             else if (jetprob >0.8){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_8JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_8JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_8JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-
                                 }
                             else if (jetprob >0.9){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_9JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_9JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_9JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-
                                 }
                             else if (jetprob >0.95){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_95JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_95JP",subtype_jp[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                                    FillHist(Form("fh1dJetRecPt_0_95JP_%sAccepted",subtype_jp[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-
                                 }
                         }
 
@@ -1320,16 +1354,12 @@ bool AliAnalysisTaskHFJetIPQA::GetPIDCombined(AliAODTrack * track, double  * pro
 }
 
 
-
-
-
 bool AliAnalysisTaskHFJetIPQA::IsFromElectron(AliAODTrack*track){
     //Printf("here0");
     //Printf("+++++++++++++++++++++++++++++++");
     if(fIsPythia){
             int pdgm =0;
             int pdg =                    GetMCTruth(track,pdgm);
-
           //  Printf("Track PDG code %i  %i",pdg,pdgm);
         }
    // Printf("+++++++++++++++++++++++++++++++");
