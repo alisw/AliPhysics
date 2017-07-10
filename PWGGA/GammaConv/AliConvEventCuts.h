@@ -654,7 +654,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,33)
+      ClassDef(AliConvEventCuts,34)
       /// \endcond
 };
 
