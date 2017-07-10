@@ -124,7 +124,7 @@ public:
     kNclsTPC,                // number of clusters assigned in the TPC
     kNclsSTPC,               // number of shared clusters assigned in the TPC
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
-    kNclsSITS,                // number of shared clusters assigned in the ITS
+    kNclsSITS,               // number of shared clusters assigned in the ITS
     kNclsSFracITS,           // fraction of shared clusters assigned in the ITS
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
@@ -604,6 +604,8 @@ public:
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
     kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
+    kMatchEffITSTPCinPlane,         // ruff estimate on the ITS-TPC matching efficiceny inPlane wrt TPC eventplane
+    kMatchEffITSTPCoutPlane,         // ruff estimate on the ITS-TPC matching efficiceny outPlane wrt TPC eventplane
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6
     kNaccTrcklts09,          // number of accepted SPD tracklets in |eta|<0.9
     kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.
@@ -2328,6 +2330,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNVtxContrib]     = 0;
   values[AliDielectronVarManager::kNacc]            = 0;
   values[AliDielectronVarManager::kMatchEffITSTPC]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = 0;
   values[AliDielectronVarManager::kNaccTrcklts]     = 0;
   values[AliDielectronVarManager::kNaccTrcklts09]   = 0;
   values[AliDielectronVarManager::kNaccTrcklts10]   = 0;
@@ -2383,7 +2387,13 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
-  if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
+  if(Req(kMatchEffITSTPCinPlane) || Req(kMatchEffITSTPCoutPlane)){
+    Double_t efficiencies[2] = {-1.};
+    values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE);
+    values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = efficiencies[0];
+    values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = efficiencies[1];
+  }
+  else if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
   if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
     values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
   if(Req(kNaccTrcklts09))
