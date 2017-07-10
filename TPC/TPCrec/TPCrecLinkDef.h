@@ -8,6 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class vector<short>+;
+
 #pragma link C++ class AliTPCclusterer+;      // The TPC clusterer
 
 #pragma link C++ class AliTPCtrack+;          // Derived from AliTrack base class for TPC tracks

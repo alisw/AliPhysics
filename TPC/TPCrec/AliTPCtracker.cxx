@@ -137,7 +137,13 @@
 #include "AliMathBase.h"
 #include <math.h>
 //
+#include <vector>
 #include "AliESDfriendTrack.h"
+#include <TArrayS.h>
+#include "AliMCEvent.h"
+#include "AliRun.h"
+#include "AliMC.h"
+
 
 using std::cout;
 using std::cerr;
@@ -185,7 +191,8 @@ AliTPCtracker::AliTPCtracker()
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1),
-  fAccountDistortions(0)
+  fAccountDistortions(0),
+  fMCtrackNClTree(0)
 {
   //
   // default constructor
@@ -432,7 +439,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCParam *par):
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1),
-  fAccountDistortions(0)
+  fAccountDistortions(0),
+  fMCtrackNClTree(0)
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
@@ -532,7 +540,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1),
-  fAccountDistortions(0)
+  fAccountDistortions(0),
+  fMCtrackNClTree(0)
 {
   //------------------------------------
   // dummy copy constructor
@@ -580,6 +589,18 @@ AliTPCtracker::~AliTPCtracker() {
   delete fHelixPool;
   if (fETPPool) fETPPool->Delete();
   delete fETPPool;
+  //
+  if (fMCtrackNClTree) {
+    TDirectory* flout = fMCtrackNClTree->GetDirectory();
+    flout->cd();
+    fMCtrackNClTree->Write();
+    delete fMCtrackNClTree;
+    if (flout->InheritsFrom("TFile")) {
+      flout->Close();
+      delete flout;
+    }
+  }
+
 }
 
 
@@ -1558,6 +1579,104 @@ Int_t  AliTPCtracker::LoadClusters()
   }
   printf("RS:AccumulatedSpace: %d for %d | pointers: %d\n",maxAcc,nclEv,capacity);
   */
+
+  if (AliTPCReconstructor::GetCountMCTrackClusters()) {
+    static std::vector<short> nclPerTrack;
+    static Int_t nclTot=0, nclOrphan=0, nMCTracks;
+    if (!fMCtrackNClTree) {
+      TFile* outF = TFile::Open("nclTPCperMCtrack.root","RECREATE");
+      fMCtrackNClTree = new TTree("nclPerMCtrack","N TPC clusters per MC track");
+      fMCtrackNClTree->Branch("nMCTracks",&nMCTracks);
+      fMCtrackNClTree->Branch("nclTot",&nclTot);
+      fMCtrackNClTree->Branch("nclOrphan",&nclOrphan);
+      fMCtrackNClTree->Branch("nclPerTrack",&nclPerTrack);
+    }
+    nMCTracks = 0;
+    nclTot = 0;
+    nclOrphan = 0;
+    while(1) {
+      const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
+      if (!mcEv) {
+	AliRunLoader *rl = AliRunLoader::Instance();
+	TTree* trK = 0;
+	if(!rl || !(trK=(TTree*)rl->TreeK())) {
+	  AliWarning("MCInfo not accessible, will not count clusters per MC track");
+	  break;
+	}
+	nMCTracks = trK->GetEntries();
+      }
+      else { // we need to filter out labels from bg event in absence of full MCevent info
+	nMCTracks = gAlice->GetMCApp()->GetNtrack();
+      }
+      //
+      nclPerTrack.resize(nMCTracks,0);
+      if (nMCTracks) {
+	for (Int_t sec=0;sec<fkNOS;sec++) {
+	  for (Int_t row=0;row<fInnerSec->GetNRows();row++) {
+	    TClonesArray *cla = fInnerSec[sec][row].GetClusters1();
+	    for (Int_t icl =0;icl< fInnerSec[sec][row].GetN1();icl++) {
+	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	      nclTot++;
+	      for (int ilb=0;ilb<3;ilb++) {
+		int lbl = cl->GetLabel(ilb);
+		if (lbl<0 || lbl>=nMCTracks) {
+		  break;
+		  if (!ilb) nclOrphan++;
+		}
+		nclPerTrack[lbl]++;
+	      }
+	    }
+	    cla = fInnerSec[sec][row].GetClusters2();
+	    for (Int_t icl =0;icl< fInnerSec[sec][row].GetN2();icl++) {
+	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	      nclTot++;
+	      for (int ilb=0;ilb<3;ilb++) {
+		int lbl = cl->GetLabel(ilb);
+		if (lbl<0 || lbl>=nMCTracks) {
+		  if (!ilb) nclOrphan++;
+		  break;
+		}
+		nclPerTrack[lbl]++;
+	      }
+	    }
+	  }
+	}
+	for (Int_t sec=0;sec<fkNOS;sec++) {
+	  for (Int_t row=0;row<fOuterSec->GetNRows();row++) {
+	    TClonesArray *cla = fOuterSec[sec][row].GetClusters1();
+	    for (Int_t icl =0;icl< fOuterSec[sec][row].GetN1();icl++) {
+	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	      nclTot++;
+	      for (int ilb=0;ilb<3;ilb++) {
+		int lbl = cl->GetLabel(ilb);
+		if (lbl<0 || lbl>=nMCTracks) {
+		  if (!ilb) nclOrphan++;
+		  break;
+		}
+		nclPerTrack[lbl]++;
+	      }
+	    }
+	    cla = fOuterSec[sec][row].GetClusters2();
+	    for (Int_t icl =0;icl< fOuterSec[sec][row].GetN2();icl++) {
+	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	      nclTot++;
+	      for (int ilb=0;ilb<3;ilb++) {
+		int lbl = cl->GetLabel(ilb);
+		if (lbl<0 || lbl>=nMCTracks) {
+		  if (!ilb) nclOrphan++;
+		  break;
+		}
+		nclPerTrack[lbl]++;
+	      }
+	    }
+	  }
+	}
+      }
+      fMCtrackNClTree->Fill();
+      break;	
+    } // while(1)
+  } 
+
   return 0;
 }
 

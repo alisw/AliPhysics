@@ -65,6 +65,9 @@ public:
   static  void SetZOutSectorCut( double v )                { fgZOutSectorCut=v; }
   static  void SetCompactClusters(Bool_t v)                { fgCompactClusters=v;}
 
+  static Bool_t GetCountMCTrackClusters()                  {return fgCountMCTrackClusters;}
+  static void   SetCountMCTrackClusters(Bool_t v=kTRUE)    {fgCountMCTrackClusters = v;}
+  
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
   AliTPCReconstructor& operator=(const AliTPCReconstructor&); //Not implemented
@@ -83,6 +86,7 @@ private:
   static Double_t              fgPrimaryZ2XCut;       // cut on Z2X for fast primaries reco 
   static Double_t              fgZOutSectorCut;       // cut on Z going on other side of CE 
   static Bool_t                fgCompactClusters;     // if true, cluster coordinates will be set to 0 in clusterizer
+  static Bool_t                fgCountMCTrackClusters; // create tree with Ncl per MC track
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
