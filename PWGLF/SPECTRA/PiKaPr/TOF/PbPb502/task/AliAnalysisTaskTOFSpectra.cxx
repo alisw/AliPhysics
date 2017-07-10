@@ -575,6 +575,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   
   for(Int_t species = 0; species < kExpSpecies; species++){//Species loop
     hBetaExpected[species] = 0x0;
+    hBetaExpectedTOFPID[species] = 0x0;
   }
 
   AliDebug(2, "Init()\t END");
@@ -1518,7 +1519,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   // monitor vertex position before event and physics selection
   //
   const AliESDVertex* vertex = ObtainVertex();
-  if (!vertex && fEventCut.PassedCut(AliEventCuts::kPileUp)){//NOTE do this only if the vertex exists!
+  if (fVertStatus >= 2 && fEventCut.PassedCut(AliEventCuts::kPileUp)){//NOTE do this only if the vertex exists!
     //Filling XY and Z distribution for vertex
     hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
     hEvtVtxZBefSel->Fill(fPrimVertex[2]);
@@ -2059,7 +2060,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
             }
             
           }
-          else if(fMCTOFMatch > 0 && fTOFSigma[kpi + fPdgIndex] < 2.){//Consistent match in TOF
+          else if(fMCTOFMatch > 0 && TMath::Abs(fTOFSigma[kpi + fPdgIndex]) < 2.){//Consistent match in TOF
             if(TMath::Abs(fRapidityMC) < fRapidityCut){
               hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
             }
@@ -2929,7 +2930,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   const AliESDVertex* vertex = fESD->GetPrimaryVertex/*GetPrimaryVertexTracks*/(); //! Primary vertex estimated using ESD tracks
   fVertStatus = 0;
   if (!vertex){
-    AliError("Cannot find any vertex");
+    AliDebug(1, "Cannot find any vertex");
     return 0x0;
   }
   
@@ -2938,13 +2939,13 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   fNContrPrimVertex = vertex->GetNContributors();
   fVertStatus++;
   if(fNContrPrimVertex < 1) { // # of tracklets/tracks used for the estimate
-    AliError(Form("Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
+    AliDebug(1, Form("Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
     // SPD vertex
     vertex = fESD->GetPrimaryVertexSPD(); //! Primary vertex estimated by the SPD
     fNContrPrimVertex = vertex->GetNContributors();
     if(fNContrPrimVertex < 1)
     {
-      AliError(Form("SPD Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
+      AliDebug(1, Form("SPD Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
       return 0x0;
     }
     
@@ -2958,7 +2959,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   //Check the position of the vertex
   fVertStatus++;
   if(TMath::Abs(fPrimVertex[2]) > fVtxZCut){
-    AliError(Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
+    AliDebug(1, Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
     return 0x0;
   }
   
@@ -3135,6 +3136,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
     for(Int_t i = 0; i < kExpSpecies; i++){
       hBetaExpected[i] = new TH2I(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpected[i]);
+      
+      hBetaExpectedTOFPID[i] = new TH2I(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+      fListHist->AddLast(hBetaExpectedTOFPID[i]);
     }
     
     hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
@@ -3172,6 +3176,7 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(){
     for(Int_t i = 0; i < kExpSpecies; i++){
       const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
       hBetaExpected[i]->Fill(fP, betaHypo);
+      if(TMath::Abs(fTOFSigma[i])) hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
     }
     if(fNTOFClusters < 2){
       hBetaNoMismatch->Fill(fP, beta);
