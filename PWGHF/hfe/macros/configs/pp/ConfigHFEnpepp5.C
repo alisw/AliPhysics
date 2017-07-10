@@ -12,17 +12,17 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
                                     Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
                                     Double_t assITSpid=-3., Double_t assTOFs=3.,
                                     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1,
-                                    Int_t HadronContFunc=0 , Int_t Chi2perTPCcluster=4)
+                                    Int_t HadronContFunc=0, Int_t PrimaryVertexTyp)
 {
 
    //***************************************//
    //        Setting up the HFE cuts        //
    //***************************************//
 
-   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pPb");
+   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pp");
    //hfecuts->SetQAOn();
    hfecuts->CreateStandardCuts();
-   if(isAOD) hfecuts->SetAODFilterBit(4);
+   if(isAOD) hfecuts->SetAODFilterBit(4); // standard cuts with very loose DCA
 
    hfecuts->SetMinNClustersTPC(TPCcl);
    hfecuts->SetMinNClustersTPCPID(TPCclPID);
@@ -40,14 +40,25 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
    }
    hfecuts->SetMaxImpactParam(DCAxy,DCAz);
 
-   hfecuts->SetUseMixedVertex(kTRUE);
-   hfecuts->SetUseSPDVertex(kFALSE);
-   hfecuts->SetUseTrackVertex(kFALSE);
+  if(PrimaryVertexTyp==1){
+    hfecuts->SetUseMixedVertex(kFALSE);
+    hfecuts->SetUseSPDVertex(kFALSE);
+    hfecuts->SetUseTrackVertex(kTRUE);
+  } else if(PrimaryVertexTyp==2){
+    hfecuts->SetUseMixedVertex(kFALSE);
+    hfecuts->SetUseSPDVertex(kTRUE);
+    hfecuts->SetUseTrackVertex(kFALSE);
+  } else{
+    hfecuts->SetUseMixedVertex(kTRUE);
+    hfecuts->SetUseSPDVertex(kFALSE);
+    hfecuts->SetUseTrackVertex(kFALSE);
+  }
 
    hfecuts->SetVertexRange(10.);
+
    if (hfecuts->GetUseSPDVertex() || hfecuts->GetUseMixedVertex() ) {
       //if SPD vertices are used acivate resolution cut
-      printf("########## CONFIGURATION FILE: Switch is working ######### \n");
+      printf("########## Additional cut for SPD vertex resolution ######### \n");
       hfecuts->SetSPDVtxResolutionCut();
    }
 
@@ -220,7 +231,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
    hfeBackgroundCuts->SetEtaRange(assETAm,assETAp);
    hfeBackgroundCuts->SetPtRange(assMinPt,20.);
 
-   hfeBackgroundCuts->SetMaxChi2perClusterTPC(Chi2perTPCcluster);
+   hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
 
    hfeBackgroundCuts->SetMinNClustersITS(assITS);
    hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
