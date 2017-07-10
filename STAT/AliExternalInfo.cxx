@@ -208,19 +208,27 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
   // Checking if resource needs to be downloaded
   const Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
-
+  
+  TString mifFilePath = ""; // Gets changed in Curl command
+  
   if (downloadNeeded == kTRUE){
     // Download resources in the form of .root files in a tree
     if (resourceIsTree == kTRUE){
       externalLocation += pathStructure + rootFileName;
       AliInfo(TString::Format("Information retrieved from: %s", externalLocation.Data()));
-
       // Check if external location is a http address or locally accessible
 //       std::cout << externalLocation(0, 4) << std::endl;
       TFile *file = TFile::Open(externalLocation);
       if (file && !file->IsZombie()){ // Checks if webresource is available
-        if (file->Cp(internalFilename)) {
-          AliInfo("Caching successful");
+        AliInfo("Resource available");
+          if(externalLocation.Contains("http")){
+           TString command = CurlTree(internalFilename, externalLocation);
+           std::cout << command << std::endl;
+           gSystem->Exec(command.Data());
+           AliInfo("Cached with curl");
+        }  
+        else if (file->Cp(internalFilename)) {
+          AliInfo("Caching with TFile::Cp() successful");
           return kTRUE;
         }
         else {
@@ -243,8 +251,8 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         externalLocation = TString::Format(externalLocation.Data(), period.Data());
       }
 
-      TString mifFilePath = ""; // Gets changed in Curl command
-      TString command = Curl(mifFilePath, internalLocation, rootFileName, externalLocation);
+      
+      TString command = CurlMif(mifFilePath, internalLocation, rootFileName, externalLocation);
 
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
@@ -334,7 +342,8 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
     if (fVerbose>1) AliInfo(TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
     if (buildIndex==1) BuildIndex(tree, type);
   } else {
-    AliError("Error while reading tree");
+    AliError("Error while reading tree: ");
+    AliError(TString::Format("ERROR READING: %s", treeName.Data()));
   }
 
   const TString cacheSize=fConfigMap[type + ".CacheSize"];
@@ -659,7 +668,7 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
 /// \param externalLocation Location specified in the config file
 /// Composes the curl-command in a TString which afterwards then can be executed
 /// \return curl-command in a TString
-const TString AliExternalInfo::Curl(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation){
+const TString AliExternalInfo::CurlMif(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation){
   TString command = "";
   TString certificate("$HOME/.globus/usercert.pem");
   TString privateKey("$HOME/.globus/userkey.pem");
@@ -678,6 +687,19 @@ const TString AliExternalInfo::Curl(TString& mifFilePath, const TString& interna
   if ((fVerbose&0x4)>0) {
     ::Info("AliExternalInfo::Curl","%s",command.Data());
   }
+  return command;
+}
+
+const TString AliExternalInfo::CurlTree(const TString internalFilename, const TString& externalLocation){
+  TString command = "";
+  TString certificate("$HOME/.globus/usercert.pem");
+  TString privateKey("$HOME/.globus/userkey.pem");
+
+
+  command = TString::Format("curl -Lk -z %s --tlsv1 --cert %s --key %s -o %s \"%s\"",     //-L option required to get files from redirected URL
+                                     internalFilename.Data(),certificate.Data(), privateKey.Data(),
+                                     internalFilename.Data(), externalLocation.Data());
+
   return command;
 }
 
