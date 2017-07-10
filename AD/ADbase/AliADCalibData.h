@@ -107,6 +107,12 @@ public:
 
   UShort_t GetBBAForBGThreshold() const {return fBBAForBGThreshold;};
   UShort_t GetBBCForBGThreshold() const {return fBBCForBGThreshold;};
+  
+  UShort_t GetCentralityADAThrLow() const {return fCentralityADAThrLow;};
+  UShort_t GetCentralityADAThrHigh() const {return fCentralityADAThrHigh;};
+
+  UShort_t GetCentralityADCThrLow() const {return fCentralityADCThrLow;};
+  UShort_t GetCentralityADCThrHigh() const {return fCentralityADCThrHigh;};
 
   UShort_t GetMultADAThrLow() const {return fMultADAThrLow;};
   UShort_t GetMultADAThrHigh() const {return fMultADAThrHigh;};
@@ -213,6 +219,11 @@ public:
   void SetBBAForBGThreshold(UShort_t th) {fBBAForBGThreshold = th;};
   void SetBBCForBGThreshold(UShort_t th) {fBBCForBGThreshold = th;};
 
+  void SetCentralityADAThrLow(UShort_t th) {fCentralityADAThrLow = th;};
+  void SetCentralityADAThrHigh(UShort_t th) {fCentralityADAThrHigh = th;};
+	
+  void SetCentralityADCThrLow(UShort_t th) {fCentralityADCThrLow = th;};
+  void SetCentralityADCThrHigh(UShort_t th) {fCentralityADCThrHigh = th;};
 
   void SetMultADAThrLow(UShort_t th) {fMultADAThrLow = th;};
   void SetMultADAThrHigh(UShort_t th) {fMultADAThrHigh = th;};
@@ -274,6 +285,10 @@ protected:
   UShort_t fBGCThreshold;  // Beam Gas Threshold in number of channel hit for ADC
   UShort_t fBBAForBGThreshold;  // BBA threshold for Beam Gas triggers (i.e. BBA and BGC)
   UShort_t fBBCForBGThreshold;  // BBC threshold for Beam Gas triggers (i.e. BBC and BGA)
+  UShort_t fCentralityADAThrLow;  // Threshold used for centrality triggers (i.e. CTA1 and CTC1)
+  UShort_t fCentralityADAThrHigh; // Threshold used for centrality triggers (i.e. CTA2 and CTC2)
+  UShort_t fCentralityADCThrLow;  // Threshold used for centrality triggers (i.e. CTA1 and CTC1)
+  UShort_t fCentralityADCThrHigh; // Threshold used for centrality triggers (i.e. CTA2 and CTC2)
   UShort_t fMultADAThrLow;  // Threshold used for multiplicity triggers (i.e. MTA and MTC)
   UShort_t fMultADAThrHigh; // Threshold used for multiplicity triggers (i.e. MTA and MTC)
   UShort_t fMultADCThrLow;  // Threshold used for multiplicity triggers (i.e. MTA and MTC)
@@ -294,7 +309,7 @@ protected:
   Float_t *fThrCalibA;	       //! Thereshold calibration parameters channel by channel (read from separate OCDB entry)
   Float_t *fThrCalibB;	       //! Thereshold calibration parameters channel by channel (read from separate OCDB entry)
 
-  ClassDef(AliADCalibData,2)    // AD Calibration data
+  ClassDef(AliADCalibData,3)    // AD Calibration data
 };
 
 #endif

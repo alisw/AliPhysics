@@ -11,11 +11,11 @@
 void ADTestPreprocessor()
 {
   // load library
-  gSystem->Load("$ALICE_ROOT/../src/SHUTTLE/TestShuttle/libTestShuttle");
+  gSystem->Load("/home/mbroz/alice/AliRoot/SHUTTLE/TestShuttle/libTestShuttle");
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(254487, 0, 323450);
+  AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 323450);
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
