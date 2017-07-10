@@ -2583,7 +2583,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         }
 
         //Do hybrid track cuts
-        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()){continue;}
+        if(!aodtrackassoc->IsHybridGlobalConstrainedGlobal()&&!aodtrackassoc->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){continue;}
 
         //Pt distribution
         if(MBtrg){
