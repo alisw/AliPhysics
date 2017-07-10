@@ -2562,7 +2562,7 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
   }
 
   // additional PileUp check for pp and pPb
-  if(!IsPbPb(){
+  if(!IsPbPb()){
     fAnalysisUtils.SetMinPlpContribMV(minContributors);
     fAnalysisUtils.SetMaxPlpChi2MV(minChi2);
     fAnalysisUtils.SetMinWDistMV(minWeiZDiff);
