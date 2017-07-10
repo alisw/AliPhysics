@@ -294,6 +294,7 @@ private:
    Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
    Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
+   TTree* fMCtrackNClTree;              //! optional tree with N clusters per MC track
    //
    ClassDef(AliTPCtracker,5) 
 };
