@@ -544,8 +544,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     else if(jetflavour==3)FillHist("fh1dJetRecPtb",           jetpt, this->fXsectionWeightingFactor );
                 }
             if(!(fJetCutsHF->IsJetSelected(jetrec))) break;
-            FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(),1);
-            FillHist("fh1dJetRecPtAccepted",jetpt,1);
+            FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), this->fXsectionWeightingFactor );
+            FillHist("fh1dJetRecPtAccepted",jetpt, this->fXsectionWeightingFactor );
             if(fIsPythia){
                     if(jetflavour==0)     FillHist("fh1dJetRecPtUnidentifiedAccepted",jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==1)FillHist("fh1dJetRecPtudsgAccepted",        jetpt, this->fXsectionWeightingFactor );
