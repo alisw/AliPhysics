@@ -75,7 +75,7 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
     constituentsMax = 49.5;
     maxRho = 50;
     maxTracks = 200;
-    minCorrPt = -25;
+    minCorrPt = -50;
   }
   else if (fForceBeamType == kpA) {
     constituentsNbins = 100;
