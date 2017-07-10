@@ -15,11 +15,11 @@
 
 //
 // Dielectron helper functions wrapped in a namespace
-// 
 //
-// Authors: 
-//   Jens Wiechula <Jens.Wiechula@cern.ch> 
-//   Frederick Kramer <Frederick.Kramer@cern.ch> 
+//
+// Authors:
+//   Jens Wiechula <Jens.Wiechula@cern.ch>
+//   Frederick Kramer <Frederick.Kramer@cern.ch>
 //   Julian Book <Julian.Book@cern.ch>
 
 
@@ -57,7 +57,7 @@ TVectorD* AliDielectronHelper::MakeLogBinning(Int_t nbinsX, Double_t xmin, Doubl
   // Make logarithmic binning
   // the user has to delete the array afterwards!!!
   //
-  
+
   //check limits
   if (xmin<1e-20 || xmax<1e-20){
     Error("AliDielectronHelper::MakeLogBinning","For Log binning xmin and xmax must be > 1e-20. Using linear binning instead!");
@@ -111,7 +111,7 @@ TVectorD* AliDielectronHelper::MakeArbitraryBinning(const char* bins)
     Error("AliDielectronHelper::MakeArbitraryBinning","Bin Limit string is empty, cannot add the variable");
     return 0x0;
   }
-  
+
   TObjArray *arr=limits.Tokenize(",");
   Int_t nLimits=arr->GetEntries();
   if (nLimits<2){
@@ -119,12 +119,12 @@ TVectorD* AliDielectronHelper::MakeArbitraryBinning(const char* bins)
     delete arr;
     return 0x0;
   }
-  
+
   TVectorD *binLimits=new TVectorD(nLimits);
   for (Int_t iLim=0; iLim<nLimits; ++iLim){
     (*binLimits)[iLim]=(static_cast<TObjString*>(arr->At(iLim)))->GetString().Atof();
   }
-  
+
   delete arr;
   return binLimits;
 }
@@ -189,7 +189,7 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange
 
   Int_t nTracklets = 0;
   Int_t nAcc = 0;
-  
+
   if (ev->IsA() == AliAODEvent::Class()) {
     AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
     if (!tracklets) return -1;
@@ -222,7 +222,7 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
 
   Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
   Double_t refMult = 0.0;   // reference multiplicity
-  
+
 //  if(runNo>114930 && runNo<117223) period = 0; Org Fred Kramer Analysis
   if(runNo>114736 && runNo<117224) period = 0; // LHC10b PASS4 2015
 //  if(runNo>119158 && runNo<120830) period = 1; Org Fred Kramer Analysis
@@ -237,7 +237,7 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
   if(period<0 || period>4) return uncorrectedNacc;
 
   if(type<0 || type>8) return uncorrectedNacc;
-  if(type == 0) refMult = 5.0;         // SPD tracklets in |eta|<0.5 
+  if(type == 0) refMult = 5.0;         // SPD tracklets in |eta|<0.5
   if(type == 1 && period!=4) refMult = 9.5;         // SPD tracklets in |eta|<1.0
   if(type == 1 && period==4) refMult = 12.0;        // SPD tracklets in |eta|<1.0 refMulti for period 4 (LHC16l) //CJ analysis
   if(type == 2) refMult = 13.0;        // SPD tracklets in |eta|<1.6
@@ -297,9 +297,8 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 }
 
 //_____________________________________________________________________________
-Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
+Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane){
   // recalulate the its-tpc matching efficiecy
-
   if (!ev) return -1;
 
   AliDielectronVarCuts varCutsTPC;
@@ -317,12 +316,27 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
   trkCutsITS.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
   trkCutsITS.SetRequireITSRefit(kTRUE);
 
+  // Eventplane angle Cuts
+
+  AliDielectronVarCuts varCutsEPinP;
+  AliDielectronVarCuts varCutsEPoutP;
+  if(bEventPlane){
+    varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -2.35, -0.79, kTRUE);
+    varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 0.79, 2.35, kTRUE);
+    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -0.79, 0.79, kTRUE);
+    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -3.15, -2.35, kTRUE);
+    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 2.35, 3.15, kTRUE);
+  }
+
+// @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
+// Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
 
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Double_t nTPC = 0, nITS = 0;
+  Double_t nTPCinP = 0, nITSinP = 0;
+  Double_t nTPCoutP = 0, nITSoutP = 0;
 
-  // @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
-  // Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
+
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
@@ -330,13 +344,24 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
     if(!trkCutsITS.IsSelected(track)) continue;
     if(!varCutsITS.IsSelected(track)) continue;
     nITS+=1.;
+    if(bEventPlane){
+      if(varCutsEPinP.IsSelected(track))  nITSinP++;
+      if(varCutsEPoutP.IsSelected(track)) nITSoutP++;
+    }
+
 
     if(!trkCutsTPC.IsSelected(track)) continue;
     if(!varCutsTPC.IsSelected(track)) continue;
     nTPC+=1.;
-
+    if(bEventPlane){
+      if(varCutsEPinP.IsSelected(track))  nTPCinP++;
+      if(varCutsEPoutP.IsSelected(track)) nTPCoutP++;
+    }
   }
-
+  if( bEventPlane && efficiencies){
+    efficiencies[0] = nITSinP > 0. ? nTPCinP/nITSinP : -1.;
+    efficiencies[1] = nITSoutP > 0. ? nTPCoutP/nITSoutP : -1.;
+  }
   //  printf(" tracks TPC %.3e ITS %.3e = %.5f \n",nTPC,nITS,(nITS>0. ? nTPC/nITS : -1));
   return (nITS>0. ? nTPC/nITS : -1);
 }
@@ -355,16 +380,16 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
     dy = ev->GetPrimaryVertex()->GetY()-0.;
     dz = ev->GetPrimaryVertex()->GetZ()-0.;
   }
-  
+
   kfParticle->X() = kfParticle->GetX() - dx;
   kfParticle->Y() = kfParticle->GetY() - dy;
   kfParticle->Z() = kfParticle->GetZ() - dz;
-  
-  
+
+
   // Rotate the kf particle
   Double_t c = cos(angle);
   Double_t s = sin(angle);
-  
+
   Double_t mA[8][ 8];
   for( Int_t i=0; i<8; i++ ){
     for( Int_t j=0; j<8; j++){
@@ -378,21 +403,21 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
   mA[1][0] = -s;  mA[1][1] = c;
   mA[3][3] =  c;  mA[3][4] = s;
   mA[4][3] = -s;  mA[4][4] = c;
-  
+
   Double_t mAC[8][8];
   Double_t mAp[8];
-  
+
   for( Int_t i=0; i<8; i++ ){
     mAp[i] = 0;
     for( Int_t k=0; k<8; k++){
       mAp[i]+=mA[i][k] * kfParticle->GetParameter(k);
     }
   }
-  
+
   for( Int_t i=0; i<8; i++){
     kfParticle->Parameter(i) = mAp[i];
   }
-  
+
   for( Int_t i=0; i<8; i++ ){
     for( Int_t j=0; j<8; j++ ){
       mAC[i][j] = 0;
@@ -401,7 +426,7 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
       }
     }
   }
-  
+
   for( Int_t i=0; i<8; i++ ){
     for( Int_t j=0; j<=i; j++ ){
       Double_t xx = 0;
@@ -411,11 +436,11 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
       kfParticle->Covariance(i,j) = xx;
     }
   }
-  
+
   kfParticle->X() = kfParticle->GetX() + dx;
   kfParticle->Y() = kfParticle->GetY() + dy;
   kfParticle->Z() = kfParticle->GetZ() + dz;
-  
+
 }
 
 //_____________________________________________________________________________
@@ -423,17 +448,17 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
   // TODO: add AODs
   // counting number of mother particles generated in given eta range and 2 particle decay
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
-  
+
   AliStack *stack = ((AliMCEvent*)ev)->Stack();
-  
+
   if (!stack) return -1;
-  
+
   Int_t nParticles = stack->GetNtrack();
   Int_t nMothers   = 0;
-  
+
   // count..
   for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
-    
+
     TParticle* particle = stack->Particle(iMc);
     if (!particle) continue;
     if (particle->GetPdgCode() != pdgMother)               continue;
@@ -443,11 +468,11 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
     // 1st daugther
     if (particle->GetFirstDaughter()>=nParticles ||
 	particle->GetFirstDaughter()<0             ) continue;
-    
+
     TParticle* dau1 = stack->Particle(particle->GetFirstDaughter());
     if (TMath::Abs(dau1->GetPdgCode()) != pdgDaughter)     continue;
     if (TMath::Abs(dau1->Eta()) > TMath::Abs(etaRange)) continue;
-    
+
     // 2nd daughter
     if (particle->GetLastDaughter()>=nParticles ||
 	particle->GetLastDaughter()<0             ) continue;
@@ -455,7 +480,7 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
     TParticle* dau2 = stack->Particle(particle->GetLastDaughter());
     if (TMath::Abs(dau2->GetPdgCode()) != pdgDaughter)     continue;
     if (TMath::Abs(dau2->Eta()) > TMath::Abs(etaRange)) continue;
-    
+
     // primary
     if (prim != -1) {
       if(particle->IsPrimary() != prim) continue;
@@ -464,5 +489,3 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
   }
   return nMothers;
 }
-
-
