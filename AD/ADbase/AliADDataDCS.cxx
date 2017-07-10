@@ -227,6 +227,10 @@ void AliADDataDCS::Init(){
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/BGCThreshold";
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBAForBGThreshold";
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBCForBGThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/CentralityADAThrLow";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/CentralityADAThrHigh";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/CentralityADCThrLow";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/CentralityADCThrHigh";
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADAThrLow";
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADAThrHigh";
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADCThrLow";

@@ -98,7 +98,7 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
   // Writes AD PMs HV values into AD calibration object and Timing resolution parameters
   calibData->FillDCSData(fDCSData);
 
-  if(runType == "PHYSICS") ProcessTrendings();
+  if(runType == "PHYSICS" || runType == "PEDESTAL" || runType == "STANDALONE_PULSER") ProcessTrendings();
 
   // *************** From DAQ ******************
 

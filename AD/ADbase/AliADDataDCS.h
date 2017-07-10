@@ -21,7 +21,7 @@ class TH1F;
 
 class AliADDataDCS : public TObject {
 public:
-  enum {kNAliases=213,kNGraphs=32,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
+  enum {kNAliases=217,kNGraphs=32,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
   enum {kHvMin=0, kHvMax=3000};
 
   AliADDataDCS();
@@ -78,7 +78,7 @@ private:
 
   Bool_t fIsProcessed;                   // bool to know processing status
 
-  ClassDef(AliADDataDCS, 7);
+  ClassDef(AliADDataDCS, 8);
 };
 
 #endif

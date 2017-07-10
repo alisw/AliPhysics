@@ -42,6 +42,10 @@ AliADCalibData::AliADCalibData()
   , fBGCThreshold(0)
   , fBBAForBGThreshold(0)
   , fBBCForBGThreshold(0)
+  , fCentralityADAThrLow(0) 
+  , fCentralityADAThrHigh(0)
+  , fCentralityADCThrLow(0) 
+  , fCentralityADCThrHigh(0)
   , fMultADAThrLow(0)
   , fMultADAThrHigh(0)
   , fMultADCThrLow(0)
@@ -108,6 +112,10 @@ AliADCalibData::AliADCalibData(const char* name)
   , fBGCThreshold(0)
   , fBBAForBGThreshold(0)
   , fBBCForBGThreshold(0)
+  , fCentralityADAThrLow(0) 
+  , fCentralityADAThrHigh(0)
+  , fCentralityADCThrLow(0) 
+  , fCentralityADCThrHigh(0)
   , fMultADAThrLow(0)
   , fMultADAThrHigh(0)
   , fMultADCThrLow(0)
@@ -181,6 +189,10 @@ AliADCalibData::AliADCalibData(const AliADCalibData& calibda)
   fBGCThreshold = calibda.GetBGCThreshold();
   fBBAForBGThreshold = calibda.GetBBAForBGThreshold();
   fBBCForBGThreshold = calibda.GetBBCForBGThreshold();
+  fCentralityADAThrLow = calibda.GetCentralityADAThrLow(); 
+  fCentralityADAThrHigh = calibda.GetCentralityADAThrHigh();
+  fCentralityADCThrLow = calibda.GetCentralityADCThrLow(); 
+  fCentralityADCThrHigh = calibda.GetCentralityADCThrHigh();
   fMultADAThrLow = calibda.GetMultADAThrLow();
   fMultADAThrHigh = calibda.GetMultADAThrHigh();
   fMultADCThrLow = calibda.GetMultADCThrLow();
@@ -506,6 +518,10 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
   else if(name.Contains("BGCThreshold")) SetBGCThreshold((UShort_t) val);
   else if(name.Contains("BBAForBGThreshold")) SetBBAForBGThreshold((UShort_t) val);
   else if(name.Contains("BBCForBGThreshold")) SetBBCForBGThreshold((UShort_t) val);
+  else if(name.Contains("CentralityADAThrLow")) SetCentralityADAThrLow((UShort_t) val);
+  else if(name.Contains("CentralityADAThrHigh")) SetCentralityADAThrHigh((UShort_t) val);
+  else if(name.Contains("CentralityADCThrLow")) SetCentralityADCThrLow((UShort_t) val);
+  else if(name.Contains("CentralityADCThrHigh")) SetCentralityADCThrHigh((UShort_t) val);
   else if(name.Contains("MultADAThrLow")) SetMultADAThrLow((UShort_t) val);
   else if(name.Contains("MultADAThrHigh")) SetMultADAThrHigh((UShort_t) val);
   else if(name.Contains("MultADCThrLow")) SetMultADCThrLow((UShort_t) val);
@@ -1213,6 +1229,8 @@ void AliADCalibData::PrintConfig()
   printf("BBA thr = %d, BBC thr = %d\n",GetBBAThreshold(),GetBBCThreshold());
   printf("BGA thr = %d, BGC thr = %d\n",GetBGAThreshold(),GetBGCThreshold());
   printf("BBAforBG thr = %d, BBCforBG thr = %d\n",GetBBAForBGThreshold(),GetBBCForBGThreshold());
+  printf("CTA low thr = %d, CTA high thr = %d\n",GetCentralityADAThrLow(),GetCentralityADAThrHigh());
+  printf("CTC low thr = %d, CTC high thr = %d\n",GetCentralityADCThrLow(),GetCentralityADCThrHigh());
 
 
   printf("\n");
@@ -1292,7 +1310,7 @@ void AliADCalibData::PrintConfig()
 
   printf("\n");
   printf("======================================================\n");
-  printf("======================= Pedestal =====================\n");
+  printf("===================== Pedestal DA ====================\n");
   printf("======================================================\n");
   printf("\n");
 
@@ -1300,6 +1318,19 @@ void AliADCalibData::PrintConfig()
     for(Int_t integrator = 0; integrator < 2; ++integrator){
       if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOnlineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
       else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
+    }
+  }
+
+  printf("\n");
+  printf("======================================================\n");
+  printf("================= Pedestal Online ====================\n");
+  printf("======================================================\n");
+  printf("\n");
+
+  for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
+    for(Int_t integrator = 0; integrator < 2; ++integrator){
+      if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.d, Cut = %.d,", pmNumber, kOnlineChannel[pmNumber],integrator, GetOnlinePedestal(integrator, pmNumber),GetOnlinePedestalCut(integrator, pmNumber));
+      else printf(" Int = %d, Pedestal = %.d, Cut = %.d\n", integrator, GetOnlinePedestal(integrator, pmNumber),GetOnlinePedestalCut(integrator, pmNumber));
     }
   }
 }
@@ -1320,6 +1351,8 @@ void AliADCalibData::PrintConfigShuttle()
   printf("BBA thr = %d, BBC thr = %d\n",GetBBAThreshold(),GetBBCThreshold());
   printf("BGA thr = %d, BGC thr = %d\n",GetBGAThreshold(),GetBGCThreshold());
   printf("BBAforBG thr = %d, BBCforBG thr = %d\n",GetBBAForBGThreshold(),GetBBCForBGThreshold());
+  printf("CTA low thr = %d, CTA high thr = %d\n",GetCentralityADAThrLow(),GetCentralityADAThrHigh());
+  printf("CTC low thr = %d, CTC high thr = %d\n",GetCentralityADCThrLow(),GetCentralityADCThrHigh());
 
   printf("\n");
   printf("======================================================\n");
@@ -1380,7 +1413,7 @@ void AliADCalibData::PrintConfigShuttle()
 
   printf("\n");
   printf("======================================================\n");
-  printf("======================= Pedestal =====================\n");
+  printf("===================== Pedestal DA ====================\n");
   printf("======================================================\n");
   printf("\n");
 
@@ -1390,4 +1423,18 @@ void AliADCalibData::PrintConfigShuttle()
       else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
     }
   }
+
+  printf("\n");
+  printf("======================================================\n");
+  printf("================= Pedestal Online ====================\n");
+  printf("======================================================\n");
+  printf("\n");
+
+  for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
+    for(Int_t integrator = 0; integrator < 2; ++integrator){
+      if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.d, Cut = %.d,", pmNumber, kOnlineChannel[pmNumber],integrator, GetOnlinePedestal(integrator, pmNumber),GetOnlinePedestalCut(integrator, pmNumber));
+      else printf(" Int = %d, Pedestal = %.d, Cut = %.d\n", integrator, GetOnlinePedestal(integrator, pmNumber),GetOnlinePedestalCut(integrator, pmNumber));
+    }
+  }
+
 }

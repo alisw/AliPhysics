@@ -200,8 +200,11 @@ void AliADReconstructor::Init()
   }
 }
 
+//_____________________________________________________________________________
 UShort_t MakeTriggerFlags(Bool_t UBA, Bool_t UBC,
-			  Bool_t UGA, Bool_t UGC) {
+			  Bool_t UGA, Bool_t UGC,
+			  Bool_t CTA1, Bool_t CTC1,
+			  Bool_t CTA2, Bool_t CTC2) {
   UShort_t flags = 0;
   flags |= (1<< 0)*(UBA && UBC);
   flags |= (1<< 1)*(UBA || UBC);
@@ -209,10 +212,10 @@ UShort_t MakeTriggerFlags(Bool_t UBA, Bool_t UBC,
   flags |= (1<< 3)*UGA;
   flags |= (1<< 4)*(UGC && UBA);
   flags |= (1<< 5)*UGC;
-  //CTA1 and CTC1
-  //CTA1 or CTC1
-  //CTA2 and CTC2
-  //CTA2 or CTC2
+  flags |= (1<< 6)*(CTA1 && CTC1);
+  flags |= (1<< 7)*(CTA1 || CTC1);
+  flags |= (1<< 8)*(CTA2 && CTC2);
+  flags |= (1<< 9)*(CTA2 || CTC2);
   //MTA and MTC
   //MTA or MTC
   flags |= (1<<12)*UBA;
@@ -297,7 +300,8 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
     const Bool_t UGC = (pBGmulADC >= fCalibData->GetBGCThreshold());
 
     const UShort_t fTrigger = MakeTriggerFlags(UBA, UBC,
-					       UGA, UGC);
+					       UGA, UGC,
+					       0,0,0,0);
 
     fESDADfriend->SetTriggerInputs(fTrigger);
     fESDADfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
@@ -333,6 +337,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   Bool_t aBBflag[16];
   Bool_t aBGflag[16];
   Float_t   adcTrigger[16];
+  UShort_t triggerChargeA = 0;
+  UShort_t triggerChargeC = 0;
 
   for (Int_t i=0; i<16; i++){
     adc[i]            = 0.0f;
@@ -373,9 +379,21 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     for (Int_t d=0, m=fDigitsArray->GetEntriesFast(); d<m; ++d) {
       const AliADdigit* digit    = dynamic_cast<const AliADdigit*>(fDigitsArray->At(d));
       const Int_t       pmNumber = digit->PMNumber();
-
-      // Pedestal retrieval and suppression
       Bool_t  integrator = digit->Integrator();
+      
+      //Raw trigger charge 
+      if(fCalibData->GetEnableCharge(pmNumber)) {
+        const Short_t charge10 = digit->ChargeADC(10);
+        UShort_t trhPed = fCalibData->GetOnlinePedestal(integrator,pmNumber);
+        UShort_t trhPedCut = fCalibData->GetOnlinePedestalCut(integrator,pmNumber);
+        if (!fCalibData->GetPedestalSubtraction(fCalibData->GetBoardNumber(pmNumber))) trhPed = trhPedCut = 0;
+        if (charge10 > trhPedCut) {
+	  if (pmNumber < 8) triggerChargeC += (charge10 - trhPed);
+	  else triggerChargeA += (charge10 - trhPed);
+	}
+      }
+      
+      // Pedestal retrieval and suppression
       Float_t maxadc     = 0.0f;
       Int_t   imax       = -1;
       Float_t adcPedSub[kADNClocks] = { 0 };
@@ -531,6 +549,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetBGFlag(aBGflag);
   fESDAD->SetADCTail(tail);
   fESDAD->SetADCTrigger(adcTrigger);
+  fESDAD->SetTriggerChargeA(triggerChargeA);
+  fESDAD->SetTriggerChargeC(triggerChargeC);
 
   // Fill BB and BG flags for all channel in 21 clocks (called past-future flags)
   for (Int_t i=0; i<16; ++i) {
@@ -559,9 +579,16 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   const Bool_t UBC = (pBBmulADC >= fCalibData->GetBBCThreshold());
   const Bool_t UGA = (pBGmulADA >= fCalibData->GetBGAThreshold());
   const Bool_t UGC = (pBGmulADC >= fCalibData->GetBGCThreshold());
-
+  
+  const Bool_t CTA1 = (triggerChargeA >= fCalibData->GetCentralityADAThrLow());
+  const Bool_t CTC1 = (triggerChargeC >= fCalibData->GetCentralityADCThrLow());
+  const Bool_t CTA2 = (triggerChargeA >= fCalibData->GetCentralityADAThrHigh());
+  const Bool_t CTC2 = (triggerChargeC >= fCalibData->GetCentralityADCThrHigh());
+  
   const UShort_t fTrigger = MakeTriggerFlags(UBA, UBC,
-					     UGA, UGC);
+					     UGA, UGC,
+					     CTA1, CTC1,
+					     CTA2, CTC2);
 
   fESDAD->SetTriggerBits(fTrigger);
   fESDAD->SetBit(AliESDAD::kOnlineBitsFilled,kTRUE);
