@@ -197,7 +197,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
   TString rootFileName = "";
   TString treeName = "";
   TString pathStructure = "";
-  TString indexName=""; 
+  TString indexName="";
   TString oldIndexName= fConfigMap[type + ".indexname"];  // rename index branch to avoid incositencies (bug in ROOT - the same index branch name requeired) 
 
   // initialization of external variables
@@ -208,36 +208,48 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
   // Checking if resource needs to be downloaded
   const Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
-  
+
   TString mifFilePath = ""; // Gets changed in Curl command
-  
+
   if (downloadNeeded == kTRUE){
+    if (resourceIsTree == kTRUE && externalLocation.Contains("http")) {
+      externalLocation += pathStructure + rootFileName;
+      Int_t fstatus=0;
+      TString command = CurlTree(internalFilename, externalLocation);
+      std::cout << command << std::endl;
+      gSystem->Exec(command.Data());
+      TFile * fcache = TFile::Open(internalFilename);
+      if (fcache!=NULL && !fcache->IsZombie()) {
+        fstatus|=1;
+        delete fcache;
+      }
+      if (fstatus==1) {
+        gSystem->GetFromPipe(Form("touch %s",internalFilename.Data()));  // Update the access and modification times of each FILE to the current time
+        return kTRUE;
+      }else{
+        AliError("Curl caching failed");
+        gSystem->GetFromPipe(Form("rm %s",internalFilename.Data()));
+        return kFALSE;
+      }
+    }
     // Download resources in the form of .root files in a tree
-    if (resourceIsTree == kTRUE){
+    if (resourceIsTree == kTRUE ) {
       externalLocation += pathStructure + rootFileName;
       AliInfo(TString::Format("Information retrieved from: %s", externalLocation.Data()));
       // Check if external location is a http address or locally accessible
-//       std::cout << externalLocation(0, 4) << std::endl;
+      //    std::cout << externalLocation(0, 4) << std::endl;
       TFile *file = TFile::Open(externalLocation);
-      if (file && !file->IsZombie()){ // Checks if webresource is available
+      if (file && !file->IsZombie()) { // Checks if webresource is available
         AliInfo("Resource available");
-          if(externalLocation.Contains("http")){
-           TString command = CurlTree(internalFilename, externalLocation);
-           std::cout << command << std::endl;
-           gSystem->Exec(command.Data());
-           AliInfo("Cached with curl");
-        }  
-        else if (file->Cp(internalFilename)) {
+        if (file->Cp(internalFilename)) {
           AliInfo("Caching with TFile::Cp() successful");
           return kTRUE;
-        }
-        else {
+        } else {
           AliError("Copying to internal location failed");
           return kFALSE;
         }
-      }
-      else {
-        AliError("Ressource not available");
+      } else {
+        AliError("Resource not available");
         return kFALSE;
       }
       delete file;
@@ -251,16 +263,16 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         externalLocation = TString::Format(externalLocation.Data(), period.Data());
       }
 
-      
+
       TString command = CurlMif(mifFilePath, internalLocation, rootFileName, externalLocation);
 
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
       if (oldIndexName.Length()==0){
-	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
       }else{
-	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
-      } 
+        gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+      }
 
       gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix").Data(),  (mifFilePath+"RunFix").Data()).Data());
       // Store it in a tree inside a root file
