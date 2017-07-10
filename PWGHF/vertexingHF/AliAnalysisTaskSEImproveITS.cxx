@@ -85,6 +85,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -149,6 +150,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -382,7 +384,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       v12->GetXYZ(pos);
       v12->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
-      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
       // update d0 
@@ -499,7 +501,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       v123->GetXYZ(pos);
       v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
-      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
 
       // update d0 for all progs
