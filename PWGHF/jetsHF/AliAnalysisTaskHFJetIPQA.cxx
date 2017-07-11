@@ -123,7 +123,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fEtaSEvt(100),fPhiSEvt(100),fEtaBEvt(100),fPhiBEvt(100),fEtaCEvt(100),fPhiCEvt(100),fEtaUdsgEvt(100),fPhiUdsgEvt(100),
     fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0},
     fCombined(nullptr),
-    fXsectionWeightingFactor(1),
+    fXsectionWeightingFactor(1.),
     fProductionNumberPtHard(-1)
 {
     SetNeedEmcalGeom(kFALSE);
@@ -492,7 +492,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     Bool_t is_udgjet = kFALSE;
                     //Event based association to save memory
                     jetflavour =IsMCJetPartonFast(jetgen,0.4,is_udgjet);
-                    FillHist("fh1dJetGenPt",GetPtCorrectedMC(jetgen),1);
+                    FillHist("fh1dJetGenPt",GetPtCorrectedMC(jetgen), this->fXsectionWeightingFactor);
                     if(jetflavour ==0)      FillHist("fh1dJetGenPtUnidentified",GetPtCorrectedMC(jetgen), this->fXsectionWeightingFactor );
                     else if(jetflavour ==1) FillHist("fh1dJetGenPtudsg",GetPtCorrectedMC(jetgen), this->fXsectionWeightingFactor );
                     else if(jetflavour ==2) FillHist("fh1dJetGenPtc",GetPtCorrectedMC(jetgen), this->fXsectionWeightingFactor );
@@ -536,7 +536,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     jetmatched =jetrec->MatchedJet();
                     if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,0.4,is_udgjet); //Event based association to save memory
                 }
-            FillHist("fh1dJetRecPt",jetrec->Pt(),1);
+            FillHist("fh1dJetRecPt",jetrec->Pt(), this->fXsectionWeightingFactor );
             if(fIsPythia){
                     if(jetflavour==0)     FillHist("fh1dJetRecPtUnidentified",jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==1)FillHist("fh1dJetRecPtudgs",          jetpt, this->fXsectionWeightingFactor );
@@ -687,11 +687,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             if(jetprob >0.5){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_5JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_5JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                              }
+                                }
                             else if (jetprob >0.6){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_6JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_6JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
-                              }
+                                }
                             else if (jetprob >0.7){
                                     FillHist(Form("fh2d_ImpSigXY_%s_0_7JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
                                     FillHist(Form("fh2d_ImpSigXYZ_%s_0_7JP","all"),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor);
@@ -734,53 +734,49 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,trackV->GetLabel());sImpParXYZSig.push_back(d);
 
                         }
-                    std::sort(sImpParXY.begin(),sImpParXY.end(),        AliAnalysisTaskHFJetIPQA::mysort);
-                    std::sort(sImpParXYSig.begin(),sImpParXYSig.end(),  AliAnalysisTaskHFJetIPQA::mysort);
-                    std::sort(sImpParXYZ.begin(),sImpParXYZ.end(),      AliAnalysisTaskHFJetIPQA::mysort);
-                    std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(),AliAnalysisTaskHFJetIPQA::mysort);
-                    const char * subtype[4] = {"Unidentified","udsg","c","b"};
-                    const char * subord [3] = {"First","Second","Third"};
-                    const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
-                    for (Int_t ot = 0 ; ot <3 ;++ot){
-                            if ((int)sImpParXY.size()>ot){
+                }
+            std::sort(sImpParXY.begin(),sImpParXY.end(),        AliAnalysisTaskHFJetIPQA::mysort);
+            std::sort(sImpParXYSig.begin(),sImpParXYSig.end(),  AliAnalysisTaskHFJetIPQA::mysort);
+            std::sort(sImpParXYZ.begin(),sImpParXYZ.end(),      AliAnalysisTaskHFJetIPQA::mysort);
+            std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(),AliAnalysisTaskHFJetIPQA::mysort);
+            const char * subtype[4] = {"Unidentified","udsg","c","b"};
+            const char * subord [3] = {"First","Second","Third"};
+            const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
+            for (Int_t ot = 0 ; ot <3 ;++ot){
+                    if ((int)sImpParXY.size()>ot){
 
-                                    if(ot==0) {
-                                            if(jetflavour >0){
-                                                    FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-                                                }
-                                            FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
-
+                            if(ot==0) {
+                                    if(jetflavour >0){
+                                            FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
                                         }
-                                    else
-                                        if (ot==1)
-                                            {
-                                                if(jetflavour >0){
-                                                        FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-                                                    }
-                                                FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
+                                    FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
+                                }
+                            else if (ot==1)
+                                {
+                                    if(jetflavour >0){
+                                            FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                                        }
+                                    FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
+                                }
+                            else if (ot==2){
+                                    if(jetflavour >0){
+                                            FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
+                                        }
+                                    FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
+                                }
+                            Double_t params [4] ={sImpParXY.at(ot).first,sImpParXYSig.at(ot).first,sImpParXYZ.at(ot).first,sImpParXYZSig.at(ot).first};
+                            Double_t weights[4] ={sImpParXY.at(ot).second,sImpParXYSig.at(ot).second,sImpParXYZ.at(ot).second,sImpParXYZSig.at(ot).second};
+                            for (Int_t ost = 0 ; ost <4 ;++ost){
+                                    TString hname = Form("%s%s",stype[ost],subord[ot]);
+                                    if(fIsPythia)   FillHist(hname.Data(),jetpt,params[ost],weights[ost] *  this->fXsectionWeightingFactor);
+                                    else  FillHist(hname.Data(),jetpt,params[ost], this->fXsectionWeightingFactor );
 
-                                            }
-                                        else
-                                            if (ot==2){
-                                                    if(jetflavour >0){
-                                                            FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,subtype[jetflavour]),jetpt,this->fXsectionWeightingFactor);
-                                                        }
-                                                    FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
-                                                }
-                                    Double_t params [4] ={sImpParXY.at(ot).first,sImpParXYSig.at(ot).first,sImpParXYZ.at(ot).first,sImpParXYZSig.at(ot).first};
-                                    Double_t weights[4] ={sImpParXY.at(ot).second,sImpParXYSig.at(ot).second,sImpParXYZ.at(ot).second,sImpParXYZSig.at(ot).second};
+
+                                }
+                            if(fIsPythia){
                                     for (Int_t ost = 0 ; ost <4 ;++ost){
-                                            TString hname = Form("%s%s",stype[ost],subord[ot]);
-                                            if(fIsPythia)   FillHist(hname.Data(),jetpt,params[ost],weights[ost] );
-                                            else  FillHist(hname.Data(),jetpt,params[ost], this->fXsectionWeightingFactor );
-
-
-                                        }
-                                    if(fIsPythia){
-                                            for (Int_t ost = 0 ; ost <4 ;++ost){
-                                                    TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
-                                                    FillHist(hname.Data(),jetpt,params[ost],weights[ost]* this->fXsectionWeightingFactor  );
-                                                }
+                                            TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
+                                            FillHist(hname.Data(),jetpt,params[ost],weights[ost]* this->fXsectionWeightingFactor  );
                                         }
                                 }
                         }
@@ -2678,8 +2674,6 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculateJetProb(AliEmcalJet *jet)
     Double_t retval = -1;
     //Loop over all tracks calculate P(s) for all accepted later add looser cuts also
     Int_t ntracks = (Int_t)jet->GetNumberOfTracks();
-
-    Printf("ntracks in the jet %i",ntracks);
     Double_t prodPS = 1;
     Double_t curps=-1;
     AliJetContainer * jetconrec = 0x0;
