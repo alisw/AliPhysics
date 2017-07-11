@@ -563,9 +563,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             //Printf("JetProbability %e (flavour %s)", jetprob,subtype_jp[jetflavour]);
 
             if(jetflavour>0 && fIsPythia){
-                    if(jetflavour==1) FillHist("fh1d_jetprob_light",jetprob,this->fXsectionWeightingFactor);
-                    else if(jetflavour==2) FillHist("fh1d_jetprob_charm",jetprob,this->fXsectionWeightingFactor);
-                    else if(jetflavour==3) FillHist("fh1d_jetprob_beauty",jetprob,this->fXsectionWeightingFactor);
+                    if(jetflavour==1) FillHist("fh2d_jetprob_light",jetpt,jetprob,this->fXsectionWeightingFactor);
+                    else if(jetflavour==2) FillHist("fh2d_jetprob_charm",jetpt,jetprob,this->fXsectionWeightingFactor);
+                    else if(jetflavour==3) FillHist("fh2d_jetprob_beauty",jetpt,jetprob,this->fXsectionWeightingFactor);
 
 
                     if(jetprob >0.5){
