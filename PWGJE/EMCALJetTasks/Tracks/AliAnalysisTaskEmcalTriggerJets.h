@@ -28,7 +28,7 @@ protected:
 
   void FillJetPIDPlots(const AliEmcalJet *jet, double radius, const char *trigger, const char *detector);
   void FillJetPIDPlotsLeading(const AliVTrack *leading, double ptjet, double radius, const char *trigger, const char *detector);
-  void FillPIDCorrelationPlot(const AliEmcalJet *jet, const AliTrackContainer *particles, const char *trigger, const char *detector);
+  void FillPIDCorrelationPlot(const AliEmcalJet *jet, const AliTrackContainer *particles, double radius, const char *trigger, const char *detector);
 
 private:
   AliAnalysisTaskEmcalTriggerJets(const AliAnalysisTaskEmcalTriggerJets &);
