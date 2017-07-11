@@ -140,6 +140,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 , fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
+, fRandom(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -561,7 +562,8 @@ void AliAnalysisTaskEMCALClusterize::AddNewTCardInducedCellsToDigit()
 //           j,fRecoUtils->AcceptCalibrateCell(j,0,amp,time,fCaloCells),idigit,fTCardCorrCellsEner[j]);
     
     // Now add the cell to the digits list
-    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( -2, -2, j, fTCardCorrCellsEner[j],0,AliEMCALDigit::kHG,idigit, 0, 0, 0);
+    //AliEMCALDigit* digit = 
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( -2, -2, j, fTCardCorrCellsEner[j],0,AliEMCALDigit::kHG,idigit, 0, 0, 0);
     
     //digit->SetListOfParents(0,0x0,0x0); // not needed
         
@@ -1848,9 +1850,9 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
         UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
         
         // Get the digit that originated this cell cluster
-        AliVCaloCells* cells = 0x0; 
-        if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
-        else                                  cells = InputEvent()->GetEMCALCells();
+//        AliVCaloCells* cells = 0x0; 
+//        if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
+//        else                                  cells = InputEvent()->GetEMCALCells();
         
         for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
         {
