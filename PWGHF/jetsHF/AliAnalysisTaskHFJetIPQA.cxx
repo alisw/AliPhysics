@@ -560,7 +560,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
             const char * subtype_jp [4] = {"","udsg","c","b"};
-            Printf("JetProbability %e (flavour %s)", jetprob,subtype_jp[jetflavour]);
+            //Printf("JetProbability %e (flavour %s)", jetprob,subtype_jp[jetflavour]);
 
             if(jetflavour>0 && fIsPythia){
                     if(jetflavour==1) FillHist("fh1d_jetprob_light",jetprob,this->fXsectionWeightingFactor);
