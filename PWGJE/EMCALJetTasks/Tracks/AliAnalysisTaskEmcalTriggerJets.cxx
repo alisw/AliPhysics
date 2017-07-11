@@ -79,7 +79,7 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
   const int kNJetPtBins = 9;
   const int kNJetRadiusBins = 7;
 
-  TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), dEdxbinning(600, 0., 600.), massbinning(400., 0., 4.), eopbinning(150, 0., 1.5), radiusBinning(10, 0., 10.);
+  TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), dEdxbinning(600, 0., 600.), massbinning(400., 0., 4.), eopbinning(150, 0., 1.5), radiusBinning(10, 0., 1.);
   const TBinning *binningPID[5] {&jetptbinning, &pbinning, &dEdxbinning, &massbinning, &eopbinning},
                  *binningAssociate[6] = {&jetptbinning, &pbinning, &radiusBinning, &dEdxbinning, &massbinning, &eopbinning};
   const std::array<int, 2> kJetRadii = {2, 4};
