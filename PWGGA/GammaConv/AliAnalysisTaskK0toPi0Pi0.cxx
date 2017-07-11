@@ -384,7 +384,7 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakeK0ShortCandid
   } else {
     // Same methods for Pi0 identification (both same or both mixed)
     for(auto primpi0 = primaryLeg->begin(); primpi0 != primaryLeg->end(); ++primpi0) {
-      for(auto secpi0 = primpi0 + 1; primpi0 != primaryLeg->end(); ++primpi0) {
+      for(auto secpi0 = primpi0 + 1; secpi0 != primaryLeg->end(); ++secpi0) {
         AliAODConversionMother candidate(&(*primpi0), &(*secpi0));
         if(!cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;
         candidates.push_back(candidate);

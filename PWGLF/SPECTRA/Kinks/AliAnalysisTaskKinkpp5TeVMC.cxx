@@ -594,7 +594,7 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
         } else {
   //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
         cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
-        if ((cent < 0) || (cent > 100)) return; //Event selection
+//        if ((cent < 0) || (cent > 100)) return; //Event selection
         }
         }
 

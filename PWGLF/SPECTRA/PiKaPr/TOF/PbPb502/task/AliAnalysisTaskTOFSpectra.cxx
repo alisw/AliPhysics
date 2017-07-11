@@ -211,6 +211,7 @@ hEvtVtxZMCReco(0x0),
 hNTrk(0x0),
 hPadDist(0x0),
 hTOFDist(0x0),
+//Beta Performance Plots
 hBeta(0x0),
 hBetaNoMismatch(0x0),
 hBetaNoMismatchEtaCut(0x0),
@@ -440,7 +441,6 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     
   }
   
-  
   for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
     for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
       for(Int_t species = 0; species < 3; species++){//Species loop
@@ -559,7 +559,6 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   }
   #endif
   
-  
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
       for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
@@ -574,6 +573,10 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     }
   }
   
+  for(Int_t species = 0; species < kExpSpecies; species++){//Species loop
+    hBetaExpected[species] = 0x0;
+  }
+
   AliDebug(2, "Init()\t END");
 }
 
@@ -641,6 +644,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kDAQincomplete");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kPileUp");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexQuality");
+      hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed Has fVertStatus > 1");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     }
@@ -868,39 +872,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTOFDist = new TH2F("hTOFDist", "Distribution in the TOF;Sector;Strip", 18, 0, 18, 91, 0, 91);
     fListHist->AddLast(hTOFDist);
     
-    if(fPerformance){
-      const Int_t Bnbins      = 4000;
-      const Double_t Blim[2]  = {0., 1.5};
-      const Double_t Bplim[2] = {0., 10.};
-      
-      hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBeta);
-      
-      hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatch);
-      
-      hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchEtaCut);
-      
-      hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchEtaCutOut);
-      
-      hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaCentral);
-      
-      hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentral);
-      
-      hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
-      
-      hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
-      
-      hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
-      fListHist->AddLast(hTPCdEdx);
-    }
-    
+    DefinePerformanceHistograms();
+
     hCutVariation = new TH1F("hCutVariation", "CutCounter;CutSet;Tracks", 20, 0. -.5, 20. -.5);
     fListHist->AddLast(hCutVariation);
     
@@ -932,7 +905,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTimeOfFlightResNoMismatch = new TH1F("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
     fListHist->AddLast(hTimeOfFlightResNoMismatch);
     
-    if(fFineTOFReso){
+    if(fFineTOFReso){//Histogram with the TOF resolution as a function of the number of TOF matched tracks
       hTimeOfFlightResFine = new TH2F("hTimeOfFlightResFine", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500, 100, 0, 100);
       fListHist->AddLast(hTimeOfFlightResFine);
       
@@ -1541,15 +1514,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   }
   StopTimePerformance(1);
   
-  StartTimePerformance(2);
-  fEvtSelected = SelectEvents(EvtStart);
-  StopTimePerformance(2);
-  
-  StartTimePerformance(3);
-  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
-  StopTimePerformance(3);
-  
-  
   //
   // monitor vertex position before event and physics selection
   //
@@ -1559,6 +1523,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     hEvtVtxXYBefSel->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
     hEvtVtxZBefSel->Fill(fPrimVertex[2]);
   }
+  
+  StartTimePerformance(2);
+  fEvtSelected = SelectEvents(EvtStart);
+  StopTimePerformance(2);
+  
+  StartTimePerformance(3);
+  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
+  StopTimePerformance(3);
+  
+  
   
   if(fMCmode) AnalyseMCParticles(); //First loop on stack Before the Physics Selection (and also after) Before the Event Selection (and also after)
   
@@ -2110,31 +2084,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       
       
       //Performance plots
-      if(fPerformance){
-        //TOF
-        const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
-        hBeta->Fill(fP, beta);
-        if(fNTOFClusters < 2){
-          hBetaNoMismatch->Fill(fP, beta);
-          if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchEtaCut->Fill(fP, beta);
-          if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchEtaCutOut->Fill(fP, beta);
-          
-        }
-        
-        if(fEvtMult <= 30.0 && fEvtMult >= 0.0){//Central collisions
-          hBetaCentral->Fill(fP, beta);
-          if(fNTOFClusters < 2){
-            hBetaNoMismatchCentral->Fill(fP, beta);
-            if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
-            if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
-          }
-          
-        }
-        
-        //TPC
-        hTPCdEdx->Fill(fP, fTPCSignal);
-        
-      }
+      FillPerformanceHistograms();
       
       //fine plot test matching efficiency
       hPadDist->Fill(fTOFImpactDX, fTOFImpactDZ);
@@ -2606,8 +2556,11 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
         hNEvt->Fill(binstart++);
         if(fEventCut.PassedCut(AliEventCuts::kVertexQuality)) {
           hNEvt->Fill(binstart++);
-          if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+          if(fVertStatus > 1) {
             hNEvt->Fill(binstart++);
+            if(fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
+              hNEvt->Fill(binstart++);
+            }
           }
         }
       }
@@ -3166,5 +3119,79 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   fTOFT0maker->WriteInESD(fESD);
   
   return kTRUE;
+  
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
+  if(fPerformance){
+    const Int_t Bnbins      = 4000;
+    const Double_t Blim[2]  = {0., 1.5};
+    const Double_t Bplim[2] = {0., 10.};
+    
+    hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBeta);
+    
+    for(Int_t i = 0; i < kExpSpecies; i++){
+      hBetaExpected[i] = new TH2I(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+      fListHist->AddLast(hBetaExpected[i]);
+    }
+    
+    hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatch);
+    
+    hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchEtaCut);
+    
+    hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchEtaCutOut);
+    
+    hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaCentral);
+    
+    hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentral);
+    
+    hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
+    
+    hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
+    
+    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
+    fListHist->AddLast(hTPCdEdx);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(){
+  if(fPerformance){
+    //TOF
+    const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+    hBeta->Fill(fP, beta);
+    for(Int_t i = 0; i < kExpSpecies; i++){
+      const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
+      hBetaExpected[i]->Fill(fP, betaHypo);
+    }
+    if(fNTOFClusters < 2){
+      hBetaNoMismatch->Fill(fP, beta);
+      if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchEtaCut->Fill(fP, beta);
+      if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchEtaCutOut->Fill(fP, beta);
+    }
+    
+    if(fEvtMult <= 30.0 && fEvtMult >= 0.0){//Central collisions
+      hBetaCentral->Fill(fP, beta);
+      if(fNTOFClusters < 2){
+        hBetaNoMismatchCentral->Fill(fP, beta);
+        if(TMath::Abs(fEta) < 0.5) hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
+        if(TMath::Abs(fEta) > 0.2) hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
+      }
+      
+    }
+    
+    //TPC
+    hTPCdEdx->Fill(fP, fTPCSignal);
+    
+  }
   
 }

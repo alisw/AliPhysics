@@ -35,6 +35,7 @@ public:
   virtual void UserExec(Option_t *option);
   //  virtual void Terminate(Option_t *option);
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
+  void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
 
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
@@ -91,7 +92,8 @@ private:
 
   Bool_t fRunInVertexing; /// flag to run hybrid task before the vertexingHF task or in standard mode
   Bool_t fImproveTracks; /// this is always kTRUE. kFALSE only if re-running on already improved AODs
-                           
+  Bool_t fUpdateSecVertCovMat; /// flag to switch on/off the modification of the sec vert cov matrix
+    
   TList   *fDebugOutput; //!<! collection of debug output
   TNtuple *fDebugNtuple; //!<! debug send on output slot 1
   Float_t *fDebugVars;   //!<! variables to store as degug info 

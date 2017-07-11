@@ -11,7 +11,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *nrhoMC               = "RhoMC",
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/l/lfeldkam/Weights.root",
                                            TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
-                                           TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/ResulFc.root",
+                                           TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/dummy_ResFct_XYSignificance_pp7TeV.root",
                                            Bool_t GenerateMeanSigmaCorrectionTable=kTRUE,
                                            Int_t nITSReq=6,
                                            const char* suffix = ""
@@ -82,6 +82,34 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         Printf("%s :: Weights written to analysis task.",taskname);
         if(filecorrectionfactors) filecorrectionfactors->Close();
     }
+    
+    
+    TFile * jetProbfile =0x0;
+    if( PathToJetProbabilityInput.EqualTo("") ) {
+    } else {
+        jetProbfile=TFile::Open(PathToJetProbabilityInput.Data(),"REAS");
+        if(!jetProbfile ||(jetProbfile&& !jetProbfile->IsOpen())){
+            AliFatal("%s :: Input weight file not found",taskname);
+            return 0x0;
+        }
+        int bins_low[5]  = {0,1,2,4,6};
+        int bins_high[5]  = {1,2,4,6,255};
+        int its_hits[4]  = {6,5,4,3};
+
+        for (int i=0;i<4;++i){
+            for (int j=0;j<5;++j){
+                TGraph *fResulFkt = (TGraph*)jetProbfile->Get(Form("fResulFkt_ITS_%i_PT_%i_to_%i",its_hits[i],bins_low[j],bins_high[j]));
+                if(!fResulFkt){
+                    Printf("Error retrieving JP resolution function i %i j %i",i,j);
+                    return kFALSE;
+                }
+                else jetTask->SetResFunction(fResulFkt,i,j);
+            }
+        }
+        if(jetProbfile)jetProbfile->Close();
+    }
+    
+    
     TH1::AddDirectory(0);
     
     

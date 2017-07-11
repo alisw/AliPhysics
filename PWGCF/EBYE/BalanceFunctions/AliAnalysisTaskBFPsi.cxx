@@ -1027,6 +1027,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 
   Float_t gCentrality = -1.;
   Double_t gMultiplicity = -1.;
+  Double_t gMultiplicityFromAOD = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   
   // use AliMultSelection framework
@@ -1043,7 +1044,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     else
       gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
 
-    Printf("***************gCentrality=%f", gCentrality);
     // error handling
     if (gCentrality > 100)
       gCentrality = -1;
@@ -1069,6 +1069,11 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     gMultiplicity = multSelection->GetEstimator(fCentralityEstimator)->GetValue();
     fHistMultiplicity->Fill(gMultiplicity);
     fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
+
+    if(multSelection->GetEstimator("RefMult08"))
+      fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
+    else
+      gMultiplicityFromAOD = GetReferenceMultiplicityFromAOD(event);
   }
   
   // use centrality framework

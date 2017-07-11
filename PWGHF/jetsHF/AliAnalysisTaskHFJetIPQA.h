@@ -94,7 +94,7 @@ public:
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                        TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                        TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
-    Bool_t SetResFunction( TGraph * f = 0x0, Int_t j=0);
+    Bool_t SetResFunction(TGraph * f = 0x0, Int_t j=0, Int_t ptbin=0);
     void localtoglobal(double alpha, double *local, double *global);
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void EventwiseCleanup();
@@ -116,7 +116,9 @@ public:
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double  * prob, int &nDetectors,UInt_t &usedDet ,AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(const Int_t &value);
-
+    Double_t CalculateJetProb(AliEmcalJet *jet);
+    Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
+    Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
@@ -184,7 +186,7 @@ private:
     std::vector <Double_t > fPhiCEvt;//!
     std::vector <Double_t > fEtaUdsgEvt;//!
     std::vector <Double_t > fPhiUdsgEvt;//!
-    TGraph fResolutionFunction [5];//[5] ie 5 * n Pt bins
+    TGraph fResolutionFunction [4][5];//[4][5] //4 Classes 5 Pt regions 0-1 1-2 2-4 4-6 6-100 GeV/c
     Double_t fAnalysisCuts[11]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;

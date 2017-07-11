@@ -341,6 +341,14 @@ public:
   }
   
   
+  ///
+  /// Method to define the histograms used for the Performance
+  void DefinePerformanceHistograms();
+  
+  ///
+  /// Method to fill the histograms used for the Performance
+  void FillPerformanceHistograms();
+  
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE){fHImode = mode;};
   void SetMCFlag(Bool_t mode = kTRUE){fMCmode = mode;};
@@ -726,6 +734,7 @@ private:
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
+  TH2I* hBetaExpected[kExpSpecies];             ///<  Histogram with the track beta vs the track momentum
   TH2I* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                  ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchEtaCutOut;               ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
