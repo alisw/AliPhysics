@@ -560,13 +560,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
             const char * subtype_jp [4] = {"","udsg","c","b"};
-           // Printf("JetProbability %e (flavour %s)", jetprob,subtype_jp[jetflavour]);
+            Printf("JetProbability %e (flavour %s)", jetprob,subtype_jp[jetflavour]);
 
             if(jetflavour>0 && fIsPythia){
                     if(jetflavour==1) FillHist("fh1d_jetprob_light",jetprob,this->fXsectionWeightingFactor);
                     else if(jetflavour==2) FillHist("fh1d_jetprob_charm",jetprob,this->fXsectionWeightingFactor);
                     else if(jetflavour==3) FillHist("fh1d_jetprob_beauty",jetprob,this->fXsectionWeightingFactor);
-
 
 
                     if(jetprob >0.5){
@@ -2703,7 +2702,12 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculateJetProb(AliEmcalJet *jet)
     Double_t curps=-1;
     AliJetContainer * jetconrec = 0x0;
     jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-    Int_t jcounter =0;
+   // Int_t jcounter =0;
+    Double_t sumPS =0;
+    double SumJet ;
+    double ProbJet;
+    double Loginvlog=0;
+    int ngoodtracks=0;
     for(Int_t itrack = 0; itrack < ntracks; ++itrack)
         {
             AliVTrack * trackV = (((AliVTrack*)((jetconrec->GetParticleContainer())->GetParticle(jet->TrackAt(itrack)))));
@@ -2714,6 +2718,7 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculateJetProb(AliEmcalJet *jet)
             else if(IsTrackAcceptedJP(trackV,5)) {isAccepted=kTRUE;track_class=1;}
             else if(IsTrackAcceptedJP(trackV,4)) {isAccepted=kTRUE;track_class=2;}
             else if(IsTrackAcceptedJP(trackV,3)) {isAccepted=kTRUE;track_class=3;}
+
             if(isAccepted){
                     Double_t dca[2] = {0,0};
                     Double_t cov[3] = {0,0,0};
@@ -2723,11 +2728,30 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculateJetProb(AliEmcalJet *jet)
                     Double_t sign =1;
                     GetImpactParameterWrtToJet((AliAODTrack*)trackV,(const AliAODEvent*)InputEvent(),jet,dca,cov,xyz,sign);
                     curps =CalculatePSTrack(sign,GetValImpactParameter(kXYSig,dca,cov),trackV->Pt() ,track_class);
-                    prodPS*=(curps>=0 ? curps : -1.*curps);
-                    jcounter++;
+                    curps  =(curps>=0 ? curps : -1.*curps);
+                    SumJet+=(curps>1e-2)?log(curps):log(1e-2);
+                    ngoodtracks++;
                 }
         }
-    Double_t sumPS =0;
+    if(SumJet<0.){
+            if(ngoodtracks>=2){
+                    Loginvlog=log(-SumJet);
+                }
+            double Prob=1.;
+            double lfact=1.;
+            for(int l=1; l!=ngoodtracks; l++){
+                    lfact*=l;
+                    Prob+=exp(l*Loginvlog-log(1.*lfact));
+                }
+            double LogProb=log(Prob);
+            ProbJet=
+                    std::min(exp(std::max(LogProb+SumJet,-30.)),1.);
+        }else{
+            ProbJet=1.;
+        }
+    return -log10(ProbJet)/4.;
+
+    /*
     bool chan=false;
     for(Int_t j=0;j<jcounter;++j){
             double val = TMath::Power(-1 * TMath::Log(prodPS),j)/TMath::Factorial(j);;
@@ -2736,7 +2760,7 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculateJetProb(AliEmcalJet *jet)
         }
     if(!chan)return -1;
     retval =sumPS *prodPS;
-    return retval;
+    return retval;*/
 }
 
 Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrack(Double_t sign, Double_t significance ,Double_t trackPt,Int_t trclass)
