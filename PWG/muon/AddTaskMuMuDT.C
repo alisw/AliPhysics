@@ -1,5 +1,3 @@
-#include"AliAnalysisTaskMuMu.h"
-#include"AliAnalysisMuMuEventCut.h"
 ///
 /// Configuration example of a task to correct charged particle multiplicity
 ///
