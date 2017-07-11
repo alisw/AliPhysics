@@ -59,6 +59,8 @@ class AliMpMotifSpecial : public AliMpVMotif
   virtual MpPair_t PadIndicesLocal(
                       Double_t localPosX, Double_t localPosY) const;
 
+  TObject* Clone(const char* newid) const;
+
  private:
   /// Not implemented
   AliMpMotifSpecial();
