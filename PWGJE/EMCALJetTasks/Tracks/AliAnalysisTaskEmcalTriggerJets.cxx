@@ -131,16 +131,18 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
                                  300., 0., 30., 150., 0., 1.5);
 
               // PID plots in bins of the jet radius
-              for(int ir = 0; ir < kNJetRadiusBins; ir++){
-                fHistos->CreateTH2("hTPCdEdxFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
-                    "TPC dE/dx vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
-                    300, 0., 30., 1000., 0., 500.);
-                fHistos->CreateTH2("hTOFBetaFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
-                    "TOF #beta vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
-                    300, 0., 30., 150., 0., 1.5);
-                fHistos->CreateTH2("hEMCALEoPFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
-                    "TPC dE/dx vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
-                    300, 0., 30., 150., 0., 1.5);
+              if(radius == 4) {
+                for(int ir = 0; ir < kNJetRadiusBins; ir++){
+                  fHistos->CreateTH2("hTPCdEdxFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
+                      "TPC dE/dx vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
+                      300, 0., 30., 1000., 0., 500.);
+                  fHistos->CreateTH2("hTOFBetaFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
+                      "TOF #beta vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
+                      300, 0., 30., 150., 0., 1.5);
+                  fHistos->CreateTH2("hEMCALEoPFullJet" + TString::Format("DMin%dDMax%dPtMin%dPtMax%d", int(kRadiusBins[ir]*10.), int(kRadiusBins[ir+1]*10.), kJetPtBins[ib], kJetPtBins[ib+1]) + det + t,
+                      "TPC dE/dx vs. p for particles with " + TString::Format("%.1f < d < %.1f and %d < p_{t} < %d", kRadiusBins[ir], kRadiusBins[ir+1], kJetPtBins[ib], kJetPtBins[ib+1]) + " in " + det + " for trigger " + t,
+                      300, 0., 30., 150., 0., 1.5);
+                }
               }
             }
           }
@@ -300,7 +302,7 @@ void AliAnalysisTaskEmcalTriggerJets::FillJetPIDPlotsLeading(const AliVTrack *le
 
 void AliAnalysisTaskEmcalTriggerJets::FillPIDCorrelationPlot(const AliEmcalJet *jet, const AliTrackContainer *particles, const char *trigger, const char *detector) {
   const int kNJetPtBins = 9;
-  const int kNRadiusBins = 8;
+  const int kNRadiusBins = 7;
   const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
   const std::array<double, kNRadiusBins+1> kRadiusBins = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1.};
   int jetptbin = -1;
@@ -312,8 +314,9 @@ void AliAnalysisTaskEmcalTriggerJets::FillPIDCorrelationPlot(const AliEmcalJet *
   }
   if(jetptbin < 0) return;
 
-  for(auto track : particles->all()) {
-   if(track->IsA() == AliAODTrack::Class()) {
+  for(auto it : *(particles->GetArray())) {
+    AliVTrack *track = static_cast<AliVTrack *>(it);
+    if(track->IsA() == AliAODTrack::Class()) {
       AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
       if(!(aodtrack->IsHybridGlobalConstrainedGlobal() || aodtrack->IsHybridTPCConstrainedGlobal())) continue;
       if(track->GetTPCsignalN() < 30) continue;
@@ -332,16 +335,16 @@ void AliAnalysisTaskEmcalTriggerJets::FillPIDCorrelationPlot(const AliEmcalJet *
         }
       }
       TString histnameTPC = TString::Format("hTPCdEdxFullJetDMin%dDMax%dPtMin%dPtMax%d%s%s", static_cast<int>(kRadiusBins[drbin] * 10.), static_cast<int>(kRadiusBins[drbin+1] * 10.), kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger),
-              histnameTOF = TString::Format("hTOFBetaFullJetDMin%dDMax%dPtMin%dPtMax%d%s%s", static_cast<int>(kRadiusBins[drbin] * 10.), static_cast<int>(kRadiusBins[drbin+1] * 10.), kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger),
-              histnameEMCAL = TString::Format("hEMCALEoPFullJetDMin%dDMax%dPtMin%dPtMax%d%s%s", static_cast<int>(kRadiusBins[drbin] * 10.), static_cast<int>(kRadiusBins[drbin+1] * 10.), kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger);
+          histnameTOF = TString::Format("hTOFBetaFullJetDMin%dDMax%dPtMin%dPtMax%d%s%s", static_cast<int>(kRadiusBins[drbin] * 10.), static_cast<int>(kRadiusBins[drbin+1] * 10.), kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger),
+          histnameEMCAL = TString::Format("hEMCALEoPFullJetDMin%dDMax%dPtMin%dPtMax%d%s%s", static_cast<int>(kRadiusBins[drbin] * 10.), static_cast<int>(kRadiusBins[drbin+1] * 10.), kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], detector, trigger);
       Double_t trtime = (track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetTimeZero()) * 1e-12;
       Double_t v = track->GetIntegratedLength()/(100. * trtime);
       Double_t beta =  v / TMath::C();
       fHistos->FillTH2(histnameTPC, TMath::Abs(track->P()), track->GetTPCsignal());
       fHistos->FillTH2(histnameTOF, TMath::Abs(track->P()), beta);
       if(track->GetEMCALcluster() >= 0){
-          AliVCluster *matched = static_cast<AliVCluster *>((*GetClusterContainer("caloClusters"))[track->GetEMCALcluster()]);
-          fHistos->FillTH2(histnameEMCAL, TMath::Abs(track->P()), TMath::Abs(matched->GetNonLinCorrEnergy()/track->P()));
+        AliVCluster *matched = static_cast<AliVCluster *>((*GetClusterContainer("caloClusters"))[track->GetEMCALcluster()]);
+        fHistos->FillTH2(histnameEMCAL, TMath::Abs(track->P()), TMath::Abs(matched->GetNonLinCorrEnergy()/track->P()));
       }
     }
   }
