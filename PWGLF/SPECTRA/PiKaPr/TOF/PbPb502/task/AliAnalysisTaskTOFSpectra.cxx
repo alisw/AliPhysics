@@ -71,6 +71,7 @@
 #include "AliPPVsMultUtils.h"
 #include "AliTOFGeometry.h"
 #include "AliCDBManager.h"
+#include "TProfile.h"
 #ifdef USETREECLASS
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
@@ -3134,10 +3135,10 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms(){
     fListHist->AddLast(hBeta);
     
     for(Int_t i = 0; i < kExpSpecies; i++){
-      hBetaExpected[i] = new TH2I(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+      hBetaExpected[i] = new TProfile(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpected[i]);
       
-      hBetaExpectedTOFPID[i] = new TH2I(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Distribution of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+      hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpectedTOFPID[i]);
     }
     
@@ -3176,7 +3177,7 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(){
     for(Int_t i = 0; i < kExpSpecies; i++){
       const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
       hBetaExpected[i]->Fill(fP, betaHypo);
-      if(TMath::Abs(fTOFSigma[i])) hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
+      if(TMath::Abs(fTOFSigma[i]) < 3.0) hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
     }
     if(fNTOFClusters < 2){
       hBetaNoMismatch->Fill(fP, beta);

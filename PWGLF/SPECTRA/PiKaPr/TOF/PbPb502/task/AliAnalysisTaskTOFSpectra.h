@@ -29,6 +29,7 @@ class AliCFContainer;
 class TDatabasePDG;
 class AliESDVertex;
 class TClonesArray;
+class TProfile;
 
 //Includes
 #include "AliTOFT0v1.h"
@@ -734,8 +735,8 @@ private:
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
-  TH2I* hBetaExpected[kExpSpecies];             ///<  Histogram with the track beta vs the track momentum obtained with the exoected time
-  TH2I* hBetaExpectedTOFPID[kExpSpecies];       ///<  Histogram with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
+  TProfile* hBetaExpected[kExpSpecies];         ///<  TProfile with the track beta vs the track momentum obtained with the exoected time
+  TProfile* hBetaExpectedTOFPID[kExpSpecies];   ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
   TH2I* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                  ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchEtaCutOut;               ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
