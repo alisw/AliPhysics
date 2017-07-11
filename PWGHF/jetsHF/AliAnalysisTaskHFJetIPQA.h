@@ -114,7 +114,7 @@ public:
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
     bool IsFromElectron(AliAODTrack *track);
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
-    bool GetPIDCombined(AliAODTrack * track, double  * prob, int &nDetectors,UInt_t &usedDet ,AliPID::EParticleType &MostProbablePID, bool setTrackPID );
+    bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(const Int_t &value);
     Double_t CalculateJetProb(AliEmcalJet *jet);
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
