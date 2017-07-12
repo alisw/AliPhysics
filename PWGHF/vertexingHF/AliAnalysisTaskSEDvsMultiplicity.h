@@ -226,6 +226,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fUseBit;    /// flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; /// flag for subtracting D meson daughter contribution to N of tracklets
   Bool_t fKeepCorrPlots; /// flag to look at the correlation of different estimators (eta ranges)
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   Int_t fUseNchWeight; /// weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
   TH1F* fHistoMCNch;    /// weight histogram for the MC on the generated multiplicity
@@ -242,7 +244,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,16); /// D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,17); /// D vs. mult task
   /// \endcond
 };
 
