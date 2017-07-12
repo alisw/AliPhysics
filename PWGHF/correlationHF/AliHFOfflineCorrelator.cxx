@@ -115,7 +115,7 @@ fNameCutObj(0),
 fUseEff(0),
 fMake2DPlots(kFALSE),
 fWeightPeriods(kTRUE),
-fStoreSoftPiInME(kTRUE)
+fRejectSoftPi(kTRUE)
 {
 
 }
@@ -171,7 +171,7 @@ fNameCutObj(source.fNameCutObj),
 fUseEff(source.fUseEff),
 fMake2DPlots(source.fMake2DPlots),
 fWeightPeriods(source.fWeightPeriods),
-fStoreSoftPiInME(source.fStoreSoftPiInME)
+fRejectSoftPi(source.fRejectSoftPi)
 {
 
 }
@@ -230,7 +230,7 @@ fNameCutObj = orig.fNameCutObj;
 fUseEff = orig.fUseEff;
 fMake2DPlots = orig.fMake2DPlots;
 fWeightPeriods = orig.fWeightPeriods;
-fStoreSoftPiInME = orig.fStoreSoftPiInME;
+fRejectSoftPi = orig.fRejectSoftPi;
 
 return *this; //returns pointer of the class
 }
@@ -600,9 +600,15 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
 
       Bool_t fillSoftpiME=kFALSE;
-      if(fStoreSoftPiInME && fDmesonSpecies==kD0toKpi && fAnType==kME && deltaPhi > -0.4 && deltaPhi < 0.4 && deltaEta > -0.4 && deltaEta < 0.4) { //ME fake soft pi cut
-	Bool_t reject = IsSoftPionFromDstar(brD,brTr);
-	if(reject) fillSoftpiME=kTRUE; //to fill histograms containing only fake softpi in ME analysis
+      if(fRejectSoftPi && fDmesonSpecies==kD0toKpi) {
+        Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+        if(fAnType==kSE) { //reject softPi in SE events
+          if(reject) continue;
+        } 
+        if(fAnType==kME && deltaPhi > -0.4 && deltaPhi < 0.4 && deltaEta > -0.4 && deltaEta < 0.4) { //ME fake soft pi cut
+	        Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+	        if(reject) fillSoftpiME=kTRUE; //to fill histograms containing only fake softpi in ME analysis
+        }
       }
 
       for(Int_t iRng=0; iRng<(int)fPtBinsTrLow.size(); iRng++) {  //loop on associated track ranges
@@ -880,7 +886,7 @@ void AliHFOfflineCorrelator::SaveOutputPlots() {
 Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr) {
 	//
 	// Calculates invmass of track+D0 and rejects if compatible with D*
-	// (to remove fake pions from D* in ME events - in SE the cut is applied in the main task)
+	// (to remove fake pions from D* in ME events, and true soft pions in SE the cut)
 	// 
 	Double_t nsigma = 3.;
 	
@@ -962,7 +968,7 @@ void AliHFOfflineCorrelator::PrintCfg() const {
   std::cout << "----------------------------------------------\n";
   std::cout << " Weight periods (if ME) = "<<fWeightPeriods<<"\n";
   std::cout << "----------------------------------------------\n";
-  std::cout << " Fake soft pi rejection in Me (D0) = "<<fStoreSoftPiInME<<"\n";
+  std::cout << " Soft pi rejection (D0) = "<<fRejectSoftPi<<"\n";
   std::cout << "----------------------------------------------\n";
 }
 

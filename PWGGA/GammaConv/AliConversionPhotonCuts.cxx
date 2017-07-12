@@ -59,8 +59,9 @@ class iostream;
 
 using namespace std;
 
+/// \cond CLASSIMP
 ClassImp(AliConversionPhotonCuts)
-
+/// \endcond
 
 const char* AliConversionPhotonCuts::fgkCutNames[AliConversionPhotonCuts::kNCuts] = {
   "V0FinderType",           // 0

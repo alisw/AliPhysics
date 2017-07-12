@@ -25,10 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <THistManager.h>
+#include <TLinearBinning.h>
 #include <TMath.h>
 #include <TString.h>
 
 #include "AliAnalysisManager.h"
+#include "AliAODTrack.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalJet.h"
 #include "AliInputEventHandler.h"
@@ -75,7 +77,11 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
 
   const std::array<TString, 5> kEmcalTriggers = {"INT7", "EJ1", "EJ2", "DJ1", "DJ2"};
   const int kNJetPtBins = 9;
-  const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
+  const int kNJetRadiusBins = 7;
+
+  TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), dEdxbinning(600, 0., 600.), massbinning(400., 0., 4.), eopbinning(150, 0., 1.5), radiusBinning(10, 0., 1.);
+  const TBinning *binningPID[5] {&jetptbinning, &pbinning, &dEdxbinning, &massbinning, &eopbinning},
+                 *binningAssociate[6] = {&jetptbinning, &pbinning, &radiusBinning, &dEdxbinning, &massbinning, &eopbinning};
   const std::array<int, 2> kJetRadii = {2, 4};
   const std::array<TString, 3> kJetTypes = {"Charged", "Full", "Neutral"};
   const std::array<TString, 2> kDetectors = {"EMCAL", "DCAL"};
@@ -106,27 +112,9 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
                   "p_{t,rel} vs. p_{t, jet} for leading " + constituent + " constituents in full jets with R=" + TString::Format("%.1f", double(radius)/10.) + " in " + det + " for trigger " + t,
                   200., 0., 200., 100, 0., 1.);
             }
-            // PID histograms for full jets (all and leading charged)
-            for(int ib  = 0; ib < kNJetPtBins; ib++){
-              fHistos->CreateTH2("hTPCdEdxFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TPC dE/dx vs. p for jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + "in " + det + " for trigger " + t,
-                                 300, 0., 30., 1000., 0., 500.);
-              fHistos->CreateTH2("hTOFBetaFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TOF #beta vs. p for jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + " in " + det + " for trigger " + t,
-                                 300., 0., 30., 120., 0., 1.2);
-              fHistos->CreateTH2("hEMCALEoPFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TOF #beta vs. p for jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + " in " + det + " for trigger " + t,
-                                 300., 0., 30., 150., 0., 1.5);
-              fHistos->CreateTH2("hTPCdEdxLeadingFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TPC dE/dx vs. p for leading jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + "in " + det + " for trigger " + t,
-                                 300, 0., 30., 1000., 0., 500.);
-              fHistos->CreateTH2("hTOFBetaLeadingFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TOF #beta vs. p for leading jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + " in " + det + " for trigger " + t,
-                                 300., 0., 30., 120., 0., 1.2);
-              fHistos->CreateTH2("hEMCALEoPLeadingFullJet" + TString::Format("Min%dMax%dR%02d", kJetPtBins[ib], kJetPtBins[ib+1], radius) + det + t,
-                                 "TOF #beta vs. p for jet constituents for full jets with " + TString::Format("%d < p_{t} < %d and R=%.1f", kJetPtBins[ib], kJetPtBins[ib+1], float(radius)/10.) + " in " + det + " for trigger " + t,
-                                 300., 0., 30., 150., 0., 1.5);
-            }
+            fHistos->CreateTHnSparse("hPIDConstituentFullJet" + TString::Format("R%02d", radius) + det + t, TString::Format("PID for full jet constituents for R=%0.2f in %s for trigger %t", double(radius)/10., det.Data(), t.Data()), 5, binningPID);
+            fHistos->CreateTHnSparse("hPIDLeadingFullJet" + TString::Format("R%02d", radius) + det + t, TString::Format("PID for full jet leading constituents for R=%0.2f in %s for trigger %t", double(radius)/10., det.Data(), t.Data()), 5, binningPID);
+            fHistos->CreateTHnSparse("hPIDAssociateFullJet" + TString::Format("R%02d", radius) + det + t, TString::Format("PID for particles associated to full jets for R=%0.2f in %s for trigger %t", double(radius)/10., det.Data(), t.Data()), 6, binningAssociate);
           }
         }
       }
@@ -184,9 +172,11 @@ bool AliAnalysisTaskEmcalTriggerJets::Run(){
           double absJetPt = TMath::Abs(j->Pt());
           for(auto t : triggers) {
             fHistos->FillTH1(rawhistnamebase + t, absJetPt);
-            if(doPID) FillJetPIDPlots(j, radius,  t, det);
             if(jt == "Full") {
               AliDebugStream(1) << "Filling full jet leading histograms, constituents c[" << j->GetNumberOfTracks() << "], n[" << j->GetNumberOfClusters() << "]" << std::endl;
+              FillJetPIDPlots(j, radius,  t, det);
+              fHistos->FillTH2("hNefFullJet" + r + det + t, absJetPt, j->NEF());
+              // fill also histograms for the neutral energy and the leading particles
               if(leadingClust){
                 fHistos->FillTH2("hLeadingNeutralPt" + tagForLeading + t, absJetPt, TMath::Abs(clustervec.Pt()));
                 fHistos->FillTH2("hLeadingNeutralZ" + tagForLeading + t, absJetPt, j->GetZ(clustervec.Px(), clustervec.Py(), clustervec.Pz()));
@@ -203,7 +193,10 @@ bool AliAnalysisTaskEmcalTriggerJets::Run(){
               } else {
                 AliDebugStream(2) << "No leading track found" << std::endl;
               }
-              // fill also histograms for the neutral energy and the leading particles
+              // Fill PID plots for particles around the main jet axis
+              if(radius == 0.4) {
+                FillPIDCorrelationPlot(j, this->GetTrackContainer("tracks"), radius, t, det);
+              }
               AliDebugStream(1) << "Filling full jet leading constituent histograms done" << std::endl;
             }
           }
@@ -215,63 +208,75 @@ bool AliAnalysisTaskEmcalTriggerJets::Run(){
 }
 
 void AliAnalysisTaskEmcalTriggerJets::FillJetPIDPlots(const AliEmcalJet *jet, double radius, const char *trigger, const char *detector){
-  const int kNJetPtBins = 9;
-  const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
-  int jetptbin = -1;
-  for(int ib = 0; ib < kNJetPtBins; ib++){
-    if(TMath::Abs(jet->Pt()) >= kJetPtBins[ib] && TMath::Abs(jet->Pt()) < kJetPtBins[ib+1]) {
-      jetptbin = ib;
-      break;
-    }
-  }
-  if(jetptbin < 0) return;
-  TString histnameTPC = TString::Format("hTPCdEdxFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger),
-          histnameTOF = TString::Format("hTOFBetaFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger),
-          histnameEMCAL = TString::Format("hEMCALEoPFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger);
+  if(TMath::Abs(jet->Pt()) < 20 || TMath::Abs(jet->Pt()) > 200) return;
+  TString histname = TString::Format("hPIDConstituentFullJetR%02d%s%s", int(radius * 10), detector, trigger);
   AliTrackContainer *tc = GetTrackContainer("tracks");
 
   for(int icharged = 0; icharged < jet->GetNumberOfTracks(); icharged++){
     AliVTrack *constituent = static_cast<AliVTrack *>(jet->TrackAt(icharged, tc->GetArray()));
     // Select only constituents with sufficient PID information in both TPC and TOF
     if(constituent->GetTPCsignalN() < 30) continue;
+    if(constituent->GetTPCSharedMapPtr()->CountBits(0) > 70) continue;
     if(!((constituent->GetStatus() & AliVTrack::kTOFout) && (constituent->GetStatus() & AliVTrack::kTIME))) continue;
     Double_t trtime = (constituent->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetTimeZero()) * 1e-12;
     Double_t v = constituent->GetIntegratedLength()/(100. * trtime);
-    Double_t beta =  v / TMath::C();
-    fHistos->FillTH2(histnameTPC, TMath::Abs(constituent->P()), constituent->GetTPCsignal());
-    fHistos->FillTH2(histnameTOF, TMath::Abs(constituent->P()), beta);
+    Double_t beta =  v / TMath::C(), gamma = 1 / TMath::Sqrt(1-beta*beta), mtof = constituent->P() / (beta*gamma);
+    Double_t eop = -1.;
     if(constituent->GetEMCALcluster() >= 0) {
       AliVCluster *matched = static_cast<AliVCluster *>((*GetClusterContainer("caloClusters"))[constituent->GetEMCALcluster()]);
-      fHistos->FillTH2(histnameEMCAL, TMath::Abs(constituent->P()), TMath::Abs(matched->GetNonLinCorrEnergy()/constituent->P()));
+      if(matched) eop = TMath::Abs(matched->GetNonLinCorrEnergy()/constituent->P());
     }
+    Double_t datapoint[5] = {TMath::Abs(jet->Pt()), TMath::Abs(constituent->P()), constituent->GetTPCsignal(), mtof, eop};
+    fHistos->FillTHnSparse(histname, datapoint);
   }
 }
 
 void AliAnalysisTaskEmcalTriggerJets::FillJetPIDPlotsLeading(const AliVTrack *leading, double ptjet, double radius, const char *trigger, const char *detector){
-  const int kNJetPtBins = 9;
-  const std::array<int, kNJetPtBins+1> kJetPtBins = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
-  int jetptbin = -1;
-  for(int ib = 0; ib < kNJetPtBins; ib++){
-    if(TMath::Abs(ptjet) >= kJetPtBins[ib] && TMath::Abs(ptjet) < kJetPtBins[ib+1]) {
-      jetptbin = ib;
-      break;
-    }
-  }
-  if(jetptbin < 0) return;
+  if(ptjet < 20 || ptjet > 200) return;
 
-  TString histnameTPC = TString::Format("hTPCdEdxLeadingFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger),
-          histnameTOF = TString::Format("hTOFBetaLeadingFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger),
-          histnameEMCAL = TString::Format("hEMCALEoPFullJetMin%dMax%dR%02d%s%s", kJetPtBins[jetptbin], kJetPtBins[jetptbin+1], int(radius*10.), detector, trigger);
+  TString histname = TString::Format("hPIDLeadingFullJetR%02d%s%s", int(radius*10.), detector, trigger);
   if(leading->GetTPCsignalN() < 30) return;
   if(!((leading->GetStatus() & AliVTrack::kTOFout) && (leading->GetStatus() & AliVTrack::kTIME))) return;
+  if(leading->GetTPCSharedMapPtr()->CountBits(0) > 70) return;
   Double_t trtime = (leading->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetTimeZero()) * 1e-12;
   Double_t v = leading->GetIntegratedLength()/(100. * trtime);
-  Double_t beta =  v / TMath::C();
-  fHistos->FillTH2(histnameTPC, TMath::Abs(leading->P()), leading->GetTPCsignal());
-  fHistos->FillTH2(histnameTOF, TMath::Abs(leading->P()), beta);
+  Double_t beta =  v / TMath::C(), gamma = 1 / TMath::Sqrt(1-beta*beta), mtof = leading->P() / (beta*gamma);
+  Double_t eop = -1.;
   if(leading->GetEMCALcluster() >= 0){
       AliVCluster *matched = static_cast<AliVCluster *>((*GetClusterContainer("caloClusters"))[leading->GetEMCALcluster()]);
-      fHistos->FillTH2(histnameEMCAL, TMath::Abs(leading->P()), TMath::Abs(matched->GetNonLinCorrEnergy()/leading->P()));
+      if(matched) eop = TMath::Abs(matched->GetNonLinCorrEnergy()/leading->P());
+  }
+  Double_t datapoint[5] = {ptjet, TMath::Abs(leading->P()), leading->GetTPCsignal(), mtof, eop};
+  fHistos->FillTHnSparse(histname, datapoint);
+}
+
+void AliAnalysisTaskEmcalTriggerJets::FillPIDCorrelationPlot(const AliEmcalJet *jet, const AliTrackContainer *particles, double radius, const char *trigger, const char *detector) {
+  if(TMath::Abs(jet->Pt()) < 20 || TMath::Abs(jet->Pt()) > 200) return;
+
+  TString histname = TString::Format("hPIDAssociateFullJetR%02d%s%s", int(radius*10.), detector, trigger);
+  for(auto it : *(particles->GetArray())) {
+    AliVTrack *track = static_cast<AliVTrack *>(it);
+    if(track->IsA() == AliAODTrack::Class()) {
+      AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+      if(!(aodtrack->IsHybridGlobalConstrainedGlobal() || aodtrack->IsHybridTPCConstrainedGlobal())) continue;
+      if(track->GetTPCsignalN() < 30) continue;
+      if(track->GetTPCSharedMapPtr()->CountBits(0) > 70) continue; // exclude tracks with more than 70 shared clusters ->
+      if(!((track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME))) continue;
+      TVector3 partvector(track->Px(), track->Py(), track->Pz()), jetvector(jet->Px(), jet->Py(), jet->Pz());
+      double dr = jetvector.DeltaR(partvector);
+      if(dr < 0 || dr >= 1.) continue;
+
+      Double_t trtime = (track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetTimeZero()) * 1e-12;
+      Double_t v = track->GetIntegratedLength()/(100. * trtime);
+      Double_t beta =  v / TMath::C(), gamma = 1 / TMath::Sqrt(1-beta*beta), mtof = track->P() / (beta*gamma);
+      Double_t eop = -1.;
+      if(track->GetEMCALcluster() >= 0){
+        AliVCluster *matched = static_cast<AliVCluster *>((*GetClusterContainer("caloClusters"))[track->GetEMCALcluster()]);
+        if(matched) eop = TMath::Abs(matched->GetNonLinCorrEnergy()/track->P());
+      }
+      Double_t datapoint[6] = {TMath::Abs(jet->Pt()), TMath::Abs(track->P()), dr, track->GetTPCsignal(), mtof, eop};
+      fHistos->FillTHnSparse(histname, datapoint);
+    }
   }
 }
 

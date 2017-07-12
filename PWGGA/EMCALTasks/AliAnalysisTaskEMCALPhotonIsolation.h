@@ -204,7 +204,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t      fTMClusterInConeRejected;        // Enable/disable TM cluster rejection in isolation cone
   Bool_t      fRejectionEventWithoutTracks;    // Enable/disable rejction of events without tracks
   Bool_t      fAnalysispPb;                    // Enable/disable the p-Pb analysis facilities
-  Int_t       fTriggerLevel1;                  // Choice of the L1 gamma trigger to "simulate" for the MC (1 = EMCEGA1, 2 = EMCEGA2)
+  Int_t       fTriggerLevel1;                  // Choice of the L1 gamma trigger to "simulate" for the MC (0 = no simulation ("MB" case), 1 = EMCEGA1, 2 = EMCEGA2)
   Int_t       fTest1;
   Int_t       fTest2;
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
@@ -320,7 +320,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F        *fEtaTracksVSclustPt;            //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
-  TH1D        *fPtTracks;                      //!<!
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output // Isolation on pTMax

@@ -83,10 +83,23 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetMultiplVsZProfileLHC13b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 13;
   }
   void SetMultiplVsZProfileLHC13c(TProfile* hprof){
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 13;
+  }
+    
+  void SetMultiplVsZProfileLHC16q(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16t(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 16;
   }
     
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -226,6 +239,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fUseBit;    /// flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; /// flag for subtracting D meson daughter contribution to N of tracklets
   Bool_t fKeepCorrPlots; /// flag to look at the correlation of different estimators (eta ranges)
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   Int_t fUseNchWeight; /// weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
   TH1F* fHistoMCNch;    /// weight histogram for the MC on the generated multiplicity
@@ -240,9 +255,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Int_t fDoVZER0ParamVertexCorr; /// Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
+  Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,16); /// D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,18); /// D vs. mult task
   /// \endcond
 };
 

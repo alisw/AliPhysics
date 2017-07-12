@@ -620,7 +620,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventVertex[z][m][eventCounter].fEP = epvalue;
 
 	//first clear the vector
-    for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+  for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
 		delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
 	}
 	fBGEventsMeson[z][m][eventCounter].clear();
@@ -632,6 +632,32 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventMesonCounter[z][m]++;
 }
 
+void AliGammaConversionAODBGHandler::AddMesonEvent(const std::vector<AliAODConversionMother> &eventMother, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue){
+  Int_t z = GetZBinIndex(zvalue);
+  Int_t m = GetMultiplicityBinIndex(multiplicity);
+
+  if(fBGEventMesonCounter[z][m] >= fNEvents){
+    fBGEventMesonCounter[z][m]=0;
+  }
+  Int_t eventCounter=fBGEventMesonCounter[z][m];
+
+  fBGEventVertex[z][m][eventCounter].fX = xvalue;
+  fBGEventVertex[z][m][eventCounter].fY = yvalue;
+  fBGEventVertex[z][m][eventCounter].fZ = zvalue;
+  fBGEventVertex[z][m][eventCounter].fEP = epvalue;
+
+  //first clear the vector
+  for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+    delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
+  }
+  fBGEventsMeson[z][m][eventCounter].clear();
+
+  // add the gammas to the vector
+  for(const auto &mother : eventMother){
+    fBGEventsMeson[z][m][eventCounter].push_back(new AliAODConversionMother(mother));
+  }
+  fBGEventMesonCounter[z][m]++;
+}
 
 //_____________________________________________________________________________________________________________________________
 void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity){
@@ -673,6 +699,11 @@ AliGammaConversionAODVector* AliGammaConversionAODBGHandler::GetBGGoodV0s(Int_t 
 AliGammaConversionMotherAODVector* AliGammaConversionAODBGHandler::GetBGGoodMesons(Int_t zbin, Int_t mbin, Int_t event){
 	//see headerfile for documentation
 	return &(fBGEventsMeson[zbin][mbin][event]);
+}
+
+//_____________________________________________________________________________________________________________________________
+Int_t AliGammaConversionAODBGHandler::GetNBackgroundEventsInBuffer(Int_t binz, int binMult) const {
+  return fBGEventsMeson[binz][binMult].size();
 }
 
 //_____________________________________________________________________________________________________________________________

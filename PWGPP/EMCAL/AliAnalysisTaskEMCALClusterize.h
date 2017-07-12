@@ -20,6 +20,7 @@
 // Root
 class TTree;
 class TClonesArray;
+#include <TRandom3.h>
 
 // EMCAL
 class AliEMCALGeometry;
@@ -29,6 +30,7 @@ class AliEMCALRecPoint;
 class AliAODCaloCluster;
 class AliCentrality;
 class AliMultSelection;
+class AliVCaloCells;
 
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecoUtils.h"
@@ -173,6 +175,30 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
                                                                    fSetCellMCLabelFromCluster = 0      ; }
   void           SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE ; }
   
+  //-----------------------------------------
+  // T-Card correlation emulation, do on MC
+  
+  void           MakeCellTCardCorrelation() ;
+  void           AddNewTCardInducedCellsToDigit() ;
+  
+  /// Activate T-Card cells correlation, 
+  /// \param conservEnergy activate cluster energy conservation, not by default
+  void           SwitchOnTCardCorrelation(Bool_t conservEnergy = kFALSE)  { fTCardCorrEmulation = kTRUE  ; fTCardCorrClusEnerConserv = conservEnergy ; }   
+  
+  /// De-activate T-Card cells correlation, 
+  void           SwitchOffTCardCorrelation()                              { fTCardCorrEmulation = kFALSE ; fTCardCorrClusEnerConserv = kFALSE        ; }      
+
+  /// fraction of energy lost by max energy cell in one of cross cells
+  /// \param row energy lost in same row cell
+  /// \param col energy lost in same column cells
+  void           SetInducedEnergyLossFraction(Float_t row, Float_t col)   { fTCardCorrInduceEnerFrac[0] = row ; fTCardCorrInduceEnerFrac[1] = col    ; } 
+
+  /// fraction of times max cell energy correlates with cross cells, different for each super-module
+  /// \param prob probability per event, from 0 to 1
+  /// \param sm   probability assigned to this super-module number
+  void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
+  //------------------------------------------
+  
 private:
     
   virtual void   FillCaloClusterInEvent();
@@ -198,6 +224,7 @@ private:
   TClonesArray          *fDigitsArr;               //!<! Digits array
   TObjArray             *fClusterArr;              //!<! Recpoints array
   TObjArray             *fCaloClusterArr;          //!<! CaloClusters array
+  AliVCaloCells         *fCaloCells;               //!<! CaloCells container
 
   // Clusterizers
   AliEMCALRecParam      *fRecParam;                ///<  Reconstruction parameters container
@@ -272,6 +299,17 @@ private:
 
   Bool_t                 fInputFromFilter ;        ///<  Get the input from AODs from the filter.
     
+  
+  // T-Card correlation emulation, do on MC
+  Bool_t                fTCardCorrEmulation;       ///< Activate T-Card cells energy correlation
+  Bool_t                fTCardCorrClusEnerConserv; ///< When making correlation, subtract from the reference cell the induced energy on the neighbour cells
+  Float_t               fTCardCorrCellsEner[fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells
+  Bool_t                fTCardCorrCellsNew [fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells, that before had no signal
+  
+  Float_t               fTCardCorrInduceEnerFrac[2 ]; ///< Induced energy loss on same 0-row cell or 1-up/down cells   
+  Float_t               fTCardCorrInduceEnerProb[22]; ///< Probability to induce energy loss per SM   
+  TRandom3              fRandom   ;                ///<  Random generator
+  
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     
@@ -279,7 +317,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 32) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 33) ;
   /// \endcond
 
 };

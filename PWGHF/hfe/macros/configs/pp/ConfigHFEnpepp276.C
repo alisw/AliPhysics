@@ -19,7 +19,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp276(Bool_t useMC, Bool_t isAOD, TString append
    //        Setting up the HFE cuts        //
    //***************************************//
 
-   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pPb");
+   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pp");
    //hfecuts->SetQAOn();
    hfecuts->CreateStandardCuts();
    if(isAOD) hfecuts->SetAODFilterBit(4);

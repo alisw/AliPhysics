@@ -38,7 +38,7 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev() :
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
   fExclJetOverlap(),
-  fOccupancyFactor(1.),
+  fOccupancyFactor(0),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -54,7 +54,7 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev(const char *name, Bool_t histo) :
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
   fExclJetOverlap(),
-  fOccupancyFactor(1.),
+  fOccupancyFactor(0),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -69,7 +69,7 @@ void AliAnalysisTaskRhoDev::UserCreateOutputObjects()
 
   AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects();
 
-  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent", 100, 0, 100, 2000, 0 , 2);
+  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent;Centrality (%);#it{C}", 100, 0, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 }
 
@@ -145,13 +145,17 @@ void AliAnalysisTaskRhoDev::CalculateRho()
     ++NjetAcc;
   }
 
+  // Occupancy correction for sparse event described in https://arxiv.org/abs/1207.2392
+  if (TotaljetArea > 0) {
+    fOccupancyFactor = TotaljetAreaPhys / TotaljetArea;
+  }
+  else {
+    fOccupancyFactor = 0;
+  }
 
   if (NjetAcc > 0) {
     //find median value
     Double_t rho = TMath::Median(NjetAcc, rhovec);
-
-    // Occupancy correction for sparse event described in https://arxiv.org/abs/1207.2392
-    if (TotaljetArea > 0) fOccupancyFactor = TotaljetAreaPhys / TotaljetArea;
 
     if (fRhoSparse) rho = rho * fOccupancyFactor;
 

@@ -660,7 +660,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   UInt_t filterMap;
   Int_t nmun=0, ncen=0;
 
-  //ESD central tracks loop
+  /*/ESD central tracks loop
   for(Int_t itr=0; itr<esdEvent->GetNumberOfTracks(); itr++) {
     AliESDtrack *eTrack = esdEvent->GetTrack(itr);
     if( !eTrack ) continue;
@@ -751,6 +751,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
 
     ncen++;
   } //ESD central tracks loop
+  /*/
 
   // ESD muon tracks
   //muon tracks loop
@@ -781,7 +782,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   } //muon tracks loop
 
   //selection for at least one muon or central track
-  //if( nmun + ncen < 1 ) return kFALSE;
+  if( nmun + ncen < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;

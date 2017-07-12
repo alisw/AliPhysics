@@ -47,7 +47,9 @@ class iostream;
 
 using namespace std;
 
+/// \cond CLASSIMP
 ClassImp(AliConversionMesonCuts)
+/// \endcond
 
 
 const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] = {

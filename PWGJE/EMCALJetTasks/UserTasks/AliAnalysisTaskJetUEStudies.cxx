@@ -75,7 +75,7 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
     constituentsMax = 49.5;
     maxRho = 50;
     maxTracks = 200;
-    minCorrPt = -25;
+    minCorrPt = -50;
   }
   else if (fForceBeamType == kpA) {
     constituentsNbins = 100;
@@ -111,6 +111,10 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
       histname = TString::Format("%s/fHistDelta%sVsRho", rho1.first.Data(), rho2.first.Data());
       title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.first.Data(), rho2.first.Data(), rho1.first.Data(), rho2.first.Data());
       fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*4, minCorrPt*2, -minCorrPt*2);
+
+      histname = TString::Format("%s/fHist%sVs%s", rho1.first.Data(), rho2.first.Data(), rho1.first.Data());
+      title = TString::Format("%s;%s (GeV/#it{c} #times rad^{-1}); %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho1.first.Data(), rho2.first.Data());
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, 500, 0, maxRho);
     }
   }
 
@@ -139,6 +143,10 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
         histname = TString::Format("%s/%s/fHistB2BDelta%sVsRho", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
         title = TString::Format("%s;#frac{%s + %s}{2} (GeV/#it{c} #times rad^{-1});%s - %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho.first.Data(), rho2.first.Data(), rho.first.Data(), rho2.first.Data());
         fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*4, minCorrPt*2, -minCorrPt*2);
+
+        histname = TString::Format("%s/fHistB2B%sVs%s", rho.first.Data(), rho2.first.Data(), rho.first.Data());
+        title = TString::Format("%s;%s (GeV/#it{c} #times rad^{-1}); %s (GeV/#it{c} #times rad^{-1});counts", histname.Data(), rho.first.Data(), rho2.first.Data());
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, 500, 0, maxRho);
       }
 
       histname = TString::Format("%s/%s/fHistLeadingJetCorrPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
@@ -208,6 +216,30 @@ void AliAnalysisTaskJetUEStudies::UserCreateOutputObjects()
       histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
       title = histname + ";#rho (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, maxRho, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistB2BRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
+
+      histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+      title = histname + ";#it{p}_{T,jet}^{lead} (GeV/#it{c});#Delta#it{p}_{T}^{RC} = #it{p}_{T}^{RC} - #it{A}_{jet}#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, (nCorrPtBins - nPtBins)*2, minCorrPt, -minCorrPt);
     }
 
     if (fCentBins.size() > 1) {
@@ -311,6 +343,9 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
 
       histname = TString::Format("%s/fHistDelta%sVsRho", rho1.first.Data(), rho2.first.Data());
       fHistManager.FillTH2(histname, (rho1.second->GetVal() + rho2.second->GetVal()) / 2, rho1.second->GetVal() - rho2.second->GetVal());
+
+      histname = TString::Format("%s/fHist%sVs%s", rho1.first.Data(), rho2.first.Data(), rho1.first.Data());
+      fHistManager.FillTH2(histname, rho1.second->GetVal(), rho2.second->GetVal());
     }
   }
 
@@ -327,6 +362,10 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
     if (leadingJet) {
       random_cone_perp.reset(GetRandomConePerp(jets, leadingJet));
       random_cone_excl_lead.reset(GetRandomConeExclLead(jets, leadingJet));
+    }
+    else {
+      random_cone_perp = random_cone;
+      random_cone_excl_lead = random_cone;
     }
 
     if (leadingJet) {
@@ -348,49 +387,56 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
         fHistManager.FillTH2(histname, fCent, leadingJet->Pt() - rho.second->GetVal() * leadingJet->Area());
       }
 
+      histname = TString::Format("%s/%s/fHistRCPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
+      fHistManager.FillTH2(histname, random_cone->Eta(), random_cone->Phi());
+
       histname = TString::Format("%s/%s/fHistRCDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
       fHistManager.FillTH2(histname, fCent, random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
 
       histname = TString::Format("%s/%s/fHistRCDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
       fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
 
-      histname = TString::Format("%s/%s/fHistRCPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
-      fHistManager.FillTH2(histname, random_cone->Eta(), random_cone->Phi());
+      histname = TString::Format("%s/%s/fHistRCPerpPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
+      fHistManager.FillTH2(histname, random_cone_perp->Eta(), random_cone_perp->Phi());
 
-      if (random_cone_perp) {
-        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, fCent, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+      histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
+      fHistManager.FillTH2(histname, fCent, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
 
-        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
-
-        histname = TString::Format("%s/%s/fHistRCPerpPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, random_cone_perp->Eta(), random_cone_perp->Phi());
-      }
-      else if (!leadingJet) {
-        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, fCent, 0);
-
-        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, rho.second->GetVal(), 0);
-      }
+      histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
+      fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
 
       if (random_cone_excl_lead) {
+        histname = TString::Format("%s/%s/fHistRCExclLeadJetPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, random_cone_excl_lead->Eta(), random_cone_excl_lead->Phi());
+
         histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
         fHistManager.FillTH2(histname, fCent, random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
 
         histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
         fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
-
-        histname = TString::Format("%s/%s/fHistRCExclLeadJetPhiVsEta", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, random_cone_excl_lead->Eta(), random_cone_excl_lead->Phi());
       }
-      else if (!leadingJet) {
-        histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, fCent, 0);
 
-        histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-        fHistManager.FillTH2(histname, rho.second->GetVal(), 0);
+      if (leadingJet) {
+        histname = TString::Format("%s/%s/fHistRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
+
+        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+
+        if (random_cone_excl_lead) {
+          histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
+        }
+      }
+      else {
+        histname = TString::Format("%s/%s/fHistRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, -1, random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
+
+        histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, -1, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+
+        histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, -1, random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
       }
 
       if (isB2B) {
@@ -405,20 +451,11 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
         histname = TString::Format("%s/%s/fHistB2BRCDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
         fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
 
-        if (random_cone_perp) {
-          histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, fCent, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+        histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, fCent, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
 
-          histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
-        }
-        else if (!leadingJet) {
-          histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, fCent, 0);
-
-          histname = TString::Format("%s/%s/fHistRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, rho.second->GetVal(), 0);
-        }
+        histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
+        fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
 
         if (random_cone_excl_lead) {
           histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
@@ -427,13 +464,30 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
           histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
           fHistManager.FillTH2(histname, rho.second->GetVal(), random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
         }
-        else if (!leadingJet) {
-          histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsCent", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, fCent, 0);
 
-          histname = TString::Format("%s/%s/fHistRCExclLeadJetDeltaPtVsRho", jets->GetArrayName().Data(), rho.first.Data());
-          fHistManager.FillTH2(histname, rho.second->GetVal(), 0);
+        if (leadingJet) {
+          histname = TString::Format("%s/%s/fHistB2BRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
+
+          histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+
+          if (random_cone_excl_lead) {
+            histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+            fHistManager.FillTH2(histname, leadingJet->Pt(), random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
+          }
         }
+        else {
+          histname = TString::Format("%s/%s/fHistB2BRCDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, -1, random_cone->Pt() - rho.second->GetVal() * random_cone->Area());
+
+          histname = TString::Format("%s/%s/fHistB2BRCPerpDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, -1, random_cone_perp->Pt() - rho.second->GetVal() * random_cone_perp->Area());
+
+          histname = TString::Format("%s/%s/fHistB2BRCExclLeadJetDeltaPtVsLeadJetPt", jets->GetArrayName().Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, -1, random_cone_excl_lead->Pt() - rho.second->GetVal() * random_cone_excl_lead->Area());
+        }
+
         for (auto rho2 : fAlternativeRho) {
           if (rho == rho2) continue;
           histname = TString::Format("%s/%s/fHistB2BDelta%sOverRhoVsCent", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
@@ -441,6 +495,9 @@ Bool_t AliAnalysisTaskJetUEStudies::FillHistograms()
 
           histname = TString::Format("%s/%s/fHistB2BDelta%sVsRho", jets->GetArrayName().Data(), rho.first.Data(), rho2.first.Data());
           fHistManager.FillTH2(histname, (rho.second->GetVal() + rho2.second->GetVal()) / 2, rho.second->GetVal() - rho2.second->GetVal());
+
+          histname = TString::Format("%s/fHistB2B%sVs%s", rho.first.Data(), rho2.first.Data(), rho.first.Data());
+          fHistManager.FillTH2(histname, rho.second->GetVal(), rho2.second->GetVal());
         }
       }
     }

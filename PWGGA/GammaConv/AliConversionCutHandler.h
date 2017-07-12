@@ -33,6 +33,8 @@ class TString;
 class AliConversionCutHandler {
 public:
 	AliConversionCutHandler(Int_t nMax=10);
+	AliConversionCutHandler(const AliConversionCutHandler &ref);
+	AliConversionCutHandler &operator=(const AliConversionCutHandler &ref);
 	virtual ~AliConversionCutHandler();
 
 	void AddCut(TString eventCut, TString photonCut, TString mesonCut);
