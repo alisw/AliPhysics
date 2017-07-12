@@ -246,13 +246,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
 			    multiplicity,
 			    zvtx};
     for (auto single: this->fsingleHists) {
-      	if (// Check overflow; see comments in the loop for the pairs.
-	    single->GetAxis(cSinglesDims::kEta)->GetBinLowEdge(1) <= stuffing[cSinglesDims::kEta]
-	    && stuffing[cSinglesDims::kEta] < single->GetAxis(cSinglesDims::kEta)->
-	    GetBinUpEdge(single->GetAxis(cSinglesDims::kEta)->GetNbins()))
-	  {
-	    single->Fill(stuffing, evWeight * track.weight);
-	  }
+      single->Fill(stuffing, evWeight * track.weight);
     }
   }
 
@@ -330,16 +324,15 @@ UInt_t AliAnalysisTaskC2::GetPairHistIndex(Float_t trigger, Float_t assoc) {
 AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
   // Get the event validation object
   AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
-  ev_val->GetFMDhits();
 
   AliAnalysisTaskValidation::Tracks ret_vector;
   // Append central tracklets
   if (this->fSettings.kRECON == this->fSettings.fDataType) {
     // Are we running on SPD clusters? If so add them to our track vector
-    if (this->fSettings.fUseSPclusters) {
+    if (this->fSettings.fUseSPDclusters) {
       AliError("SPD clusters not yet implemented");
     }
-    else if (this->fSettings.fUseSPtracklets) {
+    else if (this->fSettings.fUseSPDtracklets) {
       auto spdhits = ev_val->GetSPDtracklets();
       ret_vector.insert(ret_vector.end(), spdhits.begin(), spdhits.end());
     }
@@ -348,6 +341,9 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
     if (this->fSettings.fUseFMD) {
       auto fmdhits = ev_val->GetFMDhits();
       ret_vector.insert(ret_vector.end(), fmdhits.begin(), fmdhits.end());
+    } else if (this->fSettings.fUseV0){
+      auto v0amps = ev_val->GetV0hits();
+      ret_vector.insert(ret_vector.end(), v0amps.begin(), v0amps.end());
     }
   }
   // MC truth case:
