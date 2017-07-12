@@ -21,12 +21,8 @@
 #include "TClonesArray.h"
 #include "AliESDVertex.h"
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
-typedef vector<AliAODConversionPhoton*> AliGammaConversionAODVector;
-typedef vector<AliAODConversionMother*> AliGammaConversionMotherAODVector;
+typedef std::vector<AliAODConversionPhoton*> AliGammaConversionAODVector;
+typedef std::vector<AliAODConversionMother*> AliGammaConversionMotherAODVector;
 
 class AliGammaConversionAODBGHandler : public TObject {
 
@@ -40,13 +36,13 @@ class AliGammaConversionAODBGHandler : public TObject {
 	
 	typedef struct GammaConversionVertex GammaConversionVertex; 																//!
 
-	typedef vector<AliGammaConversionAODVector> AliGammaConversionBGEventVector;
-	typedef vector<AliGammaConversionBGEventVector> AliGammaConversionMultipicityVector;
-	typedef vector<AliGammaConversionMultipicityVector> AliGammaConversionBGVector;
+	typedef std::vector<AliGammaConversionAODVector> AliGammaConversionBGEventVector;
+	typedef std::vector<AliGammaConversionBGEventVector> AliGammaConversionMultipicityVector;
+	typedef std::vector<AliGammaConversionMultipicityVector> AliGammaConversionBGVector;
 
-	typedef vector<AliGammaConversionMotherAODVector> AliGammaConversionMotherBGEventVector;
-	typedef vector<AliGammaConversionMotherBGEventVector> AliGammaConversionMotherMultipicityVector;
-	typedef vector<AliGammaConversionMotherMultipicityVector> AliGammaConversionMotherBGVector;
+	typedef std::vector<AliGammaConversionMotherAODVector> AliGammaConversionMotherBGEventVector;
+	typedef std::vector<AliGammaConversionMotherBGEventVector> AliGammaConversionMotherMultipicityVector;
+	typedef std::vector<AliGammaConversionMotherMultipicityVector> AliGammaConversionMotherBGVector;
 	
 
 	AliGammaConversionAODBGHandler();																							//constructor
@@ -66,6 +62,7 @@ class AliGammaConversionAODBGHandler : public TObject {
 
 	void AddEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddMesonEvent(TList* const eventMothers, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
+	void AddMesonEvent(const std::vector<AliAODConversionMother> &eventMother, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
 
 	Int_t GetNBGEvents()const {return fNEvents;}
