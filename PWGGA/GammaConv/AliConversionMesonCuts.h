@@ -1,9 +1,6 @@
 #ifndef ALICONVERSIONMESONCUTS_H
 #define ALICONVERSIONMESONCUTS_H
 
-// Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner                        *
-
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -30,8 +27,11 @@ class TList;
 class AliAnalysisManager;
 
 
-/***
+/**
  * @class AliConversionMesonCuts
+ * @brief Class handling all kinds of selection cuts for Gamma Conversion analysis
+ * @author Svein Lindal
+ * @author Daniel Lohner
  * @ingroup GammaConv
  *
  * The cut configuration is set as a string with an 19 digit number.
@@ -39,6 +39,7 @@ class AliAnalysisManager;
  * its values represent the cut values. The cut configuration is listed here:
  *
  * | Position in the cut string (from the end) | Cut type                 |
+ * |-------------------------------------------|--------------------------|
  * |                  0                        | MesonKind                |
  * |                  1                        | BackgroundScheme         | 
  * |                  2                        | NumberOfBGEvents         |
@@ -180,33 +181,33 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     
   protected:
-    TList*    fHistograms;
-    Bool_t    fDoLightOutput;             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-    Int_t     fMode;                      // running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
+    TList*    fHistograms;				 ///< List of QA histograms
+    Bool_t    fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t     fMode;                      ///< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
 
-    AliCaloPhotonCuts* fCaloPhotonCuts;   // CaloPhotonCutObject belonging to same main task
+    AliCaloPhotonCuts* fCaloPhotonCuts;   ///< CaloPhotonCutObject belonging to same main task
 
     //cuts
-    Int_t     fMesonKind;
-    Int_t     fIsMergedClusterCut;        // flag for merged cluster and di cluster analysis
-    Double_t  fMaxR;                      // r cut  
-    Bool_t    fEnableMassCut;             // flag to enable mass cut
-    Double_t  fSelectionLow;              // lower meson inv mass window for further selection
-    Double_t  fSelectionHigh;             // higher meson inv mass window for further selection
-    Int_t     fSelectionWindowCut;        // selection window for merged ana in mass
-    Double_t  fAlphaMinCutMeson;          // min value for meson alpha cut
-    Double_t  fAlphaCutMeson;             // max value for meson alpha cut
-    Double_t  fRapidityCutMeson;          // max value for meson rapidity
-    Bool_t    fUseRotationMethodInBG;     // flag to apply rotation method for meson bg estimation
-    Bool_t    fUsePtmaxMethodForBG;       // flag to apply Ptmax method
-    Bool_t    fDoBG;                      // flag to intialize BG
-    Bool_t    fdoBGProbability;           // flag to use probability method for meson bg estimation
-    Bool_t    fUseTrackMultiplicityForBG; // flag to use track multiplicity for meson bg estimation (else V0 mult)
-    Int_t     fnDegreeRotationPMForBG;    //
-    Int_t     fNumberOfBGEvents;          //
-    Float_t   fOpeningAngle;              // min opening angle for meson
-    Bool_t    fEnableMinOpeningAngleCut;  // flag to enable min opening angle cut
-    Bool_t    fEnableOneCellDistCut;      // flag to enable 1 cell dist cut
+    Int_t     fMesonKind;				 ///<
+    Int_t     fIsMergedClusterCut;        ///< flag for merged cluster and di cluster analysis
+    Double_t  fMaxR;                      ///< r cut
+    Bool_t    fEnableMassCut;             ///< flag to enable mass cut
+    Double_t  fSelectionLow;              ///< lower meson inv mass window for further selection
+    Double_t  fSelectionHigh;             ///< higher meson inv mass window for further selection
+    Int_t     fSelectionWindowCut;        ///< selection window for merged ana in mass
+    Double_t  fAlphaMinCutMeson;          ///< min value for meson alpha cut
+    Double_t  fAlphaCutMeson;             ///< max value for meson alpha cut
+    Double_t  fRapidityCutMeson;          ///< max value for meson rapidity
+    Bool_t    fUseRotationMethodInBG;     ///< flag to apply rotation method for meson bg estimation
+    Bool_t    fUsePtmaxMethodForBG;       ///< flag to apply Ptmax method
+    Bool_t    fDoBG;                      ///< flag to intialize BG
+    Bool_t    fdoBGProbability;           ///< flag to use probability method for meson bg estimation
+    Bool_t    fUseTrackMultiplicityForBG; ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
+    Int_t     fnDegreeRotationPMForBG;    ///<
+    Int_t     fNumberOfBGEvents;          ///<
+    Float_t   fOpeningAngle;              ///< min opening angle for meson
+    Bool_t    fEnableMinOpeningAngleCut;  ///< flag to enable min opening angle cut
+    Bool_t    fEnableOneCellDistCut;      ///< flag to enable 1 cell dist cut
     Bool_t    fDoToCloseV0sCut;           //
     Double_t  fminV0Dist;                 //
     Bool_t    fDoSharedElecCut;           //
@@ -220,37 +221,39 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t    fAlphaPtDepCut;             //
     Int_t     fElectronLabelArraySize;    //
     Int_t*    fElectronLabelArray;        //[fElectronLabelArraySize] Array with elec/pos v0 label
-    Double_t  fDCAGammaGammaCut;          // cut value for the maximum distance between the two photons [cm]
-    Double_t  fDCAZMesonPrimVtxCut;       // cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
-    Double_t  fDCARMesonPrimVtxCut;       // cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
-    Bool_t    fDCAGammaGammaCutOn;        // cut flag for the maximum distance between the two photons
-    Bool_t    fDCAZMesonPrimVtxCutOn;     // cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex 
-    Bool_t    fDCARMesonPrimVtxCutOn;     // cut flag for the maximum distance in R between the production point of the Meson & the primary vertex 
-    Double_t  fMinOpanCutMeson;           //
-    TF1*      fFMinOpanCut;               //
-    Bool_t    fMinOpanPtDepCut;           //
-    Double_t  fMaxOpanCutMeson;           //
-    TF1*      fFMaxOpanCut;               //
-    Bool_t    fMaxOpanPtDepCut;           //
-    Int_t     fBackgroundHandler;         //
+    Double_t  fDCAGammaGammaCut;          ///< cut value for the maximum distance between the two photons [cm]
+    Double_t  fDCAZMesonPrimVtxCut;       ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
+    Double_t  fDCARMesonPrimVtxCut;       ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
+    Bool_t    fDCAGammaGammaCutOn;        ///< cut flag for the maximum distance between the two photons
+    Bool_t    fDCAZMesonPrimVtxCutOn;     ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
+    Bool_t    fDCARMesonPrimVtxCutOn;     ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
+    Double_t  fMinOpanCutMeson;           ///<
+    TF1*      fFMinOpanCut;               ///<
+    Bool_t    fMinOpanPtDepCut;           ///<
+    Double_t  fMaxOpanCutMeson;           ///<
+    TF1*      fFMaxOpanCut;               ///<
+    Bool_t    fMaxOpanPtDepCut;           ///<
+    Int_t     fBackgroundHandler;         ///<
     
     // Histograms
-    TObjString* fCutString;                     // cut number used for analysis
+    TObjString* fCutString;                     ///< cut number used for analysis
     TString     fCutStringRead;
-    TH2F*       fHistoMesonCuts;                // bookkeeping for meson cuts
-    TH2F*       fHistoMesonBGCuts;              // bookkeeping for meson bg cuts
-    TH1F*       fHistoDCAGGMesonBefore;         //
-    TH1F*       fHistoDCAZMesonPrimVtxBefore;   //
-    TH1F*       fHistoDCARMesonPrimVtxBefore;   //
-    TH1F*       fHistoDCAGGMesonAfter;          //
-    TH2F*       fHistoDCAZMesonPrimVtxAfter;    //
-    TH1F*       fHistoDCARMesonPrimVtxAfter;    //
-    TH1F*       fHistoInvMassBefore;            //
-    TH1F*       fHistoInvMassAfter;             //
+    TH2F*       fHistoMesonCuts;                ///< bookkeeping for meson cuts
+    TH2F*       fHistoMesonBGCuts;              ///< bookkeeping for meson bg cuts
+    TH1F*       fHistoDCAGGMesonBefore;         ///<
+    TH1F*       fHistoDCAZMesonPrimVtxBefore;   ///<
+    TH1F*       fHistoDCARMesonPrimVtxBefore;   ///<
+    TH1F*       fHistoDCAGGMesonAfter;          ///<
+    TH2F*       fHistoDCAZMesonPrimVtxAfter;    ///<
+    TH1F*       fHistoDCARMesonPrimVtxAfter;    ///<
+    TH1F*       fHistoInvMassBefore;            ///<
+    TH1F*       fHistoInvMassAfter;             ///<
 
   private:
 
+    /// \cond CLASSIMP
     ClassDef(AliConversionMesonCuts,19)
+    /// \endcond
 };
 
 

@@ -1,9 +1,6 @@
 #ifndef ALICONVERSIONPHOTONCUTS_H
 #define ALICONVERSIONPHOTONCUTS_H
 
-// Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Friederike Bock
-
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -35,8 +32,10 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 
-/***
+/**
  * @class AliConversionPhotonCuts
+ * @brief Class handling all kinds of selection cuts for Gamma Conversion analysis
+ * @author Friederike Bock
  * @ingroup GammaConv
  *
  * The cut configuration is set as a string with an 19 digit number.
@@ -44,6 +43,7 @@ class AliAODMCParticle;
  * its values represent the cut values. The cut configuration is listed here:
  *
  * | Position in the cut string (from the end) | Cut type               |
+ * |-------------------------------------------|------------------------|
  * |                  0                        | V0FinderType           |
  * |                  1                        | EtaCut                 | 
  * |                  2                        | MinRCut                |
@@ -252,140 +252,141 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
       
   protected:
-    TList*            fHistograms;                          //
-    AliPIDResponse*   fPIDResponse;                         //
+    TList*            fHistograms;                          ///< List of QA histograms
+    AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Bool_t            fDoLightOutput;                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-    TString           fV0ReaderName;
+    Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    TString           fV0ReaderName;						   ///< Name of the V0 reader
 
     //cuts
-    Double_t          fMaxR;                                // r cut
-    Double_t          fMinR;                                // r cut
-    Double_t          fEtaCut;                              // eta cut
-    Double_t          fEtaCutMin;                           // eta cut
-    Float_t           fEtaForPhiCutMin;                     // eta cut for phi sector selection
-    Float_t           fEtaForPhiCutMax;                     // eta cut for phi sector selection
-    Float_t           fMinPhiCut;                           // phi sector cut
-    Float_t           fMaxPhiCut;                           // phi sector cut
-    Bool_t            fDoShrinkTPCAcceptance;               // Flag for shrinking the TPC acceptance due to different reasons
-    Double_t          fPtCut;                               // pt cut
-    Double_t          fSinglePtCut;                         // pt cut for electron/positron
-    Double_t          fSinglePtCut2;                        // second pt cut for electron/positron if asymmetric cut is chosen
-    Bool_t            fDoAsymPtCut;                         // Flag for setting asymmetric pT cut on electron/positron
-    Double_t          fMaxZ;                                // z cut
-    Double_t          fMinClsTPC;                           // minimum clusters in the TPC
-    Double_t          fMinClsTPCToF;                        // minimum clusters to findable clusters
-    Double_t          fLineCutZRSlope;                      // linecut
-    Double_t          fLineCutZValue;                       // linecut
-    Double_t          fLineCutZRSlopeMin;                   // linecut
-    Double_t          fLineCutZValueMin;                    // linecut
-    Double_t          fChi2CutConversion;                   // chi2cut
-    Double_t          fPIDProbabilityCutNegativeParticle;   //
-    Double_t          fPIDProbabilityCutPositiveParticle;   //
-    Bool_t            fDodEdxSigmaCut;                      // flag to use the dEdxCut based on sigmas
-    Bool_t            fDoTOFsigmaCut;                       // flag to use TOF pid cut RRnewTOF
-    Double_t          fPIDTRDEfficiency;                    // required electron efficiency for TRD PID
-    Bool_t            fDoTRDPID;                            // flag to use TRD pid
-    Double_t          fPIDnSigmaAboveElectronLine;          // sigma cut
-    Double_t          fPIDnSigmaBelowElectronLine;          // sigma cut
-    Double_t          fTofPIDnSigmaAboveElectronLine;       // sigma cut RRnewTOF
-    Double_t          fTofPIDnSigmaBelowElectronLine;       // sigma cut RRnewTOF 
-    Double_t          fPIDnSigmaAbovePionLine;              // sigma cut
-    Double_t          fPIDnSigmaAbovePionLineHighPt;        // sigma cut
-    Double_t          fPIDMinPnSigmaAbovePionLine;          // sigma cut
-    Double_t          fPIDMaxPnSigmaAbovePionLine;          // sigma cut
-    Double_t          fDoKaonRejectionLowP;                 // Kaon rejection at low p
-    Double_t          fDoProtonRejectionLowP;               // Proton rejection at low p
-    Double_t          fDoPionRejectionLowP;                 // Pion rejection at low p
-    Double_t          fPIDnSigmaAtLowPAroundKaonLine;       // sigma cut
-    Double_t          fPIDnSigmaAtLowPAroundProtonLine;     // sigma cut
-    Double_t          fPIDnSigmaAtLowPAroundPionLine;       // sigma cut
-    Double_t          fPIDMinPKaonRejectionLowP;            // Momentum limit to apply kaon rejection
-    Double_t          fPIDMinPProtonRejectionLowP;          // Momentum limit to apply proton rejection
-    Double_t          fPIDMinPPionRejectionLowP;            // Momentum limit to apply proton rejection
-    Bool_t            fDoQtGammaSelection;                  // Select gammas using qtMax
-    Bool_t            fDo2DQt;                              // Select gammas using ellipse cut
-    Double_t          fQtMax;                               // Maximum Qt from Armenteros to select Gammas
-    Double_t          fNSigmaMass;                          // nsigma cut
-    Bool_t            fUseEtaMinCut;                        // flag
-    Bool_t            fUseOnFlyV0Finder;                    // flag
-    Int_t             fUseOnFlyV0FinderSameSign;            // int to set same sign pairing
-    Bool_t            fDoPhotonAsymmetryCut;                // flag to use the PhotonAsymetryCut
-    Bool_t            fDoPhotonPDependentAsymCut;           // flag to use the PhotonAsymetryCut with P dependent cut
-    TF1 *             fFAsymmetryCut;                       //
-    Double_t          fMinPPhotonAsymmetryCut;              // Min Momentum for Asymmetry Cut
-    Double_t          fMinPhotonAsymmetry;                  // Asymmetry Cut
-    Bool_t            fUseCorrectedTPCClsInfo;              // flag to use corrected tpc cl info
-    Bool_t            fUseTOFpid;                           // flag to use tof pid
-    Float_t           fOpeningAngle;                        // min opening angle for meson
-    Float_t           fPsiPairCut;                          //
-    Bool_t            fDo2DPsiPairChi2;                     //
-    Bool_t            fIncludeRejectedPsiPair;              //
-    Float_t           fCosPAngleCut;                        //
-    Bool_t            fDoToCloseV0sCut;                     //
-    Double_t          fminV0Dist;                           //
-    Bool_t            fDoSharedElecCut;                     //
-    Bool_t            fDoPhotonQualitySelectionCut;         //
-    Int_t             fPhotonQualityCut;                    //
-    TRandom3          fRandom;                              //
-    Int_t             fElectronArraySize;                   // Size of electron array
+    Double_t          fMaxR;                                ///< r cut
+    Double_t          fMinR;                                ///< r cut
+    Double_t          fEtaCut;                              ///< eta cut
+    Double_t          fEtaCutMin;                           ///< eta cut
+    Float_t           fEtaForPhiCutMin;                     ///< eta cut for phi sector selection
+    Float_t           fEtaForPhiCutMax;                     ///< eta cut for phi sector selection
+    Float_t           fMinPhiCut;                           ///< phi sector cut
+    Float_t           fMaxPhiCut;                           ///< phi sector cut
+    Bool_t            fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Double_t          fPtCut;                               ///< pt cut
+    Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
+    Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
+    Bool_t            fDoAsymPtCut;                         ///< Flag for setting asymmetric pT cut on electron/positron
+    Double_t          fMaxZ;                                ///< z cut
+    Double_t          fMinClsTPC;                           ///< minimum clusters in the TPC
+    Double_t          fMinClsTPCToF;                        ///< minimum clusters to findable clusters
+    Double_t          fLineCutZRSlope;                      ///< linecut
+    Double_t          fLineCutZValue;                       ///< linecut
+    Double_t          fLineCutZRSlopeMin;                   ///< linecut
+    Double_t          fLineCutZValueMin;                    ///< linecut
+    Double_t          fChi2CutConversion;                   ///< chi2cut
+    Double_t          fPIDProbabilityCutNegativeParticle;   ///<
+    Double_t          fPIDProbabilityCutPositiveParticle;   ///<
+    Bool_t            fDodEdxSigmaCut;                      ///< flag to use the dEdxCut based on sigmas
+    Bool_t            fDoTOFsigmaCut;                       ///< flag to use TOF pid cut RRnewTOF
+    Double_t          fPIDTRDEfficiency;                    ///< required electron efficiency for TRD PID
+    Bool_t            fDoTRDPID;                            ///< flag to use TRD pid
+    Double_t          fPIDnSigmaAboveElectronLine;          ///< sigma cut
+    Double_t          fPIDnSigmaBelowElectronLine;          ///< sigma cut
+    Double_t          fTofPIDnSigmaAboveElectronLine;       ///< sigma cut RRnewTOF
+    Double_t          fTofPIDnSigmaBelowElectronLine;       ///< sigma cut RRnewTOF
+    Double_t          fPIDnSigmaAbovePionLine;              ///< sigma cut
+    Double_t          fPIDnSigmaAbovePionLineHighPt;        ///< sigma cut
+    Double_t          fPIDMinPnSigmaAbovePionLine;          ///< sigma cut
+    Double_t          fPIDMaxPnSigmaAbovePionLine;          ///< sigma cut
+    Double_t          fDoKaonRejectionLowP;                 ///< Kaon rejection at low p
+    Double_t          fDoProtonRejectionLowP;               ///< Proton rejection at low p
+    Double_t          fDoPionRejectionLowP;                 ///< Pion rejection at low p
+    Double_t          fPIDnSigmaAtLowPAroundKaonLine;       ///< sigma cut
+    Double_t          fPIDnSigmaAtLowPAroundProtonLine;     ///< sigma cut
+    Double_t          fPIDnSigmaAtLowPAroundPionLine;       ///< sigma cut
+    Double_t          fPIDMinPKaonRejectionLowP;            ///< Momentum limit to apply kaon rejection
+    Double_t          fPIDMinPProtonRejectionLowP;          ///< Momentum limit to apply proton rejection
+    Double_t          fPIDMinPPionRejectionLowP;            ///< Momentum limit to apply proton rejection
+    Bool_t            fDoQtGammaSelection;                  ///< Select gammas using qtMax
+    Bool_t            fDo2DQt;                              ///< Select gammas using ellipse cut
+    Double_t          fQtMax;                               ///< Maximum Qt from Armenteros to select Gammas
+    Double_t          fNSigmaMass;                          ///< nsigma cut
+    Bool_t            fUseEtaMinCut;                        ///< flag
+    Bool_t            fUseOnFlyV0Finder;                    ///< flag
+    Int_t             fUseOnFlyV0FinderSameSign;            ///< int to set same sign pairing
+    Bool_t            fDoPhotonAsymmetryCut;                ///< flag to use the PhotonAsymetryCut
+    Bool_t            fDoPhotonPDependentAsymCut;           ///< flag to use the PhotonAsymetryCut with P dependent cut
+    TF1 *             fFAsymmetryCut;                       ///<
+    Double_t          fMinPPhotonAsymmetryCut;              ///< Min Momentum for Asymmetry Cut
+    Double_t          fMinPhotonAsymmetry;                  ///< Asymmetry Cut
+    Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
+    Bool_t            fUseTOFpid;                           ///< flag to use tof pid
+    Float_t           fOpeningAngle;                        ///< min opening angle for meson
+    Float_t           fPsiPairCut;                          ///<
+    Bool_t            fDo2DPsiPairChi2;                     ///<
+    Bool_t            fIncludeRejectedPsiPair;              ///<
+    Float_t           fCosPAngleCut;                        ///<
+    Bool_t            fDoToCloseV0sCut;                     ///<
+    Double_t          fminV0Dist;                           ///<
+    Bool_t            fDoSharedElecCut;                     ///<
+    Bool_t            fDoPhotonQualitySelectionCut;         ///<
+    Int_t             fPhotonQualityCut;                    ///<
+    TRandom3          fRandom;                              ///<
+    Int_t             fElectronArraySize;                   ///< Size of electron array
     Int_t*            fElectronLabelArray;                  //[fElectronArraySize]
-    Double_t          fDCAZPrimVtxCut;                      // cut value for the maximum distance in Z between the photon & the primary vertex [cm]
-    Double_t          fDCARPrimVtxCut;                      // cut value for the maximum distance in R between the photon & the primary vertex [cm]
-    Int_t             fInPlaneOutOfPlane;                   // In-Plane Out-Of Plane Analysis
-    Float_t           fConversionPointXArray;               // Array with conversion Point x
-    Float_t           fConversionPointYArray;               // Array with conversion Point y
-    Float_t           fConversionPointZArray;               // Array with conversion Point z
-    TObjString*       fCutString;                           // cut number used for analysis
-    TString           fCutStringRead;                       //
-    Int_t             fIsHeavyIon;                          // flag for pp (0), PbPb (1), pPb (2)
-    Bool_t            fUseITSpid;                           // flag to use tof pid    
-    Double_t          fITSPIDnSigmaAboveElectronLine;       // sigma cut RRnewTOF
-    Double_t          fITSPIDnSigmaBelowElectronLine;       // sigma cut RRnewTOF
-    Double_t          fMaxPtPIDITS;                         //max pt for ITS PID
-    Double_t          fTRDPIDBelowCut;                      // TRD cut range
-    Double_t          fTRDPIDAboveCut;                      // TRD cut range
-    Bool_t            fDoDoubleCountingCut;                 // Flag to reject double counting
-    Double_t          fMinRDC;                              // Min R for Double Counting Cut
-    Double_t          fDeltaR;                              // Delta R for Double Counting Cut
-    Double_t          fOpenAngle;                           // Opening Angle for Double Counting Cut
-    Bool_t            fSwitchToKappa;                       // switches from standard dEdx nSigma TPC cuts to Kappa TPC
-    Float_t           fKappaMinCut;                         // maximum Kappa cut
-    Float_t           fKappaMaxCut;                         // maximum Kappa cut
-    Bool_t            fMaterialBudgetWeightsInitialized;    // weights for conversions photons due due deviating material budget in MC compared to data
+    Double_t          fDCAZPrimVtxCut;                      ///< cut value for the maximum distance in Z between the photon & the primary vertex [cm]
+    Double_t          fDCARPrimVtxCut;                      ///< cut value for the maximum distance in R between the photon & the primary vertex [cm]
+    Int_t             fInPlaneOutOfPlane;                   ///< In-Plane Out-Of Plane Analysis
+    Float_t           fConversionPointXArray;               ///< Array with conversion Point x
+    Float_t           fConversionPointYArray;               ///< Array with conversion Point y
+    Float_t           fConversionPointZArray;               ///< Array with conversion Point z
+    TObjString*       fCutString;                           ///< cut number used for analysis
+    TString           fCutStringRead;                       ///<
+    Int_t             fIsHeavyIon;                          ///< flag for pp (0), PbPb (1), pPb (2)
+    Bool_t            fUseITSpid;                           ///< flag to use tof pid
+    Double_t          fITSPIDnSigmaAboveElectronLine;       ///< sigma cut RRnewTOF
+    Double_t          fITSPIDnSigmaBelowElectronLine;       ///< sigma cut RRnewTOF
+    Double_t          fMaxPtPIDITS;                         ///< max pt for ITS PID
+    Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
+    Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
+    Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
+    Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
+    Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
+    Double_t          fOpenAngle;                           ///< Opening Angle for Double Counting Cut
+    Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
+    Float_t           fKappaMinCut;                         ///< maximum Kappa cut
+    Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
+    Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     
     // Histograms
-    TH1F*             fHistoEtaDistV0s;                     // eta-distribution of all V0s after Finder selection
-    TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        // eta-distribution of all V0s after Finder selection after dEdx cuts
-    TH2F*             fHistodEdxCuts;                       // bookkeeping for dEdx cuts
-    TH2F*             fHistoTPCdEdxbefore;                  // TPC dEdx before cuts
-    TH2F*             fHistoTPCdEdxafter;                   // TPC dEdx after cuts
-    TH2F*             fHistoTPCdEdxSigbefore;               // TPC Sigma dEdx before cuts
-    TH2F*             fHistoTPCdEdxSigafter;                // TPC Sigm dEdx after cuts
-    TH2F*             fHistoKappaafter;                     // Kappa vs photon pt after cuts
-    TH2F*             fHistoTOFbefore;                      // TOF before cuts
-    TH2F*             fHistoTOFSigbefore;                   // TOF Sigma before cuts
-    TH2F*             fHistoTOFSigafter;                    // TOF Sigma after cuts
-    TH2F*             fHistoITSSigbefore;                   // ITS Sigma before cuts
-    TH2F*             fHistoITSSigafter;                    // ITS Sigma after cuts
-    TH2F*             fHistoPsiPairDeltaPhiafter;           // TOF Sigma after cuts
-    TH1F*             fHistoTrackCuts;                      // bookkeeping for track cuts
-    TH2F*             fHistoPhotonCuts;                     // bookkeeping for photon specific cuts
-    TH1F*             fHistoInvMassbefore;                  // e+e- inv mass distribution before cuts
-    TH2F*             fHistoArmenterosbefore;               // armenteros podolanski plot before cuts
-    TH1F*             fHistoInvMassafter;                   // e+e- inv mass distribution after cuts
-    TH2F*             fHistoArmenterosafter;                // armenteros podolanski plot after cuts
-    TH2F*             fHistoAsymmetryafter;                 // asymmetry plot after cuts
-    TH2F*             fHistoAcceptanceCuts;                 // bookkeeping for acceptance cuts
-    TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
-    TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
-    Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
-    Bool_t            fProcessAODCheck;                     // Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
+    TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
+    TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        ///< eta-distribution of all V0s after Finder selection after dEdx cuts
+    TH2F*             fHistodEdxCuts;                       ///< bookkeeping for dEdx cuts
+    TH2F*             fHistoTPCdEdxbefore;                  ///< TPC dEdx before cuts
+    TH2F*             fHistoTPCdEdxafter;                   ///< TPC dEdx after cuts
+    TH2F*             fHistoTPCdEdxSigbefore;               ///< TPC Sigma dEdx before cuts
+    TH2F*             fHistoTPCdEdxSigafter;                ///< TPC Sigm dEdx after cuts
+    TH2F*             fHistoKappaafter;                     ///< Kappa vs photon pt after cuts
+    TH2F*             fHistoTOFbefore;                      ///< TOF before cuts
+    TH2F*             fHistoTOFSigbefore;                   ///< TOF Sigma before cuts
+    TH2F*             fHistoTOFSigafter;                    ///< TOF Sigma after cuts
+    TH2F*             fHistoITSSigbefore;                   ///< ITS Sigma before cuts
+    TH2F*             fHistoITSSigafter;                    ///< ITS Sigma after cuts
+    TH2F*             fHistoPsiPairDeltaPhiafter;           ///< TOF Sigma after cuts
+    TH1F*             fHistoTrackCuts;                      ///< bookkeeping for track cuts
+    TH2F*             fHistoPhotonCuts;                     ///< bookkeeping for photon specific cuts
+    TH1F*             fHistoInvMassbefore;                  ///< e+e- inv mass distribution before cuts
+    TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
+    TH1F*             fHistoInvMassafter;                   ///< e+e- inv mass distribution after cuts
+    TH2F*             fHistoArmenterosafter;                ///< armenteros podolanski plot after cuts
+    TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
+    TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
+    TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
+    TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
+    Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
+    Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     TProfile*         fProfileContainingMaterialBudgetWeights;      
 
   private:
-  
+    /// \cond CLASSIMP
     ClassDef(AliConversionPhotonCuts,15)
+    /// \endcond
 };
 
 #endif
