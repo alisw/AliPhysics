@@ -142,8 +142,8 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   TRandom3    *fRand;//!<! Random number generator.  Initialzed by rot background
   TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
-  Bool_t       fDoRotBkg; //!<! Whether or not to calculate the rotational background
-  Int_t        fNRotBkgSamples; //!<! How many samples to use in the rotational background
+  Bool_t       fDoRotBkg; ///< Whether or not to calculate the rotational background
+  Int_t        fNRotBkgSamples; ///< How many samples to use in the rotational background
   THnSparseF  *fPi0Cands; //!<! Michael's THnSparse for pi0 Candidates
 
 
