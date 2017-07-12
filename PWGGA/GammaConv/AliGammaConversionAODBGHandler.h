@@ -48,7 +48,6 @@ class AliGammaConversionAODBGHandler : public TObject {
 	typedef vector<AliGammaConversionMotherBGEventVector> AliGammaConversionMotherMultipicityVector;
 	typedef vector<AliGammaConversionMotherMultipicityVector> AliGammaConversionMotherBGVector;
 	
-	typedef std::vector<std::vector<std::vector<AliAODConversionMother *>>> AliGammaConversionMotherBGVector1;
 
 	AliGammaConversionAODBGHandler();																							//constructor
     AliGammaConversionAODBGHandler(Int_t binsZ,Int_t binsMultiplicity,Int_t nEvents);										// constructor
