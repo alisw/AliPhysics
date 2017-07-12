@@ -249,47 +249,73 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       single->Fill(stuffing, evWeight * track.weight);
     }
   }
-
+  struct Bin_indices{
+    Int_t i_eta;
+    Int_t i_phi;
+    Int_t i_pt;
+    Int_t i_mult;
+    Int_t i_zvtx;
+    AliAnalysisTaskValidation::Track track;
+  };
+  // Find the bin indices here instead of doing it (implicity in the loop) which is super slow
+  vector<Bin_indices> track_bin_idxs;
+  for (auto t: tracks) {
+    THn *hist;
+    if (t.eta < this->fSettings.fEtaEdgesIts[0]) {
+      hist = this->fsingleHists[0];
+    } else if (t.eta >= this->fSettings.fEtaEdgesIts[0] && t.eta < this->fSettings.fEtaEdgesFwd[0]) {
+      hist = this->fsingleHists[1];
+    } else {
+      hist = this->fsingleHists[2];
+    }
+    track_bin_idxs.push_back(Bin_indices {
+	hist->GetAxis(cSinglesDims::kEta)->FindFixBin(t.eta),
+	hist->GetAxis(cSinglesDims::kPhi)->FindFixBin(AliAnalysisC2Utils::Wrap02pi(t.phi)),
+	hist->GetAxis(cSinglesDims::kPt)->FindFixBin(t.pt),
+	hist->GetAxis(cSinglesDims::kMult)->FindFixBin(multiplicity),
+	hist->GetAxis(cSinglesDims::kZvtx)->FindFixBin(zvtx),
+	t});
+  }
   // Fill the pair particle histograms
-  const AliAnalysisTaskValidation::Track *trigger, *assoc;
-  for (UInt_t i = 0; i < tracks.size(); i++) {
+  Bin_indices *trigger, *assoc;
+  for (UInt_t i = 0; i < track_bin_idxs.size(); i++) {
     // Do not pair with itself and drop mirrored pairs
-    for (UInt_t j = i + 1; j < tracks.size(); j++) {
+    for (UInt_t j = i + 1; j < track_bin_idxs.size(); j++) {
       // assign trigger/assoc
       // If we bin in pt, use pt as distinction, else use eta
       if (this->fSettings.fPtBinEdges.size() > 2) {
-	if (tracks[i].pt <= tracks[j].pt) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.pt <= track_bin_idxs[j].track.pt) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       else {
-	if (tracks[i].eta <= tracks[j].eta) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.eta <= track_bin_idxs[j].track.eta) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       // FIXME: This will break if I bin ITS region in pt but not the FMD part!
       Int_t pt1Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(assoc->pt);
       Int_t pt2Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(trigger->pt);
-      Double_t stuffing[7] =
-	{assoc->eta,
-	 trigger->eta,
-	 AliAnalysisC2Utils::Wrap02pi(assoc->phi),
-	 AliAnalysisC2Utils::Wrap02pi(trigger->phi),
-	 Double_t(AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 0.5),  // +.5 to hit the bin center
-	 multiplicity,
-	 zvtx};
-      this->fpairHists[this->GetPairHistIndex(trigger->eta, assoc->eta)]
-	->Fill(stuffing, assoc->weight * trigger->weight * evWeight);
+      Int_t stuffing[7] =
+	{assoc->i_eta,
+	 trigger->i_eta,
+	 assoc->i_phi,
+	 trigger->i_phi,
+	 AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 1, // bin indices start at 1...
+	 assoc->i_mult,
+	 assoc->i_zvtx};
+      this->fpairHists[this->GetPairHistIndex(trigger->track.eta, assoc->track.eta)]
+	->AddBinContent(stuffing, assoc->track.weight * trigger->track.weight * evWeight);
     }
   }
   PostData(1, this->fOutputList);
