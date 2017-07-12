@@ -119,7 +119,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion 
     AliVEvent*            fInputEvent;                                          // current event
     AliMCEvent*           fMCEvent;                                             // corresponding MC event
-    AliStack*             fMCStack;                                             // stack belonging to MC event
     TList**               fCutFolder;                                           // Array of lists for containers belonging to cut
     TList**               fESDList;                                             // Array of lists with histograms with reconstructed properties   
     TList**               fBackList;                                            // Array of lists with BG THnSparseF
@@ -396,7 +395,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 37);
+    ClassDef(AliAnalysisTaskGammaCalo, 38);
 };
 
 #endif

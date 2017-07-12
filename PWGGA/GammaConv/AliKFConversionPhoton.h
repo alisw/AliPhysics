@@ -17,7 +17,6 @@
 // #include "AliV0Reader.h"
 #include "AliESDEvent.h"
 #include "AliPID.h"
-#include "AliStack.h"
 #include "TParticle.h"
 #include "TF1.h"
 #include "TRandom3.h"

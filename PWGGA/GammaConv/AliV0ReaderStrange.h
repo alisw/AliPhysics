@@ -22,7 +22,6 @@
 
 
 class TRandom3;
-class AliStack;
 class TList;
 class AliKFConversionPhoton;
 class TString;

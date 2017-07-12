@@ -92,7 +92,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     AliConversionAODBGHandlerRP**     fBGHandlerRP;                               //
     AliVEvent*                        fInputEvent;                                //
     AliMCEvent*                       fMCEvent;                                   //
-    AliStack*                         fMCStack;                                   //
     TList**                           fCutFolder;                                 //
     TList**                           fESDList;                                   //
     TList**                           fBackList;                                  //
@@ -280,8 +279,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t*                         fUnsmearedPy;                               //[fnGammaCandidates]
     Double_t*                         fUnsmearedPz;                               //[fnGammaCandidates]
     Double_t*                         fUnsmearedE;                                //[fnGammaCandidates]
-    Int_t*                            fMCStackPos;                                //[fnGammaCandidates]
-    Int_t*                            fMCStackNeg;                                //[fnGammaCandidates]
+    Int_t*                            fMCEventPos;                                //[fnGammaCandidates]
+    Int_t*                            fMCEventNeg;                                //[fnGammaCandidates]
     Int_t*                            fESDArrayPos;                               //[fnGammaCandidates]
     Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
     Int_t                             fnCuts;                                     //
@@ -308,7 +307,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 41);
+    ClassDef(AliAnalysisTaskGammaConvV1, 42);
 };
 
 #endif

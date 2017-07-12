@@ -12,7 +12,6 @@
 #include "AliVEvent.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliESDtrackCuts.h"
@@ -253,8 +252,6 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliESDEvent *fESDEvent, 
   
    if(fMCEvent){
 
-    AliStack *fMCStack= fMCEvent->Stack();
-
     Int_t labelp=TMath::Abs(fV0Cuts->GetTrack(fESDEvent,fCurrentMotherV0->GetTrackLabelPositive())->GetLabel());
     Int_t labeln=TMath::Abs(fV0Cuts->GetTrack(fESDEvent,fCurrentMotherV0->GetTrackLabelNegative())->GetLabel());
 
@@ -263,9 +260,9 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliESDEvent *fESDEvent, 
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
     TParticle *fNegativeMCParticle = 0x0;
-    if(labeln>-1) fNegativeMCParticle = fMCStack->Particle(labeln);
+    if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
-    if(labelp>-1) fPositiveMCParticle = fMCStack->Particle(labelp);
+    if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherV0->SetMCLabelPositive(labelp);
@@ -383,7 +380,6 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliAODEvent *fAODEvent, 
   AliV0ParticleStrange *fCurrentMotherV0 = new AliV0ParticleStrange(fCurrentMother);
   
    if(fMCEvent){
-    AliStack *fMCStack= fMCEvent->Stack();
 
     Int_t labelp=TMath::Abs(fV0Cuts->GetTrack(fAODEvent,fCurrentMotherV0->GetTrackLabelPositive())->GetLabel());
     Int_t labeln=TMath::Abs(fV0Cuts->GetTrack(fAODEvent,fCurrentMotherV0->GetTrackLabelNegative())->GetLabel());
@@ -393,9 +389,9 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliAODEvent *fAODEvent, 
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
     TParticle *fNegativeMCParticle = 0x0;
-    if(labeln>-1) fNegativeMCParticle = fMCStack->Particle(labeln);
+    if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
-    if(labelp>-1) fPositiveMCParticle = fMCStack->Particle(labelp);
+    if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherV0->SetMCLabelPositive(labelp);

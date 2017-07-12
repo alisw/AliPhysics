@@ -217,17 +217,17 @@ AliAODConversionMother::~AliAODConversionMother() {
     // empty standard destructor
 }
 
-TParticle *AliAODConversionMother::GetMCParticle(AliStack *fMCStack){
-    if(!fMCStack){AliError("MC Stack not defined");return 0x0;}
+TParticle *AliAODConversionMother::GetMCParticle(AliMCEvent *mcEvent){
+    if(!mcEvent){AliError("MCEvent not defined");return 0x0;}
 
     if(fMCLabel>-1){
-		return fMCStack->Particle(fMCLabel);
+        return mcEvent->Particle(fMCLabel);
     }
     return 0x0;
 }
 
-Bool_t AliAODConversionMother::IsTrueMeson(AliStack *fMCStack,Int_t pdgcode){
-    TParticle *part=GetMCParticle(fMCStack);
+Bool_t AliAODConversionMother::IsTrueMeson(AliMCEvent *mcEvent,Int_t pdgcode){
+    TParticle *part=GetMCParticle(mcEvent);
 
     if(part){
 	// Check if it is a true photon

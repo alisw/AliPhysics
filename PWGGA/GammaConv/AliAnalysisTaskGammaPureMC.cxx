@@ -37,7 +37,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliStack.h"
 #include "AliAnalysisTaskGammaPureMC.h"
 #include "AliVParticle.h"
 #include "AliGenCocktailEventHeader.h"
@@ -56,7 +55,6 @@ ClassImp(AliAnalysisTaskGammaPureMC)
 //________________________________________________________________________
 AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fOutputContainer(nullptr),
-  fMCStack(nullptr),
   fHistNEvents(nullptr),
   fHistXSection(nullptr),
   fHistPtHard(nullptr),
@@ -130,7 +128,6 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
 AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   AliAnalysisTaskSE(name),
   fOutputContainer(nullptr),
-  fMCStack(nullptr),
   fHistNEvents(nullptr),
   fHistXSection(nullptr),
   fHistPtHard(nullptr),
@@ -474,12 +471,6 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
   if (fIsMC==0) return;
   //   cout << "I found an MC header" << endl;
 
-  fMCStack = fMCEvent->Stack();
-  if(fMCStack == nullptr) fIsMC = 0;
-  if (fIsMC==0) return;
-
-  //   cout << "the stack is intact" << endl;
-
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();  
 
@@ -544,10 +535,10 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
 void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 {
   // Loop over all primary MC particle  
-  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     // fill primary histograms
     TParticle* particle         = nullptr;
-    particle                    = (TParticle *)fMCStack->Particle(i);
+    particle                    = (TParticle *)fMCEvent->Particle(i);
     if (!particle) continue;
     Bool_t hasMother            = kFALSE;
     //     cout << i << "\t"<< particle->GetMother(0) << endl;
@@ -555,7 +546,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       hasMother                 = kTRUE;
     TParticle* motherParticle   = nullptr;
     if( hasMother ) 
-      motherParticle            = (TParticle *)fMCStack->Particle(particle->GetMother(0));
+      motherParticle            = (TParticle *)fMCEvent->Particle(particle->GetMother(0));
     if (motherParticle) 
       hasMother                 = kTRUE;
     else 
@@ -685,7 +676,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 
 
       for(Int_t j=0;j<2;j++){
-        TParticle *daughter=fMCStack->Particle(particle->GetDaughter(j));
+        TParticle *daughter=fMCEvent->Particle(particle->GetDaughter(j));
         if (!daughter) continue;
 
         // Is Daughter a Photon? 
@@ -790,7 +781,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       Double_t gdEnergyGamma[4] = {0,0,0,0};
       Bool_t allGDOK[4] = {kFALSE, kFALSE, kFALSE,kFALSE};
       for(Int_t k=0;k<2;k++){
-        TParticle *daughter=fMCStack->Particle(particle->GetDaughter(k));
+        TParticle *daughter=fMCEvent->Particle(particle->GetDaughter(k));
         if (!daughter) continue;
         
         // Is Daughter a pi0?
@@ -799,7 +790,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if(daughter->GetNDaughters() != 2) continue;
 
           for(Int_t h=0;h<2;h++){
-            TParticle *granddaughter = fMCStack->Particle(daughter->GetDaughter(k));
+            TParticle *granddaughter = fMCEvent->Particle(daughter->GetDaughter(k));
             if(granddaughter->GetPdgCode() == 22) allGDOK[2*k + h] = kTRUE;
             if(IsInPCMAcceptance(granddaughter))  SETBIT(gdAcceptanceGamma[2*k+h], kPCMAcceptance);
             if(IsInEMCalAcceptance(granddaughter)) SETBIT(gdAcceptanceGamma[2*k+h], kEMCALAcceptance);

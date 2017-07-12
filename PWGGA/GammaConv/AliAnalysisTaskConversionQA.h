@@ -11,7 +11,7 @@
 #include "AliV0ReaderV1.h"
 #include "AliConversionPhotonCuts.h"
 #include "TList.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "TClonesArray.h"
 
 
@@ -78,7 +78,6 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     AliVEvent*                  fInputEvent;                //
     Int_t                       fNumberOfESDTracks;         //
     AliMCEvent*                 fMCEvent;                   //
-    AliStack*                   fMCStack;                   //
     TTree*                      fTreeQA;                    //
     Bool_t                      fIsHeavyIon;                //
     Bool_t                      ffillTree;                  //
@@ -137,7 +136,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 6);
+    ClassDef(AliAnalysisTaskConversionQA, 7);
 };
 
 #endif

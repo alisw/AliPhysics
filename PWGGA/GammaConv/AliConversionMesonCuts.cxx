@@ -32,7 +32,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
@@ -373,11 +373,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Double_t fRapidityShift){
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
 
   if(fMCMother->GetPdgCode()==111 || fMCMother->GetPdgCode()==221){
     if(fMCMother->R()>fMaxR)  return kFALSE; // cuts on distance from collision point
@@ -397,12 +397,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
 
     for(Int_t i=0;i<2;i++){
       if(fMCMother->GetDaughter(i) < 0) return kFALSE;
-      TParticle *MDaughter=fMCStack->Particle(fMCMother->GetDaughter(i));
+      TParticle *MDaughter=mcEvent->Particle(fMCMother->GetDaughter(i));
       // Is Daughter a Photon?
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
       // Is Photon in Acceptance?
       //   if(bMCDaughtersInAcceptance){
-      //  if(!PhotonIsSelectedMC(MDaughter,fMCStack)){return kFALSE;}
+      //  if(!PhotonIsSelectedMC(MDaughter,mcEvent)){return kFALSE;}
       //   }
     }
     return kTRUE;
@@ -440,7 +440,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
       // Is Photon in Acceptance?
       //   if(bMCDaughtersInAcceptance){
-      //  if(!PhotonIsSelectedMC(MDaughter,fMCStack)){return kFALSE;}
+      //  if(!PhotonIsSelectedMC(MDaughter,mcEvent)){return kFALSE;}
       //   }
     }
     return kTRUE;
@@ -449,12 +449,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if(  fMCMother->GetPdgCode() != 111 && fMCMother->GetPdgCode() != 221 ) return kFALSE;
 
@@ -481,7 +481,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
     switch( temp->GetPdgCode() ) {
     case ::kPositron:
@@ -561,12 +561,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if( fMCMother->GetPdgCode() != 221 ) return kFALSE;
 
@@ -593,7 +593,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
     switch( temp->GetPdgCode() ) {
     case 211:
@@ -616,12 +616,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
   
@@ -649,7 +649,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 //     cout << temp->GetPdgCode() << endl;
     switch( temp->GetPdgCode() ) {
     case 211:
@@ -672,10 +672,10 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
   // returns true for omegas decaying into pi0 + gamma within the rapidity window
 
-  if(!fMCStack) return kFALSE;
+  if(!mcEvent) return kFALSE;
 
   if(fMCMother->GetPdgCode()!=223) return kFALSE; // we only want omegas
 
@@ -698,7 +698,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
 
   for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle *temp = (TParticle*)fMCStack->Particle(index);
+    TParticle *temp = (TParticle*)mcEvent->Particle(index);
     switch(temp->GetPdgCode()){
     case 22:
       gamma = temp;
@@ -730,11 +730,11 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
   // if(fMCMother->GetPdgCode()==20443 ){
   //    return kFALSE;
   // }
@@ -764,7 +764,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
       if(index < 0) continue;
-      TParticle* temp = (TParticle*)fMCStack->Particle( index );
+      TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
       switch( temp->GetPdgCode() ) {
       case 443:
@@ -784,7 +784,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 
     for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
       if(index < 0) continue;
-      TParticle* temp = (TParticle*)fMCStack->Particle( index );
+      TParticle* temp = (TParticle*)mcEvent->Particle( index );
       switch( temp->GetPdgCode() ) {
       case -11:
         electron =  temp;

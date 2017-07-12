@@ -9,7 +9,6 @@
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliVTrack.h"
-#include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -449,14 +448,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
-      Float_t   GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
-      Float_t   GetWeightForMeson( Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Bool_t    GetUseNewMultiplicityFramework(); 
       void      GetCorrectEtaShiftFromPeriod();
-      void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
-      TClonesArray*     GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
+      void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
+      TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
       
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -478,11 +477,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       
       // Cut Selection
-      Bool_t    EventIsSelected(  AliVEvent *fInputEvent, 
-                                  AliVEvent *fMCEvent);
+      Bool_t    EventIsSelected(AliVEvent *fInputEvent,
+                                AliMCEvent *fMCEvent);
       Int_t     IsEventAcceptedByCut( AliConvEventCuts *ReaderCuts, 
-                                      AliVEvent *InputEvent, 
-                                      AliMCEvent *MCEvent, 
+                                      AliVEvent *event,
+                                      AliMCEvent *mcEvent,
                                       Int_t isHeavyIon, 
                                       Bool_t isEMCALAnalysis);
         
@@ -494,31 +493,31 @@ class AliConvEventCuts : public AliAnalysisCuts {
       
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index, 
-                                      AliStack *MCStack, 
-                                      AliVEvent *InputEvent = 0x0);
+                                      AliMCEvent *mcEvent,
+                                      AliVEvent *event = 0x0);
       
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
 
       // Event Cuts
-      Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
-      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
-      Bool_t    IsPileUpV0MTPCout(AliVEvent *fInputEvent);
-      Bool_t    VertexZCut(AliVEvent *fInputEvent);
-      Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
-      Float_t   GetPtHard(AliVEvent *MCEvent);
-      void      GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSection, Float_t &NTrials);
+      Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
+      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
+      Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
+      Bool_t    VertexZCut(AliVEvent *event);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight);
+      Float_t   GetPtHard(AliVEvent *event);
+      void      GetXSectionAndNTrials(AliVEvent *event, Float_t &XSection, Float_t &NTrials);
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
-      Bool_t    MimicTrigger( AliVEvent *fInputEvent, 
+      Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
-      Bool_t    IsTriggerSelected(  AliVEvent *fInputEvent, 
+      Bool_t    IsTriggerSelected(  AliVEvent *event,
                                     Bool_t isMC);
       Bool_t    HasV0AND()                                                          { return fHasV0AND                                          ; }
       Bool_t    IsSDDFired()                                                        { return fIsSDDFired                                        ; }
       Int_t     IsSpecialTrigger()                                                  { return fSpecialTrigger                                    ; }
       Int_t     IsSpecialSubTrigger()                                               { return fSpecialSubTrigger                                 ; }
-      void      InitializeEMCALTrigger( AliVEvent *fInputEvent);
+      void      InitializeEMCALTrigger( AliVEvent *event);
       Bool_t    HasTriggerType(TriggerTypeEMCAL t);
       
       // Request Flags
@@ -526,19 +525,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      DoEtaShift(Bool_t doEtaShift)                                       { fDoEtaShift = doEtaShift                                  ; }
       
       //MC particle flags - determine whether particle is primary or secondary
-      Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
-                                        Long_t stackpos,
+      Bool_t    IsConversionPrimaryESD( AliMCEvent *mcEvent,
+                                        Long_t eventpos,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
-      Bool_t    IsConversionPrimaryAOD( AliVEvent *fInputEvent, 
+      Bool_t    IsConversionPrimaryAOD( AliVEvent *event,
                                         AliAODMCParticle* AODMCParticle,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
       
       Int_t     SecondaryClassificationPhoton(  TParticle *particle,
-                                                AliStack* fMCStack, 
+                                                AliMCEvent *mcEvent,
                                                 Bool_t isConversion );
       Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,
                                                   TClonesArray *aodmcArray, 

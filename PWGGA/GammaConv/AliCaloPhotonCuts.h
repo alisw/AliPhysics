@@ -9,7 +9,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisCuts.h"
 #include "TProfile2D.h"
 #include "TH1F.h"
@@ -200,10 +200,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     virtual Bool_t  IsSelected(TObject* /*obj*/)               {return kTRUE;}
     virtual Bool_t  IsSelected(TList* /*list*/)                {return kTRUE;}
 
-    Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, AliVEvent *mcEvent,Int_t isMC, Double_t weight=1., Long_t clusterID = -1);
+    Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, AliMCEvent *mcEvent,Int_t isMC, Double_t weight=1., Long_t clusterID = -1);
     Bool_t      ClusterIsSelectedBeforeTrackMatch(){return fIsCurrentClusterAcceptedBeforeTM;}
-    Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
-    Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
+    Bool_t      ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
+    Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent *mcEvent);
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
@@ -248,7 +248,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
-    Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, AliVEvent *mcEvent, Int_t isMC, Double_t weight, Long_t clusterID);
+    Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, AliMCEvent *mcEvent, Int_t isMC, Double_t weight, Long_t clusterID);
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
     void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE);
@@ -262,7 +262,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
-    Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliVEvent* mcEvent, Bool_t isESD);
+    Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
     
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
