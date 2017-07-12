@@ -107,6 +107,10 @@ private:
   THistManager                                *fHistos;               ///< Container for Histograms
   TList                                       *fOutput;               ///< Global output container
 
+
+  AliAnalysisTaskK0toPi0Pi0(const AliAnalysisTaskK0toPi0Pi0 &);
+  AliAnalysisTaskK0toPi0Pi0 &operator=(const AliAnalysisTaskK0toPi0Pi0 &);
+
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskK0toPi0Pi0, 1);
   /// \endcond
