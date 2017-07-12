@@ -32,8 +32,8 @@ target_link_libraries(alisync RIO Hist Core Net Tree)
 install(TARGETS alihadd RUNTIME DESTINATION bin)
 install(TARGETS alisync RUNTIME DESTINATION bin)
 install(PROGRAMS alien_rsync.sh DESTINATION bin)
-install(PROGRAMS alilog4bash.sh DESTINATION bin)
-install(PROGRAMS utilities.sh   DESTINATION bin)
+install(PROGRAMS alilog4bash.sh DESTINATION libexec)
+install(PROGRAMS utilities.sh  DESTINATION libexec)
 
 # Tests
 add_executable(test_helpers test_helpers.cxx)
