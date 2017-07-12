@@ -64,6 +64,14 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(finAnObjname);
     Name="DStar";
+  }else if(pdgMeson==431){
+      if(stdcuts) {
+          analysiscuts = new AliRDHFCutsDstoKKpi();
+          if (system == 0) analysiscuts->SetStandardCutsPP2010();
+          else analysiscuts->SetStandardCutsPbPb2011();
+      }
+      else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
+      Name="Ds";
   }
 
   AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
