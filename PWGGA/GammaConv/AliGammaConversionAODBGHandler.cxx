@@ -676,6 +676,11 @@ AliGammaConversionMotherAODVector* AliGammaConversionAODBGHandler::GetBGGoodMeso
 }
 
 //_____________________________________________________________________________________________________________________________
+Int_t AliGammaConversionAODBGHandler::GetNBackgroundEventsInBuffer(Int_t binz, int binMult) const {
+  return fBGEventsMeson[binz][binMult].size();
+}
+
+//_____________________________________________________________________________________________________________________________
 AliGammaConversionAODVector* AliGammaConversionAODBGHandler::GetBGGoodENeg(Int_t event, Double_t zvalue, Int_t multiplicity){
 	//see headerfile for documentation
 	Int_t z = GetZBinIndex(zvalue);
