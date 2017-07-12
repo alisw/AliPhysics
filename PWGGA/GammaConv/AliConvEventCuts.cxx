@@ -31,6 +31,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
+#include "TObjString.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -2244,18 +2245,16 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 //________________________________________________________________________
 // Analysing Jet-Jet MC's 
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight){
+Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight){
   AliGenCocktailEventHeader *cHeader   = 0x0;
-  AliAODMCHeader *cHeaderAOD           = 0x0;
   Bool_t headerFound                   = kFALSE;
-  TClonesArray *eventAOD            = 0x0;
   weight                               = -1;
   fMaxPtJetMC                          = 0;
   
   if (  fPeriodEnum != kLHC17f8a &&  fPeriodEnum != kLHC17f8b  && fPeriodEnum != kLHC17f8c &&       // LHC16X Jet Jet MC's
-	fPeriodEnum != kLHC17f8d &&  fPeriodEnum != kLHC17f8e &&
-	fPeriodEnum != kLHC16h3  &&                                                                  // LHC15n Jet Jet MC's
-	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&        // LHC13g Jet Jet MC's
+        fPeriodEnum != kLHC17f8d &&  fPeriodEnum != kLHC17f8e &&
+        fPeriodEnum != kLHC16h3  &&                                                                 // LHC15n Jet Jet MC's
+        fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2266,25 +2265,18 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
     return kTRUE;
   }
 
-  if(event->IsA()==AliMCEvent::Class()){
-    if(dynamic_cast<AliMCEvent*>(event)){
-      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      if(cHeader) headerFound   = kTRUE;
-    }
-  }
-  if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
-    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
-    eventAOD           = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(cHeaderAOD) headerFound     = kTRUE;
+  if(mcEvent){
+    cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if(cHeader) headerFound   = kTRUE;
+  }else{
+    //no mcEvent available -> not running on MC
+    weight = 1;
+    return kTRUE;
   }
   
   if(headerFound){
     TList *genHeaders         = 0x0;
     if(cHeader) genHeaders    = cHeader->GetHeaders();
-    if(cHeaderAOD){
-      genHeaders              = cHeaderAOD->GetCocktailHeaders();
-      if(genHeaders->GetEntries()==1) return kFALSE;
-    }
     AliGenEventHeader* gh     = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh = (AliGenEventHeader*)genHeaders->At(i);
@@ -2305,9 +2297,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
           if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
         }
         if (jet) delete jet;
-        if (event){
-          for(Long_t i = 0; i < event->GetNumberOfPrimaries(); i++) {
-            TParticle* particle = (TParticle *)event->Particle(i);
+        if (mcEvent){
+          for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+            TParticle* particle = (TParticle *)mcEvent->Particle(i);
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
               if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
@@ -2315,16 +2307,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
               }
             }
 
-          }
-        } else if (eventAOD){
-          for(Long_t i = 0; i < eventAOD->GetEntriesFast(); i++){
-            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(eventAOD->At(i));
-            if (!particle) continue;
-            if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
-                eventAccepted= kFALSE;
-              }
-            }
           }
         }
         
@@ -2447,7 +2429,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
       }
     }
   } else {    
-    AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     TString eventHeaderName     = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       Bool_t eventAccepted = kTRUE;
@@ -2464,9 +2446,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
         }
         if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
       }
-      if (event){
-        for(Long_t i = 0; i < event->GetNumberOfPrimaries(); i++) {
-          TParticle* particle = (TParticle *)event->Particle(i);
+      if (mcEvent){
+        for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          TParticle* particle = (TParticle *)mcEvent->Particle(i);
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
             if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
@@ -2474,16 +2456,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
             }
           }
           
-        }
-      } else if (eventAOD){
-        for(Long_t i = 0; i < eventAOD->GetEntriesFast(); i++){
-          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(eventAOD->At(i));
-          if (!particle) continue;
-          if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
-              eventAccepted= kFALSE;
-            }
-          }
         }
       }
       
@@ -2612,16 +2584,15 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& we
 //________________________________________________________________________
 // Analysing Jet-Jet MC's
 //________________________________________________________________________
-void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *event, Float_t &XSection, Float_t &NTrials){
+void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials){
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
-  AliAODMCHeader *cHeaderAOD       = 0x0;
-  Bool_t headerFound           = kFALSE;
+  Bool_t headerFound                   = kFALSE;
 
-  if (	fPeriodEnum != kLHC17f8a && fPeriodEnum != kLHC17f8b && fPeriodEnum != kLHC17f8c &&         // LHC16X Jet Jet MC's
-	fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8e &&  
-	fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
-	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&        // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC17f8a && fPeriodEnum != kLHC17f8b && fPeriodEnum != kLHC17f8c &&         // LHC16X Jet Jet MC's
+        fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8e &&
+        fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
+        fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2632,31 +2603,22 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *event, Float_t &XSection
     return;
   }
 
-  if(event->IsA()==AliMCEvent::Class()){
-    if(dynamic_cast<AliMCEvent*>(event)){
-      cHeader                   = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      if(cHeader) headerFound   = kTRUE;
-    }
-  }
-  if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
-    cHeaderAOD                     = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
-    if(cHeaderAOD) headerFound     = kTRUE;
+  if(mcEvent){
+    cHeader                   = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if(cHeader) headerFound   = kTRUE;
+  }else{
+    //no mcEvent available -> not running on MC
+    NTrials = -1;
+    XSection = -1;
+    return;
   }
 
   if(headerFound){
     TList *genHeaders         = 0x0;
-    if(cHeader) genHeaders       = cHeader->GetHeaders();
-    if(cHeaderAOD){
-      genHeaders           = cHeaderAOD->GetCocktailHeaders();
-      if(genHeaders->GetEntries()==1){
-        NTrials = -1;
-        XSection = -1;
-        return;
-      }
-    }
-    AliGenEventHeader* gh       = 0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
+    AliGenEventHeader* gh     = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-      gh             = (AliGenEventHeader*)genHeaders->At(i);
+      gh = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName   = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
         AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(gh);
@@ -2666,13 +2628,15 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *event, Float_t &XSection
       }
     }
   } else {
-    AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
-    TString eventHeaderName     = eventHeader->ClassName();
-    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-      AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-      NTrials = gPythia->Trials();
-      XSection = gPythia->GetXsection();
-      return;
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
+    if(eventHeader){
+      TString eventHeaderName     = eventHeader->ClassName();
+      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+        AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
+        NTrials = gPythia->Trials();
+        XSection = gPythia->GetXsection();
+        return;
+      }
     }
   }
 
@@ -2685,42 +2649,32 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *event, Float_t &XSection
 //________________________________________________________________________
 // Analysing Jet-Jet MC's 
 //________________________________________________________________________
-Float_t AliConvEventCuts::GetPtHard(AliVEvent *event){
+Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
   AliGenCocktailEventHeader *cHeader   = 0x0;
-  AliAODMCHeader *cHeaderAOD       = 0x0;
-  Bool_t headerFound           = kFALSE;
+  Bool_t headerFound                   = kFALSE;
   
-  if (	fPeriodEnum != kLHC17f8a && fPeriodEnum != kLHC17f8b && fPeriodEnum != kLHC17f8c &&         // LHC16X Jet Jet MC's
-	fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8e &&  
-	fPeriodEnum != kLHC16h3 &&                                                                    // LHC15n Jet Jet MC's
-	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&      // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC17f8a && fPeriodEnum != kLHC17f8b && fPeriodEnum != kLHC17f8c &&         // LHC16X Jet Jet MC's
+        fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8e &&
+        fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
+        fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
         fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus                                     // LHC12 JetJet MC
     ) return -1;
 
-  if(event->IsA()==AliMCEvent::Class()){
-    if(dynamic_cast<AliMCEvent*>(event)){
-      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      if(cHeader) headerFound   = kTRUE;
-    }
-  }
-  if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
-    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
-    if(cHeaderAOD) headerFound     = kTRUE;
+  if(mcEvent){
+    cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if(cHeader) headerFound   = kTRUE;
+  }else{
+    //no mcEvent available -> not running on MC
+    return -1;
   }
   
   if(headerFound){
     TList *genHeaders         = 0x0;
-    if(cHeader) genHeaders       = cHeader->GetHeaders();
-    if(cHeaderAOD){
-      genHeaders           = cHeaderAOD->GetCocktailHeaders();
-      if(genHeaders->GetEntries()==1){
-        return -1;
-      }
-    }
-    AliGenEventHeader* gh       = 0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
+    AliGenEventHeader* gh     = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh             = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName   = gh->GetName();
@@ -2729,10 +2683,12 @@ Float_t AliConvEventCuts::GetPtHard(AliVEvent *event){
       } 
     }
   } else {    
-    AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
-    TString eventHeaderName     = eventHeader->ClassName();
-    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-      return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
+    if(eventHeader){
+      TString eventHeaderName     = eventHeader->ClassName();
+      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+        return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+      }
     }
   }
   
