@@ -56,6 +56,9 @@ main()
     if [[ -e $scr ]]; then
       echo "Sourcing $scr from current directory" 1>&2
       source $scr false
+    elif [[ -e $ALICE_ROOT/libexec/$scr ]]; then
+      echo "Sourcing $scr from AliRoot" 1>&2
+      source $ALICE_ROOT/libexec/$scr false
     else
       echo "Sourcing $scr from AliPhysics" 1>&2
       source $ALICE_PHYSICS/PWGPP/scripts/$scr false
