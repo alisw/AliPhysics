@@ -34,7 +34,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -268,12 +268,12 @@ Bool_t AliPrimaryPionCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliStack *fMCStack){
+Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent){
 	
-	if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
-// 	if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
+    if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
+// 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
-	TParticle* particle = fMCStack->Particle(labelParticle);
+    TParticle* particle = mcEvent->Particle(labelParticle);
 
 	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
 	
