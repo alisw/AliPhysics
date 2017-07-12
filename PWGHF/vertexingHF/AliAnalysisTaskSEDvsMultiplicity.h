@@ -83,10 +83,23 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetMultiplVsZProfileLHC13b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 13;
   }
   void SetMultiplVsZProfileLHC13c(TProfile* hprof){
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 13;
+  }
+    
+  void SetMultiplVsZProfileLHC16q(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16t(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 16;
   }
     
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -242,9 +255,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Int_t fDoVZER0ParamVertexCorr; /// Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
+  Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,17); /// D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,18); /// D vs. mult task
   /// \endcond
 };
 
