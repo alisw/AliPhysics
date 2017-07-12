@@ -144,7 +144,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    void GetCentralityRange(Double_t range[2]){range[0]=10*fCentralityMin;range[1]=10*fCentralityMax;}
    
    // Cut Selection
-   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
+   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent);
    Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon);
    Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
    Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
@@ -227,7 +227,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    void  LoadReweightingHistosMCFromFile ();
    UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
    // Event Cuts
-   Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
+   Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
    Bool_t GetUseNewMultiplicityFramework(TString period);
    Int_t GetNumberOfContributorsVtx(AliVEvent *event);

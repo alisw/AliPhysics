@@ -767,7 +767,7 @@ Bool_t AliConversionCuts::InitPIDResponse(){
    return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent){
+Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent){
    // Process Event Selection
 
    Int_t cutindex=0;
@@ -3596,7 +3596,7 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
    return -1;
 }
 //-------------------------------------------------------------
-Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEvent)
+Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *fMCEvent)
 {   // Centrality Selection
    if(!fIsHeavyIon)return kTRUE;
 
