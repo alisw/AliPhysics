@@ -1,31 +1,27 @@
-/*
-  Test suit for the AliTreePlayer:
+// Test suite for AliTreePlayer.
+//
+// cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
+//
+// Test should be integrated to AliRoot test suite (not cmake test as it needs
+// to access the external files).
+//
+// Output should be that "Test OK" on all lines, e.g.:
+//
+// I-AliTreePlayerTest.testSelectMetadata AND invariant: Test OK: N(Logbook&&(Stat))=N(Logbook&&(Stat&&Base))+N(Logbook&&(Stat&&(!Base)))   7=2+5
+// I-AliTreePlayerTest.testSelectMetadata Negatioation test: Test OK:   N(!(A||B))=N((!A)&&(!B)) 73==73
+// I-AliTreePlayerTest.testselectTreeInfo: Test OK:   N(A))==N(A&&B)&&N(A&&!B)) 46=6+40
+// I-AliTreePlayerTest.testConvertTree: Test OK
+//
+// To run test interacivally, or test subsets:
+//     .L  $ALICE_ROOT/../src/STAT/test/AliTreePlayerTest.C+
+//     AliTreePlayerTest()
+//
+// Tests: see description in individual tests.
 
-  cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
-
-  Test should be integrated to AliRoot test suit (not cmake test as it need access to the external files)
-
-  Output should be all test OK:
-  I-AliTreePlayerTest.testSelectMetadata AND invariant: Test OK: N(Logbook&&(Stat))=N(Logbook&&(Stat&&Base))+N(Logbook&&(Stat&&(!Base)))   7=2+5
-  I-AliTreePlayerTest.testSelectMetadata Negatioation test: Test OK:   N(!(A||B))=N((!A)&&(!B)) 73==73
-  I-AliTreePlayerTest.testselectTreeInfo: Test OK:   N(A))==N(A&&B)&&N(A&&!B)) 46=6+40
-  I-AliTreePlayerTest.testConvertTree: Test OK
-
-
-  To run test interacivally, or test subsets:
-     .L  $ALICE_ROOT/../src/STAT/test/AliTreePlayerTest.C+
-     AliTreePlayerTest();
-
-  Tests: see description in individual test
-
-
-
-
-  AliTreePlayer::selectMetadata(treeLogbook, "[class==\"Logbook&&Time\"]",0)->Print();
-  AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:QA.TPC.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
-  AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"json","qatpc.json");  
-  AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"csv","qatpc.csv");  
-*/
+// AliTreePlayer::selectMetadata(treeLogbook, "[class==\"Logbook&&Time\"]",0)->Print();
+// AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:QA.TPC.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
+// AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"json","qatpc.json");
+// AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"csv","qatpc.csv");
 
 #include "TStatToolkit.h"
 #include "Riostream.h"
@@ -41,29 +37,22 @@
 #include "TTreeFormulaManager.h"
 #include "AliTreePlayer.h"
 
+TTree *testTree = 0x0;
 
-TTree * testTree=0;
 void testSelectMetadata();
 void testselectTreeInfo();
 //void testselectWhatWhereOrderBy();
 void testConvertTree();
 
-
-void AliTreePlayerTest(){
-  // test all  
-  // Input data are provided by AliExternalInfo 
-  // 
+void AliTreePlayerTest() {
   AliExternalInfo info;
-  TTree * treeLogbook = info.GetTree("Logbook","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;");
-  TTree * treeTPC = info.GetTree("QA.TPC","LHC15o","cpass1_pass1","QA.TRD;QA.TPC;QA.TOF;QA.TOF;Logbook");
-  TTree * treeTRD = info.GetTree("QA.TRD","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;Logbook;");
-  //
-  testTree=treeLogbook;
-  testSelectMetadata();  // run test
-  //
-  testTree=treeTPC;
+  TTree *treeLogbook = info.GetTree("Logbook","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;");
+  TTree *treeTPC = info.GetTree("QA.TPC","LHC15o","cpass1_pass1","QA.TRD;QA.TPC;QA.TOF;QA.TOF;Logbook");
+  TTree *treeTRD = info.GetTree("QA.TRD","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;Logbook;");
+  testTree = treeLogbook;
+  testSelectMetadata();
+  testTree = treeTPC;
   testselectTreeInfo();
-  //
   testConvertTree();
 }
 
@@ -164,10 +153,10 @@ void testConvertTree() {
   treeTRD->AddFriend(treeTPC,"QA.TPC");
 
   AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:QA.TRD.run:QA.TPC.run","1", "", 0,1000,"csv","sparsetest.csv");
-  // test that the 1 and 2 columns are the same - count different collumns 
+  // test that the 1 and 2 columns are the same - count different collumns
   //      cat sparsetest.csv | grep -v "run" | gawk  '{ sum+=($1!=$2) } END {print sum} '
   Int_t mismatch0 = (gSystem->GetFromPipe(" cat sparsetest.csv | grep -v \"run\" | gawk  '{ sum+=($1!=$2) } END {print sum} '")).Atoi(); // should be 0 count run mismatch
-  //  cat sparsetest.csv | grep -v "run" | gawk  '{sum+=($1==prev); prev=$1;} END {print sum} '  
+  //  cat sparsetest.csv | grep -v "run" | gawk  '{sum+=($1==prev); prev=$1;} END {print sum} '
   Int_t mismatch1=(gSystem->GetFromPipe("cat sparsetest.csv | grep -v \"run\" | gawk  '{sum+=($1==prev); prev=$1;} END {print sum} '")).Atoi();
   if (mismatch0>0||mismatch1){
     ::Error("AliTreePlayerTest.testConvertTree","Test ERROR Run mismatch for sparse trees");

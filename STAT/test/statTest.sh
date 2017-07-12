@@ -1,49 +1,71 @@
-#!/usr/bin/env bash
-# Test tp be used in CTEST of make test of aliroot
-#      see CMakeList.txt
-# To execute test standalone:
-#     ctest -R testAliTreePlayer --verbose
-#     or
-#     ( source $AliRoot_SRC/STEER/Utilities/alilog4bash.sh; source $AliRoot_SRC/STAT/test/statTest.sh; testAliTreePlayer )
-#     ( source $AliRoot_SRC/STEER/Utilities/alilog4bash.sh; source $AliRoot_SRC/STAT/test/statTest.sh; testAliTMinutiToolkitTestLinear )
-# assuming AliRoot_SRC variable is set
+#!/bin/bash
 
-testAliTreePlayer(){
-    #
-    # see AliTreePlayerTest.C source code for the list of tests
-    #     AliTreePlayerTest.log for details about test
-    aliroot -b -q   $AliRoot_SRC/STAT/test/AliTreePlayerTest.C+ |tee AliTreePlayerTest.log
-    cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
-    nGOOD=`cat AliTreePlayerTest.log | grep "AliTreePlayerTest\." | grep  -c -i -e "TEST.*OK"`;
-    nErr=`cat AliTreePlayerTest.log | grep -c "E-"`
-    testStatus=0;
-    if [ $nGOOD != 4 ] ; then
-        alilog_error "statTest.testAliTreePlayer: Invariant test  failed. See log files AliTreePlayerTest.log"
-        ((testStatus++))
-    fi;
-    if [ $nErr != 0 ] ; then
-        alilog_error "statTest.testAliTreePlayer: Invariant test  failed. See log files AliTreePlayerTest.log"
-        ((testStatus+=2))
-    fi
-    if [ $testStatus == 0 ] ; then
-        alilog_success "statTest.testAliTreePlayer: All OK"
-    else
-        alilog_success "statTest.testAliTreePlayer: FAILED code %"
-    fi;
-    #exit 1; #
-    exit $testStatus; # exist status tested in ctest
+# statTest.sh -- test suite for STAT
+#
+# How to run all STAT tests:
+#
+#   alienv enter AliRoot/latest  # load AliRoot environment
+#   cd <AliRoot_Build_Directory>
+#   ctest --output-on-failure -R func_STAT_*
+#
+# Tests output will be printed only in case of failures.
+
+source $ALICE_ROOT/libexec/alilog4bash.sh
+if [[ ! $ALIROOT_SOURCE ]]; then
+  echo "ALIROOT_SOURCE must be defined to the source directory of AliRoot."
+  exit 1
+fi
+
+testAliTreePlayer() {
+  TMPDIR=$(mktemp -d)
+  cd $TMPDIR
+  cp $ALIROOT_SOURCE/STAT/test/AliTreePlayerTest.C .
+  root -b -l <<\EOF &> test.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    .x ./AliTreePlayerTest.C+
+EOF
+  N_GOOD=$(grep -cE 'AliTreePlayerTest\..*Test.*OK' test.log)
+  N_BAD=$(grep -c "E-" test.log)
+  TEST_STATUS=0
+  if [[ $N_GOOD != 4 ]]; then
+    alilog_error "statTest.testAliTreePlayer: Invariant test failed"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.testAliTreePlayer: Invariant test failed"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.testAliTreePlayer: All OK"
+  else
+    alilog_success "statTest.testAliTreePlayer: FAILED (code $TEST_STATUS): full log follows"
+    cat test.log
+  fi
+  cd /
+  rm -rf $TMPDIR
+  exit $TEST_STATUS
 }
 
-testAliTMinutiToolkitTestLinear(){
-    aliroot -b -q  $AliRoot_SRC/STAT/test/AliTMinuitToolkitTestLinear.C+\(50,3\) |tee AliTMinuitToolkitTestLinear.log
-    # for the moment test only that code did not fail
-    # dead band on fit values to be checked in regression test (Elast search DB)?
-    npdf=`ls *.pdf | grep -c pdf`
-    if [ $npdf == 2 ] ;then
-        alilog_success "statTest.testAliTMinutiToolkitTestLinear: All OK"
-        exit 0;
-    else
-        alilog_error "statTest.testAliTMinutiToolkitTestLinear: FAILED"
-        exit 1;
-    fi
+testAliTMinutiToolkitTestLinear() {
+  TMPDIR=$(mktemp -d)
+  cd $TMPDIR
+  cp $ALIROOT_SOURCE/STAT/test/AliTMinuitToolkitTestLinear.C .
+  root -b -l <<\EOF &> test.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    cout << gSystem->GetIncludePath() << "e che cz" << endl;
+    .x ./AliTMinuitToolkitTestLinear.C+(50,3)
+EOF
+  NPDF=$(ls -1 *.pdf | grep -c '\.pdf')
+  if [[ $NPDF == 2 ]]; then
+    alilog_success "statTest.testAliTMinutiToolkitTestLinear: All OK"
+    exit 0
+  else
+    alilog_error "statTest.testAliTMinutiToolkitTestLinear: FAILED: full log follows"
+    cat test.log
+    exit 1
+  fi
+  cd /
+  rm -rf $TMPDIR
 }
+
+[[ $1 ]] && $1
