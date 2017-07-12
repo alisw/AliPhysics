@@ -1,7 +1,6 @@
 /*
   Test suit for the AliTreePlayer:
 
-  aliroot -b -q   $AliRoot_SRC/STAT/test/AliTreePlayerTest.C+ |tee AliTreePlayerTest.log
   cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
 
   Test should be integrated to AliRoot test suit (not cmake test as it need access to the external files)
@@ -17,12 +16,7 @@
      .L  $ALICE_ROOT/../src/STAT/test/AliTreePlayerTest.C+
      AliTreePlayerTest();
 
-  Tests: see desciption in idnividual test
-  void testSelectMetadata();
-  void testselectTreeInfo();
-  //void testselectWhatWhereOrderBy();
-  void testConvertTree();
-  in case
+  Tests: see description in individual test
 
 
 
@@ -61,7 +55,7 @@ void AliTreePlayerTest(){
   // 
   AliExternalInfo info;
   TTree * treeLogbook = info.GetTree("Logbook","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;");
-  TTree * treeTPC = info.GetTree("QA.TPC","LHC15o","cpass1_pass1","QA.TRD;QA.TPC;QA.TOC;QA.TOF;Logbook");
+  TTree * treeTPC = info.GetTree("QA.TPC","LHC15o","cpass1_pass1","QA.TRD;QA.TPC;QA.TOF;QA.TOF;Logbook");
   TTree * treeTRD = info.GetTree("QA.TRD","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;Logbook;");
   //
   testTree=treeLogbook;
@@ -155,6 +149,10 @@ void testselectWhatWhereOrderByForTRD(){
 }
 
 void testConvertTree() {
+  // test root->csv conversion
+  //    test proper match of indexes
+  //    In case of corruption of the indices  test was failing
+  //
   AliExternalInfo info;
   TTree *treeTPC = info.GetTree("QA.TPC", "LHC15o", "cpass1_pass1");
   TTree *treeTRD = info.GetTree("QA.TRD", "LHC15o", "cpass1_pass1");
