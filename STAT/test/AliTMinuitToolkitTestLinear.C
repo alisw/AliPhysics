@@ -1,4 +1,6 @@
 /*
+   Test AliTMinuitToolkit fit option
+   For the moment: Test only code doe not crachs
    .L $AliRoot_SRC/STAT/test/AliTMinuitToolkitTestLinear.C+
    AliTMinuitToolkitTestLinear(2000,3);
 
@@ -154,7 +156,8 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
     treeOut->Draw(TString::Format("fit%d.fElements[1]-p1>>hisDelta0_%d(100,-20,20)",iFit,iFit));
     treeOut->GetHistogram()->SetTitle(fnames[iFit]);
     treeOut->GetHistogram()->GetXaxis()->SetTitle("p_{1fit}-p_{1in}"); 
-    treeOut->GetHistogram()->Fit("gaus"); 
+    treeOut->GetHistogram()->Fit("gaus");
+    ::Info("AliTMinuitToolkitTestLinear", Form("Fit%s",fnames[iFit]));
   }
   canvasStatComparison->SaveAs("AliTMinuiToolkit.TestLinearFitStatExample.png");
   canvasStatComparison->SaveAs("AliTMinuiToolkit.TestLinearFitStatExample.pdf");
