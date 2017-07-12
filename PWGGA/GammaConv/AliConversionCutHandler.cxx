@@ -45,6 +45,49 @@ fClusterCutArray(new TString[fNMaxCuts])
   }
 }
 
+AliConversionCutHandler::AliConversionCutHandler(const AliConversionCutHandler &ref):
+fValidCuts(ref.fValidCuts),
+fNCuts(ref.fNCuts),
+fNMaxCuts(ref.fNMaxCuts),
+fEventCutArray(new TString[fNMaxCuts]),
+fPhotonCutArray(new TString[fNMaxCuts]),
+fMesonCutArray(new TString[fNMaxCuts]),
+fClusterCutArray(new TString[fNMaxCuts])
+{
+  for(Int_t i=0; i<fNMaxCuts; i++) {
+	fEventCutArray[i] = ref.fEventCutArray[i];
+	fPhotonCutArray[i] = ref.fPhotonCutArray[i];
+	fMesonCutArray[i] = ref.fMesonCutArray[i];
+	fClusterCutArray[i] = ref.fClusterCutArray[i];
+  }
+}
+
+AliConversionCutHandler &AliConversionCutHandler::operator=(const AliConversionCutHandler &ref) {
+  if(this != &ref){
+    delete[] fEventCutArray;
+    delete[] fPhotonCutArray;
+    delete[] fMesonCutArray;
+    delete[] fClusterCutArray;
+
+    fValidCuts = ref.fValidCuts;
+    fNCuts = ref.fNCuts;
+    fNMaxCuts = ref.fNMaxCuts;
+    fEventCutArray = new TString[fNMaxCuts];
+    fPhotonCutArray = new TString[fNMaxCuts];
+    fMesonCutArray = new TString[fNMaxCuts];
+    fClusterCutArray = new TString[fNMaxCuts];
+    for(Int_t i=0; i<fNMaxCuts; i++) {
+      for(Int_t i=0; i<fNMaxCuts; i++) {
+      fEventCutArray[i] = ref.fEventCutArray[i];
+      fPhotonCutArray[i] = ref.fPhotonCutArray[i];
+      fMesonCutArray[i] = ref.fMesonCutArray[i];
+      fClusterCutArray[i] = ref.fClusterCutArray[i];
+      }
+    }
+  }
+  return *this;
+}
+
 AliConversionCutHandler::~AliConversionCutHandler() {
   delete[] fEventCutArray;
   delete[] fPhotonCutArray;
