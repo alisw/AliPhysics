@@ -21,9 +21,9 @@ class AliEmcalCorrectionEventManager : public AliAnalysisTaskSE
   AliEmcalCorrectionEventManager(const char * name);
   virtual ~AliEmcalCorrectionEventManager();
 
-  AliVEvent * InputEvent();
+  AliVEvent * InputEvent() const;
   /// Whether the embedding should be used.
-  bool UseEmbeddingEvent() { return fUseEmbedding; }
+  bool UseEmbeddingEvent() const { return fUseEmbedding; }
 
   /**
    * Set the input event of the current event. It will be ignored if fUseEmbedding

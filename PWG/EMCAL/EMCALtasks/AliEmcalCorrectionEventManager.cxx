@@ -44,7 +44,7 @@ AliEmcalCorrectionEventManager::~AliEmcalCorrectionEventManager()
  *
  * @return Requested input event
  */
-AliVEvent * AliEmcalCorrectionEventManager::InputEvent()
+AliVEvent * AliEmcalCorrectionEventManager::InputEvent() const
 {
   AliVEvent * event = fInputEvent;
   if (fUseEmbedding) {
