@@ -145,7 +145,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity():
   fPdgMeson(411),
   fMultiplicityEstimator(kNtrk10),
   fMCPrimariesEstimator(kEta10),
-  fDoVZER0ParamVertexCorr(1)
+  fDoVZER0ParamVertexCorr(1),
+  fYearNumber(16)
 {
   /// Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -242,7 +243,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fPdgMeson(pdgMeson),
   fMultiplicityEstimator(kNtrk10),
   fMCPrimariesEstimator(kEta10),
-  fDoVZER0ParamVertexCorr(1)
+  fDoVZER0ParamVertexCorr(1),
+  fYearNumber(16)
 {
   // 
   /// Standard constructor
@@ -364,8 +366,24 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   fListProfiles->SetOwner();
   TString period[4];
   Int_t nProfiles=4;
-  if (fisPPbData) {period[0]="LHC13b"; period[1]="LHC13c"; nProfiles = 2;}
-  else {period[0]="LHC10b"; period[1]="LHC10c"; period[2]="LHC10d"; period[3]="LHC10e"; nProfiles = 4;}
+  if (fisPPbData) {
+    if(fYearNumber == 13) {
+      period[0]="LHC13b";
+      period[1]="LHC13c";
+      nProfiles = 2;
+    } else if(fYearNumber == 16) {
+      period[0]="LHC16q";
+      period[1]="LHC16t";
+      nProfiles = 2;
+    }
+  }
+  else {
+    period[0]="LHC10b";
+    period[1]="LHC10c";
+    period[2]="LHC10d";
+    period[3]="LHC10e";
+    nProfiles = 4;
+  }
   
   for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
@@ -1318,10 +1336,13 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
 
   Int_t runNo  = event->GetRunNumber();
   Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-                       // pPb: 0-LHC13b, 1-LHC13c
+                       // pPb 2013: 0-LHC13b, 1-LHC13c
+                       // pPb 2016: 0-LHC16q, 1-LHC16t
   if (fisPPbData) {
-    if (runNo>195343 && runNo<195484) period = 0;
-    if (runNo>195528 && runNo<195678) period = 1;
+    if (runNo>195343 && runNo<195484) period = 0; //13b
+    else if (runNo>195528 && runNo<195678) period = 1; //13c
+    else if (runNo>265308 && runNo<265526) period = 0; //16q
+    else if (runNo>267162 && runNo<267166) period = 1; //16t
     if (period < 0 || period > 1) return 0;
   } 
   else {
