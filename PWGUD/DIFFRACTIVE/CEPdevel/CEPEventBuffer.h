@@ -169,7 +169,7 @@ class CEPEventBuffer : public TObject {
     CEPTrackBuffer* GetTrack(Int_t ind);
     Bool_t RemoveTrack(Int_t ind);
 
-  ClassDef(CEPEventBuffer, 3)     // CEP event buffer
+    ClassDef(CEPEventBuffer, 3)     // CEP event buffer
 
 };
 

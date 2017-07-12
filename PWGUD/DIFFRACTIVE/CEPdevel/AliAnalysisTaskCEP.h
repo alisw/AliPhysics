@@ -121,6 +121,7 @@ private:
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
+  TList *flFMD     ;    //! list of QA histograms for FMD study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

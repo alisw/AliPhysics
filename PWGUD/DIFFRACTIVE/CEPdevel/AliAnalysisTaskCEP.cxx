@@ -28,6 +28,7 @@
 #include "AliAnalysisManager.h"
 #include "AliProdInfo.h"
 #include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
 #include "AliAnalysisUtils.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliTriggerAnalysis.h"
@@ -143,6 +144,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, flnClunTra(0x0)
 	, flVtx(0x0)
   , flV0(0x0)
+  , flFMD(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
@@ -244,6 +246,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   if (flV0) {
     delete flV0;
     flV0 = 0x0;
+  }
+  if (flFMD) {
+    delete flFMD;
+    flFMD = 0x0;
   }
 
   // delete fHist and fCEPtree
@@ -453,6 +459,19 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
       fHist->Add((TObject*)flV0->At(ii));
   } else flV0 = NULL;
   
+  // histograms for FMD study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitFMDStudy,AliCEPBase::kBitFMDStudy)) {
+            
+    // get list of histograms
+    flFMD = new TList();
+    flFMD = fCEPUtil->GetFMDQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flFMD->GetEntries(); ii++)
+      fHist->Add((TObject*)flFMD->At(ii));
+  } else flFMD = NULL;
+  
   // histogram for event statistics
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
   fHist->Add(fhStatsFlow);
@@ -484,7 +503,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // events running through UserExec - thus all analyzed events
   fhStatsFlow->Fill(AliCEPBase::kBinTotalInput);
 
-	// get the next event, check ..
+  // get the next event, check ..
   // availability
   // PID
   // magnetic field
@@ -498,7 +517,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   ((TH1F*)flQArnum->At(0))->Fill(fRun);
   if (fMCEvent) fhStatsFlow->Fill(AliCEPBase::kBinMCEvent);
   
-  // get event characteristics like ...
+  AliAODEvent* aodEvent = AODEvent();
+  if (aodEvent) printf("Got AODEvent ...\n");
+  
+    // get event characteristics like ...
   // run number
   fRun = fEvent->GetRunNumber();
   // event number
@@ -600,7 +622,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
   if (isDGTrigger) ((TH1F*)flQArnum->At(1))->Fill(fRun);
   
-  // post-future trigger protection
+  // past-future trigger protection
   // only valid for CCUP13-B-SPD1-CENTNOTRD
   if (flBBFlag && isDGTrigger) {
     fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
@@ -648,6 +670,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
   Bool_t isV0DG = isSPD && !(isV0A || isV0C);
+  Bool_t isADDG = isSPD && !(isADA || isADC);
   Bool_t isFMDDG = isSPD && !(isFMDA || isFMDC);
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
@@ -655,7 +678,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
   if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
   if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
-  if (isFMDDG)((TH1F*)flQArnum->At(5))->Fill(fRun);
+  if (isADDG) ((TH1F*)flQArnum->At(5))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(6))->Fill(fRun);
   
   // determine the gap condition using
   // ITS,V0,FMD,AD,ZD
@@ -697,11 +721,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The TrackStatus is contained in an array of UInt_t
   // The definition of the TrackStatus bits is given in AliCEPBase.h
   Int_t nTracks = fCEPUtil->AnalyzeTracks(fESDEvent,fTracks,fTrackStatus);
+  // printf("Total number of charged tracks: %i\n",nTracks);
   
   // V0 study
-  if (flV0) {
-    fCEPUtil->V0Analysis(fESDEvent,flV0);
-  }
+  if (flV0)  fCEPUtil->V0Analysis(fESDEvent,flV0);
+  if (flFMD && !isPileup) fCEPUtil->FMDAnalysis(fESDEvent,fTrigger,flFMD);
 
   // nbad track with !kTTTPCScluster
   UInt_t mask = AliCEPBase::kTTTPCScluster;
@@ -843,11 +867,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     ((TH1F*)flQArnum->At(3))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
     if (isToSaveDG) {
-      ((TH1F*)flQArnum->At(6))->Fill(fRun);
+      ((TH1F*)flQArnum->At(7))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinDG);
     }
     if (isToSaveNDG) {
-      ((TH1F*)flQArnum->At(7))->Fill(fRun);
+      ((TH1F*)flQArnum->At(8))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     }
     
@@ -894,6 +918,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       stack = fMCEvent->Stack();
       if (stack) {
         Int_t nPrimaries = stack->GetNprimary();
+        printf("number of tracks: primaries - %i, reconstructed - %i\n",
+          nPrimaries,nTracks);
         prot1 = stack->Particle(0);
       }
 
