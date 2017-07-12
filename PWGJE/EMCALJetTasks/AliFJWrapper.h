@@ -1414,11 +1414,11 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   
   SubJet1_Axis=SubJet_Axes[0];	
   Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
-  Double_t SubJet2_Eta;
+  Double_t SubJet2_Eta=0.0;
   Double_t SubJet1_Phi=SubJet1_Axis.phi();
   if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
   else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
-  Double_t SubJet2_Phi;
+  Double_t SubJet2_Phi=0.0;
   Double_t DeltaPhi=-5;  
   if (SubJet_Axes.size()>1){
     SubJet2_Axis=SubJet_Axes[1];
@@ -1434,11 +1434,11 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
 
   SubJet1=SubJets[0];
   Double_t SubJet1Eta=SubJet1.pseudorapidity();
-  Double_t SubJet2Eta;
+  Double_t SubJet2Eta=0.0;
   Double_t SubJet1Phi=SubJet1.phi();
   if(SubJet1Phi < -1*TMath::Pi()) SubJet1Phi += (2*TMath::Pi());
   else if (SubJet1Phi > TMath::Pi()) SubJet1Phi -= (2*TMath::Pi());
-  Double_t SubJet2Phi;
+  Double_t SubJet2Phi=0.0;
   Double_t DeltaPhiSubJets=-5;
   Double_t SubJet1LeadingTrackPt=-3.0;
   Double_t SubJet2LeadingTrackPt=-3.0;
