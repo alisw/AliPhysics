@@ -198,9 +198,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   Bool_t fIsK0sAnalysis;             /// switch between Lpi and K0sp
   AliNormalizationCounter *fCounter; //!<! AliNormalizationCounter on output slot 4
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 5
-  TList *fListCuts;                  /// list of cuts
-  TList *fListWeight;                /// list of weights
-  TList *fListCounters;              /// list of counters on output slot 2
+  TList *fListCuts;                  //!<! list of cuts
+  TList *fListWeight;                //!<! list of weights
+  TList *fListCounters;              //!<! list of counters on output slot 2
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           /// flag for event selected
 
@@ -316,7 +316,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
-  TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
+  TH1F* fHistoMCNch;  //!<! histogram with Nch distribution from MC production
  
   Int_t fSaveMode; /// switch to change saving mode for tree (light or heavy)
   Int_t fAnalysisType; /// switch to change system/year in use for loading of mult. estimators
@@ -324,8 +324,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
   Double_t fRefMult; /// reference multiplicity
   
-  TList *fListProfiles; ///list of profile histograms for z_vtx correction of mult
-
+  TList *fListProfiles; //!<!list of profile histograms for z_vtx correction of mult
+  TList *fListMultiplicityHistograms; //!<! list of multiplicity-related histograms on output slot 8 
   TH2F *fHistNtrVsZvtx; //!<! hist of ntracklets vs. z_vtx
   TH2F *fHistNtrCorrVsZvtx; //!<! hist of corrected ntracklets vs. z_vtx
   

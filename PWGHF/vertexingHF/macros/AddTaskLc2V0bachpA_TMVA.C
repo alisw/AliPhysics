@@ -3,7 +3,9 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
 							    Bool_t onTheFly=kFALSE,
 							    Bool_t keepingOnlyHIJINGbkd=kFALSE,
 							    TString suffixName="",
-                         Int_t savemode=AliAnalysisTaskSELc2V0bachelorTMVA::kElephant, Int_t system=AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013){
+                         		Int_t savemode=AliAnalysisTaskSELc2V0bachelorTMVA::kElephant,
+								Int_t system=AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013,
+								TString estimatorFilename = "", Double_t refMult = 27.99){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -49,12 +51,61 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   task->SetDebugLevel(0);
   task->SetSaveMode(savemode);
   task->SetAnalysisType(system);
+   // attempt to load histogram for multiplicity vs zvtx correction
+
+  if (estimatorFilename.EqualTo("")) {//Warn if undefined
+     printf("Warning: Estimator file not defined, correction of Ntrk will not be performed!\n");}
+      else { //Load file if defined
+  TFile *fileEstimator = TFile::Open(estimatorFilename.Data());
+  if (!fileEstimator) {
+      AliFatal("File with multiplicity estimator not found! Please check the filepath and retry.\n");
+      return;
+  }
+ task->SetReferenceMultiplicity(refMult);
+ const Char_t* profilebasename="SPDmult10";
+ 
+ switch (system) {
+  case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013:   //LHC13b & LHC13c
+   const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+   TProfile* multEstimatorAvg[2];
+   for (Int_t ip = 0; ip < 2; ip++) {
+      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvg[ip]) { // mult estimator not found
+         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+         return;
+         }
+    }
+      task->SetMultVsZProfileLHC13b(multEstimatorAvg[0]);
+      task->SetMultVsZProfileLHC13c(multEstimatorAvg[1]);
+   break;
+
+  case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2016:  //LHC16q & LHC16t
+   const Char_t* periodNames[2] = {"LHC16q", "LHC16t"};
+   TProfile* multEstimatorAvg[2];
+   for (Int_t ip = 0; ip < 2; ip++) {
+      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvg[ip]) { // mult estimator not found
+         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+         return;
+         }
+    }
+      task->SetMultVsZProfileLHC16q(multEstimatorAvg[0]);
+      task->SetMultVsZProfileLHC16t(multEstimatorAvg[1]);
+   break;
+  default: 
+   AliFatal("Multiplicity profiles specified but analysis mode incorrect. Please check collision system and retry.");
+   return;
+ }
+ 
+      }
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   TString outputfile = Form("Lc2K0Sp_tree_pA%s.root", suffixName.Data());
-  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
+  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="", output8name="";
 
   output1name = Form("treeList%s", suffixName.Data());
   output2name = Form("listCounters%s", suffixName.Data());
@@ -63,6 +114,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   output5name = Form("treeBkg%s", suffixName.Data());
   output6name = Form("listHistoKF%s", suffixName.Data());
   output7name = Form("weights%s", suffixName.Data());
+  output8name = Form("multhists%s", suffixName.Data());
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
@@ -85,6 +137,9 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   
   AliAnalysisDataContainer *coutput7   = mgr->CreateContainer(output7name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // weights
   mgr->ConnectOutput(task, 7, coutput7);
+ 
+ AliAnalysisDataContainer *coutput8    = mgr->CreateContainer(output8name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  mgr->ConnectOutput(task, 8, coutput8);
   
   return task;
   
