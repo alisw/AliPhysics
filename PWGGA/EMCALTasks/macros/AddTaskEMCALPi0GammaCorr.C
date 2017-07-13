@@ -3,7 +3,7 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   UInt_t      evtTriggerType         = AliVEvent::kEMCEGA, //AliVEvent::kAnyINT,// AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
   UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
   Double_t    trackptcut             = 0.15,              //..
-  Double_t    clusptcut              = 3.0,              //..
+  Double_t    clusptcut              = 0.15,              //..
   Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
