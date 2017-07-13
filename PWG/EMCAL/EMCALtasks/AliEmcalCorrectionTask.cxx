@@ -596,9 +596,9 @@ void AliEmcalCorrectionTask::InitializeComponents()
     AddContainersToComponent(component, AliEmcalContainerUtils::kTrack, true);
 
     // Initialize each component
-    component->Initialize();
+    bool initialized = component->Initialize();
 
-    if (component)
+    if (component && initialized)
     {
       AliInfo(TString::Format("Successfully added correction task: %s", componentName.c_str()));
       fCorrectionComponents.push_back(component);
@@ -693,6 +693,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         AliError(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
       }
       component->AdoptClusterContainer(GetClusterContainer(str.c_str()));
+
+      // Check that we are using the standard input event
+      if (!(cont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
+      }
     }
     else if (inputObjectType == AliEmcalContainerUtils::kTrack)
     {
@@ -703,6 +708,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         AliFatal(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
       }
       component->AdoptParticleContainer(GetParticleContainer(str.c_str()));
+
+      // Check that we are using the standard input event
+      if (!(cont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
+      }
     }
     else if (inputObjectType == AliEmcalContainerUtils::kCaloCells)
     {
@@ -735,6 +745,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       // should rarely be an issue.
       if (component->GetCaloCells()) {
         AliDebugStream(3) << "Component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
+      }
+
+      // Check that we are using the standard input event
+      if (!(cellCont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
       }
     }
   }
@@ -1210,13 +1225,13 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
     // Setup geometry
     component->SetEMCALGeometry(fGeom);
 
-    // Set the input events. This is redundant to where it is set during Run(), but the events need to be
-    // available to components, and they are only called one extra time.
-    component->SetEvent(InputEvent());
-    component->SetMCEvent(MCEvent());
-
     // Add the requested cells to the component
     AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
+
+    // Set the input events. This is redundant to where it is set during Run(), but the events need to be
+    // available to components, and they are only called one extra time.
+    component->SetInputEvent(InputEvent());
+    component->SetMCEvent(MCEvent());
 
     // Component ExecOnce()
     component->ExecOnce();
@@ -1332,10 +1347,11 @@ Bool_t AliEmcalCorrectionTask::Run()
   // Run the initialization for all derived classes.
   for (auto component : fCorrectionComponents)
   {
-    component->SetEvent(InputEvent());
+    component->SetInputEvent(InputEvent());
     component->SetMCEvent(MCEvent());
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
+    component->SetVertex(fVertex);
 
     component->Run();
   }

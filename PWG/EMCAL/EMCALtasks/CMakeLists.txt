@@ -63,6 +63,7 @@ set(SRCS
   AliAnalysisTaskEmcalTriggerSelection.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
   AliEmcalCopyCollection.cxx
+  AliEmcalCorrectionEventManager.cxx
   AliEmcalCorrectionTask.cxx
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
