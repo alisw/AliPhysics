@@ -18,7 +18,7 @@ class AliFemtoEventAnalysis : public AliFemtoAnalysis
 {
 public:
 
-  AliFemtoEventAnalysis();
+  AliFemtoEventAnalysis(double multMin, double multMax);
   AliFemtoEventAnalysis(const AliFemtoEventAnalysis& OriginalAnalysis);
   AliFemtoEventAnalysis& operator=(const AliFemtoEventAnalysis& aAna);
 
@@ -68,6 +68,9 @@ protected:
 
   unsigned int fNeventsProcessed;                    ///< How many events processed so far
   AliFemtoPicoEvent *fPicoEvent;
+  
+  double fMultMin;
+  double fMultMax;
   
   Bool_t fPerformSharedDaughterCut;
 
