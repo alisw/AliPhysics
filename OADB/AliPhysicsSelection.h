@@ -121,8 +121,6 @@ protected:
   AliOADBFillingScheme*    fFillOADB;    // Filling scheme OADB object
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
-  TPRegexp* fRegexp;        //! regular expression for trigger tokens
-  TList* fCashedTokens;     //! trigger token lookup list
   StringToFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
   FormulaAndBits FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
 
