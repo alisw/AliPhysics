@@ -470,11 +470,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             HasImpactParameter =kFALSE;
             Double_t xyzatdca[3];
             if (GetImpactParameter(((AliAODTrack*)trackV),(AliAODEvent *)InputEvent(), dca, cov,xyzatdca))HasImpactParameter =kTRUE;
-            /*
+
             if(fEventVertex) {
                     delete fEventVertex;
                     fEventVertex =nullptr;
-                }*/
+                }
             if(!HasImpactParameter)  continue;
             if(fIsPythia){
                     Int_t corrpartidx =-1;
@@ -629,10 +629,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     /// Stores the signed ip distributions for UDG jets as input for the JP resolution function
                     if (!IsTrackAccepted((AliAODTrack*)trackV,3))   continue;
                     if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign)){
-                            /*if(fEventVertex) {
+                            if(fEventVertex) {
                                     delete fEventVertex;
                                     fEventVertex =nullptr;
-                                }*/
+                                }
 
 
                             Int_t corridx=-1;
@@ -801,10 +801,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     //////////////////////END jet probability part
 
                     if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign)){
-                            /*if(fEventVertex) {
+                            if(fEventVertex) {
                                     delete fEventVertex;
                                     fEventVertex =nullptr;
-                                }*/
+                                }
 
                             Int_t corridx=-1;
                             fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx) : TrackWeight =1;
@@ -1224,50 +1224,50 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dJetRecPtAccepted","accepted detector level jets;pt (GeV/c); count",500,0,250,"s");
     if (fIsPythia){
             //Histograms for jet-probability tagger
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Electrons
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Pions
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Kaons
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Protons
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
-            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",400,0,100,2000,-30,30,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
 
 
             //Jet Probability QA  plots for different particle species
@@ -2662,7 +2662,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
     AliExternalTrackParam etp;
     etp.CopyFromVTrack((AliVTrack*)track);
     const Double_t kBeampiperadius=5;
-    //fEventVertex = RemoveDaughtersFromPrimaryVtx(track);
+    fEventVertex = RemoveDaughtersFromPrimaryVtx(track);
     if(!fEventVertex)return kFALSE;
     const AliVVertex *vtxESDSkip =fEventVertex;//RemoveDaughtersFromPrimaryVtx(track);
     if(!vtxESDSkip) return kFALSE;
@@ -2848,12 +2848,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
     etp_track.GetXYZAt(xb, event->GetMagneticField(),xyz_track_global);
     etp_track.PropagateTo(xb,event->GetMagneticField());
 
-    /*
+
     if(fEventVertex) {
             delete fEventVertex;
             fEventVertex =nullptr;
 
-        }*/
+        }
     double  bdecaylength =  TMath::Sqrt((VxVyVz[0] - xyz_track_global[0]) * (VxVyVz[0] - xyz_track_global[0]) +
             (VxVyVz[1] - xyz_track_global[1]) * (VxVyVz[1] - xyz_track_global[1])+
             (VxVyVz[2] - xyz_track_global[2]) * (VxVyVz[2] - xyz_track_global[2]));
