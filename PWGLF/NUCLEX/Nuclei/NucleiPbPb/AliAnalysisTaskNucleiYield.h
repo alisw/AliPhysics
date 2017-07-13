@@ -28,7 +28,7 @@
 #include <AliPIDResponse.h>
 #include <AliPID.h>
 #include <TLorentzVector.h>
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 class TF1;
 class TH2F;
@@ -91,8 +91,8 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliNuclexEventCuts  fEventCut;
-  TArrayD             fTOFfunctionPars;
+  AliEventCuts  fEventCut;
+  TArrayD       fTOFfunctionPars;
 
   UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis (set to 0 to skip the cut)
   bool                fPropagateTracks; /// Workaround for troublesome productions
