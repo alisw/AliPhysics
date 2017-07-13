@@ -53,6 +53,7 @@
 #include "AliTracker.h"
 #include "AliMCEvent.h"
 #include "AliVTrack.h"
+#include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliLog.h" 
 #include "AliMCInfoCuts.h" 
@@ -230,84 +231,77 @@ void AliPerformanceDEdx::ProcessTPC(AliMCEvent* const /*mcev*/, AliVTrack *const
 //_____________________________________________________________________________
 void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
- //
- // Fill TPC track information at inner TPC wall
- // Only ESD events store TPC track information at inner TPC wall
- //
-  if(!vEvent || !vTrack) return;
-
-  if( IsUseTrackVertex() ) 
-  { 
-    // Relate TPC inner params to prim. vertex
-    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
-    // const AliESDVertex *vtxESD = NULL;
-    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
-    Double_t x[3]; vTrack->GetXYZ(x);
-    Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = kFALSE;
-    if(fabs(b[2])>0.000001)
-      isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
-    if(!isOK) return;
-
-    /*
-      // JMT -- recaluclate DCA for HLT if not present
-      if ( dca[0] == 0. && dca[1] == 0. ) {
-        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
-      }
-    */
-  }
-
-  // get external param. at inner TPC wall
-  const AliExternalTrackParam *innerParam =  vTrack->GetInnerParam();
-  if(!innerParam) return;
-
-  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
-  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
-  vTrack->GetImpactParametersTPC(dca,cov);
-
-  if((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-
-  //
-  // select primaries
-  //
-  Double_t dcaToVertex = -1;
-  if( fCutsRC.GetDCAToVertex2D() ) 
-  {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ());
-  }
-  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
-
-  Float_t dedx = vTrack->GetTPCsignal();
-  Int_t ncls = vTrack->GetTPCNcls();
-  Int_t TPCSignalN = vTrack->GetTPCsignalN();
-  //Float_t nCrossedRows = vTrack->GetTPCClusterInfo(2,1);
-  Float_t nClsF = vTrack->GetTPCClusterInfo(2,0);
-
-
-  Double_t pt = innerParam->Pt();
-  Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
-  Double_t p = pt/TMath::Cos(lam);
-  //Double_t alpha = innerParam->GetAlpha();
-  Double_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
-  //if(phi<0.) phi += 2.*TMath::Phi();
-  Double_t y = innerParam->GetY();
-  Double_t z = innerParam->GetZ();
-  Double_t snp = innerParam->GetSnp();
-  Double_t tgl = innerParam->GetTgl();
-
-  //fill thnspars here coud add oroc mdedium long..............Atti
-  //you should select which pad leng here 
-  // http://svnweb.cern.ch/world/wsvn/AliRoot/trunk/STEER/STEERBase/AliTPCdEdxInfo.h 
-  // fTPCsignalRegion[4];
-
-  //Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
-  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
-  if(fUseSparse) fDeDxHisto->Fill(vDeDxHisto);
-  else  FilldEdxHisotgram(vDeDxHisto);
+    //
+    // Fill TPC track information at inner TPC wall
+    // Only ESD events store TPC track information at inner TPC wall
+    //
+    if(!vEvent || !vTrack) return;
     
-  if(!mcev) return;
+    
+    AliExternalTrackParam trackParams;
+    vTrack->GetTrackParam(trackParams);
+    AliExternalTrackParam *etpTrack = &trackParams;
+    
+    Double_t dca[2] = {0.,0.};
+    Double_t cov[3] = {0.,0.,0.};
+    if( IsUseTrackVertex() ) {
+        // Relate TPC inner params to prim. vertex
+        AliESDVertex vertex;
+        vEvent->GetPrimaryVertex(vertex);
+        const AliVVertex *vVertex = &vertex;
+        Double_t x[3];
+        etpTrack->GetXYZ(x);
+        Double_t b[3];
+        AliTracker::GetBxByBz(x,b);
+        Bool_t isOK=kFALSE;
+        if(fabs(b[2])>0.000001)
+            isOK = etpTrack->PropagateToDCABxByBz(vVertex, b, kVeryBig,dca,cov);
+        if(!isOK) return;
+    }
+    
+    if((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+    
+    //
+    // select primaries
+    //
+    Double_t dcaToVertex = -1;
+    if( fCutsRC.GetDCAToVertex2D() )
+    {
+        dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ());
+    }
+    if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
+    if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
+    if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
+    
+    Float_t dedx = vTrack->GetTPCsignal();
+    Int_t ncls = vTrack->GetTPCNcls();
+    Int_t TPCSignalN = vTrack->GetTPCsignalN();
+    //Float_t nCrossedRows = vTrack->GetTPCClusterInfo(2,1);
+    Float_t nClsF = vTrack->GetTPCClusterInfo(2,0);
+    
+    
+    Double_t pt = etpTrack->Pt();
+    Double_t lam = TMath::ATan2(etpTrack->Pz(),etpTrack->Pt());
+    Double_t p = pt/TMath::Cos(lam);
+    //Double_t alpha = innerParam->GetAlpha();
+    Double_t phi = TMath::ATan2(etpTrack->Py(),etpTrack->Px());
+    //if(phi<0.) phi += 2.*TMath::Phi();
+    Double_t y = etpTrack->GetY();
+    Double_t z = etpTrack->GetZ();
+    Double_t snp = etpTrack->GetSnp();
+    Double_t tgl = etpTrack->GetTgl();
+    
+    //fill thnspars here coud add oroc mdedium long..............Atti
+    //you should select which pad leng here
+    // http://svnweb.cern.ch/world/wsvn/AliRoot/trunk/STEER/STEERBase/AliTPCdEdxInfo.h
+    // fTPCsignalRegion[4];
+    
+    //Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
+    Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
+    if(fUseSparse) fDeDxHisto->Fill(vDeDxHisto);
+    else  FilldEdxHisotgram(vDeDxHisto);
+    
+    if(!mcev) return;
 }
 
 //_____________________________________________________________________________
