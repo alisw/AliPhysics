@@ -1231,7 +1231,6 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
     // Set the input events. This is redundant to where it is set during Run(), but the events need to be
     // available to components, and they are only called one extra time.
     component->SetInputEvent(InputEvent());
-    //component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
 
     // Component ExecOnce()
@@ -1349,7 +1348,6 @@ Bool_t AliEmcalCorrectionTask::Run()
   for (auto component : fCorrectionComponents)
   {
     component->SetInputEvent(InputEvent());
-    //component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);

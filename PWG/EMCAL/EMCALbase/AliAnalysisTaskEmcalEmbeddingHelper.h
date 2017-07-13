@@ -174,8 +174,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /* @} */
 
   /**
-   * Returns the external event by overloading InputEvent()
-   * Not the preferred method! Only for internal use! Instead use GetExternalEvent();
+   * **SHOULD NOT BE USED! Use GetExternalEvent()!**
+   * Returns the external event by overloading InputEvent() defined in AliAnalysisTaskSE.
+   * This is used by AliEmcalCorrectionEventManager, but it should not be used by the user!
+   * Instead, use GetExternalEvent().
+   *
+   * Note that it cannot be protected, because we need to call it externally.
+   *
    * @return The external event
    */
   AliVEvent* InputEvent()                                   const { return GetExternalEvent(); }

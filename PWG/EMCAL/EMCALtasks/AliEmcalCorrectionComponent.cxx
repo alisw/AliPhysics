@@ -147,6 +147,9 @@ void AliEmcalCorrectionComponent::ExecOnce()
  */
 Bool_t AliEmcalCorrectionComponent::Run()
 {
+  AliDebugStream(3) << ": fEventManager.UseEmbeddingEvent(): " << fEventManager.UseEmbeddingEvent() << ", "
+           << "fEventManager.InputEvent(): " << fEventManager.InputEvent() << ", "
+           << "fEventManager address: " << &fEventManager << "\n";
   if(fGetPassFromFileName)
     GetPass();
   
