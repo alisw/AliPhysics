@@ -91,14 +91,19 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     fYearNumber = 13;
   }
     
-  void SetMultiplVsZProfileLHC16q(TProfile* hprof){
+  void SetMultiplVsZProfileLHC16qt1stBunch(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
     fYearNumber = 16;
   }
-  void SetMultiplVsZProfileLHC16t(TProfile* hprof){
+  void SetMultiplVsZProfileLHC16qt2ndBunch(TProfile* hprof){
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
     fYearNumber = 16;
   }
     
