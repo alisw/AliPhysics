@@ -208,6 +208,7 @@ public:
   TList* GetZDCESEList() const {return this->fZDCESEList;};
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = (TList*)wlist->Clone();}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = (TList*)wlist->Clone();}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = (TList*)wlist->Clone();}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
   void SetCRCZDCResList(TList* const wlist) {this->fCRCZDCResList = (TList*)wlist->Clone();}
@@ -353,6 +354,7 @@ private:
   TString fCorrWeight;
   TList *fQVecList;       // list with weights
   TList *fCRCZDCCalibList; // ZDC calibration
+  TList *fCRCZDC2DCutList; // ZDC calibration
   TList *fCRCVZEROCalibList; // ZDC calibration
   TList *fCRCZDCResList; // ZDC rescaling
   TList *fZDCESEList;       // list with weights

@@ -102,6 +102,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bResetNegativeZDC=kFALSE;
   Bool_t bPhiExclZone=kFALSE;
   Bool_t bTestSin=kFALSE;
+  Bool_t bZDCCut=kFALSE;
+  if(MinMulZN>=13) bZDCCut=kTRUE;
   
   // define CRC suffix
   TString CRCsuffix = ":CRC";
@@ -576,6 +578,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   } // end of if(bCenFlattening)
+  
+  if(bZDCCut) {
+    TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root","READ");
+    if(!ZDCCutFile) {
+      cout << "ERROR: ZDCCutFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCCutList = (TList*)(ZDCCutFile->FindObjectAny("ZDCcut"));
+    if(ZDCCutList) {
+      taskQC->SetCRCZDC2DCutList(ZDCCutList);
+      cout << "ZDCCut set (from alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root)" << endl;
+    }
+    else {
+      cout << "ERROR: ZDCCutList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCCutFile;
+  }
   
   if(sDataSet=="2015") {
     TFile* RefMultRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvRefMult_HIR.root","READ");
