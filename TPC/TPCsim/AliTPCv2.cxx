@@ -2300,19 +2300,7 @@ void AliTPCv2::StepManager()
   // Called for every step in the Time Projection Chamber
   //
 
-  //
-  // parameters used for the energy loss calculations
-  //
-  //const Float_t kprim = 14.35; // number of primary collisions per 1 cm
-  //const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
-  //const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
-  const Float_t kScalewIonG4 = 0.85; // scale factor to tune kwIon for Geant4 
-  const Float_t kFanoFactorG4 = 0.7; // parameter for smearing the number of ionizations (nel) using Geant4
-  const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references 
-  Float_t prim = fTPCParam->GetNprim();
-  Float_t poti = fTPCParam->GetFpot();
-  Float_t wIon = fTPCParam->GetWmean();
- 
+  const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references
   const Float_t kbig = 1.e10;
 
   Int_t id,copy;
@@ -2326,7 +2314,8 @@ void AliTPCv2::StepManager()
   // cache reference to MC
   TVirtualMC *mc = TVirtualMC::GetMC();
 
-  if (!fPrimaryIonisation) mc->SetMaxStep(kbig);
+  // What does this actually do? Should I maybe just remove it?
+  mc->SetMaxStep(kbig);
   
   if(!mc->IsTrackAlive()) return; // particle has disappeared
   
@@ -2339,14 +2328,9 @@ void AliTPCv2::StepManager()
   id = mc->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
   if(id != fIDrift && id != fIdSens) return; // not in the sensitive folume 
 
-  if ( fPrimaryIonisation && id == fIDrift ) {
-    Double_t rnd = mc->GetRandom()->Rndm();
-    mc->SetMaxStep(0.2+(2.*rnd-1.)*0.05);  // 2 mm +- rndm*0.5mm step
-  }   
-
-  //if ( fPrimaryIonisation && id == fIDrift && mc->IsTrackEntering()) {
-  //  mc->SetMaxStep(0.2);  // 2 mm
-  //}   
+  // Set step to 2 mm +- rndm*0.5mm step
+  const Double_t rnd = mc->GetRandom()->Rndm();
+  mc->SetMaxStep(0.2+(2.*rnd-1.)*0.05);
   
   mc->TrackPosition(p);
   Double_t r = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
@@ -2437,28 +2421,49 @@ void AliTPCv2::StepManager()
   //  charged particle is in the sensitive drift volume
   //-----------------------------------------------------------------
   if(mc->TrackStep() > 0) {
+
+    // Calculate number of ionization electrons nel
     Int_t nel=0;
-    if (!fPrimaryIonisation) {
-      nel = (Int_t)(((mc->Edep())-poti)/wIon) + 1;
-    }
-    else {
-      
-      /*
-      static Double_t deForNextStep = 0.;
-      // Geant4 (the meaning of Edep as in Geant3) - wrong
-      //nel = (Int_t)(((mc->Edep())-poti)/wIon) + 1;
 
-      // Geant4 (the meaning of Edep as in Geant3) - NEW
-      Double_t eAvailable = mc->Edep() + deForNextStep;
-      nel = (Int_t)(eAvailable/wIon);
-      deForNextStep = eAvailable - nel*wIon;
-      */
+    // Stepsize in cm
+    Double_t stepSize = mc->TrackStep();
+    // printf("Stepsize %f\n", stepSize);
+    // if(stepSize > 0.25)
+    //   printf("Stepsize %f\n", stepSize);
+    TLorentzVector mom;
+    mc->TrackMomentum(mom);
+    Float_t ptot = mom.P();
+    // beta*gamma = p/E * E/m = p/m
+    Float_t betaGamma = ptot/mc->TrackMass();
+    betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+    TVectorD *bbpar = fTPCParam->GetBetheBlochParametersMC(); //get parametrization from OCDB
+    // Mean free path in cm
+    const Float_t prim = fTPCParam->GetNprim();
+    // Note that the charge**2 is to be able to handle e.g. light nuclei
+    const Double_t mfp = 1.0 / (charge*charge*prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4)));
 
-      //new Geant4-approach
-      Double_t meanIon = mc->Edep()/(wIon*kScalewIonG4);
-      nel = (Int_t) ( kFanoFactorG4*AliMathBase::Gamma(meanIon/kFanoFactorG4)); // smear nel using gamma distr w mean = meanIon and variance = meanIon/kFanoFactorG4
+    const Double_t meanNcoll = stepSize/mfp;
+    const Double_t nColl = mc->GetRandom()->Poisson(meanNcoll);
+    // Variables needed to generate random powerlaw distributed energy loss
+    const Double_t alpha = -1 * fTPCParam->GetExp(); // NA49/G3 value
+    const Double_t alpha_p1 = alpha+1;
+    const Double_t Emin = fTPCParam->GetFpot();
+    const Double_t Emax = fTPCParam->GetEend();
+    const Double_t Kmin = TMath::Power(Emin, alpha_p1);
+    const Double_t Kmax = TMath::Power(Emax, alpha_p1);
+    const Double_t wIon = fTPCParam->GetWmean();
+
+    for(Int_t n = 0; n < nColl; n++) {
+      // Use GEANT3 / NA49 expression:
+      // P(Edep) ~ k * Edep^alpha
+      // Emin(~I) < Edep < Emax(300 electrons)
+      // k fixed so that Int_Emin^EMax P(Edep) = 1.
+      const Double_t rndm = mc->GetRandom()->Rndm();
+      const Double_t Edep = TMath::Power((Kmax - Kmin) * rndm + Kmin, 1.0/alpha_p1);
+      Int_t nel_step = (Int_t)((Edep-Emin)/wIon) + 1;
+      nel_step = TMath::Min(nel_step,300); // 300 electrons corresponds to 10 keV
+      nel += nel_step;
     }
-    nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     //
     mc->TrackPosition(p);
     hits[0]=p[0];
@@ -2503,34 +2508,6 @@ void AliTPCv2::StepManager()
     
   } // step>0 
   } //within sector's limits
-  // Stemax calculation for the next step
-  
-  Float_t pp;
-  TLorentzVector mom;
-  // below is valid only for Geant3 (fPromaryIonisation not set)
-  if(!fPrimaryIonisation){
-    mc->TrackMomentum(mom);
-    Float_t ptot=mom.Rho();
-    Float_t betaGamma = ptot/mc->TrackMass();
-
-    //Int_t pid=mc->TrackPid();
-    // if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-    //       { 
-    //         pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
-    //       }
-    //     else
-    //       {
-    
-    betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-    TVectorD *bbpar = fTPCParam->GetBetheBlochParametersMC(); //get parametrization from OCDB
-    pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));         
-    //     }
-  
-    Double_t rnd = mc->GetRandom()->Rndm();
-  
-    mc->SetMaxStep(-TMath::Log(rnd)/pp);
-  }
-  
 }
 
 
