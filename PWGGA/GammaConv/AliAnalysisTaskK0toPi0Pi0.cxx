@@ -29,6 +29,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TList.h>
+#include <TString.h>
 #include "AliAnalysisTaskK0toPi0Pi0.h"
 #include "AliAODConversionMother.h"
 #include "AliAODConversionPhoton.h"
@@ -145,14 +146,17 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   for(const auto &reccase : pi0rec){
     // before selection
     // for candidates in a wide mass region
+    fHistos->CreateTH1("hNPi0CandidatesPerEventBefore" +  reccase, "Number of pi0 candidates in event before selection", 101, -0.5, 100.5);
     fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
     // only for candidates in the pi0 mass region
     fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
     fHistos->CreateTH2("hAlphavsPtPi0Before" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", 200, -1., 1., 300, 0., 30.);
     fHistos->CreateTH2("hOpeningAnglevsPtPi0Before" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", 100, 0., 1., 300., 0.3, 30.);
-  	
-  	// after selection
-  	fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
+
+    fHistos->CreateTH1("hPi0Selection" + reccase, "Pi0 selection status bit for reconstruction case " + reccase, 31, -0.5, 30.5);
+  	  // after selection
+    fHistos->CreateTH1("hNPi0CandidatesPerEventAfter" +  reccase, "Number of pi0 candidates in event before selection", 101, -0.5, 100.5);
+  	  fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
     // only for candidates in the pi0 mass region
     fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
     fHistos->CreateTH2("hAlphavsPtPi0After" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", 200, -1., 1., 300, 0., 30.);
@@ -166,11 +170,14 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   const std::array<TString, 6> k0Shortrec = {"AllConv", "AllCalo", "DiffMixed", "SameMixed", "ConvoCalo","CaloConvo" }; // aka 6 cases 
   for(const auto &reccase1 : k0Shortrec){
   	// before selection
+    fHistos->CreateTH1("hNK0CandidatesPerEventBefore" +  reccase1, "Number of K0 candidates in event before selection", 101, -0.5, 100.5);
     fHistos->CreateTH2("hMassvsPtK0ShortBefore" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.3, 0.6, 300, 0.3, 30.); 
     fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBefore"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
     
+    fHistos->CreateTH1("hK0Selection" + reccase1, "Pi0 selection status bit for reconstruction case " + reccase1, 31, -0.5, 30.5);
     
     // after selection
+    fHistos->CreateTH1("hNK0CandidatesPerEventAfter" +  reccase1, "Number of K0 candidates in event after selection", 101, -0.5, 100.5);
     fHistos->CreateTH2("hMassvsPtK0ShortAfter" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.3, 0.6, 300, 0.3, 30.); 
     fHistos->CreateTH2("hOpeningAnglevsPtK0ShortAfter"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
     
@@ -192,12 +199,23 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   qaV0reader->Add(fV0Reader->GetCutHistograms());
   fOutput->Add(qaV0reader);
   
+  // Adding to QA histos to the output - change name in order to
+  // better identify the histos
   fOutput->Add(fEventCuts->GetCutHistograms());
   fOutput->Add(fConvPhotonCuts->GetCutHistograms());
   fOutput->Add(fCaloPhotonCuts->GetCutHistograms());
-  fOutput->Add(fPi0Cuts->GetCutHistograms());
-  fOutput->Add(fPi0CutsCaloCalo->GetCutHistograms()); 
-  fOutput->Add(fK0Cuts->GetCutHistograms()); 
+  TList *histlist = fPi0Cuts->GetCutHistograms();
+  TString histname = "Pi0CutsConv_" + TString(histlist->GetName());
+  histlist->SetName(histname);
+  fOutput->Add(histlist);
+  histlist = fPi0CutsCaloCalo->GetCutHistograms();
+  histname = "Pi0CutsCalo_" + TString(histlist->GetName());
+  histlist->SetName(histname);
+  fOutput->Add(histlist);
+  histlist = fK0Cuts->GetCutHistograms();
+  histname = "K0cuts_" + TString(histlist->GetName());
+  histlist->SetName(histname);
+  fOutput->Add(histlist);
   
   
   PostData(1, fOutput);
@@ -231,10 +249,10 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   // do event selection
   // Use the same event selection as for the v0 reader
   // Good events defined as events with event quality 0
+  Bool_t selectionStatus = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, false, false);
   Int_t eventQuality = fEventCuts->GetEventQuality();
   fHistos->FillTH1("hEventQualityBefore", eventQuality);
-  
-  if(fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, false, false)) return;
+  if(selectionStatus) return;
   fHistos->FillTH1("hEventQualityAfter", eventQuality);
   fHistos->FillTH1("hVertexZ", fInputEvent->GetPrimaryVertex()->GetZ());
 
@@ -301,15 +319,17 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   */
 
   
-  // fill the QA histograms before selection                                    
+  // fill the QA histograms before selection
+  AliDebug(1, "New event - make Pi0 candidates");
   MakePi0QA(samePi0PCM, "ConvConv", "Before");
   MakePi0QA(samePi0EMCAL, "CaloCalo", "Before");
   MakePi0QA(mixedPi0, "ConvCalo", "Before");
+  AliDebug(1, "New event - finished pi0 candidates");
   
   //make the selections
-  std::vector<AliAODConversionMother> samePi0PCMSelection   = SelectMeson(samePi0PCM, *fPi0Cuts);
-  std::vector<AliAODConversionMother> samePi0EMCALSelection = SelectMeson(samePi0EMCAL, *fPi0CutsCaloCalo);
-  std::vector<AliAODConversionMother> mixedPi0Selection     = SelectMeson(mixedPi0, *fPi0Cuts); 
+  std::vector<AliAODConversionMother> samePi0PCMSelection   = SelectMeson(samePi0PCM, *fPi0Cuts, kPi0, "ConvConv");
+  std::vector<AliAODConversionMother> samePi0EMCALSelection = SelectMeson(samePi0EMCAL, *fPi0CutsCaloCalo, kPi0, "ConvCalo");
+  std::vector<AliAODConversionMother> mixedPi0Selection     = SelectMeson(mixedPi0, *fPi0Cuts, kK0, "CaloCalo");
   
   // Additionally fill the QA histograms after the selection
   MakePi0QA(samePi0PCMSelection, "ConvConv", "After");
@@ -347,12 +367,12 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   MakeK0ShortQA(mixedDiff, "DiffMixed", "Before");
   
   // make the selections
-  std::vector<AliAODConversionMother> allPCMSelection    = SelectMeson(allPCM, *fK0Cuts); 
-  std::vector<AliAODConversionMother> allEMCSelection    = SelectMeson(allEMC, *fK0Cuts);
-  std::vector<AliAODConversionMother> PCMEMCSelection    = SelectMeson(PCMEMC, *fK0Cuts);
-  std::vector<AliAODConversionMother> EMCPCMSelection    = SelectMeson(EMCPCM,*fK0Cuts);
-  std::vector<AliAODConversionMother> mixedSameSelection = SelectMeson(mixedSame, *fK0Cuts);
-  std::vector<AliAODConversionMother> mixedDiffSelection = SelectMeson(mixedDiff, *fK0Cuts);
+  std::vector<AliAODConversionMother> allPCMSelection    = SelectMeson(allPCM, *fK0Cuts, kK0, "AllConv");
+  std::vector<AliAODConversionMother> allEMCSelection    = SelectMeson(allEMC, *fK0Cuts, kK0, "AllCalo");
+  std::vector<AliAODConversionMother> PCMEMCSelection    = SelectMeson(PCMEMC, *fK0Cuts, kK0, "ConvoCalo");
+  std::vector<AliAODConversionMother> EMCPCMSelection    = SelectMeson(EMCPCM,*fK0Cuts, kK0, "CaloConvo");
+  std::vector<AliAODConversionMother> mixedSameSelection = SelectMeson(mixedSame, *fK0Cuts, kK0, "SameMixed");
+  std::vector<AliAODConversionMother> mixedDiffSelection = SelectMeson(mixedDiff, *fK0Cuts, kK0, "DiffMixed");
   
   // fill the QA histograms after selection
   MakeK0ShortQA(allPCMSelection, "AllConv", "After");
@@ -451,12 +471,19 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeConversionPho
 
 //=================================== SELECT MESON ====================================================================
 std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::SelectMeson(std::vector<AliAODConversionMother> &candidates, 
-																		   AliConversionMesonCuts &cuts){
+																		   AliConversionMesonCuts &cuts, MesonType_t meson, const char *reccase){
   std::vector<AliAODConversionMother> selectedCandidates; 
-  
+  TString mesonName;
+  switch(meson) {
+  case kPi0: mesonName = "Pi0"; break;
+  case kK0: mesonName = "K0"; break;
+  };
+  TString qaname = "h" + mesonName + "Selection" + reccase;
   for(auto candidate: candidates){
-  	 if(cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;
-     selectedCandidates.push_back(candidate);
+    Int_t selectionStatus = cuts.MesonIsSelected(&candidate, kTRUE, 0);
+    fHistos->FillTH1(qaname, selectionStatus);
+  	  if(selectionStatus) continue;
+    selectedCandidates.push_back(candidate);
   }
   
   return selectedCandidates; 
@@ -469,13 +496,16 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
                                                                                  const std::vector<AliAODConversionPhoton> *secondaryLeg,
                                                                                  AliConversionMesonCuts &cuts){
   // secondary leg: optional argument, if different methods for photon identification (i.e. PCM-EMCAL) is used
+  AliDebug(1, Form("Make Pi0 candidates: Number of photons in first leg: %lu, second leg: %lu", primaryLeg->size(), secondaryLeg ? secondaryLeg->size() : 0));
   std::vector<AliAODConversionMother> candidates;
   if(secondaryLeg){
     // Different methods for photon identification identification
     for(auto primphoton : *primaryLeg){
       for(auto secphoton : *secondaryLeg) {
         AliAODConversionMother candidate(&primphoton, &secphoton);
+        AliDebug(2, Form("Made Pi0 candidate same - Mass %f [%f - %f] GeV/c2", candidate.M(), cuts.GetSelectionLow(), cuts.GetSelectionHigh()));
         if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
+        AliDebug(2, "Candidate in mass window");
         // Do Pi0 selection
         //if(!cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;      // Rapidity shift needed when going to asymmetric systems
         candidates.push_back(candidate);
@@ -486,13 +516,16 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
     for(auto primiter = primaryLeg->begin(); primiter != primaryLeg->end(); ++primiter){
       for(auto seciter = primiter + 1; seciter != primaryLeg->end(); ++seciter){
         AliAODConversionMother candidate(&(*primiter), &(*seciter));
+        AliDebug(2, Form("Made Pi0 candidate mixed - Mass %f [%f - %f] GeV/c2", candidate.M(), cuts.GetSelectionLow(), cuts.GetSelectionHigh()));
         if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
+        AliDebug(2, "Candidate in mass window");
         // Do pi0 selection
         //if(!cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;      // Rapidity shift needed when going to asymmetric systems
         candidates.push_back(candidate);
       }
     }
   }
+  AliDebug(1, Form("Found %lu pi0 candidates in event\n", candidates.size()));
   return candidates;
 }
 
@@ -503,8 +536,8 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakeK0ShortCandid
   std::vector<AliAODConversionMother> candidates;
   if(secondaryLeg) {
     // Different methods for Pi0 identification (one same, one mixed)
-    for(auto primpi0 : *primaryLeg) {
-      for(auto secpi0 : *secondaryLeg) {
+    for(const auto &primpi0 : *primaryLeg) {
+      for(const auto &secpi0 : *secondaryLeg) {
         AliAODConversionMother candidate(&primpi0, &secpi0);
         //if(!cuts.MesonIsSelected(&candidate, kTRUE, 0)) continue;
         candidates.push_back(candidate);
@@ -525,14 +558,14 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakeK0ShortCandid
 
 //=================================== MAKE PHOTON QA CALO ====================================================================
 void AliAnalysisTaskK0toPi0Pi0::MakePhotonQACalo(const std::vector<AliAODConversionPhoton> &photons, AliConvEventCuts &cuts) {
-  for(auto photon : photons) {
+  for(const auto &photon : photons) {
     fHistos->FillTH1("hCaloPhotonPt", photon.Pt());
   }
 }
 
 //=================================== MAKE PHOTON QA CONV ====================================================================
 void AliAnalysisTaskK0toPi0Pi0::MakePhotonQAConv(const std::vector<AliAODConversionPhoton> &photons, AliConvEventCuts &cuts) {
-  for(auto photon : photons) {
+  for(const auto &photon : photons) {
     fHistos->FillTH1("hConvPhotonPt", photon.Pt());
     fHistos->FillTH2("hConvPhotonEtaR", photon.Eta(), photon.GetConversionRadius());
   }
@@ -541,41 +574,27 @@ void AliAnalysisTaskK0toPi0Pi0::MakePhotonQAConv(const std::vector<AliAODConvers
 //=================================== MAKE PI0 QA ====================================================================
 void AliAnalysisTaskK0toPi0Pi0::MakePi0QA(const std::vector<AliAODConversionMother> &pi0s, const char *reccase, TString selectionStatus){
   TString reccaseString = reccase;
-  for(auto pi0 : pi0s) {
-  	if(selectionStatus == "Before"){
-  	  fHistos->FillTH2("hMassvsPtPi0Before" + reccaseString + "All", pi0.M(), pi0.Pt());
+  fHistos->FillTH1("hNPi0CandidatesPerEvent" + selectionStatus + reccaseString, pi0s.size());
+  for(const auto &pi0 : pi0s) {
+  	  fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "All", pi0.M(), pi0.Pt());
   	  // if in the pi0 mass region  
   	  if((0.08 <=pi0.M()) && (pi0.M()<= 0.145)){
-  		 fHistos->FillTH2("hMassvsPtPi0Before"+ reccaseString + "Sel", pi0.M(),pi0.Pt());
-  		 fHistos->FillTH2("hAlphavsPtPi0Before" + reccaseString, pi0.GetAlpha(), pi0.Pt());
-  		 fHistos->FillTH2("hOpeningAnglevsPtPi0Before" + reccaseString, pi0.GetOpeningAngle(), pi0.Pt());
+  	    fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "Sel", pi0.M(),pi0.Pt());
+  	    fHistos->FillTH2("hAlphavsPtPi0" + selectionStatus + reccaseString, pi0.GetAlpha(), pi0.Pt());
+  	    fHistos->FillTH2("hOpeningAnglevsPtPi0" + selectionStatus + reccaseString, pi0.GetOpeningAngle(), pi0.Pt());
   	  }
   	}
-  	else if(selectionStatus == "After"){
-  	  fHistos->FillTH2("hMassvsPtPi0After" + reccaseString + "All", pi0.M(), pi0.Pt());
-  	  // if in the pi0 mass region  
-  	  if((0.08 <=pi0.M()) && (pi0.M()<= 0.145)){
-  		 fHistos->FillTH2("hMassvsPtPi0After"+ reccaseString + "Sel", pi0.M(),pi0.Pt());
-  		 fHistos->FillTH2("hAlphavsPtPi0After" + reccaseString, pi0.GetAlpha(), pi0.Pt());
-  		 fHistos->FillTH2("hOpeningAnglevsPtPi0After" + reccaseString, pi0.GetOpeningAngle(), pi0.Pt());
-  	  }
-  	
-  	}
-  }
 }
 
 //=================================== MAKE KO SHORT QA ====================================================================
 void AliAnalysisTaskK0toPi0Pi0::MakeK0ShortQA(const std::vector<AliAODConversionMother> &k0s,const char *reccase, TString selectionStatus){
   TString reccaseString = reccase;
-  for(auto k0: k0s) {
-  	if(selectionStatus == "Before"){
-  	  fHistos->FillTH2("hMassvsPtK0ShortBefore" + reccaseString, k0.M(), k0.Pt());
-  	  fHistos->FillTH2("hOpeningAnglevsPtK0ShortBefore" + reccaseString, k0.GetOpeningAngle(), k0.Pt());
-  	}
-  	else if(selectionStatus == "After"){
-  	  fHistos->FillTH2("hMassvsPtK0ShortAfter" + reccaseString, k0.M(), k0.Pt());
-  	  fHistos->FillTH2("hOpeningAnglevsPtK0ShortAfter" + reccaseString, k0.GetOpeningAngle(), k0.Pt());
-  	}
+  fHistos->FillTH1("hNK0CandidatesPerEvent" + selectionStatus + reccaseString, k0s.size());
+  for(const auto &k0: k0s) {
+    if(selectionStatus == "Before"){
+  	    fHistos->FillTH2("hMassvsPtK0Short" + selectionStatus + reccaseString, k0.M(), k0.Pt());
+  	    fHistos->FillTH2("hOpeningAnglevsPtK0Short" + selectionStatus + reccaseString, k0.GetOpeningAngle(), k0.Pt());
+  	  }
   }
 }
 
