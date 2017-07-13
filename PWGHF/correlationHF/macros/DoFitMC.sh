@@ -2,6 +2,7 @@
 
 declare macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp.C"
 declare macroPPb="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb.C"
+declare macroPPb2016="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb2016.C"
 declare -i system=$1
 declare -i refl=$2
 declare -i avopt=$3
@@ -73,6 +74,71 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SystematicsMC_pPb_integrpthad($refl,"$templNameRoot")
+EOF
+
+
+elif [ ${system} = 2 ]; then
+    root -b &>outFitMCPPb03to99had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_03to99had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb03to1had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_03to1had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb1to99had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_1to99had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb2to99had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_2to99had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb3to99had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_3to99had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb1to2had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_1to2had($refl,"$templNameRoot")
+EOF
+
+    root -b &>outFitMCPPb2to3had.log <<EOF
+.L ${macroPPb2016}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_2to3had($refl,"$templNameRoot")
 EOF
   
 fi

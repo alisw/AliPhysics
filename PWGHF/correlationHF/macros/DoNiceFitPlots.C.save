@@ -19,6 +19,7 @@ void SetpPbyear(Int_t syst){
 }
 
 
+syst
 void DoNiceFitPlots() {
   TFile fInPP(Form("%s/FitOutputs_pp/FitSystematics_pp_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
   TFile fInPPb(Form("%s/FitOutputs_pPb/FitSystematics_pPb_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
@@ -31,13 +32,13 @@ void DoNiceFitPlots() {
   Int_t indexpp = 2;
   Int_t indexpPb;
   if(pPbyear==2013) indexpPb = 2;
-  if(pPbyear==2016) indexpPb = 2;
+  if(pPbyear==2016) indexpPb = 3;
 
   TCanvas *cOut1 = ExtractPad(cInPP,2);
   cOut1->SetName("cNew_pp");
   TCanvas *cOut2;
   if(pPbyear==2013) cOut2 = ExtractPad(cInPPb,2);
-  if(pPbyear==2016) cOut2 = ExtractPad(cInPPb,2);
+  if(pPbyear==2016) cOut2 = ExtractPad(cInPPb,3);
 
   cOut2->SetName("cNew_pPb");
 
@@ -244,10 +245,7 @@ c->ls();
         tl4->SetTextFont(42);
     tl4->Draw("same");
   } else {
-    TLatex *tl4;
-    if(pPbyear==2013)tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
-    if(pPbyear==2016)tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
-    else tl4=new TLatex();
+    TLatex *tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
         tl4->SetTextFont(42);
