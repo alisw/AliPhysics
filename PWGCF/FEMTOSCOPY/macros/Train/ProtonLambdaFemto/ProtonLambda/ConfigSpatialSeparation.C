@@ -10,13 +10,22 @@
 #include "AliESDtrack.h"
 #endif
 
-enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton };
+enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton};
+
+enum ESys { kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
+const char *sysNames[nSys] = { "LL", "ALAL", "LAL", "PL", "APL", "PAL", "APAL","PP","PAP","APAP" };
+int runSys[nSys] = {0, 0, 1, 1, 1, 1, 1, 0, 1, 0};
+
+const int nMult = 10;
+int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
+int multBins[nMult+1] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
 AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
+void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle);
 
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
@@ -36,62 +45,52 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
     Manager->SetEventReader(Reader2011);
   }
   
-  AliFemtoEventAnalysis *femtoAnalysis1 = new AliFemtoEventAnalysis(); // PL
-  AliFemtoEventAnalysis *femtoAnalysis2 = new AliFemtoEventAnalysis(); // APL
-  AliFemtoEventAnalysis *femtoAnalysis3 = new AliFemtoEventAnalysis(); // APAL
-  AliFemtoEventAnalysis *femtoAnalysis4 = new AliFemtoEventAnalysis(); // PAL
+  AliFemtoEventAnalysis *femtoAnalysis[nSys*nMult];
+  AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult];
   
   AliFemtoBasicEventCut *eventCut = GetEventCut();
-
-  AliFemtoSpatialSeparationFunction *separationFunction1;
-  AliFemtoSpatialSeparationFunction *separationFunction2;
-  AliFemtoSpatialSeparationFunction *separationFunction3;
-  AliFemtoSpatialSeparationFunction *separationFunction4;
-
-  // get particle cuts
-  AliFemtoESDTrackCut *protonCut      = GetESDTrackCut(kEProton);
-  AliFemtoV0TrackCut  *lambdaCut      = GetV0TrackCut(kELambda);
-  AliFemtoESDTrackCut *antiprotonCut  = GetESDTrackCut(kEAntiProton);
-  AliFemtoV0TrackCut  *antilambdaCut  = GetV0TrackCut(kEAntiLambda);
   
-  // setup anallysis cuts
-  femtoAnalysis1->SetEventCut(eventCut);
-  femtoAnalysis1->SetV0SharedDaughterCut(true);
-  femtoAnalysis1->SetFirstParticleCut(protonCut);
-  femtoAnalysis1->SetSecondParticleCut(lambdaCut);
-  
-  femtoAnalysis2->SetEventCut(eventCut);
-  femtoAnalysis2->SetV0SharedDaughterCut(true);
-  femtoAnalysis2->SetFirstParticleCut(antiprotonCut);
-  femtoAnalysis2->SetSecondParticleCut(lambdaCut);
-  
-  femtoAnalysis3->SetEventCut(eventCut);
-  femtoAnalysis3->SetV0SharedDaughterCut(true);
-  femtoAnalysis3->SetFirstParticleCut(antiprotonCut);
-  femtoAnalysis3->SetSecondParticleCut(antilambdaCut);
-  
-  femtoAnalysis4->SetEventCut(eventCut);
-  femtoAnalysis4->SetV0SharedDaughterCut(true);
-  femtoAnalysis4->SetFirstParticleCut(protonCut);
-  femtoAnalysis4->SetSecondParticleCut(antilambdaCut);
-  
-  
-  // add Average Separation correlation function
-  separationFunction1 = new AliFemtoSpatialSeparationFunction("PL");
-  separationFunction2 = new AliFemtoSpatialSeparationFunction("APL");
-  separationFunction3 = new AliFemtoSpatialSeparationFunction("APAL");
-  separationFunction4 = new AliFemtoSpatialSeparationFunction("PAL");
-  
-  femtoAnalysis1->AddCorrFctn(separationFunction1);
-  femtoAnalysis2->AddCorrFctn(separationFunction2);
-  femtoAnalysis3->AddCorrFctn(separationFunction3);
-  femtoAnalysis4->AddCorrFctn(separationFunction4);
-  
-  Manager->AddAnalysis(femtoAnalysis1);
-  Manager->AddAnalysis(femtoAnalysis2);
-  Manager->AddAnalysis(femtoAnalysis3);
-  Manager->AddAnalysis(femtoAnalysis4);
-
+  int anIter = 0;
+  for (int imult=0; imult<nMult; imult++)
+  {
+    if (!runMult[imult]) continue;
+    
+    for(int iSys=0;iSys<nSys;iSys++)
+    {
+      if (!runSys[iSys]) continue;
+      
+      anIter = imult * nSys + iSys;
+      
+      femtoAnalysis[iSys] = new AliFemtoEventAnalysis(multBins[imult], multBins[imult+1]);
+      separationFunction[iSys] = new AliFemtoSpatialSeparationFunction(Form("%s_M%i",sysNames[iSys],imult));
+      
+      EPart firstParticle, secondParticle;
+      GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle);
+      
+      AliFemtoV0TrackCut  *firstV0TrackCut    = GetV0TrackCut(firstParticle);
+      AliFemtoV0TrackCut  *secondV0TrackCut   = GetV0TrackCut(secondParticle);
+      AliFemtoESDTrackCut *firstESDTrackCut   = GetESDTrackCut(firstParticle);
+      AliFemtoESDTrackCut *secondESDTrackCut  = GetESDTrackCut(secondParticle);
+      
+    
+      femtoAnalysis[iSys]->SetEventCut(eventCut);
+      femtoAnalysis[iSys]->SetV0SharedDaughterCut(true);
+      
+      if(firstV0TrackCut)
+        femtoAnalysis[iSys]->SetFirstParticleCut(firstV0TrackCut);
+      else
+        femtoAnalysis[iSys]->SetFirstParticleCut(firstESDTrackCut);
+      if(secondV0TrackCut)
+        femtoAnalysis[iSys]->SetSecondParticleCut(secondV0TrackCut);
+      else
+        femtoAnalysis[iSys]->SetSecondParticleCut(secondESDTrackCut);
+      
+      
+      femtoAnalysis[iSys]->AddCorrFctn(separationFunction[iSys]);
+      
+      Manager->AddAnalysis(femtoAnalysis[iSys]);
+    }
+  }
   return Manager;
 }
 
@@ -194,7 +193,19 @@ AliFemtoESDTrackCut* GetESDTrackCut(EPart particle)
   return particleCut;
 }
 
-
+void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle)
+{
+  if(system == kLL)   {firstParticle = kELambda;       secondParticle = kELambda;}
+  if(system == kLAL)  {firstParticle = kELambda;       secondParticle = kEAntiLambda;}
+  if(system == kALAL) {firstParticle = kEAntiLambda;   secondParticle = kEAntiLambda;}
+  if(system == kPL)   {firstParticle = kELambda;       secondParticle = kEProton;}
+  if(system == kAPL)  {firstParticle = kELambda;       secondParticle = kEAntiProton;}
+  if(system == kPAL)  {firstParticle = kEAntiLambda;   secondParticle = kEProton;}
+  if(system == kAPAL) {firstParticle = kEAntiLambda;   secondParticle = kEAntiProton;}
+  if(system == kPP)   {firstParticle = kEProton;       secondParticle = kEProton;}
+  if(system == kPAP)  {firstParticle = kEProton;       secondParticle = kEAntiProton;}
+  if(system == kAPAP) {firstParticle = kEAntiProton;   secondParticle = kEAntiProton;}
+}
 
 
 

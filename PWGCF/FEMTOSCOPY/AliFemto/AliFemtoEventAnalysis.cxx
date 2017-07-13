@@ -26,7 +26,9 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
-AliFemtoEventAnalysis::AliFemtoEventAnalysis():
+AliFemtoEventAnalysis::AliFemtoEventAnalysis(double multMin, double multMax):
+fMultMin(multMin),
+fMultMax(multMax),
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
@@ -51,6 +53,9 @@ fPerformSharedDaughterCut(a.fPerformSharedDaughterCut)
   
   const char msg_template[] = " AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a) - %s",
   warn_template[] = " WARNING [AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a)] %s";
+  
+  fMultMin = a.fMultMin;
+  fMultMax = a.fMultMax;
   
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   
@@ -141,6 +146,9 @@ AliFemtoEventAnalysis& AliFemtoEventAnalysis::operator=(const AliFemtoEventAnaly
     fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   }
   
+  fMultMin = aAna.fMultMin;
+  fMultMax = aAna.fMultMax;
+  
   fEventCut = aAna.fEventCut->Clone();
   fFirstParticleCut = aAna.fFirstParticleCut->Clone();
   fSecondParticleCut = (aAna.fFirstParticleCut == aAna.fSecondParticleCut)
@@ -212,6 +220,10 @@ AliFemtoString AliFemtoEventAnalysis::Report()
 
 void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
 {
+  double mult = hbtEvent->UncorrectedNumberOfPrimaries();
+  
+  if (mult < fMultMin || mult > fMultMax) return;
+  
   fPicoEvent = NULL;
   fNeventsProcessed++;
 
