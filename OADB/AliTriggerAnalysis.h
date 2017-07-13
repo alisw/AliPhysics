@@ -11,6 +11,7 @@
 // Origin: Jan Fiete Grosse-Oetringhaus, CERN
 // Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
+#include <map>
 
 #include "AliOADBTriggerAnalysis.h"
 #include "TBrowser.h"
@@ -21,6 +22,8 @@ class TH2F;
 class TCollection;
 class TList;
 class TMap;
+
+typedef std::map<std::string, Int_t> StringToIntMap;
 
 class AliTriggerAnalysis : public AliOADBTriggerAnalysis{
 public:
@@ -96,6 +99,9 @@ public:
   void SaveHistograms() const;
   void PrintTriggerClasses() const;
   void Browse(TBrowser *b);
+  Trigger FindTriggerBit(const char* triggerString) {
+    return static_cast<Trigger>(fTriggerToEnum.at(triggerString));
+      };
 
 protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists = 0);
@@ -165,8 +171,9 @@ protected:
   TH2F* fHistV0MOnVsOfAcc;   //! V0M online vs V0M offline distribution for threshold efficiency studies
 
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
+  StringToIntMap fTriggerToEnum; //! map from the stringy name of the trigger to its enum value
   
-  ClassDef(AliTriggerAnalysis, 35)
+  ClassDef(AliTriggerAnalysis, 36)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

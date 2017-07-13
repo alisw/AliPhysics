@@ -18,6 +18,7 @@
 
 #include <AliAnalysisCuts.h>
 #include <TList.h>
+#include <TFormula.h>
 #include "TObjString.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -35,8 +36,7 @@ class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
 
-typedef bool (*fn_t)(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, bool offline);
-typedef std::map<std::string, fn_t> StringToFunction;
+typedef std::map<std::string, TFormula> StringToTFormula;
 
 class AliPhysicsSelection : public AliAnalysisCuts{
 public:
@@ -112,12 +112,11 @@ protected:
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
+  TList* fCashedTokens;     //! trigger token lookup list
+  StringToTFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
 
-  ClassDef(AliPhysicsSelection, 22)
+  ClassDef(AliPhysicsSelection, 23)
 private:
-  StringToFunction *fTriggerToFunction; //! Map trigger strings to Function pointers
-  fn_t TriggerLogicToFunction(const char* triggerLogic);
-
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);
 };
