@@ -131,8 +131,6 @@ fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(NULL),
 fTriggerToFormula()
 {
   // constructor
@@ -163,8 +161,6 @@ AliPhysicsSelection::AliPhysicsSelection(const char *name) :
  fPSOADB(0),
  fFillOADB(0),
  fTriggerOADB(0),
- fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
- fCashedTokens(NULL),
  fTriggerToFormula()
  {
    // constructor
@@ -180,8 +176,6 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fPSOADB)       delete fPSOADB;
   if (fFillOADB)     delete fFillOADB;
   if (fTriggerOADB)  delete fTriggerOADB;
-  delete fRegexp;
-  delete fCashedTokens;
   delete fTriggerToFormula;
 }
 
@@ -283,59 +277,7 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
     paras[i] = triggerAnalysis->EvaluateTrigger(event, bit);
   }
   trg_formula.SetParameters(paras.data());
-  Bool_t new_result = trg_formula.Eval(0);
-
-  // Old code
-  // evaluates trigger logic. If called with no event
-  // pointer/triggerAnalysis pointer, it just caches the tokens Fills
-  // the statistics histogram, if booked at row i
-  TString trigger(triggerLogic);
-
-  while (1) {
-    AliDebug(AliLog::kDebug, trigger.Data());
-    
-    TArrayI pos;
-    // Match alphanumerical thing succedded by whitespace
-    Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-    // All triggers treated;
-    if (nMatches <= 0) break;
-    // Extract the name of the trigger; eg "V0A"
-    TString token(trigger(pos[0], pos[1]-pos[0]+1));
-
-    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
-    if (!param) {
-      TInterpreter::EErrorCode error;
-      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
-      
-      if (error > 0) AliFatal(Form("Trigger token %s unknown", token.Data()));
-      
-      param = new TParameter<Int_t>(token, bit);
-      fCashedTokens->Add(param);
-      AliDebug(AliLog::kDebug, "Added token");
-    }
-    
-    Long64_t bit = param->GetVal();
-    
-    AliDebug(AliLog::kDebug, Form("Tok %d %d %s %lld", pos[0], pos[1], token.Data(), bit));
-    
-    if (offline) 
-      bit |= AliTriggerAnalysis::kOfflineFlag;
-    
-    if(event && triggerAnalysis) {
-      // Replace the current trigger name with 0 or 1, base on AliTriggerAnalysis::EvaluateTrigger
-      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
-    }
-  }
-  // Check if all constituents of the trigger string evaluate to
-  // `true`; the "function" is constant, so the value in `Eval` does
-  // not matter
-  Bool_t result = R5TFormula("name", trigger).Eval(0);
-
-  if (result != new_result) {
-    AliFatal(Form("Old and new method do not aggree! Trigger logic: %s", triggerLogic));
-  }
-  AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
-  return result;
+  return trg_formula.Eval(0);
 }
 
 //______________________________________________________________________________
@@ -537,10 +479,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
-  }
-  if(!fCashedTokens){
-    fCashedTokens = new TList();
-    fCashedTokens->SetOwner();
   }
   
   fCurrentRun = runNumber;
