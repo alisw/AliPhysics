@@ -53,6 +53,11 @@ public:
     kUndefined = -1
   };
 
+  enum MesonType_t {
+    kPi0,
+    kK0
+  };
+
   AliAnalysisTaskK0toPi0Pi0();
   AliAnalysisTaskK0toPi0Pi0(const char *name);
   virtual ~AliAnalysisTaskK0toPi0Pi0();
@@ -77,7 +82,7 @@ protected:
   // Selectors
   std::vector<AliAODConversionPhoton> MakeCaloPhotonCandidates(const AliClusterContainer &inputcont, AliCaloPhotonCuts &cuts);
   std::vector<AliAODConversionPhoton> MakeConversionPhotonCandidates(const AliV0ReaderV1 &reader, AliConversionPhotonCuts &cuts);
-  std::vector<AliAODConversionMother> SelectMeson(std::vector<AliAODConversionMother> &candidates, AliConversionMesonCuts &cuts);
+  std::vector<AliAODConversionMother> SelectMeson(std::vector<AliAODConversionMother> &candidates, AliConversionMesonCuts &cuts, MesonType_t meson, const char *reccase);
   std::vector<AliAODConversionMother> MakePi0Candidates(const std::vector<AliAODConversionPhoton> *primaryLeg, const std::vector<AliAODConversionPhoton> *secondaryLeg, AliConversionMesonCuts &cuts);
   std::vector<AliAODConversionMother> MakeK0ShortCandidates(const std::vector<AliAODConversionMother> *primaryLeg, const std::vector<AliAODConversionMother> *secondaryLeg, AliConversionMesonCuts &cuts);
 
