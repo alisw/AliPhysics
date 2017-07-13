@@ -372,9 +372,10 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
       period[1]="LHC13c";
       nProfiles = 2;
     } else if(fYearNumber == 16) {
-      period[0]="LHC16q";
-      period[1]="LHC16t";
-      nProfiles = 2;
+      period[0]="LHC16qt_1stBunch";
+      period[1]="LHC16qt_2ndBunch";
+      period[2]="LHC16qt_3rdBunch";
+      nProfiles = 3;
     }
   }
   else {
@@ -1333,27 +1334,33 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
   ///
   /// If you select SPD tracklets in |eta|<1 you should use type == 1
   ///
-
+    
   Int_t runNo  = event->GetRunNumber();
   Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-                       // pPb 2013: 0-LHC13b, 1-LHC13c
-                       // pPb 2016: 0-LHC16q, 1-LHC16t
+  // pPb 2013: 0-LHC13b, 1-LHC13c
+  // pPb 2016: 0-LHC16q: 265499->265525; 265309->265387, 1-LHC16q:265435, 2-LHC16q:265388->265427, LHC16t: 267163->267166
   if (fisPPbData) {
-    if (runNo>195343 && runNo<195484) period = 0; //13b
-    else if (runNo>195528 && runNo<195678) period = 1; //13c
-    else if (runNo>265308 && runNo<265526) period = 0; //16q
-    else if (runNo>267162 && runNo<267166) period = 1; //16t
-    if (period < 0 || period > 1) return 0;
-  } 
+    if(fYearNumber==13) {
+      if (runNo>195343 && runNo<195484) period = 0; //13b
+      else if (runNo>195528 && runNo<195678) period = 1; //13c
+      if (period < 0 || period > 1) return 0;
+    }
+    else if(fYearNumber==16) {
+      if ((runNo>=265499 && runNo<=265525) || (runNo>=265309 && runNo<=265387)) period = 0;      //16q
+      else if (runNo == 265435) period = 1;                                                  //16q
+      else if ((runNo>=265388 && runNo<=265427) || (runNo>=267163 && runNo<=267166)) period = 2; //16q+t
+      if (period < 0 || period > 2) return 0;
+    }
+  }
   else {
     if(runNo>114930 && runNo<117223) period = 0;
     if(runNo>119158 && runNo<120830) period = 1;
     if(runNo>122373 && runNo<126438) period = 2;
     if(runNo>127711 && runNo<130851) period = 3;
     if(period<0 || period>3) return 0;
-     
-  } 
-
+        
+  }
+    
   return fMultEstimatorAvg[period];
 }
 
