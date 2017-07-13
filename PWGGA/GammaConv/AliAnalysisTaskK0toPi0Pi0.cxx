@@ -591,10 +591,8 @@ void AliAnalysisTaskK0toPi0Pi0::MakeK0ShortQA(const std::vector<AliAODConversion
   TString reccaseString = reccase;
   fHistos->FillTH1("hNK0CandidatesPerEvent" + selectionStatus + reccaseString, k0s.size());
   for(const auto &k0: k0s) {
-    if(selectionStatus == "Before"){
-  	    fHistos->FillTH2("hMassvsPtK0Short" + selectionStatus + reccaseString, k0.M(), k0.Pt());
-  	    fHistos->FillTH2("hOpeningAnglevsPtK0Short" + selectionStatus + reccaseString, k0.GetOpeningAngle(), k0.Pt());
-  	  }
+  	  fHistos->FillTH2("hMassvsPtK0Short" + selectionStatus + reccaseString, k0.M(), k0.Pt());
+  	  fHistos->FillTH2("hOpeningAnglevsPtK0Short" + selectionStatus + reccaseString, k0.GetOpeningAngle(), k0.Pt());
   }
 }
 
