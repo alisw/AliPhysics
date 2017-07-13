@@ -84,36 +84,6 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     }
     
     
-    TFile * jetProbfile =0x0;
-    if( PathToJetProbabilityInput.EqualTo("") ) {
-    } else {
-        jetProbfile=TFile::Open(PathToJetProbabilityInput.Data(),"REAS");
-        if(!jetProbfile ||(jetProbfile&& !jetProbfile->IsOpen())){
-            AliFatal("%s :: Input weight file not found",taskname);
-            return 0x0;
-        }
-        int bins_low[5]  = {0,1,2,4,6};
-        int bins_high[5]  = {1,2,4,6,255};
-        int its_hits[4]  = {6,5,4,3};
-
-        for (int i=0;i<4;++i){
-            for (int j=0;j<5;++j){
-                TGraph *fResulFkt = (TGraph*)jetProbfile->Get(Form("fResulFkt_ITS_%i_PT_%i_to_%i",its_hits[i],bins_low[j],bins_high[j]));
-                if(!fResulFkt){
-                    Printf("Error retrieving JP resolution function i %i j %i",i,j);
-                    return kFALSE;
-                }
-                else jetTask->SetResFunction(fResulFkt,i,j);
-            }
-        }
-        if(jetProbfile)jetProbfile->Close();
-    }
-    
-    
-    TH1::AddDirectory(0);
-    
-    
-    
     // Setup input containers
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
@@ -137,6 +107,12 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
         }
+    }
+    //==============================================================================
+    TH1::AddDirectory(0);
+    if( PathToJetProbabilityInput.EqualTo("") ) {
+    } else {
+        jetTask->SetResFunctionPID(PathToJetProbabilityInput.Data());
     }
     // Set Monte Carlo / Data status
     //==============================================================================
