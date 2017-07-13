@@ -31,8 +31,8 @@ public:
     
     
     //enum
-  enum SystematicModes{kFree=0, kLowestPoint = 1, k2PointsAtPiHalf = 2, k4PointsAtPiHalf=4,kTransverse = 5, kNLowest=6, k2GausNS=7, kBinCount = -1, kMinVar=100, kMaxVar=200, kv2Mod = 300};
-  enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3};
+  enum SystematicModes{kFree=0, kLowestPoint = 1, k2PointsAtPiHalf = 2, k4PointsAtPiHalf=4, kTransverse = 5, kNLowest=6, k2GausNS=7, kBinCount = -1, kTransverseUppStatUnc = 10, kTransverseLowStatUnc = 20,  kMinVar=100, kMaxVar=200, kv2Mod = 300};
+  enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3, kEnvelope_RMS_BaselStat=4};
     
     AliHFCorrFitSystematics();
     virtual ~AliHFCorrFitSystematics();
@@ -67,10 +67,13 @@ public:
     }
     
     void Setv2ForSystematics(Double_t v2had, Double_t v2D){fv2had = v2had; fv2Dmeson = v2D; }
+    void Setv2ForSystematics(Double_t v2had, Int_t nbins, std::vector<Double_t>& v2Dbins) {fv2had = v2had; for(Int_t i;i<nbins;i++) fv2DmesonVsPt.push_back(v2Dbins.at(i));}
+    
     
     void CheckBaselineRanges();
     void SetUseCorrelatedSystematics(Bool_t k) {fUseCorrelatedSystematics = k;}
     void SetIspPb(Bool_t k){fIspPb = k;}
+    void SetIsv2DvsPt(Bool_t k){fV2DvsPt = k;}
     void SetUseCorrelatedSystematicsForWidths(Bool_t k){fUseCorrelatedSystematicsForWidths = k;}
     
     void SetPlotV2SystSeparately(Bool_t k){
@@ -110,6 +113,7 @@ public:
     Bool_t RunFits();
     void DrawTotalSystematicsOnCanvas(TString variable, TLegend * legend);
     void DrawBaselineSystematicsOnCanvas(TH1D * histo, Int_t iSystMode, Double_t * array, TLegend * legend);
+    void DrawRMSBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void DrawTotalBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void PrintAllSystematicsOnShell();
     Bool_t DrawFinalPlots(){return DrawFinalPlots(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE);}
@@ -152,7 +156,7 @@ private:
     std::vector<Double_t> fVecLowEdgeDpt;
     std::vector<Double_t> fVecUpEdgeDpt;
     
-    
+    std::vector<Double_t> fv2DmesonVsPt;
     
     //standard vectors in size of Different modes
     std::vector<SystematicModes> fVecSystMode;
@@ -181,14 +185,15 @@ private:
     Bool_t fSavePng;
     Bool_t fSaveEps;
     Bool_t fSavePdf;
+
+    Bool_t fV2DvsPt;
     
     Double_t fMinFitRange;
     Double_t fMaxFitRange;
     
     Double_t fv2had;
     Double_t fv2Dmeson;
-    
-   
+ 
     
     Double_t fAssocTrackPtMin;
     Double_t fAssocTrackPtMax;
@@ -225,6 +230,24 @@ private:
     Double_t *fValueSystematicBaselineASYield;
     Double_t *fValueSystematicBaselineASSigma;
     Double_t *fValueSystematicBaselinePedestal;
+
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_NSYield;
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_NSSigma;
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_ASYield;
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_ASSigma;
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_Pedestal;
+
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_NSYield;
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_NSSigma;
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_ASYield;
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_ASSigma;
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_Pedestal;
+    
+    Double_t *fRMSRelative_NSYield;
+    Double_t *fRMSRelative_NSSigma;
+    Double_t *fRMSRelative_ASYield;
+    Double_t *fRMSRelative_ASSigma;
+    Double_t *fRMSRelative_Pedestal;    
 
     Double_t *fValueSystematicNSYieldUp;
     Double_t *fValueSystematicNSSigmaUp;
