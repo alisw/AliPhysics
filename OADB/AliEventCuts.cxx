@@ -349,8 +349,8 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) ||
-      (fCurrentRun >= 256146 && fCurrentRun <= 260187)) {
+  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) || // LHC15n
+      (fCurrentRun >= 252235 && fCurrentRun <= 264347)) { // 2016 samples
     SetupRun2pp();
     return;
   }
