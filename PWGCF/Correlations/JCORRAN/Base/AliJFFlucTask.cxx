@@ -44,6 +44,7 @@
 #include "AliInputEventHandler.h"
 #include "AliJEfficiency.h"
 #include "AliMultSelection.h"
+#include "AliJRunTable.h"
 
 //______________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask():
@@ -76,8 +77,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_max=0.8;
 
 	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-    	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
+	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	
 	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
 	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
 
@@ -123,7 +124,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
-
+	
 	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
     	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
 
@@ -161,7 +162,6 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	// destructor
 	delete pfOutlierLowCut;
 	delete pfOutlierHighCut;
 	delete fFFlucAna;
@@ -449,16 +449,37 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	}
 	// cut on outliers //-- 2010aod data only
 	if( IsKineOnly == kFALSE){
-		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
-		if(!pms){
-			AliError("MultSelection unavailable.");
-			return kFALSE;
-		}
+		
+		int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
+		if(frunNumber < 0)
+			cout << "ERROR: Task did not find run number!" << endl;
+		AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
+		fRunTable->SetRunNumber( frunNumber );
+		
+		if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
+			const AliVVertex* vtTrc = event->GetPrimaryVertex();
+			const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+			double covTrc[6],covSPD[6];
+			vtTrc->GetCovarianceMatrix(covTrc);
+			vtSPD->GetCovarianceMatrix(covSPD);
+			double dz = vtTrc->GetZ()-vtSPD->GetZ();
+			double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+			double errTrc = TMath::Sqrt(covTrc[5]);
+			double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+			if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
+				return kFALSE;
 
-		Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
-		Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
-		if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
-			Event_status = kFALSE;
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return kFALSE;
+			}
+
+			Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
+			Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
+			if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
+				Event_status = kFALSE;
+		}
 
 		Float_t multTPC(0.);
 		Float_t multGlob(0.);

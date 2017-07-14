@@ -76,7 +76,7 @@ int AliJRunTable::GetRunNumberToPeriod( int runnumber ){
     for( int ip=0;ip<kJNPeriod;ip++ ){
         if(fDataType[ip] == kMC ) continue;
         if( runnumber >= fRunRange[ip][0] && runnumber <= fRunRange[ip][1] ){
-            cout<< fPeriodName[ip] <<"\t"<<fRunRange[ip][0]<<"~"<<fRunRange[ip][1]<<endl;
+            //cout<< fPeriodName[ip] <<"\t"<<fRunRange[ip][0]<<"~"<<fRunRange[ip][1]<<endl;
             period = ip;
             break;
         }
