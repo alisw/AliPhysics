@@ -124,8 +124,10 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   
   
   // Event counter histograms
-  fHistos->CreateTH1("hEventQualityBefore", "Event Quality (0 = good)", 13, -0.5, 12.5);
-  fHistos->CreateTH1("hEventQualityAfter", "Event Quality (0 = good)", 13, -0.5, 12.5);
+  fHistos->CreateTH1("hEventQualityBefore", "V0 reader Event Quality (0 = good)", 13, -0.5, 12.5);
+  fHistos->CreateTH1("hEventQualityAfter", "V0 reader Event Quality (0 = good)", 13, -0.5, 12.5);
+  fHistos->CreateTH1("hEventSelectionStatusBefore", "Event selection status (0 = good)", 14, -0.5, 13.5);
+  fHistos->CreateTH1("hEventSelectionStatusAfter", "Event selection status (0 = good)", 14, -0.5, 13.5 );
   fHistos->CreateTH1("hVertexZ", "z-component of the primary vertex; z (cm); Number of events", 1000, -40., 40.);
   fHistos->CreateTH1("hCaloPhotonsBefore", "Number of Events", 13, -0.5, 12.5);
   fHistos->CreateTH1("hCaloPhotonsAfter", "Number of Events", 13, -0.5, 12.5);
@@ -249,11 +251,13 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   // do event selection
   // Use the same event selection as for the v0 reader
   // Good events defined as events with event quality 0
-  Bool_t selectionStatus = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, false, false);
-  Int_t eventQuality = fEventCuts->GetEventQuality();
+  Int_t selectionStatus = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, false, false);
+  Int_t eventQuality = fV0Reader->GetEventCuts()->GetEventQuality();
   fHistos->FillTH1("hEventQualityBefore", eventQuality);
-  if(selectionStatus) return;
+  fHistos->FillTH1("hEventSelectionStatusBefore", selectionStatus);
+  if(selectionStatus || eventQuality) return;
   fHistos->FillTH1("hEventQualityAfter", eventQuality);
+  fHistos->FillTH1("hEventSelectionStatusAfter", selectionStatus);
   fHistos->FillTH1("hVertexZ", fInputEvent->GetPrimaryVertex()->GetZ());
 
   
