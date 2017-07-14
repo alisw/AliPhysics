@@ -44,7 +44,7 @@ AliCaloNonLinearity::~AliCaloNonLinearity()
 }
 
 // Return non linearity corrected cluster energy or in case of failure the value -100
-Float_t AliCaloNonLinearity::GetCorrectedEnergy(Float_t clusterEnergy, Int_t isMC, Int_t switchNonLin, Int_t clusterType, TString periodName)
+Float_t AliCaloNonLinearity::GetCorrectedEnergy(Float_t clusterEnergy, Int_t isMC, Int_t switchNonLin, Int_t clusterType, MCSetEnum periodEnum)
 {
   // Check if cluster energy is defined
   if (!clusterEnergy) {
@@ -60,8 +60,9 @@ Float_t AliCaloNonLinearity::GetCorrectedEnergy(Float_t clusterEnergy, Int_t isM
   }
 
   // Obtain enum for period name string
-  fCurrentMC = FindEnumForMCSetString(periodName);
-  AliInfo(Form("AliCaloNonLinearity:Period name has been set to %s, period-enum: %o\n",periodName.Data(),fCurrentMC )) ;
+//   fCurrentMC = FindEnumForMCSetString(periodName);
+  fCurrentMC = periodEnum;
+  AliInfo(Form("AliCaloNonLinearity:Period enum has been set to %o\n",fCurrentMC )) ;
 
   Bool_t fPeriodNameAvailable = kTRUE;
 
@@ -483,7 +484,7 @@ Float_t AliCaloNonLinearity::GetCorrectedEnergy(Float_t clusterEnergy, Int_t isM
   }
 
   if(!fPeriodNameAvailable){
-    AliFatal(Form("NonLinearity correction not defined for fPeriodName: '%s'! Please check nonlin switch (%d) as well as function AliCaloNonLinearity::GetCorrectedEnergy. Correction failed, returning...",periodName.Data(),switchNonLin));
+    AliFatal(Form("NonLinearity correction not defined for fCurrentMC: '%o'! Please check nonlin switch (%d) as well as function AliCaloNonLinearity::GetCorrectedEnergy. Correction failed, returning...",fCurrentMC,switchNonLin));
     return -100;
   }
 
@@ -574,6 +575,8 @@ Float_t AliCaloNonLinearity::FunctionM02(Float_t E, Float_t a, Float_t b, Float_
   return ( exp( a+ b*E ) + c + d*E + e/E);
 }
 
+// returns the period enumerator for a given period string 
+// can be used to obtain the enum for GetCorrectedEnergy
 //________________________________________________________________________
 AliCaloNonLinearity::MCSetEnum AliCaloNonLinearity::FindEnumForMCSetString(TString namePeriod){
   if(       namePeriod.CompareTo("LHC14e2a")==0)        return k14e2a;
