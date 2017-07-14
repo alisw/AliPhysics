@@ -131,6 +131,7 @@ public:
     kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
+    kChi2TPCConstrainedVsGlobal, // "Golden Chi 2" Chi2 of the TPC track constrained to the global vertex and the global track, in AODs only available for production using AliRoot 7310 or later
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -636,6 +637,7 @@ public:
     kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
     kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
     kNTPCtrkswITSout,        // Number of TPC tracks with kITSout flag
+    kNTPCclsEvent,           // Number of TPC clusters in the event
     kRefMultOvRefMultTPConly,   // ref mult / tpc only ref mult should give a hint on out of bunch pile-up if much higher than factor ~4 (LHC15o)
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
@@ -1089,10 +1091,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
 
   values[AliDielectronVarManager::kTOFnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
-  values[AliDielectronVarManager::kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron)
-                                                      -AliDielectronPID::GetCntrdCorrTOF(particle)
-                                                      ) / AliDielectronPID::GetWdthCorrTOF(particle);
-
+  values[AliDielectronVarManager::kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle)) / AliDielectronPID::GetWdthCorrTOF(particle);
   values[AliDielectronVarManager::kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
   values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
@@ -1157,7 +1156,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS) || Req(kNclsSFracITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
   if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
-  if(Req(kNclsTPC) || Req(kNclsSFracTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
+  if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
   if(Req(kNclsSTPC) || Req(kNclsSFracTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   if(Req(kNclsTPCiter1)) values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
@@ -1165,6 +1164,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kNFclsTPCr) || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
   if(Req(kNFclsTPCrFrac))  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   if(Req(kNFclsTPCfCross)) values[AliDielectronVarManager::kNFclsTPCfCross]= (values[kNFclsTPC]>0)?(values[kNFclsTPCr]/values[kNFclsTPC]):0;
+  if(Req(kChi2TPCConstrainedVsGlobal)) values[AliDielectronVarManager::kChi2TPCConstrainedVsGlobal] = particle->GetChi2TPCConstrainedVsGlobal();
   if(Req(kNclsTRD))        values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2);
   if(Req(kTRDntracklets))  values[AliDielectronVarManager::kTRDntracklets] = 0;
   if(Req(kTRDpidQuality))  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
@@ -2340,6 +2340,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNevents]         = 0; //always fill bin 0;
   values[AliDielectronVarManager::kRefMult]         = 0;
   values[AliDielectronVarManager::kRefMultTPConly]  = 0;
+  values[AliDielectronVarManager::kNTPCtrkswITSout] = 0;
+  values[AliDielectronVarManager::kNTPCclsEvent]    = 0;
 
   //Centrality Run2 - from 2015 on
   values[AliDielectronVarManager::kCentralityNew] = 0.;
@@ -2712,10 +2714,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   //
 
   // Fill common AliVEvent interface information
-
-
   FillVarVEvent(event, values);
-
 
   // Fill AliAODEvent interface specific information
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
@@ -2754,6 +2753,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
   if(Req(kNTPCtrkswITSout)) values[AliDielectronVarManager::kNTPCtrkswITSout] = header->GetNumberOfTPCTracks();
+  if(Req(kNTPCclsEvent)) values[AliDielectronVarManager::kNTPCclsEvent] = header->GetNumberOfTPCClusters();
   values[AliDielectronVarManager::kRefMultOvRefMultTPConly] = (values[AliDielectronVarManager::kRefMultTPConly] > 0. ? (values[AliDielectronVarManager::kRefMult]/values[AliDielectronVarManager::kRefMultTPConly]) : 0.);
 
   // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
