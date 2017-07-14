@@ -670,6 +670,8 @@ public:
     kRunNumber,              // run number
     kMixingBin,
 
+    kMCLegSource,            // According to AliDielectronSignalMC::ESource
+
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -971,7 +973,16 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   AliDielectronMC *mc=AliDielectronMC::Instance();
   if (mc->HasMC()){
     if (mc->GetMCTrack(particle)) {
-      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
+      Int_t trkLbl = TMath::Abs(particle->GetLabel());
+
+      values[AliDielectronVarManager::kMCLegSource] = 0;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+
       values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
       values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
@@ -1403,7 +1414,22 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   AliDielectronMC *mc=AliDielectronMC::Instance();
   if (mc->HasMC()){
     if (mc->GetMCTrack(particle)) {
-      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
+
+      // Int_t trkLbl = mc->GetMCTrack(particle)->GetLabel();
+      Int_t trkLbl = particle->GetLabel();
+
+      // AliAODMCParticle* mcpart = dynamic_cast<AliAODMCParticle*>(mc->GetMCTrack(particle));
+      // if (mcpart->IsPhysicalPrimary() == kTRUE) values[AliDielectronVarManager::kMCLegSource] = AliDielectronSignalMC::kPrimary;
+      // if (mcpart->IsPhysicalPrimary() == kFALSE) values[AliDielectronVarManager::kMCLegSource] = AliDielectronSignalMC::kSecondary;
+      values[AliDielectronVarManager::kMCLegSource] = 0;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
+      if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+
+
       values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
       values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
@@ -1493,7 +1519,6 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   //
   // Fill track information available for histogramming into an array
   //
-
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kITSchi2Cl]     = 0;
   values[AliDielectronVarManager::kNclsTPC]       = 0;
@@ -1578,7 +1603,6 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   //
   // fill 2 track information starting from MC legs
   //
-
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kITSchi2Cl]     = -1;
   values[AliDielectronVarManager::kNclsTPC]       = 0;
