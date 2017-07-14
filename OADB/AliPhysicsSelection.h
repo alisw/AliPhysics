@@ -122,7 +122,7 @@ protected:
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
   StringToFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
-  FormulaAndBits FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
+  FormulaAndBits& FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
 
   ClassDef(AliPhysicsSelection, 23)
 private:

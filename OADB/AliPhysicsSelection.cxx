@@ -264,9 +264,9 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
 Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
 						 AliTriggerAnalysis* triggerAnalysis,
 						 const char* triggerLogic, Bool_t offline){
-  auto formula_and_bits = FindForumla(triggerLogic);
-  auto trg_formula = formula_and_bits.first;
-  auto bits = formula_and_bits.second;
+  auto& formula_and_bits = FindForumla(triggerLogic);
+  auto& trg_formula = formula_and_bits.first;
+  auto& bits = formula_and_bits.second;
   // Get the values for each individual trigger in the trigger logic string;
   // These values are the parameters of the TFormula
   std::vector<Double_t> paras(bits.size());
@@ -277,7 +277,8 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
     paras[i] = triggerAnalysis->EvaluateTrigger(event, bit);
   }
   trg_formula.SetParameters(paras.data());
-  return trg_formula.Eval(0);
+  Double_t dummy_val[] = {0};
+  return trg_formula.EvalPar(dummy_val, paras.data());
 }
 
 //______________________________________________________________________________
@@ -818,7 +819,7 @@ void AliPhysicsSelection::DetectPassName(){
   fPassName = passName;
 }
 
-FormulaAndBits AliPhysicsSelection::FindForumla(const char* triggerLogic) {
+FormulaAndBits& AliPhysicsSelection::FindForumla(const char* triggerLogic) {
   // Do we have this logic cached? If not, set it up
   auto it = fTriggerToFormula->find(triggerLogic);
   if (it == fTriggerToFormula->end()) {
