@@ -635,6 +635,7 @@ public:
     kNaccItsPureEsd16Corr,   //
     kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
     kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
+    kNTPCtrkswITSout,        // Number of TPC tracks with kITSout flag
     kRefMultOvRefMultTPConly,   // ref mult / tpc only ref mult should give a hint on out of bunch pile-up if much higher than factor ~4 (LHC15o)
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
@@ -2318,8 +2319,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     if(fgZDCRecenteringFile.Contains(".root")) InitZDCRecenteringHistograms(event->GetRunNumber());
     fgCurrentRun=event->GetRunNumber();
   }
-  values[AliDielectronVarManager::kMixingBin]=0;
 
+  values[AliDielectronVarManager::kMixingBin]=0;
   values[AliDielectronVarManager::kXvPrim]       = 0;
   values[AliDielectronVarManager::kYvPrim]       = 0;
   values[AliDielectronVarManager::kZvPrim]       = 0;
@@ -2387,22 +2388,22 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
+
   if(Req(kMatchEffITSTPCinPlane) || Req(kMatchEffITSTPCoutPlane)){
+
     Double_t efficiencies[2] = {-1.};
     values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE);
     values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = efficiencies[0];
     values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = efficiencies[1];
   }
   else if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
-  if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
-    values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
+  if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))  values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
   if(Req(kNaccTrcklts09))
       values[AliDielectronVarManager::kNaccTrcklts09]     = AliDielectronHelper::GetNaccTrcklts(event,0.9);
   if(Req(kNaccTrcklts10) || Req(kNaccTrcklts10Corr))
     values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
   if(Req(kNaccTrcklts0916))
     values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
-
   if(Req(kNaccTrckltsCorr))
   values[AliDielectronVarManager::kNaccTrckltsCorr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts],
@@ -2411,7 +2412,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNaccTrcklts10Corr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts10],
 						 values[AliDielectronVarManager::kZvPrim],1);
-
 
   Double_t ptMaxEv    = -1., phiptMaxEv= -1.;
   if(Req(kMaxPt) || Req(kPhiMaxPt)) AliDielectronHelper::GetMaxPtAndPhi(event, ptMaxEv, phiptMaxEv);
@@ -2423,29 +2423,28 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
   for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
 
+
   // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
   if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
       dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
-  if(flowQnVectorTask != NULL){
-    AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
-    if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
-    else{
-      for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
-        values[i] = -999.;
+    if(flowQnVectorTask != NULL){
+      AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+      TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+      if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
+      else{
+        for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
+          values[i] = -999.;
+        }
       }
     }
-  }
 
   // ep angle interval [todo, fill]
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
   if(ep) {
-
     // TPC event plane quantities (uncorrected)
     TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
     TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
     TVector2 *qsub2 = ep->GetQsub2();
-
     if(qstd) {
       values[AliDielectronVarManager::kTPCxH2uc]       = qstd->X();
       values[AliDielectronVarManager::kTPCyH2uc]       = qstd->Y();
@@ -2463,6 +2462,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
       }
     }
+
 
     // VZERO event plane
     TVector2 qvec;
@@ -2607,6 +2607,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kZDCrpResH1] = cos(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kZDCCrpH1]);
 
 
+
 }
 
 inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, Double_t * const values)
@@ -2711,7 +2712,10 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   //
 
   // Fill common AliVEvent interface information
+
+
   FillVarVEvent(event, values);
+
 
   // Fill AliAODEvent interface specific information
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
@@ -2749,6 +2753,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
+  if(Req(kNTPCtrkswITSout)) values[AliDielectronVarManager::kNTPCtrkswITSout] = header->GetNumberOfTPCTracks();
   values[AliDielectronVarManager::kRefMultOvRefMultTPConly] = (values[AliDielectronVarManager::kRefMultTPConly] > 0. ? (values[AliDielectronVarManager::kRefMult]/values[AliDielectronVarManager::kRefMultTPConly]) : 0.);
 
   // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
@@ -3282,13 +3287,11 @@ inline Double_t AliDielectronVarManager::GetTRDpidEfficiency(Int_t runNo, Double
 
 inline void AliDielectronVarManager::SetEvent(AliVEvent * const ev)
 {
-
   fgEvent = ev;
   if (fgKFVertex) delete fgKFVertex;
   fgKFVertex=0x0;
   if (!ev) return;
   if (ev->GetPrimaryVertex()) fgKFVertex=new AliKFVertex(*ev->GetPrimaryVertex());
-
   for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues;++i) fgData[i]=0.;
   AliDielectronVarManager::Fill(fgEvent, fgData);
 }
