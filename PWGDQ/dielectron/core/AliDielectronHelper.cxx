@@ -184,7 +184,6 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_
 Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange){
   // Compute the collision multiplicity based on AOD or ESD tracklets
   // Code taken from: AliAnalysisTaskMuonCollisionMultiplicity::ComputeMultiplicity()
-
   if (!ev) return -1;
 
   Int_t nTracklets = 0;
@@ -300,33 +299,35 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane){
   // recalulate the its-tpc matching efficiecy
   if (!ev) return -1;
+  Bool_t bDebug = kFALSE;
 
-  AliDielectronVarCuts varCutsTPC;
-  varCutsTPC.AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCutsTPC.AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCutsTPC.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCutsTPC.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCutsTPC.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
+
+  // AliDielectronVarCuts varCutsTPC;
+  // varCutsTPC.AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  // varCutsTPC.AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  // varCutsTPC.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  // varCutsTPC.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  // varCutsTPC.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
   AliDielectronTrackCuts trkCutsTPC;
   trkCutsTPC.SetRequireTPCRefit(kTRUE);
 
-  AliDielectronVarCuts varCutsITS;
-  varCutsITS.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  // AliDielectronVarCuts varCutsITS;
+  // varCutsITS.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   AliDielectronTrackCuts trkCutsITS;
   trkCutsITS.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
   trkCutsITS.SetRequireITSRefit(kTRUE);
 
   // Eventplane angle Cuts
 
-  AliDielectronVarCuts varCutsEPinP;
-  AliDielectronVarCuts varCutsEPoutP;
-  if(bEventPlane){
-    varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -2.35, -0.79, kTRUE);
-    varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 0.79, 2.35, kTRUE);
-    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -0.79, 0.79, kTRUE);
-    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -3.15, -2.35, kTRUE);
-    varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 2.35, 3.15, kTRUE);
-  }
+  // AliDielectronVarCuts varCutsEPinP;
+  // AliDielectronVarCuts varCutsEPoutP;
+  // if(bEventPlane){
+  //   varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -2.35, -0.79, kTRUE);
+  //   varCutsEPinP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 0.79, 2.35, kTRUE);
+  //   varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -0.79, 0.79, kTRUE);
+  //   varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, -3.15, -2.35, kTRUE);
+  //   varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 2.35, 3.15, kTRUE);
+  // }
 
 // @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
 // Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
@@ -336,26 +337,95 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
   Double_t nTPCinP = 0, nITSinP = 0;
   Double_t nTPCoutP = 0, nITSoutP = 0;
 
+  Float_t impactParXY = -99.;
+  Float_t impactParZ = -99.;
+  Float_t eta = -99.;
+  Float_t nClsTPC = -99.;
+  Float_t tpcChi2Cl = -99.;
+  Float_t trackPhi = -99.;
+  Float_t eventplane = -99.;
+  Float_t deltaPhi = -99.;
+
+
+  if(bEventPlane){
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+    if(man)
+    if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+        dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
+      if(flowQnVectorTask != NULL){
+        AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+        TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+        if(qnlist != NULL){
+          const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"TPC","latest","latest");
+          if(qVecQnFrameworkTPC != NULL){
+            TVector2 qVectorTPC(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
+            eventplane = TVector2::Phi_mpi_pi(qVectorTPC.Phi())/2;
+          }
+        }
+      }
+  }
 
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
 
+    // ITS cuts begin
     if(!trkCutsITS.IsSelected(track)) continue;
-    if(!varCutsITS.IsSelected(track)) continue;
+    //
+    if(track->IsA() == AliESDtrack::Class())track->GetImpactParameters(impactParXY, impactParZ);
+    else{
+      AliAODTrack *trackAOD = (AliAODTrack*) track;
+      Double_t xyz[2] = {-100.,-100.};
+      Double_t dcaRes[3] = {-100.,-100.,-100.};
+      AliDielectronVarManager::GetDCA(trackAOD, xyz, dcaRes);
+      impactParXY = xyz[0];
+      impactParZ = xyz[1];
+    }
+    if(TMath::Abs(impactParXY) > 1.0) continue;
+    if(TMath::Abs(impactParZ) > 3.0) continue;
+    eta = track->Eta();
+    if(TMath::Abs(eta) > 0.9) continue;
+    //
+    // if(!varCutsITS.IsSelected(track)) continue;
+    //
+    // ITS cuts end
     nITS+=1.;
+
+    // Eventplane cuts for ITS
     if(bEventPlane){
-      if(varCutsEPinP.IsSelected(track))  nITSinP++;
-      if(varCutsEPoutP.IsSelected(track)) nITSoutP++;
+      trackPhi = TVector2::Phi_0_2pi(track->Phi());
+      deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventplane);
+      if(TMath::Abs(deltaPhi) > 0.79 && TMath::Abs(deltaPhi) < 2.35)  nITSoutP++;
+      if(TMath::Abs(deltaPhi) < 0.79 || (TMath::Abs(deltaPhi) < 3.15 && TMath::Abs(deltaPhi) > 2.35))  nITSinP++;
+      // if(varCutsEPinP.IsSelected(track))  nITSinP++;
+      // if(varCutsEPoutP.IsSelected(track)) nITSoutP++;
     }
 
 
+    // TPC cuts begin
     if(!trkCutsTPC.IsSelected(track)) continue;
-    if(!varCutsTPC.IsSelected(track)) continue;
+    track->GetImpactParameters(impactParXY, impactParZ);
+    if(TMath::Abs(impactParXY) > 1.0) continue;
+    if(TMath::Abs(impactParZ) > 3.0) continue;
+    eta = track->Eta();
+    if(TMath::Abs(eta) > 0.9) continue;
+    nClsTPC = track->GetTPCNcls();
+    if(nClsTPC < 50. || nClsTPC > 160.) continue;
+    tpcChi2Cl = nClsTPC > 0 ? track->GetTPCchi2() / nClsTPC : -1.;
+    if(tpcChi2Cl < 0. || tpcChi2Cl > 4.) continue;
+    // TPC cuts end
+
+
+    // if(!varCutsTPC.IsSelected(track)) continue;
     nTPC+=1.;
+
     if(bEventPlane){
-      if(varCutsEPinP.IsSelected(track))  nTPCinP++;
-      if(varCutsEPoutP.IsSelected(track)) nTPCoutP++;
+      trackPhi = TVector2::Phi_0_2pi(track->Phi());
+      deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventplane);
+      if(TMath::Abs(deltaPhi) > 0.79 && TMath::Abs(deltaPhi) < 2.35)  nTPCoutP++;
+      if(TMath::Abs(deltaPhi) < 0.79 || (TMath::Abs(deltaPhi) < 3.15 && TMath::Abs(deltaPhi) > 2.35))  nTPCinP++;
+      // if(varCutsEPinP.IsSelected(track))  nTPCinP++;
+      // if(varCutsEPoutP.IsSelected(track)) nTPCoutP++;
     }
   }
   if( bEventPlane && efficiencies){
@@ -363,6 +433,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
     efficiencies[1] = nITSoutP > 0. ? nTPCoutP/nITSoutP : -1.;
   }
   //  printf(" tracks TPC %.3e ITS %.3e = %.5f \n",nTPC,nITS,(nITS>0. ? nTPC/nITS : -1));
+
+
   return (nITS>0. ? nTPC/nITS : -1);
 }
 
