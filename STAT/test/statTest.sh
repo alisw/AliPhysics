@@ -7,7 +7,8 @@
 #   alienv enter AliRoot/latest  # load AliRoot environment
 #   cd <AliRoot_Build_Directory>
 #   ctest --output-on-failure -R func_STAT_*
-#
+#   or extra verbose
+#   ctest --extra-verbose -R func_STAT_*
 # Tests output will be printed only in case of failures.
 
 source $ALICE_ROOT/libexec/alilog4bash.sh
@@ -17,15 +18,16 @@ if [[ ! $ALIROOT_SOURCE ]]; then
 fi
 
 testAliTreePlayer() {
-  TMPDIR=$(mktemp -d)
-  cd $TMPDIR
+  # MI comment: Keep log file for later log archiving and log parsing
+  # TMPDIR=$(mktemp -d)
+  # cd $TMPDIR
   cp $ALIROOT_SOURCE/STAT/test/AliTreePlayerTest.C .
-  root -b -l <<\EOF &> test.log
+  root -b -l <<\EOF &> testAliTreePlayer.log
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     .x ./AliTreePlayerTest.C+
 EOF
-  N_GOOD=$(grep -cE 'AliTreePlayerTest\..*Test.*OK' test.log)
-  N_BAD=$(grep -c "E-" test.log)
+  N_GOOD=$(grep -cE 'AliTreePlayerTest\..*Test.*OK' testAliTreePlayer.log)
+  N_BAD=$(grep -c "E-" testAliTreePlayer.log)
   TEST_STATUS=0
   if [[ $N_GOOD != 4 ]]; then
     alilog_error "statTest.testAliTreePlayer: Invariant test failed"
@@ -39,18 +41,19 @@ EOF
     alilog_success "statTest.testAliTreePlayer: All OK"
   else
     alilog_success "statTest.testAliTreePlayer: FAILED (code $TEST_STATUS): full log follows"
-    cat test.log
+    cat testAliTreePlayer.log
   fi
-  cd /
-  rm -rf $TMPDIR
+  # cd /
+  # rm -rf $TMPDIR
   exit $TEST_STATUS
 }
 
 testAliTMinutiToolkitTestLinear() {
-  TMPDIR=$(mktemp -d)
-  cd $TMPDIR
+  #MI comment: Keep log file for later log archiving and log parsing
+  #TMPDIR=$(mktemp -d)
+  #cd $TMPDIR
   cp $ALIROOT_SOURCE/STAT/test/AliTMinuitToolkitTestLinear.C .
-  root -b -l <<\EOF &> test.log
+  root -b -l <<\EOF &> testAliTMinutiToolkitTestLinear
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     cout << gSystem->GetIncludePath() << "e che cz" << endl;
     .x ./AliTMinuitToolkitTestLinear.C+(50,3)
@@ -61,11 +64,11 @@ EOF
     exit 0
   else
     alilog_error "statTest.testAliTMinutiToolkitTestLinear: FAILED: full log follows"
-    cat test.log
+    cat testAliTMinutiToolkitTestLinear
     exit 1
   fi
-  cd /
-  rm -rf $TMPDIR
+  #cd /
+  #rm -rf $TMPDIR
 }
 
 [[ $1 ]] && $1
