@@ -276,7 +276,6 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
     Trigger bit = static_cast<Trigger>(bits[i] | offline_flag);
     paras[i] = triggerAnalysis->EvaluateTrigger(event, bit);
   }
-  trg_formula.SetParameters(paras.data());
   Double_t dummy_val[] = {0};
   return trg_formula.EvalPar(dummy_val, paras.data());
 }
