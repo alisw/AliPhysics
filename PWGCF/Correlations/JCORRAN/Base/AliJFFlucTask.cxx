@@ -147,6 +147,8 @@ AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fOutput(ap.fOutput)
 {
 	AliInfo("----DEBUG AliJFFlucTask COPY ----");
+	pfOutlierLowCut = (TF1*)ap.pfOutlierLowCut->Clone();
+	pfOutlierHighCut = (TF1*)ap.pfOutlierHighCut->Clone();
 }
 
 //_____________________________________________________________________________
@@ -452,7 +454,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 		
 		int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
 		if(frunNumber < 0)
-			cout << "ERROR: Task did not find run number!" << endl;
+			cout << "ERROR: unknown run number" << endl;
 		AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
 		fRunTable->SetRunNumber( frunNumber );
 		
