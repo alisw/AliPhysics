@@ -141,14 +141,11 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   std::vector<Double_t>  fRSBLowLim;          // Right SB upper lim
   std::vector<Double_t>  fRSBUppLim;          // Right SB upper lim
   std::vector<Int_t>     fDaughTrackID;       // ID of tagged daughters
-  std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters		
-  std::vector<Int_t>     fSoftPiTrackID;      // ID of tagged soft pions
-  std::vector<Int_t>     fSoftPiTrigNum;      // ID of D-trigger for soft pions
+  std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters	
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)
   Int_t	    fNtrigD;			// counter on number of D triggers filled (for association with daughter tracks in TTrees)
-  Int_t     fNsoftPi;			// counter of number of soft pions
   TList    *fOutputMass;          	//!list send on output slot 1
   TList    *fOutputCorr;	  	//!list of correlation histos, output slot 5
   TList    *fOutputStudy;	  	//!list of histos with MC distributions, output slot 6
