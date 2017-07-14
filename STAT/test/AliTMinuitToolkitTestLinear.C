@@ -1,8 +1,10 @@
-// Test AliTMinuitToolkit fit option
-// For the moment: we only test that the code does not crash
-// Usage: from the ROOT prompt:
-//     .L <AliRoot_source>/STAT/test/AliTMinuitToolkitTestLinear.C+
-//     AliTMinuitToolkitTestLinear(2000, 3)
+/*
+   Test AliTMinuitToolkit fit option
+   For the moment: Test only code doe not crachs
+   .L $AliRoot_SRC/STAT/test/AliTMinuitToolkitTestLinear.C+
+   AliTMinuitToolkitTestLinear(2000,3);
+
+*/
 
 #include "AliTMinuitToolkit.h"
 #include "TVectorD.h"

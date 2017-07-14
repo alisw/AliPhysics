@@ -1,27 +1,33 @@
-// Test suite for AliTreePlayer.
-//
-// cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
-//
-// Test should be integrated to AliRoot test suite (not cmake test as it needs
-// to access the external files).
-//
-// Output should be that "Test OK" on all lines, e.g.:
-//
-// I-AliTreePlayerTest.testSelectMetadata AND invariant: Test OK: N(Logbook&&(Stat))=N(Logbook&&(Stat&&Base))+N(Logbook&&(Stat&&(!Base)))   7=2+5
-// I-AliTreePlayerTest.testSelectMetadata Negatioation test: Test OK:   N(!(A||B))=N((!A)&&(!B)) 73==73
-// I-AliTreePlayerTest.testselectTreeInfo: Test OK:   N(A))==N(A&&B)&&N(A&&!B)) 46=6+40
-// I-AliTreePlayerTest.testConvertTree: Test OK
-//
-// To run test interacivally, or test subsets:
-//     .L  $ALICE_ROOT/../src/STAT/test/AliTreePlayerTest.C+
-//     AliTreePlayerTest()
-//
-// Tests: see description in individual tests.
-
-// AliTreePlayer::selectMetadata(treeLogbook, "[class==\"Logbook&&Time\"]",0)->Print();
-// AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:QA.TPC.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
-// AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"json","qatpc.json");
-// AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"csv","qatpc.csv");
+/// \ingroup STAT/test
+/// \brief  test of AliTreePlayer class
+/*!
+  # Test suit for the AliTreePlayer: Integrated into CTEST
+  To run standalone:
+  \code
+  aliroot -b -q $AliRoot_SRC/STAT/test/AliTreePlayerTest.C+ | tee AliTreePlayerTest.log
+  cat AliTreePlayerTest.log | grep "AliTreePlayerTest\."
+  \endcode
+  Output should be all test OK:
+  \code
+  I-AliTreePlayerTest.testSelectMetadata AND invariant: Test OK: N(Logbook&&(Stat))=N(Logbook&&(Stat&&Base))+N(Logbook&&(Stat&&(!Base)))   7=2+5
+  I-AliTreePlayerTest.testSelectMetadata Negatioation test: Test OK:   N(!(A||B))=N((!A)&&(!B)) 73==73
+  I-AliTreePlayerTest.testselectTreeInfo: Test OK:   N(A))==N(A&&B)&&N(A&&!B)) 46=6+40
+  I-AliTreePlayerTest.testConvertTree: Test OK
+  \endcode
+  To run test interactivally, or test subsets (in debugger,valgrind/callgrind):
+  \code
+     .L  $AliRoot_SRC/STAT/test/AliTreePlayerTest.C+
+     AliTreePlayerTest();
+  \endcode
+  Tests: see description in individual test
+  \code
+  AliTreePlayer::selectMetadata(treeLogbook, "[class==\"Logbook&&Time\"]",0)->Print();
+  AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:QA.TPC.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
+  AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"json","qatpc.json");
+  AliTreePlayer::selectWhatWhereOrderBy(treeTRD,"run:Logbook.run:QA.TRD.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"csv","qatpc.csv");
+  \endcode
+ */
+/// \author marian  Ivanov marian.ivanov@cern.ch
 
 #include "TStatToolkit.h"
 #include "Riostream.h"
