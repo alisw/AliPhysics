@@ -65,6 +65,10 @@
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
+#include <algorithm>
+#include <vector>
+#include <iterator>
+#include <regex>
 
 #include <Riostream.h>
 #include <TH1F.h>
@@ -127,19 +131,19 @@ fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(NULL)
+fTriggerToFormula()
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
+  fTriggerToFormula = new StringToFormula();
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
- AliPhysicsSelection::AliPhysicsSelection(const char *name) :
+AliPhysicsSelection::AliPhysicsSelection(const char *name) :
  AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
  fPassName(""),
  fCurrentRun(-1),
@@ -157,15 +161,14 @@ fCashedTokens(NULL)
  fPSOADB(0),
  fFillOADB(0),
  fTriggerOADB(0),
- fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
- fCashedTokens(NULL)
+ fTriggerToFormula()
  {
    // constructor
    fCollTrigClasses.SetOwner(1);
    fBGTrigClasses.SetOwner(1);
    fTriggerAnalysis.SetOwner(1);
    fHistList.SetOwner(1);
-
+   fTriggerToFormula = new StringToFormula();
    AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
  }
 
@@ -173,8 +176,7 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fPSOADB)       delete fPSOADB;
   if (fFillOADB)     delete fFillOADB;
   if (fTriggerOADB)  delete fTriggerOADB;
-  delete fRegexp;
-  delete fCashedTokens;
+  delete fTriggerToFormula;
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
@@ -251,63 +253,31 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
   return returnCode;
 }
 
-//______________________________________________________________________________
-Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline){
-  // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
-  // Fills the statistics histogram, if booked at row i
-  TString trigger(triggerLogic);
-  
-  // add space after each token (to use ReplaceAll later)
-  fRegexp->Substitute(trigger, "$1 ", "g");
-  
-  while (1) {
-    AliDebug(AliLog::kDebug, trigger.Data());
-    
-    TArrayI pos;
-    Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-    
-    if (nMatches <= 0) break;
-    
-    TString token(trigger(pos[0], pos[1]-pos[0]+1));
-
-    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
-    if (!param) {
-      TInterpreter::EErrorCode error;
-      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
-      
-      if (error > 0) AliFatal(Form("Trigger token %s unknown", token.Data()));
-      
-      param = new TParameter<Int_t>(token, bit);
-      fCashedTokens->Add(param);
-      AliDebug(AliLog::kDebug, "Added token");
-    }
-    
-    Long64_t bit = param->GetVal();
-    
-    AliDebug(AliLog::kDebug, Form("Tok %d %d %s %lld", pos[0], pos[1], token.Data(), bit));
-    
-    if (offline) 
-      bit |= AliTriggerAnalysis::kOfflineFlag;
-    
-    if(event && triggerAnalysis) {
-      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
-    }
+/// Evaluate if the given event fulfills a given trigger logic
+///
+/// \param event Pointer to the current event
+/// \param triggerAnalysis Pointer to the TriggerAnlysis class
+/// \param triggerLogic Describing trigger logic; e.g. "V0A && V0C && ZDCTime && !TPCHVdip"
+/// \param offline Offline analysis(?)
+///
+/// \return True if the given event matches the trigger logic
+Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event,
+						 AliTriggerAnalysis* triggerAnalysis,
+						 const char* triggerLogic, Bool_t offline){
+  auto& formula_and_bits = FindForumla(triggerLogic);
+  auto& trg_formula = formula_and_bits.first;
+  auto& bits = formula_and_bits.second;
+  // Get the values for each individual trigger in the trigger logic string;
+  // These values are the parameters of the TFormula
+  std::vector<Double_t> paras(bits.size());
+  auto offline_flag = offline ? AliTriggerAnalysis::kOfflineFlag : 0;
+  for (size_t i = 0; i < bits.size(); ++i) {
+    typedef AliTriggerAnalysis::Trigger Trigger;
+    Trigger bit = static_cast<Trigger>(bits[i] | offline_flag);
+    paras[i] = triggerAnalysis->EvaluateTrigger(event, bit);
   }
-  
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
-  // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
-  // as the v6 version produces a large amount of warnings at runtime.
-  ROOT::v5::TFormula formula("formula",trigger);
-#else
-  TFormula formula("formula", trigger);
-#endif
-  if (formula.Compile() > 0)
-    AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
-  Bool_t result = formula.Eval(0);
-  
-  AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
-  
-  return result;
+  Double_t dummy_val[] = {0};
+  return trg_formula.EvalPar(dummy_val, paras.data());
 }
 
 //______________________________________________________________________________
@@ -509,10 +479,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
-  }
-  if(!fCashedTokens){
-    fCashedTokens = new TList();
-    fCashedTokens->SetOwner();
   }
   
   fCurrentRun = runNumber;
@@ -850,4 +816,56 @@ void AliPhysicsSelection::DetectPassName(){
   
   AliInfo(Form("pass name: %s\n",passName.Data()));
   fPassName = passName;
+}
+
+FormulaAndBits& AliPhysicsSelection::FindForumla(const char* triggerLogic) {
+  // Do we have this logic cached? If not, set it up
+  auto it = fTriggerToFormula->find(triggerLogic);
+  if (it == fTriggerToFormula->end()) {
+    std::string trg_logic_formated;
+    std::vector<AliTriggerAnalysis::Trigger> bits;
+
+    TString trigger(triggerLogic);
+    TArrayI pos;
+    Int_t b = 0;
+    Int_t e = 0;
+    TPRegexp trigger_regexp("[[:alpha:]][[:alnum:]]*");
+
+    // Go through the matches and construct a new string where each
+    // match is replaced by a TFormula parameter
+    while (trigger_regexp.Match(trigger, "", e, 1, &pos) != 0) {
+      b = e;
+      e = pos[0];
+      std::string unmatched(trigger.Data() + b, trigger.Data() + e);
+
+      trg_logic_formated.append(unmatched);
+      // Each param in the TFormula will be set as the value behind the trigger bit
+      trg_logic_formated.append(Form("int([%i])", (Int_t)bits.size()));
+
+      b = e;
+      e = pos[1];
+      std::string matched(trigger.Data() + b, trigger.Data() + e);
+
+      TInterpreter::EErrorCode error;
+      Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", matched.c_str()), &error);
+
+      if (error > 0)
+	AliFatal(Form("Trigger token %s unknown", matched.c_str()));
+
+      bits.push_back(static_cast<AliTriggerAnalysis::Trigger>(bit));
+    }
+    trg_logic_formated.append({trigger.Data() + e, trigger.Data() + trigger.Length()});
+
+    R5TFormula formula(Form("dummy_name_%zu", fTriggerToFormula->size()), trg_logic_formated.c_str());
+
+    if (formula.Compile() > 0) {
+      AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)",
+		    triggerLogic, trg_logic_formated.c_str()));
+    }
+    // Have the iterator point at the newly inserted element so that
+    // we don't have to look it up in the return statement
+    it = fTriggerToFormula->emplace(std::string(triggerLogic),
+				    std::make_pair(formula, std::move(bits))).first;
+  }
+  return it->second;
 }
