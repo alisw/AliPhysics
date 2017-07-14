@@ -610,8 +610,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
+  {"NTPCtrkswITSout",         "N_{trk}^{TPCwITSout}",                                  ""},
   {"RefMultOvRefMultTPConly",  "N_{trk}/N_{trk}^{TPConly}",                        ""},
-
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"NchJpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.6} without J/#psi daughters ",  ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
