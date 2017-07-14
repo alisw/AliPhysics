@@ -82,7 +82,7 @@ void AliAnalysisTaskEmcalTriggerJetsIDcorr::UserCreateOutputObjects(){
   const int kNJetPtBins = 9;
   const int kNJetRadiusBins = 7;
 
-  TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), massbinning(400., 0., 4.), radiusBinning(10, 0., 1.);
+  TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), massbinning(600., 0., 6.), radiusBinning(10, 0., 1.);
   const TBinning *binningPID[4] = {&jetptbinning, &pbinning, &radiusBinning, &massbinning};
   const std::array<TString, 2> kSpecies = {"Proton", "Deuteron"};
   fHistos = new THistManager("EmcalJetHistos");
@@ -155,14 +155,14 @@ bool AliAnalysisTaskEmcalTriggerJetsIDcorr::Run(){
     // Proton-jet correlations
     std::vector<CorrParticleInfo> protonsCorrelated = CorrelateCandidatesToJet(jetmomentum, protonCandidates);
     for(auto c : protonsCorrelated) {
-      Double_t point[4] = {TMath::Abs(j->Pt()), c.fPt, c.fDR, c.fMass};
+      Double_t point[4] = {TMath::Abs(j->Pt()), c.fPt, c.fDR, c.fMass*c.fMass};
       for(auto t : triggers) fHistos->FillTHnSparse("hPIDAssociateFullJetProton" +t, point);
     }
 
     // deuteron-jet correlations
     std::vector<CorrParticleInfo> deuteronsCorrelated = CorrelateCandidatesToJet(jetmomentum, deuteronCandidates);
     for(auto c : protonsCorrelated) {
-      Double_t point[4] = {TMath::Abs(j->Pt()), c.fPt, c.fDR, c.fMass};
+      Double_t point[4] = {TMath::Abs(j->Pt()), c.fPt, c.fDR, c.fMass*c.fMass};
       for(auto t : triggers) fHistos->FillTHnSparse("hPIDAssociateFullJetDeuteron" +t, point);
     }
   }
