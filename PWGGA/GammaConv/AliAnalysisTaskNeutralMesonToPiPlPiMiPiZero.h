@@ -116,7 +116,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliGammaConversionAODBGHandler	**fBGHandlerPiMi;							// BG handler Neg Pion
 		AliESDEvent 					*fESDEvent;									// current event
 		AliMCEvent 						*fMCEvent;									// current MC event
-		AliStack 						*fMCStack;									// current MC stack
 		TList 							**fCutFolder;								// list of output folders with main cut name 
 		TList 							**fESDList;									// list with main output histograms for data
 //		TList 							**fBackList;								// list with THnSparseF for BG
@@ -257,7 +256,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 12);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 13);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

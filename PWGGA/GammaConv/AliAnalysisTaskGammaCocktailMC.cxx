@@ -40,7 +40,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliStack.h"
 #include "AliAnalysisTaskGammaCocktailMC.h"
 #include "AliVParticle.h"
 #include "AliEventplane.h"
@@ -60,7 +59,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fMCGenHandler(NULL),
   fMCGenerator(NULL),
   fMCCocktailGen(NULL),
@@ -102,7 +100,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fMCGenHandler(NULL),
   fMCGenerator(NULL),
   fMCCocktailGen(NULL),
@@ -360,10 +357,6 @@ void AliAnalysisTaskGammaCocktailMC::UserExec(Option_t *)
   
   if (fIsMC==0) return;
   
-  fMCStack = fMCEvent->Stack();
-  if(fMCStack == NULL) fIsMC = 0;
-  if (fIsMC==0) return;
-  
   fHistNEvents->Fill(0.5);
   ProcessMCParticles();
 
@@ -468,10 +461,10 @@ void AliAnalysisTaskGammaCocktailMC::SetHasMother(UInt_t selectedMothers) {
 void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
 
   // Loop over all primary MC particle
-  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     // fill primary histograms
     TParticle* particle         = NULL;
-    particle                    = (TParticle *)fMCStack->Particle(i);
+    particle                    = (TParticle *)fMCEvent->Particle(i);
     if (!particle) continue;
     Bool_t hasMother            = kFALSE;
     Bool_t particleIsPrimary    = kTRUE;
@@ -481,7 +474,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
       particleIsPrimary = kFALSE;
     }
     TParticle* motherParticle   = NULL;
-    if( hasMother ) motherParticle = (TParticle *)fMCStack->Particle(particle->GetMother(0));
+    if( hasMother ) motherParticle = (TParticle *)fMCEvent->Particle(particle->GetMother(0));
     if (motherParticle){
       hasMother                 = kTRUE;
     }else{
@@ -624,8 +617,8 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
       Double_t alpha    = -999;
       Double_t deltaPhi = -999;
       if (particle->GetNDaughters() == 2) {
-        daughter0 = (TParticle*)fMCStack->Particle(particle->GetFirstDaughter());
-        daughter1 = (TParticle*)fMCStack->Particle(particle->GetLastDaughter());
+        daughter0 = (TParticle*)fMCEvent->Particle(particle->GetFirstDaughter());
+        daughter1 = (TParticle*)fMCEvent->Particle(particle->GetLastDaughter());
                 
         if (daughter0->GetPdgCode()==22 || daughter1->GetPdgCode()==22) {
           Double_t firstEnergy, secondEnergy;
@@ -649,7 +642,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[0]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[0]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[0]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1) fHistPtAlphaInput[0]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0) fHistPtDeltaPhiInput[0]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -657,7 +650,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[1]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[1]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[1]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1) fHistPtAlphaInput[1]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0) fHistPtDeltaPhiInput[1]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -665,7 +658,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[2]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[2]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[2]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1) fHistPtAlphaInput[2]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0) fHistPtDeltaPhiInput[2]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -673,7 +666,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[3]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[3]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[3]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1) fHistPtAlphaInput[3]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0) fHistPtDeltaPhiInput[3]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -681,7 +674,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[4]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[4]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[4]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[4]) fHistPtAlphaInput[4]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[4]) fHistPtDeltaPhiInput[4]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -689,7 +682,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[5]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[5]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[5]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[5]) fHistPtAlphaInput[5]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[5]) fHistPtDeltaPhiInput[5]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -697,7 +690,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[6]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[6]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[6]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[6]) fHistPtAlphaInput[6]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[6]) fHistPtDeltaPhiInput[6]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -705,7 +698,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[7]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha >= -1) fHistPtAlphaInput[7]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0) fHistPtDeltaPhiInput[7]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -713,7 +706,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[8]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[8]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[8]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[8]) fHistPtAlphaInput[8]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[8]) fHistPtDeltaPhiInput[8]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -721,7 +714,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[9]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[9]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[9]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[9]) fHistPtAlphaInput[9]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[9]) fHistPtDeltaPhiInput[9]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -729,7 +722,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[10]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[10]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[10]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[10]) fHistPtAlphaInput[10]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[10]) fHistPtDeltaPhiInput[10]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -737,7 +730,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[11]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[11]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[11]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[11]) fHistPtAlphaInput[11]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[11]) fHistPtDeltaPhiInput[11]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -745,7 +738,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[12]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[12]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[12]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[12]) fHistPtAlphaInput[12]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[12]) fHistPtDeltaPhiInput[12]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -753,7 +746,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[13]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[13]) fHistPtAlphaInput[13]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[13]) fHistPtDeltaPhiInput[13]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -761,7 +754,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[14]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[14]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[14]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[14]) fHistPtAlphaInput[14]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[14]) fHistPtDeltaPhiInput[14]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -769,7 +762,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[15]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[15]) fHistPtAlphaInput[15]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[15]) fHistPtDeltaPhiInput[15]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -777,7 +770,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtYInput[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
           fHistDecayChannelsInput[16]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[16]) fHistPtAlphaInput[16]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[16]) fHistPtDeltaPhiInput[16]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
@@ -1005,7 +998,7 @@ void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist(TH1F* hist, Int_
 }
 
 //_________________________________________________________________________________
-Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TParticle* part) {
+Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliMCEvent *mcEvent, TParticle* part) {
     
   Int_t nDaughters = part->GetNDaughters();
   if (nDaughters > 10) return 19.;
@@ -1013,7 +1006,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
   std::vector<Long64_t> *PdgDaughter = new std::vector<Long64_t>(nDaughters);
   Long64_t tempPdgCode = 0;
   for (Int_t i=0; i<nDaughters; i++) {
-    tempPdgCode = (Long64_t)((TParticle*)stack->Particle(part->GetFirstDaughter()+i))->GetPdgCode();
+    tempPdgCode = (Long64_t)((TParticle*)mcEvent->Particle(part->GetFirstDaughter()+i))->GetPdgCode();
     if (TMath::Abs(tempPdgCode) == 111 || TMath::Abs(tempPdgCode) == 113 || TMath::Abs(tempPdgCode) == 130 || TMath::Abs(tempPdgCode) == 310 || TMath::Abs(tempPdgCode) == 223 || TMath::Abs(tempPdgCode) == 221 || TMath::Abs(tempPdgCode) == 331 || TMath::Abs(tempPdgCode) == 2112 || TMath::Abs(tempPdgCode) == 3122 || TMath::Abs(tempPdgCode) == 9000111 || TMath::Abs(tempPdgCode) == 9010221)
       tempPdgCode = TMath::Abs(tempPdgCode);
     PdgDaughter->at(i) = tempPdgCode;

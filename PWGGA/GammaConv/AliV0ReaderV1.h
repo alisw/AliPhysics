@@ -21,7 +21,6 @@
 
 class AliConversionPhotonBase;
 class TRandom3;
-class AliStack;
 class TList;
 class AliKFConversionPhoton;
 class TString;
@@ -135,7 +134,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t             GetProduceImpactParamHistograms()                {return fProduceImpactParamHistograms;}
     TList*             GetImpactParamHistograms()                       {return fImpactParamHistograms;}
 
-    Bool_t             ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax);
+    Bool_t             ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax);
     void               CreatePureMCHistosForV0FinderEffiESD();
     void               FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0);
     void               FillImpactParamHistograms(AliVTrack *ptrack, AliVTrack* ntrack, AliESDv0 *fCurrentV0, AliKFConversionPhoton *fCurrentMotherKF);

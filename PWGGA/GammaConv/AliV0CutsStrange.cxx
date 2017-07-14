@@ -9,7 +9,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -474,11 +474,11 @@ AliESDtrack *AliV0CutsStrange::GetESDTrack(AliESDEvent * event, Int_t label){
 
 
 ///________________________________________________________________________
-Bool_t AliV0CutsStrange::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma)
+Bool_t AliV0CutsStrange::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma)
 {
   // MonteCarlo Photon Selection
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
 
 //   if (particle->GetPdgCode() == 22){
 
@@ -490,7 +490,7 @@ Bool_t AliV0CutsStrange::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSta
     //         return kFALSE;
     //     }
     
-    //     if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    //     if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
     //       return kFALSE; // no photon as mothers!
     //     }
     /*
@@ -501,7 +501,7 @@ Bool_t AliV0CutsStrange::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSta
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = fMCStack->Particle(daughterIndex);
+        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
         
         if(tmpDaughter->GetUniqueID() == 5){
           if(tmpDaughter->GetPdgCode() == 11){

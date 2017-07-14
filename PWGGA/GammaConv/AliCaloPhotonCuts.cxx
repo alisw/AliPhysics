@@ -28,7 +28,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAODConversionMother.h"
 #include "AliAODConversionPhoton.h"
 #include "TObjString.h"
@@ -1286,10 +1286,10 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
 }
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack){
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent){
    // MonteCarlo Photon Selection
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
   if(!particle) return kFALSE;
 
   if (particle->GetPdgCode() == 22){
@@ -1297,7 +1297,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
     
-    if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE;// no photon as mothers!
     }
     return kTRUE;
@@ -1306,10 +1306,10 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
 }
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack){
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent *mcEvent){
    // MonteCarlo Photon Selection
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
   if(!particle) return kFALSE;
 
   if (TMath::Abs(particle->GetPdgCode()) == 11){
@@ -1317,7 +1317,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
     
-    if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 11){
+    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 11){
       return kFALSE;// no photon as mothers!
     }
     return kTRUE;
@@ -1365,7 +1365,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 //________________________________________________________________________
 // This function selects the clusters based on their quality criteria
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, AliVEvent* mcEvent, Int_t isMC, Double_t weight, Long_t clusterID)
+Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, AliMCEvent* mcEvent, Int_t isMC, Double_t weight, Long_t clusterID)
 {   // Specific Photon Cuts
 
   // Initialize EMCAL rec utils if not initialized
@@ -2495,7 +2495,7 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
 
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, AliVEvent * mcEvent, Int_t isMC, Double_t weight, Long_t clusterID)
+Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, AliMCEvent * mcEvent, Int_t isMC, Double_t weight, Long_t clusterID)
 {
   //Selection of Reconstructed photon clusters with Calorimeters
 
@@ -5118,7 +5118,7 @@ Bool_t AliCaloPhotonCuts::AcceptCellByBadChannelMap(Int_t absID ){
 // 6: electron
 // 7: primary charged
 //_______________________________________________________________________________
-Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliVEvent* mcEvent, Bool_t isESD){
+Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD){
   Int_t* mclabelsCluster  = cluster->GetLabels();
   Int_t classification    = -1;
   
@@ -5128,17 +5128,8 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   if (isESD){
-    AliStack* fMCStack    = NULL;
-    if(mcEvent){
-      fMCStack          = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(mcEvent)->Stack());
-    }  
-    if (fMCStack == NULL){
-      AliError("No stack available in ESD");
-      return -1;
-    }  
-    
     if (cluster->GetNLabels()>0){
-      TParticle* particleLead   = (TParticle*)fMCStack->Particle(mclabelsCluster[0]);
+      TParticle* particleLead   = (TParticle*)mcEvent->Particle(mclabelsCluster[0]);
       Double_t charge           = ((TParticlePDG*)particleLead->GetPDG())->Charge();
       if (charge == 0 || charge == -0){
         classification        = 0;
@@ -5149,7 +5140,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
         if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11){
           classification      = 6;
           if (particleLead->GetMother(0) > -1)
-            if (((TParticle*)fMCStack->Particle(particleLead->GetMother(0)))->GetPdgCode() == 22)
+            if (((TParticle*)mcEvent->Particle(particleLead->GetMother(0)))->GetPdgCode() == 22)
               classification  = 4;
         } else {
             Double_t deltaX = particleLead->Vx() - mcProdVtxX;
@@ -5164,7 +5155,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
         Bool_t goOut = kFALSE;
         for (Int_t i = 1; (i< cluster->GetNLabels() && !goOut); i++){
-          TParticle* particleSub    = (TParticle*)fMCStack->Particle(mclabelsCluster[i]);
+          TParticle* particleSub    = (TParticle*)mcEvent->Particle(mclabelsCluster[i]);
           Double_t charge           = ((TParticlePDG*)particleSub->GetPDG())->Charge();
           if (!(charge == 0 || charge == -0)){
             classification++;

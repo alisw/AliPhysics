@@ -66,20 +66,20 @@ AliConversionPhotonBase & AliConversionPhotonBase::operator = (const AliConversi
   return *this;
 }
 
-TParticle *AliConversionPhotonBase::GetMCParticle(AliStack *fMCStack){
-    if(!fMCStack){printf("MC Stack not defined");return 0x0;}
+TParticle *AliConversionPhotonBase::GetMCParticle(AliMCEvent *mcEvent){
+    if(!mcEvent){printf("MCEvent not defined");return 0x0;}
 
-    Int_t label=GetMCParticleLabel(fMCStack);
+    Int_t label=GetMCParticleLabel(mcEvent);
 
     if(label>-1){
-	return fMCStack->Particle(label);
+    return mcEvent->Particle(label);
     }
 
     return 0x0;
 }
 
-Bool_t AliConversionPhotonBase::IsTruePhoton(AliStack *fMCStack){
-    TParticle *mcgamma=GetMCParticle(fMCStack);
+Bool_t AliConversionPhotonBase::IsTruePhoton(AliMCEvent *mcEvent){
+    TParticle *mcgamma=GetMCParticle(mcEvent);
 
     if(mcgamma){
 	// Check if it is a true photon
@@ -90,11 +90,11 @@ Bool_t AliConversionPhotonBase::IsTruePhoton(AliStack *fMCStack){
     return kFALSE;
 }
 
-Int_t AliConversionPhotonBase::GetMCParticleLabel(AliStack *fMCStack){
-    if(!fMCStack){printf("MC Stack not defined");return -1;}
+Int_t AliConversionPhotonBase::GetMCParticleLabel(AliMCEvent *mcEvent){
+    if(!mcEvent){printf("MCEvent not defined");return -1;}
 
-    TParticle *fPositiveMCParticle=GetPositiveMCDaughter(fMCStack);
-    TParticle *fNegativeMCParticle=GetNegativeMCDaughter(fMCStack);
+    TParticle *fPositiveMCParticle=GetPositiveMCDaughter(mcEvent);
+    TParticle *fNegativeMCParticle=GetNegativeMCDaughter(mcEvent);
 
     if(!fPositiveMCParticle||!fNegativeMCParticle){return -1;}
 
@@ -107,12 +107,12 @@ Int_t AliConversionPhotonBase::GetMCParticleLabel(AliStack *fMCStack){
 }
 
 
-TParticle *AliConversionPhotonBase::GetMCDaughter(AliStack *fMCStack,Int_t label){
-    if(!fMCStack){printf("MC Stack not defined \n");return 0x0;}
+TParticle *AliConversionPhotonBase::GetMCDaughter(AliMCEvent *mcEvent,Int_t label){
+    if(!mcEvent){printf("MCEvent not defined \n");return 0x0;}
     if(label<0||label>1){printf("Requested index out of bounds: %i \n",label);return 0x0;}
 
     if(fMCLabel[label]>-1){
-	TParticle *fMCDaughter=fMCStack->Particle(fMCLabel[label]);
+    TParticle *fMCDaughter=mcEvent->Particle(fMCLabel[label]);
 	return fMCDaughter;}
     else return 0x0;
 }

@@ -70,7 +70,6 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     
   protected:
-    AliStack*             fMCStack;                   //! stack belonging to MC event
     TList*                fOutputContainer;           //! Output container
     // histograms events
     TH1F*                 fHistNEvents;               //! number of events histo
@@ -151,7 +150,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 1);
+    ClassDef(AliAnalysisTaskGammaPureMC, 2);
 };
 
 #endif

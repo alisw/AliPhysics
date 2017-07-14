@@ -122,7 +122,6 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliGammaConversionAODBGHandler 		**fBGClusHandler;					// BG handler for Cluster
 		AliVEvent 							*fInputEvent;						// current event
 		AliMCEvent 							*fMCEvent;							// corresponding MC event
-		AliStack 							*fMCStack;							// stack belonging to MC event
 		TList 								**fCutFolder;						// Array of lists for containers belonging to cut
 		TList 								**fESDList;							// Array of lists with histograms with reconstructed properties   
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
@@ -359,8 +358,8 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		Double_t 							*fUnsmearedPy; 						//[fNGammaCandidates]
 		Double_t 							*fUnsmearedPz; 						//[fNGammaCandidates]
 		Double_t 							*fUnsmearedE;  						//[fNGammaCandidates]
-		Int_t 								*fMCStackPos;     					//[fNGammaCandidates]
-		Int_t 								*fMCStackNeg;     					//[fNGammaCandidates]
+        Int_t 								*fMCEventPos;     					//[fNGammaCandidates]
+        Int_t 								*fMCEventNeg;     					//[fNGammaCandidates]
 		Int_t 								*fESDArrayPos;    					//[fNGammaCandidates]
 		Int_t 								*fESDArrayNeg;   					//[fNGammaCandidates]
 		Int_t 								fnCuts;								// number of cuts to be analysed in parallel
@@ -381,7 +380,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 4);
+        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 5);
 };
 
 #endif

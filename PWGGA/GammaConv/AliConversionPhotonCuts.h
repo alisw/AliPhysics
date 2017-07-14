@@ -8,7 +8,7 @@
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -155,12 +155,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     
     // Cut Selection
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
-    Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
+    Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
-    Bool_t ElectronIsSelectedMC(TParticle *particle,AliStack *fMCStack);
+    //Bool_t ElectronIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
     Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
-    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-    Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Bool_t bMCDaughtersInAcceptance=kFALSE);
+    //Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
+    //Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
       
     void PrintCuts();
     void PrintCutsWithValues();
