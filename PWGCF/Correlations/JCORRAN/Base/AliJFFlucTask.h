@@ -35,6 +35,7 @@
 
 using namespace std;
 
+class TF1;
 class TH1D;
 class TH2D;
 class TList;
@@ -110,7 +111,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
   void SetCentDetName( TString CentName ){ fCentDetName = CentName;
 					cout << "setting : Cenetrality determination =" << fCentDetName.Data() << endl; };
-  void SetQCetaCut( Double_t QC_eta_min, Double_t QC_eta_max){ 
+  void SetQCetaCut( Double_t QC_eta_min, Double_t QC_eta_max){
 					fQC_eta_min=QC_eta_min; fQC_eta_max=QC_eta_max;
 					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl; };
 
@@ -146,13 +147,14 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t fCutOutliers;
   Bool_t fALICEIPinfo;
 //  Bool_t IsSCwithFineCentBin;
+  TF1 *pfOutlierLowCut, *pfOutlierHighCut;
   TClonesArray * fInputList;  // tracklist
   TH1D *h_ratio;
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output
-  ClassDef(AliJFFlucTask, 1);
-
   TH1D *h_ModuledPhi[7][2]; // cent7, sub2
+
+  ClassDef(AliJFFlucTask, 1);
 
 };
 #endif // AliJFFlucTask_H
