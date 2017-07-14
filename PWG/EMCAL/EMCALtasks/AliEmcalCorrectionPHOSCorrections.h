@@ -1,5 +1,5 @@
-#ifndef ALIEMCALCORRECTIONPHOSCorrections_H
-#define ALIEMCALCORRECTIONPHOSCorrections_H
+#ifndef ALIEMCALCORRECTIONPHOSCORRECTIONS_H
+#define ALIEMCALCORRECTIONPHOSCORRECTIONS_H
 
 #include "AliEmcalCorrectionComponent.h"
 
@@ -45,4 +45,4 @@ class AliEmcalCorrectionPHOSCorrections : public AliEmcalCorrectionComponent {
   /// \endcond
 };
 
-#endif /* ALIEMCALCORRECTIONPHOSCorrections_H */
+#endif /* ALIEMCALCORRECTIONPHOSCORRECTIONS_H */
