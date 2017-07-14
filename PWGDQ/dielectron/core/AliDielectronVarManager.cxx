@@ -63,8 +63,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NFclsTPCrobust",         "N_{cross.rows}^{TPC}",                               ""},
   {"NFclsTPCrobustFraction", "N_{cls}^{TPC}/^{}N_{find.cls}^{TPC}",                ""},//TODO: check
   {"NFclsTPCfracCrossedRows","N_{cross.rows}^{TPC}/^{}N_{find.cls}^{TPC}",         ""},
-  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                   ""},
-  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",  ""},
+  {"Chi2TPCConstrainedVsGlobal",             "Chi^{2}_{TPC-constrained vs. Global}",                                             ""},
+  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                                       ""},
+  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",                      ""},
   {"TPCchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{TPC}",                          ""},
   {"TPCclsDiff",             "N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC}",   ""},
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
@@ -610,7 +611,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
-  {"NTPCtrkswITSout",         "N_{trk}^{TPCwITSout}",                                  ""},
+  {"NTPCtrkswITSout",         "N_{trk}^{TPCwITSout}",                               ""},
+  {"NTPCclsEvent",    "N_{cls}^{TPC}",                                      ""},
   {"RefMultOvRefMultTPConly",  "N_{trk}/N_{trk}^{TPConly}",                        ""},
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"NchJpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.6} without J/#psi daughters ",  ""},
