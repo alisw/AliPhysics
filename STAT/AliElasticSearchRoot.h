@@ -1,5 +1,5 @@
 #ifndef ALIELASTICSEARCHROOT_H
-#define ALIELASTICSEARCHROOT__H
+#define ALIELASTICSEARCHROOT_H
 
 /// \ingroup STAT
 /// \class AliElasticSearchRoot
