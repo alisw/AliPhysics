@@ -106,6 +106,11 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     fMultEstimatorAvg[2]=new TProfile(*hprof);
     fYearNumber = 16;
   }
+  void SetMultiplVsZProfileLHC16qt4thBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
     
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 

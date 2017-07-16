@@ -375,7 +375,8 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
       period[0]="LHC16qt_1stBunch";
       period[1]="LHC16qt_2ndBunch";
       period[2]="LHC16qt_3rdBunch";
-      nProfiles = 3;
+      period[3]="LHC16qt_4thBunch";
+      nProfiles = 4;
     }
   }
   else {
@@ -1347,9 +1348,10 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
     }
     else if(fYearNumber==16) {
       if ((runNo>=265499 && runNo<=265525) || (runNo>=265309 && runNo<=265387)) period = 0;      //16q
-      else if (runNo == 265435) period = 1;                                                  //16q
-      else if ((runNo>=265388 && runNo<=265427) || (runNo>=267163 && runNo<=267166)) period = 2; //16q+t
-      if (period < 0 || period > 2) return 0;
+      else if (runNo == 265435) period = 1;                //16q
+      else if (runNo>=265388 && runNo<=265427) period = 2; //16q
+      else if (runNo>=267163 && runNo<=267166) period = 3; //16t
+      if (period < 0 || period > 3) return 0;
     }
   }
   else {

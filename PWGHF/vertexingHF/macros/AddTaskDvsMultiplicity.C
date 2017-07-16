@@ -145,9 +145,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
         
     if (isPPbData) {
       if(year == 16) {
-	const Char_t* periodNames[3] = {"LHC16q_265499to265525_265309to265387", "LHC16q_265435","LHC16qt_265388to265427_267163to267166"};
-	TProfile* multEstimatorAvg[3];
-	for(Int_t ip=0; ip<3; ip++) {
+	const Char_t* periodNames[4] = {"LHC16q_265499to265525_265309to265387", "LHC16q_265435","LHC16q_265388to265427","LHC16t_267163to267166"};
+	TProfile* multEstimatorAvg[4];
+	for(Int_t ip=0; ip<4; ip++) {
 	  cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 	  multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	  if (!multEstimatorAvg[ip]) {
@@ -158,6 +158,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 	dMultTask->SetMultiplVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
 	dMultTask->SetMultiplVsZProfileLHC16qt2ndBunch(multEstimatorAvg[1]);
 	dMultTask->SetMultiplVsZProfileLHC16qt3rdBunch(multEstimatorAvg[2]);
+	dMultTask->SetMultiplVsZProfileLHC16qt4thBunch(multEstimatorAvg[3]);
       }
       else {
 	//Only use two profiles if pPb 2013
