@@ -69,6 +69,7 @@ private:
 	//-------------------------------------------------------------------
 	Bool_t CheckInput();
 	void PostOutputs();
+  Bool_t IsSTGFired(TBits* fFOmap,Int_t dphiMin=0,Int_t dphiMax=10);
 
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
