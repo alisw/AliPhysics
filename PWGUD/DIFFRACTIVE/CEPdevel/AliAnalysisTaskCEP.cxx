@@ -611,14 +611,37 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
      
 	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the 2016 data
+  // in case of MC data the trigger needs to be replaied
   // compare with (isSPD  && (!isV0A && !isV0C))
   Bool_t isDGTrigger = kFALSE;
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
-  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
-    isDGTrigger = kTRUE;
-    printf("Fired trigger classes: %s\n",firedTriggerClasses.Data());
+  if (fMCEvent) {
+    // this part of the code was proposed by Evgeny Kryshen
+    Bool_t isV0Afired=0;
+    Bool_t isV0Cfired=0;
+    AliVVZERO* esdV0 = fEvent->GetVZEROData();
+    for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
+    for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
+
+    // SPD FO fird map can be extracted both in data and MC:
+    TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+
+    // The STG trigger in 2016 required two online tracklets without additional
+    // topology. It can be checked with the following function:
+    Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
+
+    isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
+    printf("DG trigger replaied: %i %i %i\n",
+      isSTGtriggerFired,!isV0Afired,!isV0Cfired);
+  
+  } else {
+  
+    if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+      isDGTrigger = kTRUE;
+      printf("Fired trigger classes: %s\n",firedTriggerClasses.Data());
+    }
+    //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
   }
-  //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
   if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
   if (isDGTrigger) ((TH1F*)flQArnum->At(1))->Fill(fRun);
   
@@ -1116,3 +1139,31 @@ void AliAnalysisTaskCEP::PostOutputs()
 
 
 //------------------------------------------------------------------------------
+// code to check if the STG trigger had fired
+// code from Evgeny Kryshen
+Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
+{
+
+  Int_t hitcnt = 0;
+  
+  Int_t n1 = fFOmap->CountBits(400);
+  Int_t n0 = fFOmap->CountBits()-n1;
+  if (n0<1 || n1<1) return 0;
+  Bool_t stg = 0;
+  Bool_t l0[20]={0};
+  Bool_t l1[40]={0};
+  Bool_t phi[20]={0};
+  for (Int_t i=0;   i< 400; ++i) if (fFOmap->TestBitNumber(i)) l0[      i/20] = 1;
+  for (Int_t i=400; i<1200; ++i) if (fFOmap->TestBitNumber(i)) l1[(i-400)/20] = 1;
+  for (Int_t i=0; i<20; ++i) phi[i] = l0[i] & (l1[(2*i)%40] | l1[(2*i+1)%40] | l1[(2*i+2)%40] | l1[(2*i+39)%40]);
+  for (Int_t dphi=dphiMin;dphi<=dphiMax;dphi++) {
+    for (Int_t i=0; i<20; ++i) {
+      stg |= phi[i] & phi[(i+dphi)%20];
+      if (phi[i] & phi[(i+dphi)%20]) hitcnt++;
+    }
+  }
+  printf("hitcnt: %i\n",hitcnt);
+
+  return stg;
+
+} 
