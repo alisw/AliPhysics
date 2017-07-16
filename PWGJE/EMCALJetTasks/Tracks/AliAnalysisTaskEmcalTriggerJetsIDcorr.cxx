@@ -210,7 +210,7 @@ std::vector<AliVTrack *>  AliAnalysisTaskEmcalTriggerJetsIDcorr::GetTPCPIDCandid
       if(aodtrk->GetTPCsignalN() < 30) continue;
       if(aodtrk->GetTPCSharedMapPtr()->CountBits(0) > 70) continue; // exclude tracks with more than 70 shared clusters ->
       Double_t nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, type);
-      if(nSigmaTPC <= -999.) throw TPCdEdxException(type);
+      if(nSigmaTPC <= -999.) continue; //throw TPCdEdxException(type);
       if(TMath::Abs(nSigmaTPC) > 3) continue;
       result.push_back(trk);
     }
