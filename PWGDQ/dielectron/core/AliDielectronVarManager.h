@@ -126,6 +126,8 @@ public:
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
     kNclsSITS,               // number of shared clusters assigned in the ITS
     kNclsSFracITS,           // fraction of shared clusters assigned in the ITS
+    kNclsSMapITS,            // ITS shared cluster map
+
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
@@ -906,11 +908,12 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
   Double_t itsNclsS = 0.;
   for(int i=0; i<6; i++){
-    if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+    if( particle->HasSharedPointOnITSLayer(i) )   itsNclsS ++;
   }
-  values[AliDielectronVarManager::kNclsITS]     = itsNcls;
+  values[AliDielectronVarManager::kNclsITS]      = itsNcls;
   values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
   values[AliDielectronVarManager::kNclsSFracITS] = itsNcls ? itsNclsS/ itsNcls :0;
+  values[AliDielectronVarManager::kNclsSMapITS]  = particle->GetITSSharedMap();
 
 
   UChar_t threshold = 5;
@@ -1172,12 +1175,13 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
-  if(Req(kNclsSITS) || Req(kNclsSFracITS)){
+  if(Req(kNclsSITS) || Req(kNclsSFracITS) || Req(kNclsSMapITS)){
     Double_t itsNclsS = 0.;
     for(int i=0; i<6; i++){
       if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
     }
     values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+    if(Req(kNclsSMapITS))  values[AliDielectronVarManager::kNclsSMapITS]  = 0;  //not implemented in AODs
     if(Req(kNclsSFracITS)) values[AliDielectronVarManager::kNclsSFracITS] = itsNclsS > 0. ? itsNclsS / particle->GetITSNcls() : 0.;
   }
 
