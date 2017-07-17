@@ -189,9 +189,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffTCardCorrelation()                              { fTCardCorrEmulation = kFALSE ; fTCardCorrClusEnerConserv = kFALSE        ; }      
 
   /// fraction of energy lost by max energy cell in one of cross cells
-  /// \param row energy lost in same row cell
-  /// \param col energy lost in same column cells
-  void           SetInducedEnergyLossFraction(Float_t row, Float_t col)   { fTCardCorrInduceEnerFrac[0] = row ; fTCardCorrInduceEnerFrac[1] = col    ; } 
+  /// \param rowUD energy lost in upper/lower cell, same column
+  /// \param col   energy lost in left/right cell, same row
+  /// \param colUD energy lost in upper/lower cell, different row
+  void           SetInducedEnergyLossFraction(Float_t rowUD, Float_t col, Float_t colUD)   
+  { fTCardCorrInduceEnerFrac[0] = rowUD ; fTCardCorrInduceEnerFrac[1] = col    ;  fTCardCorrInduceEnerFrac[2] = colUD    ; } 
 
   /// fraction of times max cell energy correlates with cross cells, different for each super-module
   /// \param prob probability per event, from 0 to 1
@@ -306,7 +308,7 @@ private:
   Float_t               fTCardCorrCellsEner[fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells
   Bool_t                fTCardCorrCellsNew [fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells, that before had no signal
   
-  Float_t               fTCardCorrInduceEnerFrac[2 ]; ///< Induced energy loss on same 0-row cell or 1-up/down cells   
+  Float_t               fTCardCorrInduceEnerFrac[3 ]; ///< Induced energy loss on same 0-row cell or 1-up/down cells   
   Float_t               fTCardCorrInduceEnerProb[22]; ///< Probability to induce energy loss per SM   
   TRandom3              fRandom   ;                ///<  Random generator
   
