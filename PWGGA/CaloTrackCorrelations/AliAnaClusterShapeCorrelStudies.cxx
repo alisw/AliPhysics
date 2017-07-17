@@ -390,6 +390,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
   
   for(Int_t i = 0; i < 20; i++)
   {
+    fhNCellsPerClusterM02M20PerSM  [i] = 0;
     fhESecCellEMaxCellM02NCellPerSM[i] = 0;           
     fhESecCellEClusterM02NCellPerSM[i] = 0;
     fhESecCellLogM02NCellPerSM     [i] = 0;   
@@ -1530,6 +1531,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
   {
+    fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
+
     Int_t nCellBin = 2;
     if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
     else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
@@ -3762,6 +3765,17 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     
     for(Int_t i = 0; i < fNModules; i++)
     {
+      
+      fhNCellsPerClusterM02M20PerSM [i] = new TH3F
+      (Form("hNCellsPerClusterM02M20_SM%d",i),
+       Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs #lambda_{1}^{2}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       nShShBins/2,minShSh,maxShSh/2, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhNCellsPerClusterM02M20PerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhNCellsPerClusterM02M20PerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterM02M20PerSM[i]->SetXTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhNCellsPerClusterM02M20PerSM[i]);  
+
       fhEMaxCellEClusterM02NCellPerSM[i]  = new TH3F 
       (Form("hEMaxCellEClusterM02NCell_SM%d",i),
        Form("(#it{E}_{cluster} - #it{E}_{max cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01}, "
