@@ -229,7 +229,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   } else if( trainConfig == 9 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0153503000000000");
   } else if( trainConfig == 10 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.6, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
@@ -305,7 +305,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   } else if( trainConfig == 39 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    cuts.AddCut("00000113","2444400043013300000","002010706","0103503400000000","0103503000000000");
+    cuts.AddCut("00000113","2444400043013300000","002010706","0103503400000000","0153503000000000");
 
 
   //8 TeV
