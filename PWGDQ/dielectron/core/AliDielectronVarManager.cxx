@@ -58,6 +58,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NclsSFracTPC",           "N_{shar.cls}^{TPC}/^{}N_{cls}^{TPC}",                ""},
   {"NclsSITS",               "N_{shar.cls}^{ITS}",                                 ""},
   {"NclsSFracITS",           "N_{shar.cls}^{ITS}/^{}N_{cls}^{ITS}",                ""},
+  {"NclsSMapITS",            "ITS_shared_cluster_map",                             ""},
   {"NclsTPCiter1",           "N_{1st.iter.cls}^{TPC}",                             ""},
   {"NFclsTPC",               "N_{find.cls}^{TPC}",                                 ""},
   {"NFclsTPCrobust",         "N_{cross.rows}^{TPC}",                               ""},
