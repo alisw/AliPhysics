@@ -520,7 +520,7 @@ void AliAnalysisPIDEvent::RemoveCheckFlag(EventFlags_t av) {
   fgFlagToCheck = fgFlagToCheck&flagmask;
 };
 Bool_t AliAnalysisPIDEvent::CheckFlag() {
-  return fEventFlags&fgFlagToCheck==fgFlagToCheck;
+  return (fEventFlags&fgFlagToCheck)==fgFlagToCheck;
 };
 void AliAnalysisPIDEvent::PrintEventSelection() {
   printf("AliAnalysisPIDEvent::AcceptEvent() requires:\n");
