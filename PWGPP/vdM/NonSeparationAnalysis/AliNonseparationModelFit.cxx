@@ -181,7 +181,7 @@ Double_t AliNonseparationModelFit::MinuitFunction(const Double_t *par) {
 #else
       AliDoubleGaussianBeamProfile::Eval(par[24+3]*sep(0) - fMuOffsetsX[k/2],
 					 par[25+3]*sep(1) - fMuOffsetsY[k/2],
-					 modelDGPar, profile, 1e-4, !kTRUE);
+					 modelDGPar, profile, 1e-5, !kTRUE);
 #endif
       // compute chi2 including correlations
       const TMatrixD covData_Inv(TMatrixD::kInverted, cov);

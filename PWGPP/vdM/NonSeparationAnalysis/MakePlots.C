@@ -97,6 +97,7 @@ Bool_t ReadData(TString rfn) {
   pScaleRateError = (TParameter<Double_t>*)gFile->Get("scaleRateError");
   muOffsetsX      = (TVectorD*)gFile->Get("muOffsetsX");
   muOffsetsY      = (TVectorD*)gFile->Get("muOffsetsY");
+  nScans          = 0;
   for (Int_t i=0; i<6; ++i) {
     gRate[i]     = ScaleGraphError((TGraphErrors*)gFile->Get(Form("gRateScan%c_%d", (i%2) ? 'Y' : 'X', i/2)),
 				   pScaleRateError->GetVal());
@@ -170,10 +171,6 @@ void MakeGraphsModel() {
 
     for (Int_t j=0, m=elist->GetN(); j<m; ++j) {
       tBeamSpot[i]->GetEntry(elist->GetEntry(j));
-    // for (Int_t j=0, n=tBeamSpot[i]->GetEntries(); j<n; ++j) {
-    //   tBeamSpot[i]->GetEntry(j);
-      // if (!fit->IsGoodLumiRegionFit(i, scanType, beamSep, mom, cov))
-      //     continue;
       for (Int_t k=0; k<7; ++k) {
 	gMoment[i][k]->SetPoint(gMoment[i][k]->GetN(), 10*beamSep(scanType), mom(k));
 	gMoment[i][k]->SetPointError(gMoment[i][k]->GetN()-1, 0, TMath::Sqrt(cov(k,k)));
@@ -184,7 +181,7 @@ void MakeGraphsModel() {
       beamSep(scanType) = 0.001*j-0.07;
       AliDoubleGaussianBeamProfile::Eval(mp.par[24+3]*beamSep(0) - (*muOffsetsX)[i/2],
 					 mp.par[25+3]*beamSep(1) - (*muOffsetsY)[i/2],
-					 mp.GetPar(), profile, 5e-3);
+					 mp.GetPar(), profile, 1e-4, !kTRUE);
 
       for (Int_t k=0; k<7; ++k)
 	gMomentModel[i][k]->SetPoint(gMomentModel[i][k]->GetN(), 10*beamSep(scanType), profile(1+k) + (k<3 ? mp.par[20+k+3*(i>=4)] : 0.0));
