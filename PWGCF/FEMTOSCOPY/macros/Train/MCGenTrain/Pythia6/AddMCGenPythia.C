@@ -13,6 +13,7 @@ AliGenerator* AddMCGenPythia(Double_t energy = 14000, TString projectile = "p", 
   if(tune<370)  gSystem->Load("libpythia6_4_25");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6");
+
   
   // Pythia
   AliGenPythia* pythia = new AliGenPythia(-1); 
