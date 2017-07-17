@@ -32,8 +32,17 @@
 
 class THistManager;
 
+/**
+ * @namespace PWG
+ * @brief Namespace for PWG framework classes
+ */
 namespace PWG {
 
+/**
+ * @namespace EMCAL
+ * @ingroup EMCALFW
+ * @brief Namespace for EMCAL framework classes and task
+ */
 namespace EMCAL {
 
 /**
