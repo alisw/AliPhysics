@@ -1616,7 +1616,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Int_t absIDr1 = -1;
     Int_t absIDr2 = -1;
     Int_t absIDc  = -1;
-    
+    Int_t absIDc1 = -1;
+    Int_t absIDc2 = -1;
+
     if (  iphi < AliEMCALGeoParams::fgkEMCALRows-1 ) absIDr1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
     if (  iphi > 0 )                                 absIDr2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
     
@@ -1625,8 +1627,13 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-1)/8) ) absIDr2 = -1;
     
     // Only one cell in the same row belongs to the same TCard, +1 for even and -1 for odd
-    if (  (ieta%2) && ieta <= AliEMCALGeoParams::fgkEMCALCols-1 ) absIDc = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
-    if ( !(ieta%2) && ieta >= 0 )                                 absIDc = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    Int_t colShift = 0;
+    if (  (ieta%2) && ieta <= AliEMCALGeoParams::fgkEMCALCols-1 ) colShift = -1; 
+    if ( !(ieta%2) && ieta >= 0 )                                 colShift = +1;                      
+   
+    absIDc1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta+colShift); 
+    absIDc2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta+colShift); 
+    absIDc  = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi  , ieta+colShift); 
 
 //    printf("\t cross absId: r1 %d, r2 %d, c %d\n",absIDr1,absIDr2,absIDc);
 //    if ( absIDc < 0  )  printf( "\t \t *** ism %d, iphi %d, ieta %d; absId(ieta+1) %d, absId(ieta-1) %d, mod eta %d, max eta %d\n",imod,iphi,ieta, 
@@ -1643,6 +1650,8 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Bool_t okr1 = kTRUE;
     Bool_t okr2 = kTRUE;
     Bool_t okc  = kTRUE;
+    Bool_t okc1 = kTRUE;
+    Bool_t okc2 = kTRUE;
 
     Float_t  ecell  = 0.;
     Double_t tcell  = 0.;
@@ -1650,7 +1659,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     okr1 = fRecoUtils->AcceptCalibrateCell(absIDr1, 0, ecell, tcell, fCaloCells); 
     okr2 = fRecoUtils->AcceptCalibrateCell(absIDr2, 0, ecell, tcell, fCaloCells); 
     okc  = fRecoUtils->AcceptCalibrateCell(absIDc , 0, ecell, tcell, fCaloCells); 
-    
+    okc1 = fRecoUtils->AcceptCalibrateCell(absIDc1, 0, ecell, tcell, fCaloCells); 
+    okc2 = fRecoUtils->AcceptCalibrateCell(absIDc2, 0, ecell, tcell, fCaloCells); 
+
     //
     // Generate some energy for the cells in cross, depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
@@ -1680,11 +1691,30 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
 //             absIDc,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc],fTCardCorrCellsNew[absIDc]);
     }
-          
+
+    if ( okc1 )
+    {
+      fTCardCorrCellsEner[absIDc1] += amp*fTCardCorrInduceEnerFrac[0];
+      if ( fCaloCells->GetCellAmplitude(absIDc1 ) < 0.01 ) fTCardCorrCellsNew[absIDc1]  = kTRUE;
+      //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
+      //             absIDc1,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc1],fTCardCorrCellsNew[absIDc1]);
+    }
+    
+    if ( okc2 )
+    {
+      fTCardCorrCellsEner[absIDc2] += amp*fTCardCorrInduceEnerFrac[0];
+      if ( fCaloCells->GetCellAmplitude(absIDc2 ) < 0.01 ) fTCardCorrCellsNew[absIDc2]  = kTRUE;
+      //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
+      //             absIDc2,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc2],fTCardCorrCellsNew[absIDc2]);
+    }
+
+    
     // Subtract the added energy to main cell, if energy conservation is requested
     if ( fTCardCorrClusEnerConserv )
     {
       if(absIDc  >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
+      if(absIDc1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
+      if(absIDc1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
       if(absIDr1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[1];
       if(absIDr2 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[1];
       //printf("\t conserve energy, remove %2.3f, from %d\n",fTCardCorrCellsEner[id],id);
