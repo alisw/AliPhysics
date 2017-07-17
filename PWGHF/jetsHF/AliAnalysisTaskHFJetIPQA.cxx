@@ -84,7 +84,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0},
     fCombined(nullptr),
     fXsectionWeightingFactor(1),
-    fProductionNumberPtHard(-1)
+    fProductionNumberPtHard(-1),
+    fMCglobalDCAxyShift(0.007),
+    fVertexRecalcMinPt(1.0)
 {
     SetMakeGeneralHistograms(kTRUE);
     SetDefaultAnalysisCuts();
@@ -127,7 +129,10 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0},
     fCombined(nullptr),
     fXsectionWeightingFactor(1.),
-    fProductionNumberPtHard(-1)
+    fProductionNumberPtHard(-1),
+    fMCglobalDCAxyShift(0.007),
+    fVertexRecalcMinPt(1.0)
+
 {
     SetNeedEmcalGeom(kFALSE);
     SetOffTrigger(AliVEvent::kMB);
@@ -422,6 +427,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                 }
         }
+
+    Printf("fXsectionWeightingFactor %e",fXsectionWeightingFactor);
     FillHist("fh1dPtHardMonitor",fPtHard,fXsectionWeightingFactor);
 
     Bool_t HasImpactParameter = kFALSE;
@@ -1268,8 +1275,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
             fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-
-
             //Jet Probability QA  plots for different particle species
             fHistManager.CreateTH2("fh2d_jetprob_beauty", "fh2d_jetprob_beauty;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
             fHistManager.CreateTH2("fh2d_jetprob_charm", "fh2d_jetprob_charm;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
@@ -1282,12 +1287,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
             fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_5JP", "fh2d_ImpSigXYZ_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
             fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_5JP", "fh2d_ImpSigXY_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
             fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_5JP", "fh2d_ImpSigXYZ_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-
-
             fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-
             //60%
             fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_6JP", "fh2d_ImpSigXY_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
             fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_6JP", "fh2d_ImpSigXYZ_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
@@ -1577,7 +1579,7 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
     if(!title.Contains("VertexerTracks")) return 0;
     AliVertexerTracks vertexer(aod->GetMagneticField());
     vertexer.SetITSMode();
-    vertexer.SetMinClusters(6);
+    vertexer.SetMinClusters(4);
     if(title.Contains("WithConstraint")) {
             Float_t diamondcovxy[3];
             aod->GetDiamondCovXY(diamondcovxy);
@@ -1602,15 +1604,14 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
     for(Int_t i=0; i<nTracks; i++){
             t = (AliAODTrack *)(aod->GetTrack(i));
             if(!((((AliAODTrack*)t)->TestFilterBit(4))))continue;
-
             id = (Int_t)t->GetID();
             AliExternalTrackParam etp_at_r39; etp_at_r39.CopyFromVTrack(t);
             etp_at_r39.PropagateTo(3.9,InputEvent()->GetMagneticField());
             double angle = TMath::ATan2(etp_at_r39.Yv(),etp_at_r39.Xv());
             double zz    = etp_at_r39.GetZ();
             bool doskip=false;
-            if(t->Pt()<0.)                      doskip=true;
-            if(fabs(TVector2::Phi_mpi_pi(angle-angle0))>TMath::Pi()/8.) {
+            if(t->Pt()<fVertexRecalcMinPt)                      doskip=true;
+            if(fabs(TVector2::Phi_mpi_pi(angle-angle0))>TMath::Pi()/6.) {
                     doskip=true;
                 }
             if(fabs(zz-zz0)>0.5) {
@@ -1625,9 +1626,16 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
     if(!vtxESDNew) return 0;
     Int_t nContrib =vtxESDNew->GetNContributors();
     if(vtxESDNew->GetNContributors()<=2) {
+
             delete vtxESDNew; vtxESDNew=nullptr;
             return 0;
         }
+
+    if(vtxESDNew->GetChi2toNDF()>3.5*3.5) {
+            delete vtxESDNew; vtxESDNew=nullptr;
+            return 0;
+        }
+
     Double_t pos[3];
     Double_t cov[6];
 
@@ -2629,6 +2637,26 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     return (TH1*)phist;
 }
 
+Double_t AliAnalysisTaskHFJetIPQA::getFVertexRecalcMinPt() const
+{
+    return fVertexRecalcMinPt;
+}
+
+void AliAnalysisTaskHFJetIPQA::setFVertexRecalcMinPt(const Double_t &value)
+{
+    fVertexRecalcMinPt = value;
+}
+
+Double_t AliAnalysisTaskHFJetIPQA::getFMCglobalDCAxyShift() const
+{
+    return fMCglobalDCAxyShift;
+}
+
+void AliAnalysisTaskHFJetIPQA::setFMCglobalDCAxyShift(const Double_t &value)
+{
+    fMCglobalDCAxyShift = value;
+}
+
 void AliAnalysisTaskHFJetIPQA::setFProductionNumberPtHard(const Int_t &value)
 {
     fProductionNumberPtHard = value;
@@ -2677,19 +2705,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
             etp.GetXYZ(XYZatDCA);
             etp.GetXYZ(x_at_dca);
             etp.GetPxPyPz(p_at_dca);
+         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
         } else return kFALSE;
 
-    vtxESDSkip->GetXYZ(pv_pos);
-    etp.GetXYZ(x_at_dca);
-    etp.GetPxPyPz(p_at_dca);
-    TVector3 x_at_dca_v3(x_at_dca);
-    TVector3 pv_vector(pv_pos);
-    double ang =-2.5e-4;
-    x_at_dca_v3.RotateX(ang);
-    x_at_dca_v3 -= pv_pos;
-    TVector3 dca_vector(x_at_dca_v3);
-    TVector3 p_at_dca_v3(p_at_dca);
-    p_at_dca_v3.RotateX(ang);
+
+
 
     return success;
 }
