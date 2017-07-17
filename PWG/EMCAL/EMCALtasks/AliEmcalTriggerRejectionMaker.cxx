@@ -31,7 +31,8 @@
 #include <TClonesArray.h>
 #include <THashList.h>
 #include <THistManager.h>
-#include 
+
+#include "AliAnalysisUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include <AliEmcalTriggerRejectionMaker.h>
 #include "AliInputEventHandler.h"
