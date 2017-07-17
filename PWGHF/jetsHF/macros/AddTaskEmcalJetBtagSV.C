@@ -7,6 +7,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
                                                      TString fileout   = "standard",
                                                      Bool_t corrMode   =  kFALSE,
                                                      Bool_t doBkgRej   =  kTRUE,
+                                                     Bool_t doRndmCone =  kFALSE,
                                                      Bool_t doQAvtx    =  kFALSE,
                                                      Bool_t doFillV0   =  kFALSE,
                                                      Bool_t doDetRespMtx = kFALSE,
@@ -50,6 +51,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
 
   hfTask->SetCorrectionMode(corrMode); // kFALSE for real data
   hfTask->SetDoBkgRejection(doBkgRej);
+  hfTask->SetDoRandomCone(doRndmCone);
   hfTask->SetDoFillSecVtxQA(doQAvtx);
   hfTask->SetDoFillV0Trks(doFillV0);
   hfTask->SetDoDetRespMtx(doDetRespMtx);

@@ -13,7 +13,6 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConvEventCuts.h"
 #include "TList.h"
-#include "AliStack.h"
 #include "TClonesArray.h"
 
 
@@ -49,7 +48,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		
 		void ProcessPhotons();
 		void ProcessMCPhotons();
-		void FillMCTree(Int_t stackPos);
+        void FillMCTree(Int_t eventPos);
 		Int_t CountTracks0914();
 		Int_t CountTracks09();
 
@@ -83,7 +82,6 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		Int_t 						fIsMC;					           	//
 		AliVEvent*        fInputEvent;                                //
 		AliMCEvent*       fMCEvent;				         //
-		AliStack*         fMCStack;                                   //
 		Int_t             fnCuts;                      //
 		Int_t             fiCut;                       //
 		TH1F**            hNEvents         ;           //!
@@ -173,7 +171,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 9);
+        ClassDef(AliAnalysisTaskMaterialHistos, 10);
 };
 
 #endif

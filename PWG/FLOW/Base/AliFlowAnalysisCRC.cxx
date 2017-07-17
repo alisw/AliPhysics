@@ -303,6 +303,7 @@ fCRCQVecList(NULL),
 fCRCQVecListTPC(NULL),
 fCRCQVecWeightsList(NULL),
 fCRCZDCCalibList(NULL),
+fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
@@ -397,6 +398,7 @@ AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
   delete fTempList;
   if(fCRCQVecWeightsList) delete fCRCQVecWeightsList;
   if(fCRCZDCCalibList)    delete fCRCZDCCalibList;
+  if(fCRCZDC2DCutList)    delete fCRCZDC2DCutList;
   if(fCRCVZEROCalibList)  delete fCRCVZEROCalibList;
   if(fCRCZDCResList)      delete fCRCZDCResList;
   if(fZDCESEList)         delete fZDCESEList;
@@ -635,6 +637,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   this->CalculateCRCQVec();
   
   if(fUseZDC) {
+    this->PassQAZDCCuts();
     if(fRecenterZDC) {
       this->RecenterCRCQVecZDC();
     }
@@ -649,9 +652,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   Double_t ZAM  = fZDCFlowVect[1].GetMult();
   if( fInvertZDC ) ZARe = -ZARe;
   
-  if(fCalculateCRC) {
-    fQAZDCCutsFlag = this->PassQAZDCCuts();
-  }
   // ZDC QA cuts
   Bool_t bPassZDCcuts = kTRUE;
   if( ZCM<=0. || ZAM<=0. || sqrt(ZCRe*ZCRe+ZCIm*ZCIm)<1.E-6 || sqrt(ZARe*ZARe+ZAIm*ZAIm)<1.E-6 ) bPassZDCcuts=kFALSE;
@@ -1116,113 +1116,24 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             fFlowSPZDCv1etaPro[fCenBin][0][12]->Fill(dEta,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
           }
           
-          if(fStoreZDCQVecVtxPos) {
-//            if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//              Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
-//              fCRCZDCQVecResv1QA[bw][0]->Fill(ZARe,ZAIm,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fCRCZDCQVecResv1QA[bw][1]->Fill(ZARe,ZAIm,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(i==0) fCRCZDCQVecResv1QA[bw][2]->Fill(ZARe,ZAIm,ZARe*ZAIm+ZCRe*ZCIm);
-//              
-//              fCRCZDCQVecResv1QC[bw][0]->Fill(ZCRe,ZCIm,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fCRCZDCQVecResv1QC[bw][1]->Fill(ZCRe,ZCIm,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(i==0) fCRCZDCQVecResv1QC[bw][2]->Fill(ZCRe,ZCIm,ZARe*ZAIm+ZCRe*ZCIm);
-//              
-//              fCRCZDCQVecResv1Cross[bw][0]->Fill(ZCRe*ZAIm,ZCIm*ZARe,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fCRCZDCQVecResv1Cross[bw][1]->Fill(ZCRe*ZAIm,ZCIm*ZARe,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(i==0) fCRCZDCQVecResv1Cross[bw][2]->Fill(ZCRe*ZAIm,ZCIm*ZARe,ZARe*ZAIm+ZCRe*ZCIm);
-//            }
-          }
-          
-//          if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//            if(fbFlagIsPosMagField) {
-//              fFlowSPZDCv1etaProPhi[0]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fFlowSPZDCv1etaProPhi[1]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(cw==0) {
-//                fFlowSPZDCv1etaProPhi[2]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProPhi[3]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              } else {
-//                fFlowSPZDCv1etaProPhi[4]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProPhi[5]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              }
-//            } else {
-//              fFlowSPZDCv1etaProPhi[6]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fFlowSPZDCv1etaProPhi[7]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(cw==0) {
-//                fFlowSPZDCv1etaProPhi[8]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProPhi[9]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              } else {
-//                fFlowSPZDCv1etaProPhi[10]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProPhi[11]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              }
-//            }
-//          }
-//          if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//            Double_t dITStype = ITStype+0.5;
-//            if(fbFlagIsPosMagField) {
-//              fFlowSPZDCv1etaProITS[0]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fFlowSPZDCv1etaProITS[1]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(cw==0) {
-//                fFlowSPZDCv1etaProITS[2]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProITS[3]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              } else {
-//                fFlowSPZDCv1etaProITS[4]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProITS[5]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              }
-//            } else {
-//              fFlowSPZDCv1etaProITS[6]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//              fFlowSPZDCv1etaProITS[7]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              if(cw==0) {
-//                fFlowSPZDCv1etaProITS[8]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProITS[9]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              } else {
-//                fFlowSPZDCv1etaProITS[10]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
-//                fFlowSPZDCv1etaProITS[11]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
-//              }
-//            }
-//            if(fbFlagIsPosMagField) {
-//              fFlowSPZDCv1etaProITSDis[0][ITStype]->Fill(dEta,dPhi,wPhiEta);
-//            } else {
-//              fFlowSPZDCv1etaProITSDis[1][ITStype]->Fill(dEta,dPhi,wPhiEta);
-//            }
-//          }
-          
-          // all runs
-          fCRCQVecPhiHist->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-          fCRCQVecPhiHistCh[cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-          Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
-          fCRCQVecPhiHistChPt[cw][ptbebe]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-          for (Int_t h=0;h<6;h++) {
-            fCRCQVecHarCosProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Cos((h+1.)*dPhi),wPhiEta);
-            fCRCQVecHarSinProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Sin((h+1.)*dPhi),wPhiEta);
-          }
-          Double_t FillCw = (fbFlagIsPosMagField==kTRUE?(cw==0?0.5:1.5):(cw==0?2.5:3.5));
-          if(fCentralityEBE>5. && fCentralityEBE<40.) {
-            fCRCQVecPtHistMagField->Fill(dPt,FillCw,wPhiEta);
-          }
-          
-          // run-by-run
-//          fCRCQVecPhiRbRHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-//          fCRCQVecPhiRbRHistCh[fRunBin][cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-          if(fCentralityEBE>0. && fCentralityEBE<70.) {
-//            fCRCQVecPhiVtxHist[etab]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],dPhi,wPhiEta);
-//            fCRCQVecEtaHist[fRunBin][0]->Fill(dEta,fVtxPosCor[0],TMath::Cos(dPhi),wPhiEta*fCenWeightEbE);
-//            fCRCQVecEtaHist[fRunBin][1]->Fill(dEta,fVtxPosCor[1],TMath::Cos(dPhi),wPhiEta*fCenWeightEbE);
-//            fCRCQVecEtaHist[fRunBin][2]->Fill(dEta,fVtxPosCor[2],TMath::Cos(dPhi),wPhiEta*fCenWeightEbE);
-//            fCRCQVecEtaHist[fRunBin][3]->Fill(dEta,fVtxPosCor[0],TMath::Sin(dPhi),wPhiEta*fCenWeightEbE);
-//            fCRCQVecEtaHist[fRunBin][4]->Fill(dEta,fVtxPosCor[1],TMath::Sin(dPhi),wPhiEta*fCenWeightEbE);
-//            fCRCQVecEtaHist[fRunBin][5]->Fill(dEta,fVtxPosCor[2],TMath::Sin(dPhi),wPhiEta*fCenWeightEbE);
-          }
-          
-//          fCRCTPCQVecCenEComTot[fRunBin][0+cw*2]->Fill(fCentralityEBE,(ZCM+ZAM)/2.,TMath::Cos(dPhi),wPhiEta);
-//          fCRCTPCQVecCenEComTot[fRunBin][1+cw*2]->Fill(fCentralityEBE,(ZCM+ZAM)/2.,TMath::Sin(dPhi),wPhiEta);
-//          fCRCTPCQVecCenRefMulTot[fRunBin][0+cw*2]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,TMath::Cos(dPhi),wPhiEta);
-//          fCRCTPCQVecCenRefMulTot[fRunBin][1+cw*2]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,TMath::Sin(dPhi),wPhiEta);
-//          Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
-//          fCRCTPCQVecCenEtaRefMulTot[bw][0+cw*2]->Fill(fCentralityEBE,dEta,fReferenceMultiplicityEBE,TMath::Cos(dPhi),wPhiEta);
-//          fCRCTPCQVecCenEtaRefMulTot[bw][1+cw*2]->Fill(fCentralityEBE,dEta,fReferenceMultiplicityEBE,TMath::Sin(dPhi),wPhiEta);
-          
         }
-//        fCRCQVecPhiHistVtxDep[fRunBin][fCenBin]->Fill(fVtxPos[2],dPhi,dEta,wPhiEta);
+        
+        // all runs
+        fCRCQVecPhiHist->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        fCRCQVecPhiHistCh[cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        fCRCQVecPhiHistChPt[cw][ptbebe]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        for (Int_t h=0;h<6;h++) {
+          fCRCQVecHarCosProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Cos((h+1.)*dPhi),wPhiEta);
+          fCRCQVecHarSinProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Sin((h+1.)*dPhi),wPhiEta);
+        }
+        Double_t FillCw = (fbFlagIsPosMagField==kTRUE?(cw==0?0.5:1.5):(cw==0?2.5:3.5));
+        if(fCentralityEBE>5. && fCentralityEBE<40.) {
+          fCRCQVecPtHistMagField->Fill(dPt,FillCw,wPhiEta);
+        }
+        fCRCQVecPhiHistVtxX[fCenBin]->Fill(fVtxPosCor[0],dPhi,dEta,wPhiEta);
+        fCRCQVecPhiHistVtxY[fCenBin]->Fill(fVtxPosCor[1],dPhi,dEta,wPhiEta);
+        fCRCQVecPhiHistVtxZ[fCenBin]->Fill(fVtxPosCor[2],dPhi,dEta,wPhiEta);
+        
         fFlowQCSpectraPubBin->Fill(fCentralityEBE,dPt,wPhiEta*fCenWeightEbE);
         fFlowQCSpectraCharge[cw]->Fill(fCentralityEBE,dPt,wPhiEta*fCenWeightEbE);
         
@@ -16629,6 +16540,7 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
 //  fCRCZDCQVecResvsEAsym = NULL;
 //  fCRCZDCQVecResvsETot = NULL;
 //  fCRCZDCQVecResvsESum = NULL;
+  fCRCQVecEtaPhiList = NULL;
   fCRCQVecPtHistMagField = NULL;
   fCRCQVecPhiHist = NULL;
   for(Int_t h=0;h<2;h++) {
@@ -16640,6 +16552,11 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     for(Int_t ptb=0;ptb<fZDCPtDiffNBins;ptb++) {
       fCRCQVecPhiHistChPt[r][ptb] = NULL;
     }
+  }
+  for (Int_t cb=0; cb<fCRCnCen; cb++) {
+    fCRCQVecPhiHistVtxX[cb] = NULL;
+    fCRCQVecPhiHistVtxY[cb] = NULL;
+    fCRCQVecPhiHistVtxZ[cb] = NULL;
   }
 //  for(Int_t h=0;h<fkQVecPhiVtxHistNEtaBins;h++) {
 //    fCRCQVecPhiVtxHist[h] = NULL;
@@ -16671,9 +16588,6 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
       fCRCVZCosnC[r][h] = NULL;
       fCRCVZSinnC[r][h] = NULL;
     }
-//    for (Int_t k=0;k<fCRCnCen;k++) {
-//      fCRCQVecPhiHistVtxDep[r][k] = NULL;
-//    }
 //    for(Int_t h=0;h<fkNHistQVecCorrv1eta;h++) {
 //      fCRCQVecEtaHist[r][h] = NULL;
 //    }
@@ -16711,9 +16625,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     for (Int_t i=0;i<7;i++) {
       fCRCZDCQVecTest[r][i] = NULL;
     }
-    for(Int_t i=0;i<fCRCQVecnCov;i++) {
-      fCRCZDCQVecCov[r][i] = NULL;
-    }
+//    for(Int_t i=0;i<fCRCQVecnCov;i++) {
+//      fCRCZDCQVecCov[r][i] = NULL;
+//    }
 //    for(Int_t h=0;h<fCRCnHar;h++) {
 //      fCRCVZEROQVec[r][h] = NULL;
 //    }
@@ -16755,9 +16669,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     }
   }
   for(Int_t c=0;c<fkCRCnCQVecVtxPos;c++) {
-    for (Int_t cb=0; cb<fCRCnCen; cb++) {
-      fCRCZDCQVecVtxPosCen[cb][c] = NULL;
-    }
+//    for (Int_t cb=0; cb<fCRCnCen; cb++) {
+//      fCRCZDCQVecVtxPosCen[cb][c] = NULL;
+//    }
     for(Int_t i=0;i<3;i++) {
       fCRCZDCQVecVtxCenEZDC[i][c] = NULL;
     }
@@ -16767,9 +16681,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
       }
     }
   }
-  for (Int_t i=0; i<fCRCnCen; i++) {
-    fCRCZDCQVecDummyEZDCBins[i] = NULL;
-  }
+//  for (Int_t i=0; i<fCRCnCen; i++) {
+//    fCRCZDCQVecDummyEZDCBins[i] = NULL;
+//  }
   for (Int_t cb=0; cb<fCRCnCen; cb++) {
     for (Int_t eb=0; eb<fCRCZDCnEtaBin; eb++) {
       for (Int_t k=0; k<6; k++) {
@@ -16834,6 +16748,12 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
       for(Int_t k=0; k<4; k++) {
         fZDCQVecVtxCenEZDC3D[i][z][k] = NULL;
       }
+    }
+  }
+  for(Int_t i=0; i<2; i++) {
+    for(Int_t z=0; z<10; z++) {
+      fCRCZDC2DCutZDCC[i][z] = NULL;
+      fCRCZDC2DCutZDCA[i][z] = NULL;
     }
   }
   fZDCQVecVtxCenEZDCFit0 = NULL;
@@ -17040,11 +16960,13 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
       fFlowQCIntCorHist[i][j] = NULL;
       fFlowQCIntCumHist[i][j] = NULL;
     }
-    for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
-      fFlowQCIntCorProTest[i][j] = NULL;
-      fFlowQCIntCorHistTest[i][j] = NULL;
-      fFlowQCIntCumHistTest[i][j] = NULL;
-      fFlowQCIntFinHistTest[i][j] = NULL;
+    for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++) {
+      for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
+        fFlowQCIntCorProTest[i][k][j] = NULL;
+        fFlowQCIntCorHistTest[i][k][j] = NULL;
+        fFlowQCIntCumHistTest[i][k][j] = NULL;
+        fFlowQCIntFinHistTest[i][k][j] = NULL;
+      }
     }
     for(Int_t j=0; j<6; j++) {
       fFlowQCIntCorNUAPro[i][j] = NULL;
@@ -17070,6 +16992,7 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
       fFlowSCProdPro[i][bng] = NULL;
       fFlowSCProdHist[i][bng] = NULL;
       fFlowSCFinalHist[i][bng] = NULL;
+      fFlowSCCovHist[i][bng] = NULL;
     }
   }
   fFlowSCMultvsZN = NULL;
@@ -17539,6 +17462,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
   for(Int_t k=0; k<3; k++) {
     fVtxHist[k] = NULL;
   }
+  fRefMulRecHist = NULL;
 //  for (Int_t c=0; c<2; c++) {
 //    fhZNCenDis[c] = NULL;
 //  }
@@ -17707,12 +17631,19 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
   fEventCounter->GetXaxis()->SetBinLabel(3,"v1(eta){SPZDC}");
   fVariousList->Add(fEventCounter);
   for (Int_t c=0; c<3; c++) {
-    fVtxHist[c] = new TH3D(Form("fVtxHist[%d]",c),Form("fVtxHist[%d]",c),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,100,(c<2?-0.5:-20.),(c<2?0.5:20.));
+    fVtxHist[c] = new TH3D(Form("fVtxHist[%d]",c),Form("fVtxHist[%d]",c),fCRCnRun,0.,1.*fCRCnRun,10,0.,100.,100,(c<2?-0.5:-20.),(c<2?0.5:20.));
     for (Int_t rb=1; rb<=fVtxHist[c]->GetXaxis()->GetNbins(); rb++) {
       fVtxHist[c]->GetXaxis()->SetBinLabel(rb,Form("%d",fRunList[rb-1]));
     }
     fVariousList->Add(fVtxHist[c]);
   }
+  Double_t cenbins[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+  Double_t RefMulbins[1001] = {0.};
+  for (Int_t i=0; i<1001; i++) {
+    RefMulbins[i] = -600 + i*1.2;
+  }
+  fRefMulRecHist = new TH2D("fRefMulRecHist","fRefMulRecHist",10,cenbins,1000,RefMulbins);
+  fVariousList->Add(fRefMulRecHist);
 //  for (Int_t c=0; c<2; c++) {
 //    fhZNCenDis[c] = new TH3D(Form("fhZNCenDis[%d]",c), Form("fhZNCenDis[%d]",c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
 //    fVariousList->Add(fhZNCenDis[c]);
@@ -17734,8 +17665,8 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
     fVariousList->Add(fhZNvsTCen[c]);
   }
   for (Int_t c=0; c<fZDCESEnCl+1; c++) {
-    if(c<2) fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 750, 0., 3000.);
-    else    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 750, 0., 3000., 750, 0., 3000.);
+    if(c<2) fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 150, 0., 3000.);
+    else    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 150, 0., 3000., 150, 0., 3000.);
     fhCenvsMul[c]->Sumw2();
     fVariousList->Add(fhCenvsMul[c]);
     fhCenvsSpec[c] = new TH2F(Form("fhCenvsSpec[%d]",c), Form("fhCenvsSpec[%d]",c), 100, 0., 100., fPtDiffNBins, fCRCPtBins);
@@ -17981,6 +17912,11 @@ void AliFlowAnalysisCRC::BookAndNestAllLists()
   fCRCQVecList->SetName("Q Vectors");
   fCRCQVecList->SetOwner(kTRUE);
   fHistList->Add(fCRCQVecList);
+  
+  fCRCQVecEtaPhiList = new TList();
+  fCRCQVecEtaPhiList->SetName("Track Distribution");
+  fCRCQVecEtaPhiList->SetOwner(kTRUE);
+  fCRCQVecList->Add(fCRCQVecEtaPhiList);
   
   fCRCPtList = new TList();
   fCRCPtList->SetName("Pt differential CRC");
@@ -18958,6 +18894,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   Int_t qb[4] = {0};
   if(fbFlagIsPosMagField) { qb[0]=0; qb[1]=1; qb[2]=4; qb[3]=5; }
   else                    { qb[0]=2; qb[1]=3; qb[2]=6; qb[3]=7; }
+  Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
   
   if(fRunNum!=fCachedRunNum) {
     fZDCQHist[0] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecC[%d][%d]",fRunNum,0)));
@@ -19044,7 +18981,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
       }
     }
     for(Int_t k=0; k<4; k++) {
-      Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
       fZDCBinsCenRefMultTot[k] = (TProfile2D*)(fCRCZDCCalibList->FindObject(Form("fCRCZDCQVecCenRefMulTot[%d][%d]",bw,k)));
       if(fZDCBinsCenRefMultTot[k]) {
         for(Int_t c=0; c<10; c++) {
@@ -19079,6 +19015,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     }
     
   }
+  
+  if(!fQAZDCCutsFlag) return;
   
   // ZDCN-C
   Double_t QCRe = fZDCFlowVect[0].X();
@@ -19162,26 +19100,34 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   }
   
   if (fZDCVtxCenHist[fCenBin][0]) {
+    Bool_t withinvtx = kTRUE;
       // method #2: recenter vs vtx in centrality bins
-    if(fVtxPosCor[0] < fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmax()) pass = kFALSE;
-    if(fVtxPosCor[1] < fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmax()) pass = kFALSE;
-    if(fVtxPosCor[2] < fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmax()) pass = kFALSE;
+    if(fVtxPosCor[0] < fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmax()) withinvtx = kFALSE;
+    if(fVtxPosCor[1] < fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmax()) withinvtx = kFALSE;
+    if(fVtxPosCor[2] < fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetXmax()) withinvtx = kFALSE;
     
-    
-    if(!pass) {
-      QCReR = 0.; QCImR = 0.; QAReR = 0.; QAImR = 0.;
-      fZDCFlowVect[0].Set(QCReR,QCImR);
-      fZDCFlowVect[0].SetMult(0.);
-      fZDCFlowVect[1].Set(QAReR,QAImR);
-      fZDCFlowVect[1].SetMult(0.);
-      fQAZDCCutsFlag = kFALSE;
-      return;
-    } else {
+    if(withinvtx) {
       QCReR -= fZDCVtxCenHist[fCenBin][0]->GetBinContent(fZDCVtxCenHist[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
       QCImR -= fZDCVtxCenHist[fCenBin][1]->GetBinContent(fZDCVtxCenHist[fCenBin][1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
       fZDCFlowVect[0].Set(QCReR,QCImR);
       QAReR -= fZDCVtxCenHist[fCenBin][2]->GetBinContent(fZDCVtxCenHist[fCenBin][2]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
       QAImR -= fZDCVtxCenHist[fCenBin][3]->GetBinContent(fZDCVtxCenHist[fCenBin][3]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      fZDCFlowVect[1].Set(QAReR,QAImR);
+    } else {
+      Double_t vx = fVtxPosCor[0];
+      Double_t vy = fVtxPosCor[1];
+      Double_t vz = fVtxPosCor[2];
+      if(fVtxPosCor[0] < fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmin()) vx = fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetBinCenter(1);
+      if(fVtxPosCor[0] > fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetXmax()) vx = fZDCVtxCenHist[fCenBin][0]->GetXaxis()->GetBinCenter(fZDCVtxCenHist[fCenBin][0]->GetNbinsX());
+      if(fVtxPosCor[1] < fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmin()) vy = fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetBinCenter(1);
+      if(fVtxPosCor[1] > fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmax()) vy = fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetBinCenter(fZDCVtxCenHist[fCenBin][0]->GetNbinsY());
+      if(fVtxPosCor[2] < fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmin()) vz = fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetBinCenter(1);
+      if(fVtxPosCor[2] > fZDCVtxCenHist[fCenBin][0]->GetYaxis()->GetXmax()) vz = fZDCVtxCenHist[fCenBin][0]->GetZaxis()->GetBinCenter(fZDCVtxCenHist[fCenBin][0]->GetNbinsZ());
+      QCReR -= fZDCVtxCenHist[fCenBin][0]->GetBinContent(fZDCVtxCenHist[fCenBin][0]->FindBin(vx,vy,vz));
+      QCImR -= fZDCVtxCenHist[fCenBin][1]->GetBinContent(fZDCVtxCenHist[fCenBin][1]->FindBin(vx,vy,vz));
+      fZDCFlowVect[0].Set(QCReR,QCImR);
+      QAReR -= fZDCVtxCenHist[fCenBin][2]->GetBinContent(fZDCVtxCenHist[fCenBin][2]->FindBin(vx,vy,vz));
+      QAImR -= fZDCVtxCenHist[fCenBin][3]->GetBinContent(fZDCVtxCenHist[fCenBin][3]->FindBin(vx,vy,vz));
       fZDCFlowVect[1].Set(QAReR,QAImR);
     }
   }
@@ -19500,83 +19446,53 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   fCRCZDCQVecCorSteps[2]->Fill(fillstep,fCentralityEBE,QCReR*QAImR);
   fCRCZDCQVecCorSteps[3]->Fill(fillstep,fCentralityEBE,-QCImR*QAReR);
   
-//  if(fVtxRbR) {
-//    if(fZDCBinsVtxCenEZDC[0][0]) {
-//      for(Int_t i=0;i<3;i++) {
-//        QCReR -= fZDCBinsVtxCenEZDC[i][0]->GetBinContent(fZDCBinsVtxCenEZDC[i][0]->FindBin(fCentralityEBE,QMCrec,fVtxPosCor[i]));
-//        QCImR -= fZDCBinsVtxCenEZDC[i][1]->GetBinContent(fZDCBinsVtxCenEZDC[i][1]->FindBin(fCentralityEBE,QMCrec,fVtxPosCor[i]));
-//        QAReR -= fZDCBinsVtxCenEZDC[i][2]->GetBinContent(fZDCBinsVtxCenEZDC[i][2]->FindBin(fCentralityEBE,QMArec,fVtxPosCor[i]));
-//        QAImR -= fZDCBinsVtxCenEZDC[i][3]->GetBinContent(fZDCBinsVtxCenEZDC[i][3]->FindBin(fCentralityEBE,QMArec,fVtxPosCor[i]));
+//  Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
+//  Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
+//  
+//  if(fZDCQVecVtxCenEZDC3D[0][0][0]) {
+//    Bool_t pass2=kTRUE;
+//    // exclude events with vtx outside of range
+//    if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
+//    if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
+//    if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
+//    // exclude events with EZDC outside of range
+//    Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
+//    Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
+////    if(EZDCCBin<=0 || EZDCCBin>=10 || EZDCABin<=0 || EZDCABin>=10) pass2 = kFALSE;
+//    if(EZDCCBin<0) EZDCCBin=0;
+//    if(EZDCCBin>9) EZDCCBin=9;
+//    if(EZDCABin<0) EZDCABin=0;
+//    if(EZDCABin>9) EZDCABin=9;
+//    if(pass2) {
+//      // check if possible to interpolate
+//      Bool_t bInterp = kTRUE;
+//      Int_t bx = fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->FindBin(fVtxPosCor[0]);
+//      Int_t by = fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->FindBin(fVtxPosCor[1]);
+//      Int_t bz = fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->FindBin(fVtxPosCor[2]);
+//      if(bx==1 || bx==fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetNbins()) bInterp = kFALSE;
+//      if(by==1 || by==fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetNbins()) bInterp = kFALSE;
+//      if(bz==1 || bz==fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetNbins()) bInterp = kFALSE;
+//      if(bInterp) {
+//        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
+//      } else {
+//        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->GetBinContent(bx,by,bz);
+//        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->GetBinContent(bx,by,bz);
+//        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->GetBinContent(bx,by,bz);
+//        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->GetBinContent(bx,by,bz);
 //      }
-//    }
-//  } else {
-//    if(fZDCQVecVtxCenEZDCFit0 && fZDCQVecVtxCenEZDCFit1) {
-//      for(Int_t i=0;i<3;i++) {
-//        for(Int_t k=0;k<4;k++) {
-//          Double_t pol0 = fZDCQVecVtxCenEZDCFit0->GetBinContent(fZDCQVecVtxCenEZDCFit0->FindBin(qb[k]+0.5,i+0.5,fCenBin+0.5));
-//          Double_t pol1 = fZDCQVecVtxCenEZDCFit1->GetBinContent(fZDCQVecVtxCenEZDCFit1->FindBin(qb[k]+0.5,i+0.5,fCenBin+0.5));
-//          Double_t EZDCsl = pol0+pol1*fVtxPosCor[i];
-//          Double_t corr = 0.;
-//          Double_t QMrec = (k<2?QMCrec:QMArec);
-//          if(QMrec>100.) corr = 100.*EZDCsl;
-//          if(QMrec<-100.) corr = -100.*EZDCsl;
-//          if(QMrec<100. && QMrec>-100.) corr = QMrec*EZDCsl;
-//          if(k==0) QCReR -= corr;
-//          if(k==1) QCImR -= corr;
-//          if(k==2) QAReR -= corr;
-//          if(k==3) QAImR -= corr;
-//        }
-//      }
+//      fZDCFlowVect[0].Set(QCReR,QCImR);
+//      fZDCFlowVect[1].Set(QAReR,QAImR);
+//    } else {
+//      QCReR = 0.; QCImR = 0.; QAReR = 0.; QAImR = 0.; QMC=0.; QMA=0.;
+//      fZDCFlowVect[0].Set(QCReR,QCImR);
+//      fZDCFlowVect[0].SetMult(0.);
+//      fZDCFlowVect[1].Set(QAReR,QAImR);
+//      fZDCFlowVect[1].SetMult(0.);
 //    }
 //  }
-  
-  Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
-  Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
-  
-  if(fZDCQVecVtxCenEZDC3D[0][0][0]) {
-    Bool_t pass2=kTRUE;
-    // exclude events with vtx outside of range
-    if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
-    if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
-    if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
-    // exclude events with EZDC outside of range
-    Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
-    Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
-//    if(EZDCCBin<=0 || EZDCCBin>=10 || EZDCABin<=0 || EZDCABin>=10) pass2 = kFALSE;
-    if(EZDCCBin<0) EZDCCBin=0;
-    if(EZDCCBin>9) EZDCCBin=9;
-    if(EZDCABin<0) EZDCABin=0;
-    if(EZDCABin>9) EZDCABin=9;
-    if(pass2) {
-      // check if possible to interpolate
-      Bool_t bInterp = kTRUE;
-      Int_t bx = fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->FindBin(fVtxPosCor[0]);
-      Int_t by = fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->FindBin(fVtxPosCor[1]);
-      Int_t bz = fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->FindBin(fVtxPosCor[2]);
-      if(bx==1 || bx==fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetNbins()) bInterp = kFALSE;
-      if(by==1 || by==fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetNbins()) bInterp = kFALSE;
-      if(bz==1 || bz==fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetNbins()) bInterp = kFALSE;
-      if(bInterp) {
-        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-      } else {
-        QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->GetBinContent(bx,by,bz);
-        QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->GetBinContent(bx,by,bz);
-        QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->GetBinContent(bx,by,bz);
-        QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->GetBinContent(bx,by,bz);
-      }
-      fZDCFlowVect[0].Set(QCReR,QCImR);
-      fZDCFlowVect[1].Set(QAReR,QAImR);
-    } else {
-      QCReR = 0.; QCImR = 0.; QAReR = 0.; QAImR = 0.; QMC=0.; QMA=0.;
-      fZDCFlowVect[0].Set(QCReR,QCImR);
-      fZDCFlowVect[0].SetMult(0.);
-      fZDCFlowVect[1].Set(QAReR,QAImR);
-      fZDCFlowVect[1].SetMult(0.);
-    }
-  }
   
   fillstep=11.5;
   fCRCZDCQVecCorSteps[0]->Fill(fillstep,fCentralityEBE,-QCReR*QAReR);
@@ -19584,70 +19500,55 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   fCRCZDCQVecCorSteps[2]->Fill(fillstep,fCentralityEBE,QCReR*QAImR);
   fCRCZDCQVecCorSteps[3]->Fill(fillstep,fCentralityEBE,-QCImR*QAReR);
   
+  // if correctly set (via fMinMulZN), cut on ZDC Q-vector distribution
+  // WARNING: QARe inverted !!!
+  
+  pass = PassCutZDCQVecDis(QCReR,QCImR,-QAReR,QAImR);
+  
   // ***************************************************************************
   // store results after correction
   // ***************************************************************************
   
-  if(QMC>0. && QMA>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6 && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6 && pass) {
+  if(QMC>0. && QMA>0. && sqrt(QCReR*QCReR+QCImR*QCImR)>1.E-6 && sqrt(QAReR*QAReR+QAImR*QAImR)>1.E-6 && pass) {
     
     fCRCZDCQVecCCorr[fRunBin][0]->Fill(fCentralityEBE,QCReR);
     fCRCZDCQVecCCorr[fRunBin][1]->Fill(fCentralityEBE,QCImR);
     
-    fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,fVtxPosCor[0],QCReR);
-    fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,fVtxPosCor[1],QCReR);
-    fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,fVtxPosCor[2],QCReR);
-    fCRCZDCQVecCov[fRunBin][3]->Fill(fCentralityEBE,fVtxPosCor[0],QCImR);
-    fCRCZDCQVecCov[fRunBin][4]->Fill(fCentralityEBE,fVtxPosCor[1],QCImR);
-    fCRCZDCQVecCov[fRunBin][5]->Fill(fCentralityEBE,fVtxPosCor[2],QCImR);
+//    fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,fVtxPosCor[0],QCReR);
+//    fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,fVtxPosCor[1],QCReR);
+//    fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,fVtxPosCor[2],QCReR);
+//    fCRCZDCQVecCov[fRunBin][3]->Fill(fCentralityEBE,fVtxPosCor[0],QCImR);
+//    fCRCZDCQVecCov[fRunBin][4]->Fill(fCentralityEBE,fVtxPosCor[1],QCImR);
+//    fCRCZDCQVecCov[fRunBin][5]->Fill(fCentralityEBE,fVtxPosCor[2],QCImR);
     
-    if(fbFlagIsPosMagField) {
-      fCRCZDCQVecVtxPosCen[fCenBin][0]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-      fCRCZDCQVecVtxPosCen[fCenBin][1]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-    } else {
-      fCRCZDCQVecVtxPosCen[fCenBin][2]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-      fCRCZDCQVecVtxPosCen[fCenBin][3]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-    }
+//    if(fbFlagIsPosMagField) {
+//      fCRCZDCQVecVtxPosCen[fCenBin][0]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
+//      fCRCZDCQVecVtxPosCen[fCenBin][1]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
+//    } else {
+//      fCRCZDCQVecVtxPosCen[fCenBin][2]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
+//      fCRCZDCQVecVtxPosCen[fCenBin][3]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
+//    }
     
     fCRCZDCQVecACorr[fRunBin][0]->Fill(fCentralityEBE,QAReR);
     fCRCZDCQVecACorr[fRunBin][1]->Fill(fCentralityEBE,QAImR);
-    fCRCZDCQVecCov[fRunBin][6]->Fill(fCentralityEBE,fVtxPosCor[0],QAReR);
-    fCRCZDCQVecCov[fRunBin][7]->Fill(fCentralityEBE,fVtxPosCor[1],QAReR);
-    fCRCZDCQVecCov[fRunBin][8]->Fill(fCentralityEBE,fVtxPosCor[2],QAReR);
-    fCRCZDCQVecCov[fRunBin][9]->Fill(fCentralityEBE,fVtxPosCor[0],QAImR);
-    fCRCZDCQVecCov[fRunBin][10]->Fill(fCentralityEBE,fVtxPosCor[1],QAImR);
-    fCRCZDCQVecCov[fRunBin][11]->Fill(fCentralityEBE,fVtxPosCor[2],QAImR);
+//    fCRCZDCQVecCov[fRunBin][6]->Fill(fCentralityEBE,fVtxPosCor[0],QAReR);
+//    fCRCZDCQVecCov[fRunBin][7]->Fill(fCentralityEBE,fVtxPosCor[1],QAReR);
+//    fCRCZDCQVecCov[fRunBin][8]->Fill(fCentralityEBE,fVtxPosCor[2],QAReR);
+//    fCRCZDCQVecCov[fRunBin][9]->Fill(fCentralityEBE,fVtxPosCor[0],QAImR);
+//    fCRCZDCQVecCov[fRunBin][10]->Fill(fCentralityEBE,fVtxPosCor[1],QAImR);
+//    fCRCZDCQVecCov[fRunBin][11]->Fill(fCentralityEBE,fVtxPosCor[2],QAImR);
     
-    if(fbFlagIsPosMagField) {
-      fCRCZDCQVecVtxPosCen[fCenBin][4]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-      fCRCZDCQVecVtxPosCen[fCenBin][5]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-    } else {
-      fCRCZDCQVecVtxPosCen[fCenBin][6]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-      fCRCZDCQVecVtxPosCen[fCenBin][7]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-    }
-    
-//    fCRCZDCQVecCenEComTot[fRunBin][0]->Fill(fCentralityEBE,QMC,QCReR);
-//    fCRCZDCQVecCenEComTot[fRunBin][1]->Fill(fCentralityEBE,QMC,QCImR);
-//    fCRCZDCQVecCenEComTot[fRunBin][2]->Fill(fCentralityEBE,QMA,QAReR);
-//    fCRCZDCQVecCenEComTot[fRunBin][3]->Fill(fCentralityEBE,QMA,QAImR);
-
-//    fCRCZDCQVecCenRefMulTot[fRunBin][0]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,QCReR);
-//    fCRCZDCQVecCenRefMulTot[fRunBin][1]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,QCImR);
-//    fCRCZDCQVecCenRefMulTot[fRunBin][2]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,QAReR);
-//    fCRCZDCQVecCenRefMulTot[fRunBin][3]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE,QAImR);
-//    fMulvsCenRbR[fRunBin]->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE);
+//    if(fbFlagIsPosMagField) {
+//      fCRCZDCQVecVtxPosCen[fCenBin][4]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
+//      fCRCZDCQVecVtxPosCen[fCenBin][5]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
+//    } else {
+//      fCRCZDCQVecVtxPosCen[fCenBin][6]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
+//      fCRCZDCQVecVtxPosCen[fCenBin][7]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
+//    }
     
     fhAvRefMulRbR->Fill(fRunBin+0.5,fCentralityEBE,fReferenceMultiplicityEBE);
     fhAvQMCRbR->Fill(fRunBin+0.5,fCentralityEBE,QMC);
     fhAvQMARbR->Fill(fRunBin+0.5,fCentralityEBE,QMA);
-    
-    if(fStoreZDCQVecVtxPos) {
-//      if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//        fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-//        fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-//        fCRCZDCQVecVtxPos[fRunBin][2]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-//        fCRCZDCQVecVtxPos[fRunBin][3]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-//      }
-    }
     
     //      for(Int_t i=0;i<3;i++) {
 //        if(fbFlagIsPosMagField) {
@@ -19692,23 +19593,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fCRCZDCQVecRes[fRunBin][3]->Fill(fCentralityEBE,QCImR*QAReR);
     
     if(fStoreZDCQVecVtxPos) {
-      Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
-//      if(fCentralityEBE>5. && fCentralityEBE<40.) {
-//        fCRCZDCQVecResVtx[bw][0]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR*QAImR);
-//        fCRCZDCQVecResVtx[bw][1]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR*QAReR);
-//        fCRCZDCQVecResVtx[bw][2]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR*QAImR-QCImR*QAReR);
-//        fCRCZDCQVecResEZDC[bw][0]->Fill(QMCrec,QMArec,QCReR*QAImR);
-//        fCRCZDCQVecResEZDC[bw][1]->Fill(QMCrec,QMArec,QCImR*QAReR);
-//        fCRCZDCQVecResEZDC[bw][2]->Fill(QMCrec,QMArec,QCReR*QAImR-QCImR*QAReR);
-//        
-//        fCRCZDCQVecResCrossC[bw][0]->Fill(QCReR,QCImR,QCReR*QAImR);
-//        fCRCZDCQVecResCrossC[bw][1]->Fill(QCReR,QCImR,QCImR*QAReR);
-//        fCRCZDCQVecResCrossC[bw][2]->Fill(QCReR,QCImR,QCReR*QAImR-QCImR*QAReR);
-//        
-//        fCRCZDCQVecResCrossA[bw][0]->Fill(QAReR,QAImR,QCReR*QAImR);
-//        fCRCZDCQVecResCrossA[bw][1]->Fill(QAReR,QAImR,QCImR*QAReR);
-//        fCRCZDCQVecResCrossA[bw][2]->Fill(QAReR,QAImR,QCReR*QAImR-QCImR*QAReR);
-//      }
       fCRCZDCQVecDis[bw][fCenBin][0]->Fill(QCReR,QCImR);
       fCRCZDCQVecDis[bw][fCenBin][1]->Fill(QAReR,QAImR);
     }
@@ -19717,25 +19601,48 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fQAZDCCutsFlag = kFALSE;
   }
   
+} // end of AliFlowAnalysisCRC::RecenterCRCQVecZDC()
+
+//=======================================================================================================================
+
+Bool_t AliFlowAnalysisCRC::PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm)
+{
+  Int_t bw = (fbFlagIsPosMagField==kTRUE?0:1);
+  Bool_t passcut = kTRUE;
+  
+  if(fMinMulZN==13) {
+    if(fCRCZDC2DCutZDCC[bw][fCenBin]) {
+      if(fRandom->Uniform(0.,1.)>fCRCZDC2DCutZDCC[bw][fCenBin]->GetBinContent(fCRCZDC2DCutZDCC[bw][fCenBin]->GetXaxis()->FindBin(ZCRe),fCRCZDC2DCutZDCC[bw][fCenBin]->GetYaxis()->FindBin(ZCIm))) passcut = kFALSE;
+    }
+  }
+  
+  if(fMinMulZN==14) {
+    if(fCRCZDC2DCutZDCA[bw][fCenBin]) {
+      if(fRandom->Uniform(0.,1.)>fCRCZDC2DCutZDCA[bw][fCenBin]->GetBinContent(fCRCZDC2DCutZDCA[bw][fCenBin]->GetXaxis()->FindBin(ZARe),fCRCZDC2DCutZDCA[bw][fCenBin]->GetYaxis()->FindBin(ZAIm))) passcut = kFALSE;
+    }
+  }
+  
+  if(fMinMulZN==15) {
+    if(fCRCZDC2DCutZDCC[bw][fCenBin] && fCRCZDC2DCutZDCA[bw][fCenBin]) {
+      if(fRandom->Uniform(0.,1.)>fCRCZDC2DCutZDCC[bw][fCenBin]->GetBinContent(fCRCZDC2DCutZDCC[bw][fCenBin]->GetXaxis()->FindBin(ZCRe),fCRCZDC2DCutZDCC[bw][fCenBin]->GetYaxis()->FindBin(ZCIm))) passcut = kFALSE;
+      if(fRandom->Uniform(0.,1.)>fCRCZDC2DCutZDCA[bw][fCenBin]->GetBinContent(fCRCZDC2DCutZDCA[bw][fCenBin]->GetXaxis()->FindBin(ZARe),fCRCZDC2DCutZDCA[bw][fCenBin]->GetYaxis()->FindBin(ZAIm))) passcut = kFALSE;
+    }
+  }
+  
+  return passcut;
 }
 
 //=======================================================================================================================
 
-Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
+void AliFlowAnalysisCRC::PassQAZDCCuts()
 {
-  Bool_t PassZDCcuts=kTRUE;
-  
   // VZ eta < 0
   Double_t VZCM = fVZFlowVect[0][1].GetMult();
   // VZ eta > 0
   Double_t VZAM = fVZFlowVect[1][1].GetMult();
   // ZDCN-C
-  Double_t ZCRe = fZDCFlowVect[0].X();
-  Double_t ZCIm = fZDCFlowVect[0].Y();
   Double_t QMC  = fZDCFlowVect[0].GetMult();
   // ZDCN-A
-  Double_t ZARe = fZDCFlowVect[1].X();
-  Double_t ZAIm = fZDCFlowVect[1].Y();
   Double_t QMA  = fZDCFlowVect[1].GetMult();
   
   // get re-centered QM*
@@ -19749,26 +19656,24 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   }
   
   // cut on multiplicity
-  if( fZNCen<=0. || fZNAen<=0. ) PassZDCcuts = kFALSE;
-  // cut on centroid position
-  if(sqrt(ZCRe*ZCRe+ZCIm*ZCIm)<1.E-6 || sqrt(ZARe*ZARe+ZAIm*ZAIm)<1.E-6) PassZDCcuts = kFALSE;
+  if( fZNCen<=0. || fZNAen<=0. ) fQAZDCCutsFlag = kFALSE;
   // exclude ZDC bad runs
-  if(fRunNum==138469 || fRunNum==138870 || fRunNum==139028 || fRunNum==139029 || fRunNum==139036) PassZDCcuts = kFALSE;
+  if(fRunNum==138469 || fRunNum==138870 || fRunNum==139028 || fRunNum==139029 || fRunNum==139036) fQAZDCCutsFlag = kFALSE;
   Int_t CenBin = (Int_t)(fCentralityEBE);
   
   // cut on #neutrons
   if(fMinMulZN==1) {
-    if(fZNCen > fPolMin[0]->Eval(fCentralityEBE) || fZNAen > fPolMin[1]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
+    if(fZNCen > fPolMin[0]->Eval(fCentralityEBE) || fZNAen > fPolMin[1]->Eval(fCentralityEBE)) fQAZDCCutsFlag = kFALSE;
   }
   if(fMinMulZN==2) {
-    if(fZNCen < fPolMax[0]->Eval(fCentralityEBE) || fZNAen < fPolMax[1]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
+    if(fZNCen < fPolMax[0]->Eval(fCentralityEBE) || fZNAen < fPolMax[1]->Eval(fCentralityEBE)) fQAZDCCutsFlag = kFALSE;
   }
   
   // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
   Double_t ZNM = (fZNCen+fZNAen)/2.;
   Double_t VZM = VZCM+VZAM;
   
-  if(fMinMulZN==3 || fMinMulZN==4 || fMinMulZN==14) {
+  if(fMinMulZN==3 || fMinMulZN==4) {
     Double_t ZCMd = fZNCen;
     Double_t ZAMd = fZNAen;
     if(fCorrMap[CenBin]) {
@@ -19776,13 +19681,10 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
       ZCMd -= fCorrMap[CenBin];
     }
     if(fMinMulZN==3) {
-      if(ZCMd-ZAMd > fPolMin[0]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
+      if(ZCMd-ZAMd > fPolMin[0]->Eval(fCentralityEBE)) fQAZDCCutsFlag = kFALSE;
     }
     if(fMinMulZN==4) {
-      if(ZCMd-ZAMd < fPolMax[0]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
-    }
-    if(fMinMulZN==14) {
-      if((ZCMd-ZAMd < fPolMin[0]->Eval(fCentralityEBE)) || (ZCMd-ZAMd > fPolMax[0]->Eval(fCentralityEBE))) PassZDCcuts = kFALSE;
+      if(ZCMd-ZAMd < fPolMax[0]->Eval(fCentralityEBE)) fQAZDCCutsFlag = kFALSE;
     }
     
     // new centrality
@@ -19817,9 +19719,9 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   
   if(fMinMulZN==7) {
     if (VZM>5.E3) {
-      PassZDCcuts = kTRUE;
+      fQAZDCCutsFlag = kTRUE;
     } else {
-      PassZDCcuts = kFALSE;
+      fQAZDCCutsFlag = kFALSE;
     }
   }
   
@@ -19836,7 +19738,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
       }
     }
     if (fZDCESEclEbE==-1) fZDCESEclEbE=fZDCESEnPol;
-    if (fCentralityEBE>=90.) PassZDCcuts = kFALSE;
+    if (fCentralityEBE>=90.) fQAZDCCutsFlag = kFALSE;
   }
   
   fhZNvsCen[0]->Fill(fCentralityEBE,fZNCen+fZNAen);
@@ -19844,52 +19746,39 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   // cut on ZDC spectra for LHC15o
   if(fMinMulZN==8) {
     if(fCentralityEBE<90.) {
-      if(fZNCen+fZNAen<fEZNCutMin->GetBinContent(fEZNCutMin->FindBin(fCentralityEBE))) PassZDCcuts = kFALSE;
-      if(fZNCen+fZNAen>fEZNCutMax->GetBinContent(fEZNCutMax->FindBin(fCentralityEBE))) PassZDCcuts = kFALSE;
+      if(fZNCen+fZNAen<fEZNCutMin->GetBinContent(fEZNCutMin->FindBin(fCentralityEBE))) fQAZDCCutsFlag = kFALSE;
+      if(fZNCen+fZNAen>fEZNCutMax->GetBinContent(fEZNCutMax->FindBin(fCentralityEBE))) fQAZDCCutsFlag = kFALSE;
     }
   }
   
   if(fMinMulZN==9) {
-    if(fabs(fVtxPosCor[0])>4.25e-3) PassZDCcuts = kFALSE;
-    if(fabs(fVtxPosCor[1])>3.9e-3) PassZDCcuts = kFALSE;
-    if(fabs(fVtxPosCor[2])>5.) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[0])>4.25e-3) fQAZDCCutsFlag = kFALSE;
+    if(fabs(fVtxPosCor[1])>3.9e-3) fQAZDCCutsFlag = kFALSE;
+    if(fabs(fVtxPosCor[2])>5.) fQAZDCCutsFlag = kFALSE;
   }
   
-  if(fMinMulZN==10) {
-//    if(sqrt(fVtxPosCor[0]*fVtxPosCor[0]+fVtxPosCor[1]*fVtxPosCor[1])>6.e-3) {
-//      PassZDCcuts = kFALSE;
-//    }
-    if(fRunNum==246087) PassZDCcuts = kFALSE;
+  if(fMinMulZN>=10) {
+    if(fRunNum==246087) fQAZDCCutsFlag = kFALSE;
   }
   
   if(fMinMulZN==11) {
-    if(fRunNum==246087) PassZDCcuts = kFALSE;
-    if(fabs(fVtxPosCor[0])>4.25e-3) PassZDCcuts = kFALSE;
-    if(fabs(fVtxPosCor[1])>3.9e-3) PassZDCcuts = kFALSE;
-    if(fabs(fVtxPosCor[2])>5.) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[0])>4.25e-3) fQAZDCCutsFlag = kFALSE;
+    if(fabs(fVtxPosCor[1])>3.9e-3) fQAZDCCutsFlag = kFALSE;
+    if(fabs(fVtxPosCor[2])>5.) fQAZDCCutsFlag = kFALSE;
   }
   
   if(fMinMulZN==12) {
-    if(fRunNum==246087) PassZDCcuts = kFALSE;
     // cut outliers
-    if(fabs(QMCrec)>100.) PassZDCcuts = kFALSE;
-    if(fabs(QMArec)>100.) PassZDCcuts = kFALSE;
-  }
-  
-  if(fMinMulZN==13) {
-    if(fRunNum==246087) PassZDCcuts = kFALSE;
-    if(sqrt(ZCRe*ZCRe+ZCIm*ZCIm)>0.75) PassZDCcuts = kFALSE;
-    if(sqrt(ZARe*ZARe+ZAIm*ZAIm)>0.75) PassZDCcuts = kFALSE;
+    if(fabs(QMCrec)>100.) fQAZDCCutsFlag = kFALSE;
+    if(fabs(QMArec)>100.) fQAZDCCutsFlag = kFALSE;
   }
   
   // fill QA plots
-  if(PassZDCcuts) {
+  if(fQAZDCCutsFlag) {
     fhZNCvsZNA[fCenBin]->Fill(fZNCen,fZNAen);
     fhZNvsCen[1]->Fill(fCentralityEBE,fZNCen+fZNAen);
     fhZNvsMul->Fill(fNITSCL1EBE,fZNCen+fZNAen,fCenWeightEbE);
   }
-  
-  return PassZDCcuts;
 }
 
 //=======================================================================================================================
@@ -20926,7 +20815,7 @@ void AliFlowAnalysisCRC::CalculateFlowSCZDC()
 {
   //symmetric cumulants
   
-  for(Int_t hsc=0; hsc<fSCv2vsZNHarm; hsc++) {
+  for(Int_t hsc=0; hsc<2; hsc++) {
     Double_t QARe=0., QAIm=0., QBRe=0., QBIm=0., QAM0=0., QAM=0., QBM0=0., QBM=0., AvPt=0.;
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
       QARe += fPOIPtDiffQReEG[0][1][hsc+1]->GetBinContent(pt+1);
@@ -20949,6 +20838,12 @@ void AliFlowAnalysisCRC::CalculateFlowSCZDC()
         fFlowSCProdPro[hsc][3]->Fill(fCentralityEBE,IQC2EG,fCenWeightEbE);
         fFlowSCProdPro[hsc][4]->Fill(fCentralityEBE,fZNCen+fZNAen,fCenWeightEbE);
         fFlowSCProdPro[hsc][5]->Fill(fCentralityEBE,fCentralityEBE,fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][0]->Fill(fCentralityEBE,IQC2EG*(fZNCen+fZNAen),fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][1]->Fill(fCentralityEBE,IQC2EG*fCentralityEBE,fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][2]->Fill(fCentralityEBE,(fZNCen+fZNAen)*fCentralityEBE,fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][3]->Fill(fCentralityEBE,IQC2EG,fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][4]->Fill(fCentralityEBE,fZNCen+fZNAen,fCenWeightEbE);
+        fFlowSCProdPro[hsc+2][5]->Fill(fCentralityEBE,fCentralityEBE,fCenWeightEbE);
         fFlowSCMultvsZN->Fill(fCentralityEBE,fZNCen+fZNAen,QAM0+QBM0);
         AvPt /= (QAM+QBM);
         fFlowSCAvPtvsZN->Fill(fCentralityEBE,fZNCen+fZNAen,AvPt);
@@ -21358,6 +21253,9 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
       fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],WQM2*fCenWeightEbE);
       fFlowQCRefCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],WQM2*fCenWeightEbE);
+      fFlowQCIntCorProTest[hr][0][0]->Fill(fCentralityEBE,fVtxPosCor[0],IQC2[hr],WQM2*fCenWeightEbE);
+      fFlowQCIntCorProTest[hr][1][0]->Fill(fCentralityEBE,fVtxPosCor[1],IQC2[hr],WQM2*fCenWeightEbE);
+      fFlowQCIntCorProTest[hr][2][0]->Fill(fCentralityEBE,fVtxPosCor[2],IQC2[hr],WQM2*fCenWeightEbE);
       
 //      Int_t ordmag = -floor(log10(fabs(IQC2[hr])));
 //      if(ordmag<0) ordmag=0;
@@ -21389,7 +21287,10 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       
       fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],WQM4*fCenWeightEbE);
       fFlowQCRefCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],WQM4*fCenWeightEbE);
-
+      fFlowQCIntCorProTest[hr][0][1]->Fill(fCentralityEBE,fVtxPosCor[0],IQC4[hr],WQM4*fCenWeightEbE);
+      fFlowQCIntCorProTest[hr][1][1]->Fill(fCentralityEBE,fVtxPosCor[1],IQC4[hr],WQM4*fCenWeightEbE);
+      fFlowQCIntCorProTest[hr][2][1]->Fill(fCentralityEBE,fVtxPosCor[2],IQC4[hr],WQM4*fCenWeightEbE);
+      
 //      Int_t ordmag = -floor(log10(fabs(IQC4[hr])));
 //      if(ordmag<0) ordmag=0;
 //      if(ordmag>fkNOrdMag-1) ordmag=fkNOrdMag-1;
@@ -21471,6 +21372,9 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
         fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],WQM2EG*fCenWeightEbE);
         fFlowQCRefCorPro[hr][2]->Fill(fCentralityEBE,IQC2EG[hr],WQM2EG*fCenWeightEbE);
+        fFlowQCIntCorProTest[hr][0][2]->Fill(fCentralityEBE,fVtxPosCor[0],IQC2EG[hr],WQM2EG*fCenWeightEbE);
+        fFlowQCIntCorProTest[hr][1][2]->Fill(fCentralityEBE,fVtxPosCor[1],IQC2EG[hr],WQM2EG*fCenWeightEbE);
+        fFlowQCIntCorProTest[hr][2][2]->Fill(fCentralityEBE,fVtxPosCor[2],IQC2EG[hr],WQM2EG*fCenWeightEbE);
         Q2EGf = kTRUE;
       }
       Double_t mul = QAM0*QBM;
@@ -21544,7 +21448,6 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       if(qpM0>0 && QM0>1) {
         dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
         fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,WdQM2*fCenWeightEbE);
-        fFlowQCIntCorProTest[hr][3]->Fill(fCentralityEBE,FillPtBin,dQC2,WdQM2*fCenWeightEbE);
         // NUA
         WqpM0 = (WeigMul? qpM0 : 1.);
         sinP1 = qpIm0/qpM0;
@@ -21574,7 +21477,6 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
                          + 2.*qpM*QM2
                          - 6.*qpM3) / dQM4;
         fFlowQCCorPro[fCenBin][hr][2]->Fill(FillPtBin,dQC4,WdQM4*fCenWeightEbE);
-        fFlowQCIntCorProTest[hr][4]->Fill(fCentralityEBE,FillPtBin,dQC4,WdQM4*fCenWeightEbE);
         
         // NUA
         dM11 = qpM0*(QM*QM-QM2) - 2.*(qpM*QM-qpM2);
@@ -21631,7 +21533,6 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       if(qpAM0>0 && QBM0>0) {
         dQC2EG = (qpARe*QBRe+qpAIm*QBIm)/dQM2EG;
         fFlowQCCorPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2EG,WdQM2EG*fCenWeightEbE);
-        fFlowQCIntCorProTest[hr][5]->Fill(fCentralityEBE,FillPtBin,dQC2EG,WdQM2EG*fCenWeightEbE);
         dQ2EGf = kTRUE;
       }
       // NUA
@@ -21783,73 +21684,6 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         
       }
     } // end of for(Int_t pb=0; pb<fPOIPhiEtaDiffQRe[0][0]->GetNbinsX(); pb++)
-    
-    // TEST ********************************************************************
-    
-    // pT-integrated, 2- and 4-particle cumulants
-    for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-      
-      FillPtBin = fPOIPtDiffQRe[0][0]->GetBinCenter(pt+1);
-      QRe=0.; QIm=0.; Q2Re2=0.; Q2Im2=0.; QRe3=0.; QIm3=0.; QM0=0.; QM=0.; QM2=0.; QM3=0.; QM4=0.;
-      
-      for(Int_t ptb=pt; ptb<fPtDiffNBins; ptb++) {
-        QRe += fPOIPtDiffQRe[1][hr+1]->GetBinContent(ptb+1);
-        QIm += fPOIPtDiffQIm[1][hr+1]->GetBinContent(ptb+1);
-        Q2Re2 += fPOIPtDiffQRe[2][2*hr+3]->GetBinContent(ptb+1);
-        Q2Im2 += fPOIPtDiffQIm[2][2*hr+3]->GetBinContent(ptb+1);
-        QRe3 += fPOIPtDiffQRe[3][hr+1]->GetBinContent(ptb+1);
-        QIm3 += fPOIPtDiffQIm[3][hr+1]->GetBinContent(ptb+1);
-        
-        QM0 += fPOIPtDiffMul[0][0]->GetBinContent(ptb+1);
-        QM  += fPOIPtDiffMul[1][0]->GetBinContent(ptb+1);
-        QM2 += fPOIPtDiffMul[2][0]->GetBinContent(ptb+1);
-        QM3 += fPOIPtDiffMul[3][0]->GetBinContent(ptb+1);
-        QM4 += fPOIPtDiffMul[4][0]->GetBinContent(ptb+1);
-      }
-      
-      IQM2 = QM*QM-QM2;
-      WQM2 = (WeigMul? IQM2 : 1.);
-      if(QM0>1) {
-        IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
-        fFlowQCIntCorProTest[hr][0]->Fill(fCentralityEBE,FillPtBin,IQC2[hr],IQM2*fCenWeightEbE);
-      }
-      
-      IQM4 = QM*QM*QM*QM - 6.*QM2*QM*QM + 8.*QM3*QM + 3.*QM2*QM2 - 6.*QM4;
-      WQM4 = (WeigMul? IQM4 : 1.);
-      if(QM0>3) {
-        IQC4[hr] = ((QRe*QRe+QIm*QIm)*(QRe*QRe+QIm*QIm)
-                    - 2.*(QRe*QRe*Q2Re2+2.*QRe*QIm*Q2Im2-QIm*QIm*Q2Re2)
-                    + 8.*(QRe3*QRe+QIm3*QIm)
-                    + (Q2Re2*Q2Re2+Q2Im2*Q2Im2)
-                    - 4.*QM2*(QRe*QRe+QIm*QIm)
-                    - 6.*QM4 + 2.*QM2*QM2) / IQM4;
-        
-        fFlowQCIntCorProTest[hr][1]->Fill(fCentralityEBE,FillPtBin,IQC4[hr],IQM4*fCenWeightEbE);
-      }
-      
-      // pT-integrated, 2-particle with Eta Gap
-      QARe=0.; QAIm=0.; QBRe=0.; QBIm=0.; QAM0=0.; QAM=0.; QBM0=0.; QBM=0.;
-      
-      for(Int_t ptb=pt; ptb<fPtDiffNBins; ptb++) {
-        QARe += fPOIPtDiffQReEG[0][1][hr+1]->GetBinContent(ptb+1);
-        QAIm += fPOIPtDiffQImEG[0][1][hr+1]->GetBinContent(ptb+1);
-        QBRe += fPOIPtDiffQReEG[1][1][hr+1]->GetBinContent(ptb+1);
-        QBIm += fPOIPtDiffQImEG[1][1][hr+1]->GetBinContent(ptb+1);
-        QAM0 += fPOIPtDiffMulEG[0][0][0]->GetBinContent(ptb+1);
-        QAM  += fPOIPtDiffMulEG[0][1][0]->GetBinContent(ptb+1);
-        QBM0 += fPOIPtDiffMulEG[1][0][0]->GetBinContent(ptb+1);
-        QBM  += fPOIPtDiffMulEG[1][1][0]->GetBinContent(ptb+1);
-      }
-      
-      IQM2EG = QAM*QBM;
-      WQM2EG = (WeigMul? IQM2EG : 1.);
-      if(QAM0>0 && QBM0>0) {
-        if(IQM2EG) {
-          IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
-          fFlowQCIntCorProTest[hr][2]->Fill(fCentralityEBE,FillPtBin,IQC2EG[hr],IQM2EG*fCenWeightEbE);
-        }
-      }
-    } // end of for(Int_t pt=0; pt<fPtDiffNBins; pt++)
     
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
   
@@ -22294,11 +22128,11 @@ void AliFlowAnalysisCRC::FillVarious()
   
   fV0MMultHist->Fill(fNITSCL1EBE,fCenWeightEbE);
   
-  if(!fQAZDCCuts || (fQAZDCCuts && fQAZDCCutsFlag)) {
-    fVtxHist[0]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[0]);
-    fVtxHist[1]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[1]);
-    fVtxHist[2]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[2]);
-  }
+  fVtxHist[0]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[0]);
+  fVtxHist[1]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[1]);
+  fVtxHist[2]->Fill(fRunBin+0.5,fCentralityEBE,fVtxPos[2]);
+  
+  fRefMulRecHist->Fill(fCentralityEBE,fReferenceMultiplicityRecEBE);
   
 } // end of AliFlowAnalysisCRC::FillVarious()
 
@@ -25024,122 +24858,138 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         }
       } // end of for(Int_t pt=1;pt<=100;pt++)
     }
+  } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
+  
+  // SC intermezzo ***********************************************************
+  
+  if (fCalculateFlowZDC && fUseZDC) {
     
-    // SC intermezzo ***********************************************************
+    // pt-integrated
     
-    if (fCalculateFlowZDC && fUseZDC) {
+    for(Int_t i=0; i<fSCv2vsZNHarm; i++) {
       
-      // pt-integrated
-      
-      for(Int_t i=0; i<fSCv2vsZNHarm; i++) {
-        
-        for(Int_t bng=0; bng<fkSCNHist; bng++) {
-          for(Int_t pt=1;pt<=fFlowSCProdPro[i][bng]->GetNbinsX();pt++) {
-            Double_t stats[6]={0.};
-            fFlowSCProdPro[i][bng]->GetXaxis()->SetRange(pt,pt);
-            fFlowSCProdPro[i][bng]->GetStats(stats);
-            Double_t SumWeig   = stats[0];
-            Double_t SumWeigSq  = stats[1];
-            Double_t SumTwo  = stats[4];
-            Double_t SumTwoSq = stats[5];
-            
-            if(SumWeig>0.) {
-              Double_t Corr = SumTwo/SumWeig;
-              Double_t SqCorr = SumTwoSq/SumWeig;
-              Double_t Weig = SumWeig;
-              Double_t SqWeig = SumWeigSq;
-              Double_t spread=0., termA=0., termB=0.;
-              if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-              if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-              if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-              Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-              if(CorrErr) {
-                fFlowSCProdHist[i][bng]->SetBinContent(pt,Corr);
-                fFlowSCProdHist[i][bng]->SetBinError(pt,CorrErr);
-              }
+      for(Int_t bng=0; bng<fkSCNHist; bng++) {
+        for(Int_t pt=1;pt<=fFlowSCProdPro[i][bng]->GetNbinsX();pt++) {
+          Double_t stats[6]={0.};
+          fFlowSCProdPro[i][bng]->GetXaxis()->SetRange(pt,pt);
+          fFlowSCProdPro[i][bng]->GetStats(stats);
+          Double_t SumWeig   = stats[0];
+          Double_t SumWeigSq  = stats[1];
+          Double_t SumTwo  = stats[4];
+          Double_t SumTwoSq = stats[5];
+          
+          if(SumWeig>0.) {
+            Double_t Corr = SumTwo/SumWeig;
+            Double_t SqCorr = SumTwoSq/SumWeig;
+            Double_t Weig = SumWeig;
+            Double_t SqWeig = SumWeigSq;
+            Double_t spread=0., termA=0., termB=0.;
+            if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+            if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+            if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+            Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+            if(CorrErr) {
+              fFlowSCProdHist[i][bng]->SetBinContent(pt,Corr);
+              fFlowSCProdHist[i][bng]->SetBinError(pt,CorrErr);
             }
-          } // end of for(Int_t pt=1;pt<=100;pt++)
-          fFlowSCProdPro[i][bng]->GetXaxis()->SetRange(1,fFlowSCProdPro[i][bng]->GetNbinsX());
-        } // end of for(Int_t bng=0; bng<3; bng++)
+          }
+        } // end of for(Int_t pt=1;pt<=100;pt++)
+        fFlowSCProdPro[i][bng]->GetXaxis()->SetRange(1,fFlowSCProdPro[i][bng]->GetNbinsX());
+      } // end of for(Int_t bng=0; bng<3; bng++)
+      
+      // check if there is residual pedestal
+      TF1* fitped = new TF1("fitped","pol1",0.,10.);
+      fFlowSCProdHist[i][4]->Fit(fitped,"RQN","",0.,10.);
+      Double_t ExpZN = 2.; // from trento, average between WN,KLN,EKRT; uncertanty .2, few stat
+      Double_t ZN0 = fitped->GetParameter(0);
+      Double_t Ped = 0.;
+      if(ZN0>ExpZN) {
+        Ped = ZN0-ExpZN;
+      }
+      
+      for (Int_t c=0; c<fFlowSCProdHist[0][0]->GetNbinsX(); c++) {
         
-        // check if there is residual pedestal
-        TF1* fitped = new TF1("fitped","pol1",0.,10.);
-        fFlowSCProdHist[i][4]->Fit(fitped,"RQN","",0.,10.);
-        Double_t ExpZN = 2.; // from trento, average between WN,KLN,EKRT; uncertanty .2, few stat
-        Double_t ZN0 = fitped->GetParameter(0);
-        Double_t Ped = 0.;
-        if(ZN0>ExpZN) {
-          Ped = ZN0-ExpZN;
+        Double_t vnZN    = fFlowSCProdHist[i][0]->GetBinContent(c+1);
+        Double_t vnCen   = fFlowSCProdHist[i][1]->GetBinContent(c+1);
+        Double_t ZNCen   = fFlowSCProdHist[i][2]->GetBinContent(c+1);
+        Double_t vn      = fFlowSCProdHist[i][3]->GetBinContent(c+1);
+        Double_t ZN      = fFlowSCProdHist[i][4]->GetBinContent(c+1);
+        Double_t Cen     = fFlowSCProdPro[i][5]->GetBinContent(c+1);
+        Double_t Varvn   = pow(fFlowSCProdPro[i][3]->GetBinError(c+1),2.);
+        Double_t VarZN   = pow(fFlowSCProdPro[i][4]->GetBinError(c+1),2.);
+        Double_t VarCen  = pow(fFlowSCProdPro[i][5]->GetXaxis()->GetBinWidth(c+1),2.)/12.;
+        
+        Double_t vnZNEr = fFlowSCProdHist[i][0]->GetBinError(c+1);
+        Double_t vnCenEr = fFlowSCProdHist[i][1]->GetBinError(c+1);
+        Double_t ZNCenEr = fFlowSCProdHist[i][2]->GetBinError(c+1);
+        Double_t vnEr = fFlowSCProdHist[i][3]->GetBinError(c+1);
+        Double_t ZNEr = fFlowSCProdHist[i][4]->GetBinError(c+1);
+        
+        // partial covariance
+        
+        Double_t CovvnZN = vnZN - vn*ZN;
+        Double_t CovvnCen = vnCen - vn*Cen;
+        Double_t CovZNCen = ZNCen - Cen*ZN;
+        
+        fFlowSCCovHist[i][0]->SetBinContent(c+1,CovvnZN);
+        fFlowSCCovHist[i][0]->SetBinError(c+1,vnZNEr);
+        fFlowSCCovHist[i][1]->SetBinContent(c+1,CovvnCen);
+        fFlowSCCovHist[i][1]->SetBinError(c+1,vnCenEr);
+        fFlowSCCovHist[i][2]->SetBinContent(c+1,CovZNCen);
+        fFlowSCCovHist[i][2]->SetBinError(c+1,ZNCenEr);
+        
+        Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/VarCen;
+        Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.)); // TBI
+        
+        fFlowSCFinalHist[i][0]->SetBinContent(c+1,ParCovvnZN);
+        fFlowSCFinalHist[i][0]->SetBinError(c+1,ParCovvnZNErr);
+        
+        // normalized partial covariance
+        
+        CovvnZN = (vnZN - vn*ZN)/(vn*ZN);
+        CovvnCen = (vnCen - vn*Cen)/(vn*Cen);
+        CovZNCen = (ZNCen - Cen*ZN)/(Cen*ZN);
+        
+        if(VarCen>0. && Cen>0.) {
+          Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/(VarCen/pow(Cen,2.));
+          Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.))/(vn*ZN); // TBI
+          
+          fFlowSCFinalHist[i][1]->SetBinContent(c+1,ParCovvnZN);
+          fFlowSCFinalHist[i][1]->SetBinError(c+1,ParCovvnZNErr);
         }
         
-        for (Int_t c=0; c<fFlowSCProdHist[0][0]->GetNbinsX(); c++) {
+        // normalized partial covariance - pedestal subtracted
+        
+        CovvnZN = (vnZN - vn*ZN)/(vn*(ZN-Ped));
+        CovvnCen = (vnCen - vn*Cen)/(vn*Cen);
+        CovZNCen = (ZNCen - Cen*ZN)/(Cen*(ZN-Ped));
+        
+        fFlowSCCovHist[i][3]->SetBinContent(c+1,CovvnZN);
+        fFlowSCCovHist[i][3]->SetBinError(c+1,vnZNEr/(vn*(ZN-Ped)));
+        fFlowSCCovHist[i][4]->SetBinContent(c+1,CovvnCen);
+        fFlowSCCovHist[i][4]->SetBinError(c+1,vnCenEr/(vn*Cen));
+        fFlowSCCovHist[i][5]->SetBinContent(c+1,CovZNCen);
+        fFlowSCCovHist[i][5]->SetBinError(c+1,ZNCenEr/(Cen*(ZN-Ped)));
+        
+        if(VarCen>0. && Cen>0.) {
+          Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/(VarCen/pow(Cen,2.));
+          Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.))/(vn*(ZN-Ped)); // TBI
           
-          Double_t vnZN    = fFlowSCProdHist[i][0]->GetBinContent(c+1);
-          Double_t vnCen   = fFlowSCProdHist[i][1]->GetBinContent(c+1);
-          Double_t ZNCen   = fFlowSCProdHist[i][2]->GetBinContent(c+1);
-          Double_t vn      = fFlowSCProdHist[i][3]->GetBinContent(c+1);
-          Double_t ZN      = fFlowSCProdHist[i][4]->GetBinContent(c+1);
-          Double_t Cen     = fFlowSCProdHist[i][5]->GetBinContent(c+1);
-          Double_t Varvn   = fFlowSCProdPro[i][3]->GetBinError(c+1);
-          Double_t VarZN   = fFlowSCProdPro[i][4]->GetBinError(c+1);
-          Double_t VarCen  = fFlowSCProdPro[i][5]->GetBinError(c+1);
-          
-          Double_t vnZNEr = fFlowSCProdHist[i][0]->GetBinError(c+1);
-          Double_t vnEr = fFlowSCProdHist[i][3]->GetBinError(c+1);
-          Double_t ZNEr = fFlowSCProdHist[i][4]->GetBinError(c+1);
-      
-          // partial covariance
-          
-          Double_t CovvnZN = vnZN - vn*ZN;
-          Double_t CovvnCen = vnCen - vn*Cen;
-          Double_t CovZNCen = ZNCen - Cen*ZN;
-          
-          if(VarCen>0.) {
-            Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/VarCen;
-            Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.)); // TBI
-            
-            fFlowSCFinalHist[i][0]->SetBinContent(c+1,ParCovvnZN);
-            fFlowSCFinalHist[i][0]->SetBinError(c+1,ParCovvnZNErr);
-          }
-          
-          // normalized partial covariance
-          
-          CovvnZN = (vnZN - vn*ZN)/(vn*ZN);
-          CovvnCen = (vnCen - vn*Cen)/(vn*Cen);
-          CovZNCen = (ZNCen - Cen*ZN)/(Cen*ZN);
-          
-          if(VarCen>0. && Cen>0.) {
-            Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/(VarCen/pow(Cen,2.));
-            Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.))/(vn*ZN); // TBI
-            
-            fFlowSCFinalHist[i][1]->SetBinContent(c+1,ParCovvnZN);
-            fFlowSCFinalHist[i][1]->SetBinError(c+1,ParCovvnZNErr);
-          }
-          
-          // normalized partial covariance - pedestal subtracted
-          
-          CovvnZN = (vnZN - vn*ZN)/(vn*(ZN-Ped));
-          CovvnCen = (vnCen - vn*Cen)/(vn*Cen);
-          CovZNCen = (ZNCen - Cen*ZN)/(Cen*(ZN-Ped));
-          
-          if(VarCen>0. && Cen>0.) {
-            Double_t ParCovvnZN = CovvnZN - (CovvnCen*CovZNCen)/(VarCen/pow(Cen,2.));
-            Double_t ParCovvnZNErr = sqrt( pow(vnZNEr,2.) + pow(vn*ZNEr,2.) + pow(ZN*vnEr,2.))/(vn*(ZN-Ped)); // TBI
-            
-            fFlowSCFinalHist[i][2]->SetBinContent(c+1,ParCovvnZN);
-            fFlowSCFinalHist[i][2]->SetBinError(c+1,ParCovvnZNErr);
-          }
-          
+          fFlowSCFinalHist[i][2]->SetBinContent(c+1,ParCovvnZN);
+          fFlowSCFinalHist[i][2]->SetBinError(c+1,ParCovvnZNErr);
         }
         
-      } // end of for(Int_t i=0; i<fSCv2vsZNHarm; i++)
+      }
       
-    } // end of if (fCalculateFlowZDC && fUseZDC)
+    } // end of for(Int_t i=0; i<fSCv2vsZNHarm; i++)
     
-    // *************************************************************************
-    
-    // FINALISE (calculate flow)
-    
+  } // end of if (fCalculateFlowZDC && fUseZDC)
+  
+  // *************************************************************************
+  
+  // FINALISE (calculate flow)
+  
+  for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     // calculate covariance
     for(Int_t pt=1; pt<=fFlowQCIntCorHist[hr][0]->GetNbinsX(); pt++) {
       // average reduced correlations:
@@ -25853,117 +25703,102 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
     // TEST
     
     for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
-      for(Int_t cb=1;cb<=fFlowQCIntCorProTest[hr][j]->GetNbinsX();cb++) {
-        for(Int_t pt=1;pt<=fFlowQCIntCorProTest[hr][j]->GetNbinsY();pt++) {
-          Double_t stats[9]={0.};
-          fFlowQCIntCorProTest[hr][j]->GetYaxis()->SetRange(pt,pt);
-          fFlowQCIntCorProTest[hr][j]->GetXaxis()->SetRange(cb,cb);
-          fFlowQCIntCorProTest[hr][j]->GetStats(stats);
-          Double_t SumWeig   = stats[0];
-          Double_t SumWeigSq  = stats[1];
-          Double_t SumTwo  = stats[7];
-          Double_t SumTwoSq = stats[8];
-          
-          if(SumWeig>0.) {
-            Double_t Corr = SumTwo/SumWeig;
-            Double_t SqCorr = SumTwoSq/SumWeig;
-            Double_t Weig = SumWeig;
-            Double_t SqWeig = SumWeigSq;
-            Double_t spread=0., termA=0., termB=0.;
-            if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-            if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-            if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-            Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-            if(CorrErr) {
-              fFlowQCIntCorHistTest[hr][j]->SetBinContent(cb,pt,Corr);
-              fFlowQCIntCorHistTest[hr][j]->SetBinError(cb,pt,CorrErr);
+      for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++) {
+        for(Int_t cb=1;cb<=fFlowQCIntCorProTest[hr][k][j]->GetNbinsX();cb++) {
+          for(Int_t pt=1;pt<=fFlowQCIntCorProTest[hr][k][j]->GetNbinsY();pt++) {
+            Double_t stats[9]={0.};
+            fFlowQCIntCorProTest[hr][k][j]->GetYaxis()->SetRange(pt,pt);
+            fFlowQCIntCorProTest[hr][k][j]->GetXaxis()->SetRange(cb,cb);
+            fFlowQCIntCorProTest[hr][k][j]->GetStats(stats);
+            Double_t SumWeig   = stats[0];
+            Double_t SumWeigSq  = stats[1];
+            Double_t SumTwo  = stats[7];
+            Double_t SumTwoSq = stats[8];
+            
+            if(SumWeig>0.) {
+              Double_t Corr = SumTwo/SumWeig;
+              Double_t SqCorr = SumTwoSq/SumWeig;
+              Double_t Weig = SumWeig;
+              Double_t SqWeig = SumWeigSq;
+              Double_t spread=0., termA=0., termB=0.;
+              if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+              if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+              if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+              Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+              if(CorrErr) {
+                fFlowQCIntCorHistTest[hr][k][j]->SetBinContent(cb,pt,Corr);
+                fFlowQCIntCorHistTest[hr][k][j]->SetBinError(cb,pt,CorrErr);
+              }
             }
-          }
-        } // end of for(Int_t pt=1;pt<=100;pt++)
+          } // end of for(Int_t pt=1;pt<=100;pt++)
+        }
+        fFlowQCIntCorProTest[hr][k][j]->GetXaxis()->SetRange(1,fFlowQCIntCorProTest[hr][k][j]->GetNbinsX());
+        fFlowQCIntCorProTest[hr][k][j]->GetYaxis()->SetRange(1,fFlowQCIntCorProTest[hr][k][j]->GetNbinsY());
       }
-      fFlowQCIntCorProTest[hr][j]->GetXaxis()->SetRange(1,fFlowQCIntCorProTest[hr][j]->GetNbinsX());
-      fFlowQCIntCorProTest[hr][j]->GetYaxis()->SetRange(1,fFlowQCIntCorProTest[hr][j]->GetNbinsY());
     } // end of for(Int_t j=0; j<fkFlowQCnIntCorTest; j++)
     
     // FINALISE (calculate flow)
-    for(Int_t cb=1;cb<=fFlowQCIntCorHistTest[hr][0]->GetNbinsX();cb++) {
-      for(Int_t pt=1;pt<=fFlowQCIntCorHistTest[hr][0]->GetNbinsY();pt++) {
-        
-        // pT-integrated
-        
-        // 2- and 4-particle cumulants
-        
-        Double_t QC2  = fFlowQCIntCorHistTest[hr][0]->GetBinContent(cb,pt);
-        Double_t QC2E = fFlowQCIntCorHistTest[hr][0]->GetBinError(cb,pt);
-        Double_t QC4  = fFlowQCIntCorHistTest[hr][1]->GetBinContent(cb,pt);
-        Double_t QC4E = fFlowQCIntCorHistTest[hr][1]->GetBinError(cb,pt);
-        Double_t Cn2 = QC2;
-        Double_t Cn2E = QC2E;
-        Double_t Cn4 = QC4-2.*QC2*QC2;
-        Double_t Cn4Esq = 16.*pow(QC2,2.)*pow(QC2E,2) + pow(QC4E,2.);
-        Double_t Cn4E = 0.;
-        if(Cn4Esq>0.) Cn4E = sqrt(Cn4Esq);
-        
-        // store cumulants
-        fFlowQCIntCumHistTest[hr][0]->SetBinContent(cb,pt,Cn2);
-        fFlowQCIntCumHistTest[hr][0]->SetBinError(cb,pt,Cn2E);
-        fFlowQCIntCumHistTest[hr][1]->SetBinContent(cb,pt,Cn4);
-        fFlowQCIntCumHistTest[hr][1]->SetBinError(cb,pt,Cn4E);
-        
-        // store flow
-        if(Cn2>0.) {
-          Double_t Flow2 = pow(Cn2,0.5);
-          Double_t Flow2E = Flow2*Cn2E/(2.*Cn2);
-          fFlowQCIntFinHistTest[hr][0]->SetBinContent(cb,pt,Flow2);
-          fFlowQCIntFinHistTest[hr][0]->SetBinError(cb,pt,Flow2E);
-        }
-        if(Cn4E>0. && Cn4<0.) {
-          Double_t Flow4 = pow(-Cn4,0.25);
-          Double_t Flow4E = Flow4*Cn4E/(4.*Cn4);
-          fFlowQCIntFinHistTest[hr][1]->SetBinContent(cb,pt,Flow4);
-          fFlowQCIntFinHistTest[hr][1]->SetBinError(cb,pt,Flow4E);
-        }
-        
-        // 2-particle with Eta Gap
-        
-        Double_t QC2EG  = fFlowQCIntCorHistTest[hr][2]->GetBinContent(cb,pt);
-        Double_t QC2EGE = fFlowQCIntCorHistTest[hr][2]->GetBinError(cb,pt);
-        Double_t Cn2EG = QC2EG;
-        Double_t Cn2EGE = QC2EGE;
-      
-        // store cumulants
-        fFlowQCIntCumHistTest[hr][2]->SetBinContent(cb,pt,Cn2EG);
-        fFlowQCIntCumHistTest[hr][2]->SetBinError(cb,pt,Cn2EGE);
-        
-        // store flow
-        if(Cn2EG>0.) {
-          Double_t Flow2EG = pow(Cn2EG,0.5);
-          Double_t Flow2EGE = Flow2EG*Cn2EGE/(2.*Cn2EG);
-          fFlowQCIntFinHistTest[hr][2]->SetBinContent(cb,pt,Flow2EG);
-          fFlowQCIntFinHistTest[hr][2]->SetBinError(cb,pt,Flow2EGE);
-        }
-        
-        // pT-differential
-        
-        // reference flow
-//        Double_t QC2    = fFlowQCIntCorHist[hr][0]->GetBinContent(cb);
-//        Double_t QC2E   = fFlowQCIntCorHist[hr][0]->GetBinError(cb);
-//        Double_t QC4    = fFlowQCIntCorHist[hr][1]->GetBinContent(cb);
-//        Double_t QC4E   = fFlowQCIntCorHist[hr][1]->GetBinError(cb);
-//        Double_t wCov24 = fFlowQCIntCorHist[hr][2]->GetBinContent(cb);
-//        Double_t Cn2    = QC2;
-//        Double_t Cn2E   = QC2E;
-//        Double_t Cn4    = QC4-2.*QC2*QC2;
-//        Double_t Cn4Esq = 16.*pow(QC2,2.)*pow(QC2E,2) + pow(QC4E,2.) - 8.*QC2*wCov24;
-//        Double_t QC2EG  = fFlowQCIntCorHistEG[hr]->GetBinContent(cb);
-//        Double_t QC2EGE = fFlowQCIntCorHistEG[hr]->GetBinError(cb);
-//        Double_t Cn2EG  = QC2EG;
-//        Double_t Cn2EGE = QC2EGE;
-        
-        
-        
-      } // end of for(Int_t cb=1;cb<=fFlowQCRefCorPro[hr][j]->GetNbinsX();cb++)
-    } // end of for(Int_t pt=1;pt<=fFlowQCRefCorPro[hr][j]->GetNbinsY();pt++)
+    for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++) {
+      for(Int_t cb=1;cb<=fFlowQCIntCorHistTest[hr][k][0]->GetNbinsX();cb++) {
+        for(Int_t pt=1;pt<=fFlowQCIntCorHistTest[hr][k][0]->GetNbinsY();pt++) {
+          
+          // pT-integrated
+          
+          // 2- and 4-particle cumulants
+          
+          Double_t QC2  = fFlowQCIntCorHistTest[hr][k][0]->GetBinContent(cb,pt);
+          Double_t QC2E = fFlowQCIntCorHistTest[hr][k][0]->GetBinError(cb,pt);
+          Double_t QC4  = fFlowQCIntCorHistTest[hr][k][1]->GetBinContent(cb,pt);
+          Double_t QC4E = fFlowQCIntCorHistTest[hr][k][1]->GetBinError(cb,pt);
+          Double_t Cn2 = QC2;
+          Double_t Cn2E = QC2E;
+          Double_t Cn4 = QC4-2.*QC2*QC2;
+          Double_t Cn4Esq = 16.*pow(QC2,2.)*pow(QC2E,2) + pow(QC4E,2.);
+          Double_t Cn4E = 0.;
+          if(Cn4Esq>0.) Cn4E = sqrt(Cn4Esq);
+          
+          // store cumulants
+          fFlowQCIntCumHistTest[hr][k][0]->SetBinContent(cb,pt,Cn2);
+          fFlowQCIntCumHistTest[hr][k][0]->SetBinError(cb,pt,Cn2E);
+          fFlowQCIntCumHistTest[hr][k][1]->SetBinContent(cb,pt,Cn4);
+          fFlowQCIntCumHistTest[hr][k][1]->SetBinError(cb,pt,Cn4E);
+          
+          // store flow
+          if(Cn2>0.) {
+            Double_t Flow2 = pow(Cn2,0.5);
+            Double_t Flow2E = Flow2*Cn2E/(2.*Cn2);
+            fFlowQCIntFinHistTest[hr][k][0]->SetBinContent(cb,pt,Flow2);
+            fFlowQCIntFinHistTest[hr][k][0]->SetBinError(cb,pt,Flow2E);
+          }
+          if(Cn4E>0. && Cn4<0.) {
+            Double_t Flow4 = pow(-Cn4,0.25);
+            Double_t Flow4E = Flow4*Cn4E/(4.*Cn4);
+            fFlowQCIntFinHistTest[hr][k][1]->SetBinContent(cb,pt,Flow4);
+            fFlowQCIntFinHistTest[hr][k][1]->SetBinError(cb,pt,Flow4E);
+          }
+          
+          // 2-particle with Eta Gap
+          
+          Double_t QC2EG  = fFlowQCIntCorHistTest[hr][k][2]->GetBinContent(cb,pt);
+          Double_t QC2EGE = fFlowQCIntCorHistTest[hr][k][2]->GetBinError(cb,pt);
+          Double_t Cn2EG = QC2EG;
+          Double_t Cn2EGE = QC2EGE;
+          
+          // store cumulants
+          fFlowQCIntCumHistTest[hr][k][2]->SetBinContent(cb,pt,Cn2EG);
+          fFlowQCIntCumHistTest[hr][k][2]->SetBinError(cb,pt,Cn2EGE);
+          
+          // store flow
+          if(Cn2EG>0.) {
+            Double_t Flow2EG = pow(Cn2EG,0.5);
+            Double_t Flow2EGE = Flow2EG*Cn2EGE/(2.*Cn2EG);
+            fFlowQCIntFinHistTest[hr][k][2]->SetBinContent(cb,pt,Flow2EG);
+            fFlowQCIntFinHistTest[hr][k][2]->SetBinError(cb,pt,Flow2EGE);
+          }
+          
+        } // end of for(Int_t cb=1;cb<=fFlowQCRefCorPro[hr][j]->GetNbinsX();cb++)
+      } // end of for(Int_t pt=1;pt<=fFlowQCRefCorPro[hr][j]->GetNbinsY();pt++)
+    } // end of for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++)
     
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
   
@@ -28880,19 +28715,21 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
       if(FlowQCIntCumHist) { this->SetFlowQCIntCumHist(FlowQCIntCumHist,i,j); }
       else { cout<<"WARNING: FlowQCIntCumHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
     }
-    for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
-      TProfile2D *FlowQCIntCorProTest = dynamic_cast<TProfile2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorProTest[%d][%d]",i,j)));
-      if(FlowQCIntCorProTest) { this->SetFlowQCIntCorProTest(FlowQCIntCorProTest,i,j); }
-      else { cout<<"WARNING: FlowQCIntCorProTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-      TH2D *FlowQCIntCorHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorHistTest[%d][%d]",i,j)));
-      if(FlowQCIntCorHistTest) { this->SetFlowQCIntCorHistTest(FlowQCIntCorHistTest,i,j); }
-      else { cout<<"WARNING: FlowQCIntCorHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-      TH2D *FlowQCIntCumHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCumHistTest[%d][%d]",i,j)));
-      if(FlowQCIntCumHistTest) { this->SetFlowQCIntCumHistTest(FlowQCIntCumHistTest,i,j); }
-      else { cout<<"WARNING: FlowQCIntCumHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-      TH2D *FlowQCIntFinHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntFinHistTest[%d][%d]",i,j)));
-      if(FlowQCIntFinHistTest) { this->SetFlowQCIntFinHistTest(FlowQCIntFinHistTest,i,j); }
-      else { cout<<"WARNING: FlowQCIntFinHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+    for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++) {
+      for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
+        TProfile2D *FlowQCIntCorProTest = dynamic_cast<TProfile2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorProTest[%d][%d][%d]",i,k,j)));
+        if(FlowQCIntCorProTest) { this->SetFlowQCIntCorProTest(FlowQCIntCorProTest,i,k,j); }
+        else { cout<<"WARNING: FlowQCIntCorProTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+        TH2D *FlowQCIntCorHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorHistTest[%d][%d][%d]",i,k,j)));
+        if(FlowQCIntCorHistTest) { this->SetFlowQCIntCorHistTest(FlowQCIntCorHistTest,i,k,j); }
+        else { cout<<"WARNING: FlowQCIntCorHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+        TH2D *FlowQCIntCumHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntCumHistTest[%d][%d][%d]",i,k,j)));
+        if(FlowQCIntCumHistTest) { this->SetFlowQCIntCumHistTest(FlowQCIntCumHistTest,i,k,j); }
+        else { cout<<"WARNING: FlowQCIntCumHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+        TH2D *FlowQCIntFinHistTest = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCIntFinHistTest[%d][%d][%d]",i,k,j)));
+        if(FlowQCIntFinHistTest) { this->SetFlowQCIntFinHistTest(FlowQCIntFinHistTest,i,k,j); }
+        else { cout<<"WARNING: FlowQCIntFinHistTest is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      }
     }
     
     for(Int_t j=0; j<6; j++) {
@@ -28943,6 +28780,9 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
       TH1D *FlowSCFinalHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowSCFinalHist[%d][%d]",i,bng)));
       if(FlowSCFinalHist) { this->SetFlowSCFinalHist(FlowSCFinalHist,i,bng); }
       else { cout<<"WARNING: FlowSCFinalHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      TH1D *FlowSCCovHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowSCCovHist[%d][%d]",i,bng)));
+      if(FlowSCCovHist) { this->SetFlowSCCovHist(FlowSCCovHist,i,bng); }
+      else { cout<<"WARNING: FlowSCCovHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
     }
   }
   
@@ -29884,6 +29724,14 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     fZDCFitSec[k] = new TF1(Form("fZDCFitSec[%d]",k),"pol3",0.,100.);
     fTempList->Add(fZDCFitSec[k]);
   }
+  if(fCRCZDC2DCutList) {
+    for(Int_t i=0; i<2; i++) {
+      for(Int_t z=0; z<10; z++) {
+        fCRCZDC2DCutZDCC[i][z] = (TH2D*)(fCRCZDC2DCutList->FindObject(Form("CutZDCC_cen%d_magfielpol%d",z,i)));
+        fCRCZDC2DCutZDCA[i][z] = (TH2D*)(fCRCZDC2DCutList->FindObject(Form("CutZDCA_cen%d_magfielpol%d",z,i)));
+      }
+    }
+  }
   if(fZDCESEList) {
     fZDCESEMinHist[0] = (TH1D*)(fZDCESEList->FindObject("MinMulHis[0]"));
     fZDCESEMaxHist[0] = (TH1D*)(fZDCESEList->FindObject("MaxMulHis[0]"));
@@ -30013,7 +29861,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(2,"pol+;ch-");
   fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(3,"pol-;ch+");
   fCRCQVecPtHistMagField->GetYaxis()->SetBinLabel(4,"pol-;ch-");
-  fCRCQVecList->Add(fCRCQVecPtHistMagField);
+  fCRCQVecEtaPhiList->Add(fCRCQVecPtHistMagField);
   
   Double_t phibinsforphihist[101] = {0.};
   for (Int_t phib=0; phib<101; phib++) {
@@ -30025,45 +29873,50 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   Double_t etabinsforrecente[] = {-0.8,-0.64,-0.48,-0.32,-0.16,0.,0.16,0.32,0.48,0.64,0.8};
   fCRCQVecPhiHist = new TH3D("fCRCQVecPhiHist","fCRCQVecPhiHist",10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
   fCRCQVecPhiHist->Sumw2();
-  fCRCQVecList->Add(fCRCQVecPhiHist);
+  fCRCQVecEtaPhiList->Add(fCRCQVecPhiHist);
   for(Int_t r=0;r<2;r++) {
     fCRCQVecPhiHistCh[r] = new TH3D(Form("fCRCQVecPhiHistCh[%d]",r),Form("fCRCQVecPhiHistCh[%d]",r),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
     fCRCQVecPhiHistCh[r]->Sumw2();
-    fCRCQVecList->Add(fCRCQVecPhiHistCh[r]);
+    fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistCh[r]);
     fCRCQVecHarCosProCh[r] = new TProfile3D(Form("fCRCQVecHarCosProCh[%d]",r),Form("fCRCQVecHarCosProCh[%d]",r),10,cenbinsforphihist,6,harbinsforphihist,fkEtaDiffMaxNBins,etabinsforrecente);
     fCRCQVecHarCosProCh[r]->Sumw2();
-    fCRCQVecList->Add(fCRCQVecHarCosProCh[r]);
+    fCRCQVecEtaPhiList->Add(fCRCQVecHarCosProCh[r]);
     fCRCQVecHarSinProCh[r] = new TProfile3D(Form("fCRCQVecHarSinProCh[%d]",r),Form("fCRCQVecHarSinProCh[%d]",r),10,cenbinsforphihist,6,harbinsforphihist,fkEtaDiffMaxNBins,etabinsforrecente);
     fCRCQVecHarSinProCh[r]->Sumw2();
-    fCRCQVecList->Add(fCRCQVecHarSinProCh[r]);
+    fCRCQVecEtaPhiList->Add(fCRCQVecHarSinProCh[r]);
   }
   for(Int_t r=0;r<2;r++) {
     for(Int_t ptb=0;ptb<fZDCPtDiffNBins;ptb++) {
       fCRCQVecPhiHistChPt[r][ptb] = new TH3D(Form("fCRCQVecPhiHistChPt[%d][%d]",r,ptb),Form("fCRCQVecPhiHistChPt[%d][%d]",r,ptb),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
       fCRCQVecPhiHistChPt[r][ptb]->Sumw2();
-      fCRCQVecList->Add(fCRCQVecPhiHistChPt[r][ptb]);
+      fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistChPt[r][ptb]);
     }
   }
-//  for(Int_t h=0;h<fkQVecPhiVtxHistNEtaBins;h++) {
-//    Double_t xmin = -8.5e-3;
-//    Double_t xmax = 8.5e-3;
-//    Double_t ymin = -7.8e-3;
-//    Double_t ymax = 7.8e-3;
-//    Double_t zmin = -10.;
-//    Double_t zmax = 10.;
-//    Double_t vtxbinsx[11] = {0.};
-//    Double_t vtxbinsy[11] = {0.};
-//    Double_t vtxbinsz[11] = {0.};
-//    for (Int_t v=0; v<11; v++) {
-//      vtxbinsx[v]=xmin + v*(xmax-xmin)/10.;
-//      vtxbinsy[v]=ymin + v*(ymax-ymin)/10.;
-//      vtxbinsz[v]=zmin + v*(zmax-zmin)/10.;
-//    }
-//    
-//    fCRCQVecPhiVtxHist[h] = new TH3D(Form("fCRCQVecPhiVtxHist[%d]",h),Form("fCRCQVecPhiVtxHist[%d]",h),10,vtxbinsx,10,vtxbinsy,10,vtxbinsz,100,phibinsforphihist);
-//    fCRCQVecPhiHist->Sumw2();
-//    fCRCQVecList->Add(fCRCQVecPhiHist);
-//  }
+  Double_t xmin = -8.5e-3;
+  Double_t xmax = 8.5e-3;
+  Double_t ymin = -7.8e-3;
+  Double_t ymax = 7.8e-3;
+  Double_t zmin = -10.;
+  Double_t zmax = 10.;
+  Double_t vtxbinsx[11] = {0.};
+  Double_t vtxbinsy[11] = {0.};
+  Double_t vtxbinsz[11] = {0.};
+  for (Int_t v=0; v<11; v++) {
+    vtxbinsx[v]=xmin + v*(xmax-xmin)/10.;
+    vtxbinsy[v]=ymin + v*(ymax-ymin)/10.;
+    vtxbinsz[v]=zmin + v*(zmax-zmin)/10.;
+  }
+  for (Int_t cb=0; cb<fCRCnCen; cb++) {
+    fCRCQVecPhiHistVtxX[cb] = new TH3D(Form("fCRCQVecPhiHistVtxX[%d]",cb),Form("fCRCQVecPhiHistVtxX[%d]",cb),10,vtxbinsx,50,phibinsforphihist,16,etabinsforphihist);
+    fCRCQVecPhiHistVtxX[cb]->Sumw2();
+    fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistVtxX[cb]);
+    fCRCQVecPhiHistVtxY[cb] = new TH3D(Form("fCRCQVecPhiHistVtxY[%d]",cb),Form("fCRCQVecPhiHistVtxY[%d]",cb),10,vtxbinsy,50,phibinsforphihist,16,etabinsforphihist);
+    fCRCQVecPhiHistVtxY[cb]->Sumw2();
+    fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistVtxY[cb]);
+    fCRCQVecPhiHistVtxZ[cb] = new TH3D(Form("fCRCQVecPhiHistVtxZ[%d]",cb),Form("fCRCQVecPhiHistVtxZ[%d]",cb),10,vtxbinsz,50,phibinsforphihist,16,etabinsforphihist);
+    fCRCQVecPhiHistVtxZ[cb]->Sumw2();
+    fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistVtxZ[cb]);
+  }
   
   for(Int_t r=0;r<fCRCnRun;r++) {
     fCRCQVecListRun[r] = new TList();
@@ -30211,31 +30064,31 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
         fCRCZDCQVecTest[r][i]->Sumw2();
         fCRCQVecListRun[r]->Add(fCRCZDCQVecTest[r][i]);
       }
-      for(Int_t i=0;i<fCRCQVecnCov;i++) {
-        Double_t xmin=0.,xmax=0.;
-        if(fDataSet==k2010) {
-          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -0.032; xmax = 0.016;}
-          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.146; xmax = 0.21;}
-          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
-        }if(fDataSet==k2011) {
-          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = 0.045; xmax = 0.08;}
-          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.258; xmax = 0.292;}
-          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
-        }if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
-          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -8.5e-3; xmax = 8.5e-3;}
-          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = -7.8e-3; xmax = 7.8e-3;}
-          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin = -10.; xmax = 10.;}
-        }
-        Double_t vtxbins[11] = {0.};
-        for (Int_t v=0; v<11; v++) {
-          vtxbins[v]=xmin + v*(xmax-xmin)/10.;
-        }
-        Double_t cenbins[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
-        fCRCZDCQVecCov[r][i] = new TProfile2D(Form("fCRCZDCQVecCov[%d][%d]",fRunList[r],i),
-                                              Form("fCRCZDCQVecCov[%d][%d]",fRunList[r],i),10,cenbins,10,vtxbins,"s");
-        fCRCZDCQVecCov[r][i]->Sumw2();
-        fCRCQVecListRun[r]->Add(fCRCZDCQVecCov[r][i]);
-      }
+//      for(Int_t i=0;i<fCRCQVecnCov;i++) {
+//        Double_t xmin=0.,xmax=0.;
+//        if(fDataSet==k2010) {
+//          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -0.032; xmax = 0.016;}
+//          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.146; xmax = 0.21;}
+//          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
+//        }if(fDataSet==k2011) {
+//          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = 0.045; xmax = 0.08;}
+//          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = 0.258; xmax = 0.292;}
+//          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin=-10.; xmax=10.;}
+//        }if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
+//          if(i==0 || i==3 || i==6 || i==9 || i==12 || i==15) {xmin = -8.5e-3; xmax = 8.5e-3;}
+//          if(i==1 || i==4 || i==7 || i==10 || i==13 || i==16) {xmin = -7.8e-3; xmax = 7.8e-3;}
+//          if(i==2 || i==5 || i==8 || i==11 || i==14 || i==17) {xmin = -10.; xmax = 10.;}
+//        }
+//        Double_t vtxbins[11] = {0.};
+//        for (Int_t v=0; v<11; v++) {
+//          vtxbins[v]=xmin + v*(xmax-xmin)/10.;
+//        }
+//        Double_t cenbins[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+//        fCRCZDCQVecCov[r][i] = new TProfile2D(Form("fCRCZDCQVecCov[%d][%d]",fRunList[r],i),
+//                                              Form("fCRCZDCQVecCov[%d][%d]",fRunList[r],i),10,cenbins,10,vtxbins,"s");
+//        fCRCZDCQVecCov[r][i]->Sumw2();
+//        fCRCQVecListRun[r]->Add(fCRCZDCQVecCov[r][i]);
+//      }
       
       Double_t fracrunbins[51] = {0.};
       for (Int_t v=0; v<51; v++) {
@@ -30342,11 +30195,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
           zmax = 10.;
         }
         if(r==0) {
-          for (Int_t cb=0; cb<fCRCnCen; cb++) {
-            fCRCZDCQVecVtxPosCen[cb][c] = new TProfile3D(Form("fCRCZDCQVecVtxPosCen[%d][%d]",cb,c),Form("fCRCZDCQVecVtxPosCen[%d][%d]",cb,c),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax,"s");
-            fCRCZDCQVecVtxPosCen[cb][c]->Sumw2();
-            fCRCQVecList->Add(fCRCZDCQVecVtxPosCen[cb][c]);
-          }
+//          for (Int_t cb=0; cb<fCRCnCen; cb++) {
+//            fCRCZDCQVecVtxPosCen[cb][c] = new TProfile3D(Form("fCRCZDCQVecVtxPosCen[%d][%d]",cb,c),Form("fCRCZDCQVecVtxPosCen[%d][%d]",cb,c),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax,"s");
+//            fCRCZDCQVecVtxPosCen[cb][c]->Sumw2();
+//            fCRCQVecList->Add(fCRCZDCQVecVtxPosCen[cb][c]);
+//          }
           
           if(fStoreZDCQVecVtxPos) {
             
@@ -30450,11 +30303,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       }
     }
     
-    Double_t DummyEZDCBins[10][11] = {{-3.000000e+02, -4.008000e+01, -2.658000e+01, -1.686000e+01, -8.520000e+00, -7.200000e-01, 7.080000e+00, 1.542000e+01, 2.520000e+01, 3.888000e+01, 3.000000e+02},{-3.000000e+02, -3.690000e+01, -2.436000e+01, -1.530000e+01, -7.560000e+00, -3.000000e-01, 6.960000e+00, 1.476000e+01, 2.388000e+01, 3.666000e+01, 3.000000e+02},{-3.000000e+02, -3.522000e+01, -2.316000e+01, -1.446000e+01, -7.020000e+00, -6.000000e-02, 6.900000e+00, 1.434000e+01, 2.310000e+01, 3.534000e+01, 3.000000e+02},{-3.000000e+02, -3.528000e+01, -2.322000e+01, -1.452000e+01, -7.080000e+00, -1.200000e-01, 6.840000e+00, 1.434000e+01, 2.310000e+01, 3.528000e+01, 3.000000e+02},{-3.000000e+02, -3.666000e+01, -2.412000e+01, -1.506000e+01, -7.320000e+00, -6.000000e-02, 7.200000e+00, 1.500000e+01, 2.412000e+01, 3.684000e+01, 3.000000e+02},{-3.000000e+02, -3.936000e+01, -2.580000e+01, -1.602000e+01, -7.680000e+00, 1.200000e-01, 7.920000e+00, 1.632000e+01, 2.616000e+01, 3.990000e+01, 3.000000e+02},{-3.000000e+02, -4.416000e+01, -2.880000e+01, -1.776000e+01, -8.280000e+00, 5.400000e-01, 9.420000e+00, 1.890000e+01, 3.000000e+01, 4.554000e+01, 3.000000e+02},{-3.000000e+02, -5.262000e+01, -3.384000e+01, -2.028000e+01, -8.700000e+00, 2.100000e+00, 1.296000e+01, 2.454000e+01, 3.816000e+01, 5.712000e+01, 3.000000e+02},{-3.000000e+02, -6.588000e+01, -4.122000e+01, -2.340000e+01, -8.160000e+00, 6.060000e+00, 2.028000e+01, 3.552000e+01, 5.340000e+01, 7.830000e+01, 3.000000e+02},{-3.000000e+02, -8.844000e+01, -5.556000e+01, -3.186000e+01, -1.158000e+01, 7.380000e+00, 2.634000e+01, 4.662000e+01, 7.038000e+01, 1.034400e+02, 3.000000e+02}};
-    for (Int_t i=0; i<fCRCnCen; i++) {
-      fCRCZDCQVecDummyEZDCBins[i] = new TH1D(Form("fCRCZDCQVecDummyEZDCBins[%d]",i),Form("fCRCZDCQVecDummyEZDCBins[%d]",i),10,DummyEZDCBins[i]);
-      fCRCQVecList->Add(fCRCZDCQVecDummyEZDCBins[i]);
-    }
+//    Double_t DummyEZDCBins[10][11] = {{-3.000000e+02, -4.008000e+01, -2.658000e+01, -1.686000e+01, -8.520000e+00, -7.200000e-01, 7.080000e+00, 1.542000e+01, 2.520000e+01, 3.888000e+01, 3.000000e+02},{-3.000000e+02, -3.690000e+01, -2.436000e+01, -1.530000e+01, -7.560000e+00, -3.000000e-01, 6.960000e+00, 1.476000e+01, 2.388000e+01, 3.666000e+01, 3.000000e+02},{-3.000000e+02, -3.522000e+01, -2.316000e+01, -1.446000e+01, -7.020000e+00, -6.000000e-02, 6.900000e+00, 1.434000e+01, 2.310000e+01, 3.534000e+01, 3.000000e+02},{-3.000000e+02, -3.528000e+01, -2.322000e+01, -1.452000e+01, -7.080000e+00, -1.200000e-01, 6.840000e+00, 1.434000e+01, 2.310000e+01, 3.528000e+01, 3.000000e+02},{-3.000000e+02, -3.666000e+01, -2.412000e+01, -1.506000e+01, -7.320000e+00, -6.000000e-02, 7.200000e+00, 1.500000e+01, 2.412000e+01, 3.684000e+01, 3.000000e+02},{-3.000000e+02, -3.936000e+01, -2.580000e+01, -1.602000e+01, -7.680000e+00, 1.200000e-01, 7.920000e+00, 1.632000e+01, 2.616000e+01, 3.990000e+01, 3.000000e+02},{-3.000000e+02, -4.416000e+01, -2.880000e+01, -1.776000e+01, -8.280000e+00, 5.400000e-01, 9.420000e+00, 1.890000e+01, 3.000000e+01, 4.554000e+01, 3.000000e+02},{-3.000000e+02, -5.262000e+01, -3.384000e+01, -2.028000e+01, -8.700000e+00, 2.100000e+00, 1.296000e+01, 2.454000e+01, 3.816000e+01, 5.712000e+01, 3.000000e+02},{-3.000000e+02, -6.588000e+01, -4.122000e+01, -2.340000e+01, -8.160000e+00, 6.060000e+00, 2.028000e+01, 3.552000e+01, 5.340000e+01, 7.830000e+01, 3.000000e+02},{-3.000000e+02, -8.844000e+01, -5.556000e+01, -3.186000e+01, -1.158000e+01, 7.380000e+00, 2.634000e+01, 4.662000e+01, 7.038000e+01, 1.034400e+02, 3.000000e+02}};
+//    for (Int_t i=0; i<fCRCnCen; i++) {
+//      fCRCZDCQVecDummyEZDCBins[i] = new TH1D(Form("fCRCZDCQVecDummyEZDCBins[%d]",i),Form("fCRCZDCQVecDummyEZDCBins[%d]",i),10,DummyEZDCBins[i]);
+//      fCRCQVecList->Add(fCRCZDCQVecDummyEZDCBins[i]);
+//    }
     
 //    Double_t xmin=0.,xmax=0.,ymin=0.,ymax=0.,zmin=0.,zmax=0.;
 //    if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
@@ -30905,6 +30758,17 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
 //      }
 //    }
 //  }
+  
+  Double_t cenbins[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+  Double_t xmin[3] = {-8.5e-3,-7.8e-3,-10.};
+  Double_t xmax[3] = {8.5e-3,7.8e-3,10.};
+  Double_t vtxbins[3][11] = {0.};
+  for (Int_t k=0; k<3; k++) {
+    for (Int_t v=0; v<11; v++) {
+      vtxbins[k][v] = xmin[k] + v*(xmax[k]-xmin[k])/10.;
+    }
+  }
+  
   for(Int_t i=0; i<fFlowNHarm; i++) {
     for(Int_t j=0; j<fkFlowQCnIntCorPro; j++) {
       fFlowQCIntCorPro[i][j] = new TProfile(Form("fFlowQCIntCorPro[%d][%d]",i,j),Form("fFlowQCIntCorPro[%d][%d]",i,j),fFlowQCCenBin,0.,100.,"s");
@@ -30917,19 +30781,21 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
       fFlowQCIntCumHist[i][j]->Sumw2();
       fFlowQCList->Add(fFlowQCIntCumHist[i][j]);
     }
-    for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
-      fFlowQCIntCorProTest[i][j] = new TProfile2D(Form("fFlowQCIntCorProTest[%d][%d]",i,j),Form("fFlowQCIntCorProTest[%d][%d]",i,j),100,0.,100.,fPtDiffNBins,fCRCPtBins);
-      fFlowQCIntCorProTest[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCIntCorProTest[i][j]);
-      fFlowQCIntCorHistTest[i][j] = new TH2D(Form("fFlowQCIntCorHistTest[%d][%d]",i,j),Form("fFlowQCIntCorHistTest[%d][%d]",i,j),100,0.,100.,fPtDiffNBins,fCRCPtBins);
-      fFlowQCIntCorHistTest[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCIntCorHistTest[i][j]);
-      fFlowQCIntCumHistTest[i][j] = new TH2D(Form("fFlowQCIntCumHistTest[%d][%d]",i,j),Form("fFlowQCIntCumHistTest[%d][%d]",i,j),100,0.,100.,fPtDiffNBins,fCRCPtBins);
-      fFlowQCIntCumHistTest[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCIntCumHistTest[i][j]);
-      fFlowQCIntFinHistTest[i][j] = new TH2D(Form("fFlowQCIntFinHistTest[%d][%d]",i,j),Form("fFlowQCIntFinHistTest[%d][%d]",i,j),100,0.,100.,fPtDiffNBins,fCRCPtBins);
-      fFlowQCIntFinHistTest[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCIntFinHistTest[i][j]);
+    for(Int_t k=0; k<fkFlowQCnVtxCorTest; k++) {
+      for(Int_t j=0; j<fkFlowQCnIntCorTest; j++) {
+        fFlowQCIntCorProTest[i][k][j] = new TProfile2D(Form("fFlowQCIntCorProTest[%d][%d][%d]",i,k,j),Form("fFlowQCIntCorProTest[%d][%d][%d]",i,k,j),10,cenbins,10,vtxbins[k]);
+        fFlowQCIntCorProTest[i][k][j]->Sumw2();
+        fFlowQCList->Add(fFlowQCIntCorProTest[i][k][j]);
+        fFlowQCIntCorHistTest[i][k][j] = new TH2D(Form("fFlowQCIntCorHistTest[%d][%d][%d]",i,k,j),Form("fFlowQCIntCorHistTest[%d][%d][%d]",i,k,j),10,cenbins,10,vtxbins[k]);
+        fFlowQCIntCorHistTest[i][k][j]->Sumw2();
+        fFlowQCList->Add(fFlowQCIntCorHistTest[i][k][j]);
+        fFlowQCIntCumHistTest[i][k][j] = new TH2D(Form("fFlowQCIntCumHistTest[%d][%d][%d]",i,k,j),Form("fFlowQCIntCumHistTest[%d][%d][%d]",i,k,j),10,cenbins,10,vtxbins[k]);
+        fFlowQCIntCumHistTest[i][k][j]->Sumw2();
+        fFlowQCList->Add(fFlowQCIntCumHistTest[i][k][j]);
+        fFlowQCIntFinHistTest[i][k][j] = new TH2D(Form("fFlowQCIntFinHistTest[%d][%d][%d]",i,k,j),Form("fFlowQCIntFinHistTest[%d][%d][%d]",i,k,j),10,cenbins,10,vtxbins[k]);
+        fFlowQCIntFinHistTest[i][k][j]->Sumw2();
+        fFlowQCList->Add(fFlowQCIntFinHistTest[i][k][j]);
+      }
     }
     for(Int_t j=0; j<6; j++) {
       fFlowQCIntCorNUAPro[i][j] = new TProfile(Form("fFlowQCIntCorNUAPro[%d][%d]",i,j),Form("fFlowQCIntCorNUAPro[%d][%d]",i,j),fFlowQCCenBin,0.,100.,"s");
@@ -31017,16 +30883,20 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
   // symmetric cumulants with ZDCs
   
   for(Int_t i=0; i<fSCv2vsZNHarm; i++) {
+    Int_t nCenBins = (i<2?100:20);
     for(Int_t bng=0; bng<fkSCNHist; bng++) {
-      fFlowSCProdPro[i][bng] = new TProfile(Form("fFlowSCProdPro[%d][%d]",i,bng),Form("fFlowSCProdPro[%d][%d]",i,bng),100,0.,100.,"s");
+      fFlowSCProdPro[i][bng] = new TProfile(Form("fFlowSCProdPro[%d][%d]",i,bng),Form("fFlowSCProdPro[%d][%d]",i,bng),nCenBins,0.,100.,"s");
       fFlowSCProdPro[i][bng]->Sumw2();
       fFlowQCList->Add(fFlowSCProdPro[i][bng]);
-      fFlowSCProdHist[i][bng] = new TH1D(Form("fFlowSCProdHist[%d][%d]",i,bng),Form("fFlowSCProdHist[%d][%d]",i,bng),100,0.,100.);
+      fFlowSCProdHist[i][bng] = new TH1D(Form("fFlowSCProdHist[%d][%d]",i,bng),Form("fFlowSCProdHist[%d][%d]",i,bng),nCenBins,0.,100.);
       fFlowSCProdHist[i][bng]->Sumw2();
       fFlowQCList->Add(fFlowSCProdHist[i][bng]);
-      fFlowSCFinalHist[i][bng] = new TH1D(Form("fFlowSCFinalHist[%d][%d]",i,bng),Form("fFlowSCFinalHist[%d][%d]",i,bng),100,0.,100.);
+      fFlowSCFinalHist[i][bng] = new TH1D(Form("fFlowSCFinalHist[%d][%d]",i,bng),Form("fFlowSCFinalHist[%d][%d]",i,bng),nCenBins,0.,100.);
       fFlowSCFinalHist[i][bng]->Sumw2();
       fFlowQCList->Add(fFlowSCFinalHist[i][bng]);
+      fFlowSCCovHist[i][bng] = new TH1D(Form("fFlowSCCovHist[%d][%d]",i,bng),Form("fFlowSCCovHist[%d][%d]",i,bng),nCenBins,0.,100.);
+      fFlowSCCovHist[i][bng]->Sumw2();
+      fFlowQCList->Add(fFlowSCCovHist[i][bng]);
     }
   }
   

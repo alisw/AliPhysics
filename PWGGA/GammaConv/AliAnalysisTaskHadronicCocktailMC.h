@@ -35,7 +35,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
 
     // getters
     Int_t   GetParticlePosLocal(Int_t pdg);
-    Float_t GetDecayChannel(AliStack* stack, TParticle* part);
+    Float_t GetDecayChannel(AliMCEvent* mcEvent, TParticle* part);
     void    GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
     void    GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
 
@@ -46,7 +46,6 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
   protected:
     AliVEvent*                  fInputEvent;                      // current event
     AliMCEvent*                 fMCEvent;                         // corresponding MC event
-    AliStack*                   fMCStack;                         // stack belonging to MC event
     AliMCGenHandler*            fMCGenHandler;
     const AliGenerator*         fMCGenerator;
     AliGenEMCocktailV2*         fMCCocktailGen;
@@ -102,7 +101,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 7);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 8);
 };
 
 #endif

@@ -158,19 +158,17 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 	
     //Initializing the histograms to be saved. For the moment, only pT of clusters and Mgammagamma.
    
-    int nbins_xi      = 10;
-    int nbins_M02     = 25;
-    int nbins_Ncells  = 30;
-   
-    int nbins_zvertex = 10;
+    
+    
 
     int nbins_Mass = 150;
+    int nbins_Mass_corr = 30;
     double min_Mass = 0.000;
     double max_Mass = 0.300;
 
-    int    nbins_Pt =  50;
+    int    nbins_Pt =  25;
     double min_Pt   =  0.0;
-    double max_Pt   =  100.0;
+    double max_Pt   =  50.0;
 
     int nbins_dphi     = 18;
     int nbins_phi     = 140;
@@ -179,29 +177,34 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_phi = 1.0;
     double max_phi = TMath::Pi();
 
-    int nbins_zt      = 10;
+    int nbins_zvertex = 5;
     double min_zvertex = -10;
     double max_zvertex = +10;
 
-
-    int nbins_eta = 160;
+    int nbins_eta = 100;
     int nbins_deta= 30;
     double max_deta = 1.5;
-    double max_eta =  1.2;
+    double max_eta =  0.75;
     double min_deta = -max_deta;
     double min_eta =  -max_eta;
     
-    double min_zt = 0;
+    int nbins_xi      = 10;   
     double min_xi = 0;
-    double max_zt = 2.0;
     double max_xi = 5.0;
+    
+    int nbins_zt      = 10;
+    double min_zt = 0;
+    double max_zt = 2.0;
    
-    int nbins_E = 50; 
+    int nbins_E = 25; 
     double min_E =0;
-    double max_E =50;
+    double max_E =50.0;
+
+    int nbins_M02     = 25;
     double min_M02 = 0.0;
     double max_M02 = 2.0;
     
+    int nbins_Ncells  = 30;
     double min_Ncells = -0.5;
     double max_Ncells = 29.5;
     
@@ -229,17 +232,17 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_DisToBorder = -0.5;
     double max_DisToBorder = 5.5;
 
-    int nbins_DisToBad = 8;
+    int nbins_DisToBad = 6;
     double min_DisToBad = -0.5;
-    double max_DisToBad = 7.5;    
+    double max_DisToBad = 5.5;    
 
     int nbins_Exoticity  = 100;
     double min_Exoticity = 0.0;
     double max_Exoticity = 1.0;
 
-    int nbins_time = 60;
-    double min_time = -60.0;
-    double max_time = +60.0;
+    int nbins_time =40;
+    double min_time = -40.0;
+    double max_time = +40.0;
 
     int nbins_RunNumber = 20;
     double min_RunNumber = -0.5;
@@ -249,22 +252,26 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_BCID    = -0.5;
     double max_BCID    = 3599.5;
 
+    int nbins_IsoTrack  = 20;
+    double min_IsoTrack = 0.0;
+    double max_IsoTrack = 40.0; 
+
     //Pion-hadron correlations
-    const int nbins_PionCorr = 15;
-    int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_E,  //trigger variables
-                                   nbins_Pt, nbins_dphi, nbins_deta, nbins_deta/2, nbins_zt, nbins_xi, //track variables
-                                   nbins_Mass,  nbins_Pt, nbins_Pt, nbins_M02, nbins_M02}; //pion-only and pion-decay variables
+    const int nbins_PionCorr = 13;
+    int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt,  //trigger variables
+                                   nbins_Pt, nbins_dphi, nbins_deta, nbins_zt, nbins_xi, //track variables
+                                   nbins_Mass_corr,  nbins_Pt, nbins_Pt, nbins_M02, nbins_M02}; //pion-only and pion-decay variables
                                    
-    double xmin[nbins_PionCorr] = {min_Centrality, min_zvertex, min_Pt  , min_E,   
-                                   min_Pt, min_dphi   , min_deta   , 0.0, min_zt, min_xi,
+    double xmin[nbins_PionCorr] = {min_Centrality, min_zvertex, min_Pt ,   
+                                   min_Pt, min_dphi   , min_deta , min_zt, min_xi,
                                    min_Mass, min_Pt, min_Pt, min_M02, min_M02};
                                    
-    double xmax[nbins_PionCorr] = {max_Centrality, max_zvertex,  max_Pt,  max_E,  
-                                   max_Pt, max_dphi,   max_deta, max_deta, max_zt, max_xi,
+    double xmax[nbins_PionCorr] = {max_Centrality, max_zvertex,  max_Pt,   
+                                   max_Pt, max_dphi,   max_deta,  max_zt, max_xi,
                                    max_Mass, max_Pt, max_Pt,  max_M02, max_M02};
 
-    TString axisNames = "Pion--Track THnSparse; Centrality; Z vertex;  #pionpT; #pion E;";
-    axisNames = axisNames + "track_pT; #Dphi ; #Deta; #|Deta|; Zt; Xi;";
+    TString axisNames = "Pion--Track THnSparse; Centrality; Z vertex;  #pionpT;";
+    axisNames = axisNames + "track_pT; #Dphi ; #Deta; Zt; Xi;";
     axisNames = axisNames + "#pion Mass; ph1_pT; ph2_pT; ph1_M02; ph2_M02;";
 
     /////////////Pi0--track correlations////////////
@@ -277,22 +284,22 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Pi0Track_Mixed);
     
     //////////////////////////////Cluster-Track correlations:///////////////////////////////////////
-    const int nbins_ClusterCorr = 12;
-    int binsClusterCorr[nbins_ClusterCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_E,
-                                                nbins_Pt, nbins_dphi, nbins_deta, nbins_deta/2, nbins_zt, nbins_xi,
-                                                nbins_M02, nbins_nMaxima};
+    const int nbins_ClusterCorr = 10;
+    int binsClusterCorr[nbins_ClusterCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt, 
+                                                nbins_Pt, nbins_dphi, nbins_deta, nbins_zt, nbins_xi,
+						 nbins_M02, nbins_dR};
                         
-    double xminClusterCorr[nbins_ClusterCorr] = {min_Centrality, min_zvertex, min_Pt  , min_E,  
-                                                min_Pt, min_dphi   , min_deta   , 0.0, min_zt, min_xi,
-                                                min_M02,  min_nMaxima};
+    double xminClusterCorr[nbins_ClusterCorr] = {min_Centrality, min_zvertex, min_Pt,  
+                                                min_Pt, min_dphi   , min_deta   , min_zt, min_xi,
+						 min_M02, min_dR};
                                    
-    double xmaxClusterCorr[nbins_ClusterCorr] = {max_Centrality, max_zvertex,  max_Pt,  max_E,  
-                                                max_Pt, max_dphi, max_deta, max_deta, max_zt, max_xi,
-                                                max_M02, max_nMaxima};
+    double xmaxClusterCorr[nbins_ClusterCorr] = {max_Centrality, max_zvertex,  max_Pt,  
+                                                 max_Pt, max_dphi, max_deta,  max_zt, max_xi,
+						 max_M02, max_dR};
 
-    axisNames = "Cluster-Track THnSparse; Centrality; Z vertex; Cluster p_{T}; Cluster E;";
-    axisNames = axisNames + "track p_{T}; #Delta#phi ; #Delta#eta; |#Delta#eta|; Z_{T}t; Xi;";
-    axisNames = axisNames + "M0; nMaxima;";
+    axisNames = "Cluster-Track THnSparse; Centrality; Z vertex; Cluster p_{T}; ";
+    axisNames = axisNames + "track p_{T}; #Delta#phi ; #Delta#eta; Z_{T}t; Xi;"; //track variables
+    axisNames = axisNames + "#lamda0; dR;";
      
     h_ClusterTrack = new THnSparseD("h_ClusterTrack", axisNames, nbins_ClusterCorr, binsClusterCorr, xminClusterCorr,xmaxClusterCorr);
     h_ClusterTrack->Sumw2();
@@ -303,42 +310,42 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_ClusterTrack_Mixed);
     
     ///////////////Pi0////////////////////////////////////
-    const int nbins_Pi = 19;
+    const int nbins_Pi = 13;
     axisNames = "Pion THnSparse; Centrality; Z vertex ;#pi Mass; #pi pT; #pi y;"; 
     axisNames = axisNames+ "Asymmetry; ph1_pT; ph2_pT; #Delta#phi;";
-    axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ph1 nCells; ph2 nCells;";
-    axisNames = axisNames+ "ph1 dR; ph2 dR; ph1 DisToBorder; ph2 DisToBorder; ph1 DisToBadChannel; ph2 DisToBadChannel;";
+    axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ";
+    axisNames = axisNames+ "ph1 dR; ph2 dR;";
 
     int binsPi0[nbins_Pi] = {nbins_Centrality, nbins_zvertex, nbins_Mass, nbins_Pt, nbins_eta,   
                              nbins_Asymmetry, nbins_Pt, nbins_Pt, nbins_alpha, 
-			     nbins_M02, nbins_M02, nbins_Ncells, nbins_Ncells, nbins_dR,nbins_dR,
-			     nbins_DisToBorder, nbins_DisToBorder, nbins_DisToBad, nbins_DisToBad};
+			     nbins_M02, nbins_M02, nbins_dR,nbins_dR,
+			     };
                             
     double xminPi0[nbins_Pi] = {min_Centrality, min_zvertex, min_Mass, min_Pt, min_eta, 
                                 min_Asymmetry, min_Pt, min_Pt, min_alpha,
-                                min_M02, min_M02 , min_Ncells, min_Ncells,  min_dR, min_dR,
-                                min_DisToBorder, min_DisToBorder, min_DisToBad, min_DisToBad};
+                                min_M02, min_M02,  min_dR, min_dR
+                                };
 
     double xmaxPi0[nbins_Pi] = {max_Centrality, max_zvertex, max_Mass, max_Pt, max_eta,
                                 max_Asymmetry, max_Pt, max_Pt, max_alpha,
-                                max_M02, max_M02, max_Ncells, max_Ncells,   max_dR, max_dR,
-                                max_DisToBorder, max_DisToBorder, max_DisToBad, max_DisToBad};
+                                max_M02, max_M02, max_dR, max_dR
+                                };
                                 
     h_Pi0= new THnSparseD("h_Pi0", axisNames, nbins_Pi, binsPi0, xminPi0, xmaxPi0);
     h_Pi0->Sumw2();
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 14;
+    const int nbins_Cluster = 16;
     
-    axisNames = "Cluster THnSparse; Centrality; Z vertex; Cluster E; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMaxima;";
-    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns];";
-    int binsCluster[nbins_Cluster] = {nbins_Centrality, nbins_zvertex, nbins_E, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
-                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time};
-    double xminCluster[nbins_Cluster] = {min_Centrality, min_zvertex, min_E, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
-					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time};
-    double xmaxCluster[nbins_Cluster] = {max_Centrality, max_zvertex, max_E, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
-					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time};
+    axisNames = "Cluster THnSparse; RunNumber; Centrality; Z vertex; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMaxima;";
+    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns]; SumTrackpT, R < 0.4; SumClusterpT, R < 0.4;";
+    int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
+                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time, nbins_IsoTrack, nbins_IsoTrack};
+    double xminCluster[nbins_Cluster] = {min_RunNumber, min_Centrality, min_zvertex, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
+					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time, min_IsoTrack, min_IsoTrack};
+    double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_Centrality, max_zvertex, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
+					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time, max_IsoTrack, max_IsoTrack};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
@@ -536,8 +543,8 @@ Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetExoticity(AliVCluster *c)
   Double_t Ecross = GetCrossEnergy( c, id);
  
   Double_t exo = 1-Ecross/Emax;
-  if(exo>1.0) exo=1.0;
-  if(exo<0.0) exo=0.0;
+  if(exo>1.0) exo=0.99;
+  if(exo<0.0) exo=0.01;
   return exo;
 }
 
@@ -546,13 +553,13 @@ Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetExoticity(AliVCluster *c)
 Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust) {
   // Check if the cluster match to a track
 
-  AliTrackContainer* tracks = GetTrackContainer(0);
+  AliTrackContainer* tracks = GetTrackContainer("ForMatching");
+  if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   AliVTrack* mt = 0;
   TLorentzVector vecClust;
   clust->GetMomentum(vecClust,fVertex);
 
   Int_t nMatched = clust -> GetNTracksMatched();
-  //if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   Double_t dR=999.;
   Double_t dR_temp;
   
@@ -612,8 +619,9 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     if(Trigger.Contains("INT7")) PassedMinBiasTrigger = kTRUE;
     
     double zVertex = fVertex[2];
-    AliParticleContainer* tracks = GetParticleContainer(0);
-    
+
+    //AliParticleContainer* tracks = GetParticleContainer(0); //trying trackcontainer above instead 
+    AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
 
     if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
@@ -660,7 +668,7 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     Weight=InputWeight; //..for mixed events normalize per events in pool
     
     for(auto cluster: clusters->accepted()){
-        if(!PassedCuts(cluster))continue ;
+        if(!PreSelection(cluster))continue ;
         if(MixedEvent){
 	  for(auto track_mix: *bgTracksArray){
 	      FillPhotonCorrelation(cluster, static_cast<AliPicoTrack*>(track_mix), h_ClusterTrack_Mixed, Weight);
@@ -674,7 +682,7 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
         }//end same event loop.
         
         for(auto cluster2: clusters->accepted()){
-	  if(!PassedCuts(cluster2)) continue;
+	  if(!PreSelection(cluster2)) continue;
           if(cluster==cluster2) continue;
 
             if(MixedEvent){
@@ -695,8 +703,60 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 }
 
 
-double AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster){
+double AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, double Rmax){
+
+  AliClusterContainer* clusters  = GetClusterContainer(0);
+  AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
+  TLorentzVector ph;
+  clusters->GetMomentum(ph, cluster);
+
+  double sumpT= 0.0;
+  int NinCone = 0;
+  for(auto track : tracks->accepted()){
+    double trackphi = TVector2::Phi_mpi_pi(track->Phi());
+    double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- trackphi);
+    double deta = ph.Eta()-track->Eta();
+    double dR= TMath::Sqrt(deta*deta+dphi*dphi);
+
+    if(dR<Rmax){
+      sumpT = sumpT + track->Pt();
+      NinCone = NinCone +1;
+    }
+
+
+  }
+  //  std::cout << " Track SumpT" << sumpT << std::endl;
+
+  return sumpT;
 }
+
+
+double AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster, double Rmax){
+
+  AliClusterContainer* clusters  = GetClusterContainer(0);
+  TLorentzVector ph;
+  clusters->GetMomentum(ph, cluster);
+
+  double sumpT= 0.0;
+  int NinCone =0;
+  TLorentzVector iph;
+  for(auto iclus : clusters->accepted()){
+    if(iclus==cluster) continue; //not count energy of photon itself
+    clusters->GetMomentum(iph, iclus);
+
+    double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- iph.Phi());
+    double deta = ph.Eta()- iph.Eta();
+    double dR= TMath::Sqrt(deta*deta+dphi*dphi);
+
+    if(dR<Rmax){ 
+        sumpT = sumpT + iph.Pt();
+        NinCone = NinCone +1;
+    }
+  }
+
+  return sumpT;
+}
+
 
 void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster1, AliVCluster* cluster2, AliVParticle* track, THnSparse* histo, double weight){
 
@@ -732,11 +792,11 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     dphi     = TVector2::Phi_mpi_pi(pi0.Phi()- trackphi)/TMath::Pi();
     if(dphi<-0.5) dphi +=2;
     
-    double entries[15] = {fCent, fVertex[2], pi0.Pt(), pi0.E(),  
-                         track->Pt(), dphi, deta, std::abs(deta), Zt, Xi,
+    double entries[13] = {fCent, fVertex[2], pi0.Pt(),  
+                         track->Pt(), dphi, deta, Zt, Xi,
                          pi0.M(), ph_lead.Pt(), ph_sub.Pt(),  cluster_lead->GetM02(), cluster_sub->GetM02()};   
              
-    histo->Fill(entries, weight); 
+    histo->Fill(entries, weight*0.5); //the factor 0.5 is to account for the fact that this  if filled twice.  
     return;
 }
 
@@ -747,6 +807,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
    
     if( track->Pt()<1.0) return;
     if( ph.Pt() < 8.0) return;
+    if(!FinalClusterCuts(cluster)) return;
+    Double_t dRmin = ClustTrackMatching(cluster);
     
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi;
@@ -759,10 +821,9 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
     dphi = TVector2::Phi_mpi_pi(ph.Phi()- trackphi)/TMath::Pi();
     if(dphi<-0.5) dphi +=2;
     
-    double entries[12] = {fCent, fVertex[2], ph.Pt(), ph.E(), 
-              track->Pt(), dphi, deta, std::abs(deta), Zt, Xi,
-              cluster->GetM02(), static_cast<double>(cluster->GetNExMax())
-              };                
+    double entries[10] = {fCent, fVertex[2], ph.Pt(),  
+                          track->Pt(), dphi, deta, Zt, Xi,
+			  cluster->GetM02(), dRmin };                
     histo->Fill(entries, weight);//
     return;
 }
@@ -774,6 +835,10 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
 void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, AliVCluster* cluster2, THnSparse* histo){
     
     AliClusterContainer* clusters  = GetClusterContainer(0);
+
+    if(!FinalClusterCuts(cluster1)) return;
+    if(!FinalClusterCuts(cluster2)) return;
+
     AliVCluster* cluster_lead = 0;
     AliVCluster* cluster_sub  = 0;
     
@@ -800,18 +865,12 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
 
-    double disToBad_1 = static_cast<double>(cluster_lead->GetDistanceToBadChannel());
-    if(disToBad_1>9) disToBad_1 = 7.0;
-    double disToBad_2 = static_cast<double>(cluster_sub->GetDistanceToBadChannel());
-    if(disToBad_2>9) disToBad_2 = 7.0;
 
-    double entries[19] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
+    double entries[13] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
 			  std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())),  cluster_lead->GetM02(), cluster_sub->GetM02(), 
-			  static_cast<double>(cluster_lead->GetNCells()), static_cast<double>(cluster_sub->GetNCells()),    dRmin_1, dRmin_2,
-                          static_cast<double>(GetMaxDistanceFromBorder(cluster_lead)), static_cast<double>(GetMaxDistanceFromBorder(cluster_sub)), 
-                          disToBad_1, disToBad_2};
+			  dRmin_1, dRmin_2};
 
-    histo->Fill(entries);
+    histo->Fill(entries, 0.5); //weight of 1/2 because this is filled twice with same pair. 
     return;
 }
 
@@ -823,17 +882,24 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     if(cluster->E()< 6.0) return;
     Double_t dRmin = ClustTrackMatching(cluster);
     Double_t disToBad = static_cast<double>(cluster->GetDistanceToBadChannel());
+    if(disToBad>5.0) disToBad=5.0;
+
     Double_t disToBorder = static_cast<double>(GetMaxDistanceFromBorder(cluster));
     Double_t exoticity = GetExoticity(cluster);
     Double_t time = cluster->GetTOF()*1000000000; //in ns
-    if (time<-60) time = -60;
-    if (time>60) time = +60;
+    if (time<-40) time = -40;
+    if (time>40) time = +40;
 
     Double_t RunNumber = static_cast<double>(FormatRunNumber(fInputEvent->GetRunNumber()));
     Double_t BCID      = static_cast<double>(fInputEvent->GetBunchCrossNumber());
 
-    double entries[14] = {fCent, fVertex[2], ph.E(), ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
-			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time};
+    Double_t SumTrackpT = GetIsolation_Track(cluster, 0.4);
+    if(SumTrackpT>40.0) SumTrackpT =39.9; //overflow
+    Double_t SumClusterpT = GetIsolation_Cluster(cluster, 0.4);
+    if(SumClusterpT>40.0) SumClusterpT =39.9; //overflow
+
+    double entries[16] = {RunNumber, fCent, fVertex[2], ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time, SumTrackpT, SumClusterpT};
     histo->Fill(entries);
     return;
 }
@@ -872,12 +938,37 @@ Int_t  AliAnalysisTaskEMCALPi0GammaCorr::GetMaxDistanceFromBorder(AliVCluster* c
 }
 
 
-Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PassedCuts(AliVCluster* cluster)
+Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PreSelection(AliVCluster* cluster)
 {
     if(!cluster->IsEMCAL()) return kFALSE;
     if(cluster->E()<3.0) return kFALSE;
     return kTRUE;
 }
+
+Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FinalClusterCuts(AliVCluster* cluster)
+{
+  if(!cluster->IsEMCAL()) return kFALSE;
+  if(cluster->E()<3.0) return kFALSE;
+
+  //  Double_t dRmin = ClustTrackMatching(cluster);
+  // if(dRmin<0.02) return kFALSE;
+  if( cluster->GetNCells() < 2) return kFALSE;
+
+  Int_t disToBad = cluster->GetDistanceToBadChannel();
+  if(disToBad<2) return kFALSE;
+  
+  Int_t disToBorder = GetMaxDistanceFromBorder(cluster);
+  if(disToBorder<1) return kFALSE;
+
+  Double_t exoticity = GetExoticity(cluster);
+  if(exoticity>0.97) return kFALSE;
+
+  Double_t time = cluster->GetTOF()*1000000000; //in ns
+  if(std::abs(time)>30) return kFALSE;
+   
+  return kTRUE;
+}
+
 
 
 double AliAnalysisTaskEMCALPi0GammaCorr::GetEff(AliTLorentzVector ClusterVec)

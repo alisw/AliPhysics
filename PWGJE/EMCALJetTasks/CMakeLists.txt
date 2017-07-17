@@ -125,12 +125,12 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDensityData.cxx
     Tracks/AliEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
-    Tracks/AliAnalysisTaskEmcalMaxPatch.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx

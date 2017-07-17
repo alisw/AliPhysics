@@ -238,6 +238,16 @@ private:
   TProfile      *fHist_ZDCC_AvgCS_Cent[2];    //!
   TProfile      *fHist_ZDCA_AvgCS_Cent[2];    //!
 
+  TProfile      *fHist_ZDCC_AvgCos_VsRun[2];    //!
+  TProfile      *fHist_ZDCA_AvgCos_VsRun[2];    //!
+  TProfile      *fHist_ZDCC_AvgSin_VsRun[2];    //!
+  TProfile      *fHist_ZDCA_AvgSin_VsRun[2];    //!
+
+  TProfile2D    *fHist_ZDCC_AvgCos_VsCR[2];    //!
+  TProfile2D    *fHist_ZDCC_AvgSin_VsCR[2];    //!
+  TProfile2D    *fHist_ZDCA_AvgCos_VsCR[2];    //!
+  TProfile2D    *fHist_ZDCA_AvgSin_VsCR[2];    //!
+
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };
 

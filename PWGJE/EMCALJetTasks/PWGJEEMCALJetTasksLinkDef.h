@@ -180,7 +180,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalTriggerEmulation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalNoiseTriggers+;
@@ -205,6 +204,7 @@
 #pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #pragma link C++ namespace EmcalTriggerJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
 #pragma link C++ class Cumulants+;

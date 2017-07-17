@@ -11,7 +11,7 @@
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TH1F.h"
@@ -79,7 +79,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TString GetCutNumber();
 
 		// Cut Selection
-	Bool_t PionIsSelectedMC(Int_t labelParticle,AliStack *fMCStack);
+    Bool_t PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent);
 	Bool_t TrackIsSelected(AliESDtrack* lTrack);
 	Bool_t PionIsSelected(AliESDtrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();

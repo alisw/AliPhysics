@@ -3,7 +3,7 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   UInt_t      evtTriggerType         = AliVEvent::kEMCEGA, //AliVEvent::kAnyINT,// AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
   UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
   Double_t    trackptcut             = 0.15,              //..
-  Double_t    clusptcut              = 3.0,              //..
+  Double_t    clusptcut              = 0.15,              //..
   Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
@@ -31,9 +31,15 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   AliAnalysisTaskEMCALPi0GammaCorr* AnalysisTask = new AliAnalysisTaskEMCALPi0GammaCorr(kTRUE);
   std::cout << "----Adding cluster container, track container" << std::endl;
   AnalysisTask->AddClusterContainer("usedefault");
-  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer("usedefault");
-  //AliWarning("Setting FilterHybridTracks");
+  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
+  trackCont->SetName("ForCorrelation");
   trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
+  //  trackCont->SetTrackCutsPeriod("LHC11c");
+  // trackCont->SetDefTrackCutsPeriod("LHC11c");
+
+  AliTrackContainer* trackContMatching = AnalysisTask->AddTrackContainer(trackName);
+  trackContMatching->SetName("ForMatching");
+  trackContMatching->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);  
 
   //-------------------------------------------------------
   // Add some selection criteria
@@ -48,11 +54,9 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   //..new task for run2
   //AnalysisTask->SetNCentBins(5);
   AnalysisTask->SetUseNewCentralityEstimation(kFALSE); //maybe this is what is required
-  if(AnalysisTask->GetTrackContainer(trackName))
-  {   
-      std::cout << "Setting pt cut of tracks to " << trackptcut;
-	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
-  }
+  
+  AnalysisTask->GetTrackContainer("ForMatching")->SetParticlePtCut(trackptcut);
+  AnalysisTask->GetTrackContainer("ForCorrelation")->SetParticlePtCut(1.0);
 
   if(AnalysisTask->GetClusterContainer(clusName))
   {

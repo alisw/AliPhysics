@@ -94,7 +94,6 @@ public:
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                        TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                        TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
-    Bool_t SetResFunction(TGraph * f = 0x0, Int_t j=0, Int_t ptbin=0);
     void localtoglobal(double alpha, double *local, double *global);
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void EventwiseCleanup();
@@ -112,13 +111,25 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
-    bool IsFromElectron(AliAODTrack *track);
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(const Int_t &value);
     Double_t CalculateJetProb(AliEmcalJet *jet);
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
+    Double_t CalculatePSTrackPID(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass, Int_t species);
+
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
+    bool IsFromElectron(AliAODTrack *track);
+    bool IsFromProton(AliAODTrack *track);
+    bool IsFromKaon(AliAODTrack *track);
+    bool IsFromPion(AliAODTrack *track);
+    Bool_t SetResFunctionPID(const char * filename);
+    Double_t getFMCglobalDCAxyShift() const;
+    void setFMCglobalDCAxyShift(const Double_t &value);
+
+    Double_t getFVertexRecalcMinPt() const;
+    void setFVertexRecalcMinPt(const Double_t &value);
+
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
@@ -158,6 +169,7 @@ private:
     TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
     TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
+    Bool_t fUsePIDJetProb;//
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -186,11 +198,13 @@ private:
     std::vector <Double_t > fPhiCEvt;//!
     std::vector <Double_t > fEtaUdsgEvt;//!
     std::vector <Double_t > fPhiUdsgEvt;//!
-    TGraph fResolutionFunction [4][5];//[4][5] //4 Classes 5 Pt regions 0-1 1-2 2-4 4-6 6-100 GeV/c
+    TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[11]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;
     Int_t   fProductionNumberPtHard;//
+    Double_t fMCglobalDCAxyShift;//
+    Double_t fVertexRecalcMinPt;//
 
     ClassDef(AliAnalysisTaskHFJetIPQA, 20)
 };

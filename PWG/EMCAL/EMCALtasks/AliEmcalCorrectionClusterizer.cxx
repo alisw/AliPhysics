@@ -222,8 +222,8 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
 
   AliEmcalCorrectionComponent::Run();
   
-  fEsd = dynamic_cast<AliESDEvent*>(fEvent);
-  fAod = dynamic_cast<AliAODEvent*>(fEvent);
+  fEsd = dynamic_cast<AliESDEvent*>(fEventManager.InputEvent());
+  fAod = dynamic_cast<AliAODEvent*>(fEventManager.InputEvent());
 
   // Only support one cluster container in the clusterizer!
   AliClusterContainer * clusCont = GetClusterContainer(0);
@@ -345,10 +345,10 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
         fOrgClusterCellId[i] =-1 ;
       }
       
-      Int_t nClusters = fEvent->GetNumberOfCaloClusters();
+      Int_t nClusters = fEventManager.InputEvent()->GetNumberOfCaloClusters();
       for (Int_t i = 0; i < nClusters; i++)
       {
-        AliVCluster *clus =  fEvent->GetCaloCluster(i);
+        AliVCluster *clus =  fEventManager.InputEvent()->GetCaloCluster(i);
         
         if (!clus) continue;
         
@@ -414,7 +414,7 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
           continue;
         }
 
-        AliVCluster* clus = fEvent->GetCaloCluster(iclus);
+        AliVCluster* clus = fEventManager.InputEvent()->GetCaloCluster(iclus);
 
         for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
         {
@@ -722,10 +722,10 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
         if (set && idCluster >= 0)
         {
           clArray.SetAt(idCluster,nClu++);
-          nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+          nLabTotOrg+=(fEventManager.InputEvent()->GetCaloCluster(idCluster))->GetNLabels();
           
           //Search highest E cluster
-          AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+          AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
           if (emax < clOrg->E())
           {
             emax  = clOrg->E();
@@ -760,7 +760,7 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
     for (Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++)
     {
       Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
-      AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+      AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
       Int_t nLab = clOrg->GetNLabels();
       
       for (Int_t iLab = 0 ; iLab < nLab ; iLab++)
@@ -927,7 +927,7 @@ Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
       AliWarning("InitBadChannels OK");
     }
     if (fInitBC>1) {
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      AliWarning(Form("No external hot channel set: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
     }
   }
   return runChanged;

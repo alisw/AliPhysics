@@ -23,17 +23,30 @@
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
+#include "AliTriggerAnalysis.h"
+// In case of ROOT6 it is necessary to stay for the moment with the v5
+// version of TFormula as the v6 version produces a large amount of
+// warnings at runtime.
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
+#include <v5/TFormula.h>
+typedef ROOT::v5::TFormula R5TFormula;
+#else
+#include <TFormula.h>
+typedef TFormula R5TFormula;
+#endif
 
 class AliVEvent;
 class TH2F;
 class TH1F;
 class TCollection;
-class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
 class AliOADBPhysicsSelection;
 class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
+
+typedef std::pair<R5TFormula, std::vector<AliTriggerAnalysis::Trigger>> FormulaAndBits;
+typedef std::map<std::string, FormulaAndBits> StringToFormula;
 
 class AliPhysicsSelection : public AliAnalysisCuts{
 public:
@@ -108,10 +121,10 @@ protected:
   AliOADBFillingScheme*    fFillOADB;    // Filling scheme OADB object
   AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
-  TPRegexp* fRegexp;        //! regular expression for trigger tokens
-  TList* fCashedTokens;     //! trigger token lookup list
+  StringToFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
+  FormulaAndBits& FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
 
-  ClassDef(AliPhysicsSelection, 22)
+  ClassDef(AliPhysicsSelection, 23)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);

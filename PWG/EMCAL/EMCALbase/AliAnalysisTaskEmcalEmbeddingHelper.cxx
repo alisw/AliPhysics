@@ -568,11 +568,17 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
   // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
-    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
+    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(fExternalEvent);
     if (eev) {
-      res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      AliFatal("Event selection is not implemented for embedding ESDs.");
+      // Unfortunately, the normal method of retrieving the trigger mask (commented out below) doesn't work for the embedded event since we don't
+      // create an input handler and I am not an expert on getting a trigger mask. Further, embedding ESDs is likely to be inefficient, so it is
+      // probably best to avoid it if possible.
+      //
+      // Suggestions are welcome here!
+      //res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     } else {
-      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
+      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(fExternalEvent);
       if (aev) {
         res = (dynamic_cast<AliVAODHeader*>(aev->GetHeader()))->GetOfflineTrigger();
       }
@@ -592,7 +598,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
   Double_t externalVertex[3]={0};
   Double_t inputVertex[3]={0};
   const AliVVertex *externalVert = fExternalEvent->GetPrimaryVertex();
-  const AliVVertex *inputVert = InputEvent()->GetPrimaryVertex();
+  const AliVVertex *inputVert = AliAnalysisTaskSE::InputEvent()->GetPrimaryVertex();
   if (externalVert && inputVert) {
     externalVert->GetXYZ(externalVertex);
     inputVert->GetXYZ(inputVertex);

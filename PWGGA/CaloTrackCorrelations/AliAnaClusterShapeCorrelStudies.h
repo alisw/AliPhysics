@@ -475,7 +475,8 @@ public:
   TH3F *   fhEMaxCellTimeNCellSM;                 //!<! n cell vs SM number vs max cell time
   TH3F *   fhESecCellTimeNCellSM;                 //!<! n cell vs SM number vs secondary cell time
 
-  // 8 < E < 12 GeV per SM
+  // 8 < E < 12 GeV per SM, neutral
+  TH3F *   fhNCellsPerClusterM02M20PerSM  [20];   //!<! m02 vs m20 vs n cells 
   TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
   TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
   TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
@@ -494,6 +495,9 @@ public:
 
   TH3F *   fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
   TH3F *   fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max / e max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max /  e max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
 
   TH3F *   fhColRowFromCellMaxECellClusterRatLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
   TH3F *   fhColRowFromCellMaxECellClusterRatHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column

@@ -129,6 +129,7 @@ fPOIExtraWeights(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
+fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
@@ -288,6 +289,7 @@ fPOIExtraWeights(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
+fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
@@ -459,6 +461,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   }
   if (fRecenterZDC) {
     if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
+    if(fCRCZDC2DCutList) fQC->SetCRCZDC2DCutList(fCRCZDC2DCutList);
     if(fCRCZDCResList) fQC->SetCRCZDCResList(fCRCZDCResList);
   }
   if(fCRCVZEROCalibList) fQC->SetCRCVZEROCalibList(fCRCVZEROCalibList);

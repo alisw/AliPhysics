@@ -34,7 +34,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
-  fEvent(0),
+  fEventManager(),
   fEsdMode(0),
   fMCEvent(0),
   fCent(0),
@@ -70,7 +70,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
-  fEvent(0),
+  fEventManager(),
   fEsdMode(0),
   fMCEvent(0),
   fCent(0),
@@ -147,6 +147,9 @@ void AliEmcalCorrectionComponent::ExecOnce()
  */
 Bool_t AliEmcalCorrectionComponent::Run()
 {
+  AliDebugStream(3) << ": fEventManager.UseEmbeddingEvent(): " << fEventManager.UseEmbeddingEvent() << ", "
+           << "fEventManager.InputEvent(): " << fEventManager.InputEvent() << ", "
+           << "fEventManager address: " << &fEventManager << "\n";
   if(fGetPassFromFileName)
     GetPass();
   
@@ -196,9 +199,9 @@ void AliEmcalCorrectionComponent::GetEtaPhiDiff(const AliVTrack *t, const AliVCl
 void AliEmcalCorrectionComponent::UpdateCells()
 {
   
-  if (!fEvent) return ;
+  if (!fEventManager.InputEvent()) return ;
   
-  Int_t bunchCrossNo = fEvent->GetBunchCrossNumber();
+  Int_t bunchCrossNo = fEventManager.InputEvent()->GetBunchCrossNumber();
   
   if (fRecoUtils)
     fRecoUtils->RecalibrateCells(fCaloCells, bunchCrossNo);
@@ -212,10 +215,10 @@ void AliEmcalCorrectionComponent::UpdateCells()
 Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
 {
   // Get run number.
-  Bool_t runChanged = fRun != fEvent->GetRunNumber();
+  Bool_t runChanged = fRun != fEventManager.InputEvent()->GetRunNumber();
   
   if (runChanged) {
-    fRun = fEvent->GetRunNumber();
+    fRun = fEventManager.InputEvent()->GetRunNumber();
     AliWarning(Form("Run changed, initializing parameters for %d", fRun));
     
     // init geometry if not already done
@@ -329,7 +332,7 @@ void AliEmcalCorrectionComponent::FillCellQA(TH1F* h){
  */
 Int_t AliEmcalCorrectionComponent::InitBadChannels()
 {
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
   
   AliInfo("Initialising Bad channel map");
@@ -338,7 +341,7 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   if (!fRecoUtils->GetEMCALBadChannelStatusMapArray())
     fRecoUtils->InitEMCALBadChannelStatusMap() ;
   
-  Int_t runBC = fEvent->GetRunNumber();
+  Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contBC = new AliOADBContainer("");
   if (fBasePath!="")

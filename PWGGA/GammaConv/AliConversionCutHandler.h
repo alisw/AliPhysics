@@ -51,10 +51,10 @@ private:
 	Bool_t fValidCuts;              ///< Test if all cuts are valid
 	Int_t fNCuts;                   ///< Number of cuts handled so far
 	Int_t fNMaxCuts;                ///< Max. number of cuts that can be handled
-	TString* fEventCutArray;        ///< Array of event cuts
-	TString* fPhotonCutArray;       ///< Array of photon cuts
-	TString* fMesonCutArray;        ///< Array of meson cuts
-	TString* fClusterCutArray;      ///< Array of calo cluster cuts
+    TString* fEventCutArray;        ///< Array of event cuts
+    TString* fPhotonCutArray;       ///< Array of photon cuts
+    TString* fMesonCutArray;        ///< Array of meson cuts
+    TString* fClusterCutArray;      ///< Array of calo cluster cuts
 };
 
 #endif /* ALICONVERSIONCUTHANDLER_H */

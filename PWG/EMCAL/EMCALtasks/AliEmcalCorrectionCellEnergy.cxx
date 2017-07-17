@@ -80,7 +80,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
 {
   AliEmcalCorrectionComponent::Run();
   
-  if (!fEvent) {
+  if (!fEventManager.InputEvent()) {
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
@@ -125,7 +125,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
  */
 Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
 {
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
   
   AliInfo("Initialising recalibration factors");
@@ -134,7 +134,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
     fRecoUtils->InitEMCALRecalibrationFactors() ;
   
-  Int_t runRC = fEvent->GetRunNumber();
+  Int_t runRC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contRF=new AliOADBContainer("");
   if (fBasePath!="")
@@ -220,7 +220,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
  */
 Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 {
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
   
   AliInfo("Initialising recalibration factors");
@@ -229,7 +229,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
     fRecoUtils->InitEMCALRecalibrationFactors() ;
   
-  Int_t runRC = fEvent->GetRunNumber();
+  Int_t runRC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contRF=new AliOADBContainer("");
   if (fBasePath!="")
@@ -344,7 +344,7 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
         AliWarning("InitRecalib OK");
       }
       if (fInitRecalib>1) {
-        AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No recalibration available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
     
@@ -358,7 +358,7 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
         AliWarning("InitRecalib OK");
       }
       if (fInitRunDepRecalib>1) {
-        AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No Temperature recalibration available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
   }

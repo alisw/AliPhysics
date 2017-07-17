@@ -71,7 +71,7 @@ class AliCaloNonLinearity : public AliAnalysisCuts {
 
     //correct NonLinearity
     MCSetEnum   FindEnumForMCSetString(TString namePeriod);
-    Float_t     GetCorrectedEnergy(Float_t clusterEnergy, Int_t isMC, Int_t switchNonLin, Int_t clusterType, TString periodName);
+    Float_t     GetCorrectedEnergy(Float_t clusterEnergy, Int_t isMC, Int_t switchNonLin, Int_t clusterType, MCSetEnum periodEnum);
 
     //predefined functions
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);

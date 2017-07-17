@@ -82,7 +82,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
 {
   AliEmcalCorrectionComponent::Run();
   
-  if (!fEvent) {
+  if (!fEventManager.InputEvent()) {
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
@@ -134,7 +134,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
 {
   // Initialising bad channel maps
   
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
 
   AliInfo("Initialising time calibration map");
@@ -143,7 +143,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   if (!fRecoUtils->GetEMCALTimeRecalibrationFactorsArray())
     fRecoUtils->InitEMCALTimeRecalibrationFactors() ;
   
-  Int_t runBC = fEvent->GetRunNumber();
+  Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contBC = new AliOADBContainer("");
   if (fBasePath!="")
@@ -233,7 +233,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
 {
   // Initialising run-by-run L1 phase in time calibration maps
   
-  if (!fEvent)
+  if (!fEventManager.InputEvent())
     return 0;
 
   AliInfo("Initialising run-by-run L1 phase in time calibration map");
@@ -242,7 +242,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   if (!fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationArray())
     fRecoUtils->InitEMCALL1PhaseInTimeRecalibration() ;
   
-  Int_t runBC = fEvent->GetRunNumber();
+  Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
   AliOADBContainer *contBC = new AliOADBContainer("");
   if (fBasePath!="")
@@ -346,7 +346,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
         AliWarning("InitTimeCalib OK");
       }
       if (initTC > 1) {
-        AliWarning(Form("No external time calibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No external time calibration available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
     
@@ -360,7 +360,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
         AliWarning("InitTimeCalibL1Phase OK");
       }
       if (initTCL1Phase > 1) {
-        AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
   }

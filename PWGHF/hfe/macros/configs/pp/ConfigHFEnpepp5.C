@@ -131,30 +131,30 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
       switch (HadronContFunc) {
         case kHadronDown:
           hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-          hBackground->SetParameter(0, 4.99915e-01);
-          hBackground->SetParameter(1, 4.99946e-01);
-          hBackground->SetParameter(2, 3.72131e-01);
-          hBackground->SetParameter(3,-4.36908e+00);
+          hBackground->SetParameter(0, 1.95937e-02);
+          hBackground->SetParameter(1, 1.96238e-02);
+          hBackground->SetParameter(2, 8.74735e-01);
+          hBackground->SetParameter(3,-6.53975e+00);
           break;
         case kHadronUp:
           hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-          hBackground->SetParameter(0, 4.99910e-01);
-          hBackground->SetParameter(1, 4.99931e-01);
-          hBackground->SetParameter(2, 3.13196e-01);
-          hBackground->SetParameter(3,-3.14914e+00);
+          hBackground->SetParameter(0, 4.99886e-01);
+          hBackground->SetParameter(1, 4.99947e-01);
+          hBackground->SetParameter(2, 3.06334e-01);
+          hBackground->SetParameter(3,-3.21433e+00);
           break;
         case kHadronLandau:
           hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])", 0. ,60.);
-          hBackground->SetParameter(0, 3.58424e+01);
-          hBackground->SetParameter(1, 2.71593e+01);
-          hBackground->SetParameter(2, 6.88483e+00);
+          hBackground->SetParameter(0, 6.11328e+00);
+          hBackground->SetParameter(1, 2.12333e+01);
+          hBackground->SetParameter(2, 5.44580e+00);
           break;
         default:
           hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-          hBackground->SetParameter(0, 4.99928e-01);
-          hBackground->SetParameter(1, 4.99933e-01);
-          hBackground->SetParameter(2, 3.06193e-01);
-          hBackground->SetParameter(3,-3.38713e+00);
+          hBackground->SetParameter(0, 7.64366e-02);
+          hBackground->SetParameter(1, 7.64075e-02);
+          hBackground->SetParameter(2, 4.19159e-01);
+          hBackground->SetParameter(3,-3.41836e+00);
           break;
       }
     }else{

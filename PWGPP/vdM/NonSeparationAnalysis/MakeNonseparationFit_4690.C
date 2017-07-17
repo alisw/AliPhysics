@@ -20,8 +20,8 @@ void MakeNonseparationFit_4690() {
 #if 1
   AliNonseparationModelFit f;
 
-  f.SetVar( 0, 25e-4, 1e-4, 15e-4, 80e-4);
-  f.SetVar( 1, 25e-4, 1e-4, 15e-4, 80e-4);
+  f.SetVar( 0, 15e-4, 1e-4, 1e-4, 80e-4);
+  f.SetVar( 1, 15e-4, 1e-4, 1e-4, 80e-4);
   f.SetVar( 2, 8.0   , 0.01, 2.5, 10.5);
   f.SetVar( 3, 0.0   , 0.01, -1, 1);
 
@@ -30,10 +30,10 @@ void MakeNonseparationFit_4690() {
   f.SetVar( 6, 1.1   , 0.01, 0.75, 1.75);
   f.SetVar( 7, 0.0   , 0.01, -1, 1);
 
-  f.SetVar( 8, 0.7   , 0.01, 0.1, 0.5);
+  f.SetVar( 8, 0.7   , 0.01, 0.5, 0.9);
 
-  f.SetVar( 9, 25e-4, 1e-4, 15e-4, 80e-4);
-  f.SetVar(10, 25e-4, 1e-4, 15e-4, 80e-4);
+  f.SetVar( 9, 15e-4, 1e-4, 1e-4, 80e-4);
+  f.SetVar(10, 15e-4, 1e-4, 1e-4, 80e-4);
   f.SetVar(11, 8.0   , 0.01, 2.5, 10.5);
   f.SetVar(12, 0.0   , 0.01, -1, 1);
 
@@ -42,7 +42,7 @@ void MakeNonseparationFit_4690() {
   f.SetVar(15, 1.1   , 0.01, 0.75, 1.75);
   f.SetVar(16, 0.0   , 0.01, -1, 1);
 
-  f.SetVar(17, 0.7   , 0.01, 0.1, 0.5);
+  f.SetVar(17, 0.7   , 0.01, 0.5, 0.9);
 
   f.SetVar(18, 0.0   , 1e-7, -0.1, +0.1);
   f.SetVar(19, 60e-6, 1e-6, -0.1, +0.1);
@@ -62,10 +62,10 @@ void MakeNonseparationFit_4690() {
 
   TCut cut("modelPar.k>0.8 && modelPar.k<1.5");
   TCut cutSep[6] = {
-    TCut("abs(beamSep.X)<0.015 && abs(beamSep.Y)<0.015"),
-    TCut("abs(beamSep.X)<0.015 && abs(beamSep.Y)<0.015"),
-    TCut("abs(beamSep.X)<0.015 && abs(beamSep.Y)<0.015"),
-    TCut("abs(beamSep.X)<0.015 && abs(beamSep.Y)<0.015"),
+    TCut("abs(beamSep.X)<0.011"),
+    TCut("abs(beamSep.Y)<0.010"),
+    TCut("abs(beamSep.X)<0.011"),
+    TCut("abs(beamSep.Y)<0.010"),
     TCut("abs(beamSep.X)<0.009"),
     TCut("abs(beamSep.Y)<0.008")
   };

@@ -44,6 +44,9 @@
 #include "AliJEbeHistos.h"
 #include "AliJJet.h"
 
+#include "AliMultSelection.h"
+//#include "AliJRunTable.h"
+
 
 ClassImp(AliJHSInterplayTask)
 
@@ -75,7 +78,11 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	IsMC(kFALSE),
 	IsKinematicOnly(kFALSE)
 {
-	// Constructor
+	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	
+	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
 }
 //________________________________________________________________________
 	AliJHSInterplayTask::AliJHSInterplayTask(const char *name) 
@@ -111,7 +118,11 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	TagThisEvent(kFALSE)
 {
 
-	// Constructor
+	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	
+	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
 
 
 	// Define input and output slots here
@@ -153,7 +164,8 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fPtHardMax(a.fPtHardMax),
 	TagThisEvent(a.TagThisEvent)
 {
-	//copy constructor
+	pfOutlierLowCut = (TF1*)a.pfOutlierLowCut->Clone();
+	pfOutlierHighCut = (TF1*)a.pfOutlierHighCut->Clone();
 }
 //________________________________________________________________________
 AliJHSInterplayTask& AliJHSInterplayTask::operator = (const AliJHSInterplayTask& ap){
@@ -238,6 +250,8 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 }
 //________________________________________________________________________
 AliJHSInterplayTask::~AliJHSInterplayTask() {
+	delete pfOutlierLowCut;
+	delete pfOutlierHighCut;
 	delete fOutput; 
 	delete fAnaUtils;
 	delete fFFlucAna;
@@ -254,7 +268,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 	// Main loop
 	// Called for each event
 	fevt++;
-	if(fevt % 1000 == 0) cout << "Numer of event scanned = "<< fevt << endl;
+	if(fevt % 1000 == 0) cout << "Number of events scanned = "<< fevt << endl;
 
 	// clear them up for every event
 	fInputList->Clear();
@@ -306,20 +320,28 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 			fFirstEvent = kFALSE;
 		}
 
-		if(!IsGoodEvent( event )) return; // zBin is set there
+		if(!IsGoodEvent( event ))
+			return; // zBin is set there
 		if(fDebug) cout << "zvtx = " << zVert << endl;
 
 		// centrality 
 		if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-			AliCentrality *cent = event->GetCentrality();
-			if( ! cent ) return;
-			fcent = cent->GetCentralityPercentile("V0M");
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return;
+			}
+
+			fcent = pms->GetMultiplicityPercentile("V0M");
+			//Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
 		} else {
 			fcent = -1;
+			cout<<"warning: centrality unavailable";
 		}
 	}
 
-	cBin = fCard->GetBin(kCentrType, fcent);;
+	//cout<<"cent = "<<fcent<<endl;
+	cBin = fCard->GetBin(kCentrType, fcent);
 	if(cBin<0) return;
 
 	fHistos->fhZVert[cBin]->Fill(zVert);
@@ -537,12 +559,45 @@ bool AliJHSInterplayTask::IsGoodEvent(AliVEvent *event) {
 
 		fHistos->fhEvents->Fill( 0 );
 
-		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+		AliInputEventHandler *pieh = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+		Bool_t triggerkMB = pieh->IsEventSelected() & ( AliVEvent::kMB );
 
 		if( triggerkMB ){
 			triggeredEventMB = kTRUE;  //event triggered as minimum bias
 			fHistos->fhEvents->Fill( 1 );
 		}
+
+		int frunNumber = pieh->GetEvent()->GetRunNumber();
+		if(frunNumber < 0)
+			cout << "ERROR: unknown run number" << endl;
+		//AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
+		fRunTable->SetRunNumber( frunNumber );
+
+		if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
+			const AliVVertex* vtTrc = event->GetPrimaryVertex();
+			const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+			double covTrc[6],covSPD[6];
+			vtTrc->GetCovarianceMatrix(covTrc);
+			vtSPD->GetCovarianceMatrix(covSPD);
+			double dz = vtTrc->GetZ()-vtSPD->GetZ();
+			double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+			double errTrc = TMath::Sqrt(covTrc[5]);
+			double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+			if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
+				return kFALSE;
+		
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return kFALSE;
+			}
+
+			Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
+			Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
+			if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
+				return kFALSE;
+		}
+
 		//--------------------------------------------------------------  
 		// check reconstructed vertex
 		int ncontributors = 0;

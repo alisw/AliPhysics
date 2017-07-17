@@ -1829,7 +1829,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t S
   TH2D* h2D = new TH2D(); //pointer to be returned
 
   TH3D* h3D; //for projecting the TH2Sparse onto
-  if(SEorME==kME && softPiME) suffixforsoftpiME = "_softpiME";
+  if(SEorME==kME && softPiME==2) suffixforsoftpiME = "_softpiME";
   if(!fIntegratePtBins) {
     if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));
     if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));

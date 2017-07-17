@@ -22,8 +22,6 @@
 #pragma link C++ class  AliEmcalTenderTask+;
 #pragma link C++ class  AliEmcalTrackingQATask+;
 #pragma link C++ class  AliEmcalTrackPropagatorTask+;
-#pragma link C++ class  AliEmcalCellMonitorTask+;
-#pragma link C++ class  AliEmcalFastOrMonitorTask+;
 #pragma link C++ class  AliEsdSkimTask+;
 #pragma link C++ class  AliEsdTrackExt+;
 #pragma link C++ class  AliHadCorrTask+;
@@ -33,6 +31,7 @@
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
 #pragma link C++ class  AliEmcalCopyCollection+;
+#pragma link C++ class  AliEmcalCorrectionEventManager+;
 #pragma link C++ class  AliEmcalCorrectionTask+;
 #pragma link C++ class  AliEmcalCorrectionCellContainer+;
 #pragma link C++ class  std::vector<AliEmcalCorrectionCellContainer *>+;
@@ -46,5 +45,12 @@
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
+#pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
 #pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
+
+#pragma link C++ namespace PWG+;
+#pragma link C++ namespace PWG::EMCAL+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTriggerRejectionMaker+;
+#pragma link C++ class PWG::EMCAL::AliEmcalCellMonitorTask+;
+#pragma link C++ class PWG::EMCAL::AliEmcalFastOrMonitorTask+;
 #endif

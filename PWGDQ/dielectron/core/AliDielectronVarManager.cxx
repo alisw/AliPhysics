@@ -58,13 +58,15 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NclsSFracTPC",           "N_{shar.cls}^{TPC}/^{}N_{cls}^{TPC}",                ""},
   {"NclsSITS",               "N_{shar.cls}^{ITS}",                                 ""},
   {"NclsSFracITS",           "N_{shar.cls}^{ITS}/^{}N_{cls}^{ITS}",                ""},
+  {"NclsSMapITS",            "ITS_shared_cluster_map",                             ""},
   {"NclsTPCiter1",           "N_{1st.iter.cls}^{TPC}",                             ""},
   {"NFclsTPC",               "N_{find.cls}^{TPC}",                                 ""},
   {"NFclsTPCrobust",         "N_{cross.rows}^{TPC}",                               ""},
   {"NFclsTPCrobustFraction", "N_{cls}^{TPC}/^{}N_{find.cls}^{TPC}",                ""},//TODO: check
   {"NFclsTPCfracCrossedRows","N_{cross.rows}^{TPC}/^{}N_{find.cls}^{TPC}",         ""},
-  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                   ""},
-  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",  ""},
+  {"Chi2TPCConstrainedVsGlobal",             "Chi^{2}_{TPC-constrained vs. Global}",                                             ""},
+  {"TPCsignalN",             "N_{d#it{E}/d#it{x} points}^{TPC}",                                       ""},
+  {"TPCsignalNfrac",         "N_{d#it{E}/d#it{x} points}^{TPC}/^{}N_{cls}^{TPC}",                      ""},
   {"TPCchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{TPC}",                          ""},
   {"TPCclsDiff",             "N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC}",   ""},
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
@@ -610,8 +612,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
+  {"NTPCtrkswITSout",         "N_{trk}^{TPCwITSout}",                               ""},
+  {"NTPCclsEvent",    "N_{cls}^{TPC}",                                      ""},
   {"RefMultOvRefMultTPConly",  "N_{trk}/N_{trk}^{TPConly}",                        ""},
-
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"NchJpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.6} without J/#psi daughters ",  ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
