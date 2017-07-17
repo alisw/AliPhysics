@@ -124,7 +124,13 @@ public:
     bool IsFromKaon(AliAODTrack *track);
     bool IsFromPion(AliAODTrack *track);
     Bool_t SetResFunctionPID(const char * filename);
-    private:
+    Double_t getFMCglobalDCAxyShift() const;
+    void setFMCglobalDCAxyShift(const Double_t &value);
+
+    Double_t getFVertexRecalcMinPt() const;
+    void setFVertexRecalcMinPt(const Double_t &value);
+
+private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
@@ -197,6 +203,8 @@ public:
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;
     Int_t   fProductionNumberPtHard;//
+    Double_t fMCglobalDCAxyShift;//
+    Double_t fVertexRecalcMinPt;//
 
     ClassDef(AliAnalysisTaskHFJetIPQA, 20)
 };
