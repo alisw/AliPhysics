@@ -102,7 +102,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = 0 ;   
+  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
 }
 
 //______________________________________________________________
@@ -151,7 +151,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = 0 ;   
+  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
 }
 
 //_______________________________________________________________
@@ -1645,7 +1645,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 //    if ( absIDr2 < 0 )  printf( "\t \t *** ism %d, iphi %d, ieta %d; absId(iphi-1) %d\n",imod,iphi,ieta, 
 //                               fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, iphi-1));
 
-    
+    //
     // Check if they are not declared bad
     Bool_t okr1 = kTRUE;
     Bool_t okr2 = kTRUE;
@@ -1665,58 +1665,67 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     //
     // Generate some energy for the cells in cross, depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-//    printf("\t Added energy (fractions %2.3f-%2.3f) on top of previous %2.3f: \n",
-//          fTCardCorrCellsEner[id], fTCardCorrInduceEnerFrac[0], fTCardCorrInduceEnerFrac[1]);
+    // CAREFUL: <<Apply the same added shift to all for the moment>>.
+    
+    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0],0.01);
+//    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],0.01);
+//    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],0.01);
+    Float_t fracCupdown = fracRupdown;
+    Float_t fracC       = fracRupdown;
+    
+//    printf("\t Added energy (fractions %2.3f-%2.3f-%2.3f) -> gaus (%2.3f-%2.3f-%2.3f) on top of previous %2.3f: \n",
+//           fTCardCorrInduceEnerFrac[0], fTCardCorrInduceEnerFrac[1], fTCardCorrInduceEnerFrac[2],
+//           fracRupdown,fracC,fracCupdown, fTCardCorrCellsEner[id]);
     
     if ( okr1 )
     {
-      fTCardCorrCellsEner[absIDr1] += amp*fTCardCorrInduceEnerFrac[1];
+      fTCardCorrCellsEner[absIDr1] += amp*fracRupdown;
       if ( fCaloCells->GetCellAmplitude(absIDr1) < 0.01 ) fTCardCorrCellsNew[absIDr1] = kTRUE;
 //      printf("\t \t r1 absId %d induced amp %2.3f, accumulated %2.3f (new %d); \n",
-//             absIDr1,amp*fTCardCorrInduceEnerFrac[1],fTCardCorrCellsEner[absIDr1],fTCardCorrCellsNew[absIDr1]);
+//             absIDr1,amp*fracRupdown,fTCardCorrCellsEner[absIDr1],fTCardCorrCellsNew[absIDr1]);
     }
     
     if ( okr2 )
     {
-      fTCardCorrCellsEner[absIDr2] += amp*fTCardCorrInduceEnerFrac[1];
+      fTCardCorrCellsEner[absIDr2] += amp*fracRupdown;
       if ( fCaloCells->GetCellAmplitude(absIDr2) < 0.01 ) fTCardCorrCellsNew[absIDr2] = kTRUE;
 //      printf("\t \t r2 absId %d induced amp %2.3f, accumulated %2.3f (new %d);\n ",
-//             absIDr2,amp*fTCardCorrInduceEnerFrac[1],fTCardCorrCellsEner[absIDr2],fTCardCorrCellsNew[absIDr2]);
+//             absIDr2,amp*fracRupdown,fTCardCorrCellsEner[absIDr2],fTCardCorrCellsNew[absIDr2]);
     }
     
     if ( okc )
     {
-      fTCardCorrCellsEner[absIDc] += amp*fTCardCorrInduceEnerFrac[0];
+      fTCardCorrCellsEner[absIDc] += amp*fracC;
       if ( fCaloCells->GetCellAmplitude(absIDc ) < 0.01 ) fTCardCorrCellsNew[absIDc]  = kTRUE;
 //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-//             absIDc,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc],fTCardCorrCellsNew[absIDc]);
+//             absIDc,amp*fracC,fTCardCorrCellsEner[absIDc],fTCardCorrCellsNew[absIDc]);
     }
 
     if ( okc1 )
     {
-      fTCardCorrCellsEner[absIDc1] += amp*fTCardCorrInduceEnerFrac[0];
+      fTCardCorrCellsEner[absIDc1] += amp*fracCupdown;
       if ( fCaloCells->GetCellAmplitude(absIDc1 ) < 0.01 ) fTCardCorrCellsNew[absIDc1]  = kTRUE;
       //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-      //             absIDc1,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc1],fTCardCorrCellsNew[absIDc1]);
+      //             absIDc1,amp*fracCupdown,fTCardCorrCellsEner[absIDc1],fTCardCorrCellsNew[absIDc1]);
     }
     
     if ( okc2 )
     {
-      fTCardCorrCellsEner[absIDc2] += amp*fTCardCorrInduceEnerFrac[0];
+      fTCardCorrCellsEner[absIDc2] += amp*fracCupdown;
       if ( fCaloCells->GetCellAmplitude(absIDc2 ) < 0.01 ) fTCardCorrCellsNew[absIDc2]  = kTRUE;
       //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-      //             absIDc2,amp*fTCardCorrInduceEnerFrac[0],fTCardCorrCellsEner[absIDc2],fTCardCorrCellsNew[absIDc2]);
+      //             absIDc2,amp*fracCupdown,fTCardCorrCellsEner[absIDc2],fTCardCorrCellsNew[absIDc2]);
     }
 
-    
+    //
     // Subtract the added energy to main cell, if energy conservation is requested
     if ( fTCardCorrClusEnerConserv )
     {
-      if(absIDc  >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
-      if(absIDc1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
-      if(absIDc1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[0];
-      if(absIDr1 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[1];
-      if(absIDr2 >=0 ) fTCardCorrCellsEner[id] -= amp*fTCardCorrInduceEnerFrac[1];
+      if(absIDc  >=0 ) fTCardCorrCellsEner[id] -= amp*fracC;
+      if(absIDc1 >=0 ) fTCardCorrCellsEner[id] -= amp*fracCupdown;
+      if(absIDc2 >=0 ) fTCardCorrCellsEner[id] -= amp*fracCupdown;
+      if(absIDr1 >=0 ) fTCardCorrCellsEner[id] -= amp*fracRupdown;
+      if(absIDr2 >=0 ) fTCardCorrCellsEner[id] -= amp*fracRupdown;
       //printf("\t conserve energy, remove %2.3f, from %d\n",fTCardCorrCellsEner[id],id);
     } // conserve energy
   
