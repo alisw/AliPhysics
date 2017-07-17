@@ -118,7 +118,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
     defaultEventCut = "00081113"; // EGA
   }
   TString defaultConvPhotonCut = "00200009327000008250400000";
-  TString defaultCaloPhotonCut = "1111111067032230000";
+  TString defaultCaloPhotonCut = "1111111067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
   TString defaultPi0Cut = "0163103100000010"; 
   TString Pi0Cut = "0163103100000060"; // calo/calo
   TString defaultK0Cut = "0163103100000000";
