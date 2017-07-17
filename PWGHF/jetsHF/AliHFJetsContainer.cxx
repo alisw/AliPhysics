@@ -238,9 +238,9 @@ void AliHFJetsContainer::GetBinning(TString var, Int_t &nBins, Double_t *bins, c
 	//}
 
 	Float_t binmin=0., binmax=0.;    
-	if (var.EqualTo("mult")) {
-		axistitle="Multiplicity";
-		nBins = 1000; binmin= 0.5; binmax= 1000.5;
+	if (var.EqualTo("cent")) {
+		axistitle="Multiplicity percentile";
+		nBins = 100; binmin= 0.5; binmax= 100.5;
 	}
   else if (var.EqualTo("jetPt")) {
 		axistitle="p_{T,jet} (GeV/c)";
@@ -440,8 +440,8 @@ const char *AliHFJetsContainer::GetVarName(CFVars var)
 { 
 
 	switch (var) {
-    case kCFMult:
-      return "kCFMult";
+    case kCFCent:
+      return "kCFCent";
     case kCFJetPt:
       return "kCFJetPt";
     case kCFJetEta:
@@ -460,8 +460,8 @@ const char *AliHFJetsContainer::GetVarName(CFVars var)
 
 //----------------------------------------------------------------
 Int_t AliHFJetsContainer::GetVarAxis(const char* varname){
-	if (!strncmp(varname,"kCFMult",50))
-    return kCFMult;
+	if (!strncmp(varname,"kCFCent",50))
+    return kCFCent;
   else if (!strncmp(varname,"kCFJetPt",50))
 		return kCFJetPt;
   else if (!strncmp(varname,"kCFJetEta",50))
@@ -487,7 +487,7 @@ Int_t AliHFJetsContainer::GetVarAxis(const char* varname){
 //----------------------------------------------------------------
 void AliHFJetsContainer::CreateDefaultBinning()
 {
-	TString vars("mult;jetPt;jetEta;jetPhi");
+	TString vars("cent;jetPt;jetEta;jetPhi");
 	// Get binning for each variable
 	TObjArray *arr;
 	TObjString *objstr;
