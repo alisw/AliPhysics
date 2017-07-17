@@ -103,7 +103,7 @@ fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
-fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE),
+fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
@@ -3052,27 +3052,62 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 //__________________________________________
 /// LED Events in period LHC11a contaminated 
 /// EMCAL clusters sample, simple method
-/// to reject such events.
+/// to reject such events. 
+/// For period LHC11a only SM3 and sometimes SM4 gave problems, fRemoveLEDEvents=1 handles it
+/// For testing, a generalization for all SMs is introduced for fRemoveLEDEvents>1
 //__________________________________________
 Bool_t  AliCaloTrackReader::RejectLEDEvents()
 {
+  // For LHC11a
   // Count number of cells with energy larger than 0.1 in SM3, cut on this number
-  Int_t ncellsSM3 = 0;
-  for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
+  if ( fRemoveLEDEvents == 1 )
   {
-    Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
-    Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-    if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
+    Int_t ncellsSM3 = 0;
+    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
+    {
+      Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
+      Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
+    }
+    
+    Int_t ncellcut = 21;
+    if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
+    
+    if(ncellsSM3 >= ncellcut)
+    {
+      AliDebug(1,Form("Reject event with ncells in SM3 %d, cut %d, trig %s",
+                      ncellsSM3,ncellcut,GetFiredTriggerClasses().Data()));
+      return kTRUE;
+    }
   }
-  
-  Int_t ncellcut = 21;
-  if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
-  
-  if(ncellsSM3 >= ncellcut)
+  // For testing
+  // Count number of cells with energy larger than 0.1 any SM, cut on this number
+  else if ( fRemoveLEDEvents > 1 )
   {
-    AliDebug(1,Form("Reject event with ncells in SM3 %d, cut %d, trig %s",
-                    ncellsSM3,ncellcut,GetFiredTriggerClasses().Data()));
-    return kTRUE;
+    Int_t ncellsSM[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    
+    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
+    {
+      Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
+      Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1) ncellsSM[sm]++;
+    }
+    
+    Int_t ncellcut = 21;
+    if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
+    
+    for(Int_t ism = 0; ism <  GetCaloUtils()->GetEMCALGeometry()->GetNumberOfSuperModules(); ism++)
+    {
+      if(ncellsSM[ism] >= ncellcut)
+      {
+        AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
+                        ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
+        
+        printf("Reject event with ncells in SM%d %d, cut %d, trig %s\n",
+               ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()); 
+        return kTRUE;
+      }
+    }
   }
   
   return kFALSE;
