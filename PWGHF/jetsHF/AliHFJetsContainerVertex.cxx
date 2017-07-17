@@ -81,7 +81,7 @@ AliHFJetsContainerVertex &AliHFJetsContainerVertex::operator=(const AliHFJetsCon
 //_____________________________________________________________________________________
 void AliHFJetsContainerVertex::FillStepJetVtxSim(CFSteps                step,
                                                  const Int_t            nSVtx,
-                                                 Double_t               evtMult,          // Event multiplicity (not used yet)
+                                                 Double_t               evtCent,          // Event multiplicity percentile (based on ZNA in pA)
                                                  Double_t               jetPt_wBkgRej,    // Jet's pt after background subtraction
                                                  vctr_pair_dbl_int     &arrVtxDisp,       // Vector of pair with SV_vtx and SV_sigma
                                                  const TClonesArray    *arrVtxHF,
@@ -99,7 +99,7 @@ void AliHFJetsContainerVertex::FillStepJetVtxSim(CFSteps                step,
 
   const Int_t kNvar = 23;
   Double_t point[kNvar] = {
-    evtMult,                            /* 0 */
+    evtCent,                            /* 0 */
     jet->Pt(),                          /* 1 */
     jet->Eta(),                         /* 2 */
     jet->Phi()-TMath::Pi(),             /* 3 */
@@ -271,7 +271,7 @@ void AliHFJetsContainerVertex::FillStepJetVtxSim(CFSteps                step,
 //_____________________________________________________________________________________
 void AliHFJetsContainerVertex::FillStepJetVtxData(CFSteps               step,
                                                   const Int_t           nSVtx,
-                                                  Double_t              evtMult,
+                                                  Double_t              evtCent,
                                                   Double_t              jetPt_wBkgRej,
                                                   vctr_pair_dbl_int    &arrVtxDisp,
                                                   const TClonesArray   *arrVtxHF,
@@ -286,7 +286,7 @@ void AliHFJetsContainerVertex::FillStepJetVtxData(CFSteps               step,
   
   const Int_t kNvar = 15;
   Double_t point[kNvar] = {
-    evtMult,                            /* 0 */
+    evtCent,                            /* 0 */
     jet->Pt(),                          /* 1 */
     jet->Eta(),                         /* 2 */
     jet->Phi()-TMath::Pi(),             /* 3 */
@@ -457,7 +457,7 @@ void AliHFJetsContainerVertex::FillStepJetVtxData(CFSteps               step,
 //_____________________________________________________________________________________
 void AliHFJetsContainerVertex::FillStepQaVtx(CFSteps                    step,
                                              const Int_t                nSVtx,
-                                             Double_t                   evtMult,
+                                             Double_t                   evtCent,
                                              const AliAODVertex        *primVtx,
                                              const AliEmcalJet         *jet,
                                              const TClonesArray        *arrVtxHF,
@@ -482,7 +482,7 @@ void AliHFJetsContainerVertex::FillStepQaVtx(CFSteps                    step,
   Int_t *indexLxy = new Int_t[nSVtx];
   const Int_t kNvar = 20;
   Double_t pointVtxProp[kNvar] = {
-    evtMult*1.,                         /* 1 */
+    evtCent*1.,                         /* 1 */
     jet->Pt(),                          /* 2 */
     jet->Eta(),                         /* 3 */
     jet->Phi()-TMath::Pi(),             /* 4 */
