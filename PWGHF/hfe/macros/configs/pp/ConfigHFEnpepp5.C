@@ -151,10 +151,10 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
           break;
         default:
           hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
-          hBackground->SetParameter(0, 4.99928e-01);
-          hBackground->SetParameter(1, 4.99933e-01);
-          hBackground->SetParameter(2, 3.06193e-01);
-          hBackground->SetParameter(3,-3.38713e+00);
+          hBackground->SetParameter(0, 7.64366e-02);
+          hBackground->SetParameter(1, 7.64075e-02);
+          hBackground->SetParameter(2, 4.19159e-01);
+          hBackground->SetParameter(3,-3.41836e+00);
           break;
       }
     }else{
