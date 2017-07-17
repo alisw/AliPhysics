@@ -31,9 +31,15 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   AliAnalysisTaskEMCALPi0GammaCorr* AnalysisTask = new AliAnalysisTaskEMCALPi0GammaCorr(kTRUE);
   std::cout << "----Adding cluster container, track container" << std::endl;
   AnalysisTask->AddClusterContainer("usedefault");
-  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer("usedefault");
-  //AliWarning("Setting FilterHybridTracks");
+  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
+  trackCont->SetName("ForCorrelation");
   trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
+  //  trackCont->SetTrackCutsPeriod("LHC11c");
+  // trackCont->SetDefTrackCutsPeriod("LHC11c");
+
+  AliTrackContainer* trackContMatching = AnalysisTask->AddTrackContainer(trackName);
+  trackContMatching->SetName("ForMatching");
+  trackContMatching->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);  
 
   //-------------------------------------------------------
   // Add some selection criteria
@@ -48,11 +54,9 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   //..new task for run2
   //AnalysisTask->SetNCentBins(5);
   AnalysisTask->SetUseNewCentralityEstimation(kFALSE); //maybe this is what is required
-  if(AnalysisTask->GetTrackContainer(trackName))
-  {   
-      std::cout << "Setting pt cut of tracks to " << trackptcut;
-	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
-  }
+  
+  AnalysisTask->GetTrackContainer("ForMatching")->SetParticlePtCut(trackptcut);
+  AnalysisTask->GetTrackContainer("ForCorrelation")->SetParticlePtCut(1.0);
 
   if(AnalysisTask->GetClusterContainer(clusName))
   {
