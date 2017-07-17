@@ -17,10 +17,12 @@
 //--Root--
 class TH1F;
 class TList;
+class TRandom3;
 class THn;
 class THnSparse;
 class TProfile;
 class AliAODMCHeader;
+class AliMultSelection;
 
 //--AliRoot--
 #include "AliLog.h"
@@ -52,6 +54,8 @@ public:
   void SetCorrectionMode(Bool_t mode ) {fCorrMode = mode;};
 
   void SetDoBkgRejection(Bool_t dorej) {fDoBkgRej = dorej;};
+  
+  void SetDoRandomCone(Bool_t dorndm) {fDoRndmCone = dorndm;};
 
   void SetDoFillSecVtxQA(Bool_t doqa ) {fDoQAVtx  = doqa;};
 
@@ -148,11 +152,13 @@ protected:
   Bool_t    IsAODtrkBelongToV0(std::vector<Int_t>& vctrTrkIDs, Int_t trkID);
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
+  Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
 
 private:
 
   Bool_t      fCorrMode;             // enable correction or data modes
-  Bool_t      fDoBkgRej;
+  Bool_t      fDoBkgRej;             // enable background rejection
+  Bool_t      fDoRndmCone;           // enable random cone method
   Bool_t      fDoQAVtx;              // enable output of qa on secondary vertex
   Bool_t      fDoFillV0Trks;         // enable V0 checks
   Bool_t      fDoDetRespMtx;        // enable detector repsonse matrix output
@@ -181,6 +187,8 @@ private:
   Double_t    fMCXsec;
   Double_t    fMCAvgTrials;
 
+  Float_t     fZNApercentile;		 // multiplicity percentile, ZNA estimator
+
   TString     fCurrFileName;         ///<  Current file path name.
 
   Bool_t      fCheckMCCrossSection;  ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
@@ -196,10 +204,12 @@ private:
   AliHFJetsContainerVertex*   fhQaVtx;           //!<! vertices properties
 
   TH1F*                       fhEntries;         //!<!
+  TH1F*						  fhZNApercentQa;	 //!<! QA histo for ZNA percentile	
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
   TH1F*                       fhRhoQa;
   TH1F*                       fhMCRhoQa;
+  TH1F* 					  fhDeltaPt;		 // delta pt distribution
 
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
   THn*                        fhnGenerated;      //!<! THn to fill MC generated histo 
@@ -209,6 +219,7 @@ private:
 
   AliVEvent*                  fEvent;            //! Input event
   AliAODMCHeader*             fMCHeader;         //! Input MC header
+  AliMultSelection*			  fMultSelection;    //! multiplicity/centrality selector
 
   AliHFJetsTaggingVertex*     fTagger;           // Jet Tagging object
 
@@ -225,11 +236,13 @@ private:
 
   map_int_bool*               fV0gTrkMap;
 
+  TRandom3* 				  fRandom;     	     // used for throwing random cone
+
   Int_t                       fGlLogLevel;
   Int_t                       fLcDebLevel;
   Int_t                       fStartBin;
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 3);  // analysis task for MC study
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 4);  // analysis task for MC study
 };
 
 //-------------------------------------------------------------------------------------
