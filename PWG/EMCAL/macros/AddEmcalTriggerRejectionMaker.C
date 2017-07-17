@@ -1,8 +1,8 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch *AddTaskEmcalMaxPatch(const char *dummy = "", const char *suffix = ""){
+PWG::EMCAL::AliEmcalTriggerRejectionMaker *AddEmcalTriggerRejectionMaker(const char *dummy = "", const char *suffix = ""){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   TString taskname(Form("MaxPatchTask%s", suffix));
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch *patchtask = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch(taskname.Data());
+  PWG::EMCAL::AliEmcalTriggerRejectionMaker *patchtask = new PWG::EMCAL::AliEmcalTriggerRejectionMaker(taskname.Data());
   mgr->AddTask(patchtask);
 
   TString outputfile(mgr->GetCommonFileName());

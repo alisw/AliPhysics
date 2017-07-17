@@ -54,6 +54,7 @@ set(SRCS
   AliEmcalTrackPropagatorTask.cxx
   AliEmcalCellMonitorTask.cxx
   AliEmcalFastOrMonitorTask.cxx
+  AliEmcalTriggerRejectionMaker.cxx
   AliEsdSkimTask.cxx
   AliEsdTrackExt.cxx
   AliHadCorrTask.cxx
