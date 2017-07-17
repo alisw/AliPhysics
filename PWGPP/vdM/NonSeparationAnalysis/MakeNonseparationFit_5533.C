@@ -17,25 +17,25 @@ void MakeNonseparationFit_5533() {
 #if 1
   AliNonseparationModelFit f;
 
-  f.SetVar( 0, 8.0e-3, 0.0001, 0.001,  0.0142);
-  f.SetVar( 1, 7.0e-3, 0.0001, 0.001,  0.0142);
-  f.SetVar( 2, 7.0   , 0.01, 6.5, 8.5);
+  f.SetVar( 0, 3.5e-3, 0.0001, 0.001,  0.0142);
+  f.SetVar( 1, 2.5e-3, 0.0001, 0.001,  0.0142);
+  f.SetVar( 2, 8.5   , 0.01, 4.5, 10.5);
   f.SetVar( 3, 0.0   , 0.01, -1, 1);
 
-  f.SetVar( 4, 1.3   , 0.01, 0.5, 1.75);
-  f.SetVar( 5, 1.3   , 0.01, 0.5, 1.75);
+  f.SetVar( 4, 1.1   , 0.01, 0.5, 1.75);
+  f.SetVar( 5, 1.1   , 0.01, 0.5, 1.75);
   f.SetVar( 6, 1.1   , 0.01, 0.5, 1.75);
   f.SetVar( 7, 0.0   , 0.01, -1, 1);
 
   f.SetVar( 8, 0.7   , 0.01, 0.1, 0.9);
 
-  f.SetVar( 9, 8.0e-3, 0.0001, 0.001,  0.0142);
-  f.SetVar(10, 7.0e-3, 0.0001, 0.001,  0.0142);
-  f.SetVar(11, 7.0   , 0.01, 6.5, 8.5);
+  f.SetVar( 9, 4.0e-3, 0.0001, 0.001,  0.0142);
+  f.SetVar(10, 2.5e-3, 0.0001, 0.001,  0.0142);
+  f.SetVar(11, 8.5   , 0.01, 4.5, 10.5);
   f.SetVar(12, 0.0   , 0.01, -1, 1);
 
-  f.SetVar(13, 1.3   , 0.01, 0.5, 1.75);
-  f.SetVar(14, 1.3   , 0.01, 0.5, 1.75);
+  f.SetVar(13, 1.1   , 0.01, 0.5, 1.75);
+  f.SetVar(14, 1.1   , 0.01, 0.5, 1.75);
   f.SetVar(15, 1.1   , 0.01, 0.5, 1.75);
   f.SetVar(16, 0.0   , 0.01, -1, 1);
 
@@ -54,17 +54,14 @@ void MakeNonseparationFit_5533() {
 
   f.SetVar(26, 2.2e-6 , 1e-4, 0.0, 0.001);
 
-  f.SetVar(27, 1 , 0.001, 0.8, 1.2);
-  f.SetVar(28, 1 , 0.001, 0.8, 1.2);
+  f.SetVar(27, 1.0 , 0.001, 0.8, 1.2);
+  f.SetVar(28, 1.0 , 0.001, 0.8, 1.2);
 
-  TCut cut = "modelPar.k>1.0 && modelPar.k<1.13";
+  TCut cut = "modelPar.k>1.0 && modelPar.k<1.13 && abs(beamSep.X)<0.015 && abs(beamSep.Y)<0.015";
   for (Int_t i=0; i<4; ++i) {
     TFile::Open(momentFileNames[i]);
     TTree *t = (TTree*)gFile->Get("TBeamSpot");
-    if (i<4)
-      f.Add(i, t, cut, NULL);
-    else
-      f.Add(i, t, cut*TCut(), NULL);
+    f.Add(i, t, cut, NULL);
   }
 
   f.SetFitToRates(kFALSE);

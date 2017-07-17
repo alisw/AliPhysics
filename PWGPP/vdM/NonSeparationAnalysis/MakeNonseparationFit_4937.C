@@ -12,11 +12,7 @@ const char* momentFileNames[] = {
   "root/4937/lumiRegion_ScanOffsetY.root"
 };
 
-void MakeNonseparationFit_4937() {
-  gROOT->LoadMacro("AliDoubleGaussianBeamProfile.cxx+");
-  gROOT->LoadMacro("AliNonseparationModelFit.cxx+");
-  gROOT->LoadMacro("MakePlots.C");
-  gROOT->LoadMacro("ExtractFromCanvas.C");
+void MakeFit(Bool_t withOffset=kTRUE) {
 #if 1
   AliNonseparationModelFit f;
 
@@ -61,13 +57,10 @@ void MakeNonseparationFit_4937() {
   f.SetVar(28, 1 , 0.001, 0.8, 1.2);
 
   TCut cut = "modelPar.k>0.85 && modelPar.k<1.25";
-  for (Int_t i=0; i<6; ++i) {
+  for (Int_t i=0; i<4+2*withOffset; ++i) {
     TFile::Open(momentFileNames[i]);
     TTree *t = (TTree*)gFile->Get("TBeamSpot");
-    if (i<4)
-      f.Add(i, t, cut, NULL);
-    else
-      f.Add(i, t, cut*TCut(), NULL);
+    f.Add(i, t, cut, NULL);
   }
 
   f.SetFitToRates(kFALSE);
@@ -76,17 +69,29 @@ void MakeNonseparationFit_4937() {
   f.GetMinimizer().FixVariable(12);
   f.GetMinimizer().FixVariable(16);
 
-  f.DoFit(TString::Format("root/%d/par_with0TVX_0_1.root", 4937));
+  TString pnBase = TString::Format("%d/NonSep_%d%s", 4937, 4937, withOffset ? "_withOffset" : "");
+  f.DoFit("root/"+pnBase+".root");
 #endif
   TString s = "";
 
   Int_t bcid=-1, wRange=0;
   Bool_t fixCrossingAngles = kTRUE;
-  MakePlots("root/4937/par_with0TVX_0_1.root",
+  MakePlots("root/"+pnBase+".root",
             "ALICE pp #sqrt{#it{s}}=13 TeV",
             0.6,
             kTRUE);
-  TString fn = TString::Format("pdf/%d/par_with0TVX.pdf_canvas.root", 4937, s.Data(), wRange, fixCrossingAngles);
-  TString line = ExtractFromCanvas(fn);
-  ofs << line.Data() << std::endl;
+  // TString fn = "pdf/"+pnBase+".pdf_canvas.root";
+  // TString line = ExtractFromCanvas(fn);
+  // std::cout << line.Data() << std::endl;
+  gROOT->Clear();
+}
+
+void MakeNonseparationFit_4937() {
+  gROOT->LoadMacro("AliDoubleGaussianBeamProfile.cxx+");
+  gROOT->LoadMacro("AliNonseparationModelFit.cxx+");
+  gROOT->LoadMacro("MakePlots.C");
+  gROOT->LoadMacro("ExtractFromCanvas.C");
+
+  MakeFit(kTRUE);
+  MakeFit(kFALSE);
 }

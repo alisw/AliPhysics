@@ -241,8 +241,7 @@ namespace Detail {
     Double_t K_Det = 0;
     K = K_Inv;
     K.InvertFast(&K_Det);
-    if (doDebug)
-      Printf("det(K)=%e", K_Det);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute mean matrix
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -399,6 +398,14 @@ namespace Detail {
 
     TMatrixD mean_pos_norm(3,1);
     mean_pos_norm = (1.0/SumA)*mean_pos;
+    if (doDebug)
+      Printf("A_mean_pos: %e | %e %e %e %e (%f %f)",
+	     mean_pos_norm(0,0),
+	     (A_a1a2*alpha_a1a2)(0,0),
+	     (A_a1b2*alpha_a1b2)(0,0),
+	     (A_b1a2*alpha_b1a2)(0,0),
+	     (A_b1b2*alpha_b1b2)(0,0),
+	     delta_x, delta_y);
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // Compute matrix of widths
