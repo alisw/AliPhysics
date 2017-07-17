@@ -1861,7 +1861,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
     for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
       if (fBackgroundScalingWeights) {
         sf = fBackgroundScalingWeights->GetBinContent(fBackgroundScalingWeights->FindBin(etaDCalRC[etaBin], phiDCalRC[phiBin]));
-        rho = sf * rho;
+        rho = sf * jetCont->GetRhoVal();
       }
       deltaPt = trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin] - rho * accRC;
       histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEtaPhi", jetCont->GetArrayName().Data());
