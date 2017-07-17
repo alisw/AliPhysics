@@ -90,6 +90,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistMixEvents(0),
   fHistMixTracks(0),
   fHistTPCvsVZEROMultiplicity(0),
+  fHistCL1vsVZEROPercentile(0),
   fHistVZEROSignal(0),
   fHistEventPlane(0),
   fHistClus(0),
@@ -170,8 +171,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCheckPileUp(kFALSE),
   fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
-  fVxMax(0.3),
-  fVyMax(0.3),
+  fUseAdditionalVtxCuts(kFALSE),
+  fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fVxMax(0.8),
+  fVyMax(0.8),
   fVzMax(10.),
   fnAODtrackCutBit(128),
   fPtMin(0.3),
@@ -321,12 +324,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //Event stats.
-  TString gCutName[7] = {"Total","Offline trigger",
-                         "Vertex","Analyzed","sel. Centrality","Not1stEvInChunk","No Pile-Up"};
+  TString gCutName[10] = {"Total","Offline trigger",
+			  "Vertex","Analyzed","sel. Centrality","Not1stEvInChunk","No Pile-Up", "Add Vtx Cuts", "Rej OOB pile up LHC15o", "Rej TPC vs global LHC15o"};
   fHistEventStats = new TH2F("fHistEventStats",
                              "Event statistics;;Centrality percentile;N_{events}",
-                             7,0.5,7.5,220,-5,105);
-  for(Int_t i = 1; i <= 7; i++)
+                             10,0.5,10.5,220,-5,105);
+  for(Int_t i = 1; i <= 10; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
@@ -382,6 +385,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   else 
     fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
   fList->Add(fHistTPCvsVZEROMultiplicity);
+
+  fHistCL1vsVZEROPercentile = new TH2F("fHistCL1vsVZEROPercentile", "V0M vs CL1 centrality percentile", 101, 0, 101, 101, 0, 101);
+  fList->Add(fHistCL1vsVZEROPercentile);
 
   fHistVZEROSignal = new TH2F("fHistVZEROSignal","VZERO signal vs VZERO channel;VZERO channel; Signal (a.u.)",64,0.5,64.5,3001,-0.5,30000.5);
   fList->Add(fHistVZEROSignal);
@@ -962,10 +968,35 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
 
-		  // get the reference multiplicty or centrality for run1 data
-		  if((event->GetRunNumber()<244824) && (fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
-		    if ((fMultiplicityEstimator == "V0MUtils")) {
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0MEq");
+		   if (fUseAdditionalVtxCuts){
+		     const AliVVertex *vertex = event->GetPrimaryVertex();
+		     if ((!vertex) || (vertex->GetNContributors()<1)){
+		       Printf("No Primary Vertex");
+		       return -1;
+		     }
+		     
+		     const AliVVertex *vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD();
+		     if (!vSPD) {
+		       Printf("No vertex SPD");
+		       return -1;
+		     }
+		     Double_t dz = vSPD->GetZ()-vertex->GetZ();
+		     double covTrc[6],covSPD[6];
+		     vertex->GetCovarianceMatrix(covTrc);
+		     vSPD->GetCovarianceMatrix(covSPD);
+		     double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+		     double errTrc = TMath::Sqrt(covTrc[5]);
+		     double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+		     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)
+		       return -1;
+		     
+		     fHistEventStats->Fill(8,gRefMultiplicity); 
+		   }
+		   
+		   // get the reference multiplicty or centrality for run1 data
+		   if((event->GetRunNumber()<244824) && (fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
+		     if ((fMultiplicityEstimator == "V0MUtils")) {
+		       gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0MEq");
 		    if ((fMultiplicityEstimator == "V0AUtils")) 
 		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0AEq");
 		    if ((fMultiplicityEstimator == "V0CUtils")) 
@@ -1070,10 +1101,31 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     fHistMultiplicity->Fill(gMultiplicity);
     fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
 
+    if (fUseOutOfBunchPileUpCutsLHC15o) {
+      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+      fHistEventStats->Fill(9, -1);
+      return -1;
+    }
+      const Int_t nTracks = event->GetNumberOfTracks();
+      Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+      Int_t multTPC = 0;
+      for (Int_t it = 0; it < nTracks; it++) {
+	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	if (!AODTrk){ delete AODTrk; continue; }
+	if (AODTrk->TestFilterBit(128)) {multTPC++;}
+      } // end of for (Int_t it = 0; it < nTracks; it++)
+
+      if ((multEsd - 3.38*multTPC) > 15000) return -1;
+
+    }
+    
+    fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+    
     if(multSelection->GetEstimator("RefMult08"))
       fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
     else
       gMultiplicityFromAOD = GetReferenceMultiplicityFromAOD(event);
+    
   }
   
   // use centrality framework
@@ -1147,6 +1199,32 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	  
 	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
 	  fHistCentStatsUsed->Fill(0.,gCentrality);
+	  
+	  if (fUseOutOfBunchPileUpCutsLHC15o) {
+	    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	      fHistEventStats->Fill(9, -1);
+	      return -1;
+	    }
+	    const Int_t nTracks = event->GetNumberOfTracks();
+	    Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+	    Int_t multTPC = 0;
+	    for (Int_t it = 0; it < nTracks; it++) {
+	      AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	      if (!AODTrk){ delete AODTrk; continue; }
+	      if (AODTrk->TestFilterBit(128)) {multTPC++;}
+	    } // end of for (Int_t it = 0; it < nTracks; it++)
+	    
+	    if ((multEsd - 3.38*multTPC) > 15000) {
+	      fHistEventStats->Fill(10, -1);
+	      return -1;
+	    }
+	  }
+	  
+	  fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+	  if(multSelection->GetEstimator("RefMult08"))
+	    fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
+	  else
+	    gMultiplicityFromAOD = GetReferenceMultiplicityFromAOD(event);
 	  
 	  gMultiplicity = multSelection->GetEstimator(fCentralityEstimator)->GetValue(); 
 	  fHistMultiplicity->Fill(gMultiplicity);

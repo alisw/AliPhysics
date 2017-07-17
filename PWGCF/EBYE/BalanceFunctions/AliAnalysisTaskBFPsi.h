@@ -164,6 +164,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
+
+  void SetUseAdditionalVtxCuts(Bool_t useAdditionalVtxCuts) {
+    fUseAdditionalVtxCuts=useAdditionalVtxCuts;}
+
+  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
+    fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
   
   // function to exclude the weak decay products
   Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
@@ -269,6 +275,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistMixTracks; //number of tracks that is mixed with in the current pool
 
   TH2F *fHistTPCvsVZEROMultiplicity; //VZERO vs TPC reference multiplicity
+  TH2F *fHistCL1vsVZEROPercentile; //VZERO vs TPC centrality to be used to monitor pileup 2015 data
   TH2F *fHistVZEROSignal; //VZERO channel vs signal
 
   TH2F *fHistEventPlane; //event plane distribution
@@ -371,6 +378,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
 
+  Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
+
+  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data. 
+
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
@@ -420,7 +431,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 8); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 9); // example of analysis
 };
 
 
