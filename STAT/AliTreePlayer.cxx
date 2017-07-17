@@ -826,13 +826,25 @@ void  AliTreePlayer::AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TSt
                         statValue=TMath::MaxElement(index1-index0, dvalues.GetMatrixArray());
                     } else if(statType==kLTM){
                         TVectorD params(7);
-                        TStatToolkit::LTMUnbinned(index1-index0, dvalues.GetMatrixArray()
-                                ,params,frac);
+                        try {
+                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+                        }
+                        catch (int e)
+                        {
+                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+                            continue;
+                        }
                         statValue = params[1];
                     } else if(statType==kLTMRMS){
                         TVectorD params(7);
-                        TStatToolkit::LTMUnbinned(index1-index0, dvalues.GetMatrixArray()
-                                ,params,frac);
+                        try {
+                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+                        }
+                        catch (int e)
+                        {
+                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+                            continue;
+                        }
                         statValue = params[2];
                     } else{
                         ::Error("AddStatInfo()","String %s StatType %d not implemented",stat.Data(),statType);
