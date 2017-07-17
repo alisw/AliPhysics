@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/**************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include <functional>
 #include <iostream>
 #include <map>
@@ -19,32 +31,28 @@
 #include <TClonesArray.h>
 #include <THashList.h>
 #include <THistManager.h>
-
-#include "AliAnalysisUtils.h"
-#include "AliAnalysisTaskEmcalMaxPatch.h"
-#include "AliEMCalTriggerWeightHandler.h"
+#include 
 #include "AliEMCALTriggerPatchInfo.h"
+#include <AliEmcalTriggerRejectionMaker.h>
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch)
+ClassImp(PWG::EMCAL::AliEmcalTriggerRejectionMaker)
 /// \endcond
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWG::EMCAL;
 
-AliAnalysisTaskEmcalMaxPatch::AliAnalysisTaskEmcalMaxPatch() :
+AliEmcalTriggerRejectionMaker::AliEmcalTriggerRejectionMaker() :
     AliAnalysisTaskEmcal(),
-    fWeightHandler(nullptr),
     fHistos(nullptr),
     fSelectTrigger(AliVEvent::kINT7)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
-AliAnalysisTaskEmcalMaxPatch::AliAnalysisTaskEmcalMaxPatch(const char *name) :
+AliEmcalTriggerRejectionMaker::AliEmcalTriggerRejectionMaker(const char *name) :
     AliAnalysisTaskEmcal(name, kTRUE),
-    fWeightHandler(nullptr),
     fHistos(nullptr),
     fSelectTrigger(AliVEvent::kINT7)
 {
@@ -52,10 +60,10 @@ AliAnalysisTaskEmcalMaxPatch::AliAnalysisTaskEmcalMaxPatch(const char *name) :
   SetMakeGeneralHistograms(true);
 }
 
-AliAnalysisTaskEmcalMaxPatch::~AliAnalysisTaskEmcalMaxPatch() {
+AliEmcalTriggerRejectionMaker::~AliEmcalTriggerRejectionMaker() {
 }
 
-void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
+void AliEmcalTriggerRejectionMaker::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
@@ -63,7 +71,7 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
   fHistos = new THistManager("histMaxPatch");
   fHistos->CreateTH1("hTrueEventCount", "Maximum energy patch in the event", 1, 0.5, 1.5);
 
-  const std::map<std::string, std::string> triggers {
+  const std::map<TString, TString> triggers {
     {"EGAOffline", "offline EGA"}, {"EJEOffline", "offline EJE"}, {"DGAOffline", "offline DGA"}, {"DJEOffline", "offline DJE"},
     {"EGARecalc", "recalc EGA"}, {"EJERecalc", "recalc EJE"}, {"DGARecalc", "recalc DGA"}, {"DJERecalc", "recalc DJE"},
     {"EG1Online", "online EG1"}, {"EG2Online", "online EG2"}, {"DG1Online", "online DG1"}, {"DG2Online", "online DG2"},
@@ -71,22 +79,22 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
   };
   // Calibrated FEE energy
   for(const auto &t : triggers)
-    fHistos->CreateTH1(Form("hPatchEnergyMax%s", t.first.c_str()), Form("Energy spectrum of the maximum %s patch", t.second.c_str()), 2000, 0., 200.);
+    fHistos->CreateTH1("hPatchEnergyMax" + t.first, "Energy spectrum of the maximum " + t.second + " patch", 2000, 0., 200.);
 
   // Online ADC counts
   for(const auto &t : triggers)
-    fHistos->CreateTH1(Form("hPatchADCMax%s", t.first.c_str()), Form("ADC spectrum of the maximum %s patch", t.second.c_str()), 2049, -0.5, 2048.5);
+    fHistos->CreateTH1("hPatchADCMax" + t.first, "ADC spectrum of the maximum " + t.second + " patch", 2049, -0.5, 2048.5);
 
   // ADC vs energy
   for(const auto &t : triggers)
-    fHistos->CreateTH2(Form("hPatchADCvsEnergyMax%s", t.first.c_str()), Form("ADC vs. Energy of the maximum %s patch", t.second.c_str()), 300, 0., 3000, 200, 0., 200.);
+    fHistos->CreateTH2("hPatchADCvsEnergyMax" + t.first, "ADC vs. Energy of the maximum " + t.second + " patch", 300, 0., 3000, 200, 0., 200.);
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   PostData(1, fOutput);
 }
 
-Bool_t AliAnalysisTaskEmcalMaxPatch::IsEventSelected(){
+Bool_t AliEmcalTriggerRejectionMaker::IsEventSelected(){
   AliDebugStream(2) << GetName() << ": Using custom event selection method" << std::endl;
   if(!fTriggerPatchInfo){
     AliErrorStream() << GetName() << ": Trigger patch container not found but required" << std::endl;
@@ -113,7 +121,7 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::IsEventSelected(){
   return true;
 }
 
-Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
+Bool_t AliEmcalTriggerRejectionMaker::Run(){
   fHistos->FillTH1("hTrueEventCount", 1);
 
   const AliEMCALTriggerPatchInfo *currentpatch(nullptr),
@@ -226,10 +234,10 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
     }
   }
 
-  std::function<void (const AliEMCALTriggerPatchInfo *, const std::string &)> FillHistos = [this](const AliEMCALTriggerPatchInfo * testpatch, const std::string & triggername){
-    fHistos->FillTH1(Form("hPatchEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
-    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0.);
-    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0, testpatch ? testpatch->GetPatchE() : 0.);
+  std::function<void (const AliEMCALTriggerPatchInfo *, const TString &)> FillHistos = [this](const AliEMCALTriggerPatchInfo * testpatch, const TString & triggername){
+    fHistos->FillTH1("hPatchEnergyMax" + triggername, testpatch ? testpatch->GetPatchE() : 0.);
+    fHistos->FillTH1("hPatchADCMax" + triggername, testpatch ? testpatch->GetADCAmp() : 0.);
+    fHistos->FillTH2("hPatchADCvsEnergyMax" + triggername, testpatch ? testpatch->GetADCAmp() : 0, testpatch ? testpatch->GetPatchE() : 0.);
   };
 
   FillHistos(maxOfflineEGA, "EGAOffline");
@@ -250,6 +258,5 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
   FillHistos(maxOnlineDJ2, "DJ2Online");
 
   return true;
-}
 
 } /* namespace EMCalTriggerPtAnalysis */

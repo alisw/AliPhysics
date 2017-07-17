@@ -49,4 +49,8 @@
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
 #pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
 #pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
+
+#pragma link C++ namespace PWG+;
+#pragma link C++ namespace PWG::EMCAL+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTriggerRejectionMaker+;
 #endif
