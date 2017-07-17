@@ -268,7 +268,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 	// Main loop
 	// Called for each event
 	fevt++;
-	if(fevt % 1000 == 0) cout << "Numer of event scanned = "<< fevt << endl;
+	if(fevt % 1000 == 0) cout << "Number of events scanned = "<< fevt << endl;
 
 	// clear them up for every event
 	fInputList->Clear();
@@ -320,20 +320,28 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 			fFirstEvent = kFALSE;
 		}
 
-		if(!IsGoodEvent( event )) return; // zBin is set there
+		if(!IsGoodEvent( event ))
+			return; // zBin is set there
 		if(fDebug) cout << "zvtx = " << zVert << endl;
 
 		// centrality 
 		if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-			AliCentrality *cent = event->GetCentrality();
-			if( ! cent ) return;
-			fcent = cent->GetCentralityPercentile("V0M");
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return;
+			}
+
+			fcent = pms->GetMultiplicityPercentile("V0M");
+			//Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
 		} else {
 			fcent = -1;
+			cout<<"warning: centrality unavailable";
 		}
 	}
 
-	cBin = fCard->GetBin(kCentrType, fcent);;
+	//cout<<"cent = "<<fcent<<endl;
+	cBin = fCard->GetBin(kCentrType, fcent);
 	if(cBin<0) return;
 
 	fHistos->fhZVert[cBin]->Fill(zVert);
@@ -562,7 +570,7 @@ bool AliJHSInterplayTask::IsGoodEvent(AliVEvent *event) {
 		int frunNumber = pieh->GetEvent()->GetRunNumber();
 		if(frunNumber < 0)
 			cout << "ERROR: unknown run number" << endl;
-		AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
+		//AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
 		fRunTable->SetRunNumber( frunNumber );
 
 		if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
