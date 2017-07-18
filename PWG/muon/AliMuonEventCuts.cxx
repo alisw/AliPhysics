@@ -122,7 +122,7 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
 AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
 {
   /// Assignment operator
-  if ( this != &obj ) { 
+  if ( this != &obj ) {
     AliAnalysisCuts::operator=(obj);
     fPhysicsSelectionMask = obj.fPhysicsSelectionMask;
     fVertexMinNContributors = obj.fVertexMinNContributors,
@@ -172,9 +172,9 @@ Bool_t AliMuonEventCuts::IsSelected( TObject* obj )
   /// Track is selected
   UInt_t filterMask = GetFilterMask();
   UInt_t selectionMask = GetSelectionMask(obj);
-  
+
   AliDebug(1, Form("Is event selected %i  mask 0x%x", ( selectionMask & filterMask ) == filterMask, selectionMask ));
-  
+
   return ( ( selectionMask & filterMask ) == filterMask );
 }
 
@@ -183,34 +183,34 @@ Bool_t AliMuonEventCuts::IsSelected( TObject* obj )
 UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
 {
   /// Get selection mask
-  
+
   UInt_t selectionMask = 0;
-  
+
   UInt_t checkMask = fCheckMask | GetFilterMask();
-  
+
   const AliInputEventHandler* inputHandler = static_cast<const AliInputEventHandler*> ( obj );
-  
+
   UInt_t physicsSelection = const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected();
 
   if ( checkMask & kPhysicsSelected ) {
     if ( physicsSelection & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
   }
-  
+
   const AliVEvent* event = inputHandler->GetEvent();
-  
+
   Double_t centrality = GetCentrality(event);
   if ( centrality >= fCentralityClasses->GetXmin() && centrality <= fCentralityClasses->GetXmax() ) selectionMask |= kSelectedCentrality;
-  
+
   UpdateEvent(event,physicsSelection);
-  
+
   if ( fSelectedTrigClassesInEvent->GetEntries() > 0 ) selectionMask |= kSelectedTrig;
-  
+
   if ( checkMask & kGoodVertex ) {
     const AliVVertex* vertex = event->GetPrimaryVertexSPD();
     if ( vertex->GetNContributors() >= GetVertexMinNContributors() &&
       vertex->GetZ() >= GetVertexVzMin() && vertex->GetZ() <= GetVertexVzMax() ) selectionMask |= kGoodVertex;
   }
-  
+
   if ( checkMask & kNoPileup ) {
     if ( ! fAnalysisUtils->IsPileUpEvent(const_cast<AliVEvent*>(event)) ) selectionMask |= kNoPileup;
     //  // Uncomment to use settings for pPb
@@ -240,7 +240,7 @@ Bool_t AliMuonEventCuts::IsSelected( TList* /* list */)
 Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event, UInt_t physicsSelection )
 {
   /// Update the transient data member per event
-  
+
   UInt_t l0Inputs = event->GetHeader()->GetL0TriggerInputs();
   UInt_t l1Inputs = event->GetHeader()->GetL1TriggerInputs();
   UInt_t l2Inputs = event->GetHeader()->GetL2TriggerInputs();
@@ -263,8 +263,8 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event, UInt_t physicsSel
 TString AliMuonEventCuts::GetDefaultTrigClassPatterns () const
 {
   /// Get the default patterns
-  /// (done in such a way to get all muon triggers)
-  return "CM*,C0M*,CINT*,CPBI*,CCENT*,CV*,!*ABCE*,!*-ACE-*,!*-AC-*,!*-A-*,!*-C-*,!*-E-*,!*WU*,!*EGA*,!*EJE*,!*PHS*";
+  /// (done in such a way to get the most commonly used muon triggers)
+  return "CINT[78]-(B|S|SC)-NOPF-[A-Z]+,C0?M(SL|SH|UL|LL)[78]?-(B|S|SC)-NOPF-[A-Z]+";
 }
 
 //________________________________________________________________________
@@ -381,11 +381,11 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
       badSyntax += Form(" %s",trigCombo->GetName());
       delete trigCombo;
     }
-    else if ( trigCombo->GetType() == AliMuonTriggerCombo::kRejectPattern ) {
-      fRejectedTrigPattern->Add(trigCombo);
-      AliDebug(1,Form("Adding %s to reject pattern",trigCombo->GetName()));
-    }
-    else if ( trigCombo->GetType() == AliMuonTriggerCombo::kMatchPattern || ( trigCombo->GetType() == AliMuonTriggerCombo::kComboSimple && trigCombo->HasTriggerClasses() ) ) {
+    // else if ( trigCombo->GetType() == AliMuonTriggerCombo::kRejectPattern ) {
+    //   fRejectedTrigPattern->Add(trigCombo);
+    //   AliDebug(1,Form("Adding %s to reject pattern",trigCombo->GetName()));
+    // }
+    else if ( trigCombo->GetType() == AliMuonTriggerCombo::kRegex || ( trigCombo->GetType() == AliMuonTriggerCombo::kComboSimple && trigCombo->HasTriggerClasses() ) ) {
       fSelectedTrigPattern->Add(trigCombo);
       AliDebug(1,Form("Adding %s to match pattern",trigCombo->GetName()));
     }
@@ -409,7 +409,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
     AliDebug(1,Form("Adding %s to trigger combination (type %u)",trigCombo->GetName(),trigCombo->GetType()));
   }
   delete fullList;
-  
+
   if ( ! duplicated.IsNull() )
     AliWarning(Form("Triggers %s already accounted in patterns",duplicated.Data()));
   if ( ! badSyntax.IsNull() )
@@ -434,9 +434,9 @@ TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( TString trigClassName ) const
   ptCutLevel[0] = trigCombo->GetTrigMatchLevel();
   if ( trigCombo->IsDimuTrigger()
       ) ptCutLevel[1] = trigCombo->GetTrigMatchLevel();
-  
+
   AliDebug(3,Form("Class %s ptCutLevel %i %i",trigClassName.Data(),ptCutLevel[0],ptCutLevel[1]));
-  
+
   return ptCutLevel;
 }
 
@@ -448,7 +448,7 @@ AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const TString& firedTriggerCla
 {
   /// Return the selected trigger classes in the fired trigger classes
   /// give also the L0,L1,L2 input bit masks
-  
+
   BuildTriggerClasses(firedTriggerClasses,l0Inputs,l1Inputs,l2Inputs,physicsSelection);
 
   return fSelectedTrigClassesInEvent;
@@ -495,7 +495,7 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
   /// Return the list of trigger classes to be considered
   /// for current event. Update the global list if necessary
   //
-  
+
   if ( fSelectedTrigClassesInEvent ) fSelectedTrigClassesInEvent->Delete();
   else {
     fSelectedTrigClassesInEvent = new TObjArray(0);
@@ -503,10 +503,10 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
   }
 
   TString firedTrigClassesAny = "ANY " + firedTrigClasses;
-  
+
   if ( fSelectedTrigPattern->GetEntriesFast() > 0 ) {
     TObjArray* firedTrigClassesList = firedTrigClassesAny.Tokenize(" ");
-  
+
     for ( Int_t itrig=0; itrig<firedTrigClassesList->GetEntriesFast(); itrig++ ) {
       TString trigName = static_cast<TObjString*>(firedTrigClassesList->At(itrig))->GetString();
 
@@ -519,10 +519,10 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
 
       AddToEventSelectedClass ( trigName, foundCombo, matchCombo );
     } // loop on trigger classes
-  
+
     delete firedTrigClassesList;
   }
-  
+
   for ( Int_t icomb=0; icomb<fSelectedTrigCombination->GetEntriesFast(); icomb++ ) {
     AliMuonTriggerCombo* trigCombo = static_cast<AliMuonTriggerCombo*>(fSelectedTrigCombination->At(icomb));
     if ( trigCombo->MatchEvent(firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs,physicsSelection) ) {
@@ -562,11 +562,11 @@ AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const AliMuo
   /// Add current trigger to the selected class for the event
 
   fSelectedTrigClassesInEvent->Add(new TObjString(toCheck));
-  
+
   if ( foundCombo ) return;
 
   AliMuonTriggerCombo* addCombo = 0x0;
-  if ( matchCombo->GetType() == AliMuonTriggerCombo::kMatchPattern ) {
+  if ( matchCombo->GetType() == AliMuonTriggerCombo::kRegex ) {
     addCombo = new AliMuonTriggerCombo(toCheck.Data(),"",matchCombo->GetTitle());
   }
   else addCombo = static_cast<AliMuonTriggerCombo*>(matchCombo->Clone());
@@ -584,13 +584,13 @@ void AliMuonEventCuts::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
   //
   Double_t* bins = centralityBins;
   Int_t nbins = nCentralityBins;
-  
+
   Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100., 105.};
   if ( ! centralityBins ) {
     bins = defaultCentralityBins;
     nbins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
   }
-  
+
   TString centralityEstimator = "V0M";
   if ( fCentralityClasses ) {
     centralityEstimator = GetCentralityEstimator();
@@ -602,7 +602,7 @@ void AliMuonEventCuts::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
     currClass = Form("%.0f_%.0f",fCentralityClasses->GetBinLowEdge(ibin),fCentralityClasses->GetBinUpEdge(ibin));
     fCentralityClasses->SetBinLabel(ibin, currClass.Data());
   }
-  
+
   SetCentralityEstimator(centralityEstimator);
 }
 
