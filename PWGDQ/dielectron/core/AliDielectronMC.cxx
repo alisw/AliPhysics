@@ -171,8 +171,8 @@ AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t label) const
     track = fMCEvent->GetTrack(label); //  tracks from MC event (ESD)
   } else if(fAnaType == kAOD) {
     if (!fMcArray){ AliError("No fMcArray"); return NULL;}
-    if (label>fMcArray->GetEntriesFast()) { AliDebug(10,Form("track %d out of array size %d",label,fMcArray->GetEntriesFast())); return NULL;}
-    track = (AliVParticle*)fMcArray->At(label); //  tracks from MC event (AOD)
+    if (label>fMcArray->GetEntriesFast()) { AliWarning(Form("track %d out of array size %d",label,fMcArray->GetEntriesFast())); return NULL;}
+    track = (AliVParticle*)fMCEvent->GetTrack(label);
   }
   return track;
 }
@@ -206,6 +206,9 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     if (!aodHandler) return kFALSE;
     AliAODEvent *aod=aodHandler->GetEvent();
     if (!aod) return kFALSE;
+
+    fMCEvent = aodHandler->MCEvent();
+    if (!fMCEvent) AliError("No MCEvent available");
 
     fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
@@ -1020,6 +1023,37 @@ Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
 }
 
 //________________________________________________________________________________
+Bool_t AliDielectronMC::IsPrimary(Int_t label) const {
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsPrimary();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return (label>=0 && label<=GetNPrimary());
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsSecondary(Int_t label) const {
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    AliAODMCParticle* mctrack = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label));
+    Bool_t isSecondary = mctrack->IsSecondaryFromMaterial() || mctrack->IsSecondaryFromWeakDecay();
+    return isSecondary;
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return (label>=GetNPrimary() && !IsPhysicalPrimary(label));
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________________
 Bool_t AliDielectronMC::IsSecondaryFromWeakDecay(Int_t label) const {
   //
   // Check if the particle with label "label" is a physical secondary from weak decay according to the
@@ -1091,7 +1125,7 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // NOTE: This includes all physics event history (initial state particles,
       //       exchange bosons, quarks, di-quarks, strings, un-stable particles, final state particles)
       //       Only the final state particles make it to the detector!!
-      return (label>=0 && label<=GetNPrimary());
+      return IsPrimary(label);
     break;
     case AliDielectronSignalMC::kFinalState :
       // primary particles created in the collision which reach the detectors
@@ -1120,7 +1154,8 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
     case AliDielectronSignalMC::kSecondary :
       // particles which are created by the interaction of final state primaries with the detector
       // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
-      return (label>=GetNPrimary() && !IsPhysicalPrimary(label));
+      return IsSecondary(label);
+      // return (label>=GetNPrimary() && !IsPhysicalPrimary(label)); // old definition
     break;
     case AliDielectronSignalMC::kSecondaryFromWeakDecay :
       // secondary particle from weak decay
@@ -1132,10 +1167,12 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       return (IsSecondaryFromMaterial(label));
     break;
     case AliDielectronSignalMC::kFromBGEvent :
+      // NOT implemented for AODs
       // used to select electrons which are not from injected signals.
       return (IsFromBGEvent(label));
       break;
     case AliDielectronSignalMC::kFinalStateFromBGEvent :
+      // NOT implemented for AODs
       // used to select electrons which are not from injected signals.
       return (IsPhysicalPrimary(label) && IsFromBGEvent(label));
       break;
@@ -1143,6 +1180,7 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       return kFALSE;
   }
   return kFALSE;
+
 }
 
 /*
@@ -1306,6 +1344,7 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
   // NOTE:  Some particles have the sign of the label flipped. It is related to the quality of matching
   //        between the ESD and the MC track. The negative labels indicate a poor matching quality
   //if(label<0) return kFALSE;
+
   if(label<0) label *= -1;
 
   AliVParticle* part = GetMCTrackFromMCEvent(label);
@@ -1508,7 +1547,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     motherIsGrandmother = kFALSE;
     motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother());
   }
-  
+
   return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
 
 }
