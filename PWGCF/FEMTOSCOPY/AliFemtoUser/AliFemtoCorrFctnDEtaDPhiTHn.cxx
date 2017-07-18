@@ -46,9 +46,10 @@ AliFemtoCorrFctn(),
   //           const Int_t* nbins, const Double_t* xmin, const Double_t* xmax,
   //           Int_t chunksize);
 
-  const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,multBins,zvtxBins};
-  const Double_t xmin[] = {fphiL,-2,pT1min,pT2min,multmin,zvtxmin};
-  const Double_t xmax[] = {fphiT, 2,pT1max,pT2max,multmax,zvtxmax};
+ 
+  const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,(double)multBins,zvtxBins};
+  const Double_t xmin[] = {fphiL,-2.0 ,pT1min,pT2min,fMultMin,zvtxmin};
+  const Double_t xmax[] = {fphiT, 2.0 ,pT1max,pT2max,fMultMax,zvtxmax};
   
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
@@ -248,7 +249,7 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddRealPair( AliFemtoPair* pair){
   double pt2 = TMath::Hypot(px2, py2);
   //   double ptmin = pt1>pt2 ? pt2 : pt1;
 
-  int mult = -1;
+  double mult = -1;
   double zvtx = -11;
   if(pair->Track1()->Track()){
     mult = pair->Track1()->Track()->Multiplicity();
@@ -302,7 +303,7 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddMixedPair( AliFemtoPair* pair){
   double pt2 = TMath::Hypot(px2, py2);
   //   double ptmin = pt1>pt2 ? pt2 : pt1;
 
-  int mult = -1;
+  double mult = -1;
   double zvtx = -11;
   if(pair->Track1()->Track()){
     mult = pair->Track1()->Track()->Multiplicity();
