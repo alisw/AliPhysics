@@ -5,6 +5,7 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   Double_t    trackptcut             = 0.15,              //..
   Double_t    clusptcut              = 0.15,              //..
   Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
+  const char *period                 = "lhc13d", 
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
   const char *taskname               = "AliAnalysisTask",
@@ -29,15 +30,17 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(
   //------------------------------------------------------
   std::cout << "----#About to start AliAnalysisTaskEMCALPi0GammaCorr task " << std::endl;
   AliAnalysisTaskEMCALPi0GammaCorr* AnalysisTask = new AliAnalysisTaskEMCALPi0GammaCorr(kTRUE);
+  //AnalysisTask->SetPeriod(period.Data());
   std::cout << "----Adding cluster container, track container" << std::endl;
   AnalysisTask->AddClusterContainer("usedefault");
-  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
+  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer("Tracks");
   trackCont->SetName("ForCorrelation");
   trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
-  //  trackCont->SetTrackCutsPeriod("LHC11c");
-  // trackCont->SetDefTrackCutsPeriod("LHC11c");
+  const char* periodstr = "LHC13d";
+  //trackCont->SetTrackCutsPeriod(period);
+  //trackCont->SetDefTrackCutsPeriod(period);
 
-  AliTrackContainer* trackContMatching = AnalysisTask->AddTrackContainer(trackName);
+  AliTrackContainer* trackContMatching = AnalysisTask->AddTrackContainer("Tracks");
   trackContMatching->SetName("ForMatching");
   trackContMatching->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);  
 

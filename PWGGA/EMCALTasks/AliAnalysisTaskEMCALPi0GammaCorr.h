@@ -32,6 +32,8 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   void SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   void SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
+  void SetPeriod(const char *period)                         { fPeriod = period; }
+
 
   void SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
   AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
@@ -93,6 +95,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
+  TString     fPeriod;                         //!<! String containing the LHC period
 
   THnSparse                 *h_Track;                   //!<!
   THnSparse                 *h_Cluster;                 //!<!
