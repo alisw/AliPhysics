@@ -47,7 +47,7 @@ AliFemtoCorrFctn(),
   //           Int_t chunksize);
 
  
-  const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,(double)multBins,zvtxBins};
+  const Int_t nbins[] = {aPhiBins,aEtaBins,pT1Bins,pT2Bins,multBins,zvtxBins};
   const Double_t xmin[] = {fphiL,-2.0 ,pT1min,pT2min,fMultMin,zvtxmin};
   const Double_t xmax[] = {fphiT, 2.0 ,pT1max,pT2max,fMultMax,zvtxmax};
   
