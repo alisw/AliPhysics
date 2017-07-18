@@ -196,70 +196,49 @@ fHistDPhi18Spe_EMCJet(0)
 
     //Init the DPhi Plots here because they are stored in arrays
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_MB[i]=0;
-        fHistDPhi500_800_MB[i]=0;
-        fHistDPhi800_1_MB[i]=0;
+        fHistDPhi300_1_MB[i]=0;
         fHistDPhi1_2_MB[i]=0;
-        fHistDPhi2_3_MB[i]=0;
-        fHistDPhi3_4_MB[i]=0;
-        fHistDPhi4_MB[i]=0;
+        fHistDPhi2_4_MB[i]=0;
+        fHistDPhi4_8_MB[i]=0;
 
-        fHistDPhi300_500_EMC7[i]=0;
-        fHistDPhi500_800_EMC7[i]=0;
-        fHistDPhi800_1_EMC7[i]=0;
+
+        fHistDPhi300_1_EMC7[i]=0;
         fHistDPhi1_2_EMC7[i]=0;
-        fHistDPhi2_3_EMC7[i]=0;
-        fHistDPhi3_4_EMC7[i]=0;
-        fHistDPhi4_EMC7[i]=0;
+        fHistDPhi2_4_EMC7[i]=0;
+        fHistDPhi4_8_EMC7[i]=0;
 
-        fHistDPhi300_500_EMCEGA[i]=0;
-        fHistDPhi500_800_EMCEGA[i]=0;
-        fHistDPhi800_1_EMCEGA[i]=0;
+
+        fHistDPhi300_1_EMCEGA[i]=0;
         fHistDPhi1_2_EMCEGA[i]=0;
-        fHistDPhi2_3_EMCEGA[i]=0;
-        fHistDPhi3_4_EMCEGA[i]=0;
-        fHistDPhi4_EMCEGA[i]=0;
+        fHistDPhi2_4_EMCEGA[i]=0;
+        fHistDPhi4_8_EMCEGA[i]=0;
 
-        fHistDPhi300_500_EMCJet[i]=0;
-        fHistDPhi500_800_EMCJet[i]=0;
-        fHistDPhi800_1_EMCJet[i]=0;
+        fHistDPhi300_1_EMCJet[i]=0;
         fHistDPhi1_2_EMCJet[i]=0;
-        fHistDPhi2_3_EMCJet[i]=0;
-        fHistDPhi3_4_EMCJet[i]=0;
-        fHistDPhi4_EMCJet[i]=0;
+        fHistDPhi2_4_EMCJet[i]=0;
+        fHistDPhi4_8_EMCJet[i]=0;
 
         //ME histos
-        fHistDPhiMix300_500_MB[i]=0;
-        fHistDPhiMix500_800_MB[i]=0;
-        fHistDPhiMix800_1_MB[i]=0;
+
+        fHistDPhiMix300_1_MB[i]=0;
         fHistDPhiMix1_2_MB[i]=0;
-        fHistDPhiMix2_3_MB[i]=0;
-        fHistDPhiMix3_4_MB[i]=0;
-        fHistDPhiMix4_MB[i]=0;
+        fHistDPhiMix2_4_MB[i]=0;
+        fHistDPhiMix4_8_MB[i]=0;
 
-        fHistDPhiMix300_500_EMC7[i]=0;
-        fHistDPhiMix500_800_EMC7[i]=0;
-        fHistDPhiMix800_1_EMC7[i]=0;
+        fHistDPhiMix300_1_EMC7[i]=0;
         fHistDPhiMix1_2_EMC7[i]=0;
-        fHistDPhiMix2_3_EMC7[i]=0;
-        fHistDPhiMix3_4_EMC7[i]=0;
-        fHistDPhiMix4_EMC7[i]=0;
+        fHistDPhiMix2_4_EMC7[i]=0;
+        fHistDPhiMix4_8_EMC7[i]=0;
 
-        fHistDPhiMix300_500_EMCEGA[i]=0;
-        fHistDPhiMix500_800_EMCEGA[i]=0;
-        fHistDPhiMix800_1_EMCEGA[i]=0;
+        fHistDPhiMix300_1_EMCEGA[i]=0;
         fHistDPhiMix1_2_EMCEGA[i]=0;
-        fHistDPhiMix2_3_EMCEGA[i]=0;
-        fHistDPhiMix3_4_EMCEGA[i]=0;
-        fHistDPhiMix4_EMCEGA[i]=0;
+        fHistDPhiMix2_4_EMCEGA[i]=0;
+        fHistDPhiMix4_8_EMCEGA[i]=0;
 
-        fHistDPhiMix300_500_EMCJet[i]=0;
-        fHistDPhiMix500_800_EMCJet[i]=0;
-        fHistDPhiMix800_1_EMCJet[i]=0;
+        fHistDPhiMix300_1_EMCJet[i]=0;
         fHistDPhiMix1_2_EMCJet[i]=0;
-        fHistDPhiMix2_3_EMCJet[i]=0;
-        fHistDPhiMix3_4_EMCJet[i]=0;
-        fHistDPhiMix4_EMCJet[i]=0;
+        fHistDPhiMix2_4_EMCJet[i]=0;
+        fHistDPhiMix4_8_EMCJet[i]=0;
     }
 
     //Init PID Plots here since they are stored in Arrays
@@ -439,70 +418,56 @@ fHistDPhi18Spe_EMCJet(0)
     // Output slot #1 writes into a TH1 container
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_MB[i]=0;
-        fHistDPhi500_800_MB[i]=0;
-        fHistDPhi800_1_MB[i]=0;
+
+        fHistDPhi300_1_MB[i]=0;
         fHistDPhi1_2_MB[i]=0;
-        fHistDPhi2_3_MB[i]=0;
-        fHistDPhi3_4_MB[i]=0;
-        fHistDPhi4_MB[i]=0;
+        fHistDPhi2_4_MB[i]=0;
+        fHistDPhi4_8_MB[i]=0;
 
-        fHistDPhi300_500_EMC7[i]=0;
-        fHistDPhi500_800_EMC7[i]=0;
-        fHistDPhi800_1_EMC7[i]=0;
+
+        fHistDPhi300_1_EMC7[i]=0;
         fHistDPhi1_2_EMC7[i]=0;
-        fHistDPhi2_3_EMC7[i]=0;
-        fHistDPhi3_4_EMC7[i]=0;
-        fHistDPhi4_EMC7[i]=0;
+        fHistDPhi2_4_EMC7[i]=0;
+        fHistDPhi4_8_EMC7[i]=0;
 
-        fHistDPhi300_500_EMCEGA[i]=0;
-        fHistDPhi500_800_EMCEGA[i]=0;
-        fHistDPhi800_1_EMCEGA[i]=0;
+
+        fHistDPhi300_1_EMCEGA[i]=0;
         fHistDPhi1_2_EMCEGA[i]=0;
-        fHistDPhi2_3_EMCEGA[i]=0;
-        fHistDPhi3_4_EMCEGA[i]=0;
-        fHistDPhi4_EMCEGA[i]=0;
+        fHistDPhi2_4_EMCEGA[i]=0;
+        fHistDPhi4_8_EMCEGA[i]=0;
 
-        fHistDPhi300_500_EMCJet[i]=0;
-        fHistDPhi500_800_EMCJet[i]=0;
-        fHistDPhi800_1_EMCJet[i]=0;
+
+        fHistDPhi300_1_EMCJet[i]=0;
         fHistDPhi1_2_EMCJet[i]=0;
-        fHistDPhi2_3_EMCJet[i]=0;
-        fHistDPhi3_4_EMCJet[i]=0;
-        fHistDPhi4_EMCJet[i]=0;
+        fHistDPhi2_4_EMCJet[i]=0;
+        fHistDPhi4_8_EMCJet[i]=0;
+
 
         //ME histos
-        fHistDPhiMix300_500_MB[i]=0;
-        fHistDPhiMix500_800_MB[i]=0;
-        fHistDPhiMix800_1_MB[i]=0;
+
+        fHistDPhiMix300_1_MB[i]=0;
         fHistDPhiMix1_2_MB[i]=0;
-        fHistDPhiMix2_3_MB[i]=0;
-        fHistDPhiMix3_4_MB[i]=0;
-        fHistDPhiMix4_MB[i]=0;
+        fHistDPhiMix2_4_MB[i]=0;
+        fHistDPhiMix4_8_MB[i]=0;
 
-        fHistDPhiMix300_500_EMC7[i]=0;
-        fHistDPhiMix500_800_EMC7[i]=0;
-        fHistDPhiMix800_1_EMC7[i]=0;
+
+        fHistDPhiMix300_1_EMC7[i]=0;
         fHistDPhiMix1_2_EMC7[i]=0;
-        fHistDPhiMix2_3_EMC7[i]=0;
-        fHistDPhiMix3_4_EMC7[i]=0;
-        fHistDPhiMix4_EMC7[i]=0;
+        fHistDPhiMix2_4_EMC7[i]=0;
+        fHistDPhiMix4_8_EMC7[i]=0;
 
-        fHistDPhiMix300_500_EMCEGA[i]=0;
-        fHistDPhiMix500_800_EMCEGA[i]=0;
-        fHistDPhiMix800_1_EMCEGA[i]=0;
+
+        fHistDPhiMix300_1_EMCEGA[i]=0;
         fHistDPhiMix1_2_EMCEGA[i]=0;
-        fHistDPhiMix2_3_EMCEGA[i]=0;
-        fHistDPhiMix3_4_EMCEGA[i]=0;
-        fHistDPhiMix4_EMCEGA[i]=0;
+        fHistDPhiMix2_4_EMCEGA[i]=0;
+        fHistDPhiMix4_8_EMCEGA[i]=0;
 
-        fHistDPhiMix300_500_EMCJet[i]=0;
-        fHistDPhiMix500_800_EMCJet[i]=0;
-        fHistDPhiMix800_1_EMCJet[i]=0;
+
+        fHistDPhiMix300_1_EMCJet[i]=0;
         fHistDPhiMix1_2_EMCJet[i]=0;
-        fHistDPhiMix2_3_EMCJet[i]=0;
-        fHistDPhiMix3_4_EMCJet[i]=0;
-        fHistDPhiMix4_EMCJet[i]=0;
+        fHistDPhiMix2_4_EMCJet[i]=0;
+        fHistDPhiMix4_8_EMCJet[i]=0;
+
     }
 
     //Init PID Plots here since they are stored in Arrays
@@ -550,70 +515,55 @@ AliAnalysisTaskPSHFE::~AliAnalysisTaskPSHFE()
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
     for(Int_t i=0;i<3;i++){
-        delete fHistDPhi300_500_MB[i];
-        delete fHistDPhi500_800_MB[i];
-        delete fHistDPhi800_1_MB[i];
+
+        delete fHistDPhi300_1_MB[i];
         delete fHistDPhi1_2_MB[i];
-        delete fHistDPhi2_3_MB[i];
-        delete fHistDPhi3_4_MB[i];
-        delete fHistDPhi4_MB[i];
+        delete fHistDPhi2_4_MB[i];
+        delete fHistDPhi4_8_MB[i];
 
-        delete fHistDPhi300_500_EMC7[i];
-        delete fHistDPhi500_800_EMC7[i];
-        delete fHistDPhi800_1_EMC7[i];
+        delete fHistDPhi300_1_EMC7[i];
         delete fHistDPhi1_2_EMC7[i];
-        delete fHistDPhi2_3_EMC7[i];
-        delete fHistDPhi3_4_EMC7[i];
-        delete fHistDPhi4_EMC7[i];
+        delete fHistDPhi2_4_EMC7[i];
+        delete fHistDPhi4_8_EMC7[i];
 
-        delete fHistDPhi300_500_EMCEGA[i];
-        delete fHistDPhi500_800_EMCEGA[i];
-        delete fHistDPhi800_1_EMCEGA[i];
+
+        delete fHistDPhi300_1_EMCEGA[i];
         delete fHistDPhi1_2_EMCEGA[i];
-        delete fHistDPhi2_3_EMCEGA[i];
-        delete fHistDPhi3_4_EMCEGA[i];
-        delete fHistDPhi4_EMCEGA[i];
+        delete fHistDPhi2_4_EMCEGA[i];
+        delete fHistDPhi4_8_EMCEGA[i];
 
-        delete fHistDPhi300_500_EMCJet[i];
-        delete fHistDPhi500_800_EMCJet[i];
-        delete fHistDPhi800_1_EMCJet[i];
+
+        delete fHistDPhi300_1_EMCJet[i];
         delete fHistDPhi1_2_EMCJet[i];
-        delete fHistDPhi2_3_EMCJet[i];
-        delete fHistDPhi3_4_EMCJet[i];
-        delete fHistDPhi4_EMCJet[i];
+        delete fHistDPhi2_4_EMCJet[i];
+        delete fHistDPhi4_8_EMCJet[i];
+
 
         //ME histos
-        delete fHistDPhiMix300_500_MB[i];
-        delete fHistDPhiMix500_800_MB[i];
-        delete fHistDPhiMix800_1_MB[i];
+
+        delete fHistDPhiMix300_1_MB[i];
         delete fHistDPhiMix1_2_MB[i];
-        delete fHistDPhiMix2_3_MB[i];
-        delete fHistDPhiMix3_4_MB[i];
-        delete fHistDPhiMix4_MB[i];
+        delete fHistDPhiMix2_4_MB[i];
+        delete fHistDPhiMix4_8_MB[i];
 
-        delete fHistDPhiMix300_500_EMC7[i];
-        delete fHistDPhiMix500_800_EMC7[i];
-        delete fHistDPhiMix800_1_EMC7[i];
+
+        delete fHistDPhiMix300_1_EMC7[i];
         delete fHistDPhiMix1_2_EMC7[i];
-        delete fHistDPhiMix2_3_EMC7[i];
-        delete fHistDPhiMix3_4_EMC7[i];
-        delete fHistDPhiMix4_EMC7[i];
+        delete fHistDPhiMix2_4_EMC7[i];
+        delete fHistDPhiMix4_8_EMC7[i];
 
-        delete fHistDPhiMix300_500_EMCEGA[i];
-        delete fHistDPhiMix500_800_EMCEGA[i];
-        delete fHistDPhiMix800_1_EMCEGA[i];
+
+        delete fHistDPhiMix300_1_EMCEGA[i];
         delete fHistDPhiMix1_2_EMCEGA[i];
-        delete fHistDPhiMix2_3_EMCEGA[i];
-        delete fHistDPhiMix3_4_EMCEGA[i];
-        delete fHistDPhiMix4_EMCEGA[i];
+        delete fHistDPhiMix2_4_EMCEGA[i];
+        delete fHistDPhiMix4_8_EMCEGA[i];
 
-        delete fHistDPhiMix300_500_EMCJet[i];
-        delete fHistDPhiMix500_800_EMCJet[i];
-        delete fHistDPhiMix800_1_EMCJet[i];
+
+        delete fHistDPhiMix300_1_EMCJet[i];
         delete fHistDPhiMix1_2_EMCJet[i];
-        delete fHistDPhiMix2_3_EMCJet[i];
-        delete fHistDPhiMix3_4_EMCJet[i];
-        delete fHistDPhiMix4_EMCJet[i];
+        delete fHistDPhiMix2_4_EMCJet[i];
+        delete fHistDPhiMix4_8_EMCJet[i];
+
     }
 
     //Init PID Plots here since they are stored in Arrays
@@ -673,7 +623,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Initialize event pool stuff
     Double_t vertexBins[5] = { -10, -4,  0, 4, 10 };
     Int_t nZvtxBins  = 4;
-    Double_t multBins[4] = {0, 200, 500, 1000};
+    Double_t multBins[4] = {0, 100, 300, 500};
     Int_t nMultBins = 3;
 
     fPoolMan = new AliEventPoolManager(50, 50, nMultBins, multBins, nZvtxBins, vertexBins);
@@ -1029,77 +979,27 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     // Delta Phi for tracks > 300MeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-.5Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi300_500_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi300_500_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi300_1_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi300_1_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-.5Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi300_500_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi300_500_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi300_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-.5Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi300_500_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi300_500_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi300_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_500_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-.5Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi300_500_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi300_500_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    // Delta Phi for tracks > 500MeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi500_800_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.5-.8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi500_800_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi500_800_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi500_800_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.5-.8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi500_800_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi500_800_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi500_800_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.5-.8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi500_800_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi500_800_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi500_800_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.5-.8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi500_800_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi500_800_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    // Delta Phi for tracks > 800MeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi800_1_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.8-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi800_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi800_1_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi800_1_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.8-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi800_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi800_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi800_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.8-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi800_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi800_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi800_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.8-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi800_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi800_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi300_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 1GeV
@@ -1129,154 +1029,82 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     // Delta Phi for tracks > 2GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_3_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-3Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi2_3_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi2_3_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi2_4_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi2_4_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_3_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-3Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi2_3_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi2_3_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi2_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_3_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-3Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi2_3_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi2_3_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi2_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_3_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-3Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi2_3_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi2_3_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi2_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 3GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi3_4_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_3-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi3_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi3_4_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi4_8_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi4_8_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi3_4_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_3-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi3_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi3_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi4_8_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi3_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_3-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi3_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi3_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi4_8_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi3_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_3-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi3_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi3_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhi4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhi4_8_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
-    // Delta Phi for tracks > 5GeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi4_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi4_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi4_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi4_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhi4_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhi4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhi4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
+    
 
     //Mixed Event DPhi plots
 
     // Delta Phi for tracks > 300MeV
+
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_500_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-.5Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix300_500_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix300_500_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix300_1_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix300_1_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_500_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-.5Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix300_500_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix300_500_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix300_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_500_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-.5Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix300_500_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix300_500_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix300_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_500_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-.5Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<.5Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix300_500_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix300_500_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    // Delta Phi for tracks > 500MeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix500_800_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.5-.8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix500_800_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix500_800_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix500_800_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.5-.8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix500_800_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix500_800_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix500_800_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.5-.8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix500_800_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix500_800_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix500_800_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.5-.8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .5Gev<pt<.8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix500_800_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix500_800_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    // Delta Phi for tracks > 800MeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix800_1_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.8-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix800_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix800_1_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix800_1_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.8-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix800_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix800_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix800_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.8-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix800_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix800_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix800_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.8-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .8Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix800_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix800_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix300_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 1GeV
@@ -1306,78 +1134,55 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     // Delta Phi for tracks > 2GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_3_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-3Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix2_3_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix2_3_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix2_4_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix2_4_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_3_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-3Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix2_3_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix2_3_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix2_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_3_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-3Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix2_3_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix2_3_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix2_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_3_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-3Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<3Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix2_3_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix2_3_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix2_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 3GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix3_4_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_3-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix3_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix3_4_MB[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix4_8_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix4_8_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix3_4_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_3-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix3_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix3_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix4_8_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix3_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_3-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix3_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix3_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix4_8_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix3_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_3-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 3Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix3_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix3_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
+        fHistDPhiMix4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
+        fHistDPhiMix4_8_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
-    // Delta Phi for tracks > 5GeV
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix4_MB[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix4_EMC7[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
-    }
-
-    for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated pt>4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
-        fHistDPhiMix4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
-        fHistDPhiMix4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-    }
+    
 
     //Hadron e/p plot
     fHistEMC_Had_MB_1Gev = new TH1F("fHistEMC_Had_MB_1Gev", "E/p for hadrons with Pt between 1-2Gev", 100, 0, 1.5);
@@ -1734,20 +1539,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     }
     for(Int_t i=0; i<3;i++){
-        fOutputMB->Add(fHistDPhi300_500_MB[i]);
-        fOutputMB->Add(fHistDPhi500_800_MB[i]);
-        fOutputMB->Add(fHistDPhi800_1_MB[i]);
+        fOutputMB->Add(fHistDPhi300_1_MB[i]);
         fOutputMB->Add(fHistDPhi1_2_MB[i]);
-        fOutputMB->Add(fHistDPhi2_3_MB[i]);
-        fOutputMB->Add(fHistDPhi3_4_MB[i]);
-        fOutputMB->Add(fHistDPhi4_MB[i]);
-        fOutputMB->Add(fHistDPhiMix300_500_MB[i]);
-        fOutputMB->Add(fHistDPhiMix500_800_MB[i]);
-        fOutputMB->Add(fHistDPhiMix800_1_MB[i]);
+        fOutputMB->Add(fHistDPhi2_4_MB[i]);
+        fOutputMB->Add(fHistDPhi4_8_MB[i]);
+        fOutputMB->Add(fHistDPhiMix300_1_MB[i]);
         fOutputMB->Add(fHistDPhiMix1_2_MB[i]);
-        fOutputMB->Add(fHistDPhiMix2_3_MB[i]);
-        fOutputMB->Add(fHistDPhiMix3_4_MB[i]);
-        fOutputMB->Add(fHistDPhiMix4_MB[i]);
+        fOutputMB->Add(fHistDPhiMix2_4_MB[i]);
+        fOutputMB->Add(fHistDPhiMix4_8_MB[i]);
     }
     fOutputMB->Add(fHistDPhi28_MB);
     fOutputMB->Add(fHistDPhiDEta28_MB);
@@ -1782,20 +1581,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     }
     for(Int_t i=0; i<3;i++){
-        fOutputEMC7->Add(fHistDPhi300_500_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhi500_800_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhi800_1_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhi300_1_EMC7[i]);
         fOutputEMC7->Add(fHistDPhi1_2_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhi2_3_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhi3_4_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhi4_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix300_500_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix500_800_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix800_1_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhi2_4_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhi4_8_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhiMix300_1_EMC7[i]);
         fOutputEMC7->Add(fHistDPhiMix1_2_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix2_3_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix3_4_EMC7[i]);
-        fOutputEMC7->Add(fHistDPhiMix4_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhiMix2_4_EMC7[i]);
+        fOutputEMC7->Add(fHistDPhiMix4_8_EMC7[i]);
     }
     fOutputEMC7->Add(fHistDPhi28_EMC7);
     fOutputEMC7->Add(fHistDPhiDEta28_EMC7);
@@ -1830,20 +1623,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     }
     for(Int_t i=0; i<3;i++){
-        fOutputEMCEGA->Add(fHistDPhi300_500_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhi500_800_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhi800_1_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhi300_1_EMCEGA[i]);
         fOutputEMCEGA->Add(fHistDPhi1_2_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhi2_3_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhi3_4_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhi4_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix300_500_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix500_800_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix800_1_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhi2_4_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhi4_8_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhiMix300_1_EMCEGA[i]);
         fOutputEMCEGA->Add(fHistDPhiMix1_2_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix2_3_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix3_4_EMCEGA[i]);
-        fOutputEMCEGA->Add(fHistDPhiMix4_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhiMix2_4_EMCEGA[i]);
+        fOutputEMCEGA->Add(fHistDPhiMix4_8_EMCEGA[i]);
     }
     fOutputEMCEGA->Add(fHistDPhi28_EMCEGA);
     fOutputEMCEGA->Add(fHistDPhiDEta28_EMCEGA);
@@ -1878,20 +1665,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     }
     for(Int_t i=0; i<3;i++){
-        fOutputEMCJet->Add(fHistDPhi300_500_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhi500_800_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhi800_1_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhi300_1_EMCJet[i]);
         fOutputEMCJet->Add(fHistDPhi1_2_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhi2_3_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhi3_4_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhi4_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix300_500_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix500_800_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix800_1_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhi2_4_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhi4_8_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhiMix300_1_EMCJet[i]);
         fOutputEMCJet->Add(fHistDPhiMix1_2_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix2_3_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix3_4_EMCJet[i]);
-        fOutputEMCJet->Add(fHistDPhiMix4_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhiMix2_4_EMCJet[i]);
+        fOutputEMCJet->Add(fHistDPhiMix4_8_EMCJet[i]);
     }
     fOutputEMCJet->Add(fHistDPhi28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiDEta28_EMCJet);
@@ -2793,56 +2574,22 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         //candidate 1<pt<2
         if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
 
-            //300-500MeV
-            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
-                if(MBtrg){
-                    fHistDPhi300_500_MB[0]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi300_500_EMC7[0]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi300_500_EMCEGA[0]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
-                        break;
-                }
-            }
+            
 
-            //500MeV
-            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
+            //300MeV
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
-                    fHistDPhi500_800_MB[0]->Fill(DPhi);
+                    fHistDPhi300_1_MB[0]->Fill(DPhi);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi500_800_EMC7[0]->Fill(DPhi);
+                        fHistDPhi300_1_EMC7[0]->Fill(DPhi);
                         break;
                     case(EMCEGA):
-                        fHistDPhi500_800_EMCEGA[0]->Fill(DPhi);
+                        fHistDPhi300_1_EMCEGA[0]->Fill(DPhi);
                         break;
                     case(EMCJE):
-                        fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
-                        break;
-                }
-            }
-
-            //800MeV
-            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                if(MBtrg){
-                    fHistDPhi800_1_MB[0]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi800_1_EMC7[0]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi800_1_EMCEGA[0]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
+                        fHistDPhi300_1_EMCJet[0]->Fill(DPhi);
                         break;
                 }
             }
@@ -2866,113 +2613,63 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             }
 
             //2GeV
-            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                 if(MBtrg){
-                    fHistDPhi2_3_MB[0]->Fill(DPhi);
+                    fHistDPhi2_4_MB[0]->Fill(DPhi);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi2_3_EMC7[0]->Fill(DPhi);
+                        fHistDPhi2_4_EMC7[0]->Fill(DPhi);
                         break;
                     case(EMCEGA):
-                        fHistDPhi2_3_EMCEGA[0]->Fill(DPhi);
+                        fHistDPhi2_4_EMCEGA[0]->Fill(DPhi);
                         break;
                     case(EMCJE):
-                        fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
+                        fHistDPhi2_4_EMCJet[0]->Fill(DPhi);
                         break;
                 }
             }
 
-            //3GeV
-            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+            //4GeV
+            if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                 if(MBtrg){
-                    fHistDPhi3_4_MB[0]->Fill(DPhi);
+                    fHistDPhi4_8_MB[0]->Fill(DPhi);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi3_4_EMC7[0]->Fill(DPhi);
+                        fHistDPhi4_8_EMC7[0]->Fill(DPhi);
                         break;
                     case(EMCEGA):
-                        fHistDPhi3_4_EMCEGA[0]->Fill(DPhi);
+                        fHistDPhi4_8_EMCEGA[0]->Fill(DPhi);
                         break;
                     case(EMCJE):
-                        fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
+                        fHistDPhi4_8_EMCJet[0]->Fill(DPhi);
                         break;
                 }
             }
 
-            //5GeV
-            if(aodtrackassoc->Pt()>4){
-                if(MBtrg){
-                    fHistDPhi4_MB[0]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi4_EMC7[0]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi4_EMCEGA[0]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi4_EMCJet[0]->Fill(DPhi);
-                        break;
-                }
-            }
+           
         }
 
         //candidate 2<pt<4
         if(aodtrack->Pt()>2&&aodtrack->Pt()<4){
 
+            
+
             //300MeV
-            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
-                    fHistDPhi300_500_MB[1]->Fill(DPhi);
+                    fHistDPhi300_1_MB[1]->Fill(DPhi);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi300_500_EMC7[1]->Fill(DPhi);
+                        fHistDPhi300_1_EMC7[1]->Fill(DPhi);
                         break;
                     case(EMCEGA):
-                        fHistDPhi300_500_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi300_1_EMCEGA[1]->Fill(DPhi);
                         break;
                     case(EMCJE):
-                        fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
-                        break;
-                }
-            }
-
-            //500MeV
-            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
-                if(MBtrg){
-                    fHistDPhi500_800_MB[1]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi500_800_EMC7[1]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi500_800_EMCEGA[1]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
-                        break;
-                }
-            }
-
-            //800MeV
-            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                if(MBtrg){
-                    fHistDPhi800_1_MB[1]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi800_1_EMC7[1]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi800_1_EMCEGA[1]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi300_1_EMCJet[1]->Fill(DPhi);
                         break;
                 }
             }
@@ -2996,137 +2693,79 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             }
 
             //2GeV
-            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                 if(MBtrg){
-                    fHistDPhi2_3_MB[1]->Fill(DPhi);
+                    fHistDPhi2_4_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi2_3_EMC7[1]->Fill(DPhi);
+                        fHistDPhi2_4_EMC7[1]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
                         fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
                         break;
                     case(EMCEGA):
-                        fHistDPhi2_3_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi2_4_EMCEGA[1]->Fill(DPhi);
                         fHistDPhi28_EMCEGA->Fill(DPhi);
                         fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
                         break;
                     case(EMCJE):
-                        fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi2_4_EMCJet[1]->Fill(DPhi);
                         fHistDPhi28_EMCJet->Fill(DPhi);
                         fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
                         break;
                 }
             }
 
-            //3GeV
-            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+            //4GeV
+            if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                 if(MBtrg){
-                    fHistDPhi3_4_MB[1]->Fill(DPhi);
+                    fHistDPhi4_8_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi3_4_EMC7[1]->Fill(DPhi);
+                        fHistDPhi4_8_EMC7[1]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
                         fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
                         break;
                     case(EMCEGA):
-                        fHistDPhi3_4_EMCEGA[1]->Fill(DPhi);
+                        fHistDPhi4_8_EMCEGA[1]->Fill(DPhi);
                         fHistDPhi28_EMCEGA->Fill(DPhi);
                         fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
                         break;
                     case(EMCJE):
-                        fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
+                        fHistDPhi4_8_EMCJet[1]->Fill(DPhi);
                         fHistDPhi28_EMCJet->Fill(DPhi);
                         fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
                         break;
                 }
             }
 
-            //5GeV
-            if(aodtrackassoc->Pt()>4){
-                if(MBtrg){
-                    fHistDPhi4_MB[1]->Fill(DPhi);
-                    fHistDPhi28_MB->Fill(DPhi);
-                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi4_EMC7[1]->Fill(DPhi);
-                        fHistDPhi28_EMC7->Fill(DPhi);
-                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi4_EMCEGA[1]->Fill(DPhi);
-                        fHistDPhi28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi4_EMCJet[1]->Fill(DPhi);
-                        fHistDPhi28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                        break;
-                }
-            }                    
+            
         }
 
         //candidate 4<pt<8
         if(aodtrack->Pt()>4&&aodtrack->Pt()<8){
 
+            
+
             //300MeV
-            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
-                    fHistDPhi300_500_MB[2]->Fill(DPhi);
+                    fHistDPhi300_1_MB[2]->Fill(DPhi);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi300_500_EMC7[2]->Fill(DPhi);
+                        fHistDPhi300_1_EMC7[2]->Fill(DPhi);
                         break;
                     case(EMCEGA):
-                        fHistDPhi300_500_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi300_1_EMCEGA[2]->Fill(DPhi);
                         break;
                     case(EMCJE):
-                        fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
-                        break;
-                }
-            }
-
-            //500MeV
-            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
-                if(MBtrg){
-                    fHistDPhi500_800_MB[2]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi500_800_EMC7[2]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi500_800_EMCEGA[2]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
-                        break;
-                }
-            }
-
-            //800MeV
-            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                if(MBtrg){
-                    fHistDPhi800_1_MB[2]->Fill(DPhi);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi800_1_EMC7[2]->Fill(DPhi);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi800_1_EMCEGA[2]->Fill(DPhi);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi300_1_EMCJet[2]->Fill(DPhi);
                         break;
                 }
             }
@@ -3150,82 +2789,58 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             }
 
             //2GeV
-            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                 if(MBtrg){
-                    fHistDPhi2_3_MB[2]->Fill(DPhi);
+                    fHistDPhi2_4_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi2_3_EMC7[2]->Fill(DPhi);
+                        fHistDPhi2_4_EMC7[2]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
                         fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
                         break;
                     case(EMCEGA):
-                        fHistDPhi2_3_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi2_4_EMCEGA[2]->Fill(DPhi);
                         fHistDPhi28_EMCEGA->Fill(DPhi);
                         fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
                         break;
                     case(EMCJE):
-                        fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi2_4_EMCJet[2]->Fill(DPhi);
                         fHistDPhi28_EMCJet->Fill(DPhi);
                         fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
                         break;
                 }
             }
 
-            //3GeV
-            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+            //4GeV
+            if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                 if(MBtrg){
-                    fHistDPhi3_4_MB[2]->Fill(DPhi);
+                    fHistDPhi4_8_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
                 switch(trigVal){
                     case(EMC7):
-                        fHistDPhi3_4_EMC7[2]->Fill(DPhi);
+                        fHistDPhi4_8_EMC7[2]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
                         fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
                         break;
                     case(EMCEGA):
-                        fHistDPhi3_4_EMCEGA[2]->Fill(DPhi);
+                        fHistDPhi4_8_EMCEGA[2]->Fill(DPhi);
                         fHistDPhi28_EMCEGA->Fill(DPhi);
                         fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
                         break;
                     case(EMCJE):
-                        fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
+                        fHistDPhi4_8_EMCJet[2]->Fill(DPhi);
                         fHistDPhi28_EMCJet->Fill(DPhi);
                         fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
                         break;
                 }
             }
 
-            //5GeV
-            if(aodtrackassoc->Pt()>4){
-                if(MBtrg){
-                    fHistDPhi4_MB[2]->Fill(DPhi);
-                    fHistDPhi28_MB->Fill(DPhi);
-                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                }
-                switch(trigVal){
-                    case(EMC7):
-                        fHistDPhi4_EMC7[2]->Fill(DPhi);
-                        fHistDPhi28_EMC7->Fill(DPhi);
-                        fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                        break;
-                    case(EMCEGA):
-                        fHistDPhi4_EMCEGA[2]->Fill(DPhi);
-                        fHistDPhi28_EMCEGA->Fill(DPhi);
-                        fHistDPhiDEta28_EMCEGA->Fill(DPhi, DEta);
-                        break;
-                    case(EMCJE):
-                        fHistDPhi4_EMCJet[2]->Fill(DPhi);
-                        fHistDPhi28_EMCJet->Fill(DPhi);
-                        fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                        break;
-                }
-            }
+            
         }
 
     }
@@ -3489,56 +3104,22 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
             //candidate 1<pt<2
             if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
 
-                //300-500MeV
-                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
-                    if(MBtrg){
-                        fHistDPhiMix300_500_MB[0]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix300_500_EMC7[0]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix300_500_EMCEGA[0]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix300_500_EMCJet[0]->Fill(DPhi);
-                            break;
-                    }
-                }
+                
 
-                //500MeV
-                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
+                //300MeV
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
-                        fHistDPhiMix500_800_MB[0]->Fill(DPhi);
+                        fHistDPhiMix300_1_MB[0]->Fill(DPhi);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix500_800_EMC7[0]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMC7[0]->Fill(DPhi);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix500_800_EMCEGA[0]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCEGA[0]->Fill(DPhi);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix500_800_EMCJet[0]->Fill(DPhi);
-                            break;
-                    }
-                }
-
-                //800MeV
-                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhiMix800_1_MB[0]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix800_1_EMC7[0]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix800_1_EMCEGA[0]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix800_1_EMCJet[0]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCJet[0]->Fill(DPhi);
                             break;
                     }
                 }
@@ -3562,113 +3143,63 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                 }
 
                 //2GeV
-                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
-                        fHistDPhiMix2_3_MB[0]->Fill(DPhi);
+                        fHistDPhiMix2_4_MB[0]->Fill(DPhi);
                     }
                     switch(trigVal){                       
                         case(EMC7):
-                            fHistDPhiMix2_3_EMC7[0]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMC7[0]->Fill(DPhi);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix2_3_EMCEGA[0]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCEGA[0]->Fill(DPhi);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix2_3_EMCJet[0]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCJet[0]->Fill(DPhi);
                             break;
                     }
                 }
 
-                //3GeV
-                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                //4GeV
+                if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                     if(MBtrg){
-                        fHistDPhiMix3_4_MB[0]->Fill(DPhi);
+                        fHistDPhiMix4_8_MB[0]->Fill(DPhi);
                     }
                     switch(trigVal){                        
                         case(EMC7):
-                            fHistDPhiMix3_4_EMC7[0]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMC7[0]->Fill(DPhi);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix3_4_EMCEGA[0]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCEGA[0]->Fill(DPhi);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix3_4_EMCJet[0]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCJet[0]->Fill(DPhi);
                             break;
                     }
                 }
 
-                //5GeV
-                if(aodtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhiMix4_MB[0]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix4_EMC7[0]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix4_EMCEGA[0]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix4_EMCJet[0]->Fill(DPhi);
-                            break;
-                    }
-                }
+                
             }
 
             //candidate 2<pt<4
             if(aodtrack->Pt()>2&&aodtrack->Pt()<4){
 
+                
+
                 //300MeV
-                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
-                        fHistDPhiMix300_500_MB[1]->Fill(DPhi);
+                        fHistDPhiMix300_1_MB[1]->Fill(DPhi);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix300_500_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMC7[1]->Fill(DPhi);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix300_500_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCEGA[1]->Fill(DPhi);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix300_500_EMCJet[1]->Fill(DPhi);
-                            break;
-                    }
-                }
-
-                //500MeV
-                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
-                    if(MBtrg){
-                        fHistDPhiMix500_800_MB[1]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix500_800_EMC7[1]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix500_800_EMCEGA[1]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix500_800_EMCJet[1]->Fill(DPhi);
-                            break;
-                    }
-                }
-
-                //800MeV
-                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhiMix800_1_MB[1]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix800_1_EMC7[1]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix800_1_EMCEGA[1]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix800_1_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCJet[1]->Fill(DPhi);
                             break;
                     }
                 }
@@ -3692,137 +3223,79 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                 }
 
                 //2GeV
-                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
-                        fHistDPhiMix2_3_MB[1]->Fill(DPhi);
+                        fHistDPhiMix2_4_MB[1]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix2_3_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMC7[1]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix2_3_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCEGA[1]->Fill(DPhi);
                             fHistDPhiMix28_EMCEGA->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix2_3_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCJet[1]->Fill(DPhi);
                             fHistDPhiMix28_EMCJet->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                             break;
                     }
                 }
 
-                //3GeV
-                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                //4GeV
+                if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                     if(MBtrg){
-                        fHistDPhiMix3_4_MB[1]->Fill(DPhi);
+                        fHistDPhiMix4_8_MB[1]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix3_4_EMC7[1]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMC7[1]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix3_4_EMCEGA[1]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCEGA[1]->Fill(DPhi);
                             fHistDPhiMix28_EMCEGA->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix3_4_EMCJet[1]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCJet[1]->Fill(DPhi);
                             fHistDPhiMix28_EMCJet->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                             break;
                     }
                 }
 
-                //5GeV
-                if(aodtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhiMix4_MB[1]->Fill(DPhi);
-                        fHistDPhiMix28_MB->Fill(DPhi);
-                        fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix4_EMC7[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix4_EMCEGA[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix4_EMCJet[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                            break;
-                    }
-                }                    
+                           
             }
 
             //candidate 4<pt<8
             if(aodtrack->Pt()>4&&aodtrack->Pt()<8){
 
+                
+
                 //300MeV
-                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
-                        fHistDPhiMix300_500_MB[2]->Fill(DPhi);
+                        fHistDPhiMix300_1_MB[2]->Fill(DPhi);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix300_500_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMC7[2]->Fill(DPhi);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix300_500_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCEGA[2]->Fill(DPhi);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix300_500_EMCJet[2]->Fill(DPhi);
-                            break;
-                    }
-                }
-
-                //500MeV
-                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
-                    if(MBtrg){
-                        fHistDPhiMix500_800_MB[2]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix500_800_EMC7[2]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix500_800_EMCEGA[2]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix500_800_EMCJet[2]->Fill(DPhi);
-                            break;
-                    }
-                }
-
-                //800MeV
-                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhiMix800_1_MB[2]->Fill(DPhi);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix800_1_EMC7[2]->Fill(DPhi);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix800_1_EMCEGA[2]->Fill(DPhi);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix800_1_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix300_1_EMCJet[2]->Fill(DPhi);
                             break;
                     }
                 }
@@ -3846,82 +3319,58 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                 }
 
                 //2GeV
-                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
-                        fHistDPhiMix2_3_MB[2]->Fill(DPhi);
+                        fHistDPhiMix2_4_MB[2]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix2_3_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMC7[2]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix2_3_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCEGA[2]->Fill(DPhi);
                             fHistDPhiMix28_EMCEGA->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix2_3_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix2_4_EMCJet[2]->Fill(DPhi);
                             fHistDPhiMix28_EMCJet->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                             break;
                     }
                 }
 
-                //3GeV
-                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                //4GeV
+                if(aodtrackassoc->Pt()>4&&aodtrackassoc->Pt()<8){
                     if(MBtrg){
-                        fHistDPhiMix3_4_MB[2]->Fill(DPhi);
+                        fHistDPhiMix4_8_MB[2]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     switch(trigVal){
                         case(EMC7):
-                            fHistDPhiMix3_4_EMC7[2]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMC7[2]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                             break;
                         case(EMCEGA):
-                            fHistDPhiMix3_4_EMCEGA[2]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCEGA[2]->Fill(DPhi);
                             fHistDPhiMix28_EMCEGA->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
                             break;
                         case(EMCJE):
-                            fHistDPhiMix3_4_EMCJet[2]->Fill(DPhi);
+                            fHistDPhiMix4_8_EMCJet[2]->Fill(DPhi);
                             fHistDPhiMix28_EMCJet->Fill(DPhi);
                             fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                             break;
                     }
                 }
 
-                //5GeV
-                if(aodtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhiMix4_MB[2]->Fill(DPhi);
-                        fHistDPhiMix28_MB->Fill(DPhi);
-                        fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
-                    }
-                    switch(trigVal){
-                        case(EMC7):
-                            fHistDPhiMix4_EMC7[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
-                            break;
-                        case(EMCEGA):
-                            fHistDPhiMix4_EMCEGA[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMCEGA->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCEGA->Fill(DPhi, DEta);
-                            break;
-                        case(EMCJE):
-                            fHistDPhiMix4_EMCJet[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
-                            break;
-                    }
-                }
+                
             }
         }
     }
