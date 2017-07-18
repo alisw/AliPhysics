@@ -1464,20 +1464,21 @@ void AliZDCv4::CreateBeamLine()
   tubpar[0] = 0.;
   tubpar[1] = 3.14;
   // New -> Added to accomodate AD (A. Morsch)
-  tubpar[2] = 150./2.;
-  //tubpar[2] = 153./2.;
+  // Updated -> The field must be 1.53 m long
+  tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
   // Ch.debug
-  //printf("	MBXW volume: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
+  printf("	MBXW magnetic volume: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
-  tubpar[2] = 153./2.;
+  // Updated -> The yoke can be 1.50 m to avoid overlaps
+  tubpar[2] = 150./2.;
   TVirtualMC::GetMC()->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
-  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip-1.5, 0, "ONLY");
   // Ch.debug
-  //printf("	MBXW yoke: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
+  printf("	MBXW yoke: %1.2f < z < %1.2f\n\n",  -zCorrDip-1.5, -zCorrDip-1.5-2*tubpar[2]);
   
   
   // -- INNER TRIPLET 
