@@ -54,7 +54,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
   Bool_t                      FillHistograms()                                              ;
   
-  Float_t                     ClustTrackMatching(AliVCluster *clust);
+  Float_t                     ClustTrackMatching(AliVCluster *clust, double &detaMIN, double &dphiMIN);
   void                        FillClusterHisto(AliVCluster* cluster, THnSparse* histo);
   void                        FillPionHisto(AliVCluster* cluster1, AliVCluster* cluster2, THnSparse* histo);
   void                        FillPionCorrelation(AliVCluster* cluster1, AliVCluster* cluster2, AliVParticle* track, THnSparse* histo, double weight);
@@ -63,7 +63,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   Bool_t                      PreSelection(AliVCluster* caloCluster);
   Bool_t                      FinalClusterCuts(AliVCluster* cluster);
   double                      GetIsolation_Track(AliVCluster* cluster, double Rmax);
-  double                      GetIsolation_Cluster(AliVCluster* cluster, double Rmax);
+  void                        GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband);
   Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
   Double_t                    GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t                    GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
