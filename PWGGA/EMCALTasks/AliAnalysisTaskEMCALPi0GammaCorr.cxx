@@ -64,7 +64,8 @@ h_ClusterTrack(0),
 h_ClusterTrack_Mixed(0),
 h_Pi0(0),
 h_Pi0Track(0),
-h_Pi0Track_Mixed(0)
+h_Pi0Track_Mixed(0),
+fPeriod("")
 {
     InitArrays();
 }
@@ -94,7 +95,8 @@ h_ClusterTrack(0),
 h_ClusterTrack_Mixed(0),
 h_Pi0(0),
 h_Pi0Track(0),
-h_Pi0Track_Mixed(0)
+h_Pi0Track_Mixed(0),
+fPeriod("")
 {
 	InitArrays();
 }//End constructor PiHadron that receives input
@@ -166,7 +168,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_Mass = 0.000;
     double max_Mass = 0.300;
 
-    int    nbins_Pt =  25;
+    int    nbins_Pt =  50;
     double min_Pt   =  0.0;
     double max_Pt   =  50.0;
 
@@ -335,17 +337,18 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     h_Pi0->Sumw2();
     fOutput->Add(h_Pi0);
     
-    /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 16;
+    /////////////////////Cluste7s////////////////////////////////////
+    const int nbins_Cluster = 17;
     
     axisNames = "Cluster THnSparse; RunNumber; Centrality; Z vertex; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMaxima;";
-    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns]; SumTrackpT, R < 0.4; SumClusterpT, R < 0.4;";
+    axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track; Exoticity; time [ns]; SumTrackpT, R < 0.4; SumClusterpT, R < 0.4; SumClusterpT, R<0.2;";
     int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
-                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time, nbins_IsoTrack, nbins_IsoTrack};
+                                      nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Exoticity, nbins_time, nbins_IsoTrack, nbins_IsoTrack, 
+                                       nbins_IsoTrack};
     double xminCluster[nbins_Cluster] = {min_RunNumber, min_Centrality, min_zvertex, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
-					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time, min_IsoTrack, min_IsoTrack};
+					 min_DisToBorder, min_DisToBad, min_dR, min_Exoticity, min_time, min_IsoTrack, min_IsoTrack, min_IsoTrack};
     double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_Centrality, max_zvertex, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
-					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time, max_IsoTrack, max_IsoTrack};
+					 max_DisToBorder, max_DisToBad, max_dR, max_Exoticity, max_time, max_IsoTrack, max_IsoTrack, max_IsoTrack};
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
@@ -554,6 +557,11 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust)
   // Check if the cluster match to a track
 
   AliTrackContainer* tracks = GetTrackContainer("ForMatching");
+
+  if(!tracks){
+    AliError(Form("Could not retrieve tracks !"));
+  }
+
   if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   AliVTrack* mt = 0;
   TLorentzVector vecClust;
@@ -622,7 +630,9 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 
     //AliParticleContainer* tracks = GetParticleContainer(0); //trying trackcontainer above instead 
     AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
-
+    if(!tracks){
+      AliError(Form("Could not retrieve tracks !"));
+    }
     if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
     AliEventPool* pool = fPoolMgr->GetEventPool(fCent, zVertex);
@@ -707,6 +717,9 @@ double AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster
 
   AliClusterContainer* clusters  = GetClusterContainer(0);
   AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
+  if(!tracks){
+    AliError(Form("Could not retrieve tracks !"));
+  }
   TLorentzVector ph;
   clusters->GetMomentum(ph, cluster);
 
@@ -879,7 +892,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     AliClusterContainer* clusters  = GetClusterContainer(0);
     TLorentzVector ph;
     clusters->GetMomentum(ph, cluster);
-    if(cluster->E()< 6.0) return;
+    if(ph.Pt() < 5.0) return;
     Double_t dRmin = ClustTrackMatching(cluster);
     Double_t disToBad = static_cast<double>(cluster->GetDistanceToBadChannel());
     if(disToBad>5.0) disToBad=5.0;
@@ -895,11 +908,16 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
 
     Double_t SumTrackpT = GetIsolation_Track(cluster, 0.4);
     if(SumTrackpT>40.0) SumTrackpT =39.9; //overflow
+
+
     Double_t SumClusterpT = GetIsolation_Cluster(cluster, 0.4);
     if(SumClusterpT>40.0) SumClusterpT =39.9; //overflow
+        
+    Double_t SumClusterpT_R02 = GetIsolation_Cluster(cluster, 0.2);
+    if(SumClusterpT_R02>40.0) SumClusterpT_R02 =39.9; //overflow
 
-    double entries[16] = {RunNumber, fCent, fVertex[2], ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
-			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time, SumTrackpT, SumClusterpT};
+    double entries[17] = {RunNumber, fCent, fVertex[2], ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, exoticity, time, SumTrackpT, SumClusterpT, SumClusterpT_R02};
     histo->Fill(entries);
     return;
 }
