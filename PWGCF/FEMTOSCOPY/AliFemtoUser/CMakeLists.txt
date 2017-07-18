@@ -79,6 +79,7 @@ set(SRCS
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
+  AliFemtoCorrFctnDEtaDPhiTHn.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
   AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnKStar.cxx
