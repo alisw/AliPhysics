@@ -675,7 +675,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
       /// \li Acceptance cuts for generated particles
       // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
-      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
 
       if(IsChargedPrimary(iParticle)){
 	
@@ -691,7 +691,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
       /// \li Acceptance cuts for generated particles
       // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
-      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
 
       if(IsChargedPrimary(iParticle)){
 
