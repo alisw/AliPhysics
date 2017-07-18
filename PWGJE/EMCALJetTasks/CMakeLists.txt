@@ -229,6 +229,7 @@ if(FASTJET_FOUND)
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
+	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
         )
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
