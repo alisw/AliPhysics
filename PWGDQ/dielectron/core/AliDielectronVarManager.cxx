@@ -643,7 +643,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
-  {"MixingBin",              "mixing bin",                                         ""}
+  {"MixingBin",              "mixing bin",                                         ""},
+  {"LegSource",              "Leg source",                                         ""}
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;
