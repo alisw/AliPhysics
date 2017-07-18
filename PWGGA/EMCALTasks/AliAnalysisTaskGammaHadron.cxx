@@ -260,6 +260,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fOutputListQA   ->SetOwner();
 	fOutputListQA   ->SetName("QA_histograms");
 
+  Double_t pi = TMath::Pi();
+
 	//common bins for the histograms
 	Int_t nbins[6]  = {0};
 	Double_t min[6] = {0};
@@ -401,48 +403,48 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThnPi0[10] = {0};
 
     titleThnPi0[dimThnPi0] = "p_{T}^{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 240;
-    Double_t pTArray[240+1];
+    nBinsThnPi0[dimThnPi0] = 100;
+    Double_t pTArray[100+1];
     binEdgesThnPi0[dimThnPi0] = pTArray;
-    GenerateFixedBinArray(240,0,50,pTArray);
+    GenerateFixedBinArray(100,0,50,pTArray);
     minThnPi0[dimThnPi0] = 0;
     maxThnPi0[dimThnPi0] = 50;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 500;
-    Double_t mGGArray[500+1];
+    nBinsThnPi0[dimThnPi0] = 750;
+    Double_t mGGArray[750+1];
     binEdgesThnPi0[dimThnPi0] = mGGArray;
-    GenerateFixedBinArray(500,0,0.5,mGGArray);
+    GenerateFixedBinArray(750,0,0.75,mGGArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 0.5;
+    maxThnPi0[dimThnPi0] = 0.75;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
     nBinsThnPi0[dimThnPi0] = 20;
-    Double_t openAngleArray[20+1];
+    Double_t openAngleArray[20+1] = {0,0.015,0.017,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,3.*pi/8.,pi/2.,3.*pi/4.,pi};
     binEdgesThnPi0[dimThnPi0] = openAngleArray;
-    GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
+  //  GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = TMath::Pi();
+    maxThnPi0[dimThnPi0] = pi;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Max Lambda_{0}^{2}";
-    nBinsThnPi0[dimThnPi0] = 5;
-    Double_t MaxM02Array[5+1] = {0.1,0.26,0.3,0.37,0.85,4};
+    nBinsThnPi0[dimThnPi0] = 6;
+    Double_t MaxM02Array[6+1] = {0.1,0.3,0.35,0.4,0.45,0.5,10}; 
     binEdgesThnPi0[dimThnPi0] = MaxM02Array;
    // GenerateFixedBinArray(5,0,);
     minThnPi0[dimThnPi0] = 0.1;
-    maxThnPi0[dimThnPi0] = 4;
+    maxThnPi0[dimThnPi0] = 10;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Min Cluster Energy";
-    nBinsThnPi0[dimThnPi0] = 4;
-    Double_t MinClusEnergyArray[4+1] = {0.3,0.4,0.5,1,2};
+    nBinsThnPi0[dimThnPi0] = 5;
+    Double_t MinClusEnergyArray[5+1] = {0.3,0.5,1,1.5,2,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
    // GenerateFixedBinArray(5,0,);
-    minThnPi0[dimThnPi0] = 0.1;
-    maxThnPi0[dimThnPi0] = 4;
+    minThnPi0[dimThnPi0] = 0.3;
+    maxThnPi0[dimThnPi0] = 100;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
