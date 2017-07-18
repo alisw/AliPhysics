@@ -141,6 +141,14 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtYPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0
     TH2F*                 fHistPtYPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance
     
+    TH2F*                 fHistPtAlphaPi0FromKGG;             //! histo for Pi0 from K gamma gamma channel (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGPCMAcc;       //! histo for Pi0 from K gamma gamma channel, PCM acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAcc;       //! histo for Pi0 from K gamma gamma channel, EMC acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGPCMEMCAcc;    //! histo for Pi0 from K gamma gamma channel, PCM-EMC acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCPCMAcc;    //! histo for Pi0 from K gamma gamma channel, EMC-PCM acceptance (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0 (Alpha)
+    TH2F*                 fHistPtAlphaPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance (Alpha)
+    
     
 	Int_t				  fIsK0;					  // k0 flag		
     Int_t                 fIsMC;                      // MC flag

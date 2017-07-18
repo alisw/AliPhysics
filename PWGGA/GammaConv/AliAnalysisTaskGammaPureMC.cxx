@@ -118,6 +118,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYPi0FromKGGEMCPCMAcc(nullptr),
   fHistPtYPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtYPi0FromKGGEMCAccDiffPi0(nullptr),
+  fHistPtAlphaPi0FromKGG(nullptr),
+  fHistPtAlphaPi0FromKGGPCMAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAcc(nullptr),
+  fHistPtAlphaPi0FromKGGPCMEMCAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCPCMAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
   fIsK0(1),
   fIsMC(1)
 {
@@ -191,6 +198,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYPi0FromKGGEMCPCMAcc(nullptr),
   fHistPtYPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtYPi0FromKGGEMCAccDiffPi0(nullptr),
+  fHistPtAlphaPi0FromKGG(nullptr),
+  fHistPtAlphaPi0FromKGGPCMAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAcc(nullptr),
+  fHistPtAlphaPi0FromKGGPCMEMCAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCPCMAcc(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
+  fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
   fIsK0(1),
   fIsMC(1)
 {
@@ -452,6 +466,34 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
         fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_Pi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
+        fHistPtAlphaPi0FromKGG              = new TH2F("Pt_Alpha_Pi0FromKGG","Pt_Alpha_Pi0FromKGG", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGG);
+        fHistPtAlphaPi0FromKGG->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGG);
+        fHistPtAlphaPi0FromKGGPCMAcc        = new TH2F("Pt_Alpha_Pi0FromKGGPCMAcc","Pt_Alpha_Pi0FromKGGPCMAcc", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMAcc);
+        fHistPtAlphaPi0FromKGGPCMAcc->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGPCMAcc);
+        fHistPtAlphaPi0FromKGGEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAcc","Pt_Alpha_Pi0FromKGGEMCAcc", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAcc);
+        fHistPtAlphaPi0FromKGGEMCAcc->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAcc);
+        fHistPtAlphaPi0FromKGGPCMEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGPCMEMCAcc","Pt_Alpha_Pi0FromKGGPCMEMCAcc", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMEMCAcc);
+        fHistPtAlphaPi0FromKGGPCMEMCAcc->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGPCMEMCAcc);
+        fHistPtAlphaPi0FromKGGEMCPCMAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCPCMAcc","Pt_Alpha_Pi0FromKGGEMCPCMAcc", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCPCMAcc);
+        fHistPtAlphaPi0FromKGGEMCPCMAcc->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCPCMAcc);
+        fHistPtAlphaPi0FromKGGEMCAccSamePi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccSamePi0","Pt_Alpha_Pi0FromKGGEMCAccSamePi0", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
+        fHistPtAlphaPi0FromKGGEMCAccSamePi0->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
+        fHistPtAlphaPi0FromKGGEMCAccDiffPi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccDiffPi0","Pt_Alpha_Pi0FromKGGEMCAccDiffPi0", 500,0.1, 50, 200, -1., 1.);
+    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
+        fHistPtAlphaPi0FromKGGEMCAccDiffPi0->Sumw2();
+        fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
   }
 
 
@@ -775,7 +817,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     if( particle->GetPdgCode() == kPdgK0Short){
       if (particle->GetNDaughters() != 2) continue;   
       UChar_t acceptanceGamma[2] = {0,0};
-      Double_t energyGamma[2] = {0,0};
+      Double_t energyPi0[2] = {0,0};
       Bool_t allOK[2] = {kFALSE,kFALSE};
       UChar_t gdAcceptanceGamma[4] = {0,0,0,0};
       Double_t gdEnergyGamma[4] = {0,0,0,0};
@@ -788,7 +830,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         if (daughter->GetPdgCode() == kPdgPi0){
           allOK[k] = kTRUE;
           if(daughter->GetNDaughters() != 2) continue;
-
+          energyPi0[k] = daughter->Energy();
           for(Int_t h=0;h<2;h++){
             TParticle *granddaughter = fMCEvent->Particle(daughter->GetDaughter(k));
             if(granddaughter->GetPdgCode() == 22) allGDOK[2*k + h] = kTRUE;
@@ -799,6 +841,8 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         }
       }
 
+	  Double_t alpha_k0 = (energyPi0[0]-energyPi0[1])/(energyPi0[0]+energyPi0[1]);
+	  
       if(allOK[0] && allOK[1]){
             fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
       }
@@ -806,12 +850,19 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
 
       if (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
-        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance) )
-        fHistPtYPi0FromKGGPCMAcc->Fill(particle->Pt(),particle->Y());
+        && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))
+        {
+          fHistPtYPi0FromKGGPCMAcc->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGPCMAcc->Fill(particle->Pt(), alpha_k0);
+        }
 
       if (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
         && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance) )
-        fHistPtYPi0FromKGGEMCAcc->Fill(particle->Pt(),particle->Y());
+        {  
+          fHistPtYPi0FromKGGEMCAcc->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGEMCAcc->Fill(particle->Pt(), alpha_k0); 
+      	}
+    
 
       if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
         && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
@@ -821,8 +872,10 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)) ||
         (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance)
         && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
-
-        fHistPtYPi0FromKGGPCMEMCAcc->Fill(particle->Pt(),particle->Y());
+        {
+          fHistPtYPi0FromKGGPCMEMCAcc->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGPCMEMCAcc->Fill(particle->Pt(), alpha_k0); 
+        }
 
       if ((TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
         && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
@@ -832,15 +885,19 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)) ||
         (TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance)
         && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance)))
-
-        fHistPtYPi0FromKGGEMCPCMAcc->Fill(particle->Pt(),particle->Y());
+	    {
+          fHistPtYPi0FromKGGEMCPCMAcc->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGEMCPCMAcc->Fill(particle->Pt(), alpha_k0); 
+		}
 
       if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) &&
         TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
         (TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) &&
         TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)))
-        
-        fHistPtYPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(),particle->Y());
+        {
+          fHistPtYPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGEMCAccSamePi0->Fill(particle->Pt(), alpha_k0); 
+        }  
 
       if ((TESTBIT(gdAcceptanceGamma[0], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
         TESTBIT(gdAcceptanceGamma[1], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
@@ -849,9 +906,11 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[2], kEMCALAcceptance)&&
         TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[3], kPCMAcceptance))||
         (TESTBIT(gdAcceptanceGamma[1], kEMCALAcceptance) && TESTBIT(gdAcceptanceGamma[3], kEMCALAcceptance)&&
-        TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance)))
-          
-        fHistPtYPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(),particle->Y());
+        TESTBIT(gdAcceptanceGamma[0], kPCMAcceptance) && TESTBIT(gdAcceptanceGamma[2], kPCMAcceptance)))  
+        {  
+          fHistPtYPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(),particle->Y());
+          fHistPtAlphaPi0FromKGGEMCAccDiffPi0->Fill(particle->Pt(), alpha_k0);
+        }   
     }
   }
 }
