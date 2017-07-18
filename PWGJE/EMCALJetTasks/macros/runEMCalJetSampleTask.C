@@ -29,10 +29,11 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 //______________________________________________________________________________
 AliAnalysisManager* runEMCalJetSampleTask(
     const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
-    const char   *cRunPeriod     = "LHC12d",                                // set the run period
+    const char   *cRunPeriod     = "LHC11h",                                // set the run period
     const char   *cLocalFiles    = "fileLists/files_LHC11h_2_AOD145.txt",   // set the local list file
     const UInt_t  iNumEvents     = 5000,                                    // number of events to be analyzed
-    const UInt_t  kPhysSel       = AliVEvent::kEMCEJE,                          // physics selection
+    const UInt_t  kPhysSel       = AliVEvent::kAnyINT |
+    AliVEvent::kCentral | AliVEvent::kSemiCentral,                          // physics selection
     const char   *cTaskName      = "EMCalJetAna",                           // sets name of analysis manager
     const Bool_t  bDoChargedJets = kTRUE,
     const Bool_t  bDoFullJets    = kTRUE,
@@ -42,7 +43,7 @@ AliAnalysisManager* runEMCalJetSampleTask(
     // 2 = launch a grid analysis
     Int_t         iStartAnalysis = 2,
     const UInt_t  iNumFiles      = 100,                                     // number of files analyzed locally
-    const char   *cGridMode      = "terminate"
+    const char   *cGridMode      = "full"
 )
 {
   TString sRunPeriod(cRunPeriod);
@@ -277,9 +278,9 @@ void StartGridAnalysis(AliAnalysisManager* pMgr, const char* uniqueName, const c
 {
   Int_t maxFilesPerWorker = 4;
   Int_t workerTTL = 7200;
-  const char* runNumbers = "184127";
+  const char* runNumbers = "180720";
   const char* pattern = "pass2/AOD/*/AliAOD.root";
-  const char* gridDir = "/alice/data/2012/LHC12d";
+  const char* gridDir = "/alice/data/2012/LHC12c";
   const char* additionalCXXs = "";
   const char* additionalHs = "";
 
