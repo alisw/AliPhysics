@@ -17,7 +17,7 @@
 
 //macro to make a .root file which contains an AliRDHFCutsLctoV0 for AliAnalysisTaskSELc2pK0S task
 
-enum ECollisionSystem{kpp7TeV,kpPb};
+enum ECollisionSystem{kpp7TeV,kpPb,kPbPb};
 enum EDataKind{kData,kLHC10f7a,kLHC11b2,kLHC15a2a,kLHC13d3};
 enum EReconstructionPass{kPass2,kPass4};
 
@@ -114,6 +114,9 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
                                           // 7 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
                                           // 8 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else -2<TPC<3s}
                                           // 9 -> combined: TOF, TPC
+  } else if (fCollisionSystem==kPbPb) {
+    RDHFLctoV0An->SetHighPtCut(999.); // default value 2.5 GeV/c
+    RDHFLctoV0An->SetPidSelectionFlag(10); // 10: -2<tof<3 for pt>3 GeV/c, -3<tpc<2 for pt>4 GeV/c 
   }
   RDHFLctoV0An->SetNPtBins(nptbins);
 
@@ -128,7 +131,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   ptbins[6]= 12.;
   RDHFLctoV0An->SetPtBins(nptbins+1,ptbins);
 
-  const Int_t nvars=17;
+  const Int_t nvars=21;
 
   Float_t** anacutsval;
   anacutsval=new Float_t*[nvars];
@@ -142,7 +145,11 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
    anacutsval[9][ipt2]=0.99;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
    anacutsval[12][ipt2]=0.;    // mass K0S veto [GeV/c2]
    anacutsval[13][ipt2]=0.005; // mass Lambda/LambdaBar veto [GeV/c2]
-   anacutsval[16][ipt2]=0.;    // V0 type cut
+   anacutsval[16][ipt2]=9999; // max cos proton emission angle in Lc CMS max
+   anacutsval[17][ipt2]=-9999; // min cos proton emission angle in Lc CMS max
+   anacutsval[18][ipt2]=-9999; // Re-signed d0 min [cm]
+   anacutsval[19][ipt2]=-9999; // V0 qT/|alpha| min
+   anacutsval[20][ipt2]=0.;    // V0 type cut
   }
 
   if (fCollisionSystem==kpp7TeV) {

@@ -278,10 +278,10 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--------------------------------------------------------
 
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[17]={0.2,0.,0.05,0.05,0.5,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.5,1};
+  Float_t cutsArrayLctoV0[21]={0.2,0.,0.05,0.05,0.5,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.5,9999.,-9999.,-9999.,-9999.,1};
   cutsLctoV0->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsLctoV0->SetMinPtCandidate(4.);
-  cutsLctoV0->SetCuts(17,cutsArrayLctoV0);
+  cutsLctoV0->SetCuts(21,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
 
   AliESDtrackCuts *esdV0daughterTrackCuts = new AliESDtrackCuts("AliESDtrackCutsForV0D","default cuts for V0 daughters");
