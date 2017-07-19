@@ -486,12 +486,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   }//End Axes for p-Pb
   else
   {//Start Axes for pp
-    fAxes["nClustersSPD"].set( 100, 0., 800.,  &fnClustersSPD );
-    fAxes["rawSizeSPD"].set( 100, 0., 10e3, &frawSizeSPD );
-    fAxes["nClustersSDD"].set( 100, 0., 1e3,  &fnClustersSDD );
-    fAxes["rawSizeSDD"].set( 100, 0., 50e3, &frawSizeSDD );
-    fAxes["nClustersSSD"].set( 100, 0., 1e3,  &fnClustersSSD );
-    fAxes["rawSizeSSD"].set( 100, 0., 100e3, &frawSizeSSD );
+    fAxes["nClustersSPD"].set( 100, 0., 1e3.,  &fnClustersSPD );
+    fAxes["rawSizeSPD"].set( 100, 0., 12e3, &frawSizeSPD );
+    fAxes["nClustersSDD"].set( 100, 0., 1.2e3,  &fnClustersSDD );
+    fAxes["rawSizeSDD"].set( 100, 0., 60e3, &frawSizeSDD );
+    fAxes["nClustersSSD"].set( 100, 0., 1.2e3,  &fnClustersSSD );
+    fAxes["rawSizeSSD"].set( 100, 0., 120e3, &frawSizeSSD );
     fAxes["nClustersITS"].set( 100, 0., 10e3, &fnClustersITS );
     fAxes["rawSizeITS"].set( 100, 0., 100e3, &frawSizeITS );
     fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
