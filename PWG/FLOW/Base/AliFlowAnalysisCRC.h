@@ -1562,9 +1562,9 @@ private:
 //  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
-  TH3D* fCRCQVecPhiHistVtxX[fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
-  TH3D* fCRCQVecPhiHistVtxY[fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
-  TH3D* fCRCQVecPhiHistVtxZ[fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
+  const static Int_t fkNVXVYBins = 5;
+  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fkNVXVYBins][fkNVXVYBins]; //! phi ditribution POIs, vtx dep
+  TH2D* fDummyVXVYBins; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1577,7 +1577,7 @@ private:
   
   // temp
   TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
-  TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
+  TProfile *fZDCQHist[12];  //! Run-by-run ZDCQvecHist
   TH2D *fZDCQHist2;  //! Run-by-run ZDCQvecHist
   const static Int_t fkNZDCResHist = 4;
   TH1D *fZDCResHist[fkNZDCResHist]; //!
