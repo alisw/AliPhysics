@@ -66,6 +66,7 @@ set(SRCS
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx
   AliFemtoCutMonitorParticlePtPDGV0.cxx
+  AliFemtoCutMonitorParticleNumber.cxx
   AliFemtoPionLambdaCutMonitor.cxx
   AliFemtoCutMonitorPionPion.cxx
   AliFemtoCutMonitorTrackTPCchiNdof.cxx

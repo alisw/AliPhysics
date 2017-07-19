@@ -26,7 +26,6 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(char* title, const int&
 AliFemtoCorrFctn(),
   fDPhiDEtaNum(0),
   fDPhiDEtaDen(0),
-  fNtrig(0),
   fphiL(0),
   fphiT(0),
   fPt1Min(pT1min),
@@ -61,15 +60,9 @@ AliFemtoCorrFctn(),
   strncat(tTitDenD,title, 100);
   fDPhiDEtaDen = new THnSparseF(tTitDenD,title,6,nbins,xmin,xmax);
 
-  // set up numerator
-  char tTitNtrig[101] = "Ntrig";
-  strncat(tTitNtrig,title, 100);
-  fNtrig = new TH3F(tTitNtrig,title,pT1Bins,pT1min,pT1max,multBins,multmin,multmax,zvtxBins,zvtxmin,zvtxmax);
-  
   // to enable error bar calculation...
   fDPhiDEtaNum->Sumw2();
   fDPhiDEtaDen->Sumw2();
-  fNtrig->Sumw2();
 }
 
 //____________________________
@@ -77,7 +70,6 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnD
   AliFemtoCorrFctn(),
   fDPhiDEtaNum(0),
   fDPhiDEtaDen(0),
-  fNtrig(0),
   fphiL(0),
   fphiT(0),
   fPt1Min(aCorrFctn.fPt1Min),
@@ -122,13 +114,7 @@ AliFemtoCorrFctnDEtaDPhiTHn::AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnD
     char tTitDenD[101] = "DenDPhiDEta";
     strncat(tTitDenD,title, 100);
     fDPhiDEtaDen = new THnSparseF(tTitDenD,title,6,nbins,xmin,xmax);
- 
-  // set up numerator
-  char tTitNtrig[101] = "Ntrig";
-  strncat(tTitNtrig,title, 100);
-  fNtrig = new TH3F(tTitNtrig,title,100,0,100,multBins,0,100,zvtxBins,-10,10);
-   
-    
+     
     
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
@@ -141,7 +127,6 @@ AliFemtoCorrFctnDEtaDPhiTHn::~AliFemtoCorrFctnDEtaDPhiTHn(){
 
   delete fDPhiDEtaNum;
   delete fDPhiDEtaDen;
-  delete fNtrig;
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhiTHn& AliFemtoCorrFctnDEtaDPhiTHn::operator=(const AliFemtoCorrFctnDEtaDPhiTHn& aCorrFctn)
@@ -266,7 +251,7 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddRealPair( AliFemtoPair* pair){
   //cout<<dphi<<" "<<deta<<" "<<pt1<<" "<<pt2<<" "<<mult<<" "<<zvtx<<endl;
   Double_t value[] = {dphi, deta, pt1, pt2, mult, zvtx};
   fDPhiDEtaNum->Fill(value);
-  fNtrig->Fill(pt1,mult,zvtx);
+
 }
 
 //____________________________
@@ -319,7 +304,6 @@ void AliFemtoCorrFctnDEtaDPhiTHn::AddMixedPair( AliFemtoPair* pair){
   //fDPhiDEtaNumerator->Fill(dphi, deta);
   Double_t value[] = {dphi, deta, pt1, pt2, mult, zvtx};
   fDPhiDEtaDen->Fill(value);
-  fNtrig->Fill(pt1,mult,zvtx);
 }
 
 
@@ -328,7 +312,6 @@ void AliFemtoCorrFctnDEtaDPhiTHn::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNum->Write();
   fDPhiDEtaDen->Write();
-  fNtrig->Write();
 }
 
 TList* AliFemtoCorrFctnDEtaDPhiTHn::GetOutputList()
@@ -337,7 +320,6 @@ TList* AliFemtoCorrFctnDEtaDPhiTHn::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fDPhiDEtaNum);
   tOutputList->Add(fDPhiDEtaDen);
-  tOutputList->Add(fNtrig);
   return tOutputList;
 
 }
