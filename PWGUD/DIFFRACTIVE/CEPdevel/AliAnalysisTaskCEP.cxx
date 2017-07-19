@@ -623,6 +623,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
 
   if (fMCEvent) {
+    
     // this part of the code was proposed by Evgeny Kryshen
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
@@ -692,6 +693,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
+  
   Bool_t isV0DG = isSPD && !(isV0A || isV0C);
   Bool_t isADDG = isSPD && !(isADA || isADC);
   Bool_t isFMDDG = isSPD && !(isFMDA || isFMDC);
@@ -945,8 +947,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       stack = fMCEvent->Stack();
       if (stack) {
         Int_t nPrimaries = stack->GetNprimary();
-        printf("number of tracks: primaries - %i, reconstructed - %i\n",
-          nPrimaries,nTracks);
+        //printf("number of tracks: primaries - %i, reconstructed - %i\n",
+        //  nPrimaries,nTracks);
         prot1 = stack->Particle(0);
       }
 
