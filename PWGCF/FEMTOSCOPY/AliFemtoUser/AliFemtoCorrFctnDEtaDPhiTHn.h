@@ -36,7 +36,6 @@ class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
  private:
   THnSparseF *fDPhiDEtaNum;  // Numerator of dEta dPhi function
   THnSparseF *fDPhiDEtaDen;  // Denominator of dEta dPhi function
-  TH3F       *fNtrig;        //Number of triggers
   double fphiL;
   double fphiT;
 
