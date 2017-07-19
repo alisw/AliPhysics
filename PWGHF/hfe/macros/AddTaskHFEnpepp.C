@@ -185,7 +185,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
 {
     // Fixed values
     Double_t etaIncMin = -0.8; Double_t etaIncMax = 0.8;
-    Double_t assETAm=-0.8; Double_t assETAp=0.8;
+    Double_t assETAm=-0.9; Double_t assETAp=0.9;
     
     //
     // Cuts on the inclusive leg
