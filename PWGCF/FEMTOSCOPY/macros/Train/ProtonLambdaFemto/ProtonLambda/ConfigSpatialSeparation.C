@@ -74,6 +74,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
       
     
       femtoAnalysis[iSys]->SetEventCut(eventCut);
+      femtoAnalysis[iSys]->SetNumEventsToMix(10);
       femtoAnalysis[iSys]->SetV0SharedDaughterCut(true);
       
       if(firstV0TrackCut)

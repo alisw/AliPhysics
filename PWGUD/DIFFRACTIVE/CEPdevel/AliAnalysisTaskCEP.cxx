@@ -615,7 +615,15 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // compare with (isSPD  && (!isV0A && !isV0C))
   Bool_t isDGTrigger = kFALSE;
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+
+  // SPD FO fird map can be extracted both in data and MC:
+  // The STG trigger in 2016 required two online tracklets without additional
+  // topology. It can be checked with the following function:
+  TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+  Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
+
   if (fMCEvent) {
+    
     // this part of the code was proposed by Evgeny Kryshen
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
@@ -623,16 +631,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
     for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
 
-    // SPD FO fird map can be extracted both in data and MC:
-    TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
-
-    // The STG trigger in 2016 required two online tracklets without additional
-    // topology. It can be checked with the following function:
-    Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
-
     isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
-    printf("DG trigger replaied: %i %i %i\n",
-      isSTGtriggerFired,!isV0Afired,!isV0Cfired);
+    // printf("DG trigger replaied: %i %i %i\n",
+    //  isSTGtriggerFired,!isV0Afired,!isV0Cfired);
   
   } else {
   
@@ -692,6 +693,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
+  
   Bool_t isV0DG = isSPD && !(isV0A || isV0C);
   Bool_t isADDG = isSPD && !(isADA || isADC);
   Bool_t isFMDDG = isSPD && !(isFMDA || isFMDC);
@@ -703,6 +705,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
   if (isADDG) ((TH1F*)flQArnum->At(5))->Fill(fRun);
   if (isFMDDG)((TH1F*)flQArnum->At(6))->Fill(fRun);
+  
+  
+  // compre isSPD and isSTGtriggerFired
+  // printf("SPD fired: %i %i\n",isSPD,isSTGtriggerFired);
   
   // determine the gap condition using
   // ITS,V0,FMD,AD,ZD
@@ -941,8 +947,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       stack = fMCEvent->Stack();
       if (stack) {
         Int_t nPrimaries = stack->GetNprimary();
-        printf("number of tracks: primaries - %i, reconstructed - %i\n",
-          nPrimaries,nTracks);
+        //printf("number of tracks: primaries - %i, reconstructed - %i\n",
+        //  nPrimaries,nTracks);
         prot1 = stack->Particle(0);
       }
 
@@ -1148,7 +1154,11 @@ Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
   
   Int_t n1 = fFOmap->CountBits(400);
   Int_t n0 = fFOmap->CountBits()-n1;
-  if (n0<1 || n1<1) return 0;
+  if (n0<1 || n1<1) {
+    printf("Problem with F0map!\n");
+    return 0;
+  }
+  
   Bool_t stg = 0;
   Bool_t l0[20]={0};
   Bool_t l1[40]={0};
