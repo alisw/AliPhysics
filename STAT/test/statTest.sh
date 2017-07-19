@@ -7,8 +7,11 @@
 #   alienv enter AliRoot/latest  # load AliRoot environment
 #   cd <AliRoot_Build_Directory>
 #   ctest --output-on-failure -R func_STAT_*
-#   or extra verbose
+#
+# Or extra verbose:
+#
 #   ctest --extra-verbose -R func_STAT_*
+#
 # Tests output will be printed only in case of failures.
 
 source $ALICE_ROOT/libexec/alilog4bash.sh
@@ -17,12 +20,11 @@ if [[ ! $ALIROOT_SOURCE ]]; then
   exit 1
 fi
 
+export ROOT_HIST=0
+
 testAliTreePlayer() {
-  # MI comment: Keep log file for later log archiving and log parsing
-  # TMPDIR=$(mktemp -d)
-  # cd $TMPDIR
   cp $ALIROOT_SOURCE/STAT/test/AliTreePlayerTest.C .
-  root -b -l <<\EOF &> testAliTreePlayer.log
+  root -n -b -l <<\EOF 2>&1 | tee testAliTreePlayer.log
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     .x ./AliTreePlayerTest.C+
 EOF
@@ -40,22 +42,15 @@ EOF
   if [[ $TEST_STATUS == 0 ]]; then
     alilog_success "statTest.testAliTreePlayer: All OK"
   else
-    alilog_success "statTest.testAliTreePlayer: FAILED (code $TEST_STATUS): full log follows"
-    cat testAliTreePlayer.log
+    alilog_error "statTest.testAliTreePlayer: FAILED (code $TEST_STATUS)"
   fi
-  # cd /
-  # rm -rf $TMPDIR
   exit $TEST_STATUS
 }
 
 testAliTMinutiToolkitTestLinear() {
-  #MI comment: Keep log file for later log archiving and log parsing
-  #TMPDIR=$(mktemp -d)
-  #cd $TMPDIR
   cp $ALIROOT_SOURCE/STAT/test/AliTMinuitToolkitTestLinear.C .
-  root -b -l <<\EOF &> testAliTMinutiToolkitTestLinear
+  root -n -b -l <<\EOF 2>&1 | tee testAliTMinutiToolkitTestLinear.log
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-    cout << gSystem->GetIncludePath() << "e che cz" << endl;
     .x ./AliTMinuitToolkitTestLinear.C+(50,3)
 EOF
   NPDF=$(ls -1 *.pdf | grep -c '\.pdf')
@@ -63,12 +58,9 @@ EOF
     alilog_success "statTest.testAliTMinutiToolkitTestLinear: All OK"
     exit 0
   else
-    alilog_error "statTest.testAliTMinutiToolkitTestLinear: FAILED: full log follows"
-    cat testAliTMinutiToolkitTestLinear
+    alilog_error "statTest.testAliTMinutiToolkitTestLinear: FAILED"
     exit 1
   fi
-  #cd /
-  #rm -rf $TMPDIR
 }
 
 [[ $1 ]] && $1
