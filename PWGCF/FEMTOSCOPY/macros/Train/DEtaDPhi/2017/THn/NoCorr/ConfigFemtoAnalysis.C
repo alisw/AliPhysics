@@ -142,8 +142,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Bool_t ifMonitors=kFALSE; if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
 	double nSigmaVal2 = atof(parameter[20]); //2.0 or 3.0
 
-	printf("*** Connect to AliEn ***\n");
-	TGrid::Connect("alien://");
+	//printf("*** Connect to AliEn ***\n");
+	//TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
@@ -215,7 +215,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorParticleNumber *cutFailNtrigetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleNumber *cutPass2Ntrigetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleNumber *cutFail2Ntrigetaphitpc[numOfMultBins*numOfChTypes];
-	
+	AliFemtoCutMonitorEventNumber *cutPassNevetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorEventNumber *cutFailNevetaphitpc[numOfMultBins*numOfChTypes];
 		  
 	AliFemtoCutMonitorV0            *cutPass1V0[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorV0            *cutFail1V0[numOfMultBins*numOfChTypes];
@@ -279,6 +280,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					cutPassColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 					cutFailColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 					mecetaphitpc[aniter]->AddCutMonitor(cutPassColletaphitpc[aniter], cutFailColletaphitpc[aniter]);
+
+
+					cutPassNevetaphitpc[aniter] = new AliFemtoCutMonitorEventNumber(Form("Pass%stpcM%i", chrgs[ichg], imult),10, -10, 10, 30,0,150);
+					cutFailNevetaphitpc[aniter] = new AliFemtoCutMonitorEventNumber(Form("Fail%stpcM%i", chrgs[ichg], imult),10, -10, 10, 30,0,150);
+					mecetaphitpc[aniter]->AddCutMonitor(cutPassNevetaphitpc[aniter], cutFailNevetaphitpc[aniter]);
 					
 					// ***** single particle track cuts *********
 					dtc1etaphitpc[aniter] = new AliFemtoMJTrackCut();
