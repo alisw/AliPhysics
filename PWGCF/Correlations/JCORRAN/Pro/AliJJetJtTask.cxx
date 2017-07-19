@@ -164,6 +164,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
    fJJetJtAnalysis->SetNrandom(NRandom);
    fJJetJtAnalysis->SetMoveJet(moveJet);
    fJJetJtAnalysis->SetMC(fDoMC);
+   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
    fJJetJtAnalysis->UserCreateOutputObjects();
 
    fCard->WriteCard(gDirectory);

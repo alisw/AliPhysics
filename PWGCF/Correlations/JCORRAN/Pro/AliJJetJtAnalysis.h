@@ -75,6 +75,7 @@ class AliJJetJtAnalysis{
     void SetMCJetList(TObjArray* jetlist){ fMCJetList=jetlist; }
     void SetInputList(TObjArray * ilist){ fInputList = ilist;}
     void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
+    void SetLeadingJets(UInt_t i){fLeadingJets = i;}
     int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
     //void SetTrackJetMap(std::vector<int> * v){ fTrackJetMap=v;}
     //void SetJetPtBin( TVector * b){ fJetPtBins=b; }
@@ -142,6 +143,7 @@ class AliJJetJtAnalysis{
     vector<TClonesArray>      fJetBgListOfList;
     TClonesArray     fpythiaJets;
     double fJetEtaCut;
+    int fLeadingJets;
     TRandom3 *frandom; // comment me
 
     TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
@@ -233,6 +235,10 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJtWeightBinLimBin; /// Comment needed 
     AliJTH1D fhLogJtWeightBinLimBin;
     AliJTH1D fhLogJtWeight2BinLimBin;
+    AliJTH1D fhLeadingJt; /// jt dist for leading track
+    AliJTH1D fhLeadingJtBin; /// jt as fn of jet pt for leading track
+    AliJTH1D fhLeadingJtWeightBin; /// jt in P.S as fn of jet pt for leading track
+    AliJTH1D fhLeadingJtWithPtCutWeightBinBin; /// jt in P.S as fns of jet pt, const pt for leading track
 
 
     //Histograms for jt in event
@@ -312,7 +318,9 @@ class AliJJetJtAnalysis{
     AliJTH1D fhBgRndmZ;
     AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
     AliJTH1D fhBgRndmJt; /// Random background jT distribution
-    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution in jet pT bins
+    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtWeight; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtWeightBin; /// Random background jT distribution in jet pT bins
     AliJTH1D fhBgRndmLogJt;
     AliJTH1D fhBgRndmJtWithPtCutWeightBin;
     AliJTH1D fhBgRndmLogJtWithPtCutWeight2Bin;

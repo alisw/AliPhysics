@@ -45,6 +45,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   //, fJetBgList(NULL) 
   , fJetBgListOfList() // Bg jet list of list container
   , fJetEtaCut() // Jet's eta cut
+  , fLeadingJets(0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -122,6 +123,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
   , fhLogJtWeight2Bin() //log jt in P.S as fn of jet pt
   , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
+  , fhLeadingJt() // jt dist for leading track
+  , fhLeadingJtBin() // jt as fn of jet pt for leading track
+  , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
+  , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
   , fhLogJtWithPtCutWeightBinBin()
   , fhLogJtWithPtCutWeight2BinBin()
   , fhEventJtBin()
@@ -203,7 +208,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhBgRndmTrkNumber()
   , fhBgRndmZ()
   , fhBgRndmJt()
+  , fhBgRndmJtWeight()
   , fhBgRndmJtBin()
+  , fhBgRndmJtWeightBin()
   , fhBgRndmLogJt()
   , fhBgRndmJtWithPtCutWeightBin()
   , fhBgRndmLogJtWithPtCutWeight2Bin()
@@ -290,6 +297,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fMCJetListOfList() // Jet finders container
   , fJetBgListOfList()
   , fJetEtaCut() 
+  , fLeadingJets(0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -361,6 +369,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhLogJtWeightBin()
   , fhLogJtWeight2Bin()
   , fhJtWithPtCutWeightBinBin()
+  , fhLeadingJt() // jt dist for leading track
+  , fhLeadingJtBin() // jt as fn of jet pt for leading track
+  , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
+  , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
   , fhLogJtWithPtCutWeightBinBin()
   , fhLogJtWithPtCutWeight2BinBin()
   , fhJtUnfBg()
@@ -425,7 +437,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhBgRndmTrkNumber()
   , fhBgRndmZ()
   , fhBgRndmJt()
+  , fhBgRndmJtWeight()
   , fhBgRndmJtBin()
+  , fhBgRndmJtWeightBin()
   , fhBgRndmLogJt()
   , fhBgRndmJtWithPtCutWeightBin()
   , fhBgRndmLogJtWithPtCutWeight2Bin()
@@ -528,6 +542,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   //, fJetBgList(ap.fJetBgList)
   , fJetBgListOfList(ap.fJetBgListOfList)
   , fJetEtaCut(ap.fJetEtaCut) // Jet's eta cut
+  , fLeadingJets(ap.fLeadingJets)
   , fJetTriggPtBorders(ap.fJetTriggPtBorders)
   , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
   , fJetAssocPtBorders(ap.fJetAssocPtBorders)
@@ -594,6 +609,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhLogJtWeightBin(ap.fhLogJtWeightBin)
   , fhLogJtWeight2Bin(ap.fhLogJtWeight2Bin)
   , fhJtWithPtCutWeightBinBin(ap.fhJtWithPtCutWeightBinBin)
+  , fhLeadingJt(ap.fhLeadingJt)
+  , fhLeadingJtBin(ap.fhLeadingJtBin)
+  , fhLeadingJtWeightBin(ap.fhLeadingJtWeightBin)
+  , fhLeadingJtWithPtCutWeightBinBin(ap.fhLeadingJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeightBinBin(ap.fhLogJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeight2BinBin(ap.fhLogJtWithPtCutWeight2BinBin)
   , fhJtUnfBg(ap.fhJtUnfBg)
@@ -667,7 +686,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhBgRndmTrkNumber(ap.fhBgRndmTrkNumber)
   , fhBgRndmZ(ap.fhBgRndmZ)
   , fhBgRndmJt(ap.fhBgRndmJt)
+  , fhBgRndmJtWeight(ap.fhBgRndmJtWeight)
   , fhBgRndmJtBin(ap.fhBgRndmJtBin)
+  , fhBgRndmJtWeightBin(ap.fhBgRndmJtWeightBin)
   , fhBgRndmLogJt(ap.fhBgRndmLogJt)
   , fhBgRndmJtWithPtCutWeightBin(ap.fhBgRndmJtWithPtCutWeightBin)
   , fhBgRndmLogJtWithPtCutWeight2Bin(ap.fhBgRndmLogJtWithPtCutWeight2Bin)
@@ -1154,8 +1175,16 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     << TH1D("BgRndmJt","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin
     <<"END";
+  fhBgRndmJtWeight
+    << TH1D("BgRndmJtWeight","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin
+    <<"END";
   fhBgRndmJtBin
     << TH1D("BgRndmJtBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhBgRndmJtWeightBin
+    << TH1D("BgRndmJtWeightBin","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin << fJetTriggerBin
     <<"END";
   fhBgRndmLogJt 
@@ -1861,6 +1890,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
   //Loop over jets
   for (int i = 0; i<Jets->GetEntries(); i++){
+    if(i > 0 && fLeadingJets > 0) continue;
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
     if (!jet) continue;
     jet->ReSum();
@@ -1947,6 +1977,19 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
         (*fConstPt)[iConst] = pta;
         (*fConstLabels)[iConst] = constituent->GetLabel();
         iConst++;
+      }
+      if(icon == 0){
+        if(pta < leadingTrackPt - 0.1){
+          cout << "Track momentum smaller than leading track!!!!!" << endl;
+          cout << "Leading track: " << leadingTrackPt << endl;
+          cout << "pta: " << pta << endl;
+          cout << endl << endl << endl;
+        }
+        fhLeadingJt[iContainer]->Fill(jt, effCorrection);
+        fhLeadingJtBin[iContainer][iBin]->Fill(jt, effCorrection);
+        fhLeadingJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection);
+        fhLeadingJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
+          ->Fill( jt, 1.0/jt * effCorrection );
       }
       fhJt[iContainer]->Fill( jt , effCorrection);
       fhJtBin[iContainer][iBin]->Fill( jt , effCorrection);
@@ -2564,6 +2607,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
 
   // Loop over Monte Carlo jets to get correlation between true and reco jet pT
   for (int i = 0; i<MCJets->GetEntries(); i++){
+    if(i > 0 && fLeadingJets > 0) continue;
     AliJJet *mcjet = dynamic_cast<AliJJet*>( MCJets->At(i) );
     if (!mcjet) continue;
     if (TMath::Abs(mcjet->Eta()) > fJetEtaCut) continue;
@@ -2892,8 +2936,10 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
             fhBgRndmRBin[iContainer][iBin]->Fill(getDiffR(randomTrack.Phi(),summedJet.Phi(),randomTrack.Eta(),summedJet.Eta()),effCorrection);
             fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             fhBgRndmZ[iContainer]->Fill( z , effCorrection);
-            fhBgRndmJt[iContainer]->Fill( jt , 1.0/jt * effCorrection);
-            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); //FIXME Missing?
+            fhBgRndmJt[iContainer]->Fill( jt , effCorrection);
+            fhBgRndmJtWeight[iContainer]->Fill( jt , effCorrection);
+            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, effCorrection);
+            fhBgRndmJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
             fhBgRndmLogJt[iContainer]->Fill( jt , 1.0/jt/jt * effCorrection);
 
             if (iptaBin < 0) continue;
@@ -2903,14 +2949,15 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
             fhBgRndmLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
           }
           else{
-            fhBgRndmRBin[iContainer][iBin]->Fill(deltaR,effCorrection);
             //randomTrack.SetPtEtaPhiE(track->Pt(), track->Eta(), phiRndm, track->E());
-            fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             z = (randomTrack.Vect()*vRandomJet.Vect().Unit())/vRandomJet.P();
 
             jt = (randomTrack.Vect()-z*vRandomJet.Vect()).Mag();
+            fhBgRndmRBin[iContainer][iBin]->Fill(deltaR,effCorrection);
+            fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             fhBgRndmZ[iContainer]->Fill( z , effCorrection);
             fhBgRndmJt[iContainer]->Fill( jt , 1.0/jt * effCorrection);
+            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); //FIXME Missing?
             fhBgRndmLogJt[iContainer]->Fill( jt , 1.0/jt/jt * effCorrection);
 
             if (iptaBin < 0) continue;
