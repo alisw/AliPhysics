@@ -1038,11 +1038,11 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   if (msize>0) graph->SetMarkerSize(msize);
   for(Int_t i=0;i<graph->GetN();i++) graph->GetX()[i]+=offset;
   //
-  if (tree->GetVar(1)->IsInteger()){
+  if (tree->GetVar(1)->IsString()){ // use string for axis description
     TAxis * axis = tree->GetHistogram()->GetXaxis();
     axis->Copy(*(graph->GetXaxis()));
   }
-  if (tree->GetVar(0)->IsInteger()){
+  if (tree->GetVar(0)->IsString()){
     TAxis * axis = tree->GetHistogram()->GetYaxis();
     axis->Copy(*(graph->GetYaxis()));
   }

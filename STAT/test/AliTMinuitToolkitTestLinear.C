@@ -1,4 +1,6 @@
 /*
+   Test AliTMinuitToolkit fit option
+   For the moment: Test only code doe not crachs
    .L $AliRoot_SRC/STAT/test/AliTMinuitToolkitTestLinear.C+
    AliTMinuitToolkitTestLinear(2000,3);
 
@@ -30,17 +32,17 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
   //      5.) Bootstrap with 20 iteration
   //      6.) Bootstrap with 100 iteration
   //      7.) MISAC     with 200 iteration
-  // 
+  //
   //   Input data: pol1 gausian nosie with tails
-  //      pol1+ ((rmdm>x) ? rndmG :10*rndmG)   
-  // 
+  //      pol1+ ((rmdm>x) ? rndmG :10*rndmG)
+  //
   // nIter=1000; nDraw=4;
   AliTMinuitToolkit::RegisterDefaultFitters();
   AliTMinuitToolkit::GetPredefinedFitter("pol1R")->SetStreamer("AliTMinuitToolkit_Pol1Rstreamer.root");
   ((TFormula*)AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetLogLikelihoodFunction())->SetParameter(0,0.7);
 
   //
-  //  
+  //
   TMatrixD &pInit = *((AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetInitialParam()));
   TMatrixD &pInitH = *((AliTMinuitToolkit::GetPredefinedFitter("pol1H")->GetInitialParam()));
   pInit(0,0)=0; pInit(0,1)=10;
@@ -83,9 +85,9 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
     f1->GetParameters(fit1.GetMatrixArray());
     //
     AliTMinuitToolkit*fitter2 = AliTMinuitToolkit::Fit(gr,"pol1","default", "", "funOption(1,3,1)");  // standard minuit
-    fit2=*(fitter2->GetParameters());     mfit2=*(fitter2->GetCovarianceMatrix());    
+    fit2=*(fitter2->GetParameters());     mfit2=*(fitter2->GetCovarianceMatrix());
     AliTMinuitToolkit*fitter3 = AliTMinuitToolkit::Fit(gr,"pol1R","iter1", "", "funOption(2,3,1)"); // logLike:gaus+cauchy
-    fit3=*(fitter3->GetParameters());     mfit3=*(fitter3->GetCovarianceMatrix());    
+    fit3=*(fitter3->GetParameters());     mfit3=*(fitter3->GetCovarianceMatrix());
     AliTMinuitToolkit*fitter4 = AliTMinuitToolkit::Fit(gr,"pol1H","", "", "funOption(2,3,2)"); // logLike: huber
     fit4=*(fitter4->GetParameters());     mfit4=*(fitter3->GetCovarianceMatrix());
     AliTMinuitToolkit*fitter5 = AliTMinuitToolkit::Fit(gr,"pol1R","bootstrap20", "","funOption(6,3,4)");  // bootstrap20
@@ -93,7 +95,7 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
     AliTMinuitToolkit*fitter6 = AliTMinuitToolkit::Fit(gr,"pol1R","bootstrap50", "", "funOption(3,3,5)" ); // bootstrap50
     fit6=*(fitter6->GetParameters());     rms6=*(fitter6->GetRMSEstimator());
     AliTMinuitToolkit*fitter7 = AliTMinuitToolkit::Fit(gr,"pol1R","misac(4,20)","","funOption(3,3,6)");    // misac 20
-    fit7=*(fitter7->GetParameters()); rms7=*(fitter7->GetRMSEstimator());    
+    fit7=*(fitter7->GetParameters()); rms7=*(fitter7->GetRMSEstimator());
     AliTMinuitToolkit*fitter8 = AliTMinuitToolkit::Fit(gr,"pol1R","misac(4,50)","","funOption(3,3,6)");    // misac 50
     TMatrixD *misacEstimator=(TMatrixD*)(fitter8->GetMISACEstimators());
     fit8=*(fitter8->GetParameters()); rms8=*(fitter8->GetRMSEstimator());
@@ -131,8 +133,8 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
       "mfit3.="<<&mfit3<<
       "mfit4.="<<&mfit4<<
       //
-      "misacE.="<<misacEstimator<<       
-      "\n";      
+      "misacE.="<<misacEstimator<<
+      "\n";
   }
   canvasTestLinearFit->SaveAs("AliTMinuiToolkit.TestLinearFitExample.png");
   canvasTestLinearFit->SaveAs("AliTMinuiToolkit.TestLinearFitExample.pdf");
@@ -153,8 +155,9 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
     canvasStatComparison->cd(iFit+1)->SetLogy();
     treeOut->Draw(TString::Format("fit%d.fElements[1]-p1>>hisDelta0_%d(100,-20,20)",iFit,iFit));
     treeOut->GetHistogram()->SetTitle(fnames[iFit]);
-    treeOut->GetHistogram()->GetXaxis()->SetTitle("p_{1fit}-p_{1in}"); 
-    treeOut->GetHistogram()->Fit("gaus"); 
+    treeOut->GetHistogram()->GetXaxis()->SetTitle("p_{1fit}-p_{1in}");
+    treeOut->GetHistogram()->Fit("gaus");
+    ::Info("AliTMinuitToolkitTestLinear", Form("Fit%s",fnames[iFit]));
   }
   canvasStatComparison->SaveAs("AliTMinuiToolkit.TestLinearFitStatExample.png");
   canvasStatComparison->SaveAs("AliTMinuiToolkit.TestLinearFitStatExample.pdf");
@@ -163,6 +166,6 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
   TTree * treeBootstrap = ((*(AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetStreamer()))<<"bootstrap").GetTree();
   TTree * treeTwoFold = ((*(AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetStreamer()))<<"crossValidation").GetTree();
   TTree * treeMISAC = ((*(AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetStreamer()))<<"misac").GetTree();
-  
+
 
 }

@@ -678,17 +678,6 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     return selected;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 // Get the enumeration type from a string
 Int_t AliTreePlayer::GetStatType(const TString &stat){
 
@@ -701,7 +690,11 @@ Int_t AliTreePlayer::GetStatType(const TString &stat){
   } else if(!stat.CompareTo("RMS",TString::kIgnoreCase)){
     return kRMS;
   } else if(!stat.CompareTo("Mean",TString::kIgnoreCase)){
-    return kMean;
+      return kMean;
+  }else if(!stat.CompareTo("Max",TString::kIgnoreCase)){
+      return kMax;
+  }else if(!stat.CompareTo("Min",TString::kIgnoreCase)){
+      return kMin;
   } else if(stat.BeginsWith("LTMRMS",TString::kIgnoreCase)){ // Least trimmed RMS, argument is LTMRMS0.95 or similar
     return kLTMRMS;
   } else if(stat.BeginsWith("LTM",TString::kIgnoreCase)){ // Least trimmed mean, argument is LTM0.95 or similar
@@ -719,142 +712,152 @@ Int_t AliTreePlayer::GetStatType(const TString &stat){
 }
 //__________________________________________________________
 void  AliTreePlayer::AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TString refQuery, Double_t deltaT,
-		 const TString statString,
-		 Int_t maxEntries){  
- 
-  
-  //
-  // 1.) Get variables from the right tree, sort them according to the coordinate
-  //
-  treeRight->SetEstimate(treeRight->GetEntries()*540);
-  Int_t entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
-  if(entries<1){
-    ::Error("AddStatInfo","No matching entries for query");
-    return;
-  }
-  Int_t * indexArr = new Int_t[entries];
-  TMath::Sort(entries, treeRight->GetV1(), indexArr,kFALSE);
-  Double_t * coordArray  = new Double_t[entries];
-  for (Int_t icoord=0; icoord<entries; icoord++) coordArray[icoord]=treeRight->GetV1()[indexArr[icoord]];
+                                 const TString statString,
+                                 Int_t maxEntries){
 
+    //
+    // 1.) Get variables from the right tree, sort them according to the coordinate
+    //
+    Int_t entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
+    if(entries<1){
+        ::Error("AddStatInfo","No matching entries for query");
+        return;
+    }else if (entries>treeRight->GetEstimate()){
+        treeRight->SetEstimate(entries*2);
+        entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
+    }
+    Int_t * indexArr = new Int_t[entries];
+    TMath::Sort(entries, treeRight->GetV1(), indexArr,kFALSE);
+    Double_t * coordArray  = new Double_t[entries];
+    for (Int_t icoord=0; icoord<entries; icoord++) coordArray[icoord]=treeRight->GetV1()[indexArr[icoord]];
+    //
+    // 2.) Attach the median,.. of the variables to the left tree
+    //
+    // The first token is the coordinate
+    TString var;
+    Ssiz_t from=0;
+    if(!refQuery.Tokenize(var,from,":")){
+        ::Error("AddStatInfo","Cannot tokenize query \'%s\'. Use colon separated list"
+                ,refQuery.Data());
+        delete[]indexArr;indexArr=0;
+        delete[]coordArray;coordArray=0;
+        return;
+    }
+    Int_t entriesCoord =  treeLeft->GetEntries();
+    TBranch * br = treeLeft->GetBranch(var.Data());
+    Int_t coordValue;
+    br->SetAddress(&coordValue);
+    //TLeaf *coordLeaf = (TLeaf*)(br->GetListOfLeaves()->At(0));
 
-  //
-  // 2.) Attach the median,.. of the variables to the left tree
-  //
-  // The first token is the coordinate
-  TString var;
-  Ssiz_t from=0;
-  if(!refQuery.Tokenize(var,from,":")){
-    ::Error("AddStatInfo","Cannot tokenize query \'%s\'. Use colon separated list"
-	    ,refQuery.Data());
+    while(refQuery.Tokenize(var,from,":")){
+        //   var="valueAnodeRaw.fElements[0]";
+        TString stat;
+        Ssiz_t fromStat=0;
+        while(statString.Tokenize(stat,fromStat,":")){
+            // stat = "median"; stat="medianLeft"; stat="medianRight";
+            //      Int_t statType=TStatToolkit::GetStatType(stat);
+            Int_t statType=GetStatType(stat);
+            if(statType==kUndef)continue;
+            //printf("\n\n\n--- StatType %d ---\n\n\n\n",statType);
+
+            // In case of LMS or LMR determine the fraction
+            Float_t frac=0.;
+            if(statType==kLTM || statType==kLTMRMS){ // stat="LTM0.95" or "LTMRMS0.95" similar
+                TString tmp= stat;
+                tmp.ReplaceAll("LTMRMS","");
+                tmp.ReplaceAll("LTM","");
+                frac = tmp.Atof(); // atof returns 0.0 on error
+                if(frac>1)frac/=100.; // allows "LTM95" for 95%
+            }
+
+            // Determine the offset in coordinate to the left and right
+            Double_t leftOffset=-1e99,rightOffset=-1e99;
+            if(statType==kMedian||statType==kRMS || statType==kMean
+               || statType==kLTM || statType==kLTMRMS || statType==kMin || statType==kMax ){ // symmetric
+                leftOffset=-deltaT;rightOffset=deltaT;
+            } else if(statType==kMedianLeft){ //left
+                leftOffset=-2.*deltaT;rightOffset=0.;
+            } else if(statType==kMedianRight){ //right
+                leftOffset=0.;rightOffset=2.*deltaT;
+            }
+
+            TString brName=Form("%s_%s",var.Data(),stat.Data());
+            brName.ReplaceAll("[","_");
+            brName.ReplaceAll("]","_");
+            brName.ReplaceAll(".","_");
+            Double_t statValue=0;
+            if (treeLeft->GetDirectory()) treeLeft->GetDirectory()->cd();
+            TBranch *brToFill = treeLeft->Branch(brName.Data(),&statValue, (brName+"/D").Data());
+            TVectorD dvalues(entries);
+
+            for (Int_t icoord=0; icoord<entriesCoord; icoord++){
+                // Int_t icoord=0
+                br->GetEntry(icoord);
+                Double_t startCoord=coordValue+leftOffset;
+                Double_t endCoord       =coordValue+rightOffset;
+                //Double_t startCoord=coordLeaf->GetValue()+leftOffset;
+                //Double_t endCoord	=coordLeaf->GetValue()+rightOffset;
+
+                // Binary search finds last element smaller or equal
+                Int_t index0=BinarySearchSmaller(entries, coordArray, startCoord)+1;
+                Int_t index1=TMath::BinarySearch(entries, coordArray, endCoord) +1;
+                statValue=0;
+                if (index1>=0 && index0>=0){
+                    //if (values.capacity()<index1-index0)  values.reserve(1.5*(index1-index0));     //resize of needed
+                    if (index1-index0<=0){
+                        index0--;
+                        index1++;
+                        if (index0<0) index0=0;
+                        if (index1>=entries) index1=entries-1;
+                    }
+                    for (Int_t i=0; i<index1-index0; i++){
+                        dvalues[i]=treeRight->GetV2()[indexArr[i+index0]];
+                    }
+                    // Calculate
+                    if(statType==kMedian||statType==kMedianLeft||statType==kMedianRight){
+                        statValue=TMath::Median(index1-index0, dvalues.GetMatrixArray());
+                    } else if(statType==kRMS){
+                        statValue=TMath::RMS(index1-index0, dvalues.GetMatrixArray());
+                    } else if(statType==kMean){
+                        statValue=TMath::Mean(index1-index0, dvalues.GetMatrixArray());
+                    }else if(statType==kMin){
+                        statValue=TMath::MinElement(index1-index0, dvalues.GetMatrixArray());
+                    }else if(statType==kMax){
+                        statValue=TMath::MaxElement(index1-index0, dvalues.GetMatrixArray());
+                    } else if(statType==kLTM){
+                        TVectorD params(7);
+                        try {
+                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+                        }
+                        catch (int e)
+                        {
+                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+                            continue;
+                        }
+                        statValue = params[1];
+                    } else if(statType==kLTMRMS){
+                        TVectorD params(7);
+                        try {
+                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+                        }
+                        catch (int e)
+                        {
+                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+                            continue;
+                        }
+                        statValue = params[2];
+                    } else{
+                        ::Error("AddStatInfo()","String %s StatType %d not implemented",stat.Data(),statType);
+                    }
+                }
+                brToFill->Fill();
+            } // Loop over cordinates
+            brToFill->FlushBaskets();
+        } // Loop over stat types
+    } // Loop over variables
+    treeLeft->Write();
     delete[]indexArr;indexArr=0;
     delete[]coordArray;coordArray=0;
-    return;
-  }
-  Int_t entriesCoord =  treeLeft->GetEntries();
-  TBranch * br = treeLeft->GetBranch(var.Data());
-  Int_t coordValue;
-  br->SetAddress(&coordValue);
-  //TLeaf *coordLeaf = (TLeaf*)(br->GetListOfLeaves()->At(0));
-
-  while(refQuery.Tokenize(var,from,":")){
-    //   var="valueAnodeRaw.fElements[0]";
-    TString stat;
-    Ssiz_t fromStat=0;
-    while(statString.Tokenize(stat,fromStat,":")){
-      // stat = "median"; stat="medianLeft"; stat="medianRight";
-      //      Int_t statType=TStatToolkit::GetStatType(stat);
-      Int_t statType=GetStatType(stat);
-      if(statType==kUndef)continue;
-      //printf("\n\n\n--- StatType %d ---\n\n\n\n",statType);
-
-      // In case of LMS or LMR determine the fraction
-      Float_t frac=0.;
-      if(statType==kLTM || statType==kLTMRMS){ // stat="LTM0.95" or "LTMRMS0.95" similar
-	TString tmp= stat;
-	tmp.ReplaceAll("LTMRMS","");
-	tmp.ReplaceAll("LTM","");
-	frac = tmp.Atof(); // atof returns 0.0 on error
-	if(frac>1)frac/=100.; // allows "LTM95" for 95%
-      }
-      
-      // Determine the offset in coordinate to the left and right
-      Double_t leftOffset=-1e99,rightOffset=-1e99;
-      if(statType==kMedian||statType==kRMS || statType==kMean
-	 || statType==kLTM || statType==kLTMRMS){ // symmetric
-	leftOffset=-deltaT;rightOffset=deltaT;
-      } else if(statType==kMedianLeft){ //left
-	leftOffset=-2.*deltaT;rightOffset=0.;
-      } else if(statType==kMedianRight){ //right
-	leftOffset=0.;rightOffset=2.*deltaT;
-      }
-      
-      TString brName=Form("%s_%s",var.Data(),stat.Data());
-      brName.ReplaceAll("[","_");
-      brName.ReplaceAll("]","_");
-      brName.ReplaceAll(".","_");
-      Double_t statValue=0;
-      TBranch *brToFill = treeLeft->Branch(brName.Data(),&statValue, (brName+"/D").Data());
-      TVectorD dvalues(entries/10+1);
-				 
-      for (Int_t icoord=0; icoord<entriesCoord; icoord++){
-	// Int_t icoord=0
-	br->GetEntry(icoord);
-	Double_t startCoord=coordValue+leftOffset;
-	Double_t endCoord       =coordValue+rightOffset;
-	//Double_t startCoord=coordLeaf->GetValue()+leftOffset;
-	//Double_t endCoord	=coordLeaf->GetValue()+rightOffset;
- 
-	// Binary search finds last element smaller or equal
-	Int_t index0=BinarySearchSmaller(entries, coordArray, startCoord)+1;
-	Int_t index1=TMath::BinarySearch(entries, coordArray, endCoord) +1;
-	statValue=0;
-	if (index1>=0 && index0>=0){
-	  //if (values.capacity()<index1-index0)  values.reserve(1.5*(index1-index0));     //resize of needed
-	  for (Int_t i=0; i<index1-index0; i++){
-	    dvalues[i]=treeRight->GetV2()[indexArr[i+index0]];
-	  }
-
-	  // Calculate 
-	  if(statType==kMedian||statType==kMedianLeft||statType==kMedianRight){
-	    statValue=TMath::Median(index1-index0, dvalues.GetMatrixArray());
-	  } else if(statType==kRMS){
-	    statValue=TMath::RMS(index1-index0, dvalues.GetMatrixArray());
-	  } else if(statType==kMean){
-	    statValue=TMath::Mean(index1-index0, dvalues.GetMatrixArray());
-	  } else if(statType==kLTM){
-	    TVectorD params(7);
-	    TStatToolkit::LTMUnbinned(index1-index0, dvalues.GetMatrixArray()
-				      ,params,frac);
-	    statValue = params[1];
-	  } else if(statType==kLTMRMS){
-	    TVectorD params(7);
-	    TStatToolkit::LTMUnbinned(index1-index0, dvalues.GetMatrixArray()
-				      ,params,frac);
-	    statValue = params[2];
-	  } else{
-	    ::Error("AddStatInfo()","String %s StatType %d not implemented",stat.Data(),statType);
-	  }
-
-	  // // debug
-	  // printf("startCoord=%.3e, endCoord=%.3e, median=%.3e, index0=%d, index1=%d "
-	  // 	 ,startCoord,endCoord,statValue,index0,index1);
-	  // for(Int_t i=0;i<index1-index0;i++){
-	  //   printf("dvalues[%d]=%.3e "
-	  // 	   ,i,dvalues[i]);
-	  // }
-	  // printf("\n");
-	    
-
-	}
-	brToFill->Fill();
-      } // Loop over cordinates
-      brToFill->FlushBaskets();
-    } // Loop over stat types
-  } // Loop over variables
-  treeLeft->Write();
-  delete[]indexArr;indexArr=0;
-  delete[]coordArray;coordArray=0;
 
 }
 
