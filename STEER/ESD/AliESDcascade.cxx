@@ -368,6 +368,15 @@ void AliESDcascade::GetXYZcascade(Double_t &x, Double_t &y, Double_t &z) const {
   z=fPosXi[2];
 }
 
+void AliESDcascade::SetXYZcascade(Double_t x, Double_t y, Double_t z) {
+    //--------------------------------------------------------------------
+    // This function sets cascade position (global)
+    //--------------------------------------------------------------------
+    fPosXi[0]=x;
+    fPosXi[1]=y;
+    fPosXi[2]=z;
+}
+
 Double_t AliESDcascade::GetDcascade(Double_t x0, Double_t y0, Double_t z0) const {
   //--------------------------------------------------------------------
   // This function returns the cascade impact parameter

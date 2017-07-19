@@ -73,6 +73,7 @@ public:
   Double_t GetChi2Xi()  const {return fChi2Xi;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetXYZcascade(Double_t &x, Double_t &y, Double_t &z) const;
+  void     SetXYZcascade(Double_t x, Double_t y, Double_t z); //for testing purposes
   Double_t GetDcascade(Double_t x0, Double_t y0, Double_t z0) const;
 
   void     GetBPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
@@ -104,7 +105,7 @@ protected:
 private:
 
 
-  ClassDef(AliESDcascade,5) // reconstructed cascade vertex
+  ClassDef(AliESDcascade,6) // reconstructed cascade vertex
 };
 
 inline
