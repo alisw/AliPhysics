@@ -115,6 +115,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     SetRejectPileUpEvent(Bool_t rpue)                               { fRejectPileUpEvent = rpue; }
   void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
   void                     SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
+  void                     SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -209,6 +210,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Int_t       fTest2;
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
   TString     fPeriod;                         // String containing the LHC period
+  Float_t     fFiducialCut;                    // Variable fiducial cut from the border of the EMCal/TPC acceptance
   
   // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters

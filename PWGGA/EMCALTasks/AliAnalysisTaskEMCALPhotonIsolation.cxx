@@ -102,6 +102,7 @@ fTest1(0),
 fTest2(0),
 fMCtruth(0),
 fPeriod(""),
+fFiducialCut(0.4),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -279,6 +280,7 @@ fTest1(0),
 fTest2(0),
 fMCtruth(0),
 fPeriod(""),
+fFiducialCut(0.4),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -2648,8 +2650,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
   Bool_t isINBoundaries;
   
   if(fTPC4Iso){
-    minEtaBound = -0.87+fIsoConeRadius;
-    maxEtaBound = 0.87-fIsoConeRadius;
+    minEtaBound = -0.87+fFiducialCut;
+    maxEtaBound = 0.87-fFiducialCut;
     
     if(fPeriod != ""){
       minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
@@ -2666,24 +2668,24 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
   }
   else{
     if(fPeriod != ""){
-      minEtaBound = fGeom->GetArm1EtaMin()+0.03+fIsoConeRadius;
-      maxEtaBound = fGeom->GetArm1EtaMax()-0.03-fIsoConeRadius;
-      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius;
+      minEtaBound = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
+      maxEtaBound = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
       
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03-fIsoConeRadius;
+        maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
       else
-        maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius;
+        maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
     }
     else{
-      minEtaBound = -0.67+fIsoConeRadius;
-      maxEtaBound = 0.67-fIsoConeRadius;
-      minPhiBound = (4./9.)*TMath::Pi()+0.03+fIsoConeRadius;
-      maxPhiBound = TMath::Pi()-0.03-fIsoConeRadius;
+      minEtaBound = -0.67+fFiducialCut;
+      maxEtaBound = 0.67-fFiducialCut;
+      minPhiBound = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+      maxPhiBound = TMath::Pi()-0.03-fFiducialCut;
     }
   }
   
-  if(vecCOI.Eta() > maxEtaBound || vecCOI.Eta() < minEtaBound || vecCOI.Phi() > maxPhiBound || vecCOI.Phi() <minPhiBound)
+  if(vecCOI.Eta() > maxEtaBound || vecCOI.Eta() < minEtaBound || vecCOI.Phi() > maxPhiBound || vecCOI.Phi() < minPhiBound)
     isINBoundaries=kFALSE;
   else
     isINBoundaries=kTRUE;
