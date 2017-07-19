@@ -320,6 +320,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F        *fEtaTracksVSclustPt;            //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
+  TH3D        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (energy integrated from 0 to 100 GeV)
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output // Isolation on pTMax
