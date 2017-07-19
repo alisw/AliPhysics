@@ -55,6 +55,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetMC(int mc) {fDoMC = mc;};
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
+  void SetLeadingJets(int leading){fLeadingJets = leading;}
   void FindDaughters(AliJJet * jet, AliAODMCParticle * track, AliMCParticleContainer * mcTracksCont);
 
  private:
@@ -74,6 +75,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     int NRandom; ///< Number of times a random background is generated for each track
     int moveJet; ///< Comment needed
     int fDoMC; ///< Whether or not MC analysis is performed
+    int fLeadingJets; ///< Do only leading jets if >0
     double zVert; ///< Vertex position
     AliAnalysisUtils *fAnaUtils;
     AliJRunTable *fRunTable;
