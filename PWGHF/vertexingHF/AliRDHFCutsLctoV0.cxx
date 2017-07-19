@@ -63,7 +63,7 @@ fMinCombinedProbability(0)
   // Default Constructor
   //
 
-  const Int_t nvars=17;
+  const Int_t nvars=21;
   SetNVars(nvars);
   TString varNames[nvars]={"Lc inv. mass if K0S [GeV/c2]",                   //  0
 			   "Lc inv. mass if Lambda [GeV/c2]",                //  1
@@ -81,7 +81,11 @@ fMinCombinedProbability(0)
 			   "mass Lambda/LambdaBar veto [GeV/c2]",            // 13
 			   "mass Gamma veto [GeV/c2]",                       // 14
 			   "pT min V0 track [GeV/c]",                        // 15
-			   "V0 type"                                         // 16
+			   "Max Proton emission angle in Lc CMS",            // 16
+			   "Min Proton emission angle in Lc CMS",            // 17
+			   "Resigned d0",                                    // 18
+			   "V0 qT/|alpha|",                                  // 19
+			   "V0 type"                                         // 20
   };
 
   Bool_t isUpperCut[nvars]={kTRUE,  //  0
@@ -100,7 +104,11 @@ fMinCombinedProbability(0)
 			    kFALSE, // 13
 			    kFALSE, // 14
 			    kFALSE, // 15
-			    kFALSE  // 16
+			    kTRUE,  // 16
+			    kFALSE, // 17
+			    kFALSE, // 18
+			    kFALSE, // 19
+			    kFALSE  // 20
   };
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[nvars]={kFALSE, //  0
@@ -119,7 +127,11 @@ fMinCombinedProbability(0)
 			kTRUE,  // 13
 			kTRUE,  // 14
 			kTRUE,  // 15
-			kFALSE  // 16
+			kTRUE,  // 16
+			kTRUE,  // 17
+			kTRUE,  // 18
+			kTRUE,  // 19
+			kFALSE // 20
   };
   SetVarsForOpt(nvars,forOpt);
 
@@ -342,6 +354,31 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   if (fVarsForOpt[15]) {
     iter++;
     vars[iter]= v0->Pt(); // V0 pT min
+  }
+
+  // cut on proton emission angle
+  if (fVarsForOpt[16]) {
+    iter++;
+    vars[iter]= d->CosThetaStar(0,4122,2212,310); //CosPrThetaCMS
+
+  }
+
+  // cut on proton emission angle
+  if (fVarsForOpt[17]) {
+    iter++;
+    vars[iter]= d->CosThetaStar(0,4122,2212,310); //CosPrThetaCMS
+  }
+
+  // cut on re-signed d0
+  if (fVarsForOpt[18]) {
+    iter++;
+    vars[iter]= -9999;
+  }
+
+  // cut on Armenteros qT/|alpha|
+  if (fVarsForOpt[19]) {
+    iter++;
+    vars[iter]= v0->PtArmV0()/TMath::Abs(v0->AlphaV0());
   }
 
 
@@ -571,6 +608,37 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)] && fExcludedCut!=15) { // V0 pT min
       AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
       return 0;
+    }
+
+    // cut on Proton emission angle
+    if(TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1 || TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1){
+      Double_t cutvar = d->CosThetaStar(0,4122,2212,310);
+      if (cutvar > fCutsRD[GetGlobalIndex(16,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
+        AliDebug(4,Form(" Cos proton emission=%2.2e < %2.2e",cutvar,fCutsRD[GetGlobalIndex(16,ptbin)]));
+        return 0;
+      }
+      if (cutvar < fCutsRD[GetGlobalIndex(17,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
+        AliDebug(4,Form(" Cos proton emission=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(17,ptbin)]));
+        return 0;
+      }
+    }
+
+    // cut on  proton re-signed d0
+    if(TMath::Abs(fCutsRD[GetGlobalIndex(18,ptbin)])<0.2){
+      Double_t cutvar = GetReSignedd0(d) ;
+      if (cutvar< fCutsRD[GetGlobalIndex(18,ptbin)] && fExcludedCut!=18) { // proton d0
+        AliDebug(4,Form(" Proton d0 (re-signed)=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(18,ptbin)]));
+        return 0;
+      }
+    }
+
+    // cut on Armenteros qT/|alpha|
+    if(TMath::Abs(fCutsRD[GetGlobalIndex(19,ptbin)])<0.3){
+      Double_t cutvar = v0->PtArmV0()/TMath::Abs(v0->AlphaV0());
+      if (cutvar < fCutsRD[GetGlobalIndex(19,ptbin)] && fExcludedCut!=19) { // v0 armenteros variable
+        AliDebug(4,Form(" qT/|alpha|=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(19,ptbin)]));
+        return 0;
+      }
     }
 
   }
@@ -990,6 +1058,29 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     }
     break;
 
+  case 10:
+
+    // identify bachelor
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+
+    isBachelorID1 = kFALSE;
+    if(TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.){
+      isBachelorID1 = !(bachelor->Pt()>fLowPtCut&& nTOFsigmas<-2.) && !(bachelor->Pt()>fLowPtCut&& nTPCsigmas>2.);
+    }
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,2,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+
+    isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.;
+    isBachelorID4 = isBachelorID2;
+
+    break;
+
   }
 
 }
@@ -1205,6 +1296,26 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
+    case 16:
+      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1)&&(d->CosThetaStar(0,4122,2212,310)<= fCutsRD[GetGlobalIndex(16,ptbin)]);
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 17:
+      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1)&&(d->CosThetaStar(0,4122,2212,310)>= fCutsRD[GetGlobalIndex(17,ptbin)]);
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 18:
+      okLck0sp   = (TMath::Abs(fCutsRD[GetGlobalIndex(18,ptbin)])<0.2)&&(GetReSignedd0(d)>= fCutsRD[GetGlobalIndex(18,ptbin)]);
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 19:
+      okLck0sp   = (TMath::Abs(fCutsRD[GetGlobalIndex(19,ptbin)])<0.3)&&(v0->PtArmV0()/TMath::Abs(v0->AlphaV0()) >= fCutsRD[GetGlobalIndex(19,ptbin)]);
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
     }
   }
 
@@ -1291,7 +1402,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   SetPtBins(nptbins+1,ptbins);
   SetPtBins(nptbins+1,ptbins);
 
-  const Int_t nvars=17;
+  const Int_t nvars=21;
 
   Float_t** prodcutsval;
   prodcutsval=new Float_t*[nvars];
@@ -1313,7 +1424,11 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
     prodcutsval[13][ipt2]=0.;   // mass Lambda/LambdaBar veto [GeV/c2]
     prodcutsval[14][ipt2]=0.;   // mass Gamma veto [GeV/c2]
     prodcutsval[15][ipt2]=0.;   // pT min V0 track [GeV/c]
-    prodcutsval[16][ipt2]=0.;   // V0 type cut
+    prodcutsval[16][ipt2]=9999.;// max cos (Proton emission angle) cut 
+    prodcutsval[17][ipt2]=-9999.;// min cos (Proton emission angle) cut 
+    prodcutsval[18][ipt2]=-9999.;// Re-signed d0 [cm]
+    prodcutsval[19][ipt2]=-9999.;// V0 armenteros qT/|alpha|
+    prodcutsval[20][ipt2]=0.;   // V0 type cut
   }
   SetCuts(nvars,nptbins,prodcutsval);
 
@@ -1623,4 +1738,34 @@ void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPtBins,Float_t *minProb
     fMinCombinedProbability[ib] = minProb[ib];
   }
   return;
+}
+
+//---------------------------------------------------------------------------
+Double_t AliRDHFCutsLctoV0::GetReSignedd0(AliAODRecoDecayHF *dd) {
+  //
+  // Sign of d0 different from regular d0. 
+  // Sign defined using the position of crossing point with Lc vector 
+  // with respect to the primary vertex
+  //
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)dd;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return -9999;
+  }
+
+  AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
+  AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(d->GetPrimaryVtx());
+  
+  Double_t d0z0bach[2],covd0z0bach[3];
+  bachelorTrack->PropagateToDCA(primvert,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+  Double_t tx[3];
+  bachelorTrack->GetXYZ(tx);
+  tx[0] -= primvert->GetX();
+  tx[1] -= primvert->GetY();
+  tx[2] -= primvert->GetZ();
+  Double_t innerpro = tx[0]*d->Px()+tx[1]*d->Py();
+  Double_t signd0 = 1.;
+  if(innerpro<0.) signd0 = -1.;
+
+  return signd0*TMath::Abs(d0z0bach[0]);
 }
