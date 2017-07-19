@@ -154,6 +154,7 @@ fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
+fEtaPhiClusVsM02(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -331,6 +332,7 @@ fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
+fEtaPhiClusVsM02(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -617,6 +619,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02 = new TH2D("hM02_NC","M02 distribution for Neutral Clusters vs E",100,0.,100.,500,0.,5.);
         fM02->Sumw2();
         fOutput->Add(fM02);
+
+	fEtaPhiClusVsM02 = new TH3D ("hEtaVsPhiVsM02", "", 250, -0.8, 0.8, 250, 1.2, 3.4, 500, 0., 5.);
+        fEtaPhiClusVsM02->Sumw2();
+	fOutput->Add(fEtaPhiClusVsM02);
         
 	if(fIsoMethod==0){
 	  fEtIsoCells = new TH1D("hEtIsoCell_NC","E_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Cells",200,-0.25,99.75);
@@ -1343,6 +1349,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
       
     case 2:
       fM02->Fill(vecCOI.E(),coi->GetM02());
+      fEtaPhiClusVsM02->Fill(vecCOI.Eta(),vecCOI.Phi(),coi->GetM02());
       break;
   }
   
