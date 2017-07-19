@@ -514,7 +514,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     }
   }
   //
-  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
+//  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
   //
   fHistCentralityClass10->Fill(centralityClass10);
   fHistCentralityPercentile->Fill(centralityPercentile);
@@ -1019,7 +1019,7 @@ void AliAnalysisTaskAntiHe4::SetBBParameters(Int_t runNumber){
 
   }
 
-  if(runNumber > 166500){ //LHC11h
+  if(runNumber > 166500 && runNumber <= 215150){ //LHC11h
 
     fBBParametersLightParticles[0]   = 4.69637;//1.11243;
     fBBParametersLightParticles[1]   = 7.51827;//26.1144;
@@ -1034,6 +1034,23 @@ void AliAnalysisTaskAntiHe4::SetBBParameters(Int_t runNumber){
     fBBParametersNuclei[4]  = 8.31768;
 
   }
+    if(runNumber > 215150){ //LHC RUN 2
+        
+        fBBParametersLightParticles[0]   = 1.45802;
+        fBBParametersLightParticles[1]   = 27.4992;
+        fBBParametersLightParticles[2]   = 4.00313e-15;
+        fBBParametersLightParticles[3]   = 2.48485;
+        fBBParametersLightParticles[4]   = 8.31768;
+        
+        fBBParametersNuclei[0]  = 1.69155;
+        fBBParametersNuclei[1]  = 27.4992;
+        fBBParametersNuclei[2]  = 4.00313e-15;
+        fBBParametersNuclei[3]  = 2.48485;
+        fBBParametersNuclei[4]  = 8.31768;
+        
+    }
+
+    
 }
 //______________________________________________________________________________
 void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack) 
