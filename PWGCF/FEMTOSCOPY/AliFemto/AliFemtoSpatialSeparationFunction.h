@@ -24,21 +24,23 @@ public:
 
   virtual AliFemtoString Report();
   
-  void AddFirstParticle(AliFemtoParticle* particle);
+  void AddFirstParticle(AliFemtoParticle* particle, bool mixing=false);
   void AddSecondParticle(AliFemtoParticle* particle);
 
   void CalculateAnglesForEvent();
   
   virtual void Finish();
-
   void WriteHistos();
   virtual TList* GetOutputList();
+  
 private:
+  TH1D *fAlphaNum; // distibution of angles between momenta of particle collections from the same event
+  TH1D *fAlphaDen; // distibution of angles between momenta of particle collections from different events
   
-  TH1D *fAlpha;          // angles between momenta of particle collections
+  double p1real[3]; // sum of momenta of particles of first type
+  double p2real[3]; // sum of momenta of particles of second type
   
-  double p1[3];
-  double p2[3];
+  double p1mixed[3]; // sum of momenta of particles of first type (other event)
   
 #ifdef __ROOT__
   ClassDef(AliFemtoSpatialSeparationFunction, 1)

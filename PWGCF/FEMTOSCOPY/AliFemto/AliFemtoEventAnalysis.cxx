@@ -34,10 +34,13 @@ fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(kFALSE)
+fPerformSharedDaughterCut(kFALSE),
+fMixingBuffer(NULL),
+fNumEventsToMix(0)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+  fMixingBuffer = new AliFemtoPicoEventCollection;
 }
 //____________________________
 AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a):
@@ -47,7 +50,9 @@ fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(a.fPerformSharedDaughterCut)
+fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
+fMixingBuffer(NULL),
+fNumEventsToMix(a.fNumEventsToMix)
 {
   /// Copy constructor
   
@@ -58,6 +63,7 @@ fPerformSharedDaughterCut(a.fPerformSharedDaughterCut)
   fMultMax = a.fMultMax;
   
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+  fMixingBuffer = new AliFemtoPicoEventCollection;
   
   // Clone the event cut
   AliFemtoEventCut *ev_cut = a.fEventCut->Clone();
@@ -125,6 +131,13 @@ AliFemtoEventAnalysis::~AliFemtoEventAnalysis()
     }
     delete fCorrFctnCollection;
   }
+  
+  if (fMixingBuffer) {
+    for (AliFemtoPicoEventIterator piter = fMixingBuffer->begin(); piter != fMixingBuffer->end(); ++piter) {
+      delete *piter;
+    }
+    delete fMixingBuffer;
+  }
 }
 //______________________
 AliFemtoEventAnalysis& AliFemtoEventAnalysis::operator=(const AliFemtoEventAnalysis& aAna)
@@ -145,6 +158,17 @@ AliFemtoEventAnalysis& AliFemtoEventAnalysis::operator=(const AliFemtoEventAnaly
     cerr << " WARNING [AliFemtoEventAnalysis::operator=()] fCorrFctnCollection was NULL, this should not happen." << endl;
     fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   }
+  
+  if (fMixingBuffer) {
+    for (AliFemtoPicoEventIterator piter = fMixingBuffer->begin(); piter != fMixingBuffer->end(); ++piter) {
+      delete *piter;
+    }
+    fMixingBuffer->clear();
+  } else {
+    cerr << " WARNING [AliFemtoSimpleAnalysis::operator=()] fMixingBuffer was NULL, this should not happen." << endl;
+    fMixingBuffer = new AliFemtoPicoEventCollection;
+  }
+
   
   fMultMin = aAna.fMultMin;
   fMultMax = aAna.fMultMax;
@@ -177,7 +201,8 @@ AliFemtoEventAnalysis& AliFemtoEventAnalysis::operator=(const AliFemtoEventAnaly
     AliFemtoCorrFctn* fctn = (*iter)->Clone();
     if (fctn) AddCorrFctn(fctn);
   }
-  
+
+  fNumEventsToMix = aAna.fNumEventsToMix;
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
   
   return *this;
@@ -221,7 +246,6 @@ AliFemtoString AliFemtoEventAnalysis::Report()
 void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
 {
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-  
   if (mult < fMultMin || mult > fMultMax) return;
   
   fPicoEvent = NULL;
@@ -269,6 +293,21 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   AddParticles("first", collection1);
   AddParticles("second", collection2);
   
+  for (AliFemtoPicoEventIterator  fPicoEventIter = fMixingBuffer->begin();
+                                  fPicoEventIter != fMixingBuffer->end();
+                                  ++fPicoEventIter)
+  {
+    AliFemtoPicoEvent *storedEvent = *fPicoEventIter;
+    AddParticles("first", storedEvent->FirstParticleCollection(),true);
+  }
+  
+  if ( MixingBufferFull() )
+  {
+    delete fMixingBuffer->back();
+    fMixingBuffer->pop_back();
+  }
+  fMixingBuffer->push_front(fPicoEvent);
+
   for (AliFemtoCorrFctnIterator tCorrFctnIter = fCorrFctnCollection->begin();
        tCorrFctnIter != fCorrFctnCollection->end();
        ++tCorrFctnIter)
@@ -277,14 +316,11 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
     tCorrFctn->CalculateAnglesForEvent();
   }
 
-  
-  cout << "AliFemtoEventAnalysis::ProcessEvent() - reals done ";
-  
   EventEnd(hbtEvent);
 }
 
 //_________________________
-void AliFemtoEventAnalysis::AddParticles(const char* typeIn, AliFemtoParticleCollection *partCollection)
+void AliFemtoEventAnalysis::AddParticles(const char* typeIn, AliFemtoParticleCollection *partCollection, bool mixing)
 {
   const string type = typeIn;
   
@@ -299,7 +335,7 @@ void AliFemtoEventAnalysis::AddParticles(const char* typeIn, AliFemtoParticleCol
          ++tPartIter)
     {
       AliFemtoParticle *particle = *tPartIter;
-      if (type == "first")      tCorrFctn->AddFirstParticle(particle);
+      if (type == "first")      tCorrFctn->AddFirstParticle(particle,mixing);
       else if(type == "second") tCorrFctn->AddSecondParticle(particle);
     }
   }

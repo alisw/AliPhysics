@@ -18,31 +18,42 @@ ClassImp(AliFemtoSpatialSeparationFunction)
 
 AliFemtoSpatialSeparationFunction::AliFemtoSpatialSeparationFunction(const char* title, const int numberOfBins) : AliFemtoCorrFctn()
 {
-  fAlpha = new TH1D(Form("SpatialSeparation_%s",title),Form("SpatialSeparation_%s",title),numberOfBins,0,TMath::Pi());
+  fAlphaNum = new TH1D(Form("NumSpatialSeparation_%s",title),Form("NumSpatialSeparation_%s",title),numberOfBins,0,TMath::Pi());
 
-  fAlpha->Sumw2();
+  fAlphaDen = new TH1D(Form("DenSpatialSeparation_%s",title),Form("DenSpatialSeparation_%s",title),numberOfBins,0,TMath::Pi());
+  
+  fAlphaNum->Sumw2();
+  fAlphaDen->Sumw2();
   
   for(int i=0;i<3;i++){
-    p1[i] = 0.0;
-    p2[i] = 0.0;
+    p1real[i] = 0.0;
+    p2real[i] = 0.0;
+    p1mixed[i] = 0.0;
   }
 }
 
 AliFemtoSpatialSeparationFunction::AliFemtoSpatialSeparationFunction(const AliFemtoSpatialSeparationFunction& aFunction) : AliFemtoCorrFctn()
 {
-  if (aFunction.fAlpha)   fAlpha = new TH1D(*aFunction.fAlpha);
-  else                    fAlpha = nullptr;
+  if (aFunction.fAlphaNum)    fAlphaNum = new TH1D(*aFunction.fAlphaNum);
+  else                        fAlphaNum = nullptr;
+  
+  if (aFunction.fAlphaDen)    fAlphaDen = new TH1D(*aFunction.fAlphaDen);
+  else                        fAlphaDen = nullptr;
 }
 
 AliFemtoSpatialSeparationFunction::~AliFemtoSpatialSeparationFunction()
 {
-  if(fAlpha)    delete fAlpha;
+  if(fAlphaNum) delete fAlphaNum;
+  if(fAlphaDen) delete fAlphaDen;
 }
 
 AliFemtoSpatialSeparationFunction& AliFemtoSpatialSeparationFunction::operator=(const AliFemtoSpatialSeparationFunction& aFunction)
 {
-  if (aFunction.fAlpha)   fAlpha = new TH1D(*aFunction.fAlpha);
-  else                        fAlpha = nullptr;
+  if (aFunction.fAlphaNum)  fAlphaNum = new TH1D(*aFunction.fAlphaNum);
+  else                      fAlphaNum = nullptr;
+  
+  if (aFunction.fAlphaDen)  fAlphaNum = new TH1D(*aFunction.fAlphaDen);
+  else                      fAlphaDen = nullptr;
   
   return *this;
 }
@@ -55,57 +66,73 @@ AliFemtoString AliFemtoSpatialSeparationFunction::Report()
 {
   string stemp = "BBbar spatial separation report:\n";
   char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fAlpha->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fAlphaNum->GetEntries());
   stemp += ctemp;
 
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
 
-void AliFemtoSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle *particle)
+void AliFemtoSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle *particle, bool mixing)
 {
   AliFemtoLorentzVector momentum = particle->FourMomentum();
   
-  p1[0] += momentum.x();
-  p1[1] += momentum.y();
-  p1[2] += momentum.z();
+  if(mixing)
+  {
+    p1mixed[0] += momentum.x();
+    p1mixed[1] += momentum.y();
+    p1mixed[2] += momentum.z();
+  }
+  else
+  {
+    p1real[0] += momentum.x();
+    p1real[1] += momentum.y();
+    p1real[2] += momentum.z();
+  }
 }
 
 void AliFemtoSpatialSeparationFunction::AddSecondParticle(AliFemtoParticle *particle)
 {
   AliFemtoLorentzVector momentum = particle->FourMomentum();
   
-  p2[0] += momentum.x();
-  p2[1] += momentum.y();
-  p2[2] += momentum.z();
+  p2real[0] += momentum.x();
+  p2real[1] += momentum.y();
+  p2real[2] += momentum.z();
 }
 
 void AliFemtoSpatialSeparationFunction::CalculateAnglesForEvent()
 {
-  double mod1 = sqrt( p1[0]*p1[0] + p1[1]*p1[1] + p1[2]*p1[2] );
-  double mod2 = sqrt( p2[0]*p2[0] + p2[1]*p2[1] + p2[2]*p2[2] );
+  double mod1real = sqrt( p1real[0]*p1real[0] + p1real[1]*p1real[1] + p1real[2]*p1real[2] );
+  double mod2real = sqrt( p2real[0]*p2real[0] + p2real[1]*p2real[1] + p2real[2]*p2real[2] );
+  double mod1mixed = sqrt( p1mixed[0]*p1mixed[0] + p1mixed[1]*p1mixed[1] + p1mixed[2]*p1mixed[2] );
   
-  if(fabs(mod1) < 0.0000001 || fabs(mod2) < 0.0000001) return;
   
-  double alpha = acos((p1[0]*p2[0] + p1[1]*p2[1] + p1[2]*p2[2])/(mod1*mod2));
+  if(fabs(mod1real) < 0.0000001 || fabs(mod2real) < 0.0000001 || fabs(mod1mixed) < 0.0000001) return;
   
-  fAlpha->Fill(fabs(alpha));
+  double alphaReal = acos((p1real[0]*p2real[0] + p1real[1]*p2real[1] + p1real[2]*p2real[2])/(mod1real*mod2real));
+  double alphaMixed = acos((p1mixed[0]*p2real[0] + p1mixed[1]*p2real[1] + p1mixed[2]*p2real[2])/(mod1mixed*mod2real));
+  
+  fAlphaNum->Fill(fabs(alphaReal));
+  fAlphaDen->Fill(fabs(alphaMixed));
   
   for(int i=0;i<3;i++){
-    p1[i] = 0.0;
-    p2[i] = 0.0;
+    p1real[i] = 0.0;
+    p2real[i] = 0.0;
+    p1mixed[i] = 0.0;
   }
 }
 
 void AliFemtoSpatialSeparationFunction::WriteHistos()
 {
-  fAlpha->Write();
+  fAlphaNum->Write();
+  fAlphaDen->Write();
 }
 
 TList* AliFemtoSpatialSeparationFunction::GetOutputList()
 {
   TList *tOutputList = new TList();
-  tOutputList->Add(fAlpha);
+  tOutputList->Add(fAlphaNum);
+  tOutputList->Add(fAlphaDen);
   return tOutputList;
 }
 
