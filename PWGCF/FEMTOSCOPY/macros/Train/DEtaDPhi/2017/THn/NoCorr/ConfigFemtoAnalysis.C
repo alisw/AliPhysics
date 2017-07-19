@@ -211,6 +211,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorParticleYPt   *cutFail3YPtetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticlePID   *cutPass3PIDetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticlePID   *cutFail3PIDetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleNumber *cutPassNtrigetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleNumber *cutFailNtrigetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleNumber *cutPass2Ntrigetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleNumber *cutFail2Ntrigetaphitpc[numOfMultBins*numOfChTypes];
+	
+		  
 	AliFemtoCutMonitorV0            *cutPass1V0[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorV0            *cutFail1V0[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorV0            *cutPass2V0[numOfMultBins*numOfChTypes];
@@ -348,7 +354,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//*********V0 cuts********************
 					//V0 first particle cut
-					dtc4etaphitpc[aniter] = new AliFemtoV0TrackCut();
+					dtc4etaphitpc[aniter] = new AliFemtoV0TrackCut(); //lambda
 					dtc4etaphitpc[aniter]->SetMass(LambdaMass);
 					dtc4etaphitpc[aniter]->SetEta(0.8); //0.8
 					if(ichg>=20 && ichg<=26)
@@ -379,7 +385,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetRequireTOFProton(false);
 				      
 					//V0 second particle cut
-					dtc5etaphitpc[aniter] = new AliFemtoV0TrackCut();
+					dtc5etaphitpc[aniter] = new AliFemtoV0TrackCut(); //anti-lambda
 					dtc5etaphitpc[aniter]->SetMass(LambdaMass);
 					dtc5etaphitpc[aniter]->SetEta(0.8);
 					if(ichg>=20 && ichg<=26)
@@ -455,6 +461,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					}
 					//**************** track Monitors ***************
 
+	
 					if(ifMonitors)//ichg>8)
 					  {
 
@@ -673,7 +680,42 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 
 
+					cutPassNtrigetaphitpc[aniter] = new AliFemtoCutMonitorParticleNumber(Form("Pass%stpcM%i", chrgs[ichg], imult),4,0,4 ,10, -10, 10, 30,0,150);//0-pion,1-kaon,2-proton
+					cutFailNtrigetaphitpc[aniter] = new AliFemtoCutMonitorParticleNumber(Form("Fail%stpcM%i", chrgs[ichg], imult),4,0,4 ,10, -10, 10, 30,0,150);
 
+
+					cutPass2Ntrigetaphitpc[aniter] = new AliFemtoCutMonitorParticleNumber(Form("Pass2%stpcM%i", chrgs[ichg], imult),4,0,4 ,10, -10, 10, 30,0,150);//0-pion,1-kaon,2-proton
+					cutFail2Ntrigetaphitpc[aniter] = new AliFemtoCutMonitorParticleNumber(Form("Fail2%stpcM%i", chrgs[ichg], imult),4,0,4 ,10, -10, 10, 30,0,150);
+
+					//numbers below checked few times, but something may be set incorectly; take note
+					//positive tracks
+					if (ichg == 0 ||ichg == 2 || ichg==3 || ichg==5 || ichg==6 || ichg==8 || ichg==10 || ichg==12 ||  ichg==13 || ichg==14 || ichg==20 || ichg==21  || ichg==27 || ichg==28)
+					  dtc1etaphitpc[aniter]->AddCutMonitor(cutPassNtrigetaphitpc[aniter],cutFailNtrigetaphitpc[aniter]);
+
+					//negative tracks
+					if (ichg == 1 || ichg==4 ||  ichg==7 ||  ichg==11 || ichg==15 || ichg==16 || ichg==22 || ichg==23 || ichg==29 || ichg == 30)
+					  dtc2etaphitpc[aniter]->AddCutMonitor(cutPassNtrigetaphitpc[aniter],cutFailNtrigetaphitpc[aniter]);
+
+					//lambda
+					if ( ichg == 17 || ichg == 18  || ichg == 24 || ichg == 25 || ichg == 29 || ichg == 31 || ichg == 32)
+					  dtc4etaphitpc[aniter]->AddCutMonitor(cutPassNtrigetaphitpc[aniter],cutFailNtrigetaphitpc[aniter]);
+
+					//anti-lambda
+					if (  ichg == 19 || ichg == 26 || ichg == 28 || ichg == 32 || ichg == 33)		
+					  dtc5etaphitpc[aniter]->AddCutMonitor(cutPassNtrigetaphitpc[aniter],cutFailNtrigetaphitpc[aniter]);
+
+
+					if(ichg == 2 || ichg==5 ||ichg==8 ||ichg==12)
+					  dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2Ntrigetaphitpc[aniter],cutFail2Ntrigetaphitpc[aniter]);
+
+					if(ichg == 13 || ichg == 15 ||  ichg == 20 || ichg == 22 || ichg == 27|| ichg==29)
+					  dtc4etaphitpc[aniter]->AddCutMonitor(cutPass2Ntrigetaphitpc[aniter],cutFail2Ntrigetaphitpc[aniter]);
+					
+					if(ichg == 14 || ichg == 16 || ichg == 18 || ichg == 21 || ichg == 23 ||  ichg == 25  || ichg==28 || ichg == 30 || ichg == 32)
+					  dtc5etaphitpc[aniter]->AddCutMonitor(cutPass2Ntrigetaphitpc[aniter],cutFail2Ntrigetaphitpc[aniter]);
+
+
+					
 					//**** Correlation functions *******	
 					//***without corrections*****
 					if(ichg >= 13)
@@ -687,6 +729,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					else
 					  cdedpetaphiTHn[aniter] = new AliFemtoCorrFctnDEtaDPhiTHn(Form("cdedpTHn%stpcM%i", chrgs[ichg], imult),29, 29, 4, 0, 4, 4,0,4 ,10, -10, 10, 30,0,150);
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphiTHn[aniter]);
+
+
+
+					
 					/*
 					if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
                                         {
