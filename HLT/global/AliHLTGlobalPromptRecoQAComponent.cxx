@@ -486,7 +486,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   }//End Axes for p-Pb
   else
   {//Start Axes for pp
-    fAxes["nClustersSPD"].set( 100, 0., 1e3.,  &fnClustersSPD );
+    fAxes["nClustersSPD"].set( 100, 0., 1e3,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 12e3, &frawSizeSPD );
     fAxes["nClustersSDD"].set( 100, 0., 1.2e3,  &fnClustersSDD );
     fAxes["rawSizeSDD"].set( 100, 0., 60e3, &frawSizeSDD );
