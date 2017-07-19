@@ -102,6 +102,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void ReconstructSecVtx(Bool_t dummy=kTRUE) {fReconstructSecVtx=dummy;}
   Bool_t GetReconstructSecVtx() const {return fReconstructSecVtx;}
 
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+
  private:
   
   void CheckEventSelection(AliAODEvent *aodEvent);
@@ -149,6 +151,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter; /// AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 3
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
+  Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
   Bool_t fIsEventSelected;           /// flag for event selected
 
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
@@ -174,7 +177,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Bool_t fReconstructSecVtx;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,10); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,11); /// class for Lc->p K0
   /// \endcond
 };
 
