@@ -751,11 +751,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtvsM02vsSum->Sumw2();
         fOutput->Add(fPtvsM02vsSum);
         
-	if(!fLightOutput){
-	  fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
-	  fPtvsM02vsSumUE->Sumw2();
-	  fOutput->Add(fPtvsM02vsSumUE);
-	}
+	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
+	fPtvsM02vsSumUE->Sumw2();
+	fOutput->Add(fPtvsM02vsSumUE);
         
           // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
           // fPtvsM02vsSumPi0->Sumw2();
@@ -3052,8 +3050,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         
         isolation=isolation-ue; // UE subtraction
         
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fEtIsoClust->Fill(vecCOI.Pt(),isolation);
       }
       
@@ -3120,8 +3117,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         
         isolation=isolation-ue; // UE subtraction
         
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
       }
       
@@ -3190,8 +3186,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         isolation=isolation-ue; // UE subtraction
       
       if(fWho==2){
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
       
@@ -3241,8 +3236,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         isolation=isolation-ue; // UE subtraction
       
       if(fWho==2){
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
       
@@ -3293,8 +3287,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         isolation=isolation-ue; // UE subtraction
       
       if(fWho==2){
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
       
@@ -3346,8 +3339,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         isolation=isolation-ue; // UE subtraction
       
       if(fWho==2){
-	if(!fLightOutput)
-	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
         // fTracksConeEtaPt->Fill(isolation, vecCOI.Eta(), vecCOI.Pt());
