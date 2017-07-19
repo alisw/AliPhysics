@@ -1,7 +1,7 @@
 #ifndef UtilHisto_h
 #define UtilHisto_h
 
-#include <Riostream.h>
+#include <iostream>
 #include "UtilMessages.h"
 #include "TCanvas.h"
 #include "TMath.h"
