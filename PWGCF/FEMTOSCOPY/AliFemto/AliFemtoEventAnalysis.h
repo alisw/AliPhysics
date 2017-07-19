@@ -38,8 +38,9 @@ public:
   void SetFirstParticleCut(AliFemtoParticleCut* TheFirstParticleCut);
   void SetSecondParticleCut(AliFemtoParticleCut* TheSecondParticleCut);
 
-  void AddParticles(const char* typeIn, AliFemtoParticleCollection *partCollection);
+  void AddParticles(const char* typeIn, AliFemtoParticleCollection *partCollection, bool mixing = false);
   
+  void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
   void SetV0SharedDaughterCut(Bool_t aPerform);
   bool V0SharedDaughterCut();
 
@@ -50,6 +51,8 @@ public:
   virtual void EventBegin(const AliFemtoEvent* TheEventToBegin);
   virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);
 
+  bool MixingBufferFull();
+  
   virtual void EventEnd(const AliFemtoEvent* TheEventToWrapUp);
 
   int GetNeventsProcessed() const;
@@ -68,6 +71,9 @@ protected:
 
   unsigned int fNeventsProcessed;                    ///< How many events processed so far
   AliFemtoPicoEvent *fPicoEvent;
+
+  AliFemtoPicoEventCollection* fMixingBuffer;        ///< mixing buffer used in this simplest analysis
+  unsigned int fNumEventsToMix;                      ///< How many "previous" events get mixed with this one, to make background
   
   double fMultMin;
   double fMultMax;
@@ -137,6 +143,16 @@ inline int AliFemtoEventAnalysis::GetNeventsProcessed() const
 inline void AliFemtoEventAnalysis::SetV0SharedDaughterCut(Bool_t aPerform)
 {
   fPerformSharedDaughterCut = aPerform;
+}
+
+inline void AliFemtoEventAnalysis::SetNumEventsToMix(const unsigned int& nmix)
+{
+  fNumEventsToMix = nmix;
+}
+
+inline bool AliFemtoEventAnalysis::MixingBufferFull()
+{
+  return (fMixingBuffer->size() >= fNumEventsToMix);
 }
 
 #endif
