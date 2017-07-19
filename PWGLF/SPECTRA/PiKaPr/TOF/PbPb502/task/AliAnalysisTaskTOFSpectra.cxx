@@ -1124,32 +1124,32 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(fMCmode){
       for (Int_t charge = 0 ; charge < 2; charge++){//Charge loop
         for(Int_t species = 0; species < 3; species++){//Species loop
-          hNumMatchMC[charge][species] = new TH1F(Form("hNumMatchMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID %s %s;%s", pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+          hNumMatchMC[charge][species] = new TH1F(Form("hNumMatchMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID %s %s;%s", pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
           hNumMatchMC[charge][species]->Sumw2();
           fListHist->AddLast(hNumMatchMC[charge][species]);
-          
-          hDenMatchMC[charge][species] = new TH1F(Form("hDenMatchMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID %s %s;%s", pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+
+          hDenMatchMC[charge][species] = new TH1F(Form("hDenMatchMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID %s %s;%s", pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
           hDenMatchMC[charge][species]->Sumw2();
           fListHist->AddLast(hDenMatchMC[charge][species]);
-          
-          hNumMatchPrimMC[charge][species] = new TH1F(Form("hNumMatchPrimMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID and Primary %s %s;%s", pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+
+          hNumMatchPrimMC[charge][species] = new TH1F(Form("hNumMatchPrimMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID and Primary %s %s;%s", pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
           hNumMatchPrimMC[charge][species]->Sumw2();
           fListHist->AddLast(hNumMatchPrimMC[charge][species]);
-          
-          hDenMatchPrimMC[charge][species] = new TH1F(Form("hDenMatchPrimMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID and Primary %s %s;%s", pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+
+          hDenMatchPrimMC[charge][species] = new TH1F(Form("hDenMatchPrimMC%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID and Primary %s %s;%s", pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
           hDenMatchPrimMC[charge][species]->Sumw2();
           fListHist->AddLast(hDenMatchPrimMC[charge][species]);
           
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
-            
-            hNumMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hNumMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+
+            hNumMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hNumMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
             hNumMatchPrimMCYCut[charge][species][mult]->Sumw2();
             fListHist->AddLast(hNumMatchPrimMCYCut[charge][species][mult]);
-            
-            hDenMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[charge].Data(), ptstring.Data()), kPtBins, fBinPt);
+
+            hDenMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
             hDenMatchPrimMCYCut[charge][species][mult]->Sumw2();
             fListHist->AddLast(hDenMatchPrimMCYCut[charge][species][mult]);
-            
+
           }
           
           //*****
