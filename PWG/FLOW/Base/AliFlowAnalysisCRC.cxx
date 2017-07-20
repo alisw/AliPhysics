@@ -699,6 +699,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       
       if(!(aftsTrack->InRPSelection() || aftsTrack->InPOISelection() || aftsTrack->InPOISelection(2))){continue;} // safety measure: consider only tracks which are RPs or POIs
       
+      Bool_t IsSplitMergedTracks = kFALSE;
+      if(fRemoveSplitMergedTracks) {
+        IsSplitMergedTracks = EvaulateIfSplitMergedTracks(anEvent,aftsTrack,i);
+      }
+      if(IsSplitMergedTracks) continue;
+      
       // RPs *********************************************************************************************************
       
       if(aftsTrack->InRPSelection()) {
@@ -739,7 +745,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         }
         if(fPOIExtraWeights==kEtaPhiVtx) // determine phieta weight for POI:
         {
-          // TBI
+          wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPosCor[2],dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
         if(fPOIExtraWeights==kEtaPhiChPt && fPhiEtaWeightsChPt[cw][ptbebe]) // determine phieta weight for POI, ch dep:
@@ -899,7 +906,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         }
         if(fPOIExtraWeights==kEtaPhiVtx) // determine phieta weight for POI:
         {
-          // TBI
+          wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPosCor[2],dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
         if(fPOIExtraWeights==kEtaPhiChPt && fPhiEtaWeightsChPt[cw][ptbebe]) // determine phieta weight for POI, ch dep:
@@ -1130,9 +1138,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fCentralityEBE>5. && fCentralityEBE<40.) {
           fCRCQVecPtHistMagField->Fill(dPt,FillCw,wPhiEta);
         }
-        Int_t vxbin = fDummyVXVYBins->GetXaxis()->FindBin(fVtxPosCor[0]);
-        Int_t vybin = fDummyVXVYBins->GetYaxis()->FindBin(fVtxPosCor[1]);
-        if(vxbin>0 && vxbin<fkNVXVYBins && vybin>0 && vybin<fkNVXVYBins) {
+        Int_t vxbin = fDummyVXVYBins->GetXaxis()->FindBin(fVtxPosCor[0])-1;
+        Int_t vybin = fDummyVXVYBins->GetYaxis()->FindBin(fVtxPosCor[1])-1;
+        if(vxbin>=0 && vxbin<fkNVXVYBins && vybin>=0 && vybin<fkNVXVYBins) {
           fCRCQVecPhiHistVtx[fCenBin][vxbin][vybin]->Fill(fVtxPosCor[2],dPhi,dEta,wPhiEta);
         }
         
@@ -1541,6 +1549,63 @@ void AliFlowAnalysisCRC::Finish()
   if(fStoreVarious) this->FinalizeVarious();
   
 } // end of AliFlowAnalysisCRC::Finish()
+
+//=======================================================================================================================
+
+Bool_t AliFlowAnalysisCRC::EvaulateIfSplitMergedTracks(AliFlowEventSimple* anEvent, AliFlowTrackSimple* aftsTrack, Int_t it1)
+{
+  const Float_t kLimit1 = 0.02 * 3;
+  Float_t bSign = (fbFlagIsPosMagField? -1 : 1);
+  Int_t nTracks = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks
+  
+  Bool_t isNoSplit = kFALSE;
+  
+  //your cuts
+  if (it1 < nTracks - 1) {
+    for (Int_t itll2 = it1 + 1; itll2 < nTracks; itll2++) {
+      
+      AliFlowTrackSimple* aftsTrack2 = (AliFlowTrackSimple*)anEvent->GetTrack(itll2);
+      if (!aftsTrack2) {
+        delete aftsTrack2;
+        continue;
+      }
+      Double_t deta1 = aftsTrack->Eta() - aftsTrack2->Eta();
+      
+      if (TMath::Abs(deta1) < 0.02 * 2.5 * 3) {
+        // phi in rad
+        Float_t phi1rad1 = aftsTrack->Phi();
+        Float_t phi2rad1 = aftsTrack2->Phi();
+        
+        // check first boundaries to see if is worth to loop and find the minimum
+        Float_t dphistar11 = GetDPhiStar(phi1rad1, aftsTrack->Pt(), aftsTrack->Charge(), phi2rad1, aftsTrack2->Pt(), aftsTrack2->Charge(), 0.8, bSign);
+        Float_t dphistar21 = GetDPhiStar(phi1rad1, aftsTrack->Pt(), aftsTrack->Charge(), phi2rad1, aftsTrack2->Pt(), aftsTrack2->Charge(), 2.5, bSign);
+        Float_t dphistarminabs1 = 1e5;
+        Float_t dphistarmin1 = 1e5;
+        
+        if (TMath::Abs(dphistar11) < kLimit1 || TMath::Abs(dphistar21) < kLimit1 || dphistar11 * dphistar21 < 0 ) {
+          
+          for (Double_t rad1 = 0.8; rad1 < 2.51; rad1 += 0.01) {
+            
+            Float_t dphistar1 = GetDPhiStar(phi1rad1, aftsTrack->Pt(), aftsTrack->Charge(), phi2rad1, aftsTrack2->Pt(), aftsTrack2->Charge(), rad1, bSign);
+            Float_t dphistarabs1 = TMath::Abs(dphistar1);
+            if (dphistarabs1 < dphistarminabs1) {
+              dphistarmin1 = dphistar1;
+              dphistarminabs1 = dphistarabs1;
+            }
+          }
+          if (dphistarminabs1 < 0.02 && TMath::Abs(deta1) < 0.02) {
+            //AliInfo(Form("HBT: Removed track pair %d %d with [[%f %f]] %f %f %f | %f %f %d %f %f %d %f", i, j, deta, dphi, dphistarminabs,dphistar1, dphistar2, phi1rad, pt1, charge1, phi2rad, pt2, charge2, bSign));
+            isNoSplit = kTRUE;
+          }
+        }
+        
+      }
+      
+    }
+  }
+  
+  return isNoSplit;
+}
 
 //=======================================================================================================================
 
@@ -17560,6 +17625,9 @@ void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
       fPhiEtaWeightsChPt[i][j] = NULL;
     }
   }
+  for (Int_t cb=0; cb<fCRCnCen; cb++) {
+    fPhiEtaWeightsVtx[cb] = NULL;
+  }
   
   // fPhiDistrRefRPs = NULL;
   // fPtDistrRefRPs = NULL;
@@ -17631,9 +17699,9 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
   fCenHist = new TH1D("Centrality","Centrality",100,0.,100.);
   fVariousList->Add(fCenHist);
   fEventCounter = new TH1D("EventCounter","EventCounter",10,0.,10.);
-  fEventCounter->GetXaxis()->SetBinLabel(1,"vn{QC}");
+  fEventCounter->GetXaxis()->SetBinLabel(1,"input events");
   fEventCounter->GetXaxis()->SetBinLabel(2,"vn{SPZDC} & SC");
-  fEventCounter->GetXaxis()->SetBinLabel(3,"v1(eta){SPZDC}");
+  fEventCounter->GetXaxis()->SetBinLabel(3,"vn{QC}");
   fVariousList->Add(fEventCounter);
   for (Int_t c=0; c<3; c++) {
     fVtxHist[c] = new TH3D(Form("fVtxHist[%d]",c),Form("fVtxHist[%d]",c),fCRCnRun,0.,1.*fCRCnRun,10,0.,100.,100,(c<2?-0.5:-20.),(c<2?0.5:20.));
@@ -21278,6 +21346,9 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     IQM2 = QM*QM-QM2;
     WQM2 = (WeigMul? IQM2 : 1.);
     if(QM0>1) {
+      
+      if(hr==0)fEventCounter->Fill(2.5);
+      
       IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
       fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],WQM2*fCenWeightEbE);
       fFlowQCRefCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],WQM2*fCenWeightEbE);
@@ -29934,10 +30005,14 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     vtxbinsy[v]=ymin + v*(ymax-ymin)/10.;
     vtxbinsz[v]=zmin + v*(zmax-zmin)/10.;
   }
+  Double_t phibinsforphihist2[51] = {0.};
+  for (Int_t phib=0; phib<51; phib++) {
+    phibinsforphihist2[phib] = phib*TMath::TwoPi()/50.;
+  }
   for (Int_t cb=0; cb<fCRCnCen; cb++) {
     for (Int_t k=0; k<fkNVXVYBins; k++) {
       for (Int_t q=0; q<fkNVXVYBins; q++) {
-        fCRCQVecPhiHistVtx[cb][k][q] = new TH3D(Form("fCRCQVecPhiHistVtx[%d][%d][%d]",cb,k,q),Form("fCRCQVecPhiHistVtx[%d][%d][%d]",cb,k,q),10,vtxbinsz,50,phibinsforphihist,16,etabinsforphihist);
+        fCRCQVecPhiHistVtx[cb][k][q] = new TH3D(Form("fCRCQVecPhiHistVtx[%d][%d][%d]",cb,k,q),Form("fCRCQVecPhiHistVtx[%d][%d][%d]",cb,k,q),10,vtxbinsz,50,phibinsforphihist2,16,etabinsforphihist);
         fCRCQVecPhiHistVtx[cb][k][q]->Sumw2();
         fCRCQVecEtaPhiList->Add(fCRCQVecPhiHistVtx[cb][k][q]);
       }
@@ -30415,7 +30490,13 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     }
   }
   if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhiVtx) {
-   // TBI
+    for (Int_t cb=0; cb<fCRCnCen; cb++) {
+      if(fWeightsList->FindObject(Form("fCRCQVecPhiHistVtx[%d]",cb))) {
+        fPhiEtaWeightsVtx[cb] = (TH3D*)(fWeightsList->FindObject(Form("fCRCQVecPhiHistVtx[%d]",cb)));
+      } else {
+        AliWarning("WARNING: POIExtraWeights (kEtaPhiVtx) not found ! \n");
+      }
+    }
   }
   if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhiChPt) {
     for (Int_t i=0; i<2; i++) {
@@ -35990,6 +36071,21 @@ void AliFlowAnalysisCRC::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsi
   }//end of for(Int_t i1=0;i1<nPrim;i1++)
   
 } // end of void AliFlowAnalysisCRC::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+
+//=======================================================================================================================
+
+Double_t AliFlowAnalysisCRC::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
+{
+  // calculates dphistar
+  Double_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  // circularity
+  if (dphistar > TMath::Pi()) dphistar = TMath::Pi() * 2. - dphistar;
+  if (dphistar < -TMath::Pi()) dphistar = -TMath::Pi() * 2. - dphistar;
+  if (dphistar > TMath::Pi()) dphistar = TMath::Pi() * 2. - dphistar;
+  
+  return dphistar;
+}
 
 //=======================================================================================================================
 

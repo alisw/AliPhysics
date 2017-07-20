@@ -187,6 +187,8 @@ public:
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
   Bool_t GetUseZDC() const {return this->fUseZDC;};
+  void SetRemoveSplitMergedTracks(Bool_t const uPhiEtaW) {this->fRemoveSplitMergedTracks = uPhiEtaW;};
+  Bool_t GetRemoveSplitMergedTracks() const {return this->fRemoveSplitMergedTracks;};
   void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
   Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
   void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
@@ -334,6 +336,7 @@ private:
   Bool_t fCalculateFlowVZ;
   Bool_t fUseVZERO;
   Bool_t fUseZDC;
+  Bool_t fRemoveSplitMergedTracks;
   Bool_t fRecenterZDC;
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
@@ -374,7 +377,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fUseTracklets;
   
-  ClassDef(AliAnalysisTaskCRC,11);
+  ClassDef(AliAnalysisTaskCRC,12);
 };
 
 //================================================================================================================

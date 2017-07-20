@@ -293,6 +293,8 @@ public:
   virtual Bool_t CheckRunFullTPCFlow(Int_t RunNum);
   // 3h.) Various:
   virtual void FinalizeVarious();
+  virtual Double_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+  virtual Bool_t EvaulateIfSplitMergedTracks(AliFlowEventSimple* anEvent, AliFlowTrackSimple* aftsTrack, Int_t it1);
   
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms():
   virtual void GetOutputHistograms(TList *outputListHistos);
@@ -749,6 +751,8 @@ public:
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
   Bool_t GetUseZDC() const {return this->fUseZDC;};
+  void SetRemoveSplitMergedTracks(Bool_t const uPhiEtaW) {this->fRemoveSplitMergedTracks = uPhiEtaW;};
+  Bool_t GetRemoveSplitMergedTracks() const {return this->fRemoveSplitMergedTracks;};
   void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
   Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
   void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
@@ -1474,6 +1478,7 @@ private:
   Bool_t fCalculateFlowVZ;
   Bool_t fUseVZERO;
   Bool_t fUseZDC;
+  Bool_t fRemoveSplitMergedTracks;
   Bool_t fRecenterZDC;
   Bool_t fNUAforCRC;
   Bool_t fUseCRCRecenter;
@@ -1506,6 +1511,7 @@ private:
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
+  TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
   TH3D *fPhiEtaRbRWeights; //!
   TH3D *fPhiEtaRbRWeightsCh[2]; //!
   
@@ -2006,7 +2012,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,62);
+  ClassDef(AliFlowAnalysisCRC,63);
   
 };
 
