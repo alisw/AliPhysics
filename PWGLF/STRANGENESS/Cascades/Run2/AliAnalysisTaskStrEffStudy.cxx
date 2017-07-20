@@ -172,6 +172,7 @@ fTreeVariableNegDxy(0),
 fTreeVariablePosDz(0),
 fTreeVariableNegDz(0),
 fTreeVariableDcaV0Daughters(0),
+fTreeVariableDcaV0DaughtersGeometric(0),
 fTreeVariablePosPropagStatus(0),
 fTreeVariableNegPropagStatus(0),
 fTreeVariableV0Radius(0),
@@ -375,6 +376,7 @@ fTreeVariableNegDxy(0),
 fTreeVariablePosDz(0),
 fTreeVariableNegDz(0),
 fTreeVariableDcaV0Daughters(0),
+fTreeVariableDcaV0DaughtersGeometric(0),
 fTreeVariablePosPropagStatus(0),
 fTreeVariableNegPropagStatus(0),
 fTreeVariableV0Radius(0),
@@ -641,6 +643,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariablePosDz",&fTreeVariablePosDz,"fTreeVariablePosDz/F");
     fTreeV0->Branch("fTreeVariableNegDz",&fTreeVariableNegDz,"fTreeVariableNegDz/F");
     fTreeV0->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
+    fTreeV0->Branch("fTreeVariableDcaV0DaughtersGeometric",&fTreeVariableDcaV0DaughtersGeometric,"fTreeVariableDcaV0DaughtersGeometric/F");
     fTreeV0->Branch("fTreeVariablePosPropagStatus",&fTreeVariablePosPropagStatus,"fTreeVariablePosPropagStatus/O");
     fTreeV0->Branch("fTreeVariableNegPropagStatus",&fTreeVariableNegPropagStatus,"fTreeVariableNegPropagStatus/O");
     fTreeV0->Branch("fTreeVariableV0Radius",&fTreeVariableV0Radius,"fTreeVariableV0Radius/F");
@@ -656,6 +659,14 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
     fTreeV0->Branch("fTreeVariablePtMC",&fTreeVariablePtMC,"fTreeVariablePtMC/F");
     fTreeV0->Branch("fTreeVariableRapMC",&fTreeVariableRapMC,"fTreeVariableRapMC/F");
+    
+    //Uncertainties
+    fTreeV0->Branch("fTreeVariablePosAlpha",&fTreeVariablePosAlpha,"fTreeVariablePosAlpha/F");
+    fTreeV0->Branch("fTreeVariablePosSigmaY2",&fTreeVariablePosSigmaY2,"fTreeVariablePosSigmaY2/F");
+    fTreeV0->Branch("fTreeVariablePosSigmaZ2",&fTreeVariablePosSigmaZ2,"fTreeVariablePosSigmaZ2/F");
+    fTreeV0->Branch("fTreeVariableNegAlpha",&fTreeVariableNegAlpha,"fTreeVariableNegAlpha/F");
+    fTreeV0->Branch("fTreeVariableNegSigmaY2",&fTreeVariableNegSigmaY2,"fTreeVariableNegSigmaY2/F");
+    fTreeV0->Branch("fTreeVariableNegSigmaZ2",&fTreeVariableNegSigmaZ2,"fTreeVariableNegSigmaZ2/F");
     //------------------------------------------------
     
     //------------------------------------------------
@@ -1220,6 +1231,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //3b: Do V0 combination and see if it works, please
         //Step 1: propagate to DCA
         fTreeVariableDcaV0Daughters = -1;
+        fTreeVariableDcaV0DaughtersGeometric = -1;
         Double_t xn, xp, dca=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
         
         //Correct for beam pipe material
@@ -1243,6 +1255,26 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Actual propagation
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
+        
+        //Acquire the DCA that's not strictly computed with uncertainties (geometric only) for comparison
+        Double_t lx1, ly1, lz1, lx2, ly2, lz2, tmp[3];
+        nt.GetXYZ(tmp);
+        lx1 = tmp[0]; ly1 = tmp[1]; lz1 = tmp[2];
+        pt.GetXYZ(tmp);
+        lx2 = tmp[0]; ly2 = tmp[1]; lz2 = tmp[2];
+        fTreeVariableDcaV0DaughtersGeometric = TMath::Sqrt(
+                                                           TMath::Power(lx1-lx2,2)+
+                                                           TMath::Power(ly1-ly2,2)+
+                                                           TMath::Power(lz1-lz2,2)
+                                                           );
+        
+        //Get track uncertainties
+        fTreeVariableNegAlpha   = nt.GetAlpha();
+        fTreeVariableNegSigmaY2 = nt.GetSigmaY2();
+        fTreeVariableNegSigmaZ2 = nt.GetSigmaZ2();
+        fTreeVariablePosAlpha   = pt.GetAlpha();
+        fTreeVariablePosSigmaY2 = pt.GetSigmaY2();
+        fTreeVariablePosSigmaZ2 = pt.GetSigmaZ2();
         
         //Step 2: Attempt creation of a V0 vertex in these conditions
         AliESDv0 vertex(nt,lNegTrackArray[iV0],pt,lPosTrackArray[iV0]);

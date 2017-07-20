@@ -373,6 +373,7 @@ private:
     Float_t fTreeVariablePosDz;
     Float_t fTreeVariableNegDz;
     Float_t fTreeVariableDcaV0Daughters; //!;
+    Float_t fTreeVariableDcaV0DaughtersGeometric; //purely geometric, no use of uncertainties
     Bool_t fTreeVariablePosPropagStatus;
     Bool_t fTreeVariableNegPropagStatus;
     Float_t fTreeVariableV0Radius; //!
@@ -388,7 +389,13 @@ private:
     Int_t fTreeVariablePIDNegative;
     Float_t fTreeVariablePtMC;
     Float_t fTreeVariableRapMC;
-    
+    //Uncertainties
+    Float_t fTreeVariablePosAlpha;
+    Float_t fTreeVariablePosSigmaY2;
+    Float_t fTreeVariablePosSigmaZ2;
+    Float_t fTreeVariableNegAlpha;
+    Float_t fTreeVariableNegSigmaY2;
+    Float_t fTreeVariableNegSigmaZ2;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
