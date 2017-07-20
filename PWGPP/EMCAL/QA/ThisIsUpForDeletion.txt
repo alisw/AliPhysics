@@ -1,0 +1,4 @@
+This QA folder is up for deletion.
+All the files are copied into PWGPP/EMCAL/QAMacros.
+
+Only Marie or Erwann should delete this folder!
