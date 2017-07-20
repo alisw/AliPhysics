@@ -62,7 +62,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t MixedEvent, double Weight);
   Bool_t                      PreSelection(AliVCluster* caloCluster);
   Bool_t                      FinalClusterCuts(AliVCluster* cluster);
-  double                      GetIsolation_Track(AliVCluster* cluster, double Rmax);
+  void                      GetIsolation_Track(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband);
   void                        GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband);
   Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
   Double_t                    GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
