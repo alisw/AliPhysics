@@ -25,11 +25,12 @@
  * This is a collection of analysis macros and general code used for EMCal QA and Calibration.
  * They are grouped in the following folder structure.
  *
- * + QA contains macros for a run-by-run quality assurance of the EMcal performance
- * + TiC contains macros for time calibration of the EMCal cell signals
- * + TeC contains macros for temperature of the EMCal cell signals
- * + EC contains macros for energy calibration of the EMCal
- * + BC contains macros for masking bad cells in the EMCal
+ * + QAMacros contains macros for a run-by-run quality assurance of the EMcal performance
+ * + TiCMacros contains macros for time calibration of the EMCal cell signals
+ * + TeCMacros contains macros for temperature of the EMCal cell signals
+ * + ECPi0Macros contains macros for energy calibration of the EMCal
+ * + ECSingleChMacros contains macros for single channel energy calibration of the EMCal
+ * + BCMacros contains macros for masking bad cells in the EMCal
  * 
  *
  * QA code
@@ -42,14 +43,13 @@
  *
  * Time Calibration code
  * ---------------------
- * 
  * + macro1.C
  * + macro2.C
  * + macro3.C
  *
+ *
  * Bad Channel Analysis code
  * ---------------------
- *
  * + BadChannelAna.cxx
  * + BadChannelAna.h
  * + runCopyFromLegoTrainBC.sh 
@@ -59,18 +59,37 @@
  * + helperMacrosOADBBC.C      
  * + helperMacrosRunByRunBC.C  
  * 
- * Energy Calibration code
- * ---------------------
  *
- * + macro1.C
- * + macro2.C
- * + macro3.C
+ * Energy Calibration (pi0) code
+ * ---------------------
+ * + CheckNoisePeakVariationWithTimeCut.C
+ * + ComparePi0CalibResults.C
+ * + ConvertOCDBtoText.C
+ * + HVrecalculation.C
+ * + HVrecalculation_EMCALthirds.C
+ * + MergeHVscanFilesVariousScans2.C
+ * + MergeThirdSMfilesIntoOne.C
+ * + MultiplyPi0CalibrationFactors_TextToHisto.C
+ * + MultiplyPi0CalibrationFactors_TextToHisto_Final.C
+ * + Pi0CalibInvMassAnalysis3.C
+ * + PlotLEDruns.C
+ * + PrepareHV_SM1819.C
+ * + SetCDB.C
+ * + UnderstandDCALthirdShuffle.C
+ * + UpdateEMCAL_OADB_Recalib.C
+ *
+ *
+ * Energy Calibration (Single Channel) code
+ * ---------------------
+ * + paint_emcal.py
+ * + calib_emcal.py
+ *
  *
  * Temperature Calibration code
  * ---------------------
- *
- * + macro1.C
- * + macro2.C
- * + macro3.C
+ * + plot.C
+ * + plotProf.C
+ * + scanAll.C
+ * + scanTemp.C
  *
  */
