@@ -792,11 +792,12 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/BC \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TeC \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TiC \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/EC \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/BCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TeCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TiCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECPi0Macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECSingleChMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QAMacros \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
