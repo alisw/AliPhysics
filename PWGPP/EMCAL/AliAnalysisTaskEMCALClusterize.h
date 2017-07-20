@@ -116,12 +116,16 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           ClusterizeCells();
   void           ClusterUnfolding();
   void           JustUnfold(Bool_t yesno)                       { fJustUnfold        = yesno   ; }
-    
+  void           UpdateCells();
+  
   void           SetConfigFileName(TString name)                { fConfigName        = name    ; }
   void           SetMaxEvent(Int_t max)                         { fMaxEvent          = max     ; }
   
   void           SwitchOnTrackMatching()                        { fDoTrackMatching   = kTRUE   ; }
   void           SwitchOffTrackMatching()                       { fDoTrackMatching   = kFALSE  ; } 
+
+  void           SwitchOnUpdateCell()                           { fUpdateCell        = kTRUE   ; } 
+  void           SwitchOffUpdateCell()                          { fUpdateCell        = kFALSE  ; }  
 
   // Cell selection after unfolding
     
@@ -261,7 +265,8 @@ private:
   
   Int_t                  fMaxEvent;                ///<  Set a maximum event
   
-  Bool_t                 fDoTrackMatching;         ///<  On/Off the matching recalulation to speed up analysis in PbPb
+  Bool_t                 fDoTrackMatching;         ///<  On/Off the matching recalculation to speed up analysis in PbPb
+  Bool_t                 fUpdateCell;              ///<  On/Off the upate of the CaloCells container
   Bool_t                 fSelectCell;              ///<  Reject cells from cluster if energy is too low and recalculate position/energy and other
   Float_t                fSelectCellMinE;          ///<  Min energy cell threshold, after unfolding
   Float_t                fSelectCellMinFrac;       ///<  Min fraction of cell energy after unfolding cut
@@ -319,7 +324,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 33) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 34) ;
   /// \endcond
 
 };

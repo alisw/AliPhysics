@@ -77,7 +77,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),           fDoTrackMatching(kFALSE)
+, fMaxEvent(0),           fDoTrackMatching(kFALSE),   fUpdateCell(0)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
@@ -126,7 +126,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),             fDoTrackMatching(kFALSE)
+, fMaxEvent(0),             fDoTrackMatching(kFALSE),   fUpdateCell(0)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
@@ -1308,6 +1308,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fConfigName       = clus->fConfigName;
     fMaxEvent         = clus->fMaxEvent;
     fDoTrackMatching  = clus->fDoTrackMatching;
+    fUpdateCell       = clus->fUpdateCell;
     fOutputAODBranchName = clus->fOutputAODBranchName;
     for(Int_t i = 0; i < 22; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
     fCentralityClass  = clus->fCentralityClass;
@@ -2201,6 +2202,66 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   }
 }
 
+//_______________________________________________________________________
+/// Create a new CaloCells container if calibration or some changes were applied.
+/// Delete previouly existing content in the container.
+//________________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::UpdateCells()
+{
+  if ( !fUpdateCell ) return;
+  
+  // Update cells only in case re-calibration was done 
+  // or bad map applied or additional T-Card cells added.
+  if(!fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+     !fRecoUtils->IsRecalibrationOn()              && 
+     !fRecoUtils->IsRunDepRecalibrationOn()        && 
+     !fRecoUtils->IsTimeRecalibrationOn()          && 
+     !fRecoUtils->IsL1PhaseInTimeRecalibrationOn() &&
+     !fTCardCorrEmulation                            ) return;
+  
+  const Int_t   ncells = fCaloCells->GetNumberOfCells();
+  const Int_t   ndigis = fDigitsArr->GetEntries();
+  if ( ncells != ndigis ) 
+  {
+    fCaloCells->DeleteContainer();
+    fCaloCells->CreateContainer(ndigis);
+  }
+  
+  for (Int_t idigit = 0; idigit < ndigis; ++idigit) 
+  {
+    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(idigit));
+    
+    Double_t cellAmplitude  = digit->GetAmplitude();
+    Short_t  cellNumber     = digit->GetId();
+    Double_t cellTime       = digit->GetTime();
+    
+    Bool_t highGain = kFALSE;
+    if( digit->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
+    
+    // Only for MC
+    // Get the label of the primary particle that generated the cell
+    // Assign the particle that deposited more energy
+    Int_t   nparents  = digit->GetNiparent();
+    Int_t   cellMcEDepFrac =-1 ;
+    Float_t cellMcLabel    =-1.;
+    if ( nparents > 0 )
+    {
+      for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+      { 
+        if(cellMcEDepFrac >= digit->GetDEParent(jndex+1)) continue ;
+        
+        cellMcLabel   = digit->GetIparent (jndex+1);
+        cellMcEDepFrac= digit->GetDEParent(jndex+1);          
+      } // all primaries in digit      
+    } // select primary label
+    
+    if(cellMcEDepFrac < 0) cellMcEDepFrac = 0.
+      
+    fCaloCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
+  }
+}
+
+
 //_______________________________________________________
 /// Do clusterization event by event, execute different steps
 ///  * 1) Do some checks on the kind of events (ESD, AOD) or if some filtering is needed, initializations
@@ -2264,6 +2325,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Step 3
   
   FillCaloClusterInEvent();
+  
+  UpdateCells();
 }
 
 
