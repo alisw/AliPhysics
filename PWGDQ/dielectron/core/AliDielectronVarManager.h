@@ -1151,10 +1151,9 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   Double_t tpcNcls=particle->GetTPCNcls();
 
   if(Req(kQnDeltaPhiTrackTPCrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnTPCrpH2]);
-  //GetNclsS not present in AODtrack
-  //Replace with method as soon as available
-  TBits tpcSharedMap = particle->GetTPCSharedMap();
-  Double_t tpcNclsS=  tpcSharedMap.CountBits(0)-tpcSharedMap.CountBits(159);
+
+  Double_t tpcNclsS = -99.;
+  if(Req(kNclsSTPC) || Req(kNclsSFracTPC)) tpcNclsS = particle->GetTPCnclsS();
 
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS) || Req(kNclsSFracITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
