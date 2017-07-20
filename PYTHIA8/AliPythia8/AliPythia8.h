@@ -131,7 +131,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     Bool_t                fDecayLonglived;	  ///<    Decay long-lived particles (see @ref SetDecayLonglived for list of supported particles)
     static AliPythia8*    fgAliPythia8;       //    Pointer to single instance
 
-    ClassDef(AliPythia8, 1) //ALICE UI to PYTHIA8
+    ClassDef(AliPythia8, 2); //ALICE UI to PYTHIA8
 };
 
 #endif
