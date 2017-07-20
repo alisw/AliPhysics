@@ -11,6 +11,7 @@
 #include <TH3F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
+#include "TCustomBinning.h"
 
 #include "AliAnalysisTaskGammaHadron.h"
 
@@ -35,6 +36,7 @@
 #include "AliESDUtils.h"
 #include "AliEventPoolManager.h"
 #include "AliMCEvent.h"
+
 
 
 using std::cout;
@@ -497,11 +499,28 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnQA[dimThnQA] = 30;
     dimThnQA++;
 
+
+    //..Create the fhAmpId TH2D with increasing binwidth
+    //..0-10 GeV (0.05), 10-20 GeV (0.2), 20-30 GeV (0.5)
+    //Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
+    TCustomBinning xBinning;
+    xBinning.SetMinimum(0);
+    xBinning.AddStep(0.5,0.005);   //..first entries of the array are the set ranges and bins
+    xBinning.AddStep(1,0.02);      //..expand the previously defined range by 2 but increase the bin width
+    xBinning.AddStep(4,0.035);      //..expand the previously defined range by 4 but increase the bin width
+
+    TArrayD xbinsArray;
+    xBinning.CreateBinEdges(xbinsArray);
+
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 300;
-    Double_t ShapeArray[300+1];
+    nbinsThnQA[dimThnQA] = 225;
+    Double_t ShapeArray[225+1];
+    for(Int_t i=0;i<226;i++)
+    {
+    		ShapeArray[i]=xbinsArray.At(i);
+    }
     binEdgesThnQA[dimThnQA] = ShapeArray;
-    GenerateFixedBinArray(300,0,4,ShapeArray);
+    //GenerateFixedBinArray(225,0,4,ShapeArray);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 4;
     dimThnQA++;
