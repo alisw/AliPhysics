@@ -46,6 +46,13 @@ struct MacroParams {
   UInt_t q3d_bin_count;
   Float_t q3d_maxq;
 
+  UInt_t ylm_max_l;
+  UInt_t ylm_ibin;
+  Float_t ylm_vmin;
+  Float_t ylm_vmax;
+
+  bool ylm_useLCMS;
+
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -106,6 +113,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
   macro_config.q3d_bin_count = 120;
   macro_config.q3d_maxq = 0.30;
+
+  macro_config.ylm_max_l = 3;
+  macro_config.ylm_ibin = 30;
+  macro_config.ylm_vmin = 0.0;
+  macro_config.ylm_vmax = 0.3;
+  macro_config.ylm_useLCMS = false;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -217,7 +230,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        TString cf_title = TString("_qinv_") + pair_type_str;
+        // TString cf_title = TString("_qinv_") + pair_type_str;
+        TString cf_title("_qinv");
         int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
         AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         analysis->AddCorrFctn(cf);
@@ -246,73 +260,75 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_trueq_cf) {
         AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         model_cf->ConnectToManager(model_manager);
-        analysis->AddCorrFctn(
-          model_cf
-        );
+        analysis->AddCorrFctn(model_cf);
       }
 
       if (macro_config.do_q3d_cf) {
-        cf_title = TString("_q3D_") + pair_type_str;
+        TString cf_title("_q3D");
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
-        cf_title = TString("Trueq3D_") + pair_type_str;
+        // cf_title = TString("Trueq3D_") + pair_type_str;
+        TString cf_title("Trueq3D_");
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
         analysis->AddCorrFctn(m_cf);
       }
 
       if (macro_config.do_kt_qinv) {
-        AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
-        binned->AddKtRange(0.2, 0.3);
-        binned->AddKtRange(0.3, 0.4);
-        binned->AddKtRange(0.4, 0.5);
-        binned->AddKtRange(0.5, 0.6);
-        binned->AddKtRange(0.6, 0.8);
-        binned->AddKtRange(0.8, 1.0);
-        analysis->AddCorrFctn(binned);
+        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
+        // loop over (low,high) pairs in the kt_ranges vector
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_qinv->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_qinv);
       }
 
       if (macro_config.do_kt_q3d && !macro_config.do_kt_trueq3d_cf) {
-        TString q3d_cf_name = TString("_q3D_") + pair_type_str;
+        // TString q3d_cf_name = TString("_q3D_") + pair_type_str;
+        TString q3d_cf_name("_q3d");
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
           new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
-        kt_q3d->AddKtRange(0.2, 0.3);
-        kt_q3d->AddKtRange(0.3, 0.4);
-        kt_q3d->AddKtRange(0.4, 0.5);
-        kt_q3d->AddKtRange(0.5, 0.6);
-        kt_q3d->AddKtRange(0.6, 0.8);
-        kt_q3d->AddKtRange(0.8, 1.0);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_q3d->AddKtRange(low, high);
+        }
         analysis->AddCorrFctn(kt_q3d);
       }
 
       if (macro_config.do_kt_trueq3d_cf) {
-        TString q3d_cf_name = TString("_Trueq3D_") + pair_type_str;
-        AliFemtoKtBinnedCorrFunc *kt_true_q3d = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D",
-          new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+        TString q3d_cf_name("Trueq3D");
 
-        for (size_t kt_idx=0; kt_idx < macro_conf.kt_ranges.size(); kt_idx += 2) {
-          float low = macro_conf.kt_ranges[kt_idx],
-                hight = macro_conf.kt_ranges[kt_idx+1];
+        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+
+        AliFemtoKtBinnedCorrFunc *kt_true_q3d = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
           kt_true_q3d->AddKtRange(low, high);
         }
         analysis->AddCorrFctn(kt_true_q3d);
       }
 
       if (macro_config.do_ylm_cf) {
-        /*
-        analysis->AddCorrFctn(
-          new AliFemtoCorrFctnDirectYlm(
-            TString::Format("cylm%stpcM%i", chrgs[ichg], imult),
-            3,
-            nbinssh,
-            0.0,
-            shqmax,
-            runshlcms
-          )
-        );
-        */
+        TString name = TString::Format("ylm", chrgs[ichg], imult);
+        AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
+            name,
+            macro_config.ylm_max_l,
+            macro_config.ylm_ibin, // nbinssh,
+            macro_config.ylm_vmin,
+            macro_config.ylm_vmax,
+            macro_config.ylm_useLCMS
+          );
+        analysis->AddCorrFctn(ylm_cf);
       }
 
       manager->AddAnalysis(analysis);
@@ -330,13 +346,11 @@ BuildConfiguration(const TString &text,
                    MacroParams &mac
                    )
 {
-  std::cout << "I-BuildConfiguration:" << TBase64::Encode(text) << " \n";
-  //   std::cout << "   '" << text << "'\n";
+  std::cout << "I-BuildConfiguration (BASE64-Encoded): " << TBase64::Encode(text) << " \n";
 
   const TString analysis_varname = "a",
                      cut_varname = "cut",
                    macro_varname = "mac";
-
 
   TObjArray* lines = text.Tokenize("\n;");
 
@@ -397,9 +411,11 @@ BuildConfiguration(const TString &text,
     {
       UInt_t rangeend = text.Index(")");
       if (rangeend == -1) {
+        std::cerr << "W-ConfigFemtoAnalysis: " << "Expected closing parens ')' in configuration string. Using rest of line as kT-bins\n";
         rangeend = line.Length();
       }
-      TString kt_ranges = line(1, rangeend - 1);
+      TString kt_ranges = line(1, rangeend - 2);
+      std::cout << "Loaded kt-ranges: '" << kt_ranges << "'\n";
       TObjArray *range_groups = kt_ranges.Tokenize(",");
 
       TIter next_range_group(range_groups);
@@ -414,16 +430,18 @@ BuildConfiguration(const TString &text,
           TString next = TString::Format("%0.6e", subrange_it->String().Atof());
 
           cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";
+          // std::cout << "`" << cmd << "`\n";
           gROOT->ProcessLineFast(cmd);
 
           cmd = macro_varname + ".kt_ranges.push_back(" + next + ");";
+          // std::cout << "`" << cmd << "`\n";
           gROOT->ProcessLineFast(cmd);
           prev = next;
         }
       }
     }
-
     continue;
+
     case '+':
       if (line == "+p") {
         cmd = macro_varname + ".pair_codes.push_back(1)";
