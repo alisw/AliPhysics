@@ -507,20 +507,19 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     xBinning.SetMinimum(0);
     xBinning.AddStep(0.5,0.005);   //..first entries of the array are the set ranges and bins
     xBinning.AddStep(1,0.02);      //..expand the previously defined range by 2 but increase the bin width
-    xBinning.AddStep(4,0.035);      //..expand the previously defined range by 4 but increase the bin width
+    xBinning.AddStep(4,0.04);      //..expand the previously defined range by 4 but increase the bin width
 
     TArrayD xbinsArray;
     xBinning.CreateBinEdges(xbinsArray);
 
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 225;
-    Double_t ShapeArray[225+1];
-    for(Int_t i=0;i<226;i++)
+    nbinsThnQA[dimThnQA] = 200;
+    Double_t ShapeArray[200+1];
+	for(Int_t i=0;i<201;i++)
     {
     		ShapeArray[i]=xbinsArray.At(i);
     }
     binEdgesThnQA[dimThnQA] = ShapeArray;
-    //GenerateFixedBinArray(225,0,4,ShapeArray);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 4;
     dimThnQA++;
@@ -1558,8 +1557,9 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(caloClusterVec); //..can acess phi from
+	Double_t energy= caloCluster->GetNonLinCorrEnergy();
 
-	if(identifier==0 && fPlotQA==1 && fGammaOrPi0==0)
+	if(identifier==0 && fPlotQA==1 && fGammaOrPi0==0 && energy >=1)
 	{
 		//..Get leading cluster
 		AliVCluster* leadingClus = GetLeadingCluster("Pt",clusters);
@@ -1586,7 +1586,7 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 
 		//Eg, lambda0,NLM, ncells, distance to bad ,e/p, Mgg
 		Double_t valueArray[7];
-		valueArray[0] = caloCluster->GetNonLinCorrEnergy();
+		valueArray[0] = energy;
 		valueArray[1] = caloCluster->GetM02();
 		//valueArray[2] = caloCluster->GetNExMax();
 		//valueArray[3] = caloCluster->GetNCells();
