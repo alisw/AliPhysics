@@ -108,26 +108,25 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
         //                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
         //      }
         
-        // Reference (for MC with reference weight LHC12e6 for pass2)
         
         RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE);
         
         RegisterTaskNPEpp( MCthere, isAOD, 120, 90, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE);
         
         
         if (MCthere){
             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                               dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE, kWei, kWeiData);
             
             
             RegisterTaskNPEpp( MCthere, isAOD,  120, 90, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                               dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE, kWei, kWeiData);
         }
         
         
@@ -150,20 +149,20 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
         if (MCthere){
             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                               dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE, kWei, kWeiData);
             
             RegisterTaskNPEpp( MCthere, isAOD, 120, 90, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                               dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE, kWei, kWeiData);
         }
         
         RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                           dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE);
        
         RegisterTaskNPEpp( MCthere, isAOD, 120, 90, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                           dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.0, kTRUE, kFALSE);
 
         
     }
@@ -179,9 +178,9 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
                                    Int_t iKink = 0, Int_t assITS=2, Int_t assTPCcl=100,
                                    Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
                                    Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
-                                   Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0,
+                                   Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0, Double_t assMinPt = 0.0,
                                    Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
-                                   Int_t weightlevelback = -1, Int_t WhichWei = 0,  Double_t assMinPt = 0.1)
+                                   Int_t weightlevelback = -1, Int_t WhichWei = 0)
 {
     // Fixed values
     Double_t etaIncMin = -0.8; Double_t etaIncMax = 0.8;
