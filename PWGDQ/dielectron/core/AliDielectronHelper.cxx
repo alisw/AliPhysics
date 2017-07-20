@@ -342,9 +342,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
   Float_t eta = -99.;
   Float_t nClsTPC = -99.;
   Float_t tpcChi2Cl = -99.;
-  Float_t trackPhi = -99.;
   Float_t eventplane = -99.;
-  Float_t deltaPhi = -99.;
+
 
 
   if(bEventPlane){
@@ -393,12 +392,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
 
     // Eventplane cuts for ITS
     if(bEventPlane){
-      trackPhi = TVector2::Phi_0_2pi(track->Phi());
-      deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventplane);
-      if(TMath::Abs(deltaPhi) > 0.79 && TMath::Abs(deltaPhi) < 2.35)  nITSoutP++;
-      if(TMath::Abs(deltaPhi) < 0.79 || (TMath::Abs(deltaPhi) < 3.15 && TMath::Abs(deltaPhi) > 2.35))  nITSinP++;
-      // if(varCutsEPinP.IsSelected(track))  nITSinP++;
-      // if(varCutsEPoutP.IsSelected(track)) nITSoutP++;
+      if(AliDielectronHelper::IsInPlane(track->Phi(),eventplane))  nITSinP++;
+      if(AliDielectronHelper::IsOutOfPlane(track->Phi(),eventplane))  nITSoutP++;
     }
 
 
@@ -420,12 +415,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
     nTPC+=1.;
 
     if(bEventPlane){
-      trackPhi = TVector2::Phi_0_2pi(track->Phi());
-      deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventplane);
-      if(TMath::Abs(deltaPhi) > 0.79 && TMath::Abs(deltaPhi) < 2.35)  nTPCoutP++;
-      if(TMath::Abs(deltaPhi) < 0.79 || (TMath::Abs(deltaPhi) < 3.15 && TMath::Abs(deltaPhi) > 2.35))  nTPCinP++;
-      // if(varCutsEPinP.IsSelected(track))  nTPCinP++;
-      // if(varCutsEPoutP.IsSelected(track)) nTPCoutP++;
+      if(AliDielectronHelper::IsInPlane(track->Phi(),eventplane))  nTPCinP++;
+      if(AliDielectronHelper::IsOutOfPlane(track->Phi(),eventplane))  nTPCoutP++;
     }
   }
   if( bEventPlane && efficiencies){
@@ -436,6 +427,7 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
 
 
   return (nITS>0. ? nTPC/nITS : -1);
+
 }
 
 
@@ -560,4 +552,17 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
     nMothers++;
   }
   return nMothers;
+}
+
+//_____________________________________________________________________________
+Bool_t AliDielectronHelper::IsInPlane(Float_t trackPhi, Float_t eventPhi){
+  Float_t deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventPhi);
+  if(TMath::Abs(deltaPhi) < TMath::Pi()/4 || (TMath::Abs(deltaPhi) < TMath::Pi() && TMath::Abs(deltaPhi) > TMath::Pi()*3/4) )  return kTRUE;
+  else return kFALSE;
+}
+
+Bool_t AliDielectronHelper::IsOutOfPlane(Float_t trackPhi, Float_t eventPhi){
+  Float_t deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventPhi);
+  if(TMath::Abs(deltaPhi) > TMath::Pi()/4 && TMath::Abs(deltaPhi) < TMath::Pi()*3/4)  return kTRUE;
+  else return kFALSE;
 }
