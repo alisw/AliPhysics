@@ -30,8 +30,8 @@
 #include <vector>
 
 #include <fastjet/ClusterSequence.hh>
-#include <fastjet/contrib/nsubjettiness.hh>
-#include <fastjet/contrib/softdrop.hh>
+#include <fastjet/contrib/Nsubjettiness.hh>
+#include <fastjet/contrib/SoftDrop.hh>
 
 #include <TMath.h>
 #include <TString.h>
@@ -91,31 +91,33 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   fJetSubstructureTree = new TTree("jetSubstructure", "Tree with jet substructure information");
   std::stringstream leaflist;
   leaflist  << "fR/D:"
-            << "fEventWeight/D:"
-            << "fPtJetRec/D:"
-            << "fPtJetSim/D:"
+            << "fEventWeight:"
+            << "fPtJetRec:"
+            << "fPtJetSim:"
+            << "fAreaRec:"
+            << "fAreaSim:"
+            << "fNEFRec:"
+            << "fNEFSim:"
+            << "fZgMeasured:"
+            << "fZgTrue:"
+            << "fRgMeasured:"
+            << "fRgTrue:"
+            << "fMgMeasured:"
+            << "fMgTrue:"
+            << "fPtgMeasured:"
+            << "fPtgTrue:"
+            << "fOneSubjettinessMeasured:"
+            << "fOneSubjettinessTrue:"
+            << "fTwoSubjettinessMeasured:"
+            << "fTwoSubjettinessTrue:"
             << "fNCharged/I:"
-            << "fNNeutral/I:"
-            << "fNTrueConst/I:"
-            << "fAreaRec/D:"
-            << "fAreaSim/D:"
-            << "fNEFRec/D:"
-            << "fNEFSim/D:"
-            << "fZgMeasured/D:"
-            << "fZgTrue/D:"
-            << "fRgMeasured/D:"
-            << "fRgTrue/D:"
-            << "fMgMeasured/D:"
-            << "fMgTrue/D:"
-            << "fPtgMeasured/D:"
-            << "fPtgTrue/D:"
-            << "fNDroppedMeasured/I:"
-            << "fNDroppedTrue/I:"
-            << "fOneSubjettinessMeasured/D:"
-            << "fOneSubjettinessTrue/D:"
-            << "fTwoSubjettinessMeasured/D:"
-            << "fTwoSubjettinessTrue/D";
-  fJetSubstructureTree->Branch("JetInfo", &fJetSubstructureInfo, leaflist.str().c_str());
+            << "fNNeutral:"
+            << "fNTrueConst:"
+            << "fNDroppedMeasured:"
+            << "fNDroppedTrue";
+  std::string leafstring = leaflist.str();
+  printf("branch string: %s\n", leafstring.c_str());
+  fJetSubstructureTree->Branch("JetInfo", &fJetSubstructureInfo, leafstring.c_str(), sizeof(fJetSubstructureInfo));
   fOutput->Add(fJetSubstructureTree);
   PostData(1, fOutput);
 }
@@ -351,7 +353,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliEmcalJet::kEMCALfid,
                               particles, nullptr);
     mcjets->SetName("mcjets");
-    mcjets->SetMinPt(20.);
+    mcjets->SetJetPtCut(20.);
   }
 
   if(isData) {
@@ -368,7 +370,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliEmcalJet::kEMCALfid,
                               tracks, clusters);
     datajets->SetName("datajets");
-    datajets->SetMinPt(20.);
+    datajets->SetJetPtCut(20.);
 
     treemaker->SetUseAliAnaUtils(true, true);
 

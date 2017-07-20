@@ -100,9 +100,6 @@ struct AliJetSubstructureInfo {
   Double_t fEventWeight;
   Double_t fPtJetRec;
   Double_t fPtJetSim;
-  Int_t fNCharged;
-  Int_t fNNeutral;
-  Int_t fNTrueConst;
   Double_t fAreaRec;
   Double_t fAreaSim;
   Double_t fNEFRec;
@@ -115,12 +112,15 @@ struct AliJetSubstructureInfo {
   Double_t fMgTrue;
   Double_t fPtgMeasured;
   Double_t fPtgTrue;
-  Int_t fNDroppedMeasured;
-  Int_t fNDroppedTrue;
   Double_t fOneSubjettinessMeasured;
   Double_t fOneSubjettinessTrue;
   Double_t fTwoSubjettinessMeasured;
   Double_t fTwoSubjettinessTrue;
+  Int_t fNCharged;
+  Int_t fNNeutral;
+  Int_t fNTrueConst;
+  Int_t fNDroppedMeasured;
+  Int_t fNDroppedTrue;
 };
 
 /**
