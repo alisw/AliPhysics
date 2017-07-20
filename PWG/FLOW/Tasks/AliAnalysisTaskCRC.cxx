@@ -109,6 +109,7 @@ fCalculateFlowZDC(kFALSE),
 fCalculateFlowVZ(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
+fRemoveSplitMergedTracks(kFALSE),
 fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
@@ -269,6 +270,7 @@ fCalculateFlowZDC(kFALSE),
 fCalculateFlowVZ(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
+fRemoveSplitMergedTracks(kFALSE),
 fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
@@ -410,6 +412,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCalculateFlowVZ(fCalculateFlowVZ);
   fQC->SetUseVZERO(fUseVZERO);
   fQC->SetUseZDC(fUseZDC);
+  fQC->SetRemoveSplitMergedTracks(fRemoveSplitMergedTracks);
   fQC->SetRecenterZDC(fRecenterZDC);
   fQC->SetDivSigma(fDivSigma);
   fQC->SetInvertZDC(fInvertZDC);

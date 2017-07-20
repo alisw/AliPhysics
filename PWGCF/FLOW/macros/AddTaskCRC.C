@@ -30,7 +30,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
-                             Bool_t bRequireTOFSignal=kFALSE,
+                             Bool_t bRemoveSplitMergedTracks=kFALSE,
                              Bool_t bUseTightPileUp=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -103,6 +103,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bPhiExclZone=kFALSE;
   Bool_t bTestSin=kFALSE;
   Bool_t bZDCCut=kFALSE;
+  Bool_t bRequireTOFSignal=kFALSE,
   if(MinMulZN>=13) bZDCCut=kTRUE;
   
   // define CRC suffix
@@ -541,7 +542,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetZDCGainAlpha(ZDCGainAlpha);
   taskQC->SetTestSin(bTestSin);
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
+  taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
+  
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
@@ -829,12 +832,17 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskQC->SetPOIExtraWeights(sPhiEtaWeight);
     TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2015" && sIntRuns=="high") {
-      if(bUsePtWeights) {
+      if(bUsePtWeights && !sPhiEtaWeight.EqualTo("EtaPhiVtx")) {
         if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights.root";
         if(AODfilterBit==128) PhiEtaWeightsFileName += "15oHI_FB128_CenPhiEtaWeights.root";
         if(AODfilterBit==768 && !bPtDepDCAxyCut) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
         if(AODfilterBit==768 &&  bPtDepDCAxyCut) PhiEtaWeightsFileName += "15oHI_FB768_DCAcut_CenPhiEtaWeights.root";
+      }
+      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtx")) {
+        if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights_Vtx.root";
+        if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights_Vtx.root";
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_Vtx.root";
       }
     }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
