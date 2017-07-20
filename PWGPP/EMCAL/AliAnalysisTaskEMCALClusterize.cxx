@@ -2255,7 +2255,7 @@ void AliAnalysisTaskEMCALClusterize::UpdateCells()
       } // all primaries in digit      
     } // select primary label
     
-    if(cellMcEDepFrac < 0) cellMcEDepFrac = 0.
+    if ( cellMcEDepFrac < 0 ) cellMcEDepFrac = 0.;
       
     fCaloCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
   }
