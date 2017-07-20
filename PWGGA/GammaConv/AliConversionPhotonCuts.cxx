@@ -2438,6 +2438,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
     fPIDnSigmaBelowElectronLine=-2.5;
     fPIDnSigmaAboveElectronLine=3;
     break;
+  case 9: // -2.5,5.
+    fPIDnSigmaBelowElectronLine=-2.5;
+    fPIDnSigmaAboveElectronLine=5;
+    break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
     return kFALSE;
