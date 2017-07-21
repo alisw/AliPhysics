@@ -130,6 +130,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fDoEtaCut;
 	Double_t fPtCut;
 	Double_t fMinClsTPC; // minimum clusters in the TPC
+    Double_t fChi2PerClsTPC; // maximum Chi2 per cluster in the TPC
+    Bool_t   fRequireTPCRefit; // require a refit in the TPC
 	Double_t fMinClsTPCToF; // minimum clusters to findable clusters
 	Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
 	Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
@@ -146,6 +148,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fDoMassCut;
 	Double_t fMassCut;	
 	Bool_t   fDoWeights;
+    Double_t fMaxDCAToVertexZ;
 	
 
 
