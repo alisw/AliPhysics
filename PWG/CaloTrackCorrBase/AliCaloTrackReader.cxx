@@ -1858,8 +1858,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   fhEMCALClusterCutsE[0]->Fill(clus->E());
 
   //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, nCells %d",
+                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(), clus->GetNCells()));
 
   //---------------------------
   // Embedding case
@@ -1985,8 +1985,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //--------------------------------------
   // Apply some kinematical/acceptance cuts
   //
-  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) return ;
-
+  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) 
+  {
+    AliDebug(2,Form("Cluster E out of range, %2.2f < %2.2f < %2.2f",fEMCALPtMin,clus->E(),fEMCALPtMax));
+    return ;
+  }
+  
   // Select cluster fiducial region
   //
   Bool_t bEMCAL = kFALSE;
@@ -2017,7 +2021,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
                     fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
     
     
-    if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta)) return;
+    if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta))
+    {
+      AliDebug(2,"Mask cluster");
+      return;
+    }
   }
   
   // Check effect of energy and fiducial cuts
@@ -2026,8 +2034,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //----------------------------------------------------
   // Apply N cells cut
   //
-  if(clus->GetNCells() <= fEMCALNCellsCut && fDataType != AliCaloTrackReader::kMC) return ;
-
+  if(clus->GetNCells() <= fEMCALNCellsCut && fDataType != AliCaloTrackReader::kMC) 
+  {
+    AliDebug(2,Form("Cluster with n cells %d < %d",clus->GetNCells(), fEMCALNCellsCut));
+    return ;
+  }
+  
   // Check effect of n cells cut
   fhEMCALClusterCutsE[5]->Fill(clus->E());
 
@@ -2038,7 +2050,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   
-  if(distBad < fEMCALBadChMinDist) return  ;
+  if(distBad < fEMCALBadChMinDist) 
+  {
+    AliDebug(2, Form("Cluster close to bad, dist %2.2f < %2.2f",distBad,fEMCALBadChMinDist));
+    return  ;
+  }
   
   // Check effect distance to bad channel cut
   fhEMCALClusterCutsE[6]->Fill(clus->E());
@@ -2075,28 +2091,31 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
   //
-  Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(clus, GetEMCALCells()); 
-  // Int_t nMaxima = clus->GetNExMax(); // For Run2
-  if( fSmearShowerShape  && clus->GetNCells() > 2 && 
-      nMaxima >= fSmearNLMMin && nMaxima <= fSmearNLMMax )
+  if ( fSmearShowerShape  && clus->GetNCells() > 2 )
   {
-    AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
-    if(fSmearingFunction == kSmearingLandau)
-    {
-      clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
-    }
-    else if(fSmearingFunction == kSmearingLandauShift)
-    {
-      if(iclus%3 == 0 && clus->GetM02() > 0.1) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
-    }
-    else if (fSmearingFunction == kNoSmearing)
-    {
-      clus->SetM02( clus->GetM02() );
-    }
-    //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
-    AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
-  }
+    Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(clus, GetEMCALCells()); 
+//  Int_t nMaxima = clus->GetNExMax(); // For Run2
 
+    if (  nMaxima >= fSmearNLMMin && nMaxima <= fSmearNLMMax )
+    {
+      AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
+      if(fSmearingFunction == kSmearingLandau)
+      {
+        clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+      }
+      else if ( fSmearingFunction == kSmearingLandauShift )
+      {
+        if(iclus%3 == 0 && clus->GetM02() > 0.1) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
+      }
+      else if (fSmearingFunction == kNoSmearing)
+      {
+        clus->SetM02( clus->GetM02() );
+      }
+      //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
+      AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
+    }
+  }
+  
   //--------------------------------------------------------
   // Fill the corresponding array with the selected clusters
   // Usually just filling EMCal array with upper or lower clusters is enough, 
