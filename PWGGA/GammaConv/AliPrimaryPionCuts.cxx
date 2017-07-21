@@ -86,7 +86,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fDoMassCut(kFALSE),
 	fMassCut(10),
 	fDoWeights(kFALSE),
-    fMaxDCAToVertexZ(0),
+    fMaxDCAToVertexZ(8000),
 	fCutString(NULL),
   fCutStringRead(""),
 	fHistCutIndex(NULL),
