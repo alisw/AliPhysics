@@ -545,6 +545,8 @@ void AliAnalysisTaskEMCALClusterize::AddNewTCardInducedCellsToDigit()
   // Get the number of stored digits, to assign the index of the new ones
   Int_t idigit = fDigitsArr->GetEntriesFast();
   
+  Double_t fixTime =  615.*1e-9;
+  
   for(Int_t j = 0; j < fgkNEMCalCells; j++)
   {
     // Newly created?
@@ -563,7 +565,7 @@ void AliAnalysisTaskEMCALClusterize::AddNewTCardInducedCellsToDigit()
     
     // Now add the cell to the digits list
     //AliEMCALDigit* digit = 
-    new((*fDigitsArr)[idigit]) AliEMCALDigit( -2, -2, j, fTCardCorrCellsEner[j],0,AliEMCALDigit::kHG,idigit, 0, 0, 0);
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( -2, -2, j, fTCardCorrCellsEner[j], fixTime,AliEMCALDigit::kHG,idigit, 0, 0, 0);
     
     //digit->SetListOfParents(0,0x0,0x0); // not needed
         
@@ -871,11 +873,13 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     idigit++;
     
   }
-
-  if ( fTCardCorrEmulation ) AddNewTCardInducedCellsToDigit();
   
   fDigitsArr->Sort();
   
+  // Call after Sort, if not it screws up digits index order in clusterization
+  if ( fTCardCorrEmulation ) AddNewTCardInducedCellsToDigit();
+
+
   //-------------------------------------------------------------------------------------
   // Do the clusterization
   //-------------------------------------------------------------------------------------        
@@ -1765,7 +1769,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
-            
+      
+      if ( !fRecParam->GetUnfold() && (ratios[ncellsTrue] > 1 || ratios[ncellsTrue] < 1)  ) 
+        AliWarning(Form("recpoint cell E %2.3f but digit E %2.3f and no unfolding", recPoint->GetEnergiesList()[c], digit->GetAmplitude()));
+      
       // In case of unfolding, remove digits with unfolded energy too low      
       if(fSelectCell)
       {
