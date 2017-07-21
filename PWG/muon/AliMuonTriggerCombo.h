@@ -41,8 +41,7 @@ public:
     kComboFormula,  //!<! Complex formula
     kComboAND,      //!<! Formula with only AND
     kComboOR,       //!<! Formula with onlt OR
-    kMatchPattern,  //!<! Match pattern
-    kRejectPattern  //!<! Reject pattern
+    kRegex,         //!<! Match pattern
   };
 
   /// Combination has trigger inputs
@@ -71,7 +70,7 @@ private:
   Bool_t fIsDimuTrig; ///< Is di-muon trigger
 
   /// \cond CLASSIMP
-  ClassDef(AliMuonTriggerCombo, 1); // Class for muon event trigger combination
+  ClassDef(AliMuonTriggerCombo, 2); // Class for muon event trigger combination
   /// \endcond
 };
 

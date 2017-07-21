@@ -72,15 +72,13 @@ Bool_t AliMuonTriggerCombo::Init ( const char* name, const char* trigInputsStrin
 {
   /// Initialise trigger pattern or trigger combination
   ///
-  /// 1) A trigger pattern is a part of the trigger class with a wildcard *
-  /// If the name begins with !, the matching pattern will be rejected
-  /// Otherwise the matching pattern will be kept
+  /// 1) A trigger pattern is a perl regular expression.
+  /// The fired trigger will be kept only if it matches the regex
   /// Examples:
-  /// - CINT7* : keep all trigger classes containg CINT
-  /// - !*-ACE-* : reject all trigger classes containing -ACE-
+  /// - CINT[78]-B-NOPF-MUFAST* : matches CINT7-B-NOPF-MUFAST and CINT8-B-NOPF-MUFAST
   ///
   /// 2) specify a combination of trigger classes, trigger inputs or physics selection bits
-  /// combined through a logical AND "&" or a logical OR "|" (wildcard * NOT accepted)
+  /// combined through a logical AND "&" or a logical OR "|" (regex * NOT accepted)
   /// Trigger input sbegins with 0, 1 or 2
   /// Physics selction bits begins with k, and correspond to the enum of AliVEvent
   /// Examples:
@@ -118,35 +116,29 @@ Bool_t AliMuonTriggerCombo::Init ( const char* name, const char* trigInputsStrin
   if ( matchPt.Contains("2") || matchPt.Contains("DI") ) fIsDimuTrig = kTRUE;
 
   TString tn (name);
-  Bool_t hasAND = kFALSE, hasOR = kFALSE, hasNOT = kFALSE, hasSTAR = kFALSE;
-  if ( tn.Contains("&") ) {
-    tn.ReplaceAll("&",";");
-    hasAND = kTRUE;
-  }
-  if ( tn.Contains("|") ) {
-    tn.ReplaceAll("|",";");
-    hasOR = kTRUE;
-  }
-  if ( tn.Contains("!") ) {
-    tn.ReplaceAll("!","");
-    hasNOT = kTRUE;
-  }
-  if ( tn.Contains("(") || tn.Contains(")") ) {
-    tn.ReplaceAll("(","");
-    tn.ReplaceAll(")","");
-  }
-  if ( tn.Contains("*") ) hasSTAR = kTRUE;
+  Bool_t hasAND = tn.Contains("&");
+  Bool_t hasOR = tn.Contains("|");
+  Bool_t hasNOT = tn.Contains("!");
 
-  if ( hasSTAR ) {
-    if ( hasAND || hasOR ) {
-      AliError(Form("%s : illegal expressions. Must be in the form:\n   pattern* => keep class if it contains pattern\n   !pattern* => reject class if it contains pattern\n   class&input = keep class if it satisfies the expression (exact matching required)",GetName()));
-      fComboType = kBadPattern;
-      return kFALSE;
-    }
-    else if ( hasNOT ) fComboType = kRejectPattern;
-    else fComboType = kMatchPattern;
+  Bool_t isRegex = kFALSE;
+  if ( tn.Contains("[") || tn.Contains(".") || tn.Contains("+") || tn.Contains("?") || tn.Contains("*") || tn.Contains("^") || tn.Contains("$") ) {
+    // This is a regular expression
+    if ( hasAND ||
+        ( hasOR && ! tn.Contains("(") ) )
+    {
+       AliError(Form("%s : illegal expressions. Must be in the form:\n   regexp => keep class if it matches the regexp\n   class&input = keep class if it satisfies the expression (exact matching required)",GetName()));
+       fComboType = kBadPattern;
+       return kFALSE;
+     }
+     fComboType = kRegex;
   }
   else {
+    tn.ReplaceAll("&",";");
+    tn.ReplaceAll("|",";");
+    tn.ReplaceAll("!","");
+    tn.ReplaceAll("(","");
+    tn.ReplaceAll(")","");
+
     if ( ( hasAND && hasOR ) || hasNOT ) fComboType = kComboFormula;
     else if ( hasAND ) fComboType = kComboAND;
     else if ( hasOR ) fComboType = kComboOR;
@@ -321,19 +313,21 @@ Bool_t AliMuonTriggerCombo::MatchEvent ( const TString& firedTriggerClasses, UIn
   TString debugString = Form("Classes: %s  inputs: 0x%x 0x%x 0x%x  PhsySel: 0x%x  Match %s =>",firedTriggerClasses.Data(),l0Inputs,l1Inputs,l2Inputs,physicsSelection,GetName());
 
   TObjString* an = 0x0;
-  if ( fComboType == kMatchPattern ) {
+  if ( fComboType == kRegex ) {
     an = static_cast<TObjString*>(fTriggerClasses->At(0));
-    ok = firedTriggerClasses.Contains(TRegexp(an->GetName(),kTRUE));
+    TPRegexp re(an->GetName());
+    ok = firedTriggerClasses.Contains(re);
     AliDebug(2,Form("%s %i",debugString.Data(),ok));
     return  ok;
   }
 
-  if ( fComboType == kRejectPattern ) {
-    an = static_cast<TObjString*>(fTriggerClasses->At(0));
-    ok = ( ! firedTriggerClasses.Contains(TRegexp(an->GetName(),kTRUE)) );
-    AliDebug(2,Form("%s %i",debugString.Data(),ok));
-    return ok;
-  }
+  // Obsolete
+  // if ( fComboType == kRejectPattern ) {
+  //   an = static_cast<TObjString*>(fTriggerClasses->At(0));
+  //   ok = ( ! firedTriggerClasses.Contains(TRegexp(an->GetName(),kTRUE)) );
+  //   AliDebug(2,Form("%s %i",debugString.Data(),ok));
+  //   return ok;
+  // }
 
   TString comp(GetName());
 
@@ -383,6 +377,6 @@ Bool_t AliMuonTriggerCombo::MatchEvent ( const TString& firedTriggerClasses, UIn
   }
 
   AliDebug(2,Form("%s %i",debugString.Data(),ok));
-  
+
   return ok;
 }
