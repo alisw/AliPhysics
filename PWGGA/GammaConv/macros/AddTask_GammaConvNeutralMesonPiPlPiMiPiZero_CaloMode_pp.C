@@ -272,13 +272,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
     cuts.AddCut("00000113","1111111067032230000","002010706","0103503400000000","0103503000000000");
   } else if( trainConfig == 28)  {
-    // eta < 0.8
+    // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
-    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
-    cuts.AddCut("00000113","1111111067032230000","40a330706","0103503400000000","0153503000000000");
-
-
+    cuts.AddCut("00000113","1111111067032230000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00000113","1111111067032230000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00000113","1111111067032230000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00000113","1111111067032230000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00000113","1111111067032230000","30a330706","0103503400000000","0153503000000000"); // all of the above
 
     // PHOS modes
   } else if( trainConfig == 31 ) {
@@ -314,11 +315,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
     cuts.AddCut("00000113","2444400043013300000","002010706","0103503400000000","0153503000000000");
   } else if( trainConfig == 40)  {
-    // eta < 0.8
+    // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
     // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
-    cuts.AddCut("00000113","2444400043013300000","40a330706","0103503400000000","0153503000000000");
+    cuts.AddCut("00000113","2444400043013300000","302010706","0103503400000000","0153503000000000"); // only cuts above
+    cuts.AddCut("00000113","2444400043013300000","30a010706","0103503400000000","0153503000000000"); // above + fMinClsTPC=80.+ fChi2PerClsTPC=4 + fRequireTPCRefit=kTRUE;
+    cuts.AddCut("00000113","2444400043013300000","302310706","0103503400000000","0153503000000000"); // above + DCA pT dependent 0.0182+0.0350/pt^1.01 + DCA_Z < 3.0
+    cuts.AddCut("00000113","2444400043013300000","302030706","0103503400000000","0153503000000000"); // above + pTmin=0.15
+    cuts.AddCut("00000113","2444400043013300000","30a330706","0103503400000000","0153503000000000"); // all of the above
 
 
   //8 TeV

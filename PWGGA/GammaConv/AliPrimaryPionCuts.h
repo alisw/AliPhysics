@@ -180,7 +180,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-	ClassDef(AliPrimaryPionCuts,4)
+    ClassDef(AliPrimaryPionCuts,5)
 };
 
 #endif
