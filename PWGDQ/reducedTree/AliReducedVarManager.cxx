@@ -837,14 +837,14 @@ void AliReducedVarManager::FillTrackingStatus(TRACK* p, Float_t* values) {
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
+/*void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
   //
   // Fill tracking flags
   //
   for(Int_t i=0; i<kNTrackingFlags; i++){
     values[kTrackingFlags+i] = p->TestFlag(i)+10e-6;
   }
-}
+}*/
 
 
 
@@ -1176,7 +1176,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   }  
 
   FillTrackingStatus(pinfo,values);
-  FillTrackingFlags(pinfo,values);
+  //FillTrackingFlags(pinfo,values);
   
   if(pinfo->HasMCTruthInfo()) {
      if(fgUsedVars[kPtMC]) values[kPtMC] = pinfo->PtMC();
