@@ -2010,45 +2010,37 @@ void AliCalorimeterUtils::RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, 
                                                       AliVCaloCells * cells)
 {  
+  if ( !IsRecalibrationOn() ) return cluster->E();
+
   // Initialize some used variables
   Float_t frac  = 0., energy = 0.;  
   
-  if(cells) 
-  {
-    //Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+  // Get the cluster number of cells and list of absId, check what kind of cluster do we have.  
+  UShort_t * index    = cluster->GetCellsAbsId() ;
+  Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+  Int_t      ncells   = cluster->GetNCells();	
+  
+  Int_t calo = AliFiducialCut::kEMCAL;
+  if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
+  
+  // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+  for(Int_t icell = 0; icell < ncells; icell++)
+  {      
+    Int_t absId = index[icell];
     
-    UShort_t * index    = cluster->GetCellsAbsId() ;
-    Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+    frac =  fraction[icell];
+    if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
     
-    Int_t ncells     = cluster->GetNCells();	
+    Float_t amp = cells->GetCellAmplitude(absId);
+    RecalibrateCellAmplitude(amp,calo, absId);
     
-    Int_t calo = AliFiducialCut::kEMCAL;
-    if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
+    AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy: before cal %f; after cal %f",
+                    calo,frac,cells->GetCellAmplitude(absId),amp));
     
-    // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
-    for(Int_t icell = 0; icell < ncells; icell++)
-    {      
-      Int_t absId = index[icell];
-      
-      frac =  fraction[icell];
-      if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
-      
-      Float_t amp = cells->GetCellAmplitude(absId);
-      RecalibrateCellAmplitude(amp,calo, absId);
-      
-      AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy: before cal %f; after cal %f",
-                      calo,frac,cells->GetCellAmplitude(absId),amp));
-      
-      energy += amp*frac;
-    }
-    
-    AliDebug(1,Form("Energy before %f, after %f",cluster->E(),energy));
-    
-  } // cells available
-  else
-  {
-    AliFatal("Cells pointer does not exist!");
+    energy += amp*frac;
   }
+  
+  AliDebug(1,Form("Energy before %f, after %f",cluster->E(),energy));
   
   return energy;
 }
@@ -2060,46 +2052,37 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cluster,
                                                                 AliVCaloCells * cells, Float_t energyOrg)
 {
-  //Initialize some used variables
+  // Initialize some used variables
   Float_t frac  = 0., energy = 0.;
+    
+  // Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+  UShort_t * index    = cluster->GetCellsAbsId() ;
+  Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+  Int_t      ncells   = cluster->GetNCells();
   
-  if(cells)
+  Int_t calo = AliFiducialCut::kEMCAL;
+  if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
+  
+  // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+  for(Int_t icell = 0; icell < ncells; icell++)
   {
-    // Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+    Int_t absId = index[icell];
     
-    UShort_t * index    = cluster->GetCellsAbsId() ;
-    Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+    frac =  fraction[icell];
+    if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
     
-    Int_t ncells     = cluster->GetNCells();
+    Float_t amp = cells->GetCellAmplitude(absId);
+    if ( IsRecalibrationOn() ) RecalibrateCellAmplitude(amp,calo, absId);
     
-    Int_t calo = AliFiducialCut::kEMCAL;
-    if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
+    amp*=GetMCECellClusFracCorrection(amp,energyOrg);
     
-    // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
-    for(Int_t icell = 0; icell < ncells; icell++)
-    {
-      Int_t absId = index[icell];
-      
-      frac =  fraction[icell];
-      if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
-      
-      Float_t amp = cells->GetCellAmplitude(absId);
-      RecalibrateCellAmplitude(amp,calo, absId);
-      
-      amp*=GetMCECellClusFracCorrection(amp,energyOrg);
-      
-      AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy %f",
-                      calo,frac,cells->GetCellAmplitude(absId)));
-      
-      energy += amp*frac;
-    }
+    AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy %f",
+                    calo,frac,cells->GetCellAmplitude(absId)));
     
-    AliDebug(1,Form("Energy before %f, after %f",cluster->E(),energy));
-  } // cells available
-  else
-  {
-    AliFatal("Cells pointer does not exist!");
+    energy += amp*frac;
   }
+  
+  AliDebug(1,Form("Energy before %f, after %f",cluster->E(),energy));
   
   return energy;
 }
