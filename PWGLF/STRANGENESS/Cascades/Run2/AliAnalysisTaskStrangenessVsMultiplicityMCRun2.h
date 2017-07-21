@@ -588,7 +588,33 @@ private:
     Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSClusters0;
+    Bool_t fTreeCascVarPosITSClusters1;
+    Bool_t fTreeCascVarPosITSClusters2;
+    Bool_t fTreeCascVarPosITSClusters3;
+    Bool_t fTreeCascVarPosITSClusters4;
+    Bool_t fTreeCascVarPosITSClusters5;
+    
+    Bool_t fTreeCascVarNegITSClusters0;
+    Bool_t fTreeCascVarNegITSClusters1;
+    Bool_t fTreeCascVarNegITSClusters2;
+    Bool_t fTreeCascVarNegITSClusters3;
+    Bool_t fTreeCascVarNegITSClusters4;
+    Bool_t fTreeCascVarNegITSClusters5;
 
+    Bool_t fTreeCascVarBachITSClusters0;
+    Bool_t fTreeCascVarBachITSClusters1;
+    Bool_t fTreeCascVarBachITSClusters2;
+    Bool_t fTreeCascVarBachITSClusters3;
+    Bool_t fTreeCascVarBachITSClusters4;
+    Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Uncertainty information on mass (from KF) for testing purposes
+    Float_t fTreeCascVarV0LambdaMassError;
+    Float_t fTreeCascVarV0AntiLambdaMassError;
+    
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
 

@@ -381,7 +381,6 @@ fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarNHitsFMDA(-1.),
 fTreeCascVarNHitsFMDC(-1.),
 
-
 fTreeCascVarCentrality(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
@@ -398,6 +397,31 @@ fTreeCascVarPIDPositiveGrandMother(0),
 fTreeCascVarPIDBachelorGrandMother(0),
 fTreeCascVarSwappedPID(0),
 fTreeCascVarIsPhysicalPrimary(0),
+
+fTreeCascVarPosITSClusters0(0),
+fTreeCascVarPosITSClusters1(0),
+fTreeCascVarPosITSClusters2(0),
+fTreeCascVarPosITSClusters3(0),
+fTreeCascVarPosITSClusters4(0),
+fTreeCascVarPosITSClusters5(0),
+
+fTreeCascVarNegITSClusters0(0),
+fTreeCascVarNegITSClusters1(0),
+fTreeCascVarNegITSClusters2(0),
+fTreeCascVarNegITSClusters3(0),
+fTreeCascVarNegITSClusters4(0),
+fTreeCascVarNegITSClusters5(0),
+
+fTreeCascVarBachITSClusters0(0),
+fTreeCascVarBachITSClusters1(0),
+fTreeCascVarBachITSClusters2(0),
+fTreeCascVarBachITSClusters3(0),
+fTreeCascVarBachITSClusters4(0),
+fTreeCascVarBachITSClusters5(0),
+
+//Uncertainty information on mass (from KF) for testing purposes
+fTreeCascVarV0LambdaMassError(0),
+fTreeCascVarV0AntiLambdaMassError(0),
 
 //Histos
 fHistEventCounter(0),
@@ -694,6 +718,32 @@ fTreeCascVarPIDPositiveGrandMother(0),
 fTreeCascVarPIDBachelorGrandMother(0),
 fTreeCascVarSwappedPID(0),
 fTreeCascVarIsPhysicalPrimary(0),
+
+fTreeCascVarPosITSClusters0(0),
+fTreeCascVarPosITSClusters1(0),
+fTreeCascVarPosITSClusters2(0),
+fTreeCascVarPosITSClusters3(0),
+fTreeCascVarPosITSClusters4(0),
+fTreeCascVarPosITSClusters5(0),
+
+fTreeCascVarNegITSClusters0(0),
+fTreeCascVarNegITSClusters1(0),
+fTreeCascVarNegITSClusters2(0),
+fTreeCascVarNegITSClusters3(0),
+fTreeCascVarNegITSClusters4(0),
+fTreeCascVarNegITSClusters5(0),
+
+fTreeCascVarBachITSClusters0(0),
+fTreeCascVarBachITSClusters1(0),
+fTreeCascVarBachITSClusters2(0),
+fTreeCascVarBachITSClusters3(0),
+fTreeCascVarBachITSClusters4(0),
+fTreeCascVarBachITSClusters5(0),
+
+//Uncertainty information on mass (from KF) for testing purposes
+fTreeCascVarV0LambdaMassError(0),
+fTreeCascVarV0AntiLambdaMassError(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -1077,6 +1127,30 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeGrandMother",&fTreeCascVarIsPhysicalPrimaryNegativeGrandMother,"fTreeCascVarIsPhysicalPrimaryNegativeGrandMother/O");
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveGrandMother",&fTreeCascVarIsPhysicalPrimaryPositiveGrandMother,"fTreeCascVarIsPhysicalPrimaryPositiveGrandMother/O");
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorGrandMother",&fTreeCascVarIsPhysicalPrimaryBachelorGrandMother,"fTreeCascVarIsPhysicalPrimaryBachelorGrandMother/O");
+            
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters0",&fTreeCascVarPosITSClusters0,"fTreeCascVarPosITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters1",&fTreeCascVarPosITSClusters1,"fTreeCascVarPosITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters2",&fTreeCascVarPosITSClusters2,"fTreeCascVarPosITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters3",&fTreeCascVarPosITSClusters3,"fTreeCascVarPosITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters4",&fTreeCascVarPosITSClusters4,"fTreeCascVarPosITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters5",&fTreeCascVarPosITSClusters5,"fTreeCascVarPosITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters0",&fTreeCascVarNegITSClusters0,"fTreeCascVarNegITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters1",&fTreeCascVarNegITSClusters1,"fTreeCascVarNegITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters2",&fTreeCascVarNegITSClusters2,"fTreeCascVarNegITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters3",&fTreeCascVarNegITSClusters3,"fTreeCascVarNegITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters4",&fTreeCascVarNegITSClusters4,"fTreeCascVarNegITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters5",&fTreeCascVarNegITSClusters5,"fTreeCascVarNegITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters0",&fTreeCascVarBachITSClusters0,"fTreeCascVarBachITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters1",&fTreeCascVarBachITSClusters1,"fTreeCascVarBachITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters2",&fTreeCascVarBachITSClusters2,"fTreeCascVarBachITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters3",&fTreeCascVarBachITSClusters3,"fTreeCascVarBachITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters4",&fTreeCascVarBachITSClusters4,"fTreeCascVarBachITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters5",&fTreeCascVarBachITSClusters5,"fTreeCascVarBachITSClusters5/O");
+            //Uncertainty information on mass (from KF) for testing purposes
+            fTreeCascade->Branch("fTreeCascVarV0LambdaMassError",&fTreeCascVarV0LambdaMassError,"fTreeCascVarV0LambdaMassError/F");
+            fTreeCascade->Branch("fTreeCascVarV0AntiLambdaMassError",&fTreeCascVarV0AntiLambdaMassError,"fTreeCascVarV0AntiLambdaMassError/F");
         }
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
@@ -2105,6 +2179,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarV0DCAptNegSigmaZ2 = -100;
         fTreeCascVarV0DCAptNegSigmaSnp2 = -100;
         fTreeCascVarV0DCAptNegSigmaTgl2 = -100;
+        
+        fTreeCascVarPosITSClusters0 = 0;
+        fTreeCascVarPosITSClusters1 = 0;
+        fTreeCascVarPosITSClusters2 = 0;
+        fTreeCascVarPosITSClusters3 = 0;
+        fTreeCascVarPosITSClusters4 = 0;
+        fTreeCascVarPosITSClusters5 = 0;
+        
+        fTreeCascVarNegITSClusters0 = 0;
+        fTreeCascVarNegITSClusters1 = 0;
+        fTreeCascVarNegITSClusters2 = 0;
+        fTreeCascVarNegITSClusters3 = 0;
+        fTreeCascVarNegITSClusters4 = 0;
+        fTreeCascVarNegITSClusters5 = 0;
+        
+        fTreeCascVarBachITSClusters0 = 0;
+        fTreeCascVarBachITSClusters1 = 0;
+        fTreeCascVarBachITSClusters2 = 0;
+        fTreeCascVarBachITSClusters3 = 0;
+        fTreeCascVarBachITSClusters4 = 0;
+        fTreeCascVarBachITSClusters5 = 0;
+        
+        //Uncertainty information on mass (from KF) for testing purposes
+        fTreeCascVarV0LambdaMassError = 1e+4;
+        fTreeCascVarV0AntiLambdaMassError = 1e+4;
 
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
         Double_t lEffMassXi      = 0. ;
@@ -2220,7 +2319,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
             continue;
         }
+        
+        //Check its clusters
+        fTreeCascVarPosITSClusters0 = pTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarPosITSClusters1 = pTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarPosITSClusters2 = pTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarPosITSClusters3 = pTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarPosITSClusters4 = pTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarPosITSClusters5 = pTrackXi->HasPointOnITSLayer(5);
 
+        fTreeCascVarNegITSClusters0 = nTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarNegITSClusters1 = nTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarNegITSClusters2 = nTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarNegITSClusters3 = nTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarNegITSClusters4 = nTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarNegITSClusters5 = nTrackXi->HasPointOnITSLayer(5);
+        
+        fTreeCascVarBachITSClusters0 = bachTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarBachITSClusters1 = bachTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarBachITSClusters2 = bachTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarBachITSClusters3 = bachTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarBachITSClusters4 = bachTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarBachITSClusters5 = bachTrackXi->HasPointOnITSLayer(5);
+        
+        //Get error parametrization (warning: be careful with offline/on-the-fly differences
+        fTreeCascVarV0LambdaMassError = xi->GetKFInfo(4,2,1);
+        fTreeCascVarV0AntiLambdaMassError = xi->GetKFInfo(2,4,1);
+        
         fTreeCascVarPosEta = pTrackXi->Eta();
         fTreeCascVarNegEta = nTrackXi->Eta();
         fTreeCascVarBachEta = bachTrackXi->Eta();
