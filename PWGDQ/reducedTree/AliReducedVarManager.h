@@ -569,7 +569,7 @@ class AliReducedVarManager : public TObject {
   static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
-  static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
+ // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
   static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
   
   static void PrintTrackFlags(AliReducedTrackInfo* track);

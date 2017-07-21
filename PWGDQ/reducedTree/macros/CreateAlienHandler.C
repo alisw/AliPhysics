@@ -63,7 +63,8 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList, TString grid
 // Data pattern for reconstructed data
 //   plugin->SetDataPattern("*AliAOD.root"); //esta linea sirve para pruebas
    
-   plugin->SetRunPrefix("000");   // real data
+   if(!dataDir.Contains("sim"))
+      plugin->SetRunPrefix("000");   // real data
    AddRunNumbers(plugin, inputRunList);
    
 //   plugin->SetOutputSingleFolder("output");
