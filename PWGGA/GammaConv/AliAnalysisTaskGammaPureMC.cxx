@@ -845,6 +845,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 	  
       if(allOK[0] && allOK[1]){
             fHistPtYPi0FromKGG->Fill(particle->Pt(), particle->Y());
+            fHistPtAlphaPi0FromKGG->Fill(particle->Pt(), alpha_k0);
       }
 
       if (!(allGDOK[0] && allGDOK[1] && allGDOK[2] && allGDOK[3])) continue;
