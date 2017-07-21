@@ -149,6 +149,8 @@ fEvents(0),
 fPtaftTime(0),
 fPtaftCell(0),
 fPtaftNLM(0),
+fClusEtVsEtaPhiMatched(0),
+fClusEtVsEtaPhiUnmatched(0),
 fPtaftTM(0),
 fPtaftDTBC(0),
 fPtaftFC(0),
@@ -328,6 +330,8 @@ fEvents(0),
 fPtaftTime(0),
 fPtaftCell(0),
 fPtaftNLM(0),
+fClusEtVsEtaPhiMatched(0),
+fClusEtVsEtaPhiUnmatched(0),
 fPtaftTM(0),
 fPtaftDTBC(0),
 fPtaftFC(0),
@@ -926,6 +930,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
+  fClusEtVsEtaPhiMatched = new TH3D ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 250, -0.8, 0.8, 250, 1.2, 3.4, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched->Sumw2();
+  fOutput->Add(fClusEtVsEtaPhiMatched);
+
+  fClusEtVsEtaPhiUnmatched = new TH3D ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 250, -0.8, 0.8, 250, 1.2, 3.4, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched->Sumw2();
+  fOutput->Add(fClusEtVsEtaPhiUnmatched);
+
   fPtaftTM = new TH1D("hPtaftTM_NC","p_{T} distribution for Neutral Clusters",200,0.,100.);
   fPtaftTM->Sumw2();
   fOutput->Add(fPtaftTM);
@@ -1119,8 +1131,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   fPtaftNLM->Fill(vecCOI.Pt());
   
   if(fTMClusterRejected){
-    if(ClustTrackMatching(coi,kTRUE))
+    if(ClustTrackMatching(coi,kTRUE)){
+      fClusEtVsEtaPhiMatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
       return kFALSE;
+    }
+    else
+      fClusEtVsEtaPhiUnmatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
   }
   
   fPtaftTM->Fill(vecCOI.Pt());
