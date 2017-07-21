@@ -68,6 +68,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fDoEtaCut(kFALSE),
 	fPtCut(0.0),
 	fMinClsTPC(0), // minimum clusters in the TPC
+    fChi2PerClsTPC(0), // maximum Chi2 per cluster in the TPC
+    fRequireTPCRefit(kFALSE), // require a refit in the TPC
 	fMinClsTPCToF(0), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(kFALSE),
 	fDodEdxSigmaTPCCut(kTRUE),
@@ -84,6 +86,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fDoMassCut(kFALSE),
 	fMassCut(10),
 	fDoWeights(kFALSE),
+    fMaxDCAToVertexZ(8000),
 	fCutString(NULL),
   fCutStringRead(""),
 	fHistCutIndex(NULL),
@@ -613,6 +616,9 @@ void AliPrimaryPionCuts::PrintCutsWithValues() {
 	printf("\t %s \n", fStringITSClusterCut.Data());
 	printf("\t min N cluster TPC > %3.2f \n", fMinClsTPC);
 	printf("\t min N cluster TPC/ findable > %3.2f \n", fMinClsTPCToF);
+
+    printf("\t max Chi2 per cluster TPC < %3.2f \n", fChi2PerClsTPC);
+    printf("\t require TPC refit ? %d \n", fRequireTPCRefit);
 // 	printf("\t dca > %3.2f \n", fMinClsTPCToF);
 // 	"kDCAcut",				// 3
 	printf("\t min pT > %3.2f \n", fPtCut);
@@ -842,7 +848,16 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fMinClsTPCToF= 0.35;
 			fUseCorrectedTPCClsInfo=1;
 			break;
-		
+        case 10:
+             fMinClsTPC     = 80.;
+             fChi2PerClsTPC = 4;
+             fRequireTPCRefit    = kTRUE;
+             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+             // Other Cuts concerning TPC
+             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
+        break;
+
 		default:
 			cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
 			return kFALSE;
@@ -936,7 +951,7 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
 			fEsdTrackCuts->SetMaxDCAToVertexXY(1000);
 			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 			break;
-		case 1: 
+        case 1:
 			fEsdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 			break;
@@ -945,6 +960,12 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
 			fEsdTrackCuts->SetMaxDCAToVertexXY(1);
 			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 			break; 
+        case 3:
+            fMaxDCAToVertexZ = 3.0;
+            fEsdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+            fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+            fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+            break;
 		default:
 			cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
 			return kFALSE;
