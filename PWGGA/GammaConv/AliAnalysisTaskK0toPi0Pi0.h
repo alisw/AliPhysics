@@ -67,8 +67,9 @@ public:
   void SetEventCuts(AliConvEventCuts *cuts) { fEventCuts = cuts; }
   void SetConversionPhotonCuts(AliConversionPhotonCuts *cuts) { fConvPhotonCuts = cuts; }
   void SetCaloPhotonCuts(AliCaloPhotonCuts *cuts) { fCaloPhotonCuts = cuts; }
-  void SetPi0Cuts(AliConversionMesonCuts *cuts) { fPi0Cuts = cuts; }
+  void SetPi0CutsConvConv(AliConversionMesonCuts *cuts) { fPi0CutsConvConv = cuts; }
   void SetPi0CutsCaloCalo(AliConversionMesonCuts *cuts) { fPi0CutsCaloCalo = cuts; }
+  void SetPi0CutsConvCalo(AliConversionMesonCuts *cuts) { fPi0CutsConvCalo = cuts; }
   void SetK0Cuts(AliConversionMesonCuts *cuts){ fK0Cuts = cuts;}
 
 protected:
@@ -105,8 +106,9 @@ private:
   AliConvEventCuts                            *fEventCuts;            ///< Event cuts
   AliConversionPhotonCuts                     *fConvPhotonCuts;       ///< Cuts on conversion photons
   AliCaloPhotonCuts                           *fCaloPhotonCuts;       ///< Calo photon cuts
-  AliConversionMesonCuts                      *fPi0Cuts;              ///< Cuts on the pi0
+  AliConversionMesonCuts                      *fPi0CutsConvConv;      ///< Cuts on the pi0 for the conv conv case
   AliConversionMesonCuts                      *fPi0CutsCaloCalo;      ///< Cuts on the pi0 for the calo calo case
+  AliConversionMesonCuts                      *fPi0CutsConvCalo;      ///< Cuts on the pi0 for the conv calo case
   AliConversionMesonCuts                      *fK0Cuts;               ///< Cuts on the K0
 
   AliGammaConversionAODBGHandler              *fBGHandler;            //!<!   Background Handler

@@ -28,8 +28,9 @@
 void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE, 
 						TString periodName = "",
 						TString periodNameV0Reader = "",
-						TString triggerConfig = "MB") {
+						TString selectConfig = "0") {
 
+  Int_t trainConfig = selectConfig.Atoi();
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -48,7 +49,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   //================================================
   //            find input container
   AliAnalysisTaskK0toPi0Pi0 *task=NULL;
-  task = new AliAnalysisTaskK0toPi0Pi0("TaskK0toPi0Pi0" + triggerConfig);
+  task = new AliAnalysisTaskK0toPi0Pi0("TaskK0toPi0Pi0" + selectConfig);
   
 
    //=========  Set Cutnumber for V0Reader ================================
@@ -109,19 +110,48 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
   task->SetNameV0Reader(V0ReaderName); 
   
-  // now for the default cuts for 8 TeV
-  TString defaultEventCut = "00010113";
-  if(triggerConfig == "EMC7"){
-  	defaultEventCut = "00052113"; // EMC7
-  }
-  else if(triggerConfig == "EGA"){
-    defaultEventCut = "00081113"; // EGA
-  }
   TString defaultConvPhotonCut = "00200009327000008250400000";
-  TString defaultCaloPhotonCut = "1111111067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
-  TString defaultPi0Cut = "0163103100000010"; 
+  TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  TString defaultPi0Cut = "0163103100000010"; // conv/conv
   TString Pi0Cut = "0163103100000060"; // calo/calo
+  TString mixedPi0Cut = "0163103100000060"; // conv/calo
   TString defaultK0Cut = "0163103100000000";
+  
+  
+  
+  if (trainConfig == 0){// ================================================= trainConfig = 0 -> 8 TeV MB
+  	TString defaultEventCut = "00010113";
+  	TString defaultConvPhotonCut = "00200009327000008250400000";
+  	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+  } else if (trainConfig == 1){ // ========================================= traingConfig = 1 -> 8 TeV EMC7 
+  	TString defaultEventCut = "00052113";
+  	TString defaultConvPhotonCut = "00200009327000008250400000";
+  	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; //conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+  } else if (trainConfig == 2){ // ========================================= traingConfig = 2 -> 8 TeV EGA 
+  	TString defaultEventCut = "00081113";
+  	TString defaultConvPhotonCut = "00200009327000008250400000";
+  	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+  } else if (trainConfig == 3){ // ========================================= traingConfig = 3 -> 7 TeV MB LHC 10 (V0OR)
+  	TString defaultEventCut = "00000113";
+  	TString defaultConvPhotonCut = "00200009327000008250400000";
+  	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+  }
   
   //create AliCaloTrackMatcher instance, if there is none present
   TString caloCutPos = defaultCaloPhotonCut;
@@ -155,16 +185,21 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   task->SetCaloPhotonCuts(analysisCaloCuts); 
   
   
-  AliConversionMesonCuts *analysisPi0Cuts = new AliConversionMesonCuts();
-  analysisPi0Cuts->InitializeCutsFromCutString(defaultPi0Cut.Data()); 
-  analysisPi0Cuts->SetFillCutHistograms(""); 
-  task->SetPi0Cuts(analysisPi0Cuts); 
+  AliConversionMesonCuts *analysisPi0CutsConvConv = new AliConversionMesonCuts();
+  analysisPi0CutsConvConv->InitializeCutsFromCutString(defaultPi0Cut.Data()); 
+  analysisPi0CutsConvConv->SetFillCutHistograms(""); 
+  task->SetPi0CutsConvConv(analysisPi0CutsConvConv); 
   
   
   AliConversionMesonCuts *analysisPi0CutsCaloCalo = new AliConversionMesonCuts();
   analysisPi0CutsCaloCalo->InitializeCutsFromCutString(Pi0Cut.Data()); 
   analysisPi0CutsCaloCalo->SetFillCutHistograms(""); 
-  task->SetPi0CutsCaloCalo(analysisPi0CutsCaloCalo); 
+  task->SetPi0CutsCaloCalo(analysisPi0CutsCaloCalo);
+  
+  AliConversionMesonCuts *analysisPi0CutsConvCalo = new AliConversionMesonCuts();
+  analysisPi0CutsConvCalo->InitializeCutsFromCutString(mixedPi0Cut.Data()); 
+  analysisPi0CutsConvCalo->SetFillCutHistograms(""); 
+  task->SetPi0CutsConvCalo(analysisPi0CutsConvCalo);  
   
   
   AliConversionMesonCuts *analysisK0Cuts = new AliConversionMesonCuts(); 
@@ -175,7 +210,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer("K0toPi0Pi0" + triggerConfig, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0%s",AliAnalysisManager::GetCommonFileName(),triggerConfig.Data()));
+  mgr->CreateContainer("K0toPi0Pi0" + selectConfig, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0%s",AliAnalysisManager::GetCommonFileName(),selectConfig.Data()));
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);

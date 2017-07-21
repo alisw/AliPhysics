@@ -61,8 +61,9 @@ AliAnalysisTaskK0toPi0Pi0::AliAnalysisTaskK0toPi0Pi0():
   fEventCuts(nullptr),
   fConvPhotonCuts(nullptr),
   fCaloPhotonCuts(nullptr),
-  fPi0Cuts(nullptr),
+  fPi0CutsConvConv(nullptr),
   fPi0CutsCaloCalo(nullptr),
+  fPi0CutsConvCalo(nullptr),
   fK0Cuts(nullptr),
   fBGHandler(nullptr),
   fHistos(nullptr),
@@ -85,8 +86,9 @@ AliAnalysisTaskK0toPi0Pi0::AliAnalysisTaskK0toPi0Pi0(const char *name):
   fEventCuts(nullptr),
   fConvPhotonCuts(nullptr),
   fCaloPhotonCuts(nullptr),
-  fPi0Cuts(nullptr),
+  fPi0CutsConvConv(nullptr),
   fPi0CutsCaloCalo(nullptr),
+  fPi0CutsConvCalo(nullptr),
   fK0Cuts(nullptr),
   fBGHandler(nullptr), 
   fHistos(nullptr),
@@ -206,12 +208,16 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   fOutput->Add(fEventCuts->GetCutHistograms());
   fOutput->Add(fConvPhotonCuts->GetCutHistograms());
   fOutput->Add(fCaloPhotonCuts->GetCutHistograms());
-  TList *histlist = fPi0Cuts->GetCutHistograms();
-  TString histname = "Pi0CutsConv_" + TString(histlist->GetName());
+  TList *histlist = fPi0CutsConvConv->GetCutHistograms();
+  TString histname = "Pi0CutsConvConv_" + TString(histlist->GetName());
   histlist->SetName(histname);
   fOutput->Add(histlist);
   histlist = fPi0CutsCaloCalo->GetCutHistograms();
   histname = "Pi0CutsCalo_" + TString(histlist->GetName());
+  histlist->SetName(histname);
+  fOutput->Add(histlist);
+  histlist = fPi0CutsConvCalo->GetCutHistograms();
+  histname = "Pi0CutsConvCalo_" + TString(histlist->GetName());
   histlist->SetName(histname);
   fOutput->Add(histlist);
   histlist = fK0Cuts->GetCutHistograms();
@@ -277,9 +283,9 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
 
   
   // get Pi0 candidates
-  std::vector<AliAODConversionMother> samePi0PCM = MakePi0Candidates(&conversionPhotons, nullptr, *fPi0Cuts),
+  std::vector<AliAODConversionMother> samePi0PCM = MakePi0Candidates(&conversionPhotons, nullptr, *fPi0CutsConvConv),
                                       samePi0EMCAL = MakePi0Candidates(&caloPhotons, nullptr, *fPi0CutsCaloCalo),
-                                      mixedPi0 = MakePi0Candidates(&conversionPhotons, &caloPhotons, *fPi0Cuts);
+                                      mixedPi0 = MakePi0Candidates(&conversionPhotons, &caloPhotons, *fPi0CutsConvCalo);
   
   /*                                    
   // create the BG Handlers and get the number of events
@@ -331,9 +337,9 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   AliDebug(1, "New event - finished pi0 candidates");
   
   //make the selections
-  std::vector<AliAODConversionMother> samePi0PCMSelection   = SelectMeson(samePi0PCM, *fPi0Cuts, kPi0, "ConvConv");
-  std::vector<AliAODConversionMother> samePi0EMCALSelection = SelectMeson(samePi0EMCAL, *fPi0CutsCaloCalo, kPi0, "ConvCalo");
-  std::vector<AliAODConversionMother> mixedPi0Selection     = SelectMeson(mixedPi0, *fPi0Cuts, kPi0, "CaloCalo");
+  std::vector<AliAODConversionMother> samePi0PCMSelection   = SelectMeson(samePi0PCM, *fPi0CutsConvConv, kPi0, "ConvConv");
+  std::vector<AliAODConversionMother> samePi0EMCALSelection = SelectMeson(samePi0EMCAL, *fPi0CutsCaloCalo, kPi0, "CaloCalo");
+  std::vector<AliAODConversionMother> mixedPi0Selection     = SelectMeson(mixedPi0, *fPi0CutsConvCalo, kPi0, "ConvCalo");
   
   // Additionally fill the QA histograms after the selection
   MakePi0QA(samePi0PCMSelection, "ConvConv", "After");
