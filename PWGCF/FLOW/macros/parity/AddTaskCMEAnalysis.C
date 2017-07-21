@@ -87,6 +87,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       suffixName[iCentralityBin] += gCentrality[iCentralityBin];
       suffixName[iCentralityBin] += "To";
       suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
+      if(gChargePOI == 1) 
+	suffixName[iCentralityBin] += "PlusPlus";
+      else if(gChargePOI == -1) 
+	suffixName[iCentralityBin] += "MinusMinus";
     }
     
     //Giving names to output slots
@@ -205,7 +209,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunSP) {
       TString outputSPv2 = fileName;
       outputSPv2 += ":outputSPv2analysis";
-      
+      if(gChargePOI == 1) outputSP2 += "PlusPlus";
+      else if(gChargePOI == -1) outputSP2 += "MinusMinus";
+
       taskSPv2[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNameSPv2[iCentralityBin].Data()),kFALSE);
       taskSPv2[iCentralityBin]->SetHarmonic(2);
       taskSPv2[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
@@ -221,6 +227,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
       TString outputSPv4 = fileName;
       outputSPv4 += ":outputSPv4analysis";
+      if(gChargePOI == 1) outputSP4 += "PlusPlus";
+      else if(gChargePOI == -1) outputSP4 += "MinusMinus";
       
       taskSPv4[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNameSPv4[iCentralityBin].Data()),kFALSE);
       taskSPv4[iCentralityBin]->SetHarmonic(4);
@@ -241,6 +249,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunQC) {
       TString outputQCv2 = fileName;
       outputQCv2 += ":outputQCv2analysis";
+      if(gChargePOI == 1) outputQC2 += "PlusPlus";
+      else if(gChargePOI == -1) outputQC2 += "MinusMinus";
       
       taskQCv2[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNameQCv2[iCentralityBin].Data()),kFALSE);
       taskQCv2[iCentralityBin]->SetHarmonic(2);
@@ -263,7 +273,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
       TString outputQCv4 = fileName;
       outputQCv4 += ":outputQCv4analysis";
-      
+      if(gChargePOI == 1) outputQC4 += "PlusPlus";
+      else if(gChargePOI == -1) outputQC4 += "MinusMinus";
+     
       taskQCv4[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNameQCv4[iCentralityBin].Data()),kFALSE);
       taskQCv4[iCentralityBin]->SetHarmonic(4);
       taskQCv4[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
@@ -289,6 +301,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunMHLS) {
       TString outputMHLS = fileName;
       outputMHLS += ":outputMHLSanalysis";
+      if(gChargePOI == 1) outputMHLS += "PlusPlus";
+      else if(gChargePOI == -1) outputMHLS += "MinusMinus";
       
       taskMHLS[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNameMHLS[iCentralityBin].Data()),kFALSE);
       taskMHLS[iCentralityBin]->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
@@ -307,6 +321,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
       TString outputMHLS2 = fileName;
       outputMHLS2 += ":outputMHLS2analysis";
+      if(gChargePOI == 1) outputMHLS2 += "PlusPlus";
+      else if(gChargePOI == -1) outputMHLS2 += "MinusMinus";
       
       taskMHLS2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNameMHLS2[iCentralityBin].Data()),kFALSE);
       taskMHLS2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
