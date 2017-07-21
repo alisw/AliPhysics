@@ -70,7 +70,6 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fMinClsTPC(0), // minimum clusters in the TPC
     fChi2PerClsTPC(0), // maximum Chi2 per cluster in the TPC
     fRequireTPCRefit(kFALSE), // require a refit in the TPC
-    fMaxDCAToVertexZ(0),
 	fMinClsTPCToF(0), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(kFALSE),
 	fDodEdxSigmaTPCCut(kTRUE),
@@ -87,6 +86,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fDoMassCut(kFALSE),
 	fMassCut(10),
 	fDoWeights(kFALSE),
+    fMaxDCAToVertexZ(0),
 	fCutString(NULL),
   fCutStringRead(""),
 	fHistCutIndex(NULL),
