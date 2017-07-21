@@ -527,6 +527,17 @@ private:
     Float_t fTreeCascVarV0DCAptNegSigmaZ2; //
     Float_t fTreeCascVarV0DCAptNegSigmaSnp2; //
     Float_t fTreeCascVarV0DCAptNegSigmaTgl2; //
+    
+    //Extended information: uncertainties at point closest to pV
+    Float_t fTreeCascVarBachDCAPVSigmaX2; //
+    Float_t fTreeCascVarBachDCAPVSigmaY2; //
+    Float_t fTreeCascVarBachDCAPVSigmaZ2; //
+    Float_t fTreeCascVarPosDCAPVSigmaX2; //
+    Float_t fTreeCascVarPosDCAPVSigmaY2; //
+    Float_t fTreeCascVarPosDCAPVSigmaZ2; //
+    Float_t fTreeCascVarNegDCAPVSigmaX2; //
+    Float_t fTreeCascVarNegDCAPVSigmaY2; //
+    Float_t fTreeCascVarNegDCAPVSigmaZ2; //
 
     Float_t fTreeCascVarPrimVertexX;
     Float_t fTreeCascVarPrimVertexY;

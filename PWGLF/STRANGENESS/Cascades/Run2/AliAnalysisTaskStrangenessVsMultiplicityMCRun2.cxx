@@ -344,6 +344,15 @@ fTreeCascVarV0DCAptNegSigmaY2(0),
 fTreeCascVarV0DCAptNegSigmaZ2(0),
 fTreeCascVarV0DCAptNegSigmaSnp2(0),
 fTreeCascVarV0DCAptNegSigmaTgl2(0),
+fTreeCascVarBachDCAPVSigmaX2(0),
+fTreeCascVarBachDCAPVSigmaY2(0),
+fTreeCascVarBachDCAPVSigmaZ2(0),
+fTreeCascVarPosDCAPVSigmaX2(0),
+fTreeCascVarPosDCAPVSigmaY2(0),
+fTreeCascVarPosDCAPVSigmaZ2(0),
+fTreeCascVarNegDCAPVSigmaX2(0),
+fTreeCascVarNegDCAPVSigmaY2(0),
+fTreeCascVarNegDCAPVSigmaZ2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
@@ -663,6 +672,15 @@ fTreeCascVarV0DCAptNegSigmaY2(0),
 fTreeCascVarV0DCAptNegSigmaZ2(0),
 fTreeCascVarV0DCAptNegSigmaSnp2(0),
 fTreeCascVarV0DCAptNegSigmaTgl2(0),
+fTreeCascVarBachDCAPVSigmaX2(0),
+fTreeCascVarBachDCAPVSigmaY2(0),
+fTreeCascVarBachDCAPVSigmaZ2(0),
+fTreeCascVarPosDCAPVSigmaX2(0),
+fTreeCascVarPosDCAPVSigmaY2(0),
+fTreeCascVarPosDCAPVSigmaZ2(0),
+fTreeCascVarNegDCAPVSigmaX2(0),
+fTreeCascVarNegDCAPVSigmaY2(0),
+fTreeCascVarNegDCAPVSigmaZ2(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
@@ -1096,6 +1114,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaZ2",&fTreeCascVarV0DCAptNegSigmaZ2,"fTreeCascVarV0DCAptNegSigmaZ2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaSnp2",&fTreeCascVarV0DCAptNegSigmaSnp2,"fTreeCascVarV0DCAptNegSigmaSnp2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaTgl2",&fTreeCascVarV0DCAptNegSigmaTgl2,"fTreeCascVarV0DCAptNegSigmaTgl2/F");
+            
+            fTreeCascade->Branch("fTreeCascVarNegDCAPVSigmaX2",&fTreeCascVarNegDCAPVSigmaX2,"fTreeCascVarNegDCAPVSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarNegDCAPVSigmaY2",&fTreeCascVarNegDCAPVSigmaY2,"fTreeCascVarNegDCAPVSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarNegDCAPVSigmaZ2",&fTreeCascVarNegDCAPVSigmaZ2,"fTreeCascVarNegDCAPVSigmaZ2/F");
+            fTreeCascade->Branch("fTreeCascVarPosDCAPVSigmaX2",&fTreeCascVarPosDCAPVSigmaX2,"fTreeCascVarPosDCAPVSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarPosDCAPVSigmaY2",&fTreeCascVarPosDCAPVSigmaY2,"fTreeCascVarPosDCAPVSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarPosDCAPVSigmaZ2",&fTreeCascVarPosDCAPVSigmaZ2,"fTreeCascVarPosDCAPVSigmaZ2/F");
+            fTreeCascade->Branch("fTreeCascVarBachDCAPVSigmaX2",&fTreeCascVarBachDCAPVSigmaX2,"fTreeCascVarBachDCAPVSigmaX2/F");
+            fTreeCascade->Branch("fTreeCascVarBachDCAPVSigmaY2",&fTreeCascVarBachDCAPVSigmaY2,"fTreeCascVarBachDCAPVSigmaY2/F");
+            fTreeCascade->Branch("fTreeCascVarBachDCAPVSigmaZ2",&fTreeCascVarBachDCAPVSigmaZ2,"fTreeCascVarBachDCAPVSigmaZ2/F");
             
         }
         if ( fkDebugParenthood ){
@@ -2345,6 +2373,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Get error parametrization (warning: be careful with offline/on-the-fly differences
         fTreeCascVarV0LambdaMassError = xi->GetKFInfo(4,2,1);
         fTreeCascVarV0AntiLambdaMassError = xi->GetKFInfo(2,4,1);
+        
+        //Get track uncertainties
+        //WARNING: THIS REFERS TO THE UNCERTAINTIES CLOSEST TO THE PV
+        fTreeCascVarNegDCAPVSigmaX2 = TMath::Power(TMath::Sin(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
+        fTreeCascVarNegDCAPVSigmaY2 = TMath::Power(TMath::Cos(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
+        fTreeCascVarNegDCAPVSigmaZ2 = nTrackXi->GetSigmaZ2();
+
+        fTreeCascVarPosDCAPVSigmaX2 = TMath::Power(TMath::Sin(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
+        fTreeCascVarPosDCAPVSigmaY2 = TMath::Power(TMath::Cos(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
+        fTreeCascVarPosDCAPVSigmaZ2 = pTrackXi->GetSigmaZ2();
+        
+        fTreeCascVarBachDCAPVSigmaX2 = TMath::Power(TMath::Sin(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
+        fTreeCascVarBachDCAPVSigmaY2 = TMath::Power(TMath::Cos(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
+        fTreeCascVarBachDCAPVSigmaZ2 = bachTrackXi->GetSigmaZ2();
         
         fTreeCascVarPosEta = pTrackXi->Eta();
         fTreeCascVarNegEta = nTrackXi->Eta();
