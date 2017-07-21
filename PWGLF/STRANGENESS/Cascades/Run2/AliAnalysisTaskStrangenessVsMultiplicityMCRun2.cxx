@@ -141,6 +141,7 @@ fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
+fkDebugParenthood ( kFALSE ), 
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
 
@@ -434,6 +435,7 @@ fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDebugParenthood ( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
 
@@ -759,9 +761,12 @@ fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
     // A - Study Wrong PID for tracking bug
     // B - Study invariant mass *B*ump
     // C - Study OOB pileup in pp 2016 data
+    // P - Study *P*arenthood information (for bump, etc)
+    
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
     if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
+    if ( lExtraOptions.Contains("P") ) fkDebugParenthood          = kTRUE;
 
 }
 
@@ -1042,7 +1047,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaSnp2",&fTreeCascVarV0DCAptNegSigmaSnp2,"fTreeCascVarV0DCAptNegSigmaSnp2/F");
             fTreeCascade->Branch("fTreeCascVarV0DCAptNegSigmaTgl2",&fTreeCascVarV0DCAptNegSigmaTgl2,"fTreeCascVarV0DCAptNegSigmaTgl2/F");
             
-            /*
+        }
+        if ( fkDebugParenthood ){
+        
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
             fTreeCascade->Branch("fTreeCascVarBachIndex",&fTreeCascVarBachIndex,"fTreeCascVarBachIndex/I");
@@ -1070,7 +1077,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeGrandMother",&fTreeCascVarIsPhysicalPrimaryNegativeGrandMother,"fTreeCascVarIsPhysicalPrimaryNegativeGrandMother/O");
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveGrandMother",&fTreeCascVarIsPhysicalPrimaryPositiveGrandMother,"fTreeCascVarIsPhysicalPrimaryPositiveGrandMother/O");
             fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorGrandMother",&fTreeCascVarIsPhysicalPrimaryBachelorGrandMother,"fTreeCascVarIsPhysicalPrimaryBachelorGrandMother/O");
-             */
         }
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
