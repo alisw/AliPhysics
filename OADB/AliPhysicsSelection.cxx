@@ -65,10 +65,8 @@
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
-#include <algorithm>
+#include <memory>
 #include <vector>
-#include <iterator>
-#include <regex>
 
 #include <Riostream.h>
 #include <TH1F.h>
@@ -111,6 +109,40 @@
 #include "AliVZEROTriggerData.h"
 #include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliITSTriggerConditions.h"
+
+#include <pcre.h>
+
+struct PCREWrap {
+  std::unique_ptr<pcre,       decltype(pcre_free)> re;
+  std::unique_ptr<pcre_extra, decltype(pcre_free)> re_extra;
+
+  PCREWrap(const TString& pattern)
+  : re       {nullptr, pcre_free}
+  , re_extra {nullptr, pcre_free}
+  {
+    const char* error;
+    int erroroffset;
+
+    re.reset(pcre_compile(pattern.Data(), 0, &error, &erroroffset, nullptr));
+    if (!re)
+      return;
+
+    re_extra.reset(pcre_study(re.get(), 0, &error));
+    if (error)
+      re.reset();
+  }
+
+  bool IsValid() const { return static_cast<bool>(re); }
+
+  bool Match(const TString& str) const {
+    return pcre_exec(re.get(), re_extra.get(),
+                     str.Data(), str.Length(),
+                     0, 0, nullptr, 0) == 0;
+  }
+};
+
+class StringToRegexp : public std::map<std::string, PCREWrap> {};
+
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
@@ -131,14 +163,14 @@ fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fTriggerToFormula()
+fTriggerToFormula(new StringToFormula()),
+fTriggerToRegexp(new StringToRegexp())
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
-  fTriggerToFormula = new StringToFormula();
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
@@ -161,14 +193,15 @@ AliPhysicsSelection::AliPhysicsSelection(const char *name) :
  fPSOADB(0),
  fFillOADB(0),
  fTriggerOADB(0),
- fTriggerToFormula()
+ fTriggerToFormula(new StringToFormula()),
+ fTriggerToRegexp(new StringToRegexp())
  {
    // constructor
    fCollTrigClasses.SetOwner(1);
    fBGTrigClasses.SetOwner(1);
    fTriggerAnalysis.SetOwner(1);
    fHistList.SetOwner(1);
-   fTriggerToFormula = new StringToFormula();
+
    AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
  }
 
@@ -177,6 +210,7 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fFillOADB)     delete fFillOADB;
   if (fTriggerOADB)  delete fTriggerOADB;
   delete fTriggerToFormula;
+  delete fTriggerToRegexp;
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
@@ -186,70 +220,74 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
   //   in bunch crossing XXX
   //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   //   triggerLogic is filled with ZZ, defaults to 0
-  
+
   TString classes = event->GetFiredTriggerClasses();
-  
+
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
-  
+
   UInt_t returnCode = AliVEvent::kUserDefined;
-  triggerLogic = 0;
-  
-  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", event->GetFiredTriggerClasses().Data()));
-  
-  TString str(trigger);
-  TObjArray* tokens = str.Tokenize(" ");
-  
-  for (Int_t i=0; i < tokens->GetEntries(); i++) {
-    TString str2(((TObjString*) tokens->At(i))->String());
-    if (str2[0] == '+' || str2[0] == '-') {
-      Bool_t flag = (str2[0] == '+');
-      str2.Remove(0, 1);
-      TObjArray* tokens2 = str2.Tokenize(",");
-      Bool_t foundTriggerClass = kFALSE;
-      for (Int_t j=0; j < tokens2->GetEntries(); j++) {
-        TString str3(((TObjString*) tokens2->At(j))->String());
-        if (flag && classes.Contains(str3)) foundTriggerClass = kTRUE;
-        if (!flag && classes.Contains(str3)) {
-          AliDebug(AliLog::kDebug+1, Form("Rejecting event because trigger class %s is present", str3.Data()));
-          delete tokens2;
-          delete tokens;
-          return kFALSE;
-        }
-      }
-      
-      delete tokens2;
-      
-      if (flag && !foundTriggerClass) {
-        AliDebug(AliLog::kDebug+1, Form("Rejecting event because (none of the) trigger class(es) %s is present", str2.Data()));
-        delete tokens;
-        return kFALSE;
-      }
+  Int_t triggerLogicLocal = 0; // don't touch triggerLogic if not successful
+
+  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", classes.Data()));
+
+  struct Util {
+    static Int_t atoi(const char*& str) {
+      Int_t ret = 0;
+      while (*str && *str != ' ')
+        ret = 10 * ret + (*str++ - '0');
+      return ret;
     }
-    else if (str2[0] == '#')
-    {
+  };
+
+  std::string str;
+  while (true) {
+    // finished
+    if (!*trigger)
+      break;
+
+    // required or rejected triggers
+    if (*trigger == '+' || *trigger == '-') {
+      bool flag = (*trigger == '+');
+      trigger++;
+
+      const char* begin = trigger;
+      while (*trigger && *trigger != ' ')
+        trigger++;
+      str.assign(begin, trigger);
+
+      const auto& re = FindRegexp(str);
+      if (re.Match(classes) != flag)
+        return kFALSE; // required not found or rejected found
+
+      continue;
+    }
+    // bunch crossing
+    if (*trigger == '#') {
       foundBCRequirement = kTRUE;
-      
-      str2.Remove(0, 1);
-      
-      Int_t bcNumber = str2.Atoi();
-      AliDebug(AliLog::kDebug+1, Form("Checking for bunch crossing number %d", bcNumber));
-      
-      if (event->GetBunchCrossNumber() == bcNumber)
-      {
+
+      if (event->GetBunchCrossNumber() == Util::atoi(++trigger))
         foundCorrectBC = kTRUE;
-        AliDebug(AliLog::kDebug+1, Form("Found correct bunch crossing %d", bcNumber));
-      }
+
+      continue;
     }
-    else if (str2[0] == '&') { str2.Remove(0, 1); returnCode = str2.Atoll();  }
-    else if (str2[0] == '*') { str2.Remove(0, 1); triggerLogic = str2.Atoi(); }
-    else AliFatal(Form("Invalid trigger syntax: %s", trigger));
+    // return value
+    if (*trigger == '&') {
+      returnCode = Util::atoi(++trigger);
+      continue;
+    }
+    // triggerLogic value
+    if (*trigger == '*') {
+      triggerLogicLocal = Util::atoi(++trigger);
+      continue;
+    }
+
+    trigger++;
   }
-  
-  delete tokens;
-  
+
   if (foundBCRequirement && !foundCorrectBC) return kFALSE;
-  
+
+  triggerLogic = triggerLogicLocal;
   return returnCode;
 }
 
@@ -868,4 +906,35 @@ FormulaAndBits& AliPhysicsSelection::FindForumla(const char* triggerLogic) {
 				    std::make_pair(formula, std::move(bits))).first;
   }
   return it->second;
+}
+
+const PCREWrap& AliPhysicsSelection::FindRegexp(const std::string& triggers) const {
+  auto it = fTriggerToRegexp->find(triggers);
+  if (it != fTriggerToRegexp->end())
+    return it->second; // cache hit
+
+  // cache miss
+  TString pattern((Ssiz_t)(triggers.length() + 32));
+
+  pattern.Append("\\b(?:");
+  for (char c : triggers) {
+    if (c == '[')
+      pattern.Append("(?:");
+    else if (c == ']')
+      pattern.Append(')');
+    else if (c == ',')
+      pattern.Append('|');
+    else
+      pattern.Append(c);
+  }
+  pattern.Append(")\\b");
+
+  PCREWrap re(pattern);
+  if (!re.IsValid()) {
+    AliFatal(Form("Bad trigger logic %s (corresponding regexp %s)",
+                  triggers.c_str(),
+                  pattern.Data()));
+  }
+
+  return fTriggerToRegexp->emplace(triggers, std::move(re)).first->second;
 }

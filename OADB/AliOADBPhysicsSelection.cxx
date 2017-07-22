@@ -95,14 +95,14 @@ AliOADBPhysicsSelection& AliOADBPhysicsSelection::operator=(const AliOADBPhysics
  
 void AliOADBPhysicsSelection::AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) {
   // add collision trigger class
-  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask, triggerLogic));
+  TObjString * tclass = new TObjString(Form("%s &%u *%u", className, triggerMask, triggerLogic));
   fCollTrigClasses[GetActiveBit(triggerMask)]->Add(tclass); 
   SetBeamSide(tclass->String().Data(),beamSide);
 }
 void AliOADBPhysicsSelection::AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) 
 { 
   // add bg trigger class
-  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask, triggerLogic));
+  TObjString * tclass = new TObjString(Form("%s &%u *%u", className, triggerMask, triggerLogic));
   fBGTrigClasses  [GetActiveBit(triggerMask)]->Add(tclass);
   SetBeamSide(tclass->String().Data(),beamSide);
 }
