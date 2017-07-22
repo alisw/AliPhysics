@@ -76,7 +76,7 @@ public:
   Int_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
   Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const 
   {
-    if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[i][j]!=0)) return fZDCTDCCorrected[i][j];
+    if(TestBit(AliESDZDC::kCorrectedTDCFilled) && (fZDCTDCData[i][j]!=0)) return fZDCTDCCorrected[i][j];
     else return 999.;
   }
   
