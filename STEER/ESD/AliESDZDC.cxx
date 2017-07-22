@@ -368,7 +368,7 @@ Bool_t AliESDZDC::GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2])
 //______________________________________________________________________________
 Float_t AliESDZDC::GetZNTDCSum(Int_t ihit) const
 {
-    if(ihit>4 || !(AliESDZDC::kCorrectedTDCFilled)){
+    if(ihit>4 || !(TestBit(AliESDZDC::kCorrectedTDCFilled))){
       return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
     }
     else{
@@ -392,7 +392,7 @@ Float_t AliESDZDC::GetZNTDCSum(Int_t ihit) const
 //______________________________________________________________________________
 Float_t AliESDZDC::GetZNTDCDiff(Int_t ihit) const
 {
-    if(ihit>4 || !(AliESDZDC::kCorrectedTDCFilled)){
+    if(ihit>4 || !(TestBit(AliESDZDC::kCorrectedTDCFilled))){
       return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
     }
     else{
