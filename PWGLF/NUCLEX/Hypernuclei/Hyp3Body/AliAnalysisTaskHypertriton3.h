@@ -61,6 +61,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetRunPeriodSelection(Bool_t run1 = kFALSE, Bool_t run2 = kFALSE) {fRun1PbPb = run1; fRun2PbPb = run2;}
+  void SetMassUpperLimit(Float_t massup = 3.1) {fCutMassUp = massup;}
+  void SetReduceMassRange(Bool_t massredo = kTRUE) {fRequireMassRange = massredo;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
   void SetEvtSpecie(UInt_t evspc = 4){fEvtSpecie = evspc;}
   void SetEmbedEvtSelection(Bool_t evtSel = kFALSE){fEvtEmbedSelection = evtSel;}
@@ -139,10 +141,13 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Bool_t             fFillTree;                    ///< variables to fill the Tree
   Bool_t             fRun1PbPb;                    ///< variables to activate Trigger and Centrality selection for Run1 (2011 Pb-Pb)
   Bool_t             fRun2PbPb;                    ///< variables to activate Trigger and Centrality selection for Run2 (2015 Pb-Pb)
+  Bool_t             fRequireMassRange;            ///< variable to switch on/off the cut on upper mass
+  Float_t            fCutMassUp;                   ///< select the upper limit in the mass range
   UInt_t             fEvtSpecie;                   ///< ESD event specie: 1-default; 2-lowM; 4-highM; 8-cosmic
   Bool_t             fEvtEmbedSelection;           ///< kTRUE: embed event selection in centrality estimation; kFALSE(default): event selection done by hand
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
+  Float_t            fCentralityClass;             ///< Centrality class (step 5%)
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
   Bool_t             fRequireITSclusters;          ///< flag for switch on the ITSclusters request in the track selection
   Int_t              fMinITSclustersN;             ///< minimum number of clusters in ITS
@@ -337,58 +342,49 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //TTree
   TTree              *fTTree;                      //!<! Tree used for local tests and cross-check
-  Float_t            fTCentralityPerc;
+  UChar_t            fTCentralityPerc;
   Bool_t             fTMCtruth;
   // Deuteron
-  Float_t            fTchi2NDFdeu;
+  UChar_t            fTchi2NDFdeu;
   UShort_t           fTPCclsdeu;
-  UShort_t           fTPCclsPIDdeu;
-  Float_t            fTpTPCdeu;
-  Float_t            fTpXdeu;
-  Float_t            fTpYdeu;
-  Float_t            fTpZdeu;
-  Float_t            fTTPCnsigmadeu;
-  Float_t            fTTOFmassdeu;
-  Float_t            fTDCAXYdeuprvtx;
-  Float_t            fTDCAZdeuprvtx;
+  UChar_t            fITSdclsmap;
+  UShort_t           fTpTdeu;
+  UShort_t           fTpdeu;
+  Char_t             fTTPCnsigmadeu;
+  Short_t            fTTOFnsigmadeu;
   // Proton
-  Float_t            fTchi2NDFpro;
+  UChar_t            fTchi2NDFpro;
   UShort_t           fTPCclspro;
-  UShort_t           fTPCclsPIDpro;
-  Float_t            fTpTPCpro;
-  Float_t            fTpXpro;
-  Float_t            fTpYpro;
-  Float_t            fTpZpro;
-  Float_t            fTTPCnsigmapro;
-  Float_t            fTTOFmasspro;
-  Float_t            fTDCAXYproprvtx;
-  Float_t            fTDCAZproprvtx;
+  UChar_t            fITSpclsmap;
+  UShort_t           fTpTpro;
+  UShort_t           fTppro;
+  Char_t             fTTPCnsigmapro;
+  Short_t            fTTOFnsigmapro;
   // Pion
-  Float_t            fTchi2NDFpion;
+  UChar_t            fTchi2NDFpion;
   UShort_t           fTPCclspion;
-  UShort_t           fTPCclsPIDpion;
-  Float_t            fTpTPCpion;
-  Float_t            fTpXpion;
-  Float_t            fTpYpion;
-  Float_t            fTpZpion;
-  Float_t            fTTPCnsigmapion;
-  Float_t            fTDCAXYpioprvtx;
-  Float_t            fTDCAZpioprvtx;
+  UChar_t            fITSpiclsmap;
+  UShort_t           fTpTpion;
+  UShort_t           fTppion;
+  Char_t             fTTPCnsigmapion;
+  Short_t            fTTOFnsigmapion;
+  //Float_t            fTDCAXYpioprvtx;
+  //Float_t            fTDCAZpioprvtx;
   // Triplet
-  Float_t            fTDCAdp;
-  Float_t            fTDCAdpi;
-  Float_t            fTDCAppi;
+  UShort_t           fTDCAdp;
+  UShort_t           fTDCAdpi;
+  UShort_t           fTDCAppi;
 
-  Float_t            fTDCAXYdvtx;
-  Float_t            fTDCAZdvtx;
-  Float_t            fTDCAXYpvtx;
-  Float_t            fTDCAZpvtx;
-  Float_t            fTDCAXYpivtx;
-  Float_t            fTDCAZpivtx;
+  Short_t            fTDCAXYdvtx;
+  Short_t            fTDCAZdvtx;
+  Short_t            fTDCAXYpvtx;
+  Short_t            fTDCAZpvtx;
+  Short_t            fTDCAXYpivtx;
+  Short_t            fTDCAZpivtx;
 
-  Float_t            fTAngle_dp;
-  Float_t            fTAngle_dpi;
-  Float_t            fTAngle_ppi;
+  UShort_t           fTAngle_dp;
+  UShort_t           fTAngle_dpi;
+  UShort_t           fTAngle_ppi;
 
   Float_t            fTpdeu_gen_X;
   Float_t            fTpdeu_gen_Y;
@@ -414,9 +410,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Int_t              fTuniqID_pion;
 
 
-  Float_t            fTRapidity;
-  Float_t            fTDecayLength;
-  Float_t            fTDecayLengthError;
+  UChar_t            fTRapidity;
+  Float_t            fTDecayLengthProper;
+  UShort_t           fTDecayLengthNorm;
   Float_t            fTCosPA;
   Float_t            fTInvariantMass;
 

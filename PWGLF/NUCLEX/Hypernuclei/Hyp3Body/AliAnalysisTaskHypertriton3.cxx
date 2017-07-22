@@ -91,10 +91,13 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fFillTree(kFALSE),
   fRun1PbPb(kTRUE),
   fRun2PbPb(kFALSE),
+  fCutMassUp(3.1),
+  fRequireMassRange(kFALSE),
   fEvtSpecie(4),
   fEvtEmbedSelection(kFALSE),
   fCentrality(0x0),
   fCentralityPercentile(0x0),
+  fCentralityClass(0x0),
   fTriggerConfig(1),
   fRequireITSclusters(kFALSE),
   fMinITSclustersN(0),
@@ -138,7 +141,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fAngledp(TMath::Pi()),
   fAngledpi(TMath::Pi()),
   fLowCentrality(0.),
-  fHighCentrality(80.),
+  fHighCentrality(90.),
   fOutput(0x0),
   fHistCount(0x0),
   fHistCentralityClass(0x0),
@@ -267,36 +270,25 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTCentralityPerc(0x0),
   fTchi2NDFdeu(0x0),
   fTPCclsdeu(0x0),
-  fTPCclsPIDdeu(0x0),
-  fTpTPCdeu(0x0),
-  fTpXdeu(0x0),
-  fTpYdeu(0x0),
-  fTpZdeu(0x0),
+  fITSdclsmap(0x0),
+  fTpTdeu(0x0),
+  fTpdeu(0x0),
   fTTPCnsigmadeu(0x0),
-  fTTOFmassdeu(0x0),
-  fTDCAXYdeuprvtx(0x0),
-  fTDCAZdeuprvtx(0x0),
+  fTTOFnsigmadeu(0x0),
   fTchi2NDFpro(0x0),
   fTPCclspro(0x0),
-  fTPCclsPIDpro(0x0),
-  fTpTPCpro(0x0),
-  fTpXpro(0x0),
-  fTpYpro(0x0),
-  fTpZpro(0x0),
+  fITSpclsmap(0x0),
+  fTpTpro(0x0),
+  fTppro(0x0),
   fTTPCnsigmapro(0x0),
-  fTTOFmasspro(0x0),
-  fTDCAXYproprvtx(0x0),
-  fTDCAZproprvtx(0x0),
+  fTTOFnsigmapro(0x0),
   fTchi2NDFpion(0x0),
   fTPCclspion(0x0),
-  fTPCclsPIDpion(0x0),
-  fTpTPCpion(0x0),
-  fTpXpion(0x0),
-  fTpYpion(0x0),
-  fTpZpion(0x0),
+  fITSpiclsmap(0x0),
+  fTpTpion(0x0),
+  fTppion(0x0),
   fTTPCnsigmapion(0x0),
-  fTDCAXYpioprvtx(0x0),
-  fTDCAZpioprvtx(0x0),
+  fTTOFnsigmapion(0x0),
   fTDCAdp(0x0),
   fTDCAdpi(0x0),
   fTDCAppi(0x0),
@@ -331,8 +323,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTuniqID_pro(0x0),
   fTuniqID_pion(0x0),
   fTRapidity(0x0),
-  fTDecayLength(0x0),
-  fTDecayLengthError(0x0),
+  fTDecayLengthProper(0x0),
+  fTDecayLengthNorm(0x0),
   fTCosPA(0x0),
   fTInvariantMass(0x0)
 {
@@ -601,6 +593,7 @@ Bool_t AliAnalysisTaskHypertriton3::PassPIDSelection(AliESDtrack *trk, int speci
     return tpcPID && tofPID;
 }
 
+//________________________________________________________________________
 Double_t AliAnalysisTaskHypertriton3::ComputeSigma(Double_t dc[2], Double_t dc_cov[3]){
   Double_t d = (dc[0]*dc[0])+(dc[1]*dc[1]);
   Double_t t_xy = (dc[0]*dc[0])*dc_cov[0];
@@ -642,7 +635,8 @@ AliESDtrack *trackNPi = 0x0;
 
 Double_t xthiss(0.0);
 Double_t xpp(0.0);
-
+Float_t nsd, nsp, nspi = 0.;
+Float_t nsd_t, nsp_t, nspi_t, b_t = 0.;
 AliESDVertex *decayVtx = 0x0;
 
 TLorentzVector Hypertriton;
@@ -792,16 +786,16 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
 
       delete decayVtx;
 
-
-      if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
-
-
       posD.SetXYZM(trkD.Px(),trkD.Py(),trkD.Pz(),1.87561);
       posP.SetXYZM(trkP.Px(),trkP.Py(),trkP.Pz(),0.93827);
       negPi.SetXYZM(trkPi.Px(),trkPi.Py(),trkPi.Pz(),0.13957);
 
 
       Hypertriton=posD+posP+negPi;
+      if(fRequireMassRange && Hypertriton.M()>fCutMassUp) continue;
+
+
+      if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
 
 
       pTotHyper = Hypertriton.P();
@@ -931,61 +925,79 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
 */
 
 if(fFillTree){
-  fTMCtruth = brotherHood;
-  fTCentralityPerc = fCentralityPercentile;
-  //deuteron
-  fTchi2NDFdeu = trackD->GetTPCchi2()/trackD->GetTPCclusters(0);
-  fTPCclsdeu = trackD->GetTPCclusters(0);
-  fTPCclsPIDdeu = trackD->GetTPCsignalN() ;
-  fTpTPCdeu = trackD->GetTPCmomentum();
-  fTpXdeu = trackD->Px();
-  fTpYdeu = trackD->Py();
-  fTpZdeu = trackD->Pz();
-  fTTPCnsigmadeu = fPIDResponse->NumberOfSigmasTPC(trackD,AliPID::kDeuteron);
-  //  fTDCAXYdeuprvtx = dprim[0];
-  //  fTDCAZdeuprvtx = dprim[1];
-  //proton
-  fTchi2NDFpro = trackP->GetTPCchi2()/trackP->GetTPCclusters(0);
-  fTPCclspro = trackP->GetTPCclusters(0);
-  fTPCclsPIDpro = trackP->GetTPCsignalN();
-  fTpTPCpro = trackP->GetTPCmomentum();
-  fTpXpro = trackP->Px();
-  fTpYpro = trackP->Py();
-  fTpZpro = trackP->Pz();
-  fTTPCnsigmapro = fPIDResponse->NumberOfSigmasTPC(trackP,AliPID::kProton);
-  //  fTDCAXYproprvtx = pprim[0];
-  //  fTDCAZproprvtx = pprim[1];
-  //pion
-  fTchi2NDFpion = trackNPi->GetTPCchi2()/trackNPi->GetTPCclusters(0);
-  fTPCclspion = trackNPi->GetTPCclusters(0);
-  fTPCclsPIDpion = trackNPi->GetTPCsignalN();
-  fTpTPCpion = trackNPi->GetTPCmomentum();
-  fTpXpion = trackNPi->Px();
-  fTpYpion = trackNPi->Py();
-  fTpZpion = trackNPi->Pz();
-  fTTPCnsigmapion = fPIDResponse->NumberOfSigmasTPC(trackNPi,AliPID::kPion);
-//  fTDCAXYpioprvtx = piprim[0];
-//  fTDCAZpioprvtx = piprim[1];
-  //triplets
-  fTDCAdp = dca_dp;
-  fTDCAdpi = dca_dpi;
-  fTDCAppi = dca_ppi;
-  fTDCAXYdvtx = dcad[0];
-  fTDCAZdvtx = dcad[1];
-  fTDCAXYpvtx = dcap[0];
-  fTDCAZpvtx = dcap[1];
-  fTDCAXYpivtx = dcapi[0];
-  fTDCAZpivtx = dcapi[1];
-  fTAngle_dp = angle_dp;
-  fTAngle_dpi = angle_dpi;
-  fTAngle_ppi = angle_ppi;
+  nsd = fPIDResponse->NumberOfSigmasTPC(trackD,AliPID::kDeuteron);
+  nsp = fPIDResponse->NumberOfSigmasTPC(trackP,AliPID::kProton);
+  nspi = fPIDResponse->NumberOfSigmasTPC(trackNPi,AliPID::kPion);
+  fTCentralityPerc = fCentralityClass;
+  if(fRequireTOFPid){
+    nsd_t = HasTOF(trackD, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kDeuteron) : -999;
+    nsp_t = HasTOF(trackP, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kProton) : -999;
+    nspi_t = HasTOF(trackNPi, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kPion) : -999;
 
-  fTRapidity = Hypertriton.Rapidity();
-  fTDecayLength = decayLengthH3L;
-  fTDecayLengthError = fVtx2->ErrorDistanceToVertex(fVtx1);
+    if(nsd_t < 0)fTTOFnsigmadeu = TMath::Floor(nsd_t/0.25);
+    else fTTOFnsigmadeu = TMath::Ceil(nsd_t/0.25);
+    if(nsp_t < 0)fTTOFnsigmapro = TMath::Floor(nsp_t/0.25);
+    else fTTOFnsigmapro = TMath::Ceil(nsp_t/0.25);
+    if(nspi_t < 0)fTTOFnsigmapion = TMath::Floor(nspi_t/0.25);
+    else fTTOFnsigmapion = TMath::Ceil(nspi_t/0.25);
+  }
+  //deuteron
+  fTchi2NDFdeu = TMath::Floor(trackD->GetTPCchi2()/(0.5*trackD->GetTPCclusters(0)));
+  fTPCclsdeu = trackD->GetTPCclusters(0);
+  fITSdclsmap = trackD->GetITSClusterMap();
+  fTpTdeu = TMath::Floor(trackD->Pt()/0.000107692);
+  fTpdeu = TMath::Floor(trackD->P()/0.000107692);
+  if(nsd < 0)fTTPCnsigmadeu = TMath::Floor(nsd/0.25);
+  else fTTPCnsigmadeu = TMath::Ceil(nsd/0.25);
+  //proton
+  fTchi2NDFpro = TMath::Floor(trackP->GetTPCchi2()/(0.5*trackP->GetTPCclusters(0)));
+  fTPCclspro = trackP->GetTPCclusters(0);
+  fITSpclsmap = trackP->GetITSClusterMap();
+  fTpTpro = TMath::Floor(trackP->Pt()/0.000107692);
+  fTppro = TMath::Floor(trackP->P()/0.000107692);
+  if(nsp < 0)fTTPCnsigmapro = TMath::Floor(nsp/0.25);
+  else fTTPCnsigmapro = TMath::Ceil(nsp/0.25);
+  //pion
+  fTchi2NDFpion = TMath::Floor(trackNPi->GetTPCchi2()/(0.5*trackNPi->GetTPCclusters(0)));
+  fTPCclspion = trackNPi->GetTPCclusters(0);
+  fITSpiclsmap = trackNPi->GetITSClusterMap();
+  fTpTpion = TMath::Floor(trackNPi->Pt()/0.000107692);
+  fTppion = TMath::Floor(trackNPi->P()/0.000107692);
+  if(nspi < 0)fTTPCnsigmapion = TMath::Floor(nspi/0.25);
+  else fTTPCnsigmapion = TMath::Ceil(nspi/0.25);
+  //triplets
+  fTDCAdp = TMath::Ceil(dca_dp/0.001);
+  fTDCAdpi = TMath::Ceil(dca_dpi/0.001);
+  fTDCAppi = TMath::Ceil(dca_ppi/0.001);
+  if(dcad[0]<0)fTDCAXYdvtx = TMath::Floor(dcad[0]/0.001);
+  else fTDCAXYdvtx = TMath::Ceil(dcad[0]/0.001);
+
+  if(dcad[1]<0)fTDCAZdvtx = TMath::Floor(dcad[1]/0.001);
+  else fTDCAZdvtx = TMath::Ceil(dcad[1]/0.001);
+
+  if(dcap[0]<0)fTDCAXYpvtx = TMath::Floor(dcap[0]/0.001);
+  else fTDCAXYpvtx = TMath::Ceil(dcap[0]/0.001);
+
+  if(dcap[1]<0)fTDCAZpvtx = TMath::Floor(dcap[1]/0.001);
+  else fTDCAZpvtx = TMath::Ceil(dcap[1]/0.001);
+
+  if(dcapi[0]<0)fTDCAXYpivtx = TMath::Floor(dcapi[0]/0.001);
+  else fTDCAXYpivtx = TMath::Ceil(dcapi[0]/0.001);
+
+  if(dcapi[1]<0)fTDCAZpivtx = TMath::Floor(dcapi[1]/0.001);
+  else fTDCAZpivtx = TMath::Ceil(dcapi[1]/0.001);
+
+  fTAngle_dp = TMath::Ceil(angle_dp);
+  fTAngle_dpi = TMath::Ceil(angle_dpi);
+  fTAngle_ppi = TMath::Ceil(angle_ppi);
+
+  fTRapidity = TMath::Ceil(TMath::Abs(rapidity)/0.1);
+  fTDecayLengthProper = ctau;
+  fTDecayLengthNorm = TMath::Floor(normalizedDecayL);
   fTCosPA = TMath::Cos(pointingAngleH);
 
   /*if(fMC){
+      fTMCtruth = brotherHood;
       labelM_deu = tparticleD->GetFirstMother();
       labelM_pro = tparticleP->GetFirstMother();
       labelM_pio = tparticlePi->GetFirstMother();
@@ -1404,78 +1416,81 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   if(fFillTree){
   OpenFile(2);
   fTTree = new TTree("hypertriton","hypertriton candidates");
-  fTTree->Branch("MCtruth",&fTMCtruth,"MCtruth/F");
-  fTTree->Branch("CentralityPerc",&fTCentralityPerc,"CentralityPerc/F");
-  fTTree->Branch("Chi2NDFdeu",&fTchi2NDFdeu,"Chi2NDFdeu/F");
+  fTTree->Branch("CentralityPerc",&fTCentralityPerc,"CentralityPerc/b");
+  fTTree->Branch("Chi2NDFdeu",&fTchi2NDFdeu,"Chi2NDFdeu/b");
   fTTree->Branch("TPCclsdeu",&fTPCclsdeu,"TPCclsdeu/s");
-  fTTree->Branch("TPCclsPIDdeu",&fTPCclsPIDdeu,"TPCclsPIDdeu/s");
-  fTTree->Branch("pTPCdeu",&fTpTPCdeu,"pTPCdeu/F");
-  fTTree->Branch("pdeu_x",&fTpXdeu,"pdeu_x/F");
-  fTTree->Branch("pdeu_y",&fTpYdeu,"pdeu_y/F");
-  fTTree->Branch("pdeu_z",&fTpZdeu,"pdeu_z/F");
-  fTTree->Branch("TPCnsigmadeu",&fTTPCnsigmadeu,"TPCnsigmadeu/F");
-  fTTree->Branch("TOFmassdeu",&fTTOFmassdeu,"TOFmassdeu/F");
-  fTTree->Branch("DCAxydeuprim",&fTDCAXYdeuprvtx,"DCAxydeuprim/F");
-  fTTree->Branch("DCAzdeuprim",&fTDCAZdeuprvtx,"DCAzdeuprim/F");
-  fTTree->Branch("Chi2NDFpro",&fTchi2NDFpro,"Chi2NDFpro/F");
+  fTTree->Branch("ITSdclsmap",&fITSdclsmap,"ITSdclsmap/b");
+  fTTree->Branch("pTdeu",&fTpTdeu,"pTdeu/s");
+  fTTree->Branch("pdeu",&fTpdeu,"pdeu/s");
+  fTTree->Branch("TPCnsigmadeu",&fTTPCnsigmadeu,"TPCnsigmadeu/B");
+  fTTree->Branch("Chi2NDFpro",&fTchi2NDFpro,"Chi2NDFpro/b");
   fTTree->Branch("TPCclspro",&fTPCclspro,"TPCclspro/s");
-  fTTree->Branch("TPCclsPIDpro",&fTPCclsPIDpro,"TPCclsPIDpro/s");
-  fTTree->Branch("pTPCpro",&fTpTPCpro,"pTPCpro/F");
-  fTTree->Branch("ppro_x",&fTpXpro,"ppro_x/F");
-  fTTree->Branch("ppro_y",&fTpYpro,"ppro_y/F");
-  fTTree->Branch("ppro_z",&fTpZpro,"ppro_z/F");
-  fTTree->Branch("TPCnsigmapro",&fTTPCnsigmapro,"TPCnsigmapro/F");
-  fTTree->Branch("TOFmasspro",&fTTOFmasspro,"TOFmasspro/F");
-  fTTree->Branch("DCAxyproprim",&fTDCAXYproprvtx,"DCAxyproprim/F");
-  fTTree->Branch("DCAzproprim",&fTDCAZproprvtx,"DCAzproprim/F");
-  fTTree->Branch("Chi2NDFpion",&fTchi2NDFpion,"Chi2NDFpion/F");
+  fTTree->Branch("ITSpclsmap",&fITSpclsmap,"ITSpclsmap/b");
+  fTTree->Branch("pTpro",&fTpTpro,"pTpro/s");
+  fTTree->Branch("ppro",&fTppro,"ppro/s");
+  fTTree->Branch("TPCnsigmapro",&fTTPCnsigmapro,"TPCnsigmapro/B");
+  fTTree->Branch("Chi2NDFpion",&fTchi2NDFpion,"Chi2NDFpion/b");
   fTTree->Branch("TPCclspion",&fTPCclspion,"TPCclspion/s");
-  fTTree->Branch("TPCclsPIDpion",&fTPCclsPIDpion,"TPCclsPIDpion/s");
-  fTTree->Branch("pTPCpion",&fTpTPCpion,"pTPCpion/F");
-  fTTree->Branch("ppion_x",&fTpXpion,"ppion_x/F");
-  fTTree->Branch("ppion_y",&fTpYpion,"ppion_y/F");
-  fTTree->Branch("ppion_z",&fTpZpion,"ppion_z/F");
-  fTTree->Branch("TPCnsigmapion",&fTTPCnsigmapion,"TPCnsigmapion/F");
-  fTTree->Branch("DCAxypioprim",&fTDCAXYpioprvtx,"DCAxypioprim/F");
-  fTTree->Branch("DCAzpioprim",&fTDCAZpioprvtx,"DCAzpioprim/F");
-  fTTree->Branch("DCAdp",&fTDCAdp,"DCAdp/F");
-  fTTree->Branch("DCAdpi",&fTDCAdpi,"DCAdpi/F");
-  fTTree->Branch("DCAppi",&fTDCAppi,"DCAppi/F");
-  fTTree->Branch("DCAXYdeuvtx",&fTDCAXYdvtx,"DCAXYdeuvtx/F");
-  fTTree->Branch("DCAZdeuvtx",&fTDCAZdvtx,"DCAZdeuvtx/F");
-  fTTree->Branch("DCAXYprovtx",&fTDCAXYpvtx,"DCAXYprovtx/F");
-  fTTree->Branch("DCAZprovtx",&fTDCAZpvtx,"DCAZprovtx/F");
-  fTTree->Branch("DCAXYpionvtx",&fTDCAXYpivtx,"DCAXYpionvtx/F");
-  fTTree->Branch("DCAZpionvtx",&fTDCAZpivtx,"DCAZpionvtx/F");
-  fTTree->Branch("Angle_dp",&fTAngle_dp,"Angle_dp/F");
-  fTTree->Branch("Angle_dpi",&fTAngle_dpi,"Angle_dpi/F");
-  fTTree->Branch("Angle_ppi",&fTAngle_ppi,"Angle_ppi/F");
-  fTTree->Branch("pdeuGen_x",&fTpdeu_gen_X,"pdeuGen_x/F");
-  fTTree->Branch("pdeuGen_y",&fTpdeu_gen_Y,"pdeuGen_y/F");
-  fTTree->Branch("pdeuGen_z",&fTpdeu_gen_Z,"pdeuGen_z/F");
-  fTTree->Branch("pproGen_x",&fTppro_gen_X,"pproGen_x/F");
-  fTTree->Branch("pproGen_y",&fTppro_gen_Y,"pproGen_y/F");
-  fTTree->Branch("pproGen_z",&fTppro_gen_Z,"pproGen_z/F");
-  fTTree->Branch("ppioGen_x",&fTppio_gen_X,"ppioGen_x/F");
-  fTTree->Branch("ppioGen_y",&fTppio_gen_Y,"ppioGen_y/F");
-  fTTree->Branch("ppioGen_z",&fTppio_gen_Z,"ppioGen_z/F");
-  fTTree->Branch("pdgCandDeu",&fTpdgDeu,"pdgCandDeu/I");
-  fTTree->Branch("pdgCandPro",&fTpdgPro,"pdgCandPro/I");
-  fTTree->Branch("pdgCandPion",&fTpdgPion,"pdgCandPion/I");
-  fTTree->Branch("momId_deu",&fTmomidD,"momId_deu/I");
-  fTTree->Branch("momId_pro",&fTmomidP,"momId_pro/I");
-  fTTree->Branch("momId_pion",&fTmomidPi,"momId_pion/I");
-  fTTree->Branch("pdgMomDeu",&fTpdgmomD,"pdgMomDeu/F");
-  fTTree->Branch("pdgMomPro",&fTpdgmomP,"pdgMomPro/F");
-  fTTree->Branch("pdgMomPion",&fTpdgmomPi,"pdgMomPion/F");
-  fTTree->Branch("uniqueID_deu",&fTuniqID_deu,"uniqueID_deu/I");
-  fTTree->Branch("uniqueID_pro",&fTuniqID_pro,"uniqueID_pro/I");
-  fTTree->Branch("uniqueID_pion",&fTuniqID_pion,"uniqueID_pion/I");
-  fTTree->Branch("Rapidity",&fTRapidity,"Rapidity/F");
-  fTTree->Branch("DecayLength",&fTDecayLength,"DecayLength/F");
-  fTTree->Branch("DecayLengthError",&fTDecayLengthError,"DecayLengthError/F");
+  fTTree->Branch("ITSpiclsmap",&fITSpiclsmap,"ITSpiclsmap/b");
+  fTTree->Branch("pTpion",&fTpTpion,"pTpion/s");
+  fTTree->Branch("ppion",&fTppion,"ppion/s");
+  fTTree->Branch("TPCnsigmapion",&fTTPCnsigmapion,"TPCnsigmapion/B");
+  fTTree->Branch("DCAdp",&fTDCAdp,"DCAdp/s");
+  fTTree->Branch("DCAdpi",&fTDCAdpi,"DCAdpi/s");
+  fTTree->Branch("DCAppi",&fTDCAppi,"DCAppi/s");
+  fTTree->Branch("DCAXYdeuvtx",&fTDCAXYdvtx,"DCAXYdeuvtx/S");
+  fTTree->Branch("DCAZdeuvtx",&fTDCAZdvtx,"DCAZdeuvtx/S");
+  fTTree->Branch("DCAXYprovtx",&fTDCAXYpvtx,"DCAXYprovtx/S");
+  fTTree->Branch("DCAZprovtx",&fTDCAZpvtx,"DCAZprovtx/S");
+  fTTree->Branch("DCAXYpionvtx",&fTDCAXYpivtx,"DCAXYpionvtx/S");
+  fTTree->Branch("DCAZpionvtx",&fTDCAZpivtx,"DCAZpionvtx/S");
+  fTTree->Branch("Angle_dp",&fTAngle_dp,"Angle_dp/s");
+  fTTree->Branch("Angle_dpi",&fTAngle_dpi,"Angle_dpi/s");
+  fTTree->Branch("Angle_ppi",&fTAngle_ppi,"Angle_ppi/s");
+  fTTree->Branch("Rapidity",&fTRapidity,"Rapidity/b");
+  fTTree->Branch("DecayLengthProper",&fTDecayLengthProper,"DecayLengthProper/F");
+  fTTree->Branch("DecayLengthNorm",&fTDecayLengthNorm,"DecayLengthNorm/s");
   fTTree->Branch("CosPA",&fTCosPA,"CosPA/F");
   fTTree->Branch("InvariantMass",&fTInvariantMass,"InvariantMass/F");
+  /*fTTree->Branch("TPCclsPIDdeu",&fTPCclsPIDdeu,"TPCclsPIDdeu/s");
+  //fTTree->Branch("DCAxydeuprim",&fTDCAXYdeuprvtx,"DCAxydeuprim/F");
+  //fTTree->Branch("DCAzdeuprim",&fTDCAZdeuprvtx,"DCAzdeuprim/F");
+  //fTTree->Branch("TPCclsPIDpro",&fTPCclsPIDpro,"TPCclsPIDpro/s");
+  //fTTree->Branch("DCAxyproprim",&fTDCAXYproprvtx,"DCAxyproprim/F");
+  //fTTree->Branch("DCAzproprim",&fTDCAZproprvtx,"DCAzproprim/F");
+  //fTTree->Branch("TPCclsPIDpion",&fTPCclsPIDpion,"TPCclsPIDpion/s");
+  //fTTree->Branch("DCAxypioprim",&fTDCAXYpioprvtx,"DCAxypioprim/F");
+  //fTTree->Branch("DCAzpioprim",&fTDCAZpioprvtx,"DCAzpioprim/F");*/
+  if(fRequireTOFPid){
+    fTTree->Branch("TOFnsigmadeu",&fTTOFnsigmadeu,"TOFnsigmadeu/S");
+    fTTree->Branch("TOFnsigmapro",&fTTOFnsigmapro,"TOFnsigmapro/S");
+    fTTree->Branch("TOFnsigmapion",&fTTOFnsigmapion,"TOFnsigmapion/S");
+  }
+
+  if(fMC){
+    fTTree->Branch("MCtruth",&fTMCtruth,"MCtruth/F");
+    fTTree->Branch("pdeuGen_x",&fTpdeu_gen_X,"pdeuGen_x/F");
+    fTTree->Branch("pdeuGen_y",&fTpdeu_gen_Y,"pdeuGen_y/F");
+    fTTree->Branch("pdeuGen_z",&fTpdeu_gen_Z,"pdeuGen_z/F");
+    fTTree->Branch("pproGen_x",&fTppro_gen_X,"pproGen_x/F");
+    fTTree->Branch("pproGen_y",&fTppro_gen_Y,"pproGen_y/F");
+    fTTree->Branch("pproGen_z",&fTppro_gen_Z,"pproGen_z/F");
+    fTTree->Branch("ppioGen_x",&fTppio_gen_X,"ppioGen_x/F");
+    fTTree->Branch("ppioGen_y",&fTppio_gen_Y,"ppioGen_y/F");
+    fTTree->Branch("ppioGen_z",&fTppio_gen_Z,"ppioGen_z/F");
+    fTTree->Branch("pdgCandDeu",&fTpdgDeu,"pdgCandDeu/I");
+    fTTree->Branch("pdgCandPro",&fTpdgPro,"pdgCandPro/I");
+    fTTree->Branch("pdgCandPion",&fTpdgPion,"pdgCandPion/I");
+    fTTree->Branch("momId_deu",&fTmomidD,"momId_deu/I");
+    fTTree->Branch("momId_pro",&fTmomidP,"momId_pro/I");
+    fTTree->Branch("momId_pion",&fTmomidPi,"momId_pion/I");
+    fTTree->Branch("pdgMomDeu",&fTpdgmomD,"pdgMomDeu/F");
+    fTTree->Branch("pdgMomPro",&fTpdgmomP,"pdgMomPro/F");
+    fTTree->Branch("pdgMomPion",&fTpdgmomPi,"pdgMomPion/F");
+    fTTree->Branch("uniqueID_deu",&fTuniqID_deu,"uniqueID_deu/I");
+    fTTree->Branch("uniqueID_pro",&fTuniqID_pro,"uniqueID_pro/I");
+    fTTree->Branch("uniqueID_pion",&fTuniqID_pion,"uniqueID_pion/I");
+  }
 
   fTTree->SetAutoSave(150000000);
   PostData(2,fTTree);
@@ -1584,6 +1599,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   if(fCentralityPercentile >= 0. && fCentralityPercentile < 10.) isCent = kTRUE;
   if(fCentralityPercentile >= 10. && fCentralityPercentile < 50.) isSemiCent = kTRUE;
+
+  fCentralityClass = TMath::Floor(fCentralityPercentile/5);
 
   fHistCount->Fill(2); // number of reco events passing Centrality Selection
 
