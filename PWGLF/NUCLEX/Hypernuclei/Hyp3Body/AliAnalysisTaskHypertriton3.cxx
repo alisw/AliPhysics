@@ -635,6 +635,8 @@ AliESDtrack *trackNPi = 0x0;
 
 Double_t xthiss(0.0);
 Double_t xpp(0.0);
+Float_t piprim[2] = {0.,0.};
+Float_t piprimc[3] = {0.,0.,0.};
 Float_t nsd, nsp, nspi = 0.;
 Float_t nsd_t, nsp_t, nspi_t, b_t = 0.;
 AliESDVertex *decayVtx = 0x0;
@@ -925,14 +927,15 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
 */
 
 if(fFillTree){
+  trackNPi->GetImpactParameters(piprim,piprimc);
   nsd = fPIDResponse->NumberOfSigmasTPC(trackD,AliPID::kDeuteron);
   nsp = fPIDResponse->NumberOfSigmasTPC(trackP,AliPID::kProton);
   nspi = fPIDResponse->NumberOfSigmasTPC(trackNPi,AliPID::kPion);
   fTCentralityPerc = fCentralityClass;
   if(fRequireTOFPid){
     nsd_t = HasTOF(trackD, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kDeuteron) : -999;
-    nsp_t = HasTOF(trackP, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kProton) : -999;
-    nspi_t = HasTOF(trackNPi, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kPion) : -999;
+    nsp_t = HasTOF(trackP, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackP,AliPID::kProton) : -999;
+    nspi_t = HasTOF(trackNPi, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackNPi,AliPID::kPion) : -999;
 
     if(nsd_t < 0)fTTOFnsigmadeu = TMath::Floor(nsd_t/0.25);
     else fTTOFnsigmadeu = TMath::Ceil(nsd_t/0.25);
@@ -965,6 +968,11 @@ if(fFillTree){
   fTppion = TMath::Floor(trackNPi->P()/0.000107692);
   if(nspi < 0)fTTPCnsigmapion = TMath::Floor(nspi/0.25);
   else fTTPCnsigmapion = TMath::Ceil(nspi/0.25);
+  if(TMath::Abs(piprim[0])<819)  fTDCAXYpioprvtx = TMath::Ceil(piprim[0]/0.025);
+  else fTDCAXYpioprvtx = 32765;
+  if(TMath::Abs(piprim[1])<819)  fTDCAZpioprvtx = TMath::Ceil(piprim[1]/0.025);
+  else fTDCAZpioprvtx = 32765;
+
   //triplets
   fTDCAdp = TMath::Ceil(dca_dp/0.001);
   fTDCAdpi = TMath::Ceil(dca_dpi/0.001);
@@ -1435,6 +1443,8 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTTree->Branch("pTpion",&fTpTpion,"pTpion/s");
   fTTree->Branch("ppion",&fTppion,"ppion/s");
   fTTree->Branch("TPCnsigmapion",&fTTPCnsigmapion,"TPCnsigmapion/B");
+  fTTree->Branch("DCAxypioprim",&fTDCAXYpioprvtx,"DCAxypioprim/S");
+  fTTree->Branch("DCAzpioprim",&fTDCAZpioprvtx,"DCAzpioprim/S");
   fTTree->Branch("DCAdp",&fTDCAdp,"DCAdp/s");
   fTTree->Branch("DCAdpi",&fTDCAdpi,"DCAdpi/s");
   fTTree->Branch("DCAppi",&fTDCAppi,"DCAppi/s");
@@ -1458,9 +1468,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   //fTTree->Branch("TPCclsPIDpro",&fTPCclsPIDpro,"TPCclsPIDpro/s");
   //fTTree->Branch("DCAxyproprim",&fTDCAXYproprvtx,"DCAxyproprim/F");
   //fTTree->Branch("DCAzproprim",&fTDCAZproprvtx,"DCAzproprim/F");
-  //fTTree->Branch("TPCclsPIDpion",&fTPCclsPIDpion,"TPCclsPIDpion/s");
-  //fTTree->Branch("DCAxypioprim",&fTDCAXYpioprvtx,"DCAxypioprim/F");
-  //fTTree->Branch("DCAzpioprim",&fTDCAZpioprvtx,"DCAzpioprim/F");*/
+  //fTTree->Branch("TPCclsPIDpion",&fTPCclsPIDpion,"TPCclsPIDpion/s");*/
   if(fRequireTOFPid){
     fTTree->Branch("TOFnsigmadeu",&fTTOFnsigmadeu,"TOFnsigmadeu/S");
     fTTree->Branch("TOFnsigmapro",&fTTOFnsigmapro,"TOFnsigmapro/S");
