@@ -359,14 +359,13 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   // cut on proton emission angle
   if (fVarsForOpt[16]) {
     iter++;
-    vars[iter]= d->CosThetaStar(0,4122,2212,310); //CosPrThetaCMS
-
+    vars[iter]= GetProtonEmissionAngleCMS(d); //CosPrThetaCMS
   }
 
   // cut on proton emission angle
   if (fVarsForOpt[17]) {
     iter++;
-    vars[iter]= d->CosThetaStar(0,4122,2212,310); //CosPrThetaCMS
+    vars[iter]= GetProtonEmissionAngleCMS(d); //CosPrThetaCMS
   }
 
   // cut on re-signed d0
@@ -612,7 +611,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
 
     // cut on Proton emission angle
     if(TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1 || TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1){
-      Double_t cutvar = d->CosThetaStar(0,4122,2212,310);
+      Double_t cutvar = GetProtonEmissionAngleCMS(d);
       if (cutvar > fCutsRD[GetGlobalIndex(16,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
         AliDebug(4,Form(" Cos proton emission=%2.2e < %2.2e",cutvar,fCutsRD[GetGlobalIndex(16,ptbin)]));
         return 0;
@@ -1297,12 +1296,12 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       okLcLBarpi = okLck0sp;
       break;
     case 16:
-      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1)&&(d->CosThetaStar(0,4122,2212,310)<= fCutsRD[GetGlobalIndex(16,ptbin)]);
+      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1)&&(GetProtonEmissionAngleCMS(d)<= fCutsRD[GetGlobalIndex(16,ptbin)]);
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     case 17:
-      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1)&&(d->CosThetaStar(0,4122,2212,310)>= fCutsRD[GetGlobalIndex(17,ptbin)]);
+      okLck0sp   =  (TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1)&&(GetProtonEmissionAngleCMS(d)>= fCutsRD[GetGlobalIndex(17,ptbin)]);
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
@@ -1738,6 +1737,34 @@ void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPtBins,Float_t *minProb
     fMinCombinedProbability[ib] = minProb[ib];
   }
   return;
+}
+
+//---------------------------------------------------------------------------
+Double_t AliRDHFCutsLctoV0::GetProtonEmissionAngleCMS(AliAODRecoDecayHF *dd) {
+  //
+  // Proton emission angle in p+K0s pair rest frame 
+  // This function is different from CosThetaStar function in AliAODRecoDecay,
+  // which assumes the mass of Lc even for the pairs with the invariant mass
+  // far from Lc mass
+  //
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)dd;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return -9999;
+  }
+  Double_t mprPDG =  TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  Double_t mlcPDG =  TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mk0sPDG =  TDatabasePDG::Instance()->GetParticle(310)->Mass();
+
+  TLorentzVector vpr, vk0s,vlc;
+  vpr.SetXYZM(d->PxProng(0),d->PyProng(0),d->PzProng(0),mprPDG);
+  vk0s.SetXYZM(d->PxProng(1),d->PyProng(1),d->PzProng(1),mk0sPDG);
+  vlc = vpr + vk0s;
+  TVector3 vboost = vlc.BoostVector();
+  vpr.Boost(-vboost);
+  Double_t bachcosthe = cos(vpr.Angle(vlc.Vect()));
+
+  return bachcosthe;
 }
 
 //---------------------------------------------------------------------------

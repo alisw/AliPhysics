@@ -3671,8 +3671,8 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(16);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->CosThetaStar(0,4122,2212,310));
-    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,part->CosThetaStar(0,4122,2212,310));
+    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetProtonEmissionAngleCMS(part));
+    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetProtonEmissionAngleCMS(part));
   }
 
   fillthis="histResignedD0"+appendthis;
@@ -4130,7 +4130,7 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
       //cout << fillthis << endl;
       cuts->SetExcludedCut(16);
       if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-        ((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,partCopy->CosThetaStar(0,4122,2212,310));
+        ((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,cuts->GetProtonEmissionAngleCMS(partCopy));
       }
 
       fillthis="histResignedD0"+appendthis;
