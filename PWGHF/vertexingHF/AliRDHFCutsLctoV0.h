@@ -92,6 +92,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   { delete fV0daughtersCuts; fV0daughtersCuts = new AliESDtrackCuts(*v0daug); }
   virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
 
+  Double_t GetProtonEmissionAngleCMS(AliAODRecoDecayHF *d);
   Double_t GetReSignedd0(AliAODRecoDecayHF *d);
   void SetMagneticField(Double_t a){fBzkG = a;}
 
