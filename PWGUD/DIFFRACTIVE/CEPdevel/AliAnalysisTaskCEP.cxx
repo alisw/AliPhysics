@@ -1162,14 +1162,14 @@ Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
   Bool_t stg = kFALSE;
   
   if (!fFOmap) {
-    printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - a!\n");
+    // printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - a!\n");
     return stg;
   }
 
   Int_t n1 = fFOmap->CountBits(400);
   Int_t n0 = fFOmap->CountBits()-n1;
   if (n0<1 || n1<1) {
-    printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - b!\n");
+    // printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - b!\n");
     return stg;
   }
   

@@ -1395,7 +1395,7 @@ void AliCEPUtils::DetermineMCprocessType (
       // Pythia
 			if (fMCGenerator == "Pythia") {
 				fMCProcess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				printf("Pythia process type: %i\n",fMCProcess);
+				// printf("Pythia process type: %i\n",fMCProcess);
         switch(fMCProcess) {
 				case 101: fMCProcessType = AliCEPBase::kProctypeMB; break;
 				case 103: fMCProcessType = AliCEPBase::kProctypeSDA; break;
