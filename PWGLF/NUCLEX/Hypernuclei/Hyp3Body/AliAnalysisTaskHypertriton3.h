@@ -368,8 +368,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   UShort_t           fTppion;
   Char_t             fTTPCnsigmapion;
   Short_t            fTTOFnsigmapion;
-  //Float_t            fTDCAXYpioprvtx;
-  //Float_t            fTDCAZpioprvtx;
+  Short_t            fTDCAXYpioprvtx;
+  Short_t            fTDCAZpioprvtx;
   // Triplet
   UShort_t           fTDCAdp;
   UShort_t           fTDCAdpi;
