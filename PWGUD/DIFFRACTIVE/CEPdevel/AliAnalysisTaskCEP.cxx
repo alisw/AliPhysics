@@ -609,22 +609,30 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
      
-	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
-  // this is relevant for the 2016 data
-  // in case of MC data the trigger needs to be replaied
-  // compare with (isSPD  && (!isV0A && !isV0C))
-  Bool_t isDGTrigger = kFALSE;
+  // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
+  // this is relevant for the LHC16[k,l,o,p] data
+  // in case of MC data and data containing no DG trigger
+  // the trigger needs to be replaied
+  // different triggers are considered
+  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e]
+  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
-
-  // SPD FO fird map can be extracted both in data and MC:
+  Bool_t isReplay = fMCEvent
+    || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
+    || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
+  
+  // The following is needed to replay the DG trigger
   // The STG trigger in 2016 required two online tracklets without additional
-  // topology. It can be checked with the following function:
+  // topology.
   TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
   Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
-
-  if (fMCEvent) {
+    
+  Bool_t isDGTrigger = kFALSE;
+  if (isReplay) {
     
     // this part of the code was proposed by Evgeny Kryshen
+    // to replay the DG trigger in MC data
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
     AliVVZERO* esdV0 = fEvent->GetVZEROData();
@@ -632,6 +640,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
 
     isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
+    
     // printf("DG trigger replaied: %i %i %i\n",
     //  isSTGtriggerFired,!isV0Afired,!isV0Cfired);
   
@@ -639,19 +648,18 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
     if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
       isDGTrigger = kTRUE;
-      printf("Fired trigger classes: %s\n",firedTriggerClasses.Data());
+      
+      fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
+      ((TH1F*)flQArnum->At(1))->Fill(fRun);
+
+      // past-future trigger protection
+      if (flBBFlag)
+        fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
-    //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
-  }
-  if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-  if (isDGTrigger) ((TH1F*)flQArnum->At(1))->Fill(fRun);
-  
-  // past-future trigger protection
-  // only valid for CCUP13-B-SPD1-CENTNOTRD
-  if (flBBFlag && isDGTrigger) {
-    fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
   }
   
+  
+  // number of tracklets
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
@@ -1151,15 +1159,21 @@ Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
 {
 
   Int_t hitcnt = 0;
+  Bool_t stg = kFALSE;
   
+  if (!fFOmap) {
+    printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - a!\n");
+    return stg;
+  }
+
   Int_t n1 = fFOmap->CountBits(400);
   Int_t n0 = fFOmap->CountBits()-n1;
   if (n0<1 || n1<1) {
-    printf("Problem with F0map!\n");
-    return 0;
+    printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - b!\n");
+    return stg;
   }
   
-  Bool_t stg = 0;
+  
   Bool_t l0[20]={0};
   Bool_t l1[40]={0};
   Bool_t phi[20]={0};
@@ -1172,7 +1186,7 @@ Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
       if (phi[i] & phi[(i+dphi)%20]) hitcnt++;
     }
   }
-  printf("hitcnt: %i\n",hitcnt);
+  // printf("hitcnt: %i\n",hitcnt);
 
   return stg;
 
