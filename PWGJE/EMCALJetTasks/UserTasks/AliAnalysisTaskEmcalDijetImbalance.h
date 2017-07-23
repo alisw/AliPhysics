@@ -105,6 +105,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
   void                        AllocateJetHistograms()                           ;
+  void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateDijetCandHistograms()                     ;
   void                        AllocateDijetImbalanceHistograms()                ;
   void                        AllocateMomentumBalanceHistograms()               ;
@@ -112,7 +113,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        AllocateCaloHistograms()                          ;
   void                        AllocateTriggerSimHistograms()                    ;
   void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin);
-  void                        ComputeBackground(AliJetContainer* jetCont)       ;
+  void                        ComputeBackground()                               ;
   void                        DoMomentumBalance(TString histname)               ;
   void                        DoGeometricalMatching()                           ;
   void                        DoTriggerSimulation()                             ;
@@ -198,7 +199,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 12);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 13);
   /// \endcond
 };
 #endif
