@@ -188,8 +188,12 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQA_V0C(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
+      fHistQA_SPDClusters(0),
+      fHistQA_SPDTracklets(0),
       fHistQA_ZNA(0),
       fHistQA_ZNC(0),
+      fHistQA_ZNApp(0),
+      fHistQA_ZNCpp(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
@@ -198,8 +202,12 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQASelected_V0C(0),
       fHistQASelected_CL0(0),
       fHistQASelected_CL1(0),
+      fHistQASelected_SPDClusters(0),
+      fHistQASelected_SPDTracklets(0),
       fHistQASelected_ZNA(0),
       fHistQASelected_ZNC(0),
+      fHistQASelected_ZNApp(0),
+      fHistQASelected_ZNCpp(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -317,8 +325,12 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQA_V0C(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
+      fHistQA_SPDClusters(0),
+      fHistQA_SPDTracklets(0),
       fHistQA_ZNA(0),
       fHistQA_ZNC(0),
+      fHistQA_ZNApp(0),
+      fHistQA_ZNCpp(0),
       fHistQA_TrackletsVsV0M(0),
       fHistQA_TrackletsVsCL0(0),
       fHistQA_TrackletsVsCL1(0),
@@ -327,8 +339,12 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQASelected_V0C(0),
       fHistQASelected_CL0(0),
       fHistQASelected_CL1(0),
+      fHistQASelected_SPDClusters(0),
+      fHistQASelected_SPDTracklets(0),
       fHistQASelected_ZNA(0),
       fHistQASelected_ZNC(0),
+      fHistQASelected_ZNApp(0),
+      fHistQASelected_ZNCpp(0),
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
@@ -734,6 +750,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQA_CL1 = new TH1D("fHistQA_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_CL1);
     }
+    if ( !fHistQA_SPDClusters ) {
+        fHistQA_SPDClusters = new TH1D("fHistQA_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_SPDClusters);
+    }
+    if ( !fHistQA_SPDTracklets ) {
+        fHistQA_SPDTracklets = new TH1D("fHistQA_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_SPDTracklets);
+    }
     if ( !fHistQA_ZNA ) {
         fHistQA_ZNA = new TH1D("fHistQA_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_ZNA);
@@ -741,6 +765,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQA_ZNC ) {
         fHistQA_ZNC = new TH1D("fHistQA_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQA_ZNC);
+    }
+    if ( !fHistQA_ZNApp ) {
+        fHistQA_ZNApp = new TH1D("fHistQA_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_ZNApp);
+    }
+    if ( !fHistQA_ZNCpp ) {
+        fHistQA_ZNCpp = new TH1D("fHistQA_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQA_ZNCpp);
     }
     //To compare SPD tracklets in data and MC
     if ( !fHistQA_TrackletsVsV0M ) {
@@ -777,6 +809,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQASelected_CL1 = new TH1D("fHistQASelected_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_CL1);
     }
+    if ( !fHistQASelected_SPDClusters ) {
+        fHistQASelected_SPDClusters = new TH1D("fHistQASelected_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_SPDClusters);
+    }
+    if ( !fHistQASelected_SPDTracklets ) {
+        fHistQASelected_SPDTracklets = new TH1D("fHistQASelected_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_SPDTracklets);
+    }
     if ( !fHistQASelected_ZNA ) {
         fHistQASelected_ZNA = new TH1D("fHistQASelected_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_ZNA);
@@ -784,6 +824,14 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQASelected_ZNC ) {
         fHistQASelected_ZNC = new TH1D("fHistQASelected_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_ZNC);
+    }
+    if ( !fHistQASelected_ZNApp ) {
+        fHistQASelected_ZNApp = new TH1D("fHistQASelected_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_ZNApp);
+    }
+    if ( !fHistQASelected_ZNCpp ) {
+        fHistQASelected_ZNCpp = new TH1D("fHistQASelected_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+        fListHist->Add(fHistQASelected_ZNCpp);
     }
     //To compare SPD tracklets in data and MC
     if ( !fHistQASelected_TrackletsVsV0M ) {
@@ -1527,8 +1575,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Float_t lV0C = lSelection->GetMultiplicityPercentile("V0C");
         Float_t lCL0 = lSelection->GetMultiplicityPercentile("CL0");
         Float_t lCL1 = lSelection->GetMultiplicityPercentile("CL1");
+        Float_t lSPDClusters  = lSelection->GetMultiplicityPercentile("SPDClusters" );
+        Float_t lSPDTracklets = lSelection->GetMultiplicityPercentile("SPDTracklets");
         Float_t lZNA = lSelection->GetMultiplicityPercentile("ZNA");
         Float_t lZNC = lSelection->GetMultiplicityPercentile("ZNC");
+        Float_t lZNApp = lSelection->GetMultiplicityPercentile("ZNApp");
+        Float_t lZNCpp = lSelection->GetMultiplicityPercentile("ZNCpp");
         Int_t ltracklets = fnTracklets->GetValueInteger();
 
         fHistQA_V0M -> Fill( lV0M );
@@ -1536,9 +1588,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQA_V0C -> Fill( lV0C );
         fHistQA_CL0 -> Fill( lCL0 );
         fHistQA_CL1 -> Fill( lCL1 );
+        fHistQA_SPDClusters  -> Fill( lSPDClusters  );
+        fHistQA_SPDTracklets -> Fill( lSPDTracklets );
         fHistQA_ZNA -> Fill( lZNA );
         fHistQA_ZNC -> Fill( lZNC );
-
+        fHistQA_ZNApp -> Fill( lZNApp );
+        fHistQA_ZNCpp -> Fill( lZNCpp );
+        
         fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
@@ -1548,17 +1604,24 @@ void AliMultSelectionTask::UserExec(Option_t *)
         lV0C = lSelection->GetMultiplicityPercentile("V0C",kTRUE);
         lCL0 = lSelection->GetMultiplicityPercentile("CL0",kTRUE);
         lCL1 = lSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        lSPDClusters  = lSelection->GetMultiplicityPercentile("SPDClusters" , kTRUE);
+        lSPDTracklets = lSelection->GetMultiplicityPercentile("SPDTracklets", kTRUE);
         lZNA = lSelection->GetMultiplicityPercentile("ZNA",kTRUE);
         lZNC = lSelection->GetMultiplicityPercentile("ZNC",kTRUE);
-
+        lZNApp = lSelection->GetMultiplicityPercentile("ZNApp",kTRUE);
+        lZNCpp = lSelection->GetMultiplicityPercentile("ZNCpp",kTRUE);
+        
         fHistQASelected_V0M -> Fill( lV0M );
         fHistQASelected_V0A -> Fill( lV0A );
         fHistQASelected_V0C -> Fill( lV0C );
         fHistQASelected_CL0 -> Fill( lCL0 );
         fHistQASelected_CL1 -> Fill( lCL1 );
-        fHistQASelected_ZNA -> Fill( lZNA );
+        fHistQASelected_SPDClusters  -> Fill( lSPDClusters  );
+        fHistQASelected_SPDTracklets -> Fill( lSPDTracklets );
         fHistQASelected_ZNC -> Fill( lZNC );
-
+        fHistQASelected_ZNApp -> Fill( lZNApp );
+        fHistQASelected_ZNCpp -> Fill( lZNCpp );
+        
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
