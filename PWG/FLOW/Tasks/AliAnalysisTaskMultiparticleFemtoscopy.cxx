@@ -5556,7 +5556,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    // d) I cannot do anything for a given event, as it seems... :'( 
    if(fFillCorrelationFunctionsTEST[7])
    {
-    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
+    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
     {
      // p_1:
      Double_t p1x = agtrack1->Px();
@@ -6888,7 +6889,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
    // d) I cannot do anything for a given event, as it seems... :'( 
    if(fFillBackgroundTEST[7])
    {
-    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
+    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
     {
      // p_1:
      Double_t p1x = agtrack1->Px();
