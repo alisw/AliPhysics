@@ -95,34 +95,6 @@ struct AliJetSubstructureData {
   AliNSubjettinessParameters fNsubjettiness;
 };
 
-struct AliJetSubstructureInfo {
-  Double_t fR;
-  Double_t fEventWeight;
-  Double_t fPtJetRec;
-  Double_t fPtJetSim;
-  Double_t fAreaRec;
-  Double_t fAreaSim;
-  Double_t fNEFRec;
-  Double_t fNEFSim;
-  Double_t fZgMeasured;
-  Double_t fZgTrue;
-  Double_t fRgMeasured;
-  Double_t fRgTrue;
-  Double_t fMgMeasured;
-  Double_t fMgTrue;
-  Double_t fPtgMeasured;
-  Double_t fPtgTrue;
-  Double_t fOneSubjettinessMeasured;
-  Double_t fOneSubjettinessTrue;
-  Double_t fTwoSubjettinessMeasured;
-  Double_t fTwoSubjettinessTrue;
-  Int_t fNCharged;
-  Int_t fNNeutral;
-  Int_t fNTrueConst;
-  Int_t fNDroppedMeasured;
-  Int_t fNDroppedTrue;
-};
-
 /**
  * @class AliAnalysisTaskEmcalJetSubstructureTree
  * @brief Tree with jet substructure information
@@ -142,6 +114,36 @@ public:
     kCAAlgo = 0,
     kKTAlgo = 1,
     kAKTAlgo = 2
+  };
+  enum JetTreeEntry {
+    kTRadius = 0,
+    kTWeight = 1,
+    kTPtJetRec = 2,
+    kTPtJetSim = 3,
+    kTAreaRec = 4,
+    kTAreaSim = 5,
+    kTNEFRec = 6,
+    kTNEFSim = 7,
+    kTMassRec = 8,
+    kTMassSim = 9,
+    kTZgMeasured = 10,
+    kTZgTrue = 11,
+    kTRgMeasured = 12,
+    kTRgTrue = 13,
+    kTMgMeasured = 14,
+    kTMgTrue = 15,
+    kTPtgMeasured = 16,
+    kTPtgTrue = 17,
+    kTOneNSubjettinessMeasured = 18,
+    kTOneNSubjettinessTrue = 19,
+    kTTwoNSubjettinessMeasured = 20,
+    kTTwoNSubjettinessTrue = 21,
+    kTNCharged = 22,
+    kTNNeutral = 23,
+    kTNConstTrue = 24,
+    kTNDroppedMeasured = 25,
+    kTNDroppedTrue = 26,
+    kTNVar = 27
   };
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
@@ -172,7 +174,7 @@ protected:
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
-	AliJetSubstructureInfo       fJetSubstructureInfo;        //!<! Jet Substructure information to be filled in the tree
+	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
 
 	Double_t                     fSDZCut;                     ///< Soft drop z-cut
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut

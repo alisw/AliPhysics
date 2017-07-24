@@ -59,26 +59,26 @@ namespace EmcalTriggerJets {
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
     fJetSubstructureTree(nullptr),
-    fJetSubstructureInfo(),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString("")
 {
+  memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree(const char *name) :
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fJetSubstructureTree(nullptr),
-    fJetSubstructureInfo(),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString("")
 {
-
+  memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
+  DefineOutput(2, TTree::Class());
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTree() {
@@ -88,38 +88,42 @@ AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTre
 void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  OpenFile(2);
   fJetSubstructureTree = new TTree("jetSubstructure", "Tree with jet substructure information");
-  std::stringstream leaflist;
-  leaflist  << "fR/D:"
-            << "fEventWeight:"
-            << "fPtJetRec:"
-            << "fPtJetSim:"
-            << "fAreaRec:"
-            << "fAreaSim:"
-            << "fNEFRec:"
-            << "fNEFSim:"
-            << "fZgMeasured:"
-            << "fZgTrue:"
-            << "fRgMeasured:"
-            << "fRgTrue:"
-            << "fMgMeasured:"
-            << "fMgTrue:"
-            << "fPtgMeasured:"
-            << "fPtgTrue:"
-            << "fOneSubjettinessMeasured:"
-            << "fOneSubjettinessTrue:"
-            << "fTwoSubjettinessMeasured:"
-            << "fTwoSubjettinessTrue:"
-            << "fNCharged/I:"
-            << "fNNeutral:"
-            << "fNTrueConst:"
-            << "fNDroppedMeasured:"
-            << "fNDroppedTrue";
-  std::string leafstring = leaflist.str();
-  printf("branch string: %s\n", leafstring.c_str());
-  fJetSubstructureTree->Branch("JetInfo", &fJetSubstructureInfo, leafstring.c_str(), sizeof(fJetSubstructureInfo));
-  fOutput->Add(fJetSubstructureTree);
+  TString varnames[kTNVar];
+  varnames[0] = "Radius";
+  varnames[1] = "EventWeight";
+  varnames[2] = "PtJetRec";
+  varnames[3] = "PtJetSim";
+  varnames[4] = "AreaRec";
+  varnames[5] = "AreaSim";
+  varnames[6] = "NEFRec";
+  varnames[7] = "NEFSim";
+  varnames[8] = "MassRec";
+  varnames[9] = "MassSim";
+  varnames[10] = "ZgMeasured";
+  varnames[11] = "ZgTrue";
+  varnames[12] = "RgMeasured";
+  varnames[13] = "RgTrue";
+  varnames[14] = "MgMeasured";
+  varnames[15] = "MgTrue";
+  varnames[16] = "PtgMeasured";
+  varnames[17] = "PtgTrue";
+  varnames[18] = "OneSubjettinessMeasured";
+  varnames[19] = "OneSubjettinessTrue";
+  varnames[20] = "TwoSubjettinessMeasured";
+  varnames[21] = "TwoSubjettinessTrue";
+  varnames[22] = "NCharged";
+  varnames[23] = "NNeutral";
+  varnames[24] = "NConstTrue";
+  varnames[25] = "NDroppedMeasured";
+  varnames[26] = "NDroppedTrue";
+
+  for(int ib = 0; ib < kTNVar; ib++){
+    fJetSubstructureTree->Branch(varnames[ib], fJetTreeData + ib, Form("%s/D", varnames[ib].Data()));
+  }
   PostData(1, fOutput);
+  PostData(2, fJetSubstructureTree);
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
@@ -195,76 +199,80 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
                                                        const AliEmcalJet *datajet, const AliEmcalJet *mcjet,
                                                        AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcSoftdrop,
                                                        AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness){
-  fJetSubstructureInfo.fR = r;
-  fJetSubstructureInfo.fEventWeight = weight;
+  fJetTreeData[kTRadius] = r;
+  fJetTreeData[kTWeight] = weight;
   if(datajet) {
-    fJetSubstructureInfo.fPtJetRec = TMath::Abs(datajet->Pt());
-    fJetSubstructureInfo.fNCharged = datajet->GetNumberOfTracks();
-    fJetSubstructureInfo.fNNeutral = datajet->GetNumberOfClusters();
-    fJetSubstructureInfo.fAreaRec = datajet->Area();
-    fJetSubstructureInfo.fNEFRec = datajet->NEF();
+    fJetTreeData[kTPtJetRec] = TMath::Abs(datajet->Pt());
+    fJetTreeData[kTNCharged] = datajet->GetNumberOfTracks();
+    fJetTreeData[kTNNeutral] = datajet->GetNumberOfClusters();
+    fJetTreeData[kTAreaRec] = datajet->Area();
+    fJetTreeData[kTNEFRec] = datajet->NEF();
+    fJetTreeData[kTMassRec] = datajet->M();
   } else {
-    fJetSubstructureInfo.fPtJetRec = 0.;
-    fJetSubstructureInfo.fNCharged = 0;
-    fJetSubstructureInfo.fNNeutral = 0;
-    fJetSubstructureInfo.fAreaRec = 0.;
-    fJetSubstructureInfo.fNEFRec = 0.;
+    fJetTreeData[kTPtJetRec] = 0.;
+    fJetTreeData[kTNCharged] = 0;
+    fJetTreeData[kTNNeutral] = 0;
+    fJetTreeData[kTAreaRec] = 0.;
+    fJetTreeData[kTNEFRec] = 0.;
+    fJetTreeData[kTMassRec] = 0.;
   }
 
   if(mcjet) {
-    fJetSubstructureInfo.fPtJetSim = TMath::Abs(mcjet->Pt());
-    fJetSubstructureInfo.fNTrueConst = mcjet->GetNumberOfConstituents();
-    fJetSubstructureInfo.fAreaSim = mcjet->Area();
-    fJetSubstructureInfo.fNEFSim = mcjet->NEF();
+    fJetTreeData[kTPtJetSim] = TMath::Abs(mcjet->Pt());
+    fJetTreeData[kTNConstTrue] = mcjet->GetNumberOfConstituents();
+    fJetTreeData[kTAreaSim] = mcjet->Area();
+    fJetTreeData[kTNEFSim] = mcjet->NEF();
+    fJetTreeData[kTMassSim] = mcjet->M();
   } else {
-    fJetSubstructureInfo.fPtJetSim = 0.;
-    fJetSubstructureInfo.fNTrueConst = 0;
-    fJetSubstructureInfo.fAreaSim = 0.;
-    fJetSubstructureInfo.fNEFSim = 0.;
+    fJetTreeData[kTPtJetSim] = 0.;
+    fJetTreeData[kTNConstTrue] = 0;
+    fJetTreeData[kTAreaSim] = 0.;
+    fJetTreeData[kTNEFSim] = 0.;
+    fJetTreeData[kTMassSim] = 0;
   }
 
   if(dataSoftdrop) {
-    fJetSubstructureInfo.fZgMeasured = dataSoftdrop->fZg;
-    fJetSubstructureInfo.fRgMeasured = dataSoftdrop->fRg;
-    fJetSubstructureInfo.fMgMeasured = dataSoftdrop->fMg;
-    fJetSubstructureInfo.fPtgMeasured = dataSoftdrop->fPtg;
-    fJetSubstructureInfo.fNDroppedMeasured = dataSoftdrop->fNDropped;
+    fJetTreeData[kTZgMeasured] = dataSoftdrop->fZg;
+    fJetTreeData[kTRgMeasured] = dataSoftdrop->fRg;
+    fJetTreeData[kTMgMeasured] = dataSoftdrop->fMg;
+    fJetTreeData[kTPtgMeasured] = dataSoftdrop->fPtg;
+    fJetTreeData[kTNDroppedMeasured] = dataSoftdrop->fNDropped;
   } else {
-    fJetSubstructureInfo.fZgMeasured = 0.;
-    fJetSubstructureInfo.fRgMeasured = 0.;
-    fJetSubstructureInfo.fMgMeasured = 0.;
-    fJetSubstructureInfo.fPtgMeasured = 0.;
-    fJetSubstructureInfo.fNDroppedMeasured = 0;
+    fJetTreeData[kTZgMeasured] = 0.;
+    fJetTreeData[kTRgMeasured] = 0.;
+    fJetTreeData[kTMgMeasured] = 0.;
+    fJetTreeData[kTPtgMeasured] = 0.;
+    fJetTreeData[kTNDroppedMeasured] = 0;
   }
 
   if(mcSoftdrop) {
-    fJetSubstructureInfo.fZgTrue = mcSoftdrop->fZg;
-    fJetSubstructureInfo.fRgTrue = mcSoftdrop->fRg;
-    fJetSubstructureInfo.fMgTrue = mcSoftdrop->fMg;
-    fJetSubstructureInfo.fPtgTrue = mcSoftdrop->fPtg;
-    fJetSubstructureInfo.fNDroppedTrue = mcSoftdrop->fNDropped;
+    fJetTreeData[kTZgTrue] = mcSoftdrop->fZg;
+    fJetTreeData[kTRgTrue] = mcSoftdrop->fRg;
+    fJetTreeData[kTMgTrue] = mcSoftdrop->fMg;
+    fJetTreeData[kTPtgTrue] = mcSoftdrop->fPtg;
+    fJetTreeData[kTNDroppedTrue] = mcSoftdrop->fNDropped;
   } else {
-    fJetSubstructureInfo.fZgTrue = 0.;
-    fJetSubstructureInfo.fRgTrue = 0.;
-    fJetSubstructureInfo.fMgTrue = 0.;
-    fJetSubstructureInfo.fPtgTrue = 0.;
-    fJetSubstructureInfo.fNDroppedTrue = 0;
+    fJetTreeData[kTZgTrue] = 0.;
+    fJetTreeData[kTRgTrue] = 0.;
+    fJetTreeData[kTMgTrue] = 0.;
+    fJetTreeData[kTPtgTrue] = 0.;
+    fJetTreeData[kTNDroppedTrue] = 0;
   }
 
   if(dataSubjettiness) {
-    fJetSubstructureInfo.fOneSubjettinessMeasured = dataSubjettiness->fOneSubjettiness;
-    fJetSubstructureInfo.fTwoSubjettinessMeasured = dataSubjettiness->fTwoSubjettiness;
+    fJetTreeData[kTOneNSubjettinessMeasured] = dataSubjettiness->fOneSubjettiness;
+    fJetTreeData[kTTwoNSubjettinessMeasured] = dataSubjettiness->fTwoSubjettiness;
   } else {
-    fJetSubstructureInfo.fOneSubjettinessMeasured = 0.;
-    fJetSubstructureInfo.fTwoSubjettinessMeasured = 0.;
+    fJetTreeData[kTOneNSubjettinessMeasured] = 0.;
+    fJetTreeData[kTTwoNSubjettinessMeasured] = 0.;
   }
 
   if(mcSubjettiness) {
-    fJetSubstructureInfo.fOneSubjettinessTrue = mcSubjettiness->fOneSubjettiness;
-    fJetSubstructureInfo.fTwoSubjettinessTrue = mcSubjettiness->fTwoSubjettiness;
+    fJetTreeData[kTOneNSubjettinessTrue] = mcSubjettiness->fOneSubjettiness;
+    fJetTreeData[kTTwoNSubjettinessTrue] = mcSubjettiness->fTwoSubjettiness;
   } else {
-    fJetSubstructureInfo.fOneSubjettinessTrue = 0.;
-    fJetSubstructureInfo.fTwoSubjettinessTrue = 0.;
+    fJetTreeData[kTOneNSubjettinessTrue] = 0.;
+    fJetTreeData[kTTwoNSubjettinessTrue] = 0.;
   }
 
   fJetSubstructureTree->Fill();
@@ -391,7 +399,8 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   TString outputfile = mgr->GetCommonFileName();
   outputfile += TString::Format(":JetSubstructure_R%02d_%s", int(jetradius * 10.), trigger);
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructure_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, Form("JetSubstructureTree_%s.root", trigger)));
 
   return treemaker;
 }
