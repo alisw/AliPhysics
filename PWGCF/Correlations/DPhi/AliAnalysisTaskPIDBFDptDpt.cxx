@@ -94,6 +94,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _debugLevel    ( 0),
   _singlesOnly   ( 0),
   PIDparticle   ( 0),
+  use_pT_cut   ( 0),
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
@@ -442,6 +443,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _debugLevel    ( 0),
   _singlesOnly   ( 0),
   PIDparticle    ( 0),
+  use_pT_cut     ( 0),
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
@@ -1014,6 +1016,8 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
         }
     }
     
+  fUtils = new AliAnalysisUtils();
+	
   createHistograms();
 
   PostData(0,_outputHistoList);
@@ -1176,6 +1180,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 {    
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
+  int    IDrec;
   float  q, phi, pt, eta, y, y_direct, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; // Au-Au put p here to make _dedx_p and _beta_p plots. 
   int    ij;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
@@ -1276,22 +1281,30 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      spdCentr = centralityObject->GetCentralityPercentile("CL1");   
 	    }
 	}
-
-      else if ( fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0C_kMB" || fSystemType == "pp_V0_kMB" )
+      else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kTRUE" )
 	{ 
 	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
 	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
 	  if (!multSelection)    AliWarning("MultSelection not found in input event");
 	  else{
-	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M");
-	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A");
-	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C");
+	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kTRUE);
+	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kTRUE);
+	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kTRUE);
+	  }
+        }
+      else if ( fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kFALSE" )
+	{ 
+	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
+	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
+	  if (!multSelection)    AliWarning("MultSelection not found in input event");
+	  else{
+	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kFALSE);
+	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kFALSE);
+	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kFALSE);
 	  }
         }
       else if ( fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" )
 	{
-	  fUtils = new AliAnalysisUtils();
-
 	  //remove Pile-Up events
 	  fUtils->SetUseMVPlpSelection(kTRUE);
 	  fUtils->SetUseOutOfBunchPileUp(kTRUE);
@@ -1302,7 +1315,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	  v0ACentr = fUtils->GetMultiplicityPercentile(fAODEvent,"V0AEq");
 	  v0CCentr = fUtils->GetMultiplicityPercentile(fAODEvent,"V0CEq");
         }
-
+      else    return;
       
       _nTracks  = fAODEvent -> GetNumberOfTracks();
         
@@ -1331,7 +1344,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       
       if      ( fSystemType == "PbPb" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0_kMB" || fSystemType == "pp_V0C_kMB" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
+      else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
       else    return;
 	
@@ -1451,8 +1464,14 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      //******************************************************************************************************************************************************************
 	      if ( PIDparticle )
 		{
-		  Int_t IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
-
+		  if ( use_pT_cut )
+		    {
+		      IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		    }
+		  else // use_p_cut
+		    {
+		      IDrec = TellParticleSpecies_by_P( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		    }
 
 		  // QA for all identified hadrons
 		  if ( IDrec != 999 )
@@ -2616,6 +2635,44 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
   // else, return undefined
   return 999;
 }
+
+
+//________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  //function to determine the particle ID
+{  
+  CalculateNSigmas( trk );
+
+  Double_t nsigmaPion = 999., nsigmaKaon = 999., nsigmaProton = 999., nsigmaElectron = 999.;
+
+  CheckTOF( trk );
+  
+  if( fHasTOFPID && ( trk->P() > ptTOFlowerBoundary ) ) // !!! diff from TellParticleSpecies
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][1] ); //Pion_TOF
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][1] ); //Kaon_TOF
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+    }
+  else
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][0] ); //Pion_TPC
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][0] ); //Kaon_TPC
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 0; //Pion 
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 2; //Proton
+    }
+
+  // else, return undefined
+  return 999;
+}
+
 
 //________________________________________________________________________________________________________________
 Double_t AliAnalysisTaskPIDBFDptDpt::TOFBetaCalculation( AliVTrack * track ) const
