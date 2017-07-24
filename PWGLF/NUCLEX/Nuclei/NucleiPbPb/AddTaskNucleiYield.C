@@ -62,7 +62,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   };
   deu->SetDCABins(34,dcabins);
 
-  deu->fEventCut.fCentralityFramework = 1;
+  deu->fEventCut.fCentralityFramework = !isMC;
 
   mgr->AddTask(deu);
 

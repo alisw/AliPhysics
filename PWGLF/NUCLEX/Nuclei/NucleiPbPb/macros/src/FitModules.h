@@ -15,6 +15,8 @@
 #include <RooAbsData.h>
 #include <RooPlot.h>
 #include <TString.h>
+#include <TAxis.h>
+#include <TStyle.h>
 
 using namespace RooFit;
 
@@ -33,16 +35,16 @@ public:
   , mSigma(new RooRealVar("mSigma","Sigma",0.02,.61))
     {}
 
-  virtual void FitData(TH1* h, TString &name, TString &title, TString range = "");
+  virtual void FitData(TH1* h, TString name, TString title, TString range = "", TString plotrange="", bool change_range = false, float low_x = -2., float high_x = 2.);
   RooPlot* GetPlot() { return mPlot; }
   static RooPlot* FitAndPlot(RooRealVar &x, RooAbsData &data, RooAbsPdf &model, RooAbsPdf &sig,
-                             RooAbsPdf &bkg,TString range) {
+                             RooAbsPdf &bkg,TString range,TString plotrange) {
     RooPlot *plot = x.frame();
     RooFitResult *res = model.fitTo(data,Extended(),Range(range),Verbose(kFALSE),PrintLevel(-1));
     data.plotOn(plot,Name("data"));
-    model.plotOn(plot,Name("model"),Range(range),NormRange(range));
-    model.plotOn(plot,Components(bkg),LineStyle(kDashed),Range(range),NormRange(range));
-    model.plotOn(plot,Components(sig),LineStyle(kDotted),Range(range),NormRange(range));
+    model.plotOn(plot,Name("model"),Range(plotrange),NormRange(plotrange));
+    model.plotOn(plot,Components(bkg),LineStyle(kDashed),Range(plotrange),NormRange(plotrange));
+    model.plotOn(plot,Components(sig),LineStyle(kDotted),Range(plotrange),NormRange(plotrange));
     model.paramOn(plot,Label(Form("#chi^{2}/NDF = %2.4f",plot->chiSquare("model","data"))));
     return plot;
   }
@@ -58,6 +60,9 @@ public:
     }*/
   }
 
+  void UseBackground(bool);
+  void UseSignal(bool);
+
   RooRealVar  *mX;
   RooRealVar  *mBkgCounts;
   RooRealVar  *mSigCounts;
@@ -68,6 +73,25 @@ public:
   RooAbsPdf   *mSignal;
   RooAbsPdf   *mBackground;
   float        mChi2;
+};
+
+class FitGausGaus : public FitModule {
+public:
+  FitGausGaus(RooRealVar *xm);
+  virtual ~FitGausGaus();
+
+  RooRealVar *mMuBkg;
+  RooRealVar *mSigmaBkg;
+
+};
+
+class FitExpTailGaus : public FitModule {
+public:
+  FitExpTailGaus(RooRealVar *xm);
+  virtual ~FitExpTailGaus();
+
+  RooRealVar *mTau0;
+  RooRealVar *mAlpha0;
 };
 
 class FitExpGaus : public FitModule {
@@ -131,6 +155,22 @@ public:
   RooRealVar  *mKbkg;
   RooRealVar  *mAlpha0;
 };
+
+class FitExpExpTailTailGaus : public FitModule {
+public:
+  FitExpExpTailTailGaus(RooRealVar *xm);
+  virtual ~FitExpExpTailTailGaus();
+  virtual void SetHighPt(bool);
+
+  RooExponential *mBkg0;
+  RooExponential *mBkg1;
+  RooRealVar  *mTau0;
+  RooRealVar  *mTau1;
+  RooRealVar  *mKbkg;
+  RooRealVar  *mAlpha0;
+  RooRealVar  *mAlpha1;
+};
+
 
 class FitExpPolTailGaus : public FitModule {
 public:
