@@ -22,7 +22,7 @@ void SecondariesTPC() {
   fitModel.SetParLimits(0, -100000, 0);
   fitModel.SetParLimits(1, -30, 30);
 
-  /// fit funztion for systematics evaluation
+  /// fit function for systematics evaluation
   TF1* vFitModel[3];
   for(int i=0; i<3; i++){
     vFitModel[i] = new TF1(Form("fitFrac_%d",i),"1/(1-[0]*exp([1]*x))",0.4,6.);
@@ -32,13 +32,7 @@ void SecondariesTPC() {
   float integral_limits[3] = {0.07,.12,.19};
   TH1D* vResTFFsyst[3];
 
-  cout << "************************************************"<< endl;
-  cout << "Inizializzazione riuscita" << endl;
-  cout << "************************************************"<< endl;
-
   gStyle->SetOptFit(1111);
-
-  //const Double_t dcaxy_limits[27] = {-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7, -0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3};
 
   const int nDCAbins = 34;
   const double dcabins[35] = {
@@ -64,7 +58,6 @@ void SecondariesTPC() {
     TDirectory *primdir = root->mkdir("Primaries");
     TDirectory *secodir = root->mkdir("Secondaries");
     TDirectory *secodir_rebin = root->mkdir("Secondaries_rebin");
-    //TDirectory *secodir_sim = root->mkdir("Secondaries_sim");
     TDirectory *tffdir = root->mkdir("TFractionFitter");
     TDirectory *resdir = root->mkdir("Results");
 
@@ -77,9 +70,6 @@ void SecondariesTPC() {
     if(string(list_key->GetName())==kFilterListNames.data()){
       for(int i=0; i<3; i++){
         vResTFFsyst[i] = (TH1D*) hResTFF.Clone(Form("hResTFFsyst_%d",i));
-        cout << "************************************************"<< endl;
-        cout << "Istogramma " << i << " definito" << endl;
-        cout << "************************************************"<< endl;
       }
     }
 
@@ -98,12 +88,6 @@ void SecondariesTPC() {
       sc->SetTitle(dt->GetTitle());
       sc_rebin->SetTitle(dt->GetTitle());
       sc_rebin->Scale(1.,"width");
-      // sc_rebin->Fit("pol0","Q");
-
-      // TH1D* sim_sc = new TH1D(Form("sim_sc_%d",iB),sc->GetTitle(),sc->GetNbinsX(),sc->GetXaxis()->GetXbins()->GetArray());
-      // for(int i=0; i<1000000; i++){
-      //   sim_sc->Fill(gRandom->Uniform(-1.3,1.3));
-      // }
 
       primdir->cd();
       pr->Write();
@@ -111,8 +95,6 @@ void SecondariesTPC() {
       sc->Write();
       secodir_rebin->cd();
       sc_rebin->Write();
-      // secodir_sim->cd();
-      // sim_sc->Write();
 
       datadir->cd();
       dt->Write();
@@ -154,7 +136,6 @@ void SecondariesTPC() {
         float prim_integral = hp->Integral(hp->GetXaxis()->FindBin(-0.12),hp->GetXaxis()->FindBin(0.12));
 
         float ratio = prim_integral/tot_integral;
-        //float err_ratio = TMath::Sqrt(1/prim_integral+1/tot_integral)*ratio;
 
         hfit->DrawCopy("same");
         hs->SetLineColor(kRed);
@@ -185,8 +166,6 @@ void SecondariesTPC() {
       obj.Remove(sc);
       delete pr;
       delete sc;
-      // delete sc_rebin;
-      // delete sim_sc;
       delete dt;
     }
     resdir->cd();
@@ -197,9 +176,6 @@ void SecondariesTPC() {
       TDirectory *sysdir = root->mkdir("Systematics");
       sysdir->cd();
       for(int i=0; i<3;i++){
-        cout << "*******************************************************" << endl;
-        cout << "sto fittando" << endl;
-        cout << "*******************************************************" << endl;
         vResTFFsyst[i]->Fit(vFitModel[i]);
         vResTFFsyst[i]->Write();
       }

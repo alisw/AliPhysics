@@ -1,4 +1,6 @@
 #include "src/Common.h"
+#include "src/Utils.h"
+using namespace utils;
 #include "src/Plotting.h"
 
 #include <TCanvas.h>
@@ -8,11 +10,10 @@
 #include <TGraphAsymmErrors.h>
 #include <TH2F.h>
 
-//float cent[12] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
 int kCentBins[11][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11}};
 int kNcentBins = 11;
 
-TH1* DoEff(TH1* tof, TH1* tot, string name, int color, char letter, int iBx, TArrayD& cent_labels, TF1& effModel) {
+TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_labels) {
   int iC0 = kCentBins[iBx-1][0];
   int iC1 = kCentBins[iBx-1][1];
   float lmin = iBx ? cent_labels[iC0-1] : cent_labels[0];
@@ -35,10 +36,7 @@ TH1* DoEff(TH1* tof, TH1* tot, string name, int color, char letter, int iBx, TAr
     efftof->SetBinContent(iBin, eff);
     efftof->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
   }
-  //TF1* f = (TF1*)efftof->GetListOfFunctions()->FindObject("effModel");
-  //f->SetLineColor(iBx ? kColor[iBx-1] : kBlack);
-  //f->SetRange(0.75,10);
-  //f->SetTitle(Form("Efficiency model %3.0f - %3.0f%%",lmin,lmax));
+
   efftof->Write();
   return efftof;
 
@@ -93,29 +91,25 @@ void Efficiency() {
       TH1D *tofMB = fITS_TPC_TOF[iS]->ProjectionY("tof0");
       TH1D *totMB = fTotal[iS]->ProjectionY("tot0");
 
-      TH1* effTofMB = DoEff(tofMB,totMB,"Tof",kBlue,kLetter[iS],0,cent_labels,effModel);
-      TH1* effTpcMB = DoEff(tpcMB,totMB,"Tpc",kRed,kLetter[iS],0,cent_labels,effModel);
+      TH1* effTofMB = DoEff(tofMB,totMB,"Tof",kLetter[iS],0,cent_labels);
+      TH1* effTpcMB = DoEff(tpcMB,totMB,"Tpc",kLetter[iS],0,cent_labels);
       for (int iBx = 1; iBx <= kNcentBins; ++iBx) {
         TH1D *tpc = fITS_TPC[iS]->ProjectionY(Form("tpc%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
         TH1D *tof = fITS_TPC_TOF[iS]->ProjectionY(Form("tof%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
         TH1D *tot = fTotal[iS]->ProjectionY(Form("tot%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
 
-        TH1* effTof = DoEff(tof,tot,"Tof",kBlue,kLetter[iS],iBx,cent_labels,effModel);
-        TH1* effTpc = DoEff(tpc,tot,"Tpc",kRed,kLetter[iS],iBx,cent_labels,effModel);
+        TH1* effTof = DoEff(tof,tot,"Tof",kLetter[iS],iBx,cent_labels);
+        TH1* effTpc = DoEff(tpc,tot,"Tpc",kLetter[iS],iBx,cent_labels);
 
         tpc->Sumw2();
         tof->Sumw2();
         int iC0 = kCentBins[iBx-1][0];
         int iC1 = kCentBins[iBx-1][1];
-        tpc->SetLineColor(kColor[iBx-1]);
-        tpc->SetMarkerStyle(20);
-        tpc->SetMarkerColor(kColor[iBx-1]);
+        plotting::SetHistStyle(tpc,plotting::kSpectraColors[iBx-1]);
         tpc->SetTitle(Form("%3.0f - %3.0f%%",cent_labels[iC0-1],cent_labels[iC1]));
         tpc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         tpc->GetYaxis()->SetTitle("Ratio to MB");
-        tof->SetLineColor(kColor[iBx-1]);
-        tof->SetMarkerStyle(20);
-        tof->SetMarkerColor(kColor[iBx-1]);
+        plotting::SetHistStyle(tof,plotting::kSpectraColors[iBx-1]);
         tof->SetTitle(Form("%3.0f - %3.0f%%",cent_labels[iC0-1],cent_labels[iC1]));
         tof->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         tof->GetYaxis()->SetTitle("Ratio to MB");
