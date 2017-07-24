@@ -1,5 +1,8 @@
 #include "src/Common.h"
+#include "src/Utils.h"
 #include "src/Plotting.h"
+using namespace utils;
+
 #include <map>
 #include <array>
 #include <vector>
@@ -47,7 +50,6 @@ void SystematicsTPC() {
   vector<TH1F*> matsyst_tpc(n_centralities,nullptr);
   vector<TH1F*> abssyst_tpc(n_centralities,nullptr);
   vector<TH1F*> countsyst_tpc(n_centralities,nullptr);
-  //vector<TH1F*> secsyst_tpc(n_centralities,nullptr);
   vector<TH1F*> totsyst_tpc(n_centralities,nullptr);
 
   for (int iC = 0; iC < n_centralities; ++iC) {
@@ -73,13 +75,6 @@ void SystematicsTPC() {
       matsyst_tpc[iC] = (TH1F*)matsyst_tmp->Rebin(n_pt_bins,Form("hMatSyst_%d",iC),pt_bin_limits);
       matsyst_tpc[iC]->Smooth(1,"R");
 
-      // if(iS==0){
-      //   string sec_sys_path = kFilterListNames + "/Systematics/hSecondSyst";
-      //   secsyst_tpc[iC] = (TH1F*)secsyst_tpc_file.Get(sec_sys_path.data());
-      //   Requires(secsyst_tpc[iC],"Missing secondary systematic");
-      //   secsyst_tpc[iC]->Smooth(1,"R");
-      // }
-
       cutsyst_tpc[iC] = (TH1F*)countsyst_tpc[iC]->Clone(("cutsyst_tpc" + to_string(iC)).data());
       cutsyst_tpc[iC]->Reset();
 
@@ -88,8 +83,6 @@ void SystematicsTPC() {
 
       totsyst_tpc[iC] = (TH1F*)countsyst_tpc[iC]->Clone(("totsyst_tpc" + to_string(iC)).data());
       totsyst_tpc[iC]->Reset();
-
-      //basepath = kFilterListNames + "/" + kNames[iS] + "/Systematics/hSystFit" + kLetter[iS] + to_string(iC);
 
       for (auto& syst : kCutNames) {
         basepath = kFilterListNames + syst.first.data() + "%i/" + kNames[iS] + "/TPCspectra" + to_string(iC);
@@ -136,7 +129,6 @@ void SystematicsTPC() {
             }
           }
           rms[iB - 1] = TMath::RMS(values.begin(),values.end()) / m0;
-          //cout << "Rms[" << iB-1 << "] : " << rms[iB - 1] << endl;
           cutsyst_tpc[iC]->SetBinContent(iB, cutsyst_tpc[iC]->GetBinContent(iB) + rms[iB-1] * rms[iB-1]);
         }
 
@@ -182,7 +174,6 @@ void SystematicsTPC() {
 
       if (kSmoothSystematics) {
         cutsyst_tpc[iC]->GetXaxis()->SetRange(cutsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),cutsyst_tpc[iC]->FindBin(kPtRange[1]-0.01));
-        //countsyst_tpc[iC]->GetXaxis()->SetRange(countsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),countsyst_tpc[iC]->FindBin(kPtRange[1]-0.01));
         cutsyst_tpc[iC]->Smooth(1,"R");
         countsyst_tpc[iC]->Smooth(1,"R");
       }
@@ -205,24 +196,19 @@ void SystematicsTPC() {
       summary.DrawFrame(0.3,0.,1.7,0.2,";#it{p}_{T} (GeV/#it{c}); Systematics uncertainties");
       TLegend leg (0.6,0.56,0.89,0.84);
       leg.SetBorderSize(0);
-      cutsyst_tpc[iC]->SetLineColor(kColor[0]);
+      cutsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[0]);
       cutsyst_tpc[iC]->Draw("same");
       leg.AddEntry(cutsyst_tpc[iC],"PID and cuts","l");
-      countsyst_tpc[iC]->SetLineColor(kColor[1]);
+      countsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[1]);
       countsyst_tpc[iC]->Draw("same");
       leg.AddEntry(countsyst_tpc[iC],"Range broadening","l");
-      matsyst_tpc[iC]->SetLineColor(kColor[2]);
+      matsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[2]);
       matsyst_tpc[iC]->Draw("same");
       leg.AddEntry(matsyst_tpc[iC],"Material budget","l");
-      abssyst_tpc[iC]->SetLineColor(kColor[3]);
+      abssyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[3]);
       abssyst_tpc[iC]->Draw("same");
       leg.AddEntry(abssyst_tpc[iC],"Hadronic interaction","l");
-      // if(iS==0){
-      //   leg.AddEntry(secsyst_tpc[iC],"Secondary fraction","l");
-      //   secsyst_tpc[iC]->SetLineColor(kColor[5]);
-      //   secsyst_tpc[iC]->Draw("same");
-      // }
-      totsyst_tpc[iC]->SetLineColor(kColor[4]);
+      totsyst_tpc[iC]->SetLineColor(plotting::kHighContrastColors[4]);
       totsyst_tpc[iC]->Draw("same");
       leg.AddEntry(totsyst_tpc[iC],"Total","l");
       totsyst_tpc[iC]->SetLineWidth(2);
@@ -233,15 +219,10 @@ void SystematicsTPC() {
       cutsyst_tpc[iC]->Write("cutsyst_tpc");
       countsyst_tpc[iC]->Write("countsyst_tpc");
       abssyst_tpc[iC]->Write("abssyst_tpc");
-      //secsyst_tpc[iC]->Write("secsyst_tpc");
       matsyst_tpc[iC]->Write("matsyst_tpc");
       totsyst_tpc[iC]->Write("totsyst_tpc");
       summary.Write();
 
-      // if (kPrintFigures) {
-      //   summary.SaveAs((kFiguresFolder + "syst" + kLetter[iS] + to_string(iC) + ".eps").data());
-      //   summary.SaveAs((kMacrosFolder + "syst" + kLetter[iS] + to_string(iC) + ".C").data());
-      // }
     }
   }
   output_file.Close();
