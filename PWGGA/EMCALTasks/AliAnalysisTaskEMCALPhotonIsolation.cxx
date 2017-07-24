@@ -626,7 +626,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3D ("hEtaVsPhiVsM02", "", 250, -0.8, 0.8, 250, 1.2, 3.4, 500, 0., 5.);
+	fEtaPhiClusVsM02 = new TH3D ("hEtaVsPhiVsM02", "", 250, -0.8, 0.8, 250, 1.2, 3.4, 300, 0., 3.);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
