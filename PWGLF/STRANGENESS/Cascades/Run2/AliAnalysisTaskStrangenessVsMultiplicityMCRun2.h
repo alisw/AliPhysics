@@ -546,6 +546,7 @@ private:
     Float_t fTreeCascVarMagField; // for X-checks
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
+    Float_t fTreeCascVarV0ChiSquare; //! //V0 chi2 (defined only for on-the-fly or refitted offline) 
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
