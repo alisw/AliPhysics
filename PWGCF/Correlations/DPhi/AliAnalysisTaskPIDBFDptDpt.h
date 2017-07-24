@@ -41,6 +41,7 @@ public:
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
   Double_t TOFBetaCalculation( AliVTrack * track ) const;
   Double_t massSquareCalculation( AliVTrack * track ) const;
+  Float_t TPC_EventPlane(AliAODEvent *event);
     
 private:
     Double_t fnsigmas[4][2]; //nsigma values
@@ -111,6 +112,9 @@ public:
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
+    virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
+    virtual     void    SetEPmin( double v)                 { EP_min          = v; }
+    virtual     void    SetEPmax( double v)                 { EP_max          = v; }
     virtual     void    SetSameFilter(int v)                { _sameFilter   = v; }
     
     virtual     void    SetRejectPileup(int v)              { _rejectPileup         = v; }
@@ -196,6 +200,10 @@ protected:
     bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
+    bool     _useEventPlane;
+    double   EP_min;
+    double   EP_max;
+    TH1F  *  _psi_EventPlane;
     int      _sameFilter;
     int      _rejectPileup;
     int      _rejectPairConversion;
@@ -376,9 +384,6 @@ protected:
     TH1F * _trackLength_GetIntegratedLength_POI;
     TH1F * _timeTOF_1d_POI;
     TH1F * _realTOF_1d_POI;
-    
-    TH1F * _nsigmakaon_1d;
-    TH1F * _nsigmaTOFkaon_1d;
     
     TH1F * _etadis_POI_AliHelperPID;
     TH1F * _etadis_before_any_cuts;
