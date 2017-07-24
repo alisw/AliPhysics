@@ -24,6 +24,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
  bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
+ bool    useEventPlane          =  1,   // 0: No      1: Yes
+ double  EventPlaneMin          =  -3.1415927/6,
+ double  EventPlaneMax          =  3.1415927/6,
  int    CentralityGroup         =  9,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
@@ -333,6 +336,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetIfContaminationInMC(   PurePIDinMC   );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
+      task->SetEventPlane(         useEventPlane     );
+      task->SetEPmin(              EventPlaneMin     );
+      task->SetEPmax(              EventPlaneMax     );
       task->SetRejectPileup(        rejectPileup    );
       task->SetRejectPairConversion(rejectPairConversion);
       task->SetVertexZMin(          zMin            );
