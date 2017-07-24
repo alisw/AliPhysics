@@ -174,6 +174,7 @@ private:
 
   TH2F            *fHist_Psi1_ZDCC_RunByRun;  //!
   TH2F            *fHist_Psi1_ZDCA_RunByRun;  //!
+  TH1F            *fHist_Event_counter_vRun;  //!
 
   TProfile      *fHist_Qx_wiCorr_RunByRun[4];  //!
 
@@ -243,10 +244,11 @@ private:
   TProfile      *fHist_ZDCC_AvgSin_VsRun[2];    //!
   TProfile      *fHist_ZDCA_AvgSin_VsRun[2];    //!
 
-  TProfile2D    *fHist_ZDCC_AvgCos_VsCR[2];    //!
-  TProfile2D    *fHist_ZDCC_AvgSin_VsCR[2];    //!
-  TProfile2D    *fHist_ZDCA_AvgCos_VsCR[2];    //!
-  TProfile2D    *fHist_ZDCA_AvgSin_VsCR[2];    //!
+  TProfile2D    *fHist_ZDCAC_AvgCosSin_Run[90]; //!
+
+  TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
+  TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
+
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };
