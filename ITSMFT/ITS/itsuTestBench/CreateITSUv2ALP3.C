@@ -54,6 +54,8 @@ void CreateITSUv2ALP3()
     {-1,  39.34, -1,    7.,  0.  , 48}   // 48 was 100
   };
   const int nChipsPerModule = 7; // For OB: how many chips in a row
+  const double zChipGap = 0.01;  // For OB: gap in Z between chips
+  const double zModuleGap = 0.01;// For OB: gap in Z between modules
 
   // create segmentations:
   AliITSMFTSegmentationPix* seg0 = new AliITSMFTSegmentationPix(0,        // segID (0:9)
@@ -98,8 +100,9 @@ void CreateITSUv2ALP3()
     int nChipsPerStaveLr = nModPerStaveLr;
     //
     if (idLr>=kNLrInner) {
-      nChipsPerStaveLr *= nChipsPerModule;
-      ITS->DefineLayer(idLr, phi0, rLr, nChipsPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, 
+      double modlen = nChipsPerModule*seg0->Dz() + (nChipsPerModule-1)*zChipGap;
+      double zlen = nModPerStaveLr*modlen + (nModPerStaveLr-1)*zModuleGap;
+      ITS->DefineLayer(idLr, phi0, rLr, zlen, nStaveLr, nModPerStaveLr, 
 		       kSiThickOB, seg0->Dy(), seg0->GetChipTypeID(),kBuildLevel);
     } else {
       turbo = radii2Turbo(tdr5dat[idLr][kRmn],rLr,tdr5dat[idLr][kRmx],seg0->Dx());	
