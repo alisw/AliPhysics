@@ -1100,6 +1100,8 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
 
     for(int i=0;i<90;i++){
       fListDummy1->Add(fHist_ZDCAC_AvgCosSin_Run[i]);
+      fListDummy1->Add(fHist_ZDCCxy_RunByRun[i]);
+      fListDummy1->Add(fHist_ZDCAxy_RunByRun[i]);
     }
     PostData(2,fListDummy1); 
   }
