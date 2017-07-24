@@ -223,6 +223,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
   TH2F               *fHistTOFdeusignal;                    //!<! TOF PID: deuteron candidates
   TH2F               *fHistTOFprosignal;                    //!<! TOF PID: proton candidates
+  TH2F               *fHistTOFpionsignal;                   //!<! TOF PID: pion candidates
   //TH1F               *fHistTOFdeumass;                    //!<! TOF mass of deuteron identified with TPC
   //TH1F               *fHistTOFpromass;                    //!<! TOF mass of proton identified with TPC
 
