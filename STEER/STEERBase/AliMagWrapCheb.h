@@ -47,6 +47,10 @@
 #define _MAGCHEB_CACHE_  // use to spead up, but then Field calls are not thread safe
 #endif
 
+#ifndef _USE_FAST_ATAN2_
+#define _USE_FAST_ATAN2_ // use approximate atan2 calculation, still precision is ~10^-4 of nominal field
+#endif
+
 class TSystem;
 class TArrayF;
 class TArrayI;
@@ -98,6 +102,10 @@ class AliMagWrapCheb: public TNamed
   AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPC->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
+  
+  Int_t GetDipSegmentsForZSlice(int zid, TObjArray& arr)  const;
+  Float_t* GetDipZSegArray()                              const {return fSegZDip;}
+
   virtual void Print(Option_t * = "")                     const;
   //
   virtual void Field(const Double_t *xyz, Double_t *b)    const;
@@ -147,9 +155,14 @@ class AliMagWrapCheb: public TNamed
   //
 #endif
   //
+  static double useATan2(double y, double x);
+  
  protected:
   void     FieldCylSol(const Double_t *rphiz, Double_t *b)    const;
   Double_t FieldCylSolBz(const Double_t *rphiz)               const;
+  static double fastATan2(float y, float x);
+  static double fastATan2px(float y, float x);
+  static double fastATan(float x);
   //
  protected:
   //
@@ -246,7 +259,7 @@ inline void AliMagWrapCheb::CylToCartCylB(const Double_t *rphiz, const Double_t 
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
   Double_t btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  Double_t psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
+  Double_t psiPLUSphi = useATan2(brphiz[1],brphiz[0]) + rphiz[1];
   bxyz[0] = btr*TMath::Cos(psiPLUSphi);
   bxyz[1] = btr*TMath::Sin(psiPLUSphi);
   bxyz[2] = brphiz[2];
@@ -258,7 +271,7 @@ inline void AliMagWrapCheb::CylToCartCartB(const Double_t* xyz, const Double_t *
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cart.system
   Double_t btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  Double_t phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
+  Double_t phiPLUSpsi = useATan2(xyz[1],xyz[0]) +  useATan2(brphiz[1],brphiz[0]);
   bxyz[0] = btr*TMath::Cos(phiPLUSpsi);
   bxyz[1] = btr*TMath::Sin(phiPLUSpsi);
   bxyz[2] = brphiz[2];
@@ -270,7 +283,7 @@ inline void AliMagWrapCheb::CartToCylCartB(const Double_t *xyz, const Double_t *
 {
   // convert field in cylindrical coordinates to cartesian system, poin is in cart.system
   Double_t btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  Double_t psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
+  Double_t psiMINphi = useATan2(bxyz[1],bxyz[0]) - useATan2(xyz[1],xyz[0]);
   //
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
@@ -283,7 +296,7 @@ inline void AliMagWrapCheb::CartToCylCylB(const Double_t *rphiz, const Double_t 
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
   Double_t btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  Double_t psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
+  Double_t psiMINphi =  useATan2(bxyz[1],bxyz[0]) - rphiz[1];
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
   brphiz[2] = bxyz[2];
@@ -294,7 +307,7 @@ inline void AliMagWrapCheb::CartToCylCylB(const Double_t *rphiz, const Double_t 
 inline void AliMagWrapCheb::CartToCyl(const Double_t *xyz, Double_t *rphiz)
 {
   rphiz[0] = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-  rphiz[1] = TMath::ATan2(xyz[1],xyz[0]);
+  rphiz[1] = useATan2(xyz[1],xyz[0]);
   rphiz[2] = xyz[2];
 }
 
@@ -305,5 +318,51 @@ inline void AliMagWrapCheb::CylToCart(const Double_t *rphiz, Double_t *xyz)
   xyz[1] = rphiz[0]*TMath::Sin(rphiz[1]);
   xyz[2] = rphiz[2];
 }
+
+//__________________________________________________________________________________________________
+inline double AliMagWrapCheb::useATan2(double y, double x)
+{
+#ifdef _USE_FAST_ATAN2_
+  return fastATan2(y,x);
+#else
+  return TMath::ATan2(y,x);
+#endif
+}
+
+//__________________________________________________________________________________________________
+inline double AliMagWrapCheb::fastATan2(float y, float x)
+{
+  if (x>0.) {
+    return fastATan2px(y,x);
+  }
+  else if (x<0.) {
+    return ((y<0.) ? -TMath::Pi() : TMath::Pi()) - fastATan2px(y,-x);
+  }
+  else {
+    return y<0.f ? -0.5*TMath::Pi() : 0.5*TMath::Pi();
+  }
+}
+
+//__________________________________________________________________________________________________
+inline double AliMagWrapCheb::fastATan2px(float y, float x)
+{
+  // x guaranteed > 0
+  // use atan(t)+atan(1/t)=-pi/2 for t<0 and pi/2 for t>0
+  if (y<0.) {
+    return (x>-y) ? fastATan(y/x) : fastATan(-x/y)-0.5*TMath::Pi();
+  }
+  else { 
+    return (x>y) ? fastATan(y/x) : 0.5*TMath::Pi()-fastATan(x/y);
+  }
+}
+
+//__________________________________________________________________________________________________
+inline double AliMagWrapCheb::fastATan(float x)
+{
+  // x >= 0
+  const float kThresh = 0.315f; // parametrization switch here
+  return x>kThresh ? x*(7.85398163397448279e-01+0.273f*(1.-x)) : x/(1.+x*x*0.2815f);
+}
+
 
 #endif

@@ -20,43 +20,42 @@ ClassImp(AliADdigit)
 
 //__________________________________________________________________________
 AliADdigit::AliADdigit()
-   :AliDigit(),
-    fPMNumber(0),
-    fTime(0.),
-    fWidth(0.),
-    fIntegrator(0),
-    fBBflag(0),
-    fBGflag(0)
-
+  : AliDigit()
+  , fPMNumber(0)
+  , fTime(0.)
+  , fWidth(0.)
+  , fIntegrator(0)
+  , fBBflag(0)
+  , fBGflag(0)
 {
   // Standard default
-  // constructor 
+  // constructor
   for(Int_t iClock = 0; iClock < kADNClocks; ++iClock) fChargeADC[iClock] = 0;
 }
 
 //__________________________________________________________________________
-AliADdigit::AliADdigit(Int_t   PMnumber, Float_t time, 
-                             Float_t width,
-			     Bool_t integrator,
-			     Short_t *chargeADC,
-			     Bool_t  BBflag,
-		  	     Bool_t  BGflag,
-			     Int_t *labels)
-:AliDigit(),
-fPMNumber(PMnumber),
-fTime(time),
-fWidth(width),
-fIntegrator(integrator),
-fBBflag(BBflag),
-fBGflag(BGflag)
-{  
+AliADdigit::AliADdigit(Int_t    PMnumber,
+		       Float_t  time,
+		       Float_t  width,
+		       Bool_t   integrator,
+		       Short_t *chargeADC,
+		       Bool_t   BBflag,
+		       Bool_t   BGflag,
+		       Int_t   *labels)
+  : AliDigit()
+  , fPMNumber(PMnumber)
+  , fTime(time)
+  , fWidth(width)
+  , fIntegrator(integrator)
+  , fBBflag(BBflag)
+  , fBGflag(BGflag)
+{
   // Constructor
   // Used in the digitizer
   if (chargeADC) {
     for(Int_t iClock = 0; iClock < kADNClocks; ++iClock)
       fChargeADC[iClock] = chargeADC[iClock];
-  }
-  else {
+  } else {
     for(Int_t iClock = 0; iClock < kADNClocks; ++iClock)
       fChargeADC[iClock] = 0;
   }
@@ -67,16 +66,14 @@ fBGflag(BGflag)
 //__________________________________________________________________________
 Bool_t AliADdigit::GetIntegratorFlag(Int_t clock)
 {
-if (clock >= 0 && clock < kADNClocks){
-	if(clock%2 == 0) return fIntegrator;
-	else return !fIntegrator;
-	}
-	
-else return kFALSE;
+  if (clock >= 0 && clock < kADNClocks) {
+    if(clock%2 == 0) return fIntegrator;
+    else return !fIntegrator;
+  } else return kFALSE;
 }
 //__________________________________________________________________________
-void AliADdigit::Print(const Option_t*) const
+void AliADdigit::Print(Option_t*) const
 {
-    // Dumps digit object
-    Dump();
+  // Dumps digit object
+  Dump();
 }

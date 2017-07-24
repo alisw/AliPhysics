@@ -45,21 +45,37 @@
 
 #endif
 
-void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Double_t padsizey=0.5)
+AliMpDataStreams& DataStreams() {
+  static AliMpDataStreams* dataStreams = nullptr;
+  if (!dataStreams) {
+    AliMpDataProcessor mp;
+    AliMpDataMap* dataMap = mp.CreateDataMap("data");
+    dataStreams = new AliMpDataStreams(dataMap);
+  }
+  return *dataStreams;
+}
+
+AliMpSlatMotifMap* SlatMotifMap() {
+  static AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
+  return motifMap;
+}
+
+AliMpSt345Reader* SlatReader() {
+  static AliMpSt345Reader* reader = new AliMpSt345Reader(SlatMotifMap());
+  return reader;
+}
+
+void testGraphicsMotif(Option_t* motifType = "R43", const char* option = "PT", Double_t padsizex=5.0, Double_t padsizey=0.5)
 {
   // Warning : this function leaks memory. But should be fine as only used 
   // interactively to check a few motifs at once...
   //
-  AliMpDataProcessor mp;
-  AliMpDataMap* dataMap = mp.CreateDataMap("data");
-  AliMpDataStreams dataStreams(dataMap);
-
   AliMp::StationType station = AliMp::kStation345;
   AliMq::Station12Type station12 = AliMq::kNotSt12;
   AliMp::PlaneType plane = AliMp::kBendingPlane;
   
-  AliMpMotifReader reader(dataStreams, station, station12, plane);
-  AliMpMotifType* type = reader.BuildMotifType(motifType);
+  AliMpMotifReader reader(station, station12, plane);
+  AliMpMotifType* type = reader.BuildMotifType(DataStreams(),motifType);
   if (!type)
   {
     cerr << "Motif not found" << endl;
@@ -75,58 +91,77 @@ void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Doubl
     return;
   }
   new TCanvas(motifType,motifType);
-  painter->Draw("PT");
+  painter->Draw(option);
 }
 
-//112230N
-//112233NR3
-//220000N
-//122000NR1
-//112200NR2
-void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane, 
-	              Option_t* option = "PMCI",
-		      Bool_t saveJPG = false)
+void testGraphicsMotifs(const char* option = "PT", Double_t padsizex=5.0, Double_t padsizey=0.5)
+{
+  std::vector <std::string> motifs = {
+    "A1", "A10", "A11", "A12", "A13", "A14", "A15", "A16", "A17", "A18", "A19", "A2", "A20", "A3", "A4", "A5", "A6",
+    "A7", "A8", "A9", "C1", "C10", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "E1", "E10", "E11", "E12", "E13",
+    "E14", "E15", "E16", "E17", "E18", "E19", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "I1", "L1", "L10", "L11",
+    "L12", "L13", "L14", "L15", "L16", "L17", "L18", "L19", "L2", "L20", "L21", "L22", "L23", "L24", "L25", "L3", "L4",
+    "L5", "L6", "L7", "L8", "L9", "O1", "O10", "O11", "O12", "O13", "O14", "O15", "O16", "O18", "O19", "O2", "O20",
+    "O21", "O22", "O23", "O24", "O25", "O26", "O27", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "P1", "P2", "P3", "P4",
+    "Q1", "Q2", "Q3", "Q4", "R1", "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18", "R19", "R2", "R20",
+    "R21", "R22", "R23", "R24", "R25", "R26", "R27", "R28", "R29", "R3", "R30", "R31", "R32", "R33", "R34", "R35",
+    "R36", "R37", "R38", "R39", "R4", "R40", "R41", "R42", "R43", "R44", "R45", "R5", "R6", "R7", "R8", "R9", "S0",
+    "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8"
+  };
+
+
+  for (auto&& m:motifs) {
+    if (m[0]=='E')
+    testGraphicsMotif(m.c_str(), option, padsizex, padsizey);
+  }
+  std::cout << motifs.size() << " motifs" << std::endl;
+}
+
+void testGraphicsSlat(const char* slatType,
+                      AliMp::PlaneType planeType = AliMp::kBendingPlane,
+                      Option_t* option = "PMCI",
+                      Bool_t saveJPG = false)
 {
   // P plane
   // M motif
   // P pad
   // I indices
 
-  AliMpDataProcessor mp;
-  AliMpDataMap* dataMap = mp.CreateDataMap("data");
-  AliMpDataStreams dataStreams(dataMap);
+  TCanvas* canvas = new TCanvas(slatType,slatType,10,10,1200,800);
 
-  AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader* reader = new AliMpSt345Reader(dataStreams, motifMap);
+  AliMpSlat* slat = SlatReader()->ReadSlat(DataStreams(),slatType, planeType);
+  AliMpVPainter* painter = AliMpVPainter::CreatePainter(slat);
+  painter->Draw(option);
+
+  if (saveJPG) {
+    std::string jpgname = slatType;
+
+    if (planeType == AliMp::kNonBendingPlane)
+      jpgname += "_NonBending";
+    else
+      jpgname += "_Bending";
+    jpgname += ".jpg";
+    canvas->SaveAs(jpgname.c_str());
+  }
+}
+
+void testGraphicsSlats(AliMp::PlaneType planeType = AliMp::kBendingPlane,
+	              Option_t* option = "PMCI",
+		      Bool_t saveJPG = false)
+{
 
   // PMPT to get manu channels numbering
   
-  Char_t *slatName[19] = {"122000SR1", "112200SR2", "122200S", "222000N", "220000N",
+  const char* slatName[19] = {"122000SR1", "112200SR2", "122200S", "222000N", "220000N",
 			  "122000NR1", "112200NR2", "122200N",
 			  "122330N", "112233NR3", "112230N", "222330N", "223300N", "333000N", "330000N",
 			  "112233N", "222333N", "223330N", "333300N"};
 			  
-  TCanvas *c1[19];
-  Char_t c1Name[255];
-  Char_t c1NameJpg[255];
-  
+
   for (Int_t i = 0; i < 19; i++) {
-    sprintf(c1Name, "%s%d", "c1", i);
-    c1[i]= new TCanvas(c1Name,slatName[i],10,10,1200,800);     
-
-    Char_t* slatType = slatName[i];
-
-    AliMpSlat* slat = reader->ReadSlat(slatType, planeType);
-    AliMpVPainter* painter = AliMpVPainter::CreatePainter(slat);
-    painter->Draw(option);
-  
-    if (planeType == AliMp::kNonBendingPlane)
-      sprintf(c1NameJpg, "%s%s", slatName[i], "_NonBending.jpg");
-    else 
-      sprintf(c1NameJpg, "%s%s", slatName[i], "_Bending.jpg");
-    
-    if (saveJPG) c1[i]->Print(c1NameJpg);
+    testGraphicsSlat(slatName[i], planeType, option, saveJPG);
   }
+
 }
 
 void testGraphicsPCB(const char* pcbName="S2B",
@@ -136,13 +171,7 @@ void testGraphicsPCB(const char* pcbName="S2B",
   
   TCanvas* c = new TCanvas(pcbName,pcbName,10,10,1200,800);     
     
-  AliMpDataProcessor mp;
-  AliMpDataMap* dataMap = mp.CreateDataMap("data");
-  AliMpDataStreams dataStreams(dataMap);
-
-  AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader* reader = new AliMpSt345Reader(dataStreams, motifMap);
-  AliMpPCB* pcb = reader->ReadPCB(pcbName);
+  AliMpPCB* pcb = SlatReader()->ReadPCB(DataStreams(),pcbName);
   if (!pcb) 
   {
     cerr << "PCB " << pcbName << " does not exist" << endl;

@@ -15,11 +15,21 @@
   (physics, calibration, systemSoftwareTrigger, detectorSoftwareTrigger)
   [When we have real data files later, we may restrict this further]
 */
-/*
-  This process reads RAW data from the files provided as command line arguments
-  and save results (class itself) in a file (named from RESULT_FILE define 
-  - see below).
-*/
+
+////////////////////////////////////////////////////////////////////////////////
+///
+/// \file EMCPEDda.cxx
+/// \ingroup EMCAL_DA
+/// \brief Pedestals Detector Algorithm
+///
+/// EMCAL DA for online calibration: for pedestal studies
+///
+///  This process reads RAW data from the files provided as command line arguments
+///  and save results (class itself) in a file (named from RESULT_FILE define, see code).
+///
+/// \author David Silvermyr <David.Silvermyr@cern.ch>, ORNL
+///
+////////////////////////////////////////////////////////////////////////////////
 
 #define RESULT_FILE  "EMCALPED.root"
 #define FILE_ID "pedestals"
@@ -59,28 +69,29 @@ extern "C" {
 //
 #include "AliCaloCalibPedestal.h"
 
-/*
-  Main routine, EMC pedestal detector algorithm 
-  Arguments: list of DATE raw data files
-*/
-
-int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorithm 
-  
+///
+///  Main routine, EMC pedestal detector algorithm 
+///
+///  Arguments: list of DATE raw data files
+///
+int main(int argc, char **argv) 
+{ 
   AliLog::SetClassDebugLevel("AliCaloRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
   
-  if (argc<2) {
+  if (argc<2) 
+  {
     printf("Wrong number of arguments\n");
     return -1;  
   }
   
   /* magic line - for TStreamerInfo */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
-					"TStreamerInfo",
-					"RIO",
-					"TStreamerInfo()"); 
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()"); 
   
   int i, status;
   
@@ -89,10 +100,12 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
   
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
-  if (status!=0) {
+  if (status!=0) 
+  {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
+  
   /* define wait event timeout - 1s max */
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
@@ -100,11 +113,14 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
   /* Retrieve mapping files from DAQ DB */ 
   const char* mapFiles[kNRCU] = {"RCU0A.data","RCU1A.data","RCU0C.data","RCU1C.data"};
   
-  for(Int_t iFile=0; iFile<kNRCU; iFile++) {
+  for(Int_t iFile=0; iFile<kNRCU; iFile++) 
+  {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
-    if(failed) { 
+    
+    if(failed)
+    { 
       printf("Cannot retrieve file %d : %s from DAQ DB. Exit now..\n",
-	     iFile, mapFiles[iFile]);
+             iFile, mapFiles[iFile]);
 #ifdef LOCAL_DEBUG
 #else
       return -1;
@@ -118,8 +134,10 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
   path += "RCU";
   TString path2;
   TString side[] = {"A","C"};//+ and - pseudarapidity supermodules
-  for(Int_t j = 0; j < 2; j++){
-    for(Int_t i = 0; i < 2; i++) {
+  for(Int_t j = 0; j < 2; j++)
+  {
+    for(Int_t i = 0; i < 2; i++) 
+    {
       path2 = path;
       path2 += i;
       path2 +=side[j]; 
@@ -127,70 +145,80 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
       mapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
     }
   }
-
+  
   /* Retrieve cut=parameter file from DAQ DB */ 
   const char* parameterFile = {"EMCALPEDda.dat"};
   
   int failed = daqDA_DB_getFile(parameterFile, parameterFile);
-  if (failed) { 
+  if (failed) 
+  { 
     printf("Cannot retrieve file : %s from DAQ DB. Exit now..\n",
-	   parameterFile);
+           parameterFile);
 #ifdef LOCAL_DEBUG
 #else
     return -1;
 #endif
   }
-
+  
   /* set up our analysis class */  
   AliCaloCalibPedestal * calibPedestal = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); // pedestal and noise calibration
   calibPedestal->SetAltroMapping( mapping );
   calibPedestal->SetParametersFromFile( parameterFile );
-
+  
   AliRawReader *rawReader = NULL;
   int nevents=0;
   
   /* loop over RAW data files */
-  for ( i=1; i<argc; i++ ) {
-    
+  for ( i=1; i<argc; i++ ) 
+  {
     /* define data source : this is argument i */
     printf("Processing file %s\n", argv[i]);
     status=monitorSetDataSource( argv[i] );
-    if (status!=0) {
-      printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", monitorDecodeError(status));
+    if (status!=0) 
+    {
+      printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", 
+             monitorDecodeError(status));
       return -1;
     }
     
     /* read until EOF */
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-
-    for ( ; ; ) { // infinite loop
+    
+    for ( ; ; ) 
+    {
+      // infinite loop
       
       /* check shutdown condition */
       if (daqDA_checkShutdown()) {break;}
       
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
-      if (status==MON_ERR_EOF) {
-	printf ("End of File %d (%s) detected\n", i, argv[i]);
-	break; /* end of monitoring file has been reached */
+      if (status==MON_ERR_EOF) 
+      {
+        printf ("End of File %d (%s) detected\n", i, argv[i]);
+        break; /* end of monitoring file has been reached */
       }
-      if (status!=0) {
-	printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-	break;
+      
+      if (status!=0) 
+      {
+        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        break;
       }
       
       /* retry if got no event */
-      if (event==NULL) {
-	continue;
+      if (event==NULL)
+      {
+        continue;
       }
       eventT = event->eventType; /* just convenient shorthand */
       
       /* skip start/end of run events */
       if ( (eventT != physicsEvent) && (eventT != calibrationEvent) &&
-	   (eventT != systemSoftwareTriggerEvent) && (eventT != detectorSoftwareTriggerEvent) ) {
-	free(event);
-	continue;
+          (eventT != systemSoftwareTriggerEvent) && (eventT != detectorSoftwareTriggerEvent) ) 
+      {
+        free(event);
+        continue;
       }
       
       nevents++; // count how many acceptable events we have
@@ -212,32 +240,35 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
   //
   
   printf ("%d physics/calibration events processed.\n",nevents);
-
+  
   /* Fitting/compute methods step commented out for now (March 31, 2010) 
    - not necessary to do here 
-  // look for dead, hot and noisy towers
-  calibPedestal->ComputeDeadTowers();
-  calibPedestal->ComputeHotAndWarningTowers();
-  */
-
+   // look for dead, hot and noisy towers
+   calibPedestal->ComputeDeadTowers();
+   calibPedestal->ComputeHotAndWarningTowers();
+   */
+  
   TFile f(RESULT_FILE, "recreate");
-  if (!f.IsZombie()) { 
+  if (!f.IsZombie())
+  { 
     f.cd();
     calibPedestal->Write(FILE_PEDClassName);
     f.Close();
     printf("Object saved to file \"%s\" as \"%s\".\n", 
-	   RESULT_FILE, FILE_PEDClassName); 
+           RESULT_FILE, FILE_PEDClassName); 
   } 
-  else {
+  else 
+  {
     printf("Could not save the object to file \"%s\".\n", 
-	   RESULT_FILE);
+           RESULT_FILE);
   }
   
   //
   // closing down; see if we can delete our analysis helper also
   //
   delete calibPedestal;
-  for(Int_t iFile=0; iFile<kNRCU; iFile++) {
+  for(Int_t iFile=0; iFile<kNRCU; iFile++) 
+  {
     if (mapping[iFile]) delete mapping[iFile];
   }
   

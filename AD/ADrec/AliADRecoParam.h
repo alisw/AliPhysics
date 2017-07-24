@@ -1,3 +1,4 @@
+// -*- C++ -*-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -20,10 +21,10 @@
 
 class AliADRecoParam : public AliDetectorRecoParam
 {
- public: 
+public:
   AliADRecoParam();
   virtual ~AliADRecoParam();
-  
+
   void SetNSigmaPed(Float_t nSigma) { fNSigmaPed = nSigma; }
   void SetStartClock(Int_t start) { fStartClock = start; }
   void SetEndClock(Int_t end) {fEndClock = end; }
@@ -59,12 +60,12 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t  GetTimeWindowBGCLow() const { return fTimeWindowBGCLow; }
   Float_t  GetTimeWindowBGCUp () const { return fTimeWindowBGCUp ; }
   Float_t  GetMaxResid () const { return fMaxResid; }
-  Float_t  GetResidRise () const { return fResidRise; } 
+  Float_t  GetResidRise () const { return fResidRise; }
 
   Int_t    GetTailBegin() const { return fTailBegin; }
   Int_t    GetTailEnd()   const { return fTailEnd;   }
-  
- private:
+
+private:
 
   Float_t fNSigmaPed;  // Number of pedestal sigmas for adc cut
   Int_t fStartClock;   // Start clock for max adc search
@@ -73,7 +74,7 @@ class AliADRecoParam : public AliDetectorRecoParam
   Int_t fNPostClocks;  // Number of post-clocks used in adc charge sum
   Int_t fTailBegin;    // tail charge begin (BC)
   Int_t fTailEnd;      // tail charge end (BC)
-  
+
   // Cuts used in the trigger mask creation
   Float_t fAdcThresHold;      // Threshold on the ADC
   Float_t fTimeWindowBBALow;  // BBA window (lower cut)
@@ -86,7 +87,7 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t fTimeWindowBGCUp;   // BGC window (upper cut)
   Float_t fMaxResid;   	      // Maximum residual of a single channel time
   Float_t fResidRise;	      // Rise of the early hit cut
-  
-  ClassDef(AliADRecoParam, 5)
+
+  ClassDef(AliADRecoParam, 5);
 };
 #endif

@@ -62,6 +62,7 @@ class AliVCaloCells : public TNamed
   // MC & embedding
   virtual Int_t    GetCellMCLabel(Short_t cellNumber)    = 0;
   virtual Int_t    GetMCLabel(Short_t pos) const         = 0;
+  virtual void     SetMCLabel(Short_t pos, Int_t val)    = 0;
 
   virtual Double_t GetCellEFraction(Short_t cellNumber)  = 0;
   virtual Double_t GetEFraction(Short_t pos) const       = 0;

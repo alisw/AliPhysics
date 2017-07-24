@@ -153,7 +153,7 @@ void AliITSOnlineSDDTP::ValidateAnodes(){
 
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
-    if(GetChannelGain(ian)<lowlim||GetChannelGain(ian)>hilim) fGoodAnode[ian]=0;
+    if(fNEvents[ian]==0 || GetChannelGain(ian)<lowlim || GetChannelGain(ian)>hilim) fGoodAnode[ian]=0;
   }
 }
 

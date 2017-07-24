@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALGeometry
+/// \ingroup EMCALUtils
 /// \brief EMCal geometry, singleton
 ///
 /// Geometry class  for EMCAL : singleton
@@ -35,11 +36,11 @@
 ///
 ///   * EMCAL_COMPLETE12SMV1: contains 12 SM for runs from year 2012 and on
 ///
-///   * EMCAL_COMPLETE12SMV1_DCAL: contains 12 SM and 6 DCAL SM
+///   * EMCAL_COMPLETE12SMV1_DCAL: contains 12 SM and 6 DCAL SM -- not for standard user mode
 ///
 ///   * EMCAL_COMPLETE12SMV1_DCAL_8SM: contains 12 SM and 8 DCAL SM including the DCAL extention (2 SM)
 ///
-///   * EMCAL_COMPLETE12SMV1_DCAL_DEV: contains 12 SM shifted and 10 DCAL SM
+///   * EMCAL_COMPLETE12SMV1_DCAL_DEV: contains 12 SM shifted and 10 DCAL SM -- not for stardard user mode
 ///
 ///   * EMCAL_WSUC (Wayne State test stand)
 ///      * = no definite equivalent in old notation, was only used by
@@ -51,12 +52,17 @@
 ///         You have to use just the correct name of geometry. If name is empty string the
 ///         default name of geometry will be used.
 ///
-///  AliEMCALGeometry* g = AliEMCALGeometry::GetInstance(name,title); // first time
+///    AliEMCALGeometry* g = AliEMCALGeometry::GetInstance(name,title); // first time
 ///  ..
-///  g = AliEMCALGeometry::GetInstance();                             // after first time
+///    g = AliEMCALGeometry::GetInstance();                             // after first time
 ///
-///  MC:   If you work with MC data you have to get geometry the next way:
-///  ==                                      =============================
+/// where name is one of the above names.
+///
+/// If you do now know what name to assign you can rely on the run number via:
+///   AliEMCALGeometry* g = AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
+/// specially interesting at the analysis level, and used also when anchoring simulations to data.
+///
+///  MC:   If you work with MC data you can get geometry the next way (kind of expert mode):
 ///  AliRunLoader    *rl   = AliRunLoader::Instance();
 ///  AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 ///  TGeoManager::Import("geometry.root");
@@ -72,21 +78,6 @@
 /// \author Magali Estienne (magali.estienne@subatech.in2p3.fr)
 /// \author M.L. Wang CCNU & Subatech Adapted for DCAL Oct-18-2012
 ///
-///
-/// Usage:
-///        You can create the AliEMCALGeometry object independently from anything.
-///        You have to use just the correct name of geometry. If name is empty string the
-///        default name of geometry will be used.
-///
-///  AliEMCALGeometry* geom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1","EMCAL");
-///  TGeoManager::Import("geometry.root");
-///
-///  MC:   If you work with MC data you have to get geometry the next way:
-///  ==                                      =============================
-/// !!!!!!!!! This part has to be modified
-///  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
-///  AliEMCALEMCGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-///  TGeoManager::Import("geometry.root");
 //_________________________________________________________________________
 
 // --- ROOT system ---
@@ -219,28 +210,19 @@ public:
   //
   Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > fEMCGeometry->GetNumberOfSuperModules() ) return -1;
                                                       return fEMCGeometry->GetEMCSystem()[nSupMod]		     ; }
-  Bool_t   IsDCALSM(Int_t nSupMod) const;
+  Bool_t   IsDCALSM   (Int_t nSupMod) const;
   Bool_t   IsDCALExtSM(Int_t nSupMod) const;
+  
+  // Methods needed for SM in extension, where center of SM != center of the SM-section.
+  // Used in AliEMCALv0 to calculate position.
   Bool_t   GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax)    const 
     { return fEMCGeometry->GetPhiBoundariesOfSM(nSupMod, phiMin, phiMax)   ; }
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const 
     { return fEMCGeometry->GetPhiBoundariesOfSMGap(nPhiSec, phiMin, phiMax); }
-  //
-  // especially for SM in extension, where center of SM != center of the SM-section.
-  // Used in AliEMCALv0 to calculate position.
-  
-  //////////////////////////////////////////////////
-  // Obsolete methods to be thrown out when feasible
-  Float_t GetGap2Active(void)                 const { return fEMCGeometry->GetGap2Active()           ; }
+    
+  // Obsolete?
   Float_t GetSteelFrontThickness(void)        const { return fEMCGeometry->GetSteelFrontThickness()  ; }
-  Float_t GetTrd2AngleY(void)                 const { return fEMCGeometry->GetTrd2AngleY()           ; }
-  Float_t Get2Trd2Dy2(void)                   const { return fEMCGeometry->Get2Trd2Dy2()             ; }
-  Float_t GetTubsR(void)                      const { return fEMCGeometry->GetTubsR()                ; }
-  Float_t GetTubsTurnAngle(void)              const { return fEMCGeometry->GetTubsTurnAngle()        ; }
-  //Float_t GetAlFrontThickness(void)           const { return fEMCGeometry->GetAlFrontThickness()     ; }
-  //Float_t GetIP2ECASection(void)              const { return fEMCGeometry->GetIP2ECASection()        ; }   
-  //////////////////////////////////////////////////
-  
+   
   ///////////////////////////////
   //Geometry data member setters
   //
@@ -340,7 +322,7 @@ public:
   }
 
   //Method to set shift-rotational matrixes from ESDHeader
-  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod);
+  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) const;
 	
   //Alternate geometry that allows to calculate tower position for different particles and different alignments
   void RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,
@@ -437,65 +419,67 @@ protected:
 
   void Init(void);     		     // initializes the parameters of EMCAL
   
-  AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
+  AliEMCALEMCGeometry * fEMCGeometry;///< Geometry object for Electromagnetic calorimeter
 
-  AliEMCALTriggerMapping* fTriggerMapping; // Trigger mapping
+  AliEMCALTriggerMapping* fTriggerMapping; ///< Trigger mapping
   
-  TString  fGeoName;                 // geometry name
-  //Int_t    *fEMCSMSystem;	         // [fEMCGeometry.fNumberOfSuperModules] geometry structure
-  Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
-  Int_t    fnSupModInDCAL;           // for calculation abs cell id; 06-nov-12
-  Int_t    fNCellsInSupMod;          // number cell in super module
-  Int_t    fNETAdiv;                 // number eta divizion of module
-  Int_t    fNPHIdiv;                 // number phi divizion of module
-  Int_t    fNCellsInModule;          // number cell in module
-  TArrayD  fPhiBoundariesOfSM;       // phi boundaries of SM in rad; size is fNumberOfSuperModules;
-  TArrayD  fPhiCentersOfSM;          // phi of centers of SM; size is fNumberOfSuperModules/2
-  TArrayD  fPhiCentersOfSMSec;       // phi of centers of section where SM lies; size is fNumberOfSuperModules/2
+  TString  fGeoName;                 ///< Geometry name string
+  //Int_t    *fEMCSMSystem;	         ///< [fEMCGeometry.fNumberOfSuperModules] geometry structure
+  Int_t    fKey110DEG;               ///< For calculation abs cell id; 19-oct-05 
+  Int_t    fnSupModInDCAL;           ///< For calculation abs cell id; 06-nov-12
+  Int_t    fNCellsInSupMod;          ///< Number cell in super module
+  Int_t    fNETAdiv;                 ///< Number eta division of module
+  Int_t    fNPHIdiv;                 ///< Number phi division of module
+  Int_t    fNCellsInModule;          ///< Number cell in module
+  TArrayD  fPhiBoundariesOfSM;       ///< Phi boundaries of SM in rad; size is fNumberOfSuperModules;
+  TArrayD  fPhiCentersOfSM;          ///< Phi of centers of SM; size is fNumberOfSuperModules/2
+  TArrayD  fPhiCentersOfSMSec;       ///< Phi of centers of section where SM lies; size is fNumberOfSuperModules/2
+  
   // Local Coordinates of SM
-  TArrayD  fPhiCentersOfCells;       // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
-  TArrayD  fCentersOfCellsEtaDir;    // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
-  TArrayD  fCentersOfCellsPhiDir;    // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
-  TArrayD  fEtaCentersOfCells;       // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
-  Int_t    fNCells;                  // number of cells in calo
-  Int_t    fNPhi;                    // Number of Towers in the PHI direction
-  TArrayD  fCentersOfCellsXDir;      // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
-  Float_t  fEnvelop[3];              // the GEANT TUB for the detector 
-  Float_t  fArm1EtaMin;              // Minimum pseudorapidity position of EMCAL in Eta
-  Float_t  fArm1EtaMax;              // Maximum pseudorapidity position of EMCAL in Eta
-  Float_t  fArm1PhiMin;              // Minimum angular position of EMCAL in Phi (degrees)
-  Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
-  Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
-  Float_t  fDCALPhiMin;              // Minimum angular position of DCAL in Phi (degrees)
-  Float_t  fDCALPhiMax;              // Maximum angular position of DCAL in Phi (degrees)
-  Float_t  fEMCALPhiMax;             // Maximum angular position of EMCAL in Phi (degrees)
-  Float_t  fDCALStandardPhiMax;      // special edge for the case that DCAL contian extension
-  Float_t  fDCALInnerExtandedEta;    // DCAL inner edge in Eta (with some extension)
-  TList   *fShishKebabTrd1Modules;   // list of modules
-  Float_t  fParSM[3];                // SM sizes as in GEANT (TRD1)
-  Float_t  fPhiModuleSize;           // Phi -> X 
-  Float_t  fEtaModuleSize;           // Eta -> Y 
-  Float_t  fPhiTileSize;             // Size of phi tile
-  Float_t  fEtaTileSize;             // Size of eta tile
-  Int_t    fNZ;                      // Number of Towers in the Z direction
-  Float_t  fIPDistance;		           // Radial Distance of the inner surface of the EMCAL
-  Float_t  fLongModuleSize;          // Size of long module
+  TArrayD  fPhiCentersOfCells;       ///< [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
+  TArrayD  fCentersOfCellsEtaDir;    ///< Size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  fCentersOfCellsPhiDir;    ///< Size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
+  TArrayD  fEtaCentersOfCells;       ///< [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  Int_t    fNCells;                  ///< Number of cells in calo
+  Int_t    fNPhi;                    ///< Number of Towers in the PHI direction
+  TArrayD  fCentersOfCellsXDir;      ///< Size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  Float_t  fEnvelop[3];              ///< The GEANT TUB for the detector 
+  Float_t  fArm1EtaMin;              ///< Minimum pseudorapidity position of EMCAL in Eta
+  Float_t  fArm1EtaMax;              ///< Maximum pseudorapidity position of EMCAL in Eta
+  Float_t  fArm1PhiMin;              ///< Minimum angular position of EMCAL in Phi (degrees)
+  Float_t  fArm1PhiMax;              ///< Maximum angular position of EMCAL in Phi (degrees)
+  Float_t  fEtaMaxOfTRD1;            ///< Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
+  Float_t  fDCALPhiMin;              ///< Minimum angular position of DCAL in Phi (degrees)
+  Float_t  fDCALPhiMax;              ///< Maximum angular position of DCAL in Phi (degrees)
+  Float_t  fEMCALPhiMax;             ///< Maximum angular position of EMCAL in Phi (degrees)
+  Float_t  fDCALStandardPhiMax;      ///< Special edge for the case that DCAL contian extension
+  Float_t  fDCALInnerExtandedEta;    ///< DCAL inner edge in Eta (with some extension)
+  TList   *fShishKebabTrd1Modules;   ///< List of modules
+  Float_t  fParSM[3];                ///< SM sizes as in GEANT (TRD1)
+  Float_t  fPhiModuleSize;           ///< Phi -> X 
+  Float_t  fEtaModuleSize;           ///< Eta -> Y 
+  Float_t  fPhiTileSize;             ///< Size of phi tile
+  Float_t  fEtaTileSize;             ///< Size of eta tile
+  Int_t    fNZ;                      ///< Number of Towers in the Z direction
+  Float_t  fIPDistance;		           ///< Radial Distance of the inner surface of the EMCAL
+  Float_t  fLongModuleSize;          ///< Size of long module
+  
   // Geometry Parameters
-  Float_t  fShellThickness;	         // Total thickness in (x,y) direction
-  Float_t  fZLength;		             // Total length in z direction
-  Float_t  fSampling;		             // Sampling factor
+  Float_t  fShellThickness;	         ///< Total thickness in (x,y) direction
+  Float_t  fZLength;		             ///< Total length in z direction
+  Float_t  fSampling;		             ///< Sampling factor
 	
-  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
-  Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager
+  mutable const TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
 	
 private:
   
-  static AliEMCALGeometry *fgGeom;	               // Pointer to the unique instance of the singleton
-  static Bool_t            fgInit;	               // Tells if geometry has been succesfully set up.
-  static const Char_t     *fgkDefaultGeometryName; // Default name of geometry
+  static AliEMCALGeometry *fgGeom;	               ///< Pointer to the unique instance of the singleton
+  static Bool_t            fgInit;	               ///< Tells if geometry has been succesfully set up.
+  static const Char_t     *fgkDefaultGeometryName; ///< Default name of geometry
   
-  
-  ClassDef(AliEMCALGeometry,17)       // EMCAL geometry class 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALGeometry,18) ;
+  /// \endcond
 
 } ;
 

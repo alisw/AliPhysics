@@ -27,6 +27,9 @@
 
 #include "AliMpVRowSegment.h"
 
+#include <iostream>
+#include "TString.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMpVRowSegment)
 /// \endcond
@@ -54,5 +57,21 @@ AliMpVPadIterator* AliMpVRowSegment::CreateIterator() const
   return 0;
 }  
 
-
+//_____________________________________________________________________________
+void AliMpVRowSegment::Print(Option_t* opt) const
+{
+    std::cout << opt << Form("%30s has %2d motifs",ClassName(),
+            GetNofMotifs());
+    std::cout << Form(" left,right=%7.2f,%7.2f bottom,top=%7.2f,%7.2f",
+        GetPositionX()-GetDimensionX(),
+        GetPositionX()+GetDimensionX(),
+        GetPositionY()-GetDimensionY(),
+        GetPositionY()+GetDimensionY());
+    std::cout << Form(" ix=%3d,%3d iy=%3d,%3d",
+            GetLowLimitIx(),
+            GetHighLimitIx(),
+            GetLowLimitIy(),
+            GetHighLimitIy())
+    << std::endl;
+}
 

@@ -32,6 +32,8 @@ class AliITSOnlineSDD : public TObject {
   Int_t GetFirstGoodTB() const {return fFirstGoodTB;}
   Int_t GetLastGoodTB() const {return fLastGoodTB;}
 
+  Bool_t IsEmptyEvent(TH2F* hrawd) const;
+
   static TH2F* ApplyZeroSuppression(TH2F* hRaw, Float_t basl, Int_t tL, Int_t tH);
 
  protected:

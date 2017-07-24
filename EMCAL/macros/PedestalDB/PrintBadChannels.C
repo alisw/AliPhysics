@@ -1,14 +1,24 @@
-// Example to check the contents of a bad channels OCDB file
-// either local file or alien file
-// Author: Gustavo Conesa Balbastre (LPSC-Grenoble)
+///
+/// \file PrintBadChannels.C
+/// \ingroup EMCAL_BadMapDB
+/// \brief Print energy calibration parameters in OCDB
+///
+/// Macro to print the values stored in the OCDB with AliCaloCalibPedestal, channels bad map,
+/// either local file or alien file
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
-void PrintBadChannels(TString file = 
-		      "$ALICE_ROOT/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v0_s0.root"
-		      "alien:///alice/data/2014/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v1_s0.root"
-		      ) 
-{
-  // Read status map
- 
+///
+/// Main method
+///
+/// \param file: full file path
+///
+void PrintBadChannels
+(TString file = "$ALICE_ROOT/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v0_s0.root"
+//		          "alien:///alice/data/2014/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v1_s0.root"
+) 
+{ 
   if(file.Contains("alien:///"))
     TGrid::Connect("alien://");
 
@@ -73,5 +83,4 @@ void PrintBadChannels(TString file =
   printf("All SM summary : --- dead %d --- hot %d --- warm %d --- bad %d\n",ndeadTotal,nhotTotal,nwarmTotal,nbadTotal);  
   
   printf("Total BAD %d\n", caloped->GetDeadTowerCount());
-  
 }

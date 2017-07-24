@@ -85,7 +85,9 @@ AliGenHijing::AliGenHijing()
      fFreeTargSpecn(0),
      fFreeTargSpecp(0),
      fFragmNeutrons(0x0),
-     fFragmProtons(0x0)
+     fFragmProtons(0x0),
+     fEConv(1),
+     fMissing(50)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -138,8 +140,9 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fFreeTargSpecn(0),
      fFreeTargSpecp(0),
      fFragmNeutrons(0x0),
-     fFragmProtons(0x0)
-
+     fFragmProtons(0x0),
+     fEConv(1),
+     fMissing(50)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -236,6 +239,11 @@ void AliGenHijing::Init()
       fFragmNeutrons = dynamic_cast<TF1*> (file->Get("funcorrn"));
       fFragmProtons = dynamic_cast<TF1*> (file->Get("funcorrp"));
     }
+
+    // deal with energy/momentun conservation and counting of errors in hijhrd
+    fHijing->SetIHPR2(31,fEConv);
+    if (fMissing>0)
+      fHijing->SetIHPR2(30,fMissing);
     
     AliGenMC::Init();
     

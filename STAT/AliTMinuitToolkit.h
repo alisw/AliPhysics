@@ -19,11 +19,13 @@ class TTreeSRedirector;
 
 class AliTMinuitToolkit: public TNamed{
 public: 
-  enum EVerboseFlags{       // flags for verbosity
-    kPrintMinuit=0x00001,   // flag:print Minuit messages 
-    kSysInfo=0x00002,       // flag:print SystemInfoamtion for profiling (Mempry, CPU...)
-    kPrintAll=0x00004,      // flag:print detailed infor in minuit
-    kStreamFcn=0x00010      // flag: stream fcn values   
+  enum EVerboseFlags{           // flags for verbosity
+    kPrintMinuit=0x00001,       // flag:print Minuit messages 
+    kSysInfo=0x00002,           // flag:print SystemInfoamtion for profiling (Mempry, CPU...)
+    kPrintAll=0x00004,          // flag:print detailed information in minuit
+    //
+    kStreamFcn=0x00010,         // flag: stream fcn values   
+    kStreamFcnPoint=0x00020     // flag: stream fcn points   
   };
   enum EFitFlags{
     kCovarFailed=0x0001     // flag - problem to extract covariance matrix 
@@ -41,7 +43,7 @@ public:
   void  FitHistogram(TH1 *const his,  Option_t* option = "");
   void  FitGraph(TGraph *const gr, Option_t* option = "");
   //  Int_t UnbinnedFit(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
-  Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
+  Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries, Bool_t doReset=kTRUE);
   TString GetFitFunctionAsAlias();
   void Bootstrap(Int_t nIter, const char* reportName, Option_t  *option=0);
   void TwoFoldCrossValidation(Int_t nIter, const char*reportName, Option_t *option=0);
@@ -73,6 +75,7 @@ public:
   Bool_t     IsHuberCost() const {return fIsHuberCost;};
   TObjArray  *GetListOfVariables(){return fVarNames;}
   void SetVerbose(Int_t verbose){fVerbose=verbose;}
+  Bool_t IsVerbose(Int_t flag){ return (fVerbose&flag)>0;}
   // static fittig
   static AliTMinuitToolkit *  Fit(TH1* his, const char *fitterName, Option_t* option = "", Option_t* goption = "", Option_t *foption="", Double_t xmin = 0, Double_t xmax = 0);
   static AliTMinuitToolkit *  Fit(TGraph* graph, const char *fitterName, Option_t* option = "", Option_t* goption = "", Option_t* foption="",Double_t xmin = 0, Double_t xmax = 0);

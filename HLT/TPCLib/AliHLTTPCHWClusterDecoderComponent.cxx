@@ -494,6 +494,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   {
 #if defined(__GNUC__) || defined(__clang__)
     for( UInt_t i=origOutputBlocksSize; i<outputBlocks.size(); i++){
+      if (outputBlocks[i].fDataType != (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) continue;
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*)( origOutputPtr + outputBlocks[i].fOffset);
       for (int j = 0;j < clusters->fCount;j++)
       {
@@ -557,7 +558,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
             //  (unsigned int) round(clusters->fClusters[j].fSigmaTime2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale), val, ldz, fSignificantBitsWidth);
             clusters->fClusters[j].fSigmaTime2 = (float) val / AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale;
           }
-        }
+	    }
       }
     }
 #else

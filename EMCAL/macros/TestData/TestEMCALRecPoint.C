@@ -1,17 +1,41 @@
 ///
 /// \file TestEMCALRecPoint.C
+/// \ingroup EMCAL_TestData
 /// \brief RecPoints reading example
 ///
 /// Test Macro, shows how to load EMCal RecPoints and Geometry, and how can we get 
 /// some of the parameters and variables.
+/// Also, access the generated MC particles kinematics of those attached to the recpoints.
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//Root include files 
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+#include <TParticle.h>
+
+//AliRoot include files 
+#include "AliStack.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliGeomManager.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCAL.h"
+#include "AliEMCALRecPoint.h"
+#include "AliEMCALGeometry.h"
+
+#endif
+
 ///
 /// Main executing method
 ///
-void TestEMCALRecPoint()
+/// \param readKine: print kinematics of generated particle attached to the rec-point
+///
+void TestEMCALRecPoint(Bool_t readKine = kFALSE)
 {
   //
   // Getting EMCAL Detector and Geometry.
@@ -47,7 +71,8 @@ void TestEMCALRecPoint()
   rl->LoadRecPoints("EMCAL");
 
   // Load Kinematics if MC
-  //rl->LoadKinematics();
+  if(readKine)
+    rl->LoadKinematics();
   
   // Get maximum number of events
   Int_t maxevent =  rl->GetNumberOfEvents();
@@ -67,9 +92,10 @@ void TestEMCALRecPoint()
     
     // Load Event
     rl->GetEvent(iEvent);
-
+    
     // In case of simulation get stack with kinematics
-    //AliStack *sta=rl->Stack();
+    AliStack *sta= 0x0;
+    if(readKine) sta = rl->Stack();
     
     //
     // Fill array of rec. points
@@ -103,9 +129,10 @@ void TestEMCALRecPoint()
       // Basic parameters
       //
       energy  = rp->GetEnergy();      // Cluster energy
+      nlm     = rp->GetNExMax();      // Number of local maxima
+      
       rp->GetGlobalPosition(gpos);    // Global ALICE xyz position
       rp->GetElipsAxis(lmb);          // Shower shape 
-      nlm     = rp->GetNExMax();      // Number of local maxima
       
       printf("\t RP %d, Energy %2.3f; Phi %2.1f, Eta %2.2f; "
              "Shower shape l0 %2.2f, l1 %2.2f;  NLM %d\n", 
@@ -126,23 +153,29 @@ void TestEMCALRecPoint()
       for (Int_t ipr=0; ipr < primMult; ipr++) 
       {
         printf("\t \t primary %d, index %d\n",ipr,primaries[ipr]);
-
-//        if ( primaries[ipr] < 0 ) continue ;
-//        
-//        TParticle *primary = sta->Particle(primaries[ipr]);
-//        if(primary) printf("\t \t Primary: E %2.2f, Phi %2.2f, eta %2.2f\n",
-//                           primary->Energy(),primary->Phi()*TMath::RadToDeg(),primary->Eta());
+        
+        if(readKine)
+        {
+          if ( primaries[ipr] < 0 ) continue ;
+          
+          TParticle *primary = sta->Particle(primaries[ipr]);
+          if(primary) printf("\t \t Primary: E %2.2f, Phi %2.2f, eta %2.2f\n",
+                             primary->Energy(),primary->Phi()*TMath::RadToDeg(),primary->Eta());
+        }
       } // primary
       
       for (Int_t ipa = 0; ipa < parMult; ipa++) 
       {
         printf("\t \t parent  %d, index %d\n",ipa,parents[ipa]);
         
-//        if ( parents[ipa] < 0 ) continue ;
-//        
-//        TParticle *primary = sta->Particle(primaries[ipa]);
-//        if(primary) printf("\t \t Primary: E %2.2f, Phi %2.2f, eta %2.2f\n",
-//                           primary->Energy(),primary->Phi()*TMath::RadToDeg(),primary->Eta());
+        if(readKine)
+        {
+          if ( parents[ipa] < 0 ) continue ;
+          
+          TParticle *primary = sta->Particle(primaries[ipa]);
+          if(primary) printf("\t \t Primary: E %2.2f, Phi %2.2f, eta %2.2f\n",
+                             primary->Energy(),primary->Phi()*TMath::RadToDeg(),primary->Eta());
+        }
       } // parents
       
     } // rp loop

@@ -8,6 +8,7 @@
 
 /**
  * @class AliEMCALTriggerPatchADCInfo
+ * @ingroup EMCALTriggerBase
  * @brief Helper class containing all ADC infos for a given trigger patch
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Oct 13, 2016
@@ -43,7 +44,7 @@ public:
 
   /**
    * Copy constructor
-   * @param [in]ref Reference for the copy
+   * @param[in] ref Reference for the copy
    */
   AliEMCALTriggerPatchADCInfo(const AliEMCALTriggerPatchADCInfo &ref);
 
@@ -106,7 +107,7 @@ public:
    * Set ADC value for a given fastor position inside the trigger
    * patch. The position (col, row) is supposed to be relative to
    * the starting position of the trigger patch.
-   * @param ADC Fastor ADC value for the given fastor position
+   * @param adc Fastor ADC value for the given fastor position
    * @param col Coloumn of the fastor postion relative to the patch starting position
    * @param row Row of the fastor position relative to the patch starting postition
    */

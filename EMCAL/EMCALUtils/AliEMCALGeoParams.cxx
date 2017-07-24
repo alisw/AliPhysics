@@ -13,20 +13,5 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// class for holding various EMCAL basic parameters
-// - number of towers in each dimension per SuperModule
-// - info on LED Reference, TRU, Temperature sensors
-// and so on.
-// Also some simple conversion methods.
-// So far it serves as the catch-all to avoid magic numbers inside the code
-//
-// This empty cxx file is just added to get the class/numbers into
-// the Utils library    
-//                                                                           //
-// Author: David Silvermyr (ORNL)
-//
-///////////////////////////////////////////////////////////////////////////////
+
 

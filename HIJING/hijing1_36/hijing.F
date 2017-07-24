@@ -377,9 +377,9 @@ C			********perform elastic collisions
 	   RNIP(JP,JT)=RANTOT
 	   SJIP(JP,JT)=HINT1(18)
 	   NCOLT=NCOLT+1
-           if (R2.GT.2.D0) THEN
-              write (8,*) R2
-           ENDIF
+c           if (R2.GT.2.D0) THEN
+c              write (8,*) R2
+c           ENDIF
 	   IPCOL(NCOLT)=JP
 	   ITCOL(NCOLT)=JT
 70	CONTINUE

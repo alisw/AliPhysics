@@ -42,10 +42,10 @@ public:
   static void MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection);
 
   template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
-  enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight}; 
+  enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight,kMax,kMin};
   static Int_t GetStatType(const TString &stat);
   static void AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TString refQuery, Double_t deltaT,
-		   const TString statString="median:medianLeft:medianRight:RMS:Mean:LTM0.60:LTMRMS0.60",
+		   const TString statString="median:medianLeft:medianRight:RMS:Mean:LTM0.60:LTMRMS0.60:Max:Min",
 		   Int_t maxEntries=100000000); 
 protected:
   

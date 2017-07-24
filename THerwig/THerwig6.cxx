@@ -211,7 +211,7 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
    
    // reset all parameters
    hwigin_();
-
+   HWDIST.PLTCUT = 3.e-11;
    // set correct title
    //char atitle[132];
    double win=pbeam1+pbeam2;

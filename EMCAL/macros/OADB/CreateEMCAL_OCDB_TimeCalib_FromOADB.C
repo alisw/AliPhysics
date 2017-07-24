@@ -1,4 +1,6 @@
+///
 /// \file CreateEMCAL_OCDB_TimeCalib_FromOADB.C
+/// \ingroup EMCAL_OADB
 /// \brief Create time calibration OCDB from OADB
 ///
 /// Compare the contents of the calibration, bad channels, etc in OCDB and AODB
@@ -8,43 +10,29 @@
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS
 ///
 
-AliEMCALGeometry * geom = 0;
-AliOADBContainer *contTRF = 0;
+//#if !defined(__CINT__)
+#include <TH1F.h>
+#include <TSystem.h>
+#include <TString.h>
+#include <TObjArray.h>
 
-/// Main method
-/// Create OCDB for different periods at the same time.
-/// 
-/// \param pass: string with pass name
-void CreateEMCAL_OCDB_TimeCalib_FromOADB(TString pass = "pass1")
-{  
-  // Instantiate EMCAL geometry for the first time
-  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
-  
-  // OADB common stuff
-  gSystem->Load("libOADB");
-  
-  contTRF=new AliOADBContainer("");
-  
-  TString oadbFilePathEMCAL = "$ALICE_PHYSICS/OADB/EMCAL" ;
-  
-  contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",oadbFilePathEMCAL.Data()),"AliEMCALTimeCalib");
+#include <Riostream.h>
 
-  CreatePeriod(122195,126437,"LHC10d, pp, 7 TeV",2010); 
-  CreatePeriod(136851,140000,"LHC10h, Pb-Pb, 2.76 TeV",2010); 
-  CreatePeriod(144871,146459,"LHC11a, pp, 7 TeV",2011);
-  CreatePeriod(146686,146860,"LHC11a, pp, 2.76 TeV",2011);
-  CreatePeriod(148531,150629,"LHC11b, pp, 7 TeV",2011);
-  CreatePeriod(151636,155384,"LHC11c, pp, 7 TeV",2011);
-  CreatePeriod(156477,159635,"LHC11d, pp, 7 TeV",2011);
-  CreatePeriod(160670,162740,"LHC11e, pp, 7 TeV",2011);
-  CreatePeriod(162933,165746,"LHC11f, pp, 7 TeV",2011);
-  CreatePeriod(166529,170593,"LHC11h, Pb-Pb, 2.76 TeV",2011);
-  CreatePeriod(176326,193766,"LHC12a-i",2012);
-  CreatePeriod(195344,197692,"LHC13b-g",2013);
-}
+#include "AliEMCALGeometry.h"
+#include "AliEMCALCalibTime.h"
+#include "AliOADBContainer.h"
+
+#include "AliCDBManager.h"
+#include "AliOADBContainer.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+//#endif
+
+AliEMCALGeometry * geom    = 0; ///< Geometry pointer
+AliOADBContainer * contTRF = 0; ///< OADB container
 
 ///
-/// Create OCDF file for a given period
+/// Create OADB file for a given period
 ///
 /// \param runmin: minimum run interval
 /// \param runmax: maximum run interval
@@ -86,7 +74,7 @@ void CreatePeriod(Int_t runmin, Int_t runmax, TString period, Int_t year)
     
     if (!h) 
     {
-      AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+      printf("Could not load hAllTimeAvBC%d\n",ibc);
       continue;
     }
     
@@ -129,3 +117,33 @@ void CreatePeriod(Int_t runmin, Int_t runmax, TString period, Int_t year)
   
 }
 
+/// Main method
+/// Create OCDB for different periods at the same time.
+/// 
+void CreateEMCAL_OCDB_TimeCalib_FromOADB()
+{  
+  // Instantiate EMCAL geometry for the first time
+  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
+  
+  // OADB common stuff
+  gSystem->Load("libOADB");
+  
+  contTRF=new AliOADBContainer("");
+  
+  TString oadbFilePathEMCAL = "$ALICE_PHYSICS/OADB/EMCAL" ;
+  
+  contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",oadbFilePathEMCAL.Data()),"AliEMCALTimeCalib");
+  
+  CreatePeriod(122195,126437,"LHC10d, pp, 7 TeV",2010); 
+  CreatePeriod(136851,140000,"LHC10h, Pb-Pb, 2.76 TeV",2010); 
+  CreatePeriod(144871,146459,"LHC11a, pp, 7 TeV",2011);
+  CreatePeriod(146686,146860,"LHC11a, pp, 2.76 TeV",2011);
+  CreatePeriod(148531,150629,"LHC11b, pp, 7 TeV",2011);
+  CreatePeriod(151636,155384,"LHC11c, pp, 7 TeV",2011);
+  CreatePeriod(156477,159635,"LHC11d, pp, 7 TeV",2011);
+  CreatePeriod(160670,162740,"LHC11e, pp, 7 TeV",2011);
+  CreatePeriod(162933,165746,"LHC11f, pp, 7 TeV",2011);
+  CreatePeriod(166529,170593,"LHC11h, Pb-Pb, 2.76 TeV",2011);
+  CreatePeriod(176326,193766,"LHC12a-i",2012);
+  CreatePeriod(195344,197692,"LHC13b-g",2013);
+}

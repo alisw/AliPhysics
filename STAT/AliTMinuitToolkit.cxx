@@ -39,6 +39,7 @@
 #include "TGraph.h"
 #include <vector>
 #include "TPRegexp.h"
+#include "TStatToolkit.h"
 
 std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;  
 
@@ -240,7 +241,7 @@ void AliTMinuitToolkit::FitGraph(TGraph *const gr, Option_t *option) {
 
 
 
-void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchisq, double *gin, int /*iflag*/){
+void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchisq, double *gin, int iflag){
   //
   // internal function which gives the specified function to the TMinuit function
   //  
@@ -256,6 +257,7 @@ void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchis
   const TMatrixD & values=    (*fitter->GetValues());
   Int_t nvars       = variables.GetNcols();
   Int_t npoints     = variables.GetNrows();
+  TVectorD param(fitter->fFormula->GetNpar(), gin);
   // calculate  log likelihood
   //
   if (fitter->fPointIndex.GetSize()>0) { 
@@ -271,20 +273,41 @@ void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchis
     Double_t value=values(ipoint,0);
     Double_t weight=values(ipoint,1);
     Double_t delta = TMath::Abs(value - funx);
+    Double_t toAdd=0;
     if (logLike){
       Double_t normDelta = delta*weight;
-      fchisq+=logLike->EvalPar(&delta,likeParam);
-      continue;
+      toAdd=logLike->EvalPar(&delta,likeParam);
+      //      continue;
+    }else{
+      if (fitter->IsHuberCost() == true) {       //hubert norm
+	delta = delta*weight;                   // normalization
+	if (delta <= 2.5) toAdd= delta*delta; // new metric: Huber-k-estimator
+	if (delta > 2.5)  toAdd= 2*(2.5)*delta - (2.5*2.5);
+      } else {
+	Double_t chi2 = delta*weight;
+	chi2*=chi2;
+	toAdd=chi2;   // chi2 (log likelihood)
+      }
     }
-    if (fitter->IsHuberCost() == true) {       //hubert norm
-     delta = delta*weight;                   // normalization
-     if (delta <= 2.5) fchisq+= delta*delta; // new metric: Huber-k-estimator
-     if (delta > 2.5) fchisq+= 2*(2.5)*delta - (2.5*2.5);
-    } else {
-     Double_t chi2 = delta*weight;
-     chi2*=chi2;
-     fchisq+= chi2;   // chi2 (log likelihood)
+    //if (fitter-
+    if (fitter->IsVerbose(kStreamFcnPoint) || (iflag&kStreamFcnPoint)){
+      TVectorD vecX(nvars, x);
+      (*(fitter->fStreamer))<<"fcnDebugPoint"<<
+	"toAdd="<<toAdd<<  // log likelihood to add
+	"val="<<value<<    // "measurement"
+	"w="<<weight<<     // wight of point
+	"fun="<<funx<<     // function value
+	"x.="<<&vecX<<     // variable vector
+	"p.="<<&param<<    // parameter vector
+	"\n";
     }
+    fchisq+=toAdd;    
+  }
+  if (fitter->IsVerbose(kStreamFcn) || (iflag&kStreamFcn )){
+    (*(fitter->fStreamer))<<"fcnDebug"<<
+      "fchisq="<<fchisq<<
+      "p.="<<&param<<
+      "\n";
   }
   fcnCounter++;
 }
@@ -373,7 +396,12 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
   
   // initialize parameters (step size???)
   for (Int_t iparam=0; iparam<nParam; iparam++){
-    minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fInitialParam)(iparam,0), (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+    if (sOption.Contains("rndmInit")){
+      Double_t initValue=(*fInitialParam)(iparam, 0)+gRandom->Gaus()*(*fInitialParam)(iparam,1);
+      minuit->SetParameter(iparam, Form("p[%d]",iparam), initValue, (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+    }else{
+      minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fInitialParam)(iparam,0), (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+    }
     /*
       if (doReset){
       minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fInitialParam)(iparam,0), (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
@@ -418,11 +446,10 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
 }
 
 
-Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries ){
+Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries, Bool_t doReset ){
   //
   // Make unbinned fit
   //
-  ClearData();
   TString query=values;
   query+=":";
   query+=variables;
@@ -434,6 +461,13 @@ Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString v
   fVarNames=variables.Tokenize(":");
   Int_t nVals= fValueNames->GetEntries();
   Int_t nVars= fVarNames->GetEntries();
+  if (doReset==kFALSE  && fPoints!=NULL){
+    if (fPoints->GetNrows()!=nVars){
+      ::Error("AliTMinuitToolkit::UnbinnedFit","Not comatible number of variables: %d instead of %d: variables:  %s",nVars, fPoints->GetNrows(), query.Data());
+      return -1;
+    }
+  }
+
   Int_t entries = inputTree->Draw(query.Data(),selection.Data(),"goffpara",nentries,firstEntry);
   if (entries<=0) {
     ::Error("AliTMinuitToolkit::UnbinnedFit","badly formatted values or variables: %s",query.Data());
@@ -441,14 +475,22 @@ Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString v
     ::Error("AliTMinuitToolkit::UnbinnedFit","variables: %s",variables.Data());
     return -1;
   }  
-  fPoints=new TMatrixD(entries,nVars);
-  fValues=new TMatrixD(entries,nVals);
+  Int_t index0=0;
+  if (doReset || fPoints==NULL) {
+    ClearData();
+    fPoints=new TMatrixD(entries,nVars);
+    fValues=new TMatrixD(entries,nVals);
+  }else{
+    index0= fPoints->GetNrows();
+    fPoints->ResizeTo(index0+entries,nVars);
+    fValues->ResizeTo(index0+entries,nVals);
+  }
   for (Int_t iPoint=0; iPoint<entries; iPoint++){
     for (Int_t iVar=0; iVar<nVars; iVar++){
-      (*fPoints)(iPoint,iVar)=inputTree->GetVal(iVar+nVals)[iPoint];
+      (*fPoints)(index0+iPoint,iVar)=inputTree->GetVal(iVar+nVals)[iPoint];
     }
     for (Int_t iVal=0; iVal<nVals; iVal++){
-      (*fValues)(iPoint,iVal)=inputTree->GetVal(iVal)[iPoint];
+      (*fValues)(index0+iPoint,iVal)=inputTree->GetVal(iVal)[iPoint];
     }
   }
 }
@@ -487,6 +529,8 @@ Double_t  AliTMinuitToolkit::GaussCachyLogLike(Double_t *x, Double_t *p){
   Double_t vCauchy=p[1]/(TMath::Pi()*(p[1]*p[1]+(*x)*(*x)));
   Double_t vGaus=(TMath::Abs(*x)<20) ? TMath::Gaus(*x,0,1.,kTRUE):0.;
   return TMath::Abs(TMath::Log(p[0]*vGaus+(1-p[0])*vCauchy)-1);
+  static Double_t norm= 1/TMath::Gaus(0,0,1.,kTRUE);
+  return TMath::Abs(TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)*norm));
 }
 
 void AliTMinuitToolkit::Bootstrap(Int_t nIter, const char * reportName, Option_t *option){
@@ -495,8 +539,8 @@ void AliTMinuitToolkit::Bootstrap(Int_t nIter, const char * reportName, Option_t
   // fitting parameters done on several times on modified data (random samples with replacement)  (to be done togerher with M-stimator)
   //    to emulate different data population
   //    reduce problem with local minima in the M-estimator estimated parameters - robust mean/median
-  //    obtined RMS can be used to estimate error of the estemator
-  //    
+  //    obtained RMS can be used to estimate error of the estemator
+  //   
   static Int_t counter=0;
   Int_t nPoints= fPoints->GetNrows();
   fPointIndex.Set(nPoints);
@@ -536,8 +580,10 @@ void AliTMinuitToolkit::Bootstrap(Int_t nIter, const char * reportName, Option_t
   TVectorD &par=*fParam;
   TVectorD &rms=*fRMSEstimator;
   for (Int_t iPar=0; iPar<nPar;iPar++) {
+    Double_t rmsf,meanf;
+    TStatToolkit::EvaluateUni(nIter,vecPar[iPar].data(),meanf,rmsf,TMath::Max(nIter*0.75,1.));
     par[iPar]=TMath::Median(nIter,vecPar[iPar].data());
-    rms[iPar]=TMath::RMS(nIter,vecPar[iPar].data());
+    rms[iPar]=rmsf;
   }
   fPointIndex.Set(0);
   return ;
@@ -773,7 +819,7 @@ void  AliTMinuitToolkit::RegisterDefaultFitters(){
   fitterGR->SetLogLikelihoodFunction(likeGausCachy);
   fitterGR->SetInitialParam(&initPar);
   AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
-  //
+ //
 }
 
 

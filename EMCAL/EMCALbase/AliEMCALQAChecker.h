@@ -3,6 +3,7 @@
 
 //===============================================================
 /// \class AliEMCALQAChecker
+/// \ingroup EMCALbase
 /// \brief QA checker class
 ///
 ///  Checks the quality assurance. 

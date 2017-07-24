@@ -206,7 +206,7 @@ void testSt345Pads()
   AliMpDataStreams dataStreams(dataMap);
 
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader reader(dataStreams, motifMap);
+  AliMpSt345Reader reader(motifMap);
   
   Int_t ok(0);
   
@@ -216,8 +216,8 @@ void testSt345Pads()
     
     TString slatName( slatTypeNames[i] );
     
-    AliMpSlat* bending = reader.ReadSlat(slatName.Data(),AliMp::kBendingPlane);
-    AliMpSlat* nonbending = reader.ReadSlat(slatName.Data(),AliMp::kNonBendingPlane);
+    AliMpSlat* bending = reader.ReadSlat(dataStreams,slatName.Data(),AliMp::kBendingPlane);
+    AliMpSlat* nonbending = reader.ReadSlat(dataStreams,slatName.Data(),AliMp::kNonBendingPlane);
   
     Int_t NumberOfBendingPads(0);
     Int_t NumberOfNonBendingPads(0);

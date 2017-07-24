@@ -8,6 +8,7 @@
 
 /**
  * @struct AliEmcalTriggerChannelContainer
+ * @ingroup EMCALTriggerBase
  * @brief Structure for position of trigger channels
  *
  * This structure is a container for trigger channels in col-row space with

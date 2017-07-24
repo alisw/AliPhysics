@@ -17,7 +17,7 @@
 ///
 /// This is a class for reading the AD DDL raw data
 /// The format of the raw data corresponds to the one
-/// implemented in AliADBuffer class. 
+/// implemented in AliADBuffer class.
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,45 +26,45 @@
 #include "AliLog.h"
 #include "AliDAQ.h"
 #include "AliADCalibData.h"
-ClassImp(AliADRawStream)
+
+ClassImp(AliADRawStream);
 
 //_____________________________________________________________________________
-AliADRawStream::AliADRawStream(AliRawReader* rawReader) :
-  fTrigger(0),
-  fTriggerMask(0),
-  fPosition(-1),
-  fRawReader(rawReader),
-  fData(NULL)
+AliADRawStream::AliADRawStream(AliRawReader* rawReader)
+  : fTrigger(0)
+  , fTriggerMask(0)
+  , fPosition(-1)
+  , fRawReader(rawReader)
+  , fData(NULL)
 {
   // create an object to read AD raw data
   //
   // select the raw data corresponding to
   // the AD detector id
   fRawReader->Reset();
-  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("AD")));
+  AliDebugF(1, "Selecting raw data for detector %d", AliDAQ::DetectorID("AD"));
   fRawReader->Select("AD");
 
   // Initalize the containers
-  for(Int_t i = 0; i < kNChannels; i++) {
+  for (Int_t i = 0; i < kNChannels; i++) {
     fTime[i] = fWidth[i] = 0;
-    for(Int_t j = 0; j < kNEvOfInt; j++) {
+    for (Int_t j = 0; j < kNEvOfInt; j++) {
       fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
-    for(Int_t j = 0; j < kNBunches; j++) {
+    for (Int_t j = 0; j < kNBunches; j++) {
       fChargeMB[i][j] = 0;
       fIsIntMB[i][j] = fIsBBMB[i][j] = fIsBGMB[i][j] = kFALSE;
     }
   }
-  for(Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
-  for(Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
+  for (Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
+  for (Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
 }
 
 //_____________________________________________________________________________
 AliADRawStream::~AliADRawStream()
 {
-  // destructor
 }
 
 //_____________________________________________________________________________
@@ -73,20 +73,20 @@ void AliADRawStream::Reset()
   // reset raw stream params
 
   // Reinitalize the containers
-  for(Int_t i = 0; i < kNChannels; i++) {
+  for (Int_t i = 0; i < kNChannels; i++) {
     fTime[i] = fWidth[i] = 0;
-    for(Int_t j = 0; j < kNEvOfInt; j++) {
+    for (Int_t j = 0; j < kNEvOfInt; j++) {
       fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
-    for(Int_t j = 0; j < kNBunches; j++) {
+    for (Int_t j = 0; j < kNBunches; j++) {
       fChargeMB[i][j] = 0;
       fIsIntMB[i][j] = fIsBBMB[i][j] = fIsBGMB[i][j] = kFALSE;
     }
   }
-  for(Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
-  for(Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
+  for (Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
+  for (Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
 
   fTrigger = fTriggerMask = 0;
   fPosition = -1;
@@ -105,98 +105,97 @@ Bool_t AliADRawStream::Next()
 
   if (!fRawReader->ReadNextData(fData)) return kFALSE;
   if (fRawReader->GetDataSize() == 0) return kFALSE;
-     
+
   if (fRawReader->GetDataSize() != 5936) {
-     fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5936",fRawReader->GetDataSize()));
-     AliWarning(Form("Wrong AD raw data size: %d, expected 5936 bytes!",fRawReader->GetDataSize()));
-     return kFALSE;
+    fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5936",fRawReader->GetDataSize()));
+    AliWarningF("Wrong AD raw data size: %d, expected 5936 bytes!",fRawReader->GetDataSize());
+    return kFALSE;
   }
 
   fPosition = 0;
 
-  fTrigger = GetNextWord() & 0xffff;
+  fTrigger     = GetNextWord() & 0xffff;
   fTriggerMask = GetNextWord() & 0xffff;
 
-  for(Int_t iScaler = 0; iScaler < kNScalers; iScaler++)
-     fScalers[iScaler] = GetNextWord();
+  for (Int_t iScaler = 0; iScaler < kNScalers; iScaler++)
+    fScalers[iScaler] = GetNextWord();
 
-  for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
-     fBunchNumbers[iBunch] = GetNextWord();
-  
+  for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
+    fBunchNumbers[iBunch] = GetNextWord();
+
   Int_t iCIU=0;
-  for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
-    
-    if(iV0CIU != 2 && iV0CIU != 5) {
-      for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
+  for (Int_t iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
+
+    if (iV0CIU != 2 && iV0CIU != 5) {
+      for (Int_t iWord = 0; iWord<182; iWord++)
+	GetNextWord();
       continue;
-      	}
- 
-  // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) :
-  
-    for (Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
-          UShort_t data = GetNextShort();
+    }
+
+    // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) :
+    for (Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) {
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for (Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
+          const UShort_t data = GetNextShort();
           fADC[iChannel][iEvOfInt] = data & 0x3ff;
           fIsInt[iChannel][iEvOfInt] = (data >> 10) & 0x1;
         }
       }
-      for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
-        UShort_t data = GetNextShort();
-        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {          
+      for (Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
+        const UShort_t data = GetNextShort();
+        for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
           fIsBB[iChannel][iEvOfInt] = (data >>  2*(iChannel-iChannel_Offset)) & 0x1;
-          fIsBG[iChannel][iEvOfInt] = (data >> (2*(iChannel-iChannel_Offset)+1)) & 0x1; 
-	  if(iEvOfInt < (kNEvOfInt - 1)) {      
-             fIsBB[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset))) & 0x1;
-             fIsBG[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset)+1)) & 0x1;
+          fIsBG[iChannel][iEvOfInt] = (data >> (2*(iChannel-iChannel_Offset)+1)) & 0x1;
+	  if (iEvOfInt < (kNEvOfInt - 1)) {
+	    fIsBB[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset))) & 0x1;
+	    fIsBG[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset)+1)) & 0x1;
 	  }
         }
       }
 
       GetNextShort();
 
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
-          UShort_t data = GetNextShort();
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
+          const UShort_t data = GetNextShort();
           fChargeMB[iChannel][iBunch] = data & 0x3ff;
           fIsIntMB[iChannel][iBunch] = (data >> 10) & 0x1;
-        } 
-      }
-   
-      for(Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
-        UShort_t data = GetNextShort();
-        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {  
-          fIsBBMB[iChannel][iBunch] = (data >>  2*iBunch) & 0x1;
-          fIsBGMB[iChannel][iBunch] = (data >> (2*iBunch+1)) & 0x1;
-	  if(iBunch < (kNBunches - 1)) {
-             fIsBBMB[iChannel][iBunch+1] = (data >> (8+2*iBunch)) & 0x1;
-             fIsBGMB[iChannel][iBunch+1] = (data >> (8+2*iBunch+1)) & 0x1;
-	  }	  
         }
       }
-  
-      GetNextShort();
-   
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        fBBScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
-        fBBScalers[iChannel] |= GetNextWord();
-        fBGScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
-        fBGScalers[iChannel] |= GetNextWord();
+
+      for (Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
+        const UShort_t data = GetNextShort();
+        for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+          fIsBBMB[iChannel][iBunch] = (data >>  2*iBunch) & 0x1;
+          fIsBGMB[iChannel][iBunch] = (data >> (2*iBunch+1)) & 0x1;
+	  if (iBunch < (kNBunches - 1)) {
+	    fIsBBMB[iChannel][iBunch+1] = (data >> (8+2*iBunch)) & 0x1;
+	    fIsBGMB[iChannel][iBunch+1] = (data >> (8+2*iBunch+1)) & 0x1;
+	  }
+        }
       }
 
-    } 
+      GetNextShort();
 
-    for(Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) { 
-      UInt_t time = GetNextWord();
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        fBBScalers[iChannel]  = ((ULong64_t)GetNextWord()) << 32;
+        fBBScalers[iChannel] |= GetNextWord();
+        fBGScalers[iChannel]  = ((ULong64_t)GetNextWord()) << 32;
+        fBGScalers[iChannel] |= GetNextWord();
+      }
+    }
+
+    for (Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) {
+      const UInt_t time = GetNextWord();
       fTime[iChannel]  = time & 0xfff;
       fWidth[iChannel] = ((time >> 12) & 0x7f); // HPTDC used in pairing mode
     }
     iCIU++;
     // End of decoding of one CIU card
-    //AliWarning(Form("Number of bytes used at end of reading CIU card number %d %d", iCIU+1, fPosition)); 
-    
+    //AliWarningF("Number of bytes used at end of reading CIU card number %d %d", iCIU+1, fPosition);
+
   } // end of decoding the eight CIUs
-    
+
   return kTRUE;
 }
 

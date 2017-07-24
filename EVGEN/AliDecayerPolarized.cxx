@@ -34,6 +34,11 @@ AliDecayerPolarized::AliDecayerPolarized():
     fAlpha(0),
     fSystRef(kHelicity),
     fDecProd(kMuon),
+    fSqrtSNN(13000.),   // Centre of Mass Energy per nucleon-nucleon pair
+    fZ1(1),             // Z of the projectile nucleus
+    fA1(1),             // A of the projectile nucleus
+    fZ2(1),             // Z of the target nucleus
+    fA2(1),             // A of the target nucleus
     fPol(0),
     fMother(0),
     fDaughter1(0),
@@ -48,6 +53,11 @@ AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinSta
     fAlpha(alpha),
     fSystRef(systref),
     fDecProd(decprod),
+    fSqrtSNN(13000.),   // Centre of Mass Energy per nucleon-nucleon pair
+    fZ1(1),             // Z of the projectile nucleus
+    fA1(1),             // A of the projectile nucleus
+    fZ2(1),             // Z of the target nucleus
+    fA2(1),             // A of the target nucleus
     fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
     fMother(0),
     fDaughter1(0),
@@ -64,6 +74,11 @@ AliDecayerPolarized::AliDecayerPolarized(const AliDecayerPolarized &decayer):
     fAlpha(0),
     fSystRef(kHelicity),
     fDecProd(kMuon),
+    fSqrtSNN(13000.),   // Centre of Mass Energy per nucleon-nucleon pair
+    fZ1(1),             // Z of the projectile nucleus
+    fA1(1),             // A of the projectile nucleus
+    fZ2(1),             // Z of the target nucleus
+    fA2(1),             // A of the target nucleus
     fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
     fMother(0),
     fDaughter1(0),
@@ -119,10 +134,13 @@ void AliDecayerPolarized::Decay(Int_t ipart, TLorentzVector *p)
     v1.SetPxPyPzE(-px1,-py1,-pz1,e1);   //in the dimuon rest frame
     v2.SetPxPyPzE(px1,py1,pz1,e2); 
 	
-    TLorentzVector pProj, pTarg; // In the CM frame
-    Float_t mp = 0.938;
-    pProj.SetPxPyPzE(0.,0.,-7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // projectile
-    pTarg.SetPxPyPzE(0.,0.,7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // target
+    TLorentzVector pProj, pTarg; // beam 4-momenta (per nucleon)
+    Double_t bz1=0.; Double_t bz2=0.; // beam momenta (per nucleoan)
+    Double_t mp=0.938; // assuming all nucleons to be protons 
+    GetMomentumOfBeams(fZ1,fA1,fZ2,fA2,fSqrtSNN,bz1,bz2);
+
+    pProj.SetPxPyPzE(0.,0.,bz2,TMath::Sqrt(bz2*bz2+mp*mp)); // projectile (kept same sign convention as before)
+    pTarg.SetPxPyPzE(0.,0.,bz1,TMath::Sqrt(bz1*bz1+mp*mp)); // target
  
     TVector3 betajpsicm;
     betajpsicm = (-1./p->E()*p->Vect());
@@ -213,4 +231,16 @@ void AliDecayerPolarized::ReadDecayTable()
     // This method is dummy
     AliWarning("Method not implemented for this class !\n");
 }
-
+// Compute the momentum of the two beams given sqrt(s_NN) and the beam types
+void AliDecayerPolarized::GetMomentumOfBeams(const Int_t Z1,const Int_t A1,const Int_t Z2,const Int_t A2,const Double_t sqrtSNN, Double_t& p1z, Double_t& p2z) {
+if(Z1==0 || Z2==0 || A1 ==0 || A2 ==0 || sqrtSNN<=0.) {
+	AliError("Wrong setting of collidiyng system.!\n");
+	return;
+}
+Double_t mp=0.938; // assuming all nucleons to be protons 
+Double_t s=sqrtSNN*sqrtSNN;
+Double_t k=(Double_t)Z2/(Double_t)Z1*(Double_t)A1/(Double_t)A2;
+p1z=TMath::Sqrt(s*(s-4.*mp*mp)/ ( 4.*(1.+k*k)*mp*mp + 4*k*s - 8.*k*mp*mp ));
+p2z=-1.*k*p1z;
+return;
+}

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 280                         $: revision of last commit
+// $Rev:: 286                         $: revision of last commit
 // $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-12-12 20:38:20 +0100 #$: date of last commit
+// $Date:: 2017-05-03 22:32:03 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -50,6 +50,8 @@ public:
 private:
 
 	double _Ep;  // Proton Energy
+        double _gamma1;
+        double _gamma2;
 	double _wideWmax;
 	double _wideWmin;
 	double _wideYmax;

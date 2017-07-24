@@ -22,6 +22,9 @@ class AliDecayerPolarized : public AliDecayer
   AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod);
   AliDecayerPolarized(const AliDecayerPolarized &decayer);
   virtual ~AliDecayerPolarized();
+  void SetCentreOfMassEnergyPerNNPair(Double_t sqrtSNN=14000.) {fSqrtSNN=sqrtSNN;}
+  void SetProjectile(Int_t Z=1, Int_t A=1) {fZ1=Z; fA1=A;}
+  void SetTarget(Int_t Z=1, Int_t A=1) {fZ2=Z; fA2=A;}
   void SetPolDec(Double_t alpha=0) {fAlpha=alpha;}
   void SetPolRefSys(Polar_t systref=kColSop) {fSystRef=systref;}
   void SetDecProd(FinState_t decprod=kMuon) {fDecProd=decprod;}
@@ -39,6 +42,11 @@ class AliDecayerPolarized : public AliDecayer
   Double_t fAlpha;       // Polarization parameter
   Polar_t fSystRef;      // Reference system for polarization
   FinState_t fDecProd;   // Choice of decay products
+  Double_t fSqrtSNN;     // Centre of Mass Energy per nucleon-nucleon pair
+  Int_t fZ1;             // Z of the projectile nucleus
+  Int_t fA1;             // A of the projectile nucleus
+  Int_t fZ2;             // Z of the target nucleus
+  Int_t fA2;             // A of the target nucleus
   TF1 *fPol;             // ! Angular distribution for decay products
   TParticle *fMother;    // ! Particle that has to be decayed
   TParticle *fDaughter1; // ! Decay product no. 1
@@ -48,8 +56,9 @@ class AliDecayerPolarized : public AliDecayer
   void  Copy(TObject &decayer) const;
   AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
       {decayer.Copy(*this);return(*this);}
+  void GetMomentumOfBeams(const Int_t Z1,const Int_t A1,const Int_t Z2,const Int_t A2,const Double_t sqrtSNN, Double_t& p1z, Double_t& p2z);
   
-  ClassDef(AliDecayerPolarized,1) // Polarized 2-body quarkonium decay
+  ClassDef(AliDecayerPolarized,2) // Polarized 2-body quarkonium decay
 };
 #endif
 

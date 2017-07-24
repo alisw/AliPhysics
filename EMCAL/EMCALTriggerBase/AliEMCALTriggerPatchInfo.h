@@ -17,6 +17,7 @@ class TArrayI;
 
 /**
  * \class AliEMCALTriggerPatchInfo
+ * \ingroup EMCALTriggerBase
  * \brief Main data structure storing all relevant information of EMCAL/DCAL trigger patches
  * \author Jiri Kral <>, University of Jyv&aumlskul&auml
  * \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory

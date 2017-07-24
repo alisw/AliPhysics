@@ -826,24 +826,12 @@ void AliCDBLocal::QueryValidFiles() {
 // Fills list fValidFileIds with AliCDBId objects extracted from CDB files
 // present in the local storage.
 // If fVersion was not set, fValidFileIds is filled with highest versions.
-// In the CVMFS case, the fValidFileIds is filled from the file containing
-// the filepaths corresponding to the highest versions for the give OCDB tag
-// by launching the script which extracts the last versions for the given run.
-//
 
   if(fVersion != -1) AliWarning ("Version parameter is not used by local storage query!");
   if(fMetaDataFilter) {
     AliWarning ("CDB meta data parameters are not used by local storage query!");
     delete fMetaDataFilter; fMetaDataFilter=0;
   }
-
-  // Check if in CVMFS case
-  TString cvmfsOcdbTag(gSystem->Getenv("OCDB_PATH"));
-  if (!cvmfsOcdbTag.IsNull()) {
-    QueryValidCVMFSFiles(cvmfsOcdbTag);
-    return;
-  }
-
   void* storageDirPtr = gSystem->OpenDirectory(fBaseDirectory);
 
   const char* level0;
@@ -932,117 +920,6 @@ void AliCDBLocal::QueryValidFiles() {
   }
   gSystem->FreeDirectory(storageDirPtr);
 
-}
-
-//_____________________________________________________________________________
-void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
-// Called in the CVMFS case to fill the fValidFileIds from the file containing
-// the filepaths corresponding to the highest versions for the given OCDB tag
-// by launching the script which extracts the last versions for the given run.
-//
-
-  TString command = cvmfsOcdbTag;
-  AliDebug(3, Form("Getting valid files from CVMFS-OCDB tag \"%s\"", cvmfsOcdbTag.Data()));
-  // CVMFS-OCDB tag. This is the file $OCDB_PATH/catalogue/20??.list.gz
-  // containing all CDB file paths (for the given AR tag)
-  cvmfsOcdbTag.Strip(TString::kTrailing, '/');
-  cvmfsOcdbTag.Append("/");
-  gSystem->ExpandPathName(cvmfsOcdbTag);
-  if ( gSystem->AccessPathName(cvmfsOcdbTag) )
-    AliFatal(Form("cvmfs OCDB set to an invalid path: %s", cvmfsOcdbTag.Data()));
-
-  // The file containing the list of valid files for the current run has to be generated
-  // by running the (shell+awk) script on the CVMFS OCDB tag file.
-
-  // the script in cvmfs to extract CDB filepaths for the given run has the following fullpath
-  // w.r.t. $OCDB_PATH: bin/OCDBperRun.sh
-  command = command.Strip(TString::kTrailing, '/');
-  command.Append("/bin/getOCDBFilesPerRun.sh "); 
-  command += cvmfsOcdbTag;
-  // from URI define the last two levels of the path of the cvmfs ocdb tag (e.g. data/2012.list.gz)
-  TString uri(GetURI());
-  uri.Remove(TString::kTrailing, '/');
-  TObjArray * osArr = uri.Tokenize('/');
-  TObjString* mcdata_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-3));
-  TObjString* yeartype_os = 0;
-  TString mcdata = mcdata_os->GetString();
-  if( mcdata == TString("data")) {
-    yeartype_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-2));
-  } else {
-    mcdata_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-2));
-    yeartype_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-1));
-  }
-  mcdata = mcdata_os->GetString();
-  TString yeartype = yeartype_os->GetString();
-  command += mcdata;
-  command += '/';
-  command += yeartype;
-  command += ".list.gz cvmfs ";
-  command += TString::Itoa(fRun,10);
-  command += ' ';
-  command += TString::Itoa(fRun,10);
-  command += " -y > ";
-  TString runValidFile(gSystem->WorkingDirectory());
-  runValidFile += '/';
-  runValidFile += mcdata;
-  runValidFile += '_';
-  runValidFile += yeartype;
-  runValidFile += '_';
-  runValidFile += TString::Itoa(fRun,10);
-  command += runValidFile;
-  AliDebug(3, Form("Running command: \"%s\"",command.Data()));
-  Int_t result = gSystem->Exec(command.Data());
-  if(result != 0) {
-    AliError(Form("Was not able to execute \"%s\"", command.Data()));
-  }
-
-  // We expect the file with valid paths for this run to be generated in the current directory
-  // and to be named as the CVMFS OCDB tag, without .gz, with '_runnumber' appended
-  // Fill fValidFileIds from file
-  std::ifstream file (runValidFile.Data());
-  if (!file.is_open()) {
-    AliFatal(Form("Error opening file \"%s\"!", runValidFile.Data()));
-  }
-  TString filepath;
-  while (filepath.ReadLine(file)) {
-    // skip line in case it is not a root file path
-    if(! filepath.EndsWith(".root")) {
-      continue;
-    }
-    //extract three-level path and basename
-    TObjArray *tokens = filepath.Tokenize('/');
-    if (tokens->GetEntries() < 5) {
-      AliError(Form("\"%s\" is not a valid cvmfs path for an OCDB object", filepath.Data()));
-      continue;
-    }
-    TObjString *baseNameOstr = (TObjString*) tokens->At(tokens->GetEntries()-1);
-    TString baseName(baseNameOstr->String());
-    TObjString *l0oStr = (TObjString*) tokens->At(tokens->GetEntries()-4);
-    TObjString *l1oStr = (TObjString*) tokens->At(tokens->GetEntries()-3);
-    TObjString *l2oStr = (TObjString*) tokens->At(tokens->GetEntries()-2);
-    TString l0(l0oStr->String());
-    TString l1(l1oStr->String());
-    TString l2(l2oStr->String());
-    TString threeLevels = l0 + '/' + l1 + '/' + l2;
-
-    AliCDBPath validPath(threeLevels);
-    //use basename and three-level path to create Id
-    AliCDBRunRange aRunRange; // the runRange got from filename
-    Int_t aVersion, aSubVersion; // the version and subVersion got from filename
-    if ( !FilenameToId(baseName, aRunRange, aVersion, aSubVersion) )
-      AliError( Form("Could not create a valid CDB id from path: \"%s\"", filepath.Data()) );
-
-    AliCDBRunRange runrg(fRun,fRun);
-    if (!aRunRange.Comprises(runrg)) continue; // should never happen (would mean awk script wrong output)
-    // aRunRange contains requested run!
-    AliCDBId *validId = new AliCDBId(validPath,aRunRange,aVersion,aSubVersion);
-    fValidFileIds.AddLast(validId);
-  }
-
-  file.close();
-  //gSystem->Exec( Form( "rm %s", runValidFile.Data() ) );
-  AliFileUtilities::RemoveLocalFile(runValidFile.Data());
-  return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

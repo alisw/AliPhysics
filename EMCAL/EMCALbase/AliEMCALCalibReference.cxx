@@ -13,11 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
-// Objects of this class contain basis for reference calibrations
-//
-
 #include <fstream>
 #include <TString.h>
 #include <TFile.h>
@@ -27,40 +22,53 @@
 
 using namespace std;
 
-ClassImp(AliEMCALCalibReference)
+/// \cond CLASSIMP
+ClassImp(AliEMCALCalibReference) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
+/// \param nSM: number of SM
 //____________________________________________________________________________
 AliEMCALCalibReference::AliEMCALCalibReference(const int nSM) : 
   fNSuperModule(nSM),
   fSuperModuleData()
 {
-  //Default constructor.
-  for (int i=0; i<fNSuperModule; i++) {
+  for (int i=0; i<fNSuperModule; i++) 
     fSuperModuleData.Add(new AliEMCALSuperModuleCalibReference(i));
-  }
+  
   fSuperModuleData.Compress(); // compress the TObjArray
   fSuperModuleData.SetOwner(kTRUE); 
 }
 
+///
+/// Read data from txt file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param nSM: number of SM
+/// \param txtFileName: output file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString &txtFileName,
-					    Bool_t swapSides)
+                                                        Bool_t swapSides)
 {
-  //Read data from txt file. ; coordinates given on SuperModule basis
-
   std::ifstream inputFile(txtFileName.Data());
-  if (!inputFile) {
-    printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Cannot open the APD info file %s\n", txtFileName.Data());
+  
+  if (!inputFile) 
+  {
+    printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Cannot open the APD info file %s\n", 
+           txtFileName.Data());
     return;
   }
-
+  
   fNSuperModule = nSM;
-
+  
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t id = 0;
-
+  
   // list of values to be read
   // first: overall values for the whole SuperModule
   Int_t iReferenceTime = 0; 
@@ -74,165 +82,203 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
   Int_t iHighLow = 0; // 
   Float_t rLEDAmp = 0; // low gain eq. amplitude
   Float_t rLEDAmpRMS = 0; //
-  // end - all values
-
+                          // end - all values
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[i];
-    if (!inputFile) {
+    
+    if (!inputFile) 
+    {
       printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; likely EOF..\n");
       return;
     }
+    
     inputFile >> iSM;
     t->SetSuperModuleNum(iSM);
-
+    
     // first: overall values for the whole SuperModule
     inputFile >> iReferenceTime;
     t->SetReferenceTime(iReferenceTime);
-
+    
     // second: additional info for LED Reference and SM temperature
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) 
+    {
       inputFile >> id >> iLEDRefHighLow >> rLEDRefAmp >> rLEDRefAmpRMS;
-      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALLEDRefs-1) ) {
-	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; LEDRef j %d id %d\n", j, id);
-	return;
+      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALLEDRefs-1) )
+      {
+        printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; LEDRef j %d id %d\n", j, id);
+        return;
       }
+      
       t->SetLEDRefHighLow(id, iLEDRefHighLow);
       t->SetLEDRefAmp(id, rLEDRefAmp);
       t->SetLEDRefAmpRMS(id, rLEDRefAmpRMS);
     }
-
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
+    
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) 
+    {
       inputFile >> id >> temperature >> temperatureRMS;
-      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALTempSensors-1) ) {
-	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; TempSensor j %d id %d\n", j, id);
-	return;
+      if (id<0 || id>(AliEMCALGeoParams::fgkEMCALTempSensors-1) ) 
+      {
+        printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; TempSensor j %d id %d\n", j, id);
+        return;
       }
+      
       t->SetTemperature(id, temperature);
       t->SetTemperatureRMS(id, temperatureRMS);
     }
-
+    
     // third: info for each tower
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       inputFile >> iCol >> iRow 
-		>> iHighLow >> rLEDAmp >> rLEDAmpRMS;
-
+      >> iHighLow >> rLEDAmp >> rLEDAmpRMS;
+      
       // check that input values are not out bounds
       if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
-	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
-	printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
-      return;
+          iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) 
+      {
+        printf("AliEMCALCalibReference::ReadCalibReferenceInfo - Error while reading input file; j %d iCol %d iRow %d\n", 
+               j, iCol, iRow);
+        return;
       }
-
+      
       // assume that this info is already swapped and done for this basis?
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iCol, iRow);
-
+      
       v->SetHighLow(iHighLow);
       v->SetLEDAmp(rLEDAmp);
       v->SetLEDAmpRMS(rLEDAmpRMS);
     }
-
+    
   } // i, SuperModule
-
+  
   inputFile.close();
-
+  
   return;
 }
 
+///
+/// Write data to txt file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param txtFileName: input file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibReference::WriteTextCalibReferenceInfo(const TString &txtFileName,
-					     Bool_t swapSides)
+                                                         Bool_t swapSides)
 {
-  // write data to txt file. ; coordinates given on SuperModule basis
-
   std::ofstream outputFile(txtFileName.Data());
-  if (!outputFile) {
-    printf("AliEMCALCalibReference::WriteCalibReferenceInfo - Cannot open the APD output file %s\n", txtFileName.Data());
+  
+  if (!outputFile) 
+  {
+    printf("AliEMCALCalibReference::WriteCalibReferenceInfo - Cannot open the APD output file %s\n", 
+           txtFileName.Data());
     return;
   }
-
+  
   Int_t iCol = 0;
   Int_t iRow = 0;
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[i];
-
+    
     // first: overall values for the whole SuperModule
     outputFile << t->GetSuperModuleNum() << endl;
     outputFile << t->GetReferenceTime() << endl;
-
+    
     // second: additional info for LED Reference and SM temperature
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++)
+    {
       outputFile << j << " " << t->GetLEDRefHighLow(j) 
-		 << " " << t->GetLEDRefAmp(j) << " " << t->GetLEDRefAmpRMS(j) 
-		 << endl;
+      << " " << t->GetLEDRefAmp(j) << " " << t->GetLEDRefAmpRMS(j) 
+      << endl;
     }
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
+    
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) 
+    {
       outputFile << j << " " << t->GetTemperature(j) << " " << t->GetTemperatureRMS(j) << endl;
     }
-
+    
     // third: info for each tower
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iCol, iRow);
-
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       outputFile << iCol << " " << iRow 
-		 << " " << v->GetHighLow() 
-		 << " " << v->GetLEDAmp() 
-		 << " " << v->GetLEDAmpRMS() << endl;
+      << " " << v->GetHighLow() 
+      << " " << v->GetLEDAmp() 
+      << " " << v->GetLEDAmpRMS() << endl;
     }
-
+    
   } // i, SuperModule
-
+  
   outputFile.close();
-
+  
   return;
 }
 
+///
+/// Read data from root file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param rootFileName: input file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibReference::ReadRootCalibReferenceInfo(const TString &rootFileName,
-					    Bool_t swapSides)
+                                                        Bool_t swapSides)
 {
-  //Read data from root file. ; coordinates given on SuperModule basis
   TFile inputFile(rootFileName, "read");  
-
+  
   TTree *tree = (TTree*) inputFile.Get("tree");
-
+  
   ReadTreeCalibReferenceInfo(tree, swapSides);
-
+  
   inputFile.Close();
-
+  
   return;
 }
 
+///
+/// Read data from tree. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param tree: input tree
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
-					    Bool_t swapSides)
+                                                        Bool_t swapSides)
 {
   // how many SuperModule's worth of info do we have?
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   fNSuperModule = tree->GetEntries();
-
+  
   Int_t iSM = 0; // SuperModule index
-  // list of values to be read
-  // first: overall values for the whole SuperModule
+                 // list of values to be read
+                 // first: overall values for the whole SuperModule
   Int_t iReferenceTime= 0; 
   // second: additional info for LED Reference and SM temperature
   Float_t rLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
@@ -245,7 +291,7 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   Float_t rLEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   Float_t rLEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
-
+  
   // just to make the initializations of the arrays are done correctly, let's use memset
   memset(rLEDRefAmp, 0, sizeof(rLEDRefAmp)); 
   memset(rLEDRefAmpRMS, 0, sizeof(rLEDRefAmpRMS)); 
@@ -255,7 +301,7 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   memset(iHighLow, 0, sizeof(iHighLow)); 
   memset(rLEDAmp, 0, sizeof(rLEDAmp)); 
   memset(rLEDAmpRMS, 0, sizeof(rLEDAmpRMS)); 
-
+  
   // declare the branches
   tree->SetBranchAddress("iSM", &iSM);
   tree->SetBranchAddress("ReferenceTime", &iReferenceTime);
@@ -269,76 +315,87 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   tree->SetBranchAddress("HighLow", iHighLow);
   tree->SetBranchAddress("LEDAmp", rLEDAmp);
   tree->SetBranchAddress("LEDAmpRMS", rLEDAmpRMS);
-
+  
   // indices for looping over the towers
   Int_t iCol = 0;
   Int_t iRow = 0;
-
-  for (int ient=0; ient<tree->GetEntries(); ient++) {
+  
+  for (int ient=0; ient<tree->GetEntries(); ient++) 
+  {
     tree->GetEntry(ient);
-
+    
     // assume the index SuperModules come in order: i=iSM
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[iSM];
-
+    
     t->SetSuperModuleNum(iSM);
     // first, overall values
     t->SetReferenceTime(iReferenceTime);
-
+    
     // second: additional info for LED references and SM temperatures
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++)
+    {
       t->SetLEDRefAmp(j, rLEDRefAmp[j]);
       t->SetLEDRefAmpRMS(j, rLEDRefAmpRMS[j]);
       t->SetLEDRefHighLow(j, iLEDRefHighLow[j]);
     }
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
+    
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) 
+    {
       t->SetTemperature(j, temperature[j]);
       t->SetTemperatureRMS(j, temperatureRMS[j]);
     }
-
+    
     // third: info for each tower
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       // help variables: possibly modified or swapped indices
       int iColMod = iCol;
       int iRowMod = iRow;
       // assume that this info is already swapped and done for this basis?
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iColMod = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iColMod = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iColMod, iRowMod);
-
+      
       v->SetHighLow(iHighLow[iCol][iRow]);
       v->SetLEDAmp(rLEDAmp[iCol][iRow]);
       v->SetLEDAmpRMS(rLEDAmpRMS[iCol][iRow]);
     }
-
+    
   } // loop over entries
-
+  
   return;
 }
 
+///
+/// Write data to root file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param rootFileName: output file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFileName,
-					     Bool_t swapSides)
+                                                         Bool_t swapSides)
 {
-  // write data to root file. ; coordinates given on SuperModule basis
   TFile destFile(rootFileName, "recreate");  
-  if (destFile.IsZombie()) {
+  if (destFile.IsZombie()) 
     return;
-  }  
+  
   destFile.cd();
-
+  
   TTree *tree = new TTree("tree","");
-
+  
   // variables for filling the TTree
   Int_t iSM = 0; // SuperModule index
-  // list of values to be written
-  // first: overall values for the whole SuperModule
+                 // list of values to be written
+                 // first: overall values for the whole SuperModule
   Int_t iReferenceTime = 0; 
   // second: additional info for LED Reference and SM temperature
   Float_t rLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs] = {0};
@@ -351,7 +408,7 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   Float_t rLEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   Float_t rLEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
-
+  
   // just to make the initializations of the arrays are done correctly, let's use memset
   memset(rLEDRefAmp, 0, sizeof(rLEDRefAmp)); 
   memset(rLEDRefAmpRMS, 0, sizeof(rLEDRefAmpRMS)); 
@@ -361,12 +418,12 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   memset(iHighLow, 0, sizeof(iHighLow)); 
   memset(rLEDAmp, 0, sizeof(rLEDAmp)); 
   memset(rLEDAmpRMS, 0, sizeof(rLEDAmpRMS)); 
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   // for looping over towers
   Int_t iCol = 0;
   Int_t iRow = 0;
-
+  
   // declare the branches
   // first
   tree->Branch("iSM", &iSM, "iSM/I");
@@ -381,72 +438,85 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   tree->Branch( "HighLow", &iHighLow, Form("HighLow[%d][%d]/I", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
   tree->Branch( "LEDAmp", &rLEDAmp, Form("LEDAmp[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
   tree->Branch( "LEDAmpRMS", &rLEDAmpRMS, Form("LEDAmpRMS[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
-
-  for (iSM = 0; iSM < fNSuperModule; iSM++) {
+  
+  for (iSM = 0; iSM < fNSuperModule; iSM++)
+  {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[iSM];
-
+    
     iSM = t->GetSuperModuleNum();
     // first, overall values
     iReferenceTime = t->GetReferenceTime();
-
+    
     // second: additional info for LED references and SM temperatures
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) 
+    {
       rLEDRefAmp[j] = t->GetLEDRefAmp(j);
       rLEDRefAmpRMS[j] = t->GetLEDRefAmpRMS(j);
       iLEDRefHighLow[j] = t->GetLEDRefHighLow(j);
     }
-    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
+    
+    for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) 
+    {
       temperature[j] = t->GetTemperature(j);
       temperatureRMS[j] = t->GetTemperatureRMS(j);
     }
-
+    
     // third: info for each tower
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    for (Int_t j=0; j<nAPDPerSM; j++)
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       // help variables: possibly modified or swapped indices
       int iColMod = iCol;
       int iRowMod = iRow;
       // assume that this info is already swapped and done for this basis?
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iColMod = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iColMod = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iCol, iRow);
-
+      
       iHighLow[iColMod][iRowMod] = v->GetHighLow();
       rLEDAmp[iColMod][iRowMod] = v->GetLEDAmp();
       rLEDAmpRMS[iColMod][iRowMod] = v->GetLEDAmpRMS();
     }
-
+    
     tree->Fill();
   } // i, SuperModule
-
+  
   tree->Write();
   destFile.Close();
-
+  
   return;
 }
 
+///
+/// Destructor
 //____________________________________________________________________________
 AliEMCALCalibReference::~AliEMCALCalibReference()
 {
   fSuperModuleData.Delete();
 }
 
+///
+/// Get SM calib reference via index
+///
+/// \param supModIndex: SM index
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibReference * AliEMCALCalibReference::GetSuperModuleCalibReferenceNum(Int_t supModIndex)const
-{ // getter via index
-  for (int i=0; i<fNSuperModule; i++) {
+{ 
+  for (int i=0; i<fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[i];
-    if (t->GetSuperModuleNum() == supModIndex) {
+    
+    if (t->GetSuperModuleNum() == supModIndex) 
       return t;
-    }
   }
-
+  
   // if we arrived here, then nothing was found.. just return a NULL pointer 
   return NULL;
 }

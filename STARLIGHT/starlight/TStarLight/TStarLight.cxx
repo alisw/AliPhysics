@@ -24,6 +24,10 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TMap.h>
+#include <TNamed.h>
+#include <TParameter.h>
+#include <TVector2.h>
 
 #include "inputParameters.h"
 #include "starlight.h"
@@ -43,8 +47,8 @@ TStarLight::TStarLight()
 
 //----------------------------------------------------------------------
 TStarLight::TStarLight(const char* name,         // The name of this object in the root name tables
-		       const char* title,        // A title for this object
-		       const char* slConfigFile) // file used to configure STARlight.
+                       const char* title,        // A title for this object
+                       const char* slConfigFile) // file used to configure STARlight.
   : TGenerator(name, title)       // Default initlization of base class
   , fErrorStatus(0)               // Error status flag 0=OK
   , fConfigFileName(slConfigFile) // Confiuration file name
@@ -53,7 +57,7 @@ TStarLight::TStarLight(const char* name,         // The name of this object in t
   , fEvent()                      // object holding STARlight simulated event.
 {
   // if (NULL == fInputParameters) {
-  //   fErrorStatus = -5; // Init failed. Creating inputParamtere class    
+  //   fErrorStatus = -5; // Init failed. Creating inputParamtere class
   //   Error("TStarLight", "creating inputParameters class failed");
   //   return;
   // } // end if
@@ -74,15 +78,12 @@ TStarLight::TStarLight(const char* name,         // The name of this object in t
 //----------------------------------------------------------------------
 TStarLight::~TStarLight()
 {
-  if (fStarLight)
-    delete fStarLight;
-  fStarLight = NULL;
+  SafeDelete(fStarLight);
 }
 
 //----------------------------------------------------------------------
 void TStarLight::GenerateEvent() {
-
-  if (NULL == fStarLight) {
+  if (!fStarLight) {
     fErrorStatus = -1; // generate failed. No generator.
     Fatal("GenerateEvent", "TStarLight class/object not properly constructed");
     return;
@@ -107,8 +108,7 @@ Int_t TStarLight::ImportParticles(TClonesArray *part, // Pointer to array of par
 				  Option_t *opt) {    // A character array of options.
   // Return:
   //   The number of particles added to the TClonesArray *part.
-
-  if (NULL == part)
+  if (!part)
     return 0;
 
   TClonesArray &clonesParticles = *part;
@@ -117,7 +117,7 @@ Int_t TStarLight::ImportParticles(TClonesArray *part, // Pointer to array of par
   Int_t nVtx(0);
   Double_t vtx(0), vty(0), vtz(0), vtt(0);
   const std::vector<vector3>* slVtx = fEvent.getVertices();
-  if (NULL == slVtx) { // not vertex assume 0,0,0,0;
+  if (!slVtx) { // not vertex assume 0,0,0,0;
     vtx = vty = vtz = vtt = 0.0;
   } else { // a vertex exits
     slVtx = fEvent.getVertices();
@@ -291,4 +291,18 @@ Double_t TStarLight::GetParameter(const char* name) const {
   }
   Fatal("GetParameter", "parameter '%s' not found", name);
   return 0.0;
+}
+
+void TStarLight::ImportEventInfo(TMap *m) const {
+  m->Clear();
+
+  if (!fEvent.isGammaavm())
+    return;
+
+  m->Add(new TNamed("b-slope", "(GeV/c)^-2"),           new TParameter<double>("bslope", fEvent.getBslope()));
+  m->Add(new TNamed("t",       "(GeV/c)^2"),            new TParameter<double>("t",      fEvent.gett()));
+  m->Add(new TNamed("Egam",    "photon energy (GeV)"),  new TParameter<double>("Egam",   fEvent.getEgam()));
+  m->Add(new TNamed("Epom",    "pomeron energy (GeV)"), new TParameter<double>("Epom",   fEvent.getEpom()));
+  m->Add(new TNamed("ptGam",   "photon pt (GeV/c)"),    new TVector2(const_cast<double*>(fEvent.getPtGam())));
+  m->Add(new TNamed("ptPom",   "pomeron pt (GeV/c)"),   new TVector2(const_cast<double*>(fEvent.getPtPom())));
 }

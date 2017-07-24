@@ -205,11 +205,17 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   else{
      HLTFatal("No mode set for clusterfindercomponent");
   }
-
+  
   //Removed the warning for loading default RecoParam in HLT
-  AliITSRecoParam *par = AliITSRecoParam::GetLowFluxParam();
-  AliITSReconstructor *rec = new AliITSReconstructor();
-  rec->SetRecoParam(par);
+  if (!AliReconstructor::GetRecoParam(0)) {
+    // RS: the setting is static, set only if not done yet
+    //AliITSReconstructor *rec = new AliITSReconstructor();
+    AliITSReconstructor itsr;
+    AliITSRecoParam *par = AliITSRecoParam::GetLowFluxParam(); 
+    itsr.SetRecoParam(par);
+    //  rec->SetRecoParam(par);
+  }
+  
   
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()){

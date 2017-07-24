@@ -46,6 +46,11 @@ public:
 
   Int_t DCSIndexFromDCSAlias(const char* dcsAlias) const;
 
+  Bool_t GetElementsFromDCSMCHLVAlias(TString alias,
+                                      Int_t &chamberNumber,
+                                      Int_t &groupNumber,
+                                      TString &voltageType) const;
+
   Bool_t DecodeDCSMCHLVAlias(const char* dcsAlias, Int_t*& detElemId, Int_t& numberOfDetectionElements, AliMp::PlaneType& planeType ) const;
 
   Int_t DetElemIdFromDCSAlias(const char* dcsAlias) const;

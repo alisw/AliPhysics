@@ -341,3 +341,18 @@ void AliMpMotifSpecial::SetPadDimensions(Int_t ixLocal, Int_t iyLocal,
     fPadDimensions2Y.AddAt(dy, fNofPadDimensions2++);
   }  
 }
+
+TObject* AliMpMotifSpecial::Clone(const char* newid) const
+{
+  AliMpMotifSpecial* ms = new AliMpMotifSpecial(newid, static_cast<AliMpMotifType*>(GetMotifType()->Clone()));
+
+  ms->fDimensionX = fDimensionX;
+  ms->fDimensionY = fDimensionY; ///< motif y dimensions
+  ms->fPadDimensionsVector = fPadDimensionsVector;  ///< the vector of pad dimensions
+  ms->fNofPadDimensions2 = fNofPadDimensions2; ///< number of different pad dimensions
+  ms->fPadDimensions2X = fPadDimensions2X; ///< the vector of x of different pad dimensions
+  ms->fPadDimensions2Y = fPadDimensions2Y; ///< the vector of x of different pad dimensions
+
+  return ms;
+}
+

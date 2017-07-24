@@ -6,6 +6,7 @@
 //=========================================================================
 ///                       
 /// \class AliEMCALTracker 
+/// \ingroup EMCALrec
 /// \brief Steer EMCal-Track matching
 ///
 /// Implementation of the track matching method between barrel tracks and

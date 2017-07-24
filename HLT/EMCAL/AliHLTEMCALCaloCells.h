@@ -62,6 +62,7 @@ class AliHLTEMCALCaloCells : public AliVCaloCells
   // MC & embedding
   inline Int_t    GetCellMCLabel(Short_t cellNumber) { return -1; }
   inline Int_t    GetMCLabel(Short_t pos) const { return -1; }
+  inline void     SetMCLabel(Short_t, Int_t )  { }
   
   inline Double_t GetCellEFraction(Short_t cellNumber) { return -1; }
   inline Double_t GetEFraction(Short_t pos) const { return -1; }

@@ -13,43 +13,34 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
- 
-
-
- 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
 
-ClassImp(AliEMCALTriggerDCSConfig)
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerDCSConfig) ;
+/// \endcond
 
+///
+/// Default constructor
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
 ,fTRUArr(0x0)
 ,fSTUObj(0x0)
 ,fSTUDCAL(0x0)
 {
-	//
-	// AliEMCALTriggerDCSConfig default constructor
-	//
   /*
 	fTRUArr = new TClonesArray("AliEMCALTriggerTRUDCSConfig",62);
 	fSTUObj = new AliEMCALTriggerSTUDCSConfig();
 	*/
 }
 
+///
+/// Destructor
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfig::~AliEMCALTriggerDCSConfig()
-{
-	//
-	// Dtor
-	//
-	
-	delete fTRUArr; fTRUArr = 0x0;
-	delete fSTUObj; fSTUObj = 0x0;
+{	
+  delete fTRUArr;
+  delete fSTUObj;
+  delete fSTUDCAL;
 }

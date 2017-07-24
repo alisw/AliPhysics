@@ -33,11 +33,9 @@ class AliGenHijing : public AliGenMC
     virtual void    SetSeed(UInt_t seed);
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
-    virtual void    SetReferenceFrame(TString frame="CMS")
-	{fFrame=frame;}
-
-    virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax = 15.)
-	{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
+    virtual void    SetReferenceFrame(TString frame="CMS") {fFrame=frame;}
+    virtual void    SetEconv(Bool_t ec, Int_t nmiss=50) {fEConv=ec; fMissing=nmiss;}
+    virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax = 15.) {fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    KeepFullEvent();
     virtual void    SetJetQuenching(Int_t flag=1)     {fQuench     = flag;}
     virtual void    SetShadowing(Int_t flag=1)        {fShadowing  = flag;}
@@ -148,6 +146,8 @@ class AliGenHijing : public AliGenMC
     Int_t 	fFreeTargSpecp;    // Num. of spectator protons from target nucleus
     TF1		*fFragmNeutrons;   // data driven correction for nuclear fragment formation
     TF1		*fFragmProtons;   // data driven correction for nuclear fragment formation
+    Bool_t      fEConv;           // if 1 switch on econv in hijhrd (def=1)
+    Int_t       fMissing;         // if >0 then set number of misses in hijhrd (def = 50)
 
  private:
     AliGenHijing(const AliGenHijing &Hijing);
@@ -163,6 +163,6 @@ class AliGenHijing : public AliGenMC
     Int_t FreeSpectatorsn(Float_t b, Int_t nSpecn);
     Int_t FreeSpectatorsp(Float_t b, Int_t nSpecp);
     
-    ClassDef(AliGenHijing, 10) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 11) // AliGenerator interface to Hijing
 };
 #endif

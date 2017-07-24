@@ -1,14 +1,30 @@
-//This a modification in a code sent by Marco Bregant, which, originally, created the OADB for misalignment matrices
+///
+/// \file UpdateEMCAL_OADB_Recalib_Run2.C
+/// \ingroup EMCAL_OADB
+/// \brief Update OADB file with energy recalibration factors for Run2.
+///
+/// The histograms with energy recalibraton Factors are loaded and some TObjarrays 
+/// are filled with these histograms. At the end, a OADB container is created 
+/// receiving these arrays.
+/// This UpdateEMCAL_OADB_Recalib updates the information of a original OADB file and writes the output to BetaRecalib.root///
+///
+/// Move Run2 calibration that includes EMCal 2012-13 and no DCal to periods larger or equal to LHC15n
+/// duplicate pass2 to pass2 and pass3
+///
+/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS ???
+/// \author Marcel Figueredo, <marcel.figueredo@cern.ch>, Sao Paulo
+///
 
-//In this macro, the histograms with Recalibraton Factors are loaded and some TObjarrays are filled with these histograms.
-// At the end, a OADB container is created receiving these arrays.
-// This UpdateEMCAL_OADB_Recalib updates the information of a original OADB file and writes the output to BetaRecalib.root
+#if !defined(__CINT__)
+#include <TH2F.h>
+#include <TFile.h>
+#include <TObjArray.h>
+#include <TSystem.h>
 
-//#include "AliOADBContainer.h"
-//#include "TObjArray.h"
-//#include "TFile.h"
-//#include "Riostream.h"
-//#include "TSystem.h"
+#include <Riostream.h>
+
+#include "AliOADBContainer.h"
+#endif
 
  const int kNbSMEMCAL=10;
  const int kNbSMEMCALthird=2;
@@ -16,12 +32,67 @@
  const int kNbSMDCALthird=2;
  const int kNbSMtot=kNbSMEMCAL+kNbSMEMCALthird+kNbSMDCAL+kNbSMDCALthird;
 
-
-void UpdateEMCAL_OADB_Recalib_Run2
-(const char *fileNameOADB="EMCALRecalib.root",
- const char *fileNameRecalibFactors="multiplyPi0CalibrationFactors_TextToHisto_Final.root")
+///
+/// Test what was updated, let's read back the file
+///
+/// \param runnumber: reference run number
+///
+void test(int runnumber=195345)
 {
+  AliOADBContainer *cont=new AliOADBContainer("");
+  cont->InitFromFile("BetaRecalib.root", "AliEMCALRecalib");
+  // 
+  cout<<"_________--------------- dump ---------------------___________"<<endl;
+  cont->Dump();
+  cout<<"_________--------------- list ---------------------___________"<<endl;
   
+  //cont0.List();
+  cout<<"cont->GetDefaultList()->Print()"<<endl;
+  cont->GetDefaultList()->Print();
+  
+  TObjArray *recal = (TObjArray*) cont->GetObject(runnumber); //GetObject(int runnumber)
+  recal->ls();
+  
+  TObjArray *recalpass = (TObjArray*) recal->FindObject("pass1");
+  
+  if(!recalpass)
+  {
+    cout<<" norecalpass"<<endl;
+    return;
+  }
+  
+  TObjArray *recalib = (TObjArray*) recalpass->FindObject("Recalib");
+  
+  if(!recalib)
+  {
+    cout<<" no recalib found"<<endl;
+    return;
+  }
+  
+  TH2F *h2=(TH2F*)recalib->FindObject("EMCALRecalFactors_SM0");
+  if(!h2)
+  {
+    return;
+    cout<<" no histo found"<<endl;
+  }
+  
+  h2->DrawCopy("colz");
+  cout<<"That's all folks!"<<endl;
+}
+
+///
+/// Update OADB Container for EMCal energy recalibration factors
+/// from external file. 
+///
+/// \param fileNameOADB: OADB file name and path
+/// \param fileNameRecalibFactors: name and path of input file with new factors
+///
+void UpdateEMCAL_OADB_Recalib_Run2
+(
+ const char *fileNameOADB="EMCALRecalib.root",
+ const char *fileNameRecalibFactors="multiplyPi0CalibrationFactors_TextToHisto_Final.root"
+)
+{
   gSystem->Load("libOADB");  
   
   AliOADBContainer *con	= new AliOADBContainer("");
@@ -31,7 +102,7 @@ void UpdateEMCAL_OADB_Recalib_Run2
   // Move Run2 calibration that includes EMCal 2012-13 and no DCal to periods >= LHC15n
   // duplicate pass2 to pass2 and pass3
   //----------------------------------------------------------------------------
-
+  
   TObjArray *array15 = (TObjArray*)con->GetObject(210000,"LHC15");
   
   con->UpdateObject(con->GetIndexForRun(210000), array15, 244340,999999);
@@ -42,12 +113,15 @@ void UpdateEMCAL_OADB_Recalib_Run2
   TObjArray *array15_pass2 = new TObjArray(kNbSMtot);
   TObjArray *array15_pass3 = new TObjArray(kNbSMtot);
   TObjArray *array15_pass4 = new TObjArray(kNbSMtot);
+ 
   array15_pass2->SetName("pass2");
   array15_pass3->SetName("pass3");
   array15_pass4->SetName("pass4");
+  
   array15_pass2->Add(*&recal);
   array15_pass3->Add(*&recal);
   array15_pass4->Add(*&recal);
+  
   array15->Add(*&array15_pass2);
   array15->Add(*&array15_pass3);
   array15->Add(*&array15_pass4);
@@ -61,9 +135,11 @@ void UpdateEMCAL_OADB_Recalib_Run2
   
   TObjArray *array15fm = new TObjArray(kNbSMtot);
   array15fm->SetName("LHC15fm");
+  
   TObjArray *array15fm_pass1 = new TObjArray(kNbSMtot);
   TObjArray *array15fm_pass2 = new TObjArray(kNbSMtot);
   TObjArray *array15fm_pass3 = new TObjArray(kNbSMtot);
+  
   array15fm_pass1->SetName("pass1");
   array15fm_pass2->SetName("pass2");
   array15fm_pass3->SetName("pass3");
@@ -79,7 +155,7 @@ void UpdateEMCAL_OADB_Recalib_Run2
     cout<<"New SM "<<iSM<<"; Recalib : "<<name<<endl;
     arrayRecalibFactors->Add(fRecalibFactors->Get(name));
   } //iSM
-    //fRecalibFactors->Close();
+  //fRecalibFactors->Close();
   
   // Add EMCal Run1 recalibration factors, factors obtained from previous update:
   for (Int_t iSM=0;iSM<10;iSM++)
@@ -91,7 +167,7 @@ void UpdateEMCAL_OADB_Recalib_Run2
   array15fm_pass1->Add(*&arrayRecalibFactors);
   array15fm_pass2->Add(*&arrayRecalibFactors);
   array15fm_pass3->Add(*&arrayRecalibFactors);
-
+  
   array15fm->Add(*&array15fm_pass1);
   array15fm->Add(*&array15fm_pass2);
   array15fm->Add(*&array15fm_pass3);
@@ -100,60 +176,12 @@ void UpdateEMCAL_OADB_Recalib_Run2
   //con->AppendObject((TObject*) &array15fm,209122,244284);
   con->AddDefaultObject((TObject*)array15fm);
   con->AppendObject((TObject*)array15fm,209122,244284);
-    
+  
   //----------------------------------------------------------------------------
-
   
   con->WriteToFile("BetaRecalib.root");
   
   //test(195935); // If someone wants to test container
-  
-}
-
-
-
-
-
-
-void test(int runnumber=195345){
-//
-// let's read back the file
-AliOADBContainer *cont=new AliOADBContainer("");
-cont->InitFromFile("BetaRecalib.root", "AliEMCALRecalib");
-// 
-cout<<"_________--------------- dump ---------------------___________"<<endl;
-cont->Dump();
-cout<<"_________--------------- list ---------------------___________"<<endl;
-//cont0.List();
-cout<<"cont->GetDefaultList()->Print()"<<endl;
-cont->GetDefaultList()->Print();
-
-TObjArray *recal=cont->GetObject(runnumber); //GetObject(int runnumber)
-recal->ls();
-
-TObjArray *recalpass=recal->FindObject("pass1");
-
-if(!recalpass){
-  cout<<" norecalpass"<<endl;
-  return;
-}
-
-TObjArray *recalib=recalpass->FindObject("Recalib");
-
-if(!recalib){
-  cout<<" no recalib found"<<endl;
-  return;
-}
-
-TH2F *h2=(TH2F*)recalib->FindObject("EMCALRecalFactors_SM0");
-if(!h2){
-  return;
-cout<<" no histo found"<<endl;
-}
-h2->DrawCopy("colz");
-cout<<"That's all folks!"<<endl;
-
-  
 }
 
 

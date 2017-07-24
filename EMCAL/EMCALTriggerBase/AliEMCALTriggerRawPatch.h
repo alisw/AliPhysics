@@ -13,6 +13,7 @@
 
 /**
  * @class AliEMCALTriggerRawPatch
+ * @ingroup EMCALTriggerBase
  * @brief Raw patch information used inside the trigger maker kernel
  * for the offline trigger and trigger recalculator
  *
@@ -24,36 +25,40 @@
 class AliEMCALTriggerRawPatch : public TObject {
 public:
   /**
-   * Dummy constructor
+   * @brief Dummy constructor
    */
   AliEMCALTriggerRawPatch();
 
   /**
-   * Main constructor
-   * @param col0 Starting column
-   * @param row0 Starting row
-   * @param size Patch size
-   * @param adc ADC value
+   * @brief Main constructor
+   * @param[in] col0 Starting column
+   * @param[in] row0 Starting row
+   * @param[in] size Patch size
+   * @param[in] adc ADC value
+   * @param[in] offlineADC ADC value calculated from FEE energies
    */
   AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineADC);
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliEMCALTriggerRawPatch() {}
 
   /**
-   * Comparison operator for equalness: Patches are equal if they have the same position and
-   * the same trigger bit mask.
-   * @param other Patch to compare to
+   * @brief Comparison operator for equalness
+   *
+   * Patches are equal if they have the same position and the same trigger bit mask.
+   * @param[in] other Patch to compare to
    * @return True if the patches share the same position and trigger bit mask, false otherwise
    */
   bool operator==(const AliEMCALTriggerRawPatch &other) const;
 
   /**
-   * Comparison operator for smaller. As this is used in sorting algorithms, the comparison
+   * @brief Comparison operator for smaller
+   *
+   * As this is used in sorting algorithms, the comparison
    * is made based on the patch ADC.
-   * @param other Patch to compate to
+   * @param [in]other Patch to compate to
    * @return True if the patch ADC of this patch is smaller, false otherwise
    */
   bool operator<(const AliEMCALTriggerRawPatch &other) const;
@@ -73,8 +78,8 @@ public:
   ULong_t GetBitmask() const { return fBitMask; }
 
   /**
-   * Print trigger patch information to a stream
-   * @param stream Output stream
+   * @brief Print trigger patch information to a stream
+   * @param [in]stream Output stream
    */
   void PrintStream(std::ostream &stream) const;
 

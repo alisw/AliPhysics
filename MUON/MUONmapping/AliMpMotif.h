@@ -29,6 +29,8 @@ class AliMpMotif : public AliMpVMotif
   AliMpMotif();
   virtual ~AliMpMotif();
 
+    TObject* Clone(const char* newid) const;
+
   // Access methods
   virtual Int_t    GetNofPadDimensions() const;
   virtual Double_t GetPadDimensionX(Int_t /*i*/ = 0) const;

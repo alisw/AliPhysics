@@ -29,23 +29,21 @@
 #include "AliADConst.h"
 #include "AliFstream.h"
 
-ClassImp(AliADBuffer)
+ClassImp(AliADBuffer);
 
 //_____________________________________________________________________________
-AliADBuffer::AliADBuffer():TObject(),
-    fRemainingWord(0),
-    f()
+AliADBuffer::AliADBuffer()
+  : TObject()
+  , fRemainingWord(0)
+  , f()
 {
-  //
-  // default constructor
-  //
 }
 //_____________________________________________________________________________
-AliADBuffer::AliADBuffer(const char* fileName):TObject(),
-    fRemainingWord(0),
-    f()
+AliADBuffer::AliADBuffer(const char* fileName)
+  : TObject()
+  , fRemainingWord(0)
+  , f()
 {
-  // Constructor
   f = new AliFstream(fileName);
   AliRawDataHeaderSim header;
   f->WriteBuffer((char*)(&header), sizeof(header));
@@ -61,6 +59,7 @@ AliADBuffer::~AliADBuffer(){
   f->Seekp(0);
   f->WriteBuffer((char*)(&header), sizeof(header));
   delete f;
+  f = NULL;
 }
 
 //_____________________________________________________________________________
@@ -84,41 +83,41 @@ void AliADBuffer::WriteTriggerScalers() {
 
   // First the general trigger scalers (16 of them)
   for(Int_t i = 0; i < 16; i++) {
-      UInt_t data = 0;
-      f->WriteBuffer((char*)&data,sizeof(data));
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));
   }
 }
 
 //_____________________________________________________________________________
 void AliADBuffer::WriteBunchNumbers() {
-  // The method writes the Bunch Numbers corresponding 
+  // The method writes the Bunch Numbers corresponding
   // to the 10 Minimum Bias events
   // For the moment there is no way to simulate
   // this, so we fill the necessary 10 words with 0
 
   // First the bunch crossing numbers
   // for these 10 events
-  
+
   for(Int_t i = 0; i < 10; i++) {
-      UInt_t data = 0;
-      f->WriteBuffer((char*)&data,sizeof(data));
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));
   }
 
 }
 
 //_____________________________________________________________________________
 void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
-  // It writes AD charge information into a raw data file. 
+  // It writes AD charge information into a raw data file.
   // Being called by Digits2Raw
-  
+
   UInt_t data = 0;
   for(Int_t i = 0; i < kADNClocks; ++i) {
     if (adc[i] > 1023) {
-      AliWarning(Form("ADC (channel=%d) saturated: %d. Truncating to 1023",channel,adc[i]));
+      AliWarningF("ADC (channel=%d) saturated: %d. Truncating to 1023",channel,adc[i]);
       adc[i] = 1023;
     }
   }
-  
+
   if(channel%2 == 0) {
     for(Int_t i = 0; i < (kADNClocks/2); ++i) {
       data =   (adc[2*i] & 0x3ff);
@@ -148,14 +147,14 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
       f->WriteBuffer((char*)&data,sizeof(data));
     }
   }
-    
+
 }
 
 //_____________________________________________________________________________
 void AliADBuffer::WriteBeamFlags(Bool_t *bbFlag, Bool_t *bgFlag) {
   // The method writes information about
-  // the Beam-Beam and Beam-Gas flags i.e. 
-  // 6  words for the 4 channels 
+  // the Beam-Beam and Beam-Gas flags i.e.
+  // 6  words for the 4 channels
   // of half a CIU card
 
   // Beam-beam and beam-gas flags are available
@@ -175,7 +174,7 @@ void AliADBuffer::WriteBeamFlags(Bool_t *bbFlag, Bool_t *bgFlag) {
       if (bgFlag[iChannel]) data |= (1 << (2*iChannel + 17));
     }
     f->WriteBuffer((char*)&data,sizeof(data));
-  }  
+  }
   for(Int_t i = 0; i < 3; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
@@ -188,9 +187,8 @@ void AliADBuffer::WriteMBInfo() {
   // The method writes information about
   // the 10 previous minimum-bias events
   // i.e. channels charge for each of these
-  // 10 events (4*10 shorts for the 4 channels 
+  // 10 events (4*10 shorts for the 4 channels
   // of half a CIU card)
-    
   for(Int_t i = 0; i < 20; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
@@ -202,14 +200,12 @@ void AliADBuffer::WriteMBInfo() {
 void AliADBuffer::WriteMBFlags() {
   // The method writes information about
   // the Minimum Bias flags
-  // 5 16-bits words for the 4 channels 
+  // 5 16-bits words for the 4 channels
   // of half a CIU card + one empty 16-bit
-
-
   for(Int_t i = 0; i < 3; i++) {
     UInt_t data = 0;
-    f->WriteBuffer((char*)&data,sizeof(data));  
-    }
+    f->WriteBuffer((char*)&data,sizeof(data));
+  }
 }
 
 //_____________________________________________________________________________
@@ -221,7 +217,7 @@ void AliADBuffer::WriteBeamScalers() {
   // Beam-beam and beam-gas scalers for
   // 4 individual channel (4x4 words)
   // (64-bit + 64-bit)*4 = 32bit * 16
-  
+
   for(Int_t i = 0; i < 16; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
@@ -230,7 +226,7 @@ void AliADBuffer::WriteBeamScalers() {
 
 //_____________________________________________________________________________
 void AliADBuffer::WriteTiming(Short_t time, Short_t width) {
-  // It writes the timing information into a raw data file. 
+  // It writes the timing information into a raw data file.
   // Being called by Digits2Raw
 
   // Writes the timing information
@@ -241,10 +237,10 @@ void AliADBuffer::WriteTiming(Short_t time, Short_t width) {
 
 //_____________________________________________________________________________
 void AliADBuffer::WriteEmptyCIU() {
-  // The method writes holes in stream due to missing CIUs Ad has 2 vrt. to 8 VZERO 
+  // The method writes holes in stream due to missing CIUs Ad has 2 vrt. to 8 VZERO
   // There are 182 words per CIU
   for(Int_t i = 0; i < 182; i++) {
-      UInt_t data = 0;
-      f->WriteBuffer((char*)&data,sizeof(data));
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));
   }
 }

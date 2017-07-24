@@ -3,22 +3,18 @@
 #ifndef ALICALORAWANALYZERFITTER_H
 #define ALICALORAWANALYZERFITTER_H
 
-/**************************************************************************
- * This file is property of and copyright by the Experimental Nuclear     *
- * Physics Group, Yale University, US 2011                                *
- *                                                                        *
- * Author: Per Thomas Hille <perthomas.hille@yale.edu> for the ALICE      *
- * experiment. Contributors are mentioned in the code where appropriate.  *
- * Please report bugs to  perthomas.hille@yale.edu                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice     */
+
+//_________________________________________________________________________
+/// \class AliCaloRawAnalyzerFitter
+/// \ingroup EMCALraw
+/// \brief  Raw data fitters base class
+///
+/// Raw data fitters base class
+///
+/// \author Per Thomas Hille <p.t.hille@fys.uio.no>, Yale. 
+//_________________________________________________________________________
 
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloConstants.h"
@@ -31,6 +27,7 @@ class  TGraph;
 
 class  AliCaloRawAnalyzerFitter : public AliCaloRawAnalyzer
 {
+
 public:
   
   AliCaloRawAnalyzerFitter( const char *name, const char *nameshort );
@@ -43,15 +40,16 @@ public:
 
 protected:
   
-  const double fkEulerSquared;          // e^2 = 7.389056098930650227
-  TF1        * fTf1;                    // Analytical formula of the Semi Gaussian to be fitted
-  double       fXaxis[ALTROMAXSAMPLES]; // Axis if time bins, ( used by TGraph )
+  const double fkEulerSquared;          ///< e^2 = 7.389056098930650227
+  TF1        * fTf1;                    ///< Analytical formula of the Semi Gaussian to be fitted
+  double       fXaxis[ALTROMAXSAMPLES]; ///< Axis if time bins, ( used by TGraph )
 
 private:
   
   AliCaloRawAnalyzerFitter(               const AliCaloRawAnalyzerFitter & );
   AliCaloRawAnalyzerFitter  & operator = (const AliCaloRawAnalyzerFitter & );
   AliCaloRawAnalyzerFitter();
+
 };
 
-#endif
+#endif //ALICALORAWANALYZERFITTER_H

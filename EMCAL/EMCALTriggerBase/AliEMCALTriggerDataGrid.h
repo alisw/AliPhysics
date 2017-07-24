@@ -10,6 +10,7 @@
 
 /**
  * \class AliEmcalTriggerDataGrid
+ * \ingroup EMCALTriggerBase
  * \brief Container for ADC / Amplitudes from the EMCAL triggers
  *
  * Dynamical-size container for ADC values from the FASTOR
@@ -184,7 +185,7 @@ public:
    * Set ADC value for position (col, row). Checks for boundary.
    * @param col Column of the position
    * @param row Row of the position
-   * @param ADC The value to set
+   * @param adc The value to set
    * @throw OutOfBoundsException in case the index in any direction is out of bounds
    * @throw UninitException in case the grid is not initialized (allocated)
    */

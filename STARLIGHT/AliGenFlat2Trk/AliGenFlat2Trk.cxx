@@ -80,12 +80,8 @@ AliGenFlat2Trk::AliGenFlat2Trk(Int_t    pid,
 
 AliGenFlat2Trk::~AliGenFlat2Trk()
 {
-  if (fTheta)
-    delete fTheta;
-  fTheta = NULL;
-  if (fHeader)
-    delete fHeader;
-  fHeader = NULL;
+  SafeDelete(fTheta);
+  SafeDelete(fHeader);
 }
 
 Double_t AliGenFlat2Trk::SetMinvMin(Double_t m) {
@@ -219,8 +215,7 @@ void AliGenFlat2Trk::Generate()
     const TArrayF eventVertex(3, origin);
 
     // Header
-    if (fHeader)
-      delete fHeader;
+    SafeDelete(fHeader);
     fHeader = new AliGenEventHeader("AliGenFlat2Trk");
 
     // Event Vertex

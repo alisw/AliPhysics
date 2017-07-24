@@ -89,6 +89,20 @@ Int_t AliGenReaderHepMC::NextEvent()
       if (!weights.empty())
         fGenEventHeader->SetEventWeight(weights.front());
       AliDebug(1, Form("Parsed event %d with %d particles, weight = %e", fGenEvent->event_number(), fGenEvent->particles_size(), fGenEventHeader->EventWeight()));
+   //
+   // convert time from [cm/c] to [s] 
+      const Double_t conv = 0.01 / 2.99792458e8; 
+
+      Int_t npart = fGenEvent->particles_size();
+      for (Int_t i = 0; i < npart; i++) {
+	   TParticle * particle = (TParticle*)fParticleIterator->Next();
+	   particle->SetProductionVertex(particle->Vx(), particle->Vy(), particle->Vz(),
+					 particle->T() * conv);
+	   
+      }
+      fParticleIterator->Reset();
+      //
+      //
       return fGenEvent->particles_size();
    }
    AliError("No more events in the file.");
@@ -98,10 +112,12 @@ Int_t AliGenReaderHepMC::NextEvent()
 TParticle* AliGenReaderHepMC::NextParticle()
 {
    // Read next particle
+    
    TParticle * particle = (TParticle*)fParticleIterator->Next();
    if (particle && particle->GetStatusCode()==1) {
       particle->SetBit(kTransportBit);
    }
+   //
    return particle;
 }
 

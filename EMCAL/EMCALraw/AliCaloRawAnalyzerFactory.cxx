@@ -26,16 +26,18 @@
 #include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 
+///
+/// Default constructor.
+//_______________________________________________________________________
 AliCaloRawAnalyzerFactory::AliCaloRawAnalyzerFactory()
-{
-  // default constructor
-}
+{ }
 
+///
+/// \return the requested algorithm.
+//_______________________________________________________________________
 AliCaloRawAnalyzer*
 AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
-{
-  // Return the requested algorithm
-  
+{  
   switch ( algo)
   {
     case  kFastFit:
@@ -59,7 +61,7 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
     default:
       return  new AliCaloRawAnalyzerCrude();
       break;
-   }
+  }
 }
 
 

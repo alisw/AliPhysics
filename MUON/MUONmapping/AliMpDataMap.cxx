@@ -77,6 +77,37 @@ TString  AliMpDataMap::Get(const TString& path, Bool_t warn) const
     return "";
   }    
   
+  object->SetBit(1 << 16);
+
   return ((TObjString*)object)->String();
 }  
   
+void AliMpDataMap::Print(Option_t* opt) const
+{
+    TString sopt(opt);
+    sopt.ToUpper();
+
+    TIter next(&fMap);
+    TObjString* key;
+    Int_t nused(0);
+
+    while ( ( key = static_cast<TObjString*>(next())) ) {
+        TObjString* str = static_cast<TObjString*>(fMap.GetValue(key));
+        Bool_t used = str->TestBit(1<<16);
+        Bool_t show = sopt.Contains("ALL");
+        if (used) {
+            ++nused;
+        }
+        if ( sopt.Contains("UNUSED") && !used ) {
+            show = kTRUE;
+        }
+        if ( sopt.Contains("USED") && !sopt.Contains("UNUSED") && used ) {
+            show = kTRUE;
+        }
+        if ( show ) {
+            std::cout << key->String().Data() << " " << str->Sizeof() << " " << (used?"USED":"UNUSED") << std::endl;
+        }
+    }
+
+    std::cout << fMap.GetSize() << " files. " << nused << " used. " << (fMap.GetSize()-nused) << " not used." << std::endl;
+}

@@ -57,6 +57,15 @@ AliMpMotif::AliMpMotif(const TString &id, AliMpMotifType *motifType,
   /// multiplying the total dimension by the number of pads
 
 }
+
+//_____________________________________________________________________________
+TObject* AliMpMotif::Clone(const char* newid) const {
+
+  AliMpMotif* n = new AliMpMotif(TString(newid),static_cast<AliMpMotifType*>(GetMotifType()->Clone()),
+  GetPadDimensionX(0),GetPadDimensionY(0));
+  return n;
+}
+
 //_____________________________________________________________________________
 AliMpMotif::~AliMpMotif()
 {

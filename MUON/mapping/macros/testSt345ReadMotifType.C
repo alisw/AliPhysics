@@ -19,14 +19,14 @@
 
 #endif
 
-Int_t test(AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
+Int_t test(AliMpDataStreams& dataStreams, AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
 {
   char m[256];
   Int_t n = 0;
   for ( Int_t i = from; i <= to; ++i ) 
   {
     sprintf(m,"%c%d",letter,i);
-    AliMpMotifType* motifType = r.BuildMotifType(m);
+    AliMpMotifType* motifType = r.BuildMotifType(dataStreams,m);
     if ( motifType ) 
     {
       motifType->Print("G");
@@ -46,18 +46,18 @@ void testSt345ReadMotifType()
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpMotifReader r(dataStreams, AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane);
+  AliMpMotifReader r(AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane);
   // note that second parameter is not used for station345.
 
   Int_t n = 0;
   
-  n += test(r,'I',1,1);
-  n += test(r,'L',1,25);
-  n += test(r,'O',1,20);
-  n += test(r,'P',1,4);
-  n += test(r,'Q',1,4);
-  n += test(r,'R',1,45);
-  n += test(r,'Z',1,8);
+  n += test(dataStreams,r,'I',1,1);
+  n += test(dataStreams,r,'L',1,25);
+  n += test(dataStreams,r,'O',1,20);
+  n += test(dataStreams,r,'P',1,4);
+  n += test(dataStreams,r,'Q',1,4);
+  n += test(dataStreams,r,'R',1,45);
+  n += test(dataStreams,r,'Z',1,8);
   
   cout << "Successfully read in " << n << " motifTypes" << endl;
 }  

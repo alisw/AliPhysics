@@ -624,6 +624,18 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
 
     // --- combine graphs
     grCombined = CombineGraphs(grOCDB, grThis);
+
+    // --- check graph
+    if (!grCombined) {
+      if (TString(graphObj->GetTitle()).Atoi()) {
+        AliFatalF("%s could not be combined, object will be missing in the reconstruction. Considered to be critical", graphObj->GetName());
+      }
+      else {
+        AliWarningF("%s could not be combined, object will be missing in the reconstruction. Not considered to be critical", graphObj->GetName());
+      }
+      continue;
+    }
+
     fGainArrayCombined->AddLast(grCombined);
     grCombined->SetMarkerColor(kMagenta);
     grCombined->SetLineColor(kMagenta);

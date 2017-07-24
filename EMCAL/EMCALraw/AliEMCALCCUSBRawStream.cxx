@@ -13,18 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to CC-USB data in test bench raw data.
-/// Author: guernane@lpsc.in2p3.fr
-///
-///////////////////////////////////////////////////////////////////////////////
-
 #include "AliEMCALCCUSBRawStream.h"
+
+// AliRoot system
 #include "AliRawReader.h"
+#include "AliLog.h"
 
-ClassImp(AliEMCALCCUSBRawStream)
+/// \cond CLASSIMP
+ClassImp(AliEMCALCCUSBRawStream) ;
+/// \endcond
 
+///
+/// Constructor
+//_______________________________________________________________________
 AliEMCALCCUSBRawStream::AliEMCALCCUSBRawStream(AliRawReader* rawReader) :
   fRawReader(rawReader),
   fData(0),
@@ -34,7 +35,7 @@ AliEMCALCCUSBRawStream::AliEMCALCCUSBRawStream(AliRawReader* rawReader) :
   fEOBuffer(0)
 {
   fRawReader = rawReader;
-
+  
   fRawReader->Reset();
   fRawReader->SelectEquipment(1, 1, 1);
   
@@ -44,78 +45,83 @@ AliEMCALCCUSBRawStream::AliEMCALCCUSBRawStream(AliRawReader* rawReader) :
   for(Int_t i = 0 ; i < fgkNScalerLecroy; i++ ) fScalerLecroy[i] = 0;       
 }
 
+///
+/// Read the next raw digit.
+/// \return kFALSE if there is no digit left
+//_______________________________________________________________________
 Bool_t AliEMCALCCUSBRawStream::Next()
 {
-// read the next raw digit
-// returns kFALSE if there is no digit left
-	
-	if ( fEOBuffer == 0xFFFF ) { fEOBuffer = 0; return kFALSE; }
-	
-	if (!fRawReader->ReadNextInt((UInt_t&) fHeader)) {
-		Error("Next", "No header");
-		return kFALSE;
-	}
-	
-	if (!fRawReader->ReadNextInt((UInt_t&) fOptHeader)) {
-		Error("Next", "No optional header");
-		return kFALSE;
-	}
   
-	if (!fRawReader->ReadNextInt((UInt_t&) fEventLength)) {
-		Error("Next", "No event length");
-		return kFALSE;
-	}
-	
-	for (Int_t i = 0; i < fgkNScalerCCUSB; i++) 
-	{  
-		if (!fRawReader->ReadNext((UChar_t*)&fData,8)) 
-		{
-			Error("Next", "Internal CC-USB scaler issing");
-			return kFALSE;
-		}
-    
-		fScalerCCUSB[i] = fData;
-	}
-	
-	for (Int_t i = 0; i < fgkNScalerLecroy; i++) 
-	{  
-		if (!fRawReader->ReadNext((UChar_t*)&fData,8)) 
-		{
-			Error("Next", "Lecroy scaler missing");
-			return kFALSE;
-		}
-    
-		fScalerLecroy[i] = fData;
-	}
-	
-	for (Int_t i = 0; i < fgkNTDC; i++) 
-	{  
-		if (!fRawReader->ReadNextInt(fData)) 
-		{
-			Error("Next", "Incomplete TDC equipment");
-			return kFALSE;
-		}
-    
-		fTDC[i] = fData;
-	}
+  if ( fEOBuffer == 0xFFFF ) { fEOBuffer = 0; return kFALSE; }
   
-	for (Int_t i = 0; i < fgkNQDC; i++) 
-	{  
-		if (!fRawReader->ReadNextInt(fData)) 
-		{
-			Error("Next", "Incomplete QDC equipment");
-			return kFALSE;
-		}
-    
-		fQDC[i] = fData;
-	}
+  if (!fRawReader->ReadNextInt((UInt_t&) fHeader)) 
+  {
+    AliError("No header");
+    return kFALSE;
+  }
   
-	if ( !fRawReader->ReadNextInt((UInt_t&) fEOBuffer) ) 
-	{
-		Error("Next", "No end of buffer");
-		return kFALSE;
-	}
-
+  if (!fRawReader->ReadNextInt((UInt_t&) fOptHeader)) 
+  {
+    AliError("No optional header");
+    return kFALSE;
+  }
+  
+  if (!fRawReader->ReadNextInt((UInt_t&) fEventLength)) 
+  {
+    AliError("No event length");
+    return kFALSE;
+  }
+  
+  for (Int_t i = 0; i < fgkNScalerCCUSB; i++) 
+  {  
+    if (!fRawReader->ReadNext((UChar_t*)&fData,8)) 
+    {
+      AliError("Internal CC-USB scaler issing");
+      return kFALSE;
+    }
+    
+    fScalerCCUSB[i] = fData;
+  }
+  
+  for (Int_t i = 0; i < fgkNScalerLecroy; i++) 
+  {  
+    if (!fRawReader->ReadNext((UChar_t*)&fData,8)) 
+    {
+      AliError("Lecroy scaler missing");
+      return kFALSE;
+    }
+    
+    fScalerLecroy[i] = fData;
+  }
+  
+  for (Int_t i = 0; i < fgkNTDC; i++) 
+  {  
+    if (!fRawReader->ReadNextInt(fData)) 
+    {
+      AliError("Incomplete TDC equipment");
+      return kFALSE;
+    }
+    
+    fTDC[i] = fData;
+  }
+  
+  for (Int_t i = 0; i < fgkNQDC; i++) 
+  {  
+    if (!fRawReader->ReadNextInt(fData)) 
+    {
+      AliError("Incomplete QDC equipment");
+      return kFALSE;
+    }
+    
+    fQDC[i] = fData;
+  }
+  
+  if ( !fRawReader->ReadNextInt((UInt_t&) fEOBuffer) ) 
+  {
+    AliError("No end of buffer");
+    return kFALSE;
+  }
+  
   return kTRUE;
 }
 

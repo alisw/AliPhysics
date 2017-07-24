@@ -1,13 +1,19 @@
-// Script to create calibration parameters and store them into CDB
-// Thre sets of calibration parameters can be created:
-// 1) equal parameters
-// 2) randomly distributed parameters for decalibrated detector silumations
-// 3) gausian  distributed parameters for decalibrated detector silumations
-// 
-// Modified from PHOS script for EMCAL by Gustavo Conesa
-// May 3, 2007: Modified by Aleksei Pavlinov
-
-//.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
+///
+/// \file AliEMCALSetCDB.C
+/// \ingroup EMCAL_CalibDB
+/// \brief Set the energy calibration parameters in OCDB
+///
+/// Script to create energy calibration parameters and store them into CDB
+/// Thre sets of calibration parameters can be created:
+/// 1) equal parameters
+/// 2) randomly distributed parameters for decalibrated detector silumations
+/// 3) gausian  distributed parameters for decalibrated detector silumations
+/// 
+/// Execute like this:
+///.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 #if !defined(__CINT__)
 #include <TControlBar.h>
@@ -28,7 +34,10 @@
 #include "AliCDBStorage.h"
 #endif
 
-
+///
+/// Main method
+/// When execution, menu appears
+//------------------------------------------------------------------------
 void AliEMCALSetCDB()
 {
   TControlBar *menu = new TControlBar("vertical","EMCAL CDB");
@@ -52,11 +61,19 @@ void AliEMCALSetCDB()
 //------------------------------------------------------------------------
 void Help()
 {
-  char *string =
-    "\nSet calibration parameters and write them into ALICE CDB. Press button \"Equal CC\" to create equal pedestals and gain factors. Press button \"Decalibrate\" to create random pedestals and gain factors to imitate decalibrated detector\n";
-  printf(string);
+  printf(
+         "\nSet calibration parameters and write them into ALICE CDB. Press button \"Equal CC\" "
+         " to create equal pedestals and gain factors. Press button \"Decalibrate\" to create random"
+         "pedestals and gain factors to imitate decalibrated detector\n"
+         );
 }
 
+///
+/// Writing calibration coefficients into the Calibration DB
+/// Arguments:
+///   flag=0: all calibration coefficients are equal
+///   flag=1: all calibration coefficients random (decalibration)
+///   flag=2: all calibration coefficients have Gaussian random distribution (decalibration)
 //------------------------------------------------------------------------
 void SetCC(Int_t flag=0)
 {
@@ -65,13 +82,12 @@ void SetCC(Int_t flag=0)
   //   flag=0: all calibration coefficients are equal
   //   flag=1: all calibration coefficients random (decalibration)
   //   flag=2: all calibration coefficients have Gaussian random distribution (decalibration)
-  // Author: Boris Polishchuk (Boris.Polichtchouk at cern.ch)
   
   TString DBFolder;
   Int_t firstRun   =  0; // What is this
   Int_t lastRun    = 10;
   Int_t beamPeriod =  1;
-  char* objFormat  = "";
+  TString objFormat  = "";
   
   if      (flag == 0)
   {
@@ -154,18 +170,16 @@ void SetCC(Int_t flag=0)
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
   loc->Put(calibda, id, &md);
-  
 }
 
+///
+/// Read calibration coefficients into the Calibration DB
+/// Arguments:
+///   flag=0: all calibration coefficients are equal
+///   flag=1: all calibration coefficients random (decalibration)
 //------------------------------------------------------------------------
 void GetCC(Int_t flag=0)
 {
-  // Read calibration coefficients into the Calibration DB
-  // Arguments:
-  //   flag=0: all calibration coefficients are equal
-  //   flag=1: all calibration coefficients random (decalibration)
-  // Author: Yuri.Kharlov at cern.ch
-  
   TString DBFolder;
   int drawKey=2;
   
@@ -197,7 +211,7 @@ void GetCC(Int_t flag=0)
   TH1F *hCCOnSum  = new TH1F("hCCSumOn"," CC online summary (in MeV) ", 200, 0.0, 20.);
   TH1F *hPedSum   = new TH1F("hPedSum"," pedestal summary (in MeV) ", 100, 4., 6.);
   
-  TCanvas *cPed =0, *cGain =0, *cGainOn =0,
+  TCanvas *cPed =0, *cGain =0, *cGainOn =0;
   TCanvas *cPed2=0, *cGain2=0, *cGainOn2=0;
   TCanvas *cPed3=0, *cGain3=0, *cGainOn3=0;
   TCanvas *cPed4=0, *cGain4=0, *cGainOn4=0;
@@ -231,7 +245,6 @@ void GetCC(Int_t flag=0)
     cPed4   ->Divide(2,2);
     cGain4  ->Divide(2,2);
     cGainOn4->Divide(2,2);
-
   }
   
   TCanvas *cSum   = new TCanvas("cSum" ,"summary"   , 10,10,600,800);
@@ -260,14 +273,18 @@ void GetCC(Int_t flag=0)
     TString nameGainOnline="hGainOnline";
     nameGain+=supermodule;
     nameGainOnline+=supermodule;
+    
     TString titleGain="Gain factors in supermodule ";
     titleGain+=supermodule;
+    
     TString titleGainOnline="Gain online factors in supermodule ";
     titleGainOnline+=supermodule;
+    
     hGain      [supermodule] = new TH2F(nameGain.Data(),titleGain.Data(),
                                         nCol,1.,1.*nCol,nRow,1.,1.*nRow);
     hGainOnline[supermodule] = new TH2F(nameGainOnline.Data(),titleGainOnline.Data(),
                                         nCol,1.,1.*nCol,nRow,1.,1.*nRow);
+    
     for (Int_t column=0; column<nCol; column++)
     {
       for (Int_t row=0; row<nRow; row++)
@@ -288,6 +305,7 @@ void GetCC(Int_t flag=0)
         nCC++;
       }
     }
+    
     cout<<" Fill cc for SM "<< supermodule << " nCC "<< nCC << endl;
     
     if(drawKey>1)
@@ -351,5 +369,4 @@ void GetCC(Int_t flag=0)
    cPed2  ->Print("pedestals_SM_6_11.eps");
    cGain2 ->Print("gains_SM_6_11.eps");
   }
-  
 }

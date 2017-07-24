@@ -220,8 +220,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
 /// a landau inverted + Gaussian for Gammas
 /// and a Landau +Gaussian for Pi0 and hadrons 
 /// New parametrisation for 
-/// lambda0^2 (=x): f(x) = normLandau*TMath::Landau(((1-mpvlandau)-x),mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for gammas
-/// lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for pi0 & hadrons
+/// lambda0^2 (=x): f(x) = normLandau*Landau(((1-mpvlandau)-x),mpvLandau,widthLandau)+normgaus*Gaus(x,meangaus,sigmagaus) for gammas
+/// lambda0^2 (=x): f(x) = normLandau*Landau(x,mpvLandau,widthLandau)+normgaus*Gaus(x,meangaus,sigmagaus) for pi0 & hadrons
 ///
 /// See AliEMCALPid 
 /// (index i) refers to each parameters of the f(lambda0^2) 

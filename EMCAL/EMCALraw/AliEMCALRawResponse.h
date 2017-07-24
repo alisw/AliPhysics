@@ -1,32 +1,18 @@
 #ifndef ALIEMCALRAWRESPONSE_H
 #define ALIEMCALRAWRESPONSE_H
 
-/**************************************************************************
- * This file is property of and copyright by the Experimental Nuclear     *
- * Physics Group, Yale University, US 2011                                *
- *                                                                        *
- * Author: Per Thomas Hille <perthomas.hille@yale.edu> for the ALICE      *
- * experiment. Contributors are mentioned in the code where appropriate.  *
- * Please report bugs to  perthomas.hille@yale.edu                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
 /// \class AliEMCALRawResponse
+/// \ingroup EMCALraw
 /// \brief Handling of digits to raw data transformation
 ///
 ///  Utility Class for handling simulated digits to Raw data generation
 ///
-///
 /// \author Per Thomas Hille <p.t.hille@fys.uio.no>, Yale. 
-/// \author Gustavo Conesa <Gustavo.Conesa.Balbastre@cern.ch>, LPSC. Adjustments.
+/// \author Gustavo Conesa <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. Adjustments.
 //_________________________________________________________________________
 
 #include "Rtypes.h"

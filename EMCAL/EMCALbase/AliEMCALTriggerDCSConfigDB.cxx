@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-
-
-
-Adapted from TRD
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
@@ -34,214 +25,198 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
 
-ClassImp(AliEMCALTriggerDCSConfigDB)
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerDCSConfigDB) ;
+/// \endcond
 
 AliEMCALTriggerDCSConfigDB* AliEMCALTriggerDCSConfigDB::fgInstance   = 0;
 Bool_t                      AliEMCALTriggerDCSConfigDB::fgTerminated = kFALSE;
 
+///
+/// Singleton implementation
+/// \return an instance of this class, it is created if neccessary
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfigDB* AliEMCALTriggerDCSConfigDB::Instance()
-{
-	//
-	// Singleton implementation
-	// Returns an instance of this class, it is created if neccessary
-	//
+{  
+  if (fgTerminated != kFALSE) 
+  {
+    return 0;
+  }
   
-	if (fgTerminated != kFALSE) 
-	{
-		return 0;
-	}
-
-	if (fgInstance == 0) 
-	{
-		fgInstance = new AliEMCALTriggerDCSConfigDB();
-	}
-
-	return fgInstance;
+  if (fgInstance == 0) 
+  {
+    fgInstance = new AliEMCALTriggerDCSConfigDB();
+  }
+  
+  return fgInstance;
 }
 
+///
+/// Singleton implementation
+/// Deletes the instance of this class and sets the terminated flag,
+/// instances cannot be requested anymore
+/// This function can be called several times.
 //_____________________________________________________________________________
 void AliEMCALTriggerDCSConfigDB::Terminate()
 {
-	//
-	// Singleton implementation
-	// Deletes the instance of this class and sets the terminated flag,
-	// instances cannot be requested anymore
-	// This function can be called several times.
-	//
+  fgTerminated = kTRUE;
   
-	fgTerminated = kTRUE;
-  
-	if (fgInstance != 0) 
-	{
-		delete fgInstance;
-		fgInstance = 0;
-	}
+  if (fgInstance != 0) 
+  {
+    delete fgInstance;
+    fgInstance = 0;
+  }
 }
 
+///
+/// Default constructor
+///
+/// TODO Default runnumber is set to 0, this should be changed later
+///      to an invalid value (e.g. -1) to prevent
+/// TODO invalid calibration data to be used.
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfigDB::AliEMCALTriggerDCSConfigDB() : TObject()
 ,fRun(-1)
 {
-	//
-	// Default constructor
-	//
-	// TODO Default runnumber is set to 0, this should be changed later
-	//      to an invalid value (e.g. -1) to prevent
-	// TODO invalid calibration data to be used.
-	//
-
-	for (Int_t i = 0; i < kCDBCacheSize; ++i) 
-	{
-		fCDBCache[i]   = 0;
-		fCDBEntries[i] = 0;
-	}
+  for (Int_t i = 0; i < kCDBCacheSize; ++i) 
+  {
+    fCDBCache[i]   = 0;
+    fCDBEntries[i] = 0;
+  }
 }
 
+///
+/// Copy constructor (not that it make any sense for a singleton...)
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfigDB::AliEMCALTriggerDCSConfigDB(const AliEMCALTriggerDCSConfigDB &c) : TObject(c)
 ,fRun(-1)
 {
-	//
-	// Copy constructor (not that it make any sense for a singleton...)
-	//
-
-	for (Int_t i = 0; i < kCDBCacheSize; ++i) 
-	{
-		fCDBCache[i]   = 0;
-		fCDBEntries[i] = 0;
-	}
+  for (Int_t i = 0; i < kCDBCacheSize; ++i) 
+  {
+    fCDBCache[i]   = 0;
+    fCDBEntries[i] = 0;
+  }
 }
 
+//
+// Assignment operator (not that it make any sense for a singleton...)
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfigDB &AliEMCALTriggerDCSConfigDB::operator=(const AliEMCALTriggerDCSConfigDB &c) 
 {
-	//
-	// Assignment operator (same as above ...)
-	//
-	if (this != &c) 
-	{
-		AliFatal("No assignment operator defined");
-	}
-
-	return *this;
+  if (this != &c) 
+  {
+    AliFatal("No assignment operator defined");
+  }
+  
+  return *this;
 }
 
+///
+/// Destructor
 //_____________________________________________________________________________
 AliEMCALTriggerDCSConfigDB::~AliEMCALTriggerDCSConfigDB() 
 {
-	//
-	// destructor
-	//
 	Invalidate();
 }
 
+///
+/// Retrieves a cdb object with the given id. The objects are cached as
+/// long as the run number is not changed.
 //_____________________________________________________________________________
 const TObject *AliEMCALTriggerDCSConfigDB::GetCachedCDBObject(Int_t id)
 {
-	//
-	// Retrieves a cdb object with the given id. The objects are cached as
-	// long as the run number is not changed.
-	//
-	switch (id) 
-	{
-		// Parameters defined per pad and chamber
-		case kIDTriggerConfig : 
-			return CacheCDBEntry(kIDTriggerConfig, "EMCAL/Calib/Trigger"); 
-			break;
-		default:			
-			AliError("Object not found!");
-			break;
-	}
-
-	return 0x0;
+  switch (id) 
+  {
+      // Parameters defined per pad and chamber
+    case kIDTriggerConfig : 
+      return CacheCDBEntry(kIDTriggerConfig, "EMCAL/Calib/Trigger"); 
+      break;
+    default:			
+      AliError("Object not found!");
+      break;
+  }
+  
+  return 0x0;
 }
 
+/// 
+/// Retrieves an entry with path "cdbPath" from the CDB.
 //_____________________________________________________________________________
 AliCDBEntry* AliEMCALTriggerDCSConfigDB::GetCDBEntry(const char *cdbPath)
 {
-	// 
-	// Retrieves an entry with path <cdbPath> from the CDB.
-	//
-	AliCDBEntry *entry = AliCDBManager::Instance()->Get(cdbPath,fRun);
-	
-	if (!entry) 
-	{ 
-		AliError(Form("Failed to get entry: %s",cdbPath));
-		return 0; 
-	}
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get(cdbPath,fRun);
   
-	return entry;
+  if (!entry) 
+  { 
+    AliError(Form("Failed to get entry: %s",cdbPath));
+    return 0; 
+  }
+  
+  return entry;
 }
 
+///
+/// Caches the entry "id" with cdb path "cdbPath"
 //_____________________________________________________________________________
 const TObject *AliEMCALTriggerDCSConfigDB::CacheCDBEntry(Int_t id, const char *cdbPath)
 {
-	//
-	// Caches the entry <id> with cdb path <cdbPath>
-	//
+  if (!fCDBCache[id]) 
+  {
+    fCDBEntries[id] = GetCDBEntry(cdbPath);
+    
+    if (fCDBEntries[id]) fCDBCache[id] = fCDBEntries[id]->GetObject();
+  }
   
-	if (!fCDBCache[id]) 
-	{
-		fCDBEntries[id] = GetCDBEntry(cdbPath);
-		
-		if (fCDBEntries[id]) fCDBCache[id] = fCDBEntries[id]->GetObject();
-	}
-
-	return fCDBCache[id];
+  return fCDBCache[id];
 }
 
+///
+/// Sets current run number. Calibration data is read from the corresponding file.
+/// When the run number changes the caching is invalidated.
 //_____________________________________________________________________________
 void AliEMCALTriggerDCSConfigDB::SetRun(Long64_t run)
 {
-  //
-  // Sets current run number. Calibration data is read from the corresponding file.
-  // When the run number changes the caching is invalidated.
-  //
-
   if (fRun == run) return;
-
+  
   fRun = run;
-
+  
   Invalidate();
 }
 
+///
+/// Invalidates cache (when run number is changed).
 //_____________________________________________________________________________
 void AliEMCALTriggerDCSConfigDB::Invalidate()
 {
-	//
-	// Invalidates cache (when run number is changed).
-	//
-	for (Int_t i = 0; i < kCDBCacheSize; ++i) 
-	{
-		if (fCDBEntries[i]) 
-		{
-			if (AliCDBManager::Instance()->GetCacheFlag() == kFALSE) 
-			{
-				if ((fCDBEntries[i]->IsOwner() == kFALSE) && (fCDBCache[i])) delete fCDBCache[i];
-				
-				delete fCDBEntries[i];
-			}
-			
-			fCDBEntries[i] = 0;
-			fCDBCache[i]   = 0;
-		}
-	}
+  for (Int_t i = 0; i < kCDBCacheSize; ++i) 
+  {
+    if (fCDBEntries[i]) 
+    {
+      if (AliCDBManager::Instance()->GetCacheFlag() == kFALSE) 
+      {
+        if ((fCDBEntries[i]->IsOwner() == kFALSE) && (fCDBCache[i])) delete fCDBCache[i];
+        
+        delete fCDBEntries[i];
+      }
+      
+      fCDBEntries[i] = 0;
+      fCDBCache[i]   = 0;
+    }
+  }
 }
 
+///
+/// Get DCS config
 //_____________________________________________________________________________
 const AliEMCALTriggerDCSConfig* AliEMCALTriggerDCSConfigDB::GetTriggerDCSConfig()
 {
-	//
-	// Get DCS config
-	//
-	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
-	
-	if (!dcsConf) 
-	{
-		AliError("Trigger DCS configuration not found!");
-		return 0x0;
-	}
-	else
-		return dcsConf;
+  const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
+  
+  if (!dcsConf) 
+  {
+    AliError("Trigger DCS configuration not found!");
+    return 0x0;
+  }
+  else
+    return dcsConf;
 }

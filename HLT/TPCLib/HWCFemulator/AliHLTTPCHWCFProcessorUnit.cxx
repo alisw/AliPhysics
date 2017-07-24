@@ -120,7 +120,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fPad = fkBunch->fPad;
   fOutput.fBranch = fkBunch->fBranch;
   fOutput.fBorder = fkBunch->fBorder;
-  fOutput.fEdge = fkBunch->fEdge;
+  fOutput.fEdge = 0; //Set below with some more constraints
   fOutput.fQmax = 0;
   fOutput.fQ = 0;
   fOutput.fT = 0;
@@ -132,6 +132,9 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fNDeconvolutedTime = 0;
   fOutput.fIsDeconvolutedPad = 0;
   fOutput.fConsecutiveTimeDeconvolution = 0;
+  fOutput.fLargestQ = 0;
+  fOutput.fLargestQ2 = 0;
+  fOutput.fLargestQPad = 0;
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
@@ -260,8 +263,9 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     fOutput.fP2+= q*fkBunch->fPad*fkBunch->fPad;
     fOutput.fMC.push_back(d.fMC);
   }
+  fOutput.fEdge = fkBunch->fEdge && iEnd > iStart + 2 && qPeak > 5;
   fOutput.fLargestQ = fOutput.fQ;
-  fOutput.fLargestQPad = fOutput.fPad;
+  fOutput.fLargestQPad = fkBunch->fEdge ? fkBunch->fPad : 0xFFFFFFFF; //We only correct if the largest charge is at the edge cluster. Mark other pads as -1
   
   if( fkBunch->fData.size()==1 && fOutput.fQ < fSingleSeqLimit ) return 0;  
   

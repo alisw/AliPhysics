@@ -3,11 +3,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
- 
-Mapping ABC 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
+///////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliEMCALTriggerMapping
+/// \ingroup EMCALUtils
+/// \brief Trigger mapping methods, base class
+///
+/// Trigger mapping base class
+///
+/// \author:  R. GUERNANE LPSC Grenoble CNRS/IN2P3 
+///
+///////////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TObject
 #  include "TObject.h"
@@ -62,7 +68,10 @@ private:
   AliEMCALTriggerMapping(           const AliEMCALTriggerMapping& rhs);
   AliEMCALTriggerMapping& operator=(const AliEMCALTriggerMapping& rhs);
   
-  ClassDef(AliEMCALTriggerMapping,1)
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTriggerMapping,1) ;
+  /// \endcond
+
 };
  
 #endif

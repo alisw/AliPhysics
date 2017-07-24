@@ -1,10 +1,19 @@
-// Script to create dead channel map and store them into CDB
-//  - 4 sets of maps parameters can be created, with now dead channels 
-// and 5%, 10%, 20% and 30% of dead channels 
-//  - it reads the stored map in a given file. 
-// Author: Gustavo Conesa
-
-//.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetTowerStatusCDB.C
+///
+/// \file AliEMCALPedestalCDB.C
+/// \ingroup EMCAL_BadMapDB
+/// \brief Set the energy calibration parameters in OCDB
+///
+/// Script to create dead channel map and store them into CDB
+///  - 4 sets of maps parameters can be created, with now dead channels 
+/// and 5%, 10%, 20% and 30% of dead channels 
+///  - it reads the stored map in a given file. 
+/// 
+/// Execute like this:
+///.x $ALICE_ROOT/EMCAL/macros/PedestalDB/AliEMCALSetTowerStatusCDB.C
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// based on PHOS macro by  Boris Polishchuk (Boris.Polichtchouk at cern.ch)
+///
 
 #if !defined(__CINT__)
 #include <TControlBar.h>
@@ -14,6 +23,8 @@
 #include <TH2.h>
 #include <TF1.h>
 #include <TCanvas.h>
+
+#include "Riostream.h"
 
 #include "AliRun.h"
 #include "AliCaloCalibPedestal.h"
@@ -25,7 +36,10 @@
 #include "AliCDBStorage.h"
 #endif
 
-
+///
+/// Main method
+/// When execution, menu appears
+//------------------------------------------------------------------------
 void AliEMCALPedestalCDB()
 {
   TControlBar *menu = new TControlBar("vertical","EMCAL CDB");
@@ -51,18 +65,20 @@ void AliEMCALPedestalCDB()
 //------------------------------------------------------------------------
 void Help()
 {
-  char *string =
-    "\nSet tower status map (dead, hot, alive) and write them into ALICE CDB. Press button \"Equal kAlive\" to set all channels alive. Press button \"Random, 5% dead\" to create random dead channel map at 5%\n";
-  printf(string);
+  printf("\nSet tower status map (dead, hot, alive) and write them into ALICE CDB."
+         " Press button \"Equal kAlive\" to set all channels alive.\n" 
+         " Press button \"Random, 5 percent dead\" to create random dead channel map at 5 percent\n"
+         );
 }
 
+///
+/// Writing status of all the channels in the OCDB with equal value
+/// except a percent to be not alive. Right now only "alive" or "dead",
+/// we need to implement the other cases like "hot"	
+///
 //------------------------------------------------------------------------
 void SetTowerStatusMap(Int_t percent=0)
 {
-  // Writing status of all the channels in the OCDB with equal value
-  // except a percent to be not alive. Right now only "alive" or "dead",
-  // we need to implement the other cases like "hot"	
-
   TString sDBFolder ="local://PedestalsDB";
   Int_t firstRun   =  0; 
   Int_t lastRun    =  999999999;
@@ -71,34 +87,42 @@ void SetTowerStatusMap(Int_t percent=0)
   
   AliCaloCalibPedestal *caloped=new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
   caloped->Init();
-
+  
   TObjArray map = caloped->GetDeadMap();
   printf("MAP entries %d\n",map.GetEntries());
-
+  
   TRandom rn;
   //for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM ++){
-	for(Int_t iSM = 0; iSM < map.GetEntries(); iSM ++){
-	  Int_t ndead = 0;
-	  printf(" >>> SM %d <<< Entries %d, NbinsX %d, NbinsY %d\n",iSM,((TH2D*)map[iSM])->GetEntries(),((TH2D*)map[iSM])->GetNbinsX(),((TH2D*)map[iSM])->GetNbinsY());
-		for(Int_t i = 0; i < ((TH2D*)map[iSM])->GetNbinsX() ; i++){
-			for(Int_t j = 0; j < ((TH2D*)map[iSM])->GetNbinsY() ; j++){
-				//printf("Bin (%d-%d) Content, before: %d ",i,j,((TH2D*)map[iSM])->GetBinContent(i, j));	
-			    
-				if(rn.Uniform(0,100) > percent)
-				  caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kAlive);
-				else{
-					caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kDead);
-					ndead++;
-				}
-				//printf("; after: %d \n",((TH2D*)map[iSM])->GetBinContent(i, j));	
-			}	
-		}
-		caloped->SetDeadTowerCount(caloped->GetDeadTowerCount()+ndead);
-		printf("--- dead %d\n",ndead);
+  for(Int_t iSM = 0; iSM < map.GetEntries(); iSM ++)
+  {
+    Int_t ndead = 0;
+    printf(" >>> SM %d <<< Entries %d, NbinsX %1.0f, NbinsY %1.0f\n",
+           iSM,((TH2D*)map[iSM])->GetEntries(),
+           ((TH2D*)map[iSM])->GetNbinsX(),((TH2D*)map[iSM])->GetNbinsY());
+    
+    for(Int_t i = 0; i < ((TH2D*)map[iSM])->GetNbinsX() ; i++)
+    {
+      for(Int_t j = 0; j < ((TH2D*)map[iSM])->GetNbinsY() ; j++)
+      {
+        //printf("Bin (%d-%d) Content, before: %d ",i,j,((TH2D*)map[iSM])->GetBinContent(i, j));	
+        
+        if(rn.Uniform(0,100) > percent)
+          caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kAlive);
+        else
+        {
+          caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kDead);
+          ndead++;
+        }
+        //printf("; after: %d \n",((TH2D*)map[iSM])->GetBinContent(i, j));	
+      }	
+    }
+    
+    caloped->SetDeadTowerCount(caloped->GetDeadTowerCount()+ndead);
+    printf("--- dead %d\n",ndead);
   }
-
+  
   printf("--- total dead %d\n",caloped->GetDeadTowerCount());
-
+  
   //Store map into database
   
   AliCDBMetaData md;
@@ -107,23 +131,17 @@ void SetTowerStatusMap(Int_t percent=0)
   md.SetResponsible("Gustavo Conesa");
   
   AliCDBId id("EMCAL/Calib/Pedestals",firstRun,lastRun); // create in EMCAL/Calib/Pedestal sDBFolder 
-
+  
   AliCDBManager* man = AliCDBManager::Instance();  
   AliCDBStorage* loc = man->GetStorage(sDBFolder.Data());
   loc->Put(caloped, id, &md);
-
 }
 
-//____________________________________________
-
-
-
-
+///
+/// Get the list of dead/hot channels from file and set them in OCDB
 //------------------------------------------------------------------------
 void SetTowerStatusMap(char * file = "map.txt")
-{
-  // Get the list of dead/hot channels from file and set them in OCDB
-  
+{  
   TString sDBFolder ="local://PedestalsDB";
   Int_t firstRun   =  0; 
   Int_t lastRun    =  999999999;
@@ -140,8 +158,8 @@ void SetTowerStatusMap(char * file = "map.txt")
   Int_t iSM=-1, icol=-1, irow=-1, istatus=-1, ndead=0 ;
   TString string;
   if (f.good()) {
-    while(string.ReadLine(f, kFALSE) && !f.eof()) {
-      
+    while(string.ReadLine(f, kFALSE) && !f.eof()) 
+    {
       sscanf(string.Data(), "%d %d %d %d",&iSM,&icol,&irow,&istatus);
       cout<<"SM= "<<iSM<<", col= "<<icol<<", row= "<<irow<<", status="<<istatus<<endl;
       if(iSM==-1) continue;
@@ -166,47 +184,53 @@ void SetTowerStatusMap(char * file = "map.txt")
   AliCDBManager* man = AliCDBManager::Instance();  
   AliCDBStorage* loc = man->GetStorage(sDBFolder.Data());
     loc->Put(caloped, id, &md);
-    
 }
 
-  
+///
+/// Read status map 
 //------------------------------------------------------------------------
 void GetTowerStatusMap()
-{
-  // Read status map
- 
+{ 
   TString sDBFolder ="local://PedestalsDB";
   Int_t runNumber   =  0; 
   
   AliCaloCalibPedestal* caloped  = (AliCaloCalibPedestal*) 
-	(AliCDBManager::Instance()
-	 ->GetStorage(sDBFolder.Data())
-	 ->Get("EMCAL/Calib/Pedestals", 
-		   runNumber)->GetObject());
-
+  (AliCDBManager::Instance()
+   ->GetStorage(sDBFolder.Data())
+   ->Get("EMCAL/Calib/Pedestals", 
+         runNumber)->GetObject());
+  
   cout<<endl;
+ 
   TObjArray map = caloped->GetDeadMap();
   printf("MAP entries %d\n",map.GetEntries());
-  for(Int_t iSM = 0; iSM < map.GetEntries(); iSM ++){ 
-	  TCanvas *cMap   = new TCanvas(Form("cMap%d",iSM),Form("SM %d dead map",iSM), 12,12,400,400);
-	  cMap->Divide(1,1); 
+  
+  for(Int_t iSM = 0; iSM < map.GetEntries(); iSM ++)
+  { 
+    TCanvas *cMap   = new TCanvas(Form("cMap%d",iSM),Form("SM %d dead map",iSM), 12,12,400,400);
+    cMap->Divide(1,1); 
  	  Int_t ndead = 0;
-	  printf(" >>> SM %d <<< Entries %d, NbinsX %d, NbinsY %d\n",iSM,((TH2D*)map[iSM])->GetEntries(),((TH2D*)map[iSM])->GetNbinsX(),((TH2D*)map[iSM])->GetNbinsY());
-	  for(Int_t i = 0; i < ((TH2D*)map[iSM])->GetNbinsX() ; i++){
-	    for(Int_t j = 0; j < ((TH2D*)map[iSM])->GetNbinsY() ; j++){
-	      if(((TH2D*)map[iSM])->GetBinContent(i, j)!=AliCaloCalibPedestal::kAlive)
-		printf("Bin (%d-%d) Content: %d \n",i,j,((TH2D*)map[iSM])->GetBinContent(i, j));	
-	      
-	      if(((TH2D*)map[iSM])->GetBinContent(i, j)==AliCaloCalibPedestal::kDead ||
-		 ((TH2D*)map[iSM])->GetBinContent(i, j)==AliCaloCalibPedestal::kHot)
-		ndead++;
-	    }	
-	  }
-	  printf("--- dead %d\n",ndead);  
-	  cMap->cd(iSM);
-	  (TH2D*)map[iSM])->Draw("lego2");
-}
-
-printf("Total DEAD %d\n", caloped->GetDeadTowerCount());
-
+    printf(" >>> SM %d <<< Entries %d, NbinsX %d, NbinsY %d\n",
+           iSM,((TH2D*)map[iSM])->GetEntries(),((TH2D*)map[iSM])->GetNbinsX(),
+           ((TH2D*)map[iSM])->GetNbinsY());
+   
+    for(Int_t i = 0; i < ((TH2D*)map[iSM])->GetNbinsX() ; i++)
+    {
+      for(Int_t j = 0; j < ((TH2D*)map[iSM])->GetNbinsY() ; j++)
+      {
+        if(((TH2D*)map[iSM])->GetBinContent(i, j)!=AliCaloCalibPedestal::kAlive)
+          printf("Bin (%d-%d) Content: %d \n",i,j,((TH2D*)map[iSM])->GetBinContent(i, j));	
+        
+        if(((TH2D*)map[iSM])->GetBinContent(i, j)==AliCaloCalibPedestal::kDead ||
+           ((TH2D*)map[iSM])->GetBinContent(i, j)==AliCaloCalibPedestal::kHot)
+          ndead++;
+      }	
+    }
+    
+    printf("--- dead %d\n",ndead);  
+    cMap->cd(iSM);
+    ((TH2D*)map[iSM])->Draw("lego2");
+  }
+  
+  printf("Total DEAD %d\n", caloped->GetDeadTowerCount());
 }

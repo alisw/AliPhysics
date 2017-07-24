@@ -1,21 +1,28 @@
+#ifndef AliEMCALTRACK_H
+#define AliEMCALTRACK_H
+
 //========================================================================  
 // Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.  
 // See cxx source for full Copyright notice                                
 //========================================================================  
-//                       
-//                       Class AliEMCALTrack 
-//                      ---------------------
-// Implementation of a track to be used for EMCAL track matching.
-// This object is used to find track intersection with EMCAL surface
-// in order to find the most well matched EMCAL cluster to associate to it.              
-// NO Kalman-like parameter updating is done.
-//
-// ------------------------------------------------------------------------
-// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+///                       
+/// \class AliEMCALTrack 
+/// \ingroup EMCALUtils
+/// \brief Matched track to cluster handling.
+///
+/// Implementation of a track to be used for EMCAL track matching, 
+/// a track which is propagated to EMCAL and matches an EMCAL cluster.
+///
+/// This object is used to find track intersection with EMCAL surface
+/// in order to find the most well matched EMCAL cluster to associate to it. 
+///
+/// NO Kalman-like parameter updating is done, but it allows track propagation 
+/// and suitable energy loss correction even in an environment with a variable 
+/// magnetic field, which is not well managed in the AliExternalTrackParam class.
+///
+/// ------------------------------------------------------------------------
+/// \author A. Pulvirenti, <alberto.pulvirenti@ct.infn.it>
 //=========================================================================
-
-#ifndef AliEMCALTRACK_H
-#define AliEMCALTRACK_H
 
 #include "AliExternalTrackParam.h"
 
@@ -57,19 +64,21 @@ protected:
 	
 	Bool_t      SimplePropagation(Double_t xk, Double_t d = 0.0, Double_t x0 = 0.0);
 	
-	static  Bool_t    fgUseOuterParams;    // use outer parameters from AliESDtrack?
-	static  Bool_t    fgCorrectForEL;      // apply corrections for energy loss?
-	static  Bool_t    fgSortByPt;          // true --> sort by pt, false --> sort by track-cluster distance
-	        Int_t     fClusterIndex;       // index of matched cluster (if any)
-	        Double_t  fClusterDist;        // distance between track propagation and matched cluster
-	        Double_t  fMass;               // mass hypothesis (in GeV/c2)
-	        Int_t     fSeedIndex;          // index of imported ESD track in its owner AliESD
-	        Int_t     fSeedLabel;          // GEANT label of imported ESD track
+  static  Bool_t    fgUseOuterParams;    ///< Use outer parameters from AliESDtrack?
+  static  Bool_t    fgCorrectForEL;      ///< Apply corrections for energy loss?
+  static  Bool_t    fgSortByPt;          ///< true --> sort by pt, false --> sort by track-cluster distance
+          Int_t     fClusterIndex;       ///< Index of matched cluster (if any)
+          Double_t  fClusterDist;        ///< Distance between track propagation and matched cluster
+          Double_t  fMass;               ///< Mass hypothesis (in GeV/c2)
+          Int_t     fSeedIndex;          ///< Index of imported ESD track in its owner AliESD
+          Int_t     fSeedLabel;          ///< GEANT label of imported ESD track
 
 private:
 	
-	ClassDef(AliEMCALTrack, 0) // track implementation for EMCAL matching
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTrack, 0) ;
+  /// \endcond
 
 };
 
-#endif
+#endif //AliEMCALTRACK_H

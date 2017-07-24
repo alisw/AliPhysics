@@ -27,21 +27,28 @@
 #include <TFile.h>
 #include <TMath.h>
 #include <TF1.h>
+#include <TH2F.h>
 #include <TProfile.h>
+#include <TGraph.h>
+#include <TAxis.h>
 #include <iostream>
 
 ClassImp(AliT0CalibSeasonTimeShift)
 
 //________________________________________________________________
-  AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift():TNamed()
+AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift():TNamed(),
+  fT0vsMult(0)
 {
   //
-  for (Int_t i=0; i<4; i++)
-    fMeanPar[i] = fSigmaPar[i] = 0; 
+  for (Int_t i=0; i<4; i++) 
+    fMeanPar[i] = fSigmaPar[i] = 0;
+    
+  fT0vsMult.SetOwner(kTRUE);
 }
 
 //________________________________________________________________
-AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const char* name):TNamed()
+AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const char* name):TNamed(),
+  fT0vsMult(0)
 {
     //constructor
     
@@ -94,7 +101,7 @@ void  AliT0CalibSeasonTimeShift::Print(Option_t*) const
   printf("\n	----	T0 results	----\n\n");
   printf(" (T0A+T0C)/2 = %f; T0A = %f; T0C = %f; resolution = %f  \n", fMeanPar[0], fMeanPar[1],fMeanPar[2],fMeanPar[3]);
   printf(" sigma(T0A+T0C)/2 = %f; sigma(T0 = %f; sigma(T0C) = %f; sigma(resolution) = %f  \n" , fSigmaPar[0], fSigmaPar[1], fSigmaPar[2],fSigmaPar[3]);
- 
+  
 } 
 
 //________________________________________________________________
@@ -120,9 +127,10 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
   // 300 no one histogram or it is empty
   //-100 peak is very narrow
 
-  Float_t mean, sigma;
+  Float_t mean=0, sigma=0;
   Int_t ok = 0;
-  TH1F *cfd = NULL;
+  TH1F *hcfd = NULL;
+  TH2F *hT0mult = NULL;
   TObjArray * tzeroObj = NULL;
 
   gFile = TFile::Open(filePhys);
@@ -131,40 +139,79 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
     return 2000;
   }
   else {
-    //    gFile->ls();
-    //    TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
     tzeroObj = dynamic_cast<TObjArray*>(gFile->Get("T0Calib"));
     TString histname[4]={"fTzeroORAplusORC", "fTzeroORA", "fTzeroORC",  "fResolution"};
     for (Int_t i=0; i<4; i++)
       {
-	if(cfd) cfd->Reset();
+	if(hcfd) hcfd->Reset();
 	if(tzeroObj) 
-	  cfd = (TH1F*)tzeroObj->FindObject( histname[i].Data());
+	  hcfd = (TH1F*)tzeroObj->FindObject( histname[i].Data());
 	else
-	  cfd =  (TH1F*)gFile ->Get(histname[i].Data());
+	  hcfd =  (TH1F*)gFile ->Get(histname[i].Data());
 
-	if(!cfd) {
+	if(!hcfd) {
 	  AliError(Form("no histograms collected for %s", histname[i].Data()));
 	  return -300;
 	}
-	if(cfd) {
-	  if( cfd->GetEntries() == 0) {
+	if(hcfd) {
+	  if( hcfd->GetEntries() == 0) {
 	  AliError(Form("%s histogram is empty", histname[i].Data()));
 	  return -300;
 	  }
-	  GetMeanAndSigma(cfd, mean, sigma);
-	  if (sigma == 0 || sigma > 600 || cfd->GetEntries()<50 ){ //!!!
+	  GetMeanAndSigma(hcfd, mean, sigma);
+	  if (sigma == 0 || sigma > 600 || hcfd->GetEntries()<50 ){ //!!!
 	    AliError(Form("%s low statsitics or bad histogram, OCDB value is = %f", histname[i].Data(), cdbtime[i]) );
 	    return 400;
 	  }
-	  if ( sigma > 0 && sigma < 600 && cfd->GetEntries()>=50) //!!!
+	  if ( sigma > 0 && sigma < 600 && hcfd->GetEntries()>=50) //!!!
 	    { 
 	      fMeanPar[i] =   mean;
 	      fSigmaPar[i] = sigma;
 	    }
 	}
       } 
+    /*
+    TString histname2D[4]={"hT0AC", "hT0A", "hT0C",  "hResolution"};
+    for (Int_t i=0; i<4; i++)
+      {
+	if(hT0mult) hT0mult->Reset();
+	if(tzeroObj) 
+	 hT0mult  = (TH2F*)tzeroObj->FindObject( histname2D[i].Data());
+	else
+	 hT0mult =  (TH2F*)gFile ->Get(histname2D[i].Data());
+	if(hT0mult) {
+	  Int_t nbins = hT0mult->GetXaxis()->GetNbins();
+	  Float_t meanprof[nbins], sigmares[nbins], mult[nbins];
+	  Int_t npoints=0;
+	  for (int ibin=1; ibin<nbins-2; ibin++) {
+	    mult[ibin-1]= hT0mult-> GetXaxis()->GetBinCenter(ibin);
+	    TH1D *proj = hT0mult->ProjectionY(Form("prY%i",ibin),ibin, ibin+1);
+	      if(proj->GetEntries()>100) {
+		GetMeanAndSigma( (TH1F*)proj, mean, sigma);
+		sigmares[ibin-1]=sigma;
+		meanprof[ibin-1]=mean;
+		npoints++;
+		printf("@@@ npoints %i \n",npoints);
+	      }
+	      else 
+		{
+		sigmares[ibin-1]=fSigmaPar[i]; 
+		meanprof[ibin-1]=fMeanPar[i];
+		}
+	      delete proj; 
+	  }
+	  TGraph *gr = NULL;
+	  if(i<3) gr = new TGraph(npoints-1, mult, meanprof);
+	  else
+	    gr = new TGraph(npoints-1, mult, sigmares);
+	  fT0vsMult.AddAtAndExpand(gr,i);
+	  //  gr->Delete();
+	}
+      }
+    */  
   }
+  
+  
   gFile->Close();
   delete gFile;
   return ok;
@@ -181,7 +228,7 @@ void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Floa
   sigmaEstimate = hist->GetRMS();
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","R","");
+  hist->Fit("fit","RQ","S");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 276                         $: revision of last commit
+// $Rev:: 284                         $: revision of last commit
 // $Author:: jnystrand                $: author of last commit
-// $Date:: 2016-09-13 20:54:42 +0200 #$: date of last commit
+// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit
 //
 // Description:
 //
@@ -198,6 +198,9 @@ public:
         double       axionMass             () const { return _axionMass.value();              }  ///< returns axion mass //AXION HACK
 	int          bslopeDefinition      () const { return _bslopeDefinition.value();       }  ///< returns the definition of b-slope
 	double       bslopeValue           () const { return _bslopeValue.value();            }  ///< returns the value of b-slope
+        double       bslope0               () const { return _bslope0.value();                }  ///<
+        double       bslope_alphaprime     () const { return _bslope_alphaprime.value();      }  ///<
+	int          impulseVM             () const { return _impulseVM.value();              }  ///< returns the impulseVM value
 	starlightConstants::particleTypeEnum    prodParticleType     () const { return _particleType;    }  ///< returns type of produced particle
 	starlightConstants::decayTypeEnum       prodParticleDecayType() const { return _decayType;       }  ///< returns decay type of produced particle
 	starlightConstants::interactionTypeEnum interactionType      () const { return _interactionType; }  ///< returns interaction type
@@ -241,9 +244,12 @@ public:
 	void setAxionMass        (double v)  {  _axionMass = v;                   }  ///< sets axion mass    //AXION HACK
 	void setbslopeDefinition      (int v)  {  _bslopeDefinition = v;          }  ///< sets the definition of b slope
         void setbslopeValue           (double v)  {  _bslopeValue = v;            }  ///< sets the value of b slope
+        void setbslope0               (double v)  {  _bslope0 = v;                }  ///< sets the value of the b-slope parameterization
+        void setbslope_alphaprime     (double v)  {  _bslope_alphaprime = v;      }  ///< sets the value of the b-slope parameterization
 
 	int  printVM                  () const { return _printVM.value();         }  ///< returns the printVM value
 	void setprintVM               (int v)  {  _printVM = v;                   }  ///< sets the value of _printVM
+        void setimpulseVM             (int v)  {  _impulseVM = v;                 }  ///< sets the value of _impulseVM
 
 	void setProdParticleType      (starlightConstants::particleTypeEnum v)    { _particleType = v;    }  ///< sets type of produced particle
 	void setProdParticleDecayType (starlightConstants::decayTypeEnum v)       { _decayType = v;       }  ///< sets decay type of produced particle
@@ -256,9 +262,7 @@ public:
 
 	std::ostream& print(std::ostream& out) const;  ///< prints parameter summary
 	std::ostream& write(std::ostream& out) const;  ///< writes parameters back to an ostream
-
 private:
-
 
 // To indicate if the crossection table should be re-calculated if parameter changes
 #define VALIDITY_CHECK true
@@ -318,7 +322,10 @@ private:
         parameter<double, VALIDITY_CHECK>          _axionMass;               ///Axion mass//AXION HACK
         parameter<unsigned int, VALIDITY_CHECK>    _bslopeDefinition;        ///< Optional parameter to set different values of slope parameter
         parameter<double, VALIDITY_CHECK>          _bslopeValue;             ///< Value of slope parameter when _bslopeDefinition is set to 1
+        parameter<double, VALIDITY_CHECK>          _bslope0;                 ///< Parameterization of slope parameter when _bslopeDefinition is set to 3
+        parameter<double, VALIDITY_CHECK>          _bslope_alphaprime;       ///< Parameterization of slope parameter when _bslopeDefinition is set to 3
 	parameter<unsigned int, VALIDITY_CHECK>    _printVM;                 ///< Optional parameter to set printing options for VM cross section
+        parameter<unsigned int, VALIDITY_CHECK>    _impulseVM;               ///< Optional parameter to use impulse approximation (no nuclear effects) for VM cross section.
 
 	starlightConstants::particleTypeEnum       _particleType;
 	starlightConstants::decayTypeEnum          _decayType;

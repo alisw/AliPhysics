@@ -759,6 +759,8 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
+                         @CMAKE_SOURCE_DIR@/STAT \
+                         @CMAKE_SOURCE_DIR@/STAT/test \
                          @CMAKE_SOURCE_DIR@/TPC \
                          @CMAKE_SOURCE_DIR@/TPC/Attic \
                          @CMAKE_SOURCE_DIR@/TPC/Base/test \
@@ -801,7 +803,25 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/MONITOR \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITORzmq \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITOR \
+                         @CMAKE_SOURCE_DIR@/EMCAL \
+                         @CMAKE_SOURCE_DIR@/EMCAL/DA \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALbase \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALraw \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALrec \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALUtils \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALsim \                         
                          @CMAKE_SOURCE_DIR@/EMCAL/EMCALTriggerBase \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/OADB \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/TestData \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/TestSimuReco \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/CalibrationDB \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/AlignmentDB \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/PedestalDB \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/SimRecParamDB \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/PeakFinder \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/Shuttle \
+                         @CMAKE_SOURCE_DIR@/EMCAL/macros/QaDB \
                          @CMAKE_SOURCE_DIR@/FMD \
                          @CMAKE_SOURCE_DIR@/FMD/DA \
                          @CMAKE_SOURCE_DIR@/FMD/FMDbase \

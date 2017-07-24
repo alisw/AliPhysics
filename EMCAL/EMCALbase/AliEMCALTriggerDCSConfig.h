@@ -3,13 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-
- 
-
-
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
+//________________________________________________
+/// \class AliEMCALTriggerDCSConfig
+/// \ingroup EMCALbase
+/// \brief Trigger DCS Config
+///
+/// Add comment
+///
+/// \author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+//________________________________________________
 
 #include "TObject.h"
 #include "TClonesArray.h"
@@ -19,42 +21,42 @@ class AliEMCALTriggerTRUDCSConfig;
 
 class AliEMCALTriggerDCSConfig : public TObject 
 {
-public:
-	
-	         AliEMCALTriggerDCSConfig();
-	virtual ~AliEMCALTriggerDCSConfig();
-	
-	void                         SetTRUArr(TClonesArray* const ta)             { fTRUArr    = ta; }
-	inline void                  SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL = false);
   
-	TClonesArray*                GetTRUArr()                 const             { return fTRUArr;  }
-	inline AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(Bool_t isDCAL = false) const;
-	AliEMCALTriggerTRUDCSConfig* GetTRUDCSConfig(Int_t iTRU) const             { return (AliEMCALTriggerTRUDCSConfig*)fTRUArr->At(iTRU); }
-	
+public:
+  
+  AliEMCALTriggerDCSConfig();
+  virtual ~AliEMCALTriggerDCSConfig();
+  
+  void                         SetTRUArr(TClonesArray* const ta)             { fTRUArr    = ta; }
+  inline void                  SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL = false);
+  
+  TClonesArray*                GetTRUArr()                 const             { return fTRUArr;  }
+  
+  inline AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(Bool_t isDCAL = false) const;
+  AliEMCALTriggerTRUDCSConfig*        GetTRUDCSConfig(Int_t iTRU) const      { return (AliEMCALTriggerTRUDCSConfig*)fTRUArr->At(iTRU); }
+  
 private:
-
-	AliEMCALTriggerDCSConfig(const AliEMCALTriggerDCSConfig &cd);            // Not implemented
-	AliEMCALTriggerDCSConfig &operator=(const AliEMCALTriggerDCSConfig &cd); // Not implemented
-
-	TClonesArray*                fTRUArr;   // TRU array
-	AliEMCALTriggerSTUDCSConfig* fSTUObj;   // STU
-	AliEMCALTriggerSTUDCSConfig* fSTUDCAL;  // STU of DCAL
-
-	ClassDef(AliEMCALTriggerDCSConfig,2)  //
+  
+  AliEMCALTriggerDCSConfig           (const AliEMCALTriggerDCSConfig &cd); // Not implemented
+  AliEMCALTriggerDCSConfig &operator=(const AliEMCALTriggerDCSConfig &cd); // Not implemented
+  
+  TClonesArray*                fTRUArr;   ///< TRU array
+  AliEMCALTriggerSTUDCSConfig* fSTUObj;   ///< STU
+  AliEMCALTriggerSTUDCSConfig* fSTUDCAL;  ///< STU of DCAL
+  
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTriggerDCSConfig,2) ;
+  /// \endcond
+  
 };
 
 void AliEMCALTriggerDCSConfig::SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL) {
-	if(isDCAL)
-	  fSTUDCAL = so;
-	else
-	  fSTUObj  = so;
-}
+  if(isDCAL) fSTUDCAL = so;
+  else       fSTUObj  = so;                                                              }
 
-AliEMCALTriggerSTUDCSConfig* AliEMCALTriggerDCSConfig::GetSTUDCSConfig(Bool_t isDCAL) const{
-  if(isDCAL)
-    return fSTUDCAL;
-  return fSTUObj;
-}
+AliEMCALTriggerSTUDCSConfig* AliEMCALTriggerDCSConfig::GetSTUDCSConfig(Bool_t isDCAL) const {
+  if(isDCAL) return fSTUDCAL;
+  return fSTUObj;                                                                           }
 
-#endif
+#endif //ALIEMCALTRIGGERDCSCONFIG_H
 

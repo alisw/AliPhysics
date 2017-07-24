@@ -3,13 +3,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
- 
- 
-Author: 
-H. YOKOYAMA Tsukuba University
-R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
+///////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliEMCALTriggerMappingV2
+/// \ingroup EMCALUtils
+/// \brief Trigger mapping methods, base class
+///
+/// Trigger mapping for Run2
+///
+/// \author H. YOKOYAMA Tsukuba University
+/// \author R. GUERNANE LPSC Grenoble CNRS/IN2P3 
+///
+///////////////////////////////////////////////////////////////////////////////
+
 
 #include "AliEMCALTriggerMapping.h"
 class AliEMCALGeometry;
@@ -20,23 +26,23 @@ public:
   //********************************************
   //static constant
   //********************************************
-  static const Int_t  fNumberOfSuperModules = 20                                      ;//Total SM in EMCAL
-  static const Int_t  fNTotalTRU            = 52                                      ;//Total TRU in EMCAL
-  static const Int_t  fNModulesInTRUEta     =  8                                      ;//#FastOR/TRU in Eta
-  static const Int_t  fNModulesInTRUPhi     = 12                                      ;//#FastOR/TRU in Phi
-  static const Int_t  fNModulesInTRU        = fNModulesInTRUEta * fNModulesInTRUPhi   ;//#FastOR/TRU
-  static const Int_t  fNTRUEta              =  3                                      ;//#TRUs/SM in Eta  
-  static const Int_t  fNTRUPhi              =  1                                      ;//#TRUs/SM in Phi
-  static const Int_t  fNTRU                 = fNTRUEta * fNTRUPhi                     ;//#TRUs/SM  
-  static const Int_t  fNEta                 = fNModulesInTRUEta * fNTRUEta            ;//#FastOR/SM in Eta
-  static const Int_t  fNPhi                 = fNModulesInTRUPhi * fNTRUPhi            ;//#FastOR/SM in Phi 
-  static const Int_t  fSTURegionNEta        = 2/*Aside,Cside*/ * fNEta                ;//EMCAL+DCAL region eta size
+  static const Int_t  fNumberOfSuperModules = 20                                      ;///< Total SM in EMCAL
+  static const Int_t  fNTotalTRU            = 52                                      ;///< Total TRU in EMCAL
+  static const Int_t  fNModulesInTRUEta     =  8                                      ;///< Number of FastOR/TRU in Eta
+  static const Int_t  fNModulesInTRUPhi     = 12                                      ;///< Number of FastOR/TRU in Phi
+  static const Int_t  fNModulesInTRU        = fNModulesInTRUEta * fNModulesInTRUPhi   ;///< Number of FastOR/TRU
+  static const Int_t  fNTRUEta              =  3                                      ;///< Number of TRUs/SM in Eta  
+  static const Int_t  fNTRUPhi              =  1                                      ;///< Number of TRUs/SM in Phi
+  static const Int_t  fNTRU                 = fNTRUEta * fNTRUPhi                     ;///< Number of TRUs/SM  
+  static const Int_t  fNEta                 = fNModulesInTRUEta * fNTRUEta            ;///< Number of FastOR/SM in Eta
+  static const Int_t  fNPhi                 = fNModulesInTRUPhi * fNTRUPhi            ;///< Number of FastOR/SM in Phi 
+  static const Int_t  fSTURegionNEta        = 2/*Aside,Cside*/ * fNEta                ;///< EMCAL+DCAL region eta size
   static const Int_t  fSTURegionNPhi        = (5 * fNPhi) + (1 * fNPhi/3)   /*EMCAL*/      
-                                            + (3 * fNPhi) + (1 * fNPhi/3)   /*DCAL */ ;//#FastOR/EMCALs in Phi
-  static const Int_t  fSTURegionN           = fSTURegionNEta * fSTURegionNPhi         ;//#FastOR/EMCALs
+                                            + (3 * fNPhi) + (1 * fNPhi/3)   /*DCAL */ ;///< Number of FastOR/EMCALs in Phi
+  static const Int_t  fSTURegionN           = fSTURegionNEta * fSTURegionNPhi         ;///< Number of FastOR/EMCALs
   
   //********************************************
-  //SM type 
+  /// SM type 
   //********************************************
   enum fEMCSMType { 
     kEMCAL_Standard = 0, 
@@ -44,7 +50,8 @@ public:
     kEMCAL_3rd      = 2, 
     kDCAL_Standard  = 3, 
     kDCAL_Ext       = 4 
-  }; // possible SM Type
+  }; 
+  /// possible calorimeter Type
   enum fDetType { 
     kEMCAL  = 0, 
     kDCAL   = 1, 
@@ -162,8 +169,11 @@ private:
     return (iSM%2 == 1)? kTRUE : kFALSE ;
   }
     
-  ClassDef(AliEMCALTriggerMappingV2,1)
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTriggerMappingV2,1) ;
+  /// \endcond
+  
 };
  
-#endif
+#endif // ALIEMCALTRIGGERMAPPINGV2_H
 

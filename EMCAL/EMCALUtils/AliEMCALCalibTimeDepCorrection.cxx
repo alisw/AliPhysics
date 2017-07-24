@@ -13,11 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
-// Objects of this class contain info on time-dependent corrections
-//
-
 #include <fstream>
 #include <TString.h>
 #include <TFile.h>
@@ -27,8 +22,16 @@
 
 using namespace std;
 
-ClassImp(AliEMCALCalibTimeDepCorrection)
+/// \cond CLASSIMP
+ClassImp(AliEMCALCalibTimeDepCorrection) ;
+/// \endcond
 
+
+///
+/// Default constructor.
+///
+/// \param nSM: number of supermodules.
+///
 //____________________________________________________________________________
 AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection(const int nSM) : 
   fNSuperModule(nSM),
@@ -37,188 +40,234 @@ AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection(const int nSM) :
   fNTimeBins(0),
   fTimeBinSize(0)
 {
-  //Default constructor.
-  for (int i=0; i<fNSuperModule; i++) {
+  for (int i=0; i<fNSuperModule; i++) 
+  {
     fSuperModuleData.Add(new AliEMCALSuperModuleCalibTimeDepCorrection(i));
   }
   fSuperModuleData.Compress(); // compress the TObjArray
 }
 
+///
+/// This methods assumes that you are using SuperModules 0..nSM-1
+///
+/// \param nSM: number of supermodules.
+/// \param nBins: .
+/// \param val: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Float_t val)
 {
-  // This methods assumes that you are using SuperModules 0..nSM-1
   fNSuperModule = nSM;
-
+  
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t nCorr = nBins;
   Float_t correction = val;
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++)
+  {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
     iSM = i;
     t->SetSuperModuleNum(iSM); // assume SMs are coming in order
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       // set size of TArray
       t->GetCorrection(iCol,iRow)->Set(nCorr);
-      for (Int_t k=0; k<nCorr; k++) {
-	// add to TArray
-	t->GetCorrection(iCol,iRow)->AddAt(correction, k); // AddAt = SetAt..
+      for (Int_t k=0; k<nCorr; k++)
+      {
+        // add to TArray
+        t->GetCorrection(iCol,iRow)->AddAt(correction, k); // AddAt = SetAt..
       }
     }
-
+    
   } // i, SuperModule
-
+  
   return;
 }
 
+///
+/// Set the values
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::SetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin, Float_t val)
-{ // if you call for non-existing data, there may be a crash..
+{ 
+  // if you call for non-existing data, there may be a crash..
   ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->AddAt(val, iBin); // AddAt = SetAt..
- return; 
+ 
+  return; 
 }
 
+///
+/// Get the values
+///
 //____________________________________________________________________________
 Float_t AliEMCALCalibTimeDepCorrection::GetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin) const
-{ // if you call for non-existing data, there may be a crash..
+{ 
+  // if you call for non-existing data, there may be a crash..
   return ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->At(iBin);
 }
 
+///
+/// Read data from txt file. ; coordinates given on SuperModule basis.
+///
+/// \param nSM: number of supermodules.
+/// \param txtFileName: file name, txt format
+/// \param swapSides: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtFileName,
-						  Bool_t swapSides)
+                                                  Bool_t swapSides)
 {
-  //Read data from txt file. ; coordinates given on SuperModule basis
-
   std::ifstream inputFile(txtFileName.Data());
-  if (!inputFile) {
+  if (!inputFile) 
+  {
     printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Cannot open the APD info file %s\n", txtFileName.Data());
     return;
   }
-
+  
   fNSuperModule = nSM;
-
+  
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t nCorr = 0;
   Float_t correction = 0;
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
+  
   // read header info 
   inputFile >> fStartTime >> fNTimeBins >> fTimeBinSize;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++)
+  {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
-
-    if (!inputFile) {
+    
+    if (!inputFile)
+    {
       printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; likely EOF..\n");
       return;
     }
+    
     inputFile >> iSM;
     t->SetSuperModuleNum(iSM);
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       inputFile >> iCol >> iRow >> nCorr;
-
+      
       // check that input values are not out bounds
       if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
-	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) || 
-	  nCorr<0 ) {
-	printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; j %d iCol %d iRow %d nCorr %d\n", j, iCol, iRow, nCorr);
-      return;
+          iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) || 
+          nCorr<0 )
+      {
+        printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; j %d iCol %d iRow %d nCorr %d\n", 
+               j, iCol, iRow, nCorr);
+        return;
       }
-
+      
       // assume that this info is already swapped and done for this basis?
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       // set size of TArray
       t->GetCorrection(iCol,iRow)->Set(nCorr);
-      for (Int_t k=0; k<nCorr; k++) {
-	inputFile >> correction;
-	// add to TArray
-	t->GetCorrection(iCol,iRow)->AddAt(correction, k);
+      for (Int_t k=0; k<nCorr; k++)
+      {
+        inputFile >> correction;
+        // add to TArray
+        t->GetCorrection(iCol,iRow)->AddAt(correction, k);
       }
     }
-
+    
   } // i, SuperModule
-
+  
   inputFile.close();
-
+  
   return;
 }
 
+///
+/// Write data to txt file. ; coordinates given on SuperModule basis.
+///
+/// \param txtFileName: file name, txt format
+/// \param swapSides: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::WriteTextInfo(const TString &txtFileName,
-						   Bool_t swapSides)
+                                                   Bool_t swapSides)
 {
-  // write data to txt file. ; coordinates given on SuperModule basis
-
   std::ofstream outputFile(txtFileName.Data());
-  if (!outputFile) {
+  if (!outputFile) 
+  {
     printf("AliEMCALCalibTimeDepCorrection::WriteTextInfo - Cannot open the APD output file %s\n", txtFileName.Data());
     return;
   }
-
+  
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t nCorr = 0;
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
+  
   // write header info 
   outputFile << fStartTime << " " << fNTimeBins << " " << fTimeBinSize << endl;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++)
+  {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
     outputFile << t->GetSuperModuleNum() << endl;
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       nCorr = t->GetCorrection(iCol,iRow)->GetSize();
-
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       outputFile << iCol << " " << iRow << " " << nCorr << endl;
-      for (Int_t k=0; k<nCorr; k++) {
-	outputFile << t->GetCorrection(iCol,iRow)->At(k) << " ";
+      for (Int_t k=0; k<nCorr; k++) 
+      {
+        outputFile << t->GetCorrection(iCol,iRow)->At(k) << " ";
       }
       outputFile << endl;
-
+      
     }
-
+    
   } // i, SuperModule
-
+  
   outputFile.close();
-
+  
   return;
 }
 
+///
+/// Read data from root file. ; coordinates given on SuperModule basis
+///
+/// \param rootFileName: file name, root format
+/// \param swapSides: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::ReadRootInfo(const TString &rootFileName,
 						  Bool_t swapSides)
 {
-  //Read data from root file. ; coordinates given on SuperModule basis
   TFile inputFile(rootFileName, "read");  
 
   TTree *treeGlob = (TTree*) inputFile.Get("treeGlob");
@@ -231,6 +280,13 @@ void AliEMCALCalibTimeDepCorrection::ReadRootInfo(const TString &rootFileName,
   return;
 }
 
+///
+/// Read info from tree.
+///
+/// \param treeGlob:
+/// \param treeCorr:
+/// \param swapSides: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCorr,
 						  Bool_t swapSides)
@@ -262,7 +318,8 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
   treeCorr->SetBranchAddress("nCorr", &nCorr);
   treeCorr->SetBranchAddress("correction", correction);
 
-  for (int ient=0; ient<treeCorr->GetEntries(); ient++) {
+  for (int ient=0; ient<treeCorr->GetEntries(); ient++) 
+  {
     treeCorr->GetEntry(ient);
 
     // assume the index SuperModules come in order: i=iSM
@@ -270,16 +327,17 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
     t->SetSuperModuleNum(iSM);
 
     // assume that this info is already swapped and done for this basis?
-    if (swapSides) {
+    if (swapSides) 
+    {
       // C side, oriented differently than A side: swap is requested
       iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
       iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
     }
 
-
     // set size of TArray
     t->GetCorrection(iCol,iRow)->Set(nCorr);
-    for (Int_t k=0; k<nCorr; k++) {
+    for (Int_t k=0; k<nCorr; k++) 
+    {
       // add to TArray
       t->GetCorrection(iCol,iRow)->AddAt(correction[k], k);
     }
@@ -289,26 +347,32 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
   return;
 }
 
+///
+/// Write data to root file. ; coordinates given on SuperModule basis
+///
+/// \param rootFileName: file name, root format
+/// \param swapSides: .
+///
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
-						   Bool_t swapSides)
+                                                   Bool_t swapSides)
 {
   // write data to root file. ; coordinates given on SuperModule basis
   TFile destFile(rootFileName, "recreate");  
-  if (destFile.IsZombie()) {
+  if (destFile.IsZombie()) 
     return;
-  }  
+  
   destFile.cd();
-
+  
   TTree *treeGlob = new TTree("treeGlob","");
   TTree *treeCorr = new TTree("treeCorr","");
-
+  
   // global part only has one entry
   treeGlob->Branch("fStartTime", &fStartTime, "fStartTime/i"); // unsigned int..
   treeGlob->Branch("fNTimeBins", &fNTimeBins, "fNTimeBins/I");
   treeGlob->Branch("fTimeBinSize", &fTimeBinSize, "fTimeBinSize/I");
   treeGlob->Fill();
-
+  
   // variables for filling the TTree
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -317,63 +381,78 @@ void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
   Float_t correction[fgkMaxTimeBins] = {0};
   // make sure it's really initialized correctly
   memset(correction, 0, sizeof(correction)); // better safe than sorry
-
+  
   // declare the branches
   treeCorr->Branch("iSM", &iSM, "iSM/I");
   treeCorr->Branch("iCol", &iCol, "iCol/I");
   treeCorr->Branch("iRow", &iRow, "iRow/I");
   treeCorr->Branch("nCorr", &nCorr, "nCorr/I");
   treeCorr->Branch("correction", &correction, "correction[nCorr]/F");
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (iSM = 0; iSM < fNSuperModule; iSM++) {
+  
+  for (iSM = 0; iSM < fNSuperModule; iSM++) 
+  {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[iSM];
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       nCorr = t->GetCorrection(iCol,iRow)->GetSize();
-      if (nCorr > fgkMaxTimeBins) {
-	printf("AliEMCALCalibTimeDepCorrection::WriteRootInfo - too many correction/timebins %d kept\n", nCorr);
-	return;
+      if (nCorr > fgkMaxTimeBins) 
+      {
+        printf("AliEMCALCalibTimeDepCorrection::WriteRootInfo - too many correction/timebins %d kept\n", nCorr);
+        return;
       }
-
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
-      for (Int_t k=0; k<nCorr; k++) {
-	correction[k] = t->GetCorrection(iCol,iRow)->At(k);
+      
+      for (Int_t k=0; k<nCorr; k++) 
+      {
+        correction[k] = t->GetCorrection(iCol,iRow)->At(k);
       }
-
+      
       treeCorr->Fill();
     }
-
+    
   } // i, SuperModule
-
+  
   treeGlob->Write();
   treeCorr->Write();
   destFile.Close();
-
+  
   return;
 }
 
+///
+/// Destructor.
+///
 //____________________________________________________________________________
 AliEMCALCalibTimeDepCorrection::~AliEMCALCalibTimeDepCorrection()
 {
   fSuperModuleData.Delete();
 }
 
+///
+/// \return corrections map of the class object type
+///
+/// \param supModIndex: super-module index
+///
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibTimeDepCorrection * AliEMCALCalibTimeDepCorrection::GetSuperModuleCalibTimeDepCorrectionNum(Int_t supModIndex)const
-{ // getter via index
-  for (int i=0; i<fNSuperModule; i++) {
+{ 
+  for (int i=0; i<fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
-    if (t->GetSuperModuleNum() == supModIndex) {
+    if (t->GetSuperModuleNum() == supModIndex) 
+    {
       return t;
     }
   }

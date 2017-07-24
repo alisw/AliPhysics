@@ -257,13 +257,17 @@ else()
   # Enable C++11 by default if found in ROOT
   if(ROOT_HAS_CXX11 AND NOT DISABLE_CXX11)
     message(STATUS "Enabling C++11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+11") 
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
   endif()
 
   # Enable C++14 by default if found in ROOT
   if(ROOT_HAS_CXX14 AND NOT DISABLE_CXX14)
     message(STATUS "Enabling C++14")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+14") 
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    endif()
   endif()
 
   # FTGL: prefer library from ROOT, look for both libFTGL and libftgl
@@ -477,6 +481,7 @@ else()
       env
       LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
       DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+      ROOT_HIST=0
       root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
   endforeach()
 

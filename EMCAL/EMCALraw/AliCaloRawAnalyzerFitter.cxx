@@ -19,51 +19,53 @@
  **************************************************************************/
 
 #include "AliCaloRawAnalyzerFitter.h"
+
 #include "TF1.h"
+
 #include <iostream>
 
 using std::cout;
 using std::endl;
 
-
+///
+/// Constructor
+//_______________________________________________________________________
 AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char *nameshort ) :AliCaloRawAnalyzer( name, nameshort), 
-											      fkEulerSquared(7.389056098930650227),
-											      fTf1(0)
-{
-  // ctor
-  
+fkEulerSquared(7.389056098930650227),
+fTf1(0)
+{  
   for(int i=0; i < ALTROMAXSAMPLES; i++)
-    {
-      fXaxis[i] = i;
-    }
-
+  {
+    fXaxis[i] = i;
+  }
+  
   fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
- 
+  
   if (fFixTau)  // Declared in AliCaloRawAnalyzer
-    {
-      fTf1->FixParameter(2, fTau);
-    }
+  {
+    fTf1->FixParameter(2, fTau);
+  }
   else 
-    {
-      fTf1->ReleaseParameter(2); // allow par. to vary
-      fTf1->SetParameter(2, fTau);
-    }
+  {
+    fTf1->ReleaseParameter(2); // allow par. to vary
+    fTf1->SetParameter(2, fTau);
+  }
 }
 
-
+///
+/// Destructor
+//_______________________________________________________________________
 AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
-{
-  // Dtor
-  
+{  
   delete fTf1;
 }
 
-
+///
+/// Print fit results
+//_______________________________________________________________________
 void 
 AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
-{
-  // print fit results
-  
+{  
   cout << endl;
   cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
   cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;

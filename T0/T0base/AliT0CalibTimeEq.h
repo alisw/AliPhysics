@@ -10,7 +10,8 @@
 
 #include "TNamed.h"
 #include "TH1F.h"
-
+#include "TGraph.h"
+#include "TObjArray.h"
 class AliT0CalibTimeEq: public TNamed {
 
  public:
@@ -51,7 +52,7 @@ class AliT0CalibTimeEq: public TNamed {
   void SetPedestalOld(Int_t channel,  Float_t val) {fCFDvalue[channel][3]=val;}
   Float_t  GetPedestalOld(Int_t channel)  const {return fCFDvalue[channel][3];}
   
-
+  TGraph* GetCFDvsTime(Int_t channel) const {return (TGraph*)fCFDvsTime.At(channel);}
  
  protected:
 
@@ -61,8 +62,9 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t     fTimeEqRms[24];	      // RMS of Time Equalized for OCDB	 
   Float_t     fMeanVertex;            // mean of vertex distribution   
   Float_t     fRmsVertex;            // RMS of vertex distribution   
+  TObjArray   fCFDvsTime;            // CFD vs timestamp
  //
-  ClassDef(AliT0CalibTimeEq,4)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibTimeEq,5)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibTimeEq AliSTARTCalibTimeEq; // for backward compatibility

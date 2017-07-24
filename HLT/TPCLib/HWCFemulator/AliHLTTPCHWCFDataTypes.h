@@ -81,6 +81,7 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt64_t fLastQ; // for merged fragments, charge of the last (highest pad value)
                          //    fragment bein merged, needed for deconvolution
   AliHLTUInt64_t fLargestQ; //for merging: charge of the cluster fragment with the largest Q
+  AliHLTUInt64_t fLargestQ2; //for merging: charge of the cluster fragment with the second largest Q
   AliHLTUInt32_t fLargestQPad; //for merging: pad that had the cluster fragment with the largest Q
   AliHLTUInt32_t fNPads; // how many pads are in the cluster 
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
@@ -101,7 +102,7 @@ AliHLTTPCHWCFCluster(): fFlag(0), fRowQ(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0),
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
   AliHLTUInt32_t fRowQ; // bits 30-31 = 0x3
                         // bits 24-29 = row number
-                        // bit  23    = flag: edge cluster 
+                        // bit  23    = flag: border cluster (edge or branch border or interleaved row)
                         // bits 0 -22 = max adc value as fixed point integer,
                         //              with 12 bits after the point
   AliHLTUInt32_t fQ;    // 0-29 total charge as fixed point integer, 12 bits after the point

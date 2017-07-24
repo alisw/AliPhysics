@@ -1,3 +1,8 @@
+///
+/// \file Config.C
+/// \ingroup EMCAL_TestSimRec
+/// \brief Single particle simulation configuration macro.
+///
 /// 
 /// Example of configuration for particle (photon) 
 /// simulation in EMCal/DCal acceptance.
@@ -6,12 +11,15 @@
 ///
 /// Example for the configuration needed for different years provided.
 ///
-
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config.C++")
+/// One can use the configuration macro in compiled mode by
+/// root [0] gSystem->Load("libgeant321");
+/// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+///                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+/// root [0] .x grun.C(1,"Config.C++")
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS), 
+/// just the particle configuration and EMCal stuff.
+///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -52,12 +60,17 @@
 #endif
 
 Float_t EtaToTheta(Float_t arg);
+
 void    LoadPythia();
+
 AliGenerator *GenParamCalo(Int_t nPart, Int_t type, TString calo);
 
-Int_t  year = 2015;
-Bool_t checkGeoAndRun = kFALSE;
+Int_t  year = 2015;             ///< year for detector configuration
+Bool_t checkGeoAndRun = kFALSE; ///< check or not the year to configure the detector
 
+/// 
+/// Main configuration method
+///
 void Config()
 {
   //AliLog::SetGlobalDebugLevel(2);
@@ -196,6 +209,8 @@ void Config()
   //	gener->SetForceDecay(kGammaEM);
   //
   //  //gener->SetTrackingFlag(0);
+  
+  /// Other configuration example
   
   //  AliGenCocktail *gener = new AliGenCocktail();
   //  gener->SetProjectile("A", 208, 82);
@@ -428,10 +443,17 @@ void Config()
   
 }
 
-Float_t EtaToTheta(Float_t arg){
+///
+/// rapidity to theta angle, needed for generator configuration
+///
+Float_t EtaToTheta(Float_t arg)
+{
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
+///
+/// Load phythia libraries
+///
 void LoadPythia()
 {
   // Load Pythia related libraries                                                                
@@ -442,11 +464,15 @@ void LoadPythia()
   // implementations                           
 }
 
-
+///
+/// Generator configuration
+///
+/// \param nPart:  number of particles per event
+/// \param type:  particle type, Pi0, Eta, Pi0Flat, EtaFlat, defined in AliPHOSGenLib
+/// \param calo: specify which acceptance, "EMCAL", "PHOS", "DCAL" (includes PHOS)
+///
 AliGenerator * GenParamCalo(Int_t nPart, Int_t type, TString calo)
 {
-  // nPart of type (Pi0, Eta, Pi0Flat, EtaFlat, ...) in EMCAL or PHOS
-  // CAREFUL EMCAL year 2010 configuration
   AliGenParam *gener = new AliGenParam(nPart,new AliGenPHOSlib(),type,"");
   
   // meson cuts
@@ -462,21 +488,30 @@ AliGenerator * GenParamCalo(Int_t nPart, Int_t type, TString calo)
   {
     //meson acceptance
     gener->SetPhiRange(80., 100.); // year 2010
-    //gener->SetPhiRange(80., 180.); // year 2011
+                                   //gener->SetPhiRange(80., 180.); // year 2011
     gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
     //decay acceptance
     gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
     gener->SetChildPhiRange(80., 100.); // year 2010
-    //gener->SetChildPhiRange(80., 180.); // year 2011
+                                        //gener->SetChildPhiRange(80., 180.); // year 2011
   }
   else if(calo=="PHOS")
   {
     //meson acceptance
-    gener->SetPhiRange(260., 320.);
+    gener->SetPhiRange(250., 320.);
     gener->SetThetaRange(EtaToTheta(0.13),EtaToTheta(-0.13));
     //decay acceptance
     gener->SetChildThetaRange(EtaToTheta(0.13),EtaToTheta(-0.13));
-    gener->SetChildPhiRange(260., 320.);
+    gener->SetChildPhiRange(250., 327.);
+  }
+  else if(calo=="DCAL")
+  {
+    //particle acceptance
+    gener->SetPhiRange(260., 320.);
+    gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+    //decay acceptance
+    gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+    gener->SetChildPhiRange(260., 327.);
   }
   
   return gener;

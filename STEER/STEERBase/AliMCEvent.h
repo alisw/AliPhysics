@@ -99,6 +99,9 @@ public:
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
 
+    Int_t Raw2MergedLabel(int lbRaw) const;
+  
+    TParticle* ParticleFromStack(Int_t i) const;
     TParticle* Particle(int i) const;
     // Vertex
     using AliVEvent::GetPrimaryVertex;
@@ -122,13 +125,15 @@ public:
     virtual Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     virtual void      DrawCheck(Int_t i, Int_t search);
     virtual void      AddSubsidiaryEvent(AliMCEvent* event);
-    virtual Int_t     GetNumberOfPrimaries() {return fNprimaries;}
+    virtual Int_t     GetNumberOfPrimaries() const {return fNprimaries;}
     virtual Int_t     GetPrimaryOffset()    const {return fPrimaryOffset;}
     virtual Int_t     GetSecondaryOffset()  const {return fSecondaryOffset;}    
     virtual void      SetPrimaryOffset(Int_t ioff)    {fPrimaryOffset = ioff;}
     virtual void      SetSecondaryOffset(Int_t ioff)  {fSecondaryOffset = ioff;}    
     virtual Bool_t    IsPhysicalPrimary(Int_t i) const;
 
+     Int_t            GetPrimary(Int_t id);
+  
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
     virtual Bool_t    IsFromBGEvent(Int_t index);
@@ -156,9 +161,13 @@ public:
 
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
+  virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const; //RS
+
+  Bool_t HasSubsidiaries() const {return fSubsidiaryEvents!=0;}
+  
 private:
     virtual void      ReorderAndExpandTreeTR();
-    virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
+
     void 	      UpdateEventInformation();
     virtual void      AssignGeneratorIndex();    
     virtual void      AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax);    

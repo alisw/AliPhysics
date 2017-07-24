@@ -74,17 +74,20 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
   //Dimensions
 
   //Lower Piece (6 holes)
-  Float_t Lower_x = 2.0;
+  //Float_t Lower_x = 2.0;  // to avoid overlap with disks, fm, largeur des barres horizontales
+  Float_t Lower_x = 1.6;
   Float_t Lower_y = 1.15;
   Float_t Lower_z = 10.7;
 
   //Middle Piece
-  Float_t Middle_x = 2.0;
+  //Float_t Middle_x = 2.0; // to avoid overlap with disks, fm
+  Float_t Middle_x = 1.6;
   Float_t Middle_y = 1.15+0.00001;
   Float_t Middle_z = 14.45;
 
   //Upper Piece (8 holes)
-  Float_t Upper_x = 2.0;
+  //Float_t Upper_x = 2.0; // to avoid overlap with disks, fm
+  Float_t Upper_x = 0.2;
   Float_t Upper_y = 1.15;
   Float_t Upper_z = 15.291;
 
@@ -548,7 +551,8 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
 
   Float_t PCB_Angle = 24.3838;
 
-  Float_t PCB_Central_Projection = 25.15;
+  //Float_t PCB_Central_Projection = 25.15;  // overlap issue, fm
+  Float_t PCB_Central_Projection = 24.00;
 
   Float_t PCB_Central_x = .8;
   Float_t PCB_Central_y = .5;
@@ -594,10 +598,8 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
   TGeoCompositeShape * Half_5_Shape_1 = new TGeoCompositeShape("Half_5_Shape_1","Half_5_Shape_0:tPCB + Half_5_Shape_0:tPCB_inv");
   TGeoCompositeShape * Half_5_Shape_2 = new TGeoCompositeShape("Half_5_Shape_2","Half_5_Shape_1 - Cut_PCB:tPCB_Cut");
 
-  TGeoVolume * Half_5_Volume = new TGeoVolume("Half_5_Volume",Half_5_Shape_2,kMedAlu);
+  TGeoVolume * Half_5_Volume = new TGeoVolume("Half_5_Volume",Half_5_Shape_2,kMedAlu); 
   Half_5->AddNode(Half_5_Volume,1,new TGeoTranslation(0., 30.283-6.2,-(28.35/2.+3.2)-.9-.6-.5));
-
-
 
   //The final translation and rotation of the Half Cone to its final position, this are the parameters of the function
 
@@ -616,7 +618,8 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
     rTotal_y = 180.;
     rTotal_z = 90.;
     tTotal_x = 0.;
-    tTotal_y = -0.1;  // to be defined
+    //tTotal_y = -0.1;  // to be defined
+    tTotal_y = -0.5;  // to avoid overlap with disks, fm, vertical position of the total
     tTotal_z = -80.0;  // position still to be defined
     
   }
@@ -625,7 +628,8 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
     rTotal_y = 180.;
     rTotal_z = -90.;
     tTotal_x = 0.;
-    tTotal_y = 0.1;    // to be defined
+    //tTotal_y = 0.1;    // to be defined
+    tTotal_y = 0.5;    // to avoid overlap with disks, fm, vertical position of the total
     tTotal_z = -80.0;  // position still to be defined
 
   }
@@ -635,12 +639,12 @@ TGeoVolumeAssembly* AliMFTHalfCone::CreateHalfCone(Int_t half){
   TGeoCombiTrans *cTotal = new TGeoCombiTrans(*tTotal, *rTotal);  
 
   // overlap problem
-  //HalfConeVolume->AddNode(Half_0, 0,cTotal); // barres intérieures horizontales fm
-  //HalfConeVolume->AddNode(Half_1, 0,cTotal); // barres intérieures horizontales fm
+  HalfConeVolume->AddNode(Half_0, 0,cTotal); // barres intérieures horizontales fm
+  HalfConeVolume->AddNode(Half_1, 0,cTotal); // barres intérieures horizontales fm
   HalfConeVolume->AddNode(Half_2, 0,cTotal);
   HalfConeVolume->AddNode(Half_3, 0,cTotal);
-  HalfConeVolume->AddNode(Half_4, 0,cTotal);
-  //HalfConeVolume->AddNode(Half_5, 0,cTotal); // barre médiane fm
+  HalfConeVolume->AddNode(Half_4, 0,cTotal); // support milieu perpendiculaire
+  HalfConeVolume->AddNode(Half_5, 0,cTotal); // barre médiane
 
 
   

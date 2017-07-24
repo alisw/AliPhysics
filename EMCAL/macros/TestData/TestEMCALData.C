@@ -1,4 +1,38 @@
-//Do a fast test of the different EMCAL data objects
+///
+/// \file TestEMCALData.C
+/// \ingroup EMCAL_TestData
+/// \brief Hits, Digits, RecPoints reading macro.
+///
+/// Test Macro, shows how to load the different data objects produced by the EMCal
+/// Hits, SDigits, Digits, RecPoints.
+/// Fill some histograms with the output of each of the objects.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)???
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//Root include files 
+#include <TH1I.h>
+#include <TH1F.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <Riostream.h>
+
+//AliRoot include files 
+#include "AliStack.h"
+#include "AliRunLoader.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCAL.h"
+#include "AliEMCALHit.h"
+#include "AliEMCALDigit.h"
+#include "AliEMCALRecPoint.h"
+
+#endif
+
+///
+/// Main executing method
+///
 void TestEMCALData() {
   
   TH1F* hE = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL",       100, 0., 10.) ;
@@ -28,7 +62,7 @@ void TestEMCALData() {
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
     (rl->GetDetectorLoader("EMCAL"));
   
-  //Load Hits
+  // Load Hits
   rl->LoadHits("EMCAL");
   //Load Digits
   rl->LoadDigits("EMCAL");
@@ -37,8 +71,7 @@ void TestEMCALData() {
   //Load RecPoints
   rl->LoadRecPoints("EMCAL");
   
-  
-  //one way to do it that works for all three
+  // One way to do it that works for all three
   AliEMCALHit* hit;
   AliEMCALDigit* dig;
   AliEMCALRecPoint* rp;
@@ -46,91 +79,104 @@ void TestEMCALData() {
   rl->GetEvent(0);
 
   TClonesArray *hits = 0;  
-  //Fill array of digits                                                                        
+  // Fill array of digits                                                                        
   TClonesArray *sdigits = emcalLoader->SDigits();
-  //Fill array of digits                                                                        
+  // Fill array of digits                                                                        
   TClonesArray *digits = emcalLoader->Digits();
-  //Fill array of clusters                                                                        
-  //TObjArray *clusters = emcalLoader->RecPoints(); //It should work, need to FIX
+  // Fill array of clusters/rec-points                                                                        
+  // TObjArray *clusters = emcalLoader->RecPoints(); //It should work, need to FIX
   TObjArray *clusters = 0;
   
-  //Get hits from the list  
-  
-  //Hits are stored in different branches in the hits Tree, 
-  //first get the branch and then access the hits in the branch
+  //
+  // Get hits from the list  
+  // Hits are stored in different branches in the hits Tree, 
+  // first get the branch and then access the hits in the branch
+  //
   Int_t nHit = 0;
   TTree *treeH = emcalLoader->TreeH();	
-  if (treeH) {
+  if (treeH) 
+  {
     // TreeH exists, get the branch
     Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
     TBranch * branchH = treeH->GetBranch("EMCAL");
     branchH->SetAddress(&hits);
-    //Now get the hits in this branch
-    for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
+    
+    // Now get the hits in this branch
+    for (Int_t iTrack = 0; iTrack < nTrack; iTrack++)
+    {
       branchH->GetEntry(iTrack);
       Int_t nHit = hits->GetEntriesFast();
-      for(Int_t ihit = 0; ihit< nHit;ihit++){
-        hit = static_cast<AliEMCALHit *>hits->At(ihit);
-        if(hit != 0){
-          nHit++;
-          hE->Fill(hit->GetEnergy());
-          cout<<"Hit Info "<<hit->GetId()<<" ELoss "<<hit->GetEnergy()<<endl;
-        }//hit?
+      for(Int_t ihit = 0; ihit< nHit;ihit++)
+      {
+        hit = static_cast<AliEMCALHit *> (hits->At(ihit));//hits->At(ihit);
+        if(!hit) continue;
+        
+        nHit++;
+        hE->Fill(hit->GetEnergy());
+        cout<<"Hit Info "<<hit->GetId()<<" ELoss "<<hit->GetEnergy()<<endl;
       }//hit loop
     }// track loop
   }//treeH?
   
   hM->Fill(nHit);
   
-  //Get digits from the list    
-  if(sdigits){
+  //
+  // Get sdigits from the list 
+  //
+  if(sdigits)
+  {
     sM->Fill(sdigits->GetEntries());
-    for(Int_t isdig = 0; isdig< sdigits->GetEntries();isdig++){
+    for(Int_t isdig = 0; isdig< sdigits->GetEntries();isdig++)
+    {
       //cout<<">> idig "<<idig<<endl;                                                             
       dig = static_cast<AliEMCALDigit *>(sdigits->At(isdig)) ;
       
-      if(dig != 0){
-        sE->Fill(dig->GetAmplitude());
-        cout << "SDigit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
-      }
+      if(!dig) continue;
+      
+      sE->Fill(dig->GetAmplitude());
+      cout << "SDigit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
     }
   }
   else printf("No Sdigits available\n");
   
-  
-  //Get digits from the list    
-  if(digits){
+  //
+  // Get digits from the list
+  //
+  if(digits)
+  {
     dM->Fill(digits->GetEntries());
-    for(Int_t idig = 0; idig< digits->GetEntries();idig++){
+    for(Int_t idig = 0; idig< digits->GetEntries();idig++)
+    {
       //cout<<">> idig "<<idig<<endl;                                                             
       dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
-    
-      if(dig != 0){
-        dA->Fill(dig->GetAmplitude());
-        cout << "Digit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
-      }
+      
+      if(!dig) continue;
+      dA->Fill(dig->GetAmplitude());
+      cout << "Digit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
     }
   }
   else printf("No digits available\n");
   
-  //Get clusters from the list 
+  // Get clusters from the list 
   TTree *treeR = emcalLoader->TreeR();
   TBranch * branchR = treeR->GetBranch("EMCALECARP");	
   branchR->SetAddress(&clusters);
   branchR->GetEntry(0);
   
-  if(clusters){
+  if(clusters)
+  {
     cM->Fill(clusters->GetEntries());
-    for(Int_t iclu = 0; iclu< clusters->GetEntries();iclu++){
+    for(Int_t iclu = 0; iclu< clusters->GetEntries();iclu++)
+    {
       //cout<<">> idig "<<idig<<endl;                                                             
       rp = static_cast<AliEMCALRecPoint *>(clusters->At(iclu)) ;
       
-      if(rp != 0){
-	cE->Fill(rp->GetEnergy());
-	cout << "RecPoint info " << rp->GetAbsId(0) << " " << rp->GetEnergy() << endl;
-      }
+      if(!rp) continue;
+      cE->Fill(rp->GetEnergy());
+      cout << "RecPoint info " << rp->GetAbsId(0) << " " << rp->GetEnergy() << endl;
     }
-  }else printf("No recpoints available\n");
+  }
+  else printf("No recpoints available\n");
   
   /*
    //another way to do it
@@ -230,5 +276,4 @@ void TestEMCALData() {
   cE->Draw();
   cclu->cd(2);
   cM->Draw();
-  
 }

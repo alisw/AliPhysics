@@ -18,6 +18,7 @@
 
 /**
  * \class AliEMCALTriggerBitConfig
+ * \ingroup EMCALTriggerBase
  * \brief Definition of trigger bit configurations
  *
  * Trigger bit configuration used in the trigger patch maker and by the trigger patches
@@ -84,6 +85,7 @@ protected:
 
 /**
  * \class AliEMCALTriggerBitConfigOld
+ * \ingroup EMCALTriggerBase
  * \brief Definition of old trigger bit configuration
  *
  * Definition of old trigger bit configuration:
@@ -101,6 +103,7 @@ public:
 
 /**
  * \class AliEMCALTriggerBitConfigNew
+ * \ingroup EMCALTriggerBase
  * \brief Definition of new trigger bit configuration
  *
  * Definition of new trigger bit configuration:

@@ -75,7 +75,7 @@ class AliESDACORDE;
 class AliESDAD;
 class AliESDHLTDecision;
 class AliESDCosmicTrack;
-
+class AliMCEvent;
 class TList;
 class TString;
 
@@ -385,7 +385,7 @@ public:
   TClonesArray* GetPileupVerticesTracks() const {return (TClonesArray*)fTrkPileupVertices;}
   TClonesArray* GetPileupVerticesSPD()    const {return (TClonesArray*)fSPDPileupVertices;}
 
-  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=3, 
+  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=5, 
 				  Double_t minZdist=0.8, 
 				  Double_t nSigmaZdist=3., 
 				  Double_t nSigmaDiamXY=2., 
@@ -599,6 +599,8 @@ public:
   //
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
+  void AdjustMCLabels(const AliVEvent *mctruth);
+  
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);

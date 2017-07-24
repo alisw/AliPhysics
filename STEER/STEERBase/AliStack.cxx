@@ -55,7 +55,8 @@ AliStack::AliStack():
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fTrackLabelMap(0)
+  fTrackLabelMap(0),
+  fMCEmbeddingFlag(kFALSE)
 {
   //
   // Default constructor
@@ -77,7 +78,8 @@ AliStack::AliStack(Int_t size, const char* /*evfoldname*/):
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fTrackLabelMap(0)
+  fTrackLabelMap(0),
+  fMCEmbeddingFlag(kFALSE)
 {
   //
   //  Constructor
@@ -100,7 +102,8 @@ AliStack::AliStack(const AliStack& st):
     fCurrentPrimary(-1),
     fHgwmk(0),
     fLoadPoint(0),
-    fTrackLabelMap(0)
+    fTrackLabelMap(0),
+    fMCEmbeddingFlag(kFALSE)
 {
     // Copy constructor
 }
@@ -579,6 +582,7 @@ void AliStack::FinishEvent()
        if(!allFilled) allFilled = kTRUE;
     }
   }
+  AliInfoF("Ntrack=%d kept from %d transported\n",fNtrack,fNtransported);
 } 
 //_____________________________________________________________________________
 

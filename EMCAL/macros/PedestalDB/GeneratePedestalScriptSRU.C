@@ -1,3 +1,13 @@
+///
+/// \file GeneratePedestalScript.C
+/// \ingroup EMCAL_BadMapDB
+/// \brief Generate pedestals
+/// 
+/// Add comment
+///
+/// \author David Silvermyr, (ORNL)
+///
+
 // some global var/constants
 const Int_t kNSM = 20; // number of SuperModules
 const Int_t kNRCU = 2; // number of readout crates (and DDLs) per SM

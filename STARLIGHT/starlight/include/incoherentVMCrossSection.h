@@ -50,6 +50,8 @@ public:
 private:
 	
 	double _Ep;
+	double _gamma1;
+	double _gamma2;
 	double _narrowYmax;
 	double _narrowYmin;
 	int    _narrowNumY;

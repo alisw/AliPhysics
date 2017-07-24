@@ -1,4 +1,5 @@
 /// \file AliEMCALSetRecParamCDB.C
+/// \ingroup EMCAL_SimRecDB
 /// \brief Set EMCal reconstruction OCDB parameters
 ///
 /// Script to create reconstruction parameters and store them into CDB

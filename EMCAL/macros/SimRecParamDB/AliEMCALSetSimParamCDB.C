@@ -1,7 +1,11 @@
-// Script to create simulation parameters and store them into CDB
-// Author: Gustavo Conesa Balbastre
-
-/* $Id: AliEMCALSetSimParamCDB.C 37597 2009-12-04 13:48:42Z gconesab $ */
+/// \file AliEMCALSetSimParamCDB.C
+/// \ingroup EMCAL_SimRecDB
+/// \brief Set EMCal reconstruction OCDB parameters
+///
+/// Script to create simulation parameters and store them into CDB
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 #if !defined(__CINT__)
 #include "TControlBar.h"
@@ -15,13 +19,13 @@
 #include "AliCDBStorage.h"
 #endif
 
-
+///
+/// Main method
+/// Create an object AliEMCALSimParam and store it to OCDB
+///
 void AliEMCALSetSimParamCDB()
 {
-  
-  // Create an object AliEMCALRecParam and store it to OCDB
-  
-  //Activate CDB storage
+  // Activate CDB storage
   AliCDBManager* cdb = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   

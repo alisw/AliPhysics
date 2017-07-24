@@ -53,6 +53,8 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
     else return 0;
   }
   Int_t GetNEvents() const {return fNEvents;}
+  Int_t GetNReadEvents() const {return fNReadEvents;}
+  Int_t GetNEmptyEvents() const {return fNEmptyEvents;}
   void WriteToASCII();
 
  protected:
@@ -60,7 +62,9 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
  private:
   static const Int_t fgkMaxCorr;     // maximum baseline correction in AMBRA (=63)
 
-  Int_t fNEvents;                    // number of events
+  Int_t fNReadEvents;                // number of read events
+  Int_t fNEvents;                    // number of accepted events
+  Int_t fNEmptyEvents;               // number of empty events
   Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
   Float_t fSumBaseline[fgkNAnodes];  // baseline summed over events
   Float_t fSumRawNoise[fgkNAnodes];  // noise summed over events
@@ -74,7 +78,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
   Float_t fLowThrFact;               // factor for low threshold
   Float_t fHighThrFact;              // factor for high threshold
 
-  ClassDef(AliITSOnlineSDDBase,2);
+  ClassDef(AliITSOnlineSDDBase,3);
 };
 
 inline Float_t AliITSOnlineSDDBase::GetAnodeRawNoise(Int_t iAnode) const{

@@ -16,8 +16,8 @@ class AliXRDPROOFtoolkit : public TObject
 {
  public :
   AliXRDPROOFtoolkit ();
-  static TChain * MakeChain(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
-  static TChain * MakeChainRandom(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
+  static TChain * MakeChain(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0, Int_t checkLevel=0);
+  static TChain * MakeChainRandom(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0,  Int_t checkLevel=0);
   TDSet  * MakeSet(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1);
   TDSet  * MakeSetRandom(const char*fileIn, const char * treeName,const char *fName=0, Int_t maxFiles=-1);
   static Bool_t FilterList(const char*inputList, const char*fileList, Int_t checkLevel);
@@ -27,6 +27,7 @@ class AliXRDPROOFtoolkit : public TObject
   static void JoinTreesIndex(const char * outputFile, const char * outputTree, const char *indexName, const char *inputTrees, Int_t debugLevel);
   static void   MakeTreeFromList(const char *fout, const char * treeOut, const char * treeIn, const char * flist, Bool_t debug);
   static void CacheFileList(const char * fileIn, const char* cachePrefix);
+  static Int_t  TestFile(const char*fileName,const char*keyNames);
  private:
   Int_t         fVerbose;          ///< verbso mode  - print command
   TString       fUserName;         ///< user name

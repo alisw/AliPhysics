@@ -1,7 +1,9 @@
-/// \file PrintEMCALCalibTime.C
-/// \brief Print time parameters in OCDB
 ///
-/// Script to create calibration parameters and store them into CDB
+/// \file AliEMCALSetTimeCDB.C
+/// \ingroup EMCAL_CalibDB
+/// \brief Set the time calibration parameters in OCDB
+///
+/// Script to create time calibration parameters and store them into CDB
 /// Thre sets of calibration parameters can be created:
 /// 1) equal parameters
 /// 2) randomly distributed parameters for decalibrated detector silumations
@@ -10,7 +12,8 @@
 /// Execute like this:
 ///.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetTimeCDB.C
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// based on PHOS macro by  Boris Polishchuk (Boris.Polichtchouk at cern.ch)
 ///
 
 #if !defined(__CINT__)
@@ -56,14 +59,17 @@ void AliEMCALSetTimeCDB()
   menu->Show();
 }
 
-///
+/// Print help
 //------------------------------------------------------------------------
 void Help()
 {
-  char *string =
-    "\nSet calibration parameters and write them into ALICE CDB. Press button \"Equal CC\" to create equal pedestals and gain factors. Press button \"Decalibrate\" to create random pedestals and gain factors to imitate decalibrated detector\n";
-  printf(string);
+  printf(
+         "\nSet calibration parameters and write them into ALICE CDB. Press button \"Equal CC\" "
+         " to create equal pedestals and gain factors. Press button \"Decalibrate\" to create random"
+         "pedestals and gain factors to imitate decalibrated detector\n"
+         );
 }
+
 
 ///
 /// Writing calibration coefficients into the Calibration DB
@@ -78,7 +84,7 @@ void SetCC(Int_t flag=0)
   Int_t firstRun   =  0; // What is this
   Int_t lastRun    = 10;
   Int_t beamPeriod =  1;
-  char* objFormat  = "";
+  TString objFormat  = "";
   
   if      (flag == 0)
   {
@@ -153,6 +159,5 @@ void SetCC(Int_t flag=0)
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBStorage* loc = man->GetStorage(dbFolder.Data());
   loc->Put(calibti, id, &md);
-  
 }
 

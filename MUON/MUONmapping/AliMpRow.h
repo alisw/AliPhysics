@@ -56,6 +56,8 @@ class AliMpRow : public AliMpVIndexed
     AliMpVRowSegment*  GetRowSegment(Int_t i) const;
     AliMpMotifMap*     GetMotifMap() const;
 
+    virtual void Print(Option_t* opt="") const;
+
   private:
     /// Not implemented
     AliMpRow(const AliMpRow& right);

@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////
 //
 // File and Version Information:
-// $Rev:: 283 $: revision of last commit // $Author:: jnystra#$: author of last commit
-// $Date:: 2017-03-07 18:17:50 +0100 #$: date of last commit //
+// $Rev:: 284 $: revision of last commit // $Author:: jnystra#$: author of last commit
+// $Date:: 2017-04-25 22:08:11 +0200 #$: date of last commit //
 // Description:
 //
 //
@@ -87,7 +87,10 @@ inputParameters::inputParameters()
           _axionMass             (this, "AXION_MASS",50, NOT_REQUIRED),  // AXION HACK
 	  _bslopeDefinition      (this, "BSLOPE_DEFINITION",0, NOT_REQUIRED),
 	  _bslopeValue           (this, "BSLOPE_VALUE",4.0,NOT_REQUIRED),
-	  _printVM               (this, "PRINT_VM",0,NOT_REQUIRED)
+	  _bslope0               (this, "BSLOPE0",4.63,NOT_REQUIRED),
+	  _bslope_alphaprime     (this, "BSLOPE_ALPHAPRIME",0.164,NOT_REQUIRED),
+          _printVM               (this, "PRINT_VM",0,NOT_REQUIRED),
+          _impulseVM             (this, "SELECT_IMPULSE_VM",0,NOT_REQUIRED)
 {
   // All parameters must be initialised in initialisation list!
   // If not: error: 'parameter<T, validate>::parameter() [with T = unsigned int, bool validate = true]' is private
@@ -389,16 +392,16 @@ inputParameters::configureFromFile(const std::string &_configFileName)
 		_inputBranchingRatio = starlightConstants::JpsiBrmumu;
 		break;
 	case 4432212:  // J/psi
-	        cout<<"In inputParameters setting J/psi mass!"<<endl; 
+	        cout<<"In inputParameters setting J/psi mass!"<<endl;
 		_particleType = JPSI_ppbar;
 		_decayType    = NARROWVMDEFAULT;
 		mass          = starlightConstants::JpsiMass;
 		width         = starlightConstants::JpsiWidth;
 		defaultMinW   = mass - 5 * width;
 		defaultMaxW         = mass + 5 * width;
-		_inputBranchingRatio = starlightConstants::JpsiBrppbar; 
+		_inputBranchingRatio = starlightConstants::JpsiBrppbar;
 		break;
-	case 444:  // psi(2S) 
+	case 444:  // psi(2S)
 		_particleType = JPSI2S;
 		_decayType    = NARROWVMDEFAULT;
 		mass          = starlightConstants::Psi2SMass;

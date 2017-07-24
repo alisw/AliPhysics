@@ -191,7 +191,7 @@ class AliAODEvent : public AliVEvent {
   Int_t         GetNumberOfPileupVerticesSPD()    const;
   virtual AliAODVertex *GetPileupVertexSPD(Int_t iV=0) const;
   virtual AliAODVertex *GetPileupVertexTracks(Int_t iV=0) const;
-  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=3, Double_t minZdist=0.8, Double_t nSigmaZdist=3., Double_t nSigmaDiamXY=2., Double_t nSigmaDiamZ=5.) const;
+  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=5, Double_t minZdist=0.8, Double_t nSigmaZdist=3., Double_t nSigmaDiamXY=2., Double_t nSigmaDiamZ=5.) const;
   virtual Bool_t IsPileupFromSPDInMultBins() const;
 
 

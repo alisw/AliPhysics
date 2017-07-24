@@ -3,14 +3,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-  Produces the data needed to calculate the quality assurance. 
-  All data must be mergeable objects.
-
-  Based on PHOS code written by
-  Y. Schutz CERN July 2007
-*/
-
+//______________________________________________________________
+/// \class AliEMCALQADataMakerSim
+/// \ingroup EMCALsim
+/// \brief Simulation QA output maker
+///
+/// Produces the data needed to calculate the quality assurance. 
+/// All data must be mergeable objects.
+///
+/// Based on PHOS code 
+/// \author  Yyves Schutz CERN July 2007
+//______________________________________________________________
 
 // --- ROOT system ---
 class TH1F ; 
@@ -22,15 +25,18 @@ class TObjArray ;
 // --- AliRoot header files ---
 #include "AliQADataMakerSim.h"
 
-class AliEMCALQADataMakerSim: public AliQADataMakerSim {
+class AliEMCALQADataMakerSim: public AliQADataMakerSim 
+{
 
 public:
+  
   AliEMCALQADataMakerSim() ;          // ctor
   AliEMCALQADataMakerSim(const AliEMCALQADataMakerSim& qadm) ;   
   AliEMCALQADataMakerSim& operator = (const AliEMCALQADataMakerSim& qadm) ;
   virtual ~AliEMCALQADataMakerSim() {;} // dtor
   
 private:
+  
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
@@ -43,7 +49,9 @@ private:
   virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
 
-  ClassDef(AliEMCALQADataMakerSim,1)  // description 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALQADataMakerSim,1) ;
+  /// \endcond
 
 };
 

@@ -13,111 +13,171 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
- 
- 
- 
- 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include "AliEMCALTriggerSTUDCSConfig.h"
+
+// ROOT system
 #include "TClonesArray.h"
 #include "TVector2.h"
 
+// Standard libraries
 #include <iostream>
 
-ClassImp(AliEMCALTriggerSTUDCSConfig)
-ClassImp(AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount)
-  
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerSTUDCSConfig) ;
+/// \endcond
+
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount) ;
+/// \endcond
+
+///
+/// Default constructor.
 //_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject(),
 fGetRawData(1),
 fRegion(0xFFFFFFFF),
-fFw(0x2A012)
+fFw(0x2A012),
+fPatchSize(0),
+fMedian(0)
 {
-	//
-	// AliEMCALTriggerSTUDCSConfig default constructor
-	//
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 2; j++) {
-			fG[i][j] = 0;
-			fJ[i][j] = 0;
-		}
-	}
-	memset(fPHOSScale, 0, sizeof(Int_t) * 4);
-	memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 32);
+  for (int i = 0; i < 3; i++) 
+  {
+    for (int j = 0; j < 2; j++) 
+    {
+      fG[i][j] = 0;
+      fJ[i][j] = 0;
+    }
+  }
+  
+  memset(fPHOSScale, 0, sizeof(Int_t) * 4);
+  memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 68);
 }
 
+///
+/// Copy constructor.
 //_____________________________________________________________________________
-AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig(){
-  //
-  // Destructor
-  //
-  for(int itru = 0; itru < 32; itru++){
+AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig(const AliEMCALTriggerSTUDCSConfig &obj) : TObject(),
+fGetRawData(1),
+fRegion(0xFFFFFFFF),
+fFw(0x2A012),
+fPatchSize(0),
+fMedian(0)
+{
+  for (int i = 0; i < 3; i++) 
+  {
+    for (int j = 0; j < 2; j++) 
+    {
+      fG[i][j] = obj.GetG(i,j);
+      fJ[i][j] = obj.GetJ(i,j);
+    }
+  }
+  
+  memset(fPHOSScale, 0, sizeof(Int_t) * 4);
+  memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 68);
+  
+  SetRawData(obj.GetRawData());
+  SetRegion(obj.GetRegion());
+  SetFw(obj.GetFw());
+  for (int i = 0; i < 4; i++) {
+    SetPHOSScale(i,obj.GetPHOSScale(i));
+  }
+  for (int i = 0; i < 68 ; i++) {
+    TClonesArray * gTRUErrorCounts = obj.GetErrorCountsForTRU(i);
+    if (!gTRUErrorCounts) continue;
+    for (int j = 0; j < gTRUErrorCounts->GetEntries(); j++) {
+      AliEMCALTriggerSTUTRUErrorCount * fErrorCount = (AliEMCALTriggerSTUTRUErrorCount *) gTRUErrorCounts->At(j);
+      if (fErrorCount) {
+        SetTRUErrorCounts(i,fErrorCount->GetTime(),fErrorCount->GetErrorCount());
+      }
+    }
+  }
+
+  SetPatchSize(obj.GetPatchSize());
+  SetMedianMode(obj.GetMedianMode());
+}
+
+
+///
+/// Destructor.
+//_____________________________________________________________________________
+AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig()
+{
+  for(int itru = 0; itru < 68; itru++)
+  {
     if(fTRUErrorCounts[itru]) delete fTRUErrorCounts[itru];
   }
 }
 
+///
+/// Get Segmentation.
 //_____________________________________________________________________________
 void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const
 {
-	// Get Segmentation
-	
-	v1.Set(1., 1.);
-	v2.Set(2., 2.);
-	v3.Set(4., 4.);
-	
-	Double_t js = 2 + (fFw >> 16);
-	v4.Set(js, js);
+  v1.Set(1., 1.);
+  v2.Set(2., 2.);
+  v3.Set(4., 4.);
+  
+  Double_t js = 2 + (fFw >> 16);
+  v4.Set(js, js);
 }
 
+///
+/// Set TRU error counts.
 //_____________________________________________________________________________
-void  AliEMCALTriggerSTUDCSConfig::SetTRUErrorCounts(Int_t itru, Int_t itime, ULong64_t errorcounts){
-  //
-  // Set TRU error counts
-  //
-  if(itru >= 32) return;
+void  AliEMCALTriggerSTUDCSConfig::SetTRUErrorCounts(Int_t itru, Int_t itime, ULong64_t errorcounts)
+{
+  if(itru > 67) return;
+  
   if(!fTRUErrorCounts[itru])
     fTRUErrorCounts[itru] = new TClonesArray("AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount");
+  
   AliEMCALTriggerSTUTRUErrorCount test(itime, errorcounts), *found(NULL);
-  if((found = dynamic_cast<AliEMCALTriggerSTUTRUErrorCount *>(fTRUErrorCounts[itru]->FindObject(&test)))){
+  
+  if((found = dynamic_cast<AliEMCALTriggerSTUTRUErrorCount *>(fTRUErrorCounts[itru]->FindObject(&test))))
+  {
     found->SetValue(itime, errorcounts);
-  } else {
+  } 
+  else
+  {
     Int_t nErrorCountsTRU = fTRUErrorCounts[itru]->GetEntries();
     new((*(fTRUErrorCounts[itru]))[nErrorCountsTRU]) AliEMCALTriggerSTUTRUErrorCount(itime, errorcounts);
   }
 }
 
+///
+/// \return time-dependent error counts for a given TRU.
 //_____________________________________________________________________________
-TClonesArray *AliEMCALTriggerSTUDCSConfig::GetErrorCountsForTRU(Int_t itru) const{
-  //
-  // Return time-dependent error counts for a given TRU
-  //
-  if(itru >= 32) return NULL;
+TClonesArray *AliEMCALTriggerSTUDCSConfig::GetErrorCountsForTRU(Int_t itru) const
+{
+  if(itru > 67) return NULL;
+  
   return fTRUErrorCounts[itru];
 }
 
+///
+/// Checks for equalness according to the time stamp.
 //_____________________________________________________________________________
-Bool_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::IsEqual(const TObject *o) const{
-  //
-  // Checks for equalness according to the time stamp
-  //
+Bool_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::IsEqual(const TObject *o) const
+{
   const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);
+  
   if(!test) return false;
+  
   return test->fTime == fTime;
 }
 
+//
+// Compare time-dependent error counts based on the time information.
 //_____________________________________________________________________________
-Int_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::Compare(const TObject *o) const{
-  //
-  // Compares time-dependent error counts based on the time information
-  //
+Int_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::Compare(const TObject *o) const
+{
   const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);
+  
   if(!test) return 1;
-  if(fTime > test->fTime) return 1;
+  
+  if(fTime > test->fTime) return  1;
   if(fTime < test->fTime) return -1;
+  
   return 0;
 }
 

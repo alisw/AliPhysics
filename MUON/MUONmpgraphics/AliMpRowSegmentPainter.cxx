@@ -35,6 +35,10 @@
 #include <TVirtualX.h>
 #include <TPad.h>
 
+#include <iostream>
+#include <vector>
+#include "TPolyMarker.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMpRowSegmentPainter)
 /// \endcond
@@ -115,7 +119,7 @@ void AliMpRowSegmentPainter::Draw(Option_t *option)
 	      ->FindMotifPosition(motifPositionId);
 				     
 	gr->SetPadPosForReal(TVector2(motifPos->GetPositionX(), motifPos->GetPositionY()),
-                             TVector2(motifPos->GetDimensionX(),motifPos->GetDimensionX()));
+                             TVector2(motifPos->GetDimensionX(),motifPos->GetDimensionY()));
       	gr->SetColor(GetColor());
 	DrawObject(motifPos,option+1);
 
@@ -125,6 +129,7 @@ void AliMpRowSegmentPainter::Draw(Option_t *option)
     break;
   default: AppendPad(option);
   }
+  AppendPad(option);
   gr->Pop();
 }
 
@@ -137,10 +142,12 @@ void AliMpRowSegmentPainter::Paint(Option_t* /*option*/)
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fRowSegment) return;
   Int_t col=gVirtualX->GetFillColor();
+  Style_t sty = gVirtualX->GetFillStyle();
   gr->Push();
   gPad->Range(0.,0.,1.,1.);
   InitGraphContext();
-  PaintWholeBox(kTRUE);
+  PaintWholeBox(kTRUE,kTRUE);
+
 
 //   Float_t textSize =   gVirtualX->GetTextSize();
 //   if (option[0]=='T')

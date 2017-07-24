@@ -13,26 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: */
-
-//_________________________________________________________________________
-//  Hits class for EMCAL    
-//  A hit in EMCAL is the sum of all hits in a tower
-//  from a single entering particle             
-//*-- Author: Sahal Yacoob (LBL / UCT)
-// Based on AliPHOSHit
-
 // --- Standard library ---
 #include <Riostream.h>
-
-// --- ROOT system ---
 
 // --- AliRoot header files ---
 #include "AliEMCALHit.h"
 
 using std::endl;
-ClassImp(AliEMCALHit)
 
+/// \cond CLASSIMP
+ClassImp(AliEMCALHit) ;
+/// \endcond
+
+///
+/// Default constructor
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit()
   : fId(0),
@@ -45,10 +39,10 @@ AliEMCALHit::AliEMCALHit()
     fIparent(0),
     fIenergy(0.),
     fTime(0.)
-{
-    // Default ctor
-}
+{ }
 
+///
+/// Copy constructor
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit) 
   : AliHit(hit),
@@ -62,20 +56,34 @@ AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit)
     fIparent(hit.fIparent),
     fIenergy(hit.fIenergy),
     fTime(hit.fTime)
-{
-    // copy ctor
-}
+{ }
+
+///
+/// Assignment operator; use copy constructor
 //_____________________________________________________________________
 AliEMCALHit& AliEMCALHit::operator = (const AliEMCALHit &source)
-{ // assignment operator; use copy ctor
+{ 
   if (&source == this) return *this;
-
+  
   new (this) AliEMCALHit(source);
   return *this;
 }
+
+///
+/// Create an EMCal hit object
+///
+/// \param shunt: level of primary selection to store
+/// \param primary: index label
+/// \param track: index
+/// \param iparent: index
+/// \param ienergy: deposited energy?
+/// \param id: cell id?
+/// \param hits: hit position time energy
+/// \param p: hit momentum
 //______________________________________________________________________
-AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
-			 Float_t *hits,Float_t *p)
+AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,
+                         Int_t iparent, Float_t ienergy, Int_t id,
+                         Float_t *hits,Float_t *p)
   : AliHit(shunt, track),
     fId(id),
     fELOS(0.),
@@ -88,59 +96,61 @@ AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, 
     fIenergy(ienergy),
     fTime(0.)
 {
-    //
-    // Create an EMCAL  hit object
-    //
-    fX          = hits[0];
-    fY          = hits[1];
-    fZ          = hits[2];
-    fTime       = hits[3] ;
-    fELOS       = hits[4];
-    fPx          = p[0];
-    fPy          = p[1];
-    fPz          = p[2];
-    fPe          = p[3];
+  fX          = hits[0];
+  fY          = hits[1];
+  fZ          = hits[2];
+  fTime       = hits[3] ;
+  fELOS       = hits[4];
+  fPx         = p[0];
+  fPy         = p[1];
+  fPz         = p[2];
+  fPe         = p[3];
 }
 
+///
+/// Two hits are identical if they have the same Id and originat
+/// from the same enterring Particle 
 //______________________________________________________________________
-Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{ 
-    // Two hits are identical if they have the same Id and originat
-    // from the same enterring Particle 
-    Bool_t rv = kFALSE;
-
-    if ( (fId == rValue.GetId()) && ( fIparent == rValue.GetIparent()))
-	rv = kTRUE;
-
-    return rv;
+Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const
+{ 
+  Bool_t rv = kFALSE;
+  
+  if ( (fId == rValue.GetId()) && ( fIparent == rValue.GetIparent()) )
+    rv = kTRUE;
+  
+  return rv;
 }
+
+///
+/// Add the energy of the hit
 //______________________________________________________________________
-AliEMCALHit AliEMCALHit::operator+(const AliEMCALHit &rValue){
-    // Add the energy of the hit
-
-    fELOS += rValue.GetEnergy() ;
- 
-    if(rValue.GetTime() < fTime)
-      fTime = rValue.GetTime() ;
- 
-    return *this;
-
+AliEMCALHit AliEMCALHit::operator+(const AliEMCALHit &rValue)
+{
+  fELOS += rValue.GetEnergy() ;
+  
+  if(rValue.GetTime() < fTime)
+    fTime = rValue.GetTime() ;
+  
+  return *this;
 }
+
+///
+/// Dump hit info
 //______________________________________________________________________
-ostream& operator << (ostream& out,AliEMCALHit& hit){
-    // Print out Id and energy
-
-    out << "AliEMCALHit:";
-    out << "id=" <<  hit.GetId();
-    out << ", Eloss=" <<  hit.GetEnergy();
-    out << ", Time=" << hit.GetTime();
-    out << "GeV , Track no.=" << hit.GetPrimary();
-    out << ", (xyz)=(" << hit.X()<< ","<< hit.Y()<< ","<<hit.Z()<<") cm";
-    out << ", fTrack=" << hit.GetTrack();
-    out << ", P=(" << hit.GetPx() << "," << hit.GetPy() << "," << hit.GetPz()
-                  << "," <<hit.GetPe() << ") GeV"  ;
-    out << ", Enterring particle ID" << hit.GetIparent();
-    out << ", Enterring particle initial energy = " << hit.GetIenergy() << " GeV" ;
-    out << endl;
-
-    return out;
+ostream& operator << (ostream& out,AliEMCALHit& hit)
+{
+  out << "AliEMCALHit:";
+  out << "id=" <<  hit.GetId();
+  out << ", Eloss=" <<  hit.GetEnergy();
+  out << ", Time=" << hit.GetTime();
+  out << "GeV , Track no.=" << hit.GetPrimary();
+  out << ", (xyz)=(" << hit.X()<< ","<< hit.Y()<< ","<<hit.Z()<<") cm";
+  out << ", fTrack=" << hit.GetTrack();
+  out << ", P=(" << hit.GetPx() << "," << hit.GetPy() << "," << hit.GetPz()
+  << "," <<hit.GetPe() << ") GeV"  ;
+  out << ", Enterring particle ID" << hit.GetIparent();
+  out << ", Enterring particle initial energy = " << hit.GetIenergy() << " GeV" ;
+  out << endl;
+  
+  return out;
 }

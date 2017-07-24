@@ -262,6 +262,7 @@ public:
   UShort_t GetTPCclusters(Int_t *idx) const;
   Double_t GetTPCdensity(Int_t row0, Int_t row1) const;
   Int_t   GetTPCLabel() const {return fTPCLabel;}
+  void    SetTPCLabel(int lbl) {fTPCLabel = lbl;}  
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
@@ -320,6 +321,7 @@ public:
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Double_t GetTRDpid(Int_t iSpecies) const;
   Int_t   GetTRDLabel() const {return fTRDLabel;}
+  void    SetTRDLabel(int lbl) {fTRDLabel = lbl;}
 
   void    SetTRDtrack(AliKalmanTrack * track){
     if (fFriendTrack) fFriendTrack->SetTRDtrack(track);

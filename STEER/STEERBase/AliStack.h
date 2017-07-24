@@ -86,6 +86,9 @@ class AliStack : public TVirtualMCStack
     Int_t       TrackLabel(Int_t label) const {return fTrackLabelMap[label];}
     Int_t*      TrackLabelMap() {return fTrackLabelMap.GetArray();}
     const TObjArray*  Particles() const;
+
+    void        SetMCEmbeddingFlag(Bool_t v=kTRUE)        {fMCEmbeddingFlag = v;}
+    Bool_t      GetMCEmbeddingFlag()                const {return fMCEmbeddingFlag;}
     
   protected:
     // methods
@@ -113,6 +116,7 @@ class AliStack : public TVirtualMCStack
     Int_t          fHgwmk;             //! Last track purified
     Int_t          fLoadPoint;         //! Next free position in the particle buffer
     TArrayI        fTrackLabelMap;     //! Map of track labels
+    Bool_t         fMCEmbeddingFlag;   //! Flag that this is a top stack of embedded MC
     ClassDef(AliStack,6) //Particles stack
 };
 

@@ -351,8 +351,8 @@ Double_t AliEMCALPIDUtils::PolynomialMixed2(Double_t x, const Double_t *params) 
 ///
 /// Compute a polynomial for a given value of 'x'
 /// with the array of parameters passed as the second arg
-/// par[0]*TMath::Power(x[0],par[1])
-/// par[0]*TMath::Exp((x[0]-par[1])*par[2]);
+/// par[0]*Power(x[0],par[1])
+/// par[0]*Exp((x[0]-par[1])*par[2]);
 ///
 /// \param x: function x parameter, energy
 /// \param params: array of function parameters

@@ -30,7 +30,18 @@
 
 ClassImp(AliITSOnlineSDDCMN)
 //______________________________________________________________________
-AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():AliITSOnlineSDD(),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.),fMinNumGoodAnForGoodMod(0),fMinClusterOfGoodAn(0)
+AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():
+  AliITSOnlineSDD(),
+  fNReadEvents(0), 
+  fNEvents(0),
+  fNEmptyEvents(0),
+  fLowThreshold(0),
+  fHighThreshold(0),
+  fMinCorrNoise(0.),
+  fMaxCorrNoise(0.),
+  fNSigmaNoise(0.),
+  fMinNumGoodAnForGoodMod(0),
+  fMinClusterOfGoodAn(0)
 {
   // default constructor
   Reset();
@@ -41,7 +52,18 @@ AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():AliITSOnlineSDD(),fNEvents(0),fLowThres
   SetCutOnGoodAnodeClusterSize();
 }
 //______________________________________________________________________
-  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.),fMinNumGoodAnForGoodMod(0),fMinClusterOfGoodAn(0)
+AliITSOnlineSDDCMN::AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid):
+  AliITSOnlineSDD(nddl,ncarlos,sid),
+  fNReadEvents(0),
+  fNEvents(0),
+  fNEmptyEvents(0),
+  fLowThreshold(0),
+  fHighThreshold(0),
+  fMinCorrNoise(0.),
+  fMaxCorrNoise(0.),
+  fNSigmaNoise(0.),
+  fMinNumGoodAnForGoodMod(0),
+  fMinClusterOfGoodAn(0)
 {
   // default constructor
   Reset();
@@ -58,7 +80,9 @@ AliITSOnlineSDDCMN::~AliITSOnlineSDDCMN(){
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::Reset(){
   // Reset counters
+  fNReadEvents=0;
   fNEvents=0;
+  fNEmptyEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
     fBaseline[i]=0.;
@@ -172,6 +196,12 @@ TH2F* AliITSOnlineSDDCMN::GetCleanEvent(const TH2F* hrawd) const {
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
   // analyzes one event and adds its ontribution to the various counters
+
+  fNReadEvents++;
+  if(IsEmptyEvent(hrawd)){
+    fNEmptyEvents++;
+    return;
+  }
 
   fNEvents++;
   TH2F* hcorrd=GetCleanEvent(hrawd);

@@ -82,8 +82,6 @@ AliITSQASDDDataMakerRec::AliITSQASDDDataMakerRec(AliITSQADataMakerRec *aliITSQAD
   fSDDhRawsTask(0),
   fSDDhDigitsTask(0),
   fSDDhRecPointsTask(0),
-  fOnlineOffsetRaws(0),
-  fOnlineOffsetRecPoints(0),
   fGenRawsOffset(0),
   fGenDigitsOffset(0),
   fGenRecPointsOffset(0),
@@ -115,8 +113,6 @@ AliITSQASDDDataMakerRec::AliITSQASDDDataMakerRec(const AliITSQASDDDataMakerRec& 
   fSDDhRawsTask(qadm.fSDDhRawsTask),
   fSDDhDigitsTask(qadm.fSDDhDigitsTask),
   fSDDhRecPointsTask(qadm.fSDDhRecPointsTask),
-  fOnlineOffsetRaws(qadm.fOnlineOffsetRaws),
-  fOnlineOffsetRecPoints(qadm.fOnlineOffsetRecPoints),
   fGenRawsOffset(qadm.fGenRawsOffset),
   fGenDigitsOffset(qadm.fGenDigitsOffset),
   fGenRecPointsOffset(qadm.fGenRecPointsOffset),
@@ -437,7 +433,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   fSDDhRawsTask++;
   
   TH2F *hDigitsPerModule = new TH2F("SDDnOfDigitsPerModule","SDD Digits vs module ; module ID ; # of digits", fgknSDDmodules,modBins,200,digbins);
-  rv = fAliITSQADataMakerRec->Add2RawsList(hDigitsPerModule,kSDDNofDigitsVsMod+offsRW, expert, !image, !saveCorr); //7   
+  rv = fAliITSQADataMakerRec->Add2RawsList(hDigitsPerModule,kSDDNofDigitsVsMod+offsRW, expert, image, !saveCorr); //7
   fSDDhRawsTask++;
   
   // active modules and drift regions
@@ -457,6 +453,17 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   rv = fAliITSQADataMakerRec->Add2RawsList(hcalibl4,kActiveModLay4+offsRW, !expert, image, !saveCorr); 
   fSDDhRawsTask++;
 
+  //Event Size
+  TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
+  hsize->SetBit(TH1::kCanRebin);
+#endif
+  hsize->GetXaxis()->SetTitle("Event Size [kB]");
+  hsize->GetYaxis()->SetTitle("Entries");
+  rv = fAliITSQADataMakerRec->Add2RawsList(hsize,kSDDDataSize+offsRW, !expert, image, !saveCorr);
+  fSDDhRawsTask++;
+
+    
   TH1F *hsummarydata = new TH1F("SDDRawDataCheck","SDDRawDataCheck",46,-0.5,45.5);//10 summary of raw data checks Non expert and image
   hsummarydata->GetXaxis()->SetLabelSize(0.02);
   hsummarydata->GetXaxis()->SetTickLength(0.01);
@@ -527,9 +534,8 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   hsummarydata->GetXaxis()->SetBinLabel(46,"dr_overthl4");
   hsummarydata->GetXaxis()->LabelsOption("v");
 
-  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,kSDDRawDataCheck+offsRW, !expert, image, !saveCorr); 
-  fSDDhRawsTask++; 
-  fOnlineOffsetRaws = fSDDhRawsTask;
+  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,kSDDRawDataCheck+offsRW, !expert, !image, !saveCorr);
+  fSDDhRawsTask++;
 
   //online part
   if(fkOnline){
@@ -538,16 +544,6 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
     hddl->GetXaxis()->SetTitle("Channel");
     hddl->GetYaxis()->SetTitle("DDL Number");
     rv = fAliITSQADataMakerRec->Add2RawsList(hddl,kSDDOnlineDDLPattern+offsRW, expert, !image, !saveCorr);
-    fSDDhRawsTask++;
-
-    //Event Size 
-    TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
-    hsize->SetBit(TH1::kCanRebin);
-#endif
-    hsize->GetXaxis()->SetTitle("Event Size [kB]");
-    hsize->GetYaxis()->SetTitle("Entries");
-    rv = fAliITSQADataMakerRec->Add2RawsList(hsize,kSDDDataSize+offsRW, expert, !image, !saveCorr); 
     fSDDhRawsTask++;
 
     Int_t nTimeBins= 256/fTimeBinSize;
@@ -638,12 +634,10 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       continue;
     } 
     if(stream->IsCompletedDDL()) {
-      if(fkOnline){
-	if ((rawReader->GetDDLID() != prevDDLID)&&(ddldata[iddl])==kFALSE){
-	  size += rawReader->GetDataSize();//in bytes
-	  prevDDLID = rawReader->GetDDLID();
-	  ddldata[iddl]=kTRUE;
-	}
+      if ((rawReader->GetDDLID() != prevDDLID)&&(ddldata[iddl])==kFALSE){
+	size += rawReader->GetDataSize();//in bytes
+	prevDDLID = rawReader->GetDDLID();
+	ddldata[iddl]=kTRUE;
       }
       AliDebug(AliQAv1::GetQADebugLevel(),Form("IsCompletedDDL == KTRUE\n"));
       continue;
@@ -690,9 +684,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   for(Int_t jmod=0; jmod<fgknSDDmodules; jmod++){
     fAliITSQADataMakerRec->FillRawsData(kSDDNofDigitsVsMod+offsRW,jmod+fgkmodoffset,cntMod[jmod]);
   }
-  if(fkOnline){
-    fAliITSQADataMakerRec->FillRawsData(kSDDDataSize+offsRW,size/1024.);//KB
-  }
+  fAliITSQADataMakerRec->FillRawsData(kSDDDataSize+offsRW,size/1024.);//KB
 	
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",cnt)); 
   delete stream;
@@ -1079,7 +1071,6 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   rv = fAliITSQADataMakerRec->Add2RecPointsList(hsummarydatarp,kSDDRecpDataCheck+offsRP, !expert, image);
   fSDDhRecPointsTask++;
 
-  fOnlineOffsetRecPoints = fSDDhRecPointsTask;
   if(fkOnline){
     TH2F *hxy1ev = new TH2F("SDDGlobalCoordDistribYXFSE","YX Global Coord Distrib FSE",112,-28,28,112,-28,28);
     hxy1ev->GetYaxis()->SetTitle("Y (cm)");
@@ -1102,7 +1093,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
- // Fill QA for RecPoints - SDD -
+  // Fill QA for RecPoints - SDD -
   Int_t rv = 0 ;
   Int_t lay, lad, det; 
 
@@ -1216,10 +1207,10 @@ void AliITSQASDDDataMakerRec::CreateTheMap()
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
   if(!ddlMapSDD){
-      AliError("Calibration object retrieval failed! SDD will not be processed");
-      fDDLModuleMap = NULL;
-      //return rv;
-    }
+    AliError("Calibration object retrieval failed! SDD will not be processed");
+    fDDLModuleMap = NULL;
+    //return rv;
+  }
   else{
     fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
     if(!cacheStatus)ddlMapSDD->SetObject(NULL);
@@ -1274,19 +1265,19 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
 void AliITSQASDDDataMakerRec::InitCalibrationArray()
 {
   //create the histograms with the calibration informations. The histograms are stored in a TObjArray
-    TH1F *pattern1  = new TH1F("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
-    pattern1->SetDirectory(0) ;
-    TH2F *patternl3 = new TH2F("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
-    patternl3->SetDirectory(0) ;
-    TH2F *patternl4 = new TH2F("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
-    patternl4->SetDirectory(0) ;
+  TH1F *pattern1  = new TH1F("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
+  pattern1->SetDirectory(0) ;
+  TH2F *patternl3 = new TH2F("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
+  patternl3->SetDirectory(0) ;
+  TH2F *patternl4 = new TH2F("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
+  patternl4->SetDirectory(0) ;
 
-    if(!fHistoCalibration)fHistoCalibration = new TObjArray(3);
-    fHistoCalibration->AddAtAndExpand(pattern1,0);
-    fHistoCalibration->AddAtAndExpand(patternl3,1);
-    fHistoCalibration->AddAtAndExpand(patternl4,2);
-    fHistoCalibration->SetOwner(kTRUE); 
-    //    printf("Calibration Histograms created!\n");
+  if(!fHistoCalibration)fHistoCalibration = new TObjArray(3);
+  fHistoCalibration->AddAtAndExpand(pattern1,0);
+  fHistoCalibration->AddAtAndExpand(patternl3,1);
+  fHistoCalibration->AddAtAndExpand(patternl4,2);
+  fHistoCalibration->SetOwner(kTRUE); 
+  //    printf("Calibration Histograms created!\n");
 }
 
 //____________________________________________________________________

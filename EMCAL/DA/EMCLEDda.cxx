@@ -10,11 +10,21 @@
   fileId:  FILE_ID=EMCALLED    
   Trigger types used: CALIBRATION_EVENT 
 */
-/*
-  This process reads RAW data from the files provided as command line arguments
-  and save results (class itself) in a file (named from RESULT_FILE define - 
-  see below).
-*/
+
+////////////////////////////////////////////////////////////////////////////////
+///
+/// \file EMCLEDda.cxx
+/// \ingroup EMCAL_DA
+/// \brief LED Detector Algorithm
+///
+/// EMCAL DA for online calibration: for LED studies
+///
+///  This process reads RAW data from the files provided as command line arguments
+///  and save results (class itself) in a file (named from RESULT_FILE define, see code).
+///
+/// \author David Silvermyr <David.Silvermyr@cern.ch>, ORNL
+///
+////////////////////////////////////////////////////////////////////////////////
 
 #define RESULT_FILE  "EMCALLED.root"
 #define FILE_ID "signal"
@@ -54,49 +64,52 @@ extern "C" {
 //
 #include "AliCaloCalibSignal.h"
 
-/*
-  Main routine, EMC signal detector algorithm 
-  Arguments: list of DATE raw data files
-*/
-
-int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm 
-
+///
+///  Main routine, EMC signal detector algorithm 
+///
+///  Arguments: list of DATE raw data files
+///
+int main(int argc, char **argv) 
+{  
   AliLog::SetClassDebugLevel("AliCaloRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
-
-  if (argc<2) {
+  
+  if (argc<2) 
+  {
     printf("Wrong number of arguments\n");
     return -1;  
   }
-
+  
   /* magic line - for TStreamerInfo */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
-					"TStreamerInfo",
-					"RIO",
-					"TStreamerInfo()"); 
-
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()"); 
+  
   /* another magic line - for TMinuit */
   gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
                                         "Minuit",
                                         "TMinuitMinimizer",
                                         "Minuit",
                                         "TMinuitMinimizer(const char*)");  
-
+  
   int i, status;
   
   /* log start of process */
   printf("EMCAL DA started - %s\n",__FILE__);
   
   Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
-
+  
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
-  if (status!=0) {
+  if (status!=0) 
+  {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
+  
   /* define wait event timeout - 1s max */
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
@@ -104,11 +117,13 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
   /* Retrieve mapping files from DAQ DB */ 
   const char* mapFiles[kNRCU] = {"RCU0A.data","RCU1A.data","RCU0C.data","RCU1C.data"};
   
-  for(Int_t iFile=0; iFile<kNRCU; iFile++) {
+  for(Int_t iFile=0; iFile<kNRCU; iFile++) 
+  {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
-    if(failed) { 
+    if(failed) 
+    { 
       printf("Cannot retrieve file %d : %s from DAQ DB. Exit now..\n",
-	     iFile, mapFiles[iFile]);
+             iFile, mapFiles[iFile]);
 #ifdef LOCAL_DEBUG
 #else
       return -1;
@@ -122,8 +137,10 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
   path += "RCU";
   TString path2;
   TString side[] = {"A","C"};//+ and - pseudorapidity supermodules
-  for(Int_t j = 0; j < 2; j++){
-    for(Int_t i = 0; i < 2; i++) {
+  for(Int_t j = 0; j < 2; j++)
+  {
+    for(Int_t i = 0; i < 2; i++) 
+    {
       path2 = path;
       path2 += i;
       path2 += side[j]; 
@@ -136,9 +153,10 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
   const char* parameterFile = {"EMCALLEDda.dat"};
   
   int failed = daqDA_DB_getFile(parameterFile, parameterFile);
-  if (failed) { 
+  if (failed) 
+  { 
     printf("Cannot retrieve file : %s from DAQ DB. Exit now..\n",
-	   parameterFile);
+           parameterFile);
 #ifdef LOCAL_DEBUG
 #else
     return -1;
@@ -167,7 +185,7 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
     /* read until EOF */
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-
+    
     for ( ; ; ) { // infinite loop
       
       /* check shutdown condition */
@@ -176,31 +194,34 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF) {
-	printf ("End of File %d (%s) detected\n", i, argv[i]);
-	break; /* end of monitoring file has been reached */
+        printf ("End of File %d (%s) detected\n", i, argv[i]);
+        break; /* end of monitoring file has been reached */
       }
       if (status!=0) {
-	printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-	break;
+        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        break;
       }
       
       /* retry if got no event */
-      if (event==NULL) {
-	continue;
+      if (event==NULL)
+      {
+        continue;
       }
       eventT = event->eventType; /* just convenient shorthand */
       /* only look at calibration events */
-      if ( eventT != calibrationEvent ) {
-	free(event);    
-	continue;
+      if ( eventT != calibrationEvent ) 
+      {
+        free(event);    
+        continue;
       }
       
       /* only look at events where EMCAL was included */
-      if (! TEST_DETECTOR_IN_PATTERN(event->eventDetectorPattern, emcID) ) {
-	free(event);    
-	continue;
+      if (! TEST_DETECTOR_IN_PATTERN(event->eventDetectorPattern, emcID) ) 
+      {
+        free(event);    
+        continue;
       }
-
+      
       nevents++; // count how many acceptable events we have
       
       //  Signal calibration
@@ -239,18 +260,19 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
     calibSignal->Write(FILE_SIGClassName);
     f.Close();
     printf("Objects saved to file \"%s\" as \"%s\".\n", 
-	   RESULT_FILE, FILE_SIGClassName); 
+           RESULT_FILE, FILE_SIGClassName); 
   } 
   else {
     printf("Could not save the object to file \"%s\".\n", 
-	   RESULT_FILE);
+           RESULT_FILE);
   }
   
   //
   // closing down; see if we can delete our analysis helper(s) also
   //
   delete calibSignal;
-  for(Int_t iFile=0; iFile<kNRCU; iFile++) {
+  for(Int_t iFile=0; iFile<kNRCU; iFile++) 
+  {
     if (mapping[iFile]) delete mapping[iFile];
   }
   

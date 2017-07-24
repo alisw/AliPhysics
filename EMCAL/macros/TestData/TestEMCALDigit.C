@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALDigit.C
+/// \ingroup EMCAL_TestData
 /// \brief Digits reading example
 ///
 /// Test Macro, shows how to load EMCal Digits and Geometry, and how can we get 
@@ -11,12 +12,29 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//Root include files 
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+
+//AliRoot include files 
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCAL.h"
+#include "AliEMCALDigit.h"
+#include "AliEMCALGeometry.h"
+
+#endif
+
 ///
-/// Main executing method
+/// Main execution method
 ///
-/// \param ampMin: print digits avobe this valie
+/// \param ampMin: print digits above this value
 /// \param printMC: print digit MC information
-/// \param printMC: print digit geometrical location
+/// \param printGeo: print digit geometrical location
 ///
 void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo = kFALSE)
 {
@@ -33,15 +51,16 @@ void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
   (rl->GetDetectorLoader("EMCAL"));
   
+  AliEMCALGeometry * geom ;
   if(printGeo)
   {
     TGeoManager::Import("geometry.root");
-
+    
     AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
-    AliEMCALGeometry * geom ;
+    
     if(alirun)
     {
-      AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
+      AliEMCAL * emcal  = (AliEMCAL*) alirun->GetDetector("EMCAL");
       geom = emcal->GetGeometry();
     }
     
@@ -95,7 +114,7 @@ void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo
         printf("Digit null pointer\n");
         continue;
       }
-
+      
       //
       // Basic digit parameters
       ///
@@ -107,7 +126,7 @@ void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo
       if(amp < ampMin) continue ;
       
       printf("*** Cell ID %d, Amplitude %4.2f, Time %4.2f, Type %d\n",id,amp,time,type);
-
+      
       //
       // MC
       //
@@ -122,13 +141,13 @@ void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo
         if(nprimaries > 0)
         {
           for(Int_t iprim = 0; iprim < nprimaries; iprim++)
-          printf(" \t primary %d, label %d, edep %2.3f\n", iprim, dig->GetPrimary(iprim+1), dig->GetDEPrimary(iprim+1));
+            printf(" \t primary %d, label %d, edep %2.3f\n", iprim, dig->GetPrimary(iprim+1), dig->GetDEPrimary(iprim+1));
         }
         
         if(nparents > 0)
         {
           for(Int_t ipar = 0; ipar < nparents; ipar++)
-          printf("\t parent  %d, label %d, edep %2.3f\n", ipar , dig->GetIparent(ipar +1), dig->GetDEParent (ipar +1));
+            printf("\t parent  %d, label %d, edep %2.3f\n", ipar , dig->GetIparent(ipar +1), dig->GetDEParent (ipar +1));
         }
       }
       
@@ -142,7 +161,7 @@ void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo
         // Get tower cell indexes from SM number and module
         geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
                                           iIphi, iIeta,iphi,ieta);
-
+        
         printf("Super module number %d; Module: number %d; eta %d, phi %d; Cell/Tower: eta %d, phi %d\n",
                iSupMod,iTower,iIeta,iIphi,ieta,iphi);
         

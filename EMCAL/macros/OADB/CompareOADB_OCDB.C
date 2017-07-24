@@ -1,5 +1,7 @@
+///
 /// \file CompareOADB_OCDB.C
-/// \brief Compare contents in OADB and OCDB
+/// \ingroup EMCAL_OADB
+/// \brief Compare contents in EMCal OADB and OCDB
 ///
 /// Compare the contents of the calibration, bad channels, etc in OCDB and OADB
 /// You need connexion to the grid to run this macro
@@ -7,57 +9,46 @@
 ///
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS
 ///
-/// Main method
-/// Executes the for the selected run and parameter
-///
-/// \param run: run numer
-/// \param pathOADB: path location of OADB file
-/// \param checkObject: Type of comparison, 1-bad channels, 2-energy, 3-energy online, 4-Time
-/// \param pass: for some objects, pass string is needed
-/// \param printAll: option to print messages
-///
-void CompareOADB_OCDB(Int_t run = 196000, TString pathOADB = "$ALICE_PHYSICS/OADB/EMCAL",
-                      Int_t checkObject = 3, TString pass = "pass3", Bool_t printAll = kFALSE)
-{  
-  gSystem->Load("libOADB");
-  TGrid::Connect("alien://");
-  
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
-  //man->SetDefaultStorage("local://2013/OCDB");
-  man->SetRun(run);
-  AliCDBStorage *storage = man->GetDefaultStorage();
-  
-  // Instantiate EMCAL geometry for the first time
 
-  AliEMCALGeometry * geom = 0;
-  if     (run < 140000) geom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1"); // 2010
-  else if(run < 198000) geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");  // 2011-2012-2013
-  else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
-  
-  if     (checkObject == 0) CheckBadChannels            (run, pathOADB, storage, geom,     printAll);
-  else if(checkObject == 1) CheckEnergyCalibration      (run, pathOADB, storage, geom,pass,printAll);
-  else if(checkObject == 2) CheckEnergyOnlineCalibration(run, pathOADB, storage, geom,     printAll);
-  if     (checkObject == 3) CheckTimeCalibration        (run, pathOADB, storage, geom,pass,printAll);
-  else printf("non existing object option\n");
-  
-  printf("*** Comparisons ended *** \n");
-}  
+#if !defined(__CINT__)
+#include <TString.h>
+#include <TH2F.h>
+#include <TObjArray.h>
+#include <TGrid.h>
+
+#include "AliCaloCalibPedestal.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
+
+#include "AliCDBManager.h"
+#include "AliOADBContainer.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#endif
+
+// Common parameters in different methods:
+Int_t   fRun      ; ///< reference run number
+TString fPathOADB ; ///< path to AODB file
+TString fPass     ; ///< pass name
+Bool_t  fPrintAll ; ///< debug level
+
+AliEMCALGeometry * fGeom    ; ///< EMCAL geometry
+AliCDBStorage    * fStorage ; ///< OCDB
 
 ///
 /// Check energy recalibration.
-//__________________________
-void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, AliEMCALGeometry *geom,
-                            TString pass,Bool_t printAll = kTRUE)
+//___________________________
+void CheckEnergyCalibration()
 {  
   AliOADBContainer *contRF=new AliOADBContainer("");
-  contRF->InitFromFile(Form("%s/EMCALRecalib.root",pathOADB.Data()),"AliEMCALRecalib");
+  contRF->InitFromFile(Form("%s/EMCALRecalib.root",fPathOADB.Data()),"AliEMCALRecalib");
   
-  const Int_t nSM = geom->GetNumberOfSuperModules();
+  const Int_t nSM = fGeom->GetNumberOfSuperModules();
   
   // Get the OCDB object
   
-  AliEMCALCalibData* cparam = (AliEMCALCalibData*) (storage->Get("EMCAL/Calib/Data", run)->GetObject());
+  AliEMCALCalibData* cparam = (AliEMCALCalibData*) (fStorage->Get("EMCAL/Calib/Data", fRun)->GetObject());
 
 //  // Access directly the OCDB file and not the latest version
 //  TFile * f = TFile::Open("alien:///alice/data/2011/OCDB/EMCAL/Calib/Data/Run144484_999999999_v2_s0.root","READ");
@@ -68,7 +59,7 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
   
   TH2F *h[12];
   
-  TObjArray *recal=(TObjArray*)contRF->GetObject(run);
+  TObjArray *recal=(TObjArray*)contRF->GetObject(fRun);
   
   if(!recal)
   {
@@ -76,7 +67,7 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
     return;
   }
   
-  TObjArray *recalpass=(TObjArray*)recal->FindObject(pass);
+  TObjArray *recalpass=(TObjArray*)recal->FindObject(fPass);
   
   if(!recalpass)
   {
@@ -97,7 +88,7 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
     h[i] = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
     if (!h[i])
     {
-      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+      printf("Could not load EMCALRecalFactors_SM%d\n",i);
       continue;
     }
   }
@@ -111,8 +102,8 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
   for(Int_t i=0;i < nSM*24*48; i++)
   {
     //printf("AbsID %d\n",i);
-    geom->GetCellIndex(i,iSM,iMod,iIphi,iIeta);
-    geom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
+    fGeom->GetCellIndex(i,iSM,iMod,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
     
     Float_t paramOCDB = -1;
     if(cparam) paramOCDB = cparam->GetADCchannel(iSM,iCol,iRow);
@@ -124,12 +115,12 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
     if(h[iSM]) paramOADB = h[iSM]->GetBinContent(iCol,iRow);
     paramOADB*=0.0162; // Transformation into OCDB parameter, it will not work for all channels
     
-    if    (printAll)
+    if    (fPrintAll)
     printf("Recalibration parameter: ID %d, col %d, row %d, sm %d  OCDB %1.4f, OADB %1.4f\n",
            i,iCol,iRow,iSM,paramOCDB, paramOADB);
     else if(paramOADB > 0)
     {
-      if (paramOCDB/paramOADB > 1.01 || paramOCDB/paramOADB < 0.99) )
+      if ( paramOCDB/paramOADB > 1.01 || paramOCDB/paramOADB < 0.99 )
       {
         printf("DIFFERENT recalibration parameter: ID %d, col %d, row %d, sm %d  OCDB %1.4f, OADB %1.4f, ratio OCDB/OADB %1.4f\n",//, old OCDB param %1.4f\n",
                i,iCol,iRow,iSM,paramOCDB, paramOADB,paramOCDB/paramOADB);//,paramOCDB2);
@@ -150,28 +141,27 @@ void CheckEnergyCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage
     }
   }
   
-  if(!printAll) printf("Total number of different channels %d / %d\n",nDiff,nSM*24*48);//, origin %d\n",nDiff,nSM*24*48,nDiff2);
+  if(!fPrintAll) printf("Total number of different channels %d / %d\n",nDiff,nSM*24*48);//, origin %d\n",nDiff,nSM*24*48,nDiff2);
 }
 
 ///
 /// Check energy online calibration
 //___________________________
-void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, AliEMCALGeometry *geom,
-                            Bool_t printAll = kTRUE)
+void CheckEnergyOnlineCalibration()
 {  
   AliOADBContainer *contRF=new AliOADBContainer("");
-  contRF->InitFromFile(Form("%s/EMCALCalibOnlineRef.root",pathOADB.Data()),"AliEMCALRecalib");
+  contRF->InitFromFile(Form("%s/EMCALCalibOnlineRef.root",fPathOADB.Data()),"AliEMCALRecalib");
   
-  const Int_t nSM = geom->GetNumberOfSuperModules();
+  const Int_t nSM = fGeom->GetNumberOfSuperModules();
   
   // Get the OCDB object
   // Access directly the OCDB file and not the latest version
   TFile * f = 0;
-  if     (run < 140000)
+  if     (fRun < 140000)
     f = TFile::Open("alien:///alice/data/2010/OCDB/EMCAL/Calib/Data/Run113461_999999999_v3_s0.root","READ");
-  else if(run < 171000)
+  else if(fRun < 171000)
     f = TFile::Open("alien:///alice/data/2011/OCDB/EMCAL/Calib/Data/Run144484_999999999_v3_s0.root","READ");
-  else if(run < 198000)
+  else if(fRun < 198000)
     f = TFile::Open("alien:///alice/data/2012/OCDB/EMCAL/Calib/Data/Run177115_999999999_v2_s0.root","READ");
   else {
     printf("Run not available\n");
@@ -185,7 +175,7 @@ void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * s
   
   TH2F *h[12];
   
-  TObjArray *cal=(TObjArray*)contRF->GetObject(run);
+  TObjArray *cal=(TObjArray*)contRF->GetObject(fRun);
   
   if(!cal)
   {
@@ -198,7 +188,7 @@ void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * s
     h[i] = (TH2F*)cal->FindObject(Form("EMCALRecalFactors_SM%d",i));
     if (!h[i])
     {
-      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+      printf("Could not load EMCALRecalFactors_SM%d\n",i);
       continue;
     }
   }
@@ -212,8 +202,8 @@ void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * s
   for(Int_t i=0;i < nSM*24*48; i++)
   {
     //printf("AbsID %d\n",i);
-    geom->GetCellIndex(i,iSM,iMod,iIphi,iIeta);
-    geom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
+    fGeom->GetCellIndex(i,iSM,iMod,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
     
     Float_t paramOCDB = -1;
     if(cparam) paramOCDB = cparam->GetADCchannel(iSM,iCol,iRow);
@@ -221,7 +211,7 @@ void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * s
     Float_t paramOADB = -1;
     if(h[iSM]) paramOADB = h[iSM]->GetBinContent(iCol,iRow);
     
-    if    (printAll)
+    if    (fPrintAll)
     printf("Online Calib: ID %d, col %d, row %d, sm %d  OCDB %1.4f, OADB %1.4f\n",
            i,iCol,iRow,iSM,paramOCDB, paramOADB);
     
@@ -235,19 +225,19 @@ void CheckEnergyOnlineCalibration(Int_t run, TString pathOADB, AliCDBStorage * s
     
   }
   
-  if(!printAll) printf("Total number of different channels %d / %d\n",nDiff,nSM*24*48);//, origin %d\n",nDiff,nSM*24*48,nDiff2);
+  if(!fPrintAll) printf("Total number of different channels %d / %d\n",nDiff,nSM*24*48);//, origin %d\n",nDiff,nSM*24*48,nDiff2);
 }
 
 ///
 /// Get the OCDB bad channels and compare to the OADB ones.
 //____________________
-void CheckBadChannels(Int_t run, TString pathOADB, AliCDBStorage * storage, AliEMCALGeometry *geom, Bool_t printAll = kTRUE)
+void CheckBadChannels()
 {  
-  //const Int_t nSM = static_const (geom->GetNumberOfSuperModules());
-  const Int_t nSM = static_cast<const Int_t> (geom->GetNumberOfSuperModules());
+  //const Int_t nSM = static_const (fGeom->GetNumberOfSuperModules());
+  const Int_t nSM = static_cast<const Int_t> (fGeom->GetNumberOfSuperModules());
 
   // Access OCDB histograms
-  AliCaloCalibPedestal* caloped  = (AliCaloCalibPedestal*) (storage->Get("EMCAL/Calib/Pedestals", run)->GetObject());
+  AliCaloCalibPedestal* caloped  = (AliCaloCalibPedestal*) (fStorage->Get("EMCAL/Calib/Pedestals", fRun)->GetObject());
     
   // Access directly the OCDB file and not the latest version
   //TFile * f = TFile::Open("alien:///alice/data/2011/OCDB/EMCAL/Calib/Pedestals/Run145954_146856_v3_s0.root","READ");
@@ -261,9 +251,9 @@ void CheckBadChannels(Int_t run, TString pathOADB, AliCDBStorage * storage, AliE
   
   AliOADBContainer *contBC=new AliOADBContainer("");
   
-  contBC->InitFromFile(Form("%s/EMCALBadChannels.root",pathOADB.Data()),"AliEMCALBadChannels"); 
+  contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fPathOADB.Data()),"AliEMCALBadChannels"); 
   
-  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(run);
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
   
   if(!arrayBC)
   {
@@ -273,11 +263,11 @@ void CheckBadChannels(Int_t run, TString pathOADB, AliCDBStorage * storage, AliE
   
   for (Int_t i=0; i < nSM; ++i)
   {
-    hbm[i]=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+    hbm[i] = (TH2I*) arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
     
-    if (!hbm)
+    if (!hbm[i])
     {
-      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+      printf("Can not get EMCALBadChannelMap_Mod%d\n",i);
       continue;
     }
   }
@@ -288,14 +278,14 @@ void CheckBadChannels(Int_t run, TString pathOADB, AliCDBStorage * storage, AliE
   for(Int_t i = 0; i < nSM*24*48; i++)
   {
     //printf("AbsID %d\n",i);
-    geom->GetCellIndex(i,iSM,iMod,iIphi,iIeta); 
-    geom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
+    fGeom->GetCellIndex(i,iSM,iMod,iIphi,iIeta); 
+    fGeom->GetCellPhiEtaIndexInSModule(iSM,iMod, iIphi, iIeta,iRow,iCol);
     if(map.At(iSM))badMapOCDB = ((TH2F*)map.At(iSM))->GetBinContent(iCol,iRow);
     else badMapOCDB  = -1;
     if(hbm[iSM])   badMapOADB = hbm[iSM]->GetBinContent(iCol,iRow);
      else badMapOADB = -1;
 
-    if    (printAll && badMapOCDB > 0)
+    if    (fPrintAll && badMapOCDB > 0)
       printf("STATUS: ID %d, col %d, row %d, sm %d  OCDB %d, OADB %d\n",
              i,iCol,iRow,iSM,badMapOCDB, badMapOADB);
     else if(badMapOCDB!=badMapOADB)
@@ -308,11 +298,11 @@ void CheckBadChannels(Int_t run, TString pathOADB, AliCDBStorage * storage, AliE
 ///
 /// Get the OCDB time calibration shifts and compare to the OADB ones.
 //________________________
-void CheckTimeCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, AliEMCALGeometry *geom, TString pass, Bool_t printAll = kTRUE)
+void CheckTimeCalibration()
 {
   // Get the OCDB object
 
-  AliEMCALCalibTime* cparam = (AliEMCALCalibTime*) (storage->Get("EMCAL/Calib/Time", run)->GetObject());
+  AliEMCALCalibTime* cparam = (AliEMCALCalibTime*) (fStorage->Get("EMCAL/Calib/Time", fRun)->GetObject());
 
   // Access directly the OCDB file and not the latest version
 //  TFile * f = TFile::Open("2010/OCDB/EMCAL/Calib/Time/Run122195_126437_v0_s1.root","READ");
@@ -328,9 +318,9 @@ void CheckTimeCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, 
 
   // Access OADB
   AliOADBContainer *contTRF=new AliOADBContainer("");
-  contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",pathOADB.Data()),"AliEMCALTimeCalib");
+  contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fPathOADB.Data()),"AliEMCALTimeCalib");
   
-  TObjArray *trecal=(TObjArray*)contTRF->GetObject(run); 
+  TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRun); 
   
   if(!trecal)
   {
@@ -338,7 +328,7 @@ void CheckTimeCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, 
     printf("\t array not available\n");
   }
   
-  TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+  TObjArray *trecalpass=(TObjArray*)trecal->FindObject(fPass);
   
   if(!trecalpass)
   {
@@ -359,34 +349,81 @@ void CheckTimeCalibration(Int_t run, TString pathOADB, AliCDBStorage * storage, 
     
     if (!h) 
     {
-      AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+      printf("Could not load hAllTimeAvBC%d\n",ibc);
       continue;
     }
     
     // Fill params here
         
-    const Int_t nSM = static_cast<const Int_t> (geom->GetNumberOfSuperModules());
+    const Int_t nSM = static_cast<const Int_t> (fGeom->GetNumberOfSuperModules());
 
     for(Int_t absId = 0; absId < nSM*24*48; absId++)
     {
-      geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
-      geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);    
+      fGeom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
+      fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);    
       
       Float_t paramOADB = h->GetBinContent(absId);
             
       Float_t paramOCDB = cparam->GetTimeChannel(iSupMod,ieta,iphi,ibc);
       
       
-      if    (printAll && TMath::Abs(paramOCDB-paramOADB) < 0.001)
-        printf("OK: ID %d, col %d, row %d, sm %d  OCDB %d, OADB %d\n",
+      if    (fPrintAll && TMath::Abs(paramOCDB-paramOADB) < 0.001)
+        printf("OK: ID %d, col %d, row %d, sm %d  OCDB %2.3f, OADB %2.3f\n",
                absId,ieta,iphi,iSupMod,paramOCDB,paramOADB);
       else if(TMath::Abs(paramOCDB-paramOADB) > 0.001)
-        printf("DIFFERENT VALUES: ID %d, col %d, row %d, sm %d  OCDB %d, OADB %d\n",
+        printf("DIFFERENT VALUES: ID %d, col %d, row %d, sm %d  OCDB %2.3f, OADB %2.3f\n",
                absId,ieta,iphi,iSupMod,paramOCDB,paramOADB);
     }
     
     // end
-    
   } // bunch crossing loop
 }
+
+///
+/// Main method
+/// Executes the for the selected run and parameter
+///
+/// \param run: run number
+/// \param pathOADB: path location of OADB file
+/// \param checkObject: Type of comparison, 1-bad channels, 2-energy, 3-energy online, 4-Time
+/// \param pass: for some objects, pass string is needed
+/// \param printAll: option to print messages
+///
+void CompareOADB_OCDB(Int_t run = 196000, TString pathOADB = "$ALICE_PHYSICS/OADB/EMCAL",
+                      Int_t checkObject = 1, TString pass = "pass2", Bool_t printAll = kFALSE)
+{  
+  fRun      = run;
+  fPathOADB = pathOADB;
+  fPass     = pass;
+  fPrintAll = printAll;
+  
+  printf("*** Settings: Run %d; object %d; pass %s; \n"
+         "              path %s\n",
+           fRun,checkObject,fPass.Data(),fPathOADB.Data() );
+  
+  gSystem->Load("libOADB");
+  TGrid::Connect("alien://");
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  //man->SetDefaultStorage("local://2013/OCDB");
+  man->SetRun(fRun);
+  
+  fStorage = man->GetDefaultStorage();
+  
+  // Instantiate EMCAL geometry for the first time
+  
+  fGeom = 0;
+  if     (fRun < 140000) fGeom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1"); // 2010
+  else if(fRun < 198000) fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");  // 2011-2012-2013
+  else                   fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
+  
+  if     (checkObject == 0) CheckBadChannels            ();
+  else if(checkObject == 1) CheckEnergyCalibration      ();
+  else if(checkObject == 2) CheckEnergyOnlineCalibration();
+  if     (checkObject == 3) CheckTimeCalibration        ();
+  else printf("non existing object option\n");
+  
+  printf("*** Comparisons ended *** \n");
+}  
 

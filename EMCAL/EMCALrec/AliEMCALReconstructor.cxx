@@ -73,24 +73,31 @@ TClonesArray               *AliEMCALReconstructor::fgTriggerData      = 0x0;
 
 ///
 /// Constructor
-/// Init all arrays and stuff.
+///
+/// Init :
+/// * Geometry
+/// * pointer to AliEMCALRawUtils
+/// * OCDB: energy calibration, time calibration, bad map
+/// * Trigger
+/// * Lists: digits, rec points, matching 
 ///
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0)
-{
-  fgRawUtils = new AliEMCALRawUtils;
-  
+{      
+  // OCDB initialization, do it here to recover run number 
+  // for geometry
+  //
   AliCDBManager* man = AliCDBManager::Instance();
-  
+
   //----------------------------------
-  // Get the geometry, 3 posibilities:
+  // Initialize the geometry, 3 posibilities:
   //  * To make sure we match with the geometry in a simulation file,
   //    let's try to get it first.  
   //  * If not, check the run number assigned for this chunk and set the 
   //    geometry depending on the run number
   //  * If not, take the default geometry
-  
+  //
   AliRunLoader *rl = AliRunLoader::Instance();
   if (rl->GetAliRun())
   {
@@ -101,6 +108,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fGeom)
   {
     Int_t runNumber = man->GetRun();
+    AliInfo(Form("Finding EMCAL Geometry from run number %d.",runNumber));
     fGeom =  AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
   }
   
@@ -112,9 +120,20 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   
   if ( !fGeom ) AliFatal(Form("Could not get geometry!"));
   else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
-  
+
   //---------------------------
+  // Initialize AliEMCALRawUtils 
+  // It must be done after the geometry is initialized since there is a geometry
+  // initialization in AliEMCALRawUtils that could conflict
+  //
+  fgRawUtils = new AliEMCALRawUtils;
+  
+  //=============================================
+  // OCDB containers, now get the different 
+  // type of OCDB parameters
+  //  
   // Get energy calibration parameters	
+  //
   if(!fCalibData)
   {
       AliCDBEntry *entry = (AliCDBEntry*)  man->Get("EMCAL/Calib/Data");
@@ -125,8 +144,8 @@ AliEMCALReconstructor::AliEMCALReconstructor()
     AliFatal("Energy Calibration parameters not found in CDB!");
   
   
-  //---------------------------
   // Get time calibration parameters if requested	
+  //
   if(!fCalibTime)
   {
     AliCDBEntry *entry = (AliCDBEntry*)  man->Get("EMCAL/Calib/Time");
@@ -136,8 +155,8 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fCalibTime)
     AliFatal("Time Calibration parameters not found in CDB!");
   
-  //------------------
   // Get bad channels	
+  //
   if(!fPedestalData)
   {
       AliCDBEntry *entry = (AliCDBEntry*) man->Get("EMCAL/Calib/Pedestals");
@@ -146,9 +165,10 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   
   if(!fPedestalData)
     AliFatal("Dead map not found in CDB!");
-  
+
   //----------------------------------------------------
   // Get trigger parameters and init other trigger stuff
+  //
   AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
   
   const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
@@ -166,6 +186,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 
   //-----------------------------
   // Init temporary list of digits
+  //
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
   fgClustersArr   = new TObjArray(1000);
 
@@ -174,6 +195,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 	
   //--------------------------
   // Init Track matching array
+  //
   fMatches = new TList();
   fMatches->SetOwner(kTRUE);
 } 
@@ -431,9 +453,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   // Note: fgTriggerProcessor reset done at the end of this method
   
-  // TO DO: Run2 emulation
-  if(esd->GetRunNumber() < 200000) // Enable trigger emulation for Run1
-    fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
+  fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");

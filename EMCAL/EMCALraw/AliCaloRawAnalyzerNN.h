@@ -1,27 +1,19 @@
 #ifndef ALICALORAWANALYZERNN_H
 #define ALICALORAWANALYZERNN_H
 
-/**************************************************************************
- * This file is property of and copyright by                              *
- * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
- *                                                                        *
- * Primary Author: Per Thomas Hille <perthomas.hille@yale.edu>            *
- *                                                                        *
- * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to p.t.hille@fys.uio.no                             *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice     */
 
-// Evaluation of peak position
-// and amplitude using Neural Networks (NN)
-// ------------------
+//_________________________________________________________________________
+/// \class AliCaloRawAnalyzerNN
+/// \ingroup EMCALraw
+/// \brief Raw data fitting: Neural network
+///
+/// Evaluation of peak position
+/// and amplitude using Neural Networks (NN)
+///
+/// \author Paola La Rocca (Catania) 
+//_________________________________________________________________________
 
 #include "AliCaloRawAnalyzer.h"
 
@@ -33,22 +25,25 @@ class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
 {
   friend class AliCaloRawAnalyzerFactory; // self explanatory
   
- public:
+public:
   
   virtual ~AliCaloRawAnalyzerNN();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-                                      UInt_t altrocfg1, UInt_t altrocfg2 );
-
- private:
-
+                                     UInt_t altrocfg1, UInt_t altrocfg2 );
+  
+private:
+  
   AliCaloRawAnalyzerNN();
   AliCaloRawAnalyzerNN(                 const AliCaloRawAnalyzerNN & );
   AliCaloRawAnalyzerNN   & operator = ( const AliCaloRawAnalyzerNN & );
   
-  AliCaloNeuralFit *fNeuralNet; // pointer to the class whick actually implements the Neural Network for EMCAL
-  Double_t fNNInput[5]; // The 5 input Neurons to the network ( mix bin + to samples on each side )
-  ClassDef( AliCaloRawAnalyzerNN, 1 )
-
+  AliCaloNeuralFit * fNeuralNet;  ///< Pointer to the class whick actually implements the Neural Network for EMCAL
+  Double_t           fNNInput[5]; ///< The 5 input Neurons to the network ( mix bin + to samples on each side )
+  
+  /// \cond CLASSIMP
+  ClassDef( AliCaloRawAnalyzerNN, 1 ) ;
+  /// \endcond
+  
 };
 
-#endif
+#endif //ALICALORAWANALYZERNN_H

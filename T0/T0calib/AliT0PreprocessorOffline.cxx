@@ -123,7 +123,6 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
     cfdvalue[i]=cfd[i-52][3];
     TString LHCperiod = grpData->GetLHCPeriod();
     if(cfdvalue[i]<1 && LHCperiod.Contains("15") )  cfdvalue[i] = pedestalLHC15fghij[i-52];
-    AliInfo(Form("@@@ %i pedestal %f\n",i,cfdvalue[i]) );
   } 
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Int_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
@@ -164,13 +163,16 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
-  metaData.SetComment("Time equalizing result with slew");
+  metaData.SetComment("Collision time shift ");
   fStatusAdjust = writeok;
   if (writeok == 0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
     ocdbStorage->Put(offline, (*id1), &metaData);
   }
+  else 
+    AliWarning(Form("writeok = %d data is not OK to be in OCDB",writeok));
+      		  
 
 }
 //_____________________________________________________________________________

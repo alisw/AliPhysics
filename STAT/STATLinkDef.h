@@ -19,10 +19,16 @@
 #pragma link C++ class AliTMinuitToolkit+;
 #pragma link C++ class AliNDLocalRegression+;
 
-#pragma link C++ class AliExternalInfo+;
+#ifdef ROOT_HAS_HTTP
 #pragma link C++ class AliTreePlayer+;
+#endif
+
+#pragma link C++ class AliExternalInfo+;
 #pragma link C++ class AliTreeTrending+;
 #pragma link C++ class AliNDFormulaBrowser+;
+#pragma link C++ class AliDrawStyle+;
+#pragma link C++ class AliElasticSearchRoot++;
+
 #pragma link C++ namespace AliFFTsmoother+;
 
 #pragma link C++ namespace TStatToolkit;
@@ -49,6 +55,8 @@
 #pragma link C++ class std::map<std::string,TVectorF*>+;
 #pragma link C++ class std::map<std::string,TVectorD*>+;
 #pragma link C++ class std::map<UInt_t,THn*>+;
+#pragma link C++ class std::map<Int_t,TClonesArray*>+;
+#pragma link C++ class std::map<std::string,std::string>+;
 
 /*
 // RS At the moment is not recognized by the CINT...

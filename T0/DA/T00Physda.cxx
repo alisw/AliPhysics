@@ -36,6 +36,7 @@ Trigger types used: PHYSICS_EVENT
 #include "TBenchmark.h"
 #include "TString.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TMath.h"
 
 
@@ -131,7 +132,8 @@ int main(int argc, char **argv) {
       return -1;
     }
   }
-  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
+  status =
+ daqDA_DB_getFile("T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
   if (status) {
     printf("Failed to get  file T0/Calib/Slewing_Walk() from DAQdetDB, status=%d\n", status);
     return -1;
@@ -140,7 +142,7 @@ int main(int argc, char **argv) {
   TGraph *gr[24]; TGraph *gramp[24];
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://localOCDB");
-  man->SetRun(runNr);
+  man->SetRun(runNr); 
   cout<<" run number "<<runNr<<endl;
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/Slewing_Walk");
   if(entry) {
@@ -152,22 +154,28 @@ int main(int argc, char **argv) {
   }
   Int_t chargeQT0[24], chargeQT1[24];
   Float_t adc ,walk, amp;
-  
+  Int_t ind[24];
+  for (int iii=0; iii<12; iii++) ind[iii]=25;
+  for (int iii=12; iii<24; iii++) ind[iii]=57;
+
   // Allocation of histograms - start
-  
+  UInt_t timestamp;
+    
   TH1F *hCFD1minCFD[24];  
   TH1F *hCFD[24], *hQT1[24], *hPed[24];  
-  
+  TH2F* hCFDvsTimestamp[24];
   for(Int_t ic=0; ic<24; ic++) {
-    hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",kcbx,kclx,kcmx);
-    hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kcfdbx,kcfdlx,kcfdhx);
+    hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),Form("CFD1-CFD%d",ic+1),kcbx,kclx,kcmx);
+    hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kcfdbx,kcfdlx,kcfdhx-600);
     hQT1[ic] = new TH1F(Form("QT1%d",ic+1),"QT1",kt0bx,kt0lx,kt0hx);
     hPed[ic] = new TH1F(Form("hPed%d",ic+1),"pedestal",500,500,2000);
+    hCFDvsTimestamp[ic]= new TH2F();
+    hCFDvsTimestamp[ic]->SetName(Form("hCFDvsTimestamp%i", ic+1));
+    hCFDvsTimestamp[ic]->SetTitle(Form("CFD vs timestamp%i", ic+1));    
   }
   TH1F *hVertex = new TH1F("hVertex","TVDC",kt0bx,kt0lx,kt0hx);
-  TH1F *hOrA = new TH1F("hOrA","OrA",kcfdbx,kcfdlx,kcfdhx);
-  TH1F *hOrC = new TH1F("hOrC","OrC",kcfdbx,kcfdlx,kcfdhx);
-  
+  TH1F *hOrA = new TH1F("hOrA","OrA",kcfdbx,kcfdlx+500,kcfdhx);
+  TH1F *hOrC = new TH1F("hOrC","OrC",kcfdbx,kcfdlx+500,kcfdhx);
    // Allocation of histograms - end
   
   
@@ -212,10 +220,6 @@ int main(int argc, char **argv) {
       //	 	 case CALIBRATION_EVENT: for test
       iev++;
       
-      if(iev==1){
-	printf("First event - %i\n",iev);
-      }
-      
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
       
@@ -223,6 +227,14 @@ int main(int argc, char **argv) {
       reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
       // start->SetPrintout(kFALSE);
+      //CFD vs timestamp; for 20hours   
+     timestamp = reader->GetTimestamp();
+     if (iev==1) {
+       for (int iii=0; iii<24; iii++)
+	 hCFDvsTimestamp[iii]->SetBins(120, timestamp, timestamp+72000, kcfdbx,kcfdlx,kcfdhx-600 );
+       printf("First event - %i\n",iev);	
+     }
+      
       // Read raw data
       Int_t allData[250][5];
       for(Int_t i0=0;i0<250;i0++)
@@ -233,54 +245,67 @@ int main(int argc, char **argv) {
 	for (Int_t i=0; i<226; i++) {
 	  for(Int_t iHit=0;iHit<5;iHit++){
 	    allData[i][iHit]= start->GetData(i,iHit);
+	//    if (i>100 && i<106 && allData[i][iHit]>0) cout<<i<<" "<<allData[i][iHit]<<endl;
 	  }
 	}
       }
-      if (allData[50][0])   {
-	hVertex->Fill(allData[50][0]);
-	hOrA->Fill(allData[51][0]);
-	hOrC->Fill(allData[52][0]);
-	// Fill the histograms
-	walk = adc = amp = -999;
-	for (Int_t in=0; in<12;  in++)
-	  {
-	    chargeQT0[in]=allData[2*in+25][0];
-	    chargeQT1[in]=allData[2*in+26][0];
-	  }	
-	for (Int_t in=12; in<24;  in++)
-	  {
-	    chargeQT0[in]=allData[2*in+57][0];
-	    chargeQT1[in]=allData[2*in+58][0];
-	  }
-	Float_t time[24]; 
-	Float_t meanShift[24];
-	for (Int_t ik = 0; ik<24; ik++)
-	  { 	 
-	    if( ( chargeQT0[ik] - chargeQT1[ik])>0)  {
-	      adc = chargeQT0[ik] - chargeQT1[ik];
-	      //	cout<<ik <<"  "<<adc<<endl;
-	    }
-	    if(gr[ik] && adc>0) 
-	      walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
-	    //	  cout<<ik<<" walk "<<walk<<" "<<allData[ik+1][0]<<endl; 
-	    if(ik<12 && allData[ik+1][0]>0  ){
-	      if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
-	      hQT1[ik]->Fill(chargeQT1[ik]);
-	      if ( allData[knpmtC][0]>0 )
-		hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
-	    }
-	    
-	    if(ik>11 && allData[ik+45][0]>0 )
-	      {
-		if( walk >-100) hCFD[ik]->Fill(allData[ik+45][0] - walk);
-		hQT1[ik]->Fill(chargeQT1[ik]);
-		if (allData[56+knpmtA][0]>0)
-		  hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
+      unsigned char classId;
+      //   int retClassId=daqDA_getClassIdFromName("CINT7-B-NOPF-CENT",&classId);
+      //   printf(" @@@ CINT7-B %i \n",retClassId);
+      Bool_t cint7 = kFALSE, tvxb = kFALSE;
+      if ( daqDA_getClassIdFromName("CINT7-B-NOPF-CENT",&classId)==0 ) cint7=kTRUE;
+      if ( daqDA_getClassIdFromName("C0TVX-B-NOPF-CENT",&classId)==0 ) tvxb=kTRUE;  
+      if (cint7||tvxb) {
+	//	printf("class ID  %d %f %f \n", (int)classId,kt0lx,kt0hx  );
+	
+	if (allData[50][0]>kt0lx &&allData[50][0]<kt0hx )   {
+	  hVertex->Fill(allData[50][0]);
+	  hOrA->Fill(allData[51][0]);
+	  hOrC->Fill(allData[52][0]);
+	  // Fill the histograms
+	  walk = adc = amp = -999;
+	  for (Int_t in=0; in<24;  in++)
+	    {
+	      chargeQT0[in] =allData[2*in+ind[in]][0];
+	      chargeQT1[in] = chargeQT1[in] = allData[2*in+ind[in]+1][0];
+	    }	
+	  
+	  Float_t time[24]; 
+	  Float_t meanShift[24];
+	  for (Int_t ik = 0; ik<24; ik++)
+	    { 	 
+	      if( ( chargeQT0[ik] - chargeQT1[ik])>0)  {
+		adc = chargeQT0[ik] - chargeQT1[ik];
+		//    cout<<ik <<" QT0 "<<chargeQT0[ik]<<" QT1 "<<chargeQT1[ik]<<" adc "<<adc<<endl;
 	      }
-	    if(ik<12 && allData[ik+1][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
-	    if(ik>11 && allData[ik+45][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
-	    
-	  }
+	      if(gr[ik] && adc>0) 
+		walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
+	      if(ik<12 && allData[ik+1][0]>0  ){
+		// cout<<ik<<" adc "<<adc<<" walk "<<walk<<" CFD "<<allData[ik+1][0]<<endl; 
+		if( walk >-100) {
+		  hCFD[ik]->Fill(allData[ik+1][0] - walk);
+		  hCFDvsTimestamp[ik]->Fill(timestamp, Float_t (allData[ik+1][0] - walk));
+		}
+		hQT1[ik]->Fill(chargeQT1[ik]);
+		if ( allData[knpmtC][0]>0 )
+		  hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
+	      }
+	      
+	      if(ik>11 && allData[ik+45][0]>0 )
+		{
+		  //  cout<<ik<<" adc "<<adc<<" walk "<<walk<<" CFD "<<allData[ik+45][0]<<endl; 
+		  if( walk >-100) {
+		    hCFD[ik]->Fill(allData[ik+45][0] - walk);
+		    hCFDvsTimestamp[ik]->Fill(timestamp, Float_t (allData[ik+45][0] - walk));
+		  }
+		  hQT1[ik]->Fill(chargeQT1[ik]);
+		  if (allData[56+knpmtA][0]>0)
+		    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
+		}
+	      if(ik<12 && allData[ik+1][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
+	      if(ik>11 && allData[ik+45][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
+	    }
+	}
       }
       delete start;
       start = 0x0;
@@ -311,6 +336,7 @@ int main(int argc, char **argv) {
     hCFD[j]->Write();
     hQT1[j]->Write();
     hPed[j]->Write();
+    hCFDvsTimestamp[j]->Write();    
   }
   hVertex->Write();
   hOrA->Write();

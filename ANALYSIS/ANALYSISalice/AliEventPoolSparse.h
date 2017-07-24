@@ -40,14 +40,14 @@ class AliEventPoolSparse : public AliVEventPool {
 
   TEntryList * GetNextPool(Int_t i) {
     // Returns the array associated with bin "i"
-    return fPool>0 ? fPool[i] : 0x0;
+    return fPool ? fPool[i] : 0x0;
   }
 
   TEntryList * GetEvents(const Double_t * x) {
     // Returns the array associated with the bin
     // that corresponds to vector "x"
     Int_t bin = fHnSparseI.GetBin(x,kFALSE);
-    return fPool>0 ? fPool[bin] : 0x0;
+    return fPool ? fPool[bin] : 0x0;
   }
 
   void SetTagChain(TChain * chain){

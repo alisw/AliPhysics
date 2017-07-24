@@ -1,7 +1,34 @@
-// Test Macro, shows how to load Digits and Geometry, and how can we get 
-// some of the parameters and variables.
-// Author: Gustavo Conesa
+///
+/// \file TestEMCALSDigit.C
+/// \ingroup EMCAL_TestData
+/// \brief Summable Digits reading example
+///
+/// Test Macro, shows how to load EMCal SDigits and Geometry, and how can we get 
+/// some of the parameters and variables.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//Root include files 
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+
+//AliRoot include files 
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCAL.h"
+#include "AliEMCALDigit.h"
+#include "AliEMCALGeometry.h"
+
+#endif
+
+///
+/// Main execution method
+///
 void TestEMCALSDigit()
 {
   
@@ -15,19 +42,23 @@ void TestEMCALSDigit()
   rl->LoadgAlice();//Needed to get geometry
   
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
-    (rl->GetDetectorLoader("EMCAL"));
+  (rl->GetDetectorLoader("EMCAL"));
   
   TGeoManager::Import("geometry.root");
   
   AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
+  
   AliEMCALGeometry * geom ;
-  if(alirun){
+  if(alirun)
+  {
     AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
     geom = emcal->GetGeometry();
   }
   
-  if (geom == 0) cout<<"Did not get geometry from EMCALLoader"<<endl;
-  else   geom->PrintGeometry();
+  if (geom == 0) 
+    cout<<"Did not get geometry from EMCALLoader"<<endl;
+  else   
+    geom->PrintGeometry();
   
   //Load Digits
   rl->LoadSDigits("EMCAL");
@@ -47,47 +78,47 @@ void TestEMCALSDigit()
   Int_t iIeta   =  0 ;
   Int_t iphi    =  0 ;
   Int_t ieta    =  0 ;
-  
   AliEMCALDigit * dig;
   
   for ( iEvent=0; iEvent<maxevent; iEvent++)
+  {
+    cout <<  " ======> Event " << iEvent << endl ;
+    //Load Event
+    rl->GetEvent(iEvent);
+    
+    // Fill array of digits
+    TClonesArray *digits = emcalLoader->SDigits();
+    
+    // Get digits from the list      
+    for(Int_t idig = 0; idig< digits->GetEntries();idig++)
     {
-      cout <<  " ======> Event " << iEvent << endl ;
-      //Load Event
-      rl->GetEvent(iEvent);
+      //cout<<">> idig "<<idig<<endl;
+      dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
       
-      //Fill array of digits
-      TClonesArray *digits = emcalLoader->SDigits();
-      
-      //Get digits from the list      
-      for(Int_t idig = 0; idig< digits->GetEntries();idig++){
-	//cout<<">> idig "<<idig<<endl;
-	dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
-	
-	if(dig != 0){
-	  id   = dig->GetId() ; //cell (digit) label
-	  amp  = dig->GetAmplitude(); //amplitude in cell (digit)
-	  time = dig->GetTime();//time of creation of digit after collision
-	  
-	  cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
-	  
-	  //Geometry methods  
-	  if(geom){
-	    geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
-	    //Gives SuperModule and Tower numbers
-	    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					      iIphi, iIeta,iphi,ieta);
-	    //Gives label of cell in eta-phi position per each supermodule
-	    cout<< "SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
-		<<"; Phi "<<iIphi<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
-	  }
-	}
-	else
-	  cout<<"Digit pointer 0x0"<<endl;
+      if(!dig)
+      {
+        printf("Digit null pointer\n");
+        continue;
       }
       
-    }
-
-
+      id   = dig->GetId() ;       // cell (digit) label
+      amp  = dig->GetAmplitude(); // amplitude in cell (digit)
+      time = dig->GetTime();      // time of creation of digit after collision
+      
+      cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
+      
+      // Geometry methods  
+      if(geom)
+      {
+        geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
+        //Gives SuperModule and Tower numbers
+        geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                          iIphi, iIeta,iphi,ieta);
+        //Gives label of cell in eta-phi position per each supermodule
+        cout<< "SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
+        <<"; Phi "<<iIphi<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+      }
+    } // sdigit loop
+  } // event loop
 }
 

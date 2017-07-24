@@ -22,6 +22,7 @@ class AliVCaloCells;
 
 /**
  * @class AliEMCALTriggerQAPbPb
+ * @ingroup EMCALTriggerBase
  * @brief Class to generate EMCal trigger QA plots in PbPb collision mode
  */
 

@@ -25,13 +25,20 @@
 #include "AliEMCALEMCGeometry.h"
 #include <cassert>
 
-ClassImp(AliEMCALEMCGeometry)
+/// \cond CLASSIMP
+ClassImp(AliEMCALEMCGeometry) ;
+/// \endcond
 
 // these initialisations are needed for a singleton
 Bool_t    AliEMCALEMCGeometry::fgInit      = kFALSE;
 const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
 
-
+///
+/// Default ctor only for internal usage (singleton).
+/// It must be kept public for root persistency purposes, 
+/// but should never be called by the outside world. 
+///
+//______________________________________________________________________________
 AliEMCALEMCGeometry::AliEMCALEMCGeometry() 
   : TNamed(),
     fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
@@ -46,20 +53,24 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(), fILOSS(-1), fIHADR(-1),
-    //obsolete member data
-     fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
-    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
+    fSteelFrontThick(0.)  // obsolete data member?
 { 
-  // default ctor only for internal usage (singleton)
-  // must be kept public for root persistency purposes, 
-  // but should never be called by the outside world    
   fParSM[0]=0; fParSM[1]=0; fParSM[2]=0;
   fEnvelop[0] = 0; fEnvelop[1] = 0; fEnvelop[2] = 0;
   for(Int_t i = 0; i < 6; i++) fkAdditionalOpts[i] = "";
   
   AliDebug(2, "AliEMCALEMCGeometry : default ctor ");
 }
-//______________________________________________________________________
+
+///
+/// Constructor only for internal usage (singleton).
+///
+/// \param name: geometry name, EMCAL_COMPLETEV1, EMCAL_COMPLETE12SMV1, EMCAL_COMPLETE12SMV1_DCAL, EMCAL_COMPLETE12SMV1_DCAL_8SM, EMCAL_COMPLETE12SMV1_DCAL_DEV (see main class description for definition)
+/// \param title
+/// \param mcname: Geant3/4, Flukla, ...
+/// \param mctitle: Geant4 physics list tag name
+///
+//______________________________________________________________________________
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title,
                                          const Text_t* mcname, const Text_t* mctitle ) :
   TNamed(name,title),
@@ -75,23 +86,22 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(),fILOSS(-1), fIHADR(-1), 
-    //obsolete member data
-    fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
-    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
+    fSteelFrontThick(0.) // obsolete data member?
 {
-  // ctor only for internal usage (singleton)
   AliDebug(2, Form("AliEMCALEMCGeometry(%s,%s,%s,%s) ", name,title,mcname,mctitle));
 
   Init(mcname,mctitle);
 
   //  CreateListOfTrd1Modules();
 
-  if (AliDebugLevel()>=2) {
+  if (AliDebugLevel()>=2)
     PrintGeometry();
-  }
-
 }
-//______________________________________________________________________
+
+///
+/// Copy constructor.
+///
+//______________________________________________________________________________
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   : TNamed(geom),
     fGeoName(geom.fGeoName),
@@ -151,16 +161,8 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fPhiCentersOfCells(geom.fPhiCentersOfCells),
     fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
     fILOSS(geom.fILOSS), fIHADR(geom.fIHADR),
-    //obsolete member data
-    fGap2Active(geom.fGap2Active),
-    fSteelFrontThick(geom.fSteelFrontThick),
-    fTrd2AngleY(geom.fTrd2AngleY),
-    f2Trd2Dy2(geom.f2Trd2Dy2),
-    fEmptySpace(geom.fEmptySpace),
-    fTubsR(geom.fTubsR),
-    fTubsTurnAngle(geom.fTubsTurnAngle)
+    fSteelFrontThick(geom.fSteelFrontThick) // obsolete data member? 
 {
-  //copy ctor
   for(Int_t i=0;i<fNumberOfSuperModules;i++)
     fEMCSMSystem[i] = geom.fEMCSMSystem[i];
   fParSM[0]=geom.fParSM[0]; 
@@ -170,28 +172,32 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   fEnvelop[1] = geom.fEnvelop[1]; 
   fEnvelop[2] = geom.fEnvelop[2];
   for(Int_t i = 0; i < 6; i++) fkAdditionalOpts[i] = geom.fkAdditionalOpts[i];
-
 }
 
-//______________________________________________________________________
-AliEMCALEMCGeometry::~AliEMCALEMCGeometry(void){
-    // dtor
+///
+/// Destructor
+///
+//______________________________________________________________________________
+AliEMCALEMCGeometry::~AliEMCALEMCGeometry(void)
+{
   delete[] fEMCSMSystem; // was created with new[], note the brackets
   // TODO, FIXME Hans, Aug 2015: Shouldn't one add
   // if(fArrayOpts){fArrayOpts->Delete();delete fArrayOpts;}
   // End Hans, Aug 2015
-
 }
 
-//______________________________________________________________________
-void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
-  //
-  // Initializes the EMCAL parameters based on the name
-  // Only Shashlyk geometry is available, but various combinations of
-  // layers and number of supermodules can be selected with additional
-  // options or geometry name
-  //
-
+//
+/// It initializes the EMCAL parameters based on the name.
+/// Only Shashlyk geometry is available, but various combinations of
+/// layers and number of supermodules can be selected with additional
+/// options or geometry name
+///
+/// \param mcname: Geant3/4, Fluka, needed for settings of transport (not needed since 15/03/16)
+/// \param mctitle: Geant4 physics list ((not needed since 15/03/16))
+///
+//______________________________________________________________________________
+void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle)
+{
   fkAdditionalOpts[0] = "nl=";       // number of sampling layers (fNECLayers)
   fkAdditionalOpts[1] = "pbTh=";     // cm, Thickness of the Pb   (fECPbRadThick)
   fkAdditionalOpts[2] = "scTh=";     // cm, Thickness of the Sc    (fECScintThick)
@@ -309,7 +315,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     CheckAdditionalOptions();	
   }
   
-  if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") || fGeoName.Contains("COMPLETE12SMV1") ){
+  if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") || fGeoName.Contains("COMPLETE12SMV1") )
+  {
     // Oct 26,2010 : First module has tilt = 0.75 degree : 
     // look to AliEMCALShishKebabTrd1Module::DefineFirstModule(key)
     // New sizes from production drawing, added Al front plate.
@@ -412,7 +419,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fNCellsInModule = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
   fNCells = 0;
-   for( int i=0; i<fNumberOfSuperModules; i++) {
+   for( int i=0; i<fNumberOfSuperModules; i++) 
+   {
      if(      GetSMType(i) == kEMCAL_Standard) fNCells +=   fNCellsInSupMod   ;
      else if( GetSMType(i) == kEMCAL_Half)     fNCells +=   fNCellsInSupMod/2 ;
      else if( GetSMType(i) == kEMCAL_3rd)      fNCells +=   fNCellsInSupMod/3 ;
@@ -428,7 +436,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
 
   fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);  
-  if(fGeoName.Contains("V1")){
+  if(fGeoName.Contains("V1"))
+  {
     Double_t ws = fECScintThick + fECPbRadThickness + 2.*fTrd1BondPaperThick; // sampling width
     // Number of Pb tiles = Number of Sc tiles - 1
     fLongModuleSize = fTrd1AlFrontThick + (ws*fNECLayers - fECPbRadThickness);
@@ -457,13 +466,18 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fPhiCentersOfSMSec[0] = fPhiCentersOfSM[0];  // the same in the First SM
   fPhiBoundariesOfSM[0] = fPhiCentersOfSM[0] - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
   fPhiBoundariesOfSM[1] = fPhiCentersOfSM[0] + TMath::ATan2(fParSM[1] , fIPDistance);
-  if(fNumberOfSuperModules > 2) { // 2 to Max
+  
+  if(fNumberOfSuperModules > 2) 
+  { // 2 to Max
     Int_t tmpSMType = GetSMType(2);
-     for(int i = 1; i<fNPhiSuperModule; i++) {
+     for(int i = 1; i<fNPhiSuperModule; i++) 
+     {
        fPhiBoundariesOfSM[2*i]   += fPhiBoundariesOfSM[2*i-2] + kfSupermodulePhiWidth;
-       if(tmpSMType == GetSMType(2*i)) {
+       if(tmpSMType == GetSMType(2*i))
+       {
          fPhiBoundariesOfSM[2*i+1]  += fPhiBoundariesOfSM[2*i-1] + kfSupermodulePhiWidth;
-       } else { 
+       } else 
+       { 
          //changed SM Type, redefine the [2*i+1] Boundaries
          tmpSMType = GetSMType(2*i);
          if(        GetSMType(2*i)  == kEMCAL_Standard) {
@@ -490,7 +504,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
 
   fEMCALPhiMax  = fArm1PhiMin;    
   fDCALPhiMax   = fDCALPhiMin;// DCAl extention will not be included
-  for( Int_t i = 0; i < fNumberOfSuperModules; i+=2) {
+  for( Int_t i = 0; i < fNumberOfSuperModules; i+=2) 
+  {
     if(      GetSMType(i) == kEMCAL_Standard ) fEMCALPhiMax += 20.;
     else if( GetSMType(i) == kEMCAL_Half     ) fEMCALPhiMax += fPhiSuperModule/2. + fInnerExtandedPhi;
     else if( GetSMType(i) == kEMCAL_3rd      ) fEMCALPhiMax += fPhiSuperModule/3. + 4.0*fInnerExtandedPhi/3.0;
@@ -509,7 +524,10 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fgInit = kTRUE; 
 }
 
-//___________________________________________________________________
+///
+/// Print EMCal parameters
+///
+//______________________________________________________________________________
 void AliEMCALEMCGeometry::PrintGeometry()
 {
   // Separate routine is callable from broswer; Nov 7,2006
@@ -559,17 +577,15 @@ void AliEMCALEMCGeometry::PrintGeometry()
 	   fPhiBoundariesOfSM[2*i+1], fPhiBoundariesOfSM[2*i+1]*TMath::RadToDeg(),
 	   fPhiCentersOfSM[i], fPhiCentersOfSM[i]*TMath::RadToDeg());
   }
-
 }
 
-//______________________________________________________________________
+///
+/// Additional options that can be used to select
+/// the specific geometry of EMCAL to run
+///
+//______________________________________________________________________________
 void AliEMCALEMCGeometry::CheckAdditionalOptions()
 {
-  // Feb 06,2006
-  // Additional options that
-  // can be used to select
-  // the specific geometry of 
-  // EMCAL to run
   // Dec 27,2006
   // adeed allILOSS= and allIHADR= for MIP investigation
   // TODO, FIXME Hans, Aug 2015: Shouldn't one add
@@ -578,29 +594,37 @@ void AliEMCALEMCGeometry::CheckAdditionalOptions()
   // End Hans, Aug 2015
   fArrayOpts = new TObjArray;
   Int_t nopt = ParseString(fGeoName, *fArrayOpts);
-  if(nopt==1) { // no aditional option(s)
+  if(nopt==1) 
+  { // no aditional option(s)
     fArrayOpts->Delete();
     delete fArrayOpts;
     fArrayOpts = 0; 
     return;
   }  		 
-  for(Int_t i=1; i<nopt; i++){
+  
+  for(Int_t i=1; i<nopt; i++)
+  {
     TObjString *o = (TObjString*)fArrayOpts->At(i); 
 
     TString addOpt = o->String();
     Int_t indj=-1;
-    for(Int_t j=0; j<fNAdditionalOpts; j++) {
+    for(Int_t j=0; j<fNAdditionalOpts; j++)
+    {
       TString opt = fkAdditionalOpts[j];
       if(addOpt.Contains(opt,TString::kIgnoreCase)) {
 	  indj = j;
         break;
       }
     }
-    if(indj<0) {
+    
+    if(indj<0)
+    {
       AliDebug(2,Form("<E> option |%s| unavailable : ** look to the file AliEMCALGeometry.h **\n", 
 		      addOpt.Data()));
       assert(0);
-    } else {
+    } 
+    else 
+    {
       AliDebug(2,Form("<I> option |%s| is valid : number %i : |%s|\n", 
 		      addOpt.Data(), indj, fkAdditionalOpts[indj]));
       if       (addOpt.Contains("NL=",TString::kIgnoreCase))   {// number of sampling layers
@@ -624,12 +648,19 @@ void AliEMCALEMCGeometry::CheckAdditionalOptions()
   }
 }
 
-//__________________________________________________________________
+///
+/// Set the value of fSampling used to calibrate the MC hits energy (check)
+/// Called in AliEMCALv0 and not anymore here in Init() in order to be able to work with Geant4
+///
+/// \param mcname: Geant3/4, Flukla, ...
+/// \param mctitle: Geant4 physics list tag name
+///
+//______________________________________________________________________________
 void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Text_t* mctitle)
 {
   // Jun 05,2006
   // Look http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
-  // Keep for compatibilty
+  // Keep for compatibility
   //
   
   // Sampling factor for G3
@@ -638,8 +669,10 @@ void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Tex
     fSampling = 12.55;
   } else if(fNECLayers == 61) { // 20% layer reduction
     fSampling = 12.80;
-  } else if(fNECLayers == 77) {
-    if(fGeoName.Contains("V1")){
+  } else if(fNECLayers == 77) 
+  {
+    if(fGeoName.Contains("V1"))
+    {
       fSampling = 10.87; //Adding paper sheets and cover plate; Nov 25,2010
     } else if   (fECScintThick>0.159 && fECScintThick<0.161) { // original sampling fraction, equal layers
       fSampling = 12.327; // fECScintThick = fECPbRadThickness = 0.160;
@@ -668,31 +701,38 @@ void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Tex
                mcName.Data(),mcTitle.Data(),fSampling,samplingFactorTranportModel,fSampling*samplingFactorTranportModel));
   
   fSampling*=samplingFactorTranportModel;
-  
 }
 
-//________________________________________________________________________________________________
+///
+/// \return center of supermodule in phi
+///
+//_______________________________________________________________________________
 Double_t AliEMCALEMCGeometry::GetPhiCenterOfSMSec(Int_t nsupmod) const
 {
-  //returns center of supermodule in phi
   int i = nsupmod/2;
   return fPhiCentersOfSMSec[i];
-
 }
 
-//________________________________________________________________________________________________
+///
+/// \return center of supermodule in phi sector
+///
+//______________________________________________________________________________
 Double_t AliEMCALEMCGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 {
-  //returns center of supermodule in phi
   int i = nsupmod/2;
   return fPhiCentersOfSM[i];
-
 }
 
-//________________________________________________________________________________________________
+///
+/// SM boundaries
+///
+/// \param nSupMod: super module index, input
+/// \param phiMin: minimum phi value in radians, output
+/// \param phiMax: maximum phi value in radians, output
+///
+//______________________________________________________________________________
 Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const
 {
-  // 0<= nSupMod <=17; phi in rad
   static int i;
   if(nSupMod<0 || nSupMod >12+fnSupModInDCAL-1) return kFALSE;
   i = nSupMod/2;
@@ -701,39 +741,49 @@ Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin
   return kTRUE;
 }
 
-//________________________________________________________________________________________________
+///
+/// SM boundaries between gaps
+///
+/// \param nPhiSec: super module sector index, input
+/// \param phiMin: minimum phi value in radians, output
+/// \param phiMax: maximum phi value in radians, output
+///
+/// * 0;  gap boundaries between  0th&2th  | 1th&3th SM
+/// * 1;  gap boundaries between  2th&4th  | 3th&5th SM
+/// * 2;  gap boundaries between  4th&6th  | 5th&7th SM
+/// * 3;  gap boundaries between  6th&8th  | 7th&9th SM
+/// * 4;  gap boundaries between  8th&10th | 9th&11th SM
+/// * 5;  gap boundaries between 10th&12th | 11h&13th SM 
+///
+//______________________________________________________________________________
 Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const
-{
-  // 0<= nPhiSec <=max; phi in rad
-  // 0;  gap boundaries between  0th&2th  | 1th&3th SM
-  // 1;  gap boundaries between  2th&4th  | 3th&5th SM
-  // 2;  gap boundaries between  4th&6th  | 5th&7th SM
-  // 3;  gap boundaries between  6th&8th  | 7th&9th SM
-  // 4;  gap boundaries between  8th&10th | 9th&11th SM
-  // 5;  gap boundaries between 10th&12th | 11h&13th SM
-  //             ...
+{          
   if(nPhiSec<0 || nPhiSec >5+fnSupModInDCAL/2-1) return kFALSE;
   phiMin = fPhiBoundariesOfSM[2*nPhiSec+1];
   phiMax = fPhiBoundariesOfSM[2*nPhiSec+2];
   return kTRUE;
 }
 
-//________________________________________________________________________________________________
+///
+/// Play with strings names and modify them for better handling (?)
+///
+//______________________________________________________________________________
 int AliEMCALEMCGeometry::ParseString(const TString &topt, TObjArray &Opt)
 { 
-	//Parse string, does what? GCB 08/09
-	Ssiz_t begin, index, end, end2;
-	begin = index = end = end2 = 0;
-	TRegexp separator("[^ ;,\\t\\s/]+");
-	while ( (begin < topt.Length()) && (index != kNPOS) ) {
-		// loop over given options
-		index = topt.Index(separator,&end,begin);
-		if (index >= 0 && end >= 1) {
-			TString substring(topt(index,end));
-			Opt.Add(new TObjString(substring.Data()));
-		}
-		begin += end+1;
-	}
-	return Opt.GetEntries();
+  Ssiz_t begin, index, end, end2;
+  begin = index = end = end2 = 0;
+  TRegexp separator("[^ ;,\\t\\s/]+");
+  while ( (begin < topt.Length()) && (index != kNPOS) ) 
+  {
+    // loop over given options
+    index = topt.Index(separator,&end,begin);
+    if (index >= 0 && end >= 1) 
+    {
+      TString substring(topt(index,end));
+      Opt.Add(new TObjString(substring.Data()));
+    }
+    begin += end+1;
+  }
+  return Opt.GetEntries();
 }
 

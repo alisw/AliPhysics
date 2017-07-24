@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALRawUtils
+/// \ingroup EMCALbase
 /// \brief Handling of raw data.
 ///
 ///  Utility Class for handling Raw data

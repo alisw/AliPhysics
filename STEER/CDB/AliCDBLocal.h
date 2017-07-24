@@ -48,7 +48,6 @@ class AliCDBLocal: public AliCDBStorage {
   AliCDBId* GetId(const AliCDBId& query);
 
   virtual void QueryValidFiles();
-  void QueryValidCVMFSFiles(TString& cvmfsOcdbTag);
 
   void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
   void GetEntriesForLevel1(const char* level0, const char* Level1,

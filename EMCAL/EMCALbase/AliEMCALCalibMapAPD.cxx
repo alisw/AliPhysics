@@ -13,11 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
-// Objects of this class contain info on APD calibration and map info
-//
-
 #include <fstream>
 #include <TString.h>
 #include <TFile.h>
@@ -27,35 +22,47 @@
 
 using namespace std;
 
-ClassImp(AliEMCALCalibMapAPD)
+/// \cond CLASSIMP
+ClassImp(AliEMCALCalibMapAPD) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
+/// \param nSM: number of SM
 //____________________________________________________________________________
 AliEMCALCalibMapAPD::AliEMCALCalibMapAPD(const int nSM) : 
   fNSuperModule(nSM),
   fSuperModuleData()
 {
-  //Default constructor.
-  for (int i=0; i<fNSuperModule; i++) {
+  for (int i=0; i<fNSuperModule; i++) 
     fSuperModuleData.Add(new AliEMCALSuperModuleCalibMapAPD(i));
-  }
+  
   fSuperModuleData.Compress(); // compress the TObjArray
   fSuperModuleData.SetOwner(kTRUE); 
 }
 
+///
+/// Read data from txt file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param nSM: number of SM
+/// \param txtFileName: output file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtFileName,
-						  Bool_t swapSides)
+                                                  Bool_t swapSides)
 {
-  //Read data from txt file. ; coordinates given on SuperModule basis
-
   std::ifstream inputFile(txtFileName.Data());
-  if (!inputFile) {
-    printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Cannot open the APD info file %s\n", txtFileName.Data());
+  if (!inputFile)
+  {
+    printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Cannot open the APD info file %s\n", 
+           txtFileName.Data());
     return;
   }
-
+  
   fNSuperModule = nSM;
-
+  
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -68,41 +75,49 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
   Int_t iBreakDown = 0;
   Float_t darkCurrent = 0; 
   // end - all values
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
-    if (!inputFile) {
+    
+    if (!inputFile) 
+    {
       printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; likely EOF..\n");
       return;
     }
+    
     inputFile >> iSM;
     t->SetSuperModuleNum(iSM);
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++)
+    {
       inputFile >> iCol >> iRow >> iHW 
-		>> iAPDNum >> v30 
-		>> par[0] >> par[1] >> par[2]
-		>> parErr[0] >> parErr[1] >> parErr[2]
-		>> iBreakDown >> darkCurrent;
-
+      >> iAPDNum >> v30 
+      >> par[0] >> par[1] >> par[2]
+      >> parErr[0] >> parErr[1] >> parErr[2]
+      >> iBreakDown >> darkCurrent;
+      
       // check that input values are not out bounds
       if (iCol<0 || iCol>(AliEMCALGeoParams::fgkEMCALCols-1) ||
-	  iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) {
-	printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; j %d iCol %d iRow %d\n", j, iCol, iRow);
-      return;
+          iRow<0 || iRow>(AliEMCALGeoParams::fgkEMCALRows-1) ) 
+      {
+        printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; j %d iCol %d iRow %d\n", 
+               j, iCol, iRow);
+        return;
       }
-
+      
       // assume that this info is already swapped and done for this basis?
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
-
+      
       v->SetHardWareId(iHW);
       v->SetAPDNum(iAPDNum);
       v->SetV30(v30);
@@ -115,85 +130,106 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
       v->SetBreakDown(iBreakDown);
       v->SetDarkCurrent(darkCurrent);
     }
-
+    
   } // i, SuperModule
-
+  
   inputFile.close();
-
+  
   return;
 }
 
+///
+/// Write data to txt file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param txtFileName: input file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibMapAPD::WriteTextCalibMapAPDInfo(const TString &txtFileName,
-						   Bool_t swapSides)
+                                                   Bool_t swapSides)
 {
-  // write data to txt file. ; coordinates given on SuperModule basis
-
   std::ofstream outputFile(txtFileName.Data());
-  if (!outputFile) {
-    printf("AliEMCALCalibMapAPD::WriteCalibMapAPDInfo - Cannot open the APD output file %s\n", txtFileName.Data());
+  
+  if (!outputFile) 
+  {
+    printf("AliEMCALCalibMapAPD::WriteCalibMapAPDInfo - Cannot open the APD output file %s\n",
+           txtFileName.Data());
     return;
   }
-
+  
   Int_t iCol = 0;
   Int_t iRow = 0;
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (Int_t i = 0; i < fNSuperModule; i++) {
+  
+  for (Int_t i = 0; i < fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
     outputFile << t->GetSuperModuleNum() << endl;
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) 
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
-
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      
+      if (swapSides)
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       outputFile << iCol << " " << iRow << " " << v->GetHardWareId() 
-		 << " " << v->GetAPDNum() << " " << v->GetV30() 
-		 << " " << v->GetPar(0) << " " << v->GetPar(1) << " " << v->GetPar(2)
-		 << " " << v->GetParErr(0) << " " << v->GetParErr(1) << " " << v->GetParErr(2)
-		 << " " << v->GetBreakDown() << " " << v->GetDarkCurrent() << endl;
+      << " " << v->GetAPDNum() << " " << v->GetV30() 
+      << " " << v->GetPar(0) << " " << v->GetPar(1) << " " << v->GetPar(2)
+      << " " << v->GetParErr(0) << " " << v->GetParErr(1) << " " << v->GetParErr(2)
+      << " " << v->GetBreakDown() << " " << v->GetDarkCurrent() << endl;
     }
-
+    
   } // i, SuperModule
-
+  
   outputFile.close();
-
+  
   return;
 }
 
+///
+/// Read data from root file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param rootFileName: input file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibMapAPD::ReadRootCalibMapAPDInfo(const TString &rootFileName,
-						  Bool_t swapSides)
+                                                  Bool_t swapSides)
 {
-  //Read data from root file. ; coordinates given on SuperModule basis
   TFile inputFile(rootFileName, "read");  
-
+  
   TTree *tree = (TTree*) inputFile.Get("tree");
-
+  
   ReadTreeCalibMapAPDInfo(tree, swapSides);
-
+  
   inputFile.Close();
-
+  
   return;
 }
 
+///
+/// Read data from tree. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param tree: input tree
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
-						  Bool_t swapSides)
+                                                  Bool_t swapSides)
 {
   // how many SuperModule's worth of entries / APDs do we have?
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   fNSuperModule = tree->GetEntries() / nAPDPerSM;
-
+  
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -206,7 +242,7 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
   Int_t iBreakDown = 0;
   Float_t darkCurrent = 0; 
   // end - all values
-
+  
   // declare the branches
   tree->SetBranchAddress("iSM", &iSM);
   tree->SetBranchAddress("iCol", &iCol);
@@ -218,23 +254,25 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
   tree->SetBranchAddress("ParErr", parErr);
   tree->SetBranchAddress("BreakDown", &iBreakDown);
   tree->SetBranchAddress("DarkCurrent", &darkCurrent);
-
-  for (int ient=0; ient<tree->GetEntries(); ient++) {
+  
+  for (int ient=0; ient<tree->GetEntries(); ient++) 
+  {
     tree->GetEntry(ient);
-
+    
     // assume the index SuperModules come in order: i=iSM
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[iSM];
     t->SetSuperModuleNum(iSM);
-
+    
     // assume that this info is already swapped and done for this basis?
-    if (swapSides) {
+    if (swapSides) 
+    {
       // C side, oriented differently than A side: swap is requested
       iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
       iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
     }
-
+    
     AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
-
+    
     v->SetHardWareId(iHW);
     v->SetAPDNum(iAPDNum);
     v->SetV30(v30);
@@ -247,23 +285,29 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
     v->SetBreakDown(iBreakDown);
     v->SetDarkCurrent(darkCurrent);
   } // 
-
+  
   return;
 }
 
+///
+/// Write data to root file. ; coordinates given on SuperModule basis
+/// info file is for nSm=1 to fgkEMCALModules
+///
+/// \param rootFileName: output file name
+/// \param swapSides: swap SM, A to C
 //____________________________________________________________________________
 void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
-				       Bool_t swapSides)
+                                                   Bool_t swapSides)
 {
   // write data to root file. ; coordinates given on SuperModule basis
   TFile destFile(rootFileName, "recreate");  
-  if (destFile.IsZombie()) {
+  if (destFile.IsZombie()) 
     return;
-  }  
+  
   destFile.cd();
-
+  
   TTree *tree = new TTree("tree","");
-
+  
   // variables for filling the TTree
   Int_t iSM = 0; // SuperModule index
   Int_t iHW = 0;
@@ -287,59 +331,70 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
   tree->Branch("ParErr", &parErr, "ParErr[3]/F");
   tree->Branch("BreakDown", &iBreakDown, "BreakDown/I");
   tree->Branch("DarkCurrent", &darkCurrent, "DarkCurrent/F");
-
+  
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-
-  for (iSM = 0; iSM < fNSuperModule; iSM++) {
+  
+  for (iSM = 0; iSM < fNSuperModule; iSM++) 
+  {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD *) fSuperModuleData[iSM];
-
-    for (Int_t j=0; j<nAPDPerSM; j++) {
+    
+    for (Int_t j=0; j<nAPDPerSM; j++)
+    {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
-
+      
       AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
-
-      if (swapSides) {
-	// C side, oriented differently than A side: swap is requested
-	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
-	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      
+      if (swapSides) 
+      {
+        // C side, oriented differently than A side: swap is requested
+        iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+        iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
-
+      
       iHW = v->GetHardWareId(); 
       iAPDNum = v->GetAPDNum();
       v30 = v->GetV30();
-      for (int k=0; k<3; k++) {
-	par[k] = v->GetPar(k);
-	parErr[k] = v->GetParErr(k);
+      for (int k=0; k<3; k++) 
+      {
+        par[k] = v->GetPar(k);
+        parErr[k] = v->GetParErr(k);
       } 
       iBreakDown = v->GetBreakDown();
       darkCurrent = v->GetDarkCurrent();
-
+      
       tree->Fill();
     }
-
+    
   } // i, SuperModule
-
+  
   tree->Write();
   destFile.Close();
-
+  
   return;
 }
 
+///
+/// Destructor
 //____________________________________________________________________________
 AliEMCALCalibMapAPD::~AliEMCALCalibMapAPD()
 {
   fSuperModuleData.Delete();
 }
 
+///
+/// Get SM calib map via index
+///
+/// \param supModIndex: SM index
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibMapAPD * AliEMCALCalibMapAPD::GetSuperModuleCalibMapAPDNum(Int_t supModIndex)const
-{ // getter via index
-  for (int i=0; i<fNSuperModule; i++) {
+{ 
+  for (int i=0; i<fNSuperModule; i++) 
+  {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
-    if (t->GetSuperModuleNum() == supModIndex) {
+   
+    if (t->GetSuperModuleNum() == supModIndex) 
       return t;
-    }
   }
 
   // if we arrived here, then nothing was found.. just return a NULL pointer 

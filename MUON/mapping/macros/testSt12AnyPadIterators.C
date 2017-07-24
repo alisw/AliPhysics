@@ -70,8 +70,8 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
 
-  AliMpSectorReader r(dataStreams, station, plane);
-  AliMpSector* sector = r.BuildSector();
+  AliMpSectorReader r(station, plane);
+  AliMpSector* sector = r.BuildSector(dataStreams);
   AliMpSectorSegmentation segmentation(sector);
     
   TCanvas* canv = CreateTCanvas("canv ", "", station, plane);

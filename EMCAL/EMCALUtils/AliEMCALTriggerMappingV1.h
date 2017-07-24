@@ -3,11 +3,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
- 
- 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
+///////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliEMCALTriggerMappingV1
+/// \ingroup EMCALUtils
+/// \brief Trigger mapping methods, Run1
+///
+/// Trigger mapping for Run1
+///
+/// \author:  R. GUERNANE LPSC Grenoble CNRS/IN2P3 
+///
+///////////////////////////////////////////////////////////////////////////////
 
 #include "AliEMCALTriggerMapping.h"
 class AliEMCALGeometry;
@@ -55,7 +61,10 @@ private:
 	                    AliEMCALTriggerMappingV1(const AliEMCALTriggerMappingV1& rhs);
 	         AliEMCALTriggerMappingV1& operator=(const AliEMCALTriggerMappingV1& rhs);
 	
-	ClassDef(AliEMCALTriggerMappingV1,1)
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTriggerMappingV1,1) ;
+  /// \endcond
+
 };
  
 #endif

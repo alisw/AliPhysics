@@ -1,11 +1,37 @@
-// Set OCDB parameters from existing versions
+///
+/// \file SetOCDBFromRun1.C
+/// \ingroup EMCAL_CalibDB
+/// \brief Set OCDB for EMCAL energy calibration starting from Run1
+///
+/// Create OCDB file for a given period from already existing OCDB file
+/// include the online calibration parameters
+///
+/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS
+///
 
-// Author : Gustavo Conesa Balbastre (LPSC-CNRS)
+#if !defined(__CINT__)
+#include <TSystem.h>
+#include <TString.h>
+#include <TGrid.h>
 
+#include <Riostream.h>
+
+#include "AliEMCALGeometry.h"
+#include "AliEMCALCalibData.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#endif
+
+///
+/// Main method
+///
+/// \param year: year to set geometry and run range
+/// \param printAll: verbosity checks 
+///
 void SetOCDBFromRun1(Int_t year = 2010, Bool_t printAll = kFALSE)
 {  
-
-  gSystem->Load("libOADB");
   TGrid::Connect("alien://");
   
   Int_t run = 182325; //2012
@@ -18,10 +44,10 @@ void SetOCDBFromRun1(Int_t year = 2010, Bool_t printAll = kFALSE)
   AliCDBStorage *storage = man->GetDefaultStorage();
   
   // Instantiate EMCAL geometry for the first time
-
+  AliEMCALGeometry * geom;
   if     (year == 2010) geom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1"); // 2010
   else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");  // 2011-2012-2013
-//  else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
+//else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM"); // Run2
 
   const Int_t nSM = geom->GetNumberOfSuperModules();
   
@@ -37,9 +63,8 @@ void SetOCDBFromRun1(Int_t year = 2010, Bool_t printAll = kFALSE)
   TFile * f = TFile::Open(Form("alien:///alice/data/%d/OCDB/EMCAL/Calib/Data/%s",year,first.Data()),"READ");
   AliCDBEntry * cdb = (AliCDBEntry*) f->Get("AliCDBEntry");
   AliEMCALCalibData* cparam1 = (AliEMCALCalibData*)  cdb->GetObject();
-
   
-  //New OCDB container
+  // New OCDB container
   AliEMCALCalibData *cparamnew=new AliEMCALCalibData("EMCAL");
   
   // Do the comparison
@@ -65,7 +90,7 @@ void SetOCDBFromRun1(Int_t year = 2010, Bool_t printAll = kFALSE)
     cparamnew->SetADCchannelOnline(iSM,iCol,iRow,param1);
   }
   
-  //Create OCDB File
+  // Create OCDB File
   AliCDBMetaData md;
   md.SetComment("Calibration after calibration with pi0, store also first online calibration");
   md.SetBeamPeriod(0);
@@ -79,8 +104,8 @@ void SetOCDBFromRun1(Int_t year = 2010, Bool_t printAll = kFALSE)
   
   AliCDBId id("EMCAL/Calib/Data",firstRun,AliCDBRunRange::Infinity()); // create in EMCAL/Calib/Data DBFolder
   
-  AliCDBManager* man = AliCDBManager::Instance();
-  AliCDBStorage* loc = man->GetStorage(Form("local://%d",year));
+  AliCDBManager* man2 = AliCDBManager::Instance();
+  AliCDBStorage* loc = man2->GetStorage(Form("local://%d",year));
   loc->Put(cparamnew, id, &md);
 }
 

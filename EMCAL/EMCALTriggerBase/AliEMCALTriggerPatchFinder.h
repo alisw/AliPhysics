@@ -18,6 +18,7 @@ template<typename T> class AliEMCALTriggerAlgorithm;
 
 /**
  * @class AliEmcalTriggerPatchFinder
+ * @ingroup EMCALTriggerBase
  * @brief Steering class for patch finder
  *
  * This class steers the trigger patch finding by calling
@@ -46,7 +47,8 @@ public:
   /**
    * Find trigger patches usin the grid of adc values. All trigger patch finders are called one after each other.
    * The result contains the vector of patches from all trigger algorithms. The trigger patches are sorted in energy.
-   * @param adc Data grid with ADC values
+   * @param[in] adc Data grid with ADC values
+   * @param[in] offlineAdc Data grid with ADC values calculated from FEE energies
    * @return List of trigger patches found by all trigger algorithms assigned to this trigger patch finder.
    */
   std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc, const AliEMCALTriggerDataGrid<T> &offlineAdc) const;

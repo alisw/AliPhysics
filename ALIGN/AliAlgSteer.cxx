@@ -409,7 +409,7 @@ void AliAlgSteer::SetESDEvent(const AliESDEvent* ev)
   // setup magnetic field if needed
   if (fESDEvent && 
       (!TGeoGlobalMagField::Instance()->GetField() || 
-       Abs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz())>1e-4) ) { 
+       !SmallerAbs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz(),5e-4)) ) {
     fESDEvent->InitMagneticField();
   }
 }
@@ -440,7 +440,8 @@ Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
     return kFALSE;
   }
   //
-  SetCosmic(esdEv->GetEventSpecie()==AliRecoParam::kCosmic || esdEv->GetNumberOfCosmicTracks()>0);
+  SetCosmic(esdEv->GetEventSpecie()==AliRecoParam::kCosmic ||
+	    (esdEv->GetNumberOfCosmicTracks()>0 && !esdEv->GetPrimaryVertexTracks()->GetStatus()));
   //
   FillStatHisto( kEvInp );
   //
@@ -862,8 +863,8 @@ void AliAlgSteer::AcknowledgeNewRun(Int_t run)
   //
   // setup magnetic field
   if (fESDEvent && 
-      (!TGeoGlobalMagField::Instance()->GetField() || 
-       !IsZeroAbs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz())) ) { 
+      (!TGeoGlobalMagField::Instance()->GetField() ||
+       !SmallerAbs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz(),5e-4)) ) { 
     fESDEvent->InitMagneticField();
   }
   //

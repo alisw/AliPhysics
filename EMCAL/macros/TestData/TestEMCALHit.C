@@ -1,10 +1,36 @@
-// Test Macro, shows how to load Hits and Geometry, and how can we get 
-// some of the parameters and variables.
-// Author: Gustavo Conesa
+///
+/// \file TestEMCALHit.C
+/// \ingroup EMCAL_TestData
+/// \brief Hits reading example
+///
+/// Test Macro, shows how to load EMCal Hits and Geometry, and how can we get 
+/// some of the parameters and variables.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//Root include files 
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+
+//AliRoot include files 
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCAL.h"
+#include "AliEMCALHit.h"
+#include "AliEMCALGeometry.h"
+
+#endif
+
+///
+/// Main execution method
+///
 void TestEMCALHit()
-{
-  
+{  
   // Getting EMCAL Detector and Geometry.
   
   AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
@@ -20,8 +46,10 @@ void TestEMCALHit()
   TGeoManager::Import("geometry.root");
   
   AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
+  
   AliEMCALGeometry * geom ;
-  if(alirun){
+  if(alirun)
+  {
     AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
     geom = emcal->GetGeometry();
   }
@@ -37,70 +65,78 @@ void TestEMCALHit()
   cout<<"Number of events "<<maxevent<<endl;
   //maxevent = 8000 ;
   
-  
   AliEMCALHit * hit;
   TClonesArray *hits = 0;
   
   for (Int_t iEvent=0; iEvent<maxevent; iEvent++)
+  {
+    //cout <<  " ======> Event " << iEvent <<endl ;  
+    // Load Event
+    rl->GetEvent(iEvent);
+    Float_t elos=-1;
+    Float_t time  = -1 ;
+    Int_t id      = -1 ;
+    Int_t iSupMod =  0 ;
+    Int_t iTower  =  0 ;
+    Int_t iIphi   =  0 ;
+    Int_t iIeta   =  0 ;
+    Int_t iphi    =  0 ;
+    Int_t ieta    =  0 ;
+    
+    cout <<  " ======> Event " << iEvent << endl; 
+    
+    // Get hits from the list      
+    // Hits are stored in different branches in the hits Tree, 
+    // first get the branch and then access the hits in the branch
+    TTree *treeH = emcalLoader->TreeH();
+    if (!treeH)
     {
-      //cout <<  " ======> Event " << iEvent <<endl ;  
-      //Load Event
-      rl->GetEvent(iEvent);
-      Float_t elos=-1;
-      Float_t time  = -1 ;
-      Int_t id      = -1 ;
-      Int_t iSupMod =  0 ;
-      Int_t iTower  =  0 ;
-      Int_t iIphi   =  0 ;
-      Int_t iIeta   =  0 ;
-      Int_t iphi    =  0 ;
-      Int_t ieta    =  0 ;
+      printf("TreeH not available!\n");
+      continue;
+    }
+    
+    // TreeH exists, get the branch
+    Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
+    TBranch * branchH = treeH->GetBranch("EMCAL");
+    branchH->SetAddress(&hits);
+    
+    for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) 
+    {
+      branchH->GetEntry(iTrack);
       
-      //Fill array of hits
-      cout <<  " ======> Event " << iEvent << endl; 
-      
-      
-      //Get hits from the list      
-      
-      //Hits are stored in different branches in the hits Tree, 
-      //first get the branch and then access the hits in the branch
-      TTree *treeH = emcalLoader->TreeH();	
-      if (treeH) {
-	// TreeH exists, get the branch
-	Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
-	TBranch * branchH = treeH->GetBranch("EMCAL");
-	branchH->SetAddress(&hits);
-	for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
-	  branchH->GetEntry(iTrack);
-	  //Now get the hits in this branch
-	  Int_t nHit = hits->GetEntriesFast();
-	  for(Int_t ihit = 0; ihit< nHit;ihit++){
-	    hit = static_cast<AliEMCALHit *>hits->At(ihit);//(hits->At(ihit)) ;
-	    
-	    if(hit != 0){
-	      id   = hit->GetId() ; //cell (hit) label
-	      elos = hit->GetEnergy(); //amplitude in cell (hit)
-	      time = hit->GetTime();//time of creation of hit after collision
-	      
-	      cout<<"Hit ID "<<id<<" ELoss "<<elos;
-	      
-	      //Geometry methods  
-	      if(geom){
-		geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
-		//Gives SuperModule and Tower numbers
-		geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-						  iIphi, iIeta,iphi,ieta);
-		//Gives label of cell in eta-phi position per each supermodule
-		// cout<< "SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
-		//<<"; Phi "<<iIphi<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
-		cout<< ";  SModule "<<iSupMod<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
-	      }//geom?
-	    }//hit?
-	    else
-	      cout<<"Hit pointer 0x0"<<endl;
-	  }//hit loop
-	}// track loop
-      }//treeH?
-    }//event loop
+      // Now get the hits in this branch
+      Int_t nHit = hits->GetEntriesFast();
+      for(Int_t ihit = 0; ihit < nHit;ihit++)
+      {
+        hit = static_cast<AliEMCALHit *>(hits->At(ihit));//hits->At(ihit) ;
+        
+        if(!hit)
+        {
+          cout<<"Hit pointer 0x0"<<endl;
+          continue;
+        }
+        
+        id   = hit->GetId() ;    // cell (hit) label
+        elos = hit->GetEnergy(); // amplitude in cell (hit)
+        time = hit->GetTime();   // time of creation of hit after collision
+        
+        cout<<"Hit ID "<<id<<" ELoss "<<elos;
+        
+        // Geometry methods  
+        if(geom)
+        {
+          geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
+          
+          // Gives SuperModule and Tower numbers
+          geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                            iIphi, iIeta,iphi,ieta);
+          //Gives label of cell in eta-phi position per each supermodule
+          // cout<< "SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
+          //<<"; Phi "<<iIphi<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+          cout<< ";  SModule "<<iSupMod<<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+        }//geom?
+      }//hit loop
+    }// track loop
+  }//event loop
 }
 

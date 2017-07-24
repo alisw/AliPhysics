@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//
-// Generator using the TPythia interface (via AliPythia)
-// to generate pp collisions.
-// Using SetNuclei() also nuclear modifications to the structure functions
-// can be taken into account. This makes, of course, only sense for the
-// generation of the products of hard processes (heavy flavor, jets ...)
-//
-// andreas.morsch@cern.ch
-//
 #include <TMath.h>
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
@@ -43,10 +32,10 @@
 #include "AliStack.h"
 #include "AliRunLoader.h"
 #include "AliMC.h"
+#include "AliLog.h"
 #include "PyquenCommon.h"
 
 ClassImp(AliGenPythiaPlus)
-
 
 AliGenPythiaPlus::AliGenPythiaPlus():
     AliGenMC(),
@@ -116,13 +105,22 @@ AliGenPythiaPlus::AliGenPythiaPlus():
     fRL(0),      
     fFileName(0),
     fFragPhotonInCalo(kFALSE),
+    fHadronInCalo(kFALSE) ,
     fPi0InCalo(kFALSE) ,
-    fPhotonInCalo(kFALSE),
+    fEtaInCalo(kFALSE) ,
+    fPhotonInCalo(kFALSE), // not in use
+    fDecayPhotonInCalo(kFALSE),
+    fForceNeutralMeson2PhotonDecay(kFALSE),
+    fEleInCalo(kFALSE),
+    fEleInEMCAL(kFALSE), // not in use
+    fCheckBarrel(kFALSE),
     fCheckEMCAL(kFALSE),
     fCheckPHOS(kFALSE),
     fCheckPHOSeta(kFALSE),
-    fFragPhotonOrPi0MinPt(0), 
-    fPhotonMinPt(0), 
+    fPHOSRotateCandidate(-1),
+    fTriggerParticleMinPt(0), 
+    fPhotonMinPt(0), // not in use
+    fElectronMinPt(0), // not in use
     fPHOSMinPhi(219.),
     fPHOSMaxPhi(321.),
     fPHOSEta(0.13),
@@ -206,13 +204,22 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
      fRL(0),      
      fFileName(0),
      fFragPhotonInCalo(kFALSE),
+     fHadronInCalo(kFALSE) ,
      fPi0InCalo(kFALSE) ,
-     fPhotonInCalo(kFALSE),
+     fEtaInCalo(kFALSE) ,
+     fPhotonInCalo(kFALSE), // not in use
+     fDecayPhotonInCalo(kFALSE),
+     fForceNeutralMeson2PhotonDecay(kFALSE),
+     fEleInCalo(kFALSE),
+     fEleInEMCAL(kFALSE), // not in use
+     fCheckBarrel(kFALSE),
      fCheckEMCAL(kFALSE),
      fCheckPHOS(kFALSE),
      fCheckPHOSeta(kFALSE),
-     fFragPhotonOrPi0MinPt(0),
-     fPhotonMinPt(0),
+     fPHOSRotateCandidate(-1),
+     fTriggerParticleMinPt(0), 
+     fPhotonMinPt(0), // not in use
+     fElectronMinPt(0), // not in use
      fPHOSMinPhi(219.),
      fPHOSMaxPhi(321.),
      fPHOSEta(0.13),
@@ -343,7 +350,9 @@ void AliGenPythiaPlus::Init()
     fPythia->SetInitialAndFinalStateRadiation(fGinit, fGfinal);
 
 //  pt - kick
-    fPythia->SetIntrinsicKt(fPtKick);
+//  10/4/2017
+//  this line has been removed since it overwrites the settings of the standard tunes
+//  fPythia->SetIntrinsicKt(fPtKick);
 
     if (fReadFromFile) {
 	fRL  =  AliRunLoader::Open(fFileName, "Partons");
@@ -625,7 +634,7 @@ void AliGenPythiaPlus::Generate()
 	    fProcess != kPyBeautyppMNRwmi &&
       fProcess != kPyWPWHG &&
 	    fProcess != kPyJetsPWHG &&
-	    fProcess != kPyCharmPWHG &&
+            fProcess != kPyCharmPWHG &&
      fProcess != kPyBeautyPWHG) {
 	    
 	    for (i = 0; i < np; i++) {
@@ -849,81 +858,31 @@ Int_t  AliGenPythiaPlus::GenerateMB()
     
     Int_t* pParent = new Int_t[np];
     for (i=0; i< np; i++) pParent[i] = -1;
-    if (fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyJetsPWHG || fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG ) {
-	TParticle* jet1 = (TParticle *) fParticles.At(6);
-	TParticle* jet2 = (TParticle *) fParticles.At(7);
+    if (fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyJetsPWHG || 
+        fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG ) {
+       // 6,7 particles in PYTHIA6
+       TParticle* jet1 = (TParticle *) fParticles.At(4);
+       TParticle* jet2 = (TParticle *) fParticles.At(5);
 	if (!CheckTrigger(jet1, jet2)) {
 	  delete [] pParent;
 	  return 0;
 	}
     }
-
-    // Select jets with fragmentation photon or pi0 going to PHOS or EMCAL
-    if ((fProcess == kPyJets || fProcess == kPyJetsPWHG) && (fFragPhotonInCalo || fPi0InCalo) ) {
-
-      Bool_t ok = kFALSE;
-
-      Int_t pdg  = 0; 
-      if (fFragPhotonInCalo) pdg = 22   ; // Photon
-      else if (fPi0InCalo) pdg = 111 ; // Pi0
-
-      for (i=0; i< np; i++) {
-	TParticle* iparticle = (TParticle *) fParticles.At(i);
-	if(iparticle->GetStatusCode()==1 && iparticle->GetPdgCode()==pdg && 
-	   iparticle->Pt() > fFragPhotonOrPi0MinPt){
-	    Int_t imother = (fPythia->Version() == 6) ? (iparticle->GetFirstMother() - 1) :(iparticle->GetFirstMother()) ;
-	  TParticle* pmother = (TParticle *) fParticles.At(imother);
-	  if(pdg == 111 || 
-	     (pdg == 22 && pmother->GetStatusCode() != 11))//No photon from hadron decay
-	    {
-	      Float_t phi = iparticle->Phi()*180./TMath::Pi(); //Convert to degrees
-	      Float_t eta =TMath::Abs(iparticle->Eta());//in calos etamin=-etamax	  
-	      if((fCheckEMCAL && IsInEMCAL(phi,eta)) ||
-	         (fCheckPHOS    && IsInPHOS(phi,eta)) )
-		ok =kTRUE;
-	    }
-	}
-      }
-      if(!ok){
-	  delete [] pParent;
-	  return 0;
-      }
-    }
-    
-    
-     // Select events with a photon  pt > min pt going to PHOS eta acceptance or exactly PHOS eta phi
-    if ((fProcess == kPyJets || fProcess == kPyJetsPWHG || fProcess == kPyDirectGamma) && fPhotonInCalo && (fCheckPHOSeta || fCheckPHOS)){
-
-      Bool_t okd = kFALSE;
-
-      Int_t pdg  = 22; 
-      Int_t iphcand = -1;
-      for (i=0; i< np; i++) {
-	 TParticle* iparticle = (TParticle *) fParticles.At(i);
-	 Float_t phi = iparticle->Phi()*180./TMath::Pi(); //Convert to degrees
-	 Float_t eta =TMath::Abs(iparticle->Eta());//in calos etamin=-etamax 
-	 
-	 if(iparticle->GetStatusCode() == 1 
-	    && iparticle->GetPdgCode() == pdg   
-	    && iparticle->Pt() > fPhotonMinPt    
-	    && eta < fPHOSEta){                 
-	    
-	    // first check if the photon is in PHOS phi
-	    if(IsInPHOS(phi,eta)){ 
-	        okd = kTRUE;
-		break;
-	    } 
-	    if(fCheckPHOSeta) iphcand = i; // candiate photon to rotate in phi
-	     
-	 }
-      }
+  
+    // Select events with fragmentation photon, decay photon, pi0, eta 
+    // or other hadrons going to PHOS or EMCAL or central barrel,
+    // implemented primarily for kPyJets, but extended to any kind of process.
+    if ( ( fFragPhotonInCalo || fPi0InCalo || 
+           fEtaInCalo        || fEleInCalo || 
+           fHadronInCalo     || fDecayPhotonInCalo   ) && 
+         ( fCheckPHOS || fCheckEMCAL || fCheckBarrel )    ) 
+    {
+      Bool_t ok = TriggerOnSelectedParticles(np);
       
-      if(!okd && iphcand != -1) // execute rotation in phi 
-          RotatePhi(iphcand,okd);
-      
-      if(!okd) {
-	  delete[] pParent;
-	  return 0;
+      if ( !ok ) 
+      {
+        delete[] pParent;
+        return 0;
       }
     }
     
@@ -1246,6 +1205,41 @@ Bool_t AliGenPythiaPlus::CheckTrigger(const TParticle* jet1, const TParticle* je
 	    ij = 1;
 	    ig = 0;
 	}
+      
+      // Search the physical direct photon
+      // and recover its eta and phi
+      if ( fProcess == kPyDirectGamma )      
+      {
+        const TParticle * jets[] = {jet1,jet2};
+        Int_t status = jets[ig]->GetStatusCode();
+        Int_t index  = jets[ig]->GetDaughter(0);
+        Int_t pdg    = jets[ig]->GetPdgCode();
+        Int_t np     = fParticles.GetEntriesFast();
+        
+        //printf("Search physical photon...\n");
+        TParticle * photon = 0;
+        while ( status!=1 )
+        {
+          if ( pdg!=kGamma || index < 0 || index >= np)
+          {
+            AliWarning(Form("Photon with daughter PDG <%d> or negative/large index <%d>/<%d>, skip event",pdg,index,np));
+            return kFALSE;
+          }
+          
+          //printf("\t daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+          photon = (TParticle*) fParticles.At(index);
+          if(!photon) return kFALSE;
+          
+          status = photon->GetStatusCode();
+          index  = photon->GetDaughter(0);
+          pdg    = photon->GetPdgCode();
+          eta[ig]= photon->Eta();
+          phi[ig]= photon->Phi();
+        }
+        //printf("final:   daught %d, status %d, pdg %d, eta %2.2f, phi %2.2f\n",index,status,pdg,eta[ig],phi[ig]);
+        //printf("...found\n");
+      }
+      
 	//Check eta range first...
 	if ((eta[ij] < fEtaMaxJet   && eta[ij] > fEtaMinJet) &&
 	    (eta[ig] < fEtaMaxGamma && eta[ig] > fEtaMinGamma))
@@ -1379,13 +1373,25 @@ void AliGenPythiaPlus::GetSubEventTime()
   return;
 }
 
+///
+/// \return true if particle in central barrel acceptance
+///
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+///
+Bool_t AliGenPythiaPlus::IsInBarrel(Float_t eta) const
+{
+  return ( eta < fTriggerEta ) ;
+}
 
-
-
+///
+/// \return true if particle in EMCAL acceptance
+/// Acceptance slightly larger to be considered.
+///
+/// \param phi        particle azimuthal angle in degrees
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+///
 Bool_t AliGenPythiaPlus::IsInEMCAL(Float_t phi, Float_t eta) const
 {
-  // Is particle in EMCAL acceptance? 
-  // phi in degrees, etamin=-etamax
   if(phi > fEMCALMinPhi  && phi < fEMCALMaxPhi && 
      eta < fEMCALEta  ) 
     return kTRUE;
@@ -1393,67 +1399,336 @@ Bool_t AliGenPythiaPlus::IsInEMCAL(Float_t phi, Float_t eta) const
     return kFALSE;
 }
 
-Bool_t AliGenPythiaPlus::IsInPHOS(Float_t phi, Float_t eta) const
+///
+/// \return true if particle in PHOS acceptance
+/// Acceptance slightly larger to be considered.
+///
+/// \param phi        particle azimuthal angle in degrees
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+/// \param iparticle  particle index, for PHOS event rotation
+///
+Bool_t AliGenPythiaPlus::IsInPHOS(Float_t phi, Float_t eta, Int_t iparticle)
 {
-  // Is particle in PHOS acceptance? 
-  // Acceptance slightly larger considered.
-  // phi in degrees, etamin=-etamax
   if(phi > fPHOSMinPhi  && phi < fPHOSMaxPhi && 
      eta < fPHOSEta  ) 
     return kTRUE;
   else 
+  {
+    if( fCheckPHOSeta && eta < fPHOSEta) fPHOSRotateCandidate = iparticle;
+    
     return kFALSE;
+  }
 }
 
-void AliGenPythiaPlus::RotatePhi(Int_t iphcand, Bool_t& okdd)
-{
+///
+/// Rotate event in phi to enhance events in PHOS acceptance
+///
+void AliGenPythiaPlus::RotatePhi(Bool_t& okdd)
+{  
+  if(fPHOSRotateCandidate < 0) return ; 
+  
   //calculate the new position random between fPHOSMinPhi and fPHOSMaxPhi 
   Double_t phiPHOSmin = TMath::Pi()*fPHOSMinPhi/180;
   Double_t phiPHOSmax = TMath::Pi()*fPHOSMaxPhi/180;
-  Double_t phiPHOS = gRandom->Uniform(phiPHOSmin,phiPHOSmax);
+  Double_t phiPHOS = (AliPythiaRndm::GetPythiaRandom())->Uniform(phiPHOSmin,phiPHOSmax);
   
   //calculate deltaphi
-  TParticle* ph = (TParticle *) fParticles.At(iphcand);
+  TParticle* ph = (TParticle *) fParticles.At(fPHOSRotateCandidate);
   Double_t phphi = ph->Phi();
   Double_t deltaphi = phiPHOS - phphi;
-
-  
   
   //loop for all particles and produce the phi rotation
   Int_t np = (fHadronisation) ? fParticles.GetEntriesFast() : fNpartons;
   Double_t oldphi, newphi;
-  Double_t newVx, newVy, R, Vz, time; 
-  Double_t newPx, newPy, pt, Pz, e;
-  for(Int_t i=0; i< np; i++) {
-      TParticle* iparticle = (TParticle *) fParticles.At(i);
-      oldphi = iparticle->Phi();
-      newphi = oldphi + deltaphi;
-      if(newphi < 0) newphi = 2*TMath::Pi() + newphi; // correct angle 
-      if(newphi > 2*TMath::Pi()) newphi = newphi - 2*TMath::Pi(); // correct angle
-      
-      R = iparticle->R();
-      newVx = R*TMath::Cos(newphi);
-      newVy = R*TMath::Sin(newphi);
-      Vz = iparticle->Vz(); // don't transform
-      time = iparticle->T(); // don't transform
-      
-      pt = iparticle->Pt();
-      newPx = pt*TMath::Cos(newphi);
-      newPy = pt*TMath::Sin(newphi);
-      Pz = iparticle->Pz(); // don't transform
-      e = iparticle->Energy(); // don't transform
-      
-      // apply rotation 
-      iparticle->SetProductionVertex(newVx, newVy, Vz, time);
-      iparticle->SetMomentum(newPx, newPy, Pz, e);
-      
+  Double_t newVx, newVy, r, vZ, time; 
+  Double_t newPx, newPy, pt, pz, e;
+  for(Int_t i=0; i< np; i++) 
+  {
+    TParticle* iparticle = (TParticle *) fParticles.At(i);
+    oldphi = iparticle->Phi();
+    newphi = oldphi + deltaphi;
+    if(newphi < 0) newphi = 2*TMath::Pi() + newphi; // correct angle 
+    if(newphi > 2*TMath::Pi()) newphi = newphi - 2*TMath::Pi(); // correct angle
+    
+    r = iparticle->R();
+    newVx = r * TMath::Cos(newphi);
+    newVy = r * TMath::Sin(newphi);
+    vZ   = iparticle->Vz(); // don't transform
+    time = iparticle->T(); // don't transform
+    
+    pt = iparticle->Pt();
+    newPx = pt * TMath::Cos(newphi);
+    newPy = pt * TMath::Sin(newphi);
+    pz = iparticle->Pz(); // don't transform
+    e  = iparticle->Energy(); // don't transform
+    
+    // apply rotation 
+    iparticle->SetProductionVertex(newVx, newVy, vZ, time);
+    iparticle->SetMomentum(newPx, newPy, pz, e);
+    
   } //end particle loop 
   
-   // now let's check that we put correctly the candidate photon in PHOS
-   Float_t phi = ph->Phi()*180./TMath::Pi(); //Convert to degrees
-   Float_t eta =TMath::Abs(ph->Eta());//in calos etamin=-etamax 
-   if(IsInPHOS(phi,eta)) 
-      okdd = kTRUE;
+  // now let's check that we put correctly the candidate photon in PHOS
+  Float_t phi = ph->Phi()*180./TMath::Pi(); //Convert to degrees
+  Float_t eta =TMath::Abs(ph->Eta());//in calos etamin=-etamax 
+  if(IsInPHOS(phi,eta,-1)) 
+  okdd = kTRUE;
+  
+  // reset the value for next event
+  fPHOSRotateCandidate = -1;
+}
+
+///
+/// Check the eta/phi correspond to the detectors acceptance
+/// iparticle is the index of the particle to be checked, for PHOS rotation case
+///
+/// \return true if particle in selected acceptance
+/// \param phi        particle azimuthal angle in degrees
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+/// \param iparticle  particle index, for PHOS event rotation
+Bool_t AliGenPythiaPlus::CheckDetectorAcceptance(Float_t phi, Float_t eta, Int_t iparticle)
+{
+  if     (fCheckPHOS   && IsInPHOS  (phi,eta,iparticle)) return kTRUE;
+  else if(fCheckEMCAL  && IsInEMCAL (phi,eta)) return kTRUE;
+  else if(fCheckBarrel && IsInBarrel(    eta)) return kTRUE;
+  else                                         return kFALSE;
+}
+
+///
+/// Select events with fragmentation photon, decay photon, pi0, eta or other 
+/// hadrons going to PHOS or EMCAL or central barrel,
+/// implemented primarily for kPyJets, but extended to any kind of process.
+///
+/// \param np : number of generated particles
+/// \return true if accept the event
+///
+Bool_t AliGenPythiaPlus::TriggerOnSelectedParticles(Int_t np)
+{
+  AliDebug(1,Form("** Check: frag photon %d, pi0 %d, eta %d, electron %d, hadron %d, decay %d; "
+                  " in PHOS %d, EMCAL %d, Barrel %d; with pT > %2.2f GeV/c**",
+                  fFragPhotonInCalo,fPi0InCalo, fEtaInCalo,fEleInCalo,fHadronInCalo,fDecayPhotonInCalo,
+                  fCheckPHOS,fCheckEMCAL, fCheckBarrel,fTriggerParticleMinPt)); 
+    
+  Bool_t ok = kFALSE;
+  for (Int_t i=0; i< np; i++) 
+  {
+    TParticle* iparticle = (TParticle *) fParticles.At(i);
+    
+    Int_t pdg          = iparticle->GetPdgCode();
+    Int_t status       = iparticle->GetStatusCode();
+    Int_t imother      = iparticle->GetFirstMother();//- 1;
+    
+    TParticle* pmother = 0x0;
+    Int_t momStatus    = -1;
+    Int_t momPdg       = -1;
+    if(imother > 0 )
+    {  
+      pmother = (TParticle *) fParticles.At(imother);
+      momStatus    = pmother->GetStatusCode();
+      momPdg       = pmother->GetPdgCode();
+    }
+    
+    ok = kFALSE;
+
+    //
+    // Check the particle type: hadron (not pi0 or eta), electron, decay photon (from pi0 or eta or any), pi0 or eta
+    //
+    
+    // Hadron
+    if (fHadronInCalo && status == 1)
+    {
+      // avoid quarks, bosons, photons, electrons, muons, neutrinos and eta or pi0 
+      // (in case neutral mesons were declared stable)
+      if ( TMath::Abs(pdg) > 100 && pdg != 221 && pdg != 111 ) 
+      ok = kTRUE;
+    }
+    
+    // Electron
+    else if ( fEleInCalo && status == 1 && TMath::Abs(pdg) == 11 )
+    {
+      ok = kTRUE;
+    }
+    
+    // Fragmentation photon
+    else if ( fFragPhotonInCalo && pdg == 22 && status == 1 && TMath::Abs(momPdg) < 23 ) 
+    {        
+      // mother can be only q/g/strings/photon, no photon from hadron decay
+      ok = kTRUE ;  
+    }
+    
+    // Decay photon
+    else if ( fDecayPhotonInCalo && !fForceNeutralMeson2PhotonDecay && pdg == 22 && TMath::Abs(momPdg) > 100 ) 
+    {              
+      if( momStatus == 0)
+      {
+        //if(iparticle->Pt() > fTriggerParticleMinPt) 
+        //printf("Decay photon! pdg %d, status %d, pt %2.2f, mom: pdg %d, pt %2.2f\n",
+        //        pdg,status,iparticle->Pt(),momPdg,pmother->Pt());
+        ok = kTRUE ;  // photon from hadron decay
+        
+        // In case only decays from pi0 or eta requested
+        if ( fPi0InCalo && momPdg!=111 ) ok = kFALSE;
+        if ( fEtaInCalo && momPdg!=221 ) ok = kFALSE;
+      }
+    }
+    // Pi0 or Eta particle
+    else if ( fPi0InCalo || fEtaInCalo )
+    {
+      if ( fDecayPhotonInCalo && !fForceNeutralMeson2PhotonDecay ) continue ;
+      
+      if (fPi0InCalo && pdg == 111) // pi0 status can be 1 or 11 depending on decay settings
+      {
+        //if(iparticle->Pt() > fTriggerParticleMinPt) printf("Pi0! pdg %d, status %d, pt %2.2f\n",pdg,status,iparticle->Pt());
+        ok = kTRUE;
+      }      
+      else if (fEtaInCalo && pdg == 221) 
+      {
+        //if(iparticle->Pt() > fTriggerParticleMinPt) printf("Eta! pdg %d, status %d, pt %2.2f\n",pdg,status,iparticle->Pt());
+        ok = kTRUE;
+      }
+      
+    }// pi0 or eta
+    
+    //
+    // Check that the selected particle is in the calorimeter acceptance
+    //
+    if(ok && iparticle->Pt() > fTriggerParticleMinPt)
+    {
+      // Just check if the selected particle falls in the acceptance
+      if(!fForceNeutralMeson2PhotonDecay )
+      {
+        //printf("\t Check acceptance! \n");
+        Float_t phi = iparticle->Phi()*180./TMath::Pi(); //Convert to degrees
+        Float_t eta =TMath::Abs(iparticle->Eta()); //in calos etamin=-etamax	  
+        
+        if(CheckDetectorAcceptance(phi,eta,i))
+        {
+          ok =kTRUE;
+          
+          AliInfo(Form("Selected trigger pdg %d, status %d, pt %2.2f, eta %2.2f, phi %2.2f; mother pdg %d status %d",
+                       pdg,status,iparticle->Pt(), eta, phi, momPdg, momStatus));
+          
+          break;
+        }
+        else ok = kFALSE;
+      }
+      // Mesons have several decay modes, select only those decaying into 2 photons
+      else if ( fForceNeutralMeson2PhotonDecay && (fPi0InCalo || fEtaInCalo) )
+      {
+        // In case we want the pi0/eta trigger, 
+        // check the decay mode (2 photons)
+        
+        //printf("\t Force decay 2 gamma\n");          
+        
+        Int_t ndaughters = iparticle->GetNDaughters();
+        if(ndaughters != 2)
+        {
+          ok=kFALSE;
+          continue;
+        }
+        
+        TParticle*d1 = (TParticle *) fParticles.At(iparticle->GetDaughter(0)-1);
+        TParticle*d2 = (TParticle *) fParticles.At(iparticle->GetDaughter(1)-1);
+        if(!d1 || !d2) 
+        {
+          ok=kFALSE;
+          continue;
+        }
+        
+        //iparticle->Print();
+        //d1->Print();
+        //d2->Print();
+        
+        Int_t pdgD1 = d1->GetPdgCode();
+        Int_t pdgD2 = d2->GetPdgCode();
+        //printf("\t \t 2 daughters pdg = %d - %d\n",pdgD1,pdgD2);
+        //printf("mother %d - %d\n",d1->GetFirstMother(),d2->GetFirstMother());
+        
+        if(pdgD1 != 22  || pdgD2 != 22)
+        { 
+          ok = kFALSE;
+          continue;
+        }
+        
+        //printf("\t accept decay\n");
+        
+        // Trigger on the meson, not on the daughter
+        if ( !fDecayPhotonInCalo )
+        {    
+          Float_t phi = iparticle->Phi()*180./TMath::Pi(); //Convert to degrees
+          Float_t eta =TMath::Abs(iparticle->Eta()); //in calos etamin=-etamax	
+          
+          if(CheckDetectorAcceptance(phi,eta,i))
+          {
+            //printf("\t Accept meson pdg %d\n",pdg);
+            ok =kTRUE;
+            
+            AliDebug(1,Form("Selected trigger pdg %d (decay), status %d, pt %2.2f, eta %2.2f, phi %2.2f; mother pdg %d status %d",
+                            pdg,status,iparticle->Pt(), eta, phi, momPdg, momStatus));
+            
+            break;
+          } 
+          else
+          {
+            ok=kFALSE;
+            continue;
+          }
+        }
+        
+        //printf("Check daughters acceptance\n");
+        
+        // Trigger on the meson daughters
+        // Photon 1
+        Float_t phi = d1->Phi()*180./TMath::Pi(); //Convert to degrees
+        Float_t eta =TMath::Abs(d1->Eta()); //in calos etamin=-etamax	  
+        if(d1->Pt() > fTriggerParticleMinPt)
+        {
+          if(CheckDetectorAcceptance(phi,eta,i))
+          {
+            ok =kTRUE;
+            
+            AliDebug(1,Form("Selected trigger pdg %d (decay), status %d, pt %2.2f, eta %2.2f, phi %2.2f; mother pdg %d status %d",
+                            pdg,status,iparticle->Pt(), eta, phi, momPdg, momStatus));
+            
+            break;
+          }
+          else ok = kFALSE;
+        } // pt cut
+        else  ok = kFALSE;
+        
+        //Photon 2
+        phi = d2->Phi()*180./TMath::Pi(); //Convert to degrees
+        eta =TMath::Abs(d2->Eta()); //in calos etamin=-etamax	
+        
+        if(d2->Pt() > fTriggerParticleMinPt)
+        {
+          if(CheckDetectorAcceptance(phi,eta,i))
+          {
+            ok =kTRUE;
+
+            AliDebug(1,Form("Selected trigger pdg %d (decay), status %d, pt %2.2f, eta %2.2f, phi %2.2f\n",
+                            pdg,status,iparticle->Pt(), eta, phi));
+            
+            break;
+          } 
+          else ok = kFALSE;         
+        } // pt cut
+        else ok = kFALSE;
+      } // force 2 photon daughters in pi0/eta decays
+      else ok = kFALSE;
+    } else ok = kFALSE; // check acceptance
+  } // primary loop
+  
+  //
+  // If requested, rotate the particles event in phi to enhance/speed PHOS selection
+  // A particle passing all trigger conditions except phi position in PHOS, is used as reference
+  //
+  if(fCheckPHOSeta)
+  {
+    RotatePhi(ok);
+  }
+  
+  return ok;
 }
 
 void AliGenPythiaPlus::WriteXsection(const Char_t *fname) {

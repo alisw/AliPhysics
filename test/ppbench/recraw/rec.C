@@ -11,7 +11,7 @@ void rec() {
 
   reco.SetNumberOfEventsPerFile(-1); // all events in one single file
 
-  reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  reco.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s/..",gSystem->pwd()));
   reco.SetRunPlaneEff(kTRUE);

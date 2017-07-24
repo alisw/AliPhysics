@@ -17,6 +17,7 @@ template<typename T> class AliEMCALTriggerDataGrid;
 /**
  * @class AliEMCALTriggerAlgorithm
  * @brief Base class for EMCAL Level1 trigger algorithms
+ * @ingroup EMCALTriggerBase
  */
 template<typename T>
 class AliEMCALTriggerAlgorithm : public TObject {

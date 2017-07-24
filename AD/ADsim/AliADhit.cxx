@@ -17,58 +17,56 @@
 
 //_________________________________________________________________________
 //
-//      Hit class for AD detector   
-//  
+//      Hit class for AD detector
+//
 //_________________________________________________________________________
-
 
 #include "AliADhit.h"
 
-ClassImp(AliADhit)
+ClassImp(AliADhit);
 
 //_____________________________________________________________________________
 AliADhit::AliADhit()
-  : AliHit(), 
-  fModule(0),
-  fEk(0.),
-  fPt(0.),
-  fPx(0.),
-  fPy(0.),
-  fPz(0.),
-  fTof(0.),
-  fTleng(0.),
-  fEloss(0.),
-  fNphot(0),
-  fCell(0),
-  fPrimary(0),
-  fPDG(0),
-  fPDGMother(0)
+  : AliHit()
+  , fModule(0)
+  , fEk(0.)
+  , fPt(0.)
+  , fPx(0.)
+  , fPy(0.)
+  , fPz(0.)
+  , fTof(0.)
+  , fTleng(0.)
+  , fEloss(0.)
+  , fNphot(0)
+  , fCell(0)
+  , fPrimary(0)
+  , fPDG(0)
+  , fPDGMother(0)
 {
-   // Default constructor
+  // Default constructor
 }
 
 //_____________________________________________________________________________
 AliADhit::AliADhit(Int_t shunt, Int_t track, Int_t* vol, Float_t* hits)
-  : AliHit(shunt, track),
-  fModule(vol[4]),
-  fEk(hits[3]),
-  fPt(hits[4]),
-  fPx(hits[5]),
-  fPy(hits[6]),
-  fPz(hits[7]),
-  fTof(hits[8]),
-  fTleng(hits[9]),
-  fEloss(hits[10]),
-  fNphot(vol[3]),
-  fCell(vol[4]),         
-  fPrimary(vol[0]),
-  fPDG(vol[1]),
-  fPDGMother(vol[2])
+  : AliHit(shunt, track)
+  , fModule(vol[4])
+  , fEk(hits[3])
+  , fPt(hits[4])
+  , fPx(hits[5])
+  , fPy(hits[6])
+  , fPz(hits[7])
+  , fTof(hits[8])
+  , fTleng(hits[9])
+  , fEloss(hits[10])
+  , fNphot(vol[3])
+  , fCell(vol[4])
+  , fPrimary(vol[0])
+  , fPDG(vol[1])
+  , fPDGMother(vol[2])
 {
-   // Constructor
-   fX           = hits[0];      // X position of hit
-   fY           = hits[1];      // Y position of hit
-   fZ           = hits[2];      // Z position of hit   
+  fX = hits[0];      // X position of hit
+  fY = hits[1];      // Y position of hit
+  fZ = hits[2];      // Z position of hit
 }
 //_____________________________________________________________________________
 AliADhit::~AliADhit()
@@ -77,5 +75,3 @@ AliADhit::~AliADhit()
   // Default destructor.
   //
 }
-
-

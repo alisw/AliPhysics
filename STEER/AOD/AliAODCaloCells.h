@@ -64,6 +64,7 @@ class AliAODCaloCells : public AliVCaloCells
   // MC & embedding
   inline Int_t    GetCellMCLabel(Short_t cellNumber) ;
   inline Int_t    GetMCLabel(Short_t pos) const ;
+  inline void     SetMCLabel(Short_t pos, Int_t val);
   
   inline Double_t GetCellEFraction(Short_t cellNumber) ;
   inline Double_t GetEFraction(Short_t pos) const ;  
@@ -301,6 +302,13 @@ Int_t AliAODCaloCells::GetMCLabel(Short_t pos) const
     return fMCLabel[pos];
   } else {
     return 0;
+  }
+}
+
+void AliAODCaloCells::SetMCLabel(Short_t pos, Int_t val)
+{ 
+  if (pos>=0 && pos<fNCells && fMCLabel) {
+    fMCLabel[pos] = val;
   }
 }
 

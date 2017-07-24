@@ -1,4 +1,5 @@
 /// \class AliEMCALTriggerOnlineQAPP
+/// \ingroup EMCALTriggerBase
 /// \brief Class to generate EMCal trigger QA plots in pp collisions
 ///
 /// This class generates QA plots for EMCal trigger in pp collisions

@@ -23,7 +23,7 @@ void testSt345ReadPCB()
   AliMpDataStreams dataStreams(dataMap);
 
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
-  AliMpSt345Reader r(dataStreams, motifMap);
+  AliMpSt345Reader r(motifMap);
 
   const char* pcbToTest[] = { "B1", "B2", "B3+", "B3-", "N1", "N2+", "N2-", 
   "N3", "R1B", "R1N", "R2B", "R2N", "R3B", "R3N", "S2B-", "S2B+", "S2N" };
@@ -33,7 +33,7 @@ void testSt345ReadPCB()
   
   for ( Int_t i = 0; i < N; ++i )
   {
-    AliMpPCB* pcb = r.ReadPCB(pcbToTest[i]);
+    AliMpPCB* pcb = r.ReadPCB(dataStreams,pcbToTest[i]);
     if (pcb)
     {
       ++ok;

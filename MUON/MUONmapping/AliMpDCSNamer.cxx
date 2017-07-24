@@ -95,6 +95,7 @@ const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "vEff", "actual.iMon" };
 
 const char* AliMpDCSNamer::fgkDetectorName[] = { "TRACKER", "TRIGGER" };
 
+
 //_____________________________________________________________________________
 AliMpDCSNamer::AliMpDCSNamer():
 fDetector(-1)
@@ -551,6 +552,55 @@ AliMpDCSNamer::DCSAliasFromName(const char* dcsName) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliMpDCSNamer::GetElementsFromDCSMCHLVAlias(TString alias,
+                                                   Int_t &chamberNumber,
+                                                   Int_t &groupNumber,
+                                                   TString &voltageType) const
+{
+  /// Extract chamberNumber, groupNumber and voltageType from the MCH LV DCS alias
+  ///
+  /// This method is more work than the bare sscanf it replaces, but hopefully safer ?
+
+  if (!alias.BeginsWith("MchHvLvLeft") && !alias.BeginsWith("MchHvLvRight")) {
+    AliError(Form("alias %s does not start with the expected MchHvLvLeft or MchHvLvRight string",alias.Data()));
+    return kFALSE;
+  }
+
+  Int_t slash = alias.Index('/');
+
+  alias = alias(slash+1,alias.Length()-slash-1);
+
+  if (!alias.BeginsWith("Chamber")) {
+    AliError(Form("alias part %s does not start with the expected Chamber string",alias.Data()));
+    return kFALSE;
+  }
+
+  chamberNumber = TString(alias(TString("Chamber").Length(),2)).Atoi();
+
+  slash = alias.Index('/');
+
+  alias = alias(slash+1,alias.Length()-slash-1);
+
+  if (!alias.BeginsWith("Group")) {
+    AliError(Form("alias part %s does not start with the expected Group string",alias.Data()));
+    return kFALSE;
+  }
+
+  groupNumber = TString(alias(TString("Group").Length(),1)).Atoi();
+
+  int dot = alias.Index('.');
+
+  voltageType = alias(TString("Group").Length()+1,dot-TString("Group").Length()-1);
+
+  if ( voltageType != "anp" && voltageType != "ann" && voltageType != "dig") {
+    AliError(Form("alias part (voltageType) %s does not contain one of anp,ann or dig voltageType",alias.Data()));
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliMpDCSNamer::DecodeDCSMCHLVAlias(const char* dcsAlias, Int_t*& detElemId, Int_t& numberOfDetectionElements, AliMp::PlaneType& planeType ) const
 {
   /// Decode a MCH LV dcs alias in order to get :
@@ -588,7 +638,7 @@ Bool_t AliMpDCSNamer::DecodeDCSMCHLVAlias(const char* dcsAlias, Int_t*& detElemI
   Int_t chamberNumber, groupNumber;
   TString voltageType;
 
-  sscanf(salias.Data(),fgkDCSMCHLVGroupPattern[side],&chamberNumber,&groupNumber,&voltageType[0]);
+  GetElementsFromDCSMCHLVAlias(salias,chamberNumber,groupNumber,voltageType);
 
   if ( chamberNumber >= 1 && chamberNumber <= 4 )
   {

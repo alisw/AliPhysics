@@ -407,7 +407,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
     return kFALSE;
   }
   
-  //If the distance to the border is 0 or negative just exit accept all clusters
+  // If the distance to the border is 0 or negative just exit accept all clusters
   if (cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) 
     return kTRUE;
   
@@ -420,45 +420,57 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   
   if (absIdMax==-1) return kFALSE;
   
-  //Check if the cell is close to the borders:
+  // Check if the cell is close to the borders:
   Bool_t okrow = kFALSE;
   Bool_t okcol = kFALSE;
   
-  if (iSM < 0 || iphi < 0 || ieta < 0 ) {
+  if (iSM < 0 || iphi < 0 || ieta < 0 ) 
+  {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
     return kFALSE; // trick coverity
   }
   
-  //Check rows/phi
+  // Check rows/phi
   Int_t iPhiLast = 24;
-   if( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
-   else if (  geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd ) iPhiLast /= 3;// 1/3 sm case
-  
+   if      ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
+   else if ( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd  ) iPhiLast /= 3;// 1/3 sm case
+   else if ( geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Ext   ) iPhiLast /= 3;// 1/3 sm case
+
   if(iphi >= fNCellsFromEMCALBorder && iphi < iPhiLast - fNCellsFromEMCALBorder) okrow = kTRUE; 
 
-  //Check columns/eta
+  // Check columns/eta
   Int_t iEtaLast = 48;
-  if(!fNoEMCALBorderAtEta0 || geom->IsDCALSM(iSM)) {// conside inner border
-     if(  geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  iEtaLast = iEtaLast*2/3;        
-     if(ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder) okcol = kTRUE;  
-  } else {
-    if (iSM%2==0) {
-     if (ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;  
-    } else {
-     if(ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE; 
+  if ( !fNoEMCALBorderAtEta0 || geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard ) 
+  {
+    // consider inner border
+    if ( geom->IsDCALSM(iSM) ) iEtaLast = iEtaLast*2/3;        
+  
+    if ( ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder ) okcol = kTRUE;  
+  } 
+  else 
+  {
+    if (iSM%2==0) 
+    {
+     if (ieta >= fNCellsFromEMCALBorder)           okcol = kTRUE;  
+    } 
+    else 
+    {
+     if (ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE; 
     }
   }//eta 0 not checked
   
   AliDebug(2,Form("EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d:  column? %d, row? %d\nq",
                   fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
   
-  if (okcol && okrow) {
-    //printf("Accept\n");
+  if (okcol && okrow) 
+  {
     return kTRUE;
-  } else  {
-    //printf("Reject\n");
+  } 
+  else
+  {
     AliDebug(2,Form("Reject cluster in border, max cell : ieta %d, iphi %d, SM %d\n",ieta, iphi, iSM));
+    
     return kFALSE;
   }
 }  
@@ -468,7 +480,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 /// in fEMCALBadChannelMap 
 ///
 /// \param geom: AliEMCALGeometry pointer
-/// \param cellsList: list of cells absolute ID in cluster
+/// \param cellList: list of cells absolute ID in cluster
 /// \param nCells: number of cells in cluster
 ///
 /// \return bool, true if cluster contains a bad channel
@@ -585,7 +597,6 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
 /// Do before recalibrating the cells.
 ///
 /// \param absID: controlled cell absolute ID number
-/// \param tcell: time of cell under control
 /// \param cells: full list of cells
 /// \param bc: bunch crossing number
 ///
@@ -1130,7 +1141,7 @@ Float_t  AliEMCALRecoUtils::GetDepth(Float_t energy,
 /// \param cells: full list of cells
 /// \param clu: pointer to AliVCluster
 /// \param absId: absolute id number of cell with highest energy in cluster
-/// \param iSupmod: supermodule number of cell with highest energy in cluster
+/// \param iSupMod: supermodule number of cell with highest energy in cluster
 /// \param ieta: column number of cell with highest energy in cluster
 /// \param iphi: row number of cell with highest energy in cluster
 /// \param shared: cluster is shared between 2 supermodules
@@ -1550,9 +1561,10 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
 ///
 /// Recalibrate time of cell from AbsID number considering cell calibration map 
 ///
-/// \param absID: cell absolute ID number
+/// \param absId: cell absolute ID number
 /// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
 /// \param celltime: cell time to be returned calibrated
+/// \param isLGon: low gain time calibration on/off
 ///
 //_______________________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & celltime, Bool_t isLGon) const
@@ -1608,7 +1620,7 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
 /// \param mc       MC event pointer, to identify the generator
 /// \param absID    ID of the cell
 /// \param amp      amplitude of the cell, to be recalculated if extra generators are removed
-/// \param labelArr list of MC labels associated to the cell
+/// \param labeArr  list of MC labels associated to the cell
 /// \param eDepArr  list of MC energy depositions in the cell corresponding to each MC label
 ///
 //______________________________________________________________________________
@@ -1711,7 +1723,7 @@ void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, 
 ///
 /// \param geom: EMCal geometry pointer
 /// \param cells: list of EMCal cells with signal
-/// \param cluster: EMCal cluster subject to position recalculation
+/// \param clu: EMCal cluster subject to position recalculation
 ///
 //______________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom, 
@@ -1735,7 +1747,7 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom,
 ///
 /// \param geom: EMCal geometry pointer
 /// \param cells: list of EMCal cells with signal
-/// \param cluster: EMCal cluster subject to position recalculation
+/// \param clu: EMCal cluster subject to position recalculation
 ///
 //_____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, 
@@ -1822,7 +1834,7 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
 ///
 /// \param geom: EMCal geometry pointer
 /// \param cells: list of EMCal cells with signal
-/// \param cluster: EMCal cluster subject to position recalculation
+/// \param clu: EMCal cluster subject to position recalculation
 ///
 //____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALGeometry *geom, 
@@ -2348,6 +2360,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 /// \param event: event pointer
 /// \param clusterArr: list of clusters
 /// \param geom: AliEMCALGeometry pointer
+/// \param mc: AliMCEvent pointer
 ///
 //____________________________________________________________________________
 void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
@@ -2736,6 +2749,7 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 /// \param step: ...
 /// \param minpt: minimum track pT for matching
 /// \param useMassForTracking: switch to use the mass hypothesis
+/// \param useDCA: switch to use different track vertex
 ///
 /// \return bool true if track could be extrapolated
 ///
@@ -3080,7 +3094,7 @@ Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
 ///
 /// Given a cluster index, it returns if the cluster has a match.
 ///
-/// \param trkIndex: cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
+/// \param clsIndex: cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
 ///
 /// \return bool true if cluster is matched
 ///
@@ -3096,7 +3110,7 @@ Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex) const
 ///
 /// Given a track index, it returns if the track has a match.
 ///
-/// \param clsIndex: cluster index as in AliESDEvent::GetTrack(trkIndex)
+/// \param trkIndex: track index as in AliESDEvent::GetTrack(trkIndex)
 ///
 /// \return bool true if cluster is matched
 ///

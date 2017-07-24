@@ -686,6 +686,12 @@ Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
   }
   //
   if (!params[0]) return 0;
+  if (params[2]<0) {
+    ::Error("TStatToolkit::LTMUnbinned","rounding error in RMS<0");
+    // current fast algorithm N  -  Sometimes rounding errors can lead to negative RMS
+    // more precise algorithm N2
+    throw 1;
+  }
   params[2] = TMath::Sqrt(params[2]);
   params[3] = params[2]/TMath::Sqrt(params[0]); // error on mean
   params[4] = params[3]/TMath::Sqrt(2.0); // error on RMS

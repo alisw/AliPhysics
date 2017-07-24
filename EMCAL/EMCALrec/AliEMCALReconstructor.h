@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALReconstructor
+/// \ingroup EMCALrec
 /// \brief Wrapping class for EMCal reconstruction
 ///
 /// Wrapping class for EMCal reconstruction.
