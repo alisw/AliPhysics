@@ -246,15 +246,19 @@ void AliRsnEvent::SetDaughterESDv0(AliRsnDaughter &out, Int_t i)
             if (mc && tp && tn) {
                Int_t lp = TMath::Abs(tp->GetLabel());
                Int_t ln = TMath::Abs(tn->GetLabel());
-               TParticle *pp = mc->Stack()->Particle(lp);
-               TParticle *pn = mc->Stack()->Particle(ln);
+               TParticle *pp = ((AliMCParticle*)mc->GetTrack(lp))->Particle();
+               TParticle *pn = ((AliMCParticle*)mc->GetTrack(ln))->Particle();
+               //TParticle *pp = mc->Stack()->Particle(lp); // old way to read MC
+               //TParticle *pn = mc->Stack()->Particle(ln); // old way to read MC
                if (pp && pn) {
                   // if their first mothers are the same, the V0 is true
                   // otherwise label remains '-1' --> fake V0
                   if (pp->GetFirstMother() == pn->GetFirstMother() && pp->GetFirstMother() >= 0) {
                      out.SetLabel(pp->GetFirstMother());
                      //patch for k0s/k0l
-                     TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother());
+                      TParticle *mom = ((AliMCParticle*)mc->GetTrack(pn->GetFirstMother()))->Particle();
+                     //TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother()); // old way to read MC
+
                      if(mom->GetPdgCode() == 310) {
                         //take the mother of the k0s which is a k0 (311)
                         out.SetLabel(mom->GetFirstMother());
