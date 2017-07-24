@@ -9,6 +9,7 @@
  
 #include "AliFIT.h"
 #include "TGraph.h"
+#include "TGeoVolume.h"
 #include <sstream>
 class AliFITv7 : public AliFIT {
   
@@ -32,6 +33,8 @@ public:
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   Bool_t RegisterPhotoE(Double_t energy);
+  void SetVZEROGeo(TGeoVolume *alice);
+  void SetOneMCP(TGeoVolume *stl);
   virtual void   StepManager();
   // void SetPMTeff();
 

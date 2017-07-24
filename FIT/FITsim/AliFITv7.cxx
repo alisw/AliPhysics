@@ -162,13 +162,6 @@ void AliFITv7::CreateGeometry()
   Float_t pstartC[3] = {20., 20 ,5};
   Float_t pstartA[3] = {20, 20 ,5};
   Float_t pinstart[3] = {2.95,2.95,4.34};
-  Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
-  Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
-  Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
-  Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
-  Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
-  Double_t prfh[3]= {1.323,0.0002, 1.};//horizontal refracting layer bettwen radiators a 
-  Double_t pal[3]= {2.648,2.648, 0.25};  // 5mm Al top on th eeach radiator
 
   AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   
@@ -302,9 +295,25 @@ void AliFITv7::CreateGeometry()
   TGeoRotation * rotC = new TGeoRotation( "rotC",90., 0., 90., 90., 180., 0.);
   alice->AddNode(stlinC,1, new TGeoCombiTrans(0., 0., -zdetC , rotC) );
   
-  x=0;
-  y=0;
-   
+  SetOneMCP(ins);
+  
+  SetVZEROGeo(alice);
+  
+}
+//_________________________________________
+void AliFITv7::SetOneMCP(TGeoVolume *ins)
+{
+  cout<<"AliFITv7::SetOneMCP "<<ins<<endl;
+  Double_t x,y,z;
+  Int_t *idtmed = fIdtmed->GetArray();
+  Float_t pinstart[3] = {2.95,2.95,4.34};
+  Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
+  Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
+  Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
+  Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
+  Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
+  Double_t prfh[3]= {1.323,0.0002, 1.};//horizontal refracting layer bettwen radiators a 
+  Double_t pal[3]= {2.648,2.648, 0.25};  // 5mm Al top on th eeach radiator
   // Entry window (glass)
   TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass radiator
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
@@ -326,6 +335,7 @@ void AliFITv7::CreateGeometry()
   //wrapped radiator +  reflectiong layers 
   Int_t ntops=0, nrfvs=0, nrfhs=0;
   Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
+  x=y=z=0;
   topref->AddNode(top, 1, new TGeoTranslation(0,0,0) );
   xinv = -ptop[0] - prfv[0];
   topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
@@ -362,11 +372,13 @@ void AliFITv7::CreateGeometry()
   z=-pinstart[2] + 2*pal[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
   //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
+}
   
-
- 
+//_________________________________________
+void AliFITv7::SetVZEROGeo(TGeoVolume *alice)
+{ 
   //V0+
-
+  cout<<" AliFITv7::SetVZEROGeo "<<alice<<endl;
   const int kV0PlusColorSci   = 5;
   TGeoMedium *medV0PlusSci = gGeoManager->GetMedium("FIT_V0PlusSci");
   Double_t Pi = TMath::Pi();
