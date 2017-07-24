@@ -576,7 +576,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsMCTruth(AliReducedTrackInfo* track) {
    //
    if(TMath::Abs(track->MCPdg(0)) != 11) return kFALSE;
    if(TMath::Abs(track->MCPdg(1)) != 443) return kFALSE;
-   if(track->MCPdg(2) != -9999) return kFALSE;
+   //   if(track->MCPdg(2) != -9999) return kFALSE;
    return kTRUE;
 }
 
@@ -589,8 +589,8 @@ Bool_t AliReducedAnalysisJpsi2ee::IsMCTruth(AliReducedTrackInfo* ptrack, AliRedu
    if(TMath::Abs(ntrack->MCPdg(0)) != 11) return kFALSE;
    if(TMath::Abs(ptrack->MCPdg(1)) != 443) return kFALSE;
    if(TMath::Abs(ntrack->MCPdg(1)) != 443) return kFALSE;
-   if(ptrack->MCPdg(2) != -9999) return kFALSE;
-   if(ntrack->MCPdg(2) != -9999) return kFALSE;   
+   //if(ptrack->MCPdg(2) != -9999) return kFALSE;
+   //if(ntrack->MCPdg(2) != -9999) return kFALSE;   
    if(TMath::Abs(ptrack->MCLabel(1)) != TMath::Abs(ntrack->MCLabel(1))) return kFALSE;
    return kTRUE;
 }
