@@ -159,6 +159,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
     fHist_ZDCC_En_Run[i]  = NULL;
 
     fHist_ZDCAC_AvgCosSin_Run[i] = NULL;
+    fHist_ZDCCxy_RunByRun[i]  = NULL;
+    fHist_ZDCAxy_RunByRun[i]  = NULL;
 
     for(int j=0;j<10;j++){
      fHist_znCx_V0_VxVy[i][j] = NULL;
@@ -329,6 +331,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     fHist_ZDCC_En_Run[i]  = NULL;
 
     fHist_ZDCAC_AvgCosSin_Run[i] = NULL;
+    fHist_ZDCCxy_RunByRun[i]  = NULL;
+    fHist_ZDCAxy_RunByRun[i]  = NULL;
 
     for(int j=0;j<10;j++){
      fHist_znCx_V0_VxVy[i][j] = NULL;
@@ -613,6 +617,8 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
   //Shift-vs- run,Cent
   for(int i=0; i<90; i++){
     fHist_ZDCAC_AvgCosSin_Run[i] = new TProfile2D(Form("fHist_ZDCAC_AvgCosSin_Run%d",runArray_2015[i]),"",60,0,60,8,0,8,"");
+    fHist_ZDCCxy_RunByRun[i]  = new TH3F(Form("fHist_ZDCCxy_Run%d",runArray_2015[i]),"",40,4,45, 40,-2.0,2.0, 40,-2.0,2.0);
+    fHist_ZDCAxy_RunByRun[i]  = new TH3F(Form("fHist_ZDCAxy_Run%d",runArray_2015[i]),"",40,4,45, 40,-2.0,2.0, 40,-2.0,2.0);
   }
 
   fHist_XXYY_vs_Cent_woCorr[0] = new TProfile(Form("fHist_XXminusYY_vs_Cent_woCorr"),"XX-YY",90,0,90,"");
@@ -1898,7 +1904,11 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     fHist_ZDCAC_AvgCosSin_Run[runindex]->Fill(EvtCent,7.5,TMath::Sin(2.*(Psi1C+Psi1A)));
   }
 
-  fHist_Event_counter_vRun->Fill(runindex);
+  if(EvtCent>5 && EvtCent<45){
+    fHist_ZDCCxy_RunByRun[runindex]->Fill(EvtCent,xyZNC[0],xyZNC[1]);
+    fHist_ZDCAxy_RunByRun[runindex]->Fill(EvtCent,xyZNA[0],xyZNA[1]);
+    fHist_Event_counter_vRun->Fill(runindex);
+  }
 
 
   if(bFillZDCQAon){
