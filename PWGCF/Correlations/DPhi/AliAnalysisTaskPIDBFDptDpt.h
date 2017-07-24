@@ -34,7 +34,8 @@ public:
  
   //PID functions
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
-  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method.
+  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_by_P( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
   void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
@@ -106,6 +107,7 @@ public:
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
+    virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
@@ -190,6 +192,7 @@ protected:
     int      _debugLevel;
     int      _singlesOnly;
     bool      PIDparticle;
+    bool      use_pT_cut;
     bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
