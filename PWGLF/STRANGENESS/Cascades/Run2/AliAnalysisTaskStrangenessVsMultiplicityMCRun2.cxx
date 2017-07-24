@@ -357,6 +357,7 @@ fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
 fTreeCascVarV0Lifetime(0),
+fTreeCascVarV0ChiSquare(0),
 fTreeCascVarMagField(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -685,6 +686,7 @@ fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
 fTreeCascVarV0Lifetime(0),
+fTreeCascVarV0ChiSquare(0),
 fTreeCascVarMagField(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -1082,6 +1084,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarCascadeDecayZMC",&fTreeCascVarCascadeDecayZMC,"fTreeCascVarCascadeDecayZMC/F");
             
             fTreeCascade->Branch("fTreeCascVarV0Lifetime",&fTreeCascVarV0Lifetime,"fTreeCascVarV0Lifetime/F");
+            fTreeCascade->Branch("fTreeCascVarV0ChiSquare",&fTreeCascVarV0ChiSquare,"fTreeCascVarV0ChiSquare/F");
             fTreeCascade->Branch("fTreeCascVarMagField",&fTreeCascVarMagField,"fTreeCascVarMagField/F");
             //Track Labels (check for duplicates, etc)
             
@@ -2301,7 +2304,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         xi->ChangeMassHypothesis(lV0quality , 3312); // default working hypothesis : cascade = Xi- decay
 
         lEffMassXi  			= xi->GetEffMassXi();
-        //lChi2Xi 			    = xi->GetChi2Xi();
+        fTreeCascVarV0ChiSquare = xi->GetChi2Xi();
         lDcaXiDaughters 	= xi->GetDcaXiDaughters();
         lXiCosineOfPointingAngle 	            = xi->GetCascadeCosineOfPointingAngle( lBestPrimaryVtxPos[0],
                 lBestPrimaryVtxPos[1],
