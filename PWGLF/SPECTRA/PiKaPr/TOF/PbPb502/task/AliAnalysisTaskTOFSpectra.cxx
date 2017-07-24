@@ -188,6 +188,7 @@ fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fRecalibrateTOF(kFALSE),
 fFineTOFReso(kFALSE),
+fFineEfficiency(kFALSE),
 
 //Mask for physics selection
 fSelectBit(AliVEvent::kINT7),
