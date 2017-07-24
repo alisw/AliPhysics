@@ -161,6 +161,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistTOFsignal(0x0),
   fHistTOFdeusignal(0x0),
   fHistTOFprosignal(0x0),
+  fHistTOFpionsignal(0x0),
   //fHistTOFdeumass(0x0),
   //fHistTOFpromass(0x0),
   fHistpionTPCcls(0x0),
@@ -1125,6 +1126,8 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs p - proton; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
+  fHistTOFpionsignal = new TH2F("fHistTOFpionsignal","#beta vs p - pion; p (GeV/c); #beta",400,0.,4,400,0.,1.1);
+
   //fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
 
   //fHistTOFpromass = new TH1F("fHistTOFpromass","proton mass distribution - TOF; mass (GeV/c^{2}); entries",200,0.5,1.5);
@@ -1306,6 +1309,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistTOFsignal);
   fOutput->Add(fHistTOFdeusignal);
   fOutput->Add(fHistTOFprosignal);
+  fOutput->Add(fHistTOFpionsignal);
   //fOutput->Add(fHistTOFdeumass);
   //fOutput->Add(fHistTOFpromass);
   fOutput->Add(fHistpionTPCcls);
@@ -1763,12 +1767,15 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     }
       if(!fESDtrackCutsV0->AcceptTrack(track)) continue;
 
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= fPionTPCSigmas) { //pion^+
+      if(PassPIDSelection(track,AliPID::kPion, useTOF,fPionTPCSigmas)) { //pion^+
           fHistTPCpionsignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
           fHistDCApiprimary->Fill(dca_prim);
           fHistDCAXYpiprimary->Fill(dcaprim[0]);
           fHistDCAZpiprimary->Fill(dcaprim[1]);
           fHistpionTPCcls->Fill(track->GetTPCclusters(0));
+          if(useTOF){
+            fHistTOFpionsignal->Fill(p,beta);
+          }
           if(dca_prim < fDCAPiPVmin) continue;
           if(positive) cpionplus[nPioPlusTPC++] = i;
           if(negative) cpionminus[nPioMinusTPC++] = i;
