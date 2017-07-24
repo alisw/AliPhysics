@@ -626,7 +626,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3D ("hEtaVsPhiVsM02", "", 250, -0.8, 0.8, 250, 1.2, 3.4, 300, 0., 3.);
+	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "", 225, -0.72, 0.72, 225, 1.31, 3.29, 125, 0., 2.5);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
@@ -930,11 +930,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
-  fClusEtVsEtaPhiMatched = new TH3D ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 250, -0.8, 0.8, 250, 1.2, 3.4, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 225, -0.72, 0.72, 225, 1.31, 3.29, 100, 0., 100.);
   fClusEtVsEtaPhiMatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiMatched);
 
-  fClusEtVsEtaPhiUnmatched = new TH3D ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 250, -0.8, 0.8, 250, 1.2, 3.4, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 225, -0.72, 0.72, 225, 1.31, 3.29, 100, 0., 100.);
   fClusEtVsEtaPhiUnmatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
