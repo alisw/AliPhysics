@@ -284,8 +284,12 @@ private:
     TH1D *fHistQA_V0C;
     TH1D *fHistQA_CL0; 
     TH1D *fHistQA_CL1;
+    TH1D *fHistQA_SPDClusters;
+    TH1D *fHistQA_SPDTracklets;
     TH1D *fHistQA_ZNA;
     TH1D *fHistQA_ZNC;
+    TH1D *fHistQA_ZNApp;
+    TH1D *fHistQA_ZNCpp;
     TProfile *fHistQA_TrackletsVsV0M; 
     TProfile *fHistQA_TrackletsVsCL0; 
     TProfile *fHistQA_TrackletsVsCL1; 
@@ -295,8 +299,12 @@ private:
     TH1D *fHistQASelected_V0C;
     TH1D *fHistQASelected_CL0; 
     TH1D *fHistQASelected_CL1;
+    TH1D *fHistQASelected_SPDClusters;
+    TH1D *fHistQASelected_SPDTracklets;
     TH1D *fHistQASelected_ZNA;
     TH1D *fHistQASelected_ZNC;
+    TH1D *fHistQASelected_ZNApp;
+    TH1D *fHistQASelected_ZNCpp;
     TProfile *fHistQASelected_TrackletsVsV0M;
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
@@ -322,7 +330,8 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 2);
+    ClassDef(AliMultSelectionTask, 3);
+    //3 - extra QA histograms
 };
 
 #endif
