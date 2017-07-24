@@ -103,6 +103,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
   fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
+  fTCardCorrInduceEnerFracWidth[0] = fTCardCorrInduceEnerFracWidth[1] = fTCardCorrInduceEnerFracWidth[2] = 0 ;   
 }
 
 //______________________________________________________________
@@ -152,6 +153,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
   fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
+  fTCardCorrInduceEnerFracWidth[0] = fTCardCorrInduceEnerFracWidth[1] = fTCardCorrInduceEnerFracWidth[2] = 0 ;   
 }
 
 //_______________________________________________________________
@@ -1672,9 +1674,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     // Check if originally the tower had no or little energy, in which case tag it as new
     // CAREFUL: <<Apply the same added shift to all for the moment>>.
     
-    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0],0.01);
-//    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],0.01);
-//    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],0.01);
+    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracWidth[0]);
+//  Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracWidth[1]);
+//  Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracWidth[2]);
     Float_t fracCupdown = fracRupdown;
     Float_t fracC       = fracRupdown;
     
