@@ -602,13 +602,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   
   if(sDataSet=="2015") {
     TFile* RefMultRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvRefMult_HIR.root","READ");
-    if(!CenWeightsFile) {
+    if(!RefMultRbRFile) {
       cout << "ERROR: RefMultRbRFile not found!" << endl;
       exit(1);
     }
     TCanvas* cav = (TCanvas*)(RefMultRbRFile->Get("Canvas_1"));
     TProfile2D* RefMultPro = (TProfile2D*)(cav->GetPrimitive("fhAvRefMulRbR"));
-    if(CenHist) {
+    if(RefMultPro) {
       taskQC->SetRefMultRbRPro(RefMultPro);
       cout << "RefMultRbR set (15o_AvRefMult_HIR.root)" << endl;
     }
