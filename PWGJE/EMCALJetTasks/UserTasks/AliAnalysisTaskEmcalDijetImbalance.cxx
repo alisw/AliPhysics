@@ -195,13 +195,30 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  if (fPlotJetHistograms) AllocateJetHistograms();
-  if (fPlotDijetCandHistograms) AllocateDijetCandHistograms();
-  if (fPlotDijetImbalanceHistograms) AllocateDijetImbalanceHistograms();
-  if (fDoMomentumBalance) AllocateMomentumBalanceHistograms();
-  if (fDoGeometricalMatching) AllocateGeometricalMatchingHistograms();
-  if (fDoCaloStudy) AllocateCaloHistograms();
-  if (fDoTriggerSimulation) AllocateTriggerSimHistograms();
+  if (fPlotJetHistograms) {
+    AllocateJetHistograms();
+  }
+  if (fComputeBackground) {
+    AllocateBackgroundHistograms();
+  }
+  if (fPlotDijetCandHistograms) {
+    AllocateDijetCandHistograms();
+  }
+  if (fPlotDijetImbalanceHistograms) {
+    AllocateDijetImbalanceHistograms();
+  }
+  if (fDoMomentumBalance) {
+    AllocateMomentumBalanceHistograms();
+  }
+  if (fDoGeometricalMatching) {
+    AllocateGeometricalMatchingHistograms();
+  }
+  if (fDoCaloStudy) {
+    AllocateCaloHistograms();
+  }
+  if (fDoTriggerSimulation) {
+    AllocateTriggerSimHistograms();
+  }
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -333,33 +350,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins5, min5, max5);
     }
     
-    // Allocate background subtraction histograms, if enabled
-    if (fComputeBackground) {
-      
-      histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
-      title = histname + ";Centrality;Scale factor;counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
-      
-      histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
-      title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
-      
-      histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEtaPhi", jets->GetArrayName().Data());
-      title = histname + ";#eta;#phi;Centrality;Scale factor;";
-      Int_t nbins[4]  = {fNEtaBins, fNPhiBins, 50, 400};
-      Double_t min[4] = {-0.5,1., 0, 0};
-      Double_t max[4] = {0.5,6., 100, 20};
-      fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
-      
-      histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEtaPhi", jets->GetArrayName().Data());
-      title = histname + ";#eta;#phi;Centrality;#delta#it{p}_{T} (GeV/#it{c})";
-      Int_t nbinsDpT[4]  = {fNEtaBins, fNPhiBins, 10, 400};
-      Double_t minDpT[4] = {-0.5,1., 0, -50};
-      Double_t maxDpT[4] = {0.5,6., 100, 150};
-      fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsDpT, minDpT, maxDpT);
-      
-    }
-    
   }
   
   // MB downscale factor histogram
@@ -369,6 +359,46 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
   }
   
+}
+
+/*
+ * This function allocates background subtraction histograms, if enabled.
+ * A set of histograms is allocated per each jet container.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::AllocateBackgroundHistograms()
+{
+  TString histname;
+  TString title;
+  
+  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
+  
+  AliJetContainer* jets = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality;Scale factor;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEtaPhi", jets->GetArrayName().Data());
+    title = histname + ";#eta;#phi;Centrality;Scale factor;";
+    Int_t nbins[4]  = {fNEtaBins, fNPhiBins, 50, 400};
+    Double_t min[4] = {-0.5,1., 0, 0};
+    Double_t max[4] = {0.5,6., 100, 20};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
+    
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEtaPhi", jets->GetArrayName().Data());
+    title = histname + ";#eta;#phi;Centrality;#delta#it{p}_{T} (GeV/#it{c})";
+    Int_t nbinsDpT[4]  = {fNEtaBins, fNPhiBins, 10, 400};
+    Double_t minDpT[4] = {-0.5,1., 0, -50};
+    Double_t maxDpT[4] = {0.5,6., 100, 150};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsDpT, minDpT, maxDpT);
+    
+  }
 }
 
 /*
@@ -1678,7 +1708,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetC
 /**
  * This function performs a study of the heavy-ion background.
  */
-void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetCont)
+void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground()
 {
   // Loop over tracks and clusters in order to:
   //   (1) Compute scale factor for full jets
@@ -1702,175 +1732,182 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
   Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
   
-  // Define fiducial acceptances, to be used to generate random cones
-  TRandom3* r = new TRandom3(0);
-  Double_t jetR = jetCont->GetJetRadius();
-  Double_t accRC = TMath::Pi() * jetR * jetR;
-  Double_t etaEMCalfid = etaEMCal - jetR;
-  Double_t phiMinEMCalfid = phiMinEMCal + jetR;
-  Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
-  Double_t phiMinDCalRegionfid = phiMinDCal + jetR;
-  Double_t phiMaxDCalRegionfid = phiMaxDCal - jetR;
+  // Loop over jet containers
+  AliJetContainer* jetCont = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
   
-  // Generate EMCal random cone eta-phi
-  Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
-  Double_t phiEMCalRC = r->Uniform(phiMinEMCalfid, phiMaxEMCalfid);
-  
-  // For eta-phi correction, generate random eta, phi in each eta/phi bin, to be used as center of random cone
-  Double_t etaDCalRC[fNEtaBins]; // array storing the RC eta values
-  Double_t etaStep = 1./fNEtaBins;
-  Double_t etaMin;
-  Double_t etaMax;
-  for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
-    etaMin = -etaEMCalfid + etaBin*etaStep;
-    etaMax = etaMin + etaStep;
-    etaDCalRC[etaBin] = r->Uniform(etaMin, etaMax);
-  }
-  
-  Double_t phiDCalRC[fNPhiBins]; // array storing the RC phi values
-  Double_t phiStep = 5./fNPhiBins; // phi axis is [1,6] in order to have simple binning
-  Double_t phiMin;
-  Double_t phiMax;
-  for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
-    phiMin = 1 + phiBin*phiStep;
-    phiMax = phiMin + phiStep;
-    phiDCalRC[phiBin] = r->Uniform(phiMin, phiMax);
-  }
-  
-  // Initialize the various sums to 0
-  Double_t trackPtSumTPC = 0;
-  Double_t trackPtSumEMCal = 0;
-  Double_t trackPtSumEMCalRC = 0;
-  Double_t clusESumEMCal = 0;
-  Double_t clusESumEMCalRC = 0;
-  
-  // Define a 2D vector (initialized to 0) to store the sum of track pT, and another for cluster ET
-  std::vector<std::vector<Double_t>> trackPtSumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
-  std::vector<std::vector<Double_t>> clusESumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
-  
-  // Loop over tracks. Sum the track pT:
-  // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
-  // (4) in a random cone at each eta-phi
-  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
-  AliTLorentzVector track;
-  Double_t trackEta;
-  Double_t trackPhi;
-  Double_t trackPt;
-  Double_t deltaR;
-  for (auto trackIterator : trackCont->accepted_momentum() ) {
+    // Define fiducial acceptances, to be used to generate random cones
+    TRandom3* r = new TRandom3(0);
+    Double_t jetR = jetCont->GetJetRadius();
+    Double_t accRC = TMath::Pi() * jetR * jetR;
+    Double_t etaEMCalfid = etaEMCal - jetR;
+    Double_t phiMinEMCalfid = phiMinEMCal + jetR;
+    Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
+    Double_t phiMinDCalRegionfid = phiMinDCal + jetR;
+    Double_t phiMaxDCalRegionfid = phiMaxDCal - jetR;
     
-    track.Clear();
-    track = trackIterator.first;
-    trackEta = track.Eta();
-    trackPhi = track.Phi_0_2pi();
-    trackPt = track.Pt();
+    // Generate EMCal random cone eta-phi
+    Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
+    Double_t phiEMCalRC = r->Uniform(phiMinEMCalfid, phiMaxEMCalfid);
+    
+    // For eta-phi correction, generate random eta, phi in each eta/phi bin, to be used as center of random cone
+    Double_t etaDCalRC[fNEtaBins]; // array storing the RC eta values
+    Double_t etaStep = 1./fNEtaBins;
+    Double_t etaMin;
+    Double_t etaMax;
+    for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
+      etaMin = -etaEMCalfid + etaBin*etaStep;
+      etaMax = etaMin + etaStep;
+      etaDCalRC[etaBin] = r->Uniform(etaMin, etaMax);
+    }
+    
+    Double_t phiDCalRC[fNPhiBins]; // array storing the RC phi values
+    Double_t phiStep = 5./fNPhiBins; // phi axis is [1,6] in order to have simple binning
+    Double_t phiMin;
+    Double_t phiMax;
+    for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+      phiMin = 1 + phiBin*phiStep;
+      phiMax = phiMin + phiStep;
+      phiDCalRC[phiBin] = r->Uniform(phiMin, phiMax);
+    }
+    
+    // Initialize the various sums to 0
+    Double_t trackPtSumTPC = 0;
+    Double_t trackPtSumEMCal = 0;
+    Double_t trackPtSumEMCalRC = 0;
+    Double_t clusESumEMCal = 0;
+    Double_t clusESumEMCalRC = 0;
+    
+    // Define a 2D vector (initialized to 0) to store the sum of track pT, and another for cluster ET
+    std::vector<std::vector<Double_t>> trackPtSumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
+    std::vector<std::vector<Double_t>> clusESumDCalRC(fNEtaBins, std::vector<Double_t>(fNPhiBins));
+    
+    // Loop over tracks. Sum the track pT:
+    // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
+    // (4) in a random cone at each eta-phi
+    AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+    AliTLorentzVector track;
+    Double_t trackEta;
+    Double_t trackPhi;
+    Double_t trackPt;
+    Double_t deltaR;
+    for (auto trackIterator : trackCont->accepted_momentum() ) {
+      
+      track.Clear();
+      track = trackIterator.first;
+      trackEta = track.Eta();
+      trackPhi = track.Phi_0_2pi();
+      trackPt = track.Pt();
 
-    // (1)
-    if (TMath::Abs(trackEta) < etaTPC) {
-      trackPtSumTPC += trackPt;
-    }
-    
-    // (2)
-    if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
-      trackPtSumEMCal += trackPt;
-    }
-    
-    // (3)
-    deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
-    if (deltaR < jetR) {
-      trackPtSumEMCalRC += trackPt;
-    }
-    
-    // (4)
-    for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
-      for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
-        deltaR = GetDeltaR(&track, etaDCalRC[etaBin], phiDCalRC[phiBin]);
-        if (deltaR < jetR) {
-          trackPtSumDCalRC[etaBin][phiBin] += trackPt;
+      // (1)
+      if (TMath::Abs(trackEta) < etaTPC) {
+        trackPtSumTPC += trackPt;
+      }
+      
+      // (2)
+      if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
+        trackPtSumEMCal += trackPt;
+      }
+      
+      // (3)
+      deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
+      if (deltaR < jetR) {
+        trackPtSumEMCalRC += trackPt;
+      }
+      
+      // (4)
+      for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
+        for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+          deltaR = GetDeltaR(&track, etaDCalRC[etaBin], phiDCalRC[phiBin]);
+          if (deltaR < jetR) {
+            trackPtSumDCalRC[etaBin][phiBin] += trackPt;
+          }
         }
       }
+      
     }
     
-  }
-  
-  // Loop over clusters. Sum the cluster ET:
-  // (1) in the EMCal, (2) in the EMCal random cone, (3) in a random cone at each eta-phi
-  AliClusterContainer* clusCont = GetClusterContainer(0);
-  AliTLorentzVector clus;
-  Double_t clusEta;
-  Double_t clusPhi;
-  Double_t clusE;
-  for (auto clusIterator : clusCont->accepted_momentum() ) {
-   
-    clus.Clear();
-    clus = clusIterator.first;
-    clusEta = clus.Eta();
-    clusPhi = clus.Phi_0_2pi();
-    clusE = clus.E();
-    
-    // (1)
-    if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
-      clusESumEMCal += clusE;
-    }
-    
-    // (2)
-    deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
-    if (deltaR < jetR) {
-      clusESumEMCalRC += clusE;
-    }
-    
-    // (3)
-    for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
-      for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
-        deltaR = GetDeltaR(&clus, etaDCalRC[etaBin], phiDCalRC[phiBin]);
-        if (deltaR < jetR) {
-          clusESumDCalRC[etaBin][phiBin] += clusE;
+    // Loop over clusters. Sum the cluster ET:
+    // (1) in the EMCal, (2) in the EMCal random cone, (3) in a random cone at each eta-phi
+    AliClusterContainer* clusCont = GetClusterContainer(0);
+    AliTLorentzVector clus;
+    Double_t clusEta;
+    Double_t clusPhi;
+    Double_t clusE;
+    for (auto clusIterator : clusCont->accepted_momentum() ) {
+     
+      clus.Clear();
+      clus = clusIterator.first;
+      clusEta = clus.Eta();
+      clusPhi = clus.Phi_0_2pi();
+      clusE = clus.E();
+      
+      // (1)
+      if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
+        clusESumEMCal += clusE;
+      }
+      
+      // (2)
+      deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
+      if (deltaR < jetR) {
+        clusESumEMCalRC += clusE;
+      }
+      
+      // (3)
+      for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
+        for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+          deltaR = GetDeltaR(&clus, etaDCalRC[etaBin], phiDCalRC[phiBin]);
+          if (deltaR < jetR) {
+            clusESumDCalRC[etaBin][phiBin] += clusE;
+          }
         }
       }
+      
     }
     
-  }
-  
-  // Compute the scale factor for EMCal, as a function of centrality
-  Double_t numerator = (trackPtSumEMCal + clusESumEMCal) / accEMCal;
-  Double_t denominator = trackPtSumTPC / accTPC;
-  Double_t scaleFactor = numerator / denominator;
-  TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
-  fHistManager.FillTH2(histname, fCent, scaleFactor);
-  
-  // Compute the scale factor in each eta-phi bin, as a function of centrality
-  for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
-    for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
-      numerator = (trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin]) / accRC;
-      scaleFactor = numerator / denominator;
-      histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEtaPhi", jetCont->GetArrayName().Data());
-      Double_t x[4] = {etaDCalRC[etaBin], phiDCalRC[phiBin], fCent, scaleFactor};
-      fHistManager.FillTHnSparse(histname, x);
-    }
-  }
-  
-  // Compute delta pT for EMCal, as a function of centrality
-  Double_t rho = jetCont->GetRhoVal();
-  Double_t deltaPt = trackPtSumEMCalRC + clusESumEMCalRC - rho * TMath::Pi() * jetR * jetR;
-  histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
-  fHistManager.FillTH2(histname, fCent, deltaPt);
-  
-  // Compute delta pT in each eta-phi bin, as a function of centrality
-  Double_t sf;
-  for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
-    for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
-      if (fBackgroundScalingWeights) {
-        sf = fBackgroundScalingWeights->GetBinContent(fBackgroundScalingWeights->FindBin(etaDCalRC[etaBin], phiDCalRC[phiBin]));
-        rho = sf * jetCont->GetRhoVal();
+    // Compute the scale factor for EMCal, as a function of centrality
+    Double_t numerator = (trackPtSumEMCal + clusESumEMCal) / accEMCal;
+    Double_t denominator = trackPtSumTPC / accTPC;
+    Double_t scaleFactor = numerator / denominator;
+    TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, scaleFactor);
+    
+    // Compute the scale factor in each eta-phi bin, as a function of centrality
+    for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
+      for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+        numerator = (trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin]) / accRC;
+        scaleFactor = numerator / denominator;
+        histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEtaPhi", jetCont->GetArrayName().Data());
+        Double_t x[4] = {etaDCalRC[etaBin], phiDCalRC[phiBin], fCent, scaleFactor};
+        fHistManager.FillTHnSparse(histname, x);
       }
-      deltaPt = trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin] - rho * accRC;
-      histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEtaPhi", jetCont->GetArrayName().Data());
-      Double_t x[4] = {etaDCalRC[etaBin], phiDCalRC[phiBin], fCent, deltaPt};
-      fHistManager.FillTHnSparse(histname, x);
     }
+    
+    // Compute delta pT for EMCal, as a function of centrality
+    Double_t rho = jetCont->GetRhoVal();
+    Double_t deltaPt = trackPtSumEMCalRC + clusESumEMCalRC - rho * TMath::Pi() * jetR * jetR;
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, deltaPt);
+    
+    // Compute delta pT in each eta-phi bin, as a function of centrality
+    Double_t sf;
+    for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
+      for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+        if (fBackgroundScalingWeights) {
+          sf = fBackgroundScalingWeights->GetBinContent(fBackgroundScalingWeights->FindBin(etaDCalRC[etaBin], phiDCalRC[phiBin]));
+          rho = sf * jetCont->GetRhoVal();
+        }
+        deltaPt = trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin] - rho * accRC;
+        histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEtaPhi", jetCont->GetArrayName().Data());
+        Double_t x[4] = {etaDCalRC[etaBin], phiDCalRC[phiBin], fCent, deltaPt};
+        fHistManager.FillTHnSparse(histname, x);
+      }
+    }
+    
+    delete r;
+    
   }
-  
-  delete r;
 
 }
 
@@ -1974,8 +2011,15 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetType(AliEmcalJet* jet)
  */
 Bool_t AliAnalysisTaskEmcalDijetImbalance::FillHistograms()
 {
-  if (fPlotJetHistograms) FillJetHistograms();
-  if (fDoCaloStudy) FillCaloHistograms();
+  if (fPlotJetHistograms) {
+    FillJetHistograms();
+  }
+  if (fComputeBackground) {
+    ComputeBackground();
+  }
+  if (fDoCaloStudy) {
+    FillCaloHistograms();
+  }
   
   return kTRUE;
 }
@@ -2072,9 +2116,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       
     } //jet loop
     
-    //---------------------------------------------------------------------------
-    // Do study of background (if requested)
-    if (fComputeBackground) ComputeBackground(jets);
   }
 }
 
