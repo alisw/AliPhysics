@@ -71,6 +71,7 @@
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliAnalysisUtils.h"
+#include "TVector2.h"
 
 
 using namespace std;
@@ -98,6 +99,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
+  _useEventPlane   ( 0),
+  EP_min( -3.1415927/6 ),
+  EP_max( 3.1415927/6 ),
+  _psi_EventPlane ( 0),
   _sameFilter    ( false),
   _rejectPileup  ( 1),
   _rejectPairConversion ( 0),
@@ -244,9 +249,6 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _realTOF_1d_POI (0),
   _trackLength_POI (0),
   _trackLength_GetIntegratedLength_POI(0),
-
-  _nsigmakaon_1d (0),
-  _nsigmaTOFkaon_1d (0), 
   
   _dedx_p (0),
   _beta_p (0), 
@@ -447,6 +449,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
+  _useEventPlane   ( 0),
+  EP_min( -3.1415927/6 ),
+  EP_max( 3.1415927/6 ),
+  _psi_EventPlane ( 0),
   _sameFilter    ( false),
   _rejectPileup  ( 1),
   _rejectPairConversion ( 0),
@@ -592,9 +598,6 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _realTOF_1d_POI (0),
   _trackLength_POI (0),
   _trackLength_GetIntegratedLength_POI(0),
-  
-  _nsigmakaon_1d (0),
-  _nsigmaTOFkaon_1d (0), 
   
   _dedx_p (0),
   _beta_p (0), 
@@ -1051,7 +1054,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
       name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");       
       name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");   
+      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+      name = "psi_EventPlane";            _psi_EventPlane   = createHisto1F(name,name, 360, 0.0, 6.4, "#psi","counts");
       name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
       name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");    
       name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
@@ -1069,13 +1073,11 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "dedx_p";   _dedx_p = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "beta_p";   _beta_p = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p";   _inverse_beta_p = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-      name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");   
-      name = "nsigmakaon_1d";   _nsigmakaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmakaon","counts");
-      name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");  
+      name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");  
       name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "nSigmaTOF_p";       _nSigmaTOF_p     = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF","counts");
-      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 80, -4.0, 4.0,  "p", "nSigmaTOF_POI","counts");
+      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF_POI","counts");
       name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");    
       name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
@@ -1200,6 +1202,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   const float mkaon   = 0.493677; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
+  double EP = 0;
     
   float slope_vZ = 0;
   float vZ_bin_center = 0;
@@ -1388,6 +1391,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       // "MCAODreco" -- for a MC reconstructed production dataset, e.g. Hijing_PbPb_LHC10h
       if ( fAnalysisType == "RealData" || fAnalysisType == "MCAODreco" )
 	{
+	  EP = TPC_EventPlane( fAODEvent );
+	  _psi_EventPlane -> Fill( EP );
+	  
 	  //Track Loop starts here
 	  for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
 	    {
@@ -1571,7 +1577,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    
 	      if ( _useRapidity )  eta = y;  //switch from eta to y
 	      //*************************************************************************************************************************************************************
-	    
+
+	      if ( _useEventPlane )
+		{
+		  if( !( ((phi-EP)>=EP_min) && ((phi-EP)<=EP_max)) && !( ((phi-EP-TMath::Pi())>=EP_min) && ((phi-EP-TMath::Pi())<=EP_max)) ) continue;
+		}
+
+	      
 	      //Particle 1
 	      if ( _requestedCharge_1 == charge )
 		//&& dedx >=  _dedxMin && dedx < _dedxMax)
@@ -2695,4 +2707,32 @@ Double_t AliAnalysisTaskPIDBFDptDpt::massSquareCalculation( AliVTrack * track ) 
 {
   Double_t massSquare = track->P() * track->P() * ( 1 / ( TOFBetaCalculation(track) * TOFBetaCalculation(track) ) - 1 ); 
   return massSquare;
+}
+
+
+//________________________________________________________________________________________________________________
+Float_t AliAnalysisTaskPIDBFDptDpt::TPC_EventPlane(AliAODEvent *fAOD)
+{
+  Int_t ntracks = fAOD->GetNumberOfTracks();
+        
+  TVector2 mQ;
+  float mypsi=0;
+  float mQx=0, mQy=0;
+
+  for(Int_t i=0; i<ntracks; i++)
+    {
+      AliAODTrack *track =(AliAODTrack *)fAOD->GetTrack(i); // pointer to reconstructed to track
+      if(!track) {
+	AliError(Form("ERROR: Could not retrieve aod track %d\n",i));
+	continue;
+      }                        
+      mQx += (cos(2*track->Phi()))*(track->Pt());
+      mQy += (sin(2*track->Phi()))*(track->Pt());
+    }
+            
+  mQ.Set(mQx,mQy);
+            
+  mypsi=(TMath::ATan2(-mQy,-mQx))/2.;
+  //cout<<"mypsi_fct :"<<mypsi<<endl;
+  return mypsi+TMath::Pi();
 }
