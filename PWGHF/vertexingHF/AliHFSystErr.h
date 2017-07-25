@@ -264,6 +264,9 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2011PbPb2050();
   void InitDstoKKpi2013pPb0100();
   void InitDstoKKpi2016pPb0100();
+  void InitDstoKKpi2016pPb140trkl();
+  void InitDstoKKpi2016pPb4070trkl();
+  void InitDstoKKpi2016pPb70200trkl();
 
   void InitLctopKpi2010pp();
   void InitLctopKpi2010ppBDT();
