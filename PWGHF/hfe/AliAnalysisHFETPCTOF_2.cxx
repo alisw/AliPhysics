@@ -1084,14 +1084,11 @@ void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
 
 	Int_t pdg = -99999;
 	Int_t pdg_mother = -99999;
-	Int_t pdg_gmother = -99999;
-	Double_t pt_gmother = -99999;
 	Double_t pt_mother = -99999;
 	Double_t weight = -99999;
 	Double_t weight_had_f = -99999;
 	Double_t weight_pi0 = -99999;
 	Double_t weight_eta = -99999;
-	
 	Double_t fTPCnSigma = -999;
 	Double_t fTOFnSigma = -999;
 	Double_t fITSnSigma = -999;
