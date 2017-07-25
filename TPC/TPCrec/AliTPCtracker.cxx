@@ -1609,6 +1609,7 @@ Int_t  AliTPCtracker::LoadClusters()
 	nMCTracks = gAlice->GetMCApp()->GetNtrack();
       }
       //
+      nclPerTrack.clear();
       nclPerTrack.resize(nMCTracks,0);
       if (nMCTracks) {
 	for (Int_t sec=0;sec<fkNOS;sec++) {
