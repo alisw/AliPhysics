@@ -28,12 +28,12 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
 
     bool   fIgnoreCentrality;
     bool   fUseAfterburner;
+    AliGenLightNuclei fAfterburner; // Afterburner
 
   protected:
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
     AliAnalysisTaskNucleiKine& operator=(const AliAnalysisTaskNucleiKine& other);
 
-    AliGenLightNuclei fAfterburner; // Afterburner
 
     TList* fOutputList;    //! output list for histograms
 
