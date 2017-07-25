@@ -85,7 +85,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -150,7 +150,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -338,7 +338,34 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
+  // first loop on candidates to fill them in case of reduced AODs
+  // this is done to have the same behaviour of the improver with full (pp, p-Pb) and recuced (Pb-Pb) candidates
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
+  // D0->Kpi
+  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
+  if (array2Prong) {
+    for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
+    }
+  }
+  // Dstar->Kpipi
+  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
+  if (arrayCascade) {
+    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
+    }
+  }
+  // Three prong
+  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
+  if (array3Prong) {
+    for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
+    }
+  }
 
 
   // Smear all tracks
@@ -355,11 +382,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   // TODO: recalculated primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
 
-  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   
   // Recalculate all candidates
   // D0->Kpi
-  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
   if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
@@ -424,8 +449,6 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 
   // Dstar->Kpipi
-  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
-  
   if (arrayCascade) {
     for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
@@ -476,7 +499,6 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 
   // Three prong
-  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
   if (array3Prong) {
     for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
