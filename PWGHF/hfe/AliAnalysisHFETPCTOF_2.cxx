@@ -1082,6 +1082,16 @@ void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
 ///______________________________________________________________________
 }
 
+
+
+
+//______________________________________________________________________
+//Main loop
+//Called for each event
+void AliAnalysisHFETPCTOF_2::UserExec(Option_t *) 
+{
+
+
 	Int_t pdg = -99999;
 	Int_t pdg_mother = -99999;
 	Double_t weight = -99999;
@@ -1103,13 +1113,8 @@ void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
 	Int_t fTPCnClus = 99999; 
 	Double_t qaweights[5];
 
-
-//______________________________________________________________________
-//Main loop
-//Called for each event
-void AliAnalysisHFETPCTOF_2::UserExec(Option_t *) 
-{
 //Check Event
+
 	fESD = dynamic_cast<AliESDEvent*>(InputEvent());
 	fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 	
