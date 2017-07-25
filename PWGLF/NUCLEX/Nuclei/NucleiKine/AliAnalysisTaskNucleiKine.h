@@ -24,6 +24,7 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
       kPiPlus, kPiMinus, kKplus, kKminus, kProton, kAntiProton, kNeutron, kAntiNeutron, kDeuteron, kAntiDeuteron,
       kLambda, kAntiLambda, kXiMinus, kXiPlus, kOmegaMinus, kOmegaPlus
     };
+    std::vector<std::string> fParticleNames;
 
     bool   fIgnoreCentrality;
     bool   fUseAfterburner;
