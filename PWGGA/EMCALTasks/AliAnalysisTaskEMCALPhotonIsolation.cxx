@@ -622,7 +622,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtaftM02C->Sumw2();
         fOutput->Add(fPtaftM02C);
         
-        fM02 = new TH2D("hM02_NC","M02 distribution for Neutral Clusters vs #it{p}_{T}",100,0.,100.,500,0.,5.);
+        fM02 = new TH2D("hM02_NC","#sigma_{long}^{2} vs. #it{E}_{T} for clusters",100,0.,100.,500,0.,5.);
         fM02->Sumw2();
         fOutput->Add(fM02);
 
