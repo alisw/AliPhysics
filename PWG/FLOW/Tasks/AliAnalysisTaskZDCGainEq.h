@@ -249,6 +249,8 @@ private:
   TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
   TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
 
+  TH3F             *fHist_ZDCCxy_RunByRun[90]; //!
+  TH3F             *fHist_ZDCAxy_RunByRun[90]; //!
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };

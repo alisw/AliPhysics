@@ -209,8 +209,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunSP) {
       TString outputSPv2 = fileName;
       outputSPv2 += ":outputSPv2analysis";
-      if(gChargePOI == 1) outputSP2 += "PlusPlus";
-      else if(gChargePOI == -1) outputSP2 += "MinusMinus";
+      if(gChargePOI == 1) outputSPv2 += "PlusPlus";
+      else if(gChargePOI == -1) outputSPv2 += "MinusMinus";
 
       taskSPv2[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNameSPv2[iCentralityBin].Data()),kFALSE);
       taskSPv2[iCentralityBin]->SetHarmonic(2);
@@ -227,8 +227,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
       TString outputSPv4 = fileName;
       outputSPv4 += ":outputSPv4analysis";
-      if(gChargePOI == 1) outputSP4 += "PlusPlus";
-      else if(gChargePOI == -1) outputSP4 += "MinusMinus";
+      if(gChargePOI == 1) outputSPv4 += "PlusPlus";
+      else if(gChargePOI == -1) outputSPv4 += "MinusMinus";
       
       taskSPv4[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNameSPv4[iCentralityBin].Data()),kFALSE);
       taskSPv4[iCentralityBin]->SetHarmonic(4);
@@ -249,8 +249,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunQC) {
       TString outputQCv2 = fileName;
       outputQCv2 += ":outputQCv2analysis";
-      if(gChargePOI == 1) outputQC2 += "PlusPlus";
-      else if(gChargePOI == -1) outputQC2 += "MinusMinus";
+      if(gChargePOI == 1) outputQCv2 += "PlusPlus";
+      else if(gChargePOI == -1) outputQCv2 += "MinusMinus";
       
       taskQCv2[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNameQCv2[iCentralityBin].Data()),kFALSE);
       taskQCv2[iCentralityBin]->SetHarmonic(2);
@@ -273,8 +273,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
       TString outputQCv4 = fileName;
       outputQCv4 += ":outputQCv4analysis";
-      if(gChargePOI == 1) outputQC4 += "PlusPlus";
-      else if(gChargePOI == -1) outputQC4 += "MinusMinus";
+      if(gChargePOI == 1) outputQCv4 += "PlusPlus";
+      else if(gChargePOI == -1) outputQCv4 += "MinusMinus";
      
       taskQCv4[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNameQCv4[iCentralityBin].Data()),kFALSE);
       taskQCv4[iCentralityBin]->SetHarmonic(4);
