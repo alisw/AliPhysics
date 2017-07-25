@@ -21,6 +21,8 @@ ClassImp(AliAnalysisTaskNucleiKine);
 
 AliAnalysisTaskNucleiKine::AliAnalysisTaskNucleiKine(const char* name) :
   AliAnalysisTaskSE(name),
+  fUseAfterburner(false),
+  fAfterburner(),
   fPdgCodes(),
   fIgnoreCentrality(true),
   fOutputList(0x0),
@@ -52,6 +54,9 @@ void AliAnalysisTaskNucleiKine::UserCreateOutputObjects() {
   fOutputList->Add(fPtSpectra);
   fOutputList->Add(fPtSpectraNoRapidity);
 
+  fAfterburner.SetNucleusPdgCode(AliGenLightNuclei::kDeuteron); // default
+  fAfterburner.SetCoalescenceMomentum(0.100); // default (GeV/c)
+
   PostData(1,fOutputList);
 }
 
@@ -64,6 +69,11 @@ void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
   AliStack* stack = mcEvent->Stack();
   if (!stack)
     AliFatal("Missing stack.");
+
+  if (fUseAfterburner) {
+    fAfterburner.SetStack(stack);
+    fAfterburner.Generate();
+  }
   int nstack = stack->GetNtrack();
 
   float impact = 1.f;
