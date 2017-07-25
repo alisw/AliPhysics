@@ -1084,7 +1084,6 @@ void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
 
 	Int_t pdg = -99999;
 	Int_t pdg_mother = -99999;
-	Double_t pt_mother = -99999;
 	Double_t weight = -99999;
 	Double_t weight_had_f = -99999;
 	Double_t weight_pi0 = -99999;
@@ -1718,7 +1717,6 @@ if(fIsMC)
 						if(fMCparticle->GetMother()<=0) continue;
 							fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 							pdg_mother = fMCparticleMother->GetPdgCode();
-							pt_mother = fMCparticleMother->Pt();
 
 							weight=1;
 						
