@@ -10,8 +10,8 @@ enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3
 
 //TString names=("all;electrons;highMult;midMult;lowMult");
 //TString names=("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt");
-//TString names = ("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt;highMult;midMult;lowMult");
-TString names=("all;electrons");
+TString names = ("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt;highMult;midMult;lowMult");
+//TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kFALSE; //Needed for LMEEcutlib

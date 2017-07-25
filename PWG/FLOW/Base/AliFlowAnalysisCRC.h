@@ -29,6 +29,8 @@
 #include "TRandom3.h"
 #include "AliFlowCommonConstants.h"
 #include "TNamed.h"
+#include <complex>
+#include <cmath>
 
 class TObjArray;
 class TList;
@@ -116,6 +118,7 @@ public:
   virtual void InitializeArraysForFlowEbE();
   virtual void InitializeArraysForFlowQC();
   virtual void InitializeArraysForFlowQCHighOrders();
+  virtual void InitializeArraysForFlowGF();
   virtual void InitializeArraysForFlowSPZDC();
   virtual void InitializeArraysForFlowSPVZ();
   virtual void InitializeArraysForEbEFlow();
@@ -149,6 +152,7 @@ public:
   virtual void BookEverythingForFlowEbE();
   virtual void BookEverythingForFlowQC();
   virtual void BookEverythingForFlowQCHighOrders();
+  virtual void BookEverythingForFlowGF();
   virtual void BookEverythingForFlowSPZDC();
   virtual void BookEverythingForFlowSPVZ();
   virtual void BookEverythingForEbEFlow();
@@ -184,6 +188,8 @@ public:
   virtual void CalculateIntFlowSumOfEventWeightsNUA();
   virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
   virtual void CalculateMixedHarmonics();
+  virtual std::complex<double> ucN(const Int_t n, const TArrayI& h);
+  virtual std::complex<double> ucN2(const Int_t n, TArrayI& h, TArrayI& cnt);
   // 2c.) Cross-checking reference flow correlations with nested loops:
   virtual void EvaluateIntFlowNestedLoops(AliFlowEventSimple* const anEvent);
   virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent);
@@ -232,6 +238,7 @@ public:
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
   virtual void CalculateFlowQCHighOrders();
+  virtual void CalculateFlowGF();
   virtual void CalculateFlowSCZDC();
   virtual void CalculateFlowSPZDC(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm, Double_t dPhi, Double_t dEta, Double_t dPt, Double_t wPhiEta, Double_t dCharge, Int_t dCnt);
   virtual void CalculateFlowSPVZ();
@@ -288,6 +295,7 @@ public:
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
   virtual void FinalizeFlowQCHighOrders();
+  virtual void FinalizeFlowGF();
   virtual void FinalizeFlowSPZDC();
   virtual void FinalizeFlowSPVZ();
   virtual Bool_t CheckRunFullTPCFlow(Int_t RunNum);
@@ -317,6 +325,7 @@ public:
   virtual void GetPointersForCME();
   virtual void GetPointersForFlowQC();
   virtual void GetPointersForFlowQCHighOrders();
+  virtual void GetPointersForFlowGF();
   virtual void GetPointersForFlowSPZDC();
   virtual void GetPointersForFlowSPVZ();
   virtual void GetPointersForEbEFlow();
@@ -1013,6 +1022,29 @@ public:
   void SetFlowQCIntQCHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntQCHOHist[c][eg] = TP;};
   TH1D* GetFlowQCIntQCHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntQCHOHist[c][eg];};
   
+  // Flow Generic Framework
+  void SetFlowGFList(TList* const TL) {this->fFlowGFList = TL;};
+  void SetFlowGFIntCorPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCorPro[c][eg] = TP;};
+  TProfile* GetFlowGFIntCorPro(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCorPro[c][eg];};
+  void SetFlowGFIntCorHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntCorHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCorHist[c][eg];};
+  void SetFlowGFIntCumHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCumHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntCumHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCumHist[c][eg];};
+  void SetFlowGFIntFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntFinalHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntFinalHist[c][eg];};
+  
+  void SetFlowGFIntCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovPro[c][eg][k] = TP;};
+  TProfile* GetFlowGFIntCovPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowGFIntCovPro[c][eg][k];};
+  void SetFlowGFIntCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHist[c][eg][k] = TP;};
+  TH1D* GetFlowGFIntCovHist(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowGFIntCovHist[c][eg][k];};
+  
+  void SetFlowGFMixedCorPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedCorPro[c][eg] = TP;};
+  TProfile* GetFlowGFMixedCorPro(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedCorPro[c][eg];};
+  void SetFlowGFMixedCorHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedCorHist[c][eg] = TP;};
+  TH1D* GetFlowGFMixedCorHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedCorHist[c][eg];};
+  void SetFlowGFMixedFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedFinalHist[c][eg] = TP;};
+  TH1D* SetFlowGFMixedFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedFinalHist[c][eg];};
+  
   // Flow SP ZDC
   void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
   
@@ -1240,6 +1272,8 @@ private:
   TMatrixD *fReQ; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TMatrixD *fSpk; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
+  TMatrixD *fReQGF; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+  TMatrixD *fImQGF; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TH1D *fIntFlowCorrelationsEBE; //! 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; //! 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; //! to be improved (add comment)
@@ -1568,9 +1602,7 @@ private:
 //  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
-  const static Int_t fkNVXVYBins = 5;
-  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fkNVXVYBins][fkNVXVYBins]; //! phi ditribution POIs, vtx dep
-  TH2D* fDummyVXVYBins; //!
+  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1909,6 +1941,22 @@ private:
   TH1D *fFlowQCIntCorHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
   TH1D *fFlowQCIntQCHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
   
+  // flow Generic Framework
+  TList *fFlowGFList;    //! QC high order List
+  const static Int_t fkFlowGFNHarm = 4;
+  const static Int_t fkFlowGFNOrde = 4;
+  const static Int_t fFlowGFCenBin = 100;
+  TProfile *fFlowGFIntCorPro[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCumHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntFinalHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovPro[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHist[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  
+  TProfile *fFlowGFMixedCorPro[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+  TH1D *fFlowGFMixedCorHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+  TH1D *fFlowGFMixedFinalHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+  
   // SC w ZDC
   const static Int_t fSCv2vsZNPtBins = 3;
   const static Int_t fSCv2vsZNHarm = 4;
@@ -2012,7 +2060,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,63);
+  ClassDef(AliFlowAnalysisCRC,64);
   
 };
 

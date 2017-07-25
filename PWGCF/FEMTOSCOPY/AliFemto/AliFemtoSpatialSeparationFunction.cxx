@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoSpatialSeparationFunction.h"
+#include "AliFemtoModelHiddenInfo.h"
 #include <cstdio>
 #include <TMath.h>
 
@@ -25,6 +26,13 @@ AliFemtoSpatialSeparationFunction::AliFemtoSpatialSeparationFunction(const char*
   fAlphaNum->Sumw2();
   fAlphaDen->Sumw2();
   
+  fFirstParticleId      = new TH1D(Form("IdFirst_%s",title), Form("IdFirst_%s",title), 6000, 0.0, 6000.0);
+  fSecondParticleId     = new TH1D(Form("IdSecond_%s",title), Form("IdSecond_%s",title), 6000, 0.0, 6000.0);
+  fFirstParticleOrigin  = new TH1D(Form("OriginFirst_%s",title), Form("OriginFirst_%s",title), 6000, 0.0, 6000.0);
+  fSecondParticleOrigin = new TH1D(Form("OriginSecond_%s",title), Form("OriginSecond_%s",title), 6000, 0.0, 6000.0);
+  
+  
+  
   for(int i=0;i<3;i++){
     p1real[i] = 0.0;
     p2real[i] = 0.0;
@@ -39,12 +47,30 @@ AliFemtoSpatialSeparationFunction::AliFemtoSpatialSeparationFunction(const AliFe
   
   if (aFunction.fAlphaDen)    fAlphaDen = new TH1D(*aFunction.fAlphaDen);
   else                        fAlphaDen = nullptr;
+  
+  if (aFunction.fFirstParticleId)    fFirstParticleId = new TH1D(*aFunction.fFirstParticleId);
+  else                        fFirstParticleId = nullptr;
+  
+  if (aFunction.fSecondParticleId)    fSecondParticleId = new TH1D(*aFunction.fSecondParticleId);
+  else                        fSecondParticleId = nullptr;
+  
+  if (aFunction.fFirstParticleOrigin)    fFirstParticleOrigin = new TH1D(*aFunction.fFirstParticleOrigin);
+  else                        fFirstParticleOrigin = nullptr;
+  
+  if (aFunction.fSecondParticleOrigin)    fSecondParticleOrigin = new TH1D(*aFunction.fSecondParticleOrigin);
+  else                        fSecondParticleOrigin = nullptr;
+  
 }
 
 AliFemtoSpatialSeparationFunction::~AliFemtoSpatialSeparationFunction()
 {
   if(fAlphaNum) delete fAlphaNum;
   if(fAlphaDen) delete fAlphaDen;
+  
+  if(fFirstParticleId) delete fFirstParticleId;
+  if(fSecondParticleId) delete fSecondParticleId;
+  if(fFirstParticleOrigin) delete fFirstParticleOrigin;
+  if(fSecondParticleOrigin) delete fSecondParticleOrigin;
 }
 
 AliFemtoSpatialSeparationFunction& AliFemtoSpatialSeparationFunction::operator=(const AliFemtoSpatialSeparationFunction& aFunction)
@@ -55,6 +81,19 @@ AliFemtoSpatialSeparationFunction& AliFemtoSpatialSeparationFunction::operator=(
   if (aFunction.fAlphaDen)  fAlphaNum = new TH1D(*aFunction.fAlphaDen);
   else                      fAlphaDen = nullptr;
   
+  
+  if (aFunction.fFirstParticleId)  fFirstParticleId = new TH1D(*aFunction.fFirstParticleId);
+  else                      fFirstParticleId = nullptr;
+  
+  if (aFunction.fSecondParticleId)  fSecondParticleId = new TH1D(*aFunction.fSecondParticleId);
+  else                      fSecondParticleId = nullptr;
+  
+  if (aFunction.fFirstParticleOrigin)  fFirstParticleOrigin = new TH1D(*aFunction.fFirstParticleOrigin);
+  else                      fFirstParticleOrigin = nullptr;
+  
+  if (aFunction.fSecondParticleOrigin)  fSecondParticleOrigin = new TH1D(*aFunction.fSecondParticleOrigin);
+  else                      fSecondParticleOrigin = nullptr;
+
   return *this;
 }
 
@@ -89,6 +128,17 @@ void AliFemtoSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle *parti
     p1real[1] += momentum.y();
     p1real[2] += momentum.z();
   }
+  
+  AliFemtoModelHiddenInfo *hiddenInfo = (AliFemtoModelHiddenInfo*)particle->GetHiddenInfo();
+  
+  if(hiddenInfo)
+  {
+    int partID = TMath::Abs(hiddenInfo->GetPDGPid());
+    int motherID = TMath::Abs(hiddenInfo->GetMotherPdgCode());
+    
+    fFirstParticleId->Fill(partID);
+    fFirstParticleOrigin->Fill(motherID);
+  }
 }
 
 void AliFemtoSpatialSeparationFunction::AddSecondParticle(AliFemtoParticle *particle)
@@ -98,6 +148,17 @@ void AliFemtoSpatialSeparationFunction::AddSecondParticle(AliFemtoParticle *part
   p2real[0] += momentum.x();
   p2real[1] += momentum.y();
   p2real[2] += momentum.z();
+  
+  AliFemtoModelHiddenInfo *hiddenInfo = (AliFemtoModelHiddenInfo*)particle->GetHiddenInfo();
+  
+  if(hiddenInfo)
+  {
+    int partID = TMath::Abs(hiddenInfo->GetPDGPid());
+    int motherID = TMath::Abs(hiddenInfo->GetMotherPdgCode());
+    
+    fSecondParticleId->Fill(partID);
+    fSecondParticleOrigin->Fill(motherID);
+  }
 }
 
 void AliFemtoSpatialSeparationFunction::CalculateAnglesForEvent()
@@ -126,6 +187,11 @@ void AliFemtoSpatialSeparationFunction::WriteHistos()
 {
   fAlphaNum->Write();
   fAlphaDen->Write();
+  
+  fFirstParticleId->Write();
+  fSecondParticleId->Write();
+  fFirstParticleOrigin->Write();
+  fSecondParticleOrigin->Write();
 }
 
 TList* AliFemtoSpatialSeparationFunction::GetOutputList()
@@ -133,6 +199,10 @@ TList* AliFemtoSpatialSeparationFunction::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fAlphaNum);
   tOutputList->Add(fAlphaDen);
+  tOutputList->Add(fFirstParticleId);
+  tOutputList->Add(fSecondParticleId);
+  tOutputList->Add(fFirstParticleOrigin);
+  tOutputList->Add(fSecondParticleOrigin);
   return tOutputList;
 }
 

@@ -1,5 +1,8 @@
 #include "src/Common.h"
+#include "src/Utils.h"
+using namespace utils;
 #include "src/Plotting.h"
+
 #include <map>
 #include <array>
 #include <vector>
@@ -102,9 +105,9 @@ void Systematics() {
             cout << basepath.data() << " is missing." << endl;
             return;
           }
-          variations[iV] = (TH1F*)variations_tmp->Rebin(n_pt_bins,Form("variation_%d",iV),pt_bin_limits);
+          variations[iV] = (TH1F*)variations_tmp->Rebin(n_pt_bins,Form("variation_%zu",iV),pt_bin_limits);
           variations[iV]->SetName(("cut" + to_string(iV)).data());
-          SetHistStyle(variations[iV],iV);
+          plotting::SetHistStyle(variations[iV],iV);
           sigmas[iV] = (TH1F*)variations[iV]->Clone(("sigma" + to_string(iV)).data());
           sigmas[iV]->Reset();
           sigmas[iV]->SetDrawOption("e");
@@ -215,27 +218,27 @@ void Systematics() {
       summary.DrawFrame(0.7,0.,4.1,0.3,";#it{p}_{T} (GeV/#it{c}); Systematics uncertainties");
       TLegend leg (0.6,0.56,0.89,0.84);
       leg.SetBorderSize(0);
-      cutsyst[iC]->SetLineColor(kColor[0]);
+      cutsyst[iC]->SetLineColor(plotting::kHighContrastColors[0]);
       cutsyst[iC]->Draw("same");
       leg.AddEntry(cutsyst[iC],"PID and cuts","l");
-      countsyst[iC]->SetLineColor(kColor[1]);
+      countsyst[iC]->SetLineColor(plotting::kHighContrastColors[1]);
       countsyst[iC]->Draw("same");
       leg.AddEntry(countsyst[iC],"Range broadening","l");
-      shiftsyst[iC]->SetLineColor(kColor[5]);
+      shiftsyst[iC]->SetLineColor(plotting::kHighContrastColors[5]);
       shiftsyst[iC]->Draw("same");
       leg.AddEntry(shiftsyst[iC],"Range shifting","l");
-      matsyst[iC]->SetLineColor(kColor[2]);
+      matsyst[iC]->SetLineColor(plotting::kHighContrastColors[2]);
       matsyst[iC]->Draw("same");
       leg.AddEntry(matsyst[iC],"Material budget","l");
-      abssyst[iC]->SetLineColor(kColor[3]);
+      abssyst[iC]->SetLineColor(plotting::kHighContrastColors[3]);
       abssyst[iC]->Draw("same");
       leg.AddEntry(abssyst[iC],"Hadronic interaction","l");
       // if(iS==0){
       //   leg.AddEntry(secsyst[iC],"Secondary fraction","l");
-      //   secsyst[iC]->SetLineColor(kColor[5]);
+      //   secsyst[iC]->SetLineColor(plotting::kHighContrastColors[5]);
       //   secsyst[iC]->Draw("same");
       // }
-      totsyst[iC]->SetLineColor(kColor[4]);
+      totsyst[iC]->SetLineColor(plotting::kHighContrastColors[4]);
       totsyst[iC]->Draw("same");
       leg.AddEntry(totsyst[iC],"Total","l");
       totsyst[iC]->SetLineWidth(2);

@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKNUCLEIKINE_H
 
 #include <AliAnalysisTaskSE.h>
+#include <AliGenLightNuclei.h>
 
 class TH1D;
 class TH3D;
@@ -25,10 +26,13 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
     };
 
     bool   fIgnoreCentrality;
+    bool   fUseAfterburner;
 
   protected:
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
     AliAnalysisTaskNucleiKine& operator=(const AliAnalysisTaskNucleiKine& other);
+
+    AliGenLightNuclei fAfterburner; // Afterburner
 
     TList* fOutputList;    //! output list for histograms
 
