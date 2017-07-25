@@ -626,7 +626,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 225, -0.72, 0.72, 225, 1.31, 3.29, 125, 0., 2.5);
+	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 2.);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
@@ -759,11 +759,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtvsM02noiso->SetYTitle("#lambda_{0}^{2}");
         fOutput->Add(fPtvsM02noiso);
 
-        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone} distribution for non isolated clusters",200,0.,100.,500,0.,5.,200,0.,100.);
+        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone} distribution for non isolated clusters",200,0.,100.,400,0.,4.,200,0.,100.);
         fPtvsM02vsSum->Sumw2();
         fOutput->Add(fPtvsM02vsSum);
         
-	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
+	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,200,-10.,90.);
 	fPtvsM02vsSumUE->Sumw2();
 	fOutput->Add(fPtvsM02vsSumUE);
         
@@ -930,11 +930,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 225, -0.72, 0.72, 225, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
   fClusEtVsEtaPhiMatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiMatched);
 
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 225, -0.72, 0.72, 225, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
   fClusEtVsEtaPhiUnmatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
