@@ -29,6 +29,8 @@ if(HLT_OPENCL)
     add_subdirectory(tracking-ca/cagpu/opencl)
 endif()
 
+add_subdirectory(tracking-ca/standalone)
+
 # Module
 set(MODULE AliHLTTPC)
 
@@ -173,6 +175,8 @@ set(HDRS ${HDRS}
     tracking-ca/AliHLTTPCCAMath.h
     transform/AliHLTTPCReverseTransformInfoV1.h
 )
+
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0 -ggdb")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
