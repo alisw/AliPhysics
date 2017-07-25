@@ -1168,7 +1168,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	if(iHyp==0 && !(passAllCuts&1)) continue; // candidate not passing as D0
 	if(iHyp==1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
       }
-      if(fPdgMeson==431 && !(passAllCuts&4 || passAllCuts&8)) continue; // candidates Ds not passing as kk(phi)pi or pikk(phi)
+      if(fPdgMeson==431){
+	if(iHyp==0 && !(passAllCuts&4)) continue; // candidates Ds not passing as kk(phi)pi
+	if(iHyp==1 && !(passAllCuts&8)) continue; // candidates Ds not passing as pikk(phi)
+      }
         
       if(passAllCuts){
 	aveMult+=multForCand;
