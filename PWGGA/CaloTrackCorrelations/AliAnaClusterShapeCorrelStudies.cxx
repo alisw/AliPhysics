@@ -97,6 +97,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhClusterMaxCellDiffM02[i] = 0;
     fhNCellsPerClusterM02  [i] = 0;
     fhNCellsPerClusterM20  [i] = 0;
+    fhNCellsPerClusterNLM  [i] = 0;
     
     fhNCellsPerClusterMEta    [i] = 0;
     fhNCellsPerClusterMPhi    [i] = 0;
@@ -107,6 +108,12 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhSMNCellM02           [i] = 0;
     fhSMM02                [i] = 0;
     fhSMM02NoCut           [i] = 0;
+   
+    fhSMM20LowM02          [i] = 0;
+    fhSMM20LowM02NoCut     [i] = 0;
+    fhSMM20HighM02         [i] = 0;
+    fhSMM20HighM02NoCut    [i] = 0;
+
     fhColM02               [i] = 0;
     fhRowM02               [i] = 0;
 
@@ -391,6 +398,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
   for(Int_t i = 0; i < 20; i++)
   {
     fhNCellsPerClusterM02M20PerSM  [i] = 0;
+    fhNCellsPerClusterM02NLMPerSM  [i] = 0;
     fhESecCellEMaxCellM02NCellPerSM[i] = 0;           
     fhESecCellEClusterM02NCellPerSM[i] = 0;
     fhESecCellLogM02NCellPerSM     [i] = 0;   
@@ -1366,6 +1374,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
   Float_t m20    = clus->GetM20();
+  Int_t   nlm    = GetCaloUtils()->GetNumberOfLocalMaxima(clus, fCaloCellList) ; 
+
   Int_t   nCell  = 0;
 
   Int_t   dIeta    = 0;
@@ -1535,11 +1545,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     }
   } // Fill cell-cluster histogram loop
   
-  // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
   {
     fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
+    fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
+    // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
     Int_t nCellBin = 2;
     if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
     else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
@@ -1559,9 +1570,15 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
+  fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
+  if      ( m02 > 0.1 && m02 < 0.3 )
+    fhSMM20LowM02NoCut [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+  else if ( m02 > 0.5 && m02 < 2   )
+    fhSMM20HighM02NoCut[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+
   
   if ( energy > fEMinShape && energy < fEMaxShape ) 
   {
@@ -1581,6 +1598,11 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   if ( nCell > fNCellMinShape ) // it makes sense only for significant size histograms
   { 
+    if      ( m02 > 0.1 && m02 < 0.3 )
+      fhSMM20LowM02 [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+    else if ( m02 > 0.5 && m02 < 2   )
+      fhSMM20HighM02[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+
     fhSMM02 [matchedPID]->Fill(energy, smMax  , m02, GetEventWeight());
     fhColM02[matchedPID]->Fill(energy, ietaMax, m02, GetEventWeight());
     fhRowM02[matchedPID]->Fill(energy, iphiMax, m02, GetEventWeight());
@@ -3777,11 +3799,21 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       (Form("hNCellsPerClusterM02M20_SM%d",i),
        Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs #lambda_{1}^{2}, "
             "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
-       nShShBins/2,minShSh,maxShSh/2, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+       (Int_t)nShShBins/1.5,0,maxShSh/1.5, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
       fhNCellsPerClusterM02M20PerSM[i]->SetZTitle("#lambda_{0}^{2}");
       fhNCellsPerClusterM02M20PerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM02M20PerSM[i]->SetXTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM02M20PerSM[i]);  
+
+      fhNCellsPerClusterM02NLMPerSM [i] = new TH3F
+      (Form("hNCellsPerClusterM02NLM_SM%d",i),
+       Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs N_{lm}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       10,0,10, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhNCellsPerClusterM02NLMPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhNCellsPerClusterM02NLMPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterM02NLMPerSM[i]->SetXTitle("n_{lm}");
+      outputContainer->Add(fhNCellsPerClusterM02NLMPerSM[i]);  
 
       fhEMaxCellEClusterM02NCellPerSM[i]  = new TH3F 
       (Form("hEMaxCellEClusterM02NCell_SM%d",i),
@@ -4024,7 +4056,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhDeltaIAM20[imatch]  = new TH3F 
         (Form("hDeltaIAM20_%s",matchCase[imatch].Data()),
          Form("Cluster *asymmetry* in cell units vs #lambda^{2}_{1} for %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5,asyBins,asyMin,asyMax); 
+         nEbins,minE,maxE,(Int_t)nShShBins/1.5,0,maxShSh/1.5,asyBins,asyMin,asyMax); 
         fhDeltaIAM20[imatch]->SetXTitle("#it{E}_{cluster}");
         fhDeltaIAM20[imatch]->SetYTitle("#lambda^{2}_{1}");
         fhDeltaIAM20[imatch]->SetZTitle("#it{A}_{cell in cluster}");
@@ -4033,7 +4065,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhDeltaIATotM20[imatch]  = new TH3F 
         (Form("hDeltaIATotM20_%s",matchCase[imatch].Data()),
          Form("Cluster *total asymmetry* in cell units vs #lambda^{2}_{1} for %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5,asyBins,asyMin,asyMax); 
+         nEbins,minE,maxE,(Int_t)nShShBins/1.5,0,maxShSh/1.5,asyBins,asyMin,asyMax); 
         fhDeltaIATotM20[imatch]->SetXTitle("#it{E}_{cluster}");
         fhDeltaIATotM20[imatch]->SetYTitle("#lambda^{2}_{1}");
         fhDeltaIATotM20[imatch]->SetZTitle("#it{A}_{cell in cluster}^{total}");
@@ -4113,11 +4145,20 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]  = new TH3F 
       (Form("hNCellsPerClusterM20_%s",matchCase[imatch].Data()),
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhNCellsPerClusterM20[imatch]->SetXTitle("#it{E} (GeV)");
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
+
+      fhNCellsPerClusterNLM[imatch]  = new TH3F 
+      (Form("hNCellsPerClusterNLM_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{n}_{cells} vs n_{lm} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+      fhNCellsPerClusterNLM[imatch]->SetXTitle("#it{E} (GeV)");
+      fhNCellsPerClusterNLM[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterNLM[imatch]->SetZTitle("n_{lm}");
+      outputContainer->Add(fhNCellsPerClusterNLM[imatch]); 
       
       fhSMM02[imatch]  = new TH3F 
       (Form("hSMM02_%s",matchCase[imatch].Data()),
@@ -4136,6 +4177,44 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM02NoCut[imatch]->SetYTitle("SM number");
       fhSMM02NoCut[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhSMM02NoCut[imatch]); 
+
+      fhSMM20LowM02[imatch]  = new TH3F 
+      (Form("hSMM20LowM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, #it{n}_{cells}^{w>0.01}>%d, for 0.1<#lambda_{0}^{2}<0.3, for ID %s",
+            fNCellMinShape,matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20LowM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20LowM02[imatch]->SetYTitle("SM number");
+      fhSMM20LowM02[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20LowM02[imatch]); 
+      
+      fhSMM20LowM02NoCut[imatch]  = new TH3F 
+      (Form("hSMM20LowM02NoCut_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, for 0.1<#lambda_{0}^{2}<0.3, for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20LowM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20LowM02NoCut[imatch]->SetYTitle("SM number");
+      fhSMM20LowM02NoCut[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20LowM02NoCut[imatch]); 
+
+      fhSMM20HighM02[imatch]  = new TH3F 
+      (Form("hSMM20HighM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, #it{n}_{cells}^{w>0.01}>%d, for 0.5<#lambda_{0}^{2}<2, for ID %s",
+            fNCellMinShape,matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20HighM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20HighM02[imatch]->SetYTitle("SM number");
+      fhSMM20HighM02[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20HighM02[imatch]); 
+      
+      fhSMM20HighM02NoCut[imatch]  = new TH3F 
+      (Form("hSMM20HighM02NoCut_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, for 0.5<#lambda_{0}^{2}<2, for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20HighM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20HighM02NoCut[imatch]->SetYTitle("SM number");
+      fhSMM20HighM02NoCut[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20HighM02NoCut[imatch]);       
       
       fhSMNCell[imatch]  = new TH3F 
       (Form("hSMNCell_%s",matchCase[imatch].Data()),

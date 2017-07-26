@@ -449,6 +449,7 @@ public:
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20  
+  TH3F *   fhNCellsPerClusterNLM  [3];           //!<! N cells per cluster vs cluster energy vs nlm  
   
   TH3F *   fhNCellsPerClusterMEta    [3];         //!<! N cells per cluster vs cluster energy vs shape in eta direction
   TH3F *   fhNCellsPerClusterMPhi    [3];         //!<! N cells per cluster vs cluster energy vs shape in phi direction
@@ -466,6 +467,10 @@ public:
 
   TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
   TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
+  TH3F *   fhSMM20HighM02NoCut[3];                //!<! SM number vs m20, 0.5<m02<2, no ncell cut
+  TH3F *   fhSMM20HighM02[3];                     //!<! SM number vs m20, 0.5<m02<2, n cell > 4
+  TH3F *   fhSMM20LowM02NoCut[3];                 //!<! SM number vs m20, 0.1<m02<0.3, no ncell cut
+  TH3F *   fhSMM20LowM02[3];                      //!<! SM number vs m20, 0.1<m02<0.3, n cell > 4
   TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
   TH3F *   fhSMNCellM02[3];                       //!<! SM number vs number of cells vs M02, in E bin
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
@@ -477,6 +482,7 @@ public:
 
   // 8 < E < 12 GeV per SM, neutral
   TH3F *   fhNCellsPerClusterM02M20PerSM  [20];   //!<! m02 vs m20 vs n cells 
+  TH3F *   fhNCellsPerClusterM02NLMPerSM  [20];   //!<! m02 vs NLM vs n cells 
   TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
   TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
   TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
