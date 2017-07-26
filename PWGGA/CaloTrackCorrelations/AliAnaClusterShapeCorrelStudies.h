@@ -449,6 +449,7 @@ public:
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20  
+  TH3F *   fhNCellsPerClusterNLM  [3];           //!<! N cells per cluster vs cluster energy vs nlm  
   
   TH3F *   fhNCellsPerClusterMEta    [3];         //!<! N cells per cluster vs cluster energy vs shape in eta direction
   TH3F *   fhNCellsPerClusterMPhi    [3];         //!<! N cells per cluster vs cluster energy vs shape in phi direction

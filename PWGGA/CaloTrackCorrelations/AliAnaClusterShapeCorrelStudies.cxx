@@ -97,6 +97,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhClusterMaxCellDiffM02[i] = 0;
     fhNCellsPerClusterM02  [i] = 0;
     fhNCellsPerClusterM20  [i] = 0;
+    fhNCellsPerClusterNLM  [i] = 0;
     
     fhNCellsPerClusterMEta    [i] = 0;
     fhNCellsPerClusterMPhi    [i] = 0;
@@ -1538,12 +1539,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     }
   } // Fill cell-cluster histogram loop
   
-  // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
   {
     fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
     fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
+    // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
     Int_t nCellBin = 2;
     if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
     else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
@@ -1563,6 +1564,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
+  fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
@@ -4132,6 +4134,15 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
+
+      fhNCellsPerClusterNLM[imatch]  = new TH3F 
+      (Form("hNCellsPerClusterNLM_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{n}_{cells} vs n_{lm} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
+      fhNCellsPerClusterNLM[imatch]->SetXTitle("#it{E} (GeV)");
+      fhNCellsPerClusterNLM[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterNLM[imatch]->SetZTitle("n_{lm}");
+      outputContainer->Add(fhNCellsPerClusterNLM[imatch]); 
       
       fhSMM02[imatch]  = new TH3F 
       (Form("hSMM02_%s",matchCase[imatch].Data()),
