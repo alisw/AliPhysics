@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <iterator>
+#include <ctime>
 
 #ifdef __ROOT__
 /// \cond CLASSIMP
@@ -36,8 +37,10 @@ fSecondParticleCut(NULL),
 fNeventsProcessed(0),
 fPerformSharedDaughterCut(kFALSE),
 fMixingBuffer(NULL),
-fNumEventsToMix(0)
+fNumEventsToMix(0),
+fIdenticalParticles(false)
 {
+  if(fIdenticalParticles) srand(std::time(0));
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
@@ -52,7 +55,8 @@ fSecondParticleCut(NULL),
 fNeventsProcessed(0),
 fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
 fMixingBuffer(NULL),
-fNumEventsToMix(a.fNumEventsToMix)
+fNumEventsToMix(a.fNumEventsToMix),
+fIdenticalParticles(a.fIdenticalParticles)
 {
   /// Copy constructor
   
@@ -203,6 +207,7 @@ AliFemtoEventAnalysis& AliFemtoEventAnalysis::operator=(const AliFemtoEventAnaly
   }
 
   fNumEventsToMix = aAna.fNumEventsToMix;
+  fIdenticalParticles = aAna.fIdenticalParticles;
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
   
   return *this;
@@ -264,7 +269,7 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   AliFemtoParticleCollection  *collection1 = fPicoEvent->FirstParticleCollection(),
                               *collection2 = fPicoEvent->SecondParticleCollection();
   
-  if (collection1 == NULL || collection2 == NULL) {
+  if (collection1 == NULL || (collection2 == NULL && !fIdenticalParticles)) {
     cout << "E-AliFemtoEventAnalysis::ProcessEvent: new PicoEvent is missing particle collections!\n";
     EventEnd(hbtEvent);  // cleanup for EbyE
     delete fPicoEvent;
@@ -290,9 +295,18 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
     return;
   }
   
-  AddParticles("first", collection1);
-  AddParticles("second", collection2);
-  
+  if(fIdenticalParticles)
+  {
+    double random_variable = (double)rand()/RAND_MAX;
+   
+    if(random_variable < 0.5) AddParticles("first", collection1);
+    else                      AddParticles("second", collection1);
+  }
+  else
+  {
+    AddParticles("first", collection1);
+    AddParticles("second", collection2);
+  }
   for (AliFemtoPicoEventIterator  fPicoEventIter = fMixingBuffer->begin();
                                   fPicoEventIter != fMixingBuffer->end();
                                   ++fPicoEventIter)
