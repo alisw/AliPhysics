@@ -80,6 +80,8 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNITSCL1(-1.),
   fCentralityTRK(-1.),
   fRun(-1),
+  fZNCQ0(0.),
+  fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
   fAbsOrbit(0),
@@ -135,6 +137,8 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fNITSCL1(-1.),
   fCentralityTRK(-1.),
   fRun(-1),
+  fZNCQ0(0.),
+  fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
   fAbsOrbit(0),
@@ -194,6 +198,8 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fRun(anEvent.fRun),
   fZNCQ(anEvent.fZNCQ),
   fZNAQ(anEvent.fZNAQ),
+  fZNCQ0(anEvent.fZNCQ0),
+  fZNAQ0(anEvent.fZNAQ0),
   fZNCM(anEvent.fZNCM),
   fZNAM(anEvent.fZNAM),
   fAbsOrbit(anEvent.fAbsOrbit),
@@ -279,6 +285,8 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fRun = anEvent.fRun;
   fZNCQ = anEvent.fZNCQ;
   fZNAQ = anEvent.fZNAQ;
+  fZNCQ0 = anEvent.fZNCQ0;
+  fZNAQ0 = anEvent.fZNAQ0;
   fZNCM = anEvent.fZNCM;
   fZNAM = anEvent.fZNAM;
   fAbsOrbit = anEvent.fAbsOrbit;
@@ -870,6 +878,8 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fNITSCL1(-1.),
   fCentralityTRK(-1.),
   fRun(-1),
+  fZNCQ0(0.),
+  fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
   fAbsOrbit(0),

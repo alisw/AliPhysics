@@ -1608,13 +1608,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       AliAODZDC *aodZDC = aod->GetZDCData();
       
-      Double_t energyZNC  = (Double_t) (aodZDC->GetZNCEnergy());
-      Double_t energyZPC  = (Double_t) (aodZDC->GetZPCEnergy());
-      Double_t energyZNA  = (Double_t) (aodZDC->GetZNAEnergy());
-      Double_t energyZPA  = (Double_t) (aodZDC->GetZPAEnergy());
-      Double_t energyZEM1 = (Double_t) (aodZDC->GetZEM1Energy());
-      Double_t energyZEM2 = (Double_t) (aodZDC->GetZEM2Energy());
-      
       const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
       const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
       
@@ -1660,8 +1653,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         znaEnergy += towZNA[i];
       }
       if(RunNum>=245829) znaEnergy *= 8./7.;
-      fFlowEvent->SetZNCEnergy(towZNC[0]);
-      fFlowEvent->SetZNAEnergy(towZNA[0]);
+      fFlowEvent->SetZNCQ0(towZNC[0]);
+      fFlowEvent->SetZNAQ0(towZNA[0]);
+      
+      Double_t energyZNC = ((AliVAODHeader*)aod->GetHeader())->GetZDCN1Energy();
+      Double_t energyZNA = ((AliVAODHeader*)aod->GetHeader())->GetZDCN2Energy();
+      fFlowEvent->SetZNCEnergy(energyZNC);
+      fFlowEvent->SetZNAEnergy(energyZNA);
       
       const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
       const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
@@ -1809,6 +1807,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         fhZNAPM[i]->Fill(towZNA[i]);
         if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
       }
+      
+      Double_t energyZPC  = (Double_t) (aodZDC->GetZPCEnergy());
+      Double_t energyZPA  = (Double_t) (aodZDC->GetZPAEnergy());
+      Double_t energyZEM1 = (Double_t) (aodZDC->GetZEM1Energy());
+      Double_t energyZEM2 = (Double_t) (aodZDC->GetZEM2Energy());
       
       fhZNCvsZNA->Fill(energyZNA, energyZNC);
       fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);

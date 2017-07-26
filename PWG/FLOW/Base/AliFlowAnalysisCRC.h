@@ -96,6 +96,7 @@ public:
     kEtaPhiChPt,
     kEtaPhiRbR,
     kEtaPhiChRbR,
+    kEtaPhiVtxRbR,
   };
   
   // 0.) methods called in the constructor:
@@ -2041,6 +2042,8 @@ private:
   TF1 *fPolDist[2]; //!
   TF1 *fPolSlope[2]; //!
   TGraph *fCenMetric; //!
+  Double_t fZNCQ0; // common tower energy from ZNC-C
+  Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
