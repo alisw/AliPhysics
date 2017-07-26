@@ -24,11 +24,11 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
  bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
- bool    useEventPlane          =  1,   // 0: No      1: Yes
+ bool    useEventPlane          =  0,   // 0: No      1: Yes
  double  EventPlaneMin          =  -3.1415927/6,
  double  EventPlaneMax          =  3.1415927/6,
  int    CentralityGroup         =  9,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
- int    singlesOnly             =  1,   // 0: full correlations    1: singles only
+ int    singlesOnly             =  0,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
@@ -383,7 +383,15 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetPtTOFlowerBoundary( ptTOFlowerMin );
       task->SetElectronNSigmaVetoCut( ElectronVetoCut );
       task->SetfRemoveTracksT0Fill( remove_Tracks_T0 );
-  
+      
+      /*
+      AliEventCuts* EventCuts = new AliEventCuts();
+      EventCuts->SetManualMode();
+      EventCuts->fUseVariablesCorrelationCuts = true;
+      EventCuts->fUseStrongVarCorrelationCut = true;
+      task->SetAliEventCuts( EventCuts );
+      */
+      
       if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb, PbPb_2015
       else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb & pp
         
