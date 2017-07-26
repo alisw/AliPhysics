@@ -2739,7 +2739,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb140trkl() {
   for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.02); //
   
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 2.4% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); //  0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
@@ -2791,7 +2791,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb4070trkl() {
   for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.02); //
   
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 2.4% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); // 0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
@@ -2843,7 +2843,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb70200trkl() {
   for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.02); //
   
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 2.4% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); // 0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
@@ -6588,7 +6588,7 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb010() {
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 0.24% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); //  0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
@@ -6648,7 +6648,7 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb3050() {
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 0.24% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); // 0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
@@ -6711,7 +6711,7 @@ void AliHFSystErr::InitDplustoKpipi2015PbPb6080() {
   
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
-  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.024); // 0.24% PDG2016
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); // 0.24/9.46 PDG2016
   
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
