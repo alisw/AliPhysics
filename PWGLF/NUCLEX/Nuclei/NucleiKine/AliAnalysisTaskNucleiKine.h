@@ -24,15 +24,16 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
       kPiPlus, kPiMinus, kKplus, kKminus, kProton, kAntiProton, kNeutron, kAntiNeutron, kDeuteron, kAntiDeuteron,
       kLambda, kAntiLambda, kXiMinus, kXiPlus, kOmegaMinus, kOmegaPlus
     };
+    std::vector<std::string> fParticleNames;
 
     bool   fIgnoreCentrality;
     bool   fUseAfterburner;
+    AliGenLightNuclei fAfterburner; // Afterburner
 
   protected:
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
     AliAnalysisTaskNucleiKine& operator=(const AliAnalysisTaskNucleiKine& other);
 
-    AliGenLightNuclei fAfterburner; // Afterburner
 
     TList* fOutputList;    //! output list for histograms
 

@@ -14,7 +14,7 @@ enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton};
 
 enum ESys { kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
 const char *sysNames[nSys] = { "LL", "ALAL", "LAL", "PL", "APL", "PAL", "APAL","PP","PAP","APAP" };
-int runSys[nSys] = {0, 0, 1, 1, 1, 1, 1, 0, 1, 0};
+int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 const int nMult = 10;
 int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
@@ -26,6 +26,7 @@ AliFemtoBasicEventCut* GetEventCut();
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
 AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle);
+bool AreIdentical(ESys system);
 
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
@@ -62,6 +63,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
       anIter = imult * nSys + iSys;
       
       femtoAnalysis[iSys] = new AliFemtoEventAnalysis(multBins[imult], multBins[imult+1]);
+      femtoAnalysis[iSys]->SetIdenticalParticles(AreIdentical(iSys));
       separationFunction[iSys] = new AliFemtoSpatialSeparationFunction(Form("%s_M%i",sysNames[iSys],imult));
       
       EPart firstParticle, secondParticle;
@@ -208,6 +210,11 @@ void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParti
   if(system == kAPAP) {firstParticle = kEAntiProton;   secondParticle = kEAntiProton;}
 }
 
+bool AreIdentical(ESys system)
+{
+  if(system == kLL || system == kALAL || system == kPP || system == kAPAP) return true;
+  else return false;
+}
 
 
 
