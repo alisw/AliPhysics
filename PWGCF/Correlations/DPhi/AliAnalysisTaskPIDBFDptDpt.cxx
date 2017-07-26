@@ -72,6 +72,7 @@
 #include "AliMultInput.h"
 #include "AliAnalysisUtils.h"
 #include "TVector2.h"
+#include "AliEventCuts.h"
 
 
 using namespace std;
@@ -225,6 +226,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _weight_1      ( 0    ),
   _weight_2      ( 0    ),
   _eventAccounting ( 0),
+  fEventCut ( 0),
   _m0 ( 0),
   _m1 ( 0),
   _m2 ( 0),
@@ -575,6 +577,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _weight_1        ( 0    ),
   _weight_2        ( 0    ),
   _eventAccounting ( 0),
+  fEventCut ( 0),
   _m0 ( 0),
   _m1 ( 0),
   _m2 ( 0),
@@ -793,6 +796,8 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
   OpenFile(0);
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
+
+  fEventCut.AddQAplotsToList(_outputHistoList);
     
   //if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
     
@@ -1046,6 +1051,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
   name = "m7"; _m7      = createHisto1D(name,name,_nBins_M7, _min_M7, _max_M7, _title_m7, _title_counts);
   name = "m8"; _m8      = createHisto1D(name,name,_nBins_M8, _min_M8, _max_M8, _title_m8, _title_counts);
   name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
+  name = "psi_EventPlane"; _psi_EventPlane = createHisto1F(name,name, 360, 0.0, 6.4, "#psi","counts");
 
   // histos for tracks:
   if ( _singlesOnly )
@@ -1054,8 +1060,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
       name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");       
       name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-      name = "psi_EventPlane";            _psi_EventPlane   = createHisto1F(name,name, 360, 0.0, 6.4, "#psi","counts");
+      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");      
       name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
       name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");    
       name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
@@ -1384,6 +1389,19 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	
       _eventAccounting -> Fill( 3 ); // count all events with right centrality & vertexZ
 
+      if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" )
+	{
+	  fEventCut.SetManualMode();
+	  fEventCut.fUseVariablesCorrelationCuts = true;
+	  if (!fEventCut.AcceptEvent(fAODEvent))
+	    {
+	      PostData(0, _outputHistoList);
+	      return;
+	    }
+	}
+
+      _eventAccounting -> Fill( 4 ); // count all events afer "official" pile-up cut
+      
       //=========================================================================================================
       //*********************************************************************************************************            
       // "RealData" & "MCAODreco" share this same piece of code; if needed, seperate these 2 parts later 

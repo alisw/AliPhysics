@@ -2,6 +2,7 @@
 #define AliAnalysisTaskPIDBFDptDpt_H_Included
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 #include "TString.h"
 #include "AliLog.h"
 
@@ -69,6 +70,7 @@ public:
     virtual void   Terminate(Option_t* );
     virtual void   createHistograms();
     virtual void   finalizeHistograms();
+    AliEventCuts   fEventCut;
     
     virtual void   addToList(TH1 *h);
     
@@ -173,6 +175,8 @@ public:
     void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
+    //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
+
     
 protected:
     
