@@ -450,6 +450,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fPOIExtraWeights.EqualTo("EtaPhiChPt")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiChPt);
     if(fPOIExtraWeights.EqualTo("EtaPhiRbR")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiRbR);
     if(fPOIExtraWeights.EqualTo("EtaPhiChRbR")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiChRbR);
+    if(fPOIExtraWeights.EqualTo("EtaPhiVtxRbR")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiVtxRbR);
     // Pass the list with weights to class:
     if(fWeightsList) fQC->SetWeightsList(fWeightsList);
   }
