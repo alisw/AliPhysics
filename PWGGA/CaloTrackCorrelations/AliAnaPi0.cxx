@@ -3204,54 +3204,54 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
             fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
             
-	    if     (momstatus  == 21) {
-	      fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-	      fhMCPi0Radius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+            if     (momstatus  == 21) {
+              fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
+              fhMCPi0Radius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg     < 22 ) {
-	      fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-	      fhMCPi0Radius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+              fhMCPi0Radius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg     > 2100  && mompdg   < 2210) {
               fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
-	      fhMCPi0Radius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
-	    else if(mompdg    == 221) {
-	      fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
-	      fhMCPi0Radius[8]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0Radius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
+            else if(mompdg    == 221) {
+              fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
+              fhMCPi0Radius[8]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    == 331) {
-	      fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
-	      fhMCPi0Radius[9]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
+              fhMCPi0Radius[9]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    == 213) {
-	      fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
-	      fhMCPi0Radius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
+              fhMCPi0Radius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    == 223) {
-	      fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
-	      fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
+              fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    >= 310   && mompdg    <= 323) {
               fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-	      fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    == 130) {
-	      fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
-	      fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
+              fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(momstatus == 11 || momstatus  == 12 ) {
               fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-	      fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
-	    else {
-	      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
-	      fhMCPi0Radius[7]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
-	    
-            if(status!=11)
+              fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
+            else {
+              fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
+              fhMCPi0Radius[7]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
+            
+            if(status!=11) // all the time for py8
             {
-              if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
+              if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
               else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
               else if(mompdg     > 2100  && mompdg   < 2210)
                 fhMCNotResonancePi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
@@ -3262,9 +3262,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
               else if(mompdg    >= 310   && mompdg    <= 323)
                 fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
               else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
-              else if(momstatus == 11 || momstatus  == 12 )
+              else if(momstatus == 12 )
                 fhMCNotResonancePi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-              else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other?
+              else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
             }
           }
           
@@ -3357,32 +3357,32 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           {
             fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight()*weightPt);
             
-           if     (momstatus == 21 ) {
-	      fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-	      fhMCEtaRadius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+            if     (momstatus == 21 ) { // empty for py8
+              fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
+              fhMCEtaRadius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    < 22  ) {
-	      fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-	      fhMCEtaRadius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark, include parton for py8
+              fhMCEtaRadius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    > 2100  && mompdg  < 2210) {
               fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);//qq resonances
-	      fhMCEtaRadius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCEtaRadius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else if(mompdg    == 331) {
-	      fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
-	      fhMCEtaRadius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
-            else if(momstatus == 11 || momstatus == 12 ) {
+              fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
+              fhMCEtaRadius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
+            else if(momstatus == 11 || momstatus == 12 ) { // empty for py8
               fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-	      fhMCEtaRadius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	    }
+              fhMCEtaRadius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+            }
             else {
-	      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions?
-	      fhMCEtaRadius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
-            //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
-	    }
-	    
+              fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions? resonances for py8?
+              fhMCEtaRadius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
+              //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+            } 
+            
           }
           
         }// eta mass region
@@ -3414,7 +3414,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     }
     else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7)
     {
-      if(ancStatus==1)
+      if(ancStatus==1) 
       {//Stable particles, converted? not decayed resonances
         mcIndex = 6;
       }
@@ -3429,25 +3429,25 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       {//String fragmentation
         mcIndex = 8;
       }
-      else if (ancStatus==21)
-      {
-        if(ancLabel < 2)
-        {//Colliding protons
-          mcIndex = 11;
-        }//colliding protons
-        else if(ancLabel < 6)
-        {//partonic initial states interactions
-          mcIndex = 9;
-        }
-        else if(ancLabel < 8)
-        {//Final state partons radiations?
-          mcIndex = 10;
-        }
+      //else if (ancStatus==21)
+      //{
+      if(ancLabel < 2)
+      {//Colliding protons
+        mcIndex = 11;
+      }//colliding protons
+      else if(ancLabel < 6)
+      {//partonic initial states interactions, not exactly for py8 it can include few more labels
+        mcIndex = 9;
+      }
+      else if(ancLabel < 8)
+      {//Final state partons radiations?, not exactly for py8 it can include few more labels
+        mcIndex = 10;
+      }
         // else {
         //   printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
         //          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
         // }
-      }//status 21
+      //}//status 21
       //else {
       //  printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check *** Common ancestor label %d, pdg %d, name %s, status %d; \n",
       //         ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
