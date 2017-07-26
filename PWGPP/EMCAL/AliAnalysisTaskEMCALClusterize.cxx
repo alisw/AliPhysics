@@ -1670,15 +1670,15 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     okc2 = fRecoUtils->AcceptCalibrateCell(absIDc2, 0, ecell, tcell, fCaloCells); 
 
     //
-    // Generate some energy for the cells in cross, depending on this cell energy
+    // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    // CAREFUL: <<Apply the same added shift to all for the moment>>.
-    
     Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracWidth[0]);
-//  Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracWidth[1]);
-//  Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracWidth[2]);
-    Float_t fracCupdown = fracRupdown;
-    Float_t fracC       = fracRupdown;
+    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracWidth[1]);
+    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracWidth[2]);
+    
+//    // CAREFUL: <<Apply the same added shift to all>>.
+//    Float_t fracCupdown = fracRupdown;
+//    Float_t fracC       = fracRupdown;
     
 //    printf("\t Added energy (fractions %2.3f-%2.3f-%2.3f) -> gaus (%2.3f-%2.3f-%2.3f) on top of previous %2.3f: \n",
 //           fTCardCorrInduceEnerFrac[0], fTCardCorrInduceEnerFrac[1], fTCardCorrInduceEnerFrac[2],
