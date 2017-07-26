@@ -38,6 +38,8 @@ public:
   void SetFirstParticleCut(AliFemtoParticleCut* TheFirstParticleCut);
   void SetSecondParticleCut(AliFemtoParticleCut* TheSecondParticleCut);
 
+  void SetIdenticalParticles(bool identical);
+  
   void AddParticles(const char* typeIn, AliFemtoParticleCollection *partCollection, bool mixing = false);
   
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
@@ -80,6 +82,9 @@ protected:
   
   Bool_t fPerformSharedDaughterCut;
 
+private:
+  bool fIdenticalParticles; // is the analysis of identical particles
+  
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoEventAnalysis, 0);
@@ -135,6 +140,11 @@ inline void AliFemtoEventAnalysis::SetSecondParticleCut(AliFemtoParticleCut* x)
   x->SetAnalysis(this);
 }
 
+inline void AliFemtoEventAnalysis::SetIdenticalParticles(bool identical)
+{
+  fIdenticalParticles = identical;
+}
+
 inline int AliFemtoEventAnalysis::GetNeventsProcessed() const
 {
   return fNeventsProcessed;
@@ -154,5 +164,7 @@ inline bool AliFemtoEventAnalysis::MixingBufferFull()
 {
   return (fMixingBuffer->size() >= fNumEventsToMix);
 }
+
+
 
 #endif

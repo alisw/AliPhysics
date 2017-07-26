@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// AliFemtoSpatialSeparationFunction - A calss which calculates          //
+// AliFemtoSpatialSeparationFunction - A calss which calculates               //
 // total momentum of baryons and antibaryons in given event and builds        //
 // a histogram of anges between those vectors.                                //
 //                                                                            //
