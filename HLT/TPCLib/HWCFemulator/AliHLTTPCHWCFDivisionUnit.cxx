@@ -208,10 +208,11 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   }
 
   sort(labels.begin(), labels.end(), CompareMCWeights );
-    
-  for( unsigned int i=0; i<3 && i<labels.size(); i++ ){
+
+  for( unsigned int i=0, j = 0; j<3 && i<labels.size(); i++ ){
     if( labels[i].fMCID <0 ) continue;
-    fOutput.fMC.fClusterID[i] = labels[i];
+    if( labels[i].fWeight == 0) continue;
+    fOutput.fMC.fClusterID[j++] = labels[i];
   }
 
   if( fDebug==2 ){
