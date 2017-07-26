@@ -209,6 +209,9 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2013pPb4060CL1();
   void InitDplustoKpipi2013pPb60100CL1();
     
+  void InitDplustoKpipi2016pPb140trkl();
+  void InitDplustoKpipi2016pPb4070trkl();
+  void InitDplustoKpipi2016pPb70200trkl();
 
  private:
 
