@@ -57,6 +57,7 @@ endif()
 
 # Path to additonal modules
 set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB)
 
 # Retrieve Git version and revision
 # ALIPHYSICS_VERSION
