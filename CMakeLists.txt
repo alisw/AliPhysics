@@ -106,6 +106,8 @@ else()
   # AliRoot Core mandatory
   find_package(AliRoot REQUIRED)
 
+  find_package(Boost 1.53.0 REQUIRED)
+
   # ROOT configuration mandatory
   if(ROOTSYS)
       find_package(ROOT REQUIRED)
