@@ -415,6 +415,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTDecayLengthProper;
   UShort_t           fTDecayLengthNorm;
   Float_t            fTCosPA;
+  UShort_t           fTTransverseMom;
   Float_t            fTInvariantMass;
 
 
