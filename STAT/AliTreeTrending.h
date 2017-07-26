@@ -24,7 +24,7 @@ public:
   ~AliTreeTrending(){;}
   void SetTree(TTree * tree) {fTree=tree;};
   void AddUserDescription(TNamed *description);  //
-  Bool_t  InitSummaryTrending(TString statusDescription[3], Float_t descriptionSize=0.015);
+  Bool_t  InitSummaryTrending(TString statusDescription[3], Float_t descriptionSize=0.015, TString cutString="");
   void SetDefaultStyle();  // own style to be used - not yet
   void AppendStatusPad(Float_t padratio, Float_t bottomMargin, Float_t rightMargin);
 public:

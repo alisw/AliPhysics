@@ -3,12 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//
-// some utilities which do net exist in the standard ROOT
-//
+/// \ingroup STAT
 /// \file TStatToolkit.h
 /// \class TStatToolkit
 /// \brief Summary of statistics functions
+/// \author Marian  Ivanov marian.ivanov@cern.ch
+
+
 #include "TMath.h"
 #include "Riostream.h"
 #include "TH1F.h"
@@ -91,7 +92,7 @@ namespace TStatToolkit
   TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
-  TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend);
+  TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp=kTRUE );
   //
   // Fitting function
   //

@@ -1170,6 +1170,9 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                 cout<<"Looking for MC aliphys: "<<tempprod.aliphys<<" MC aliroot: "<<tempprod.aliroot<<endl;
                 if(!((*iter).anchpass).Contains("cpass") && !((*iter).anchpass).Contains("cosmic") && (!isgp || TPRegexp("^pass").MatchB((*iter).anchpass,"i"))){
                 cout<<"Used for guess: RDphys:"<<(*iter).aliphys<<" RDroot: "<<(*iter).aliroot<<" RDpass guess: "<<(*iter).anchpass<<endl;
+                *osrdpass=TObjString(iter->anchpass);
+                *osrdaliphys=TObjString(iter->aliphys);
+                *osrdaliroot=TObjString(iter->aliroot);
                 break;
                     }
                 if(iter==list.begin()) break;
@@ -1218,9 +1221,12 @@ TString  AliExternalInfo::GetMCPassGuess(TString sMCprodname){
 }
  
  char pMCprodname[1000];
+
  TObjString osMCprodname=0;
+ TObjString* osAnchprodname=0;
  TObjString* osMCpassguess=0;
- 
+
+ guesstree->GetBranch("anchorProdTag_ForGuess")->SetAddress(&osAnchprodname); 
  guesstree->GetBranch("prodName")->SetAddress(&pMCprodname);
  guesstree->GetBranch("anchorPassName_guess")->SetAddress(&osMCpassguess);
  
@@ -1229,7 +1235,7 @@ TString  AliExternalInfo::GetMCPassGuess(TString sMCprodname){
      osMCprodname = TObjString(pMCprodname);
      if(osMCprodname.String()==sMCprodname){       //if match found return corresponding guess
          cout<<"Anchor Pass guess for "<<osMCprodname.String()<<": "<<osMCpassguess->String()<<endl;
-         return(osMCpassguess->String());
+         return(osAnchprodname->String()+" "+osMCpassguess->String());
      }
  }
  cout<<osMCprodname.String()<<" was not found in list of MC productions"<<endl;
