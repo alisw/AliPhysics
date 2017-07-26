@@ -72,7 +72,7 @@
 #include "AliMultInput.h"
 #include "AliAnalysisUtils.h"
 #include "TVector2.h"
-#include "AliEventCuts.h"
+//#include "AliEventCuts.h"
 
 
 using namespace std;
@@ -226,7 +226,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _weight_1      ( 0    ),
   _weight_2      ( 0    ),
   _eventAccounting ( 0),
-  fEventCut ( 0),
+//fEventCut ( 0),
   _m0 ( 0),
   _m1 ( 0),
   _m2 ( 0),
@@ -577,7 +577,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _weight_1        ( 0    ),
   _weight_2        ( 0    ),
   _eventAccounting ( 0),
-  fEventCut ( 0),
+  //fEventCut ( 0),
   _m0 ( 0),
   _m1 ( 0),
   _m2 ( 0),
@@ -797,7 +797,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
 
-  fEventCut.AddQAplotsToList(_outputHistoList);
+  //fEventCut->AddQAplotsToList(_outputHistoList);
     
   //if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
     
@@ -1389,16 +1389,18 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	
       _eventAccounting -> Fill( 3 ); // count all events with right centrality & vertexZ
 
+      /*
       if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" )
 	{
-	  fEventCut.SetManualMode();
-	  fEventCut.fUseVariablesCorrelationCuts = true;
-	  if (!fEventCut.AcceptEvent(fAODEvent))
+	  fEventCut->SetManualMode();
+	  fEventCut->fUseVariablesCorrelationCuts = true;
+	  if (!fEventCut->AcceptEvent(fAODEvent))
 	    {
 	      PostData(0, _outputHistoList);
 	      return;
 	    }
 	}
+      */
 
       _eventAccounting -> Fill( 4 ); // count all events afer "official" pile-up cut
       
