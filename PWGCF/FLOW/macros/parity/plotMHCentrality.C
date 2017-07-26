@@ -97,6 +97,11 @@ TList *GetSPResults(TFile *fInput,
   //Get the TDirectoryFile
   TString directoryNameSP = 0;
   directoryNameSP = Form("outputSPv%danalysis",iHarmonic); 
+  if(charge == -1)
+    directoryNameSP += "MinusMinus";
+  else if(charge == 1)
+    directoryNameSP += "PlusPlus";
+
   TDirectoryFile *outputSPanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameSP.Data()));
   if(!outputSPanalysis) {
     Printf("SP directory not found!!!");
@@ -111,6 +116,10 @@ TList *GetSPResults(TFile *fInput,
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     listNameSP = "Centrality"; 
     listNameSP += strCentralityBins[iCentralityBin];
+    if(charge == -1)
+      listNameSP += "MinusMinus";
+    else if(charge == 1)
+    listNameSP += "PlusPlus";
     listNameSP += "_SP_v"; listNameSP += iHarmonic;
     if(isPID) {
       listNameSP += AliFlowTrackCuts::PIDsourceName(sourcePID);
@@ -222,7 +231,12 @@ TList *GetQCResults(TFile *fInput,
   //Get the TDirectoryFile
   TString directoryNameQC = 0;
   directoryNameQC = Form("outputQCv%danalysis",iHarmonic); 
-  TDirectoryFile *outputQCanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameQC.Data()));
+  if(charge == -1)
+    directoryNameQC += "MinusMinus";
+  else if(charge == 1)
+    directoryNameQC += "PlusPlus";
+
+TDirectoryFile *outputQCanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameQC.Data()));
   if(!outputQCanalysis) {
     Printf("QC directory not found!!!");
     break;
@@ -236,6 +250,10 @@ TList *GetQCResults(TFile *fInput,
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     listNameQC = "Centrality"; 
     listNameQC += strCentralityBins[iCentralityBin];
+    if(charge == -1)
+      listNameQC += "MinusMinus";
+    else if(charge == 1)
+      listNameQC += "PlusPlus";
     listNameQC += "_QC_v"; listNameQC += iHarmonic;
     if(isPID) {
       listNameQC += AliFlowTrackCuts::PIDsourceName(sourcePID);
@@ -402,11 +420,17 @@ TList *GetMHResults(TFile *fInput,
     else if(iHarmonic == 2)
       directoryNameMH = Form("outputMHUS%danalysis",iHarmonic); 
   }
-  else if((charge == -1)||(charge == 1)) {
+  else if(charge == -1) {
     if(iHarmonic == 1)
-      directoryNameMH = "outputMHLSanalysis"; 
+      directoryNameMH = "outputMHLSanalysisMinusMinus"; 
     else if(iHarmonic == 2)
-      directoryNameMH = Form("outputMHLS%danalysis",iHarmonic); 
+      directoryNameMH = Form("outputMHLS%danalysisMinusMinus",iHarmonic); 
+  }
+  else if(charge == 1) {
+    if(iHarmonic == 1)
+      directoryNameMH = "outputMHLSanalysisPlusPlus"; 
+    else if(iHarmonic == 2)
+      directoryNameMH = Form("outputMHLS%danalysisPlusPlus",iHarmonic); 
   }
 
   TDirectoryFile *outputMHanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameMH.Data()));
@@ -424,6 +448,10 @@ TList *GetMHResults(TFile *fInput,
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     listNameMH = "Centrality"; 
     listNameMH += strCentralityBins[iCentralityBin];
+    if(charge == -1)
+      listNameMH += "MinusMinus";
+    else if(charge == 1)
+      listNameMH += "PlusPlus";
     if(charge == 0) 
       listNameMH += "_MHUS_v"; 
     else if((charge == -1)||(charge == 1)) 
@@ -500,6 +528,7 @@ TList *GetMHResults(TFile *fInput,
 			  g3pCorrelatorError,1,17);
     TString g3pHistName = "g3pHist";
     g3pHistName += strCentralityBins[iCentralityBin];
+    g3pHistName += "v"; g3pHistName += iHarmonic;
     TH1D *g3pHist = new TH1D(g3pHistName,
 			     ";;#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3}#GT#GT",
 			     1,0.5,1.5);
