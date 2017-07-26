@@ -339,6 +339,7 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fElectronBKGNoEnhULS_WithW(0)
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
+
 {
     //Named constructor
     // Define input and output slots here
@@ -2611,35 +2612,17 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
         
         CocktailType_t Type = FindTrackGenerator(MCIndex, fMCheader,fMCarray);
         
-        if ( Type == kBackgroundEnhanced)
-            IsEnhancedPi0Eta = kTRUE;
-        else if (Type == kHFEnhanced)
-            IsEnhancedHF = kTRUE;
+        if ( Type == kBackgroundEnhanced || Type == kHFEnhanced)
+            continue;
         
-        //pi0
-        if (PDGCode == 111)
+        if (particle->IsPrimary() && particle->GetMother()<0)
         {
-            if (IsEnhancedPi0Eta)
-            {
-                if (particle->GetMother()<0)
-                    fPtMCpi0_NoMother->Fill(particle->Pt());
-            }
-            else if (!IsEnhancedHF)
-                fPtMCpi0_PureHijing->Fill(particle->Pt());
+            if (PDGCode == 111)
+                fPtMCpi0_NoMother->Fill(particle->Pt());
+            else if (PDGCode == 221)
+                fPtMCEta_NoMother->Fill(particle->Pt());
         }
-        
-        //eta
-        if (PDGCode == 221)
-        {
-            if (IsEnhancedPi0Eta)
-            {
-                if (particle->GetMother()<0)
-                    fPtMCEta_NoMother->Fill(particle->Pt());
-            }
-            else if (!IsEnhancedHF)
-                fPtMCEta_PureHijing->Fill(particle->Pt());
-            
-        }
+
     }
 }
 
@@ -2815,39 +2798,9 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
     Int_t LabelMC = TMath::Abs(track->GetLabel());
     CocktailType_t Type = FindTrackGenerator(LabelMC, fMCheader, fMCarray);
     
-    //Calculate using only the enhanced sample
-    if (Type == kBackgroundEnhanced)
-    {
-        //Find Particle first mother
-        AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
-        AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
-        
-        while (MCMother->GetMother()>=0){
-            MCMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
-        }
-        
-        //Total number of NHFe in the enh. sample
-        Double_t MotherW = CalculateWeightRun2(TMath::Abs(MCMother->GetPdgCode()),MCMother->Pt());
-        
-        fEtaCutElectronBKNoTag->Fill(track->Pt());
-        fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(),MotherW);
-        
-        
-        if (fNonHFE->IsULS())
-        {
-            fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
-            fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS()*MotherW);
-        }
-        
-        if (fNonHFE->IsLS())
-        {
-            fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
-            fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNLS()*MotherW);
-        }
-    }
+    //Calculate using only the NON-enhanced sample (HF and eta/Pi0)
     
-    //Calculate using only the NON-enhanced sample
-    if ( (Type == kNoCoktail) || (Type == kHijing) )
+    if ( Type != kBackgroundEnhanced &&  Type != kHFEnhanced)
     {
         
         AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
@@ -2872,6 +2825,11 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                 
                 if (MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
                 {
+                    //Pi0/Eta should be primary and have no mother (same condition used to calculate the weight)
+
+                    if (!MCMother->IsPrimary() || MCMother->GetMother()>0)
+                        return;
+                    
                     Double_t Weight = CalculateWeightRun2ToData(MotherPDGAfterReco,MCMother->Pt());
                     fElectronBKGNoEnhTotalNumber_WithW->Fill(track->Pt(), Weight);
                     
@@ -2888,6 +2846,10 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                     {
                         AliAODMCParticle* MCGMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
                         Int_t GMotherPDGAfterReco = TMath::Abs(MCGMother->GetPdgCode());
+                        
+                        //Pi0/Eta should be primary and have no mother (same condition used to calculate the weight)
+                        if (!MCGMother->IsPrimary() || MCGMother->GetMother()>0)
+                            return;
                         
                         if (GMotherPDGAfterReco ==111 || GMotherPDGAfterReco ==221)
                         {
