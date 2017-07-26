@@ -366,6 +366,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="4070trkl")  InitDstoKKpi2016pPb4070trkl();
 	else if (fCentralityClass=="70200trkl") InitDstoKKpi2016pPb70200trkl();
       }
+    }
     else AliFatal("Not yet implemented");
     break;
   case 5: // Lc->pKpi
