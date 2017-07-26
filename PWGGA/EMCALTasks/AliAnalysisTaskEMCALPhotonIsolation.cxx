@@ -612,6 +612,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fTrackResolutionPtMC->Sumw2();
           fOutput->Add(fTrackResolutionPtMC);
         }
+
+	if(fQA){
+	  fNLM2_NC_Acc = new TH2D("hNLM2_NC_Acc","NLM distribution for *Neutral* Clusters in acceptance",10,0.,10.,100,0.,100.);
+	  fNLM2_NC_Acc->Sumw2();
+	  fOutput->Add(fNLM2_NC_Acc);
+	}
       }
         break;
         
@@ -829,10 +835,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fNLM = new TH2D("hNLM_NC","NLM distribution for Clusters",10,0.,10.,100,0.,100.);
     fNLM->Sumw2();
     fOutput->Add(fNLM);
-    
-    fNLM2_NC_Acc = new TH2D("hNLM2_NC_Acc","NLM distribution for *Neutral* Clusters in acceptance",10,0.,10.,100,0.,100.);
-    fNLM2_NC_Acc->Sumw2();
-    fOutput->Add(fNLM2_NC_Acc);
     
     fTestIndex= new TH2D("hTestIndex","Test index for cluster",100,0.,100.,100,0.,100.);
     fTestIndex->SetXTitle("index");
@@ -1146,7 +1148,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   if(vecCOI.Pt()<5.)
     return kFALSE;
   
-  if(fQA)
+  if(fQA && fWho == 1)
     fNLM2_NC_Acc->Fill(nlm,coi->E());
   
   return kTRUE;
