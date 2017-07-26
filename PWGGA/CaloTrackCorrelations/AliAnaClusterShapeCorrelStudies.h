@@ -477,6 +477,7 @@ public:
 
   // 8 < E < 12 GeV per SM, neutral
   TH3F *   fhNCellsPerClusterM02M20PerSM  [20];   //!<! m02 vs m20 vs n cells 
+  TH3F *   fhNCellsPerClusterM02NLMPerSM  [20];   //!<! m02 vs NLM vs n cells 
   TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
   TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
   TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
