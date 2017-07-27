@@ -288,13 +288,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event");
       return;
     }
-    
-    AliStack* stack = mcEvent->Stack();
-    if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
-      return;
-    }
-    
+        
     AliHeader* header = mcEvent->Header();
     if (!header) {
       AliDebug(AliLog::kError, "Header not available");
@@ -303,11 +297,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     AliGenEventHeader* genHeader = header->GenEventHeader();
     genHeader->PrimaryVertex(mcVertex);
 
-    Int_t ngenpart = (Int_t)stack->GetNtrack();
+    Int_t ngenpart = (Int_t)mcEvent->GetNumberOfTracks();
     //printf("# generated particles = %d\n",ngenpart);
     dNchdy=0;
     for(Int_t ip=0; ip<ngenpart; ip++) {
-      TParticle* part = (TParticle*)stack->Particle(ip);
+      TParticle* part = (TParticle*)mcEvent->Particle(ip);
       // keep only electorns, muons, pions, kaons and protons
       Int_t apdg = TMath::Abs(part->GetPdgCode());
       if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;      
