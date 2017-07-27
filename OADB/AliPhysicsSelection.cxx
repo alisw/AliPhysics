@@ -65,7 +65,6 @@
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
-#include <memory>
 #include <vector>
 
 #include <Riostream.h>
@@ -110,38 +109,7 @@
 #include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliITSTriggerConditions.h"
 
-#include <pcre.h>
-
-struct PCREWrap {
-  std::unique_ptr<pcre,       decltype(pcre_free)> re;
-  std::unique_ptr<pcre_extra, decltype(pcre_free)> re_extra;
-
-  PCREWrap(const TString& pattern)
-  : re       {nullptr, pcre_free}
-  , re_extra {nullptr, pcre_free}
-  {
-    const char* error;
-    int erroroffset;
-
-    re.reset(pcre_compile(pattern.Data(), 0, &error, &erroroffset, nullptr));
-    if (!re)
-      return;
-
-    re_extra.reset(pcre_study(re.get(), 0, &error));
-    if (error)
-      re.reset();
-  }
-
-  bool IsValid() const { return static_cast<bool>(re); }
-
-  bool Match(const TString& str) const {
-    return pcre_exec(re.get(), re_extra.get(),
-                     str.Data(), str.Length(),
-                     0, 0, nullptr, 0) == 0;
-  }
-};
-
-class StringToRegexp : public std::map<std::string, PCREWrap> {};
+class StringToRegexp : public std::map<std::string, TPRegexp> {};
 
 ClassImp(AliPhysicsSelection)
 
@@ -248,7 +216,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
 
     // required or rejected triggers
     if (*trigger == '+' || *trigger == '-') {
-      bool flag = (*trigger == '+');
+      Int_t flag = (*trigger == '+');
       trigger++;
 
       const char* begin = trigger;
@@ -256,8 +224,8 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char
         trigger++;
       str.assign(begin, trigger);
 
-      const auto& re = FindRegexp(str);
-      if (re.Match(classes) != flag)
+      auto& re = FindRegexp(str);
+      if (re.Match(classes, "", 0, 1) != flag)
         return kFALSE; // required not found or rejected found
 
       continue;
@@ -908,7 +876,7 @@ FormulaAndBits& AliPhysicsSelection::FindForumla(const char* triggerLogic) {
   return it->second;
 }
 
-const PCREWrap& AliPhysicsSelection::FindRegexp(const std::string& triggers) const {
+TPRegexp& AliPhysicsSelection::FindRegexp(const std::string& triggers) const {
   auto it = fTriggerToRegexp->find(triggers);
   if (it != fTriggerToRegexp->end())
     return it->second; // cache hit
@@ -929,7 +897,8 @@ const PCREWrap& AliPhysicsSelection::FindRegexp(const std::string& triggers) con
   }
   pattern.Append(")\\b");
 
-  PCREWrap re(pattern);
+  TPRegexp re(pattern);
+  re.Match(""); // compile regexp
   if (!re.IsValid()) {
     AliFatal(Form("Bad trigger logic %s (corresponding regexp %s)",
                   triggers.c_str(),
