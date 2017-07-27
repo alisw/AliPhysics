@@ -192,7 +192,13 @@ int AliHLTTPCFastdEdxComponent::Reconfigure( const char* cdbEntry, const char* c
   return Configure( cdbEntry, chainId, NULL );
 }
 
-
+static inline void insertCharge(float q, float qmax, int& count, int& countIROC, int& countOROC1, float* bufTot, float* bufMax, int padRow)
+{
+  bufTot[count] = q;
+  bufMax[count++] = qmax;
+  if (padRow < AliHLTTPCGeometry::GetNRowLow()) countIROC++;
+  else if (padRow < AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1()) countOROC1++;
+}
 
 int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks)
 {
@@ -263,6 +269,11 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
       int countOROC1 = 0;
       
       int lastPatch = AliHLTTPCGeometry::CluID2Partition(currTrack->fPointIDs[currTrack->fNPoints - 1]);
+      int lastrow = -10;
+      float chargeTotMin = 1e10;
+      float chargeMaxMin = 1e10;
+      int countSubThr = 0;
+      int countSubThrIROC = 0, countSubThrOROC1 = 0, countSubThrOROC2 = 0;
       for(int ic = currTrack->fNPoints;--ic;)
       {
 	UInt_t id = currTrack->fPointIDs[ic];
@@ -276,6 +287,7 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	float chargeTot = cluster.GetCharge();
 	float chargeMax = cluster.GetQMax();
 	int padRow = cluster.GetPadRow() + AliHLTTPCGeometry::GetFirstRow(iPatch);
+        if (padRow < lastrow) break; //Currently we cannot treat full helix
 	float padPitchWidth = AliHLTTPCGeometry::GetPadPitchWidth(iPatch);
 	float padLength = AliHLTTPCGeometry::GetPadLength(padRow);
 	
@@ -295,15 +307,43 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	
 	chargeTot *= factor;
 	chargeMax *= factor / padPitchWidth;
-	
-	fBufTot[count] = chargeTot;
-	fBufMax[count++] = chargeMax;
-	if (padRow < AliHLTTPCGeometry::GetNRowLow()) countIROC++;
-	else if (padRow < AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1()) countOROC1++;
-	
-	if (count >= fMaxClusterCount) break;
-      }
+        
+        if (chargeTot < chargeTotMin) chargeTotMin = chargeTot;
+        if (chargeMax < chargeMaxMin) chargeMaxMin = chargeMax;
+        if (lastrow == padRow - 2) countSubThr++;
+        
+        if ((lastrow < AliHLTTPCGeometry::GetNRowLow() && padRow >= AliHLTTPCGeometry::GetNRowLow()) || (lastrow < AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1() && padRow >= AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1()))
+        {
+          int k;
+          for (k = 0;k < countSubThr;k++)
+          {
+            if (count >= fMaxClusterCount) break;
+            insertCharge(chargeTotMin, chargeMaxMin, count, countIROC, countOROC1, fBufTot, fBufMax, lastrow);
+          }
+          if (lastrow < AliHLTTPCGeometry::GetNRowLow()) countSubThrIROC = k;
+          else if (lastrow < AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1()) countSubThrOROC1 = k;
+          else countSubThrOROC2 = k;
+          
+          chargeTotMin = 1e10;
+          chargeMaxMin = 1e10;
+          countSubThr = 0;
+        }
 
+        insertCharge(chargeTot, chargeMax, count, countIROC, countOROC1, fBufTot, fBufMax, padRow);
+        lastrow = padRow;
+
+        if (count >= fMaxClusterCount) break;
+      }
+      int k;
+      for (k = 0;k < countSubThr && count < fMaxClusterCount;k++)
+      {
+        insertCharge(chargeTotMin, chargeMaxMin, count, countIROC, countOROC1, fBufTot, fBufMax, lastrow);
+      }
+      if (lastrow < AliHLTTPCGeometry::GetNRowLow()) countSubThrIROC = k;
+      else if (lastrow < AliHLTTPCGeometry::GetNRowLow() + AliHLTTPCGeometry::GetNRowUp1()) countSubThrOROC1 = k;
+      else countSubThrOROC2 = k;
+      
+      
       int countOROC2 = count - countIROC - countOROC1;
       int countOROC = countOROC1 + countOROC2;
       int truncLow = 6; //fractions of 128
@@ -319,11 +359,11 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
       outFill->fdEdxMaxOROC  = GetSortTruncMean(fBufMax + countIROC             , countOROC , truncLow, truncHigh);
       outFill->fdEdxMaxTPC   = GetSortTruncMean(fBufMax                         , count     , truncLow, truncHigh);
       outFill->nHitsIROC = countIROC;
-      outFill->nHitsSubThresholdIROC = countIROC;
+      outFill->nHitsSubThresholdIROC = countIROC + countSubThrIROC;
       outFill->nHitsOROC1 = countOROC1;
-      outFill->nHitsSubThresholdOROC1 = countOROC1;
+      outFill->nHitsSubThresholdOROC1 = countOROC1 + countSubThrOROC1;
       outFill->nHitsOROC2 = countOROC2;
-      outFill->nHitsSubThresholdOROC2 = countOROC2;
+      outFill->nHitsSubThresholdOROC2 = countOROC2 + countSubThrOROC2;
       outFill++;;
 
       unsigned int step = sizeof(AliHLTExternalTrackParam) + currTrack->fNPoints * sizeof(unsigned int);
