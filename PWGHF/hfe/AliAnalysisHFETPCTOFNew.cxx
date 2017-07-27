@@ -63,7 +63,7 @@
 #include "AliCFManager.h"
 #include "AliSelectNonHFE.h"
 #include "AliHFEpidTPC.h"
-#include "AliAnalysisHFETPCTOF_2.h"
+#include "AliAnalysisHFETPCTOFNew.h"
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TLorentzVector.h"
@@ -94,10 +94,10 @@
 //______________________________________________________________________
 
 //______________________________________________________________________
-ClassImp(AliAnalysisHFETPCTOF_2)
+ClassImp(AliAnalysisHFETPCTOFNew)
 
 //______________________________________________________________________
-AliAnalysisHFETPCTOF_2::AliAnalysisHFETPCTOF_2(const char *name) 
+AliAnalysisHFETPCTOFNew::AliAnalysisHFETPCTOFNew(const char *name) 
   : AliAnalysisTaskSE(name)
 ,fIsMC(0)
 
@@ -328,8 +328,8 @@ AliAnalysisHFETPCTOF_2::AliAnalysisHFETPCTOF_2(const char *name)
 }
 
 //________________________________________________________________________
-AliAnalysisHFETPCTOF_2::AliAnalysisHFETPCTOF_2() 
-  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisHFETPCTOF_2")
+AliAnalysisHFETPCTOFNew::AliAnalysisHFETPCTOFNew() 
+  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisHFETPCTOFNew")
 
 ,fIsMC(0)
 
@@ -555,7 +555,7 @@ AliAnalysisHFETPCTOF_2::AliAnalysisHFETPCTOF_2()
 }
 
 //______________________________________________________________________
-AliAnalysisHFETPCTOF_2::~AliAnalysisHFETPCTOF_2()
+AliAnalysisHFETPCTOFNew::~AliAnalysisHFETPCTOFNew()
 {
 	//Destructor 
 	delete fOutputList;
@@ -568,7 +568,7 @@ AliAnalysisHFETPCTOF_2::~AliAnalysisHFETPCTOF_2()
 //Create Output Objects
 //Here we can define the histograms and others output files
 //Called once
-void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
+void AliAnalysisHFETPCTOFNew::UserCreateOutputObjects()
 {
 //______________________________________________________________________
 //Initialize PID
@@ -1088,7 +1088,7 @@ void AliAnalysisHFETPCTOF_2::UserCreateOutputObjects()
 //______________________________________________________________________
 //Main loop
 //Called for each event
-void AliAnalysisHFETPCTOF_2::UserExec(Option_t *) 
+void AliAnalysisHFETPCTOFNew::UserExec(Option_t *) 
 {
 
 
@@ -1831,7 +1831,7 @@ if(fIsMC)
 }      
 
 //=======================================================================
-void AliAnalysisHFETPCTOF_2::Terminate(Option_t *) 
+void AliAnalysisHFETPCTOFNew::Terminate(Option_t *) 
 {
 //Draw result to the screen
 //Called once at the end of the query
@@ -1848,7 +1848,7 @@ void AliAnalysisHFETPCTOF_2::Terminate(Option_t *)
 //=======================================================================
 
 //=======================================================================
-Bool_t AliAnalysisHFETPCTOF_2::ProcessCutStep(Int_t cutStep, AliVParticle *track)
+Bool_t AliAnalysisHFETPCTOFNew::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 {
 //Check single track cuts for a given cut step
 //Note this function is called inside the UserExec function
@@ -1858,28 +1858,28 @@ Bool_t AliAnalysisHFETPCTOF_2::ProcessCutStep(Int_t cutStep, AliVParticle *track
 }
 
 //Setter for the Partner cuts
-void AliAnalysisHFETPCTOF_2::SetPartnerCuts(Float_t Mass, Float_t MinPt, Float_t TpcNclus) {
+void AliAnalysisHFETPCTOFNew::SetPartnerCuts(Float_t Mass, Float_t MinPt, Float_t TpcNclus) {
 	fMass = Mass; 
 	fMinPt = MinPt; 
 	fTpcNclusAsso = TpcNclus;
 }
 
 //Setter for the PID cuts (TOF and TPC)
-void AliAnalysisHFETPCTOF_2::SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut) {
+void AliAnalysisHFETPCTOFNew::SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut) {
 	ftpcPIDmincut = tpcPIDmincut; 
 	ftpcPIDmaxcut = tpcPIDmaxcut;
 	ftofPIDmincut = tofPIDmincut;
 	ftofPIDmaxcut = tofPIDmaxcut;
 }
 //Setter for the Eta cut
-void AliAnalysisHFETPCTOF_2::SetEtaCut(Float_t EtaMin, Float_t EtaMax){
+void AliAnalysisHFETPCTOFNew::SetEtaCut(Float_t EtaMin, Float_t EtaMax){
 	fEtaMin = EtaMin; 
 	fEtaMax = EtaMax;
 }
 
 
 //=======================================================================
-Bool_t AliAnalysisHFETPCTOF_2::FindMother(Int_t mcIndex)
+Bool_t AliAnalysisHFETPCTOFNew::FindMother(Int_t mcIndex)
 {
 	fIsHFE1 = kFALSE;
 	fIsHFE2 = kFALSE;
@@ -2105,7 +2105,7 @@ Bool_t AliAnalysisHFETPCTOF_2::FindMother(Int_t mcIndex)
 }
 //======================================================================
 
-Bool_t AliAnalysisHFETPCTOF_2::IsHFelectronsMC(AliVTrack *track){
+Bool_t AliAnalysisHFETPCTOFNew::IsHFelectronsMC(AliVTrack *track){
 
           	            
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
@@ -2131,7 +2131,7 @@ Bool_t AliAnalysisHFETPCTOF_2::IsHFelectronsMC(AliVTrack *track){
 }
 
 //_________________________________________ for taggign efficiency weights ________________________________________
-Int_t AliAnalysisHFETPCTOF_2::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray){
+Int_t AliAnalysisHFETPCTOFNew::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray){
     //
     // Return what type of pi0, eta it is
     //
@@ -2159,7 +2159,7 @@ Int_t AliAnalysisHFETPCTOF_2::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArr
 
 //___________________________________________________________________________________________________________
 
-Int_t AliAnalysisHFETPCTOF_2::GetElecSourceType(AliAODMCParticle *electron, TClonesArray *mcArray,Double_t &ptm){
+Int_t AliAnalysisHFETPCTOFNew::GetElecSourceType(AliAODMCParticle *electron, TClonesArray *mcArray,Double_t &ptm){
     //
     // Return what type of gammax it is
     //

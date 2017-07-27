@@ -1,4 +1,4 @@
-AliAnalysisHFETPCTOF_2* AddTaskHFETPCTOFRun2_new( ///-> to run locally
+AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 			TString uniqueID        = "",
 			Bool_t 	isMC 			= kFALSE, 
 			Bool_t 	isAOD 			= kFALSE,
@@ -38,7 +38,7 @@ AliAnalysisHFETPCTOF_2* AddTaskHFETPCTOFRun2_new( ///-> to run locally
 	}
 	
 	//_______________________
-    AliAnalysisHFETPCTOF_2 *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,isErf);
+    AliAnalysisHFETPCTOFNew *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,isErf);
     //_____________________________________________________
 	//Trigger
 		if(!isMC){
@@ -65,7 +65,7 @@ AliAnalysisHFETPCTOF_2* AddTaskHFETPCTOFRun2_new( ///-> to run locally
 }
 
 
-AliAnalysisHFETPCTOF_2* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t isErf)
+AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t isErf)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -97,7 +97,7 @@ AliAnalysisHFETPCTOF_2* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPP
     
     //___________________________________________________________________________________________________________
     ///Task config
-    AliAnalysisHFETPCTOF_2 *task = new AliAnalysisHFETPCTOF_2();
+    AliAnalysisHFETPCTOFNew *task = new AliAnalysisHFETPCTOFNew();
     printf("task ------------------------ %p\n ", task);
     task->SetHFECuts(hfecuts);
     task->SetAODanalysis(isAODc);
