@@ -73,6 +73,10 @@
 #include "AliHLTTRDTrackData.h"
 #include "AliHLTTRDTrackPoint.h"
 #include "AliHLTITSTrackPoint.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
+#include "AliHLTTPCdEdxData.h"
+#include "AliTPCdEdxInfo.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -86,6 +90,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fScaleDownTracks(0)
   , fSolenoidBz(-5.00668)
   , fMakeFriends(0)
+  , fBeamTypePbPb(false)
   , fBenchmark("EsdConverter")
 {
   // see header file for class documentation
@@ -123,6 +128,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeCaloCluster);
   list.push_back(kAliHLTDataTypeCaloTrigger);
   list.push_back(kAliHLTDataTypedEdx);
+  list.push_back(AliHLTTPCDefinitions::TPCdEdxNew());
   list.push_back(kAliHLTDataTypeESDVertex);
   list.push_back(kAliHLTDataTypeESDObject);
   list.push_back(kAliHLTDataTypeTObject);
@@ -283,6 +289,17 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
   
   if( iResult>=0 && fMakeFriends ){
     fESDfriend = new AliESDfriend();
+  }
+  
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+
+  if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" ||
+      mgr.GetGRPData()->GetBeamType() == "PbPb" ||
+      mgr.GetGRPData()->GetBeamType() == "A-A" ||
+      mgr.GetGRPData()->GetBeamType() == "AA" )
+  {
+    fBeamTypePbPb = true;
   }
 
   fBenchmark.SetTimer(0,"total");
@@ -664,13 +681,19 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   AliHLTFloat32_t *dEdxTPC = 0; 
   Int_t ndEdxTPC = 0;
+  AliHLTTPCdEdxData* dEdxInfo = NULL;
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypedEdx|kAliHLTDataOriginTPC);
-       pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
+    pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
     fBenchmark.AddInput(pBlock->fSize);
     dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
     ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
   }
-
+  
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TPCdEdxNew());
+    pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
+    fBenchmark.AddInput(pBlock->fSize);
+    dEdxInfo = (AliHLTTPCdEdxData*) pBlock->fPtr;
+  }
   
   std::map<int,int> mapTpcId2esdId;
 
@@ -741,7 +764,40 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// TPC cluster
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
-	if( iTrack < ndEdxTPC ){
+    if (dEdxInfo)
+    {
+      if (dEdxInfo->fCount <= iTrack)
+      {
+        HLTWarning("Wrong number of dEdx TPC info");
+      }
+      else
+      {
+        AliHLTTPCdEdxInfo* info = &dEdxInfo->fdEdxInfo[iTrack];
+        iotrack.SetTPCsignal(fBeamTypePbPb ? info->fdEdxMaxTPC : info ->fdEdxTotTPC, 0, info->nHitsIROC + info->nHitsOROC1 + info->nHitsOROC2);
+        AliTPCdEdxInfo* tpcInfo = new AliTPCdEdxInfo; //will be deleted automatically when iotrack goes out of scope.
+        double signal[4];
+        char clusters[3];
+        char rows[3];
+        signal[0] = info->fdEdxMaxIROC; //We store incorrect qMax in the region and qTot in the qMax region to reproduce incorrect implementation in offline AliTPCdEdxInfo...
+        signal[1] = info->fdEdxMaxOROC1;
+        signal[2] = info->fdEdxMaxOROC2;
+        signal[3] = info->fdEdxMaxOROC;
+        clusters[0] = info->nHitsIROC;
+        clusters[1] = info->nHitsOROC1;
+        clusters[2] = info->nHitsOROC2;
+        rows[0] = info->nHitsSubThresholdIROC;
+        rows[1] = info->nHitsSubThresholdOROC1;
+        rows[2] = info->nHitsSubThresholdOROC2;
+        tpcInfo->SetTPCSignalRegionInfo(signal, clusters, rows);
+        signal[0] = info->fdEdxTotIROC; //We store incorrect qMax in the region and qTot in the qMax region to reproduce incorrect implementation in offline AliTPCdEdxInfo...
+        signal[1] = info->fdEdxTotOROC1;
+        signal[2] = info->fdEdxTotOROC2;
+        signal[3] = info->fdEdxTotOROC;
+        tpcInfo->SetTPCSignalsQmax(signal);
+        iotrack.SetTPCdEdxInfo(tpcInfo);
+      }
+    }
+	else if( iTrack < ndEdxTPC ){
 	  AliHLTFloat32_t *val = &(dEdxTPC[3*iTrack]);
 	  iotrack.SetTPCsignal( val[0], val[1], (UChar_t) val[2] ); 
 	} else {
