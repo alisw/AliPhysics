@@ -1248,7 +1248,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     }
 
     
-    
+    fNevent->Fill(20);
     //______________________________________________________________________
     //______________________________________________________________________
     //______________________________________________________________________
@@ -1276,8 +1276,14 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                     {
                         fCentralityValue = MultSelection->GetMultiplicityPercentile("V0A");
                     }
+                    
+                    fNevent->Fill(10);
+                    
                     if (MultSelection->GetEvSelCode() != 0)
                         return;
+                    fNevent->Fill(11);
+
+                    
                     
                 }
             }
@@ -1293,7 +1299,11 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             
             fCentralityHist->Fill(fCentralityValue);
             
+            fNevent->Fill(12);
+
             if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax) return;
+            
+            fNevent->Fill(13);
             
             fCentralityHistPass->Fill(fCentralityValue);
         }
