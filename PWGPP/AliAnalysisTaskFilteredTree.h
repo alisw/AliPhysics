@@ -30,6 +30,7 @@ class TTree;
 class TTreeSRedirector;
 class TParticle;
 class TH3D;
+#include <string>
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
@@ -117,6 +118,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Int_t   GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType,  AliExternalTrackParam & paramNearest);
   static void SetDefaultAliasesV0(TTree *treeV0);
   static void SetDefaultAliasesHighPt(TTree *treeV0);
+  Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);
+  Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);
  private:
 
   AliESDEvent *fESD;    //! ESD event

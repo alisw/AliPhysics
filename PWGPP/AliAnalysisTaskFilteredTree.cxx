@@ -15,21 +15,21 @@
 
 /*
    Class to process/filter reconstruction information from ESD, ESD friends, MC and provide them for later reprocessing
-   Filtering schema - low pt part is downscaled - to have flat pt specatra of selected topologies (tracks and V0s)
+   Filtering schema - low pt part is downscaled - to have flat pt spectra of selected topologies (tracks and V0s)
    Downscaling schema is controlled by downscaling factors
    Usage: 
      1.) Filtering on Lego train
-     2.) expert QA for tracking (resolution efficnecy)
-     3.) pt reoslution studies using V0s 
+     2.) expert QA for tracking (resolution efficiency)
+     3.) pt resolution studies using V0s
      4.) dEdx calibration using V0s
      5.) pt resolution and dEdx studies using cosmic
      +
      6.) Info used for later raw data OFFLINE triggering  (highPt, V0, laser, cosmic, high dEdx)
 
-   Exported trees (with full objects and dereived variables):
+   Exported trees (with full objects and derived variables):
    1.) "highPt"     - filtered trees with esd tracks, derived variables(propagated tracks), optional MC info +optional space points
-   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optionla space points
-   3.) "Laser"      - dump laser tracks with space points if exests 
+   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optional space points
+   3.) "Laser"      - dump laser tracks with space points if exists
    4.) "CosmicTree" - cosmic track candidate (random or triggered) + esdTracks(up/down)+ optional points
    5.) "dEdx"       - tree with high dEdx tpc tracks
 */
@@ -1231,7 +1231,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           TClonesArray *trefs=0;
           Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(labelTPC), part, trefs);
 
-          if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
+          if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.)
           {
             Int_t nTrackRef = trefs->GetEntries();
             //printf("nTrackRef %d \n",nTrackRef);
@@ -1628,7 +1628,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   }
   genHeader->PrimaryVertex(vtxMC);
 
-  // multipliticy of all MC primary tracks
+  // multiplicity of all MC primary tracks
   // in Zv, pt and eta ranges)
   multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
 
@@ -1667,8 +1667,6 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   }
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
-  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
@@ -1684,7 +1682,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     TParticle *particleMother=NULL;
     Int_t mech=-1;
 
-    // reco event info
+    // reconstruction  event info
     Double_t vert[3] = {0}; 
     vert[0] = vtxESD->GetX();
     vert[1] = vtxESD->GetY();
@@ -3101,7 +3099,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
     tree->SetAlias(TString::Format("deltaP%d",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])",refBranch,iPar,iPar).Data());
     tree->SetAlias(TString::Format("deltaPC%d",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])",iPar,iPar).Data());
     // rough  normalization of the residual sigma ~ sqrt(1+*k/pt)^2) 
-    // histogramming pt normalized deltas enable us to use wider bins in q/pt and also less bins in deltas 
+    // histogram pt normalized deltas enable us to use wider bins in q/pt and also less bins in deltas
     tree->SetAlias(TString::Format("deltaP%dNorm",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1+(1*esdTrack.fP[4])**2)",refBranch,iPar,iPar).Data());
     tree->SetAlias(TString::Format("deltaPC%dNorm",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1.+(5.*esdTrack.fP[4])**2)",iPar,iPar).Data());
     //
@@ -3116,8 +3114,8 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
     TStatToolkit::AddMetadata(tree,TString::Format("pullP%d.AxisTitle",iPar).Data(),TString::Format("pull %s (unit)",chName[iPar]).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("pullPC%d.AxisTitle",iPar).Data(),TString::Format("pull %s (unit)",chName[iPar]).Data());
     //
-    TStatToolkit::AddMetadata(tree,TString::Format("deltaP%d.Title",iPar).Data(),TString::Format("%s",chName[iPar], chUnit[iPar]).Data());
-    TStatToolkit::AddMetadata(tree,TString::Format("deltaPC%d.Title",iPar).Data(),TString::Format("%s",chName[iPar], chUnit[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaP%d.Title",iPar).Data(),TString::Format("%s",chName[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaPC%d.Title",iPar).Data(),TString::Format("%s",chName[iPar]).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("pullP%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("pullPC%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
   }
@@ -3125,4 +3123,120 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   TStatToolkit::AddMetadata(tree, "mult.AxisTitle","N_{prim}");
   TStatToolkit::AddMetadata(tree, "ntracks.Title","N_{tr}");
   TStatToolkit::AddMetadata(tree, "ntracks.AxisTitle","N_{tr} (prim+sec+pile-up)");
-} 
+}
+
+/// AliAnalysisTaskFilteredTree::GetMCInfoTrack - attach MC track info into map
+/// combine MC and reconstruction particle information and calculate derived information
+/// \param label        - track label
+/// \param trackInfoF   - std map with
+/// \param trackInfoO   - std map with object information, map is OWNER of all containing information (shared pointers can be used because of alice C++ limitation)
+/// \return             - 0 OK - >0 error code
+Int_t AliAnalysisTaskFilteredTree::GetMCInfoTrack(Int_t label,  std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO){
+  // 0.)  define some constants
+  const Double_t kTPCOutR=245; // used in loop counters
+  AliStack * stack = fMC->Stack();
+  Int_t mcStackSize=stack->GetNtrack();
+  if (label>mcStackSize){
+    return 1;
+  }
+  // 1.) particle information
+  TParticle *particle=NULL;
+  TClonesArray *trackRefs=0;
+  Int_t status = fMC->GetParticleAndTR(label, particle, trackRefs);
+  trackInfoO["p"]=particle;    // particle information
+  if (particle==NULL || particle->GetPDG() ==NULL || particle->GetPDG()->Charge()!=0.) {
+    return 2;
+  }
+  // 2.) particle trajectory information
+  Int_t nTrackRef = trackRefs->GetEntries();
+  trackInfoF["nRef"]=nTrackRef;  // number of references
+  if (nTrackRef==0){
+    return 4;
+  }
+  TVectorF refCounter(21);  // counter of references
+  TVectorF detLength(21);   // track length defined as distance between first and the last track reference in detector
+  Double_t maxRadius=0;
+  AliTrackReference*detRef[21]={NULL};
+  Int_t loopCounter=0;     // turning point counter to check loopers
+  AliTrackReference *lastLoopRef = NULL;
+  for (Int_t iRef = 0; iRef < nTrackRef; iRef++) {
+    AliTrackReference *ref = (AliTrackReference *) trackRefs->At(iRef);
+    if (ref->Label() != label) continue;
+    Int_t detID=ref->DetectorId();
+    if (detID < 0) {
+      trackInfoO["refDecay"] = ref;
+      break;
+    }
+    if (ref->R()>maxRadius) maxRadius=ref->R();
+    refCounter[detID]++;
+    if (lastLoopRef!=NULL && ref->R()<kTPCOutR){ //loop counter
+      Double_t dir0=ref->Px()*ref->X()+ref->Py()*ref->Y();
+      Double_t dir1=lastLoopRef->Px()*lastLoopRef->X()+lastLoopRef->Py()*lastLoopRef->Y();
+      if (dir0*dir1<0) {
+        loopCounter++;
+        lastLoopRef=ref;
+      }
+    }
+    if (lastLoopRef==NULL) lastLoopRef=ref;
+    if (refCounter[detID] >0){
+      detLength=ref->GetLength()-detRef[detID];
+    }else{
+      detRef[detID]=ref;
+    }
+  }
+  trackInfoO["refCounter"]=new TVectorF(recCounter);
+  trackInfoO["detLength"]=new TVectorF(detLegth);
+  trackInfoF["loopCounter"]=loopCounter;
+  trackInfoF["maxRadius"]=maxRadius;
+  // 3.) Assign - reconstruction information
+  //     In case particle reconstructed more than once - use the best
+  //     Distance definition ???
+  Int_t ntracks=event->GetNumberOfTracks();
+  Int_t nRecITS=0, nRecTPC=0, nRecTRD=0, nRecTOF=0;
+  AliESDtrack * esdTrack=NULL;
+  AliESDtrack * itsTrack=0;
+  Int_t detLength=0, trackIndex=-1;
+  for (Int_t iTrack=0;iTrack<ntracks;iTrack++) {
+    AliESDtrack *track = event->GetTrack(iTrack);
+    if (track == NULL) continue;
+    Int_t recoLabel = TMath::Abs(track->GetLabel());
+    if (recoLabel != label) continue;
+    // find longest combined track - only "non fake legs" counted
+    Int_t detLength0 = 0;
+    if (TMath::Abs(track->GetITSLabel()) == label) detLength += track->IsOn(AliESDtrack::kITSin) +
+                                                                track->IsOn(AliESDtrack::kITSrefit);
+    if (TMath::Abs(track->GetTPCLabel()) == label) detLength += track->IsOn(AliESDtrack::kTPCin) +
+                                                                track->IsOn(AliESDtrack::kTPCrefit);
+    if (TMath::Abs(track->GetTRDLabel()) == label) detLength += track->IsOn(AliESDtrack::kTRDout) +
+                                                                track->IsOn(AliESDtrack::kTRDrefit);
+    if (track->IsOn(AliESDtrack::kITSin)) nRecITS++;
+    if (track->IsOn(AliESDtrack::kTPCin)) nRecTPC++;
+    if (track->IsOn(AliESDtrack::kTRDout)) nRecTRD++;
+    // in case the same "detector length" use most precise angular pz/pt determination
+    // TODO - pz/pt chosen because valid also for secondary particles, better to use combined chi2, More complex - closest reference to be used in that case
+    if (detLength == detLength0) {
+      Double_t tglParticle = particle->Pz() / particle->Pt();
+      Double_t deltaTgl0 = esdTrack->Pz() / esdTrack->Pt() - tglParticle;
+      Double_t deltaTgl1 = track->Pz() / track->Pt() - tglParticle;
+      if (TMath::Abs(deltaTgl1) < TMath::Abs(deltaTgl0)) {
+        esdTrack = track;
+        index = iTrack;
+      }
+    }
+    if (detLength < detLegth0) {
+      detLength = detLength0;
+      esdTrack = track;
+      index = iTrack;
+    }
+    if (!track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kITSin)) {
+      itsTrack = track;
+    }
+  }
+  trackInfoO["esdTrack"]=esdTrack;
+  trackInfoO["itsTrack"]=itsTrack;
+  return 0;
+}
+
+Int_t AliAnalysisTaskFilteredTree::GetMCInfoKink(Int_t label, std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO){
+
+}
