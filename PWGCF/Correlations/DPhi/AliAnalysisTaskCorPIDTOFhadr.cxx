@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* AliAnaysisTaskCorPIDTOFQA
+/* AliAnaysisTaskCorPIDTOFhadr
  *
  * empty task which can serve as a starting point for building an analysis
  * as an example, one histogram is filled
@@ -57,7 +57,7 @@
 //    kPion     =  2;
 //    kKaon     =  3;
 //    kProton   =  4;
-//    kDeuteron =  5;
+//    kHadreron =  5;
 //    kTriton   =  6;
 //    kHe3      =  7;
 //    kAlpha    =  8;
@@ -81,7 +81,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 //Int_t NTracks            = 0;
 //Int_t NGoodTracks        = 0;
 //Int_t NAssociatedTracks  = 0;
-//Int_t DeuteronCandidates = 0;
+//Int_t HadreronCandidates = 0;
 
 
 // SetCutGeoNcrNcl  cut out 3 cm on the sides of the TPC
@@ -103,68 +103,62 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     m2_neg(0),                  //  4
     beta_p_pos(0),              //  5
     beta_p_neg(0),              //  6
-
     deltat_p_pos(0),            //  7
     deltat_p_neg(0),            //  8
-    dedx_p_pos(0),              //  9
-    dedx_p_neg(0),              // 10
-    dedx_deltat_pos(0),         // 11
-    dedx_deltat_neg(0),         // 12
-    dedx_p_deltat_pos(0),       // 13
-    dedx_p_deltat_neg(0),       // 14
+    m2_pos_cut(0),              //  9
+    m2_neg_cut(0),              // 10
+    beta_p_pos_cut(0),          // 11
+    beta_p_neg_cut(0),          // 12
+    deltat_p_pos_cut(0),        // 13
+    deltat_p_neg_cut(0),        // 14
+    m2_pos_cut_T(0),            // 15
+    m2_neg_cut_T(0),            // 16
+    hadr_per_event(0),          // 17
 
-    m2_pos_cut(0),              // 15
-    m2_neg_cut(0),              // 16
-    beta_p_pos_cut(0),          // 17
-    beta_p_neg_cut(0),          // 18
-    deltat_p_pos_cut(0),        // 19
-    deltat_p_neg_cut(0),        // 20
+    dphi_pt_hadr_C(0),          // 18
+    dphi_kt_hadr_C(0),          // 19
+    dphi_et_hadr_C(0),          // 20
+    dphi_en_hadr_C(0),          // 21
 
-    dedx_p_pos_cut(0),          // 21
-    dedx_p_neg_cut(0),          // 22
+    hadr_pt_count_C(0),         // 22
+    hadr_kt_count_C(0),         // 23
+    hadr_et_count_C(0),         // 24
+    hadr_en_count_C(0),         // 25
 
-    dedx_deltat_pos_cut(0),     // 23
-    dedx_deltat_neg_cut(0),     // 24
-    dedx_p_deltat_pos_cut(0),   // 25
-    dedx_p_deltat_neg_cut(0),   // 26
+    dphi_pt_hadr_P(0),          // 26
+    dphi_kt_hadr_P(0),          // 27
+    dphi_et_hadr_P(0),          // 28
+    dphi_en_hadr_P(0),          // 29
 
-
-
-
-    hadr_dphi_T(0),             // 27
-    hadr_dphi_pos_T(0),         // 28
-    hadr_dphi_neg_T(0),         // 29
-//    hadr_dphi_A(0),             // 30
-//    hadr_dphi_pos_A(0),         // 31
-//    hadr_dphi_neg_A(0),         // 32
-//    hadr_dphi_B(0),             // 33
-//    hadr_dphi_pos_B(0),         // 34
-//    hadr_dphi_neg_B(0),         // 35
-
-    hadr_per_event(0),          // 36
-    hadr_per_event_pos(0),      // 37
-    hadr_per_event_neg(0),      // 38
+    hadr_pt_count_P(0),         // 30
+    hadr_kt_count_P(0),         // 31
+    hadr_et_count_P(0),         // 32
+    hadr_en_count_P(0),         // 33
     
-    m2_pos_cut_T(0),            // 39
-//    m2_pos_cut_A(0),            // 40
-//    m2_pos_cut_B(0),            // 41
-    m2_neg_cut_T(0),            // 42
-//    m2_neg_cut_A(0),            // 43
-//    m2_neg_cut_B(0),            // 44
+    centrality_dist(0),         // 34
+    multiplicity_dist(0),       // 35
+    centrality_raw(0),          // 36
+    multiplicity_raw(0),        // 37
 
-    dphi_et_hadr_T(0),         // 45
-//    dphi_et_hadr_A(0),         // 46
-//    dphi_et_hadr_B(0),         // 47
+    hadr_dphi_deta_p1_0510(0),  // 38
+    hadr_dphi_deta_p1_1020(0),  // 39
+    hadr_dphi_deta_p1_2030(0),  // 40
+    hadr_dphi_deta_p1_3040(0),  // 41
+    hadr_dphi_deta_p1_4050(0),  // 42
 
-    deltat_channel(0),           // 48
+    hadr_dphi_deta_p2_0510(0),  // 43
+    hadr_dphi_deta_p2_1020(0),  // 44
+    hadr_dphi_deta_p2_2030(0),  // 45
+    hadr_dphi_deta_p2_3040(0),  // 46
+    hadr_dphi_deta_p2_4050(0),  // 47
+    
+    hadr_dphi_deta_p3_0510(0),  // 48
+    hadr_dphi_deta_p3_1020(0),  // 49
+    hadr_dphi_deta_p3_2030(0),  // 50
+    hadr_dphi_deta_p3_3040(0),  // 51
+    hadr_dphi_deta_p3_4050(0),  // 52
 
-    hadr_et_count(0),          // 49
-    hadr_e_count(0),           // 50
-    dphi_e_hadr_T(0),          // 51
-
-    hadr_pt_count(0),           // 52
-    asso_phi_hist(0),           // 53
-    hadr_phi_hist(0)            // 54  
+    hadr_cor_radius(0)          // 53
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -172,7 +166,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 //_____________________________________________________________________________
 AliAnalysisTaskCorPIDTOFhadr::AliAnalysisTaskCorPIDTOFhadr(const char* name) : AliAnalysisTaskSE(name),
 fAOD(0), fOutputList(0), fPIDResponse(0),
-									   
+
     fHistPt(0),                 //  1
     cent_ntracks(0),            //  2
     
@@ -180,66 +174,62 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     m2_neg(0),                  //  4
     beta_p_pos(0),              //  5
     beta_p_neg(0),              //  6
-
     deltat_p_pos(0),            //  7
     deltat_p_neg(0),            //  8
-    dedx_p_pos(0),              //  9
-    dedx_p_neg(0),              // 10
-    dedx_deltat_pos(0),         // 11
-    dedx_deltat_neg(0),         // 12
-    dedx_p_deltat_pos(0),       // 13
-    dedx_p_deltat_neg(0),       // 14
+    m2_pos_cut(0),              //  9
+    m2_neg_cut(0),              // 10
+    beta_p_pos_cut(0),          // 11
+    beta_p_neg_cut(0),          // 12
+    deltat_p_pos_cut(0),        // 13
+    deltat_p_neg_cut(0),        // 14
+    m2_pos_cut_T(0),            // 15
+    m2_neg_cut_T(0),            // 16
+    hadr_per_event(0),          // 17
 
-    m2_pos_cut(0),              // 15
-    m2_neg_cut(0),              // 16
-    beta_p_pos_cut(0),          // 17
-    beta_p_neg_cut(0),          // 18
-    deltat_p_pos_cut(0),        // 19
-    deltat_p_neg_cut(0),        // 20
+    dphi_pt_hadr_C(0),          // 18
+    dphi_kt_hadr_C(0),          // 19
+    dphi_et_hadr_C(0),          // 20
+    dphi_en_hadr_C(0),          // 21
 
-    dedx_p_pos_cut(0),          // 21
-    dedx_p_neg_cut(0),          // 22
+    hadr_pt_count_C(0),         // 22
+    hadr_kt_count_C(0),         // 23
+    hadr_et_count_C(0),         // 24
+    hadr_en_count_C(0),         // 25
 
-    dedx_deltat_pos_cut(0),     // 23
-    dedx_deltat_neg_cut(0),     // 24
-    dedx_p_deltat_pos_cut(0),   // 25
-    dedx_p_deltat_neg_cut(0),   // 26
+    dphi_pt_hadr_P(0),          // 26
+    dphi_kt_hadr_P(0),          // 27
+    dphi_et_hadr_P(0),          // 28
+    dphi_en_hadr_P(0),          // 29
 
+    hadr_pt_count_P(0),         // 30
+    hadr_kt_count_P(0),         // 31
+    hadr_et_count_P(0),         // 32
+    hadr_en_count_P(0),         // 33									       
 
-    hadr_dphi_T(0),             // 27
-    hadr_dphi_pos_T(0),         // 28
-    hadr_dphi_neg_T(0),         // 29
-//    hadr_dphi_A(0),             // 30
-//    hadr_dphi_pos_A(0),         // 31
-//    hadr_dphi_neg_A(0),         // 32
-//    hadr_dphi_B(0),             // 33
-//    hadr_dphi_pos_B(0),         // 34
-//    hadr_dphi_neg_B(0),         // 35
+    centrality_dist(0),         // 34
+    multiplicity_dist(0),       // 35
+    centrality_raw(0),          // 36
+    multiplicity_raw(0),        // 37
 
-    hadr_per_event(0),          // 36
-    hadr_per_event_pos(0),      // 37
-    hadr_per_event_neg(0),      // 38
+    hadr_dphi_deta_p1_0510(0),  // 38
+    hadr_dphi_deta_p1_1020(0),  // 39
+    hadr_dphi_deta_p1_2030(0),  // 40
+    hadr_dphi_deta_p1_3040(0),  // 41
+    hadr_dphi_deta_p1_4050(0),  // 42
+
+    hadr_dphi_deta_p2_0510(0),  // 43
+    hadr_dphi_deta_p2_1020(0),  // 44
+    hadr_dphi_deta_p2_2030(0),  // 45
+    hadr_dphi_deta_p2_3040(0),  // 46
+    hadr_dphi_deta_p2_4050(0),  // 47
     
-    m2_pos_cut_T(0),            // 39
-//    m2_pos_cut_A(0),            // 40
-//    m2_pos_cut_B(0),            // 41
-    m2_neg_cut_T(0),            // 42
-//    m2_neg_cut_A(0),            // 43
-//    m2_neg_cut_B(0),            // 44
+    hadr_dphi_deta_p3_0510(0),  // 48
+    hadr_dphi_deta_p3_1020(0),  // 49
+    hadr_dphi_deta_p3_2030(0),  // 50
+    hadr_dphi_deta_p3_3040(0),  // 51
+    hadr_dphi_deta_p3_4050(0),  // 52
 
-    dphi_et_hadr_T(0),         // 45
-//    dphi_et_hadr_A(0),         // 46
-//    dphi_et_hadr_B(0),         // 47
-
-    deltat_channel(0),           // 48
-
-    hadr_et_count(0),          // 49
-    hadr_e_count(0),           // 50
-    dphi_e_hadr_T(0),          // 51
-
-    hadr_pt_count(0),           // 52
-    asso_phi_hist(0),           // 53
-    hadr_phi_hist(0)            // 54  
+    hadr_cor_radius(0)          // 53
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -258,14 +248,19 @@ AliAnalysisTaskCorPIDTOFhadr::~AliAnalysisTaskCorPIDTOFhadr()
 void AliAnalysisTaskCorPIDTOFhadr::UserCreateOutputObjects()
 {
 
+// old //   3.43396 0.0133493 0.0593701 -0.125677 0.0646736 0.148637 3.59796 -0.00619808 -0.107274 0.034074 0.0359503 0.0131823 
+//3.09901 0.0446792 0.469684 0.0973401 0.0424328 -0.0685078 2.91151 0.0730297 0.664744 -0.115955 0.0709238 0.15557 
+
+
+    
 //    pi = TMath::Pi();
 //    fout.open("output.txt");
 
 
-//  Double_t prot_curves[2][2][3];  // [charge][mean,sigma][par]
+//  Double_t hadr_curves[2][2][3];  // [charge][mean,sigma][par]
 
-//  TF1 *fit_prot_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
-//    fit_prot_curve->SetParNames("a", "b x", "c/#sqrt(x)");
+//  TF1 *fit_hadr_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
+//    fit_hadr_curve->SetParNames("a", "b x", "c/#sqrt(x)");
 	
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
@@ -274,83 +269,72 @@ void AliAnalysisTaskCorPIDTOFhadr::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
 
-    fHistPt               = new TH1F("fHistPt",               "Pt()",                 1000,     0,     10);                              //  1
-    cent_ntracks          = new TH2F("cent_ntracks",          "cent_ntracks",          100,     0,    100,     100,       0,     800);   //  2
+    fHistPt                = new TH1F("fHistPt",                "Pt()",                 1000,     0,     10);                              //  1
+    cent_ntracks           = new TH2F("cent_ntracks",           "cent_ntracks",          100,     0,    100,     100,       0,     800);   //  2
     
-    m2_pos                = new TH2F("m2_pos",                "m2_pos",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  3
-    m2_neg                = new TH2F("m2_neg",                "m2_neg",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  4
-    beta_p_pos            = new TH2F("beta_p_pos",            "beta_p_pos",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  5
-    beta_p_neg            = new TH2F("beta_p_neg",            "beta_p_neg",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  6
-    deltat_p_pos          = new TH2F("deltat_p_pos",          "deltat_p_pos",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  7
-    deltat_p_neg          = new TH2F("deltat_p_neg",          "deltat_p_neg",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  8
-    dedx_p_pos            = new TH2F("dedx_p_pos",            "dedx_p_pos",            780,   0.2,    8.0,     250,     0.0,   500.0);   //  9
-    dedx_p_neg            = new TH2F("dedx_p_neg",            "dedx_p_neg",            780,   0.2,    8.0,     250,     0.0,   500.0);   // 10
-    dedx_deltat_pos       = new TH2F("dedx_deltat_pos",       "dedx_deltat_pos",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 11
-    dedx_deltat_neg       = new TH2F("dedx_deltat_neg",       "dedx_deltat_neg",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 12
-    dedx_p_deltat_pos     = new TH3F("dedx_p_deltat_pos",     "dedx_p_deltat_pos",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 13 //// (dedx, mom, deltat)
-    dedx_p_deltat_neg     = new TH3F("dedx_p_deltat_neg",     "dedx_p_deltat_neg",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 14 //// (dedx, mom, deltat)
-    m2_pos_cut            = new TH2F("m2_pos_cut",            "m2_pos_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 15
-    m2_neg_cut            = new TH2F("m2_neg_cut",            "m2_neg_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 16
-    beta_p_pos_cut        = new TH2F("beta_p_pos_cut",        "beta_p_pos_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 17
-    beta_p_neg_cut        = new TH2F("beta_p_neg_cut",        "beta_p_neg_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 18
-    deltat_p_pos_cut      = new TH2F("deltat_p_pos_cut",      "deltat_p_pos_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 19
-    deltat_p_neg_cut      = new TH2F("deltat_p_neg_cut",      "deltat_p_neg_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 20
-    dedx_p_pos_cut        = new TH2F("dedx_p_pos_cut",        "dedx_p_pos_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 21
-    dedx_p_neg_cut        = new TH2F("dedx_p_neg_cut",        "dedx_p_neg_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 22
-    dedx_deltat_pos_cut   = new TH2F("dedx_deltat_pos_cut",   "dedx_deltat_pos_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 23
-    dedx_deltat_neg_cut   = new TH2F("dedx_deltat_neg_cut",   "dedx_deltat_neg_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 24
-    dedx_p_deltat_pos_cut = new TH3F("dedx_p_deltat_pos_cut", "dedx_p_deltat_pos_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 25 //// (dedx, mom, deltat)
-    dedx_p_deltat_neg_cut = new TH3F("dedx_p_deltat_neg_cut", "dedx_p_deltat_neg_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 26 //// (dedx, mom, deltat)
+    m2_pos                 = new TH2F("m2_pos",                 "m2_pos",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  3
+    m2_neg                 = new TH2F("m2_neg",                 "m2_neg",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  4
+    beta_p_pos             = new TH2F("beta_p_pos",             "beta_p_pos",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  5
+    beta_p_neg             = new TH2F("beta_p_neg",             "beta_p_neg",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  6
+    deltat_p_pos           = new TH2F("deltat_p_pos",           "deltat_p_pos",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  7
+    deltat_p_neg           = new TH2F("deltat_p_neg",           "deltat_p_neg",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  8
 
-    hadr_dphi_T           = new TH2F("hadr_dphi_T",           "hadr_dphi_T",           160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 27
-    hadr_dphi_pos_T       = new TH2F("hadr_dphi_pos_T",       "hadr_dphi_pos_T",       160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 28
-    hadr_dphi_neg_T       = new TH2F("hadr_dphi_neg_T",       "hadr_dphi_neg_T",       160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 29    
-//    hadr_dphi_A           = new TH2F("hadr_dphi_A",           "hadr_dphi_A",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 30
-//    hadr_dphi_pos_A       = new TH2F("hadr_dphi_pos_A",       "hadr_dphi_pos_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 31
-//    hadr_dphi_neg_A       = new TH2F("hadr_dphi_neg_A",       "hadr_dphi_neg_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 32    
-//    hadr_dphi_B           = new TH2F("hadr_dphi_B",           "hadr_dphi_B",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 33
-//    hadr_dphi_pos_B       = new TH2F("hadr_dphi_pos_B",       "hadr_dphi_pos_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 34
-//    hadr_dphi_neg_B       = new TH2F("hadr_dphi_neg_B",       "hadr_dphi_neg_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 35
-    hadr_per_event        = new TH1I("hadr_per_event",        "hadr_per_event",         20,     0,    20);                               // 36
-    hadr_per_event_pos    = new TH1I("hadr_per_event_pos",    "hadr_per_event_pos",     20,     0,    20);                               // 37
-    hadr_per_event_neg    = new TH1I("hadr_per_event_neg",    "hadr_per_event_neg",     20,     0,    20);                               // 38
-    m2_pos_cut_T          = new TH2F("m2_pos_cut_T",          "m2_pos_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 39
-//    m2_pos_cut_A          = new TH2F("m2_pos_cut_A",          "m2_pos_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 40
-//    m2_pos_cut_B          = new TH2F("m2_pos_cut_B",          "m2_pos_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 41
-    m2_neg_cut_T          = new TH2F("m2_neg_cut_T",          "m2_neg_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 42
-//    m2_neg_cut_A          = new TH2F("m2_neg_cut_A",          "m2_neg_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 43
-//    m2_neg_cut_B          = new TH2F("m2_neg_cut_B",          "m2_neg_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 44
-//    dphi_et_hadr_T       = new TH2F("dphi_et_hadr_T",       "dphi_et_hadr_T",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 45 // dphi, ket
-    dphi_et_hadr_T        = new TH2F("dphi_et_hadr_T",        "dphi_et_hadr_T",        189,  1.00,   4.78,      60, -1.6708,  4.8124);   // 45 // dphi, et
-//    dphi_et_hadr_A       = new TH2F("dphi_et_hadr_A",       "dphi_et_hadr_A",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 46 // dphi, ket
-//    dphi_et_hadr_B       = new TH2F("dphi_et_hadr_B",       "dphi_et_hadr_B",        46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 47 // dphi, ket
-
-    deltat_channel        = new TProfile("deltat_channel",    "deltat_channel",       4800,     0,   4800,    -0.6,     0.6);            // 48 // tof channel and deltat
-
-
-
-
-    hadr_et_count         = new TH1F("hadr_et_count",         "hadr_et_count",         189,  1.00,   4.78);                              // 49
-    hadr_e_count          = new TH1F("hadr_e_count",          "hadr_e_count",          189,  1.00,   4.78);                              // 50
-
-    dphi_e_hadr_T         = new TH2F("dphi_e_hadr_T",         "dphi_e_hadr_T",         189,  1.00,   4.78,      60, -1.6708,  4.8124);   // 51 // dphi, e
-    hadr_pt_count         = new TH1F("hadr_pt_count",         "hadr_pt_count",         160,   1.0,    5.0);                              // 52
-  
-    asso_phi_hist         = new TH1F("asso_phi_hist",         "asso_phi_hist",         480, -0.1, 6.383185);                             // 53
-    hadr_phi_hist         = new TH1F("hadr_phi_hist",         "hadr_phi_hist",         480, -0.1, 6.383185);                             // 54
+    m2_pos_cut             = new TH2F("m2_pos_cut",             "m2_pos_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  9
+    m2_neg_cut             = new TH2F("m2_neg_cut",             "m2_neg_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 10
+    beta_p_pos_cut         = new TH2F("beta_p_pos_cut",         "beta_p_pos_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 11
+    beta_p_neg_cut         = new TH2F("beta_p_neg_cut",         "beta_p_neg_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 12
+    deltat_p_pos_cut       = new TH2F("deltat_p_pos_cut",       "deltat_p_pos_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 13
+    deltat_p_neg_cut       = new TH2F("deltat_p_neg_cut",       "deltat_p_neg_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 14
+    m2_pos_cut_T           = new TH2F("m2_pos_cut_T",           "m2_pos_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 15
+    m2_neg_cut_T           = new TH2F("m2_neg_cut_T",           "m2_neg_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 16
+    hadr_per_event         = new TH1I("hadr_per_event",         "hadr_per_event",          5,     0,     5);                               // 17
     
-    
-//    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
-//    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
-//    alpha                   = new TH1F("alpha",                     "alpha",                  1000,     0,    4.0);
-//    theta                   = new TH1F("theta",                     "theta",                   100,  -7.0,    7.0);
-//    dca                     = new TH2F("dca",                       "dca",                     100,  -5.0,    5.0,     100,   -5.0,    5.0);
-//    generic                 = new TH1F("generic",                   "generic",                 4, -1,3);
-    //markc
+    dphi_pt_hadr_C         = new TH2F("dphi_pt_hadr_C",         "dphi_pt_hadr_C",        160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 18 // dphi, pt
+    dphi_kt_hadr_C         = new TH2F("dphi_kt_hadr_C",         "dphi_kt_hadr_C",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 19 // dphi, kt
+    dphi_et_hadr_C         = new TH2F("dphi_et_hadr_C",         "dphi_et_hadr_C",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 20 // dphi, et
+    dphi_en_hadr_C         = new TH2F("dphi_en_hadr_C",         "dphi_en_hadr_C",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 21 // dphi, en
 
+    hadr_pt_count_C        = new TH1F("hadr_pt_count_C",        "hadr_pt_count_C",       160,  1.00,   5.00);                              // 22
+    hadr_kt_count_C        = new TH1F("hadr_kt_count_C",        "hadr_kt_count_C",       239,  1.00,   5.78);                              // 23
+    hadr_et_count_C        = new TH1F("hadr_et_count_C",        "hadr_et_count_C",       239,  1.00,   5.78);                              // 24
+    hadr_en_count_C        = new TH1F("hadr_en_count_C",        "hadr_en_count_C",       239,  1.00,   5.78);                              // 25
 
+    dphi_pt_hadr_P         = new TH2F("dphi_pt_hadr_P",         "dphi_pt_hadr_P",        160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 26 // dphi, pt
+    dphi_kt_hadr_P         = new TH2F("dphi_kt_hadr_P",         "dphi_kt_hadr_P",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 27 // dphi, kt
+    dphi_et_hadr_P         = new TH2F("dphi_et_hadr_P",         "dphi_et_hadr_P",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 28 // dphi, et
+    dphi_en_hadr_P         = new TH2F("dphi_en_hadr_P",         "dphi_en_hadr_P",        239,  1.00,   5.78,     300, -1.6708,  4.8124);   // 29 // dphi, en
+
+    hadr_pt_count_P        = new TH1F("hadr_pt_count_P",        "hadr_pt_count_P",       160,  1.00,   5.00);                              // 30
+    hadr_kt_count_P        = new TH1F("hadr_kt_count_P",        "hadr_kt_count_P",       239,  1.00,   5.78);                              // 31
+    hadr_et_count_P        = new TH1F("hadr_et_count_P",        "hadr_et_count_P",       239,  1.00,   5.78);                              // 32
+    hadr_en_count_P        = new TH1F("hadr_en_count_P",        "hadr_en_count_P",       239,  1.00,   5.78);                              // 33
     
+    centrality_dist        = new TH1F("centrality_dist",        "centrality_dist",       100,     0,    100);                              // 34
+    multiplicity_dist      = new TH1F("multiplicity_dist",      "multiplicity_dist",     100,     0,    800);                              // 35
+    centrality_raw         = new TH1F("centrality_raw",         "centrality_raw",        100,     0,    100);                              // 36
+    multiplicity_raw       = new TH1F("multiplicity_raw",       "multiplicity_raw",      100,     0,    800);                              // 37
     
+    hadr_dphi_deta_p1_0510 = new TH2F("hadr_dphi_deta_p1_0510", "hadr_dphi_deta_p1_0510", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 38  // dphi    ,    deta
+    hadr_dphi_deta_p1_1020 = new TH2F("hadr_dphi_deta_p1_1020", "hadr_dphi_deta_p1_1020", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 39
+    hadr_dphi_deta_p1_2030 = new TH2F("hadr_dphi_deta_p1_2030", "hadr_dphi_deta_p1_2030", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 40
+    hadr_dphi_deta_p1_3040 = new TH2F("hadr_dphi_deta_p1_3040", "hadr_dphi_deta_p1_3040", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 41
+    hadr_dphi_deta_p1_4050 = new TH2F("hadr_dphi_deta_p1_4050", "hadr_dphi_deta_p1_4050", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 42
+
+    hadr_dphi_deta_p2_0510 = new TH2F("hadr_dphi_deta_p2_0510", "hadr_dphi_deta_p2_0510", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 43// dphi    ,    deta
+    hadr_dphi_deta_p2_1020 = new TH2F("hadr_dphi_deta_p2_1020", "hadr_dphi_deta_p2_1020", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 44
+    hadr_dphi_deta_p2_2030 = new TH2F("hadr_dphi_deta_p2_2030", "hadr_dphi_deta_p2_2030", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 45
+    hadr_dphi_deta_p2_3040 = new TH2F("hadr_dphi_deta_p2_3040", "hadr_dphi_deta_p2_3040", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 46
+    hadr_dphi_deta_p2_4050 = new TH2F("hadr_dphi_deta_p2_4050", "hadr_dphi_deta_p2_4050", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 47
+        
+    hadr_dphi_deta_p3_0510 = new TH2F("hadr_dphi_deta_p3_0510", "hadr_dphi_deta_p3_0510", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 48// dphi    ,    deta
+    hadr_dphi_deta_p3_1020 = new TH2F("hadr_dphi_deta_p3_1020", "hadr_dphi_deta_p3_1020", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 49
+    hadr_dphi_deta_p3_2030 = new TH2F("hadr_dphi_deta_p3_2030", "hadr_dphi_deta_p3_2030", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 50
+    hadr_dphi_deta_p3_3040 = new TH2F("hadr_dphi_deta_p3_3040", "hadr_dphi_deta_p3_3040", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 51
+    hadr_dphi_deta_p3_4050 = new TH2F("hadr_dphi_deta_p3_4050", "hadr_dphi_deta_p3_4050", 60, -1.6708,  4.8124,   46,   -2.30,    2.30);   // 52
+
+    hadr_cor_radius        = new TH2F("hadr_cor_radius",        "hadr_cor_radius",       160,  1.00,   5.00,     325,   -3.53,    3.53);   // 53
+
+	
     fOutputList->Add(fHistPt);                //  1                                                             // objects added to output file
     fOutputList->Add(cent_ntracks);           //  2
     
@@ -360,56 +344,61 @@ void AliAnalysisTaskCorPIDTOFhadr::UserCreateOutputObjects()
     fOutputList->Add(beta_p_neg);             //  6
     fOutputList->Add(deltat_p_pos);           //  7
     fOutputList->Add(deltat_p_neg);           //  8
-    fOutputList->Add(dedx_p_pos);             //  9
-    fOutputList->Add(dedx_p_neg);             // 10
-    fOutputList->Add(dedx_deltat_pos);        // 11
-    fOutputList->Add(dedx_deltat_neg);        // 12
-    fOutputList->Add(dedx_p_deltat_pos);      // 13
-    fOutputList->Add(dedx_p_deltat_neg);      // 14
-    
-    fOutputList->Add(m2_pos_cut);             // 15
-    fOutputList->Add(m2_neg_cut);             // 16
-    fOutputList->Add(beta_p_pos_cut);         // 17
-    fOutputList->Add(beta_p_neg_cut);         // 18
-    fOutputList->Add(deltat_p_pos_cut);       // 19
-    fOutputList->Add(deltat_p_neg_cut);       // 20
-    fOutputList->Add(dedx_p_pos_cut);         // 21
-    fOutputList->Add(dedx_p_neg_cut);         // 22
-    fOutputList->Add(dedx_deltat_pos_cut);    // 23   
-    fOutputList->Add(dedx_deltat_neg_cut);    // 24
-    fOutputList->Add(dedx_p_deltat_pos_cut);  // 25  
-    fOutputList->Add(dedx_p_deltat_neg_cut);  // 26
-    fOutputList->Add(hadr_dphi_T);            // 27
-    fOutputList->Add(hadr_dphi_pos_T);        // 28
-    fOutputList->Add(hadr_dphi_neg_T);        // 29
-//    fOutputList->Add(hadr_dphi_A);            // 30
-//    fOutputList->Add(hadr_dphi_pos_A);        // 31
-//    fOutputList->Add(hadr_dphi_neg_A);        // 32
-//    fOutputList->Add(hadr_dphi_B);            // 33
-//    fOutputList->Add(hadr_dphi_pos_B);        // 34
-//    fOutputList->Add(hadr_dphi_neg_B);        // 35
-    fOutputList->Add(hadr_per_event);         // 36
-    fOutputList->Add(hadr_per_event_pos);     // 37
-    fOutputList->Add(hadr_per_event_neg);     // 38
-    fOutputList->Add(m2_pos_cut_T);           // 39
-//    fOutputList->Add(m2_pos_cut_A);           // 40
-//    fOutputList->Add(m2_pos_cut_B);	      // 41
-    fOutputList->Add(m2_neg_cut_T);           // 42
-//    fOutputList->Add(m2_neg_cut_A);           // 43
-//    fOutputList->Add(m2_neg_cut_B);           // 44
-    fOutputList->Add(dphi_et_hadr_T);        // 45
-//    fOutputList->Add(dphi_et_hadr_A);        // 46
-//    fOutputList->Add(dphi_et_hadr_B);        // 47
-    
-    fOutputList->Add(deltat_channel);         // 48
 
+    fOutputList->Add(m2_pos_cut);             //  9
+    fOutputList->Add(m2_neg_cut);             // 10
+    fOutputList->Add(beta_p_pos_cut);         // 11
+    fOutputList->Add(beta_p_neg_cut);         // 12
+    fOutputList->Add(deltat_p_pos_cut);       // 13
+    fOutputList->Add(deltat_p_neg_cut);       // 14
+    fOutputList->Add(m2_pos_cut_T);           // 15
+    fOutputList->Add(m2_neg_cut_T);           // 16
+    fOutputList->Add(hadr_per_event);         // 17
+    
+    fOutputList->Add(dphi_pt_hadr_C);         // 18
+    fOutputList->Add(dphi_kt_hadr_C);         // 19
+    fOutputList->Add(dphi_et_hadr_C);         // 20
+    fOutputList->Add(dphi_en_hadr_C);         // 21
+    
+    fOutputList->Add(hadr_pt_count_C);        // 22
+    fOutputList->Add(hadr_kt_count_C);        // 23
+    fOutputList->Add(hadr_et_count_C);        // 24
+    fOutputList->Add(hadr_en_count_C);        // 25
+    
+    fOutputList->Add(dphi_pt_hadr_P);         // 26
+    fOutputList->Add(dphi_kt_hadr_P);         // 27
+    fOutputList->Add(dphi_et_hadr_P);         // 28
+    fOutputList->Add(dphi_en_hadr_P);         // 29
+    
+    fOutputList->Add(hadr_pt_count_P);        // 30
+    fOutputList->Add(hadr_kt_count_P);        // 31
+    fOutputList->Add(hadr_et_count_P);        // 32
+    fOutputList->Add(hadr_en_count_P);        // 33
+    
+    fOutputList->Add(centrality_dist);        // 34
+    fOutputList->Add(multiplicity_dist);      // 35
+    fOutputList->Add(centrality_raw);         // 36
+    fOutputList->Add(multiplicity_raw);       // 37
+    
+    fOutputList->Add(hadr_dphi_deta_p1_0510); // 38
+    fOutputList->Add(hadr_dphi_deta_p1_1020); // 39
+    fOutputList->Add(hadr_dphi_deta_p1_2030); // 40
+    fOutputList->Add(hadr_dphi_deta_p1_3040); // 41
+    fOutputList->Add(hadr_dphi_deta_p1_4050); // 42
+    
+    fOutputList->Add(hadr_dphi_deta_p2_0510); // 43
+    fOutputList->Add(hadr_dphi_deta_p2_1020); // 44
+    fOutputList->Add(hadr_dphi_deta_p2_2030); // 45
+    fOutputList->Add(hadr_dphi_deta_p2_3040); // 46
+    fOutputList->Add(hadr_dphi_deta_p2_4050); // 47
 
-    fOutputList->Add(hadr_et_count);          // 49
-    fOutputList->Add(hadr_e_count);           // 50
-    fOutputList->Add(dphi_e_hadr_T);          // 51
-    fOutputList->Add(hadr_pt_count);          // 52
-    fOutputList->Add(asso_phi_hist);          // 53
-    fOutputList->Add(hadr_phi_hist);          // 54
+    fOutputList->Add(hadr_dphi_deta_p3_0510); // 48
+    fOutputList->Add(hadr_dphi_deta_p3_1020); // 49
+    fOutputList->Add(hadr_dphi_deta_p3_2030); // 50
+    fOutputList->Add(hadr_dphi_deta_p3_3040); // 51
+    fOutputList->Add(hadr_dphi_deta_p3_4050); // 52
+
+    fOutputList->Add(hadr_cor_radius);        // 53
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -439,22 +428,29 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
     Int_t iTracks(fAOD->GetNumberOfTracks());
 
 
-    
+    Float_t centrality = 1.0;
+//    centrality = fAOD->GetCentrality()->GetCentralityPercentile("VOM");
+//  cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("VOM"), iTracks);
+
+        
     //////////////////////////////////////// MULTIPLICITY PART ////////////////////////////////////////
 
     cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"), iTracks);
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    centrality = fAOD->GetCentrality()->GetCentralityPercentile("V0M");
 
+    centrality_raw->Fill(centrality);
+    multiplicity_raw->Fill(iTracks);
 
     
-    int NHadr                = 0;
-    int NHadr_pos            = 0;
-    int NHadr_neg            = 0;
-    int hadr_flag_T          = 0;
-    int hadr_track_num_T     = -9999;;
-    int associated_tracks    = 0;
+    int NHadr              = 0;
+    int NHadr_pos          = 0;
+    int NHadr_neg          = 0;
+    int hadr_flag_T        = 0;
+    int hadr_track_num_T   = -9999;;
+    int associated_tracks  = 0;
 
 
 
@@ -475,8 +471,6 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
     // loop over all these tracks
     for(Int_t i(0); i < iTracks; i++)
     {
-//	NTracks++;
-
 
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;                                                       // if we failed, skip this track
@@ -485,50 +479,9 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 //	if(!track->IsPrimaryCandidate())   continue;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-//	AliExternalTrackParam trkparam;
-//	trkparam.CopyFromVTrack(track);
+	AliExternalTrackParam trkparam;
+	trkparam.CopyFromVTrack(track);
 	
-//	if(trkparam.GetX() > 3.) continue; // only valid for propagation inside the beam pipe
-		
-	// impact parameters
-//	Double_t b[2];
-//	Double_t bCov[3];
-//	if(!trkparam.PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 10000., b, bCov))   continue;
-	
-//	Double_t dcaxy = b[0];
-//	Double_t dcaz  = b[1];
-
-//	if(fabs(dcaxy) > 3.0)   continue;
-//	if(fabs(dcaz)  > 2.0)   continue;
-//	dca->Fill(dcaxy, dcaz);
-
-
-//	UChar_t map = track->GetITSClusterMap();
-//	Int_t nITSpoints = 0;
-//	for(Int_t j=2; j<6; j++)
-//	{
-//		if(map&(1<<j)) ++nITSpoints;
-//	}
-	
-
-//	if(nITSpoints < 2)      continue;
-	
-//	Short_t nTPCclusters     = track->GetTPCsignalN();
-//	if(nTPCclusters<70)     continue;                          // No of TPC Clusters
-
-
-
-	
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-
-//	if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { continue; }
-
-//	if(!fTrackSelection->IsTrackAccepted(track)){   continue;   }  // from markus' code
-//	if(!(track->TestFilterBit(AliAODTrack::klsHybridTPCCG)) ) { continue; }
-//	DCA_XY->Fill(track->XAtDCA(), track->YAtDCA());
-
-//	NGoodTracks++;
-//	associated_tracks++;
 	track_node *new_track = new track_node;
 	new_track->track_num = i;
 	new_track->next = NULL;
@@ -537,7 +490,7 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 
 	
 	short isGlobal    = 1;
-	short isModGlobal = 0;  // is it suitable for proteron candidate
+	short isModGlobal = 0;  // is it suitable for hadreron candidate
 	
 	if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal))){   isGlobal = 0;   }
 	
@@ -556,20 +509,10 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 		
 	}
 
-
-
-//	if(tpcIsOk  &&  tofIsOk)
-//	if(tofIsOk)
-//	{
-
 	    
 	Double_t mom            = track->P();
-//	Double_t energy         = track->E();
-//	float    mass           = track->M();
 	float    pt             = track->Pt();
-//	Double_t tpc_mom        = track->GetTPCmomentum();
 	Short_t  charge         = track->Charge();
-//	Double_t eta            = track->Eta();
 
 	Double_t sigma_min      = -999.0;
 	int      id             = 14;
@@ -589,24 +532,20 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 
 
 	fHistPt->Fill(pt);
-//	if(pt >= 0.3  &&  pt < 5)   alpha->Fill(1/pt);
 
-//	if(pt >= 1.0  &&  pt < 1.05)   cout<<fPIDResponse->GetTOFResponse().GetTOFchannel(track)<<endl;
 
 	// markc
 	if(isModGlobal == 1)
 	{
 	    Double_t m2tof = get_mass_squared(track);
-	    Float_t dedx   = track->GetTPCsignal();
 	    Float_t deltat = tof_minus_tpion(track);
-
 
 //    kElectron =  0;
 //    kMuon     =  1;
 //    kPion     =  2;
 //    kKaon     =  3;
 //    kProton   =  4;
-//    kDeuteron =  5;
+//    kHadreron =  5;
 //    kTriton   =  6;
 //    kHe3      =  7;
 //    kAlpha    =  8;
@@ -618,7 +557,7 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 //    kUnknown  = 14;  
 
 	    
-	    ////  markA
+      ////  markA
 
 	    Float_t beta_kaon = 0.0;
 	    Float_t beta      = 0.0;
@@ -630,101 +569,70 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 	    {
 		m2_pos->Fill(        pt, m2tof);
 		beta_p_pos->Fill(   mom, Beta(track));
-		dedx_p_pos->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos->Fill(deltat, dedx);
-		dedx_p_deltat_pos->Fill(dedx, mom, deltat);
-//		dedx_p_m2_pos->Fill(dedx, mom, m2tof);
 		deltat_p_pos->Fill(  pt, deltat);
 
-		
-		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
+//		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
+		if(                                                                      isGlobal == 1)
 		{
-		    if(    (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-			   )
-		    {
+//		    if(    (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//			   )
+//		    {
 			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{
 			    m2_pos_cut->Fill(        pt, m2tof);
 			    beta_p_pos_cut->Fill(   mom, Beta(track));
 			    deltat_p_pos_cut->Fill(  pt, deltat);
-			    dedx_p_pos_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos_cut->Fill(deltat, dedx);
-			    dedx_p_deltat_pos_cut->Fill(dedx, mom, deltat);
-//			    dedx_p_m2_pos_cut->Fill(dedx, mom, m2tof);
-			}
-		    }
 
-		    Int_t channel           = 0;
-		    channel                 = fPIDResponse->GetTOFResponse().GetTOFchannel(track);
-//		    Double_t xy_length      = 0.00;
-//		    xy_length               = length * TMath::Sin(track_theta);
 
-		    if(channel > -1  &&  channel < 4801)
-		    {
-			if(pt >= 0.995  &&  pt < 1.005)
-			{
-			    if(deltat >= -0.6  &&  deltat < 0.6)
+			    if(pt >= 1.4  &&  pt < 4.4)
 			    {
-				deltat_channel->Fill(channel, deltat);
+				m2_pos_cut_T->Fill(mom,m2tof);
+				hadr_track_num_T = i;
+				NHadr++;
+				NHadr_pos++;
+				hadr_flag_T = 1;
 			    }
 			}
-		    }
-
-		    
-		    if(mom >= 1.0  &&  mom < 4.0)
-		    {
-			m2_pos_cut_T->Fill(mom,m2tof);
-			hadr_track_num_T = i;
-			NHadr++;
-			NHadr_pos++;
-			hadr_flag_T = 1;
-		    }
+		 // }
 		}
 	    }
 	    
 	    else if(charge < 0)
 	    {
-		m2_neg->Fill(      pt,m2tof);
+		m2_neg->Fill(        pt, m2tof);
 		beta_p_neg->Fill(   mom, Beta(track));
-		dedx_p_neg->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg->Fill(deltat, dedx);
-		dedx_p_deltat_neg->Fill(dedx, mom, deltat);
 		deltat_p_neg->Fill(  pt, deltat);
-
 		
-		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
+//		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
+		if(                                                                      isGlobal == 1)
 		{
-		    if(    (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-			   )
-		    {
+//		    if(    (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//			   )
+//		    {
 			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{	
-			    m2_neg_cut->Fill(      pt, m2tof);
+			    m2_neg_cut->Fill(        pt, m2tof);
 			    beta_p_neg_cut->Fill(   mom, Beta(track));
 			    deltat_p_neg_cut->Fill(  pt, deltat);
-			    dedx_p_neg_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg_cut->Fill(deltat, dedx);
-			    dedx_p_deltat_neg_cut->Fill(dedx, mom, deltat);
-			}
-		    }
 
-		    if(mom >= 1.0  &&  mom < 4.0)
-		    {
-			m2_neg_cut_T->Fill(mom,m2tof);
-			hadr_track_num_T = i;
-		     // hadr_track_num_neg_T = i;
-			NHadr++;
-			NHadr_neg++;
-			hadr_flag_T = 1;
-		    }
+			    if(pt >= 1.4  &&  pt < 4.4)
+			    {
+				m2_neg_cut_T->Fill(mom,m2tof);
+				hadr_track_num_T = i;
+				NHadr++;
+				NHadr_neg++;
+				hadr_flag_T = 1;
+			    }  
+			}
+//		    }
 		}
 	    }
 	}    //   track has both TPC and TOF PID, tracks are o.k.
@@ -732,35 +640,35 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 
 
     hadr_per_event->Fill(NHadr);
-    hadr_per_event_pos->Fill(NHadr_pos);
-    hadr_per_event_neg->Fill(NHadr_neg);
 
     if(hadr_flag_T > 0)
     {
 //	HadreronCandidates++;
 	int j = hadr_track_num_T;
 
+	centrality_dist->Fill(centrality);
+	multiplicity_dist->Fill(iTracks);
+	
 	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
 	if(!track) {}
 	else
 	{
 	    Double_t hadr_phi = track->Phi();
-	    Double_t hadr_pt  = track->Pt();
 	    Double_t hadr_mom = track->P();
 	    Short_t  charge   = track->Charge();
 	    Double_t hadr_eta = track->Eta();
 
-	    Double_t hadr_et = 0.0;
-	    Double_t hadr_e   = 0.0;
+	    Double_t hadr_pt  = track->Pt();
+	    Double_t hadr_kt  = 0.00;
+	    Double_t hadr_et  = 0.00;
+	    Double_t hadr_en  = 0.00;
 	    
-	    hadr_et = sqrt(pow(hadr_pt, 2) + pow(0.2902614,2));// - 0.2902614;
-	    hadr_e  = sqrt(pow(hadr_mom,2) + pow(0.2902614,2));// - 0.2902614;
+	    hadr_kt = sqrt(pow(hadr_pt, 2) + pow(1.87561,2)) - 1.87561;
+	    hadr_et = sqrt(pow(hadr_pt, 2) + pow(1.87561,2));
+	    hadr_en = sqrt(pow(hadr_mom,2) + pow(1.87561,2));
+
 	    
-
-	    hadr_phi_hist->Fill(hadr_phi);
-
 	    int asso = 0;
-	    
 	    conductor = root->next;
 	    if (conductor != 0)
 	    {
@@ -771,31 +679,82 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 		    
 		    if(k != j)  // if the k-th track is not the j-th track which is the hadreron of interest
 		    {
-//		    NAssociatedTracks++;
 			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
 			if(!track){}                                                               // if we failed, skip this track
 			else
 			{
 			    Double_t mom            = track->P();
-		 	    Double_t phi            = track->Phi();
+			    Double_t phi            = track->Phi();
+			    Double_t pt             = track->Pt();
+			    Double_t eta            = track->Eta();
 			    
-
-			    if(mom > 2.0  &&  mom < 5.0)
+			    if(pt > 2.0  &&  pt < 5.0)
 			    {
 				Double_t dphi = hadr_phi - phi;
 				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
 				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
 				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+
+				if(centrality <= 20)
+				{
+				    dphi_pt_hadr_C->Fill(hadr_pt, dphi);	    dphi_kt_hadr_C->Fill(hadr_kt, dphi);
+				    dphi_et_hadr_C->Fill(hadr_et, dphi);	    dphi_en_hadr_C->Fill(hadr_en, dphi);
+				}
+				else if(centrality > 60)
+				{
+				    dphi_pt_hadr_P->Fill(hadr_pt, dphi);	    dphi_kt_hadr_P->Fill(hadr_kt, dphi);
+				    dphi_et_hadr_P->Fill(hadr_et, dphi);	    dphi_en_hadr_P->Fill(hadr_en, dphi);
+				}
+
+				dphi = hadr_phi - phi;
+				if(dphi < -TMath::Pi())    dphi = dphi + TMath::TwoPi();
+				if(dphi < -TMath::Pi())    dphi = dphi + TMath::TwoPi();
+				if(dphi >  TMath::Pi())    dphi = dphi - TMath::TwoPi();
+				if(dphi >  TMath::Pi())    dphi = dphi - TMath::TwoPi();
+				hadr_cor_radius->Fill(hadr_pt, TMath::Sign(1.0,dphi)*sqrt(pow(dphi,2) + pow(hadr_eta - eta,2)));			    
 				
-				hadr_dphi_T->Fill(hadr_mom, dphi);
-				
-				if(charge>0) {   hadr_dphi_pos_T->Fill(hadr_mom, dphi);   }
-				if(charge<0) {   hadr_dphi_neg_T->Fill(hadr_mom, dphi);   }
-				dphi_et_hadr_T->Fill(hadr_et, dphi);
-				dphi_e_hadr_T->Fill(hadr_e, dphi);
-				asso_phi_hist->Fill(phi);
 				asso++;
+			    }
+
+			    if(hadr_pt >= 1.4  &&  hadr_pt < 2.4)
+			    {
+				Double_t eta  = track->Eta();	 Double_t dphi = hadr_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p1_0510->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p1_1020->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p1_2030->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p1_3040->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p1_4050->Fill(dphi, hadr_eta - eta);    }
+			    }
+			    else if(hadr_pt >= 2.4  &&  hadr_pt < 3.4)
+			    {
+				Double_t eta  = track->Eta();	 Double_t dphi = hadr_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p2_0510->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p2_1020->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p2_2030->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p2_3040->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p2_4050->Fill(dphi, hadr_eta - eta);    }
+			    }
+			    else if(hadr_pt >= 3.4  &&  hadr_pt < 4.4)
+			    {
+				Double_t eta  = track->Eta();	 Double_t dphi = hadr_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p3_0510->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p3_1020->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p3_2030->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p3_3040->Fill(dphi, hadr_eta - eta);    }
+				else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p3_4050->Fill(dphi, hadr_eta - eta);    }
 			    }
 			}
 		    }
@@ -803,8 +762,7 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 	    
 		int k = conductor->track_num;
 		conductor = conductor->next;
-//	    NAssociatedTracks++;
-		if(k != j)  // if the k-th track is not the j-th track which is the proteron of interest
+		if(k != j)  // if the k-th track is not the j-th track which is the hadreron of interest
 		{
 		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
 		    if(!track){}                                                               // if we failed, skip this track
@@ -812,38 +770,96 @@ void AliAnalysisTaskCorPIDTOFhadr::UserExec(Option_t *)
 		    {
 			Double_t mom            = track->P();
 			Double_t phi            = track->Phi();
+			Double_t eta            = track->Eta();
+			Double_t pt             = track->Pt();
 			
-			if(mom > 2.0  &&  mom < 5.0)
+			if(pt > 2.0  &&  pt < 5.0)
 			{
 			    Double_t dphi = hadr_phi - phi;
 			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
 			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
 			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+
+			    if(centrality <= 20)
+			    {
+				dphi_pt_hadr_C->Fill(hadr_pt, dphi);		dphi_kt_hadr_C->Fill(hadr_kt, dphi);
+				dphi_et_hadr_C->Fill(hadr_et, dphi);		dphi_en_hadr_C->Fill(hadr_en, dphi);
+			    }
+			    else if(centrality > 60)
+			    {
+				dphi_pt_hadr_P->Fill(hadr_pt, dphi);		dphi_kt_hadr_P->Fill(hadr_kt, dphi);
+				dphi_et_hadr_P->Fill(hadr_et, dphi);		dphi_en_hadr_P->Fill(hadr_en, dphi);
+			    }
 			    
-			    hadr_dphi_T->Fill(hadr_mom, dphi);
-			    if(charge>0) {   hadr_dphi_pos_T->Fill(hadr_mom, dphi);   }
-			    if(charge<0) {   hadr_dphi_neg_T->Fill(hadr_mom, dphi);   }
-			    dphi_et_hadr_T->Fill(hadr_et, dphi);
-			    dphi_e_hadr_T->Fill(hadr_e, dphi);
-			    asso_phi_hist->Fill(phi);
-			    asso++;
+			    dphi = hadr_phi - phi;
+			    if(dphi < -TMath::Pi())    dphi = dphi + TMath::TwoPi();
+			    if(dphi < -TMath::Pi())    dphi = dphi + TMath::TwoPi();
+			    if(dphi >  TMath::Pi())    dphi = dphi - TMath::TwoPi();
+			    if(dphi >  TMath::Pi())    dphi = dphi - TMath::TwoPi();
+			    hadr_cor_radius->Fill(hadr_pt, TMath::Sign(1.0,dphi)*sqrt(pow(dphi,2) + pow(hadr_eta - eta,2)));
+			    asso++;			    
 			}
+
+			if(hadr_pt >= 1.4  &&  hadr_pt < 2.4)
+			{
+			    Double_t eta  = track->Eta();    Double_t dphi = hadr_phi - phi;
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p1_0510->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p1_1020->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p1_2030->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p1_3040->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p1_4050->Fill(dphi, hadr_eta - eta);    }
+			}
+			else if(hadr_pt >= 2.4  &&  hadr_pt < 3.4)
+			{
+			    Double_t eta  = track->Eta();    Double_t dphi = hadr_phi - phi;
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p2_0510->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p2_1020->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p2_2030->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p2_3040->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p2_4050->Fill(dphi, hadr_eta - eta);    }
+			}
+			else if(hadr_pt >= 3.4  &&  hadr_pt < 4.4)
+			{
+			    Double_t eta  = track->Eta();    Double_t dphi = hadr_phi - phi;
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			    
+			    if(     mom >= 0.5  &&  mom < 1.0){   hadr_dphi_deta_p3_0510->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 1.0  &&  mom < 2.0){   hadr_dphi_deta_p3_1020->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 2.0  &&  mom < 3.0){   hadr_dphi_deta_p3_2030->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 3.0  &&  mom < 4.0){   hadr_dphi_deta_p3_3040->Fill(dphi, hadr_eta - eta);    }
+			    else if(mom >= 4.0  &&  mom < 5.0){   hadr_dphi_deta_p3_4050->Fill(dphi, hadr_eta - eta);    }
+			}			
 		    }
 		}
 	    }
 
 	    if(asso > 0)
 	    {
-		hadr_et_count->Fill(hadr_et);
-		hadr_e_count->Fill(hadr_e);
-		hadr_pt_count->Fill(hadr_pt);
+		if(centrality <= 20.0)
+		{
+		    hadr_pt_count_C->Fill(hadr_pt);	    hadr_kt_count_C->Fill(hadr_kt);
+		    hadr_et_count_C->Fill(hadr_et);	    hadr_en_count_C->Fill(hadr_en);
+		}
+		else if(centrality > 60)
+		{
+		    hadr_pt_count_P->Fill(hadr_pt);	    hadr_kt_count_P->Fill(hadr_kt);
+		    hadr_et_count_P->Fill(hadr_et);	    hadr_en_count_P->Fill(hadr_en);
+		}
 	    }
 	}
-    }  // end of proteron correlation PRIMARY LOOP
+    }  // end of hadreron correlation PRIMARY LOOP
 
-
-     
                                                         // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -883,7 +899,6 @@ Double_t AliAnalysisTaskCorPIDTOFhadr::Beta(AliAODTrack *track)
 Double_t AliAnalysisTaskCorPIDTOFhadr::tof_minus_tpion(AliAODTrack *track)
 {
     Double_t start_time     = fPIDResponse->GetTOFResponse().GetStartTime(track->P());                      // in ps
-//  Double_t start_time     = fPIDResponse->GetTOFResponse().GetTimeZero() * 1e-12;
     Double_t stop_time      = track->GetTOFsignal();
     Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
     Double_t time_of_flight = stop_time - start_time;
@@ -901,7 +916,6 @@ Double_t AliAnalysisTaskCorPIDTOFhadr::tof_minus_tpion(AliAODTrack *track)
 Double_t AliAnalysisTaskCorPIDTOFhadr::get_mass_squared(AliAODTrack *track)
 {
     Double_t start_time     = fPIDResponse->GetTOFResponse().GetStartTime(track->P());                      // in ps
-//  Double_t start_time     = fPIDResponse->GetTOFResponse().GetTimeZero() * 1e-12;                         // lower resolution than previous line
     Double_t stop_time      = track->GetTOFsignal();
     Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
     Double_t tof            = stop_time - start_time;
