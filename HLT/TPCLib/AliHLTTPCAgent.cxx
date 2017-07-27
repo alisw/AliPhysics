@@ -257,6 +257,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     dEdXInput+="TPC-globalmerger";
 
     handler->CreateConfiguration("TPC-dEdx","TPCdEdx",dEdXInput.Data(),"");
+    handler->CreateConfiguration("TPC-FastdEdx","FastTPCdEdx",dEdXInput.Data(),"");
 
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
