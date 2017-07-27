@@ -502,7 +502,11 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
            };
 	for(Int_t z=0;z<fNBinsZ;z++){
 		for(Int_t m=0;m<fNBinsMultiplicity; m++){
-            fBGProbability[z][m] = BGProbabilityLookup[z][m];
+            if((z<7)&&(m<4)){
+                fBGProbability[z][m] = BGProbabilityLookup[z][m];
+            }else{
+                fBGProbability[z][m] = 1;
+            }
 		}
 	}
 	
