@@ -20,6 +20,7 @@ endforeach()
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliPhysics_BINARY_DIR}")
 message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
+message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}/OADB/")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # CMake supports different build types by default. We want the DEBUG build type
