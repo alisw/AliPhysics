@@ -72,10 +72,10 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
   AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult*nEventPlane*nPt];
   AliFemtoBasicEventCut                       *eventCut[nSys*nMult*nEventPlane*nPt];
   
-  AliFemtoV0TrackCut    *firstV0TrackCut[nSys];
-  AliFemtoV0TrackCut   *secondV0TrackCut[nSys];
-  AliFemtoESDTrackCut  *firstESDTrackCut[nSys];
-  AliFemtoESDTrackCut *secondESDTrackCut[nSys];
+  AliFemtoV0TrackCut    *firstV0TrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoV0TrackCut   *secondV0TrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoESDTrackCut  *firstESDTrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoESDTrackCut *secondESDTrackCut[nSys*nMult*nEventPlane*nPt];
   
   int anIter = 0;
   
@@ -85,11 +85,6 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
     
     EPart firstParticle, secondParticle;
     GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle);
-    
-    firstV0TrackCut[iSys]    = GetV0TrackCut(firstParticle);
-    secondV0TrackCut[iSys]   = GetV0TrackCut(secondParticle);
-    firstESDTrackCut[iSys]   = GetESDTrackCut(firstParticle);
-    secondESDTrackCut[iSys]  = GetESDTrackCut(secondParticle);
     
     for (int iMult=0; iMult<nMult; iMult++) // iterate on centrality bins
     {
@@ -125,26 +120,31 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
           femtoAnalysis[anIter]->SetEventCut(eventCut[anIter]);
           
           
+          firstV0TrackCut[anIter]    = GetV0TrackCut(firstParticle);
+          secondV0TrackCut[anIter]   = GetV0TrackCut(secondParticle);
+          firstESDTrackCut[anIter]   = GetESDTrackCut(firstParticle);
+          secondESDTrackCut[anIter]  = GetESDTrackCut(secondParticle);
+          
           // setup particle cuts
-          if(firstV0TrackCut[iSys])
+          if(firstV0TrackCut[anIter])
           {
-            if(doPtBinning) firstV0TrackCut[iSys]->SetPt(pTbins[iPt],pTbins[iPt+1]);
-            femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut[iSys]);
+            if(doPtBinning) firstV0TrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut[anIter]);
           }
           else
           {
-            if(doPtBinning) firstESDTrackCut[iSys]->SetPt(pTbins[iPt],pTbins[iPt+1]);
-            femtoAnalysis[anIter]->SetFirstParticleCut(firstESDTrackCut[iSys]);
+            if(doPtBinning) firstESDTrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetFirstParticleCut(firstESDTrackCut[anIter]);
           }
-          if(secondV0TrackCut[iSys])
+          if(secondV0TrackCut[anIter])
           {
-            if(doPtBinning) secondV0TrackCut[iSys]->SetPt(pTbins[iPt],pTbins[iPt+1]);
-            femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut[iSys]);
+            if(doPtBinning) secondV0TrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut[anIter]);
           }
           else
           {
-            if(doPtBinning) secondESDTrackCut[iSys]->SetPt(pTbins[iPt],pTbins[iPt+1]);
-            femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut[iSys]);
+            if(doPtBinning) secondESDTrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut[anIter]);
           }
           // add correlation function to analysis and analysis to the manager
           femtoAnalysis[anIter]->AddCorrFctn(separationFunction[anIter]);
