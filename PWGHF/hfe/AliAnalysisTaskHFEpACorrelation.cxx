@@ -1217,6 +1217,8 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         if (!isINT7selected){
             fNevent2->Fill(25);
+            PostData(1, fOutputList);
+            printf("Event not selected \n");
             return;
         }
     }
@@ -1280,7 +1282,10 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                     fNevent->Fill(10);
                     
                     if (MultSelection->GetEvSelCode() != 0)
+                    {
+                        PostData(1, fOutputList);
                         return;
+                    }
                     fNevent->Fill(11);
 
                     
@@ -1301,7 +1306,11 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             
             fNevent->Fill(12);
 
-            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax) return;
+            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax)
+            {
+                PostData(1, fOutputList);
+                return;
+            }
             
             fNevent->Fill(13);
             
