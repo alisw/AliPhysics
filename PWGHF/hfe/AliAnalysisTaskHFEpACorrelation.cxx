@@ -1221,6 +1221,34 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         }
     }
     
+    //Kinks
+    
+    fNumberOfVertices = 0;
+    fNumberOfMotherkink = 0;
+    
+    if(fIsAOD)
+    {
+        fNumberOfVertices = fAOD->GetNumberOfVertices();
+        
+        fListOfmotherkink = new Double_t[fNumberOfVertices];
+        
+        for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
+        {
+            AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+            if(!aodvertex) continue;
+            if(aodvertex->GetType()==AliAODVertex::kKink)
+            {
+                AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
+                if(!mother1) continue;
+                Int_t idmother = mother1->GetID();
+                fListOfmotherkink[fNumberOfMotherkink] = idmother;
+                fNumberOfMotherkink++;
+            }
+        }
+    }
+
+    
+    
     //______________________________________________________________________
     //______________________________________________________________________
     //______________________________________________________________________
