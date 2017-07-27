@@ -65,10 +65,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     kK0DifferentLambdaMother = 6,
     kK0CorrectLambdaMother = 7 };    
 
-  enum EMode {
-     kElephant = 0,   /// heavy configuration, all branches saved
-     kMouse = 1};     /// light configuration, subset of branches saved
- 
   enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
      kpPb2013 = 0,
      kpPb2016 = 1};
@@ -139,10 +135,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     fHistoMCNch = new TH1F(*h);
   }
   
-  void SetSaveMode(Int_t mode){
-     fSaveMode = mode;
-  }
-
   void SetAnalysisType(Int_t mode){
      fAnalysisType = mode;
   }
@@ -199,8 +191,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter; //!<! AliNormalizationCounter on output slot 4
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 5
   TList *fListCuts;                  //!<! list of cuts
-  TList *fListWeight;                //!<! list of weights
+  TList *fListWeight;                /// list of weights
   TList *fListCounters;              //!<! list of counters on output slot 2
+  TList *fListProfiles;              /// list of profiles for z-vtx correction of multiplicity
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           /// flag for event selected
 
@@ -318,13 +311,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
   TH1F* fHistoMCNch;  //!<! histogram with Nch distribution from MC production
  
-  Int_t fSaveMode; /// switch to change saving mode for tree (light or heavy)
   Int_t fAnalysisType; /// switch to change system/year in use for loading of mult. estimators
   Int_t fNTracklets; /// tracklet multiplicity in event
   TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
   Double_t fRefMult; /// reference multiplicity
   
-  TList *fListProfiles; //!<!list of profile histograms for z_vtx correction of mult
   TList *fListMultiplicityHistograms; //!<! list of multiplicity-related histograms on output slot 8 
   TH2F *fHistNtrVsZvtx; //!<! hist of ntracklets vs. z_vtx
   TH2F *fHistNtrCorrVsZvtx; //!<! hist of corrected ntracklets vs. z_vtx
@@ -338,8 +329,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounterU;           //!<!Counter for normalization, uncorrected multiplicity
   AliNormalizationCounter *fCounterCandidates;  //!<!Counter for normalization, corrected multiplicity for candidates
 
-  Int_t fUseNchWeight; /// weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
-  
   
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 12); /// class for Lc->p K0

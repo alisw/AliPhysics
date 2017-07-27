@@ -90,6 +90,7 @@ AliAnalysisTaskSE(),
   fAnalCuts(0),
   fListCuts(0),
   fListCounters(0),
+  fListProfiles(0),
   fListWeight(0),
   fHistoMCNch(0),
   fUseOnTheFlyV0(kFALSE),
@@ -202,10 +203,8 @@ AliAnalysisTaskSE(),
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
   fAnalysisType(kpPb2013),
-  fSaveMode(kElephant),
   fNTracklets(0),
   fRefMult(0),
-  fListProfiles(0),
   fListMultiplicityHistograms(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
@@ -215,8 +214,7 @@ AliAnalysisTaskSE(),
   fHistNtrCorrEvWithCand(0),
   fCounterC(0),
   fCounterU(0),
-  fCounterCandidates(0),
-  fUseNchWeight(0)
+  fCounterCandidates(0)
   
 {
   //
@@ -238,6 +236,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fAnalCuts(analCuts),
   fListCuts(0),
   fListCounters(0),
+  fListProfiles(0),
   fListWeight(0),
   fHistoMCNch(0),
   fUseOnTheFlyV0(useOnTheFly),
@@ -351,10 +350,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fFuncWeightFONLL5overLHC13d3(0),
   fFuncWeightFONLL5overLHC13d3Lc(0),
   fAnalysisType(kpPb2013),
-  fSaveMode(kElephant),
   fNTracklets(0),
   fRefMult(0),
-  fListProfiles(0),
   fListMultiplicityHistograms(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
@@ -364,18 +361,13 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fHistNtrCorrEvWithCand(0),
   fCounterC(0),
   fCounterU(0),
-  fCounterCandidates(0),
-  fUseNchWeight(0)
+  fCounterCandidates(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2V0bachelorTMVA","Calling Constructor");
   for (Int_t i = 0; i < 4; i++) fMultEstimatorAvg[i] = 0;
-
-  if (!fAnalCuts) {
-      AliFatal("Where are the cuts?");
-  }
 
   DefineOutput(1, TList::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(2, TList::Class()); // normalization counter object
@@ -384,7 +376,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   DefineOutput(5, TTree::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(6, TList::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(7, TList::Class());  // weights
-  DefineOutput(8, TList::Class());  // profile list for mult corr
+  DefineOutput(8, TList::Class());  // multiplicity-based histograms
+  DefineOutput(9, TList::Class());  // profile list for mult corr
 
 }
 
@@ -426,10 +419,18 @@ AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
     delete fListCounters;
     fListCounters = 0;
   }
+  if (fListProfiles) {
+    delete fListProfiles;
+    fListProfiles = 0;
+  } 
 
   if (fListWeight) {
     delete fListWeight;
     fListWeight = 0;
+  }
+  if (fListMultiplicityHistograms) {
+    delete fListMultiplicityHistograms;
+    fListMultiplicityHistograms = 0;
   }
 
   if(fVariablesTreeSgn){
@@ -470,9 +471,27 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
 
   // Save the weight functions or histograms
   fListWeight = new TList();
+  fListWeight->SetOwner();
   fListWeight->Add(fHistoMCNch);
   PostData(7,fListWeight);
 
+  fListProfiles = new TList();
+  fListProfiles->SetOwner();
+  TString period[2];
+  Int_t nProfiles = 2;
+  if (fAnalysisType == kpPb2013) {period[0] = "LHC13b"; period[1] = "LHC13c";}
+  else if (fAnalysisType == kpPb2016) {period[0] = "LHC16q"; period[1] = "LHC16t";}
+
+  for (Int_t i = 0; i < nProfiles; i++) {
+      if (fMultEstimatorAvg[i]){
+         TProfile* hprof = new TProfile(*fMultEstimatorAvg[i]);
+         hprof->SetName(Form("ProfileTrxVsZvtx%s\n",period[i].Data()));
+         fListProfiles->Add(hprof);
+      }
+  }
+
+  PostData(9,fListProfiles);
+  
   if (fUseMCInfo && (fKeepingOnlyHIJINGBkg || fKeepingOnlyPYTHIABkg)) fUtils = new AliVertexingHFUtils();
 
   return;
@@ -539,24 +558,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
-
-
-
   Int_t nVar; 
-  switch (fSaveMode) {
-    case kElephant : // "heavy mode", save all possible branches
-      nVar = 47;
-      break;
-    case kMouse :    // "light mode", save smaller subset of branches 
-      nVar = 30; 
-      break;
-    }
+  if (fUseMCInfo)  nVar = 47; //"full" tree if MC
+  else nVar = 30; //"reduced" tree if data
+  
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
   
-  switch (fSaveMode) {
-     case kElephant : // "heavy mode"
+  if (fUseMCInfo) { // "full tree" for MC
         fCandidateVariableNames[0]="massLc2K0Sp";
         fCandidateVariableNames[1]="massLc2Lambdapi";
         fCandidateVariableNames[2]="massK0S";
@@ -661,10 +671,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
 //        fCandidateVariableNames[83]="alphaArmLcCharge";
 //        fCandidateVariableNames[84]="ptArmLc";
       
-
-        break;
-
-     case kMouse :   // "light mode"
+}
+else {   // "light mode"
         fCandidateVariableNames[0]="massLc2K0Sp";
         fCandidateVariableNames[1]="massLc2Lambdapi";
         fCandidateVariableNames[2]="massK0S";
@@ -695,7 +703,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
         fCandidateVariableNames[27]="ptArm";
         fCandidateVariableNames[28]="NtrkRaw";
         fCandidateVariableNames[29]="NtrkCorr";
-        break;
+        
   }
 
   for(Int_t ivar=0; ivar<nVar; ivar++){
@@ -839,11 +847,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntrk10 vs VtxZ; VtxZ;N_{trk};",300,-15,15,nMultBins,firstMultBin,lastMultBin); //
 
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected Ntrk multiplicity for selected events; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);
-  fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand","Uncorrected Ntrk multiplicity for events with D candidates; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
+  fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand","Uncorrected Ntrk multiplicity for events with #Lambda_{c} candidates; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
 
 
   fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected Ntrk multiplicity for selected events; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);
-  fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Ntrk multiplicity for events with D candidates; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
+  fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Ntrk multiplicity for events with #Lambda_{c} candidates; Ntrk ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
 
  fHistNtrVsZvtx->Sumw2();
  fHistNtrCorrVsZvtx->Sumw2();
@@ -1040,6 +1048,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fFuncWeightFONLL5overLHC13d3Lc->SetParameters(5.94428e+01,1.63585e+01,9.65555e+00,6.71944e+00,8.88338e-02,2.40477e+00,-4.88649e-02,-6.78599e-01,-2.10951e-01);
 
   PostData(6, fOutputKF);
+ 
+  PostData(7, fListWeight);
+  PostData(9, fListProfiles);
 
   return;
 }
@@ -1191,6 +1202,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   PostData(4, fVariablesTreeSgn);
   PostData(5, fVariablesTreeBkg);
   PostData(6, fOutputKF);
+  PostData(7, fListWeight);
   PostData(8, fListMultiplicityHistograms);
 }
 //-------------------------------------------------------------------------------
@@ -1867,8 +1879,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
 
 
-    switch (fSaveMode) { 
-       case kElephant :  //  "heavy" mode
+    if (fUseMCInfo) {   //  save full tree if on MC
           fCandidateVariables[0] = invmassLc;
           fCandidateVariables[1] = invmassLc2Lpi;
           fCandidateVariables[2] = invmassK0s;
@@ -1985,9 +1996,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           fCandidateVariables[45] = fNTracklets;
       
           fCandidateVariables[46] = countTreta1corr;
-       break;
+       }
       
-       case kMouse: //"light mode"
+       else { //remove MC-only variables from tree if data
         
           fCandidateVariables[0] = invmassLc;
           fCandidateVariables[1] = invmassLc2Lpi;
@@ -2017,9 +2028,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
           fCandidateVariables[25] = v0part->Ct(310, v0part->GetSecondaryVtx()); 
           fCandidateVariables[26] = v0part->AlphaV0();
           fCandidateVariables[27] = v0part->PtArmV0();
-      
-       break; 
-       
+          fCandidateVariables[28] = fNTracklets;
+          fCandidateVariables[29] = countTreta1corr;
+        
        }
       
     // fill multiplicity histograms for events with a candidate   
@@ -2942,19 +2953,18 @@ TProfile* AliAnalysisTaskSELc2V0bachelorTMVA::GetEstimatorHistogram(const AliVEv
       case kpPb2013: //0 = LHC13b, 1 = LHC13c
          if (runNo > 195343 && runNo < 195484) period = 0;
          if (runNo > 195528 && runNo < 195678) period = 1;
-         if (period < 0 || period > 1) return 0;
+         if (period < 0 || period > 1)  { AliInfo(Form("Run number %d not found for LHC13!",runNo)); return 0;}
          break;
       case kpPb2016: //0 = LHC16q, 1 = LHC16t
          if (runNo > 265014 && runNo < 265526) period = 0;
          if (runNo > 267160 && runNo < 267167) period = 1;
-         if (period < 0 || period > 1) return 0;
- 
+         if (period < 0 || period > 1) { AliInfo(Form("Run number %d not found for LHC16!",runNo)); return 0;}
+         break;
       default:       //no valid switch
          return 0;
       break;
-   
-
   }
+
   return fMultEstimatorAvg[period];
 }
 
