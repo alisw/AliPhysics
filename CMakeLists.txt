@@ -56,8 +56,7 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "${AliPhysics_SOURCE_DIR}")
 endif()
 
 # Path to additonal modules
-set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake" "${AliPhysics_SOURCE_DIR}/OADB")
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB)
+set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
 
 # Retrieve Git version and revision
 # ALIPHYSICS_VERSION
