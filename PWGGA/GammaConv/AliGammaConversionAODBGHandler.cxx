@@ -620,7 +620,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventVertex[z][m][eventCounter].fEP = epvalue;
 
 	//first clear the vector
-  for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+  for(Int_t d=0;d<fBGEventsMeson[z][m][eventCounter].size();d++){
 		delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
 	}
 	fBGEventsMeson[z][m][eventCounter].clear();
