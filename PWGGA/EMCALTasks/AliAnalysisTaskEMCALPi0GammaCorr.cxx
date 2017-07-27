@@ -43,6 +43,7 @@ ClassImp(AliAnalysisTaskEMCALPi0GammaCorr)
 ////////////////////////////////////////////////////////////////////////////////////////
 AliAnalysisTaskEMCALPi0GammaCorr::AliAnalysisTaskEMCALPi0GammaCorr():
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPi0GammaCorr", kTRUE),
+fIsMC(kFALSE),
 fSavePool(0),
 fEventCuts(0),
 fFiducialCellCut(0x0),
@@ -74,6 +75,7 @@ fPeriod("")
 // Constructor with inputs
 AliAnalysisTaskEMCALPi0GammaCorr::AliAnalysisTaskEMCALPi0GammaCorr(Bool_t InputDoMixing):
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPi0GammaCorr", kTRUE),
+fIsMC(kFALSE),
 fSavePool(0),
 fEventCuts(0),
 fFiducialCellCut(0x0),
@@ -238,9 +240,6 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_alpha = 0.0;
     double max_alpha = 50;
 
-    int nbins_dR = 11;
-    double min_dR = 0.0;
-    double max_dR = 0.11;
     
     int nbins_DisToBorder = 6;
     double min_DisToBorder = -0.5;
@@ -278,8 +277,12 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_nClusters = 0.0;
     double max_nClusters = 100.0;
     
-    int nbins_Matching = 100;
-    double min_Matching = -0.05; 
+    int nbins_dR = 10;
+    double min_dR = 0.0;
+    double max_dR = 0.05;
+
+    int nbins_Matching = 10;
+    double min_Matching = 0.00; 
     double max_Matching = 0.05; 
 
     //////////////////////Pion-hadron correlations//////////////////////////
@@ -464,7 +467,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
     bool PassedMinBiasTrigger = kFALSE;
     if(Trigger.Contains("EG1") ||Trigger.Contains("EG2") || Trigger.Contains("DG1") || Trigger.Contains("DG2")) PassedGammaTrigger = kTRUE;
     if(Trigger.Contains("INT7")) PassedMinBiasTrigger = kTRUE;
-    if(!PassedGammaTrigger && !PassedMinBiasTrigger) return kFALSE;
+    if(!PassedGammaTrigger && !PassedMinBiasTrigger && !fIsMC) return kFALSE; //if not MC and does not trigger data, remove
 
     bool isSelected = AliAnalysisTaskEmcal::IsEventSelected();
     return kTRUE;
@@ -602,7 +605,11 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust,
   Double_t deta_temp; 
   Double_t dphi_temp;  
     
-  if (nMatched <1 ) return 0.1001;
+  if (nMatched <1 ){
+      detaMIN = 0.049; 
+      dphiMIN = 0.049;
+      return 0.0499;
+  }
 
   for(Int_t i=0;i< nMatched;i++){
 
@@ -618,20 +625,18 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust,
     TVector3 cpos(pos);
     Double_t ceta     = cpos.Eta();
     Double_t cphi     = cpos.Phi(); 
-    deta_temp =veta-ceta;
-    dphi_temp =TVector2::Phi_mpi_pi(vphi-cphi);
+    deta_temp =std::abs(veta-ceta);
+    dphi_temp =std::abs(TVector2::Phi_mpi_pi(vphi-cphi));
     dR_temp  =TMath::Sqrt(deta_temp*deta_temp+dphi_temp*dphi_temp);
-
+    
     if(dR_temp < dR) dR = dR_temp;
     if(deta_temp < deta) deta = deta_temp;
     if(dphi_temp < dphi ) dphi = dphi_temp;
   }
 
   //overflow treatment:
-  if(deta>0.05) deta = 0.0499;
-  if(deta<-0.05) deta = -0.0499;
-  if(dphi>0.05) dphi = 0.0499;
-  if(dphi<-0.05) dphi = -0.0499;
+  deta = std::min(deta, 0.0499);
+  dphi = std::min(dphi, 0.0499);
 
   detaMIN = deta; 
   dphiMIN = dphi; 
@@ -659,7 +664,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 	// 3. The reduced and bgTracks arrays must both be passed into
 	//    FillCorrelations(). Also nMix should be passed in, so a weight
 	//    of 1./nMix can be applied.
- 
+  //  std::cout << "Entering fill histograms " << std::endl;
     TString Trigger;
     Trigger = fInputEvent->GetFiredTriggerClasses();
     bool PassedGammaTrigger = kFALSE;
@@ -675,7 +680,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     if(!tracks){
       AliError(Form("Could not retrieve tracks !"));
     }
-    if(PassedGammaTrigger) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
+    if(PassedGammaTrigger or fIsMC) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
    
     AliEventPool* pool = fPoolMgr->GetEventPool(fCent, zVertex);
@@ -725,7 +730,7 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     double Weight=1.0;    
     Weight=InputWeight; //..for mixed events normalize per events in pool
     
-    for(auto cluster: clusters->accepted()){
+     for(auto cluster: clusters->accepted()){
         if(!PreSelection(cluster))continue ;
         if(MixedEvent){
 	  for(auto track_mix: *bgTracksArray){
@@ -740,8 +745,10 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
         }//end same event loop.
         
         for(auto cluster2: clusters->accepted()){
+   
 	  if(!PreSelection(cluster2)) continue;
           if(cluster==cluster2) continue;
+	 
 
             if(MixedEvent){
 	      for(auto track_mix: *bgTracksArray){
@@ -749,6 +756,7 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 		} //end loop over tracks
             } // end mixed event loop 
             else{
+	      
                 FillPionHisto(cluster, cluster2, h_Pi0);
 		for(auto track : tracks->accepted()){
                     FillPionCorrelation(cluster, cluster2, track, h_Pi0Track, Weight);
@@ -962,13 +970,14 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     Double_t dRmin_2 = ClustTrackMatching(cluster_sub, detamin_2, dphimin_2);    
 
     pi0 = ph_lead + ph_sub;
+   
     //////////////////Selection/////////////////////////////////////////
-    if( pi0.Pt() < 6.0) return;
+    if( pi0.Pt() < 3.0) return;
     if( pi0.M()  > 0.3) return;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
     double openingAngle = 1000.0*std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())); // in mrads
-
+   
     double entries[13] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
 			  openingAngle,  cluster_lead->GetM02(), cluster_sub->GetM02(), 
 			  dRmin_1, dRmin_2};

@@ -33,7 +33,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   void SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   void SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
   void SetPeriod(const char *period)                         { fPeriod = period; }
-
+  void SetMC (Bool_t MC)                                     { fIsMC = MC; }
 
   void SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
   AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
@@ -74,6 +74,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
 
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
+  Bool_t                      fIsMC; /// Whether analysis is on MC or not. 
   
   //..Input histograms
   THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
