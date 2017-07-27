@@ -20,7 +20,6 @@ endforeach()
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliPhysics_BINARY_DIR}")
 message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
-message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}/OADB/")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # CMake supports different build types by default. We want the DEBUG build type
@@ -57,7 +56,7 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "${AliPhysics_SOURCE_DIR}")
 endif()
 
 # Path to additonal modules
-set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake" "${AliPhysics_SOURCE_DIR}/OADB")
 set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB)
 
 # Retrieve Git version and revision
