@@ -43,7 +43,7 @@ class AliAnalysisTaskSE;
 class AliOADBPhysicsSelection;
 class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
-class PCREWrap;
+class TPRegexp;
 class StringToRegexp;
 
 typedef std::pair<R5TFormula, std::vector<AliTriggerAnalysis::Trigger>> FormulaAndBits;
@@ -126,7 +126,7 @@ protected:
   FormulaAndBits& FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
 
   StringToRegexp* fTriggerToRegexp; //!
-  const PCREWrap& FindRegexp(const std::string& triggers) const;
+  TPRegexp& FindRegexp(const std::string& triggers) const;
 
   ClassDef(AliPhysicsSelection, 24)
 private:
