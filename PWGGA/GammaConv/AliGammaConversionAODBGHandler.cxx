@@ -490,41 +490,25 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
 	for(Int_t z=0; z < fNBinsZ; z++){
 		fBGProbability[z] = new Double_t[fNBinsMultiplicity];
 	}
-
+    Double_t BGProbabilityLookup[7][4] =
+           {
+             {0.243594,0.279477,0.305104,0.315927},
+             {0.241964,0.272995,0.307165,0.292248},
+             {0.241059,0.27509,0.283657,0.310512},
+             {0.23888,0.283418,0.297232,0.348188},
+             {0.245555,0.281218,0.317236,0.323495},
+             {0.244572,0.259498,0.278383,0.284696},
+             {0.24703, 0.275265,0.284004,0.343584}
+           };
 	for(Int_t z=0;z<fNBinsZ;z++){
 		for(Int_t m=0;m<fNBinsMultiplicity; m++){
-			fBGProbability[z][m] = 0;
+            if((z<7)&&(m<4)){
+                fBGProbability[z][m] = BGProbabilityLookup[z][m];
+            }else{
+                fBGProbability[z][m] = 1;
+            }
 		}
 	}
-	//filling the probability
-	fBGProbability[0][0] = 0.243594;
-	fBGProbability[0][1] = 0.279477;
-	fBGProbability[0][2] = 0.305104;
-	fBGProbability[0][3] = 0.315927;
-	fBGProbability[1][0] = 0.241964;
-	fBGProbability[1][1] = 0.272995;
-	fBGProbability[1][2] = 0.307165;
-	fBGProbability[1][3] = 0.292248;
-	fBGProbability[2][0] = 0.241059;
-	fBGProbability[2][1] = 0.27509;
-	fBGProbability[2][2] = 0.283657;
-	fBGProbability[2][3] = 0.310512;
-	fBGProbability[3][0] = 0.23888;
-	fBGProbability[3][1] = 0.283418;
-	fBGProbability[3][2] = 0.297232;
-	fBGProbability[3][3] = 0.348188;
-	fBGProbability[4][0] = 0.245555;
-	fBGProbability[4][1] = 0.281218;
-	fBGProbability[4][2] = 0.317236;
-	fBGProbability[4][3] = 0.323495;
-	fBGProbability[5][0] = 0.244572;
-	fBGProbability[5][1] = 0.259498;
-	fBGProbability[5][2] = 0.278383;
-	fBGProbability[5][3] = 0.284696;
-	fBGProbability[6][0] = 0.24703;
-	fBGProbability[6][1] = 0.275265;
-	fBGProbability[6][2] = 0.284004;
-	fBGProbability[6][3] = 0.343584;
 	
 }
 
