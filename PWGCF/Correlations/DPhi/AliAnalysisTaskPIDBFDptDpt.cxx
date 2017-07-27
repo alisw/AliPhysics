@@ -424,7 +424,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
   fUtils(0),
-  fEventCut(0),
+  fEventCut(0)
 {
   printf("Default constructor called \n");  
   printf("passed \n ");
@@ -774,7 +774,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
   fUtils(0),
-  fEventCut(0),
+  fEventCut(0)
 {
   // Au-Au added this block of code to use his own PID functions
   for( Int_t ipart = 0; ipart < 4; ipart++ )
