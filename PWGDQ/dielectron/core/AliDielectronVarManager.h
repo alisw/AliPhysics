@@ -1010,7 +1010,6 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
 
   values[AliDielectronVarManager::kITSsignal]   =   particle->GetITSsignal();
-
   Double_t itsdEdx[4];
   particle->GetITSdEdxSamples(itsdEdx);
 
@@ -1195,8 +1194,17 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
       if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
     }
     values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
-    if(Req(kNclsSMapITS))  values[AliDielectronVarManager::kNclsSMapITS]  = 0;  //not implemented in AODs
+    if(Req(kNclsSMapITS))  values[AliDielectronVarManager::kNclsSMapITS]  = particle->GetITSSharedClusterMap();  //not implemented in AODs
     if(Req(kNclsSFracITS)) values[AliDielectronVarManager::kNclsSFracITS] = itsNclsS > 0. ? itsNclsS / particle->GetITSNcls() : 0.;
+  }
+
+  if(Req(kITSsignalSSD1) || Req(kITSsignalSSD2) || Req(kITSsignalSDD1) || Req(kITSsignalSDD2) ){
+    Double_t itsdEdx[4];
+    particle->GetITSdEdxSamples(itsdEdx);
+    values[AliDielectronVarManager::kITSsignalSSD1]   =   itsdEdx[0];
+    values[AliDielectronVarManager::kITSsignalSSD2]   =   itsdEdx[1];
+    values[AliDielectronVarManager::kITSsignalSDD1]   =   itsdEdx[2];
+    values[AliDielectronVarManager::kITSsignalSDD2]   =   itsdEdx[3];
   }
 
 
