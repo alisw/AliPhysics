@@ -53,6 +53,7 @@
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
 #include "TTreeStream.h"//why?
+#include "TRandom3.h"
 
 class TString;
 class TObject;
@@ -131,6 +132,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          AttachRejCutMee(Double_t rejcut)              { fvRejCutMee.push_back(rejcut); }
   void          AttachRejCutTheta(Double_t rejcut)            { fvRejCutTheta.push_back(rejcut); }
   void          AttachRejCutPhiV(Double_t rejcut)             { fvRejCutPhiV.push_back(rejcut); }
+  void          AttachIsTOFrequireCut(Bool_t TOFreq)          { fvIsTOFrequireCut.push_back(TOFreq); }
   void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
   void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
   void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
@@ -141,7 +143,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min; fDeltaThetaMax=max;}
   void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min; fDeltaPhiMax=max;}
   void          SetDeltaAngleBinning(Int_t N, Double_t min, Double_t max) {fDeltaAngleNbins=N; fDeltaAngleMin=min; fDeltaAngleMax=max;}
-  
+
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
   void          CreateSupportHistos();
@@ -210,6 +212,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<Double_t>           fvRejCutMee;
   std::vector<Double_t>           fvRejCutTheta;
   std::vector<Double_t>           fvRejCutPhiV;
+  std::vector<Bool_t>             fvIsTOFrequireCut;
   //Efficiency Histograms
   TH3D*                           fNgen_Ele;
   std::vector<TH3D*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
