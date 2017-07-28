@@ -406,35 +406,34 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("80000123", "00200009227000008250400000", "0162103500000000"); // edEdx -3,5
     cuts.AddCut("80000123", "00200009627000008250400000", "0162103500000000"); // edEdx -2.5,4
     cuts.AddCut("80000123", "00200009127000008250400000", "0162103500000000"); // edEdx -5,5
-  } else if (trainConfig == 124) { //PidEdx Variation  added sig
+  } else if (trainConfig == 124) { //PidEdx Variation
     cuts.AddCut("80000123", "00200009357000008250400000", "0162103500000000"); // PidEdx(2, >0.4GeV)
     cuts.AddCut("80000123", "00200009387300008250400000", "0162103500000000"); // PidEdx(2, >0.4GeV; 1>3.5GeV)
     cuts.AddCut("80000123", "00200009320000008250400000", "0162103500000000"); // PidEdx(1, >0.5GeV)
     cuts.AddCut("80000123", "00200009325000008250400000", "0162103500000000"); // PidEdx(1, >0.3GeV)
-  } else if (trainConfig == 125) { //PidEdx Variation 2 added sig
+  } else if (trainConfig == 125) { //PidEdx Variation 2
     cuts.AddCut("80000123", "00200009327300008250400000", "0162103500000000"); // PidEdx(1, >0.4GeV; -10>3.5GeV)
     cuts.AddCut("80000123", "00200009326000008250400000", "0162103500000000"); // PidEdx(1, >0.25GeV)
-    cuts.AddCut("80000123", "00200009327200008250400000", "0162103500000000"); // PidEdx(1, >0.4GeV; -10>4GeV)
     cuts.AddCut("80000123", "00200009326200008250400000", "0162103500000000"); // PidEdx(1, >0.25GeV; -10>4GeV)
-  } else if (trainConfig == 126) { // qt & psipair variation add sig
+    cuts.AddCut("80000123", "00200009327200008250400000", "0162103500000000"); // PidEdx(1, >0.4GeV; -10>4GeV)
+  } else if (trainConfig == 126) { // qt & psipair variation
     cuts.AddCut("80000123", "00200009327000003250400000", "0162103500000000"); // qT 0.05 1D
     cuts.AddCut("80000123", "00200009327000009250400000", "0162103500000000"); // qT 0.03 2D
     cuts.AddCut("80000123", "00200009327000002250400000", "0162103500000000"); // qT 0.07 1D
-    cuts.AddCut("80000123", "00200009327000008210400000", "0162103500000000"); // Psi Pair: 1D 0.1}
-  } else if (trainConfig == 127) { // PsiPair Variation added sig
+    cuts.AddCut("80000123", "00200009327000008240400000", "0162103500000000"); // Psi Pair: 1D 0.2
+  } else if (trainConfig == 127) { // PsiPair Variation
     cuts.AddCut("80000123", "00200009327000008210400000", "0162103500000000"); // Psi Pair: 1D 0.1
     cuts.AddCut("80000123", "00200009327000008150400000", "0162103500000000"); // chi2 50  2D
     cuts.AddCut("80000123", "00200009327000008850400000", "0162103500000000"); // chi2 20  2D
     cuts.AddCut("80000123", "00200009327000008260400000", "0162103500000000"); // psi pair 0.05
-  } else if (trainConfig == 128) { // cos point & meson alpha variation added sig
+  } else if (trainConfig == 128) { // cos point & meson alpha variation
     cuts.AddCut("80000123", "00200009327000008250300000", "0162103500000000"); // cos pointing angle 0.75
     cuts.AddCut("80000123", "00200009327000008250600000", "0162103500000000"); // cos pointing angle 0.9
     cuts.AddCut("80000123", "00200009327000008250400000", "0162106500000000"); // alpha meson cut 0.8
-  } else if (trainConfig == 129) { // BG mixing & smear variations added sig
+  } else if (trainConfig == 129) { // BG mixing & smear variations
     cuts.AddCut("80000123", "00200009327000008250400000", "0262103500000000"); // BG track multiplicity
     cuts.AddCut("80000123", "00200009327000008250400000", "0162103500800000"); // fPSigSmearingCte=0.014;
     cuts.AddCut("80000123", "00200009327000008250400000", "0162103500900000"); // fPSigSmearingCte=0.014;
-    //------------------------------------------------------------------------
     // pseudorapidity studies
     //-----------------------------------------------------------------------
   } else if (trainConfig == 130) {
