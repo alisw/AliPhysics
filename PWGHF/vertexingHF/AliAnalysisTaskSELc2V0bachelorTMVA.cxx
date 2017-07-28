@@ -477,10 +477,16 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
 
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[2];
+  
+  TString period[4];
   Int_t nProfiles = 2;
-  if (fAnalysisType == kpPb2013) {period[0] = "LHC13b"; period[1] = "LHC13c";}
-  else if (fAnalysisType == kpPb2016) {period[0] = "LHC16q"; period[1] = "LHC16t";}
+ 
+  switch (fAnalysisType) {
+     case kpPb2013: period[0] = "LHC13b"; period[1] = "LHC13c"; break;
+     case kpPb2016: period[0] = "LHC16qtbunch1"; period[1] = "LHC16qtbunch2"; period[2] = "LHC16qtbunch3"; period[3] = "LHC16qtbunch4"; nProfiles = 4; break;
+     case kpp2016: period[0] = "LHC16j"; period[1] = "LHC16k"; period[2] = "LHC16l"; nProfiles = 3; break;
+  }
+
 
   for (Int_t i = 0; i < nProfiles; i++) {
       if (fMultEstimatorAvg[i]){
@@ -2955,11 +2961,18 @@ TProfile* AliAnalysisTaskSELc2V0bachelorTMVA::GetEstimatorHistogram(const AliVEv
          if (runNo > 195528 && runNo < 195678) period = 1;
          if (period < 0 || period > 1)  { AliInfo(Form("Run number %d not found for LHC13!",runNo)); return 0;}
          break;
-      case kpPb2016: //0 = LHC16q, 1 = LHC16t
-         if (runNo > 265014 && runNo < 265526) period = 0;
-         if (runNo > 267160 && runNo < 267167) period = 1;
-         if (period < 0 || period > 1) { AliInfo(Form("Run number %d not found for LHC16!",runNo)); return 0;}
+      case kpPb2016: //0 = LHC16q, 265499 -- 265525 || 265309 -- 265387, 1 = LHC16q, 265435, 2 = LHC16q, 265388 -- 265427, 3 = LHC16t, 267163 -- 267166
+         if ((runNo >=265499 && runNo <=265525) || (runNo >= 265309 && runNo <= 265387)) period = 0;
+         else if (runNo == 265435) period = 1;
+         else if (runNo >= 265388 && runNo <= 265427) period = 2;
+         else if (runNo >=267163 && runNo <=276166) period = 3;
+         if (period < 0 || period > 3) { AliInfo(Form("Run number %d not found for LHC16 pPb!",runNo)); return 0;}
          break;
+      case kpp2016: //0 = LHC16j, 1 = LHC16k, 2 = LHC16l
+         if (runNo >= 256219 && runNo <= 256418) period = 0;
+         else if (runNo >= 256504 && runNo <= 258537) period = 1;
+         else if (runNo >= 265388 && runNo <= 265427) period = 2;
+         if (period < 0 || period > 2) {AliInfo(Form("Run number %d not found for LHC16 pp!",runNo)); return 0;}
       default:       //no valid switch
          return 0;
       break;

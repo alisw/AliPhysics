@@ -67,7 +67,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 
   enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
      kpPb2013 = 0,
-     kpPb2016 = 1};
+     kpPb2016 = 1,
+     kpp2016 = 2};
   
   AliAnalysisTaskSELc2V0bachelorTMVA();
   AliAnalysisTaskSELc2V0bachelorTMVA(const Char_t* name, AliRDHFCutsLctoV0* cutsA,
@@ -149,14 +150,37 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     fMultEstimatorAvg[1]=new TProfile(*hprof);
   }
 
-  void SetMultVsZProfileLHC16q(TProfile* hprof){
+  void SetMultVsZProfileLHC16qt1stBunch(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
   }
-  void SetMultVsZProfileLHC16t(TProfile* hprof){
+  void SetMultVsZProfileLHC16qt2ndBunch(TProfile* hprof){
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
   }
+  void SetMultVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16qt4thBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+  }
+
+  void SetMultVsZProfileLHC16j(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16k(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16l(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+  }
+
+
 
   void SetReferenceMultiplicity(Double_t rmu){fRefMult=rmu;}
   

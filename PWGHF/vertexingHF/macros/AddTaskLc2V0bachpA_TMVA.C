@@ -80,9 +80,9 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
    break;
 
   case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2016:  //LHC16q & LHC16t
-   const Char_t* periodNames[2] = {"LHC16q", "LHC16t"};
-   TProfile* multEstimatorAvg[2];
-   for (Int_t ip = 0; ip < 2; ip++) {
+   const Char_t* periodNames[4] = {"LHC16qt1stBunch", "LHC16qt2ndBunch", "LHC16qt3rdBunch", "LHC16qt4thBunch"};
+   TProfile* multEstimatorAvg[4];
+   for (Int_t ip = 0; ip < 4; ip++) {
       cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
       multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
       if (!multEstimatorAvg[ip]) { // mult estimator not found
@@ -90,9 +90,26 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
          return;
          }
    }
-      task->SetMultVsZProfileLHC16q(multEstimatorAvg[0]);
-      task->SetMultVsZProfileLHC16t(multEstimatorAvg[1]);
+      task->SetMultVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
+      task->SetMultVsZProfileLHC16qt2ndBunch(multEstimatorAvg[1]);
+      task->SetMultVsZProfileLHC16qt3rdBunch(multEstimatorAvg[2]);
+      task->SetMultVsZProfileLHC16qt4thBunch(multEstimatorAvg[3]);
    break;
+   case AliAnalysisTaskSELc2V0bachelorTMVA::kpp2016:  //LHC16j,k,l
+   const Char_t* periodNames[3] = {"LHC16j","LHC16k","LHC16l"};
+   TProfile* multEstimatorAvg[3];
+   for (Int_t ip = 0; ip < 3; ip++) {
+      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvg[ip]) { // mult estimator not found
+         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+         return;
+         }
+   }
+      task->SetMultVsZProfileLHC16j(multEstimatorAvg[0]);
+      task->SetMultVsZProfileLHC16k(multEstimatorAvg[1]);
+      task->SetMultVsZProfileLHC16l(multEstimatorAvg[2]);
+     break; 
   default: 
    AliFatal("Multiplicity profiles specified but analysis mode incorrect. Please check collision system and retry.");
    return;
