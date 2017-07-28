@@ -127,6 +127,7 @@ void runFilter(TString gridmode = "test", bool isMC = false) {
   AliAnalysisCODEXtask * filter = AddCODEXtask();
   //Setting custom option for each data period
   filter->mCentralityMode = 1;
+  filter->Discard("");
   // Disable debug printouts
   mgr->SetDebugLevel(3);
   AliLog::SetGlobalLogLevel(AliLog::kFatal);

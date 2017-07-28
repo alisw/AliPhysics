@@ -42,10 +42,14 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     double          mPtCut;                 /// Minimum pt stored in the output trees
     unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
     double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+
+    void Discard(const TString discard) { mToDiscard = discard;};
+
   private:
     // Private methods
     AliAnalysisCODEXtask(const AliAnalysisCODEXtask&);            //! Not implemented
     AliAnalysisCODEXtask& operator=(const AliAnalysisCODEXtask&); //! Not implemented
+    void Discard();                                               /// Method to discard a branch of the filtered tree
 
     TList*   mOutput; //!
     TTree*   mTree;   //!
@@ -58,8 +62,10 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
 
     ///
     TH2I* mTimeChan;                                    /// 2D histogram with the Time/Channel correlation
+    //
+    TString mToDiscard; /// List of the branches to discard
 
-    ClassDef(AliAnalysisCODEXtask,1)
+    ClassDef(AliAnalysisCODEXtask,2)
 };
 
 #endif
