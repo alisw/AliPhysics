@@ -88,7 +88,7 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
 
   // resolution calculation
   task->SetCalcResolution(CalcResolution);
-  if(CalcResolution || CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(0));
+  if(CalcResolution || CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings("kPbPb2015_Pt100_ResolutionCuts"));
   if(CalcResolution) {
     task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
     task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
@@ -143,13 +143,16 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
 
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     TString cutDefinition(arrNames->At(i)->GetName());
-    std::cout << "CUT NAME: " << cutDefinition << std::endl;
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(cutDefinition, bESDANA); // main function in config file
+    std::cout << "##############################" << std::endl;
+    std::cout << "NEW CUT SETTING WITH CUT NAME: " << cutDefinition << std::endl;
+    Bool_t IsTOFreqCut = false;
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(cutDefinition, bESDANA, IsTOFreqCut); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     if (isPrefilterCutset) {
       Int_t success = SetupPrefilterPairCuts(i);
       if (!success) { std::cout << "WARNING: no/bad Prefilter PairCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     }
+    std::cout << "Is TOFreq setting: " << (IsTOFreqCut ? "true" : "false") << std::endl;
     // fill std vectors with all information which is individual per track setting:
     task->AttachTrackCuts(trackCuts);
     task->AttachDoPrefilterEff(isPrefilterCutset);
@@ -157,8 +160,10 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
     task->AttachRejCutMee(rejCutMee);
     task->AttachRejCutTheta(rejCutTheta);
     task->AttachRejCutPhiV(rejCutPhiV);
+    task->AttachIsTOFrequireCut(IsTOFreqCut);
 
     task->CreateHistograms(names,i);
+    std::cout << "Cutsetting added\n##############################" << std::endl;
   }
 
   mgr->AddTask(task);
