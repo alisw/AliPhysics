@@ -158,6 +158,8 @@ fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
 fEtaPhiClusVsM02(0),
+fEtaPhiClusVsEtIsoClus(0),
+fEtaPhiClusVsPtIsoTrack(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -339,6 +341,8 @@ fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
 fEtaPhiClusVsM02(0),
+fEtaPhiClusVsEtIsoClus(0),
+fEtaPhiClusVsPtIsoTrack(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -636,6 +640,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
+	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+        fEtaPhiClusVsEtIsoClus->Sumw2();
+	fOutput->Add(fEtaPhiClusVsEtIsoClus);
+
+	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+        fEtaPhiClusVsPtIsoTrack->Sumw2();
+	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+
         fEtIsoClust = new TH2D("hEtIsoClus_NC","#Sigma #it{p}_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Clusters",200,0.,100.,200,0.,100.);
         fEtIsoClust->SetYTitle("#Sigma #it{p}_{T}^{iso cone} (GeV/c)");
         fEtIsoClust->SetXTitle("#it{p}_{T}^{clust}");
@@ -2115,6 +2127,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   } // End of tracks loop
   
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
+  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+    fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
+    fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
+  }
   
   if(fIsoMethod==1 && fQA && !fLightOutput){
     fEtVSM02VSPisotrack->Fill(c.Pt(),candidate->GetM02(),sumpTConeCharged);
@@ -2304,7 +2320,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     // Printf("\ntotal activity in isolation Cone from Tracks %.4lf",sumpTConeCharged);
   
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
-  
+  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+    fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
+    fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
+  }  
+
   if(fIsoMethod==1 && fQA && !fLightOutput){
     fEtVSM02VSPisotrack->Fill(c.Pt(),candidate->GetM02(),sumpTConeCharged);
     fEtVSM02VSEisoclust->Fill(c.Pt(),candidate->GetM02(),sumEnergyConeClus);
