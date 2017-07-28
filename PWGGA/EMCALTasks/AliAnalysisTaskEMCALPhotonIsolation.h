@@ -322,7 +322,9 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F        *fEtaTracksVSclustPt;            //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
-  TH3F        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (energy integrated from 0 to 100 GeV)
+  TH3F        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
+  TH3F        *fEtaPhiClusVsEtIsoClus;         //!<! Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F        *fEtaPhiClusVsPtIsoTrack;         //!<! Cluster eta vs. phi vs. charged contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
   TH3F        *fClusEtVsEtaPhiMatched;         //!<! Track-matched cluster eta vs. phi vs. E_T
   TH3F        *fClusEtVsEtaPhiUnmatched;       //!<! Not track-matched cluster eta vs. phi vs. E_T
   
