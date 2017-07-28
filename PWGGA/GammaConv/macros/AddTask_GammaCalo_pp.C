@@ -1176,6 +1176,26 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00083013","1111112067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM EMC
     cuts.AddCut("00083013","1111121067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt PCMEMC
     cuts.AddCut("00083013","1111122067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 411){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","1111113017032220000","0163103100000060"); // 1000ns timing cut, NL kSDM PCMEMC + testbeam
+    cuts.AddCut("00010113","1111114017032220000","0163103100000060"); // 1000ns timing cut, NL kSDM EMC + testbeam
+    cuts.AddCut("00010113","1111123017032220000","0163103100000060"); // 1000ns timing cut, NL DExt PCMEMC + testbeam
+    cuts.AddCut("00010113","1111124017032220000","0163103100000060"); // 1000ns timing cut, NL DExt EMC + testbeam
+  } else if (trainConfig == 412){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","1111113067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM PCMEMC + testbeam
+    cuts.AddCut("00010113","1111114067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM EMC + testbeam
+    cuts.AddCut("00010113","1111123067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt PCMEMC + testbeam
+    cuts.AddCut("00010113","1111124067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt EMC + testbeam
+  } else if (trainConfig == 413){ // EMCAL clusters - NonLin EMC7
+    cuts.AddCut("00052013","1111113017032220000","0163103100000060"); // 1000ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00052013","1111114017032220000","0163103100000060"); // 1000ns timing cut, NL kSDM EMC
+    cuts.AddCut("00052013","1111123017032220000","0163103100000060"); // 1000ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00052013","1111124017032220000","0163103100000060"); // 1000ns timing cut, NL DExt EMC
+  } else if (trainConfig == 414){ // EMCAL clusters - NonLin EMC7
+    cuts.AddCut("00052013","1111113067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00052013","1111114067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM EMC
+    cuts.AddCut("00052013","1111123067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00052013","1111124067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt EMC
 
   // 2.76TeV additional configurations for y range change
   } else if (trainConfig == 501){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
