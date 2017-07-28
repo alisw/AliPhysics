@@ -53,10 +53,14 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   
 
    //=========  Set Cutnumber for V0Reader ================================
-  //TString cutnumberPhoton = "00200008400000002200000000"; 
-  TString cutnumberPhoton = "00000000000000000000000000"; 
-  TString cutnumberEvent = "00000003"; 
- 
+  //TString cutnumberPhoton = "00200008400000002200000000";
+  TString cutnumberPhoton = "00000000000000000000000000";
+	if (trainConfig != 4){
+    TString cutnumberEvent = "00000003";
+  }else if(trainConfig == 4){
+		TString cutnumberEvent = "00000003";
+	}
+
 //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -151,7 +155,15 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   	TString Pi0Cut = "0163103700000060"; // calo/calo
   	TString mixedPi0Cut = "0163103700000060"; // conv/calo
   	TString defaultK0Cut = "0163103000000000";
-  }
+  }else if (trainConfig == 4){ // p-Pb
+		TString defaultEventCut = "80000113";
+  	TString defaultConvPhotonCut = "00200009327000008250400000";
+  	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+	}
   
   //create AliCaloTrackMatcher instance, if there is none present
   TString caloCutPos = defaultCaloPhotonCut;
