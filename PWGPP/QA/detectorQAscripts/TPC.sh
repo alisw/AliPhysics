@@ -40,7 +40,23 @@ periodLevelQA()
   aliroot -b -q -l "drawPerformanceTPCQAMatchTrends.C(\"trending.root\",\"PbPb\")"
   # aliroot -b -q -l "makePeriodTrendingTree.C(\"trending.root\",\"PbPb\")"
   makeHTMLindexPerPeriod
+
+  if [[ ${dataType} =~ "sim" ]]; then  
+#    cd ../../MCRD/
+    echo "running tpcMCValidation.C in " $PWD
+    #source /home/sebaleh/Documents/service/alice-tpc-notes/JIRA/ATO-83/code/listMCRD.sh
+    #anchorinfo=${anchorinfo[$period]}
+    #anchorper=${anchorinfo%%:*}
+    #anchorpass=${anchorinfo##*:}
+    echo "MC period: $period;" 
+    echo "make direcotry: mcrd_com;"
+    mkdir -p mcrd_com
+
+        aliroot -q  "$ALICE_PHYSICS/PWGPP/TPC/macros/tpcMCValidation.C+(\"$period\")"
+    cd - 
+  fi 
 }
+
 
 makeHTMLindexPerRun()
 {
@@ -82,7 +98,11 @@ fileName="trending.root"
 copyFileFromRemote http://tablefilter.free.fr/TableFilter/tablefilter.js .
 copyFileFromRemote http://methvin.com/splitter/splitter.js .
 
-aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\)
+if [[ ${dataType} =~ "sim" ]]; then 
+    aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\,\"anchorper\",\"anchorpass\"\)
+    else
+    aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\)
+fi
 
 #
 # fill html web page
