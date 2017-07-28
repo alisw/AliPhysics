@@ -860,7 +860,7 @@ void AliPIPEv3::CreateGeometry()
   voRB24CuTubeM->AddNode(voRB24CuTube, 1, gGeoIdentity);
   // Air outside tube with higher transport cuts
   TGeoVolume* voRB24CuTubeA  = new TGeoVolume("voRB24CuTubeA", 
-      new TGeoTube(25., 100., kRB24CuTubeL/2.), kMedAirHigh);
+					      new TGeoTube(25., 100., (kRB24CuTubeL - 144.)/2.), kMedAirHigh);
   voRB24CuTubeA->SetVisibility(0);
   // Simplified DN 100 Flange
   TGeoVolume* voRB24CuTubeF  = new TGeoVolume("voRB24CuTubeF",
@@ -1636,7 +1636,7 @@ void AliPIPEv3::CreateGeometry()
   TGeoVolumeAssembly* voRB24 = new TGeoVolumeAssembly("RB24");
   // Cu Tube with two simplified flanges
   voRB24->AddNode(voRB24CuTubeM, 1, gGeoIdentity);
-  if (!fBeamBackground) voRB24->AddNode(voRB24CuTubeA, 1, gGeoIdentity);
+  if (!fBeamBackground) voRB24->AddNode(voRB24CuTubeA, 1, new TGeoTranslation(0., 0.,   72));
   z = - kRB24CuTubeL/2 + kRB24CuTubeFL/2.;
   voRB24->AddNode(voRB24CuTubeF, 1, new TGeoTranslation(0., 0., z));
   z = + kRB24CuTubeL/2 - kRB24CuTubeFL/2.;
