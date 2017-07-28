@@ -38,6 +38,7 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
   ,mPtCut(0.1)
   ,mPOI(255)
   ,mNsigmaTPCselectionPOI(5.)
+  ,mToDiscard()
 {
   Cuts.SetMinNClustersTPC(60);
   Cuts.SetMaxChi2PerClusterTPC(6);
@@ -80,6 +81,7 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   mTree = new TTree("AliCODEX","Alice COmpressed Dataset for EXotica");
   mTree->Branch("Header",&mHeader);
   mTree->Branch("Tracks",&mTracks);
+  Discard();
   //
   mTree->SetAutoSave(100000000);
   PostData(1,mTree);
@@ -253,7 +255,10 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
     /// Binned information
     float cov[3],dca[2];
+    double ITSsamp[4];
     track->GetImpactParameters(dca,cov);
+    track->GetITSdEdxSamples(ITSsamp);
+    for(int iL = 0; iL < 4; iL++) t.ITSSignal[iL] = ITSsamp[iL];
     t.SetDCAxy(dca[0]);
     t.SetDCAz(dca[1]);
     t.SetTPCChi2NDF(track->GetTPCchi2() / track->GetTPCNcls());
@@ -344,4 +349,11 @@ long AliAnalysisCODEXtask::GetParticleMask(TParticle *part) {
     case 1000020040: return kHe4;
   }
   return 0;
+}
+
+void AliAnalysisCODEXtask::Discard(){
+  if(mToDiscard.IsNull() || mToDiscard.IsWhitespace()) return;
+  TObjArray *arr = mToDiscard.Tokenize(" ");
+  for(Int_t i = 0; i < arr->GetEntries(); i++) mTree->SetBranchStatus(static_cast<TObjString*>(arr->At(i))->GetName(), 0);
+  mToDiscard = "";
 }
