@@ -503,6 +503,14 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // standard cut 8tev
     cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // trigger kEMC7 
     cuts.AddCut("00081113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // trigger kEGA7
+  } else if (trainConfig == 74) { //pp 8TeV std cuts with EMC triggers
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // new standard cut 8tev
+    cuts.AddCut("00052113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // trigger kEMC7
+    cuts.AddCut("00081113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // trigger kEGA7
+  } else if (trainConfig == 75) { //pp 8TeV cuts with smearing
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500800000"); //smearing 8
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500900000"); //smearing 9
 
 
     //---------systematic studies mesons and direct photon 2016 pp 7TeV------------------//
