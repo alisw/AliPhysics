@@ -757,15 +757,27 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 300) {  
     cuts.AddCut("00010113", "00200009297302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200009297302001280004000", "0152101500000000"); // alpha pT dependent
+  } else if (trainConfig == 310) {  
+    cuts.AddCut("00010113", "00200009327302002280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200009327302002280004000", "0152101500000000"); // alpha pT dependent
+ 
  // High Mult V0
   } else if (trainConfig == 301) {  
     cuts.AddCut("00074113", "00200009297302001280004000", "0152103500000000"); // for V0 High-Mult trigger
     cuts.AddCut("00074013", "00200009297302001280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+  } else if (trainConfig == 311) {  
+    cuts.AddCut("00074113", "00200009327302002280004000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00074013", "00200009327302002280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+
  // Low B Field
   } else if (trainConfig == 302) {  
     cuts.AddCut("00010113", "00200089297302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089397302001280004000", "0152103500000000"); // Open dEdx
-  } else if (trainConfig == 303) { // EMC triggers
+  } else if (trainConfig == 312) {  
+    cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
+ 
+ } else if (trainConfig == 303) { // EMC triggers
     cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //INT7
     cuts.AddCut("00052113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EMC7
     cuts.AddCut("00085113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EG2
