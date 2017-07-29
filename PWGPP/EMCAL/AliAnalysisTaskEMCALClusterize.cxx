@@ -102,7 +102,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
+  fTCardCorrInduceEnerFrac     [0] = fTCardCorrInduceEnerFrac     [1] = fTCardCorrInduceEnerFrac     [2] = 0 ;   
+  fTCardCorrInduceEnerFracP1   [0] = fTCardCorrInduceEnerFracP1   [1] = fTCardCorrInduceEnerFracP1   [2] = 0 ;   
   fTCardCorrInduceEnerFracWidth[0] = fTCardCorrInduceEnerFracWidth[1] = fTCardCorrInduceEnerFracWidth[2] = 0 ;   
 }
 
@@ -152,7 +153,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-  fTCardCorrInduceEnerFrac[0] = fTCardCorrInduceEnerFrac[1] = fTCardCorrInduceEnerFrac[2] = 0 ;   
+  fTCardCorrInduceEnerFrac     [0] = fTCardCorrInduceEnerFrac     [1] = fTCardCorrInduceEnerFrac     [2] = 0 ;   
+  fTCardCorrInduceEnerFracP1   [0] = fTCardCorrInduceEnerFracP1   [1] = fTCardCorrInduceEnerFracP1   [2] = 0 ;   
   fTCardCorrInduceEnerFracWidth[0] = fTCardCorrInduceEnerFracWidth[1] = fTCardCorrInduceEnerFracWidth[2] = 0 ;   
 }
 
@@ -1672,9 +1674,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracWidth[0]);
-    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracWidth[1]);
-    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracWidth[2]);
+    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0]+ecell*fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0]);
+    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1]+ecell*fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1]);
+    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2]+ecell*fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2]);
     
 //    // CAREFUL: <<Apply the same added shift to all>>.
 //    Float_t fracCupdown = fracRupdown;
