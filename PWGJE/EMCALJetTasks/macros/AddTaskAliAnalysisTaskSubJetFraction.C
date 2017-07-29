@@ -294,8 +294,13 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   contName1 += SubJetMinPtString;
   contName2 += SubJetMinPtString;
  
-
-
+  TString SubJetAlgorithmString = "";
+  if (SubJetAlgorithm==0) SubJetAlgorithmString="_ReclusteringAlgorithm_kT";
+  else if (SubJetAlgorithm==1) SubJetAlgorithmString="_ReclusteringAlgorithm_CA";
+  else if (SubJetAlgorithm==2) SubJetAlgorithmString="_ReclusteringAlgorithm_AkT";
+  else if (SubJetAlgorithm==10) SubJetAlgorithmString="_ReclusteringAlgorithm_Min";
+  contName1 += SubJetAlgorithmString;
+  contName2 += SubJetAlgorithmString;
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
