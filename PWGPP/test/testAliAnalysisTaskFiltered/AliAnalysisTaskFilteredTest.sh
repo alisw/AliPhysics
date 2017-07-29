@@ -3,12 +3,12 @@
 #
 # This script runs the test for the AliAnalysisTaskFiltered class 
 #
-#   Macro to test functionality of the AnaliAnalysisTaskFiltered.
+#   Macro to test functionality of the AliAnalysisTaskFiltered.
 #   To be used within UnitTest suit
-#   $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+#   $AliRoot_SRC/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
 #   To test:
 #   1.) CPU/Memory/Data volume
-#   2.) Relative fracion of the information in exported trees
+#   2.) Relative fraction of the information in exported trees
 #   3.) Compression for points
 #
 #   Author of test:
@@ -16,11 +16,11 @@
 ###############################################################################
 # Test environment has to be configured before
 # To setup: input data path 
-# Setup example config can be found in directory $ALICE_ROOT/../src/test/configuration
+# Setup example config can be found in directory $AliRoot_SRC/test/configuration
 # E.g for GSI setup:
 #
-# export UnitTestConfig=$ALICE_ROOT/../src/test/configuration/configGSI.sh 
-# $ALICE_PHYSICS/../src/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+# export UnitTestConfig=$AliRoot_SRC/test/configuration/configGSI.sh
+# $AliRoot_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
 #
 ###############################################################################
 # Steps:
@@ -69,6 +69,6 @@ source $UnitTestConfig
         exit 1
     fi
 #run FilterTask
-    echo aliroot -l -b -q $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
-    aliroot -l -b -q $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+    echo aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+    aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
 exit
