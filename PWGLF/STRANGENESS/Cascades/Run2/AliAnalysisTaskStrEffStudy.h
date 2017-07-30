@@ -94,6 +94,10 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedCascadeVertexFinding = lOpt;
     }
+    void SetDoImprovedDCAV0DauPropagation( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedDCAV0DauPropagation = lOpt;
+    }
     void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkIfImprovedPerformInitialLinearPropag = lOpt;
@@ -265,7 +269,11 @@ public:
                   Double_t g[3],  //first defivatives
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
+    //Improved DCA V0 Dau
+    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b);
+    void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
+    //---------------------------------------------------------------------------------------
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -298,6 +306,7 @@ private:
     Bool_t fkPreselectPID;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedCascadeVertexFinding;
+    Bool_t fkDoImprovedDCAV0DauPropagation;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
     Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
