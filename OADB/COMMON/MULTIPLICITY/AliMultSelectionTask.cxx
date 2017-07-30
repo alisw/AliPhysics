@@ -1764,6 +1764,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     AliInfoF("Detected run number: %i",fCurrentRun);
 
     TString lPathInput = CurrentFileName();
+    
+    //Autodetecting event type
+    UInt_t lEventType = esd->GetEventType();
+    AliWarning(Form("Event type: %i",lEventType));
+    
+    //For now: very trivial way of storing event type
+    fHistEventCounter->SetTitle(Form("Event type: %i",lEventType));
 
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
