@@ -1656,6 +1656,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 
     //
     // Check if they are not declared bad
+    // REMEMBER, do it properly instead of taking this complex method!!!!
     Bool_t okr1 = kTRUE;
     Bool_t okr2 = kTRUE;
     Bool_t okc  = kTRUE;
@@ -1664,20 +1665,26 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 
     Float_t  ecell  = 0.;
     Double_t tcell  = 0.;
-    
+  
     okr1 = fRecoUtils->AcceptCalibrateCell(absIDr1, 0, ecell, tcell, fCaloCells); 
     okr2 = fRecoUtils->AcceptCalibrateCell(absIDr2, 0, ecell, tcell, fCaloCells); 
     okc  = fRecoUtils->AcceptCalibrateCell(absIDc , 0, ecell, tcell, fCaloCells); 
     okc1 = fRecoUtils->AcceptCalibrateCell(absIDc1, 0, ecell, tcell, fCaloCells); 
     okc2 = fRecoUtils->AcceptCalibrateCell(absIDc2, 0, ecell, tcell, fCaloCells); 
 
+//    if(amp > 2)
+//    printf("ecell %2.2f, amp %2.2f: F1 %2.2e, F2 %2.2e, F3 %2.2e; w1 %2.2e w2 %2.2e w3 %2.2e \n",ecell,amp, 
+//           fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0],
+//           fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1],
+//           fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[2],
+//           fTCardCorrInduceEnerFracWidth[0],fTCardCorrInduceEnerFracWidth[1],fTCardCorrInduceEnerFracWidth[2]);
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0]+ecell*fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0]);
-    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1]+ecell*fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1]);
-    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2]+ecell*fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2]);
-    
+    Float_t fracRupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0]);
+    Float_t fracCupdown = fRandom.Gaus(fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1]);
+    Float_t fracC       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2]);
+        
 //    // CAREFUL: <<Apply the same added shift to all>>.
 //    Float_t fracCupdown = fracRupdown;
 //    Float_t fracC       = fracRupdown;
