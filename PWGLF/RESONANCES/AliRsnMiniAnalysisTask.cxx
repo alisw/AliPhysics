@@ -372,13 +372,16 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    
    fOutput->Add(fHEventStat);
 
-   if (fUseCentrality)
-      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 101, 0, 101.0);
-   else
-      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
+   if (!fHAEventsVsMulti) {
+      if (fUseCentrality)
+         fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 101, 0, 101.0);
+      else
+         fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
+   }
    fOutput->Add(fHAEventsVsMulti);
    
-   fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
+   if (!fHAEventsVsTracklets)
+      fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
    fOutput->Add(fHAEventsVsTracklets);
 
    if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
@@ -1585,7 +1588,7 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
 }
 
 //----------------------------------------------------------------------------------
-void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
+void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
 {
    if(!histo) {
       AliWarning(Form("event QA histogram pointer not defined for slot %s",type.Data()));
@@ -1596,22 +1599,24 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
    TString multitype(histo->GetYaxis()->GetTitle());
    multitype.ToUpper();
    
-   if(!type.CompareTo("vz")) fHAEventVzCent = histo;
+   if(!type.CompareTo("eventsvsmulti")) fHAEventsVsMulti = (TH1F*) histo;
+   else if(!type.CompareTo("eventsvstracklets")) fHAEventsVsTracklets = (TH1F*) histo;
+   else if(!type.CompareTo("vz")) fHAEventVzCent = (TH2F*) histo;
    else if(!type.CompareTo("multicent")) {
       if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
          AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
          histo->GetYaxis()->SetTitle("TRACKS");
       }
-      fHAEventMultiCent = histo;
+      fHAEventMultiCent = (TH2F*) histo;
    }
    else if(!type.CompareTo("refmulti")){
      if ( multitype.CompareTo("GLOBAL") && multitype.CompareTo("TRACKLETS") ) {
        AliWarning(Form("Reference multiplicity vs. centrality histogram y-axis %s unknown, setting to GLOBAL",multitype.Data()));
        histo->GetYaxis()->SetTitle("GLOBAL");
      }
-     fHAEventRefMultiCent = histo;     
+     fHAEventRefMultiCent = (TH2F*) histo;     
    }
-   else if(!type.CompareTo("eventplane")) fHAEventPlane = histo;
+   else if(!type.CompareTo("eventplane")) fHAEventPlane = (TH2F*) histo;
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));
 
    return;

@@ -72,7 +72,7 @@ public:
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
    Short_t             GetMaxNDaughters()                 {return fMaxNDaughters;}
-   void                SetEventQAHist(TString type,TH2F *histo);
+   void                SetEventQAHist(TString type,TH1 *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
 
    virtual void        UserCreateOutputObjects();
