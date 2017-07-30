@@ -417,6 +417,13 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhColRowFromCellMaxHighM02PerSM[i][0] = 0;
     fhColRowFromCellMaxHighM02PerSM[i][1] = 0;
     
+    fhNCellsPerClusterM02PerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterM20PerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterNLMPerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterM02PerSMPerCol[i][1] = 0;
+    fhNCellsPerClusterM20PerSMPerCol[i][1] = 0;
+    fhNCellsPerClusterNLMPerSMPerCol[i][1] = 0;
+    
     for(Int_t j = 0; j < 3; j++)
     {
       fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [i][0][j] = 0;
@@ -1571,6 +1578,13 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
   fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
+  
+  if ( matchedPID == 0 )
+  {
+    fhNCellsPerClusterM02PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m02, GetEventWeight());
+    fhNCellsPerClusterM20PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m20, GetEventWeight());
+    fhNCellsPerClusterNLMPerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, nlm, GetEventWeight());
+  }
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
@@ -3794,7 +3808,6 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     
     for(Int_t i = 0; i < fNModules; i++)
     {
-      
       fhNCellsPerClusterM02M20PerSM [i] = new TH3F
       (Form("hNCellsPerClusterM02M20_SM%d",i),
        Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs #lambda_{1}^{2}, "
@@ -3910,6 +3923,33 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       Float_t   maxdeltacells = 9.5;
       for(Int_t col = 0; col < 2; col++)
       {
+        fhNCellsPerClusterM02PerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterM02_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetZTitle("#lambda_{0}^{2}");
+        outputContainer->Add(fhNCellsPerClusterM02PerSMPerCol[i][col]); 
+        
+        fhNCellsPerClusterM20PerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterM20_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetZTitle("#lambda_{1}^{2}");
+        outputContainer->Add(fhNCellsPerClusterM20PerSMPerCol[i][col]); 
+        
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterNLM_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs n_{lm}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetZTitle("n_{lm}");
+        outputContainer->Add(fhNCellsPerClusterNLMPerSMPerCol[i][col]); 
+        
         fhColRowFromCellMaxLowM02PerSM[i][col]  = new TH3F 
         (Form("hColRowFromCellMaxLowM02_SM%d_Col%d",i,col),
          Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{n}_{cells}^{w>0.01} for 0.1 < #lambda_{0}^{2} < 0.3, "
