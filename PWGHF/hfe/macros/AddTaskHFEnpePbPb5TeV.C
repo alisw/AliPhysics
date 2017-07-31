@@ -6,7 +6,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 				   Bool_t kNPEkAny = kFALSE,
                                    Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used 
 				   Bool_t kNPERefTPConly = kFALSE,
-				   Bool_t kNPETOFITS = kTRUE,
+
+				   //Bool_t kNPETOFITS = kTRUE,
+				   Bool_t kNPETOFITS = kFALSE,
+
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE,
@@ -76,9 +79,11 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
     k11a10bpluswei11a10abis   = 8,  // LHC11a10b_plus weights for LHC11a10abis
     k11a10bbisweiData = 9,  // LHC11a10bbis weights 
 
-    k16g1 = 60         // 60: PbPb LHC16g1 minimum bias MC (mfaggin, 29/06/2017)
+    k16g1 = 60,         // 60: PbPb LHC16g1 minimum bias MC (mfaggin, 29/06/2017)
+    k16g1_2 = 61         // 61: PbPb LHC16g1 minimum bias MC using charged pion data spectra (mfaggin, 26/07/2017)
   };
-  Int_t kWeightMC = k16g1;
+  //Int_t kWeightMC = k16g1;
+  Int_t kWeightMC = k16g1_2;
   
 
   //get the current analysis manager
@@ -577,7 +582,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   else		task->SetHasMCData(kFALSE);
 
   //if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
-  if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);//0;For default PbPb
+  if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);//2;For default PbPb
 
   // ----- centrality selection -----
   task->SetCentralityCheck(newCentralitySelection,"V0M");
