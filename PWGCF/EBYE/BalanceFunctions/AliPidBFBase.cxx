@@ -1,7 +1,5 @@
 #include <Riostream.h>
-#include <TCanvas.h>
 #include <TMath.h>
-#include <TAxis.h>
 #include <TH2D.h>
 #include <TH3D.h>
 #include <TLorentzVector.h>
