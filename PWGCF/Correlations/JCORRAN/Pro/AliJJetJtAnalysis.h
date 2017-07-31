@@ -176,6 +176,7 @@ class AliJJetJtAnalysis{
     TVector *fConstLabels; 
     TVector *fJetPt; ///< Store jet pT values
     TVector *fJetPt2; ///< Comment needed
+    TVector *fDiJetMjj; ///< Store di-jet invariant mass values
     TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks
     TVector *fConstFound; ///< Keep track of which constituents were matched with MC tracks
     TVector *fBin2;
@@ -209,6 +210,7 @@ class AliJJetJtAnalysis{
     AliJBin fiHist2MC;
     AliJTH1D fhNumber;
     AliJTH1D fhKNumber;
+    AliJTH1D fhDiJetM; /// Di-jet invariant mass
     AliJTH1D fhJetPt; /// Jet pT distribution
     AliJTH1D fhJetPtBin; /// Jet pT distribution in jet pT bins
     AliJTH1D fhJetPtMultiplicityCutBin; /// Jet pT distribution in jet multiplicity bins
@@ -353,6 +355,9 @@ class AliJJetJtAnalysis{
     AliJTH1D fhTrackMatchSuccess;
     AliJTH2D fhConstJtCorrBin;	
     AliJTH1D fhConstMatchSuccess;
+
+    //Di-jet correlation histogram
+    AliJTH2D fhDiJetMjjCorr;
 
     //PYthia correlation histograms
     AliJTH2D fhTrackJtCorrBinPythia; /// Track jT correlation in jet pT bins between Pythia jets and measured jets

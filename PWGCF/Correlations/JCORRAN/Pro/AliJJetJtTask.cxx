@@ -14,8 +14,8 @@
  **************************************************************************/
 
 //______________________________________________________________________________
-// Analysis task for di-jet Analysis
-// author: B.K Kim,  D.J. Kim
+// Analysis task for jT Analysis
+// author: B.K Kim,  D.J. Kim, T. Snellman
 // ALICE Group University of Jyvaskyla 
 // Finland 
 // Fill the analysis containers for ESD or AOD
