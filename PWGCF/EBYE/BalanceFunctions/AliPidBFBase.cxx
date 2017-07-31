@@ -68,7 +68,9 @@ AliPidBFBase::AliPidBFBase() :
   fVertexBinning(kFALSE),
   fCustomBinning(""),
   fBinningString(""),
-  fEventClass("EventPlane"){
+  fEventClass("EventPlane"),
+  kTrackVariablesSingle(2),
+  kTrackVariablesPair(5){
   // Default constructor
 }
 
@@ -110,7 +112,9 @@ AliPidBFBase::AliPidBFBase(const AliPidBFBase& balance):
   fVertexBinning(balance.fVertexBinning),
   fCustomBinning(balance.fCustomBinning),
   fBinningString(balance.fBinningString),
-  fEventClass("EventPlane"){
+  fEventClass("EventPlane"),
+  kTrackVariablesSingle(balance.kTrackVariablesSingle),
+  kTrackVariablesPair(balance.kTrackVariablesPair){
   //copy constructor
 }
 
@@ -150,14 +154,14 @@ void AliPidBFBase::InitHistograms() {
   TH1::AddDirectory(kFALSE);
 
   Int_t anaSteps   = 1;       // analysis steps
-  Int_t iBinSingle[kTrackVariablesSingle1];        // binning for track variables
-  Double_t* dBinsSingle[kTrackVariablesSingle1];   // bins for track variables  
-  TString axisTitleSingle[kTrackVariablesSingle1]; // axis titles for track variables
+  Int_t iBinSingle[kTrackVariablesSingle];        // binning for track variables
+  Double_t* dBinsSingle[kTrackVariablesSingle];   // bins for track variables  
+  TString axisTitleSingle[kTrackVariablesSingle]; // axis titles for track variables
   
   // two particle histograms
-  Int_t iBinPair[kTrackVariablesPair1];         // binning for track variables
-  Double_t* dBinsPair[kTrackVariablesPair1];    // bins for track variables  
-  TString axisTitlePair[kTrackVariablesPair1];  // axis titles for track variables
+  Int_t iBinPair[kTrackVariablesPair];         // binning for track variables
+  Double_t* dBinsPair[kTrackVariablesPair];    // bins for track variables  
+  TString axisTitlePair[kTrackVariablesPair];  // axis titles for track variables
 
 
 
@@ -293,8 +297,8 @@ void AliPidBFBase::InitHistograms() {
   //+ triggered particles
   histName = "fHistP"; 
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistP = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle1,iBinSingle);
-  for (Int_t j=0; j<kTrackVariablesSingle1; j++) {
+  fHistP = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle,iBinSingle);
+  for (Int_t j=0; j<kTrackVariablesSingle; j++) {
     fHistP->SetBinLimits(j, dBinsSingle[j]);
     fHistP->SetVarTitle(j, axisTitleSingle[j]);
   }
@@ -302,8 +306,8 @@ void AliPidBFBase::InitHistograms() {
   //- triggered particles
   histName = "fHistN"; 
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistN = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle1,iBinSingle);
-  for (Int_t j=0; j<kTrackVariablesSingle1; j++) {
+  fHistN = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle,iBinSingle);
+  for (Int_t j=0; j<kTrackVariablesSingle; j++) {
     fHistN->SetBinLimits(j, dBinsSingle[j]);
     fHistN->SetVarTitle(j, axisTitleSingle[j]);
   }
@@ -311,8 +315,8 @@ void AliPidBFBase::InitHistograms() {
   //+- pairs
   histName = "fHistPN";
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistPN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair1, iBinPair);
-  for (Int_t j=0; j<kTrackVariablesPair1; j++) {
+  fHistPN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistPN->SetBinLimits(j, dBinsPair[j]);
     fHistPN->SetVarTitle(j, axisTitlePair[j]);
   }
@@ -320,8 +324,8 @@ void AliPidBFBase::InitHistograms() {
   //-+ pairs
   histName = "fHistNP";
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistNP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair1, iBinPair);
-  for (Int_t j=0; j<kTrackVariablesPair1; j++) {
+  fHistNP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistNP->SetBinLimits(j, dBinsPair[j]);
     fHistNP->SetVarTitle(j, axisTitlePair[j]);
   }
@@ -329,8 +333,8 @@ void AliPidBFBase::InitHistograms() {
   //++ pairs
   histName = "fHistPP";
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistPP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair1, iBinPair);
-  for (Int_t j=0; j<kTrackVariablesPair1; j++) {
+  fHistPP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistPP->SetBinLimits(j, dBinsPair[j]);
     fHistPP->SetVarTitle(j, axisTitlePair[j]);
   }
@@ -338,8 +342,8 @@ void AliPidBFBase::InitHistograms() {
   //-- pairs
   histName = "fHistNN";
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistNN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair1, iBinPair);
-  for (Int_t j=0; j<kTrackVariablesPair1; j++) {
+  fHistNN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistNN->SetBinLimits(j, dBinsPair[j]);
     fHistNN->SetVarTitle(j, axisTitlePair[j]);
   }
@@ -374,6 +378,8 @@ void AliPidBFBase::CalculateBalance(Double_t gReactionPlane,
 				     Double_t vertexZ) {
   // Calculates the balance function
   fAnalyzedEvents++;
+
+cout<<" Single: "<<kTrackVariablesSingle<<'\t'<<" Pair :"<<kTrackVariablesPair<<endl;
     
   // Initialize histograms if not done yet
   if(!fHistPN){
@@ -382,8 +388,8 @@ void AliPidBFBase::CalculateBalance(Double_t gReactionPlane,
     InitHistograms();
   }
 
-  Double_t trackVariablesSingle[kTrackVariablesSingle1];
-  Double_t trackVariablesPair[kTrackVariablesPair1];
+  Double_t trackVariablesSingle[kTrackVariablesSingle];
+  Double_t trackVariablesPair[kTrackVariablesPair];
 
   if (!particles){
     AliWarning("particles TObjArray is NULL pointer --> return");
@@ -396,7 +402,6 @@ void AliPidBFBase::CalculateBalance(Double_t gReactionPlane,
   if (particlesMixed)
     jMax = particlesMixed->GetEntriesFast();
 
-cout<<" particles number: "<<iMax<<endl;
 
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
   TObjArray* particlesSecond = (particlesMixed) ? particlesMixed : particles;
