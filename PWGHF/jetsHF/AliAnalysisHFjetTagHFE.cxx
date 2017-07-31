@@ -75,6 +75,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  fmimSig(-1.0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -120,6 +121,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fHistClustE(0),
+  fHistClustEtime(0),
+  fEMCClsEtaPhi(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0),
@@ -164,6 +168,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  fmimSig(-1.0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -209,6 +214,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fHistClustE(0),
+  fHistClustEtime(0),
+  fEMCClsEtaPhi(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0),
@@ -472,6 +480,14 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fQAHistTrPhi = new TH1F("fQAHistTrPhi","track phi",650,0.0,6.5);
   fOutput->Add(fQAHistTrPhi);
  
+  fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
+  fOutput->Add(fHistClustE);
+
+  fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 500, 0.0, 50.0);
+  fOutput->Add(fHistClustEtime);
+
+  fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
+  fOutput->Add(fEMCClsEtaPhi);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -699,7 +715,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
    //cout << "check PID ..." << endl;
 
   // track
-  ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+  //ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+  ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
   int ntracks = 0;
   if(ftrack)
     {
@@ -713,7 +730,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
    //cout << "check track ..." << endl;
 
   // EMCal
-  TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters")); 
+  //TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters")); 
+  TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
   //cout << "check cluster ..." << endl;
 
    // MC array
@@ -736,13 +754,59 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
  // analysis
 
-  if(TMath::Abs(Zvertex)<10.0 && TMath::Abs(del_Z)<0.1 && (centrality>fcentMim && centrality<fcentMax)) // event cuts
+  Bool_t fcentID = kFALSE;
+  if(fcentMim<-10)
+    {
+     fcentID = kTRUE; // pp 
+    } 
+  else
+    {
+     if(centrality>fcentMim && centrality<fcentMax)fcentID = kTRUE;
+    }
+
+  //if(TMath::Abs(Zvertex)<10.0 && TMath::Abs(del_Z)<0.1 && (centrality>fcentMim && centrality<fcentMax)) // event cuts
+  if(TMath::Abs(Zvertex)<10.0 && fcentID) // event cuts
     {
      //cout << "cent cut = " << centrality << endl; 
      fHistCent->Fill(centrality);    
 
-     // inclusive jet
+  /////////////////////////////
+  //EMCAL cluster information//
+  /////////////////////////////
+  Int_t Nclust = -999;
+  Nclust = fCaloClusters->GetEntries();
 
+  for(Int_t icl=0; icl<Nclust; icl++)
+  {
+    AliVCluster *clust = 0x0;
+    clust = dynamic_cast<AliVCluster*>(fCaloClusters->At(icl));
+    if(!clust)  printf("ERROR: Could not receive cluster matched calibrated from track %d\n", icl);
+
+    if(clust && clust->IsEMCAL())
+    {
+      Float_t  emcx[3]; // cluster pos
+      clust->GetPosition(emcx);
+      TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+      Double_t emcphi = clustpos.Phi();
+      Double_t emceta = clustpos.Eta();
+      if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
+
+      //if(emcphi > 1.39 && emcphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+      if(emcphi > 4.53 && emcphi < 5.708) continue; //DCAL  : 260 < phi < 327
+
+      Float_t tof = clust->GetTOF()*1e+9; // ns
+
+      fEMCClsEtaPhi->Fill(emceta,emcphi);
+
+      Double_t clustE = clust->E();
+      fHistClustE->Fill(clustE);
+      if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
+    }
+  }
+
+     
+
+     // inclusive jet
      double rho = 0.0;
      int Ncon = 0;
      if (fJetsCont) 
@@ -890,7 +954,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
-        if(fTPCnSigma<-1 || fTPCnSigma>3)continue;
+         if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
+        //if(fTPCnSigma<-1 || fTPCnSigma>3)continue;
+        if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
 
                epTarray[0] = px;
