@@ -24,8 +24,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t kTrackVariablesSingle = 3;       // track variables in histogram (event class, pTtrig, vertexZ)
-const Int_t kTrackVariablesPair   = 6;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated, vertexZ)
+const Int_t kTrackVariablesSingle1 = 3;       // track variables in histogram (event class, pTtrig, vertexZ)
+const Int_t kTrackVariablesPair1   = 6;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated, vertexZ)
 
 class AliPidBFBase : public TObject {
  public:
