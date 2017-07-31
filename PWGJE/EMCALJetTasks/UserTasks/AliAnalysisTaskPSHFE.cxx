@@ -623,10 +623,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Initialize event pool stuff
     Double_t vertexBins[5] = { -10, -4,  0, 4, 10 };
     Int_t nZvtxBins  = 4;
-    Double_t multBins[4] = {0, 100, 300, 500};
+    Double_t multBins[12] = {0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 200};
     Int_t nMultBins = 3;
 
-    fPoolMan = new AliEventPoolManager(50, 50, nMultBins, multBins, nZvtxBins, vertexBins);
+    fPoolMan = new AliEventPoolManager(1000, 10000, nMultBins, multBins, nZvtxBins, vertexBins);
     fPoolMan->Validate();
 
     //Some strings for histograms
