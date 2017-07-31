@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
 
-void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE, 
+void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
 						TString periodName = "",
 						TString periodNameV0Reader = "",
 						TString selectConfig = "0") {
@@ -40,25 +40,25 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
-  
+
+
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
   //            find input container
   AliAnalysisTaskK0toPi0Pi0 *task=NULL;
   task = new AliAnalysisTaskK0toPi0Pi0("TaskK0toPi0Pi0" + selectConfig);
-  
+
 
    //=========  Set Cutnumber for V0Reader ================================
   //TString cutnumberPhoton = "00200008400000002200000000";
   TString cutnumberPhoton = "00000000000000000000000000";
-	if (trainConfig != 4){
+  if (trainConfig != 4){
     TString cutnumberEvent = "00000003";
   }else if(trainConfig == 4){
-		TString cutnumberEvent = "00000003";
+	  TString cutnumberEvent = "00000003";
 	}
 
 //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -101,8 +101,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
-   
+
     fV0ReaderV1->Init();
 
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
@@ -111,18 +110,17 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
     mgr->ConnectInput(fV0ReaderV1,0,cinput);
 
   }
-  
-  task->SetNameV0Reader(V0ReaderName); 
-  
+
+  task->SetNameV0Reader(V0ReaderName);
+
   TString defaultConvPhotonCut = "00200009327000008250400000";
   TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
   TString defaultPi0Cut = "0163103100000010"; // conv/conv
   TString Pi0Cut = "0163103100000060"; // calo/calo
   TString mixedPi0Cut = "0163103100000060"; // conv/calo
   TString defaultK0Cut = "0163103100000000";
-  
-  
-  
+
+
   if (trainConfig == 0){// ================================================= trainConfig = 0 -> 8 TeV MB
   	TString defaultEventCut = "00010113";
   	TString defaultConvPhotonCut = "00200009327000008250400000";
@@ -131,7 +129,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   	TString Pi0Cut = "0163103700000060"; // calo/calo
   	TString mixedPi0Cut = "0163103700000060"; // conv/calo
   	TString defaultK0Cut = "0163103000000000";
-  } else if (trainConfig == 1){ // ========================================= traingConfig = 1 -> 8 TeV EMC7 
+  } else if (trainConfig == 1){ // ========================================= traingConfig = 1 -> 8 TeV EMC7
   	TString defaultEventCut = "00052113";
   	TString defaultConvPhotonCut = "00200009327000008250400000";
   	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
@@ -139,7 +137,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   	TString Pi0Cut = "0163103700000060"; // calo/calo
   	TString mixedPi0Cut = "0163103700000060"; // conv/calo
   	TString defaultK0Cut = "0163103000000000";
-  } else if (trainConfig == 2){ // ========================================= traingConfig = 2 -> 8 TeV EGA 
+  } else if (trainConfig == 2){ // ========================================= traingConfig = 2 -> 8 TeV EGA
   	TString defaultEventCut = "00081113";
   	TString defaultConvPhotonCut = "00200009327000008250400000";
   	TString defaultCaloPhotonCut = "1111113067002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
@@ -163,8 +161,16 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   	TString Pi0Cut = "0163103700000060"; // calo/calo
   	TString mixedPi0Cut = "0163103700000060"; // conv/calo
   	TString defaultK0Cut = "0163103000000000";
+	}else if (trainConfig == 5){ // Standard cuts for 13 TeV
+		TString defaultEventCut = "00010113";
+  	TString defaultConvPhotonCut = "00200009227302008254404000";
+  	TString defaultCaloPhotonCut = "1111113017002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
 	}
-  
+
   //create AliCaloTrackMatcher instance, if there is none present
   TString caloCutPos = defaultCaloPhotonCut;
   caloCutPos.Resize(1);
@@ -175,56 +181,56 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
     mgr->AddTask(fTrackMatcher);
     mgr->ConnectInput(fTrackMatcher,0,cinput);
   }
-  
+
   // ============= Set the different cut types to their default values ==============
-  AliConvEventCuts *analysisEventCuts = new AliConvEventCuts(); 
+  AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
   analysisEventCuts->SetPeriodEnum(periodName);
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
   analysisEventCuts->InitializeCutsFromCutString(defaultEventCut.Data());
-  analysisEventCuts->SetFillCutHistograms("", kTRUE); 
-  task->SetEventCuts(analysisEventCuts); 
+  analysisEventCuts->SetFillCutHistograms("", kTRUE);
+  task->SetEventCuts(analysisEventCuts);
 
-  AliConversionPhotonCuts *analysisConvoCuts = new AliConversionPhotonCuts();  
+  AliConversionPhotonCuts *analysisConvoCuts = new AliConversionPhotonCuts();
   analysisConvoCuts->SetV0ReaderName(V0ReaderName);
   analysisConvoCuts->InitializeCutsFromCutString(defaultConvPhotonCut.Data());
   analysisConvoCuts->SetFillCutHistograms("",kTRUE);
-  task->SetConversionPhotonCuts(analysisConvoCuts); 
-  
-  AliCaloPhotonCuts *analysisCaloCuts = new AliCaloPhotonCuts(); 
+  task->SetConversionPhotonCuts(analysisConvoCuts);
+
+  AliCaloPhotonCuts *analysisCaloCuts = new AliCaloPhotonCuts();
   analysisCaloCuts->SetV0ReaderName(V0ReaderName);
   analysisCaloCuts->InitializeCutsFromCutString(defaultCaloPhotonCut.Data());
   analysisCaloCuts->SetFillCutHistograms("");
-  task->SetCaloPhotonCuts(analysisCaloCuts); 
-  
-  
+  task->SetCaloPhotonCuts(analysisCaloCuts);
+
+
   AliConversionMesonCuts *analysisPi0CutsConvConv = new AliConversionMesonCuts();
-  analysisPi0CutsConvConv->InitializeCutsFromCutString(defaultPi0Cut.Data()); 
-  analysisPi0CutsConvConv->SetFillCutHistograms(""); 
-  task->SetPi0CutsConvConv(analysisPi0CutsConvConv); 
-  
-  
+  analysisPi0CutsConvConv->InitializeCutsFromCutString(defaultPi0Cut.Data());
+  analysisPi0CutsConvConv->SetFillCutHistograms("");
+  task->SetPi0CutsConvConv(analysisPi0CutsConvConv);
+
+
   AliConversionMesonCuts *analysisPi0CutsCaloCalo = new AliConversionMesonCuts();
-  analysisPi0CutsCaloCalo->InitializeCutsFromCutString(Pi0Cut.Data()); 
-  analysisPi0CutsCaloCalo->SetFillCutHistograms(""); 
+  analysisPi0CutsCaloCalo->InitializeCutsFromCutString(Pi0Cut.Data());
+  analysisPi0CutsCaloCalo->SetFillCutHistograms("");
   task->SetPi0CutsCaloCalo(analysisPi0CutsCaloCalo);
-  
+
   AliConversionMesonCuts *analysisPi0CutsConvCalo = new AliConversionMesonCuts();
-  analysisPi0CutsConvCalo->InitializeCutsFromCutString(mixedPi0Cut.Data()); 
-  analysisPi0CutsConvCalo->SetFillCutHistograms(""); 
-  task->SetPi0CutsConvCalo(analysisPi0CutsConvCalo);  
-  
-  
-  AliConversionMesonCuts *analysisK0Cuts = new AliConversionMesonCuts(); 
-  analysisK0Cuts->InitializeCutsFromCutString(defaultK0Cut.Data()); 
-  analysisK0Cuts->SetFillCutHistograms(""); 
-  task->SetK0Cuts(analysisK0Cuts); 
-  
-  
+  analysisPi0CutsConvCalo->InitializeCutsFromCutString(mixedPi0Cut.Data());
+  analysisPi0CutsConvCalo->SetFillCutHistograms("");
+  task->SetPi0CutsConvCalo(analysisPi0CutsConvCalo);
+
+
+  AliConversionMesonCuts *analysisK0Cuts = new AliConversionMesonCuts();
+  analysisK0Cuts->InitializeCutsFromCutString(defaultK0Cut.Data());
+  analysisK0Cuts->SetFillCutHistograms("");
+  task->SetK0Cuts(analysisK0Cuts);
+
+
   //connect containers
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer("K0toPi0Pi0" + selectConfig, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0%s",AliAnalysisManager::GetCommonFileName(),selectConfig.Data()));
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
-  
+
 }
