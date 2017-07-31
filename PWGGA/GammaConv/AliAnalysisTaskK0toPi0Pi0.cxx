@@ -165,11 +165,11 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
     fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
     fHistos->CreateTH2("hAlphavsPtPi0After" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", 200, -1., 1., 300, 0., 30.);
     fHistos->CreateTH2("hOpeningAnglevsPtPi0After" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", 100, 0., 1., 300., 0.3, 30.);
-  
+
   }
 
   AliDebug(2, "************* Defining K0 Histograms ********************");
-  
+
   // K0short invariant mass distribution and opening angle distributions
   const std::array<TString, 6> k0Shortrec = {"AllConv", "AllCalo", "DiffMixed", "SameMixed", "ConvoCalo","CaloConvo" }; // aka 6 cases 
   for(const auto &reccase1 : k0Shortrec){
@@ -177,32 +177,32 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
     fHistos->CreateTH1("hNK0CandidatesPerEventBefore" +  reccase1, "Number of K0 candidates in event before selection", 101, -0.5, 100.5);
     fHistos->CreateTH2("hMassvsPtK0ShortBefore" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.0, 0.6, 300, 0.3, 30.); 
     fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBefore"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
-    
+
     fHistos->CreateTH1("hK0Selection" + reccase1, "Pi0 selection status bit for reconstruction case " + reccase1, 2, -0.5, 1.5);
-    
+
     // after selection
     fHistos->CreateTH1("hNK0CandidatesPerEventAfter" +  reccase1, "Number of K0 candidates in event after selection", 101, -0.5, 100.5);
     fHistos->CreateTH2("hMassvsPtK0ShortAfter" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.0, 0.6, 300, 0.3, 30.); 
     fHistos->CreateTH2("hOpeningAnglevsPtK0ShortAfter"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
-    
+
     /*
     //background histograms
     fHistos->CreateTH2("hMassvsPtK0ShortBKG" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.3, 0.6, 300, 0.3, 30.); 
     fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBKG"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
     */
   }
-  
+
   for(auto hist : *(fHistos->GetListOfHistograms())) fOutput->Add(hist);
-  
+
   // Adding cut QA
-  
+
   TList *qaV0reader = new TList;
   qaV0reader->SetName("QA_V0reader");
   qaV0reader->SetOwner(kTRUE);
   qaV0reader->Add(fV0Reader->GetEventCutHistograms());
   qaV0reader->Add(fV0Reader->GetCutHistograms());
   fOutput->Add(qaV0reader);
-  
+
   // Adding to QA histos to the output - change name in order to
   // better identify the histos
   fOutput->Add(fEventCuts->GetCutHistograms());
@@ -224,21 +224,21 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   histname = "K0cuts_" + TString(histlist->GetName());
   histlist->SetName(histname);
   fOutput->Add(histlist);
-  
-  
+
+
   PostData(1, fOutput);
-  
+
 }
 
 //=================================== EXEC ONCE ====================================================================
 void AliAnalysisTaskK0toPi0Pi0::ExecOnce() {
   if(!fClusterContainer) fClusterContainer = new AliClusterContainer(fInputEvent->IsA() == AliESDEvent::Class() ? "CaloClusters" : "caloClusters");
   fClusterContainer->SetArray(fInputEvent);
-   
+
   if(fConvPhotonCuts){
-    fConvPhotonCuts->InitPIDResponse();   
+    fConvPhotonCuts->InitPIDResponse();
   }
-   
+
 }
 
 //=================================== USER EXEC ====================================================================
@@ -247,13 +247,13 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
     ExecOnce();
     fLocalInitialized = kTRUE;
   }
-  
+
   if(fCurrentRun != fInputEvent->GetRunNumber()) {
     RunChanged();
     fCurrentRun = fInputEvent->GetRunNumber();
   }
-  
-  
+
+
   // do event selection
   // Use the same event selection as for the v0 reader
   // Good events defined as events with event quality 0
@@ -266,27 +266,27 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   fHistos->FillTH1("hEventSelectionStatusAfter", selectionStatus);
   fHistos->FillTH1("hVertexZ", fInputEvent->GetPrimaryVertex()->GetZ());
 
-  
+
   // get Photon candidates
   fHistos->FillTH1("hConvPhotonsBefore",fV0Reader->GetNReconstructedGammas());
   std::vector<AliAODConversionPhoton> conversionPhotons = MakeConversionPhotonCandidates(*fV0Reader, *fConvPhotonCuts);
   MakePhotonQAConv(conversionPhotons, *fEventCuts);
   Int_t numPhotons = conversionPhotons.size();
-  fHistos->FillTH1("hConvPhotonsAfter", numPhotons); 
-  
+  fHistos->FillTH1("hConvPhotonsAfter", numPhotons);
+
   fHistos->FillTH1("hCaloPhotonsBefore",fClusterContainer->GetNEntries());
   std::vector<AliAODConversionPhoton> caloPhotons = MakeCaloPhotonCandidates(*fClusterContainer, *fCaloPhotonCuts);
   MakePhotonQACalo(caloPhotons, *fEventCuts);
   Int_t numCaloPhotons = caloPhotons.size();
   fHistos->FillTH1("hCaloPhotonsAfter", numCaloPhotons);
-  
 
-  
+
+
   // get Pi0 candidates
   std::vector<AliAODConversionMother> samePi0PCM = MakePi0Candidates(&conversionPhotons, nullptr, *fPi0CutsConvConv),
                                       samePi0EMCAL = MakePi0Candidates(&caloPhotons, nullptr, *fPi0CutsCaloCalo),
                                       mixedPi0 = MakePi0Candidates(&conversionPhotons, &caloPhotons, *fPi0CutsConvCalo);
-  
+
   /*
   // create the BG Handlers and get the number of events
   // collision system 0 for pp
@@ -297,29 +297,26 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   AliGammaConversionBGHandler *samePCMHandler = new AliGammaConversionBGHandler(0,0,0,fPi0Cuts->GetNumberOfBGEvents(),fPi0Cuts->UseTrackMultiplicity(),0,8,5); 
   AliGammaConversionBGHandler *sameEMCALHandler = new AliGammaConversionBGHandler(0,0,0,fPi0CutsCaloCalo->GetNumberOfBGEvents(),fPi0CutsCaloCalo->UseTrackMultiplicity(),0,8,5);
   AliGammaConversionBGHandler *mixedHandler = new AliGammaConversionBGHandler(0,0,0,fPi0Cuts->GetNumberOfBGEvents(),fPi0Cuts->UseTrackMultiplicity(),0,8,5); 
-   
+
   Int_t nEventsSamePCM   = samePCMHandler->GetNBackgroundEventsInBuffer(binZ, multiplicity);
-  Int_t nEventsSameEMCAL = sameEMCALHandler->GetNBackgroundEventsInBuffer(binZ, multiplicity);  
-  Int_t nEventsMixed     = mixedHandler->GetNBackgroundEventsInBuffer(binZ, multiplicity); 
-  
-  
-  std::vector<AliAODConversionMother> samePi0PCM_BG; 
+  Int_t nEventsSameEMCAL = sameEMCALHandler->GetNBackgroundEventsInBuffer(binZ, multiplicity);
+  Int_t nEventsMixed     = mixedHandler->GetNBackgroundEventsInBuffer(binZ, multiplicity);
+
+
+  std::vector<AliAODConversionMother> samePi0PCM_BG;
   std::vector<AliAODConversionMother> samePi0EMCAL_BG;
-  std::vector<AliAODConversionMother> mixedPi0_BG;  
-  
-  
+  std::vector<AliAODConversionMother> mixedPi0_BG;
+
   // loop combine all pi0s with all of the events currently in the buffer
-  // add it to the buffer once it is already 
+  // add it to the buffer once it is already
   // three for loops, one for each buffer event
-  
   for(int i=0;i<nEventsSamePCM;i++){
-     	samePi0PCM_BG.insert(handler->GetBGGoodMesons(binZ, multiplicity, i)); 	
+     	samePi0PCM_BG.insert(handler->GetBGGoodMesons(binZ, multiplicity, i));
   }
-  
   for(int h=0;h<nEventsSameEMCAL;h++){
-     	samePi0EMCAL_BG.insert(handler->GetBGGoodMesons(binZ, multiplicity, h)); 	
+     	samePi0EMCAL_BG.insert(handler->GetBGGoodMesons(binZ, multiplicity, h));
   }
-  
+
   for(int h=0;h<nEventsSameEMCAL;h++){
      	mixedPi0_BG.insert(handler->GetBGGoodMesons(binZ, multiplicity, h));
   }
@@ -351,13 +348,13 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
 
 
   // get K0Short candidates
-  std::vector<AliAODConversionMother> allPCM = MakeK0ShortCandidates(&samePi0PCMSelection, nullptr, *fK0Cuts); 
-  std::vector<AliAODConversionMother> allEMC = MakeK0ShortCandidates(&samePi0EMCALSelection, nullptr, *fK0Cuts);
-  std::vector<AliAODConversionMother> PCMEMC = MakeK0ShortCandidates(&samePi0PCMSelection, &mixedPi0Selection, *fK0Cuts);
-  std::vector<AliAODConversionMother> EMCPCM = MakeK0ShortCandidates(&samePi0EMCALSelection, &mixedPi0Selection, *fK0Cuts);
+  std::vector<AliAODConversionMother> allPCM    = MakeK0ShortCandidates(&samePi0PCMSelection, nullptr, *fK0Cuts);
+  std::vector<AliAODConversionMother> allEMC    = MakeK0ShortCandidates(&samePi0EMCALSelection, nullptr, *fK0Cuts);
+  std::vector<AliAODConversionMother> PCMEMC    = MakeK0ShortCandidates(&samePi0PCMSelection, &mixedPi0Selection, *fK0Cuts);
+  std::vector<AliAODConversionMother> EMCPCM    = MakeK0ShortCandidates(&samePi0EMCALSelection, &mixedPi0Selection, *fK0Cuts);
   std::vector<AliAODConversionMother> mixedSame = MakeK0ShortCandidates(&samePi0EMCALSelection, &samePi0PCMSelection, *fK0Cuts);
   std::vector<AliAODConversionMother> mixedDiff = MakeK0ShortCandidates(&mixedPi0Selection, nullptr, *fK0Cuts);
-  
+
   /*
   // add duplicates for the background as well
   std::vector<AliAODConversionMother> allPCM_BG = MakeK0ShortCandidates(&samePi0PCM_BG, nullptr, *fK0Cuts);
@@ -442,8 +439,8 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeConversionPho
   Int_t nV0 = 0;
   std::vector<AliAODConversionPhoton *> GammaCandidatesStepOne;
   TList GammaCandidatesStepTwo;
-  
-  // Loop over Photon Candidates allocated by ReaderV1  
+
+  // Loop over Photon Candidates allocated by ReaderV1
   for(auto photon : reader){
     if(!cuts.PhotonIsSelected(photon ,fInputEvent)) continue;
     if(!cuts.InPlaneOutOfPlaneCut(photon->GetPhotonPhi(), fEventPlaneAngle)) continue;
@@ -482,7 +479,7 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeConversionPho
 //=================================== SELECT MESON ====================================================================
 std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::SelectMeson(std::vector<AliAODConversionMother> &candidates, 
 																		   AliConversionMesonCuts &cuts, MesonType_t meson, const char *reccase){
-  std::vector<AliAODConversionMother> selectedCandidates; 
+  std::vector<AliAODConversionMother> selectedCandidates;
   TString mesonName;
   switch(meson) {
   case kPi0: mesonName = "Pi0"; break;
@@ -495,8 +492,8 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::SelectMeson(std::
   	  if(!selectionStatus) continue;
     selectedCandidates.push_back(candidate);
   }
-  
-  return selectedCandidates; 
+
+  return selectedCandidates;
 
 
 }
@@ -587,7 +584,7 @@ void AliAnalysisTaskK0toPi0Pi0::MakePi0QA(const std::vector<AliAODConversionMoth
   fHistos->FillTH1("hNPi0CandidatesPerEvent" + selectionStatus + reccaseString, pi0s.size());
   for(const auto &pi0 : pi0s) {
   	  fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "All", pi0.M(), pi0.Pt());
-  	  // if in the pi0 mass region  
+  	  // if in the pi0 mass region
   	  if((0.08 <=pi0.M()) && (pi0.M()<= 0.155)){
   	    fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "Sel", pi0.M(),pi0.Pt());
   	    fHistos->FillTH2("hAlphavsPtPi0" + selectionStatus + reccaseString, pi0.GetAlpha(), pi0.Pt());
