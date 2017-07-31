@@ -24,8 +24,6 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t kTrackVariablesSingle1 = 3;       // track variables in histogram (event class, pTtrig, vertexZ)
-const Int_t kTrackVariablesPair1   = 6;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated, vertexZ)
 
 class AliPidBFBase : public TObject {
  public:
@@ -44,6 +42,9 @@ class AliPidBFBase : public TObject {
   void SetDeltaEtaMax(Double_t receivedDeltaEtaMax){ fDeltaEtaMax = receivedDeltaEtaMax; }
   void SetVertexZBinning(Bool_t receivedVertexBinning=kTRUE){ fVertexBinning = receivedVertexBinning; }
   void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
+  void SetTrackVariableSingle(Int_t SingleVariable) {kTrackVariablesSingle=SingleVariable;}
+  void SetTrackVariablePair(Int_t PairVariable) {kTrackVariablesPair=PairVariable;}
+
 
   void InitHistograms(void);
 
@@ -153,6 +154,9 @@ class AliPidBFBase : public TObject {
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
   TString fCustomBinning;//for setting customized binning
   TString fBinningString;//final binning string
+
+  Int_t kTrackVariablesSingle; // For binning AliTHn (single)
+  Int_t kTrackVariablesPair;   // For binning AliTHn (Pair)
 
   TString fEventClass;
 
