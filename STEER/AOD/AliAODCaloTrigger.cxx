@@ -28,7 +28,9 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "Riostream.h"
 #include <cstdlib>
 
+/// \cond CLASSIMP
 ClassImp(AliAODCaloTrigger)
+/// \endcond
 
 //_______________
 AliAODCaloTrigger::AliAODCaloTrigger() : AliVCaloTrigger(),

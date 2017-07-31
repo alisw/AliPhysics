@@ -12,25 +12,17 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-//-----------------------------------------------------------------
-//
-//   Virtual class to access calorimeter 
-//   (EMCAL, PHOS, PMD, FMD) trigger data
-//   Author: Salvatore Aiola
-//
-//-----------------------------------------------------------------
-
 #include "AliVCaloTrigger.h"
 
+/// \cond CLASSIMP
 ClassImp(AliVCaloTrigger)
+/// \endcond
   
   AliVCaloTrigger::AliVCaloTrigger(const AliVCaloTrigger& vtrg) :
-    TNamed(vtrg) { ; } // Copy constructor
+    TNamed(vtrg) { ; }
 
 AliVCaloTrigger& AliVCaloTrigger::operator=(const AliVCaloTrigger& vtrg)
 { 
-  //Assignment operator
   if (this!=&vtrg) { 
     TObject::operator=(vtrg); 
   }
