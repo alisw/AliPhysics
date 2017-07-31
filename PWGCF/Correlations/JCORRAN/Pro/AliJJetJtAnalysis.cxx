@@ -45,6 +45,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   //, fJetBgList(NULL) 
   , fJetBgListOfList() // Bg jet list of list container
   , fJetEtaCut() // Jet's eta cut
+  , fLeadingJets(0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -69,6 +70,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fConstPt(NULL)    //Store pT of jet constituents
   , fConstLabels(NULL)    //Store labels of jet constituents
   , fJetPt(NULL)    //Store pT of corresponding jets
+  , fDiJetMjj(NULL) //Store di-jet invariant mass for each jet finder
   , fTrackFound(NULL) //Keep track of matched tracks
   , fConstFound(NULL) //Keep track of matched tracks
   , fBin2(NULL)    //Store iBin2 of corresponding tracks 
@@ -107,6 +109,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJetMultiplicityBin() //Number of tracks in jet
   , fhJetMultiplicityBin2() //Number of tracks with jT filled in jet
   , fhJetConeMultiplicityBin() //Number of tracks in jet cone
+  , fhDiJetM() // Di-jet invariant mass
   , fhZ() // z dist
   , fhZBin() // z dist as fn of jet pt
   , fhRBin() // R dist as fn of jet pt
@@ -122,8 +125,13 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
   , fhLogJtWeight2Bin() //log jt in P.S as fn of jet pt
   , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
+  , fhLeadingJt() // jt dist for leading track
+  , fhLeadingJtBin() // jt as fn of jet pt for leading track
+  , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
+  , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
   , fhLogJtWithPtCutWeightBinBin()
   , fhLogJtWithPtCutWeight2BinBin()
+  , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
   , fhJetConeTrkPt()
@@ -202,7 +210,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhBgRndmTrkNumber()
   , fhBgRndmZ()
   , fhBgRndmJt()
+  , fhBgRndmJtWeight()
   , fhBgRndmJtBin()
+  , fhBgRndmJtWeightBin()
   , fhBgRndmLogJt()
   , fhBgRndmJtWithPtCutWeightBin()
   , fhBgRndmLogJtWithPtCutWeight2Bin()
@@ -250,6 +260,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJetdRPythia() //Jet distance distribution
   , fhJetdPt() //Jet momentum difference distribution
   , fhJetdPtPythia() //Jet momentum difference distribution
+  , fhDiJetMjjCorr() //Correlation between true and reco mc di-jet invariant mass
   , frandom(0x0)
   , fhJetPtPythia()
   , fhJetPtBinPythia()
@@ -289,6 +300,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fMCJetListOfList() // Jet finders container
   , fJetBgListOfList()
   , fJetEtaCut() 
+  , fLeadingJets(0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
   , fJetAssocPtBorders(NULL)
@@ -313,6 +325,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fConstPt(NULL)
   , fConstLabels(NULL)
   , fJetPt(NULL)
+  , fDiJetMjj(NULL)
   , fTrackFound(NULL)
   , fConstFound(NULL)
   , Nrandom(1)
@@ -347,6 +360,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetMultiplicityBin() //Number of tracks in jet
   , fhJetMultiplicityBin2() //Number of tracks with jT filled in jet
   , fhJetConeMultiplicityBin() //Number of tracks in jet cone
+  , fhDiJetM() // Di-jet invariant mass
   , fhZ()
   , fhZBin()
   , fhZPythia() // z dist
@@ -360,6 +374,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhLogJtWeightBin()
   , fhLogJtWeight2Bin()
   , fhJtWithPtCutWeightBinBin()
+  , fhLeadingJt() // jt dist for leading track
+  , fhLeadingJtBin() // jt as fn of jet pt for leading track
+  , fhLeadingJtWeightBin() // jt in P.S as fn of jet pt for leading track
+  , fhLeadingJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt for leading track
   , fhLogJtWithPtCutWeightBinBin()
   , fhLogJtWithPtCutWeight2BinBin()
   , fhJtUnfBg()
@@ -371,6 +389,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJtWeightBinLimBin()
   , fhLogJtWeightBinLimBin()
   , fhLogJtWeight2BinLimBin()
+  , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
   , fhJetConeTrkPt()
@@ -423,7 +442,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhBgRndmTrkNumber()
   , fhBgRndmZ()
   , fhBgRndmJt()
+  , fhBgRndmJtWeight()
   , fhBgRndmJtBin()
+  , fhBgRndmJtWeightBin()
   , fhBgRndmLogJt()
   , fhBgRndmJtWithPtCutWeightBin()
   , fhBgRndmLogJtWithPtCutWeight2Bin()
@@ -487,7 +508,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetdPt() 
   , fhJetdRPythia() 
   , fhJetdPtPythia() 
-, frandom(0x0)
+  , fhDiJetMjjCorr() //Correlation between true and reco mc di-jet invariant mass
+  , frandom(0x0)
   , fhJetPtPythia()
   , fhJetPtBinPythia()
   , fhJetMultiplicityBinPythia()
@@ -526,6 +548,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   //, fJetBgList(ap.fJetBgList)
   , fJetBgListOfList(ap.fJetBgListOfList)
   , fJetEtaCut(ap.fJetEtaCut) // Jet's eta cut
+  , fLeadingJets(ap.fLeadingJets)
   , fJetTriggPtBorders(ap.fJetTriggPtBorders)
   , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
   , fJetAssocPtBorders(ap.fJetAssocPtBorders)
@@ -579,6 +602,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetMultiplicityBin(ap.fhJetMultiplicityBin) //Number of tracks in jet
   , fhJetMultiplicityBin2(ap.fhJetMultiplicityBin2) 
   , fhJetConeMultiplicityBin(ap.fhJetConeMultiplicityBin) 
+  , fhDiJetM(ap.fhDiJetM)
   , fhZ(ap.fhZ)
   , fhZBin(ap.fhZBin)
   , fhZPythia(ap.fhZPythia) 
@@ -592,6 +616,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhLogJtWeightBin(ap.fhLogJtWeightBin)
   , fhLogJtWeight2Bin(ap.fhLogJtWeight2Bin)
   , fhJtWithPtCutWeightBinBin(ap.fhJtWithPtCutWeightBinBin)
+  , fhLeadingJt(ap.fhLeadingJt)
+  , fhLeadingJtBin(ap.fhLeadingJtBin)
+  , fhLeadingJtWeightBin(ap.fhLeadingJtWeightBin)
+  , fhLeadingJtWithPtCutWeightBinBin(ap.fhLeadingJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeightBinBin(ap.fhLogJtWithPtCutWeightBinBin)
   , fhLogJtWithPtCutWeight2BinBin(ap.fhLogJtWithPtCutWeight2BinBin)
   , fhJtUnfBg(ap.fhJtUnfBg)
@@ -603,6 +631,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJtWeightBinLimBin(ap.fhJtWeightBinLimBin)
   , fhLogJtWeightBinLimBin(ap.fhLogJtWeightBinLimBin)
   , fhLogJtWeight2BinLimBin(ap.fhLogJtWeight2BinLimBin)
+  , fhEventJtBin(ap.fhEventJtBin)
   , fhEventJtWeightBin(ap.fhEventJtWeightBin)
   , fhEventJtWithPtCutWeightBinBin(ap.fhEventJtWithPtCutWeightBinBin)
   , fhJetConeTrkPt(ap.fhJetConeTrkPt)
@@ -664,7 +693,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhBgRndmTrkNumber(ap.fhBgRndmTrkNumber)
   , fhBgRndmZ(ap.fhBgRndmZ)
   , fhBgRndmJt(ap.fhBgRndmJt)
+  , fhBgRndmJtWeight(ap.fhBgRndmJtWeight)
   , fhBgRndmJtBin(ap.fhBgRndmJtBin)
+  , fhBgRndmJtWeightBin(ap.fhBgRndmJtWeightBin)
   , fhBgRndmLogJt(ap.fhBgRndmLogJt)
   , fhBgRndmJtWithPtCutWeightBin(ap.fhBgRndmJtWithPtCutWeightBin)
   , fhBgRndmLogJtWithPtCutWeight2Bin(ap.fhBgRndmLogJtWithPtCutWeight2Bin)
@@ -700,6 +731,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhTrackPtCorrPythia(ap.fhTrackPtCorrPythia) 
   , fhJetdRPythia(ap.fhJetdRPythia)
   , fhJetdPtPythia(ap.fhJetdPtPythia)
+  , fhDiJetMjjCorr(ap.fhDiJetMjjCorr) 
   , frandom(0x0)
   , fhJetPtPythia(ap.fhJetPtPythia)
   , fhJetPtBinPythia(ap.fhJetPtBinPythia)
@@ -818,7 +850,11 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   for(int ij=0;ij<=NBINS;ij++) LogBinsX[ij]=LimL*exp(ij*logBW);
 
 
-
+  // Dijet Histograms - Oskari
+  fhDiJetM
+    << TH1D("DiJetM","Di-jet invariant mass",NBINS, LogBinsX ) 
+    << fJetFinderBin
+    <<"END";
 
   fhNumber
     << TH1D("hNumber","Number",20,0,20)
@@ -925,12 +961,34 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   int NBINSJtW=150;
   double LimLJtW=TMath::Log(0.01), LimHJtW=TMath::Log(10);
 
+  fhEventJtBin 
+    << TH1D("EventJtBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+
   fhEventJtWeightBin 
     << TH1D("EventJtWeightBin","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin << fJetTriggerBin
     <<"END";
 
   fhEventJtWithPtCutWeightBinBin
+    << TH1D("EventJtWithPtCutWeightBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin << fTrkPtBin
+    <<"END";
+
+  fhLeadingJt 
+    << TH1D("Jt","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin
+    <<"END";
+  fhLeadingJtBin 
+    << TH1D("JtBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhLeadingJtWeightBin 
+    << TH1D("JtWeightBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhLeadingJtWithPtCutWeightBinBin
     << TH1D("EventJtWithPtCutWeightBin","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin << fJetTriggerBin << fTrkPtBin
     <<"END";
@@ -1146,8 +1204,16 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     << TH1D("BgRndmJt","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin
     <<"END";
+  fhBgRndmJtWeight
+    << TH1D("BgRndmJtWeight","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin
+    <<"END";
   fhBgRndmJtBin
     << TH1D("BgRndmJtBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhBgRndmJtWeightBin
+    << TH1D("BgRndmJtWeightBin","",NBINSJt, LogBinsJt ) 
     << fJetFinderBin << fJetTriggerBin
     <<"END";
   fhBgRndmLogJt 
@@ -1391,6 +1457,10 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
     << fJetTriggerBinMC
     << "END";
 
+  fhDiJetMjjCorr
+    << TH2D("JetDiJetMjjCorr","",NBINS,LogBinsX,NBINS,LogBinsX)
+    << fJetFinderBinMC
+    << "END";
 
   int NBINSZ=150;
   double LogBinsZ[NBINSZ+1], LimLZ=0.001, LimHZ=1.1;
@@ -1654,6 +1724,7 @@ void AliJJetJtAnalysis::UserExec(){
   fpta = new TVector(fTracks->GetEntries());  //Store pTa bin of corresponding tracks
   fptt = new TVector(fTracks->GetEntries());  //Store pTt bin of corresponding tracks
 
+  fDiJetMjj = new TVector(fJetListOfList.GetEntries()); //Di-jet invariant mass for each jet finder.
 
   int nR = 0;
   if(fDoMC){
@@ -1692,6 +1763,21 @@ void AliJJetJtAnalysis::UserExec(){
         this->FillPythia(Jets,i); //Fill histogram for jet jT using Pythia fragmentation information, including correlation between reco and pythia
       }
     }
+  }
+
+  //Fill correlation matrix for di-jet invariant mass between reco and particle level.
+  for( int i=0;i<fJetListOfList.GetEntries()/2;i++ ){
+      if((*fDiJetMjj)[i+nR*2] > 0 ) { //MC jets
+          if((*fDiJetMjj)[i] > 0 ) {  //jets
+              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],(*fDiJetMjj)[i]);
+          } else {
+              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],-1);
+          }
+      }
+      /*if((*fDiJetMjj)[i+nR*2] == 0 && (*fDiJetMjj)[i] > 0){ //If event has a measured dijet mass but no true dijet mass
+        cout << "Found measured Dijet M but no true M!!!!! " << endl << endl << endl;
+        cout << "Measured M" << (*fDiJetMjj)[i] << endl;
+      }*/
   }
 
 
@@ -1794,6 +1880,9 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
   int iBin2=0;
   int iBin3=0;
   double pT = 0;
+  double leadingM = 0;
+  double subleadingM = 0;
+  double diJetM = 0;
   double conPtMax =0;
 
 
@@ -1853,12 +1942,18 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
   //Loop over jets
   for (int i = 0; i<Jets->GetEntries(); i++){
+    //cout << "Jet: " << (i+1) << "/" << Jets->GetEntries() << endl;
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
     if (!jet) continue;
-    jet->ReSum();
+    jet->ReSum(); 
+    //if (TMath::Abs(jet->Eta()) > fJetEtaCut) {cout << "ijet: " << i << " Jet outside eta range, eta: " << jet->Eta() << " pT: " << jet->Pt() << endl; continue;}
+    //if (TMath::Abs(jet->Eta()) > fJetEtaCut && i == 0) cout << "Leading jet skipped because outside eta range!, eta: " << jet->Eta() << endl;
     if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+    //TODO Separate Eta cuts for charged and full jets
+    //TODO Limit full jets to emcal acceptance Phi: from 1.855 to 2.685
     fhJetEtaPhi[iContainer]->Fill(jet->Eta(),jet->Phi());
     pT = jet->Pt();
+    //cout << "ijet: " << i << " pT: " << pT  << endl;
     if (pT<(*fJetTriggPtBorders)[1]) continue;
     iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
     if( iBin < 0 ) continue;
@@ -1869,6 +1964,9 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
       cout << "Skipping jet" << endl;
       continue;
     }
+    if (i==0 && pT>20) leadingM = TMath::Sqrt(TMath::Power(jet->E(),2)-TMath::Power(jet->P(),2));
+    if (i==1 && pT>20) subleadingM = TMath::Sqrt(TMath::Power(jet->E(),2)-TMath::Power(jet->P(),2));
+    if(i > 0 && fLeadingJets > 0) continue;
     fhJetPt[iContainer]->Fill( pT );
     fhJetPtBin[iContainer][iBin]->Fill( pT );
     fhJetPtWeight[iContainer]->Fill( pT , 1/pT);
@@ -1939,6 +2037,20 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
         (*fConstPt)[iConst] = pta;
         (*fConstLabels)[iConst] = constituent->GetLabel();
         iConst++;
+      }
+      if(icon == 0){ //Leading track is not first track
+        /*if(pta < leadingTrackPt - 0.1){
+          cout << "Track momentum smaller than leading track!!!!!" << endl;
+          cout << "Leading track: " << leadingTrackPt << endl;
+          cout << "pta: " << pta << endl;
+          cout << "Jet momentum: " << pT << endl;
+          cout << endl << endl << endl;
+        }*/
+        fhLeadingJt[iContainer]->Fill(jt, effCorrection);
+        fhLeadingJtBin[iContainer][iBin]->Fill(jt, effCorrection);
+        fhLeadingJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection);
+        fhLeadingJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
+          ->Fill( jt, 1.0/jt * effCorrection );
       }
       fhJt[iContainer]->Fill( jt , effCorrection);
       fhJtBin[iContainer][iBin]->Fill( jt , effCorrection);
@@ -2053,11 +2165,14 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
       z = (track->Vect()*jet->Vect().Unit())/jet->P();
       jt = (track->Vect()-z*jet->Vect()).Mag();
       //jT for all tracks in the event 
-      fhEventJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill(jt, 1.0/jt * effCorrection);
-      fhEventJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
 
-      //Jet Cone Jt here
       deltaR   = getDiffR(jet->Phi(),track->Phi(),jet->Eta(),track->Eta());
+      if(deltaR < TMath::Pi()/2){
+        fhEventJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill(jt, 1.0/jt * effCorrection);
+        fhEventJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
+        fhEventJtBin[iContainer][iBin]->Fill(jt,effCorrection); 
+      }
+      //Jet Cone Jt here
       if ( deltaR < thisConeSize){ 
         fhJetConeTrkPt[iContainer]->Fill(pta,effCorrection);
         fhJetConeTrkPtBin[iContainer][iBin]->Fill(pta,effCorrection);
@@ -2186,6 +2301,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
         }
       }
     }
+  }
+  if (leadingM > 0 && subleadingM > 0){
+      (*fDiJetMjj)[iContainer] = leadingM + subleadingM;
+      fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
   }
   //doRndmBg = 1;
   /*if(doRndmBg){
@@ -2553,6 +2672,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
 
   // Loop over Monte Carlo jets to get correlation between true and reco jet pT
   for (int i = 0; i<MCJets->GetEntries(); i++){
+    if(i > 0 && fLeadingJets > 0) continue;
     AliJJet *mcjet = dynamic_cast<AliJJet*>( MCJets->At(i) );
     if (!mcjet) continue;
     if (TMath::Abs(mcjet->Eta()) > fJetEtaCut) continue;
@@ -2881,8 +3001,10 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
             fhBgRndmRBin[iContainer][iBin]->Fill(getDiffR(randomTrack.Phi(),summedJet.Phi(),randomTrack.Eta(),summedJet.Eta()),effCorrection);
             fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             fhBgRndmZ[iContainer]->Fill( z , effCorrection);
-            fhBgRndmJt[iContainer]->Fill( jt , 1.0/jt * effCorrection);
-            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); //FIXME Missing?
+            fhBgRndmJt[iContainer]->Fill( jt , effCorrection);
+            fhBgRndmJtWeight[iContainer]->Fill( jt , effCorrection);
+            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, effCorrection);
+            fhBgRndmJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
             fhBgRndmLogJt[iContainer]->Fill( jt , 1.0/jt/jt * effCorrection);
 
             if (iptaBin < 0) continue;
@@ -2892,14 +3014,15 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
             fhBgRndmLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
           }
           else{
-            fhBgRndmRBin[iContainer][iBin]->Fill(deltaR,effCorrection);
             //randomTrack.SetPtEtaPhiE(track->Pt(), track->Eta(), phiRndm, track->E());
-            fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             z = (randomTrack.Vect()*vRandomJet.Vect().Unit())/vRandomJet.P();
 
             jt = (randomTrack.Vect()-z*vRandomJet.Vect()).Mag();
+            fhBgRndmRBin[iContainer][iBin]->Fill(deltaR,effCorrection);
+            fhBgRndmTrkPt[iContainer]->Fill(pta,effCorrection);
             fhBgRndmZ[iContainer]->Fill( z , effCorrection);
             fhBgRndmJt[iContainer]->Fill( jt , 1.0/jt * effCorrection);
+            fhBgRndmJtBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); //FIXME Missing?
             fhBgRndmLogJt[iContainer]->Fill( jt , 1.0/jt/jt * effCorrection);
 
             if (iptaBin < 0) continue;
