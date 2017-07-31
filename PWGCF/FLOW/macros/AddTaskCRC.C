@@ -75,7 +75,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Double_t centrMax=100.;
   Double_t CenBinWidth=10.;
   Bool_t bCalculateCRCInt=kFALSE;
-  Bool_t bCalculateCRC2=kTRUE;
+  Bool_t bCalculateCRC2=kFALSE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
   Bool_t bCalculateCRC=kTRUE;
@@ -847,6 +847,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
+      }
+    }
+    if(sDataSet=="2015pidfix") {
+      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "15opidfix_FB768_CenPhiEtaWeights_VtxRbR.root";
       }
     }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
