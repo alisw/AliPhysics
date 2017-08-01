@@ -397,12 +397,27 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     bLimits.AddAt(1000.00, j); //Overflow
     if(j != kEvtMultBins) AliFatal("Somehow index does not sum up");
     //Copy the values to the cut array
-    for(Int_t i = 0; i <=  kEvtMultBins; i++) fMultiplicityBin.AddAt(bLimits.At(i), i);
+    for(Int_t i = 0; i <= kEvtMultBins; i++) fMultiplicityBin.AddAt(bLimits.At(i), i);
+  }
+  if(!fHImode){
+    TArrayF ppLimits(9);
+    Int_t j = 0;
+    ppLimits.AddAt(-1000, j++);
+    ppLimits.AddAt(-204, j++);
+    ppLimits.AddAt(-200, j++);
+    ppLimits.AddAt(0, j++);
+    ppLimits.AddAt(5, j++);
+    ppLimits.AddAt(10, j++);
+    ppLimits.AddAt(15, j++);
+    ppLimits.AddAt(23, j++);
+    ppLimits.AddAt(33, j);
+    fMultiplicityBin.Adopt(j, ppLimits.GetArray());
   }
   //Check on the defined binning
-  for(Int_t i = 0; i <  kEvtMultBins; i++){//Multiplicity
-    AliDebugF(2, "Mutltiplicity Bin %iis [%s, %s]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1)); 
-    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatal("Multiplicity bin is not defined correctly");
+  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
+  { 
+    AliDebugF(2, "Mutltiplicity Bin %i is [%s, %s]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1)); 
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly", i);
   }
   //
   //Shift to the TPC signal
@@ -723,9 +738,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(hEvtMult->GetXaxis()->GetBinCenter(hEvtMult->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMult);
 
-    hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(hEvtMultAftEvSel->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
+    hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
     fListHist->AddLast(hEvtMultAftEvSel);
 
     hEvtVtxXYBefSel = new TH1F("hEvtVtxXYBefSel", "XY primary vertex distance Before Selection;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
