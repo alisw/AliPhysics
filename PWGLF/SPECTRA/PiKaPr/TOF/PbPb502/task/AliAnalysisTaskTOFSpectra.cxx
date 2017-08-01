@@ -1526,23 +1526,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   //Check the Event Multiplicity, the event selection is embedded in the Multiplicity selection with the codes reported in the AliMultSelectionCuts
   //
   StartTimePerformance(1);
-  if(fHImode){
-    fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
-    if(!fMultSel) {
-      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-    }
-    else{
-      AliDebug(2, "Estimating centrality");
-      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);//Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-    }
-
-  }
-  else{
-    AliDebug(2, "Estimating Multiplicity at midrapidity");
-    fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE);//fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-
-  }
+  ComputeEvtMultiplicity();//Compute the event multiplicity or centrality depending on the system
   StopTimePerformance(1);
 
   //
@@ -2348,6 +2332,27 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
 //*************************************************************
 //********************Utility Methods**************************
 //*************************************************************
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity(){
+  if(fHImode){
+    fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
+    if(!fMultSel) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+    }
+    else{
+      AliDebug(2, "Estimating centrality");
+      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);//Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+    }
+
+  }
+  else{
+    AliDebug(2, "Estimating Multiplicity at midrapidity");
+    fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE);//fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+
+  }
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
