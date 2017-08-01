@@ -55,6 +55,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
+  if(evtCutSetID>=100){
+    triggerMask=AliVEvent::kHighMultV0;
+    evtCutSetID=evtCutSetID%100;
+  }
+
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
