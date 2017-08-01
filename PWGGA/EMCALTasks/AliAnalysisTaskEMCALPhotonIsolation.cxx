@@ -973,11 +973,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fphietaOthers = new TH3D("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
     // fOutput->Add(fphietaOthers);
   
-  if(!fLightOutput){
-    fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
-    fPtTracksVSpTNC->Sumw2();
-    fOutput->Add(fPtTracksVSpTNC);
+  fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+  fPtTracksVSpTNC->Sumw2();
+  fOutput->Add(fPtTracksVSpTNC);
   
+  if(!fLightOutput){
     fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
     fPhiTracksVSclustPt->Sumw2();
     fOutput->Add(fPhiTracksVSclustPt);
@@ -1301,8 +1301,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
           AliError("No track found");
           return kFALSE;
         }
+	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	if(!fLightOutput){
-	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
 	}
@@ -1345,8 +1345,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
             AliError("No track found");
             return kFALSE;
           }
+	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	  if(!fLightOutput){
-	    fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
 	  }
