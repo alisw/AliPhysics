@@ -133,6 +133,7 @@ AliJJetJtTask::~AliJJetJtTask()
   // destructor 
 
     delete fJJetJtAnalysis;
+    delete fAnaUtils;
 
 }
 
@@ -141,6 +142,9 @@ void AliJJetJtTask::UserCreateOutputObjects()
 {  
   //=== create the jcorran outputs objects
   if(fDebug > 1) printf("AliJJetJtTask::UserCreateOutPutData() \n");
+
+  fAnaUtils = new AliAnalysisUtils();
+  fAnaUtils->SetUseOutOfBunchPileUp(kTRUE);
   
   //=== Get AnalysisManager
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
