@@ -1,4 +1,4 @@
-void AddTask_dNdPtCutAnalysisPbPb()
+void AddTask_dNdPtPbPb_CutAnalysis()
 {
 /*
 CheckLoadLibrary("libPWG0base");
@@ -13,7 +13,7 @@ CheckLoadLibrary("libPWG0selectors");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
-    Error("AddTask_dNdPtCutAnalysisPbPb", "No analysis manager found.");
+    Error("AddTask_dNdPtPbPb_CutAnalysis", "No analysis manager found.");
     return 0;
   }
 
