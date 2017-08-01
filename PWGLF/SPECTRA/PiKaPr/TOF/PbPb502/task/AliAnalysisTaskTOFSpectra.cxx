@@ -72,6 +72,7 @@
 #include "AliTOFGeometry.h"
 #include "AliCDBManager.h"
 #include "TProfile.h"
+#include "AliGenHepMCEventHeader.h"
 #ifdef USETREECLASS
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
@@ -188,6 +189,7 @@ fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fRecalibrateTOF(kFALSE),
+fCutOnMCImpact(kFALSE),
 fFineTOFReso(kFALSE),
 fFineEfficiency(kFALSE),
 
@@ -374,7 +376,34 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     if(i > 0) AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i-1), fMultiplicityBin.At(i)));
 
   }
-
+  //
+  if (fCutOnMCImpact && fMCmode)
+  {
+    AliInfo("Changing the centrality cut to match the data impact parameter b");
+    TArrayD bLimits(kEvtMultBins + 1);
+    Int_t j = 0;
+    bLimits.AddAt(0.00, j++);  //0%
+    bLimits.AddAt(3.50, j++);  //5%
+    bLimits.AddAt(4.94, j++);  //10%
+    bLimits.AddAt(6.98, j++);  //20%
+    bLimits.AddAt(8.55, j++);  //30%
+    bLimits.AddAt(9.88, j++);  //40%
+    bLimits.AddAt(11.04, j++); //50%
+    bLimits.AddAt(12.09, j++); //60%
+    bLimits.AddAt(13.05, j++); //70%
+    bLimits.AddAt(13.97, j++); //80%
+    bLimits.AddAt(14.96, j++); //90%
+    bLimits.AddAt(20.00, j++); //100%
+    bLimits.AddAt(1000.00, j); //Overflow
+    if(j != kEvtMultBins) AliFatal("Somehow index does not sum up");
+    //Copy the values to the cut array
+    for(Int_t i = 0; i <=  kEvtMultBins; i++) fMultiplicityBin.AddAt(bLimits.At(i), i);
+  }
+  //Check on the defined binning
+  for(Int_t i = 0; i <  kEvtMultBins; i++){//Multiplicity
+    AliDebugF(2, "Mutltiplicity Bin %iis [%s, %s]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1)); 
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatal("Multiplicity bin is not defined correctly");
+  }
   //
   //Shift to the TPC signal
   //
@@ -2340,6 +2369,11 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity(){
   if(fHImode){
+    if(fMCmode && fCutOnMCImpact){//If requested, using the MC impact parameter instead of the measured centrality
+      fEvtMult = static_cast < AliGenHepMCEventHeader*> (fMCEvt->GenEventHeader())->impact_parameter();
+      return;
+    }
+    
     fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
     if(!fMultSel) {
       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
