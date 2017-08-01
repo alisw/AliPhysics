@@ -100,6 +100,7 @@ fDCAZ(-999),
 fRunNumber(0),
 fEvtPhysSelected(kFALSE),
 fEvtSelected(kFALSE),
+fEvtMCSampSelected(kFALSE),
 fTOFout(kFALSE),
 fTRDout(kFALSE),
 fTime(kFALSE),
@@ -1540,7 +1541,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   }
 
   StartTimePerformance(2);
-  fEvtSelected = SelectEvents(EvtStart);
+  fEvtSelected = SelectEvents(EvtStart);//Perform the cuts for the event selectionevent selection
   StopTimePerformance(2);
 
   StartTimePerformance(3);
@@ -2282,6 +2283,7 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar(){
   fMCPrimaries = -999;
   fEvtPhysSelected = kFALSE;
   fEvtSelected = kFALSE;
+  fEvtMCSampSelected = kFALSE;
   StopTimePerformance(8);
 
   StartTimePerformance(9);
@@ -2386,42 +2388,70 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
-  //   AliInfo("AnalyseMCParticles");
+void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
+  //   AliInfo("GatherEventMCInfo");
 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
+  //Get the MC handler
+  AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  //Check on the MC handler
+  if (!eventHandler)
+  {
     AliError("Could not retrieve MC event handler");
     return;
   }
 
-
-  if (eventHandler) fMCEvt = eventHandler->MCEvent();
-  if (!fMCEvt) {
+  //Get the MC Event
+  fMCEvt = eventHandler->MCEvent();
+  // Check on the MC Event
+  if (!fMCEvt)
+  {
     AliError("Could not retrieve MC event");
     return;
   }
+  //Set The PID response on the current MC event
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
-
+  
+  //Get the stack
   fMCStack = fMCEvt->Stack();
-  if (!fMCStack) return;
+  // Check on the Stack
+  if (!fMCStack)
+  {
+    AliError("Could not retrieve MC Stack");
+    return;
+  }
 
   //Get the number of tracks in the event
-  fNMCTracks = fMCEvt->GetNumberOfTracks();//Number of particles
-  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();//Number of primary particles
+  fNMCTracks = fMCEvt->GetNumberOfTracks();      //Number of particles
+  fMCPrimaries = fMCEvt->GetNumberOfPrimaries(); //Number of primary particles
 
   //Get the information of the MC vertex
-  const  AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
-  if (!MCvtx) {
+  const AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
+  //Check on the MC vertex
+  if (!MCvtx)
+  {
     AliError("Could not retrieve MC vertex");
     return;
   }
 
-  Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
-  if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
+  //Check if the MC vertex is generated in the acceptance
+  if (TMath::Abs(MCvtx->GetZ()) < fVtxZCut)
+    fEvtMCSampSelected = kTRUE; //Position on Z of the vertex
+  
+  //Fill histograms with the MC vertex information
   hEvtVtxZMCGen->Fill(MCvtx->GetZ());
-  if(fEvtPhysSelected) hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
-  if(fVertStatus > 1) hEvtVtxZMCReco->Fill(MCvtx->GetZ());
+  if (fEvtPhysSelected)
+    hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
+  if (fVertStatus > 1)
+    hEvtVtxZMCReco->Fill(MCvtx->GetZ());
+
+  //Check on the definition of the correct Multiplicity
+  if (fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins - 1)
+    AliFatal("The Multiplicity bin is not defined!!!");
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
+  //   AliInfo("AnalyseMCParticles");
 
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
@@ -2460,7 +2490,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
 
     if(passy){
       hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
-      if(passMCSampSel) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(fEvtMCSampSelected) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
     if(!fEvtPhysSelected) continue;//After Physics Selection
@@ -2468,7 +2498,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
 
     if(passy){
       hDenTrkVertex[fSignMC][fPdgIndex]->Fill(fPtMC);
-      if(passMCSampSel) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(fEvtMCSampSelected) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
     if(!fEvtSelected) continue;//After Event Selection
