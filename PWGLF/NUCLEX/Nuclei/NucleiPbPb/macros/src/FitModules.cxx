@@ -24,11 +24,11 @@ RooPlot* FitModule::FitData(TH1* dat,TString name, TString title, TString range,
   plot->SetTitle(title.Data());
   plot->SetName(name.Data());
   plot->GetYaxis()->SetTitle(Form("Counts / (%.2f Gev/#it{c}^{2})",plot->GetXaxis()->GetBinWidth(1)));
-  for (int i = 2; i--;) RooFitResult *res = mTemplate->fitTo(data,Extended(),Verbose(kFALSE),PrintLevel(-1),Range(range));
+  for (int i = 2; i--;) RooFitResult *res = mTemplate->fitTo(data,Extended(),Verbose(kFALSE),PrintEvalErrors(-1),PrintLevel(-1),Range(range));
   if(change_range) plot->GetXaxis()->SetRangeUser(low_x,high_x);
   data.plotOn(plot,Name("data"),DrawOption("pz"));
-  mTemplate->plotOn(plot,Name("model"),Range(range),NormRange(range));
-  mTemplate->plotOn(plot,Name("bkg"),Components(*mBackground),LineStyle(kDashed),LineColor(kRed),Range(range),NormRange(range));
+  mTemplate->plotOn(plot,Name("model"),Range(plotrange),NormRange(range));
+  mTemplate->plotOn(plot,Name("bkg"),Components(*mBackground),LineStyle(kDashed),LineColor(kRed),Range(plotrange),NormRange(range));
   mChi2 = plot->chiSquare("model","data");
   plot->remove("model",false);
   plot->remove("bkg",false);

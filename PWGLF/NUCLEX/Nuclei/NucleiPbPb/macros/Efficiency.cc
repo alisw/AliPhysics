@@ -42,19 +42,10 @@ TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_
 
 }
 
-void Efficiency() {
+void Efficiency(bool MBonly = false) {
   /// Taking all the histograms from the MC file
   TFile input_file(kMCfilename.data());
   TFile output_file(kEfficiencyOutput.data(),"recreate");
-
-  /// Bilding the function used to fit the efficiency distribution
-  TF1 effModel("effModel","[0]+[1]*exp([2]*x)+[3]/x+[4]/sq(x)+[5]/(x*sq(x))",0,10.);
-  effModel.SetParLimits(0, 0.2, 0.8);
-  effModel.SetParLimits(1, -5, 5.);
-  effModel.SetParLimits(2, -7., 0);
-  effModel.SetParLimits(3, -5.,5.);
-  effModel.SetParLimits(4, -5., 0.);
-  effModel.SetParameters(0.35, -0.98,-2.2,0.001,-0.01);
 
   int iList = 0;
   int counter=0;
@@ -93,6 +84,8 @@ void Efficiency() {
 
       TH1* effTofMB = DoEff(tofMB,totMB,"Tof",kLetter[iS],0,cent_labels);
       TH1* effTpcMB = DoEff(tpcMB,totMB,"Tpc",kLetter[iS],0,cent_labels);
+
+      if(MBonly) continue;
       for (int iBx = 1; iBx <= kNcentBins; ++iBx) {
         TH1D *tpc = fITS_TPC[iS]->ProjectionY(Form("tpc%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
         TH1D *tof = fITS_TPC_TOF[iS]->ProjectionY(Form("tof%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);

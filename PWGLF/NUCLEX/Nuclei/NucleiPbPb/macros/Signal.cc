@@ -40,14 +40,18 @@ using namespace RooFit;
 void Signal() {
 
   /// Suppressing the output
-  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR) ;
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+  RooMsgService::instance().setSilentMode(true);
+
+  const int kCentBinsArray[7][2] = {{2,2},{3,3},{4,4},{5,5},{6,6},{7,8},{9,12}};
+  const int kCentLength = 7;
 
   /// Taking all the histograms from the MC file
   TFile input_file(kDataFilename.data());
   TFile output_file(kSignalOutput.data(),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m_{TOF}^{2} - m^{2}_{PDG}",-2.,2.5,"GeV^{2}/c^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
   m.setBins(10000,"cache");
   m.setRange("Full", -2., 2.5);
 
@@ -55,13 +59,13 @@ void Signal() {
   fExpExpTailTailGaus.mMu->setRange(-.1,1);
   fExpExpTailTailGaus.mSigma->setRange(0.05,0.3);
   fExpExpTailTailGaus.mSigma->setVal(0.1);
-  fExpExpTailTailGaus.mAlpha0->setRange(-3.,-1.);
+  fExpExpTailTailGaus.mAlpha0->setRange(-3.,-1.3);
   fExpExpTailTailGaus.mAlpha1->setRange(0.5,3.);
   fExpExpTailTailGaus.mSigCounts->setRange(0.,4000.);
 
   //Background
-  RooRealVar m_bis("dm2_bis","m_{TOF}^{2} - m^{2}_{PDG}",-1.2,1.5,"GeV^{2}/c^{4}");
-  m_bis.setBins(10000,"cache");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  m_bis.setBins(1000,"cache");
   m_bis.setRange("Full", -1.2, 1.5);
   FitExpExpTailGaus fBkg(&m_bis);
   fBkg.UseSignal(false);
@@ -117,24 +121,24 @@ void Signal() {
 
     /// Build arrays to analyse all the centrality classes for
     /// both deuteron and anti-deuterons. Complicate stuff just for fun.
-    TH1D* hRawCounts[2][n_centralities];
-    TH1D* hSignalTailTailGaus[2][n_centralities];
-    TH1D* hSystFit[2][n_centralities];
-    TH1D* hSignificance[2][n_centralities];
-    TH1D* hChiSquare[2][n_centralities];
-    TH1D* hChiSquareTPC[2][n_centralities];
-    TH1D* hTPConly[2][n_centralities];
+    TH1D* hRawCounts[2][kCentLength];
+    TH1D* hSignalTailTailGaus[2][kCentLength];
+    TH1D* hSystFit[2][kCentLength];
+    TH1D* hSignificance[2][kCentLength];
+    TH1D* hChiSquare[2][kCentLength];
+    TH1D* hChiSquareTPC[2][kCentLength];
+    TH1D* hTPConly[2][kCentLength];
 
-    vector<float> n_sigma_vec={3.0,3.1,3.2,3.3,3.4,3.5};
-    int n_vec_sigma = n_sigma_vec.size();
+    vector<float> n_sigma_vec = {3.0,3.1,3.2,3.3,3.4,3.5};
     vector<float> v_shift = {-0.1,0.05,0.,0.05,0.1};
+    std::cout << n_sigma_vec.size() << std::endl;
     int n_shifts = v_shift.size();
     int kNewGreen = kGreen + 3;
     int color_vector[] = {kBlack,kBlue,kNewGreen,kOrange,kRed};
-    TH1D* hWidenRangeSyst[2][n_centralities];
-    TH1D* hShiftRangeSyst[2][n_centralities];
-    TH1D* hWidenRangeSystTPC[2][n_centralities];
-    TH1D* hShiftRangeSystTPC[2][n_centralities];
+    TH1D* hWidenRangeSyst[2][kCentLength];
+    TH1D* hShiftRangeSyst[2][kCentLength];
+    TH1D* hWidenRangeSystTPC[2][kCentLength];
+    TH1D* hShiftRangeSystTPC[2][kCentLength];
 
     /// Creating the directories to be used to store the results
     for (int iS = 0; iS < 2; ++iS) {
@@ -150,7 +154,7 @@ void Signal() {
     }
 
     for (int iS = 0; iS < 2; ++iS) {
-      for (int iC = 0; iC < n_centralities; ++iC) {
+      for (int iC = 0; iC < kCentLength; ++iC) {
         hTPConly[iS][iC] = new TH1D(Form("hTPConly%c%i",kLetter[iS],iC),";p_{T} GeV/c; TPC raw counts",n_pt_bins,pt_labels.GetArray());
         hSignificance[iS][iC] = new TH1D(Form("hSignificance%c%i",kLetter[iS],iC),"; p_{T}(GeV/c); #frac{S}{#sqrt{S+B}}",n_pt_bins,pt_labels.GetArray());
         hChiSquare[iS][iC] = new TH1D(Form("hChiSquare%c%i",kLetter[iS],iC),"; p_{T}(GeV/c); #chi^{2}/NDF",n_pt_bins,pt_labels.GetArray());
@@ -171,14 +175,14 @@ void Signal() {
 
     for (int iB = 0; iB < n_pt_bins; ++iB) {
       if ( pt_axis->GetBinCenter(iB+1) < kPtRange[0] || pt_axis->GetBinCenter(iB+1) > kPtRange[1]) continue;
-      float sigma_deut[n_centralities];
-      float sigma_deut_tpc[n_centralities];
+      float sigma_deut[kCentLength];
+      float sigma_deut_tpc[kCentLength];
       for (int iS = 0; iS < 2; ++iS) {
-        for (int iC = 0; iC < n_centralities; ++iC) {
+        for (int iC = 0; iC < kCentLength; ++iC) {
           // TOF analysis
-          TString iTitle = Form("%1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}",pt_labels[iB],pt_labels[iB + 1]);
+          TString iTitle = Form(" %1.0f - %1.0f  %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
           TString iName = Form("d%i_%i",iC,iB);
-          TH1D *dat = tof_histo[iS]->ProjectionZ(Form("data%i_%i",iC,iB),iC + 1,iC + 1, iB + 1, iB + 1);
+          TH1D *dat = tof_histo[iS]->ProjectionZ(Form("data%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB + 1,iB + 1);
           RooDataHist data("data","data",RooArgList(m),Import(*dat));
 
           /// TailTail
@@ -195,24 +199,24 @@ void Signal() {
           RooPlot* expExpTailTailGausPlot = fExpExpTailTailGaus.FitData(dat, iName, iTitle, "Full", "Full",true,-1.2,1.5);
           fExpExpTailTailGaus.mSigma->setConstant(false);
           if(iS==0) sigma_deut[iC] = fExpExpTailTailGaus.mSigma->getVal();
-          if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailTailGausPlot->Write();
+          /*if(pt_axis->GetBinCenter(iB+1) > kTOFminPt)*/ expExpTailTailGausPlot->Write();
           hSignalTailTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailTailGaus.mSigCounts->getVal());
           hSignalTailTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailTailGaus.mSigCounts->getError());
 
           /// Bin counting TOF
-          float residual_vector[n_vec_sigma];
+          float residual_vector[n_sigma_vec.size()];
           for(size_t iSigma=0; iSigma < n_sigma_vec.size(); iSigma++){
-            float left_sigma = fExpExpTailTailGaus.mMu->getVal()-n_sigma_vec[iSigma]*fExpExpTailTailGaus.mSigma->getVal();
-            float right_sigma = fExpExpTailTailGaus.mMu->getVal()+(n_sigma_vec[iSigma])*fExpExpTailTailGaus.mSigma->getVal();
+            float left_sigma = fExpExpTailTailGaus.mMu->getVal() - n_sigma_vec[iSigma]*fExpExpTailTailGaus.mSigma->getVal();
+            float right_sigma = fExpExpTailTailGaus.mMu->getVal() + (float(n_sigma_vec[iSigma])+2.)*fExpExpTailTailGaus.mSigma->getVal();
             int left_edge_bin = dat->FindBin(left_sigma);
             float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
             int right_edge_bin = dat->FindBin(right_sigma);
             float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
             fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
-            if (!iSigma) {
+            if (iSigma==0) {
               fBkg.mX->setRange("left",-1.2,left_edge_float);
               fBkg.mX->setRange("right",right_edge_float,1.5);
-              RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_%d_sideband",iName.Data(),(int)iSigma), iTitle, "left,right","Full",true);
+              RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
               base_dir->cd(Form("%s/Sidebands",kNames[iS].data()));
               bkgPlot->Write();
 
@@ -232,14 +236,14 @@ void Signal() {
             }
             residual_vector[iSigma] = sig_integral;
           }
-          width_range_syst = TMath::RMS(n_vec_sigma,residual_vector);
+          width_range_syst = TMath::RMS(n_sigma_vec.size(),residual_vector);
           width_range_syst /= hRawCounts[iS][iC]->GetBinContent(iB + 1);
           hWidenRangeSyst[iS][iC]->SetBinContent(iB + 1, width_range_syst);
           // Moving the counting range
           float shift_vector[n_shifts];
           for(int iShift=0; iShift<n_shifts; iShift++){
             float left_sigma = fExpExpTailTailGaus.mMu->getVal()-3.*fExpExpTailTailGaus.mSigma->getVal()-v_shift[iShift];
-            float right_sigma = fExpExpTailTailGaus.mMu->getVal()+3.*fExpExpTailTailGaus.mSigma->getVal()-v_shift[iShift];
+            float right_sigma = fExpExpTailTailGaus.mMu->getVal()+5.*fExpExpTailTailGaus.mSigma->getVal()-v_shift[iShift];
             int left_edge_bin = dat->FindBin(left_sigma);
             float left_edge_float = dat->GetBinLowEdge(left_edge_bin);
             int right_edge_bin = dat->FindBin(right_sigma);
@@ -258,7 +262,7 @@ void Signal() {
           /// TPC analysis
           if(pt_axis->GetBinCenter(iB+1) < kTPCmaxPt){
             base_dir->cd(Form("%s/TPConly",kNames[iS].data()));
-            TH1D *tpc_dat = tpc_histo[iS]->ProjectionZ(Form("tpc_data%i_%i",iC,iB),iC + 1,iC + 1, iB + 1, iB + 1);
+            TH1D *tpc_dat = tpc_histo[iS]->ProjectionZ(Form("tpc_data%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1], iB + 1, iB + 1);
             RooDataHist tpc_data("tpc_data","tpc_data",RooArgList(ns),Import(*tpc_dat));
 
             if(iB<=5) fGausGaus.UseBackground(false);
@@ -274,8 +278,8 @@ void Signal() {
             float bin_width = tpc_dat->GetBinWidth(1);
 
             /// Bin Counting TPC
-            float count_tpc_vector[n_vec_sigma];
-            float count_tpc_err_vector[n_vec_sigma];
+            float count_tpc_vector[n_sigma_vec.size()];
+            float count_tpc_err_vector[n_sigma_vec.size()];
             float TpcChi=0.;
 
             for(size_t iSigma=0; iSigma < n_sigma_vec.size(); iSigma++){
@@ -304,7 +308,7 @@ void Signal() {
             float sErrTPC = count_tpc_err_vector[0];
             hTPConly[iS][iC]->SetBinContent(iB + 1, sValTPC);
             hTPConly[iS][iC]->SetBinError(iB + 1, sErrTPC);
-            width_range_syst_tpc = TMath::RMS(n_vec_sigma,count_tpc_vector);
+            width_range_syst_tpc = TMath::RMS(n_sigma_vec.size(),count_tpc_vector);
             width_range_syst_tpc /= hTPConly[iS][iC]->GetBinContent(iB + 1);
             hWidenRangeSystTPC[iS][iC]->SetBinContent(iB + 1, width_range_syst_tpc);
 
@@ -332,7 +336,7 @@ void Signal() {
     }
 
     for (int iS = 0; iS < 2; ++iS) {
-      for (int iC = 0; iC < n_centralities; ++iC) {
+      for (int iC = 0; iC < kCentLength; ++iC) {
         base_dir->cd(Form("%s/TailTail",kNames[iS].data()));
         hRawCounts[iS][iC]->Write();
         hSignalTailTailGaus[iS][iC]->Write();
