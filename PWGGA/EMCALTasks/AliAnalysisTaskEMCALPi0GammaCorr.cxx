@@ -265,9 +265,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_BCID    = -0.5;
     double max_BCID    = 3599.5;
 
-    int nbins_IsoE  = 40;
+    int nbins_IsoE  = 20;
     double min_IsoE = 0.0;
-    double max_IsoE = 40.0; 
+    double max_IsoE = 20.0; 
  
     int nbins_nTracks = 50;
     double min_nTracks = 0.0;
@@ -786,6 +786,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, 
   int NinUE  = 0;
 
   for(auto track : tracks->accepted()){
+
+    if(track->Pt()<0.200) continue; 
+    if(std::abs(track->Eta()) >0.8) continue;
+
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- trackphi);
     double deta     = ph.Eta()- track->Eta();
@@ -801,8 +805,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, 
     }
   } //end loop over tracks
 
-  sumpT = std::min(sumpT, 39.9);
-  UE_sumpT = std::min(UE_sumpT, 39.9);
+  //Restrict variable to 19.9
+  sumpT = std::min(sumpT, 19.9);
+  UE_sumpT = std::min(UE_sumpT, 19.9);
   UE_etaband = UE_sumpT;
   IsoE       = sumpT;
   return;
@@ -825,6 +830,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster
   for(auto iclus : clusters->accepted()){
     if(iclus==cluster) continue; //not count energy of photon itself
     clusters->GetMomentum(iph, iclus);
+   
+    //Consider only clusters with energy above 300 MeV and that pass general QA
+    if (iclus->E() < 0.300) continue;
+    if( !FinalClusterCuts(iclus)) return;
 
     double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- iph.Phi());
     double deta = ph.Eta()- iph.Eta();
@@ -839,9 +848,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster
       NinUE  = NinUE+1;      
     }
   }
-
-  sumpT = std::min(sumpT, 39.9);
-  UE_sumpT = std::min(UE_sumpT, 39.9);
+  //Restrict that variable to 19.9
+  sumpT = std::min(sumpT, 19.9);
+  UE_sumpT = std::min(UE_sumpT, 19.9);
   UE_etaband = UE_sumpT;
   IsoE       = sumpT;
   
@@ -856,14 +865,10 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     AliVCluster* cluster_sub  = 0;
     TLorentzVector ph_lead, ph_sub, pi0; 
     if(cluster1->E()< cluster2->E()) return; //to avoid double-counting   
-    //if(cluster1->E() > cluster2->E()){
+
     cluster_lead = cluster1;
     cluster_sub  = cluster2;
-    //}
-    //else{
-    //    cluster_lead = cluster2;
-    //    cluster_sub  = cluster1; 
-    //}    
+
     clusters->GetMomentum(ph_lead, cluster_lead);
     clusters->GetMomentum(ph_sub, cluster_sub);
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
@@ -873,6 +878,10 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     //////////////////Selection/////////////////////////////////////////////
     if( !FinalClusterCuts(cluster_lead)) return; 
     if( !FinalClusterCuts(cluster_sub)) return;
+    
+    if(cluster_lead->E() < 3.0) return;
+    if(cluster_sub->E()  < 3.0) return;
+
     if( pi0.Pt() < 8.0    ) return;
     if( pi0.M()  > 0.3    ) return;
     if( asym > 0.7        ) return; 
@@ -940,6 +949,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     
     AliClusterContainer* clusters  = GetClusterContainer(0);
 
+    if(cluster1->E() < 3.0) return; 
+    if(cluster2->E() < 3.0) return; 
     if(!FinalClusterCuts(cluster1)) return;
     if(!FinalClusterCuts(cluster2)) return;
 
@@ -949,14 +960,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     TLorentzVector ph_lead, ph_sub, pi0; 
     if(cluster1->E() < cluster2->E()) return; //to avoid double-counting
    
-    //  if(cluster1->E() > cluster2->E()){
     cluster_lead = cluster1;
     cluster_sub  = cluster2;
-	//}
-	//. else{
-	// cluster_lead = cluster2;
-	// cluster_sub  = cluster1; 
-	//}    
     
     clusters->GetMomentum(ph_lead, cluster_lead);
     clusters->GetMomentum(ph_sub,  cluster_sub);
@@ -972,7 +977,7 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     pi0 = ph_lead + ph_sub;
    
     //////////////////Selection/////////////////////////////////////////
-    if( pi0.Pt() < 3.0) return;
+    if( pi0.Pt() < 6.0) return;
     if( pi0.M()  > 0.3) return;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
@@ -1000,10 +1005,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     Double_t dphimin = 0.0; 
 
     Double_t dRmin = ClustTrackMatching(cluster, detamin, dphimin);
-    Double_t disToBad = static_cast<double>(cluster->GetDistanceToBadChannel());
-    if(disToBad>5.0) disToBad=5.0;
+    Double_t disToBad = std::min( static_cast<double>(cluster->GetDistanceToBadChannel()), 5.0);
+   
 
-    Double_t disToBorder = static_cast<double>(GetMaxDistanceFromBorder(cluster));
+    Double_t disToBorder = std::min(static_cast<double>(GetMaxDistanceFromBorder(cluster)), 5.0);
     Double_t exoticity = GetExoticity(cluster);
     Double_t time = cluster->GetTOF()*1000000000; //in ns
     if (time<-40) time = -40;
@@ -1027,11 +1032,8 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     GetIsolation_Cluster(cluster, 0.4, IsoE_Clusters_R04, UE_Clusters_R04);
     GetIsolation_Cluster(cluster, 0.2, IsoE_Clusters_R02, UE_Clusters_R02);
  
-    Double_t nTracks = static_cast<double>(tracks->GetNAcceptedTracks());
-    if(nTracks > 100) nTracks = 99.9;
- 
-    Double_t nClusters = static_cast<double>(clusters->GetNAcceptedClusters());
-    if(nClusters > 100) nClusters = 99.9;
+    Double_t nTracks = std::min( static_cast<double>(tracks->GetNAcceptedTracks()), 99.9);
+    Double_t nClusters = std::min(static_cast<double>(clusters->GetNAcceptedClusters()), 99.9);
 
     double entries[26] = {RunNumber, fCent, fVertex[2], ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, detamin, dphimin, exoticity, time, nTracks, nClusters,
@@ -1082,8 +1084,9 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PreSelection(AliVCluster* cluster)
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FinalClusterCuts(AliVCluster* cluster)
 {
+
+  //General QA. 
   if(!cluster->IsEMCAL()) return kFALSE;
-  if(cluster->E()<3.0) return kFALSE;
 
   if( cluster->GetNCells() < 2) return kFALSE;
 
