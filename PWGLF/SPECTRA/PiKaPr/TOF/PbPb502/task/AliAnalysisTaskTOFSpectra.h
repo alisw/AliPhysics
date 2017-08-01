@@ -121,6 +121,10 @@ public:
 
   //Utility methods
   ///
+  ///  Method to get the event Multiplicity
+  void ComputeEvtMultiplicity();
+
+  ///
   ///  Method to get the event Multiplicity (binned)
   void ComputeEvtMultiplicityBin();
 
