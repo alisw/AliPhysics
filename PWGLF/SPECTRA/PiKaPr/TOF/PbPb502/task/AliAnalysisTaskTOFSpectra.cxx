@@ -513,12 +513,12 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
 
-      hDenTrkTrigger[charge][species]         = 0x0;
       hDenTrkMCVertexZ[charge][species]       = 0x0;
       hDenTrkVertex[charge][species]          = 0x0;
       hDenTrkVertexMCVertexZ[charge][species] = 0x0;
 
       for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+        hDenTrkTrigger[charge][species][mult]                = 0x0;
         hDenPrimMCYCut[charge][species][mult]                = 0x0;
         hDenPrimMCEtaCut[charge][species][mult]              = 0x0;
         hDenPrimMCEtaYCut[charge][species][mult]             = 0x0;
@@ -1266,10 +1266,6 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
         for(Int_t species = 0; species < 3; species++){//Species loop
 
-          hDenTrkTrigger[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkTrigger[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkTrigger[charge][species]);
-
           hDenTrkMCVertexZ[charge][species] = new TH1F(Form("hDenTrkMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
           hDenTrkMCVertexZ[charge][species]->Sumw2();
           fListHist->AddLast(hDenTrkMCVertexZ[charge][species]);
@@ -1283,6 +1279,11 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
 
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+
+            hDenTrkTrigger[charge][species][mult] = new TH1F(Form("hDenTrkTrigger_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
+            hDenTrkTrigger[charge][species][mult]->Sumw2();
+            fListHist->AddLast(hDenTrkTrigger[charge][species][mult]);
+
             hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
             hDenPrimMCYCut[charge][species][mult]->Sumw2();
             fListHist->AddLast(hDenPrimMCYCut[charge][species][mult]);
@@ -2535,7 +2536,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     else fSignMC = kTRUE;             //Particle is negative
 
     if(passy){
-      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
+      hDenTrkTrigger[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
       if(fEvtMCSampSelected) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
