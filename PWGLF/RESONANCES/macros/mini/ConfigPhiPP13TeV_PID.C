@@ -84,6 +84,7 @@ Bool_t ConfigPhiPP13TeV_PID
   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  nmult--;
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges

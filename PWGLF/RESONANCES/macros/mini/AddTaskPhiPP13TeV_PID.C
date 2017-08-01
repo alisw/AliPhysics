@@ -202,8 +202,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-  TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti",nmult,multbins);
-  task->SetEventQAHist("hAEventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
+  nmult--;
+  TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
+  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
 
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
