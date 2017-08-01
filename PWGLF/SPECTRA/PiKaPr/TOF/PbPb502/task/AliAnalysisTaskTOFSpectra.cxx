@@ -78,7 +78,7 @@
 #endif
 
 
-ClassImp(AliAnalysisTaskTOFSpectra)
+ClassImp(AliAnalysisTaskTOFSpectra);
 
 //________________________________________________________________________
 AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts) :
@@ -2591,20 +2591,9 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
   //
   //Particle production
   if(fMCStack->IsPhysicalPrimary(AbsTrkLabel)) fProdInfo = 0;//Track is Physical Primary
-  else{//If it not physical primary check the Origin
-    Int_t indexMoth = part->GetFirstMother();
-    if(indexMoth >= 0){
-      TParticle* mother = fMCStack->Particle(indexMoth);
-      Float_t PDGcodemother = TMath::Abs(mother->GetPdgCode());
-      mfl = Int_t (PDGcodemother/ TMath::Power(10, Int_t(TMath::Log10(PDGcodemother))));
-    }
-    else mfl = 0;
-
-    uniqueID = part->GetUniqueID();
-
-    if(mfl == 3 && uniqueID == kPDecay) fProdInfo = 1;//Track comes from weak decay
-    else fProdInfo = 2;//Track is from material
-  }
+  else if(fMCStack->IsSecondaryFromWeakDecay(AbsTrkLabel)) fProdInfo = 1;//Track comes from weak decay
+  else if(fMCStack->IsSecondaryFromMaterial(AbsTrkLabel)) fProdInfo = 2;//Track is from material
+  else AliFatal("Particle is not primary, sec. from w.d. or material");
 
   //       AliDebug(2, Form("Track is a %i %i", fSignMC, fPdgIndex));
 
