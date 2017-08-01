@@ -159,6 +159,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
   TH3F* fHistImpParXYPtMulTPCselSPDanyGood;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanyFake;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
 
   TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -186,7 +189,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,6);
+  ClassDef(AliAnalysisTaskCheckESDTracks,7);
 };
 
 
