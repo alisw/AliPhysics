@@ -129,6 +129,10 @@ public:
   void ComputeEvtMultiplicityBin();
 
   ///
+  /// Method to get the information of the MC truth of the generated event
+  void GatherEventMCInfo();
+
+  ///
   /// Method to get the information of the MC truth before the event is selected
   void AnalyseMCParticles();
 
@@ -584,8 +588,9 @@ private:
   Int_t fRunNumber;        ///<  Run number under analysis
 
   //Event flags
-  Bool_t fEvtPhysSelected; ///<  Event is selected by the Physics Selection
-  Bool_t fEvtSelected;     ///<  Event is selected by the Event Selection
+  Bool_t fEvtPhysSelected;   ///<  Event is selected by the Physics Selection
+  Bool_t fEvtSelected;       ///<  Event is selected by the Event Selection
+  Bool_t fEvtMCSampSelected; ///<  Event is selected by the MC Sample Selection
 
   //Track flags
   ///
