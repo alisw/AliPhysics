@@ -1521,16 +1521,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   EvtStart++;
 
   //
-  //Event Selection
-  //
-  //
-  //Check the Event Multiplicity, the event selection is embedded in the Multiplicity selection with the codes reported in the AliMultSelectionCuts
-  //
-  StartTimePerformance(1);
-  ComputeEvtMultiplicity();//Compute the event multiplicity or centrality depending on the system
-  StopTimePerformance(1);
-
-  //
   // monitor vertex position before event and physics selection
   //
   const AliESDVertex* vertex = ObtainVertex();
@@ -1540,12 +1530,24 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     hEvtVtxZBefSel->Fill(fPrimVertex[2]);
   }
 
+  if(fMCmode) GatherEventMCInfo();//Get the MC event and get the information on it. NOTE here the information on the reco vertex is needed as it is used
+
+  //
+  //Event Selection
+  //
+  //
+  //Check the Event Multiplicity, the event selection is embedded in the Multiplicity selection with the codes reported in the AliMultSelectionCuts
+  //
+  StartTimePerformance(1);
+  ComputeEvtMultiplicity();//Compute the event multiplicity or centrality depending on the system
+  StopTimePerformance(1);
+
   StartTimePerformance(2);
-  fEvtSelected = SelectEvents(EvtStart);//Perform the cuts for the event selectionevent selection
+  fEvtSelected = SelectEvents(EvtStart);//Perform the cuts for the event selection
   StopTimePerformance(2);
 
   StartTimePerformance(3);
-  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
+  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event. Event selection needs to be defined already as no outliers are accepted!
   StopTimePerformance(3);
 
 
@@ -2444,9 +2446,6 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
   if (fVertStatus > 1)
     hEvtVtxZMCReco->Fill(MCvtx->GetZ());
 
-  //Check on the definition of the correct Multiplicity
-  if (fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins - 1)
-    AliFatal("The Multiplicity bin is not defined!!!");
 }
 
 //________________________________________________________________________
