@@ -1118,7 +1118,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //Mixed event analysis -- it was removed from is pp because
     if(fEventMixingFlag && fCorrelationFlag)
     {
-        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
+        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,10000);
         fOutputList->Add(fPoolNevents);
         
         Int_t trackDepth = 100000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
