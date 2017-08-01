@@ -23,7 +23,6 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   evtCuts->SetTriggerRequired(kTRUE);
 
   // Create geom. acceptance cuts
-
   Float_t etaWindow = 1. ;
   Float_t ptMin = 0.10;
 
@@ -31,8 +30,9 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   accCuts->SetEtaRange(-etaWindow,etaWindow);
   accCuts->SetPtRange(ptMin,1.e10);
 
+  // Create standard esd track cuts
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC);
+  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
   esdTrackCuts->SetHistogramsOn(kTRUE);
 
@@ -43,6 +43,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   // trigger selection: MB
   if(stEventTrigger.Contains("kINT7")) task->SelectCollisionCandidates(AliVEvent::kINT7);
   else if(stEventTrigger.Contains("kMB")) task->SelectCollisionCandidates(AliVEvent::kMB);
+  // Create analysis object
 
 
   // Create cut analysis object
