@@ -88,6 +88,7 @@ class AliGammaConversionAODBGHandler : public TObject {
 		Int_t ** 							fBGEventCounter;				//! bg counter
 		Int_t ** 							fBGEventENegCounter;			//! bg electron counter
 		Int_t ** 							fBGEventMesonCounter;			//! bg counter
+		Int_t ** 							fBGEventBufferCounter;			//! bg counter
 		Double_t ** 						fBGProbability; 				//! prob per bin
 		GammaConversionVertex *** 			fBGEventVertex;					//! array of event vertex
 		Int_t 								fNBinsZ;	 					//n z bins
@@ -98,6 +99,6 @@ class AliGammaConversionAODBGHandler : public TObject {
 		AliGammaConversionBGVector 			fBGEventsENeg; 					// electron background electron events
 		AliGammaConversionMotherBGVector 	fBGEventsMeson; 				// neutral meson background events
 		
-	ClassDef(AliGammaConversionAODBGHandler,5)
+	ClassDef(AliGammaConversionAODBGHandler,6)
 };
 #endif

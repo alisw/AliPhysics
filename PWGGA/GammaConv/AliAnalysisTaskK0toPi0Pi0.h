@@ -43,7 +43,7 @@ class AliConversionMesonCuts;
 class AliConversionPhotonCuts;
 class AliClusterContainer;
 class AliV0ReaderV1;
-class AliGammaConversionAODBGHandler; 
+class AliGammaConversionAODBGHandler;
 
 class AliAnalysisTaskK0toPi0Pi0 : public AliAnalysisTaskSE {
 public:
@@ -86,6 +86,7 @@ protected:
   std::vector<AliAODConversionMother> SelectMeson(std::vector<AliAODConversionMother> &candidates, AliConversionMesonCuts &cuts, MesonType_t meson, const char *reccase);
   std::vector<AliAODConversionMother> MakePi0Candidates(const std::vector<AliAODConversionPhoton> *primaryLeg, const std::vector<AliAODConversionPhoton> *secondaryLeg, AliConversionMesonCuts &cuts);
   std::vector<AliAODConversionMother> MakeK0ShortCandidates(const std::vector<AliAODConversionMother> *primaryLeg, const std::vector<AliAODConversionMother> *secondaryLeg, AliConversionMesonCuts &cuts);
+  std::vector<AliAODConversionMother> MakeK0ShortCandidatesMixed(const std::vector<AliAODConversionMother> *sameEvent, const std::vector<AliAODConversionMother *> *mixedEvent, AliConversionMesonCuts &cuts);
 
   void MakePhotonQACalo(const std::vector<AliAODConversionPhoton> &photons, AliConvEventCuts &cuts);
   void MakePhotonQAConv(const std::vector<AliAODConversionPhoton> &photons, AliConvEventCuts &cuts);
@@ -111,7 +112,9 @@ private:
   AliConversionMesonCuts                      *fPi0CutsConvCalo;      ///< Cuts on the pi0 for the conv calo case
   AliConversionMesonCuts                      *fK0Cuts;               ///< Cuts on the K0
 
-  AliGammaConversionAODBGHandler              *fBGHandler;            //!<!   Background Handler
+  AliGammaConversionAODBGHandler              *fSamePCMHandler;       //!<!   Background Handler for same PCM
+  AliGammaConversionAODBGHandler              *fSameEMCALHandler;     //!<!   Background Handler for same EMC
+  AliGammaConversionAODBGHandler              *fMixedHandler;         //!<!   Background Handler for mixed case
   THistManager                                *fHistos;               ///< Container for Histograms
   TList                                       *fOutput;               ///< Global output container
 

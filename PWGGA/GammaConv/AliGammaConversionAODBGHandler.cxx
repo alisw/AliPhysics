@@ -36,6 +36,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler() :
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(0),
@@ -56,6 +57,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t binsZ,Int_t
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(binsZ),
@@ -78,6 +80,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
 	fNBinsZ(binsZ),
@@ -349,6 +352,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(const AliGammaCon
 	fBGEventCounter(original.fBGEventCounter),
 	fBGEventENegCounter(original.fBGEventENegCounter),
 	fBGEventMesonCounter(original.fBGEventMesonCounter),
+	fBGEventBufferCounter(original.fBGEventBufferCounter),
 	fBGProbability(original.fBGProbability),
 	fBGEventVertex(original.fBGEventVertex),
 	fNBinsZ(original.fNBinsZ),
@@ -405,6 +409,14 @@ AliGammaConversionAODBGHandler::~AliGammaConversionAODBGHandler(){
 		delete[] fBGEventMesonCounter;
 		fBGEventMesonCounter = NULL;
 	}
+	
+	if(fBGEventBufferCounter){
+		for(Int_t z=0;z<fNBinsZ;z++){
+			delete[] fBGEventBufferCounter[z];
+		}
+		delete[] fBGEventMesonCounter;
+		fBGEventMesonCounter = NULL;
+	}
 
 	if(fBinLimitsArrayZ){
 		delete[] fBinLimitsArrayZ;
@@ -452,9 +464,18 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
 		fBGEventMesonCounter[z]=new Int_t[fNBinsMultiplicity];
 	}
 	
+	
+	if(fBGEventBufferCounter == NULL){
+		fBGEventBufferCounter= new Int_t*[fNBinsZ];
+	}
+	for(Int_t z=0;z<fNBinsZ;z++){
+		fBGEventBufferCounter[z]=new Int_t[fNBinsMultiplicity];
+	}
+	
 	for(Int_t z=0;z<fNBinsZ;z++){
 		for(Int_t m=0;m<fNBinsMultiplicity;m++){
 			fBGEventMesonCounter[z][m]=0;
+			fBGEventBufferCounter[z][m] =0;
 		}
 	}
 
@@ -596,6 +617,9 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	if(fBGEventMesonCounter[z][m] >= fNEvents){
 		fBGEventMesonCounter[z][m]=0;
 	}
+	if(fBGEventBufferCounter[z][m] < fNEvents){
+		fBGEventBufferCounter[z][m]++;
+	}
 	Int_t eventCounter=fBGEventMesonCounter[z][m];
 	
 	fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -623,6 +647,9 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(const std::vector<AliAODConve
   if(fBGEventMesonCounter[z][m] >= fNEvents){
     fBGEventMesonCounter[z][m]=0;
   }
+	if(fBGEventBufferCounter[z][m] < fNEvents){
+		fBGEventBufferCounter[z][m]++;
+	}
   Int_t eventCounter=fBGEventMesonCounter[z][m];
 
   fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -687,7 +714,7 @@ AliGammaConversionMotherAODVector* AliGammaConversionAODBGHandler::GetBGGoodMeso
 
 //_____________________________________________________________________________________________________________________________
 Int_t AliGammaConversionAODBGHandler::GetNBackgroundEventsInBuffer(Int_t binz, int binMult) const {
-  return fBGEventsMeson[binz][binMult].size();
+  return fBGEventBufferCounter[binz][binMult];
 }
 
 //_____________________________________________________________________________________________________________________________
