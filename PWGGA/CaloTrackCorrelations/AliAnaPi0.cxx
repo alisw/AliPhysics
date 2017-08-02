@@ -3464,11 +3464,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     
   if(mcIndex < 0 || mcIndex >= 13) 
   {
-    AliWarning(Form("Wrong ancestor type %d, set it to unknown (12)",mcIndex));
-    mcIndex = 12;
+    AliInfo(Form("Wrong ancestor type %d, set it to unknown (12)",mcIndex));
     
-    printf("Ancestor type not found: label %d, pdg %d, name %s, status %d\n",
-           ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
+    AliInfo(Form("\t Ancestor type not found: label %d, pdg %d, name %s, status %d\n",
+           ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
+    
+    mcIndex = 12;
   }
   
   fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
