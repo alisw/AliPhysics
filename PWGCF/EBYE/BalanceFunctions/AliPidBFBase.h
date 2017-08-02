@@ -24,6 +24,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
+const Int_t kTrackVariablesSingle = 2; // For binning AliTHn (single)
+const Int_t kTrackVariablesPair   = 5;   // For binning AliTHn (Pair)
 
 class AliPidBFBase : public TObject {
  public:
@@ -154,9 +156,6 @@ class AliPidBFBase : public TObject {
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
   TString fCustomBinning;//for setting customized binning
   TString fBinningString;//final binning string
-
-  Int_t kTrackVariablesSingle; // For binning AliTHn (single)
-  Int_t kTrackVariablesPair;   // For binning AliTHn (Pair)
 
   TString fEventClass;
 
