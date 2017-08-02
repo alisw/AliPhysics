@@ -156,12 +156,12 @@ void AliPidBFBase::InitHistograms() {
   Int_t anaSteps   = 1;       // analysis steps
   Int_t iBinSingle[kTrackVariablesSingle];        // binning for track variables
   Double_t* dBinsSingle[kTrackVariablesSingle];   // bins for track variables  
-  TString axisTitleSingle[kTrackVariablesSingle]; // axis titles for track variables
+  TString* axisTitleSingle = new TString[kTrackVariablesSingle]; // axis titles for track variables
   
   // two particle histograms
   Int_t iBinPair[kTrackVariablesPair];         // binning for track variables
   Double_t* dBinsPair[kTrackVariablesPair];    // bins for track variables  
-  TString axisTitlePair[kTrackVariablesPair];  // axis titles for track variables
+  TString* axisTitlePair = new TString[kTrackVariablesPair];  // axis titles for track variables
 
 
 
@@ -365,6 +365,9 @@ void AliPidBFBase::InitHistograms() {
   fHistQbefore          = new TH3D("fHistQbefore","before momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistQafter           = new TH3D("fHistQafter","after momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
 
+  if(axisTitleSingle) delete [] axisTitleSingle;
+  if(axisTitlePair) delete [] axisTitlePair;
+  
   TH1::AddDirectory(oldStatus);
 
 }
