@@ -77,7 +77,7 @@ AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE,
   if(fillTree){
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("trogolo_HyperTree", TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    "trogolo_Hyper3.root");
+							    AliAnalysisManager::GetCommonFileName());
   coutput2->SetSpecialOutput();
   mgr->ConnectOutput(taskhyp, 2, coutput2);
 
