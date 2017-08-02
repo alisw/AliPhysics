@@ -97,7 +97,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskWeakDecayVertexer)
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
-    : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0),
+: AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0),
 //________________________________________________
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
@@ -134,7 +134,7 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0)
 //________________________________________________
 {
-
+    
 }
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *name, TString lExtraOptions)
@@ -175,9 +175,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0)
 //________________________________________________
 {
-
+    
     //Re-vertex: Will only apply for cascade candidates
-
+    
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
     fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
     fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
@@ -185,7 +185,7 @@ fHistV0ToBachelorPropagationStatus(0)
     fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
     fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
     fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
-
+    
     fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
     fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
     fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
@@ -194,7 +194,7 @@ fHistV0ToBachelorPropagationStatus(0)
     fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 200.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-
+    
     DefineOutput(1, TList::Class()); // Basic Histograms
 }
 
@@ -204,7 +204,7 @@ AliAnalysisTaskWeakDecayVertexer::~AliAnalysisTaskWeakDecayVertexer()
     //------------------------------------------------
     // DESTRUCTOR
     //------------------------------------------------
-
+    
     //Destroy output objects if present
     if (fListHist) {
         delete fListHist;
@@ -218,22 +218,22 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
     //------------------------------------------------
     // Particle Identification Setup
     //------------------------------------------------
-
+    
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
     inputHandler->SetNeedField();
-
+    
     //------------------------------------------------
     // V0 Multiplicity Histograms
     //------------------------------------------------
-
+    
     // Create histograms
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
-
+    
     fEventCuts.AddQAplotsToList(fListHist);
-
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",2,0,2);
@@ -241,7 +241,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(2, "Selected");
         fListHist->Add(fHistEventCounter);
     }
-
+    
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
         fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
@@ -272,7 +272,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(10,"Propag OK");
         fListHist->Add(fHistV0ToBachelorPropagationStatus);
     }
-
+    
     PostData(1, fListHist    );
 }// end UserCreateOutputObjects
 
@@ -282,42 +282,42 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
 {
     // Main loop
     // Called for each event
-
+    
     AliESDEvent *lESDevent = 0x0;
-
+    
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
-
+    
     // Appropriate for ESD analysis!
-
+    
     lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
     if (!lESDevent) {
         AliWarning("ERROR: lESDevent not available \n");
         return;
     }
-
+    
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
-
+    
     fHistEventCounter->Fill(0.5);
-
+    
     //------------------------------------------------
     // Primary Vertex Requirements Section:
     //  ---> pp: has vertex, |z|<10cm
     //------------------------------------------------
-
+    
     //classical Proton-proton like selection
     const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
     const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
     const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-
+    
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
+    
     //------------------------------------------------
     // Multiplicity Information Acquistion, basic event selection
     //------------------------------------------------
-
+    
     Float_t lPercentile = 500;
     Int_t lEvSelCode = 100;
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
@@ -330,12 +330,12 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }
-
+    
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
         return;
     }
-
+    
     AliVEvent *ev = InputEvent();
     if( fkDoExtraEvSels ) {
         if( !fEventCuts.AcceptEvent(ev) ) {
@@ -343,12 +343,12 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             return;
         }
     }
-
+    
     fHistEventCounter->Fill(1.5);
-
+    
     //Fill centrality histogram
     fHistCentrality->Fill(lPercentile);
-
+    
     
     //============================================================
     // V0 Revertexing part
@@ -369,7 +369,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(1.5, nv0s);
-
+    
     //============================================================
     // Cascade revertexing part
     //============================================================
@@ -378,7 +378,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Long_t ncascades = 0;
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(2.5, ncascades);
-
+    
     if( fkRunCascadeVertexer ){
         lESDevent->ResetCascades();
         //Only regenerate candidates if within interesting interval
@@ -393,7 +393,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
-
+    
     // Post output data: end of times
     PostData(1, fListHist    );
 }
@@ -403,23 +403,23 @@ void AliAnalysisTaskWeakDecayVertexer::Terminate(Option_t *)
 {
     // Draw result to the screen
     // Called once at the end of the query
-
+    
     TList *cRetrievedList = 0x0;
     cRetrievedList = (TList*)GetOutputData(1);
     if(!cRetrievedList) {
         Printf("ERROR - AliAnalysisTaskWeakDecayVertexer : ouput data container list not available\n");
         return;
     }
-
+    
     fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
     if (!fHistEventCounter) {
         Printf("ERROR - AliAnalysisTaskWeakDecayVertexer : fHistEventCounter not available");
         return;
     }
-
+    
     TCanvas *canCheck = new TCanvas("AliAnalysisTaskWeakDecayVertexer","V0 Multiplicity",10,10,510,510);
     canCheck->cd(1)->SetLogy();
-
+    
     fHistEventCounter->SetMarkerStyle(22);
     fHistEventCounter->DrawCopy("E");
 }
@@ -432,7 +432,7 @@ void AliAnalysisTaskWeakDecayVertexer::SetupStandardVertexing()
     SetRunV0Vertexer(kTRUE);
     SetRunCascadeVertexer(kTRUE);
     SetDoV0Refit(kTRUE);
-
+    
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
     SetV0VertexerDCASecondtoPV(0.05);
@@ -440,7 +440,7 @@ void AliAnalysisTaskWeakDecayVertexer::SetupStandardVertexing()
     SetV0VertexerCosinePA(0.98);
     SetV0VertexerMinRadius(0.9);
     SetV0VertexerMaxRadius(200);
-
+    
     //Cascade-Related topological selections
     SetCascVertexerMinV0ImpactParameter(0.05);
     SetCascVertexerV0MassWindow(0.006);
@@ -510,7 +510,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
         if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
-
+        
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
         if (TMath::Abs(d)>fV0VertexerSels[6]) continue;
@@ -530,11 +530,11 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
             /*
-            if(fkPreselectDedxLambda){
-                Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ptrk, AliPID::kProton ));
-                Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ntrk, AliPID::kProton ));
-                if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue; 
-            }
+             if(fkPreselectDedxLambda){
+             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ptrk, AliPID::kProton ));
+             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ntrk, AliPID::kProton ));
+             if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+             }
              */
             
             if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
@@ -1064,7 +1064,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 Double_t xn, xp, dca=nTrack->GetDCA(pTrack,b,xn,xp);
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
                 nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
-            
+                
                 //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
                 //POSITIVE
                 Double_t alphaPos=pt.GetAlpha(), csp=TMath::Cos(alphaPos), snp=TMath::Sin(alphaPos);
@@ -1108,10 +1108,10 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 Double_t lNegUnc  = lV0DCAptNegSigmaX2    + lV0DCAptNegSigmaY2    + lV0DCAptNegSigmaZ2;
                 
                 Double_t lV0Travel = TMath::Sqrt(
-                                        TMath::Power((lCascadeDecayX-lV0DecayX),2)+
-                                        TMath::Power((lCascadeDecayY-lV0DecayY),2)+
-                                        TMath::Power((lCascadeDecayZ-lV0DecayZ),2)
-                                        );
+                                                 TMath::Power((lCascadeDecayX-lV0DecayX),2)+
+                                                 TMath::Power((lCascadeDecayY-lV0DecayY),2)+
+                                                 TMath::Power((lCascadeDecayZ-lV0DecayZ),2)
+                                                 );
                 
                 Double_t lV0UncPos = 1.0* TMath::Power(1./lPosUnc+1./lNegUnc,-1);
                 Double_t lV0UncAng = 2.0*lV0Travel*TMath::Power(1./(lV0DCAptPosSigmaTgl2+lV0DCAptPosSigmaSnp2)+1./(lV0DCAptNegSigmaTgl2+lV0DCAptNegSigmaSnp2),-1);
@@ -1162,8 +1162,8 @@ Double_t AliAnalysisTaskWeakDecayVertexer::Det(Double_t a00, Double_t a01, Doubl
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskWeakDecayVertexer::Det(Double_t a00,Double_t a01,Double_t a02,
-                                      Double_t a10,Double_t a11,Double_t a12,
-                                      Double_t a20,Double_t a21,Double_t a22) const {
+                                               Double_t a10,Double_t a11,Double_t a12,
+                                               Double_t a20,Double_t a21,Double_t a22) const {
     //--------------------------------------------------------------------
     // This function calculates locally a 3x3 determinant
     //--------------------------------------------------------------------
@@ -1368,9 +1368,9 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
 
 //________________________________________________________________________
 void AliAnalysisTaskWeakDecayVertexer::Evaluate(const Double_t *h, Double_t t,
-                     Double_t r[3],  //radius vector
-                     Double_t g[3],  //first defivatives
-                     Double_t gg[3]) //second derivatives
+                                                Double_t r[3],  //radius vector
+                                                Double_t g[3],  //first defivatives
+                                                Double_t gg[3]) //second derivatives
 {
     //--------------------------------------------------------------------
     // Calculate position of a point on a track and some derivatives
@@ -1473,192 +1473,192 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
     
     if( fkDoImprovedDCAV0DauPropagation){
-    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    // V0 preprocessing: analytical estimate of DCAxy position
-    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    Double_t nhelix[6], phelix[6];
-    nt->GetHelixParameters(nhelix,b);
-    pt->GetHelixParameters(phelix,b);
-    Double_t lNegCenterR[2], lPosCenterR[2];
-    
-    //Negative track parameters in XY
-    GetHelixCenter( nt , lNegCenterR, b);
-    Double_t xNegCenter = lNegCenterR[0];
-    Double_t yNegCenter = lNegCenterR[1];
-    Double_t NegRadius = TMath::Abs(1./nhelix[4]);
-    
-    //Positive track parameters in XY
-    GetHelixCenter( pt , lPosCenterR, b );
-    Double_t xPosCenter = lPosCenterR[0];
-    Double_t yPosCenter = lPosCenterR[1];
-    Double_t PosRadius = TMath::Abs(1./phelix[4]);
-    
-    //Define convenient coordinate system
-    //Logical zero: position of negative center
-    Double_t ux = xPosCenter - xNegCenter;
-    Double_t uy = yPosCenter - yNegCenter;
-    
-    //Check center-to-center distance
-    Double_t lDist = TMath::Sqrt(
-                                 TMath::Power( xNegCenter - xPosCenter , 2) +
-                                 TMath::Power( yNegCenter - yPosCenter , 2)
-                                 );
-    //Normalize ux, uz to unit vector
-    ux /= lDist; uy /= lDist;
-    
-    //Calculate perpendicular vector (normalized)
-    Double_t vx = -uy;
-    Double_t vy = +ux;
-    
-    Double_t lPreprocessDCAxy = 1e+3; //define outside scope
-    Double_t lPreprocessxp = 0;
-    Double_t lPreprocessxn = 0;
-    
-    if( lDist > NegRadius + PosRadius ){
-        //================================================================
-        //Case 1: distance bigger than sum of radii ("gamma-like")
-        //        re-position tracks along the center-to-center axis
-        //Re-position negative track
-        Double_t xNegOptPosition = xNegCenter + NegRadius*ux;
-        Double_t yNegOptPosition = yNegCenter + NegRadius*uy;
-        Double_t csNeg=TMath::Cos(nt->GetAlpha());
-        Double_t snNeg=TMath::Sin(nt->GetAlpha());
-        Double_t xThisNeg=xNegOptPosition*csNeg + yNegOptPosition*snNeg;
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // V0 preprocessing: analytical estimate of DCAxy position
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        Double_t nhelix[6], phelix[6];
+        nt->GetHelixParameters(nhelix,b);
+        pt->GetHelixParameters(phelix,b);
+        Double_t lNegCenterR[2], lPosCenterR[2];
         
-        //Re-position positive track
-        Double_t xPosOptPosition = xPosCenter - PosRadius*ux;
-        Double_t yPosOptPosition = yPosCenter - PosRadius*uy;
-        Double_t csPos=TMath::Cos(pt->GetAlpha());
-        Double_t snPos=TMath::Sin(pt->GetAlpha());
-        Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
+        //Negative track parameters in XY
+        GetHelixCenter( nt , lNegCenterR, b);
+        Double_t xNegCenter = lNegCenterR[0];
+        Double_t yNegCenter = lNegCenterR[1];
+        Double_t NegRadius = TMath::Abs(1./nhelix[4]);
         
-        if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
-            Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
-            Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
-            lPreprocessDCAxy = TMath::Sqrt(
-                                           TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
-                                           TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
-                                           TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
-                                           );
-            //Pass coordinates
-            lPreprocessxp = xThisPos;
-            lPreprocessxn = xThisNeg;
-        }
-        //================================================================
-    } else {
-        //================================================================
-        //Case 2: distance smaller than sum of radii (cowboy/sailor configs)
+        //Positive track parameters in XY
+        GetHelixCenter( pt , lPosCenterR, b );
+        Double_t xPosCenter = lPosCenterR[0];
+        Double_t yPosCenter = lPosCenterR[1];
+        Double_t PosRadius = TMath::Abs(1./phelix[4]);
         
-        //Calculate coordinate for radical line
-        Double_t lRadical = (lDist*lDist - PosRadius*PosRadius + NegRadius*NegRadius) / (2*lDist);
+        //Define convenient coordinate system
+        //Logical zero: position of negative center
+        Double_t ux = xPosCenter - xNegCenter;
+        Double_t uy = yPosCenter - yNegCenter;
         
-        //Calculate absolute displacement from center-to-center axis
-        Double_t lDisplace = (0.5/lDist) * TMath::Sqrt(
-                                                       (-lDist + PosRadius - NegRadius) *
-                                                       (-lDist - PosRadius + NegRadius) *
-                                                       (-lDist + PosRadius + NegRadius) *
-                                                       ( lDist + PosRadius + NegRadius)
-                                                       );
-        
-        Double_t lCase2aDCA = 1e+3;
-        Double_t lCase2bDCA = 1e+3;
-        
-        //2 cases: positive and negative displacement
-        Double_t xNegOptPosition[2], yNegOptPosition[2], xPosOptPosition[2], yPosOptPosition[2];
-        Double_t csNeg, snNeg, csPos, snPos;
-        Double_t xThisNeg[2], xThisPos[2];
-        
-        csNeg=TMath::Cos(nt->GetAlpha());
-        snNeg=TMath::Sin(nt->GetAlpha());
-        csPos=TMath::Cos(pt->GetAlpha());
-        snPos=TMath::Sin(pt->GetAlpha());
-        
-        //Case 2a: Positive displacement along v vector
-        //Re-position negative track
-        xNegOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
-        yNegOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
-        xThisNeg[0] = xNegOptPosition[0]*csNeg + yNegOptPosition[0]*snNeg;
-        //Re-position positive track
-        xPosOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
-        yPosOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
-        xThisPos[0] = xPosOptPosition[0]*csPos + yPosOptPosition[0]*snPos;
-        
-        //Case 2b: Negative displacement along v vector
-        //Re-position negative track
-        xNegOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
-        yNegOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
-        xThisNeg[1] = xNegOptPosition[1]*csNeg + yNegOptPosition[1]*snNeg;
-        //Re-position positive track
-        xPosOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
-        yPosOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
-        xThisPos[1] = xPosOptPosition[1]*csPos + yPosOptPosition[1]*snPos;
-        
-        //Test the two cases, please
-        
-        //Case 2a
-        if( xThisNeg[0] < fV0VertexerSels[6] && xThisPos[0] < fV0VertexerSels[6] && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
-            Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
-            Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
-            lCase2aDCA = TMath::Sqrt(
-                                     TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
-                                     TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
-                                     TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
+        //Check center-to-center distance
+        Double_t lDist = TMath::Sqrt(
+                                     TMath::Power( xNegCenter - xPosCenter , 2) +
+                                     TMath::Power( yNegCenter - yPosCenter , 2)
                                      );
+        //Normalize ux, uz to unit vector
+        ux /= lDist; uy /= lDist;
+        
+        //Calculate perpendicular vector (normalized)
+        Double_t vx = -uy;
+        Double_t vy = +ux;
+        
+        Double_t lPreprocessDCAxy = 1e+3; //define outside scope
+        Double_t lPreprocessxp = 0;
+        Double_t lPreprocessxn = 0;
+        
+        if( lDist > NegRadius + PosRadius ){
+            //================================================================
+            //Case 1: distance bigger than sum of radii ("gamma-like")
+            //        re-position tracks along the center-to-center axis
+            //Re-position negative track
+            Double_t xNegOptPosition = xNegCenter + NegRadius*ux;
+            Double_t yNegOptPosition = yNegCenter + NegRadius*uy;
+            Double_t csNeg=TMath::Cos(nt->GetAlpha());
+            Double_t snNeg=TMath::Sin(nt->GetAlpha());
+            Double_t xThisNeg=xNegOptPosition*csNeg + yNegOptPosition*snNeg;
+            
+            //Re-position positive track
+            Double_t xPosOptPosition = xPosCenter - PosRadius*ux;
+            Double_t yPosOptPosition = yPosCenter - PosRadius*uy;
+            Double_t csPos=TMath::Cos(pt->GetAlpha());
+            Double_t snPos=TMath::Sin(pt->GetAlpha());
+            Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
+            
+            if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
+                Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
+                Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
+                lPreprocessDCAxy = TMath::Sqrt(
+                                               TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
+                                               TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
+                                               TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
+                                               );
+                //Pass coordinates
+                lPreprocessxp = xThisPos;
+                lPreprocessxn = xThisNeg;
+            }
+            //================================================================
+        } else {
+            //================================================================
+            //Case 2: distance smaller than sum of radii (cowboy/sailor configs)
+            
+            //Calculate coordinate for radical line
+            Double_t lRadical = (lDist*lDist - PosRadius*PosRadius + NegRadius*NegRadius) / (2*lDist);
+            
+            //Calculate absolute displacement from center-to-center axis
+            Double_t lDisplace = (0.5/lDist) * TMath::Sqrt(
+                                                           (-lDist + PosRadius - NegRadius) *
+                                                           (-lDist - PosRadius + NegRadius) *
+                                                           (-lDist + PosRadius + NegRadius) *
+                                                           ( lDist + PosRadius + NegRadius)
+                                                           );
+            
+            Double_t lCase2aDCA = 1e+3;
+            Double_t lCase2bDCA = 1e+3;
+            
+            //2 cases: positive and negative displacement
+            Double_t xNegOptPosition[2], yNegOptPosition[2], xPosOptPosition[2], yPosOptPosition[2];
+            Double_t csNeg, snNeg, csPos, snPos;
+            Double_t xThisNeg[2], xThisPos[2];
+            
+            csNeg=TMath::Cos(nt->GetAlpha());
+            snNeg=TMath::Sin(nt->GetAlpha());
+            csPos=TMath::Cos(pt->GetAlpha());
+            snPos=TMath::Sin(pt->GetAlpha());
+            
+            //Case 2a: Positive displacement along v vector
+            //Re-position negative track
+            xNegOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+            yNegOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+            xThisNeg[0] = xNegOptPosition[0]*csNeg + yNegOptPosition[0]*snNeg;
+            //Re-position positive track
+            xPosOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+            yPosOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+            xThisPos[0] = xPosOptPosition[0]*csPos + yPosOptPosition[0]*snPos;
+            
+            //Case 2b: Negative displacement along v vector
+            //Re-position negative track
+            xNegOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+            yNegOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+            xThisNeg[1] = xNegOptPosition[1]*csNeg + yNegOptPosition[1]*snNeg;
+            //Re-position positive track
+            xPosOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+            yPosOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+            xThisPos[1] = xPosOptPosition[1]*csPos + yPosOptPosition[1]*snPos;
+            
+            //Test the two cases, please
+            
+            //Case 2a
+            if( xThisNeg[0] < fV0VertexerSels[6] && xThisPos[0] < fV0VertexerSels[6] && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
+                Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
+                Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                lCase2aDCA = TMath::Sqrt(
+                                         TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
+                                         TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
+                                         TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
+                                         );
+            }
+            
+            //Case 2b
+            if( xThisNeg[1] < fV0VertexerSels[6] && xThisPos[1] < fV0VertexerSels[6] && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
+                Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
+                Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
+                lCase2bDCA = TMath::Sqrt(
+                                         TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
+                                         TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
+                                         TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
+                                         );
+            }
+            
+            //Minor detail: all things being equal, prefer closest X
+            Double_t lCase2aSumX = xThisPos[0]+xThisNeg[0];
+            Double_t lCase2bSumX = xThisPos[1]+xThisNeg[1];
+            
+            Double_t lDCAxySmallestR = lCase2aDCA;
+            Double_t lxpSmallestR = xThisPos[0];
+            Double_t lxnSmallestR = xThisNeg[0];
+            
+            Double_t lDCAxyLargestR = lCase2bDCA;
+            Double_t lxpLargestR = xThisPos[1];
+            Double_t lxnLargestR = xThisNeg[1];
+            
+            if( lCase2bSumX < lCase2aSumX ){
+                lDCAxySmallestR = lCase2bDCA;
+                lxpSmallestR = xThisPos[1];
+                lxnSmallestR = xThisNeg[1];
+                lDCAxyLargestR = lCase2aDCA;
+                lxpLargestR = xThisPos[0];
+                lxnLargestR = xThisNeg[0];
+            }
+            
+            //Pass conclusion to lPreprocess variables, please
+            lPreprocessDCAxy = lDCAxySmallestR;
+            lPreprocessxp = lxpSmallestR;
+            lPreprocessxn = lxnSmallestR;
+            if( lDCAxyLargestR < lDCAxySmallestR ){
+                lPreprocessDCAxy = lDCAxyLargestR;
+                lPreprocessxp = lxpLargestR;
+                lPreprocessxn = lxnLargestR;
+            }
         }
+        //End of preprocessing stage!
+        //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
+        nt->PropagateTo(lPreprocessxn, b);
+        pt->PropagateTo(lPreprocessxp, b);
         
-        //Case 2b
-        if( xThisNeg[1] < fV0VertexerSels[6] && xThisPos[1] < fV0VertexerSels[6] && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
-            Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
-            Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
-            lCase2bDCA = TMath::Sqrt(
-                                     TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
-                                     TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
-                                     TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
-                                     );
-        }
+        Double_t p1[8]; nt->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        Double_t p2[8]; pt->GetHelixParameters(p2,b);
+        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
         
-        //Minor detail: all things being equal, prefer closest X
-        Double_t lCase2aSumX = xThisPos[0]+xThisNeg[0];
-        Double_t lCase2bSumX = xThisPos[1]+xThisNeg[1];
-        
-        Double_t lDCAxySmallestR = lCase2aDCA;
-        Double_t lxpSmallestR = xThisPos[0];
-        Double_t lxnSmallestR = xThisNeg[0];
-        
-        Double_t lDCAxyLargestR = lCase2bDCA;
-        Double_t lxpLargestR = xThisPos[1];
-        Double_t lxnLargestR = xThisNeg[1];
-        
-        if( lCase2bSumX < lCase2aSumX ){
-            lDCAxySmallestR = lCase2bDCA;
-            lxpSmallestR = xThisPos[1];
-            lxnSmallestR = xThisNeg[1];
-            lDCAxyLargestR = lCase2aDCA;
-            lxpLargestR = xThisPos[0];
-            lxnLargestR = xThisNeg[0];
-        }
-        
-        //Pass conclusion to lPreprocess variables, please
-        lPreprocessDCAxy = lDCAxySmallestR;
-        lPreprocessxp = lxpSmallestR;
-        lPreprocessxn = lxnSmallestR;
-        if( lDCAxyLargestR < lDCAxySmallestR ){
-            lPreprocessDCAxy = lDCAxyLargestR;
-            lPreprocessxp = lxpLargestR;
-            lPreprocessxn = lxnLargestR;
-        }
-    }
-    //End of preprocessing stage!
-    //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
-    nt->PropagateTo(lPreprocessxn, b);
-    pt->PropagateTo(lPreprocessxp, b);
-    
-    Double_t p1[8]; nt->GetHelixParameters(p1,b);
-    p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
-    Double_t p2[8]; pt->GetHelixParameters(p2,b);
-    p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
-    
-    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     }
     
     Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
@@ -1703,7 +1703,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
                     AliDebug(1," stopped at not a stationary point !");
                 Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
                 if (lmb < 0.)
-                    cout<<" stopped at not a minimum !"<<endl;
+                    AliDebug(1," stopped at not a minimum !");
                 break;
             }
         
