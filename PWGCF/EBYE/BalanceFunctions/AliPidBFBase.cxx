@@ -378,8 +378,6 @@ void AliPidBFBase::CalculateBalance(Double_t gReactionPlane,
 				     Double_t vertexZ) {
   // Calculates the balance function
   fAnalyzedEvents++;
-
-cout<<" Single: "<<kTrackVariablesSingle<<'\t'<<" Pair :"<<kTrackVariablesPair<<endl;
     
   // Initialize histograms if not done yet
   if(!fHistPN){
