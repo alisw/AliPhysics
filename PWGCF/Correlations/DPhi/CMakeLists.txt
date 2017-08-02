@@ -39,6 +39,7 @@ set(SRCS
     AliAnalysisTaskCorPIDTOFdeut.cxx
     AliAnalysisTaskCorPIDTOFprot.cxx
     AliAnalysisTaskCorPIDTOFhadr.cxx
+    AliAnalysisTaskCorPIDTOFdiprot.cxx
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AlianalysisTaskDptPIDpPb.cxx    
