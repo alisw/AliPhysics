@@ -1766,18 +1766,20 @@ void AliJJetJtAnalysis::UserExec(){
   }
 
   //Fill correlation matrix for di-jet invariant mass between reco and particle level.
-  for( int i=0;i<fJetListOfList.GetEntries()/2;i++ ){
+  if(fDoMC){
+    for( int i=0;i<fJetListOfList.GetEntries()/2;i++ ){
       if((*fDiJetMjj)[i+nR*2] > 0 ) { //MC jets
-          if((*fDiJetMjj)[i] > 0 ) {  //jets
-              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],(*fDiJetMjj)[i]);
-          } else {
-              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],-1);
-          }
+        if((*fDiJetMjj)[i] > 0 ) {  //jets
+          fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],(*fDiJetMjj)[i]);
+        } else {
+          fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],-1);
+        }
       }
       /*if((*fDiJetMjj)[i+nR*2] == 0 && (*fDiJetMjj)[i] > 0){ //If event has a measured dijet mass but no true dijet mass
         cout << "Found measured Dijet M but no true M!!!!! " << endl << endl << endl;
         cout << "Measured M" << (*fDiJetMjj)[i] << endl;
-      }*/
+        }*/
+    }
   }
 
 
@@ -1937,10 +1939,12 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
   if(Jets->GetEntries() == 0){
     //cout << "No Jets!" << endl;
+    //cout << "iContainer: " << iContainer << " No jets" << endl;
     return;
   }
 
   //Loop over jets
+  //cout << "Container: " << iContainer << " Number of Jets: " << Jets->GetEntries() << endl;
   for (int i = 0; i<Jets->GetEntries(); i++){
     //cout << "Jet: " << (i+1) << "/" << Jets->GetEntries() << endl;
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
@@ -2045,7 +2049,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
           cout << "pta: " << pta << endl;
           cout << "Jet momentum: " << pT << endl;
           cout << endl << endl << endl;
-        }*/
+          }*/
         fhLeadingJt[iContainer]->Fill(jt, effCorrection);
         fhLeadingJtBin[iContainer][iBin]->Fill(jt, effCorrection);
         fhLeadingJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection);
@@ -2303,8 +2307,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     }
   }
   if (leadingM > 0 && subleadingM > 0){
-      (*fDiJetMjj)[iContainer] = leadingM + subleadingM;
-      fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
+    (*fDiJetMjj)[iContainer] = leadingM + subleadingM;
+    fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
   }
   //doRndmBg = 1;
   /*if(doRndmBg){
@@ -2803,7 +2807,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
               cout << "Reco track Eta:   " << track->Eta() <<      " mc Track Eta:    " << mcTrack->Eta()  << endl;
               cout << "Reco track Phi:   " << track->Phi() <<      " mc Track Eta:    " << mcTrack->Phi()  << endl;
               cout << "Reco track pT:    " << track->Pt() <<       " mc Track pT:     " << mcTrack->Pt()  << endl;
-             */
+              */
             (*fTrackFound)[icon2] = 1;
             if((*fTrackJt)[icon2] < -0){ //Matching reco track was found but it has no jT value
               //cout << "Reconstructed track jT not measured, MC jT was " << jt << endl;
