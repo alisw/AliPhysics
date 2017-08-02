@@ -1766,18 +1766,20 @@ void AliJJetJtAnalysis::UserExec(){
   }
 
   //Fill correlation matrix for di-jet invariant mass between reco and particle level.
-  for( int i=0;i<fJetListOfList.GetEntries()/2;i++ ){
+  if(fDoMC){
+    for( int i=0;i<fJetListOfList.GetEntries()/2;i++ ){
       if((*fDiJetMjj)[i+nR*2] > 0 ) { //MC jets
-          if((*fDiJetMjj)[i] > 0 ) {  //jets
-              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],(*fDiJetMjj)[i]);
-          } else {
-              fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],-1);
-          }
+        if((*fDiJetMjj)[i] > 0 ) {  //jets
+          fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],(*fDiJetMjj)[i]);
+        } else {
+          fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+nR*2],-1);
+        }
       }
       /*if((*fDiJetMjj)[i+nR*2] == 0 && (*fDiJetMjj)[i] > 0){ //If event has a measured dijet mass but no true dijet mass
         cout << "Found measured Dijet M but no true M!!!!! " << endl << endl << endl;
         cout << "Measured M" << (*fDiJetMjj)[i] << endl;
-      }*/
+        }*/
+    }
   }
 
 
@@ -1910,6 +1912,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
   double thisConeSize = fConeSizes[iContainer] ;
   double etaRndm = 0;
   double phiRndm = 0;
+  double leadingTrackPt = 0;
+  double leadingTrackJt = 0;
+  double leadingTrackEff = 0;
+  int leadingTrackIndex = 0;
   int iBgJet = 0;
   int nC = 0;
 
@@ -1937,10 +1943,12 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
   if(Jets->GetEntries() == 0){
     //cout << "No Jets!" << endl;
+    //cout << "iContainer: " << iContainer << " No jets" << endl;
     return;
   }
 
   //Loop over jets
+  //cout << "Container: " << iContainer << " Number of Jets: " << Jets->GetEntries() << endl;
   for (int i = 0; i<Jets->GetEntries(); i++){
     //cout << "Jet: " << (i+1) << "/" << Jets->GetEntries() << endl;
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
@@ -1973,7 +1981,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     fhJetPtWeightBin[iContainer][iBin]->Fill( pT, 1/pT );
     //cout << "Fill fhJetMultiplicityBin[" << iContainer << "][" << iBin << "] With " << jet->GetConstituents()->GetEntries() << endl;
     fhJetMultiplicityBin[iContainer][iBin]->Fill(jetMult);
-    double leadingTrackPt = jet->LeadingParticlePt();
+    double leadingTrackPt = jet->LeadingParticlePt(); //FIXME? For MC tracks this is possibly a track with no charge
     fhLeadingTrkPtBin[iContainer][iBin]->Fill(leadingTrackPt);
     iBin2 = GetBin(fJetLeadPtBorders,leadingTrackPt);
     iBin3 = GetBin(fJetMultBorders,jetMult);
@@ -2002,6 +2010,9 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     //iConstituent loop for the iJet
     //jt, z are calcualted and filled  
     nC = 0;
+    leadingTrackPt = 0;
+    leadingTrackIndex = 0;
+    leadingTrackEff = 0;
     for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
       AliJBaseTrack *constituent = jet->GetConstituent(icon);
       if(constituent->GetCharge() == 0 ) {
@@ -2038,20 +2049,6 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
         (*fConstLabels)[iConst] = constituent->GetLabel();
         iConst++;
       }
-      if(icon == 0){ //Leading track is not first track
-        /*if(pta < leadingTrackPt - 0.1){
-          cout << "Track momentum smaller than leading track!!!!!" << endl;
-          cout << "Leading track: " << leadingTrackPt << endl;
-          cout << "pta: " << pta << endl;
-          cout << "Jet momentum: " << pT << endl;
-          cout << endl << endl << endl;
-        }*/
-        fhLeadingJt[iContainer]->Fill(jt, effCorrection);
-        fhLeadingJtBin[iContainer][iBin]->Fill(jt, effCorrection);
-        fhLeadingJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection);
-        fhLeadingJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
-          ->Fill( jt, 1.0/jt * effCorrection );
-      }
       fhJt[iContainer]->Fill( jt , effCorrection);
       fhJtBin[iContainer][iBin]->Fill( jt , effCorrection);
       fhJtWeightBin[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
@@ -2070,6 +2067,14 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
       fhLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]
         ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection);
 
+      if(pta > leadingTrackPt){
+        leadingTrackPt = pta;
+        leadingTrackIndex = icon;
+        leadingTrackJt = jt; //Save leading track jT for later
+        leadingTrackEff = effCorrection;
+      }
+
+
       for (int jj = 0; jj <= jBin ; jj++) {
         fhJtBinLimBin[iContainer][iBin][jj]->Fill( jt, effCorrection );
         fhJtWeightBinLimBin[iContainer][iBin][jj]
@@ -2081,6 +2086,12 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
       }
 
     }
+    fhLeadingJt[iContainer]->Fill(leadingTrackJt, leadingTrackEff);
+    fhLeadingJtBin[iContainer][iBin]->Fill(leadingTrackJt, leadingTrackEff);
+    fhLeadingJtWeightBin[iContainer][iBin]->Fill(leadingTrackJt, 1.0/leadingTrackJt * leadingTrackEff);
+    fhLeadingJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
+      ->Fill( leadingTrackJt, 1.0/leadingTrackJt * leadingTrackEff);
+
     fhJetMultiplicityBin2[iContainer][iBin]->Fill(nC);
 
     //vOrtho.SetVect(jet->Vect().Orthogonal());
@@ -2303,8 +2314,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     }
   }
   if (leadingM > 0 && subleadingM > 0){
-      (*fDiJetMjj)[iContainer] = leadingM + subleadingM;
-      fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
+    (*fDiJetMjj)[iContainer] = leadingM + subleadingM;
+    fhDiJetM[iContainer]->Fill((*fDiJetMjj)[iContainer]);
   }
   //doRndmBg = 1;
   /*if(doRndmBg){
@@ -2803,7 +2814,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
               cout << "Reco track Eta:   " << track->Eta() <<      " mc Track Eta:    " << mcTrack->Eta()  << endl;
               cout << "Reco track Phi:   " << track->Phi() <<      " mc Track Eta:    " << mcTrack->Phi()  << endl;
               cout << "Reco track pT:    " << track->Pt() <<       " mc Track pT:     " << mcTrack->Pt()  << endl;
-             */
+              */
             (*fTrackFound)[icon2] = 1;
             if((*fTrackJt)[icon2] < -0){ //Matching reco track was found but it has no jT value
               //cout << "Reconstructed track jT not measured, MC jT was " << jt << endl;
