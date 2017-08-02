@@ -227,6 +227,7 @@ enum {kDummyBin,
   Bool_t GetUseSpecialOutput()            const {return fUseSpecialOutput;}
   void   SetUseSpecialOutput(Bool_t v=kTRUE)    {fUseSpecialOutput=v;}
   void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
+  void       SetMCCalib(Bool_t calib = kFALSE)              {fMCCalib = calib;}
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
   void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
   void SetCalibfilePath(TString CalibfilePath) {fCalibfilePath=CalibfilePath;}
@@ -317,10 +318,11 @@ protected:
   Bool_t fIsSelected;                      //! did current event pass phys.sel.?
   Bool_t fVtxOK;                           //! rec.vertex is good
   Bool_t fUseSpecialOutput;                // flag to open special output
-  Bool_t fUseBCMod;                         // flag to use bunch crossing mod 4 events
-  Int_t      fBCMod4;                        // Select BC Mod4
-  Bool_t fCutOnPhi;                          // Set cut on affected phi regions
-  TString fCalibfilePath;                     // Set V0M MC calibration file name path
+  Bool_t fUseBCMod;                         //! flag to use bunch crossing mod 4 events
+  Bool_t fMCCalib;                         //! flag to use mc calibrated V0M boundries
+  Int_t      fBCMod4;                        //! Select BC Mod4
+  Bool_t fCutOnPhi;                          //! Set cut on affected phi regions
+  TString fCalibfilePath;                     //! Set V0M MC calibration file name path
 
 
 
