@@ -2272,14 +2272,14 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
    for(Int_t i=1;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.037);
    for(Int_t i=13; i<=24; i++) fTrackingEff->SetBinContent(i, 0.040);
         
-   // Raw yield extraction ---> to be updated
+   // Raw yield extraction
    fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
    for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
-   for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.03); // [2-4]
-   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.01); // [4-6]
-   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.01); // [6-8]
-   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.01); // [8-12]
-   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.03); // [12-16]
+   for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.04); // [2-4]
+   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.04); // [4-6]
+   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.03); // [6-8]
+   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.03); // [8-12]
+   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.09); // [12-16]
    for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.06); // [16-24]
         
    // Cuts efficiency (envelope of cuts variation syst. and ImproverTask syst.)
@@ -2305,8 +2305,8 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
         
    // MC dN/dpt
    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.00); // No assigned systematics
-        
+   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.01); // this stays for weights with Cand or with D
+     
    return;
  }
     
@@ -2332,14 +2332,14 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
    for(Int_t i=1;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.037);
    for(Int_t i=13; i<=24; i++) fTrackingEff->SetBinContent(i, 0.040);
         
-   // Raw yield extraction ---> to be updated
+   // Raw yield extraction
    fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
    for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
    for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.03); // [2-4]
-   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.01); // [4-6]
-   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.01); // [6-8]
-   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.01); // [8-12]
-   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.03); // [12-16]
+   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.03); // [4-6]
+   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.04); // [6-8]
+   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.05); // [8-12]
+   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.12); // [12-16]
    for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.06); // [16-24]
         
    // Cuts efficiency (envelope of cuts variation syst. and ImproverTask syst.)
@@ -2365,8 +2365,8 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
         
    // MC dN/dpt
    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.00); // No assigned systematics
-        
+   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.01); // this stays for weights with Cand or with D
+     
    return;
  }
     
@@ -2392,14 +2392,14 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
    for(Int_t i=1;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.037);
    for(Int_t i=13; i<=24; i++) fTrackingEff->SetBinContent(i, 0.040);
         
-   // Raw yield extraction ---> to be updated
+   // Raw yield extraction 
    fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
    for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
-   for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.03); // [2-4]
-   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.01); // [4-6]
-   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.01); // [6-8]
-   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.01); // [8-12]
-   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.03); // [12-16]
+   for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.04); // [2-4]
+   for(Int_t i=5;  i<=6;  i++) fRawYield->SetBinContent(i, 0.04); // [4-6]
+   for(Int_t i=7;  i<=8;  i++) fRawYield->SetBinContent(i, 0.04); // [6-8]
+   for(Int_t i=9;  i<=12; i++) fRawYield->SetBinContent(i, 0.04); // [8-12]
+   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i, 0.10); // [12-16]
    for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.06); // [16-24]
         
    // Cuts efficiency (envelope of cuts variation syst. and ImproverTask syst.)
@@ -2425,7 +2425,7 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
         
    // MC dN/dpt
    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.00); // No assigned systematics
+   for(Int_t i=1; i<=24; i++) fMCPtShape->SetBinContent(i, 0.01); // this stays for weights with Cand or with D
         
    return;
  }
