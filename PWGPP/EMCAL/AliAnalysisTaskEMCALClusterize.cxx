@@ -195,6 +195,34 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
 }
 
 //_______________________________________________________
+/// Reject cell if acceptance criteria not passed: 
+///   * correct cell number
+///   * is it bad channel 
+///
+/// \param absID: absolute cell ID number
+///
+/// \return bool quality of cell, exists or not 
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell(Int_t absID) 
+{  
+  if ( absID < 0 || absID >= 24*48*fGeom->GetNumberOfSuperModules() ) 
+    return kFALSE;
+  
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  if (!fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
+    return kFALSE; 
+  
+  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
+  
+  // Do not include bad channels found in analysis,
+  if ( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+       fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi) ) 
+    return kFALSE;
+  
+  return kTRUE;
+}
+
+//_______________________________________________________
 /// \return True if there is in the event an EMCal cluster with enough energy and with good quality.
 /// Accept event given there is a EMCAL cluster with enough energy,
 /// number of cells and not noisy, exotic.
@@ -1692,30 +1720,16 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 //                               fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, iphi-1));
 
     //
-    // Check if they are not declared bad
-    // REMEMBER, do it properly instead of taking this complex method!!!!
-    Bool_t okup   = kTRUE;
-    Bool_t okdo   = kTRUE;
-    Bool_t oklr   = kTRUE;
-    Bool_t okuplr = kTRUE;
-    Bool_t okdolr = kTRUE;
-    Bool_t okup2  = kTRUE;
-    Bool_t okdo2  = kTRUE;
-    Bool_t okup2lr= kTRUE;  
-    Bool_t okdo2lr= kTRUE;
-
-    Float_t  ecell  = 0.;
-    Double_t tcell  = 0.;
-  
-    okup   = fRecoUtils->AcceptCalibrateCell(absIDup   , 0, ecell, tcell, fCaloCells); 
-    okdo   = fRecoUtils->AcceptCalibrateCell(absIDdo   , 0, ecell, tcell, fCaloCells); 
-    oklr   = fRecoUtils->AcceptCalibrateCell(absIDlr   , 0, ecell, tcell, fCaloCells); 
-    okuplr = fRecoUtils->AcceptCalibrateCell(absIDuplr , 0, ecell, tcell, fCaloCells); 
-    okdolr = fRecoUtils->AcceptCalibrateCell(absIDdolr , 0, ecell, tcell, fCaloCells); 
-    okup2  = fRecoUtils->AcceptCalibrateCell(absIDup2  , 0, ecell, tcell, fCaloCells); 
-    okdo2  = fRecoUtils->AcceptCalibrateCell(absIDdo2  , 0, ecell, tcell, fCaloCells); 
-    okup2lr= fRecoUtils->AcceptCalibrateCell(absIDup2lr, 0, ecell, tcell, fCaloCells); 
-    okdo2lr= fRecoUtils->AcceptCalibrateCell(absIDdo2lr, 0, ecell, tcell, fCaloCells); 
+    // Check if they are not declared bad or exist
+    Bool_t okup   = AcceptCell(absIDup   ); 
+    Bool_t okdo   = AcceptCell(absIDdo   ); 
+    Bool_t oklr   = AcceptCell(absIDlr   ); 
+    Bool_t okuplr = AcceptCell(absIDuplr ); 
+    Bool_t okdolr = AcceptCell(absIDdolr ); 
+    Bool_t okup2  = AcceptCell(absIDup2  ); 
+    Bool_t okdo2  = AcceptCell(absIDdo2  ); 
+    Bool_t okup2lr= AcceptCell(absIDup2lr); 
+    Bool_t okdo2lr= AcceptCell(absIDdo2lr); 
 
 //    if(amp > 2)
 //    printf("ecell %2.2f, amp %2.2f: F1 %2.2e, F2 %2.2e, F3 %2.2e; w1 %2.2e w2 %2.2e w3 %2.2e \n",ecell,amp, 
@@ -1817,15 +1831,15 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     // Subtract the added energy to main cell, if energy conservation is requested
     if ( fTCardCorrClusEnerConserv )
     {
-      if(absIDlr   >=0 ) fTCardCorrCellsEner[id] -= amp*fracleri;
-      if(absIDuplr >=0 ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
-      if(absIDdolr >=0 ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
-      if(absIDup   >=0 ) fTCardCorrCellsEner[id] -= amp*fracupdown;
-      if(absIDdo   >=0 ) fTCardCorrCellsEner[id] -= amp*fracupdown;
-      if(absIDup2  >=0 ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if(absIDup2lr>=0 ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if(absIDdo2  >=0 ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if(absIDdo2lr>=0 ) fTCardCorrCellsEner[id] -= amp*frac2nd;
+      if ( oklr    ) fTCardCorrCellsEner[id] -= amp*fracleri;
+      if ( okuplr  ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
+      if ( okdolr  ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
+      if ( okup    ) fTCardCorrCellsEner[id] -= amp*fracupdown;
+      if ( okdo    ) fTCardCorrCellsEner[id] -= amp*fracupdown;
+      if ( okup2   ) fTCardCorrCellsEner[id] -= amp*frac2nd;
+      if ( okup2lr ) fTCardCorrCellsEner[id] -= amp*frac2nd;
+      if ( okdo2   ) fTCardCorrCellsEner[id] -= amp*frac2nd;
+      if ( okdo2lr ) fTCardCorrCellsEner[id] -= amp*frac2nd;
       //printf("\t conserve energy, remove %2.3f, from %d\n",fTCardCorrCellsEner[id],id);
     } // conserve energy
   
