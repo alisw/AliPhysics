@@ -52,6 +52,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
     
   // Event methods, settings
   
+  Bool_t         AcceptCell(Int_t absID);
   Bool_t         AcceptEventEMCAL();
   void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent   = kTRUE   ; }
   void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent   = kFALSE  ; }
@@ -340,7 +341,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 34) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 35) ;
   /// \endcond
 
 };
