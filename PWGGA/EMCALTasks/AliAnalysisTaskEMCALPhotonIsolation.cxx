@@ -788,20 +788,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fTrackMultvsPt->Sumw2();
 	  fOutput->Add(fTrackMultvsPt);
 	}
-        
-        if(fIsMC){
-          fphietaPhotons = new TH3D ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
-          fphietaPhotons->Sumw2();
-          fOutput->Add(fphietaPhotons);
-          
-          fphietaOthers = new TH3D ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthers->Sumw2();
-          fOutput->Add(fphietaOthers);
-          
-          fphietaOthersBis = new TH3D ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthersBis->Sumw2();
-          fOutput->Add(fphietaOthersBis);
-        }
       }
         break;
     }
@@ -1006,26 +992,28 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fPtTracksVSpTNC_MC->Sumw2();
     fOutput->Add(fPtTracksVSpTNC_MC);
     
-    fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
-    fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
-    fpi0VSclusterVSIsolation->SetYTitle("cluster E");
-    fpi0VSclusterVSIsolation->SetZTitle("Isolation");
-    fpi0VSclusterVSIsolation->Sumw2();
-    fOutput->Add(fpi0VSclusterVSIsolation);
+    if(!fLightOutput){
+      fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
+      fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+      fpi0VSclusterVSIsolation->SetYTitle("cluster E");
+      fpi0VSclusterVSIsolation->SetZTitle("Isolation");
+      fpi0VSclusterVSIsolation->Sumw2();
+      fOutput->Add(fpi0VSclusterVSIsolation);
     
-    fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster #sigma_{long}^{2} vs Isolation",95,5.,100.,500,0.,5.,400,0.,100.);
-    fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
-    fpi0VSM02VSIsolation->SetYTitle("cluster #sigma_{long}^{2}");
-    fpi0VSM02VSIsolation->SetZTitle("Isolation");
-    fpi0VSM02VSIsolation->Sumw2();
-    fOutput->Add(fpi0VSM02VSIsolation);
+      fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster #sigma_{long}^{2} vs Isolation",95,5.,100.,500,0.,5.,400,0.,100.);
+      fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+      fpi0VSM02VSIsolation->SetYTitle("cluster #sigma_{long}^{2}");
+      fpi0VSM02VSIsolation->SetZTitle("Isolation");
+      fpi0VSM02VSIsolation->Sumw2();
+      fOutput->Add(fpi0VSM02VSIsolation);
     
-    fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster #sigma_{long}^{2} ",95,5.,100.,100,0.,100.,500,0.,5.);
-    fpi0VSclusterVSM02->SetXTitle("particle (#pi^{0} or #eta) E");
-    fpi0VSclusterVSM02->SetYTitle("cluster E");
-    fpi0VSclusterVSM02->SetZTitle("cluster #sigma_{long}^{2}");
-    fpi0VSclusterVSM02->Sumw2();
-    fOutput->Add(fpi0VSclusterVSM02);
+      fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster #sigma_{long}^{2} ",95,5.,100.,100,0.,100.,500,0.,5.);
+      fpi0VSclusterVSM02->SetXTitle("particle (#pi^{0} or #eta) E");
+      fpi0VSclusterVSM02->SetYTitle("cluster E");
+      fpi0VSclusterVSM02->SetZTitle("cluster #sigma_{long}^{2}");
+      fpi0VSclusterVSM02->Sumw2();
+      fOutput->Add(fpi0VSclusterVSM02);
+    }
   }
   
   PostData(1, fOutput);
@@ -2863,9 +2851,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-          fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
-          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
-          fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
+	  if(!fLightOutput){
+	    fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
+	    fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
+	    fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
+	  }
         }
         else{
             // printf("  of a non considered meson/baryon");
@@ -2952,9 +2942,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-          fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
-          fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
-          fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
+	  if(!fLightOutput){
+	    fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
+	    fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
+	    fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
+	  }
         }
         else
           clusterFromPromptPhoton=8; // Undefined
@@ -3826,7 +3818,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
       eT = mcpart->E()*TMath::Sin(mcpart->Theta()); // Transform to transverse Energy
       
-      fphietaPhotons->Fill(eta,phi,eT);
+      if(fWho == 1)
+	fphietaPhotons->Fill(eta,phi,eT);
       
       bool foundmatch=kFALSE;
       for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
@@ -3847,8 +3840,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
           foundmatch=kTRUE;
-          fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
-          fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
+	  if(fWho == 1){
+	    fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
+	    fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
+	  }
         }
       }
       
