@@ -5,6 +5,7 @@
 #include "AliAnalysisTaskdNdEtapp13.h"
 #include "AliAnalysisManager.h"
 #include "TProof.h"
+#include "TFile.h"
 #include "TROOT.h"
 #endif
 
@@ -56,9 +57,10 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
   Int_t BCmod4      = 2,              // set Bunch crossing mode 4
   Bool_t phicuts      = kFALSE,       // set cut on affected phi regions
-  TString calibfile = "$ALICE_PHYSICS/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root",
-  Float_t mcscale = 1.0
-
+Float_t mcscale = 1.0,                // set mc scale for V0 amplitude
+Bool_t mcCalib      = kTRUE,       // set cut on affected phi regions
+TString calibfile = "./V0M_bins_LHC15g3a3.root"
+//  const Char_t *calibfile = "$HOME/alice/ali-master/AliPhysics/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root",
 )
 {
 
@@ -191,6 +193,7 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   task->SetInjScale(injScale);
   task->SetRemoveOverlaps(remOvl);
   task->SetUseBCMod(useBCmod);
+  task->SetMCCalib(mcCalib);
   task->SetBCMod(BCmod4);
   task->SetCutOnPhi(phicuts);
   task->SetScaleMCV0(mcscale);
