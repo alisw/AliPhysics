@@ -3271,7 +3271,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         }//pi0 mass region
       }
       
-      if(fNAngleCutBins > 0)
+      if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
       {
         Int_t angleBin = -1;
         for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
@@ -3339,7 +3339,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         {
           fhMCEtaPtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
           
-          Float_t momOK = kFALSE;
+          Bool_t momOK = kFALSE;
           
           AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
           momindex  = ancestor->GetMother();
@@ -3387,7 +3387,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           
         }// eta mass region
     } 
-      if(fNAngleCutBins > 0)
+      if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
       {
         Int_t angleBin = -1;
         for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
