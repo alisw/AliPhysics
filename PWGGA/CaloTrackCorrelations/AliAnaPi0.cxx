@@ -3425,7 +3425,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     }
     else
     {//Partons, colliding protons, strings, intermediate corrections
-      if(ancStatus==11 || ancStatus==12)
+      if(ancStatus == 11 || ancStatus == 12 || ancStatus == 0 )
       {//String fragmentation
         mcIndex = 8;
       }
@@ -3458,17 +3458,23 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   { //ancLabel <= -1
     //printf("Not related at all label = %d\n",ancLabel);
     AliDebug(1,"Common ancestor not found");
-    
+
     mcIndex = 12;
   }
-  
-  if(mcIndex >= 0 && mcIndex < 13)
+    
+  if(mcIndex < 0 || mcIndex >= 13) 
   {
-    fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
-    fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
-    fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight()*weightPt);
-    fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight()*weightPt);
+    AliWarning(Form("Wrong ancestor type %d, set it to unknown (12)",mcIndex));
+    mcIndex = 12;
+    
+    printf("Ancestor type not found: label %d, pdg %d, name %s, status %d\n",
+           ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
   }
+  
+  fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
+  fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
+  fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight()*weightPt);
+  fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight()*weightPt);
   
   if( IsStudyClusterOverlapsPerGeneratorOn() )
   {      
@@ -4089,6 +4095,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
               
               fhRe1     [index]->Fill(pt, m, GetEventWeight()*weightPt);
+              
               if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
               
               if(fFillBadDistHisto)
@@ -4247,11 +4254,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         if(fFillOriginHisto)
+        {
           FillMCVersusRecDataHistograms(ancLabel, ancPDG, ancStatus, weightPt,
                                         p1->GetCaloLabel(0), p2->GetCaloLabel(0),
                                         p1->GetTag(),p2->GetTag(),
                                         p1->Pt(), p2->Pt(),
                                         ncell1, ncell2, m, pt, a, deta, dphi, angle);
+        }
       }
       
       //-----------------------
