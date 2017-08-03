@@ -1,4 +1,6 @@
-
+	//update Augsut 3rd, 2017
+	//new ShowerShape cuts
+	//not cut from 0 to 100 in centrality (same events have centrality = 101)
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
 
@@ -88,7 +90,14 @@ Bool_t isTOFdet 		= kFALSE
 	if(configIndex==18) hfecuts->SetMaxImpactParam(2,3); //changed z to 3
 	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);//r,z   default on AOD 2.4, 3.2
 	else if(configIndex==83) hfecuts->SetMaxImpactParam(0.1,0.2);
-	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
+		//default:
+		//else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
+	
+		//to check track issue
+	else hfecuts->SetMaxImpactParam(4,4); 	
+	
+	
+	
 	
 	//Event Selection
 	hfecuts->SetVertexRange(10.);													//
@@ -257,7 +266,7 @@ Bool_t isTOFdet 		= kFALSE
 
 	//E/p Cuts
 	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==61) task->SetEoverPCut(0.70,1.2);
+	else if (configIndex==61) task->ç(0.70,1.2);
 	else if (configIndex==62) task->SetEoverPCut(0.75,1.2);
 	else if (configIndex==63) task->SetEoverPCut(0.76,1.2);
 	else if (configIndex==64) task->SetEoverPCut(0.77,1.2);
@@ -289,7 +298,7 @@ Bool_t isTOFdet 		= kFALSE
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-	if(centralityIndex==5) task->SetCentrality(0,100);
+	//if(centralityIndex==5) task->SetCentrality(0,100); // to not cut events see centralityIndex==19 in case you want it
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);
@@ -301,6 +310,8 @@ Bool_t isTOFdet 		= kFALSE
 	if(centralityIndex==13) task->SetCentrality(70,80);
 	if(centralityIndex==14) task->SetCentrality(80,90);
 	if(centralityIndex==15) task->SetCentrality(90,100);
+	
+	if(centralityIndex==19) task->SetCentrality(0,100);
 	
 ///_______________________________________________________________________________________________________________
 
