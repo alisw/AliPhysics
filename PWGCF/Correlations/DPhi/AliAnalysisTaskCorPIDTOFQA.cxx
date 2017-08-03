@@ -13,13 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* AliAnaysisTaskCorPIDTOFdeut
+/* AliAnaysisTaskCorPIDTOFdiprot
  *
  * empty task which can serve as a starting point for building an analysis
  * as an example, one histogram is filled
  */
 //#include <iostream>
-//#include <fstream>
+#include <fstream>
 #include <cmath>
 //#include <iomanip>
 #include "TChain.h"
@@ -71,93 +71,64 @@
 
 
 
-//class AliAnalysisTaskCorPIDTOFQA;    // your analysis class
-
 using namespace std;            // std namespace: so you can do things like 'cout'
-
 //using namespace BSchaefer_devel;
 
-//ofstream fout;
-//Int_t NTracks            = 0;
-//Int_t NGoodTracks        = 0;
-//Int_t NAssociatedTracks  = 0;
-//Int_t DeuteronCandidates = 0;
+//ofstream file_output("output.txt");
 
-
-// SetCutGeoNcrNcl  cut out 3 cm on the sides of the TPC
-
-
-
-//Double_t deut_curves[2][2][3];  // [charge][mean,sigma][par]
-//TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
 
 ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
-    fHistPt(0),                 //  1
-    cent_ntracks(0),            //  2
+    fHistPt(0),                    //  1
+    cent_ntracks(0),               //  2
     
-    high_per_event_05(0),       //  3a
-    high_per_event_10(0),       //  3b
-    high_per_event_pos(0),      //  4
-    high_per_event_neg(0),      //  5
+    m2_pt_pos(0),                  //  3
+    m2_pt_neg(0),                  //  4
+    beta_p_pos(0),                 //  5
+    beta_p_neg(0),                 //  6
 
+    deltat_pt_pos(0),              //  7
+    deltat_pt_neg(0),              //  8
 
-    dphi_pt_deut_05(0),         //  6
-    dphi_et_deut_05(0),         //  7
-    dphi_en_deut_05(0),         //  8
-    dphi_kt_deut_05(0),         //  9
-    
-    dphi_pt_prot_05(0),         // 10
-    dphi_et_prot_05(0),         // 11
-    dphi_en_prot_05(0),         // 12
-    dphi_kt_prot_05(0),         // 13
+    m2_pt_pos_cut(0),              //  9
+    m2_pt_neg_cut(0),              // 10
+    beta_p_pos_cut(0),             // 11
+    beta_p_neg_cut(0),             // 12
+    deltat_pt_pos_cut(0),          // 13
+    deltat_pt_neg_cut(0),          // 14
 
-    dphi_pt_hadr_05(0),         // 14
-    dphi_et_hadr_05(0),         // 15
-    dphi_en_hadr_05(0),         // 16
-    dphi_kt_hadr_05(0),         // 17
+    deut_per_event(0),             // 15
+//  deut_per_event_pos(0),         // 16
+//  deut_per_event_neg(0),         // 17
     
-//  high_pt_count_05(0),        // 18
-//  high_et_count_05(0),        // 19
-//  high_en_count_05(0),        // 20
-//  high_kt_count_05(0),        // 21
-    
-    deut_phi_hist_05(0),        // 22
-    prot_phi_hist_05(0),        // 23
-    hadr_phi_hist_05(0),        // 24
-    high_phi_hist_05(0),        // 25
+    m2_pt_pos_cut_T(0),            // 18
+    m2_pt_neg_cut_T(0),            // 19
 
-    dphi_pt_deut_10(0),         // 26
-    dphi_et_deut_10(0),         // 27
-    dphi_en_deut_10(0),         // 28
-    dphi_kt_deut_10(0),         // 29
+    deut_phi_pt(0),                // 20
+    deut_phi_pt_pos(0),            // 21
+    deut_phi_pt_neg(0),            // 22
     
-    dphi_pt_prot_10(0),         // 30
-    dphi_et_prot_10(0),         // 31
-    dphi_en_prot_10(0),         // 32
-    dphi_kt_prot_10(0),         // 33
 
-    dphi_pt_hadr_10(0),         // 34
-    dphi_et_hadr_10(0),         // 35
-    dphi_en_hadr_10(0),         // 36
-    dphi_kt_hadr_10(0),         // 37
+    trig_05_phi_pt(0),             // 23
+    trig_05_phi_pt_pos(0),         // 24
+    trig_05_phi_pt_neg(0),         // 25
+    trig_08_phi_pt(0),             // 26
+    trig_08_phi_pt_pos(0),         // 27
+    trig_08_phi_pt_neg(0),         // 28
     
-//  high_pt_count_10(0),        // 38
-//  high_et_count_10(0),        // 39
-//  high_en_count_10(0),        // 40
-//  high_kt_count_10(0),        // 41
-    
-    deut_phi_hist_10(0),        // 42
-    prot_phi_hist_10(0),        // 43
-    hadr_phi_hist_10(0),        // 44
-    high_phi_hist_10(0),        // 45    
-    
-    m2_cut(0)                   // 46
+    deut_dphi_pt_pos_pos_05(0),    // 29
+    deut_dphi_pt_pos_neg_05(0),    // 30
+    deut_dphi_pt_neg_neg_05(0),    // 31
 
-    
+    deut_dphi_pt_pos_pos_08(0),    // 32
+    deut_dphi_pt_pos_neg_08(0),    // 33
+    deut_dphi_pt_neg_neg_08(0)     // 34
+
+//    track_cor_radius_pt(0),        // 34
+//    track_cor_radius_pt_cut(0)     // 35
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -166,66 +137,53 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAnalysisTaskSE(name),
 fAOD(0), fOutputList(0), fPIDResponse(0),
 									   
-    fHistPt(0),                 //  1
-    cent_ntracks(0),            //  2
-    
-    high_per_event_05(0),       //  3a
-    high_per_event_10(0),       //  3b									       
-    high_per_event_pos(0),      //  4
-    high_per_event_neg(0),      //  5
 
-    dphi_pt_deut_05(0),         //  6
-    dphi_et_deut_05(0),         //  7
-    dphi_en_deut_05(0),         //  8
-    dphi_kt_deut_05(0),         //  9
+    fHistPt(0),                    //  1
+    cent_ntracks(0),               //  2
     
-    dphi_pt_prot_05(0),         // 10
-    dphi_et_prot_05(0),         // 11
-    dphi_en_prot_05(0),         // 12
-    dphi_kt_prot_05(0),         // 13
+    m2_pt_pos(0),                  //  3
+    m2_pt_neg(0),                  //  4
+    beta_p_pos(0),                 //  5
+    beta_p_neg(0),                 //  6
 
-    dphi_pt_hadr_05(0),         // 14
-    dphi_et_hadr_05(0),         // 15
-    dphi_en_hadr_05(0),         // 16
-    dphi_kt_hadr_05(0),         // 17
-    
-//  high_pt_count_05(0),        // 18
-//  high_et_count_05(0),        // 19
-//  high_en_count_05(0),        // 20
-//  high_kt_count_05(0),        // 21
-    
-    deut_phi_hist_05(0),        // 22
-    prot_phi_hist_05(0),        // 23
-    hadr_phi_hist_05(0),        // 24
-    high_phi_hist_05(0),        // 25
+    deltat_pt_pos(0),              //  7
+    deltat_pt_neg(0),              //  8
 
-    dphi_pt_deut_10(0),         // 26
-    dphi_et_deut_10(0),         // 27
-    dphi_en_deut_10(0),         // 28
-    dphi_kt_deut_10(0),         // 29
-    
-    dphi_pt_prot_10(0),         // 30
-    dphi_et_prot_10(0),         // 31
-    dphi_en_prot_10(0),         // 32
-    dphi_kt_prot_10(0),         // 33
+    m2_pt_pos_cut(0),              //  9
+    m2_pt_neg_cut(0),              // 10
+    beta_p_pos_cut(0),             // 11
+    beta_p_neg_cut(0),             // 12
+    deltat_pt_pos_cut(0),          // 13
+    deltat_pt_neg_cut(0),          // 14
 
-    dphi_pt_hadr_10(0),         // 34
-    dphi_et_hadr_10(0),         // 35
-    dphi_en_hadr_10(0),         // 36
-    dphi_kt_hadr_10(0),         // 37
+    deut_per_event(0),             // 15
+//  deut_per_event_pos(0),         // 16
+//  deut_per_event_neg(0),         // 17
     
-//  high_pt_count_10(0),        // 38
-//  high_et_count_10(0),        // 39
-//  high_en_count_10(0),        // 40
-//  high_kt_count_10(0),        // 41
-    
-    deut_phi_hist_10(0),        // 42
-    prot_phi_hist_10(0),        // 43
-    hadr_phi_hist_10(0),        // 44
-    high_phi_hist_10(0),        // 45    
-    
-    m2_cut(0)                   // 46
+    m2_pt_pos_cut_T(0),            // 18
+    m2_pt_neg_cut_T(0),            // 19
+							  
+    deut_phi_pt(0),                // 20
+    deut_phi_pt_pos(0),            // 21
+    deut_phi_pt_neg(0),            // 22
 
+    trig_05_phi_pt(0),             // 23
+    trig_05_phi_pt_pos(0),         // 24
+    trig_05_phi_pt_neg(0),         // 25
+    trig_08_phi_pt(0),             // 26
+    trig_08_phi_pt_pos(0),         // 27
+    trig_08_phi_pt_neg(0),         // 28
+									   
+    deut_dphi_pt_pos_pos_05(0),    // 29
+    deut_dphi_pt_pos_neg_05(0),    // 30
+    deut_dphi_pt_neg_neg_05(0),    // 31
+
+    deut_dphi_pt_pos_pos_08(0),    // 32
+    deut_dphi_pt_pos_neg_08(0),    // 33
+    deut_dphi_pt_neg_neg_08(0)     // 34
+									       
+//    track_cor_radius_pt(0),        // 34
+//    track_cor_radius_pt_cut(0)     // 35
 									       
 {
     // constructor
@@ -245,10 +203,6 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
 
-// old //   3.43396 0.0133493 0.0593701 -0.125677 0.0646736 0.148637 3.59796 -0.00619808 -0.107274 0.034074 0.0359503 0.0131823 
-//3.09901 0.0446792 0.469684 0.0973401 0.0424328 -0.0685078 2.91151 0.0730297 0.664744 -0.115955 0.0709238 0.15557 
-
-
     deut_curves[0][0][0] = 3.09901;     // pos deut mean curve
     deut_curves[0][0][1] = 0.0446792;
     deut_curves[0][0][2] = 0.469684;
@@ -267,27 +221,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
 
     
-    prot_curves[0][0][0] = 0.763625;     // pos prot mean curve
-    prot_curves[0][0][1] = 0.0194772;
-    prot_curves[0][0][2] = 0.0903159;
-    prot_curves[0][0][3] =-0.000109114;
-    
-    prot_curves[0][1][0] =-0.129833;  // pos prot sigma curve
-    prot_curves[0][1][1] = 0.0625516;
-    prot_curves[0][1][2] = 0.10124;
-    prot_curves[0][1][3] = 0.000109926;
-
-    prot_curves[1][0][0] = 0.778006;     // neg prot mean curve
-    prot_curves[1][0][1] = 0.0183448;
-    prot_curves[1][0][2] = 0.0754383;
-    prot_curves[1][0][3] =-0.00010526;
-
-    prot_curves[1][1][0] =-0.117123;  // neg prot sigma curve
-    prot_curves[1][1][1] = 0.0597632;
-    prot_curves[1][1][2] = 0.0921575;
-    prot_curves[1][1][3] = 0.000118412;
-
-	
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
@@ -295,135 +228,114 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
 
-    fHistPt               = new TH1F("fHistPt",               "Pt()",                 1000,     0,     10);                              //  1
-    cent_ntracks          = new TH2F("cent_ntracks",          "cent_ntracks",          100,     0,    100,     100,       0,     800);   //  2
+    Double_t pt_binning[2001];
 
 
-    
-    high_per_event_05     = new TH1I("high_per_event_05",     "high_per_event_05",      50,     0,     50);                              //  3a
-    high_per_event_10     = new TH1I("high_per_event_10",     "high_per_event_10",      50,     0,     50);                              //  3b
-    high_per_event_pos    = new TH1I("high_per_event_pos",    "high_per_event_pos",     50,     0,     50);                              //  4
-    high_per_event_neg    = new TH1I("high_per_event_neg",    "high_per_event_neg",     50,     0,     50);                              //  5
-
-
-
-    dphi_pt_deut_05       = new TH2F("dphi_pt_deut_05",       "dphi_pt_deut_05",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   //  6
-    dphi_et_deut_05       = new TH2F("dphi_et_deut_05",       "dphi_et_deut_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   //  7
-    dphi_en_deut_05       = new TH2F("dphi_en_deut_05",       "dphi_en_deut_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   //  8
-    dphi_kt_deut_05       = new TH2F("dphi_kt_deut_05",       "dphi_kt_deut_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   //  9
-
-    dphi_pt_prot_05       = new TH2F("dphi_pt_prot_05",       "dphi_pt_prot_05",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 10
-    dphi_et_prot_05       = new TH2F("dphi_et_prot_05",       "dphi_et_prot_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 11
-    dphi_en_prot_05       = new TH2F("dphi_en_prot_05",       "dphi_en_prot_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 12
-    dphi_kt_prot_05       = new TH2F("dphi_kt_prot_05",       "dphi_kt_prot_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 13
-
-    dphi_pt_hadr_05       = new TH2F("dphi_pt_hadr_05",       "dphi_pt_hadr_05",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 14
-    dphi_et_hadr_05       = new TH2F("dphi_et_hadr_05",       "dphi_et_hadr_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 15
-    dphi_en_hadr_05       = new TH2F("dphi_en_hadr_05",       "dphi_en_hadr_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 16
-    dphi_kt_hadr_05       = new TH2F("dphi_kt_hadr_05",       "dphi_kt_hadr_05",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 17
-
-//  high_pt_count_05      = new TH1F("high_pt_count_05",      "high_pt_count_05",      160,  1.00,   5.00);                              // 18
-//  high_et_count_05      = new TH1F("high_et_count_05",      "high_et_count_05",      160,  1.00,   4.78);                              // 19
-//  high_en_count_05      = new TH1F("high_en_count_05",      "high_en_count_05",      160,  1.00,   4.78);                              // 20
-//  high_kt_count_05      = new TH1F("high_kt_count_05",      "high_kt_count_05",      160,  1.00,   4.78);                              // 21
-
-    deut_phi_hist_05      = new TH1F("deut_phi_hist_05",      "deut_phi_hist_05",      480, -0.10, 6.383185);                            // 22
-    prot_phi_hist_05      = new TH1F("prot_phi_hist_05",      "prot_phi_hist_05",      480, -0.10, 6.383185);                            // 23
-    hadr_phi_hist_05      = new TH1F("hadr_phi_hist_05",      "hadr_phi_hist_05",      480, -0.10, 6.383185);                            // 24
-    high_phi_hist_05      = new TH1F("high_phi_hist_05",      "high_phi_hist_05",      480, -0.10, 6.383185);                            // 25
-    
-
-    dphi_pt_deut_10       = new TH2F("dphi_pt_deut_10",       "dphi_pt_deut_10",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 26
-    dphi_et_deut_10       = new TH2F("dphi_et_deut_10",       "dphi_et_deut_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 27
-    dphi_en_deut_10       = new TH2F("dphi_en_deut_10",       "dphi_en_deut_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 28
-    dphi_kt_deut_10       = new TH2F("dphi_kt_deut_10",       "dphi_kt_deut_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 29
-
-    dphi_pt_prot_10       = new TH2F("dphi_pt_prot_10",       "dphi_pt_prot_10",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 30
-    dphi_et_prot_10       = new TH2F("dphi_et_prot_10",       "dphi_et_prot_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 31
-    dphi_en_prot_10       = new TH2F("dphi_en_prot_10",       "dphi_en_prot_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 32
-    dphi_kt_prot_10       = new TH2F("dphi_kt_prot_10",       "dphi_kt_prot_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 33
-
-    dphi_pt_hadr_10       = new TH2F("dphi_pt_hadr_10",       "dphi_pt_hadr_10",       160,  1.00,   5.00,     300, -1.6708,  4.8124);   // 34
-    dphi_et_hadr_10       = new TH2F("dphi_et_hadr_10",       "dphi_et_hadr_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 35
-    dphi_en_hadr_10       = new TH2F("dphi_en_hadr_10",       "dphi_en_hadr_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 36
-    dphi_kt_hadr_10       = new TH2F("dphi_kt_hadr_10",       "dphi_kt_hadr_10",       189,  1.00,   4.78,     300, -1.6708,  4.8124);   // 37
-
-//  high_pt_count_10      = new TH1F("high_pt_count_10",      "high_pt_count_10",      160,  1.00,   5.00);                              // 38
-//  high_et_count_10      = new TH1F("high_et_count_10",      "high_et_count_10",      160,  1.00,   4.78);                              // 39
-//  high_en_count_10      = new TH1F("high_en_count_10",      "high_en_count_10",      160,  1.00,   4.78);                              // 40
-//  high_kt_count_10      = new TH1F("high_kt_count_10",      "high_kt_count_10",      160,  1.00,   4.78);                              // 41
-
-    deut_phi_hist_10      = new TH1F("deut_phi_hist_10",      "deut_phi_hist_10",      480, -0.10, 6.383185);                            // 42
-    prot_phi_hist_10      = new TH1F("prot_phi_hist_10",      "prot_phi_hist_10",      480, -0.10, 6.383185);                            // 43
-    hadr_phi_hist_10      = new TH1F("hadr_phi_hist_10",      "hadr_phi_hist_10",      480, -0.10, 6.383185);                            // 44
-    high_phi_hist_10      = new TH1F("high_phi_hist_10",      "high_phi_hist_10",      480, -0.10, 6.383185);                            // 45
-    
-    m2_cut                = new TH2F("m2_cut",                "m2_cut",                200,  1.00, 5.00,      400,    -1.00,    7.00);   // 46
-
-
+    Float_t moving_marker = 0.10;
+    for(int i=0; i<1202; i++)
+    {
+	pt_binning[i] = moving_marker;
+	moving_marker = moving_marker + pt_binning[i] * 0.005;
+    }
     
     
-    fOutputList->Add(fHistPt);                //  1                                                             // objects added to output file
-    fOutputList->Add(cent_ntracks);           //  2
+     
+    fHistPt                    = new TH1F("fHistPt",                    "Pt()",                        800,       pt_binning);                              //  1
+    cent_ntracks               = new TH2F("cent_ntracks",               "cent_ntracks",                100,        0,    100,     100,       0,     800);   //  2
     
+    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  3
+    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  4
+    beta_p_pos                 = new TH2F("beta_p_pos",                 "beta_p_pos",                  800,       pt_binning,    3000,     0.1,     1.1);   //  5
+    beta_p_neg                 = new TH2F("beta_p_neg",                 "beta_p_neg",                  800,       pt_binning,    3000,     0.1,     1.1);   //  6
+    deltat_pt_pos              = new TH2F("deltat_pt_pos",              "deltat_pt_pos",               800,       pt_binning,   10000,    -1.0,    99.0);   //  7
+    deltat_pt_neg              = new TH2F("deltat_pt_neg",              "deltat_pt_neg",               800,       pt_binning,   10000,    -1.0,    99.0);   //  8
 
-    fOutputList->Add(high_per_event_05);      //  3a
-    fOutputList->Add(high_per_event_10);      //  3b
-    fOutputList->Add(high_per_event_pos);     //  4
-    fOutputList->Add(high_per_event_neg);     //  5
+    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  9
+    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   // 10
+    beta_p_pos_cut             = new TH2F("beta_p_pos_cut",             "beta_p_pos_cut",              800,       pt_binning,    3000,     0.1,     1.1);   // 11
+    beta_p_neg_cut             = new TH2F("beta_p_neg_cut",             "beta_p_neg_cut",              800,       pt_binning,    3000,     0.1,     1.1);   // 12
+    deltat_pt_pos_cut          = new TH2F("deltat_pt_pos_cut",          "deltat_pt_pos_cut",           800,       pt_binning,   10000,    -1.0,    99.0);   // 13
+    deltat_pt_neg_cut          = new TH2F("deltat_pt_neg_cut",          "deltat_pt_neg_cut",           800,       pt_binning,   10000,    -1.0,    99.0);   // 14
 
-    fOutputList->Add(dphi_pt_deut_05);        //  6
-    fOutputList->Add(dphi_et_deut_05);        //  7
-    fOutputList->Add(dphi_en_deut_05);        //  8
-    fOutputList->Add(dphi_kt_deut_05);        //  9
+
+    deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 15
+//  deut_per_event_pos         = new TH1I("deut_per_event_pos",         "deut_per_event_pos",           12,        0,     12);                              // 16
+//  deut_per_event_neg         = new TH1I("deut_per_event_neg",         "deut_per_event_neg",           12,        0,     12);                              // 17
+    m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   // 18
+    m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   // 19
+
+    deut_phi_pt                = new TH2F("deut_phi_pt",                "deut_phi_pt",                 800,       pt_binning,     300, -1.6708,  4.8124);   // 20
+    deut_phi_pt_pos            = new TH2F("deut_phi_pt_pos",            "deut_phi_pt_pos",             800,       pt_binning,     300, -1.6708,  4.8124);   // 21
+    deut_phi_pt_neg            = new TH2F("deut_phi_pt_neg",            "deut_phi_pt_neg",             800,       pt_binning,     300, -1.6708,  4.8124);   // 22
+
+
+    trig_05_phi_pt             = new TH2F("trig_05_phi_pt",             "trig_05_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 23
+    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 24
+    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 25
+    trig_08_phi_pt             = new TH2F("trig_08_phi_pt",             "trig_08_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 26
+    trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 27
+    trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 28
     
-    fOutputList->Add(dphi_pt_prot_05);        // 10
-    fOutputList->Add(dphi_et_prot_05);        // 11
-    fOutputList->Add(dphi_en_prot_05);        // 12
-    fOutputList->Add(dphi_kt_prot_05);        // 13
-
-    fOutputList->Add(dphi_pt_hadr_05);        // 14
-    fOutputList->Add(dphi_et_hadr_05);        // 15
-    fOutputList->Add(dphi_en_hadr_05);        // 16
-    fOutputList->Add(dphi_kt_hadr_05);        // 17
+    deut_dphi_pt_pos_pos_05    = new TH2F("deut_dphi_pt_pos_pos_05",    "deut_dphi_pt_pos_pos_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 29
+    deut_dphi_pt_pos_neg_05    = new TH2F("deut_dphi_pt_pos_neg_05",    "deut_dphi_pt_pos_neg_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 30
+    deut_dphi_pt_neg_neg_05    = new TH2F("deut_dphi_pt_neg_neg_05",    "deut_dphi_pt_neg_neg_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 31
     
-//  fOutputList->Add(high_pt_count_05);       // 18
-//  fOutputList->Add(high_et_count_05);       // 19
-//  fOutputList->Add(high_en_count_05);       // 20
-//  fOutputList->Add(high_kt_count_05);       // 21
+    deut_dphi_pt_pos_pos_08    = new TH2F("deut_dphi_pt_pos_pos_08",    "deut_dphi_pt_pos_pos_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 32
+    deut_dphi_pt_pos_neg_08    = new TH2F("deut_dphi_pt_pos_neg_08",    "deut_dphi_pt_pos_neg_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 33
+    deut_dphi_pt_neg_neg_08    = new TH2F("deut_dphi_pt_neg_neg_08",    "deut_dphi_pt_neg_neg_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 34
     
-    fOutputList->Add(deut_phi_hist_05);       // 22
-    fOutputList->Add(prot_phi_hist_05);       // 23
-    fOutputList->Add(hadr_phi_hist_05);       // 24
-    fOutputList->Add(high_phi_hist_05);       // 25
-
-    fOutputList->Add(dphi_pt_deut_10);        // 26
-    fOutputList->Add(dphi_et_deut_10);        // 27
-    fOutputList->Add(dphi_en_deut_10);        // 28
-    fOutputList->Add(dphi_kt_deut_10);        // 29
+//  track_cor_radius_pt        = new TH2F("track_cor_radius_pt",        "track_cor_radius_pt",         900,       pt_binning,     325,   -3.53,    3.53);   // 34
+//  track_cor_radius_pt_cut    = new TH2F("track_cor_radius_pt_cut",    "track_cor_radius_pt_cut",     900,       pt_binning,     325,   -3.53,    3.53);   // 35
     
-    fOutputList->Add(dphi_pt_prot_10);        // 30
-    fOutputList->Add(dphi_et_prot_10);        // 31
-    fOutputList->Add(dphi_en_prot_10);        // 32
-    fOutputList->Add(dphi_kt_prot_10);        // 33
+    // objects added to output file
 
-    fOutputList->Add(dphi_pt_hadr_10);        // 34
-    fOutputList->Add(dphi_et_hadr_10);        // 35
-    fOutputList->Add(dphi_en_hadr_10);        // 36
-    fOutputList->Add(dphi_kt_hadr_10);        // 37
+
+
+    fOutputList->Add(fHistPt);                     //  1
+    fOutputList->Add(cent_ntracks);                //  2
     
-//  fOutputList->Add(high_pt_count_10);       // 38
-//  fOutputList->Add(high_et_count_10);       // 39
-//  fOutputList->Add(high_en_count_10);       // 40
-//  fOutputList->Add(high_kt_count_10);       // 41
+    fOutputList->Add(m2_pt_pos);                   //  3
+    fOutputList->Add(m2_pt_neg);                   //  4 
+    fOutputList->Add(beta_p_pos);                  //  5
+    fOutputList->Add(beta_p_neg);                  //  6
+    fOutputList->Add(deltat_pt_pos);               //  7
+    fOutputList->Add(deltat_pt_neg);               //  8
+
+    fOutputList->Add(m2_pt_pos_cut);               //  9
+    fOutputList->Add(m2_pt_neg_cut);               // 10
+    fOutputList->Add(beta_p_pos_cut);              // 11
+    fOutputList->Add(beta_p_neg_cut);              // 12
+    fOutputList->Add(deltat_pt_pos_cut);           // 13
+    fOutputList->Add(deltat_pt_neg_cut);           // 14
+
+    fOutputList->Add(deut_per_event);              // 15
+//  fOutputList->Add(deut_per_event_pos);          // 16
+//  fOutputList->Add(deut_per_event_neg);          // 17
+    fOutputList->Add(m2_pt_pos_cut_T);             // 18
+    fOutputList->Add(m2_pt_neg_cut_T);             // 19
+
+    fOutputList->Add(deut_phi_pt);                 // 20
+    fOutputList->Add(deut_phi_pt_pos);             // 21
+    fOutputList->Add(deut_phi_pt_neg);             // 22
     
-    fOutputList->Add(deut_phi_hist_10);       // 42
-    fOutputList->Add(prot_phi_hist_10);       // 43
-    fOutputList->Add(hadr_phi_hist_10);       // 44
-    fOutputList->Add(high_phi_hist_10);       // 45
+    fOutputList->Add(trig_05_phi_pt);              // 23
+    fOutputList->Add(trig_05_phi_pt_pos);          // 24
+    fOutputList->Add(trig_05_phi_pt_neg);          // 25
+    fOutputList->Add(trig_08_phi_pt);              // 26
+    fOutputList->Add(trig_08_phi_pt_pos);          // 27
+    fOutputList->Add(trig_08_phi_pt_neg);          // 28
+    
+    fOutputList->Add(deut_dphi_pt_pos_pos_05);     // 29
+    fOutputList->Add(deut_dphi_pt_pos_neg_05);     // 30
+    fOutputList->Add(deut_dphi_pt_neg_neg_05);     // 31
+    
+    fOutputList->Add(deut_dphi_pt_pos_pos_08);     // 32
+    fOutputList->Add(deut_dphi_pt_pos_neg_08);     // 33
+    fOutputList->Add(deut_dphi_pt_neg_neg_08);     // 34
 
-    fOutputList->Add(m2_cut);                 // 46
-
+//  fOutputList->Add(track_cor_radius_pt);         // 34
+//  fOutputList->Add(track_cor_radius_pt_cut);     // 35
+       
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -450,819 +362,396 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if(!fAOD) return;
 
     Int_t iTracks(fAOD->GetNumberOfTracks());
+
+
     
     //////////////////////////////////////// MULTIPLICITY PART ////////////////////////////////////////
 
-    cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"), iTracks);
+    cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0A"), iTracks);
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-     
-    int NHigh_05             = 0;
-    int NHigh_pos            = 0;
-    int NHigh_neg            = 0;
-    int high_flag_05         = 0;
-
-    int high_track_num_05[100];
-
-    int NHigh_10             = 0;
-    int high_flag_10         = 0;
-
-    int high_track_num_10[100];
+    int deut_track_num[20];    
+    int deut_count              = 0;
     
+    int trig_05_track_num[20];
+    int trig_05_track_count     = 0;
 
-	
-    struct track_node        // linked list, for efficient, dynamically allocated memory use
-    {
-	int track_num;
-	track_node *next;
-    };
-    track_node *root;        // don't change this one, or you will lose the list in memory
-    track_node *conductor;   // points to each node as it traverses the list
-    root = new track_node;
-    root->next = NULL;
-    conductor = root;
+    int trig_08_track_num[20];
+    int trig_08_track_count     = 0;
 
-
+    Float_t pio2 = TMath::PiOver2();
+    Float_t twopi  = TMath::TwoPi();
+    // markA
 
     // loop over all these tracks
+    //
+    // pull out track numbers for high-pt triggers and also deutons
+    
     for(Int_t i(0); i < iTracks; i++)
     {
-        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track) continue;                                                       // if we failed, skip this track
-	if(!(track->IsHybridGlobalConstrainedGlobal())){   continue;   }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-
-	track_node *new_track = new track_node;
-	new_track->track_num = i;
-	new_track->next = NULL;
-	conductor->next = new_track;
-	conductor = conductor->next;
-
-	Double_t eta = track->Eta();                     	if(fabs(eta > 0.8))   continue;
-	
-	float    pt             = track->Pt();
-	Short_t  charge         = track->Charge();
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+        if(!track)                                                                      {    continue;    }
+	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
+	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.8)                       {    continue;    }
+	if(!track->IsPrimaryCandidate())                                                {    continue;    }
+	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
+	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
+	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
+	Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);     /* && trk->IsOn(AliESDtrack::kTPCpid)*/;
+	Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
+	if(!tpcIsOk  ||  !tofIsOk)                                                      {    continue;    }
 
 
+	Float_t pt            = track->Pt();
 	fHistPt->Fill(pt);
- 
+	
+	if(pt >= 5.0)	{    trig_05_track_num[trig_05_track_count] = i;	    trig_05_track_count++;	}
+	if(pt >= 8.0)	{    trig_08_track_num[trig_08_track_count] = i;	    trig_08_track_count++;	}
+
+
+	float   mom           = track->P();
+	Short_t charge        = track->Charge();
+	Float_t sigma_min     = -999.0;
+	Float_t deut_mean     = 0.0;
+	Float_t deut_sigma    = 0.0;
+
+	Float_t phi           = track->Phi();
+	   
+	if(phi <  -pio2){    phi = phi + twopi; }	if(phi <  -pio2){    phi = phi + twopi;   }
+	if(phi > 3*pio2){    phi = phi - twopi;	}       if(phi > 3*pio2){    phi = phi - twopi;   }
+
+
+
+
+
+	Float_t m2tof  = get_mass_squared(track);
+	Float_t deltat = tof_minus_tpion(track);
+	Float_t dedx   = track->GetTPCsignal();
+	
+	Float_t beta      = 0.0;
+	beta      = Beta(track);
 
 	    
 	if(charge > 0)
 	{
-	    if(pt > 5.0)
+	    m2_pt_pos      ->Fill(pt,  m2tof);
+	    beta_p_pos     ->Fill(mom, Beta(track));
+	    deltat_pt_pos  ->Fill(pt,  deltat);
+
+	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
 	    {
-		high_track_num_05[NHigh_05] = i;
-		NHigh_05++;
-		NHigh_pos++;
-		high_flag_05 = 1;
+		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+		    )
+		{
+//		    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
+//		    if(nsigmaTPC <= 2.0)
+//		    {
+			m2_pt_pos_cut    ->Fill(pt,  m2tof);
+			beta_p_pos_cut   ->Fill(mom, Beta(track));
+			deltat_pt_pos_cut->Fill(pt,  deltat);
+			
+			if(mom >= 1.5  &&  mom < 4.4)
+			{
+			    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
+			    deut_mean = fit_deut_curve->Eval(mom);
+			    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
+			    deut_sigma = fit_deut_curve->Eval(mom);
+
+			    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+			    {
+				deut_track_num[deut_count] = i;
+				deut_count++;
+				m2_pt_pos_cut_T->Fill(pt,m2tof);
+
+				Float_t deut_phi = track->Phi();
+				if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+				if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+				deut_phi_pt    ->Fill(pt, deut_phi);
+				deut_phi_pt_pos->Fill(pt, deut_phi);
+			    }		    
+			}			    
+//		    }
+		}
 	    }
-	    if(pt > 10.0)
-	    {
-		high_track_num_10[NHigh_10] = i;
-		NHigh_10++;
-		high_flag_10 = 1;
-	    }
-	    
 	}
 	    
 	else if(charge < 0)
 	{
-	    if(pt > 5.0)
+	    m2_pt_neg      ->Fill(pt,  m2tof);
+	    beta_p_neg     ->Fill(mom, Beta(track));
+	    deltat_pt_neg  ->Fill(pt,  deltat);
+		
+	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
 	    {
-		high_track_num_05[NHigh_05] = i;
-		NHigh_05++;
-		NHigh_neg++;
-		high_flag_05 = 1;
+		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+		    )
+		{
+//		    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
+//		    if(nsigmaTPC <= 2.0)
+//		    {	
+			m2_pt_neg_cut    ->Fill(pt, m2tof);
+			beta_p_neg_cut   ->Fill(mom, Beta(track));
+			deltat_pt_neg_cut->Fill(pt, deltat);
+
+
+			if(mom >= 1.5  &&  mom < 4.4)
+			{
+			    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
+			    deut_mean = fit_deut_curve->Eval(mom);
+			    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
+			    deut_sigma = fit_deut_curve->Eval(mom);
+
+			    
+			    
+			    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+			    {
+				deut_track_num[deut_count] = i;
+				deut_count++;
+				m2_pt_neg_cut_T->Fill(pt,m2tof);
+				
+				Float_t deut_phi = track->Phi();
+				if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+				if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+				deut_phi_pt    ->Fill(pt, deut_phi);
+				deut_phi_pt_neg->Fill(pt, deut_phi);
+
+			    }		    
+			}
+//		    }
+		}
 	    }
-	    if(pt > 10.0)
-	    {
-		high_track_num_10[NHigh_10] = i;
-		NHigh_10++;
-		high_flag_10 = 1;
-	    }
-	}
+	}    //   end of neg charge if statement
     }        //   end of track loop
 
 
-    high_per_event_05->Fill(NHigh_05);
-    high_per_event_10->Fill(NHigh_10);
-    high_per_event_pos->Fill(NHigh_pos);
-    high_per_event_neg->Fill(NHigh_neg);
+    deut_per_event->Fill(deut_count);
+//    deut_per_event_pos->Fill(NDeut_pos);
+//    deut_per_event_neg->Fill(NDeut_neg);
 
 
-
+//    cout<<endl<<endl;
+    // markA
     
-    for(int ii=0; ii < high_flag_05; ii++)
+    if(deut_count > 0  &&  trig_05_track_count > 0)
     {
-	int j = high_track_num_05[ii];
-
-	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	if(!track) {}
-	else
+//	cout<<"trig count: "<<trig_05_track_count<<" associate deuton count: "<<deut_count<<" ";
+//	cout<<trig_05_track_count<<","<<deut_count<<" ";
+	for(int i=0; i<trig_05_track_count; i++)  // trigger loop
 	{
-	    Double_t high_phi = track->Phi();
 	    
-	    high_phi_hist_05->Fill(high_phi);
+	    int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+
+	    Float_t phi_H       = trackH->Phi();
+	    Float_t px_H        = trackH->Px();
+	    Float_t py_H        = trackH->Py();
+	    Float_t pz_H        = trackH->Pz();
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
 	    
-	    conductor = root->next;
-	    if (conductor != 0)
+	    if(phi_H <  -pio2){    phi_H = phi_H + twopi;   }	    if(phi_H <  -pio2){    phi_H = phi_H + twopi;   }
+	    if(phi_H > 3*pio2){    phi_H = phi_H - twopi;   }	    if(phi_H > 3*pio2){    phi_H = phi_H - twopi;   }
+	    trig_05_phi_pt->Fill(pt_H, phi_H);
+
+	    if     (charge_H > 0)   trig_05_phi_pt_pos->Fill(pt_H, phi_H);
+	    else if(charge_H < 0)   trig_05_phi_pt_neg->Fill(pt_H, phi_H);
+	    
+	    for(int j=0; j<deut_count; j++)
 	    {
-		while(conductor->next != 0)
+		int A               = deut_track_num[j];
+//		cout<<"A"<<A<<" ";
+		AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		
+		Float_t px_A        = trackA->Px();
+		Float_t py_A        = trackA->Py();
+		Float_t pz_A        = trackA->Pz();
+		Float_t phi_A       = trackA->Phi();
+		Short_t charge_A    = trackA->Charge();
+		Float_t pt_A        = trackA->Pt();
+
+
+		if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
+		if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
+		deut_phi_pt->Fill(pt_A, phi_A);
+
+		Float_t Sdphi = phi_A - phi_H;
+		if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+		if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+
+		if(charge_H > 0)
 		{
-		    int k = conductor->track_num;
-		    conductor = conductor->next;
-
-		    short match = 0;
-		    for(int kk=0; kk < high_flag_05; kk++)
-		    {
-			if(k == high_track_num_05[kk])   match = 1;
-		    }
-
-		    
-		    if(match == 0)  // if the k-th track is not the j-th track which is the trigger particle of interest
-		    {
-			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-			if(!track){}                                                               // if we failed, skip this track
-			else
-			{
-			    Double_t pt             = track->Pt();
-
-			    
-			    if(pt > 1.1  &&  pt < 4.4)
-			    {
-				short isGlobal    = 1;
-				short isModGlobal = 0;  // is it suitable for deuteron candidate
-	
-				if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal))){   isGlobal = 0;   }
-	
-				Double_t nsigmaTPC = 999.0;
-				Double_t nsigmaTOF = 999.0;
-
-				if(isGlobal == 1)  
-				{
-				    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
-				    AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
-				    Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);  
-				    Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
-
-				    if(tpcIsOk  && tofIsOk){   isModGlobal = 1;   }
-				    else                   {   isModGlobal = 0;   }
-				}
-
-				if(isModGlobal == 1)
-				{
-				    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
-				    if(nsigmaTPC <= 2.0)
-				    {					
-					Double_t deut_mean      = 0.00;
-					Double_t deut_sigma     = 0.00;
-					Double_t cut_width      = 1.00;
-
-					Double_t mom   = track->P();
-					Double_t m2tof = 0.00;
-					m2tof = get_mass_squared(track);
-					
-					for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-					deut_mean = fit_deut_curve->Eval(mom);
-					for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-					deut_sigma = fit_deut_curve->Eval(mom);
-					
-					if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-					{
-//					    Double_t mom            = track->P();
-					    Double_t phi            = track->Phi();
-
-					    Double_t et = 0.00;
-					    Double_t en = 0.00;
-					    Double_t kt = 0.00;
-	    
-					    et = sqrt(pow(pt ,2) + pow(1.87561,2));
-					    en = sqrt(pow(mom,2) + pow(1.87561,2));
-					    kt = sqrt(pow(pt ,2) + pow(1.87561,2)) - 1.87561;
-				
-					    Double_t dphi = 0.00;
-					    dphi = high_phi - phi;
-				
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					    dphi_pt_deut_05->Fill(pt, dphi);
-					    dphi_et_deut_05->Fill(et, dphi);
-					    dphi_en_deut_05->Fill(en, dphi);
-					    dphi_kt_deut_05->Fill(kt, dphi);
-					    
-					    deut_phi_hist_05->Fill(phi);
-
-					    m2_cut->Fill(pt, m2tof);
-					}
-				    }
-				    statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
-				    if(nsigmaTPC <= 2.0)
-				    {					
-					Double_t prot_mean      = 0.00;
-					Double_t prot_sigma     = 0.00;
-					Double_t cut_width      = 1.00;
-				    
-					Double_t mom            = track->P();
-					Double_t m2tof          = 0.00;
-					
-					m2tof = get_mass_squared(track);
-					
-					for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-					prot_mean = fit_prot_curve->Eval(mom);
-					for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-					prot_sigma = fit_prot_curve->Eval(mom);
-					
-					if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-					{
-					    Double_t phi            = track->Phi();
-					    
-					    Double_t et = 0.00;
-					    Double_t en = 0.00;
-					    Double_t kt = 0.00;
-					    
-					    et = sqrt(pow(pt ,2) + pow(0.93827,2));
-					    en = sqrt(pow(mom,2) + pow(0.93827,2));
-					    kt = sqrt(pow(pt ,2) + pow(0.93827,2)) - 0.93827;
-					    
-					    Double_t dphi = 0.00;
-					    dphi = high_phi - phi;
-					    
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-					    dphi_pt_prot_05->Fill(pt, dphi);
-					    dphi_et_prot_05->Fill(et, dphi);
-					    dphi_en_prot_05->Fill(en, dphi);
-					    dphi_kt_prot_05->Fill(kt, dphi);
-					    
-					    prot_phi_hist_05->Fill(phi);
-
-					    m2_cut->Fill(pt, m2tof);
-					}
-				    }
-
-				    Double_t phi = track->Phi();
-				    Double_t mom = track->P();
-				    Double_t et  = 0.00;
-				    Double_t en  = 0.00;
-				    Double_t kt  = 0.00;
-
-				    et = sqrt(pow(pt ,2) + pow(0.29026,2));
-				    en = sqrt(pow(mom,2) + pow(0.29026,2));
-				    kt = sqrt(pow(pt ,2) + pow(0.29026,2)) - 0.29026;
-					    
-				    Double_t dphi = 0.00;
-				    dphi = high_phi - phi;
-					    
-				    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-				    dphi_pt_hadr_05->Fill(pt, dphi);
-				    dphi_et_hadr_05->Fill(et, dphi);
-				    dphi_en_hadr_05->Fill(en, dphi);
-				    dphi_kt_hadr_05->Fill(kt, dphi);
-				    
-				    hadr_phi_hist_05->Fill(phi);
-				}
-			    }
-			}
-		    }
+		    if     (charge_A > 0){    deut_dphi_pt_pos_pos_05->Fill(pt_A, Sdphi);	}
+		    else if(charge_A < 0){    deut_dphi_pt_pos_neg_05->Fill(pt_A, Sdphi);	}
 		}
-	    
-	    
-		int k = conductor->track_num;
-		conductor = conductor->next;
-	
-		short match = 0;
-		for(int kk=0; kk < high_flag_05; kk++)
+		else if(charge_H < 0)
 		{
-		    if(k == high_track_num_05[kk])   match = 1;
-		}
-
-		    
-		if(match == 0)  // if the k-th track is not the j-th track which is the trigger particle of interest
-		{
-		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		    if(!track){}                                                               // if we failed, skip this track
-		    else
-		    {
-			Double_t pt             = track->Pt();
-
-			    
-			if(pt > 1.1  &&  pt < 4.4)
-			{
-			    short isGlobal    = 1;
-			    short isModGlobal = 0;  // is it suitable for deuteron candidate
-	
-			    if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal))){   isGlobal = 0;   }
-	
-			    Double_t nsigmaTPC = 999.0;
-			    Double_t nsigmaTOF = 999.0;
-
-			    if(isGlobal == 1)  
-			    {
-				AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
-				AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
-				Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);  
-				Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
-				
-				if(tpcIsOk  && tofIsOk){   isModGlobal = 1;   }
-				else                   {   isModGlobal = 0;   }
-			    }
-
-			    if(isModGlobal == 1)
-			    {
-				AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
-				if(nsigmaTPC <= 2.0)
-				{					
-				    Double_t deut_mean      = 0.0;
-				    Double_t deut_sigma     = 0.0;
-				    Double_t cut_width      = 1.0;
-				    
-				    Double_t mom   = track->P();
-				    Double_t m2tof = 0.00;
-				    m2tof = get_mass_squared(track);
-					
-				    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-				    deut_mean = fit_deut_curve->Eval(mom);
-				    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-				    deut_sigma = fit_deut_curve->Eval(mom);
-					
-				    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-				    {
-					Double_t phi            = track->Phi();
-
-					Double_t et = 0.00;
-					Double_t en = 0.00;
-					Double_t kt = 0.00;
-	    
-					et = sqrt(pow(pt ,2) + pow(1.87561,2));
-					en = sqrt(pow(mom,2) + pow(1.87561,2));
-					kt = sqrt(pow(pt ,2) + pow(1.87561,2)) - 1.87561;
-				
-					Double_t dphi = 0.00;
-					dphi = high_phi - phi;
-				
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					dphi_pt_deut_05->Fill(pt, dphi);
-					dphi_et_deut_05->Fill(et, dphi);
-					dphi_en_deut_05->Fill(en, dphi);
-					dphi_kt_deut_05->Fill(kt, dphi);
-
-					deut_phi_hist_05->Fill(phi);
-
-					m2_cut->Fill(pt, m2tof);
-				    }
-				}
-
-				statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
-				if(nsigmaTPC <= 2.0)
-				{					
-				    Double_t prot_mean      = 0.0;
-				    Double_t prot_sigma     = 0.0;
-				    Double_t cut_width      = 1.0;
-				    
-				    Double_t mom   = track->P();
-				    Double_t m2tof = 0.00;
-				    m2tof = get_mass_squared(track);
-					
-				    for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-				    prot_mean = fit_prot_curve->Eval(mom);
-				    for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-				    prot_sigma = fit_prot_curve->Eval(mom);
-					
-				    if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-				    {
-					Double_t phi            = track->Phi();
-
-					Double_t et = 0.00;
-					Double_t en = 0.00;
-					Double_t kt = 0.00;
-	
-					et = sqrt(pow(pt ,2) + pow(0.93827,2));
-					en = sqrt(pow(mom,2) + pow(0.93827,2));
-					kt = sqrt(pow(pt ,2) + pow(0.93827,2)) - 0.93827;
-				
-					Double_t dphi = 0.00;
-					dphi = high_phi - phi;
-				
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					dphi_pt_prot_05->Fill(pt, dphi);
-					dphi_et_prot_05->Fill(et, dphi);
-					dphi_en_prot_05->Fill(en, dphi);
-					dphi_kt_prot_05->Fill(kt, dphi);
-
-					prot_phi_hist_05->Fill(phi);
-
-					m2_cut->Fill(pt, m2tof);
-				    }
-				}
-
-				
-				Double_t phi = track->Phi();
-				Double_t mom = track->P();
-				Double_t et = 0.00;
-				Double_t en = 0.00;
-				Double_t kt = 0.00;
-
-				et = sqrt(pow(pt ,2) + pow(0.29026,2));
-				en = sqrt(pow(mom,2) + pow(0.29026,2));
-				kt = sqrt(pow(pt ,2) + pow(0.29026,2)) - 0.29026;
-					    
-				Double_t dphi = 0.00;
-				dphi = high_phi - phi;
-					    
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-				dphi_pt_hadr_05->Fill(pt, dphi);
-				dphi_et_hadr_05->Fill(et, dphi);
-				dphi_en_hadr_05->Fill(en, dphi);
-				dphi_kt_hadr_05->Fill(kt, dphi);
-				    
-				hadr_phi_hist_05->Fill(phi);
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }  // end of high-pt correlation PRIMARY LOOP
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    for(int ii=0; ii < high_flag_10; ii++)
-    {
-	int j = high_track_num_10[ii];
-
-	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	if(!track) {}
-	else
-	{
-	    Double_t high_phi = track->Phi();
-	    
-	    high_phi_hist_10->Fill(high_phi);
-	    
-	    conductor = root->next;
-	    if (conductor != 0)
-	    {
-		while(conductor->next != 0)
-		{
-		    int k = conductor->track_num;
-		    conductor = conductor->next;
-
-		    short match = 0;
-		    for(int kk=0; kk < high_flag_10; kk++)
-		    {
-			if(k == high_track_num_10[kk])   match = 1;
-		    }
-
-		    
-		    if(match == 0)  // if the k-th track is not the j-th track which is the trigger particle of interest
-		    {
-			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-			if(!track){}                                                               // if we failed, skip this track
-			else
-			{
-			    Double_t pt             = track->Pt();
-
-			    
-			    if(pt > 1.1  &&  pt < 4.4)
-			    {
-				short isGlobal    = 1;
-				short isModGlobal = 0;  // is it suitable for deuteron candidate
-	
-				if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal))){   isGlobal = 0;   }
-	
-				Double_t nsigmaTPC = 999.0;
-				Double_t nsigmaTOF = 999.0;
-
-				if(isGlobal == 1)  
-				{
-				    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
-				    AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
-				    Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);  
-				    Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
-
-				    if(tpcIsOk  && tofIsOk){   isModGlobal = 1;   }
-				    else                   {   isModGlobal = 0;   }
-				}
-
-				if(isModGlobal == 1)
-				{
-				    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
-				    if(nsigmaTPC <= 2.0)
-				    {					
-					Double_t deut_mean      = 0.00;
-					Double_t deut_sigma     = 0.00;
-					Double_t cut_width      = 1.00;
-
-					Double_t mom   = track->P();
-					Double_t m2tof = 0.00;
-					m2tof = get_mass_squared(track);
-					
-					for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-					deut_mean = fit_deut_curve->Eval(mom);
-					for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-					deut_sigma = fit_deut_curve->Eval(mom);
-					
-					if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-					{
-//					    Double_t mom            = track->P();
-					    Double_t phi            = track->Phi();
-
-					    Double_t et = 0.00;
-					    Double_t en = 0.00;
-					    Double_t kt = 0.00;
-	    
-					    et = sqrt(pow(pt ,2) + pow(1.87561,2));
-					    en = sqrt(pow(mom,2) + pow(1.87561,2));
-					    kt = sqrt(pow(pt ,2) + pow(1.87561,2)) - 1.87561;
-				
-					    Double_t dphi = 0.00;
-					    dphi = high_phi - phi;
-				
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					    dphi_pt_deut_10->Fill(pt, dphi);
-					    dphi_et_deut_10->Fill(et, dphi);
-					    dphi_en_deut_10->Fill(en, dphi);
-					    dphi_kt_deut_10->Fill(kt, dphi);
-					    
-					    deut_phi_hist_10->Fill(phi);
-					}
-				    }
-				    statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
-				    if(nsigmaTPC <= 2.0)
-				    {					
-					Double_t prot_mean      = 0.00;
-					Double_t prot_sigma     = 0.00;
-					Double_t cut_width      = 1.00;
-				    
-					Double_t mom            = track->P();
-					Double_t m2tof          = 0.00;
-					
-					m2tof = get_mass_squared(track);
-					
-					for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-					prot_mean = fit_prot_curve->Eval(mom);
-					for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-					prot_sigma = fit_prot_curve->Eval(mom);
-					
-					if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-					{
-					    Double_t phi            = track->Phi();
-					    
-					    Double_t et = 0.00;
-					    Double_t en = 0.00;
-					    Double_t kt = 0.00;
-					    
-					    et = sqrt(pow(pt ,2) + pow(0.93827,2));
-					    en = sqrt(pow(mom,2) + pow(0.93827,2));
-					    kt = sqrt(pow(pt ,2) + pow(0.93827,2)) - 0.93827;
-					    
-					    Double_t dphi = 0.00;
-					    dphi = high_phi - phi;
-					    
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-					    dphi_pt_prot_10->Fill(pt, dphi);
-					    dphi_et_prot_10->Fill(et, dphi);
-					    dphi_en_prot_10->Fill(en, dphi);
-					    dphi_kt_prot_10->Fill(kt, dphi);
-					    
-					    prot_phi_hist_10->Fill(phi);
-					}
-				    }
-
-				    Double_t phi            = track->Phi();
-				    Double_t mom = track->P();
-				    Double_t et = 0.00;
-				    Double_t en = 0.00;
-				    Double_t kt = 0.00;
-
-				    et = sqrt(pow(pt ,2) + pow(0.29026,2));
-				    en = sqrt(pow(mom,2) + pow(0.29026,2));
-				    kt = sqrt(pow(pt ,2) + pow(0.29026,2)) - 0.29026;
-					    
-				    Double_t dphi = 0.00;
-				    dphi = high_phi - phi;
-					    
-				    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-				    dphi_pt_hadr_10->Fill(pt, dphi);
-				    dphi_et_hadr_10->Fill(et, dphi);
-				    dphi_en_hadr_10->Fill(en, dphi);
-				    dphi_kt_hadr_10->Fill(kt, dphi);
-				    
-				    hadr_phi_hist_10->Fill(phi);
-				}
-			    }
-			}
-		    }
-		}
-	    
-	    
-		int k = conductor->track_num;
-		conductor = conductor->next;
-	
-		short match = 0;
-		for(int kk=0; kk < high_flag_10; kk++)
-		{
-		    if(k == high_track_num_10[kk])   match = 1;
-		}
-
-		    
-		if(match == 0)  // if the k-th track is not the j-th track which is the trigger particle of interest
-		{
-		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		    if(!track){}                                                               // if we failed, skip this track
-		    else
-		    {
-			Double_t pt             = track->Pt();
-
-			    
-			if(pt > 1.1  &&  pt < 4.4)
-			{
-			    short isGlobal    = 1;
-			    short isModGlobal = 0;  // is it suitable for deuteron candidate
-	
-			    if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal))){   isGlobal = 0;   }
-	
-			    Double_t nsigmaTPC = 999.0;
-			    Double_t nsigmaTOF = 999.0;
-
-			    if(isGlobal == 1)  
-			    {
-				AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
-				AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
-				Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);  
-				Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
-				
-				if(tpcIsOk  && tofIsOk){   isModGlobal = 1;   }
-				else                   {   isModGlobal = 0;   }
-			    }
-
-			    if(isModGlobal == 1)
-			    {
-				AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
-				if(nsigmaTPC <= 2.0)
-				{					
-				    Double_t deut_mean      = 0.0;
-				    Double_t deut_sigma     = 0.0;
-				    Double_t cut_width      = 1.0;
-				    
-				    Double_t mom   = track->P();
-				    Double_t m2tof = 0.00;
-				    m2tof = get_mass_squared(track);
-					
-				    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-				    deut_mean = fit_deut_curve->Eval(mom);
-				    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-				    deut_sigma = fit_deut_curve->Eval(mom);
-					
-				    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-				    {
-					Double_t phi            = track->Phi();
-
-					Double_t et = 0.00;
-					Double_t en = 0.00;
-					Double_t kt = 0.00;
-	    
-					et = sqrt(pow(pt ,2) + pow(1.87561,2));
-					en = sqrt(pow(mom,2) + pow(1.87561,2));
-					kt = sqrt(pow(pt ,2) + pow(1.87561,2)) - 1.87561;
-				
-					Double_t dphi = 0.00;
-					dphi = high_phi - phi;
-				
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					dphi_pt_deut_10->Fill(pt, dphi);
-					dphi_et_deut_10->Fill(et, dphi);
-					dphi_en_deut_10->Fill(en, dphi);
-					dphi_kt_deut_10->Fill(kt, dphi);
-
-					deut_phi_hist_10->Fill(phi);
-				    }
-				}
-
-				statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
-				if(nsigmaTPC <= 2.0)
-				{					
-				    Double_t prot_mean      = 0.0;
-				    Double_t prot_sigma     = 0.0;
-				    Double_t cut_width      = 1.0;
-				    
-				    Double_t mom   = track->P();
-				    Double_t m2tof = 0.00;
-				    m2tof = get_mass_squared(track);
-					
-				    for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-				    prot_mean = fit_prot_curve->Eval(mom);
-				    for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-				    prot_sigma = fit_prot_curve->Eval(mom);
-					
-				    if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-				    {
-					Double_t phi            = track->Phi();
-
-					Double_t et = 0.00;
-					Double_t en = 0.00;
-					Double_t kt = 0.00;
-	
-					et = sqrt(pow(pt ,2) + pow(0.93827,2));
-					en = sqrt(pow(mom,2) + pow(0.93827,2));
-					kt = sqrt(pow(pt ,2) + pow(0.93827,2)) - 0.93827;
-				
-					Double_t dphi = 0.00;
-					dphi = high_phi - phi;
-				
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-					dphi_pt_prot_10->Fill(pt, dphi);
-					dphi_et_prot_10->Fill(et, dphi);
-					dphi_en_prot_10->Fill(en, dphi);
-					dphi_kt_prot_10->Fill(kt, dphi);
-
-					prot_phi_hist_10->Fill(phi);
-				    }
-				}
-
-				
-				Double_t phi = track->Phi();
-				Double_t mom = track->P();
-				Double_t et = 0.00;
-				Double_t en = 0.00;
-				Double_t kt = 0.00;
-
-				et = sqrt(pow(pt ,2) + pow(0.29026,2));
-				en = sqrt(pow(mom,2) + pow(0.29026,2));
-				kt = sqrt(pow(pt ,2) + pow(0.29026,2)) - 0.29026;
-					    
-				Double_t dphi = 0.00;
-				dphi = high_phi - phi;
-					    
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-					    
-				dphi_pt_hadr_10->Fill(pt, dphi);
-				dphi_et_hadr_10->Fill(et, dphi);
-				dphi_en_hadr_10->Fill(en, dphi);
-				dphi_kt_hadr_10->Fill(kt, dphi);
-				    
-				hadr_phi_hist_10->Fill(phi);
-			    }
-			}
-		    }
-		}
-	    }
+		    if     (charge_A > 0){    deut_dphi_pt_pos_neg_05->Fill(pt_A, Sdphi);	}
+		    else if(charge_A < 0){    deut_dphi_pt_neg_neg_05->Fill(pt_A, Sdphi);	}
+		}	
+	    }	    
 	}
     }
+
+
+    if(deut_count > 0  &&  trig_08_track_count > 0)
+    {
+
+	for(int i=0; i<trig_08_track_count; i++)  // trigger loop
+	{
+	    
+	    int H               = trig_08_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+
+	    Float_t phi_H       = trackH->Phi();
+	    Float_t px_H        = trackH->Px();
+	    Float_t py_H        = trackH->Py();
+	    Float_t pz_H        = trackH->Pz();
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    
+	    if(phi_H <  -pio2){    phi_H = phi_H + twopi;   }	    if(phi_H <  -pio2){    phi_H = phi_H + twopi;   }
+	    if(phi_H > 3*pio2){    phi_H = phi_H - twopi;   }	    if(phi_H > 3*pio2){    phi_H = phi_H - twopi;   }
+	    trig_08_phi_pt->Fill(pt_H, phi_H);
+
+	    if     (charge_H > 0)   trig_08_phi_pt_pos->Fill(pt_H, phi_H);
+	    else if(charge_H < 0)   trig_08_phi_pt_neg->Fill(pt_H, phi_H);
+	    
+	    for(int j=0; j<deut_count; j++)
+	    {
+		int A               = deut_track_num[j];
+//		cout<<"A"<<A<<" ";
+		AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		
+		Float_t px_A        = trackA->Px();
+		Float_t py_A        = trackA->Py();
+		Float_t pz_A        = trackA->Pz();
+		Float_t phi_A       = trackA->Phi();
+		Short_t charge_A    = trackA->Charge();
+		Float_t pt_A        = trackA->Pt();
+
+
+		Float_t Sdphi = phi_A - phi_H;
+		if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+		if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+
+		if(charge_H > 0)
+		{
+		    if     (charge_A > 0){    deut_dphi_pt_pos_pos_08->Fill(pt_A, Sdphi);	}
+		    else if(charge_A < 0){    deut_dphi_pt_pos_neg_08->Fill(pt_A, Sdphi);	}
+		}
+		else if(charge_H < 0)
+		{
+		    if     (charge_A > 0){    deut_dphi_pt_pos_neg_08->Fill(pt_A, Sdphi);	}
+		    else if(charge_A < 0){    deut_dphi_pt_neg_neg_08->Fill(pt_A, Sdphi);	}
+		}	
+	    }	    
+	}
+    }
+
+
+
+	
+/*
+	int A = deut_track_num_1;
+	int B = deut_track_num_2;
+	
+	AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+	AliAODTrack* trackB = static_cast<AliAODTrack*>(fAOD->GetTrack(B));
+
+	if(!trackA  ||  !trackB  ||  !trackH) {}
+	else
+	{
+	    Float_t deut_phi_A      = trackA->Phi();
+	    Float_t deut_pt_A       = trackA->Pt();
+	    Float_t deut_mom_A      = trackA->P();
+	    Short_t deut_charge_A   = trackA->Charge();
+	    Float_t deut_eta_A      = trackA->Eta();
+
+	    Float_t deut_et_A       = 0.0;
+	    Float_t deut_e_A        = 0.0;
+	    Float_t deut_px_A       = trackA->Px();
+	    Float_t deut_py_A       = trackA->Py();
+	    Float_t deut_pz_A       = trackA->Pz();
+	    
+	    deut_et_A = sqrt(pow(deut_pt_A ,2) + pow(0.93827,2));
+	    deut_e_A  = sqrt(pow(deut_mom_A,2) + pow(0.93827,2));
+	    	    
+	    if(deut_phi_A <  -pio2)    deut_phi_A = deut_phi_A + twopi;
+	    if(deut_phi_A <  -pio2)    deut_phi_A = deut_phi_A + twopi;
+	    if(deut_phi_A > 3*pio2)    deut_phi_A = deut_phi_A - twopi;
+	    if(deut_phi_A > 3*pio2)    deut_phi_A = deut_phi_A - twopi;
+	    deut_phi_pt_A->Fill(deut_phi_A);
+	    
+	    
+	    Float_t deut_phi_B      = trackB->Phi();
+	    Float_t deut_pt_B       = trackB->Pt();
+	    Float_t deut_mom_B      = trackB->P();
+	    Short_t  deut_charge_B   = trackB->Charge();
+	    Float_t deut_eta_B      = trackB->Eta();
+
+	    Float_t deut_et_B       = 0.0;
+	    Float_t deut_e_B        = 0.0;
+	    Float_t deut_px_B       = trackB->Px();
+	    Float_t deut_py_B       = trackB->Py();
+	    Float_t deut_pz_B       = trackB->Pz();
+	    
+	    deut_et_B = sqrt(pow(deut_pt_B ,2) + pow(0.93827,2));
+	    deut_e_B  = sqrt(pow(deut_mom_B,2) + pow(0.93827,2));
+
+	    if(deut_phi_B <  -pio2)    deut_phi_B = deut_phi_B + twopi;
+	    if(deut_phi_B <  -pio2)    deut_phi_B = deut_phi_B + twopi;
+	    if(deut_phi_B > 3*pio2)    deut_phi_B = deut_phi_B - twopi;
+	    if(deut_phi_B > 3*pio2)    deut_phi_B = deut_phi_B - twopi;
+	    deut_phi_pt_B->Fill(deut_phi_B);
+	    	    
+
+
+	    
+	    Float_t Q2 = 0.00;	    Q2 = pow(deut_px_A - deut_px_B,2)  +  pow(deut_py_A - deut_py_B,2)  +  pow(deut_pz_A - deut_pz_B,2);
+
+	    Float_t Q  = 0.00;	    Q  = sqrt(Q2);
+	    Float_t Sx = deut_px_A + deut_px_B;
+	    Float_t Sy = deut_py_A + deut_py_B;
+
+	    Float_t Sphi = atan2(Sy,Sx);
+	    if(Sphi <  -pio2)    Sphi = Sphi + twopi;
+	    if(Sphi <  -pio2)    Sphi = Sphi + twopi;
+	    if(Sphi > 3*pio2)    Sphi = Sphi - twopi;
+	    if(Sphi > 3*pio2)    Sphi = Sphi - twopi;
+				
+	    deut_phi_pt->Fill(Sphi);
+
+	    Float_t Sdphi = Sphi - phi_H;
+	    if(Sdphi <  -pio2)    Sdphi = Sdphi + twopi;
+	    if(Sdphi <  -pio2)    Sdphi = Sdphi + twopi;
+	    if(Sdphi > 3*pio2)    Sdphi = Sdphi - twopi;
+	    if(Sdphi > 3*pio2)    Sdphi = Sdphi - twopi;
+
+
+
+	    
+
+	}
+
+*/
     
-                                                     // continue until all the tracks are processed
+
+
+//    file_output.close();
+                                                        // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
+
 
 }
 
@@ -1322,9 +811,8 @@ Double_t AliAnalysisTaskCorPIDTOFQA::get_mass_squared(AliAODTrack *track)
     Double_t length         = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
     length                  = length * 100;                                                                 // convert to cm
     Double_t mom            = track->P();
-    Double_t m2      = 0.0;
-
-    Double_t c2 = 29.9792458;
+    Double_t m2             = 0.0;
+    Double_t c2             = 29.9792458;
     
     m2 = pow(mom,2) * (tof*tof * c2 * c2 / (length * length) - 1);
     return m2;
