@@ -223,6 +223,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   AliConversionMesonCuts *analysisK0Cuts = new AliConversionMesonCuts();
   analysisK0Cuts->InitializeCutsFromCutString(defaultK0Cut.Data());
   analysisK0Cuts->SetFillCutHistograms("");
+	analysisK0Cuts->SetNumberOfBGEvents(6);
   task->SetK0Cuts(analysisK0Cuts);
 
 
@@ -230,6 +231,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer("K0toPi0Pi0" + selectConfig, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0toPi0Pi0%s",AliAnalysisManager::GetCommonFileName(),selectConfig.Data()));
   mgr->AddTask(task);
+	//mgr->SetDebugLevel(2);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
 
