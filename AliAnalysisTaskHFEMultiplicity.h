@@ -32,7 +32,10 @@ class AliMultSelection;
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "TProfile.h"
-
+#include "AliAnalysisVertexingHF.h"
+#include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
+#include "AliVEvent.h"
 
 
 
@@ -148,7 +151,7 @@ private:
   THnSparse* 	        fSparseULSElectron; //! Electron information
   Double_t*             fvaluePHElectron;//!
   Double_t*             fvalueElectron; //!
-  
+ 
   THnSparse* 	        fSparseMulti; //! Multiplicity information
   Double_t*             fvalueMulti; //!
 
