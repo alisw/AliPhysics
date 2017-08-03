@@ -411,13 +411,13 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     ppLimits.AddAt(15, j++);
     ppLimits.AddAt(23, j++);
     ppLimits.AddAt(33, j);
-    fMultiplicityBin.Adopt(j, ppLimits.GetArray());
+    fMultiplicityBin.Set(j, ppLimits.GetArray());
   }
   //Check on the defined binning
   for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
-  { 
-    AliDebugF(2, "Mutltiplicity Bin %i is [%s, %s]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1)); 
-    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly", i);
+  {
+    AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly: %.3f > %.3f", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
   }
   //
   //Shift to the TPC signal
@@ -2385,7 +2385,7 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity(){
       fEvtMult = static_cast < AliGenHepMCEventHeader*> (fMCEvt->GenEventHeader())->impact_parameter();
       return;
     }
-    
+
     fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
     if(!fMultSel) {
       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -2458,7 +2458,7 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
   }
   //Set The PID response on the current MC event
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
-  
+
   //Get the stack
   fMCStack = fMCEvt->Stack();
   // Check on the Stack
@@ -2484,7 +2484,7 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
   //Check if the MC vertex is generated in the acceptance
   if (TMath::Abs(MCvtx->GetZ()) < fVtxZCut)
     fEvtMCSampSelected = kTRUE; //Position on Z of the vertex
-  
+
   //Fill histograms with the MC vertex information
   hEvtVtxZMCGen->Fill(MCvtx->GetZ());
   if (fEvtPhysSelected)
