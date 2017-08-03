@@ -544,7 +544,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             Double_t xn, xp, dca;
             
             //Improved call: use own function, including XY-pre-opt stage
-            dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+            
+            if( fkDoImprovedDCAV0DauPropagation ){
+                //Improved: use own call
+                dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+            }else{
+                //Old: use old call
+                dca=nt.GetDCA(&pt,b,xn,xp);
+            }
             
             if (dca > fV0VertexerSels[3]) continue;
             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
@@ -560,10 +567,16 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                 corrected=kTRUE;
             }
             if (corrected) {
-                //dca=nt.GetDCA(&pt,b,xn,xp);
-                //if (dca > fV0VertexerSels[3]) continue;
-                //if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-                //if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
+                if( fkDoImprovedDCAV0DauPropagation ){
+                    //Improved: use own call
+                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                }else{
+                    //Old: use old call
+                    dca=nt.GetDCA(&pt,b,xn,xp);
+                }
+                if (dca > fV0VertexerSels[3]) continue;
+                if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
+                if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
             }
             
             nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
@@ -756,6 +769,103 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
             //PH        if (cascade.GetChi2Xi() > fChi2max) continue;
             
+            //___________________________________________________________________________________________
+            //Improve estimate of cascade decay position using uncertainties if requested to do so
+            if( fkDoImprovedCascadePosition ){
+                //Step 1: acquire relevant uncertainties
+                
+                //Step 1a: Bachelor uncertainties (OK -> pbt already at correct position!)
+                Double_t alphaBachelor=pbt->GetAlpha(), cs=TMath::Cos(alphaBachelor), sn=TMath::Sin(alphaBachelor);
+                const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
+                Double_t sx1=sn*sn*pbt->GetSigmaY2()+ss, sy1=cs*cs*pbt->GetSigmaY2()+ss;
+                Double_t lBachelorDCAptSigmaX2 = sx1;
+                Double_t lBachelorDCAptSigmaY2 = sy1;
+                Double_t lBachelorDCAptSigmaZ2 = pbt->GetSigmaZ2();
+                
+                //Step 2a1: Neg/Pos track uncertainties: getting tracks
+                UInt_t lKeyPos = (UInt_t)TMath::Abs(pv0->GetPindex());
+                UInt_t lKeyNeg = (UInt_t)TMath::Abs(pv0->GetNindex());
+                AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+                AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+                
+                //Step 2a2: Neg/Pos track uncertainties: propagation
+                Double_t xn, xp, dca;
+                AliExternalTrackParam nt(*nTrack), pt(*pTrack);
+                
+                if( fkDoImprovedDCAV0DauPropagation ){
+                    //Improved: use own call
+                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                }else{
+                    //Old: use old call
+                    dca=nt.GetDCA(&pt,b,xn,xp);
+                }
+                
+                nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                
+                //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
+                //POSITIVE
+                Double_t alphaPos=pt.GetAlpha(), csp=TMath::Cos(alphaPos), snp=TMath::Sin(alphaPos);
+                Double_t sxp=snp*snp*pt.GetSigmaY2()+0.0005*0.0005, syp=csp*csp*pt.GetSigmaY2()+0.0005*0.0005;
+                Double_t lV0DCAptPosSigmaX2 = sxp;
+                Double_t lV0DCAptPosSigmaY2 = syp;
+                Double_t lV0DCAptPosSigmaZ2 = pt.GetSigmaZ2();
+                Double_t lV0DCAptPosSigmaSnp2 = pt.GetSigmaSnp2();
+                Double_t lV0DCAptPosSigmaTgl2 = pt.GetSigmaTgl2();
+                //NEGATIVE
+                Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
+                Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
+                Double_t lV0DCAptNegSigmaX2 = sxn;
+                Double_t lV0DCAptNegSigmaY2 = syn;
+                Double_t lV0DCAptNegSigmaZ2 = nt.GetSigmaZ2();
+                Double_t lV0DCAptNegSigmaSnp2 = nt.GetSigmaSnp2();
+                Double_t lV0DCAptNegSigmaTgl2 = nt.GetSigmaTgl2();
+                
+                //Step 3a: Get positions
+                Double_t r[3]; pbt->GetXYZ(r);
+                Double_t x1=r[0], y1=r[1], z1=r[2];
+                Double_t x2,y2,z2;          // position of the V0
+                pv0->GetXYZ(x2,y2,z2);
+                
+                //get first estimate on position (for improvement)
+                Double_t lPosXi[3];
+                cascade.GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
+                Double_t lCascadeDecayX = lPosXi[0];
+                Double_t lCascadeDecayY = lPosXi[1];
+                Double_t lCascadeDecayZ = lPosXi[2];
+                
+                Double_t lPosV0Xi[3];
+                cascade.GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
+                Double_t lV0DecayX = lPosV0Xi[0];
+                Double_t lV0DecayY = lPosV0Xi[1];
+                Double_t lV0DecayZ = lPosV0Xi[2];
+                
+                //Step 3: Compute improved position estimate
+                Double_t lBachUnc = lBachelorDCAptSigmaX2 + lBachelorDCAptSigmaY2 + lBachelorDCAptSigmaZ2;
+                Double_t lPosUnc  = lV0DCAptPosSigmaX2    + lV0DCAptPosSigmaY2    + lV0DCAptPosSigmaZ2;
+                Double_t lNegUnc  = lV0DCAptNegSigmaX2    + lV0DCAptNegSigmaY2    + lV0DCAptNegSigmaZ2;
+                
+                Double_t lV0Travel = TMath::Sqrt(
+                                                 TMath::Power((lCascadeDecayX-lV0DecayX),2)+
+                                                 TMath::Power((lCascadeDecayY-lV0DecayY),2)+
+                                                 TMath::Power((lCascadeDecayZ-lV0DecayZ),2)
+                                                 );
+                
+                Double_t lV0UncPos = 1.0* TMath::Power(1./lPosUnc+1./lNegUnc,-1);
+                
+                //Fixme: disregard for now!
+                Double_t lV0UncAng = 0.0*lV0Travel*TMath::Power(1./(lV0DCAptPosSigmaTgl2+lV0DCAptPosSigmaSnp2)+1./(lV0DCAptNegSigmaTgl2+lV0DCAptNegSigmaSnp2),-1);
+                
+                Double_t lV0Unc = TMath::Sqrt( lV0UncAng*lV0UncAng + lV0UncPos*lV0UncPos );
+                Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
+                
+                //Estimating improved position based on uncertainties
+                Double_t lImprovedX = x1 + (x2-x1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedY = y1 + (y2-y1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedZ = z1 + (z2-z1)*lFractionalUncertaintyComingFromBachelor;
+                
+                cascade.SetXYZcascade(lImprovedX, lImprovedY, lImprovedZ);
+            }
+            
             Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
             Double_t r2=x*x + y*y;
             if (r2 > fCascadeVertexerSels[7]*fCascadeVertexerSels[7]) continue;   // condition on fiducial zone
@@ -813,6 +923,105 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             
             AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
             //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
+            
+            
+            //___________________________________________________________________________________________
+            //Improve estimate of cascade decay position using uncertainties if requested to do so
+            if( fkDoImprovedCascadePosition ){
+                //Step 1: acquire relevant uncertainties
+                
+                //Step 1a: Bachelor uncertainties (OK -> pbt already at correct position!)
+                Double_t alphaBachelor=pbt->GetAlpha(), cs=TMath::Cos(alphaBachelor), sn=TMath::Sin(alphaBachelor);
+                const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
+                Double_t sx1=sn*sn*pbt->GetSigmaY2()+ss, sy1=cs*cs*pbt->GetSigmaY2()+ss;
+                Double_t lBachelorDCAptSigmaX2 = sx1;
+                Double_t lBachelorDCAptSigmaY2 = sy1;
+                Double_t lBachelorDCAptSigmaZ2 = pbt->GetSigmaZ2();
+                
+                //Step 2a1: Neg/Pos track uncertainties: getting tracks
+                UInt_t lKeyPos = (UInt_t)TMath::Abs(pv0->GetPindex());
+                UInt_t lKeyNeg = (UInt_t)TMath::Abs(pv0->GetNindex());
+                AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+                AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+                
+                //Step 2a2: Neg/Pos track uncertainties: propagation
+                Double_t xn, xp, dca;
+                
+                AliExternalTrackParam nt(*nTrack), pt(*pTrack);
+                
+                if( fkDoImprovedDCAV0DauPropagation ){
+                    //Improved: use own call
+                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                }else{
+                    //Old: use old call
+                    dca=nt.GetDCA(&pt,b,xn,xp);
+                }
+                
+                nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                
+                //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
+                //POSITIVE
+                Double_t alphaPos=pt.GetAlpha(), csp=TMath::Cos(alphaPos), snp=TMath::Sin(alphaPos);
+                Double_t sxp=snp*snp*pt.GetSigmaY2()+0.0005*0.0005, syp=csp*csp*pt.GetSigmaY2()+0.0005*0.0005;
+                Double_t lV0DCAptPosSigmaX2 = sxp;
+                Double_t lV0DCAptPosSigmaY2 = syp;
+                Double_t lV0DCAptPosSigmaZ2 = pt.GetSigmaZ2();
+                Double_t lV0DCAptPosSigmaSnp2 = pt.GetSigmaSnp2();
+                Double_t lV0DCAptPosSigmaTgl2 = pt.GetSigmaTgl2();
+                //NEGATIVE
+                Double_t alphaNeg=nt.GetAlpha(), csn=TMath::Cos(alphaNeg), snn=TMath::Sin(alphaNeg);
+                Double_t sxn=snn*snn*nt.GetSigmaY2()+0.0005*0.0005, syn=csn*csn*nt.GetSigmaY2()+0.0005*0.0005;
+                Double_t lV0DCAptNegSigmaX2 = sxn;
+                Double_t lV0DCAptNegSigmaY2 = syn;
+                Double_t lV0DCAptNegSigmaZ2 = nt.GetSigmaZ2();
+                Double_t lV0DCAptNegSigmaSnp2 = nt.GetSigmaSnp2();
+                Double_t lV0DCAptNegSigmaTgl2 = nt.GetSigmaTgl2();
+                
+                //Step 3a: Get positions
+                Double_t r[3]; pbt->GetXYZ(r);
+                Double_t x1=r[0], y1=r[1], z1=r[2];
+                Double_t x2,y2,z2;          // position of the V0
+                pv0->GetXYZ(x2,y2,z2);
+                
+                //get first estimate on position (for improvement)
+                Double_t lPosXi[3];
+                cascade.GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
+                Double_t lCascadeDecayX = lPosXi[0];
+                Double_t lCascadeDecayY = lPosXi[1];
+                Double_t lCascadeDecayZ = lPosXi[2];
+                
+                Double_t lPosV0Xi[3];
+                cascade.GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
+                Double_t lV0DecayX = lPosV0Xi[0];
+                Double_t lV0DecayY = lPosV0Xi[1];
+                Double_t lV0DecayZ = lPosV0Xi[2];
+                
+                //Step 3: Compute improved position estimate
+                Double_t lBachUnc = lBachelorDCAptSigmaX2 + lBachelorDCAptSigmaY2 + lBachelorDCAptSigmaZ2;
+                Double_t lPosUnc  = lV0DCAptPosSigmaX2    + lV0DCAptPosSigmaY2    + lV0DCAptPosSigmaZ2;
+                Double_t lNegUnc  = lV0DCAptNegSigmaX2    + lV0DCAptNegSigmaY2    + lV0DCAptNegSigmaZ2;
+                
+                Double_t lV0Travel = TMath::Sqrt(
+                                                 TMath::Power((lCascadeDecayX-lV0DecayX),2)+
+                                                 TMath::Power((lCascadeDecayY-lV0DecayY),2)+
+                                                 TMath::Power((lCascadeDecayZ-lV0DecayZ),2)
+                                                 );
+                
+                Double_t lV0UncPos = 1.0* TMath::Power(1./lPosUnc+1./lNegUnc,-1);
+                
+                //Fixme: disregard for now!
+                Double_t lV0UncAng = 0.0*lV0Travel*TMath::Power(1./(lV0DCAptPosSigmaTgl2+lV0DCAptPosSigmaSnp2)+1./(lV0DCAptNegSigmaTgl2+lV0DCAptNegSigmaSnp2),-1);
+                
+                Double_t lV0Unc = TMath::Sqrt( lV0UncAng*lV0UncAng + lV0UncPos*lV0UncPos );
+                Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
+                
+                //Estimating improved position based on uncertainties
+                Double_t lImprovedX = x1 + (x2-x1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedY = y1 + (y2-y1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedZ = z1 + (z2-z1)*lFractionalUncertaintyComingFromBachelor;
+                
+                cascade.SetXYZcascade(lImprovedX, lImprovedY, lImprovedZ);
+            }
             
             Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
             Double_t r2=x*x + y*y;
@@ -1061,8 +1270,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
                 
                 //Step 2a2: Neg/Pos track uncertainties: propagation
-                Double_t xn, xp, dca=nTrack->GetDCA(pTrack,b,xn,xp);
+                Double_t xn, xp, dca;
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
+                
+                if( fkDoImprovedDCAV0DauPropagation ){
+                    //Improved: use own call
+                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                }else{
+                    //Old: use old call
+                    dca=nt.GetDCA(&pt,b,xn,xp);
+                }
+                
                 nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
                 
                 //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
@@ -1114,7 +1332,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                                                  );
                 
                 Double_t lV0UncPos = 1.0* TMath::Power(1./lPosUnc+1./lNegUnc,-1);
-                Double_t lV0UncAng = 2.0*lV0Travel*TMath::Power(1./(lV0DCAptPosSigmaTgl2+lV0DCAptPosSigmaSnp2)+1./(lV0DCAptNegSigmaTgl2+lV0DCAptNegSigmaSnp2),-1);
+                
+                //Fixme: disregard for now!
+                Double_t lV0UncAng = 0.0*lV0Travel*TMath::Power(1./(lV0DCAptPosSigmaTgl2+lV0DCAptPosSigmaSnp2)+1./(lV0DCAptNegSigmaTgl2+lV0DCAptNegSigmaSnp2),-1);
                 
                 Double_t lV0Unc = TMath::Sqrt( lV0UncAng*lV0UncAng + lV0UncPos*lV0UncPos );
                 Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
@@ -1653,11 +1873,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         nt->PropagateTo(lPreprocessxn, b);
         pt->PropagateTo(lPreprocessxp, b);
         
-        Double_t p1[8]; nt->GetHelixParameters(p1,b);
-        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
-        Double_t p2[8]; pt->GetHelixParameters(p2,b);
-        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
-        
+        //don't redefine!
+        nt->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]);
+        p1[7]=TMath::Cos(p1[2]);
+        pt->GetHelixParameters(p2,b);
+        p2[6]=TMath::Sin(p2[2]);
+        p2[7]=TMath::Cos(p2[2]);
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     }
     
