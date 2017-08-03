@@ -100,7 +100,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fRejectIfNoQuark(kFALSE),
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
-   fKeepMotherInAcceptance(kFALSE) 
+   fKeepMotherInAcceptance(kFALSE),
+   fRsnTreeInFile(kFALSE),
+   fRsnTreeFile(0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -156,7 +158,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fRejectIfNoQuark(kFALSE),
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
-   fKeepMotherInAcceptance(kFALSE)
+   fKeepMotherInAcceptance(kFALSE),
+   fRsnTreeInFile(kFALSE),
+   fRsnTreeFile(0)
 {
 //
 // Default constructor.
@@ -217,7 +221,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fRejectIfNoQuark(copy.fRejectIfNoQuark),
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
-   fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance)
+   fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
+   fRsnTreeInFile(copy.fRsnTreeInFile),
+   fRsnTreeFile(copy.fRsnTreeFile)
 {
 //
 // Copy constructor.
@@ -281,6 +287,9 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMinPt = copy.fMotherAcceptanceCutMinPt;
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
+   fRsnTreeInFile = copy.fRsnTreeInFile;
+   fRsnTreeFile = copy.fRsnTreeFile;
+
    return (*this);
 }
 
@@ -292,8 +301,6 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
 // Clean-up the output list, but not the histograms that are put inside
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
-
-
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
       delete fEvBuffer;
@@ -372,13 +379,16 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    
    fOutput->Add(fHEventStat);
 
-   if (fUseCentrality)
-      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 101, 0, 101.0);
-   else
-      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
+   if (!fHAEventsVsMulti) {
+      if (fUseCentrality)
+         fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 101, 0, 101.0);
+      else
+         fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
+   }
    fOutput->Add(fHAEventsVsMulti);
    
-   fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
+   if (!fHAEventsVsTracklets)
+      fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
    fOutput->Add(fHAEventsVsTracklets);
 
    if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
@@ -399,7 +409,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    }
 
    // create temporary tree for filtered events
-   if (fMiniEvent) delete fMiniEvent;
+   if (fMiniEvent) SafeDelete(fMiniEvent);
+   if (fRsnTreeInFile)
+      fRsnTreeFile = TFile::Open(TString::Format("RsnTree%s.root", GetName()).Data(), "RECREATE");
    fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
 
@@ -632,6 +644,8 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
    timer.Stop(); timer.Print(); fflush(stdout);
 
+   if (fRsnTreeFile)
+      SafeDelete(fRsnTreeFile);
    /*
    OLD
    ifill = 0;
@@ -1585,7 +1599,7 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
 }
 
 //----------------------------------------------------------------------------------
-void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
+void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
 {
    if(!histo) {
       AliWarning(Form("event QA histogram pointer not defined for slot %s",type.Data()));
@@ -1596,22 +1610,24 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
    TString multitype(histo->GetYaxis()->GetTitle());
    multitype.ToUpper();
    
-   if(!type.CompareTo("vz")) fHAEventVzCent = histo;
+   if(!type.CompareTo("eventsvsmulti")) fHAEventsVsMulti = (TH1F*) histo;
+   else if(!type.CompareTo("eventsvstracklets")) fHAEventsVsTracklets = (TH1F*) histo;
+   else if(!type.CompareTo("vz")) fHAEventVzCent = (TH2F*) histo;
    else if(!type.CompareTo("multicent")) {
       if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
          AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
          histo->GetYaxis()->SetTitle("TRACKS");
       }
-      fHAEventMultiCent = histo;
+      fHAEventMultiCent = (TH2F*) histo;
    }
    else if(!type.CompareTo("refmulti")){
      if ( multitype.CompareTo("GLOBAL") && multitype.CompareTo("TRACKLETS") ) {
        AliWarning(Form("Reference multiplicity vs. centrality histogram y-axis %s unknown, setting to GLOBAL",multitype.Data()));
        histo->GetYaxis()->SetTitle("GLOBAL");
      }
-     fHAEventRefMultiCent = histo;     
+     fHAEventRefMultiCent = (TH2F*) histo;     
    }
-   else if(!type.CompareTo("eventplane")) fHAEventPlane = histo;
+   else if(!type.CompareTo("eventplane")) fHAEventPlane = (TH2F*) histo;
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));
 
    return;

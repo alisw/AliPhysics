@@ -2309,8 +2309,38 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
           }
         }
-        
-        if ( fPeriodEnum == kLHC16h3 ){
+
+	if ( fPeriodEnum == kLHC17f8b) {
+          Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+          Double_t weightsBins[20]     = {  43.7553,  13.5848, 6.788, 2.67826, 0.975255,
+					    0.39069, 0.127342, 0.0465597, 0.0206539, 0.00750243,
+					    0.00319118, 0.00122291, 0.000641232, 0.000321437, 0.000168273,
+					    9.17033e-05, 5.34755e-05, 3.01354e-05, 1.74518e-05, 2.8004e-05};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+	} else  if ( fPeriodEnum == kLHC17f8c ){
+         Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+	 Double_t weightsBins[20]     = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+					  0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+					  0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+					  9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+        } else  if ( fPeriodEnum == kLHC16h3 ){
           Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
                                            21, 28, 36, 45, 57,
                                            70, 85, 99, 115, 132,

@@ -71,99 +71,61 @@
 
 
 
-//class AliAnalysisTaskCorPIDTOFprot;    // your analysis class
-
 using namespace std;            // std namespace: so you can do things like 'cout'
-
-//using namespace BSchaefer_devel;
-
-//ofstream fout;
-//Int_t NTracks            = 0;
-//Int_t NGoodTracks        = 0;
-//Int_t NAssociatedTracks  = 0;
-//Int_t DeuteronCandidates = 0;
-
-
-// SetCutGeoNcrNcl  cut out 3 cm on the sides of the TPC
+// using namespace BSchaefer_devel;
 
 
 
-//Double_t prot_curves[2][2][3];  // [charge][mean,sigma][par]
-//TF1 *fit_prot_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
 
 ClassImp(AliAnalysisTaskCorPIDTOFprot) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFprot::AliAnalysisTaskCorPIDTOFprot() : AliAnalysisTaskSE(), 
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
-    fHistPt(0),                 //  1
-    cent_ntracks(0),            //  2
+    fHistPt(0),                   //  1
+    cent_ntracks(0),              //  2
     
-    m2_pos(0),                  //  3
-    m2_neg(0),                  //  4
-    beta_p_pos(0),              //  5
-    beta_p_neg(0),              //  6
+    m2_pos(0),                    //  3
+    m2_neg(0),                    //  4
+    beta_p_pos(0),                //  5
+    beta_p_neg(0),                //  6
 
-    deltat_p_pos(0),            //  7
-    deltat_p_neg(0),            //  8
-    dedx_p_pos(0),              //  9
-    dedx_p_neg(0),              // 10
-    dedx_deltat_pos(0),         // 11
-    dedx_deltat_neg(0),         // 12
-    dedx_p_deltat_pos(0),       // 13
-    dedx_p_deltat_neg(0),       // 14
+//  deltat_p_pos(0),              //  7
+//  deltat_p_neg(0),              //  8
 
-    m2_pos_cut(0),              // 15
-    m2_neg_cut(0),              // 16
-    beta_p_pos_cut(0),          // 17
-    beta_p_neg_cut(0),          // 18
-    deltat_p_pos_cut(0),        // 19
-    deltat_p_neg_cut(0),        // 20
+    m2_pos_cut(0),                //  9
+    m2_neg_cut(0),                // 10
+    beta_p_pos_cut(0),            // 11
+    beta_p_neg_cut(0),            // 12
+//  deltat_p_pos_cut(0),          // 13
+//  deltat_p_neg_cut(0),          // 14
 
-    dedx_p_pos_cut(0),          // 21
-    dedx_p_neg_cut(0),          // 22
-
-    dedx_deltat_pos_cut(0),     // 23
-    dedx_deltat_neg_cut(0),     // 24
-    dedx_p_deltat_pos_cut(0),   // 25
-    dedx_p_deltat_neg_cut(0),   // 26
-
-
-
-
-    prot_dphi_T(0),             // 27
-    prot_dphi_pos_T(0),         // 28
-    prot_dphi_neg_T(0),         // 29
-//    prot_dphi_A(0),             // 30
-//    prot_dphi_pos_A(0),         // 31
-//    prot_dphi_neg_A(0),         // 32
-//    prot_dphi_B(0),             // 33
-//    prot_dphi_pos_B(0),         // 34
-//    prot_dphi_neg_B(0),         // 35
-
-    prot_per_event(0),          // 36
-    prot_per_event_pos(0),      // 37
-    prot_per_event_neg(0),      // 38
+    prot_per_event(0),            // 15
+    prot_per_event_pos(0),        // 16
+    prot_per_event_neg(0),        // 17
     
-    m2_pos_cut_T(0),            // 39
-//    m2_pos_cut_A(0),            // 40
-//    m2_pos_cut_B(0),            // 41
-    m2_neg_cut_T(0),            // 42
-//    m2_neg_cut_A(0),            // 43
-//    m2_neg_cut_B(0),            // 44
+    m2_pos_cut_T(0),              // 18
+    m2_neg_cut_T(0),              // 19
 
-    dphi_et_prot_T(0),          // 45
-//    dphi_et_prot_A(0),         // 46
-//    dphi_et_prot_B(0),         // 47
+    prot_phi_hist(0),             // 20
 
-    deltat_channel(0),          // 48
+    pt_mom(0),                    // 21
+    proton_pt_q_pos_pos(0),       // 22
+    proton_pt_q_pos_neg(0),       // 23
+    proton_pt_q_neg_neg(0),       // 24
+    di_proton_phi(0),             // 25
+    hi_05_phi(0),                 // 26
+    hi_08_phi(0),                 // 27
+    di_prot_q_dphi_pos_pos_05(0), // 28
+    di_prot_q_dphi_pos_neg_05(0), // 29
+    di_prot_q_dphi_neg_neg_05(0), // 30
 
-    prot_et_count(0),           // 49
-    prot_e_count(0),            // 50
-    dphi_e_prot_T(0),           // 51
-    prot_pt_count(0),           // 52
-    asso_phi_hist(0),           // 53
-    prot_phi_hist(0)            // 54    
+    di_prot_q_dphi_pos_pos_08(0), // 31
+    di_prot_q_dphi_pos_neg_08(0), // 32
+    di_prot_q_dphi_neg_neg_08(0)  // 33
+
+//    track_cor_radius(0),          // 34
+//    track_cor_radius_cut(0)       // 35
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -172,71 +134,51 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 AliAnalysisTaskCorPIDTOFprot::AliAnalysisTaskCorPIDTOFprot(const char* name) : AliAnalysisTaskSE(name),
 fAOD(0), fOutputList(0), fPIDResponse(0),
 									   
-    fHistPt(0),                 //  1
-    cent_ntracks(0),            //  2
+
+    fHistPt(0),                   //  1
+    cent_ntracks(0),              //  2
     
-    m2_pos(0),                  //  3
-    m2_neg(0),                  //  4
-    beta_p_pos(0),              //  5
-    beta_p_neg(0),              //  6
+    m2_pos(0),                    //  3
+    m2_neg(0),                    //  4
+    beta_p_pos(0),                //  5
+    beta_p_neg(0),                //  6
 
-    deltat_p_pos(0),            //  7
-    deltat_p_neg(0),            //  8
-    dedx_p_pos(0),              //  9
-    dedx_p_neg(0),              // 10
-    dedx_deltat_pos(0),         // 11
-    dedx_deltat_neg(0),         // 12
-    dedx_p_deltat_pos(0),       // 13
-    dedx_p_deltat_neg(0),       // 14
+//  deltat_p_pos(0),              //  7
+//  deltat_p_neg(0),              //  8
 
-    m2_pos_cut(0),              // 15
-    m2_neg_cut(0),              // 16
-    beta_p_pos_cut(0),          // 17
-    beta_p_neg_cut(0),          // 18
-    deltat_p_pos_cut(0),        // 19
-    deltat_p_neg_cut(0),        // 20
+    m2_pos_cut(0),                //  9
+    m2_neg_cut(0),                // 10
+    beta_p_pos_cut(0),            // 11
+    beta_p_neg_cut(0),            // 12
+//  deltat_p_pos_cut(0),          // 13
+//  deltat_p_neg_cut(0),          // 14
 
-    dedx_p_pos_cut(0),          // 21
-    dedx_p_neg_cut(0),          // 22
-
-    dedx_deltat_pos_cut(0),     // 23
-    dedx_deltat_neg_cut(0),     // 24
-    dedx_p_deltat_pos_cut(0),   // 25
-    dedx_p_deltat_neg_cut(0),   // 26
-
-
-    prot_dphi_T(0),             // 27
-    prot_dphi_pos_T(0),         // 28
-    prot_dphi_neg_T(0),         // 29
-//    prot_dphi_A(0),             // 30
-//    prot_dphi_pos_A(0),         // 31
-//    prot_dphi_neg_A(0),         // 32
-//    prot_dphi_B(0),             // 33
-//    prot_dphi_pos_B(0),         // 34
-//    prot_dphi_neg_B(0),         // 35
-
-    prot_per_event(0),          // 36
-    prot_per_event_pos(0),      // 37
-    prot_per_event_neg(0),      // 38
+    prot_per_event(0),            // 15
+    prot_per_event_pos(0),        // 16
+    prot_per_event_neg(0),        // 17
     
-    m2_pos_cut_T(0),            // 39
-//    m2_pos_cut_A(0),            // 40
-//    m2_pos_cut_B(0),            // 41
-    m2_neg_cut_T(0),            // 42
-//    m2_neg_cut_A(0),            // 43
-//    m2_neg_cut_B(0),            // 44
+    m2_pos_cut_T(0),              // 18
+    m2_neg_cut_T(0),              // 19
 
-    dphi_et_prot_T(0),         // 45
-//    dphi_et_prot_A(0),         // 46
-//    dphi_et_prot_B(0),         // 47
+    prot_phi_hist(0),             // 20
 
-    deltat_channel(0),          // 48
-    prot_et_count(0),           // 49
-    prot_e_count(0),            // 50
-    dphi_e_prot_T(0),           // 51
-    prot_pt_count(0),           // 52
-    asso_phi_hist(0),           // 53
-    prot_phi_hist(0)            // 54    
+    pt_mom(0),                    // 21
+    proton_pt_q_pos_pos(0),       // 22
+    proton_pt_q_pos_neg(0),       // 23
+    proton_pt_q_neg_neg(0),       // 24
+    di_proton_phi(0),             // 25
+    hi_05_phi(0),                 // 26
+    hi_08_phi(0),                 // 27
+    di_prot_q_dphi_pos_pos_05(0), // 28
+    di_prot_q_dphi_pos_neg_05(0), // 29
+    di_prot_q_dphi_neg_neg_05(0), // 30
+
+    di_prot_q_dphi_pos_pos_08(0), // 31
+    di_prot_q_dphi_pos_neg_08(0), // 32
+    di_prot_q_dphi_neg_neg_08(0)  // 33
+									       
+//    track_cor_radius(0),          // 34
+//    track_cor_radius_cut(0)       // 35
 									       
 {
     // constructor
@@ -255,46 +197,29 @@ AliAnalysisTaskCorPIDTOFprot::~AliAnalysisTaskCorPIDTOFprot()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFprot::UserCreateOutputObjects()
 {
-
-
-// deuteron   
-//3.09901 0.0446792 0.469684 0.0973401 0.0424328 -0.0685078 2.91151 0.0730297 0.664744 -0.115955 0.0709238 0.15557 
-
-// proton
-    //  0.763625 0.0194772 0.0903159 -0.000109114
-    // -0.129833 0.0625516 0.10124 0.000109926
-    //  0.778006 0.0183448 0.0754383 -0.00010526
-    // -0.117123 0.0597632 0.0921575 0.000118412
-    
-    prot_curves[0][0][0] = 0.763625;     // pos prot mean curve
+    prot_curves[0][0][0] = 0.763625;      // pos prot mean curve
     prot_curves[0][0][1] = 0.0194772;
     prot_curves[0][0][2] = 0.0903159;
     prot_curves[0][0][3] =-0.000109114;
     
-    prot_curves[0][1][0] =-0.129833;  // pos prot sigma curve
+    prot_curves[0][1][0] =-0.129833;      // pos prot sigma curve
     prot_curves[0][1][1] = 0.0625516;
     prot_curves[0][1][2] = 0.10124;
     prot_curves[0][1][3] = 0.000109926;
 
-    prot_curves[1][0][0] = 0.778006;     // neg prot mean curve
+    prot_curves[1][0][0] = 0.778006;      // neg prot mean curve
     prot_curves[1][0][1] = 0.0183448;
     prot_curves[1][0][2] = 0.0754383;
     prot_curves[1][0][3] =-0.00010526;
 
-    prot_curves[1][1][0] =-0.117123;  // neg prot sigma curve
+    prot_curves[1][1][0] =-0.117123;      // neg prot sigma curve
     prot_curves[1][1][1] = 0.0597632;
     prot_curves[1][1][2] = 0.0921575;
     prot_curves[1][1][3] = 0.000118412;
+
+
+
     
-//    pi = TMath::Pi();
-//    fout.open("output.txt");
-
-
-//  Double_t prot_curves[2][2][3];  // [charge][mean,sigma][par]
-
-//  TF1 *fit_prot_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
-//    fit_prot_curve->SetParNames("a", "b x", "c/#sqrt(x)");
-	
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
@@ -302,138 +227,99 @@ void AliAnalysisTaskCorPIDTOFprot::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
 
-    fHistPt               = new TH1F("fHistPt",               "Pt()",                 1000,     0,     10);                              //  1
-    cent_ntracks          = new TH2F("cent_ntracks",          "cent_ntracks",          100,     0,    100,     100,       0,     800);   //  2
+    fHistPt               = new TH1F("fHistPt",               "Pt()",                 1000,         0,      10);                              //  1
+    cent_ntracks          = new TH2F("cent_ntracks",          "cent_ntracks",          100,         0,     100,     100,       0,     800);   //  2
     
-    m2_pos                = new TH2F("m2_pos",                "m2_pos",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  3
-    m2_neg                = new TH2F("m2_neg",                "m2_neg",                320,   0.0,    8.0,    2400,    -1.0,     7.0);   //  4
-    beta_p_pos            = new TH2F("beta_p_pos",            "beta_p_pos",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  5
-    beta_p_neg            = new TH2F("beta_p_neg",            "beta_p_neg",            780,   0.0,    8.0,    3000,     0.1,     1.1);   //  6
-    deltat_p_pos          = new TH2F("deltat_p_pos",          "deltat_p_pos",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  7
-    deltat_p_neg          = new TH2F("deltat_p_neg",          "deltat_p_neg",        27000,   0.3,    3.0,    1000,    -1.0,     9.0);   //  8
-    dedx_p_pos            = new TH2F("dedx_p_pos",            "dedx_p_pos",            780,   0.2,    8.0,     250,     0.0,   500.0);   //  9
-    dedx_p_neg            = new TH2F("dedx_p_neg",            "dedx_p_neg",            780,   0.2,    8.0,     250,     0.0,   500.0);   // 10
-    dedx_deltat_pos       = new TH2F("dedx_deltat_pos",       "dedx_deltat_pos",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 11
-    dedx_deltat_neg       = new TH2F("dedx_deltat_neg",       "dedx_deltat_neg",      2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 12
-    dedx_p_deltat_pos     = new TH3F("dedx_p_deltat_pos",     "dedx_p_deltat_pos",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 13 //// (dedx, mom, deltat)
-    dedx_p_deltat_neg     = new TH3F("dedx_p_deltat_neg",     "dedx_p_deltat_neg",     250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 14 //// (dedx, mom, deltat)
-    m2_pos_cut            = new TH2F("m2_pos_cut",            "m2_pos_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 15
-    m2_neg_cut            = new TH2F("m2_neg_cut",            "m2_neg_cut",            320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 16
-    beta_p_pos_cut        = new TH2F("beta_p_pos_cut",        "beta_p_pos_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 17
-    beta_p_neg_cut        = new TH2F("beta_p_neg_cut",        "beta_p_neg_cut",        780,   0.0,    8.0,    3000,     0.1,     1.1);   // 18
-    deltat_p_pos_cut      = new TH2F("deltat_p_pos_cut",      "deltat_p_pos_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 19
-    deltat_p_neg_cut      = new TH2F("deltat_p_neg_cut",      "deltat_p_neg_cut",    27000,   0.3,    3.0,    1000,    -1.0,     9.0);   // 20
-    dedx_p_pos_cut        = new TH2F("dedx_p_pos_cut",        "dedx_p_pos_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 21
-    dedx_p_neg_cut        = new TH2F("dedx_p_neg_cut",        "dedx_p_neg_cut",        780,   0.2,    8.0,     250,     0.0,   500.0);   // 22
-    dedx_deltat_pos_cut   = new TH2F("dedx_deltat_pos_cut",   "dedx_deltat_pos_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 23
-    dedx_deltat_neg_cut   = new TH2F("dedx_deltat_neg_cut",   "dedx_deltat_neg_cut",  2100,  -1.0,   20.0,     250,     0.0,   500.0);   // 24
-    dedx_p_deltat_pos_cut = new TH3F("dedx_p_deltat_pos_cut", "dedx_p_deltat_pos_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 25 //// (dedx, mom, deltat)
-    dedx_p_deltat_neg_cut = new TH3F("dedx_p_deltat_neg_cut", "dedx_p_deltat_neg_cut", 250, 0.0, 500.0, 156, 0.2, 8.0, 420, -1.0, 20.0); // 26 //// (dedx, mom, deltat)
+    m2_pos                = new TH2F("m2_pos",                "m2_pos",                320,       0.0,     8.0,    2400,    -1.0,     7.0);   //  3
+    m2_neg                = new TH2F("m2_neg",                "m2_neg",                320,       0.0,     8.0,    2400,    -1.0,     7.0);   //  4
+    beta_p_pos            = new TH2F("beta_p_pos",            "beta_p_pos",            780,       0.0,     8.0,    3000,     0.1,     1.1);   //  5
+    beta_p_neg            = new TH2F("beta_p_neg",            "beta_p_neg",            780,       0.0,     8.0,    3000,     0.1,     1.1);   //  6
+//  deltat_p_pos          = new TH2F("deltat_p_pos",          "deltat_p_pos",        27000,       0.3,     3.0,    1000,    -1.0,     9.0);   //  7
+//  deltat_p_neg          = new TH2F("deltat_p_neg",          "deltat_p_neg",        27000,       0.3,     3.0,    1000,    -1.0,     9.0);   //  8
 
-    prot_dphi_T           = new TH2F("prot_dphi_T",           "prot_dphi_T",           160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 27
-    prot_dphi_pos_T       = new TH2F("prot_dphi_pos_T",       "prot_dphi_pos_T",       160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 28
-    prot_dphi_neg_T       = new TH2F("prot_dphi_neg_T",       "prot_dphi_neg_T",       160,   1.0,    5.0,     300, -1.6708,  4.8124);   // 29    
-//    prot_dphi_A           = new TH2F("prot_dphi_A",           "prot_dphi_A",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 30
-//    prot_dphi_pos_A       = new TH2F("prot_dphi_pos_A",       "prot_dphi_pos_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 31
-//    prot_dphi_neg_A       = new TH2F("prot_dphi_neg_A",       "prot_dphi_neg_A",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 32    
-//    prot_dphi_B           = new TH2F("prot_dphi_B",           "prot_dphi_B",            14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 33
-//    prot_dphi_pos_B       = new TH2F("prot_dphi_pos_B",       "prot_dphi_pos_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 34
-//    prot_dphi_neg_B       = new TH2F("prot_dphi_neg_B",       "prot_dphi_neg_B",        14,   1.0,    4.5,     300, -1.6708,  4.8124);   // 35
-    prot_per_event        = new TH1I("prot_per_event",        "prot_per_event",          8,     0,     8);                               // 36
-    prot_per_event_pos    = new TH1I("prot_per_event_pos",    "prot_per_event_pos",      8,     0,     8);                               // 37
-    prot_per_event_neg    = new TH1I("prot_per_event_neg",    "prot_per_event_neg",      8,     0,     8);                               // 38
-    m2_pos_cut_T          = new TH2F("m2_pos_cut_T",          "m2_pos_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 39
-//    m2_pos_cut_A          = new TH2F("m2_pos_cut_A",          "m2_pos_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 40
-//    m2_pos_cut_B          = new TH2F("m2_pos_cut_B",          "m2_pos_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 41
-    m2_neg_cut_T          = new TH2F("m2_neg_cut_T",          "m2_neg_cut_T",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 42
-//    m2_neg_cut_A          = new TH2F("m2_neg_cut_A",          "m2_neg_cut_A",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 43
-//    m2_neg_cut_B          = new TH2F("m2_neg_cut_B",          "m2_neg_cut_B",          320,   0.0,    8.0,    2400,    -1.0,     7.0);   // 44
-    dphi_et_prot_T        = new TH2F("dphi_et_prot_T",        "dphi_et_prot_T",        189,  1.00,   4.78,      60, -1.6708,  4.8124);   // 45 // dphi, ket
-//    dphi_et_prot_A       = new TH2F("dphi_et_prot_A",       "dphi_et_prot_A",         46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 46 // dphi, ket
-//    dphi_et_prot_B       = new TH2F("dphi_et_prot_B",       "dphi_et_prot_B",         46, 0.445,  2.745,      60, -1.6708,  4.8124);   // 47 // dphi, ket
-
-    deltat_channel        = new TProfile("deltat_channel",    "deltat_channel",       4800,     0,   4800,    -0.6,     0.6);            // 48 // tof channel and deltat
+    m2_pos_cut            = new TH2F("m2_pos_cut",            "m2_pos_cut",            320,       0.0,     8.0,    2400,    -1.0,     7.0);   //  9
+    m2_neg_cut            = new TH2F("m2_neg_cut",            "m2_neg_cut",            320,       0.0,     8.0,    2400,    -1.0,     7.0);   // 10
+    beta_p_pos_cut        = new TH2F("beta_p_pos_cut",        "beta_p_pos_cut",        780,       0.0,     8.0,    3000,     0.1,     1.1);   // 11
+    beta_p_neg_cut        = new TH2F("beta_p_neg_cut",        "beta_p_neg_cut",        780,       0.0,     8.0,    3000,     0.1,     1.1);   // 12
+//  deltat_p_pos_cut      = new TH2F("deltat_p_pos_cut",      "deltat_p_pos_cut",    27000,       0.3,     3.0,    1000,    -1.0,     9.0);   // 13
+//  deltat_p_neg_cut      = new TH2F("deltat_p_neg_cut",      "deltat_p_neg_cut",    27000,       0.3,     3.0,    1000,    -1.0,     9.0);   // 14
 
 
-    prot_et_count         = new TH1F("prot_et_count",         "prot_et_count",         189,  1.00,   4.78);                              // 49
-    prot_e_count          = new TH1F("prot_e_count",          "prot_e_count",          189,  1.00,   4.78);                              // 50
+    prot_per_event        = new TH1I("prot_per_event",        "prot_per_event",          8,         0,      8);                               // 15
+    prot_per_event_pos    = new TH1I("prot_per_event_pos",    "prot_per_event_pos",      8,         0,      8);                               // 16
+    prot_per_event_neg    = new TH1I("prot_per_event_neg",    "prot_per_event_neg",      8,         0,      8);                               // 17
+    m2_pos_cut_T          = new TH2F("m2_pos_cut_T",          "m2_pos_cut_T",          320,       0.0,     8.0,    2400,    -1.0,     7.0);   // 18
+    m2_neg_cut_T          = new TH2F("m2_neg_cut_T",          "m2_neg_cut_T",          320,       0.0,     8.0,    2400,    -1.0,     7.0);   // 19
 
-    dphi_e_prot_T         = new TH2F("dphi_e_prot_T",         "dphi_e_prot_T",         189,  1.00,   4.78,      60, -1.6708,  4.8124);   // 51 // dphi, e
-    prot_pt_count         = new TH1F("prot_pt_count",         "prot_pt_count",         160,   1.0,    5.0);                              // 52
+    prot_phi_hist         = new TH1F("prot_phi_hist",         "prot_phi_hist",         300,   -1.6708,  4.8124);                              // 20
 
-    asso_phi_hist         = new TH1F("asso_phi_hist",         "asso_phi_hist",         480, -0.1, 6.383185);                             // 53
-    prot_phi_hist         = new TH1F("prot_phi_hist",         "prot_phi_hist",         480, -0.1, 6.383185);                             // 54
+    pt_mom                = new TH2F("pt_mom",                "pt_mom",                 92,       0.4,    5.00,    152,  0.40,   8.0);        // 21
+    proton_pt_q_pos_pos   = new TH2F("proton_pt_q_pos_pos",   "proton_pt_q_pos_pos",    37,       0.4,    4.10,   76,  0.00,  3.8);           // 22
+    proton_pt_q_pos_neg   = new TH2F("proton_pt_q_pos_neg",   "proton_pt_q_pos_neg",    37,       0.4,    4.10,   76,  0.00,  3.8);           // 23
+    proton_pt_q_neg_neg   = new TH2F("proton_pt_q_neg_neg",   "proton_pt_q_neg_neg",    37,       0.4,    4.10,   76,  0.00,  3.8);           // 24
+
+    di_proton_phi         = new TH1F("di_proton_phi",         "di_proton_phi",         300,   -1.6708,  4.8124);                              // 25
+    hi_05_phi             = new TH1F("hi_05_phi",             "hi_05_phi",             300,   -1.6708,  4.8124);                              // 26
+    hi_08_phi             = new TH1F("hi_08_phi",             "hi_08_phi",             300,   -1.6708,  4.8124);                              // 27
     
-//    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
-//    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
-//    alpha                   = new TH1F("alpha",                     "alpha",                  1000,     0,    4.0);
-//    theta                   = new TH1F("theta",                     "theta",                   100,  -7.0,    7.0);
-//    dca                     = new TH2F("dca",                       "dca",                     100,  -5.0,    5.0,     100,   -5.0,    5.0);
-//    generic                 = new TH1F("generic",                   "generic",                 4, -1,3);
-    //markc
+    di_prot_q_dphi_pos_pos_05 = new TH2F("di_prot_q_dphi_pos_pos_05", "di_prot_q_dphi_pos_pos_05", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 28
+    di_prot_q_dphi_pos_neg_05 = new TH2F("di_prot_q_dphi_pos_neg_05", "di_prot_q_dphi_pos_neg_05", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 29
+    di_prot_q_dphi_neg_neg_05 = new TH2F("di_prot_q_dphi_neg_neg_05", "di_prot_q_dphi_neg_neg_05", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 30
+    
+    di_prot_q_dphi_pos_pos_08 = new TH2F("di_prot_q_dphi_pos_pos_08", "di_prot_q_dphi_pos_pos_08", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 31
+    di_prot_q_dphi_pos_neg_08 = new TH2F("di_prot_q_dphi_pos_neg_08", "di_prot_q_dphi_pos_neg_08", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 32
+    di_prot_q_dphi_neg_neg_08 = new TH2F("di_prot_q_dphi_neg_neg_08", "di_prot_q_dphi_neg_neg_08", 76, 0.00, 3.8, 300, -1.6708, 4.8124);      // 33
+    
+//    track_cor_radius      = new TH2F("track_cor_radius",        "track_cor_radius",    160,  1.00,   5.00,     325,   -3.53,    3.53);        // 34
+//    track_cor_radius_cut  = new TH2F("track_cor_radius_cut",    "track_cor_radius_cut",160,  1.00,   5.00,     325,   -3.53,    3.53);        // 35
+    
+    // objects added to output file
+    
+    fOutputList->Add(fHistPt);                    //  1
+    fOutputList->Add(cent_ntracks);               //  2
+    
+    fOutputList->Add(m2_pos);                     //  3
+    fOutputList->Add(m2_neg);                     //  4 
+    fOutputList->Add(beta_p_pos);                 //  5
+    fOutputList->Add(beta_p_neg);                 //  6
+//  fOutputList->Add(deltat_p_pos);               //  7
+//  fOutputList->Add(deltat_p_neg);               //  8
 
+    fOutputList->Add(m2_pos_cut);                 //  9
+    fOutputList->Add(m2_neg_cut);                 // 10
+    fOutputList->Add(beta_p_pos_cut);             // 11
+    fOutputList->Add(beta_p_neg_cut);             // 12
+//  fOutputList->Add(deltat_p_pos_cut);           // 13
+//  fOutputList->Add(deltat_p_neg_cut);           // 14
 
-    
-    
-    fOutputList->Add(fHistPt);                //  1                                                             // objects added to output file
-    fOutputList->Add(cent_ntracks);           //  2
-    
-    fOutputList->Add(m2_pos);                 //  3
-    fOutputList->Add(m2_neg);                 //  4 
-    fOutputList->Add(beta_p_pos);             //  5
-    fOutputList->Add(beta_p_neg);             //  6
-    fOutputList->Add(deltat_p_pos);           //  7
-    fOutputList->Add(deltat_p_neg);           //  8
-    fOutputList->Add(dedx_p_pos);             //  9
-    fOutputList->Add(dedx_p_neg);             // 10
-    fOutputList->Add(dedx_deltat_pos);        // 11
-    fOutputList->Add(dedx_deltat_neg);        // 12
-    fOutputList->Add(dedx_p_deltat_pos);      // 13
-    fOutputList->Add(dedx_p_deltat_neg);      // 14
-    
-    fOutputList->Add(m2_pos_cut);             // 15
-    fOutputList->Add(m2_neg_cut);             // 16
-    fOutputList->Add(beta_p_pos_cut);         // 17
-    fOutputList->Add(beta_p_neg_cut);         // 18
-    fOutputList->Add(deltat_p_pos_cut);       // 19
-    fOutputList->Add(deltat_p_neg_cut);       // 20
-    fOutputList->Add(dedx_p_pos_cut);         // 21
-    fOutputList->Add(dedx_p_neg_cut);         // 22
-    fOutputList->Add(dedx_deltat_pos_cut);    // 23   
-    fOutputList->Add(dedx_deltat_neg_cut);    // 24
-    fOutputList->Add(dedx_p_deltat_pos_cut);  // 25  
-    fOutputList->Add(dedx_p_deltat_neg_cut);  // 26
-    fOutputList->Add(prot_dphi_T);            // 27
-    fOutputList->Add(prot_dphi_pos_T);        // 28
-    fOutputList->Add(prot_dphi_neg_T);        // 29
-//    fOutputList->Add(prot_dphi_A);            // 30
-//    fOutputList->Add(prot_dphi_pos_A);        // 31
-//    fOutputList->Add(prot_dphi_neg_A);        // 32
-//    fOutputList->Add(prot_dphi_B);            // 33
-//    fOutputList->Add(prot_dphi_pos_B);        // 34
-//    fOutputList->Add(prot_dphi_neg_B);        // 35
-    fOutputList->Add(prot_per_event);         // 36
-    fOutputList->Add(prot_per_event_pos);     // 37
-    fOutputList->Add(prot_per_event_neg);     // 38
-    fOutputList->Add(m2_pos_cut_T);           // 39
-//    fOutputList->Add(m2_pos_cut_A);           // 40
-//    fOutputList->Add(m2_pos_cut_B);	      // 41
-    fOutputList->Add(m2_neg_cut_T);           // 42
-//    fOutputList->Add(m2_neg_cut_A);           // 43
-//    fOutputList->Add(m2_neg_cut_B);           // 44
-    fOutputList->Add(dphi_et_prot_T);        // 45
-//    fOutputList->Add(dphi_et_prot_A);        // 46
-//    fOutputList->Add(dphi_et_prot_B);        // 47
-    
-    fOutputList->Add(deltat_channel);         // 48
+    fOutputList->Add(prot_per_event);             // 15
+    fOutputList->Add(prot_per_event_pos);         // 16
+    fOutputList->Add(prot_per_event_neg);         // 17
+    fOutputList->Add(m2_pos_cut_T);               // 18
+    fOutputList->Add(m2_neg_cut_T);               // 19
 
-    fOutputList->Add(prot_et_count);          // 49
-    fOutputList->Add(prot_e_count);           // 50
-    fOutputList->Add(dphi_e_prot_T);          // 51
-    fOutputList->Add(prot_pt_count);          // 52
-    fOutputList->Add(asso_phi_hist);          // 53
-    fOutputList->Add(prot_phi_hist);          // 54
+    fOutputList->Add(prot_phi_hist);              // 20
+
+    fOutputList->Add(pt_mom);                     // 21
+    fOutputList->Add(proton_pt_q_pos_pos);        // 22
+    fOutputList->Add(proton_pt_q_pos_neg);        // 23
+    fOutputList->Add(proton_pt_q_neg_neg);        // 24
+
+    fOutputList->Add(di_proton_phi);              // 25
+    fOutputList->Add(hi_05_phi);                  // 26
+    fOutputList->Add(hi_08_phi);                  // 27
+
+    fOutputList->Add(di_prot_q_dphi_pos_pos_05);  // 28
+    fOutputList->Add(di_prot_q_dphi_pos_neg_05);  // 29
+    fOutputList->Add(di_prot_q_dphi_neg_neg_05);  // 30
     
+    fOutputList->Add(di_prot_q_dphi_pos_pos_08);  // 31
+    fOutputList->Add(di_prot_q_dphi_pos_neg_08);  // 32
+    fOutputList->Add(di_prot_q_dphi_neg_neg_08);  // 33
+
+//    fOutputList->Add(track_cor_radius);           // 34
+//    fOutputList->Add(track_cor_radius_cut);       // 35
+       
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -456,8 +342,6 @@ void AliAnalysisTaskCorPIDTOFprot::UserCreateOutputObjects()
 void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 {
 
-//    	Double_t pi = 3.1415926535897932384626434;
-
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
 
@@ -467,7 +351,7 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
     
     //////////////////////////////////////// MULTIPLICITY PART ////////////////////////////////////////
 
-    cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"), iTracks);
+    cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0A"), iTracks);
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,17 +361,22 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
     int NProt                = 0;
     int NProt_pos            = 0;
     int NProt_neg            = 0;
-    int prot_flag_T          = 0;
-//    int prot_flag_A          = 0;
-//    int prot_flag_B          = 0;
-    int prot_track_num_T     = -9999;;
-//    int prot_track_num_A     = -9999;;
-//    int prot_track_num_B     = -9999;;
+
+    int prot_track_num_1    = -9999;
+    int prot_track_num_2    = -9999;
     int associated_tracks    = 0;
 
+    
+    int high_05_track_num    = -9999;
+    int high_05_track_count  = 0;
+    Float_t high_05_track_pt = 0.0;
 
+    int high_08_track_num    = -9999;
+    int high_08_track_count  = 0;
+    Float_t high_08_track_pt = 0.0;
 
-	
+    
+    
     struct track_node        // linked list, for efficient, dynamically allocated memory use
     {
 	int track_num;
@@ -499,13 +388,11 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
     root->next = NULL;
     conductor = root;
 
-
+    // markA
 
     // loop over all these tracks
     for(Int_t i(0); i < iTracks; i++)
     {
-//	NTracks++;
-
 
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;                                                       // if we failed, skip this track
@@ -513,38 +400,66 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 
 	if(!track->IsPrimaryCandidate())   continue;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-//	AliExternalTrackParam trkparam;
-//	trkparam.CopyFromVTrack(track);
+	Double_t pt            = track->Pt();
+	Short_t  yes_high_pt   = 0;
 	
-//	if(trkparam.GetX() > 3.) continue; // only valid for propagation inside the beam pipe
+	if(pt >= 5.0)
+	{
+	    if(high_05_track_pt < pt)
+	    {
+		high_05_track_num = i;
+		high_05_track_pt  = pt;	
+	    }
+	    high_05_track_count++;
+	    yes_high_pt = 1;
+	}
+
+	if(pt >= 8.0)
+	{
+	    if(high_08_track_pt < pt)
+	    {
+		high_08_track_num = i;
+		high_08_track_pt  = pt;	
+	    }
+	    high_08_track_count++;
+	}
+
+	if(yes_high_pt == 1) continue;
+	
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	AliExternalTrackParam trkparam;
+	trkparam.CopyFromVTrack(track);
+
+
+	
+	if(trkparam.GetX() > 3.) continue; // only valid for propagation inside the beam pipe
 		
 	// impact parameters
-//	Double_t b[2];
-//	Double_t bCov[3];
-//	if(!trkparam.PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 10000., b, bCov))   continue;
+	Double_t b[2];
+	Double_t bCov[3];
+	if(!trkparam.PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 10000., b, bCov))   continue;
 	
-//	Double_t dcaxy = b[0];
-//	Double_t dcaz  = b[1];
+	Double_t dcaxy = b[0];
+	Double_t dcaz  = b[1];
 
-//	if(fabs(dcaxy) > 3.0)   continue;
-//	if(fabs(dcaz)  > 2.0)   continue;
-//	dca->Fill(dcaxy, dcaz);
+	if(fabs(dcaxy) > 3.0)   continue;
+	if(fabs(dcaz)  > 2.0)   continue;
 
 
-//	UChar_t map = track->GetITSClusterMap();
-//	Int_t nITSpoints = 0;
-//	for(Int_t j=2; j<6; j++)
-//	{
-//		if(map&(1<<j)) ++nITSpoints;
-//	}
+
+	UChar_t map = track->GetITSClusterMap();
+	Int_t nITSpoints = 0;
+	for(Int_t j=2; j<6; j++)
+	{
+		if(map&(1<<j)) ++nITSpoints;
+	}
 	
 
-//	if(nITSpoints < 2)      continue;
+	if(nITSpoints < 2)      continue;
 	
-//	Short_t nTPCclusters     = track->GetTPCsignalN();
-//	if(nTPCclusters<70)     continue;                          // No of TPC Clusters
-
+	Short_t nTPCclusters     = track->GetTPCsignalN();
+	if(nTPCclusters<70)     continue;                          // No of TPC Clusters
+	
 
 
 	
@@ -592,10 +507,10 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 //	{
 
 	    
-	Double_t mom            = track->P();
+
 //	Double_t energy         = track->E();
 //	float    mass           = track->M();
-	float    pt             = track->Pt();
+	float    mom            = track->P();
 //	Double_t tpc_mom        = track->GetTPCmomentum();
 	Short_t  charge         = track->Charge();
 //	Double_t eta            = track->Eta();
@@ -604,7 +519,7 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 	int      id             = 14;
 	Double_t prot_mean      = 0.0;
 	Double_t prot_sigma     = 0.0;
-	Double_t cut_width      = 1.0;
+
 
 	Double_t phi = track->Phi();
 	Double_t eta = track->Eta();
@@ -618,36 +533,14 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 
 
 	fHistPt->Fill(pt);
-//	if(pt >= 0.3  &&  pt < 5)   alpha->Fill(1/pt);
 
-//	if(pt >= 1.0  &&  pt < 1.05)   cout<<fPIDResponse->GetTOFResponse().GetTOFchannel(track)<<endl;
-
-	// markc
 	if(isModGlobal == 1)
 	{
 	    Double_t m2tof = get_mass_squared(track);
 	    Float_t dedx   = track->GetTPCsignal();
 	    Float_t deltat = tof_minus_tpion(track);
 
-
-//    kElectron =  0;
-//    kMuon     =  1;
-//    kPion     =  2;
-//    kKaon     =  3;
-//    kProton   =  4;
-//    kDeuteron =  5;
-//    kTriton   =  6;
-//    kHe3      =  7;
-//    kAlpha    =  8;
-//    kPhoton   =  9;
-//    kPi0      = 10;
-//    kNeutron  = 11;
-//    kKaon0    = 12;
-//    kEleCon   = 13;
-//    kUnknown  = 14;  
-
-	    
-	    ////  markA
+	    pt_mom->Fill(pt, mom);
 
 	    Float_t beta_kaon = 0.0;
 	    Float_t beta      = 0.0;
@@ -659,11 +552,7 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 	    {
 		m2_pos->Fill(        pt, m2tof);
 		beta_p_pos->Fill(   mom, Beta(track));
-		dedx_p_pos->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos->Fill(deltat, dedx);
-		dedx_p_deltat_pos->Fill(dedx, mom, deltat);
-//		dedx_p_m2_pos->Fill(dedx, mom, m2tof);
-		deltat_p_pos->Fill(  pt, deltat);
+//		deltat_p_pos->Fill(  pt, deltat);
 
 		
 		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
@@ -674,57 +563,37 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
 			   )
 		    {
-			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
+			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{
 			    m2_pos_cut->Fill(        pt, m2tof);
 			    beta_p_pos_cut->Fill(   mom, Beta(track));
-			    deltat_p_pos_cut->Fill(  pt, deltat);
-			    dedx_p_pos_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_pos_cut->Fill(deltat, dedx);
-			    dedx_p_deltat_pos_cut->Fill(dedx, mom, deltat);
-//			    dedx_p_m2_pos_cut->Fill(dedx, mom, m2tof);
-			}
-		    }
+//			    deltat_p_pos_cut->Fill(  pt, deltat);
 
-		    Int_t channel           = 0;
-		    channel                 = fPIDResponse->GetTOFResponse().GetTOFchannel(track);
-//		    Double_t xy_length      = 0.00;
-//		    xy_length               = length * TMath::Sin(track_theta);
-
-		    if(channel > -1  &&  channel < 4801)
-		    {
-			if(pt >= 0.995  &&  pt < 1.005)
-			{
-			    if(deltat >= -0.6  &&  deltat < 0.6)
+			    if(mom >= 0.5  &&  mom < 4.0)
 			    {
-				deltat_channel->Fill(channel, deltat);
-			    }
+				for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
+				prot_mean = fit_prot_curve->Eval(mom);
+				for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
+				prot_sigma = fit_prot_curve->Eval(mom);
+
+				if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
+				{
+				    if(NProt == 0)
+				    {
+					prot_track_num_1 = i;
+				    }
+				    else if(NProt == 1)
+				    {
+					prot_track_num_2 = i;
+				    }
+				    m2_pos_cut_T->Fill(mom,m2tof);
+				    NProt++;
+				    NProt_pos++;
+				}		    
+			    }			    
 			}
 		    }
-
-		    
-		    if(mom >= 1.0  &&  mom < 4.0)
-		    {
-			for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-			prot_mean = fit_prot_curve->Eval(mom);
-			for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-			prot_sigma = fit_prot_curve->Eval(mom);
-
-			if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-			{
-			    m2_pos_cut_T->Fill(mom,m2tof);
-			    prot_track_num_T = i;
-			    // prot_track_num_pos_T = i;
-			    NProt++;
-			    NProt_pos++;
-			    prot_flag_T = 1;
-			}		    
-		    }
-		    
-
-		
-
 		}
 	    }
 	    
@@ -732,12 +601,7 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 	    {
 		m2_neg->Fill(      pt,m2tof);
 		beta_p_neg->Fill(   mom, Beta(track));
-		dedx_p_neg->Fill(   mom, dedx);
-		if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg->Fill(deltat, dedx);
-		dedx_p_deltat_neg->Fill(dedx, mom, deltat);
-//		dedx_p_m2_neg->Fill(dedx, mom, m2tof);
-		deltat_p_neg->Fill(  pt, deltat);
-
+//		deltat_p_neg->Fill(  pt, deltat);
 		
 		if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340  &&  isGlobal == 1)
 		{
@@ -747,37 +611,38 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
 		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
 			   )
 		    {
-			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 5, nsigmaTPC);
+			AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 4, nsigmaTPC);
 			if(nsigmaTPC <= 2.0)
 			{	
 			    m2_neg_cut->Fill(      pt, m2tof);
 			    beta_p_neg_cut->Fill(   mom, Beta(track));
-			    deltat_p_neg_cut->Fill(  pt, deltat);
-			    dedx_p_neg_cut->Fill(   mom, dedx);
-			    if(mom >= 2.0  &&  mom < 3.0)    dedx_deltat_neg_cut->Fill(deltat, dedx);
-			    dedx_p_deltat_neg_cut->Fill(dedx, mom, deltat);
+//			    deltat_p_neg_cut->Fill(  pt, deltat);
+
+
+			    if(mom >= 0.5  &&  mom < 4.0)
+			    {
+				for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[1][0][w]);   }
+				prot_mean = fit_prot_curve->Eval(mom);
+				for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[1][1][w]);   }
+				prot_sigma = fit_prot_curve->Eval(mom);
+				
+				if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
+				{
+				    if(NProt == 0)
+				    {
+					prot_track_num_1 = i;
+				    }
+				    else if(NProt == 1)
+				    {
+					prot_track_num_2 = i;
+				    }
+				    m2_neg_cut_T->Fill(mom,m2tof);
+				    NProt++;
+				    NProt_neg++;
+				}		    
+			    }
 			}
 		    }
-
-		    if(mom >= 1.0  &&  mom < 4.0)
-		    {
-			for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][0][w]);   }
-			prot_mean = fit_prot_curve->Eval(mom);
-			for(int w=0; w<4; w++){   fit_prot_curve->SetParameter(w, prot_curves[0][1][w]);   }
-			prot_sigma = fit_prot_curve->Eval(mom);
-
-			if(m2tof < prot_mean + cut_width * prot_sigma  &&   m2tof > prot_mean - cut_width * prot_sigma)
-			{
-			    m2_neg_cut_T->Fill(mom,m2tof);
-			    prot_track_num_T = i;
-			    // prot_track_num_neg_T = i;
-			    NProt++;
-			    NProt_neg++;
-			    prot_flag_T = 1;
-			}		    
-		    }
-		    
-		    
 		}
 	    }
 	}    //   track has both TPC and TOF PID, tracks are o.k.
@@ -788,130 +653,251 @@ void AliAnalysisTaskCorPIDTOFprot::UserExec(Option_t *)
     prot_per_event_pos->Fill(NProt_pos);
     prot_per_event_neg->Fill(NProt_neg);
 
-    if(prot_flag_T > 0)
+
+    // markA
+    if(NProt == 2  &&  high_05_track_count > 0)
     {
 //	ProteronCandidates++;
-	int j = prot_track_num_T;
-
-	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	if(!track) {}
+	int A = prot_track_num_1;
+	int B = prot_track_num_2;
+	int H = high_05_track_num;
+	
+	AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+	AliAODTrack* trackB = static_cast<AliAODTrack*>(fAOD->GetTrack(B));
+	AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	if(!trackA  ||  !trackB  ||  !trackH) {}
 	else
 	{
-	    Double_t prot_phi = track->Phi();
-	    Double_t prot_pt  = track->Pt();
-	    Double_t prot_mom = track->P();
-	    Short_t  charge   = track->Charge();
-	    Double_t prot_eta = track->Eta();
+	    Double_t prot_phi_A      = trackA->Phi();
+	    Double_t prot_pt_A       = trackA->Pt();
+	    Double_t prot_mom_A      = trackA->P();
+	    Short_t  prot_charge_A   = trackA->Charge();
+	    Double_t prot_eta_A      = trackA->Eta();
 
-	    Double_t prot_et  = 0.0;
-	    Double_t prot_e   = 0.0;
+	    Double_t prot_et_A       = 0.0;
+	    Double_t prot_e_A        = 0.0;
+	    Double_t prot_px_A       = trackA->Px();
+	    Double_t prot_py_A       = trackA->Py();
+	    Double_t prot_pz_A       = trackA->Pz();
 	    
-	    prot_et = sqrt(pow(prot_pt ,2) + pow(0.93827,2));
-	    prot_e  = sqrt(pow(prot_mom,2) + pow(0.93827,2));
+	    prot_et_A = sqrt(pow(prot_pt_A ,2) + pow(0.93827,2));
+	    prot_e_A  = sqrt(pow(prot_mom_A,2) + pow(0.93827,2));
 
-	    prot_phi_hist->Fill(prot_phi);
+	    prot_phi_hist->Fill(prot_phi_A);
 	    	    
-	    int asso = 0;
 	    
-	    conductor = root->next;
-	    if (conductor != 0)
-	    {
-		while(conductor->next != 0)
-		{
-		    int k = conductor->track_num;
-		    conductor = conductor->next;
-		    
-		    if(k != j)  // if the k-th track is not the j-th track which is the proteron of interest
-		    {
-//		    NAssociatedTracks++;
-			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-			if(!track){}                                                               // if we failed, skip this track
-			else
-			{
-			    Double_t mom            = track->P();
-		 	    Double_t phi            = track->Phi();
-			    
+	    Double_t prot_phi_B      = trackB->Phi();
+	    Double_t prot_pt_B       = trackB->Pt();
+	    Double_t prot_mom_B      = trackB->P();
+	    Short_t  prot_charge_B   = trackB->Charge();
+	    Double_t prot_eta_B      = trackB->Eta();
 
-			    if(mom > 2.0  &&  mom < 5.0)
-			    {
-				Double_t dphi = prot_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-				
-				prot_dphi_T->Fill(prot_mom, dphi);
-				
-				if(charge>0) {   prot_dphi_pos_T->Fill(prot_mom, dphi);   }
-				if(charge<0) {   prot_dphi_neg_T->Fill(prot_mom, dphi);   }
-				dphi_et_prot_T->Fill(prot_et, dphi);
-				dphi_e_prot_T->Fill(prot_e,   dphi);
-				asso_phi_hist->Fill(phi);
-				asso++;
-			    }
-			}
-		    }
-		}
+	    Double_t prot_et_B       = 0.0;
+	    Double_t prot_e_B        = 0.0;
+	    Double_t prot_px_B       = trackB->Px();
+	    Double_t prot_py_B       = trackB->Py();
+	    Double_t prot_pz_B       = trackB->Pz();
 	    
-		int k = conductor->track_num;
-		conductor = conductor->next;
-//	    NAssociatedTracks++;
-		if(k != j)  // if the k-th track is not the j-th track which is the proteron of interest
+	    prot_et_B = sqrt(pow(prot_pt_B ,2) + pow(0.93827,2));
+	    prot_e_B  = sqrt(pow(prot_mom_B,2) + pow(0.93827,2));
+
+	    
+	    Double_t phi_H      = trackH->Phi();
+	    Double_t pt_H       = trackH->Pt();
+	    Double_t mom_H      = trackH->P();
+	    Short_t  charge_H   = trackH->Charge();
+	    Double_t eta_H      = trackH->Eta();
+
+	    Double_t et_H       = 0.0;
+	    Double_t e_H        = 0.0;
+	    Double_t px_H       = trackH->Px();
+	    Double_t py_H       = trackH->Py();
+	    Double_t pz_H       = trackH->Pz();
+	    
+	    et_H = sqrt(pow(pt_H ,2) + pow(0.93827,2));
+	    e_H  = sqrt(pow(mom_H,2) + pow(0.93827,2));
+
+	    
+	    Double_t Q2 = 0.00;	    Q2 = pow(prot_px_A - prot_px_B,2)  +  pow(prot_py_A - prot_py_B,2)  +  pow(prot_pz_A - prot_pz_B,2);
+
+	    Double_t Q  = 0.00;	    Q  = sqrt(Q2);
+	    Double_t Sx = prot_px_A + prot_px_B;
+	    Double_t Sy = prot_py_A + prot_py_B;
+
+	    Double_t Sphi = atan2(Sy,Sx);
+	    if(Sphi <  -TMath::PiOver2())    Sphi = Sphi + TMath::TwoPi();
+	    if(Sphi <  -TMath::PiOver2())    Sphi = Sphi + TMath::TwoPi();
+	    if(Sphi > 3*TMath::PiOver2())    Sphi = Sphi - TMath::TwoPi();
+	    if(Sphi > 3*TMath::PiOver2())    Sphi = Sphi - TMath::TwoPi();
+				
+	    di_proton_phi->Fill(Sphi);
+
+	    Double_t Sdphi = Sphi - phi_H;
+	    if(Sdphi <  -TMath::PiOver2())    Sdphi = Sdphi + TMath::TwoPi();
+	    if(Sdphi <  -TMath::PiOver2())    Sdphi = Sdphi + TMath::TwoPi();
+	    if(Sdphi > 3*TMath::PiOver2())    Sdphi = Sdphi - TMath::TwoPi();
+	    if(Sdphi > 3*TMath::PiOver2())    Sdphi = Sdphi - TMath::TwoPi();
+
+	    if(phi_H <  -TMath::PiOver2())    phi_H = phi_H + TMath::TwoPi();
+	    if(phi_H <  -TMath::PiOver2())    phi_H = phi_H + TMath::TwoPi();
+	    if(phi_H > 3*TMath::PiOver2())    phi_H = phi_H - TMath::TwoPi();
+	    if(phi_H > 3*TMath::PiOver2())    phi_H = phi_H - TMath::TwoPi();
+	    hi_05_phi->Fill(phi_H);
+
+	    
+	    if(prot_charge_A > 0)
+	    {
+		if(prot_charge_B > 0)
 		{
-		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		    if(!track){}                                                               // if we failed, skip this track
-		    else
-		    {
-			Double_t mom            = track->P();
-			Double_t phi            = track->Phi();
-			
-			if(mom > 2.0  &&  mom < 5.0)
-			{
-			    Double_t dphi = prot_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-			    
-			    prot_dphi_T->Fill(prot_mom, dphi);
-			    if(charge>0) {   prot_dphi_pos_T->Fill(prot_mom, dphi);   }
-			    if(charge<0) {   prot_dphi_neg_T->Fill(prot_mom, dphi);   }
-			    dphi_et_prot_T->Fill(prot_et, dphi);
-			    dphi_e_prot_T->Fill(prot_e,   dphi);
-			    asso_phi_hist->Fill(phi);
-			    asso++;
-			}
-//			if(prot_mom >= 3.25  &&  prot_mom < 4.25)
-//			{
-//			    Double_t eta            = track->Eta();			    
-//			    Double_t dphi = prot_phi - phi;
-//			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-//			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-//			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-//			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
-			    
-//			    if(     mom >= 0.5  &&  mom < 1.0){   prot_dphi_deta_p0510->Fill(dphi, prot_eta - eta);    }
-//			    else if(mom >= 1.0  &&  mom < 2.0){   prot_dphi_deta_p1020->Fill(dphi, prot_eta - eta);    }
-//			    else if(mom >= 2.0  &&  mom < 3.0){   prot_dphi_deta_p2030->Fill(dphi, prot_eta - eta);    }
-//			    if(     mom >= 1.0  &&  mom < 5.0){   prot_dphi_deta_p1050->Fill(dphi, prot_eta - eta);    }
-//			}
-		    }
+		    proton_pt_q_pos_pos->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_pos_pos_05->Fill(Q, Sdphi);
+		}
+		else if(prot_charge_B < 0)
+		{
+		    proton_pt_q_pos_neg->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_pos_neg_05->Fill(Q, Sdphi);
 		}
 	    }
-
-	    if(asso > 0)
+	    else if(prot_charge_A < 0)
 	    {
-		prot_et_count->Fill(prot_et);
-		prot_e_count->Fill(prot_e);
-		prot_pt_count->Fill(prot_pt);
+		if(prot_charge_B > 0)
+		{
+		    proton_pt_q_pos_neg->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_pos_neg_05->Fill(Q, Sdphi);
+		}
+		else if(prot_charge_B < 0)
+		{
+		    proton_pt_q_neg_neg->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_neg_neg_05->Fill(Q, Sdphi);
+		}
 	    }
-	    
 	}
-    }  // end of proteron correlation PRIMARY LOOP
+    }
+
+    if(NProt == 2  &&  high_08_track_count > 0)
+    {
+//	ProteronCandidates++;
+	int A = prot_track_num_1;
+	int B = prot_track_num_2;
+	int H = high_08_track_num;
+	
+	AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+	AliAODTrack* trackB = static_cast<AliAODTrack*>(fAOD->GetTrack(B));
+	AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	if(!trackA  ||  !trackB  ||  !trackH) {}
+	else
+	{
+	    Double_t prot_phi_A      = trackA->Phi();
+	    Double_t prot_pt_A       = trackA->Pt();
+	    Double_t prot_mom_A      = trackA->P();
+	    Short_t  prot_charge_A   = trackA->Charge();
+	    Double_t prot_eta_A      = trackA->Eta();
+
+	    Double_t prot_et_A       = 0.0;
+	    Double_t prot_e_A        = 0.0;
+	    Double_t prot_px_A       = trackA->Px();
+	    Double_t prot_py_A       = trackA->Py();
+	    Double_t prot_pz_A       = trackA->Pz();
+	    
+	    prot_et_A = sqrt(pow(prot_pt_A ,2) + pow(0.93827,2));
+	    prot_e_A  = sqrt(pow(prot_mom_A,2) + pow(0.93827,2));
+
+//	    prot_phi_hist->Fill(prot_phi_A);
+	    	    
+	    
+	    Double_t prot_phi_B      = trackB->Phi();
+	    Double_t prot_pt_B       = trackB->Pt();
+	    Double_t prot_mom_B      = trackB->P();
+	    Short_t  prot_charge_B   = trackB->Charge();
+	    Double_t prot_eta_B      = trackB->Eta();
+
+	    Double_t prot_et_B       = 0.0;
+	    Double_t prot_e_B        = 0.0;
+	    Double_t prot_px_B       = trackB->Px();
+	    Double_t prot_py_B       = trackB->Py();
+	    Double_t prot_pz_B       = trackB->Pz();
+	    
+	    prot_et_B = sqrt(pow(prot_pt_B ,2) + pow(0.93827,2));
+	    prot_e_B  = sqrt(pow(prot_mom_B,2) + pow(0.93827,2));
+
+	    
+	    Double_t phi_H      = trackH->Phi();
+	    Double_t pt_H       = trackH->Pt();
+	    Double_t mom_H      = trackH->P();
+	    Short_t  charge_H   = trackH->Charge();
+	    Double_t eta_H      = trackH->Eta();
+
+	    Double_t et_H       = 0.0;
+	    Double_t e_H        = 0.0;
+	    Double_t px_H       = trackH->Px();
+	    Double_t py_H       = trackH->Py();
+	    Double_t pz_H       = trackH->Pz();
+	    
+	    et_H = sqrt(pow(pt_H ,2) + pow(0.93827,2));
+	    e_H  = sqrt(pow(mom_H,2) + pow(0.93827,2));
+
+	    
+	    Double_t Q2 = 0.00;	    Q2 = pow(prot_px_A - prot_px_B,2)  +  pow(prot_py_A - prot_py_B,2)  +  pow(prot_pz_A - prot_pz_B,2);
+	    Double_t Q  = 0.00;	    Q  = sqrt(Q2);
+	    
+	    Double_t Sx = prot_px_A + prot_px_B;
+	    Double_t Sy = prot_py_A + prot_py_B;
+
+	    Double_t Sphi = atan2(Sy,Sx);
+	    if(Sphi <  -TMath::PiOver2())    Sphi = Sphi + TMath::TwoPi();
+	    if(Sphi <  -TMath::PiOver2())    Sphi = Sphi + TMath::TwoPi();
+	    if(Sphi > 3*TMath::PiOver2())    Sphi = Sphi - TMath::TwoPi();
+	    if(Sphi > 3*TMath::PiOver2())    Sphi = Sphi - TMath::TwoPi();
+				
+//	    di_proton_phi->Fill(Sphi);   // already filled under 05
 
 
+	    Double_t Sdphi = Sphi - phi_H;
+	    if(Sdphi <  -TMath::PiOver2())    Sdphi = Sdphi + TMath::TwoPi();
+	    if(Sdphi <  -TMath::PiOver2())    Sdphi = Sdphi + TMath::TwoPi();
+	    if(Sdphi > 3*TMath::PiOver2())    Sdphi = Sdphi - TMath::TwoPi();
+	    if(Sdphi > 3*TMath::PiOver2())    Sdphi = Sdphi - TMath::TwoPi();
 
-                                                     // continue until all the tracks are processed
+
+	    if(phi_H <  -TMath::PiOver2())    phi_H = phi_H + TMath::TwoPi();
+	    if(phi_H <  -TMath::PiOver2())    phi_H = phi_H + TMath::TwoPi();
+	    if(phi_H > 3*TMath::PiOver2())    phi_H = phi_H - TMath::TwoPi();
+	    if(phi_H > 3*TMath::PiOver2())    phi_H = phi_H - TMath::TwoPi();
+
+	    hi_08_phi->Fill(phi_H);
+
+	    
+	    
+	    if(prot_charge_A > 0)
+	    {
+		if(prot_charge_B > 0)
+		{
+//		    proton_pt_q_pos_pos->Fill(prot_pt_A, Q);    // already filled under 05
+		    di_prot_q_dphi_pos_pos_08->Fill(Q, Sdphi);
+		}
+		else if(prot_charge_B < 0)
+		{
+//		    proton_pt_q_pos_neg->Fill(prot_pt_A, Q);    // already filled under 05
+		    di_prot_q_dphi_pos_neg_08->Fill(Q, Sdphi);
+		}
+	    }
+	    else if(prot_charge_A < 0)
+	    {
+		if(prot_charge_B > 0)
+		{
+//		    proton_pt_q_pos_neg->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_pos_neg_08->Fill(Q, Sdphi);
+		}
+		else if(prot_charge_B < 0)
+		{
+//		    proton_pt_q_neg_neg->Fill(prot_pt_A, Q);
+		    di_prot_q_dphi_neg_neg_08->Fill(Q, Sdphi);
+		}
+	    }
+	}
+    }
+    
+                                                        // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
@@ -951,7 +937,6 @@ Double_t AliAnalysisTaskCorPIDTOFprot::Beta(AliAODTrack *track)
 Double_t AliAnalysisTaskCorPIDTOFprot::tof_minus_tpion(AliAODTrack *track)
 {
     Double_t start_time     = fPIDResponse->GetTOFResponse().GetStartTime(track->P());                      // in ps
-//  Double_t start_time     = fPIDResponse->GetTOFResponse().GetTimeZero() * 1e-12;
     Double_t stop_time      = track->GetTOFsignal();
     Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
     Double_t time_of_flight = stop_time - start_time;
@@ -969,7 +954,6 @@ Double_t AliAnalysisTaskCorPIDTOFprot::tof_minus_tpion(AliAODTrack *track)
 Double_t AliAnalysisTaskCorPIDTOFprot::get_mass_squared(AliAODTrack *track)
 {
     Double_t start_time     = fPIDResponse->GetTOFResponse().GetStartTime(track->P());                      // in ps
-//  Double_t start_time     = fPIDResponse->GetTOFResponse().GetTimeZero() * 1e-12;                         // lower resolution than previous line
     Double_t stop_time      = track->GetTOFsignal();
     Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
     Double_t tof            = stop_time - start_time;
@@ -977,9 +961,8 @@ Double_t AliAnalysisTaskCorPIDTOFprot::get_mass_squared(AliAODTrack *track)
     Double_t length         = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
     length                  = length * 100;                                                                 // convert to cm
     Double_t mom            = track->P();
-    Double_t m2      = 0.0;
-
-    Double_t c2 = 29.9792458;
+    Double_t m2             = 0.0;
+    Double_t c2             = 29.9792458;
     
     m2 = pow(mom,2) * (tof*tof * c2 * c2 / (length * length) - 1);
     return m2;

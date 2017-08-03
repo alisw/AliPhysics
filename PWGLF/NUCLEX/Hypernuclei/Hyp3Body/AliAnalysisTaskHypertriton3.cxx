@@ -327,6 +327,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTDecayLengthProper(0x0),
   fTDecayLengthNorm(0x0),
   fTCosPA(0x0),
+  fTTransverseMom(0x0),
   fTInvariantMass(0x0)
 {
   //Constructor
@@ -1004,6 +1005,7 @@ if(fFillTree){
   fTDecayLengthProper = ctau;
   fTDecayLengthNorm = TMath::Floor(normalizedDecayL);
   fTCosPA = TMath::Cos(pointingAngleH);
+  fTTransverseMom = TMath::Floor(Hypertriton.Pt()/0.001);
 
   /*if(fMC){
       fTMCtruth = brotherHood;
@@ -1465,6 +1467,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTTree->Branch("DecayLengthProper",&fTDecayLengthProper,"DecayLengthProper/F");
   fTTree->Branch("DecayLengthNorm",&fTDecayLengthNorm,"DecayLengthNorm/s");
   fTTree->Branch("CosPA",&fTCosPA,"CosPA/F");
+  fTTree->Branch("TransverseMom",&fTTransverseMom,"TransverseMom/s");
   fTTree->Branch("InvariantMass",&fTInvariantMass,"InvariantMass/F");
   /*fTTree->Branch("TPCclsPIDdeu",&fTPCclsPIDdeu,"TPCclsPIDdeu/s");
   //fTTree->Branch("DCAxydeuprim",&fTDCAXYdeuprvtx,"DCAxydeuprim/F");

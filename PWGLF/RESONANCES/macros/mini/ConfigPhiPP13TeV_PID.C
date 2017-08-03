@@ -79,10 +79,12 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Double_t multbins[200];
   int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-  //for(j=1;j<=18;j++){multbins[nmult]=10+5*j; nmult++;}
+  nmult--;
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -127,8 +129,8 @@ Bool_t ConfigPhiPP13TeV_PID
     else out->AddAxis(ptID,200,0.,20.);//default use mother pt
 
     // axis Z: centrality-multiplicity
-    //if(!isPP || MultBins) out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,100,0.,100.);
-    //else out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,161,-0.5,160.5);
+    if(!isPP || MultBins) out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,100,0.,100.);
+    else out->AddAxis(centID,nmult,multbins);//out->AddAxis(centID,161,-0.5,160.5);
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity

@@ -55,6 +55,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
+  if(evtCutSetID>=100){
+    triggerMask=AliVEvent::kHighMultV0;
+    evtCutSetID=evtCutSetID%100;
+  }
+
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
@@ -189,6 +194,17 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
   if(isPP && !MultBins) outMult->AddAxis(multID,400,0.5,400.5);
   else outMult->AddAxis(multID,110,0.,110.);
+
+  Double_t multbins[200];
+  int j,nmult=0;
+  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+  for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  nmult--;
+  TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
+  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
 
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member

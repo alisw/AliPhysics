@@ -87,7 +87,6 @@ set(SRCS
   AliAnalysisTaskFlowTPCEMCalEP.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 
-  AliAnalysisHFETPCTOF.cxx 
   AliAnalysisTaskHFEpACorrelation.cxx
   AliHFEdebugTreeTask.cxx
   AliHFEVZEROEventPlane.cxx
@@ -118,7 +117,7 @@ set(SRCS
   AliHFEUnfolding.cxx	
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
-  AliAnalysisHFETPCTOF_2.cxx
+  AliAnalysisHFETPCTOFNew.cxx
   )
 
 # Headers from sources

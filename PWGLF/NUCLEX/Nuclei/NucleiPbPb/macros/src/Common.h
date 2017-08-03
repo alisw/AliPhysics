@@ -42,6 +42,11 @@ const bool   kPrintFigures{true};
 const string kFiguresFolder = "/Users/lbariogl/cernbox/Deuterons13TeV/macros/results/images/";
 const string kMacrosFolder = "/Users/lbariogl/cernbox/Deuterons13TeV/macros/results/images/macros/";
 
+const float  kPtBins[16] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.8,2.0,2.2,2.6,3.0,3.4,3.8};
+const int    kNPtBins = 15;
+const float  kCentralityBins[8] = {0.f,5.f,10.f,20.f,30.f,40.f,60.f,100.f};
+const int    kNCentralityBins = 7;
+
 const float  kTPCmaxPt = 1.4f;
 const float  kTOFminPt = 1.f;
 const float  kPtRange[2] = {0.6,3.8};

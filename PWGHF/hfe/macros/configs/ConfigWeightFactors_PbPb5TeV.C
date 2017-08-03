@@ -1,4 +1,4 @@
-void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t collType = 1, TString filename = "nonHFEcorrect_PbPb5TeV.root"){
+void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t collType = 1, TString filename = "nonHFEcorrect_PbPb5TeV_fromchpions.root"){
   //
   // Set weighting factors for nonHFE backgrounds
   // Option "collType": 0 for pp 2.76 TeV; 1 for pp 7 TeV; 2 for PbPb; 3 for DPMJET pPb; 4 for HIJING pPb; 5 for DPMJET/HIJING pPb: 6 Pb-Pb LHC11a10abis; 7 Pb-Pb LHC11a10b_plus; 8 Pb-Pb LHC11a10b_plus for LHC11a10abis ; 9 Pb-Pb LHC11a10b_plus for LHC11a10bbis; 10 for pp LHC106; 11 for pp LHC106a; 12 for pp LHC107a_d
@@ -20,18 +20,17 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   }
 
   const Char_t *backNameMC[9] = {"pion","eta","omega","phi","etap","rho","kaon","k0s","lambda"};
-  /*
-        // GSI version
+/*      // GSI version
   printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
   printf("collType %d\n",collType);
   TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-  */
+*/
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
 //  TFile *weightFile = TFile::Open(Form("%s/PWGHF/hfe/macros/configs/PbPb/%s", gSystem->Getenv("ALICE_PHYSICS"),filename.Data()));
     TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
-
+ 
   if(weightFile){
     if(syst){
       TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
@@ -152,6 +151,16 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "      PbPb LHC16g1 minimum bias MC weights read      ";
           cout << "\n-------------------------------------------------\n";
           cout << "-------------------------------------------------\n";
+        }
+        // 61: PbPb LHC16g1 minimum bias MC using charged pion data spectra (mfaggin, 26/07/2017)
+        else if(collType == 61){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_16g1_chpions_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 minimum bias MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
         }
 
 

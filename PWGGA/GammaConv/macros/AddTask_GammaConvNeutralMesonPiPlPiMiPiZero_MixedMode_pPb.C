@@ -303,7 +303,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.75, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
     cuts.AddCut("80000113","00200009117000008260400000","2444400030022000000","002010702","0103503100000000","0103503000000000");
-  } else if( trainConfig == 49) {
+  } else if( trainConfig == 40) {
     // eta < 0.9
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15

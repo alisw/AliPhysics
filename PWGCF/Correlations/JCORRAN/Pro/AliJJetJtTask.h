@@ -4,14 +4,14 @@
 /// \class AliJJetJtTask
 /// \brief Wrapper class for AliJJetJtAnalysis
 ///
-/// This is a longer description of the class. This longer description is
-/// formatted using the Markdown syntax (see below) and can span on multiple
-/// lines.
+/// Provides an AliAnalysisTask wrapper for AliJJetJtAnalysis class.  
+/// When the task is created an AliJJetJtAnalysis object is created and correct parameters for the analysis are set.
+/// 
 /// 
 /// \author Tomas Snellman, tsnellma@cern.ch
 /// \author Beomkyu Kim
 /// \author Dongjo Kim
-/// \date Nov 11, 2016
+/// \date Aug 3, 2017
 
 #include "AliAnalysisTaskSE.h"
 #include "AliJJetJtAnalysis.h"
@@ -53,8 +53,10 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetJJetJtAnalysis(AliJJetJtAnalysis * jco){ fJJetJtAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
   void SetMC(int mc) {fDoMC = mc;};
+  void SetLog(bool doLog) {fDoLog = doLog;}
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
+  void SetLeadingJets(int leading){fLeadingJets = leading;}
   void FindDaughters(AliJJet * jet, AliAODMCParticle * track, AliMCParticleContainer * mcTracksCont);
 
  private:
@@ -74,7 +76,9 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     int NRandom; ///< Number of times a random background is generated for each track
     int moveJet; ///< Comment needed
     int fDoMC; ///< Whether or not MC analysis is performed
+    int fLeadingJets; ///< Do only leading jets if >0
     double zVert; ///< Vertex position
+    bool fDoLog; ///< Whether or not logarithmic histograms should be filled/created
     AliAnalysisUtils *fAnaUtils;
     AliJRunTable *fRunTable;
     TH1D * fEventHist;

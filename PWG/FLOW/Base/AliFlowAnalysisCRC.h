@@ -96,6 +96,7 @@ public:
     kEtaPhiChPt,
     kEtaPhiRbR,
     kEtaPhiChRbR,
+    kEtaPhiVtxRbR,
   };
   
   // 0.) methods called in the constructor:
@@ -298,7 +299,6 @@ public:
   virtual void FinalizeFlowGF();
   virtual void FinalizeFlowSPZDC();
   virtual void FinalizeFlowSPVZ();
-  virtual Bool_t CheckRunFullTPCFlow(Int_t RunNum);
   // 3h.) Various:
   virtual void FinalizeVarious();
   virtual Double_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
@@ -1032,6 +1032,8 @@ public:
   TH1D* GetFlowGFIntCumHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCumHist[c][eg];};
   void SetFlowGFIntFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntFinalHist[c][eg] = TP;};
   TH1D* GetFlowGFIntFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntFinalHist[c][eg];};
+  void SetFlowGFIntExtraHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntExtraHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntExtraHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntExtraHist[c][eg];};
   
   void SetFlowGFIntCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovPro[c][eg][k] = TP;};
   TProfile* GetFlowGFIntCovPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowGFIntCovPro[c][eg][k];};
@@ -1603,6 +1605,7 @@ private:
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
   TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep
+  TH3D* fCRCQVecPhiHistRefMul[fCRCMaxnCen]; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1903,7 +1906,7 @@ private:
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
   
-  const static Int_t fkFlowQCnIntCorTest = 3;
+  const static Int_t fkFlowQCnIntCorTest = 1;
   const static Int_t fkFlowQCnVtxCorTest = 3;
   TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   TH2D *fFlowQCIntCorHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
@@ -1950,6 +1953,7 @@ private:
   TH1D *fFlowGFIntCorHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCumHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntFinalHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TProfile *fFlowGFIntCovPro[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCovHist[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
   
@@ -2041,6 +2045,8 @@ private:
   TF1 *fPolDist[2]; //!
   TF1 *fPolSlope[2]; //!
   TGraph *fCenMetric; //!
+  Double_t fZNCQ0; // common tower energy from ZNC-C
+  Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
@@ -2060,7 +2066,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,64);
+  ClassDef(AliFlowAnalysisCRC,65);
   
 };
 

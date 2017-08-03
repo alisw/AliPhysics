@@ -121,8 +121,16 @@ public:
 
   //Utility methods
   ///
+  ///  Method to get the event Multiplicity
+  void ComputeEvtMultiplicity();
+
+  ///
   ///  Method to get the event Multiplicity (binned)
   void ComputeEvtMultiplicityBin();
+
+  ///
+  /// Method to get the information of the MC truth of the generated event
+  void GatherEventMCInfo();
 
   ///
   /// Method to get the information of the MC truth before the event is selected
@@ -520,6 +528,7 @@ private:
   const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
   const Bool_t fPerformance;    ///<  Flag to fill the performance plots
   const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
+  const Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
   const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
   const Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
   UInt_t fSelectBit;            ///<  Mask for Trigger selection
@@ -580,8 +589,9 @@ private:
   Int_t fRunNumber;        ///<  Run number under analysis
 
   //Event flags
-  Bool_t fEvtPhysSelected; ///<  Event is selected by the Physics Selection
-  Bool_t fEvtSelected;     ///<  Event is selected by the Event Selection
+  Bool_t fEvtPhysSelected;   ///<  Event is selected by the Physics Selection
+  Bool_t fEvtSelected;       ///<  Event is selected by the Event Selection
+  Bool_t fEvtMCSampSelected; ///<  Event is selected by the MC Sample Selection
 
   //Track flags
   ///

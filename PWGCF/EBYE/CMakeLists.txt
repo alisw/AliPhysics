@@ -49,6 +49,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
+  BalanceFunctions/AliPidBFBase.cxx   
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx

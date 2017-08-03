@@ -25,6 +25,7 @@ class TH2D;
 class TH3D;
 class TProfile;
 class AliAnalysisUtils;
+class AliEventCuts;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
@@ -52,8 +53,8 @@ private:
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
 
-    //AliAnalysisUtils
     AliAnalysisUtils *fUtils;//AliAnalysisUtils
+    AliEventCuts *   fEventCut;
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -173,6 +174,8 @@ public:
     void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
+    //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
+
     
 protected:
     

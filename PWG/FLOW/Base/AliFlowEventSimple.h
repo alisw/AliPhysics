@@ -138,6 +138,10 @@ class AliFlowEventSimple: public TObject {
   Double_t GetCentralityTRK() const {return fCentralityTRK;};
   void SetRun(Int_t const run) {fRun = run;};
   Int_t GetRun() const {return fRun;};
+  void SetZNCQ0(Double_t const en) {fZNCQ0 = en;};
+  Double_t GetZNCQ0() const {return fZNCQ0;};
+  void SetZNAQ0(Double_t const en) {fZNAQ0 = en;};
+  Double_t GetZNAQ0() const {return fZNAQ0;};
   void SetZNCEnergy(Double_t const en) {fZNCM = en;};
   Double_t GetZNCEnergy() const {return fZNCM;};
   void SetZNAEnergy(Double_t const en) {fZNAM = en;};
@@ -188,6 +192,8 @@ class AliFlowEventSimple: public TObject {
   // test members for LHC15o VZERO calibration, do not use
   AliFlowVector           fV0C[4];                    // Q_n vector from V0-C
   AliFlowVector           fV0A[4];                    // Q_n vector from V0-C
+  Double_t                fZNCQ0;                      // common channel ZNC-C
+  Double_t                fZNAQ0;                      // common channel ZNC-A
   Double_t                fZNCM;                      // total energy from ZNC-C
   Double_t                fZNAM;                      // total energy from ZNC-A
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
