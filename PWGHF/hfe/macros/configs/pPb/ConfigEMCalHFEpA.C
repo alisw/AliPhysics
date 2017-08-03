@@ -266,7 +266,7 @@ Bool_t isTOFdet 		= kFALSE
 
 	//E/p Cuts
 	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==61) task->ç(0.70,1.2);
+	else if (configIndex==61) task->SetEoverPCut(0.70,1.2);
 	else if (configIndex==62) task->SetEoverPCut(0.75,1.2);
 	else if (configIndex==63) task->SetEoverPCut(0.76,1.2);
 	else if (configIndex==64) task->SetEoverPCut(0.77,1.2);
