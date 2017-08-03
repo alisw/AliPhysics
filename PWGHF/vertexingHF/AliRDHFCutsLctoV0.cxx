@@ -1684,6 +1684,19 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliA
 	 ( ( v0negativeTrack->GetTPCClusterInfo(2,1) ) < fV0daughtersCuts->GetMinNClusterTPC() ) ) return kFALSE;
   }
 
+  if (fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+    Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+    Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+    if (v0positiveTrack->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPCPos = v0positiveTrack->GetTPCClusterInfo(2,1) / v0positiveTrack->GetTPCNclsF();
+    }
+    if (v0negativeTrack->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPCNeg = v0negativeTrack->GetTPCClusterInfo(2,1) / v0negativeTrack->GetTPCNclsF();
+    }
+    if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+        ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) ) return kFALSE;
+  }
+
   // kTPCrefit status
   if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
     if (fV0daughtersCuts->GetRequireTPCRefit()) {

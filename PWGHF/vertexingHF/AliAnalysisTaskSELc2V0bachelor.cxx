@@ -2300,12 +2300,84 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
           ( ( ntrk->GetTPCClusterInfo(2,1) ) < v0trkCuts->GetMinNClusterTPC() ) ) continue;
     }
 
+    if (v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+      Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+      Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+      if (ptrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCPos = ptrk->GetTPCClusterInfo(2,1) / ptrk->GetTPCNclsF();
+      }
+      if (ntrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCNeg = ntrk->GetTPCClusterInfo(2,1) / ntrk->GetTPCNclsF();
+      }
+      if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+          ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) ) continue;
+    }
+
     // kTPCrefit status
     if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
       if (v0trkCuts->GetRequireTPCRefit()) {
         if( !(ptrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(ntrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
       }
+    }
+
+    AliESDtrack esdTrackP(ptrk);
+    esdTrackP.SetTPCClusterMap(ptrk->GetTPCClusterMap());
+    esdTrackP.SetTPCSharedMap(ptrk->GetTPCSharedMap());
+    esdTrackP.SetTPCPointsF(ptrk->GetTPCNclsF());
+    esdTrackP.RelateToVertex(&vESD,0.,3.);
+
+    AliESDtrack esdTrackN(ntrk);
+    esdTrackN.SetTPCClusterMap(ntrk->GetTPCClusterMap());
+    esdTrackN.SetTPCSharedMap(ntrk->GetTPCSharedMap());
+    esdTrackN.SetTPCPointsF(ntrk->GetTPCNclsF());
+    esdTrackN.RelateToVertex(&vESD,0.,3.);
+
+    //appliyng TPC crossed rows pT dependent cut
+    TString tmptxt(fAnalCuts->GetMinCrossedRowsTPCPtDep());
+    if(tmptxt.Contains("pt")){
+      tmptxt.ReplaceAll("pt","x");
+      TF1 funcCutMin("funcCutMin",tmptxt);
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      if(nCrossedRowsTPCP<funcCutMin.Eval(esdTrackP.Pt())) continue;
+      if(nCrossedRowsTPCN<funcCutMin.Eval(esdTrackN.Pt())) continue;
+    }
+  
+    //appliyng NTPCcls/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioClsOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nClustersTPCP = esdTrackP.GetTPCNcls();
+      Float_t nClustersTPCN = esdTrackN.GetTPCNcls();
+      if(nCrossedRowsTPCP!=0){ 
+        Float_t ratioP = nClustersTPCP/nCrossedRowsTPCP;
+        if(ratioP<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+      }
+      else continue;
+      if(nCrossedRowsTPCN!=0){ 
+        Float_t ratioN = nClustersTPCN/nCrossedRowsTPCN;
+        if(ratioN<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+      }
+      else continue;
+    }
+
+    //appliyng TPCsignalN/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nTPCsignalP = esdTrackP.GetTPCsignalN();
+      Float_t nTPCsignalN = esdTrackN.GetTPCsignalN();
+      if(nCrossedRowsTPCP!=0){
+        Float_t ratioP = nTPCsignalP/nCrossedRowsTPCP;
+        if(ratioP<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+      }
+      else continue;
+      if(nCrossedRowsTPCN!=0){
+        Float_t ratioN = nTPCsignalN/nCrossedRowsTPCN;
+        if(ratioN<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+      }
+      else continue;
     }
 
     // kink condition
@@ -2357,11 +2429,6 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
     if ( (ptrk->Pt()<=ptMin || ptrk->Pt()>=ptMax) ||
         (ntrk->Pt()<=ptMin || ntrk->Pt()>=ptMax) ) continue;
 
-    // Condition on nTPCclusters
-    if (trkCuts->GetMinNClusterTPC()>0) {
-      if ( ( ( ptrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) || 
-          ( ( ntrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) ) continue;
-    }
 
     // kTPCrefit status
     if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
@@ -2381,11 +2448,13 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
 
     //Should decay before TPC 
     Double_t dR = TMath::Sqrt(v0->DecayVertexV0X()*v0->DecayVertexV0X()+v0->DecayVertexV0Y()*v0->DecayVertexV0Y());
-    if(dR>60.) continue;
+    if(dR>40.) continue;
 
     Int_t LType = 0;
     if(TMath::Abs(v0->MassLambda()-mLPDG)<0.02) LType += 1;
     if(TMath::Abs(v0->MassAntiLambda()-mLPDG)<0.02) LType += 2;
+    if(LType==3) continue;//to avoid complexity
+
     Bool_t okLcK0Sp = kTRUE; // K0S case
     Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
     Bool_t okLcLambdaPi = kTRUE; // Lambda case
@@ -2396,6 +2465,105 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
       Int_t labV0 = v0->MatchToMC(3122,mcArray,2,pdgdgv0); // the V0
       if(labV0>=0){
         mcv0 = (AliAODMCParticle*) mcArray->At(labV0);
+      }
+    }
+
+    AliESDtrack esdTrackP(ptrk);
+    esdTrackP.SetTPCClusterMap(ptrk->GetTPCClusterMap());
+    esdTrackP.SetTPCSharedMap(ptrk->GetTPCSharedMap());
+    esdTrackP.SetTPCPointsF(ptrk->GetTPCNclsF());
+    esdTrackP.RelateToVertex(&vESD,0.,3.);
+
+    AliESDtrack esdTrackN(ntrk);
+    esdTrackN.SetTPCClusterMap(ntrk->GetTPCClusterMap());
+    esdTrackN.SetTPCSharedMap(ntrk->GetTPCSharedMap());
+    esdTrackN.SetTPCPointsF(ntrk->GetTPCNclsF());
+    esdTrackN.RelateToVertex(&vESD,0.,3.);
+
+    // Condition on nTPCclusters
+    if (trkCuts->GetMinNClusterTPC()>0) {
+      if(LType==1){
+        if ( ( ( ptrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) || 
+            ( ( ntrk->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      }
+      if(LType==2){
+        if ( ( ( ntrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) || 
+            ( ( ptrk->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      }
+    }
+
+    if (trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+      Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+      Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+      if (ptrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCPos = ptrk->GetTPCClusterInfo(2,1) / ptrk->GetTPCNclsF();
+      }
+      if (ntrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCNeg = ntrk->GetTPCClusterInfo(2,1) / ntrk->GetTPCNclsF();
+      }
+      if(LType==1){
+        if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+            ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < 0.8 ) ) continue;
+      }
+      if(LType==2){
+        if ( ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+            ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < 0.8 ) ) continue;
+      }
+    }
+
+    //appliyng TPC crossed rows pT dependent cut
+    TString tmptxt(fAnalCuts->GetMinCrossedRowsTPCPtDep());
+    if(tmptxt.Contains("pt")){
+      tmptxt.ReplaceAll("pt","x");
+      TF1 funcCutMin("funcCutMin",tmptxt);
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      if(LType==1 && nCrossedRowsTPCP<funcCutMin.Eval(esdTrackP.Pt())) continue;
+      if(LType==2 && nCrossedRowsTPCN<funcCutMin.Eval(esdTrackN.Pt())) continue;
+    }
+  
+    //appliyng NTPCcls/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioClsOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nClustersTPCP = esdTrackP.GetTPCNcls();
+      Float_t nClustersTPCN = esdTrackN.GetTPCNcls();
+      if(LType==1){
+        if(nCrossedRowsTPCP!=0){ 
+          Float_t ratioP = nClustersTPCP/nCrossedRowsTPCP;
+          if(ratioP<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+        }
+        else continue;
+
+      }
+      if(LType==2){
+        if(nCrossedRowsTPCN!=0){ 
+          Float_t ratioN = nClustersTPCN/nCrossedRowsTPCN;
+          if(ratioN<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+        }
+        else continue;
+      }
+    }
+
+    //appliyng TPCsignalN/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nTPCsignalP = esdTrackP.GetTPCsignalN();
+      Float_t nTPCsignalN = esdTrackN.GetTPCsignalN();
+      if(LType==1){
+        if(nCrossedRowsTPCP!=0){
+          Float_t ratioP = nTPCsignalP/nCrossedRowsTPCP;
+          if(ratioP<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+        }
+        else continue;
+      }
+      if(LType==2){
+        if(nCrossedRowsTPCN!=0){
+          Float_t ratioN = nTPCsignalN/nCrossedRowsTPCN;
+          if(ratioN<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+        }
+        else continue;
       }
     }
 
