@@ -1,5 +1,5 @@
 	//update Augsut 3rd, 2017
-	//new ShowerShape cuts
+	//new ShowerShape cuts for sys
 	//not cut from 0 to 100 in centrality (same events have centrality = 101)
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
