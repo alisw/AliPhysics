@@ -393,7 +393,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
 
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetClusterCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNeutralPionCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
-    if( !analysisPionCuts[i]->InitializeCutsFromCutString(PionCutarray[i].Data())) {
+    if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
       return 0;
     } else {
