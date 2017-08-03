@@ -49,6 +49,7 @@ AliJJetJtTask::AliJJetJtTask() :
     cBin(-1),
     zBin(-1),
     fDoMC(0),
+    fDoLog(0),
     NRandom(1),
     moveJet(0),
     zVert(-999),
@@ -75,6 +76,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
     cBin(-1),
     zBin(-1),
     fDoMC(0),
+    fDoLog(0),
     NRandom(1),
     moveJet(0),
     zVert(-999),
@@ -168,6 +170,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
    fJJetJtAnalysis->SetNrandom(NRandom);
    fJJetJtAnalysis->SetMoveJet(moveJet);
    fJJetJtAnalysis->SetMC(fDoMC);
+   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
    fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
    fJJetJtAnalysis->UserCreateOutputObjects();
 
