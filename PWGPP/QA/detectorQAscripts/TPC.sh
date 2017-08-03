@@ -42,17 +42,13 @@ periodLevelQA()
   makeHTMLindexPerPeriod
 
   if [[ ${dataType} =~ "sim" ]]; then  
-#    cd ../../MCRD/
     echo "running tpcMCValidation.C in " $PWD
-    #source /home/sebaleh/Documents/service/alice-tpc-notes/JIRA/ATO-83/code/listMCRD.sh
-    #anchorinfo=${anchorinfo[$period]}
-    #anchorper=${anchorinfo%%:*}
-    #anchorpass=${anchorinfo##*:}
     echo "MC period: $period;" 
-    echo "make direcotry: mcrd_com;"
-    mkdir -p mcrd_com
+    mcrddir="mcrd_com"
+    echo "make direcotry: $mcrddir"
+    mkdir -p $mcrddir
 
-        aliroot -q  "$ALICE_PHYSICS/PWGPP/TPC/macros/tpcMCValidation.C+(\"$period\")"
+        aliroot -q  "$ALICE_PHYSICS/PWGPP/TPC/macros/tpcMCValidation.C+(\"$period\",\"$mcrddir\")"
     cd - 
   fi 
 }

@@ -30,10 +30,10 @@ TTree * treeMC;
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose);
 void tpcMCValidationStandard(TString mcPeriod,Int_t verbose,Int_t doCheck);
 void InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck);
-void MakeReport();
+void MakeReport(const char* mcrddir);
 
 
-void tpcMCValidation(const char* MCper ="LHC15k1a1"){
+void tpcMCValidation(const char* MCper ="LHC15k1a1",const char* mcrddir="./"){
 
 //gROOT->LoadMacro("tpcMCValidationStandardQA.C+");
 cout<<"INITIALIZING TPC MC Validation"<<endl;
@@ -58,38 +58,8 @@ Double_t cRange2[4]={0.13,0.01,0.5,0.3};
 Double_t cRange5[4]={0.13,0.01,0.8,0.3};
 TMultiGraph *graph=0,*lines=0;
 
-MakeReport();
-//trendingDraw->fWorkingCanvas->Clear();  
-//TLegend *legend2 = new TLegend(cRange2[0],cRange2[1],cRange2[2],cRange2[3],"Number of clusters: MC/Anchor"); legend2->SetBorderSize(0);
-//legend2->SetNColumns(2);
-//graph = TStatToolkit::MakeMultGraph(treeMC,"","meanTPCncl;TPC.Anchor.meanTPCncl:run","1","25;21","2;4",1,0.75,5,legend2);
-//TStatToolkit::DrawMultiGraph(graph,"alp");
-//legend2->Draw();
-//trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-//trendingDraw->fWorkingCanvas->SaveAs("meanTPCNclMCtoAnchor.png"); 
-////trendingDraw->fWorkingCanvas->Draw();
-//
-//{trendingDraw->fWorkingCanvas->Clear(); 
-//TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange5[3],"Matching efficiency: MC/Anchor"); legend->SetBorderSize(0);
-//legend->SetNColumns(5);
-//graph = TStatToolkit::MakeMultGraph(treeMC,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","1","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,1.5,5,legend);
-//TStatToolkit::DrawMultiGraph(graph,"alp");
-//legend->Draw(); 
-//trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-//trendingDraw->fWorkingCanvas->SaveAs("matchingTPC-ITSEffe.png");    
-////trendingDraw->fWorkingCanvas->Draw(); 
-//}
-//
-//{
-//trendingDraw->fWorkingCanvas->Clear(); 
-//    TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange5[3],"Matching efficiency:pass1_lowIR/pass3_lowIR_pidfix"); legend->SetBorderSize(0);
-//    legend->SetNColumns(5);
-//    graph = TStatToolkit::MakeMultGraph(treeMC,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffoneSPDPt02;QA.ITS.EffoneSPDPt1;QA.ITS.EffoneSPDPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffoneSPDPt02;ITS.Anchor.EffoneSPDPt1;ITS.Anchor.EffoneSPDPt10:run","1","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,1.5,5,legend);
-//    TStatToolkit::DrawMultiGraph(graph,"alp");    
-//    legend->Draw();
-//    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-//    trendingDraw->fWorkingCanvas->SaveAs("matchingTPC-ITSEffe1.png"); 
-//}
+MakeReport(mcrddir);
+
 }
 
 
@@ -187,7 +157,7 @@ void InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeriod
   trendingDraw->InitSummaryTrending(statusString); 
 }
 
-void MakeReport(){
+void MakeReport(const char* mcrddir){
   //
   // 3.) make a report
   //
@@ -203,7 +173,8 @@ void MakeReport(){
     TStatToolkit::DrawMultiGraph(graph,"alp");
     legend2->Draw();
     trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-    trendingDraw->fWorkingCanvas->SaveAs("mcrd_com/meanTPCNclMCtoAnchor.png");
+    cout<<mcrddir<<endl;
+    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/meanTPCNclMCtoAnchor.png");
   }
 //  
 //  { //
@@ -265,7 +236,7 @@ void MakeReport(){
     TStatToolkit::DrawMultiGraph(graph,"alp");
     legend->Draw(); 
     trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-    trendingDraw->fWorkingCanvas->SaveAs("mcrd_com/matchingTPC-ITSEffe.png");    
+    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/matchingTPC-ITSEffe.png");    
   }
 
 //  { // matching efficiency
@@ -293,45 +264,3 @@ void MakeReport(){
 
 
 }
-
-
-
-/*
-void debugFormulas(){  
-  //
-  // Bug found in parsing of the TTreeFormulas
-  //    Shortes script reproducing problem to be created and put into the UnitTest of the AliTreePplayerTest.C
-  //
-  //
-  // In some cases TTreeFromaul does not recognize properly branches
-  //      Unit test to check Tree  match
-  //  Problem analogue observed in the past and Unit test Writen in  AliTreePlayerTest.C:reproduceIndexProblem()
-  // 
-
-  treeMC->GetFriend("QA.TRD").Scan("run:TPCTRDmatchEffNegAll");
-  treeMC->GetFriend("Anchor.QA.TRD").Scan("run:TPCTRDmatchEffNegAll")
-  // This is not fine - 
-  treeMC->Scan("run:QA.TRD.run:Anchor.QA.TRD.run:QA.TRD.TPCTRDmatchEffNegAll:Anchor.QA.TRD.TPCTRDmatchEffNegAll","","");
-  // This looks fine - but exact test / comparison neeede
-  treeMCTRD->Scan("run:QA.TRD.run:Anchor.QA.TRD.run:QA.TRD.TPCTRDmatchEffNegAll:Anchor.QA.TRD.TPCTRDmatchEffNegAll","","");
-  //
-  dump
-    treeMC->GetFriend("QA.TRD")->Scan("run:TPCTRDmatchEffNegAll","","colsize=30");        >treeMC.qa.trd.list0
-    treeMC->GetFriend("Anchor.QA.TRD")->Scan("run:TPCTRDmatchEffNegAll","","colsize=30"); >treeMC.anchor.qa.trd.list0
-    //
-    treeMC->Scan("run:QA.TRD.TPCTRDmatchEffNegAll","","colsize=30"); >treeMC.qa.trd.list1
-    treeMC->Scan("run:Anchor.QA.TRD.TPCTRDmatchEffNegAll","","colsize=30"); >treeMC.anchor.qa.trd.list1     
-    //
-    treeMCTRD->Scan("run:QA.TRD.TPCTRDmatchEffNegAll","","colsize=30"); >treeMCTRD.qa.trd.list1
-    treeMCTRD->Scan("run:Anchor.QA.TRD.TPCTRDmatchEffNegAll","","colsize=30"); >treeMCTRD.anchor.qa.trd.list1 
-    //
-    for a in `ls *.list*`; do cat $a | gawk '{print $4"\t"$6}'> $a.Table; mv $a.Table $a; done 
-
-    meld  treeMC.qa.trd.list0  treeMCTRD.qa.trd.list1 treeMC.qa.trd.list1    # first 2 collumns are the same 3 columns is wrong
-    meld  treeMC.anchor.qa.trd.list0 treeMC.anchor.qa.trd.list1 treeMCTRD.anchor.qa.trd.list1  #  all are the same but in anchor we have more runs ...
-    meld  treeMC.anchor.qa.trd.list1 treeMC.qa.trd.list1   #anchor tree used instead of the MC
-
-  
-}
-
-*/
