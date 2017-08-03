@@ -91,10 +91,10 @@ Bool_t isTOFdet 		= kFALSE
 	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);//r,z   default on AOD 2.4, 3.2
 	else if(configIndex==83) hfecuts->SetMaxImpactParam(0.1,0.2);
 		//default:
-		//else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
+	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
 	
 		//to check track issue
-	else hfecuts->SetMaxImpactParam(4,4); 	
+		//else hfecuts->SetMaxImpactParam(4,4); 	
 	
 	
 	
