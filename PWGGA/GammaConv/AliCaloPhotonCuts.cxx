@@ -4639,19 +4639,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
           if(fClusterType==1){
-            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
-            energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
+            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
             //apply again the same
-            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
-            energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
+            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
           }
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
             energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
-            energy /=  (FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746)*0.9953479301) ;//with TM pt dep
             //apply again the same
             energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
-            energy /=  (FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746)*0.9953479301) ;//with TM pt dep
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -4760,8 +4756,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         }
       }
       break;
-    // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
-    case 83:
+
+// *************** 90 + x **** modified tender Settings 2 - PbPb
+
+      // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
+    case 91:
       if(isMC>0){
         if( fCurrentMC== k15PbPb5TeV){
           if(fClusterType==1){
@@ -4774,7 +4773,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       break;
 
       // NonLinearity LHC15o PbPb Calo  - only shifting MC
-    case 84:
+    case 92:
       if(isMC>0){
         if( fCurrentMC== k15PbPb5TeV){
           if(fClusterType==1){
@@ -4785,8 +4784,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         }
       }
       break;
-      
-// *************** 90 + x **** modified tender Settings 2 - PbPb
       
       
       
