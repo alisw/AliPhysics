@@ -10,7 +10,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Int_t bCutTPCbound=0,
+                             Double_t MaxChi2PerClITS=100.,
                              Bool_t bUseCRCRecenter=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
@@ -21,13 +21,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t dDCAz=1000.,
                              Int_t CRC2nEtaBins=5,
                              Double_t MaxFracSharedTPCCl=0.4,
+                             Double_t MaxFracSharedITSCl=0.75,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bRequireITSRefit=kFALSE,
                              Bool_t bCorrectPhiTracklets=kFALSE,
                              Double_t DeltaEta=0.4,
                              Bool_t bRecZDCVtxRbR=kFALSE,
-                             Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
                              Bool_t bRemoveSplitMergedTracks=kFALSE,
@@ -95,6 +95,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
+  Int_t bCutTPCbound=0;
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
   Bool_t bUsePileUp=kTRUE;
@@ -103,7 +104,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bPhiExclZone=kFALSE;
   Bool_t bTestSin=kFALSE;
   Bool_t bZDCCut=kFALSE;
-  Bool_t bRequireTOFSignal=kFALSE,
+  Bool_t bRequireTOFSignal=kFALSE;
+  Bool_t bUsePtWeights = (PtWeightsFileName.EqualTo("")?kFALSE:kTRUE);
   if(MinMulZN>=13) bZDCCut=kTRUE;
   
   // define CRC suffix
@@ -396,10 +398,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cutsRP->SetMinNClustersTPC(dMinClusTPC);
       cutsRP->SetMinChi2PerClusterTPC(0.1);
       cutsRP->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+      cutsRP->SetCutChi2PerClusterITS(MaxChi2PerClITS);
       cutsRP->SetPtRange(ptMin,ptMax);
       cutsRP->SetEtaRange(etaMin,etaMax);
       cutsRP->SetAcceptKinkDaughters(kFALSE);
       cutsRP->SetMaxFracSharedTPCCluster(MaxFracSharedTPCCl);
+      cutsRP->SetMaxFracSharedITSCluster(MaxFracSharedITSCl);
       if(bCutTPCbound==1) cutsRP->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
       if(bCutTPCbound==2) cutsRP->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
       cutsRP->SetQA(bCutsQA);
@@ -413,6 +417,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsPOI->SetMinNClustersTPC(dMinClusTPC);
     cutsPOI->SetMinChi2PerClusterTPC(0.1);
     cutsPOI->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+    cutsPOI->SetCutChi2PerClusterITS(MaxChi2PerClITS);
     if(bMimicGlobalCuts) {
       cutsPOI->SetMinNClustersTPC(50);
       cutsPOI->SetCutCrossedTPCRows(70,0.8);
@@ -431,6 +436,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsPOI->SetEtaRange(etaMin,etaMax);
     cutsPOI->SetAcceptKinkDaughters(kFALSE);
     cutsPOI->SetMaxFracSharedTPCCluster(MaxFracSharedTPCCl);
+    cutsPOI->SetMaxFracSharedITSCluster(MaxFracSharedITSCl);
     cutsPOI->SetRequireTOFSignal(bRequireTOFSignal);
     if(bCutTPCbound==1) cutsPOI->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
     if(bCutTPCbound==2) cutsPOI->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
@@ -583,7 +589,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   } // end of if(bCenFlattening)
   
   if(bZDCCut) {
-    TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root","READ");
+    TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut_2.root","READ");
     if(!ZDCCutFile) {
       cout << "ERROR: ZDCCutFile not found!" << endl;
       exit(1);
@@ -591,7 +597,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     TList* ZDCCutList = (TList*)(ZDCCutFile->FindObjectAny("ZDCcut"));
     if(ZDCCutList) {
       taskQC->SetCRCZDC2DCutList(ZDCCutList);
-      cout << "ZDCCut set (from alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root)" << endl;
+      cout << "ZDCCut set (from alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut_2.root)" << endl;
     }
     else {
       cout << "ERROR: ZDCCutList not found!" << endl;

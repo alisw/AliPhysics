@@ -1622,7 +1622,7 @@ private:
   TH2D *fZDCQHist2;  //! Run-by-run ZDCQvecHist
   const static Int_t fkNZDCResHist = 4;
   TH1D *fZDCResHist[fkNZDCResHist]; //!
-  TH1D *fZDCEPHist[20][3];  //! Run-by-run ZDCQvecHist
+  TH2D *fZDCEPHist[2];  //! Run-by-run ZDCQvecHist
   TF1* fFitPol0EP; //!
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
@@ -1692,7 +1692,7 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 13;
+  const static Int_t fkNsteps = 14;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
