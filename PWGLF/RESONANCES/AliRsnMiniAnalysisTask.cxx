@@ -100,7 +100,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fRejectIfNoQuark(kFALSE),
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
-   fKeepMotherInAcceptance(kFALSE) 
+   fKeepMotherInAcceptance(kFALSE),
+   fRsnTreeInFile(kFALSE),
+   fRsnTreeFile(0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -156,7 +158,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fRejectIfNoQuark(kFALSE),
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
-   fKeepMotherInAcceptance(kFALSE)
+   fKeepMotherInAcceptance(kFALSE),
+   fRsnTreeInFile(kFALSE),
+   fRsnTreeFile(0)
 {
 //
 // Default constructor.
@@ -217,7 +221,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fRejectIfNoQuark(copy.fRejectIfNoQuark),
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
-   fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance)
+   fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
+   fRsnTreeInFile(copy.fRsnTreeInFile),
+   fRsnTreeFile(copy.fRsnTreeFile)
 {
 //
 // Copy constructor.
@@ -281,6 +287,9 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMinPt = copy.fMotherAcceptanceCutMinPt;
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
+   fRsnTreeInFile = copy.fRsnTreeInFile;
+   fRsnTreeFile = copy.fRsnTreeFile;
+
    return (*this);
 }
 
@@ -292,8 +301,6 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
 // Clean-up the output list, but not the histograms that are put inside
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
-
-
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
       delete fEvBuffer;
@@ -402,7 +409,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    }
 
    // create temporary tree for filtered events
-   if (fMiniEvent) delete fMiniEvent;
+   if (fMiniEvent) SafeDelete(fMiniEvent);
+   if (fRsnTreeInFile)
+      fRsnTreeFile = TFile::Open(TString::Format("RsnTree%s.root", GetName()).Data(), "RECREATE");
    fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
 
@@ -635,6 +644,8 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
    timer.Stop(); timer.Print(); fflush(stdout);
 
+   if (fRsnTreeFile)
+      SafeDelete(fRsnTreeFile);
    /*
    OLD
    ifill = 0;

@@ -68,6 +68,7 @@ public:
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
+   void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
@@ -155,8 +156,10 @@ private:
    Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
+   Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
+   TFile               *fRsnTreeFile;    // pointer to file where rsn tree will be saved
 
-   ClassDef(AliRsnMiniAnalysisTask, 13);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 14);   // AliRsnMiniAnalysisTask
 };
 
 
