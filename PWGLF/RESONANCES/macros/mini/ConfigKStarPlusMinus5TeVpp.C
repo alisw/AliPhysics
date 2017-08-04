@@ -13,6 +13,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnMiniAnalysisTask *task,
    Bool_t                  isPP,
    Bool_t                  isMC,
+   Bool_t                  isGT,
    Float_t                 piPIDCut,
    Float_t                 pi_k0s_PIDCut,
    Int_t                   aodFilterBit,
@@ -180,6 +181,16 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
+   /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
+   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
+   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP,kFALSE);
+   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
+   /* cos(theta) J     */ Int_t ctjID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE);
+   /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
+   /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
+   /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
+
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -234,6 +245,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
    } 
    
    AddMonitorOutput_PionPt(cutSetPi->GetMonitorOutput());
@@ -281,7 +293,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("AKStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
      // selection settings
@@ -299,7 +311,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
-     
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
    }
    
    return kTRUE;
