@@ -6808,7 +6808,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 	    fNonHFE->SetUseITSTPCRefit(kTRUE);
 	
 		//new cuts to be consistent with TPC-only analysis (Henrique changes on AliSelectNonHFE, December, 2016)
-		//fNonHFE->SetUseGlobalTracks();	
+		fNonHFE->SetUseGlobalTracks();	
 		fNonHFE->SetNClustITS(2);	
 	    fNonHFE->SetDCAPartnerCuts(1, 2);	//r,z
 		fNonHFE->SetEtaCutForPart(-0.8, 0.8);
