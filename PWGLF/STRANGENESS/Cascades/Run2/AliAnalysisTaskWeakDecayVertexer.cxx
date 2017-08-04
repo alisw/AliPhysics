@@ -557,6 +557,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
             if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
             
+            /* FIXME: this correction is not implemented
             Bool_t corrected=kFALSE;
             if ((nt.GetX() > 3.) && (xn < 3.)) {
                 //correct for the beam pipe material
@@ -567,6 +568,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                 corrected=kTRUE;
             }
             if (corrected) {
+                
                 if( fkDoImprovedDCAV0DauPropagation ){
                     //Improved: use own call
                     dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
@@ -578,6 +580,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                 if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
                 if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
             }
+             */
             
             nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
             
@@ -792,6 +795,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 Double_t xn, xp, dca;
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
                 
+                /* COMMENTED OUT: EXCESSIVE CPU USAGE
                 if( fkDoImprovedDCAV0DauPropagation ){
                     //Improved: use own call
                     dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
@@ -801,6 +805,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 }
                 
                 nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                 */
                 
                 //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
                 //POSITIVE
@@ -949,15 +954,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
                 
-                if( fkDoImprovedDCAV0DauPropagation ){
-                    //Improved: use own call
-                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
-                }else{
-                    //Old: use old call
-                    dca=nt.GetDCA(&pt,b,xn,xp);
-                }
-                
-                nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                /* COMMENTED OUT: EXCESSIVE CPU USAGE
+                 if( fkDoImprovedDCAV0DauPropagation ){
+                 //Improved: use own call
+                 dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                 }else{
+                 //Old: use old call
+                 dca=nt.GetDCA(&pt,b,xn,xp);
+                 }
+                 
+                 nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                 */
                 
                 //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
                 //POSITIVE
@@ -1273,15 +1280,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 Double_t xn, xp, dca;
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
                 
-                if( fkDoImprovedDCAV0DauPropagation ){
-                    //Improved: use own call
-                    dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
-                }else{
-                    //Old: use old call
-                    dca=nt.GetDCA(&pt,b,xn,xp);
-                }
-                
-                nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                /* COMMENTED OUT: EXCESSIVE CPU USAGE
+                 if( fkDoImprovedDCAV0DauPropagation ){
+                 //Improved: use own call
+                 dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                 }else{
+                 //Old: use old call
+                 dca=nt.GetDCA(&pt,b,xn,xp);
+                 }
+                 
+                 nt.PropagateTo(xn,b); pt.PropagateTo(xp,b); //propagate call -> use only pbt, nt, pt now
+                 */
                 
                 //Step 2a3: Neg/Pos track uncertainties: getting uncertainties
                 //POSITIVE
