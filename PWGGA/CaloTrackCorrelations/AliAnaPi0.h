@@ -455,12 +455,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // Pair origin
   // Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles,
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 
-  // 12-pi0 non gamma-gamma, 13-eta non gamma-gamma, 14-unrelated
+  // 12-pi0 non gamma-gamma, 13-eta non gamma-gamma, 14-gamma-not conversion, 15-electron-not conversion 16-unrelated
     
-  TH2F *   fhMCOrgMass[15];            //!<! Mass vs pt of real pairs, check common origin of pair
-  TH2F *   fhMCOrgAsym[15];            //!<! Asymmetry vs pt of real pairs, check common origin of pair
-  TH2F *   fhMCOrgDeltaEta[15];        //!<! Delta Eta vs pt of real pairs, check common origin of pair
-  TH2F *   fhMCOrgDeltaPhi[15];        //!<! Delta Phi vs pt of real pairs, check common origin of pair
+  TH2F *   fhMCOrgMass[17];            //!<! Mass vs pt of real pairs, check common origin of pair
+  TH2F *   fhMCOrgAsym[17];            //!<! Asymmetry vs pt of real pairs, check common origin of pair
+  TH2F *   fhMCOrgDeltaEta[17];        //!<! Delta Eta vs pt of real pairs, check common origin of pair
+  TH2F *   fhMCOrgDeltaPhi[17];        //!<! Delta Phi vs pt of real pairs, check common origin of pair
   
   // Multiple cuts in simulation, origin pi0 or eta
     

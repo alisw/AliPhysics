@@ -225,7 +225,7 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhMCEtaRadius [i] = 0;
   }
   
-  for(Int_t i = 0; i < 15; i++)
+  for(Int_t i = 0; i < 17; i++)
   {
     fhMCOrgMass    [i] =0 ;
     fhMCOrgAsym    [i] =0 ;
@@ -1465,11 +1465,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
       
       // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
-      TString ancestorTitle[] = {"Photon","Electron","Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
+      TString ancestorTitle[] = {"Photon, conversion","Electron, conversion",
+        "Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
         "Resonances","Strings","Initial state interaction","Final state radiations","Colliding protons",
-        "Pi0Not2SingleGamma","EtaNot2Gamma","not found"};
+        "Pi0Not2SingleGamma","EtaNot2Gamma","Photon, not both conversion","Electron, not both conversion","not found"};
       
-      for(Int_t i = 0; i<15; i++)
+      for(Int_t i = 0; i<17; i++)
       {
         fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -3127,13 +3128,21 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
                     ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
     
-    if(ancPDG==22)
-    {//gamma
-      mcIndex = 0;
+    if ( ancPDG==22 )
+    { // gamma, from conversions?
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
+        mcIndex = 0;
+      else
+        mcIndex = 14;
     }
     else if(TMath::Abs(ancPDG)==11)
-    {//e
-      mcIndex = 1;
+    {// electron, from conversions?
+      if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+           GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
+        mcIndex = 1;
+      else
+        mcIndex = 15;
     }
     else if(ancPDG==111)
     {//Pi0
@@ -3517,20 +3526,20 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     //printf("Not related at all label = %d\n",ancLabel);
     AliDebug(1,"Common ancestor not found");
 
-    mcIndex = 14;
+    mcIndex = 16;
   }
     
-  if(mcIndex < 0 || mcIndex >= 15) 
+  if(mcIndex < 0 || mcIndex >= 17) 
   {
     AliInfo(Form("Wrong ancestor type %d, set it to unknown (12)",mcIndex));
     
     AliInfo(Form("\t Ancestor type not found: label %d, pdg %d, name %s, status %d\n",
            ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
     
-    mcIndex = 14;
+    mcIndex = 16;
   }
   
-  printf("Pi0TASK: MC index %d\n",mcIndex);
+  //printf("Pi0TASK: MC index %d\n",mcIndex);
   
   fhMCOrgMass    [mcIndex]->Fill(pt, mass, GetEventWeight()*weightPt);
   fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
@@ -4010,7 +4019,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Float_t weightPt  = 1;
       if ( IsDataMC() )
       {
-        printf("Get the ancestors\n");
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
                                                              GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
         if( ancLabel >= 0 )
