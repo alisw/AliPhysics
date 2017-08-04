@@ -281,7 +281,6 @@ private:
     Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
-    Bool_t fkDebugParenthood; //if true, add extra info to TTrees (full parenthood) for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
 
@@ -527,17 +526,6 @@ private:
     Float_t fTreeCascVarV0DCAptNegSigmaZ2; //
     Float_t fTreeCascVarV0DCAptNegSigmaSnp2; //
     Float_t fTreeCascVarV0DCAptNegSigmaTgl2; //
-    
-    //Extended information: uncertainties at point closest to pV
-    Float_t fTreeCascVarBachDCAPVSigmaX2; //
-    Float_t fTreeCascVarBachDCAPVSigmaY2; //
-    Float_t fTreeCascVarBachDCAPVSigmaZ2; //
-    Float_t fTreeCascVarPosDCAPVSigmaX2; //
-    Float_t fTreeCascVarPosDCAPVSigmaY2; //
-    Float_t fTreeCascVarPosDCAPVSigmaZ2; //
-    Float_t fTreeCascVarNegDCAPVSigmaX2; //
-    Float_t fTreeCascVarNegDCAPVSigmaY2; //
-    Float_t fTreeCascVarNegDCAPVSigmaZ2; //
 
     Float_t fTreeCascVarPrimVertexX;
     Float_t fTreeCascVarPrimVertexY;
@@ -546,7 +534,6 @@ private:
     Float_t fTreeCascVarMagField; // for X-checks
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
-    Float_t fTreeCascVarV0ChiSquare; //! //V0 chi2 (defined only for on-the-fly or refitted offline) 
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
@@ -590,6 +577,7 @@ private:
     Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
     Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
     Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
+    Int_t   fTreeCascVarBachCousinStatus;         //!
 
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
@@ -600,33 +588,7 @@ private:
     Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
-    
-    //Cluster information for all daughter tracks
-    Bool_t fTreeCascVarPosITSClusters0;
-    Bool_t fTreeCascVarPosITSClusters1;
-    Bool_t fTreeCascVarPosITSClusters2;
-    Bool_t fTreeCascVarPosITSClusters3;
-    Bool_t fTreeCascVarPosITSClusters4;
-    Bool_t fTreeCascVarPosITSClusters5;
-    
-    Bool_t fTreeCascVarNegITSClusters0;
-    Bool_t fTreeCascVarNegITSClusters1;
-    Bool_t fTreeCascVarNegITSClusters2;
-    Bool_t fTreeCascVarNegITSClusters3;
-    Bool_t fTreeCascVarNegITSClusters4;
-    Bool_t fTreeCascVarNegITSClusters5;
 
-    Bool_t fTreeCascVarBachITSClusters0;
-    Bool_t fTreeCascVarBachITSClusters1;
-    Bool_t fTreeCascVarBachITSClusters2;
-    Bool_t fTreeCascVarBachITSClusters3;
-    Bool_t fTreeCascVarBachITSClusters4;
-    Bool_t fTreeCascVarBachITSClusters5;
-    
-    //Uncertainty information on mass (from KF) for testing purposes
-    Float_t fTreeCascVarV0LambdaMassError;
-    Float_t fTreeCascVarV0AntiLambdaMassError;
-    
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
 
