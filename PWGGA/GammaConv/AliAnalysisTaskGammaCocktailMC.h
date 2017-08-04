@@ -86,11 +86,17 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH1D*                       fMtScalingFactors;              //!
     TH2F*                       fPtYDistributions[17];          //!
 
+    //histos for PCM-EMCal related Pi0-tagging, splitting Gammas from Pi0s into Dalitz and NonDalitz contributions
+    TH2F*                       fHistPtYGammaSourceFromDalitzPi0; //!
+    TH2F*                       fHistPtPhiGammaSourceFromDalitzPi0; //!
+    TH2F*                       fHistPtYGammaSourceFromNonDalitzPi0; //!
+    TH2F*                       fHistPtPhiGammaSourceFromNonDalitzPi0; //!
+
   private:
     AliAnalysisTaskGammaCocktailMC(const AliAnalysisTaskGammaCocktailMC&);            // Prevent copy-construction
     AliAnalysisTaskGammaCocktailMC &operator=(const AliAnalysisTaskGammaCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCocktailMC, 5);
+    ClassDef(AliAnalysisTaskGammaCocktailMC, 6);
 };
 
 #endif

@@ -86,6 +86,10 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fPtYDistributions{NULL},
+  fHistPtYGammaSourceFromDalitzPi0(NULL),
+  fHistPtPhiGammaSourceFromDalitzPi0(NULL),
+  fHistPtYGammaSourceFromNonDalitzPi0(NULL),
+  fHistPtPhiGammaSourceFromNonDalitzPi0(NULL),
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
@@ -127,6 +131,10 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fPtYDistributions{NULL},
+  fHistPtYGammaSourceFromDalitzPi0(NULL),
+  fHistPtPhiGammaSourceFromDalitzPi0(NULL),
+  fHistPtYGammaSourceFromNonDalitzPi0(NULL),
+  fHistPtPhiGammaSourceFromNonDalitzPi0(NULL),
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
@@ -283,6 +291,17 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
       
       fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaSource[i]);
+
+      if(i==0){
+        fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0[i],"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fOutputContainer->Add(fHistPtYGammaSourceFromDalitzPi0[i]);
+        fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0[i],"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+        fOutputContainer->Add(fHistPtPhiGammaSourceFromDalitzPi0[i]);
+        fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0[i],"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fOutputContainer->Add(fHistPtYGammaSourceFromNonDalitzPi0[i]);
+        fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0[i],"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+        fOutputContainer->Add(fHistPtPhiGammaSourceFromNonDalitzPi0[i]);
+      }
       
       // correlation gamma from certain mother to mother
       fHistPtGammaSourcePtInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourcePtInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
@@ -308,6 +327,12 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
       fHistPtPhiGammaSource[i]        = NULL;
       fHistPtGammaSourcePtInput[i]    = NULL;
       fHistPhiGammaSourcePhiInput[i]  = NULL;
+      if(i==0){
+        fHistPtYGammaSourceFromDalitzPi0 = NULL;
+        fHistPtPhiGammaSourceFromDalitzPi0 = NULL;
+        fHistPtYGammaSourceFromNonDalitzPi0 = NULL;
+        fHistPtPhiGammaSourceFromNonDalitzPi0 = NULL;
+      }
       fHistDecayChannelsInput[i]      = NULL;
       fHistPythiaBR[i]                = NULL;
     }
@@ -506,6 +531,13 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
         case 111:
           fHistPtYGammaSource[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if(motherParticle->GetNDaughters() == 3){
+            fHistPtYGammaSourceFromDalitzPi0->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiGammaSourceFromDalitzPi0->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          }else{
+            fHistPtYGammaSourceFromNonDalitzPi0->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+            fHistPtPhiGammaSourceFromNonDalitzPi0->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          }
           fHistPtGammaSourcePtInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
           fHistPhiGammaSourcePhiInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
