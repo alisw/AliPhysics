@@ -1,5 +1,5 @@
-#ifndef ALISELECTNONHFE_H
-#define ALISELECTNONHFE_H
+#ifndef AliSelectNonHFE_H
+#define AliSelectNonHFE_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -36,7 +36,7 @@ class AliSelectNonHFE : public TNamed {
   Int_t* GetPartnersULS() const {return fULSPartner;};
   Bool_t IsLS() const {return fIsLS;};
   Bool_t IsULS() const {return fIsULS;};
-  void FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent);
+  void FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent, TClonesArray  *fTracks_tender=0, Bool_t fUseTender=kFALSE);
   void SetAlgorithm(TString Algorithm) {fAlgorithm = Algorithm;};
 	
   void SetAdditionalCuts(Double_t PtMin, Int_t TpcNcls) {fPtMin = PtMin; fTpcNcls = TpcNcls; fHasPtCut=kTRUE; };
@@ -114,6 +114,7 @@ class AliSelectNonHFE : public TNamed {
   Double_t fEtaCutMax; // max eta cut
    
   Bool_t fRequireITSAndTPCRefit;
+  Bool_t fUseTender;
 
 	
   Int_t			*fLSPartner;	        //! Pointer for the LS partners index
@@ -125,6 +126,8 @@ class AliSelectNonHFE : public TNamed {
   TH1F			*fHistAngle;	        //! Opening Angle histogram for Unlike sign pairs
   TH1F			*fHistAngleBack;        //! Opening Angle histogram for like sign pairs
   AliPIDResponse *fPIDResponse;     	//! PID response object
+	
+
   
   AliSelectNonHFE(const AliSelectNonHFE&); // not implemented
   AliSelectNonHFE& operator=(const AliSelectNonHFE&); // not implemented
