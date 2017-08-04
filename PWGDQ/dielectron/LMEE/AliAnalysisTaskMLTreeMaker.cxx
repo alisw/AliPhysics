@@ -116,9 +116,10 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
 //  chi2TPC(0),
   chi2GlobalPerNDF(0),
   nITSshared(0),
-//  chi2GlobalvsTPC(0),
+  chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   motherlabel(0),
+  label(0),        
   charge(0.),      
   runn(0),      
   Rej(kFALSE),
@@ -204,9 +205,10 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
 //  chi2TPC(0),
   chi2GlobalPerNDF(0),      
   nITSshared(0),
-//  chi2GlobalvsTPC(0),
+  chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   motherlabel(0),
+  label(0),         
   charge(0.),      
   runn(0),      
   Rej(kFALSE),
@@ -335,7 +337,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("nITSshared_frac", &nITSshared);
   fTree->Branch("chi2ITS", &chi2ITS);
 //  fTree->Branch("chi2TPC", &chi2TPC);
-//  fTree->Branch("chi2GlobalvsTPC", &chi2GlobalvsTPC);
+  fTree->Branch("chi2GlobalvsTPC", &chi2GlobalvsTPC);
   fTree->Branch("chi2GlobalPerNDF", &chi2GlobalPerNDF);
   
   if(hasMC) {
@@ -343,6 +345,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("Pdg", &pdg);
     fTree->Branch("Pdg_Mother", &pdgmother);
     fTree->Branch("Mother_label", &motherlabel);
+    fTree->Branch("Label", &label);      
     fTree->Branch("Has_Mother", &hasmother);
     fTree->Branch("IsEnh", &enh);
   
@@ -484,12 +487,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   chi2ITS.clear();
 //  chi2TPC.clear();
 //  chi2Global.clear();
-//  chi2GlobalvsTPC.clear();
+  chi2GlobalvsTPC.clear();
   chi2GlobalPerNDF.clear();
   pdg.clear();
   pdgmother.clear();
   hasmother.clear();
   motherlabel.clear();
+  label.clear();  
   charge.clear();
   enh.clear();
   MCvertx.clear();
@@ -610,6 +614,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           Double_t MCvert[3] = {0};
           mcTrack->XvYvZv(MCvert);
           
+          label.push_back(track->GetLabel());
+          
           MCvertx.push_back(MCvert[0]);
           MCverty.push_back(MCvert[1]);
           MCvertz.push_back(MCvert[2]);
@@ -703,31 +709,10 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       chi2ITS.push_back(track->GetITSchi2());
 //      chi2TPC.push_back(track->GetTPCchi2());//this variable will be always 0 for AODs (not yet in)
       
-      if(isAOD) chi2GlobalPerNDF.push_back(((AliAODTrack*)track)->Chi2perNDF());
-//      else      chi2GlobalvsTPC.push_back(0.);       //to be implemented!
+      if(isAOD){ chi2GlobalPerNDF.push_back(((AliAODTrack*)track)->Chi2perNDF());
+                 chi2GlobalvsTPC.push_back(((AliAODTrack*)track)->GetChi2TPCConstrainedVsGlobal());  
+      }
 
-	
-//      fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDTrackCuts->kVertexTracks | fESDTrackCuts->kVertexSPD;
-//
-//      const AliVVertex* vertex = 0;
-//      if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTracks){
-//        vertex = track->GetEvent()->GetPrimaryVertexTracks();}
-//      
-//      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexSPD){
-//	      vertex = track->GetEvent()->GetPrimaryVertexSPD();}
-//	
-//      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTPC){
-//	      vertex = track->GetEvent()->GetPrimaryVertexTPC();}
-
-      // golden chi2 has to be done separately
-//      if (vertex->GetStatus()){
-//	if(isAOD)
-//	  chi2GlobalvsTPC.push_back(((AliAODTrack*)track)->GetChi2TPCConstrainedVsGlobal());
-//	else
-//	  chi2GlobalvsTPC.push_back(((AliESDtrack*)track)->GetChi2TPCConstrainedVsGlobal((AliESDVertex*)vertex));
-//      }
- 
-      // count tracks
       acceptedTracks++;
   }
     
