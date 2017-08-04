@@ -291,14 +291,12 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
                                       mixedPi0     = MakePi0Candidates(&conversionPhotons, &caloPhotons, *fPi0CutsConvCalo);
 
   // create the BG Handlers
-  printf("************************** Just before creating the background handler *************************\n" );
 
 
   Int_t binZ   = fSamePCMHandler->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
   Int_t mbin   = fSamePCMHandler->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 
 
-  printf("************************** After Creating the background handler *************************\n" );
   Int_t nEventsSamePCM   = fSamePCMHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
   Int_t nEventsSameEMCAL = fSameEMCALHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
   Int_t nEventsMixed     = fMixedHandler->GetNBackgroundEventsInBuffer(binZ,mbin);

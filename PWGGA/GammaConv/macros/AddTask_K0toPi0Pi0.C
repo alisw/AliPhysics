@@ -184,7 +184,7 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
 
   // ============= Set the different cut types to their default values ==============
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
-  analysisEventCuts->SetPeriodEnum(periodName);
+  if(periodName.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodName);
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
   analysisEventCuts->InitializeCutsFromCutString(defaultEventCut.Data());
   analysisEventCuts->SetFillCutHistograms("", kTRUE);
