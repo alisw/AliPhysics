@@ -3578,6 +3578,33 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fMinDistTrackToClusterPhi = -0.15;//-0.03;
         fMaxDistTrackToClusterPhi = 0.11;//0.1;//0.5;
         break;
+      case 4: //pT dependent for PCM-PHOS "default" selection
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = kTRUE;
+        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta->SetParameters(0.05, 0.005, 3.0);
+
+        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi->SetParameters(0.33, 0.005, 2.3);
+        break;
+      case 5: //pT dependent for PCM-PHOS tight selection
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = kTRUE;
+        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta->SetParameters(0.025, 0.002, 3.0);
+
+        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi->SetParameters(0.17, 0.005, 2.5);
+        break;
+      case 6: //pT dependent for PCM-PHOS loose selection
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = kTRUE;
+        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta->SetParameters(0.07, 0.003, 2.5);
+
+        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi->SetParameters(0.45, 0.010, 2.0);
+        break;
 
       default:
         AliError(Form("Track Matching Cut not defined %d",trackMatching));
@@ -4607,6 +4634,26 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         goto label_case_42;// goto previous case for shifting MC
       }  
       break;
+    // NonLinearity LHC13 pPb ConvCalo  - applying f^2
+    case 45:
+      if(isMC>0){
+        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
+            //apply again the same
+            energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ;
+          }
+        } else if( fCurrentMC==k13e7 ) {
+          if(fClusterType==1){
+            energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
+            //apply again the same
+            energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
 
 // *************** 50 + x **** modified tender Settings 1 - pPb
     // NonLinearity LHC13 pPb ConvCalo  - only shifting MC
@@ -4682,8 +4729,61 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
 // *************** 80 + x **** modified tender Settings 1 - PbPb
       
-      
+      // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
+    case 81:
+      label_case_81:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.95597, -3.09059, -0.702889) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC
+    case 82:
+      label_case_82:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.095, -0.175739, 0.00776757) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+
 // *************** 90 + x **** modified tender Settings 2 - PbPb
+
+      // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC
+    case 91:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= FunctionNL_DExp(energy, 1.0026971373, -0.0320283624, -0.4999999953, 1.0750656618, -0.0855019990, -0.4571523301);
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC
+    case 92:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= FunctionNL_DExp(energy, 1.0541217488, -0.1111428177, -0.4999999983, 1.0782958817, -0.0706389211, -0.4999999959);
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
       
       
       
@@ -4912,7 +5012,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC15l") == 0 ||
             namePeriod.CompareTo("LHC15m") == 0 )       return k15pp13TeV;
   else if ( namePeriod.CompareTo("LHC15n") == 0 )       return k15pp5TeV;
-  else if ( namePeriod.CompareTo("LHC15o") == 0 )       return k15PbPb5TeV;
+  else if ( namePeriod.CompareTo("LHC15o") == 0 ||
+            namePeriod.CompareTo("LHC16g1") == 0 ||
+            namePeriod.CompareTo("LHC16g1a") == 0 ||
+            namePeriod.CompareTo("LHC16g1b") == 0 ||
+            namePeriod.CompareTo("LHC16g1c") == 0)      return k15PbPb5TeV;
   else if ( namePeriod.CompareTo("LHC16d") == 0 ||
             namePeriod.CompareTo("LHC16e") == 0 ||
             namePeriod.CompareTo("LHC16f") == 0 ||
