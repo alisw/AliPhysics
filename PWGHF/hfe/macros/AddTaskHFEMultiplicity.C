@@ -36,7 +36,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
       return;
     }
     HFEtaskINT7->SetReferenceMultiplicity(refMult);
-    const Char_t* profilebasename="SPDmult";
+    const Char_t* profilebasename="SPDmult10";
     
     const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
     TProfile* multEstimatorAvg[2];

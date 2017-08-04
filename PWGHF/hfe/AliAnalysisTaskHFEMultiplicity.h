@@ -32,7 +32,9 @@ class AliMultSelection;
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "TProfile.h"
-
+#include "AliAnalysisVertexingHF.h"
+#include "AliVertexingHFUtils.h"
+#include "AliVEvent.h"
 
 
 
@@ -99,7 +101,7 @@ private:
   Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
   Bool_t                fEMCEG1;//EMcal Threshold EG1
-  Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
+  Bool_t                fEMCEG2;//EMcal Threshold EG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
   Bool_t 		fRejectPUFromSPD;
@@ -148,7 +150,7 @@ private:
   THnSparse* 	        fSparseULSElectron; //! Electron information
   Double_t*             fvaluePHElectron;//!
   Double_t*             fvalueElectron; //!
-  
+ 
   THnSparse* 	        fSparseMulti; //! Multiplicity information
   Double_t*             fvalueMulti; //!
 

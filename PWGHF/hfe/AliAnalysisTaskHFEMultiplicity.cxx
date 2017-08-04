@@ -82,7 +82,6 @@
 #include "AliESDVZERO.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
-#include "AliVertexingHFUtils.h"
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
