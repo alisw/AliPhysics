@@ -22,7 +22,11 @@ AliReducedEventCut::AliReducedEventCut() :
   fEventTagFilterEnabled(kFALSE),
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
-  fEventTriggerMask(0)
+  fEventTriggerMask(0),
+  fEventL1MaskEnabled(kFALSE),
+  fEventL1Mask(0),
+  fEventL0MaskEnabled(kFALSE),
+  fEventL0Mask(0)
 {
   //
   // default constructor
@@ -35,7 +39,11 @@ AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) 
   fEventTagFilterEnabled(kFALSE),
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
-  fEventTriggerMask(0)
+  fEventTriggerMask(0),
+  fEventL1MaskEnabled(kFALSE),
+  fEventL1Mask(0),
+  fEventL0MaskEnabled(kFALSE),
+  fEventL0Mask(0)
 {
   //
   // named constructor
@@ -77,7 +85,19 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    if(fEventTriggerMaskEnabled) {
      if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
      AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
-     if(fEventTriggerMaskEnabled && !(eventInfo->TriggerMask() & fEventTriggerMask)) return kFALSE;
+     if(!(eventInfo->TriggerMask() & fEventTriggerMask)) return kFALSE;
+   }
+
+   if(fEventL1MaskEnabled) {
+      if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
+      AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
+      if(!(eventInfo->L1TriggerInputs() & fEventL1Mask)) return kFALSE;
+   }
+   
+   if(fEventL0MaskEnabled) {
+      if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
+      AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
+      if(!(eventInfo->L0TriggerInputs() & fEventL0Mask)) return kFALSE;
    }
    
    return AliReducedVarCut::IsSelected(values);   
