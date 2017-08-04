@@ -33,8 +33,11 @@ class AliMultSelection;
 #include "AliPIDResponse.h"
 #include "TProfile.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
 #include "AliVEvent.h"
+#include "AliSelectNonHFE.h"
+
 
 
 
@@ -94,21 +97,20 @@ private:
   TClonesArray*         fTracks_tender;//Tender tracks     
   TClonesArray*         fCaloClusters_tender;//Tender cluster      
   AliAODMCParticle*	fMCparticle;
-  TClonesArray*	fMCarray;//! MC array
+  TClonesArray*	        fMCarray;//! MC array
   TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
 
   Bool_t                fUseTender;// switch to add tender
   Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
   Bool_t                fEMCEG1;//EMcal Threshold EG1
-  Bool_t                fEMCEG2;//EMcal Threshold EG2
+  Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
   Bool_t 		fRejectPUFromSPD;
   
   TList*                fOutputList;//! output list
   TList*		fListProfiles; // list of profile histos for z-vtx correction
- 
   TH1F*			fNevents;//! no of events
   TH1F*			fClusPhi;//! Cluster Phi
   TH1F*			fClusEta;//! Cluster Eta
@@ -145,12 +147,10 @@ private:
   TRandom3*		gRandom;//!< random number generator
  
   THnSparse* 	        fSparseElectron; //! Electron information
- 
   THnSparse* 	        fSparseLSElectron; //! Electron information
   THnSparse* 	        fSparseULSElectron; //! Electron information
   Double_t*             fvaluePHElectron;//!
   Double_t*             fvalueElectron; //!
- 
   THnSparse* 	        fSparseMulti; //! Multiplicity information
   Double_t*             fvalueMulti; //!
 
