@@ -127,7 +127,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetTyp
   AliClusterContainer* clusCont =  nullptr;
   auto partContSearch = fParticleCollArray.find(partContName);
   if (partContSearch != fParticleCollArray.end()) partCont = partContSearch->second;
-  auto clusContSearch = fClusterCollArray.find(partContName);
+  auto clusContSearch = fClusterCollArray.find(clusContName);
   if (clusContSearch != fClusterCollArray.end()) clusCont = clusContSearch->second;
   if (!partCont && !clusCont) {
     AliError(Form("Could not find neither particle nor cluster container with names '%s' and '%s'", partContName.c_str(), clusContName.c_str()));

@@ -164,7 +164,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 33;
+  const Int_t nVar = 38;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -184,23 +184,28 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
    fShapesVarNames[13] = "SDDeltaR";
   fShapesVarNames[14] = "SDGroomedFrac"; 
   fShapesVarNames[15] = "SDGroomedN"; 
- fShapesVarNames[16] = "SDSymmkt";
-   fShapesVarNames[17] = "SDDeltaRkt";
-  fShapesVarNames[18] = "SDGroomedFrackt"; 
-  fShapesVarNames[19] = "SDGroomedNkt";
-   fShapesVarNames[20] = "SDSymmAkt";
-   fShapesVarNames[21] = "SDDeltaRAkt";
-  fShapesVarNames[22] = "SDGroomedFracAkt"; 
-  fShapesVarNames[23] = "SDGroomedNAkt"; 
-  fShapesVarNames[24] = "SDSymmBeta1";
-   fShapesVarNames[25] = "SDDeltaRBeta1";
-  fShapesVarNames[26] = "SDGroomedFracBeta1"; 
-  fShapesVarNames[27] = "SDGroomedNBeta1"; 
-   fShapesVarNames[28] = "SDSymmBeta2";
-   fShapesVarNames[29] = "SDDeltaRBeta2";
-  fShapesVarNames[30] = "SDGroomedFracBeta2"; 
-  fShapesVarNames[31] = "SDGroomedNBeta2"; 
-  fShapesVarNames[32] = "weightPythia"; 
+  fShapesVarNames[16] = "SDMass";
+  fShapesVarNames[17] = "SDSymmkt";
+   fShapesVarNames[18] = "SDDeltaRkt";
+  fShapesVarNames[19] = "SDGroomedFrackt"; 
+  fShapesVarNames[20] = "SDGroomedNkt";
+  fShapesVarNames[21] = "SDMasskt";
+   fShapesVarNames[22] = "SDSymmAkt";
+   fShapesVarNames[23] = "SDDeltaRAkt";
+  fShapesVarNames[24] = "SDGroomedFracAkt"; 
+  fShapesVarNames[25] = "SDGroomedNAkt";
+   fShapesVarNames[26] = "SDMassAkt";
+  fShapesVarNames[27] = "SDSymmBeta1";
+   fShapesVarNames[28] = "SDDeltaRBeta1";
+  fShapesVarNames[29] = "SDGroomedFracBeta1"; 
+  fShapesVarNames[30] = "SDGroomedNBeta1";
+  fShapesVarNames[31] = "SDMassBeta1";
+   fShapesVarNames[32] = "SDSymmBeta2";
+   fShapesVarNames[33] = "SDDeltaRBeta2";
+  fShapesVarNames[34] = "SDGroomedFracBeta2"; 
+  fShapesVarNames[35] = "SDGroomedNBeta2";
+  fShapesVarNames[36] = "SDMassBeta2";
+  fShapesVarNames[37] = "weightPythia"; 
 
 
   
@@ -410,16 +415,13 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[6] = fjNSubJettiness(jet1,0,1,0,1,0);
       fShapesVar[7] = fjNSubJettiness(jet1,0,2,0,1,0);
       //nsub1 and nsub2 for min_axis
-      fShapesVar[8] =0;
-	// 	fjNSubJettiness(jet1,0,1,10,1,0);
-      fShapesVar[9] =0;
-	// 	fjNSubJettiness(jet1,0,2,10,1,0);
-      //deltaRkt
-	fShapesVar[10] = 0;
-      //fjNSubJettiness(jet1,0,2,0,1,2);
-      //deltaRmin
-      fShapesVar[11] = 0;
-      //fjNSubJettiness(jet1,0,2,10,1,2);
+      fShapesVar[8] =fjNSubJettiness(jet1,0,1,10,1,0);
+      fShapesVar[9] =fjNSubJettiness(jet1,0,2,10,1,0);
+      //nsub1 and nsub2 for akt
+      fShapesVar[10] = 0;
+      //fjNSubJettiness(jet1,0,1,10,1,0);
+      fShapesVar[11] =0;
+      //fjNSubJettiness(jet1,0,2,10,1,0);
     
       //SoftDropParameters for different reclustering strategies and beta values 
       SoftDrop(jet1,jetCont,0.1,0,0);
@@ -1171,29 +1173,36 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[12]=SymParam;
   fShapesVar[13]=DeltaR;
   fShapesVar[14]=GroomedPt;
-  fShapesVar[15]=NGroomedBranches;}
+  fShapesVar[15]=NGroomedBranches;
+  fShapesVar[16]=Mu;}
    if(ReclusterAlgo==1){
-  fShapesVar[16]=SymParam;
-  fShapesVar[17]=DeltaR;
-  fShapesVar[18]=GroomedPt;
-  fShapesVar[19]=NGroomedBranches;}
+  fShapesVar[17]=SymParam;
+  fShapesVar[18]=DeltaR;
+  fShapesVar[19]=GroomedPt;
+  fShapesVar[20]=NGroomedBranches;
+  fShapesVar[21]=Mu; }
 
      if(ReclusterAlgo==2){
-  fShapesVar[20]=SymParam;
-  fShapesVar[21]=DeltaR;
-  fShapesVar[22]=GroomedPt;
-  fShapesVar[23]=NGroomedBranches;}}
+  fShapesVar[22]=SymParam;
+  fShapesVar[23]=DeltaR;
+  fShapesVar[24]=GroomedPt;
+  fShapesVar[25]=NGroomedBranches;
+  fShapesVar[26]=Mu;
+     }}
   if(beta==1){
-     fShapesVar[24]=SymParam;
-  fShapesVar[25]=DeltaR;
-  fShapesVar[26]=GroomedPt;
-  fShapesVar[27]=NGroomedBranches;}
+     fShapesVar[27]=SymParam;
+  fShapesVar[28]=DeltaR;
+  fShapesVar[29]=GroomedPt;
+  fShapesVar[30]=NGroomedBranches;
+  fShapesVar[31]=Mu;
+  }
 
    if(beta==2){
-  fShapesVar[28]=SymParam;
-  fShapesVar[29]=DeltaR;
-  fShapesVar[30]=GroomedPt;
-  fShapesVar[31]=NGroomedBranches;}
+  fShapesVar[32]=SymParam;
+  fShapesVar[33]=DeltaR;
+  fShapesVar[34]=GroomedPt;
+  fShapesVar[35]=NGroomedBranches;
+  fShapesVar[36]=Mu; }
 
   
   return;
