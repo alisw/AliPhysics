@@ -1840,7 +1840,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("52500713", "00216609247602008850404000", "0652501500000000"); //
 
   } else if ( trainConfig == 359){ // chi2 + psi pair
-    cuts.AddCut("50100013", "00200009247002008504040000", "0152501500000000"); // 30+0.1 2D
+    cuts.AddCut("50100013", "00200009247002008250404000", "0152501500000000"); // 30+0.1 2D
   } else if ( trainConfig == 360){ // chi2 + psi pair - phi
     cuts.AddCut("50100013", "00216609247002008250404000", "0152501500000000"); // 30+0.1 2D
   } else if ( trainConfig == 361){ // chi2 + psi pair
