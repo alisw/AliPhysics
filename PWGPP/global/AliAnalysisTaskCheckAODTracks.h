@@ -62,10 +62,16 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
   }
+  void SetPhiBinning(Int_t nbins){
+    fNPhiBins=nbins;
+  }
+  void SetEtaBinning(Int_t nbins){
+    fNEtaBins=nbins;
+  }
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=27};
+  enum EVarsTree {kNumOfIntVar=12, kNumOfFloatVar=27};
   enum EFiltBits {kNumOfFilterBits=12};
 
   AliAnalysisTaskCheckAODTracks(const AliAnalysisTaskCheckAODTracks &source);
@@ -92,6 +98,14 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCsel;           //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;     //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDany;     //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+
+  TH3F* fHistEtaPhiPtPosChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtPosChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtPosChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistEtaPhiPtNegChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtNegChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtNegChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
@@ -145,13 +159,15 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
+  Int_t fNEtaBins;             // number of eta intervals in histos
+  Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,7);
+  ClassDef(AliAnalysisTaskCheckAODTracks,8);
 };
 
 
