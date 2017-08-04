@@ -211,6 +211,7 @@ private:
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkDoImprovedCascadePosition;
     Bool_t fkDoImprovedDCAV0DauPropagation;
+    Bool_t fkDoImprovedDCAV0DauPropagationGoodInitialGuess;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
     Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
@@ -246,6 +247,7 @@ private:
     TH1D *fHistCentrality; //!
     TH1D *fHistNumberOfCandidates; //!
     
+     
     TH1D *fHistV0ToBachelorPropagationStatus; //! 
 
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
