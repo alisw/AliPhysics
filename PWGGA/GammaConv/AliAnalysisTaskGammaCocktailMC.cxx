@@ -293,14 +293,14 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
       fOutputContainer->Add(fHistPtPhiGammaSource[i]);
 
       if(i==0){
-        fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0[i],"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
-        fOutputContainer->Add(fHistPtYGammaSourceFromDalitzPi0[i]);
-        fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0[i],"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
-        fOutputContainer->Add(fHistPtPhiGammaSourceFromDalitzPi0[i]);
-        fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0[i],"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
-        fOutputContainer->Add(fHistPtYGammaSourceFromNonDalitzPi0[i]);
-        fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0[i],"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
-        fOutputContainer->Add(fHistPtPhiGammaSourceFromNonDalitzPi0[i]);
+        fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0,"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fOutputContainer->Add(fHistPtYGammaSourceFromDalitzPi0);
+        fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0,"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+        fOutputContainer->Add(fHistPtPhiGammaSourceFromDalitzPi0);
+        fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0,"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+        fOutputContainer->Add(fHistPtYGammaSourceFromNonDalitzPi0);
+        fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0,"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+        fOutputContainer->Add(fHistPtPhiGammaSourceFromNonDalitzPi0);
       }
       
       // correlation gamma from certain mother to mother
