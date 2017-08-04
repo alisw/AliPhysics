@@ -176,16 +176,28 @@ void MakeReport(const char* mcrddir){
     cout<<mcrddir<<endl;
     trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/meanTPCNclMCtoAnchor.png");
   }
-//  
-//  { //
-//    trendingDraw->fWorkingCanvas->Clear();  
-//    TLegend *legend = new TLegend(cRange[0],cRange[1],cRange[2],cRange[3],"Number of clusters MC/Anchor"); legend->SetBorderSize(0);
-//    graph = TStatToolkit::MakeMultGraph(treeMC,"","meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF :run","1","25;21","2;4",1,0.75,6,legend);
-//    TStatToolkit::DrawMultiGraph(graph,"alp");
-//    legend->Draw();    
-//    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-//    trendingDraw->fWorkingCanvas->SaveAs("meanTPCNclRatioMCtoAnchor.png");    
-//  }
+  { // matching efficiency
+    trendingDraw->fWorkingCanvas->Clear(); 
+    TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange5[3],"Matching efficiency:pass1_lowIR/pass3_lowIR_pidfix"); legend->SetBorderSize(0);
+    legend->SetNColumns(5);
+    graph = TStatToolkit::MakeMultGraph(treeMC,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","1","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,1.5,5,legend);
+    TStatToolkit::DrawMultiGraph(graph,"alp");
+    legend->Draw(); 
+    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
+    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/matchingTPC-ITSEffe.png");    
+  }
+/**  
+ * @todo additional plots to be implemented
+ *  */
+  { 
+    trendingDraw->fWorkingCanvas->Clear();  
+    TLegend *legend = new TLegend(cRange[0],cRange[1],cRange[2],cRange[3],"Number of clusters MC/Anchor"); legend->SetBorderSize(0);
+    graph = TStatToolkit::MakeMultGraph(treeMC,"","meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF :run","1","25;21","2;4",1,0.75,6,legend);
+    TStatToolkit::DrawMultiGraph(graph,"alp");
+    legend->Draw();    
+    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
+    trendingDraw->fWorkingCanvas->SaveAs("meanTPCNclRatioMCtoAnchor.png");    
+  }
 //  
 //  { // DCA resolution at high pt
 //    trendingDraw->fWorkingCanvas->Clear();  
@@ -227,18 +239,6 @@ void MakeReport(const char* mcrddir){
 //    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
 //    trendingDraw->fWorkingCanvas->SaveAs("matchingTPC-ITSEffe3.png");    
 //  }
-
-  { // matching efficiency
-    trendingDraw->fWorkingCanvas->Clear(); 
-    TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange5[3],"Matching efficiency:pass1_lowIR/pass3_lowIR_pidfix"); legend->SetBorderSize(0);
-    legend->SetNColumns(5);
-    graph = TStatToolkit::MakeMultGraph(treeMC,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","1","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,1.5,5,legend);
-    TStatToolkit::DrawMultiGraph(graph,"alp");
-    legend->Draw(); 
-    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/matchingTPC-ITSEffe.png");    
-  }
-
 //  { // matching efficiency
 //    trendingDraw->fWorkingCanvas->Clear(); 
 //    TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange5[3],"Matching efficiency:pass1_lowIR/pass3_lowIR_pidfix"); legend->SetBorderSize(0);
@@ -249,8 +249,6 @@ void MakeReport(const char* mcrddir){
 //    trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
 //    trendingDraw->fWorkingCanvas->SaveAs("matchingTPC-ITSEffe_1.png");    
 //  }
-  
-  
 //  { // matching efficiency
 //    trendingDraw->fWorkingCanvas->Clear(); 
 //    TLegend *legend = new TLegend(cRange5[0],cRange5[1],cRange5[2],cRange[3],"Matching efficiency:pass1_lowIR/pass3_lowIR_pidfix"); legend->SetBorderSize(0);
