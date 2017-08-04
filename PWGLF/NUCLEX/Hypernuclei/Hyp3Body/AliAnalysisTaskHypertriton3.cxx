@@ -640,7 +640,7 @@ Double_t xpp(0.0);
 Float_t piprim[2] = {0.,0.};
 Float_t piprimc[3] = {0.,0.,0.};
 Float_t nsd, nsp, nspi = 0.;
-Float_t nsd_t, nsp_t, nspi_t, b_t = 0.;
+Float_t nsd_tof, nsp_tof, nspi_tof, b_tof = 0.;
 AliESDVertex *decayVtx = 0x0;
 
 TLorentzVector Hypertriton;
@@ -935,16 +935,16 @@ if(fFillTree){
   nspi = fPIDResponse->NumberOfSigmasTPC(trackNPi,AliPID::kPion);
   fTCentralityPerc = fCentralityClass;
   if(fRequireTOFPid){
-    nsd_t = HasTOF(trackD, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kDeuteron) : -999;
-    nsp_t = HasTOF(trackP, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackP,AliPID::kProton) : -999;
-    nspi_t = HasTOF(trackNPi, b_t) ? fPIDResponse->NumberOfSigmasTOF(trackNPi,AliPID::kPion) : -999;
+    nsd_tof = HasTOF(trackD, b_tof) ? fPIDResponse->NumberOfSigmasTOF(trackD,AliPID::kDeuteron) : -999;
+    nsp_tof = HasTOF(trackP, b_tof) ? fPIDResponse->NumberOfSigmasTOF(trackP,AliPID::kProton) : -999;
+    nspi_tof = HasTOF(trackNPi, b_tof) ? fPIDResponse->NumberOfSigmasTOF(trackNPi,AliPID::kPion) : -999;
 
-    if(nsd_t < 0)fTTOFnsigmadeu = TMath::Floor(nsd_t/0.25);
-    else fTTOFnsigmadeu = TMath::Ceil(nsd_t/0.25);
-    if(nsp_t < 0)fTTOFnsigmapro = TMath::Floor(nsp_t/0.25);
-    else fTTOFnsigmapro = TMath::Ceil(nsp_t/0.25);
-    if(nspi_t < 0)fTTOFnsigmapion = TMath::Floor(nspi_t/0.25);
-    else fTTOFnsigmapion = TMath::Ceil(nspi_t/0.25);
+    if(nsd_tof < 0)fTTOFnsigmadeu = TMath::Floor(nsd_tof/0.25);
+    else fTTOFnsigmadeu = TMath::Ceil(nsd_tof/0.25);
+    if(nsp_tof < 0)fTTOFnsigmapro = TMath::Floor(nsp_tof/0.25);
+    else fTTOFnsigmapro = TMath::Ceil(nsp_tof/0.25);
+    if(nspi_tof < 0)fTTOFnsigmapion = TMath::Floor(nspi_tof/0.25);
+    else fTTOFnsigmapion = TMath::Ceil(nspi_tof/0.25);
   }
   //deuteron
   fTchi2NDFdeu = TMath::Floor(trackD->GetTPCchi2()/(0.5*trackD->GetTPCclusters(0)));
