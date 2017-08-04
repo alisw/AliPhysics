@@ -3161,9 +3161,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       }
       
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay) &&
-           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0Decay) &&
-          !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0)      && // Not merged
-          !GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0) && ok  )
+           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0Decay) && ok  )
       {
         mcIndex = 2;
         
@@ -3323,6 +3321,48 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       else
       {
         mcIndex = 12; // other decays than pi0->gamma-gamma or merged
+        
+//        printf("Et (%2.2f, %2.2f), Mass %f, decay (%d, %d), merged (%d, %d), conv (%d, %d) ok %d, N daug %d\n",
+//               pt1, pt2, mass,
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0Decay),
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay),
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCPi0),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion),  
+//               GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion),
+//               ok, mom->GetNDaughters());
+//        
+//        if ( mom->GetNDaughters()==2 )
+//        {
+//          AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
+//          AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
+//          printf("\t labels (%d, %d), pdg (%d, %d) \n",
+//                 mom->GetDaughterLabel(0), mom->GetDaughterLabel(1),
+//                 d1->PdgCode()           , d2->PdgCode()            ); 
+//        }
+//        
+//        Int_t first = 0;
+//        AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),iclus1,first);
+//        AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),iclus2,iclus1);
+//        if(!cluster2 || !cluster1) 
+//        { 
+//          AliWarning(Form("Cluster1 %p or Cluster 2 %p not found!",cluster1,cluster2));
+//          return;
+//        }
+//
+//        printf("xxx Cluster1\n");
+//        for(Int_t ilab = 0; ilab < cluster1->GetNLabels(); ilab++ )
+//        {
+//          printf("label %d\n",ilab);
+//          GetMCAnalysisUtils()->PrintAncestry(GetMC(), cluster1->GetLabels()[ilab]);
+//        }
+//
+//        printf("xxx Cluster2\n");
+//        for(Int_t ilab = 0; ilab < cluster2->GetNLabels(); ilab++ )
+//        {
+//          printf("label %d\n",ilab);
+//          GetMCAnalysisUtils()->PrintAncestry(GetMC(), cluster2->GetLabels()[ilab]);
+//        }
       }
     }
     else if(ancPDG==221)
@@ -3344,9 +3384,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       if ( mom->GetNDaughters()!=2 ) ok = kFALSE;
 
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCEtaDecay) &&
-           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEtaDecay) &&
-          !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCEta)      && // not merged
-          !GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEta)  )
+           GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEtaDecay) && ok )
       {        
         mcIndex = 3;
         
