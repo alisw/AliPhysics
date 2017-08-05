@@ -188,6 +188,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
   fTPCsharedCut(-1),
+  fUseSphericityCut(kFALSE),
+  fSphericityMin(0.),
+  fSphericityMax(0.),
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
@@ -786,6 +789,9 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     }
   }
 
+  //Sphericity
+  Double_t gSphericity = -999.;
+  
   // get the accepted tracks in main event
   TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();

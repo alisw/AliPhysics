@@ -100,6 +100,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fTPCsharedCut = minTPCsharedCut;
   }
 
+   void SetUseSphericityCut(Double_t minSphericity, Double_t maxSphericity){
+     fUseSphericityCut = kTRUE;
+     fSphericityMin = minSphericity;
+     fSphericityMax = maxSphericity;
+   }
+   
   //==============MC analysis==============//
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
@@ -401,6 +407,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
   Int_t fTPCsharedCut;//only used for AODs
+
+  Bool_t fUseSphericityCut;//sphericity cut (currelntly only for AODs)
+  Double_t fSphericityMin;//min sphericity  (currelntly only for AODs)
+  Double_t fSphericityMax;//max sphericity  (currelntly only for AODs)
 
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
 
