@@ -25,7 +25,7 @@ class AliPIDResponse;
 class AliAODv0;
 // class AliAnalyseLeadingTrackUE;
 class THnSparse;
-class AliAODcasdade;
+class AliAODcascade;
 class AliAODVertex;
 class TProfile;
 
