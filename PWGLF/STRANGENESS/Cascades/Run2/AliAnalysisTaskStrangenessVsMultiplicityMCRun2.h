@@ -565,6 +565,18 @@ private:
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
 
+    //Bachelor Sibling Testing Variables
+    Float_t fTreeCascVarBachSibPt; //!
+    Float_t fTreeCascVarBachSibDcaV0ToPrimVertex; //!
+    Float_t fTreeCascVarBachSibDcaV0Daughters; //!
+    Float_t fTreeCascVarBachSibV0CosineOfPointingAngle; //!
+    Float_t fTreeCascVarBachSibV0V0Radius; //!
+    Float_t fTreeCascVarBachSibV0DcaPosToPrimVertex; //!
+    Float_t fTreeCascVarBachSibV0DcaNegToPrimVertex; //!
+    Float_t fTreeCascVarBachSibV0InvMassK0s; //!
+    Float_t fTreeCascVarBachSibV0InvMassLambda; //!
+    Float_t fTreeCascVarBachSibV0InvMassAntiLambda; //!
+
     //MC-only Variabless
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
@@ -578,6 +590,7 @@ private:
     Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
     Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
     Int_t   fTreeCascVarBachCousinStatus;         //!
+    Int_t   fTreeCascVarV0BachSibIsValid;         //!
 
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
