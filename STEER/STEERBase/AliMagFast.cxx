@@ -19,7 +19,7 @@
 const float AliMagFast::fgkSolR2Max[AliMagFast::kNSolRRanges] =
   {80.f*80.f,250.f*250.f,400.f*400.f,423.f*423.f, 500.f*500.f};
 
-const float AliMagFast::fgkSolZMax = 260.0f;
+const float AliMagFast::fgkSolZMax = 550.0f;
 
 ClassImp(AliMagFast)
 
@@ -163,9 +163,10 @@ Bool_t AliMagFast::GetSegment(const float xyz[3], int& zSeg,int &rSeg, int &quad
 {
   // get segment of point location
   const float &x = xyz[kX], &y = xyz[kY], &z = xyz[kZ];
+  const float zGridSpaceInv = 1/(fgkSolZMax*2/kNSolZRanges);
   zSeg = -1;
   if (z<fgkSolZMax) {
-    if (z>-fgkSolZMax) zSeg = z<0.f ? 0:1; // solenoid params
+    if (z>-fgkSolZMax) zSeg = (z+fgkSolZMax)*zGridSpaceInv; // solenoid params
     else { // need to check dipole params
       return kFALSE;
     }
