@@ -2180,7 +2180,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           if(qnlist != NULL){
             qnTPCeventplane = fgQnEPacRemoval->GetACcorrectedQnTPCEventplane(pair, qnlist); // Remove auto correlations from the eventplane for the given pair
           }
-          if(qnTPCeventplane == -999.) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
+          if(TMath::AreEqualRel(qnTPCeventplane, -999., 1e-12)) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
         }
       }
     }
