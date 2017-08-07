@@ -143,14 +143,14 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
     AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND); 
     AliDielectronVarCuts* convMassCut     = new AliDielectronVarCuts("convMassCut", "convMassCut");
     AliDielectronVarCuts* convPhiVCut     = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-    convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.03);
+    convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.05);
     convPhiVCut->AddCut(AliDielectronVarManager::kOpeningAngle, 0.05, 3.2);
     convRejCut->AddCut(convMassCut);
     convRejCut->AddCut(convPhiVCut);
 
     //Mass cut to include any pairs with mass greater than 0.03
     AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-    pairMassCut->AddCut(AliDielectronVarManager::kM, 0.03, 5.0);
+    pairMassCut->AddCut(AliDielectronVarManager::kM, 0.05, 5.0);
 
     //OR cut group to accept for above cuts
     AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
@@ -397,12 +397,12 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
             }else{		
                 trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0);		
             }		
-            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 36.0);		
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       70.0, 200.);		
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     60.0, 200.);		
-            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);		
+            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);		
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       80.0, 200.);		
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 200.);		
+            //trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);		
             //trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable		
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable 		
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1); //Crossed rows over findable 		
             //Lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014		
             AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");		
             //trackCutsDiel->SetAODFilterBit(0<<0); // (=0) filterbit 0! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut		
