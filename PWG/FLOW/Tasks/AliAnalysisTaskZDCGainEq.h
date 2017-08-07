@@ -72,7 +72,7 @@ public:
   void    SetShiftVsCent(Bool_t const bVsCent)        {this->bShiftCorrOnCent   =      bVsCent;}
   void    SetTrigonMetricQ(Bool_t const bTrigQn)      {this->bUseTrigonQn       =      bTrigQn;}
   void    SetApplyShiftCorr(Bool_t const bDoShift)    {this->bApplyShiftCorr    =     bDoShift;}
-
+  void    SetShiftCombine(Bool_t const bShiftCom)     {this->bShiftCombinedEP   =    bShiftCom;}
 
 
 
@@ -122,6 +122,7 @@ private:
   Bool_t            bShiftCorrOnCent;    //
   Bool_t                bUseTrigonQn;    //
   Bool_t             bApplyShiftCorr;    //
+  Bool_t            bShiftCombinedEP;    //
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
   Float_t                   VyCut[2];    //
@@ -154,10 +155,13 @@ private:
 
   TH2F              *fHist_Vxy_RunAveraged; //!
 
-  TH1F             *fHist_ZDCC_AvgCosNPsi[2]; //! 
-  TH1F             *fHist_ZDCC_AvgSinNPsi[2]; //!
-  TH1F             *fHist_ZDCA_AvgCosNPsi[2]; //! 
-  TH1F             *fHist_ZDCA_AvgSinNPsi[2]; //!
+  TH2F             *fHist_ZDCC_AvgCosNPsi[4]; //! 
+  TH2F             *fHist_ZDCC_AvgSinNPsi[4]; //!
+  TH2F             *fHist_ZDCA_AvgCosNPsi[4]; //! 
+  TH2F             *fHist_ZDCA_AvgSinNPsi[4]; //!
+
+  TH2F             *fHist_ZDC_AvgCosNPsiAC[4]; //! 
+  TH2F             *fHist_ZDC_AvgSinNPsiAC[4]; //!
 
 
   TH1F               *fHist_Vx_ArrayFinder; //!
@@ -249,11 +253,16 @@ private:
   TProfile2D      *fHist_ZDCA_AvgCos_VsRun[4];    //!
   TProfile2D      *fHist_ZDCA_AvgSin_VsRun[4];    //!
 
-
   TProfile2D      *fHist_ZDC_AvgCosPsiSum_VsRun[4];    //!
   TProfile2D      *fHist_ZDC_AvgSinPsiSum_VsRun[4];    //!
 
+  TProfile2D      *fHist_ZDCC_AvgQx_VsRun;    //!
+  TProfile2D      *fHist_ZDCC_AvgQy_VsRun;    //!
+  TProfile2D      *fHist_ZDCA_AvgQx_VsRun;    //!
+  TProfile2D      *fHist_ZDCA_AvgQy_VsRun;    //!
 
+  TProfile2D      *fHist_ZDC_AvgXXminusYY_VsRun;    //!
+  TProfile2D      *fHist_ZDC_AvgXYplusXY_VsRun;    //!
 
   TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
   TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
