@@ -10,7 +10,7 @@ A               ! TARG
 7.3             ! BMIN (mininum impact parameter in fm) 
 8.9		! BMAX (maximum impact parameter in fm, also see below)
 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
-150		! NTMAX: number of timesteps (D=150), see below
+1000		! NTMAX: number of timesteps (D=150), see below
 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
 0.3		! PARJ(41): parameter a in Lund symmetric splitting function
 0.15    	! PARJ(42): parameter b in Lund symmetric splitting function
