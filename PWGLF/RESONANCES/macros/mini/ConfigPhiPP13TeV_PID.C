@@ -21,7 +21,8 @@ Bool_t ConfigPhiPP13TeV_PID
  Bool_t                 useMixLS=0,
  Bool_t                 checkReflex=0,
  AliRsnMiniValue::EType yaxisVar=AliRsnMiniValue::kPt,
- TString                polarizationOpt="" /* J - Jackson,T - Transversity */
+ TString                polarizationOpt="", /* J - Jackson,T - Transversity */
+ UInt_t                 triggerMask=AliVEvent::kINT7
 )
 {
   // manage suffix
@@ -83,8 +84,8 @@ Bool_t ConfigPhiPP13TeV_PID
   for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-  for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-  nmult--;
+  if(triggerMask==AliVEvent::kHighMultV0){multbins[nmult]=1.; nmult++;}
+  else for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges

@@ -125,6 +125,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   ::Info("AddTaskPhiPP13TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  task->SaveRsnTreeInFile(kTRUE);
 
   mgr->AddTask(task);
 
@@ -227,7 +228,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
-  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
+  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 
