@@ -2,8 +2,8 @@
 * @Author: Pascal Dillenseger <pascaldillenseger>
 * @Date:   2016-11-11, 11:39:13
 * @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-14, 11:14:44
+ * @Last modified by:   pascaldillenseger
+ * @Last modified time: 2017-08-07, 10:18:48
 */
 
 
@@ -119,7 +119,7 @@ Double_t AliDielectronQnEPcorrection::GetACcorrectedQnTPCEventplane(const AliDie
   Bool_t acceptedTrack1 = AliDielectronQnEPcorrection::IsSelected(track1);
   Bool_t acceptedTrack2 = AliDielectronQnEPcorrection::IsSelected(track2);
 
-  if(!acceptedTrack1 && !acceptedTrack2) return -tpcEPangle;
+  if(!acceptedTrack1 && !acceptedTrack2) return tpcEPangle;
   //sum the contribution to the qVector of the tracks passing the EventPlanePOIPreFilter
   if(acceptedTrack1){
     cQX += TMath::Cos(2*track1->Phi());

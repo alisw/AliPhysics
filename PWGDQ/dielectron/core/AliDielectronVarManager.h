@@ -609,6 +609,8 @@ public:
     kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
     kMatchEffITSTPCinPlane,         // ruff estimate on the ITS-TPC matching efficiceny inPlane wrt TPC eventplane
     kMatchEffITSTPCoutPlane,         // ruff estimate on the ITS-TPC matching efficiceny outPlane wrt TPC eventplane
+    kMatchEffITSTPCinPlaneV0C,         // ruff estimate on the ITS-TPC matching efficiceny inPlane wrt V0C eventplane
+    kMatchEffITSTPCoutPlaneV0C,         // ruff estimate on the ITS-TPC matching efficiceny outPlane wrt V0C eventplane
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6
     kNaccTrcklts09,          // number of accepted SPD tracklets in |eta|<0.9
     kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.
@@ -2180,7 +2182,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           if(qnlist != NULL){
             qnTPCeventplane = fgQnEPacRemoval->GetACcorrectedQnTPCEventplane(pair, qnlist); // Remove auto correlations from the eventplane for the given pair
           }
-          if(qnTPCeventplane == -999.) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
+          if(TMath::AreEqualRel(qnTPCeventplane, -999., 1e-12)) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
         }
       }
     }
@@ -2371,6 +2373,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kMatchEffITSTPC]  = 0;
   values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = 0;
   values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCinPlaneV0C]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCoutPlaneV0C]  = 0;
   values[AliDielectronVarManager::kNaccTrcklts]     = 0;
   values[AliDielectronVarManager::kNaccTrcklts09]   = 0;
   values[AliDielectronVarManager::kNaccTrcklts10]   = 0;
@@ -2435,6 +2439,13 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE);
     values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = efficiencies[0];
     values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = efficiencies[1];
+  }
+  if(Req(kMatchEffITSTPCinPlaneV0C) || Req(kMatchEffITSTPCoutPlaneV0C)){
+
+    Double_t efficiencies[2] = {-1.};
+    values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE, kTRUE);
+    values[AliDielectronVarManager::kMatchEffITSTPCinPlaneV0C]  = efficiencies[0];
+    values[AliDielectronVarManager::kMatchEffITSTPCoutPlaneV0C]  = efficiencies[1];
   }
   else if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
   if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))  values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
