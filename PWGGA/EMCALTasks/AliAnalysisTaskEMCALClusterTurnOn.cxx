@@ -507,41 +507,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
 
     // Fill events number histogram
   fEvents->Fill(0);
-//gROOT->LoadMacro(Form("%s/PWG/EMCAL/macros/AddTaskTriggerMakerNew.C", gSystem->ExpandPathName(gSystem->Getenv("ALICE_PHYSICS"))));
-//AliEmcalTriggerMakerTask *triggermaker = AddTaskTriggerMakerNew();
-//triggermaker->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7 | AliVEvent::kEMCEJE | AliVEvent::kEMCEGA);
-//  AliEmcalDownscaleFactorsOCDB *downscalehandler = AliEmcalDownscaleFactorsOCDB::Instance();
-//  double ds = downscalehandler->GetDownscaleFactorForTriggerClass("CEMC7-S-NOPF-ALLNOTRD");
-//  cout << "downscalefactor current run: " << ds << endl;
-//  downscalehandler->SetRun(180500);
-//  ds = downscalehandler->GetDownscaleFactorForTriggerClass("CEMC7-S-NOPF-ALLNOTRD");
-//  cout << "downscalefactor 180500: " << ds << endl;
-
-//  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-//  TClonesArray* fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers"));
-//  if (fTriggerPatches) {
-//    Int_t nPatches = fTriggerPatches->GetEntries();
-//    for (Int_t i = 0; i < nPatches; i++) {
-//      AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
-//      if(!patch) continue;
-//      if(!patch->
-//      printf("\ttrigger patch1 E=%1.2f\n",patch->GetPatchE());
-//      cout << "trigger patch1 Et = " << patch->GetPatchET() << " Trigger Bits: " << patch->GetTriggerBits() << " PhiGeo1: " << patch->GetPhiGeo() << " PhiMax1: " << patch->GetPhiMax() << " EdgeCellX: " << patch->GetEdgeCellX()<<" Row start: " << patch->GetRowStart() << endl;
-//      TArrayI Tarr(1024);
-//      patch->GetCellIndices(geom,&Tarr);
-////      Int_t nCells = Tarr.GetSize();
-////      for(Int_t ii=0; i<nCells; i++){
-////        cout << " cell number" << ii << ": " << Tarr.GetAt(ii);
-////      }
-//          
-////      printf(" phiCM1: %f", patch->GetPhiCM());
-////      printf(" etaCM1: %f", patch->GetEtaCM());
-//      if(patch->IsRecalc()) printf("patch1 is recal");
-//      if(patch->IsLevel0()) printf("patch1 is level0");
-//    }
-//  }
-//  else printf("TClonesArray 1 not found!!!!");  
-
 
   
 //  TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(fVevent->FindListObject("EmcalTriggers")); 
@@ -565,31 +530,15 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       }
       if(pti->IsLevel0Recalc() && pti->GetADCAmp() > 106) isL0recalc = kTRUE;
       if(!pti->IsRecalcGamma()) continue;
-//      fTriggerbit->Fill(0,veclclus.E());
-//      if(pti->IsGammaHighRecalc()){
-//        fADCvsEonline->Fill(pti->GetADCAmp(),pti->GetPatchE());
-//        fTriggerbit->Fill(2,veclclus.E());
-//        printf("\ttrigger patch2 E=%1.1f\n",pti->GetPatchE());
-//        printf(" phiCM2: %f", pti->GetPhiCM());
-//        printf(" etaCM2: %f", pti->GetEtaCM());
       hPatchADC->Fill(pti->GetADCAmp());
       if(maxADC<pti->GetADCAmp()){
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
       }
       if(pti->GetADCAmp() > 130){  
-//        AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
-//        cout << "Gamma bit: " << triggerBitConfig->GetGammaHighBit() << " L0 bit: " << triggerBitConfig->GetLevel0Bit() << endl;
-//        AliEMCALTriggerBitConfig* triggerBitConfigold = new AliEMCALTriggerBitConfigOld();
-//        cout << "Gamma bit old: " << triggerBitConfigold->GetGammaHighBit() << " L0 bit old: " << triggerBitConfigold->GetLevel0Bit() << endl;
-//        cout << "ADC Ampl L1: " << pti->GetADCAmp() << endl;
         isL1 = kTRUE;
 //        break;
       }
-//        if(pti->IsRecalc()) printf("patch2 is recal\n");
-//        if(pti->IsLevel0()) printf("patch2 is level0");
-//      if(pti->IsLevel0()) fTriggerbit->Fill(1,veclclus.E());
-//    if(!pti->IsLevel0()) continue;
     }
   }                      
   else printf("TClonesArray 2 not found!!!!");
@@ -604,19 +553,12 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   AODtrigger->Reset();
   while(AODtrigger->Next()){ 
     Int_t TriggerBits;
-//    AODtrigger->GetTriggerBits(TriggerBits);
     AODtrigger->GetNL0Times(ntimes);
     AODtrigger->GetL0Times(L0times);
     Float_t Ampli;
     AODtrigger->GetAmplitude(Ampli);
     for(Int_t i = 0; i<ntimes; i++){
       if((L0times[i]==8 || L0times[i] == 9) && Ampli > 28710.){
-//        cout << "L0time: " << L0times[i] << endl;
-//        cout << "TriggerBit: " << TriggerBits << " Amplitude: " << Ampli << endl;
-//        AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
-//        cout << "Gamma bit: " << triggerBitConfig->GetGammaHighBit() << " L0 bit: " << triggerBitConfig->GetLevel0Bit() << endl;
-//        AliEMCALTriggerBitConfig* triggerBitConfigold = new AliEMCALTriggerBitConfigOld();
-//        cout << "Gamma bit old: " << triggerBitConfigold->GetGammaHighBit() << " L0 bit old: " << triggerBitConfigold->GetLevel0Bit() << endl;
         AODtrigger->Print();
         isL0 = kTRUE;
         hL0Amplitude->Fill(Ampli);
@@ -641,17 +583,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(vecCOI.E()>veclclus.E()) veclclus = vecCOI;
   }
   if(veclclus.E() > 10.) fEventsover10->Fill(0);
-//  if(isL0 || isL1) {
-
-
-//    AliVCluster *coi = (clusters->GetLeadingCluster());
-//    if(!coi){
-//      
-//      AliError(Form("No leading cluster"));
-//    }
-//    else{
-//      TLorentzVector vecCOI;
-//      coi->GetMomentum(vecCOI,fVertex);
     if(isL0){
       if(veclclus.E() > 10.) fEventsover10->Fill(2);
       fL0triggered->Fill(veclclus.E());
@@ -663,13 +594,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(isL1){
       if(veclclus.E() > 10.) fEventsover10->Fill(8);
       fL1triggered->Fill(veclclus.E());
-//      fL1triggered->Fill(vecCOI.Pt());
     }
-//  }
-//  for(Int_t i = 1; i<=15; i++){
-//    if(leadcoi->E() > i) fEvents->Fill(i);
-//  }
-    //AliError(Form("one event"));
   
   
     //Fill Vertex Z histogram
@@ -704,31 +629,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     TIter next(triggerClasses);
     TObjString* triggerClass = 0;
 
-//    Int_t TriggerBits = InputEvent()->GetTriggerBits();
-//    cout << "TriggerBits: " << TriggerBits << endl;
-//    AliCDBManager* man = AliCDBManager::Instance(); 
-//    man->SetDefaultStorage("raw://"); 
-//    man->SetRun(180044);
-//    AliCDBPath* cdbpath = "GRP/CTP/Config";
-//    AliCDBEntry* entry = man->Get(cdbpath);
-//    AliTriggerConfiguration* cfg = (AliTriggerConfiguration*)entry->GetObject(); 
-//    AliTriggerClass* triggerclass = cfg->GetClasses().FindObject("CEMC7-S-NOPF-ALLNOTRD");
-//    Double_t ds;
-//    triggerclass->GetDownscaleFactor(ds); 
-//    cout << "downscaling factor = " << ds << endl;
-
-//    TClonesArray* fTriggerPatchInfo;
-//    TString fCaloTriggerPatchInfoName = "EmcalTriggers";
-//  fTriggerPatchInfo= dynamic_cast<TClonesArray*>(fVevent->FindListObject(fCaloTriggerPatchInfoName ));
-//  Int_t nPatch = fTriggerPatchInfo->GetEntries();
-//  cout << "Patch Entries: " << nPatch << endl;
-//  AliEMCALTriggerPatchInfo *patch;
-////   if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
-//  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-//    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-//    Int_t triggerbits = patch->GetTriggerBits();
-//    cout << "TriggerBits: " << triggerbits << endl;
-//  }
 
     if(fQA) {
       fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
