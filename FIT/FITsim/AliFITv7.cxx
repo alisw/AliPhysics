@@ -162,6 +162,7 @@ void AliFITv7::CreateGeometry()
   Float_t pstartC[3] = {20., 20 ,5};
   Float_t pstartA[3] = {20, 20 ,5};
   Float_t pinstart[3] = {2.95,2.95,4.34};
+  Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
 
   AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   
