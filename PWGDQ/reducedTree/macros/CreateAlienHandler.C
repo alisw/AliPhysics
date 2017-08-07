@@ -15,7 +15,7 @@ void AddRunNumbers(AliAnalysisAlien* plugin, const Char_t* filename);
 AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList, TString gridRunMode="test", 
                                         TString dataDir = "", TString dataPattern = "", Int_t maxInputFilesPerJob = 20, 
                                         TString workingDir = "", TString outputDir = "", TString outputFiles = "dstTree.root",
-                                        TString rootVersion="v5-34-30-alice5-2", TString alirootVersion="v5-08-16-1", TString aliphysicsVersion="vAN-20160921-1")
+                                        TString rootVersion="", TString alirootVersion="", TString aliphysicsVersion="vAN-20160921-1")
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
@@ -38,9 +38,8 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList, TString grid
 
    // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   //   plugin->SetROOTVersion("v5-33-02b");
-   plugin->SetROOTVersion(rootVersion.Data());
-   plugin->SetAliROOTVersion(alirootVersion.Data());
+   //plugin->SetROOTVersion(rootVersion.Data());
+   //plugin->SetAliROOTVersion(alirootVersion.Data());
    plugin->SetAliPhysicsVersion(aliphysicsVersion.Data());
 // Declare input data to be processed.
 // Method 1: Create automatically XML collections using alien 'find' command.

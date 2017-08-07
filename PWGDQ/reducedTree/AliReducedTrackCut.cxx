@@ -27,7 +27,8 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
   fRequestTPCrefit(kFALSE),
-  fRequestTOFout(kFALSE)
+  fRequestTOFout(kFALSE),
+  fRequestTRDonlineMatch(kFALSE)
 {
   //
   // default constructor
@@ -45,7 +46,8 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
   fRequestTPCrefit(kFALSE),
-  fRequestTOFout(kFALSE)
+  fRequestTOFout(kFALSE),
+  fRequestTRDonlineMatch(kFALSE)
 {
   //
   // named constructor
@@ -97,6 +99,7 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
    if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0))) return kFALSE;
    if(fRejectTaggedGamma && ((AliReducedBaseTrack*)obj)->IsGammaLeg()) return kFALSE;
    if(fRejectTaggedPureGamma && ((AliReducedBaseTrack*)obj)->IsPureGammaLeg()) return kFALSE;
+   if(fRequestTRDonlineMatch && !((AliReducedBaseTrack*)obj)->IsTRDmatch()) return kFALSE;
    
    return AliReducedVarCut::IsSelected(values);   
 }

@@ -219,9 +219,21 @@ void AliReducedAnalysisTest::Process() {
           fHistosManager->FillHistClass("TPCclusterMap", fValues);
         }
       }
-      if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+      if(track->IsGammaLeg()) {
+         fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+         for(UShort_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
+         }
+      }
       if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
-      if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+      if(track->IsK0sLeg()) {
+         fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+         for(UShort_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
+         }
+      }
       if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
       if(track->IsLambdaLeg()) {
         if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
