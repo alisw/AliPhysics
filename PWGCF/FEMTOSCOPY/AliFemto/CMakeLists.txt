@@ -17,6 +17,7 @@ set(SRCS
   AliFemtoSimpleAnalysis.cxx
   AliFemtoEventAnalysis.cxx
   AliFemtoSpatialSeparationFunction.cxx
+  AliFemtoAngularSpatialSeparationFunction.cxx
   AliFemtoLikeSignAnalysis.cxx
   AliFemtoVertexAnalysis.cxx
   AliFemtoVertexMultAnalysis.cxx
