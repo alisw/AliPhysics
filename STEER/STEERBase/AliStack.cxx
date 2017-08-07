@@ -41,6 +41,9 @@
 
 ClassImp(AliStack)
 
+
+TParticle AliStack::fgDummyParticle(21,999,-1,-1,-1,-1,0,0,-999,999,0,0,0,0);
+
 //_______________________________________________________________________
 AliStack::AliStack():
   fParticles("TParticle", 1000),
@@ -672,16 +675,20 @@ void AliStack::SetHighWaterMark(Int_t)
 }
 
 //_____________________________________________________________________________
-TParticle* AliStack::Particle(Int_t i)
+TParticle* AliStack::Particle(Int_t i, Bool_t useInEmbedding)
 {
   //
   // Return particle with specified ID
-
+  if (GetMCEmbeddingFlag() && !useInEmbedding) {
+    AliError("Method should not be called by user in embedding mode, returning dummy particle");
+    return (TParticle*)&fgDummyParticle;
+  }
+  
   if(!fParticleMap.At(i)) {
     Int_t nentries = fParticles.GetEntriesFast();
     // algorithmic way of getting entry index
     // (primary particles are filled after secondaries)
-    Int_t entry = TreeKEntry(i);
+    Int_t entry = TreeKEntry(i,useInEmbedding);
     // check whether algorithmic way and 
     // and the fParticleFileMap[i] give the same;
     // give the fatal error if not
@@ -701,19 +708,23 @@ TParticle* AliStack::Particle(Int_t i)
 }
 
 //_____________________________________________________________________________
-TParticle* AliStack::ParticleFromTreeK(Int_t id) const
+TParticle* AliStack::ParticleFromTreeK(Int_t id, Bool_t useInEmbedding) const
 {
 // 
 // return pointer to TParticle with label id
 //
+  if (GetMCEmbeddingFlag() && !useInEmbedding) {
+    AliError("Method should not be called by user in embedding mode, returning dummy particle");
+    return (TParticle*)&fgDummyParticle;
+  }
   Int_t entry;
-  if ((entry = TreeKEntry(id)) < 0) return 0;
+  if ((entry = TreeKEntry(id,useInEmbedding)) < 0) return 0;
   if (fTreeK->GetEntry(entry)<=0) return 0;
   return fParticleBuffer;
 }
 
 //_____________________________________________________________________________
-Int_t AliStack::TreeKEntry(Int_t id) const 
+Int_t AliStack::TreeKEntry(Int_t id, Bool_t useInEmbedding) const 
 {
 //
 // Return entry number in the TreeK for particle with label id
@@ -728,6 +739,12 @@ Int_t AliStack::TreeKEntry(Int_t id) const
 // The primaries are written after they have been transported and occupy 
 // fNtrack - fNprimary .. fNtrack - 1
 
+  if (GetMCEmbeddingFlag() && !useInEmbedding) {
+    AliError("Method should not be called by user in embedding mode, returning -1");
+    return -1;
+  }
+
+  
   Int_t entry;
   if (id<fNprimary)
     entry = id+fNtrack-fNprimary;
@@ -754,7 +771,7 @@ Int_t AliStack::GetCurrentParentTrackNumber() const
 }
  
 //_____________________________________________________________________________
-Int_t AliStack::GetPrimary(Int_t id)
+Int_t AliStack::GetPrimary(Int_t id, Bool_t useInEmbedding)
 {
   //
   // Return number of primary that has generated track
@@ -765,7 +782,7 @@ Int_t AliStack::GetPrimary(Int_t id)
   parent=id;
   while (1) {
     current=parent;
-    parent=Particle(current)->GetFirstMother();
+    parent=Particle(current,useInEmbedding)->GetFirstMother();
     if(parent<0) return current;
   }
 }
@@ -1015,7 +1032,7 @@ Bool_t AliStack::IsStable(Int_t pdg) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliStack::IsPhysicalPrimary(Int_t index)
+Bool_t AliStack::IsPhysicalPrimary(Int_t index, Bool_t useInEmbedding)
 {
     //
     // Test if a particle is a physical primary according to the following definition:
@@ -1023,7 +1040,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
     // electromagnetic decay and excluding feed-down from weak decays of strange
     // particles.
     //
-    TParticle* p = Particle(index);
+    TParticle* p = Particle(index,useInEmbedding);
     Int_t ist = p->GetStatusCode();
     
     //
@@ -1044,7 +1061,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 //
 
 	Int_t imo =  p->GetFirstMother();
-	TParticle* pm  = Particle(imo);
+	TParticle* pm  = Particle(imo,useInEmbedding);
 	Int_t mpdg = TMath::Abs(pm->GetPdgCode());
 // Check for Sigma0 
 	if ((mpdg == 3212) &&  (imo <  GetNprimary())) return kTRUE;
@@ -1069,7 +1086,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	// Loop back to the generated mother
 	while (imo >=  GetNprimary()) {
 	    imo = pm->GetFirstMother();
-	    pm  =  Particle(imo);
+	    pm  =  Particle(imo,useInEmbedding);
 	}
 	mpdg = TMath::Abs(pm->GetPdgCode());
 	mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
@@ -1082,18 +1099,18 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
     } // produced by generator ?
 } 
 
-Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
+Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index, Bool_t useInEmbedding) {
 
   // If a particle is not a physical primary, check if it comes from weak decay
 
-  TParticle* particle = Particle(index);
+  if(IsPhysicalPrimary(index,useInEmbedding)) return kFALSE;
+  
+  TParticle* particle = Particle(index, useInEmbedding);
   Int_t uniqueID = particle->GetUniqueID();
-
-  if(IsPhysicalPrimary(index)) return kFALSE;
 
   Int_t indexMoth = particle->GetFirstMother();
   if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
-  TParticle* moth = Particle(indexMoth);
+  TParticle* moth = Particle(indexMoth,useInEmbedding);
   Float_t codemoth = (Float_t)TMath::Abs(moth->GetPdgCode());
   // mass of the flavour
   Int_t mfl = 0;
@@ -1112,13 +1129,13 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
   return kFALSE;
   
 }
-Bool_t AliStack::IsSecondaryFromMaterial(Int_t index) {
+Bool_t AliStack::IsSecondaryFromMaterial(Int_t index, Bool_t useInEmbedding) {
 
   // If a particle is not a physical primary, check if it comes from material
 
-  if(IsPhysicalPrimary(index)) return kFALSE;
-  if(IsSecondaryFromWeakDecay(index)) return kFALSE;
-  TParticle* particle = Particle(index);
+  if(IsPhysicalPrimary(index,useInEmbedding)) return kFALSE;
+  if(IsSecondaryFromWeakDecay(index,useInEmbedding)) return kFALSE;
+  TParticle* particle = Particle(index,useInEmbedding);
   Int_t indexMoth = particle->GetFirstMother();
   if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
   return kTRUE;

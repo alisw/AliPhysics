@@ -1,3 +1,4 @@
+
 #ifndef ALI_STACK_H
 #define ALI_STACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -75,14 +76,14 @@ class AliStack : public TVirtualMCStack
     Int_t       GetNtransported() const;
     virtual Int_t GetCurrentTrackNumber() const;
     virtual Int_t GetCurrentParentTrackNumber() const;
-    TParticle*  Particle(Int_t id);
-    Int_t       GetPrimary(Int_t id);
+    TParticle*  Particle(Int_t id, Bool_t useInEmbedding=kFALSE);
+    Int_t       GetPrimary(Int_t id, Bool_t useInEmbedding=kFALSE);
     TTree*      TreeK() const {return fTreeK;}
-    TParticle*  ParticleFromTreeK(Int_t id) const;
-    Int_t       TreeKEntry(Int_t id) const;
-    Bool_t      IsPhysicalPrimary(Int_t i);
-    Bool_t      IsSecondaryFromWeakDecay(Int_t index);
-    Bool_t      IsSecondaryFromMaterial (Int_t index);
+    TParticle*  ParticleFromTreeK(Int_t id, Bool_t useInEmbedding=kFALSE) const;
+    Int_t       TreeKEntry(Int_t id, Bool_t useInEmbedding=kFALSE) const;
+    Bool_t      IsPhysicalPrimary(Int_t i, Bool_t useInEmbedding=kFALSE);
+    Bool_t      IsSecondaryFromWeakDecay(Int_t index, Bool_t useInEmbedding=kFALSE);
+    Bool_t      IsSecondaryFromMaterial (Int_t index, Bool_t useInEmbedding=kFALSE);
     Int_t       TrackLabel(Int_t label) const {return fTrackLabelMap[label];}
     Int_t*      TrackLabelMap() {return fTrackLabelMap.GetArray();}
     const TObjArray*  Particles() const;
@@ -117,6 +118,9 @@ class AliStack : public TVirtualMCStack
     Int_t          fLoadPoint;         //! Next free position in the particle buffer
     TArrayI        fTrackLabelMap;     //! Map of track labels
     Bool_t         fMCEmbeddingFlag;   //! Flag that this is a top stack of embedded MC
+
+    static TParticle fgDummyParticle; // dummy particle returned in Stack::Particle call in embedding mode
+    
     ClassDef(AliStack,6) //Particles stack
 };
 

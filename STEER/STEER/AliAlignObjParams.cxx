@@ -19,6 +19,7 @@
 //   AliAlignObjParams derived from the base class AliAlignObj
 //-----------------------------------------------------------------
 
+#include "AliLog.h"
 #include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
 
@@ -34,7 +35,7 @@ AliAlignObjParams::AliAlignObjParams() : AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
+AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) : AliAlignObj(symname,volUId)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   // If the user explicitly sets the global variable to kFALSE then the
@@ -45,12 +46,12 @@ AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, Doubl
   if(global){
     SetPars(x, y, z, psi, theta, phi);
   }else{
-    if(!SetLocalPars(x,y,z,psi,theta,phi)) throw "Alignment object creation failed (TGeo instance needed)!\n";
+    if(!SetLocalPars(x,y,z,psi,theta,phi)) { AliFatal("Alignment object creation failed (TGeo instance needed)!"); }
   }
 }
 
 //_____________________________________________________________________________
-AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
+AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) : AliAlignObj(symname,volUId)
 {
   // standard constructor with TGeoMatrix
   // If the user explicitly sets the global variable to kFALSE then the
@@ -59,10 +60,10 @@ AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, TGeoM
   // constructor will fail (no object created)
   //
 
-  if (!SetMatrix(m)) throw "Alignment object creation failed (can't extract roll-pitch-yall angles from the matrix)!\n";
+  if (!SetMatrix(m)) { AliFatal("Alignment object creation failed (can't extract roll-pitch-yall angles from the matrix)!");}
 
   if (!global) {
-    if (!SetLocalPars(fTranslation[0],fTranslation[1],fTranslation[2],fRotation[0],fRotation[1],fRotation[2])) throw "Alignment object creation failed (TGeo instance needed)!\n";
+    if (!SetLocalPars(fTranslation[0],fTranslation[1],fTranslation[2],fRotation[0],fRotation[1],fRotation[2])) { AliFatal ("Alignment object creation failed (TGeo instance needed)!"); }
   }
 }
 

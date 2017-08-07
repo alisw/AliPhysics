@@ -72,7 +72,6 @@
 
 ClassImp(AliADv1);
 
-ClassImp(AliADv1)
 const Double_t AliADv1::kZwall        = 1895.9 ;  // Aluminium plate z position 
 const Double_t AliADv1::kZendAbs      = 1880.75;  // End of CC block absorber
 const Double_t AliADv1::kZbegVMAOI    = 1919.2 ;  // Begining of Warm Module
@@ -200,8 +199,8 @@ TGeoCompositeShape * AliADv1::MakeShapeADCpadH(const Double_t W, const Double_t 
 //_____________________________________________________________________________
 void AliADv1::CreateAD()
 {
-  Printf("AliADv1::CreateAD(): update=[Jun 5th, 2017] [ecalvovi@cern.ch]");
-  Printf("Please use together with ((AliPIPv3*)pipe)->SetBeamBackgroundSimulation() in Config.C");
+  Printf("AliADv1::CreateAD(): update=[Jul 29th, 2017] [ecalvovi@cern.ch]");
+  Printf("Please use together with ((AliPIPEv3*)pipe)->SetBeamBackgroundSimulation() in Config.C");
 
   TGeoVolumeAssembly * ad = new TGeoVolumeAssembly("AD");
   Int_t nvertices;
@@ -452,6 +451,26 @@ void AliADv1::CreateAD()
   new TGeoCompositeShape("shIonPumpVBi", "shIonPumpVB1i+shIonPumpVB2i:ctPumpVB2");
   TGeoShape * sh3 = new TGeoCompositeShape("shIonPumpVB",  "shIonPumpVBo-shIonPumpVBi");
   TGeoVolume * voIonPumpVB = new TGeoVolume("voIonPumpVB", sh3, kMedSteelSh);
+  // Ion pump below warm module.
+  // VPIB: (https://edms.cern.ch/ui/file/965894/0/lhcvc2__0003-v0.pdf)
+  Double_t  thk = 0.2;
+  TGeoMedium * kMed_AISI_304 = kMedSteelSh;
+  TGeoVolume * voVPIB_FlangeUp = new TGeoVolume("voVPIB_FlangeUp", new TGeoTube("shVPIB_FlangeUp", 3.50    , 7.50, 1.98/2.0), kMed_AISI_304); // the two flanges
+  TGeoVolume * voVPIB_FlangeDw = new TGeoVolume("voVPIB_FlangeDw", new TGeoTube("shVPIB_FlangeDw", 5.05-thk, 7.50, 1.98/2.0), kMed_AISI_304); // the two flanges
+  TGeoVolume * voVPIB_Tube     = new TGeoVolume("voVPIB_Tube"    , new TGeoTube("shVPIB_Tube"    , 5.05-thk, 5.05, 6.02/2.0), kMed_AISI_304);
+  new TGeoBBox("shVPIB_BoxMo" , 23.50/2.0     , 16.00/2.0     , 13.60/2.0    );
+  new TGeoBBox("shVPIB_BoxIn" , 23.50/2.0-thk , 16.00/2.0-thk , 13.60/2.0-thk);
+  TGeoVolume * voVPIB_Box = new TGeoVolume("voVPIB_Box", new TGeoCompositeShape("shVPIB_Box" , "shVPIB_BoxMo-shVPIB_BoxIn"), kMed_AISI_304);
+
+  TGeoVolumeAssembly * voVPIB = new TGeoVolumeAssembly("voVPIB");
+  voVPIB_FlangeUp -> SetLineColor(kBlue);
+  voVPIB_FlangeDw -> SetLineColor(kBlue);
+  voVPIB_Tube     -> SetLineColor(kGreen);
+  voVPIB_Box      -> SetLineColor(kBlue);
+  voVPIB -> AddNode( voVPIB_FlangeUp , 1, new TGeoCombiTrans (0.0,  1.98/2.0           , 0.0, Rx90));
+  voVPIB -> AddNode( voVPIB_FlangeDw , 1, new TGeoCombiTrans (0.0, -1.98/2.0           , 0.0, Rx90));
+  voVPIB -> AddNode( voVPIB_Tube     , 1, new TGeoCombiTrans (0.0, -1.98-6.02/2.0      , 0.0, Rx90));
+  voVPIB -> AddNode( voVPIB_Box      , 1, new TGeoTranslation(0.0, -1.98-6.02-16.00/2.0, 0.0));
   // Variables 
   Double_t alpha, beta, tga2, tga, sa, ca, ctgb, d, Ro, Ri, phi1, dphi, H, L, z;
   // Drawing: LHCVSR__0054
@@ -760,20 +779,17 @@ void AliADv1::CreateAD()
   new TGeoTube("shVAC",              0.,     7.9,    dz2VA/2.);
   new TGeoTube("shVACh",             0.,     5.3,    dz2VA   );
   // translation for shVAHbox (ernesto.calvo@pucp.edu.pe) 
-  ( new TGeoTranslation("trVAH1", 0.,  12.75, 0.) )->RegisterYourself();
-  ( new TGeoTranslation("trVAH2", 0., -12.75, 0.) )->RegisterYourself();
+  ( new TGeoTranslation("trVAH1", 0., 2.5+12.75, 0.))->RegisterYourself();
+  ( new TGeoTranslation("trVAH2", 0., 2.5-12.75, 0.))->RegisterYourself();
+  ( new TGeoTranslation("trVAC" , 0., 2.5      , 0.))->RegisterYourself();
 
   TGeoVolume * voValveVA = new TGeoVolume("voValveVA",
-      new TGeoCompositeShape("(shVAbox + shVAHbox:trVAH1 + shVAHbox:trVAH2 + shVAC)-shVACh"),
-      kMedSteelSh);
-  voValve->AddNode(voValveVA, 1, 0);
+    new TGeoCompositeShape("(shVAbox + shVAHbox:trVAH1 + shVAHbox:trVAH2 + shVAC:trVAC)-shVACh:trVAC"),
+    kMedSteelSh);
   // Define Vacuum Hole of Valve
   TGeoTube   * shVACvach   = new TGeoTube("shVACvach", 0., 5.3, dz2VA/2.);
   TGeoVolume * voValveVAvh = new TGeoVolume("voValveVAvacuum", shVACvach, kMedVacuum);
-  voValve->AddNode(voValveVAvh,1,0);
   // Also add valve Support (ernesto.calvo@pucp.edu.pe) 
-  voValve->AddNode(voVS, 1, new TGeoTranslation(0.,  12.75, -dz2VA/2.-dzVS/2.));
-  voValve->AddNode(voVS, 2, new TGeoTranslation(0., -12.75, -dz2VA/2.-dzVS/2.));
 
   // Define Volume VB (ernesto.calvo@pucp.edu.pe) 
   const Double_t dxVB = 23.5; 
@@ -782,7 +798,6 @@ void AliADv1::CreateAD()
   TGeoVolume * voValveVB = new TGeoVolume("voValveVB", 
       new TGeoBBox("shVBbox", dxVB/2., dyVB/2., dzVB/2.),
       kMedSteelSh);
-  voValve->AddNode(voValveVB, 1, new TGeoTranslation(  0., dyVA/2. +dyVB/2. , 0));
   // Define Volume VC (ernesto.calvo@pucp.edu.pe) 
   const Double_t R1VC  =  4.5 /2.;
   const Double_t R2VC  =  8.1 /2.;
@@ -795,8 +810,6 @@ void AliADv1::CreateAD()
   TGeoVolume * voValveVC = new TGeoVolume("voValveVC",
       new TGeoCompositeShape("shVC1  + shVC2:trVC21 + shVC2:trVC22"),
       kMedSteelSh);
-  voValve->AddNode(voValveVC, 1, new TGeoCombiTrans( 
-        0., dyVA/2. + dyVB + dy1VC/2. , 0, Rx90) );
   // Define volume VD (ernesto.calvo@pucp.edu.pe) 
   const Double_t dxVD = 15.9;
   const Double_t dyVD = 23.0;
@@ -804,9 +817,15 @@ void AliADv1::CreateAD()
   TGeoVolume * voValveVD = new TGeoVolume("voValveVD",
       new TGeoBBox("shVD", dxVD/2., dyVD/2., dzVD/2.),
       kMedSteelSh);
-  voValve->AddNode(voValveVD, 1, 
-      new TGeoTranslation( 1.25, dyVA/2. + dyVB + dy1VC + dyVD/2. , 0) );
 
+  // Assamble Valve:
+  voValve->AddNode(voValveVA   , 1);
+  voValve->AddNode(voValveVAvh , 1, new TGeoTranslation(0., 2.5      , 0.));
+  voValve->AddNode(voVS        , 1, new TGeoTranslation(0., 2.5+12.75, -dz2VA/2.-dzVS/2.));
+  voValve->AddNode(voVS        , 2, new TGeoTranslation(0., 2.5-12.75, -dz2VA/2.-dzVS/2.));
+  voValve->AddNode(voValveVB   , 1, new TGeoTranslation(0.  , dyVA/2. + dyVB/2.                , 0));
+  voValve->AddNode(voValveVC   , 1, new TGeoCombiTrans (0.  , dyVA/2. + dyVB + dy1VC/2.        , 0, Rx90));
+  voValve->AddNode(voValveVD   , 1, new TGeoTranslation(1.25, dyVA/2. + dyVB + dy1VC + dyVD/2. , 0));
   //
   // Define volume Front Bar (ernesto.calvo@pucp.edu.pe) 
   //
@@ -949,19 +968,20 @@ void AliADv1::CreateAD()
   voVBU26mm  ->SetLineColor(kViolet+6);
   voVBUcent  ->SetLineColor(kViolet+6);
   //         
-  voMoVMAOI->AddNode(voVSR      ,1, new TGeoTranslation(0., 0., 7.1 - 0.45));
-  voMoVMAOI->AddNode(voIonPumpVB,1, new TGeoTranslation(0., 0., 1 + 11.5/2.));
-  voMoVMAOI->AddNode(voVSRflange,1, new TGeoTranslation(0.,0.,0.));
-  voMoVMAOI->AddNode(voVSRcontD ,1, new TGeoTranslation(0.,0.,28.));
-  voMoVMAOI->AddNode(voVSRcontF ,1, new TGeoTranslation(0.,0.,28.));
+  voMoVMAOI->AddNode(voVSR       , 1 , new TGeoTranslation(0., 0.   , 7.1 - 0.45 )); 
+  voMoVMAOI->AddNode(voIonPumpVB , 1 , new TGeoTranslation(0., 0.   , 1 + 11.5/2.)); 
+  voMoVMAOI->AddNode(voVPIB      , 1 , new TGeoTranslation(0., -14.1, 7.8        )); 
+  voMoVMAOI->AddNode(voVSRflange , 1 , new TGeoTranslation(0., 0.   , 0.         )); 
+  voMoVMAOI->AddNode(voVSRcontD  , 1 , new TGeoTranslation(0., 0.   , 28.        )); 
+  voMoVMAOI->AddNode(voVSRcontF  , 1 , new TGeoTranslation(0., 0.   , 28.        )); 
   z = 1.0 + 11.5;
-  voMoVMAOI->AddNode( voVBU9mm   , 1, new TGeoTranslation(0.,0., z) );
-  voMoVMAOI->AddNode( voVBU26mm  , 1, new TGeoTranslation(0.,0., z + 11.9) );
-  voMoVMAOI->AddNode( voVBUcent  , 1, new TGeoTranslation(0.,0., z) );
-  voMoVMAOI->AddNode( voVBUrotFlg, 1, new TGeoCombiTrans (0.,0.,1.31, Ry180) );
-  voMoVMAOI->AddNode( voVBUrotFlg, 2, new TGeoTranslation(0.,0.,28. - 1.31) );
-  voMoVMAOI->AddNode( voVBUflg   , 1, new TGeoTranslation(0.,0.,0.) );
-  voMoVMAOI->AddNode( voVBUflg   , 2, new TGeoCombiTrans (0.,0.,28., Ry180) );
+  voMoVMAOI->AddNode( voVBU9mm   , 1, new TGeoTranslation(0., 0.,  z           ));
+  voMoVMAOI->AddNode( voVBU26mm  , 1, new TGeoTranslation(0., 0.,  z + 11.9    ));
+  voMoVMAOI->AddNode( voVBUcent  , 1, new TGeoTranslation(0., 0.,  z           ));
+  voMoVMAOI->AddNode( voVBUrotFlg, 1, new TGeoCombiTrans (0., 0.,  1.31, Ry180 ));
+  voMoVMAOI->AddNode( voVBUrotFlg, 2, new TGeoTranslation(0., 0., 28.00 - 1.31 ));
+  voMoVMAOI->AddNode( voVBUflg   , 1, new TGeoTranslation(0., 0.,  0.00        ));
+  voMoVMAOI->AddNode( voVBUflg   , 2, new TGeoCombiTrans (0., 0., 28.00, Ry180 ));
   // ==========================================================================
   //
   // AD Support structure by Pieter Ijzerman
@@ -1389,13 +1409,13 @@ void AliADv1::CreateAD()
   vADCstruct->AddNode(voWallBigPlate, 1, new TGeoTranslation(0., 0., z - 0.5 * dAlWallThick ));
   vADCstruct->AddNode(voWallSqrPlate, 1, new TGeoTranslation(0., 0., z + 0.5 * dAlWallThick ));
   z = kZendAbs + 1.95 + dzRodL/2.; 
-  vADCstruct->AddNode(voSaa3Rod,  1, new TGeoTranslation(  12.5, -12.75, z));
-  vADCstruct->AddNode(voSaa3Rod,  2, new TGeoTranslation(  12.5,  12.75, z));
-  vADCstruct->AddNode(voSaa3Rod,  3, new TGeoTranslation( -12.5, -12.75, z));
-  vADCstruct->AddNode(voSaa3Rod,  4, new TGeoTranslation( -12.5,  12.75, z));
-  vADCstruct->AddNode(voValve,    1, new TGeoTranslation( 0., 0., zPosValve));
-  vADCstruct->AddNode(voMoVMAOI,  1, new TGeoTranslation( 0., 0., kZbegVMAOI));
-  vADCstruct->AddNode(voFrontBar, 1, new TGeoTranslation( 0., 0., kZbegFrontBar + dzF/2.));
+  vADCstruct->AddNode(voSaa3Rod  , 1 , new TGeoTranslation(  12.5 , -12.75 , z                      )); 
+  vADCstruct->AddNode(voSaa3Rod  , 2 , new TGeoTranslation(  12.5 , 12.75  , z                      )); 
+  vADCstruct->AddNode(voSaa3Rod  , 3 , new TGeoTranslation( -12.5 , -12.75 , z                      )); 
+  vADCstruct->AddNode(voSaa3Rod  , 4 , new TGeoTranslation( -12.5 , 12.75  , z                      )); 
+  vADCstruct->AddNode(voValve    , 1 , new TGeoTranslation( 0.    , -2.5   , zPosValve              )); 
+  vADCstruct->AddNode(voMoVMAOI  , 1 , new TGeoTranslation( 0.    , 0.     , kZbegVMAOI             )); 
+  vADCstruct->AddNode(voFrontBar , 1 , new TGeoTranslation( 0.    , 0.     , kZbegFrontBar + dzF/2. )); 
   z = kZbegCoil;
   vADCstruct->AddNode(voCoil, 1, new TGeoCombiTrans(  3.6 + dz/2., 0., z, Ry90m));
   vADCstruct->AddNode(voCoil, 2, new TGeoCombiTrans(  3.6 + dz/2., 0., z, new TGeoRotation((*Ry90m)*(*Rx180))));
@@ -1424,7 +1444,7 @@ void AliADv1::CreateAD()
   TGeoVolume * voBLMsupport = gGeoManager->MakeBox("voBLMsupport", kMedAlu, 1.5/2.0, 30.0/2.0, 6.0/2.0);
   voBLMsupport -> SetLineColor(kGray);
   //
-  TGeoVolume         * voSupportZEM           = CreateSupportZEM(); 
+  // TGeoVolume         * voSupportZEM           = CreateSupportZEM(); 
   TGeoVolumeAssembly * voBLM                  = CreateBLM(); 
   TGeoVolumeAssembly * voVacuumChamberSupport = CreateVacuumChamberSupport();
   TGeoVolumeAssembly * voShield               = CreateADAShielding();
@@ -1452,7 +1472,7 @@ void AliADv1::CreateAD()
   vADAstruct->AddNode(voShield              , 1 , new TGeoTranslation(   0. ,   0.0 , 1665.5             ));
   vADAstruct->AddNode(voBLM                 , 1 , new TGeoTranslation(  12.5,   0.0 , 1459.80 )  );
   vADAstruct->AddNode(voBLMsupport          , 1 , new TGeoTranslation(  12.5, -21.5 , 1459.80 )  );
-  vADAstruct->AddNode(voSupportZEM          , 1 , new TGeoTranslation(   0. ,   0.0 ,  804.50 )  );
+  // vADAstruct->AddNode(voSupportZEM          , 1 , new TGeoTranslation(   0. ,   0.0 ,  804.50 )  );
   vADAstruct->AddNode(voWarmModuleSupport   , 1 , new TGeoTranslation(   0.0,-100.5 ,  882.80 ));
   vADAstruct->AddNode(voOldADA              , 1 , new TGeoTranslation(   0.0,   0.0 ,  561.00 ));
   vADAstruct->AddNode(voPumpAfterMagnet     , 1 , new TGeoCombiTrans (   0.0,-(8.0+3.6) , 1260.00 , Rx90));

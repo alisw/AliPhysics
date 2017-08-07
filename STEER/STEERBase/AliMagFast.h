@@ -16,7 +16,7 @@ class AliMagFast : public TObject
 {
 
  public:
-  enum {kNSolRRanges=5, kNSolZRanges=2, kNQuadrants=4};
+  enum {kNSolRRanges=5, kNSolZRanges=22, kNQuadrants=4};
   enum {kX,kY,kZ};
   
   struct SolParam { float mParBxyz[3][20];};

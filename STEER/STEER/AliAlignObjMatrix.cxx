@@ -19,6 +19,7 @@
 //   AliAlignObjMatrix derived from the base class AliAlignObj
 //-----------------------------------------------------------------
 
+#include "AliLog.h"
 #include "AliAlignObj.h"
 #include "AliAlignObjMatrix.h"
 
@@ -34,7 +35,7 @@ AliAlignObjMatrix::AliAlignObjMatrix() :
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) :
+AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global):
   AliAlignObj(symname,volUId),
   fMatrix()
 {
@@ -47,13 +48,13 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, Doubl
   if(global){
     SetPars(x, y, z, psi, theta, phi);
   }else{
-    if(!SetLocalPars(x,y,z,psi,theta,phi)) throw "Alignment object creation failed (TGeo instance needed)!\n";
+    if(!SetLocalPars(x,y,z,psi,theta,phi)) {AliFatal ("Alignment object creation failed (TGeo instance needed)!");}
   }
 }
 
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *) :
+AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global)  :
   AliAlignObj(symname,volUId),
   fMatrix()
 {
@@ -68,7 +69,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* symname, UShort_t volUId, TGeoM
     SetMatrix(m);
   }
   else {
-    if (!SetLocalMatrix(m)) throw "Alignment object creation failed (TGeo instance needed)!\n";
+    if (!SetLocalMatrix(m)) {AliFatal ("Alignment object creation failed (TGeo instance needed)!");}
   }
 }
 
