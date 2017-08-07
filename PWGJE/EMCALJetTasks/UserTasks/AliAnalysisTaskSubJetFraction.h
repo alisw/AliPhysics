@@ -79,6 +79,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
+  void SetSoftDropOn(Int_t SoftDropOn)                           {fSoftDropOn = SoftDropOn;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
@@ -129,6 +130,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fBeta_SD;
   Double_t                            fZCut;
   Int_t                               fReclusteringAlgorithm;
+  Int_t                               fSoftDropOn;
 
   Bool_t                              fNsubMeasure;
   
