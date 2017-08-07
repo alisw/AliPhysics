@@ -161,97 +161,77 @@ void AliFITv7::CreateGeometry()
   //  Float_t pstartA[3] = {2.55, 20 ,5};
   Float_t pstartC[3] = {20., 20 ,5};
   Float_t pstartA[3] = {20, 20 ,5};
-  Float_t pinstart[3] = {2.95,2.95,4.};
-  Float_t  pmcp[3] = {2.949, 2.949, 2.8}; //MCP
-  Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
-  Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
-  Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
-  Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
-  Double_t prfh[3]= {1.323,0.0002, 1.};//horizontal refracting layer bettwen radiators a 
-   Float_t zV0A = 325.;
-  Float_t zV0C = 89;
-  Float_t pV0Amother[3] = {4.25, 41.25, 0.15};
-  Float_t pV0A[3] = {4.3, 41.2, 0.1};
+  Float_t pinstart[3] = {2.95,2.95,4.34};
+  Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
 
   AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   
   //-------------------------------------------------------------------
-  //  T0 volume 
   //-------------------------------------------------------------------
-  //C side
-  /*
-  Float_t xc[28] = {-8.95, -3.05, 3.05, 8.95, -14.85,
-		    -8.95, -3.05, 3.05, 8.95,  14.85,
-		    -14.85, -8.95, 8.95, 14.85, -14.85, 
-		    -8.95, 8.95, 14.85, -14.85,-8.95,
-		    -3.05, 3.05, 8.95, 14.85, -8.95,
-		    -3.05, 3.05, 8.95 };
-  
-  Float_t yc[28] = {14.85, 14.85,14.85,14.85,8.95,
-		    8.95,8.95,8.95,8.95,8.95, 
-		    3.05, 3.05,3.05,3.05,-3.05,
-		    -3.05,-3.05,-3.05,-8.95,-8.95,
-		    -8.95,-8.95,-8.95,-8.95,-14.85, 
-		    -14.85,-14.85,-14.85};
-  */ 
-  //Alpha, Beta, and Gamma angles for the C side Rotations
+  //C side Concave Geometry
+
+  Double_t crad = 82.;		//define concave c-side radius here
+    
+  Double_t dP = pmcp[0]; 	//side length of mcp divided by 2
+
+  //uniform angle between detector faces==
+  Double_t btta = 2*TMath::ATan(dP/crad);
  
-  Double_t ac[28] = { 211.0555505 ,  191.37002946,  348.62997054,  328.9444495 ,
-         238.9444495 ,  225.        ,  198.46612083,  341.53387917,
-         315.        ,  301.0555505 ,  258.62997054,  251.53387917,
-         288.46612083,  281.37002946,  281.37002946,  288.46612083,
-         251.53387917,  258.62997054,  301.0555505 ,  315.        ,
-         341.53387917,  198.46612083,  225.        ,  238.9444495 ,
-         328.9444495 ,  348.62997054,  191.37002946,  211.0555505 };
-   Double_t bc[28] = {12.35160924,  10.77300323, -10.77300323, -12.35160924,
-         12.35160924,   8.978165  ,   6.68091565,  -6.68091565,
-         -8.978165  , -12.35160924,  10.77300323,   6.68091565,
-         -6.68091565, -10.77300323,  10.77300323,   6.68091565,
-         -6.68091565, -10.77300323,  12.35160924,   8.978165  ,
-          6.68091565,  -6.68091565,  -8.978165  , -12.35160924,
-         12.35160924,  10.77300323, -10.77300323, -12.35160924};
-   Double_t gc[28] = {-211.0555505 , -191.37002946, -348.62997054, -328.9444495 ,
-        -238.9444495 , -225.        , -198.46612083, -341.53387917,
-        -315.        , -301.0555505 , -258.62997054, -251.53387917,
-        -288.46612083, -281.37002946, -281.37002946, -288.46612083,
-        -251.53387917, -258.62997054, -301.0555505 , -315.        ,
-        -341.53387917, -198.46612083, -225.        , -238.9444495 ,
-        -328.9444495 , -348.62997054, -191.37002946, -211.0555505 };
-   Double_t xc2[28] = { -9.10385087,  -3.04012128,   3.04012128,   9.10385087,
-        -15.11813129,  -9.10385087,  -3.04012128,   3.04012128,
-          9.10385087,  15.11813129, -15.11813129,  -9.10385087,
-          9.10385087,  15.11813129, -15.11813129,  -9.10385087,
-          9.10385087,  15.11813129, -15.11813129,  -9.10385087,
-         -3.04012128,   3.04012128,   9.10385087,  15.11813129,
-         -9.10385087,  -3.04012128,   3.04012128,   9.10385087};
-   Double_t yc2[28] = { 15.11813129,  15.11813129,  15.11813129,  15.11813129,
-          9.10385087,   9.10385087,   9.10385087,   9.10385087,
-          9.10385087,   9.10385087,   3.04012128,   3.04012128,
-          3.04012128,   3.04012128,  -3.04012128,  -3.04012128,
-         -3.04012128,  -3.04012128,  -9.10385087,  -9.10385087,
-         -9.10385087,  -9.10385087,  -9.10385087,  -9.10385087,
-        -15.11813129, -15.11813129, -15.11813129, -15.11813129};
-   Double_t zc2[28] = {80.59039648,  81.04597318,  81.04597318,  80.59039648,
-         80.59039648,  81.4892005 ,  81.93978009,  81.93978009,
-         81.4892005 ,  80.59039648,  81.04597318,  81.93978009,
-         81.93978009,  81.04597318,  81.04597318,  81.93978009,
-         81.93978009,  81.04597318,  80.59039648,  81.4892005 ,
-         81.93978009,  81.93978009,  81.4892005 ,  80.59039648,
-         80.59039648,  81.04597318,  81.04597318,  80.59039648};
-  //A Side
-  /*
-  Float_t xa[24] = {-11.8, -5.9, 0, 5.9, 11.8, 
-		    -11.8, -5.9, 0, 5.9, 11.8,
-		    -11.8, -5.9, 5.9, 11.8, 
-		    -11.8, -5.9, 0, 5.9, 11.8,
-		    -11.8, -5.9, 0, 5.9, 11.8 };
+  //get noncompensated translation data
+  Double_t grdin[6] = {-3, -2, -1, 1, 2, 3};  
+  Double_t gridpoints[6];
+  for(Int_t i = 0; i < 6; i++){
+    gridpoints[i] = crad*TMath::Sin((1 - 1/(2*TMath::Abs(grdin[i])))*grdin[i]*btta);
+  } 
+
+  Double_t xi[28] = {gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],
+       		     gridpoints[0],gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],gridpoints[5],
+       		     gridpoints[0],gridpoints[1],gridpoints[4],gridpoints[5],
+       		     gridpoints[0],gridpoints[1],gridpoints[4],gridpoints[5],
+       		     gridpoints[0],gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],gridpoints[5],
+       		     gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4]};
+  Double_t yi[28] = {gridpoints[5],gridpoints[5],gridpoints[5],gridpoints[5],
+       		     gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],
+   	             gridpoints[3],gridpoints[3],gridpoints[3],gridpoints[3],
+	             gridpoints[2],gridpoints[2],gridpoints[2],gridpoints[2],
+	             gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],
+	             gridpoints[0],gridpoints[0],gridpoints[0],gridpoints[0]}; 
+  Double_t zi[28];
+  for(Int_t i = 0; i < 28; i++) {
+    zi[i] = TMath::Sqrt(TMath::Power(crad, 2) - TMath::Power(xi[i], 2) - TMath::Power(yi[i], 2));
+  }
+
+  //get rotation data
+  Double_t ac[28], bc[28], gc[28];
+  for(Int_t i = 0; i < 28; i++) {
+    ac[i] = TMath::ATan(yi[i]/xi[i]) - TMath::Pi()/2 + 2*TMath::Pi();
+    if(xi[i] < 0){
+      bc[i] = TMath::ACos(zi[i]/crad);
+    }
+    else {
+      bc[i] = -1 * TMath::ACos(zi[i]/crad);
+    }
+  }
+  Double_t xc2[28], yc2[28], zc2[28];
+    
+    
+  //compensation based on node position within individual detector geometries
+  //determine compensated radius
+  Double_t rcomp = crad + pstartC[2] / 2.0; //
+  for(Int_t i = 0; i < 28; i++) {
+    //Get compensated translation data
+    xc2[i] = rcomp*TMath::Cos(ac[i] + TMath::Pi()/2)*TMath::Sin(-1*bc[i]);
+    yc2[i] = rcomp*TMath::Sin(ac[i] + TMath::Pi()/2)*TMath::Sin(-1*bc[i]);
+    zc2[i] = rcomp*TMath::Cos(bc[i]);
+
+    //Convert angles to degrees
+    ac[i]*=180/TMath::Pi();
+    bc[i]*=180/TMath::Pi();
+    gc[i] = -1 * ac[i];
+  }
   
-  Float_t ya[24] = { 11.9, 11.9, 11.9, 11.9, 11.9,
-		     6.0,   6.0,  6.0, 6.0,  6.0,
-		    -0.1, -0.1, 0.1, 0.1,
-		    -6.0, -6.0, -6.0, -6.0, -6.0,
-		     -11.9, -11.9, -11.9,  -11.9, -11.9 };  
-  */  
+  //A Side
+ 
  Float_t xa[24] = {-11.8, -5.9, 0, 5.9, 11.8, 
 		    -11.8, -5.9, 0, 5.9, 11.8,
 		    -12.8, -6.9, 6.9, 12.8, 
@@ -264,13 +244,10 @@ void AliFITv7::CreateGeometry()
 		    -6.0, -6.0, -7.0, -6.0, -6.0,
 		     -11.9, -11.9, -12.9,  -11.9, -11.9 }; 
 
-  
- 
-  
-   
+    
   TGeoVolumeAssembly * stlinA = new TGeoVolumeAssembly("0STL");  // A side mother 
   TGeoVolumeAssembly * stlinC = new TGeoVolumeAssembly("0STR");  // C side mother 
- //T0 interior
+ //FIT interior
   TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kAir],pinstart,3);
   TGeoVolume *ins = gGeoManager->GetVolume("0INS");
  // 
@@ -316,12 +293,28 @@ void AliFITv7::CreateGeometry()
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(stlinA,1,new TGeoTranslation(0,0, zdetA ) );
   // alice->AddNode(stlinC,1,new TGeoTranslation(0,0, -zdetC ) );
-    TGeoRotation * rotC = new TGeoRotation( "rotC",90., 0., 90., 90., 180., 0.);
-     alice->AddNode(stlinC,1, new TGeoCombiTrans(0., 0., -zdetC , rotC) );
+  TGeoRotation * rotC = new TGeoRotation( "rotC",90., 0., 90., 90., 180., 0.);
+  alice->AddNode(stlinC,1, new TGeoCombiTrans(0., 0., -zdetC , rotC) );
   
-  x=0;
-  y=0;
-   
+  SetOneMCP(ins);
+  
+  SetVZEROGeo(alice);
+  
+}
+//_________________________________________
+void AliFITv7::SetOneMCP(TGeoVolume *ins)
+{
+  cout<<"AliFITv7::SetOneMCP "<<ins<<endl;
+  Double_t x,y,z;
+  Int_t *idtmed = fIdtmed->GetArray();
+  Float_t pinstart[3] = {2.95,2.95,4.34};
+  Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
+  Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
+  Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
+  Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
+  Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
+  Double_t prfh[3]= {1.323,0.0002, 1.};//horizontal refracting layer bettwen radiators a 
+  Double_t pal[3]= {2.648,2.648, 0.25};  // 5mm Al top on th eeach radiator
   // Entry window (glass)
   TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass radiator
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
@@ -335,14 +328,17 @@ void AliFITv7::CreateGeometry()
   TGeoVolume *rfv = gGeoManager->GetVolume("0RFV");
   TVirtualMC::GetMC()->Gsvolu("0RFH","BOX",idtmed[kOpAir],prfh,3); //optical Air horizontal
   TGeoVolume *rfh = gGeoManager->GetVolume("0RFH");
+  
+   TVirtualMC::GetMC()->Gsvolu("0PAL","BOX",idtmed[kAl],pal,3); // 5mmAl top on the radiator
+  TGeoVolume *altop = gGeoManager->GetVolume("0PAL");
+
 
   //wrapped radiator +  reflectiong layers 
   Int_t ntops=0, nrfvs=0, nrfhs=0;
   Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
+  x=y=z=0;
   topref->AddNode(top, 1, new TGeoTranslation(0,0,0) );
-  // xinv = -ptopref[0] + prfv[0];
-  
-xinv = -ptop[0] - prfv[0];
+  xinv = -ptop[0] - prfv[0];
   topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
   printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
   xinv = ptop[0] + prfv[0];
@@ -353,32 +349,37 @@ xinv = -ptop[0] - prfv[0];
   printf(" GEOGEO  refh  ,  0, %f, 0 \n",yinv);
   yinv = ptop[1] + prfh[1];
   topref->AddNode(rfh, 2, new TGeoTranslation(0,yinv,0) );
-
-  //container for radiator, cathod, mcp	 
+  
+  //container for radiator, cathod 
   for (Int_t ix=0; ix<2; ix++) {
     xin = - pinstart[0] + 0.3 + (ix+0.5)*2*ptopref[0] ;
     for (Int_t iy=0; iy<2 ; iy++) {
-      z = - pinstart[2]+ptopref[2];
+      z = - pinstart[2] + 2*pal[2] + ptopref[2];
       yin = - pinstart[1] + 0.3 + (iy+0.5)*2*ptopref[1];
       ntops++;
       ins->AddNode(topref, ntops, new TGeoTranslation(xin,yin,z) );
       printf(" 0TOP  full %i x %f y %f z %f \n", ntops, xin, yin, z);
-      z = -pinstart[2] + 2 * ptopref[2] + preg[2];
+      z = -pinstart[2]   + 2*pal[2] + 2 * ptopref[2] + preg[2];
       ins->AddNode(cat, ntops, new TGeoTranslation(xin, yin, z) );
       // cat->Print();
       printf(" GEOGEO  CATHOD x=%f , y= %f z= %f num  %i\n", xin, yin, z, ntops);
-      }
-   }
-     
-// MCP
-   z=-pinstart[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
-   //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
+    }
+  }
+  //Al top
+  z=-pinstart[2] + pal[2];
+  ins->AddNode(altop, 1 , new TGeoTranslation(0,0,z) );
+  
+  // MCP
+  z=-pinstart[2] + 2*pal[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
+  //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
-
-
- 
+}
+  
+//_________________________________________
+void AliFITv7::SetVZEROGeo(TGeoVolume *alice)
+{ 
   //V0+
-
+  cout<<" AliFITv7::SetVZEROGeo "<<alice<<endl;
   const int kV0PlusColorSci   = 5;
   TGeoMedium *medV0PlusSci = gGeoManager->GetMedium("FIT_V0PlusSci");
   Double_t Pi = TMath::Pi();
@@ -825,40 +826,43 @@ symName.Data(),volPath.Data()));
 void AliFITv7::CreateMaterials()
 {
 
-   Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
-   Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
-   //   Float_t a,z,d,radl,absl,buf[1];
-   // Int_t nbuf;
-// AIR
-                                                                                
-   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-   Float_t zAir[4]={6.,7.,8.,18.};
-   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-   Float_t dAir = 1.20479E-3;
-   Float_t dAir1 = 1.20479E-11;
- // Radiator  glass SiO2
-   Float_t aglass[2]={28.0855,15.9994};
-   Float_t zglass[2]={14.,8.};
-   Float_t wglass[2]={1.,2.};
-   Float_t dglass=2.65;
- // MCP glass SiO2
-   Float_t dglass_mcp=1.3;
-//*** Definition Of avaible T0 materials ***
-   AliMixture(1, "Vacuum$", aAir, zAir, dAir1,4,wAir);
-   AliMixture(2, "Air$", aAir, zAir, dAir,4,wAir);
-   AliMixture( 4, "MCP glass   $",aglass,zglass,dglass_mcp,-2,wglass);
-   AliMixture( 24, "Radiator Optical glass$",aglass,zglass,dglass,-2,wglass);
-   
-   AliMedium(1, "Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
-   AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium(6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+  Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
+  //   Float_t a,z,d,radl,absl,buf[1];
+  // Int_t nbuf;
+  // AIR
   
-   AliMedium(7, "OpAir$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
-   AliMedium(16, "OpticalGlass$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-    AliMedium(19, "OpticalGlassCathode$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium(22, "SensAir$", 2, 1, isxfld, sxmgmx, 10., .1, 1., .003, .003);
-
-   //V0+
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  Float_t dAir1 = 1.20479E-11;
+  // Radiator  glass SiO2
+  Float_t aglass[2]={28.0855,15.9994};
+  Float_t zglass[2]={14.,8.};
+  Float_t wglass[2]={1.,2.};
+  Float_t dglass=2.65;
+  // MCP glass SiO2
+  Float_t dglass_mcp=1.3;
+  //*** Definition Of avaible T0 materials ***
+  AliMixture(1, "Vacuum$", aAir, zAir, dAir1,4,wAir);
+  AliMixture(2, "Air$", aAir, zAir, dAir,4,wAir);
+  AliMixture( 4, "MCP glass   $",aglass,zglass,dglass_mcp,-2,wglass);
+  AliMixture( 24, "Radiator Optical glass$",aglass,zglass,dglass,-2,wglass);
+  AliMaterial(11, "Aliminium$", 26.98, 13.0, 2.7, 8.9,999); 
+ 
+  AliMedium(1, "Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+  AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+  
+  AliMedium(7, "OpAir$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+  
+  AliMedium(15, "Aluminium$", 11, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
+  AliMedium(16, "OpticalGlass$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(19, "OpticalGlassCathode$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(22, "SensAir$", 2, 1, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+   
+  //V0+
 
   // Parameters for simulation scope
   Int_t     FieldType       = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type 
@@ -1136,26 +1140,7 @@ Bool_t AliFITv7::RegisterPhotoE(Double_t energy)
 }
 
 //----------------------------------------------------------------------------
-/*
-void AliFITv7::SetPMTeff()
-{
-  Float_t lambda[50];
-  Float_t eff[50 ] = {0,        0,       0.23619,  0.202909, 0.177913, 
-		    0.175667, 0.17856, 0.190769, 0.206667, 0.230286,
-		    0.252276, 0.256267,0.26,     0.27125,  0.281818,
-		    0.288118, 0.294057,0.296222, 0.301622, 0.290421, 
-		    0.276615, 0.2666,  0.248,    0.23619,  0.227814, 
-		    0.219818, 0.206667,0.194087, 0.184681, 0.167917, 
-		    0.154367, 0.1364,  0.109412, 0.0834615,0.0725283, 
-		    0.0642963,0.05861, 0.0465,   0.0413333,0.032069, 
-		    0.0252203,0.02066, 0.016262, 0.012,    0.00590476,
-		    0.003875, 0.00190, 0,        0,        0          } ;
-  for (Int_t i=0; i<50; i++) lambda[i]=200+10*i; 
 
-  fPMTeff = new TGraph(50,lambda,eff);
- 
-}
-*/
 //-------------------------------------------------------------------------
 Int_t AliFITv7::GetCellId(Int_t *vol)
 {
@@ -1301,7 +1286,6 @@ Int_t AliFITv7::ReadOptProperties(const std::string filePath, Float_t **e, Doubl
     ssLine >> (*abs)[iLine];
     ssLine >> (*n)[iLine];
     ssLine >> (*qe)[iLine];
-    cout<<iLine<<" e "<< (*de)[iLine]<<" abs "<<(*abs)[iLine]<<" n "<<(*n)[iLine]<<" qe "<<(*qe)[iLine]<<endl;
     if(!(ssLine.good() || ssLine.eof())){ // check if there were problems with numbers conversion
             AliFatal(Form("Error while reading line %i: %s", iLine, ssLine.str().c_str()));
       return -6;

@@ -9,12 +9,13 @@
  
 #include "AliFIT.h"
 #include "TGraph.h"
+#include "TGeoVolume.h"
 #include <sstream>
 class AliFITv7 : public AliFIT {
   
 public:
 
-  enum constants {kAir=1, kVac=3, kGlass=6, kOpAir=7, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
+  enum constants {kAir=1, kVac=3, kGlass=6, kOpAir=7, kAl=15, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
 
  
   AliFITv7();
@@ -32,6 +33,8 @@ public:
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   Bool_t RegisterPhotoE(Double_t energy);
+  void SetVZEROGeo(TGeoVolume *alice);
+  void SetOneMCP(TGeoVolume *stl);
   virtual void   StepManager();
   // void SetPMTeff();
 
