@@ -16,6 +16,7 @@
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoV0TrackCut.h"
 #include "AliFemtoSpatialSeparationFunction.h"
+#include "AliFemtoAngularSpatialSeparationFunction.h"
 #include "AliESDtrack.h"
 #endif
 
@@ -50,7 +51,7 @@ void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParti
 bool AreIdentical(ESys system);
 
 // main function
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool doPtBinning = false)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool doPtBinning = false, bool doAngular = false)
 {
   // create analysis managers
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -69,8 +70,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
   
   // prepare objets for analysis and cuts
   AliFemtoEventAnalysis                  *femtoAnalysis[nSys*nMult*nEventPlane*nPt];
-  AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult*nEventPlane*nPt];
   AliFemtoBasicEventCut                       *eventCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult*nEventPlane*nPt];
+  AliFemtoAngularSpatialSeparationFunction *angularSeparationFunction[nSys*nMult*nEventPlane*nPt];
   
   AliFemtoV0TrackCut    *firstV0TrackCut[nSys*nMult*nEventPlane*nPt];
   AliFemtoV0TrackCut   *secondV0TrackCut[nSys*nMult*nEventPlane*nPt];
@@ -106,7 +108,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
           femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
           
           // create a separation function
-          separationFunction[anIter] = new AliFemtoSpatialSeparationFunction(Form("%s_M%i_EP%i_pT%i",sysNames[iSys],iMult,iEventPlane,iPt));
+          
+          separationFunction[anIter]        = new AliFemtoSpatialSeparationFunction(Form("%s_M%i_EP%i_pT%i",sysNames[iSys],iMult,iEventPlane,iPt));
+          angularSeparationFunction[anIter] = new AliFemtoAngularSpatialSeparationFunction(Form("%s_M%i_EP%i_pT%i",sysNames[iSys],iMult,iEventPlane,iPt));
           
           // setup event cuts
           eventCut[anIter] = GetEventCut();
@@ -147,7 +151,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
             femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut[anIter]);
           }
           // add correlation function to analysis and analysis to the manager
-          femtoAnalysis[anIter]->AddCorrFctn(separationFunction[anIter]);
+          if(doAngular) femtoAnalysis[anIter]->AddCorrFctn(angularSeparationFunction[anIter]);
+          else        femtoAnalysis[anIter]->AddCorrFctn(separationFunction[anIter]);
           Manager->AddAnalysis(femtoAnalysis[anIter]);
           anIter++;
         }
