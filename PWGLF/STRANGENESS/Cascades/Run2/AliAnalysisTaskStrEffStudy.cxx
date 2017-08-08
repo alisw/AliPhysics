@@ -1817,8 +1817,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             
             fTreeCascVarImprovedCascCosPointingAngle = cascadeimproved.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
             
-            
-            //V0 properties to get started
+            //cascade properties to get started
             Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
             for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
             

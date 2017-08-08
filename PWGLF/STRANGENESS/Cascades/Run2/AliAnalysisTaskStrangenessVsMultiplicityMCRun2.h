@@ -425,6 +425,8 @@ private:
     Float_t fTreeCascVarDCAPosToPrimVtx;  //!
     Float_t fTreeCascVarDCANegToPrimVtx;  //!
     Float_t fTreeCascVarCascCosPointingAngle;         //!
+    Float_t fTreeCascVarCascDCAtoPVxy;         //!
+    Float_t fTreeCascVarCascDCAtoPVz;         //!
     Float_t fTreeCascVarCascRadius;                   //!
     Float_t fTreeCascVarV0Mass;                       //!
     Float_t fTreeCascVarV0CosPointingAngle;           //!

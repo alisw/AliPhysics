@@ -256,6 +256,8 @@ fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarDCAPosToPrimVtx(0),
 fTreeCascVarDCANegToPrimVtx(0),
 fTreeCascVarCascCosPointingAngle(0),
+fTreeCascVarCascDCAtoPVxy(0),
+fTreeCascVarCascDCAtoPVz(0),
 fTreeCascVarCascRadius(0),
 fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
@@ -562,6 +564,8 @@ fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarDCAPosToPrimVtx(0),
 fTreeCascVarDCANegToPrimVtx(0),
 fTreeCascVarCascCosPointingAngle(0),
+fTreeCascVarCascDCAtoPVxy(0),
+fTreeCascVarCascDCAtoPVz(0),
 fTreeCascVarCascRadius(0),
 fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
@@ -955,6 +959,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDCAPosToPrimVtx",&fTreeCascVarDCAPosToPrimVtx,"fTreeCascVarDCAPosToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarDCANegToPrimVtx",&fTreeCascVarDCANegToPrimVtx,"fTreeCascVarDCANegToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarCascCosPointingAngle",&fTreeCascVarCascCosPointingAngle,"fTreeCascVarCascCosPointingAngle/F");
+        fTreeCascade->Branch("fTreeCascVarCascDCAtoPVxy",&fTreeCascVarCascDCAtoPVxy,"fTreeCascVarCascDCAtoPVxy/F");
+        fTreeCascade->Branch("fTreeCascVarCascDCAtoPVz",&fTreeCascVarCascDCAtoPVz,"fTreeCascVarCascDCAtoPVz/F");
+
         fTreeCascade->Branch("fTreeCascVarCascRadius",&fTreeCascVarCascRadius,"fTreeCascVarCascRadius/F");
         fTreeCascade->Branch("fTreeCascVarV0Mass",&fTreeCascVarV0Mass,"fTreeCascVarV0Mass/F");
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngle",&fTreeCascVarV0CosPointingAngle,"fTreeCascVarV0CosPointingAngle/F");
@@ -2627,7 +2634,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //lAlphaXi  = xi->AlphaXi();
         //lPtArmXi  = xi->PtArmXi();
 
+        //----------------------------------------
+        // Calculate Cascade DCA to PV, please
+        //----------------------------------------
         
+        Int_t lChargeCascade = fTreeCascVarCharge; 
+        
+        //cascade properties to get started
+        Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
+        for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
+        
+        xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
+        xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+        
+        AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+        
+        Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
+                                                             lBestPrimaryVtxPos[1],
+                                                             lMagneticField) );
+        Float_t dzcascade[2];
+        hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+        Double_t lCascDCAtoPVz = dzcascade[1];
+        
+        //assign TTree values
+        fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
+        fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
 
         //------------------------------------------------
         // Associate Cascade Candidates to Monte Carlo!
@@ -2686,6 +2717,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent()
             << " / MC event Number in Run : " << lMCevent->Header()->GetEventNrInRun() << endl;
 
+        
+        
         //----------------------------------------
         // Bump studies: perform propagation
         //----------------------------------------
