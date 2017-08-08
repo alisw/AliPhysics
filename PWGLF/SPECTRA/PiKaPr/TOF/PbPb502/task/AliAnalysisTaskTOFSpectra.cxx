@@ -411,13 +411,13 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     ppLimits.AddAt(15, j++);
     ppLimits.AddAt(23, j++);
     ppLimits.AddAt(33, j);
-    fMultiplicityBin.Adopt(j, ppLimits.GetArray());
+    fMultiplicityBin.Set(j, ppLimits.GetArray());
   }
   //Check on the defined binning
   for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
-  { 
-    AliDebugF(2, "Mutltiplicity Bin %i is [%s, %s]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1)); 
-    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly", i);
+  {
+    AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly: %.3f > %.3f", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
   }
   //
   //Shift to the TPC signal
@@ -513,12 +513,12 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
 
-      hDenTrkTrigger[charge][species]         = 0x0;
       hDenTrkMCVertexZ[charge][species]       = 0x0;
       hDenTrkVertex[charge][species]          = 0x0;
       hDenTrkVertexMCVertexZ[charge][species] = 0x0;
 
       for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+        hDenTrkTrigger[charge][species][mult]                = 0x0;
         hDenPrimMCYCut[charge][species][mult]                = 0x0;
         hDenPrimMCEtaCut[charge][species][mult]              = 0x0;
         hDenPrimMCEtaYCut[charge][species][mult]             = 0x0;
@@ -733,9 +733,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
 
-    hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMult->GetXaxis()->GetBinCenter(hEvtMult->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
+    hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
     fListHist->AddLast(hEvtMult);
 
     hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
@@ -1266,10 +1264,6 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
         for(Int_t species = 0; species < 3; species++){//Species loop
 
-          hDenTrkTrigger[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkTrigger[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkTrigger[charge][species]);
-
           hDenTrkMCVertexZ[charge][species] = new TH1F(Form("hDenTrkMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
           hDenTrkMCVertexZ[charge][species]->Sumw2();
           fListHist->AddLast(hDenTrkMCVertexZ[charge][species]);
@@ -1283,6 +1277,11 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
 
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+
+            hDenTrkTrigger[charge][species][mult] = new TH1F(Form("hDenTrkTrigger_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
+            hDenTrkTrigger[charge][species][mult]->Sumw2();
+            fListHist->AddLast(hDenTrkTrigger[charge][species][mult]);
+
             hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
             hDenPrimMCYCut[charge][species][mult]->Sumw2();
             fListHist->AddLast(hDenPrimMCYCut[charge][species][mult]);
@@ -2386,7 +2385,7 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity(){
       fEvtMult = static_cast < AliGenHepMCEventHeader*> (fMCEvt->GenEventHeader())->impact_parameter();
       return;
     }
-    
+
     fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
     if(!fMultSel) {
       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -2459,7 +2458,7 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
   }
   //Set The PID response on the current MC event
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
-  
+
   //Get the stack
   fMCStack = fMCEvt->Stack();
   // Check on the Stack
@@ -2485,7 +2484,7 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
   //Check if the MC vertex is generated in the acceptance
   if (TMath::Abs(MCvtx->GetZ()) < fVtxZCut)
     fEvtMCSampSelected = kTRUE; //Position on Z of the vertex
-  
+
   //Fill histograms with the MC vertex information
   hEvtVtxZMCGen->Fill(MCvtx->GetZ());
   if (fEvtPhysSelected)
@@ -2535,7 +2534,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     else fSignMC = kTRUE;             //Particle is negative
 
     if(passy){
-      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
+      hDenTrkTrigger[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
       if(fEvtMCSampSelected) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
