@@ -113,7 +113,7 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   fOutput->SetOwner(kTRUE);
 
   // Define the different types of binnings
-  TLinearBinning massBinningK0(500, 0.0, 0.6),massBinningPi0(500, 0., 0.5), ptBinning(300, 0.3, 30.), openingAngleBinning(100, 0., 1.), candidateBinning( 101, -0.5, 100.5), alphaBinning(200, -1., 1.);
+  TLinearBinning massBinningK0(700, 0.0, 0.7),massBinningPi0(500, 0., 0.5), ptBinning(300, 0.3, 30.), openingAngleBinning(100, 0., 1.), candidateBinning( 101, -0.5, 100.5), alphaBinning(200, -1., 1.);
 
 
 
@@ -614,7 +614,7 @@ void AliAnalysisTaskK0toPi0Pi0::MakePi0QA(const std::vector<AliAODConversionMoth
   for(const auto &pi0 : pi0s) {
   	  fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "All", pi0.M(), pi0.Pt());
   	  // if in the pi0 mass region
-  	  if((0.08 <=pi0.M()) && (pi0.M()<= 0.155)){
+  	  if((1e-4 <=pi0.M()) && (pi0.M()<= 0.2)){
   	    fHistos->FillTH2("hMassvsPtPi0" + selectionStatus + reccaseString + "Sel", pi0.M(),pi0.Pt());
   	    fHistos->FillTH2("hAlphavsPtPi0" + selectionStatus + reccaseString, pi0.GetAlpha(), pi0.Pt());
   	    fHistos->FillTH2("hOpeningAnglevsPtPi0" + selectionStatus + reccaseString, pi0.GetOpeningAngle(), pi0.Pt());
