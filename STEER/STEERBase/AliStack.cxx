@@ -42,7 +42,8 @@
 ClassImp(AliStack)
 
 
-TParticle AliStack::fgDummyParticle(21,999,-1,-1,-1,-1,0,0,-999,999,0,0,0,0);
+TParticle AliStack::fgDummyParticle(21,999,-1,-1,-1,-1,1,1,999,999,0,0,0,0);
+const Char_t* AliStack::fgkEmbedPathsKey = "embeddingBKGPaths";
 
 //_______________________________________________________________________
 AliStack::AliStack():
