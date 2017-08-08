@@ -98,7 +98,8 @@ public TObject
     kINELgtZERO = 8,
     kNoInconsistentVtx = 16,
     kNoV0Asym = 32,
-    kAll = 63
+    kVertexSelected2015pp=64,
+    kAll = 127
   };
   static const Char_t *fgkCentralityEstimatorName[kNCentralityEstimators]; // centrality estimator name
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
