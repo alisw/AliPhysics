@@ -828,9 +828,20 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 //Step 3a: Get positions
                 Double_t r[3]; pbt->GetXYZ(r);
                 Double_t x1=r[0], y1=r[1], z1=r[2];
-                Double_t x2,y2,z2;          // position of the V0
-                pv0->GetXYZ(x2,y2,z2);
                 
+                //V0 characteristics
+                Double_t x2,y2,z2;
+                pv0->GetXYZ(x2,y2,z2);
+                Double_t px2,py2,pz2;       // momentum of V0
+                pv0->GetPxPyPz(px2,py2,pz2);
+                
+                //Step 3b: get actual position of the V0 based on linear propagation
+                Double_t a2=((x1-x2)*px2+(y1-y2)*py2+(z1-z2)*pz2)/(px2*px2+py2*py2+pz2*pz2);
+                
+                Double_t lV0x=x2+a2*px2;
+                Double_t lV0y=y2+a2*py2;
+                Double_t lV0z=z2+a2*pz2;
+
                 //get first estimate on position (for improvement)
                 Double_t lPosXi[3];
                 cascade.GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
@@ -864,9 +875,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
                 
                 //Estimating improved position based on uncertainties
-                Double_t lImprovedX = x1 + (x2-x1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedY = y1 + (y2-y1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedZ = z1 + (z2-z1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedX = x1 + (lV0x-x1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedY = y1 + (lV0y-y1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedZ = z1 + (lV0z-z1)*lFractionalUncertaintyComingFromBachelor;
                 
                 cascade.SetXYZcascade(lImprovedX, lImprovedY, lImprovedZ);
             }
@@ -951,7 +962,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 
                 //Step 2a2: Neg/Pos track uncertainties: propagation
                 Double_t xn, xp, dca;
-                
                 AliExternalTrackParam nt(*nTrack), pt(*pTrack);
                 
                 /* COMMENTED OUT: EXCESSIVE CPU USAGE
@@ -987,8 +997,19 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 //Step 3a: Get positions
                 Double_t r[3]; pbt->GetXYZ(r);
                 Double_t x1=r[0], y1=r[1], z1=r[2];
-                Double_t x2,y2,z2;          // position of the V0
+                
+                //V0 characteristics
+                Double_t x2,y2,z2;
                 pv0->GetXYZ(x2,y2,z2);
+                Double_t px2,py2,pz2;       // momentum of V0
+                pv0->GetPxPyPz(px2,py2,pz2);
+                
+                //Step 3b: get actual position of the V0 based on linear propagation
+                Double_t a2=((x1-x2)*px2+(y1-y2)*py2+(z1-z2)*pz2)/(px2*px2+py2*py2+pz2*pz2);
+                
+                Double_t lV0x=x2+a2*px2;
+                Double_t lV0y=y2+a2*py2;
+                Double_t lV0z=z2+a2*pz2;
                 
                 //get first estimate on position (for improvement)
                 Double_t lPosXi[3];
@@ -1023,9 +1044,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                 Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
                 
                 //Estimating improved position based on uncertainties
-                Double_t lImprovedX = x1 + (x2-x1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedY = y1 + (y2-y1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedZ = z1 + (z2-z1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedX = x1 + (lV0x-x1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedY = y1 + (lV0y-y1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedZ = z1 + (lV0z-z1)*lFractionalUncertaintyComingFromBachelor;
                 
                 cascade.SetXYZcascade(lImprovedX, lImprovedY, lImprovedZ);
             }
@@ -1313,8 +1334,19 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 //Step 3a: Get positions
                 Double_t r[3]; pbt->GetXYZ(r);
                 Double_t x1=r[0], y1=r[1], z1=r[2];
-                Double_t x2,y2,z2;          // position of the V0
+                
+                //V0 characteristics
+                Double_t x2,y2,z2;
                 pv0->GetXYZ(x2,y2,z2);
+                Double_t px2,py2,pz2;       // momentum of V0
+                pv0->GetPxPyPz(px2,py2,pz2);
+                
+                //Step 3b: get actual position of the V0 based on linear propagation
+                Double_t a2=((x1-x2)*px2+(y1-y2)*py2+(z1-z2)*pz2)/(px2*px2+py2*py2+pz2*pz2);
+                
+                Double_t lV0x=x2+a2*px2;
+                Double_t lV0y=y2+a2*py2;
+                Double_t lV0z=z2+a2*pz2;
                 
                 //get first estimate on position (for improvement)
                 Double_t lPosXi[3];
@@ -1349,9 +1381,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
                 Double_t lFractionalUncertaintyComingFromBachelor = lBachUnc/( lBachUnc + lV0Unc );
                 
                 //Estimating improved position based on uncertainties
-                Double_t lImprovedX = x1 + (x2-x1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedY = y1 + (y2-y1)*lFractionalUncertaintyComingFromBachelor;
-                Double_t lImprovedZ = z1 + (z2-z1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedX = x1 + (lV0x-x1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedY = y1 + (lV0y-y1)*lFractionalUncertaintyComingFromBachelor;
+                Double_t lImprovedZ = z1 + (lV0z-z1)*lFractionalUncertaintyComingFromBachelor;
                 
                 cascade.SetXYZcascade(lImprovedX, lImprovedY, lImprovedZ);
             }
