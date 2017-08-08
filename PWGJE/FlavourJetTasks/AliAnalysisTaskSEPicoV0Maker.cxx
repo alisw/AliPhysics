@@ -21,38 +21,37 @@
 // Author: X-M. Zhang, xmzhang@lbl.gov
 /////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-#include <TString.h>
-#include <TH1D.h>
 #include <TH2D.h>
-#include <THnSparse.h>
 #include <TMath.h>
+#include <THnSparse.h>
 #include <TClonesArray.h>
-#include <TDatabasePDG.h>
 #include <TParticle.h>
 
-#include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliVVertex.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliMCEvent.h"
+
+#include "AliHeader.h"
+#include "AliInputEventHandler.h"
+#include "AliGenDPMjetEventHeader.h"
+
 #include "AliAODv0.h"
 #include "AliESDv0.h"
-#include "AliAODTrack.h"
+#include "AliV0vertexer.h"
+
 #include "AliESDtrack.h"
-#include "AliStack.h"
+#include "AliAODTrack.h"
 #include "AliMCParticle.h"
 #include "AliAODMCParticle.h"
-#include "AliHeader.h"
-#include "AliGenDPMjetEventHeader.h"
-#include "AliV0vertexer.h"
-#include "AliAnalysisUtils.h"
-#include "AliInputEventHandler.h"
-#include "AliCentrality.h"
-#include "AliPIDResponse.h"
 
-#include "AliPicoHeaderCJ.h"
+#include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
+
+#include "AliCentrality.h"
+#include "AliMultSelection.h"
+
+#include "AliPicoBase.h"
 #include "AliPicoV0RD.h"
 #include "AliPicoV0MC.h"
 #include "AliAnalysisTaskSEPicoV0Maker.h"
@@ -60,30 +59,21 @@
 ClassImp(AliAnalysisTaskSEPicoV0Maker)
 //=============================================================================
 
-const Double_t AliAnalysisTaskSEPicoV0Maker::fgkMassPion   = 0.13957;
-const Double_t AliAnalysisTaskSEPicoV0Maker::fgkMassKshort = 0.497614;
-const Double_t AliAnalysisTaskSEPicoV0Maker::fgkMassProton = 0.938272;
-const Double_t AliAnalysisTaskSEPicoV0Maker::fgkMassLambda = 1.11568;
-
 //_____________________________________________________________________________
 AliAnalysisTaskSEPicoV0Maker::AliAnalysisTaskSEPicoV0Maker() :
 AliAnalysisTaskSE(),
-fEventAOD(0),
-fEventESD(0),
-fCentInfo(0),
-fRespoPID(0),
-fAnaUtils(0),
-fEventAcptMask(0),
 fTriggerMask(0),
 fCollisionType(0),
-fCentEst(""),
-fIsAnaInfoMC(kFALSE),
-fIsRefitV0sESD(kFALSE),
-fIsSkipFastOnly(kFALSE),
+fIsAnaUseMC(kFALSE),
 fIsDPMjetMC(kFALSE),
+fUseMultOld(kFALSE),
+fUseAnaUtils(kFALSE),
+fIsSkipFastOnly(kFALSE),
+fIsRefitV0sESD(kFALSE),
 fRapidityShift(0.),
-fCutMinEventVtxContr(0),
-fCutMaxEventVzAbs(0.),
+fMultEstDef(""),
+fCutMinMult(0.),
+fCutMaxMult(0.),
 fCutMinV0Pt(0.),
 fCutMaxV0Pt(0.),
 fCutMinV0Rap(0.),
@@ -108,36 +98,37 @@ fCutMinLambdaCosPA(0.),
 fCutMaxLambdaCtau(0.),
 fCutMaxLambdaArmFrac(0.),
 fCutMinLambdaDeletaM(0.),
-fPicoV0sClArr(0),
-fOutputListEH(0),
-fOutputListMC(0)
+fEventAcptMask(0),
+fEventAOD(nullptr),
+fEventESD(nullptr),
+fRespoPID(nullptr),
+fMultEsti(),
+fPicoV0sClArr(nullptr),
+fOutputListEH(nullptr),
+fOutputListMC(nullptr)
 {
 //
 // Default constructor
 //
 
-  for (Int_t i=3; i--;) fPrimaryVtx[i] = 0.;
+  for (auto &d : fPrimaryVtx) d = -999.;
 }
 
 //_____________________________________________________________________________
 AliAnalysisTaskSEPicoV0Maker::AliAnalysisTaskSEPicoV0Maker(const char *name, Bool_t bIsMC) :
 AliAnalysisTaskSE(name),
-fEventAOD(0),
-fEventESD(0),
-fCentInfo(0),
-fRespoPID(0),
-fAnaUtils(0),
-fEventAcptMask(0),
-fTriggerMask(0),
-fCollisionType(AliPicoHeaderCJ::kPP),
-fCentEst("V0M"),
-fIsAnaInfoMC(bIsMC),
-fIsRefitV0sESD(kFALSE),
-fIsSkipFastOnly(kFALSE),
+fTriggerMask(AliVEvent::kAny),
+fCollisionType(AliPicoBase::kPP),
+fIsAnaUseMC(bIsMC),
 fIsDPMjetMC(kFALSE),
+fUseMultOld(kFALSE),
+fUseAnaUtils(kFALSE),
+fIsSkipFastOnly(kTRUE),
+fIsRefitV0sESD(kFALSE),
 fRapidityShift(0.),
-fCutMinEventVtxContr(2),
-fCutMaxEventVzAbs(10.),
+fMultEstDef(""),
+fCutMinMult(-99999.),
+fCutMaxMult(999999.),
 fCutMinV0Pt(0.),
 fCutMaxV0Pt(100.),
 fCutMinV0Rap(-10.),
@@ -162,18 +153,23 @@ fCutMinLambdaCosPA(0.993),
 fCutMaxLambdaCtau(40.),
 fCutMaxLambdaArmFrac(-1.),
 fCutMinLambdaDeletaM(-1.),
-fPicoV0sClArr(0),
-fOutputListEH(0),
-fOutputListMC(0)
+fEventAcptMask(0),
+fEventAOD(nullptr),
+fEventESD(nullptr),
+fRespoPID(nullptr),
+fMultEsti(),
+fPicoV0sClArr(nullptr),
+fOutputListEH(nullptr),
+fOutputListMC(nullptr)
 {
 //
 // Constructor
 //
 
-  for (Int_t i=3; i--;) fPrimaryVtx[i] = 0.;
+  for (auto &d : fPrimaryVtx) d = -999.;
 
   DefineOutput(1, TList::Class());
-  if (fIsAnaInfoMC) DefineOutput(2, TList::Class());
+  if (fIsAnaUseMC) DefineOutput(2, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -183,16 +179,13 @@ AliAnalysisTaskSEPicoV0Maker::~AliAnalysisTaskSEPicoV0Maker()
 // Default destructor
 //
 
+  if (fEventAOD) { delete fEventAOD; fEventAOD = nullptr; }
+  if (fEventESD) { delete fEventESD; fEventESD = nullptr; }
+  if (fRespoPID) { delete fRespoPID; fRespoPID = nullptr; }
 
-  if (fEventAOD) { delete fEventAOD; fEventAOD = 0; }
-  if (fEventESD) { delete fEventESD; fEventESD = 0; }
-  if (fCentInfo) { delete fCentInfo; fCentInfo = 0; }
-  if (fRespoPID) { delete fRespoPID; fRespoPID = 0; }
-  if (fAnaUtils) { delete fAnaUtils; fAnaUtils = 0; }
-
-  if (fPicoV0sClArr) { delete fPicoV0sClArr; fPicoV0sClArr = 0; }
-  if (fOutputListEH) { delete fOutputListEH; fOutputListEH = 0; }
-  if (fOutputListMC) { delete fOutputListMC; fOutputListMC = 0; }
+  if (fPicoV0sClArr) { delete fPicoV0sClArr; fPicoV0sClArr = nullptr; }
+  if (fOutputListEH) { delete fOutputListEH; fOutputListEH = nullptr; }
+  if (fOutputListMC) { delete fOutputListMC; fOutputListMC = nullptr; }
 }
 
 //_____________________________________________________________________________
@@ -215,7 +208,12 @@ void AliAnalysisTaskSEPicoV0Maker::UserCreateOutputObjects()
   InitAnalysis();
 //=============================================================================
 
-  if (fIsAnaInfoMC) {
+  if (fPicoV0sClArr) {
+    delete fPicoV0sClArr;
+    fPicoV0sClArr = nullptr;
+  }
+
+  if (fIsAnaUseMC) {
     fPicoV0sClArr = new TClonesArray("AliPicoV0MC");
     fPicoV0sClArr->SetName("PicoV0s");
   } else {
@@ -224,17 +222,31 @@ void AliAnalysisTaskSEPicoV0Maker::UserCreateOutputObjects()
   }
 //=============================================================================
 
+  if (fOutputListEH) {
+    delete fOutputListEH;
+    fOutputListEH = nullptr;
+  }
+
   fOutputListEH = new TList();
   fOutputListEH->SetOwner();
+
   CreateHistogramsEH();
   PostData(1, fOutputListEH);
+//=============================================================================
 
-  if (fIsAnaInfoMC) {
+  if (fIsAnaUseMC) {
+    if (fOutputListMC) {
+      delete fOutputListMC;
+      fOutputListMC = nullptr;
+    }
+
     fOutputListMC = new TList();
     fOutputListMC->SetOwner();
+
     CreateHistogramsMC();
     PostData(2, fOutputListMC);
   }
+//=============================================================================
 
   return;
 }
@@ -247,17 +259,19 @@ void AliAnalysisTaskSEPicoV0Maker::UserExec(Option_t */*opt*/)
 //
 
   fPicoV0sClArr->Delete();
-  if (IsEventNotAcpt()) return;
   if (!(InputEvent()->FindListObject("PicoV0s"))) InputEvent()->AddObject(fPicoV0sClArr);
 //=============================================================================
 
+  if (IsEventNotAcpt()) return;
   FillHistogramsEH();
+//=============================================================================
+
   if (IsEventNotINEL()) return;
-  if (fIsAnaInfoMC) FillHistogramsMC();
+  if (fIsAnaUseMC) FillHistogramsMC();
 //=============================================================================
 
   if (IsEventNotMBsa()) return;
-
+//=============================================================================
 
   FillPicoV0s();
   return;
@@ -290,52 +304,51 @@ void AliAnalysisTaskSEPicoV0Maker::FillPicoV0s()
 //  AliAnalysisTaskSEPicoV0Maker::FillPicoRecoV0s
 //
 
-  Int_t nV0s = 0;
-  AliAODv0 *pV0AOD = 0;
-  AliESDv0 *pV0ESD = 0;
-  if (fEventAOD) nV0s = fEventAOD->GetNumberOfV0s();
-  if (fEventESD) nV0s = fEventESD->GetNumberOfV0s();
+  const auto nV0s(fEventAOD ? fEventAOD->GetNumberOfV0s() :
+                              fEventESD->GetNumberOfV0s());
+
   if (nV0s<=0) return;
 //=============================================================================
 
-
-  TH2D *hKshortPtInvM = dynamic_cast<TH2D*>(fOutputListEH->FindObject("hKshortPtInvM"));
-  TH2D *hLambdaPtInvM = dynamic_cast<TH2D*>(fOutputListEH->FindObject("hLambdaPtInvM"));
-  TH2D *hAntiLaPtInvM = dynamic_cast<TH2D*>(fOutputListEH->FindObject("hAntiLaPtInvM"));
+  auto nAt(fPicoV0sClArr->GetEntriesFast());
+  auto hKshortPtInvM(static_cast<TH2D*>(fOutputListEH->FindObject("hKshortPtInvM")));
+  auto hLambdaPtInvM(static_cast<TH2D*>(fOutputListEH->FindObject("hLambdaPtInvM")));
+  auto hAntiLaPtInvM(static_cast<TH2D*>(fOutputListEH->FindObject("hAntiLaPtInvM")));
 //=============================================================================
 
-  AliPicoV0RD *pV0RD = 0;
-  AliPicoV0MC *pV0MC = 0;
-  Int_t nAt = fPicoV0sClArr->GetEntriesFast();
-
-  for (Int_t iV0=0; iV0<nV0s; iV0++) {
+  for (auto iV0=0; iV0<nV0s; ++iV0) {
+    AliPicoV0RD *pV0RD(nullptr);
+    AliPicoV0MC *pV0MC(nullptr);
 
     if (fEventAOD) {
-      pV0AOD = fEventAOD->GetV0(iV0); if (!pV0AOD) continue;
+      auto pV0(fEventAOD->GetV0(iV0));
+      if (!pV0) continue;
 
-      if (fIsAnaInfoMC) {
-        pV0MC = SelectV0CandidateMC(pV0AOD); if (!pV0MC) { pV0AOD = 0; continue; }
+      if (fIsAnaUseMC) {
+        pV0MC = SelectV0CandidateMC(pV0);
       } else {
-        pV0RD = SelectV0CandidateRD(pV0AOD); if (!pV0RD) { pV0AOD = 0; continue; }
+        pV0RD = SelectV0CandidateRD(pV0);
       }
     }
 
     if (fEventESD) {
-      pV0ESD = fEventESD->GetV0(iV0); if (!pV0ESD) continue;
+      auto pV0(fEventESD->GetV0(iV0));
+      if (!pV0) continue;
 
-      if (fIsAnaInfoMC) {
-        pV0MC = SelectV0CandidateMC(pV0ESD); if (!pV0MC) { pV0ESD = 0; continue; }
+      if (fIsAnaUseMC) {
+        pV0MC = SelectV0CandidateMC(pV0);
       } else {
-        pV0RD = SelectV0CandidateRD(pV0ESD); if (!pV0RD) { pV0ESD = 0; continue; }
+        pV0RD = SelectV0CandidateRD(pV0);
       }
     }
+//=============================================================================
 
     if (pV0RD) {
       pV0RD->FillKshortPtInvM(hKshortPtInvM);
       pV0RD->FillLambdaPtInvM(hLambdaPtInvM);
       pV0RD->FillAntiLaPtInvM(hAntiLaPtInvM);
       new ((*fPicoV0sClArr)[nAt++]) AliPicoV0RD(*pV0RD);
-      delete pV0RD; pV0RD=0;
+      delete pV0RD; pV0RD=nullptr;
     }
 
     if (pV0MC) {
@@ -343,68 +356,67 @@ void AliAnalysisTaskSEPicoV0Maker::FillPicoV0s()
       pV0MC->FillLambdaPtInvM(hLambdaPtInvM);
       pV0MC->FillAntiLaPtInvM(hAntiLaPtInvM);
       new ((*fPicoV0sClArr)[nAt++]) AliPicoV0MC(*pV0MC);
-      delete pV0MC; pV0MC=0;
+      delete pV0MC; pV0MC=nullptr;
     }
-
-    if (pV0AOD) pV0AOD=0;
-    if (pV0ESD) pV0ESD=0;
   }
+//=============================================================================
 
   return;
 }
 
 //_____________________________________________________________________________
-AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *pV0)
+AliPicoV0RD *AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *pV0)
 {
 //
 //  AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD
 //
 
-  if  (pV0->GetOnFlyStatus()) return 0x0;
-  if ((pV0->Chi2V0())>fCutMaxV0Chi2) return 0x0;
+  if  (pV0->GetOnFlyStatus()) return nullptr;
+  if ((pV0->Chi2V0())>fCutMaxV0Chi2) return nullptr;
 //=============================================================================
 
-  Double_t dV0Pt  = pV0->Pt(); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return 0x0;
-  Double_t dKaRap = pV0->RapK0Short(); if ((dKaRap<fCutMinV0Rap) || (dKaRap>fCutMaxV0Rap)) return 0x0;
-  Double_t dLaRap = pV0->RapLambda();  if ((dLaRap<fCutMinV0Rap) || (dLaRap>fCutMaxV0Rap)) return 0x0;
+  const auto dV0Pt(pV0->Pt()); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return nullptr;
+  const auto dKaRap(pV0->RapK0Short()); if ((dKaRap<fCutMinV0Rap) || (dKaRap>fCutMaxV0Rap)) return nullptr;
+  const auto dLaRap(pV0->RapLambda());  if ((dLaRap<fCutMinV0Rap) || (dLaRap>fCutMaxV0Rap)) return nullptr;
 //=============================================================================
 
   Double_t dV0Vtx[3]; pV0->GetXYZ(dV0Vtx);
-  Double_t dV0Radius = TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]);
-  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return 0x0;
+  const auto dV0Radius(TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]));
+  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return nullptr;
 
-  Double_t dDausDCA = pV0->DcaV0Daughters(); if (dDausDCA>fCutMaxDausDCA) return 0x0;
-  Double_t dPosDCAtoPV = pV0->DcaPosToPrimVertex(); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
-  Double_t dNegDCAtoPV = pV0->DcaNegToPrimVertex(); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
+  const auto dDausDCA(pV0->DcaV0Daughters()); if (dDausDCA>fCutMaxDausDCA) return nullptr;
+  const auto dPosDCAtoPV(pV0->DcaPosToPrimVertex()); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
+  const auto dNegDCAtoPV(pV0->DcaNegToPrimVertex()); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
 //=============================================================================
 
-  AliAODTrack *pDauPos = (AliAODTrack*)pV0->GetDaughter(0); if (!pDauPos) return 0x0;
-  AliAODTrack *pDauNeg = (AliAODTrack*)pV0->GetDaughter(1); if (!pDauNeg) return 0x0;
+  auto pDauPos(static_cast<AliAODTrack*>(pV0->GetDaughter(0))); if (!pDauPos) return nullptr;
+  auto pDauNeg(static_cast<AliAODTrack*>(pV0->GetDaughter(1))); if (!pDauNeg) return nullptr;
 
-  if (!(pDauPos->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if (!(pDauNeg->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
+  if (!(pDauPos->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if (!(pDauNeg->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
 
-  if ((pDauPos->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return 0x0;
-  if ((pDauNeg->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return 0x0;
+  if ((pDauPos->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return nullptr;
+  if ((pDauNeg->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return nullptr;
 
-  Float_t dPosXrowsTPC = pDauPos->GetTPCClusterInfo(2,1);
-  Float_t dNegXrowsTPC = pDauNeg->GetTPCClusterInfo(2,1);
-  Float_t dDauXrowsTPC = dPosXrowsTPC; if (dDauXrowsTPC>dNegXrowsTPC) dDauXrowsTPC = dNegXrowsTPC;
-  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return 0x0;
+  const auto dPosXrowsTPC(pDauPos->GetTPCClusterInfo(2,1));
+  const auto dNegXrowsTPC(pDauNeg->GetTPCClusterInfo(2,1));
+  const auto dDauXrowsTPC((dPosXrowsTPC<dNegXrowsTPC) ? dPosXrowsTPC : dNegXrowsTPC);
+  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return nullptr;
 
-  UShort_t wPosTPCNClsF = pDauPos->GetTPCNclsF(); if (wPosTPCNClsF<=0) return 0x0;
-  UShort_t wNegTPCNClsF = pDauNeg->GetTPCNclsF(); if (wNegTPCNClsF<=0) return 0x0;
-  Double_t dPosXrowsOverFindableClusTPC = ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF);
-  Double_t dNegXrowsOverFindableClusTPC = ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF);
+  const auto wPosTPCNClsF(pDauPos->GetTPCNclsF()); if (wPosTPCNClsF<=0) return nullptr;
+  const auto wNegTPCNClsF(pDauNeg->GetTPCNclsF()); if (wNegTPCNClsF<=0) return nullptr;
+  const auto dPosXrowsOverFindableClusTPC( ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF) );
+  const auto dNegXrowsOverFindableClusTPC( ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF) );
 
-  Double_t dDauXrowsOverFindableClusTPC = dPosXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC>dNegXrowsOverFindableClusTPC) dDauXrowsOverFindableClusTPC = dNegXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return 0x0;
+  const auto dDauXrowsOverFindableClusTPC((dPosXrowsOverFindableClusTPC<dNegXrowsOverFindableClusTPC) ?
+                                           dPosXrowsOverFindableClusTPC :
+                                           dNegXrowsOverFindableClusTPC);
+  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return nullptr;
 //=============================================================================
 
-  Short_t nPosCharge = pDauPos->Charge();
-  Short_t nNegCharge = pDauNeg->Charge();
-  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return 0x0;
+  const auto nPosCharge(pDauPos->Charge());
+  const auto nNegCharge(pDauNeg->Charge());
+  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return nullptr;
 
   Double_t dPosPxPyPz[3] = { 0., 0., 0. };
   Double_t dNegPxPyPz[3] = { 0., 0., 0. };
@@ -419,29 +431,25 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *p
     dNegPxPyPz[0] = pV0->MomNegX(); dNegPxPyPz[1] = pV0->MomNegY(); dNegPxPyPz[2] = pV0->MomNegZ();
   }
 
-  TVector3 v3Pos(dPosPxPyPz);
-  TVector3 v3Neg(dNegPxPyPz);
-
-  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return 0x0;
-  Double_t dPosEta = v3Pos.Eta(); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return 0x0;
-  Double_t dNegEta = v3Neg.Eta(); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return 0x0;
+  const TVector3 v3Pos(dPosPxPyPz);
+  const TVector3 v3Neg(dNegPxPyPz);
+  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return nullptr;
+  const auto dPosEta(v3Pos.Eta()); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return nullptr;
+  const auto dNegEta(v3Neg.Eta()); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  Bool_t bIsKshort = kFALSE;
-  Bool_t bIsLambda = kFALSE;
-  Bool_t bIsAntiLa = kFALSE;
+  auto bIsKshort(kTRUE);
+  auto bIsLambda(kTRUE);
+  auto bIsAntiLa(kTRUE);
+  const auto dPosPionSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kPion));
+  const auto dNegPionSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kPion));
 
-  Float_t dPosPionSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kPion);
-  Float_t dNegPionSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kPion);
-
-  Float_t dPosProtonSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kProton);
-  Float_t dNegProtonSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kProton);
+  const auto dPosProtonSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kProton));
+  const auto dNegProtonSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kProton));
 
   if (fCutMaxKshortSigmaTPC>0.) {
     bIsKshort = ((TMath::Abs(dPosPionSigmaTPC)<fCutMaxKshortSigmaTPC) &&
                  (TMath::Abs(dNegPionSigmaTPC)<fCutMaxKshortSigmaTPC));
-  } else {
-    bIsKshort = kTRUE;
   }
 
   if (fCutMaxLambdaSigmaTPC>0.) {
@@ -450,15 +458,12 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *p
 
     bIsAntiLa = ((TMath::Abs(dPosPionSigmaTPC)  <fCutMaxLambdaSigmaTPC) &&
                  (TMath::Abs(dNegProtonSigmaTPC)<fCutMaxLambdaSigmaTPC));
-  } else {
-    bIsLambda = kTRUE;
-    bIsAntiLa = kTRUE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0CosPA = pV0->CosPointingAngle(fPrimaryVtx);
+  const auto dV0CosPA(pV0->CosPointingAngle(fPrimaryVtx));
 
   if (bIsKshort) if (dV0CosPA<fCutMinKshortCosPA) {
     bIsKshort = kFALSE;
@@ -469,27 +474,26 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0DistToPV = 0.;
-  for (Int_t i=0; i<3; i++) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
-  Double_t dV0DistToPVoverP = TMath::Sqrt(dV0DistToPV) / (pV0->P()+1e-10);
+  auto dV0DistToPV(0.);
+  for (auto i=0; i<3; ++i) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
+  const auto dV0DistToPVoverP(TMath::Sqrt(dV0DistToPV) / (pV0->P()+1e-10));
 
-  if (bIsKshort) if ((dV0DistToPVoverP*fgkMassKshort)>fCutMaxKshortCtau) {
+  if (bIsKshort) if ((dV0DistToPVoverP*AliPicoBase::MassKshort())>fCutMaxKshortCtau) {
     bIsKshort = kFALSE;
   }
 
-  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*fgkMassLambda)>fCutMaxLambdaCtau) {
+  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*AliPicoBase::MassLambda())>fCutMaxLambdaCtau) {
     bIsLambda = kFALSE;
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0ArmFrac = pV0->PtArmV0() / (TMath::Abs(pV0->AlphaV0())+1e-12);
-
+  const auto dV0ArmFrac(pV0->PtArmV0() / (TMath::Abs(pV0->AlphaV0())+1e-12));
   if (bIsKshort && (fCutMaxKshortArmFrac>0.)) if (dV0ArmFrac>fCutMaxKshortArmFrac) {
     bIsKshort = kFALSE;
   }
@@ -499,152 +503,130 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliAODv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-  TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
+  TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+  TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-  TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-  TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
+  TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+  TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
 
-  TLorentzVector vKshort = vPosPion   + vNegPion;
-  TLorentzVector vLamvda = vPosProton + vNegPion;
-  TLorentzVector vAntiLa = vNegProton + vPosPion;
-
-  Double_t dKshortInvM = vKshort.M();
-  Double_t dLambdaInvM = vLamvda.M();
-  Double_t dAntiLaInvM = vAntiLa.M();
-
-  if (bIsKshort) {
-    Double_t dLower = 0.430006 - 0.0110029*dV0Pt;
-    Double_t dUpper = 0.563707 + 0.0114979*dV0Pt;
-
-    if ((dKshortInvM<dLower) || (dKshortInvM>dUpper)) bIsKshort = kFALSE;
-  }
+  const auto dKshortInvM((vPosPion  +vNegPion).M());
+  const auto dLambdaInvM((vPosProton+vNegPion).M());
+  const auto dAntiLaInvM((vNegProton+vPosPion).M());
+  if (bIsKshort) if ((dKshortInvM<(0.430006 - 0.0110029*dV0Pt)) ||
+                     (dKshortInvM>(0.563707 + 0.0114979*dV0Pt))) bIsKshort = kFALSE;
 
   if (bIsLambda || bIsAntiLa) {
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-
+    const auto dLower(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt));
+    const auto dUpper(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt));
     if (bIsLambda) if ((dLambdaInvM<dLower) || (dLambdaInvM>dUpper)) bIsLambda = kFALSE;
     if (bIsAntiLa) if ((dAntiLaInvM<dLower) || (dAntiLaInvM>dUpper)) bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
   if (bIsKshort && (fCutMinKshortDeltaM>0.)) {
-    if ((TMath::Abs(dLambdaInvM-fgkMassLambda)<fCutMinKshortDeltaM) ||
-        (TMath::Abs(dAntiLaInvM-fgkMassLambda)<fCutMinKshortDeltaM)) bIsKshort = kFALSE;
+    if ((TMath::Abs(dLambdaInvM-AliPicoBase::MassLambda())<fCutMinKshortDeltaM) ||
+        (TMath::Abs(dAntiLaInvM-AliPicoBase::MassLambda())<fCutMinKshortDeltaM)) bIsKshort = kFALSE;
   }
 
   if ((bIsLambda || bIsAntiLa) && (fCutMinLambdaDeletaM>0.)) {
-    if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) {
+    if ((TMath::Abs(dKshortInvM-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) {
       bIsLambda = kFALSE;
       bIsAntiLa = kFALSE;
     }
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  UInt_t wMask = 0;
-  if (bIsKshort) wMask |= AliPicoHeaderCJ::kKshort;
-  if (bIsLambda) wMask |= AliPicoHeaderCJ::kLambda;
-  if (bIsAntiLa) wMask |= AliPicoHeaderCJ::kAntiLambda;
+  UInt_t wMask(0);
+  if (bIsKshort) wMask |= AliPicoBase::kKshort;
+  if (bIsLambda) wMask |= AliPicoBase::kLambda;
+  if (bIsAntiLa) wMask |= AliPicoBase::kAntiLambda;
+//=============================================================================
 
-  Bool_t bPosInJC = kFALSE;
-  Bool_t bNegInJC = kFALSE;
-
-/*AliAODTrack *pTrkAOD = 0;
-  Int_t idPos = pDauPos->GetID();
-  Int_t idNeg = pDauNeg->GetID();
-  if (fJetContisClArr) for (Int_t i=0; i<fJetContisClArr->GetEntriesFast(); i++) {
-    pTrkAOD = static_cast<AliAODTrack*>(fJetContisClArr->At(i)); if (!pTrkAOD) continue;
-
-    Int_t id = pTrkAOD->GetID();
-    if (idPos==id) bPosInJC = kTRUE;
-    if (idNeg==id) bNegInJC = kTRUE;
-    if (bPosInJC && bNegInJC) { pTrkAOD = 0; break; }
-
-    pTrkAOD = 0;
-  }*/
-
-  AliPicoV0RD *pPicoV0 = new AliPicoV0RD(wMask,
-                                         dV0Radius,
-                                         dV0CosPA,
-                                         dV0DistToPVoverP,
-                                         dDausDCA,
-                                         dPosDCAtoPV,
-                                         dNegDCAtoPV,
-                                         dDauXrowsTPC,
-                                         dDauXrowsOverFindableClusTPC,
-                                         v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
-                                         v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
-                                         bPosInJC, bNegInJC,
-                                         dPosPionSigmaTPC, dPosProtonSigmaTPC,
-                                         dNegPionSigmaTPC, dNegProtonSigmaTPC);
-
-  return pPicoV0;
+  auto bPosInJC(kFALSE);
+  auto bNegInJC(kFALSE);
+  return (new AliPicoV0RD(wMask,
+                          dV0Radius,
+                          dV0CosPA,
+                          dV0DistToPVoverP,
+                          dDausDCA,
+                          dPosDCAtoPV,
+                          dNegDCAtoPV,
+                          dDauXrowsTPC,
+                          dDauXrowsOverFindableClusTPC,
+                          v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
+                          v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
+                          bPosInJC, bNegInJC,
+                          dPosPionSigmaTPC, dPosProtonSigmaTPC,
+                          dNegPionSigmaTPC, dNegProtonSigmaTPC));
 }
 
 //_____________________________________________________________________________
-AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *pV0)
+AliPicoV0RD *AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *pV0)
 {
 //
 //  AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD
 //
 
-  if (pV0->GetOnFlyStatus()) return 0x0;
-  if (pV0->GetChi2V0()>fCutMaxV0Chi2) return 0x0;
+  if (pV0->GetOnFlyStatus()) return nullptr;
+  if (pV0->GetChi2V0()>fCutMaxV0Chi2) return nullptr;
 //=============================================================================
 
-  Double_t dV0Pt = pV0->Pt(); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return 0x0;
-  Double_t dKaRap = pV0->RapK0Short(); if ((dKaRap<fCutMinV0Rap) || (dKaRap>fCutMaxV0Rap)) return 0x0;
-  Double_t dLaRap = pV0->RapLambda();  if ((dLaRap<fCutMinV0Rap) || (dLaRap>fCutMaxV0Rap)) return 0x0;
+  const auto dV0Pt(pV0->Pt()); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return nullptr;
+  const auto dKaRap(pV0->RapK0Short()); if ((dKaRap<fCutMinV0Rap) || (dKaRap>fCutMaxV0Rap)) return nullptr;
+  const auto dLaRap(pV0->RapLambda());  if ((dLaRap<fCutMinV0Rap) || (dLaRap>fCutMaxV0Rap)) return nullptr;
 //=============================================================================
 
   Double_t dV0Vtx[3];  pV0->GetXYZ(dV0Vtx[0], dV0Vtx[1], dV0Vtx[2]);
-  Double_t dV0Radius = TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]);
-  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return 0x0;
+  const auto dV0Radius(TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]));
+  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return nullptr;
 
-  Double_t dDausDCA = pV0->GetDcaV0Daughters(); if (dDausDCA>fCutMaxDausDCA) return 0x0;
+  const auto dDausDCA(pV0->GetDcaV0Daughters()); if (dDausDCA>fCutMaxDausDCA) return nullptr;
 //=============================================================================
 
-  Int_t nPosIndex = pV0->GetPindex(); if (nPosIndex<0) return 0x0;
-  Int_t nNegIndex = pV0->GetNindex(); if (nNegIndex<0) return 0x0;
+  const auto nPosIndex(pV0->GetPindex()); if (nPosIndex<0) return nullptr;
+  const auto nNegIndex(pV0->GetNindex()); if (nNegIndex<0) return nullptr;
 
-  AliESDtrack *pDauPos = fEventESD->GetTrack(nPosIndex); if (!pDauPos) return 0x0;
-  AliESDtrack *pDauNeg = fEventESD->GetTrack(nNegIndex); if (!pDauNeg) return 0x0;
+  auto pDauPos(fEventESD->GetTrack(nPosIndex)); if (!pDauPos) return nullptr;
+  auto pDauNeg(fEventESD->GetTrack(nNegIndex)); if (!pDauNeg) return nullptr;
 
-  Double_t dMegField = fEventESD->GetMagneticField();
-  Double_t dPosDCAtoPV = TMath::Abs(pDauPos->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
-  Double_t dNegDCAtoPV = TMath::Abs(pDauNeg->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
+  const auto dMegField(fEventESD->GetMagneticField());
+  const auto dPosDCAtoPV(TMath::Abs(pDauPos->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)));
+  if (dPosDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
+
+  const auto dNegDCAtoPV(TMath::Abs(pDauNeg->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)));
+  if (dNegDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
 //=============================================================================
 
-  if (!(pDauPos->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if (!(pDauNeg->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if ((pDauPos->GetKinkIndex(0)>0) || (pDauNeg->GetKinkIndex(0)>0)) return 0x0;
+  if (!(pDauPos->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if (!(pDauNeg->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if ((pDauPos->GetKinkIndex(0)>0) || (pDauNeg->GetKinkIndex(0)>0)) return nullptr;
 
-  Float_t dPosXrowsTPC = pDauPos->GetTPCClusterInfo(2,1);
-  Float_t dNegXrowsTPC = pDauNeg->GetTPCClusterInfo(2,1);
-  Float_t dDauXrowsTPC = dPosXrowsTPC; if (dDauXrowsTPC>dNegXrowsTPC) dDauXrowsTPC = dNegXrowsTPC;
-  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return 0x0;
+  const auto dPosXrowsTPC(pDauPos->GetTPCClusterInfo(2,1));
+  const auto dNegXrowsTPC(pDauNeg->GetTPCClusterInfo(2,1));
+  const auto dDauXrowsTPC((dPosXrowsTPC<dNegXrowsTPC) ? dPosXrowsTPC : dNegXrowsTPC);
+  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return nullptr;
 
-  UShort_t wPosTPCNClsF = pDauPos->GetTPCNclsF(); if (wPosTPCNClsF<=0) return 0x0;
-  UShort_t wNegTPCNClsF = pDauNeg->GetTPCNclsF(); if (wNegTPCNClsF<=0) return 0x0;
-  Double_t dPosXrowsOverFindableClusTPC = ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF);
-  Double_t dNegXrowsOverFindableClusTPC = ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF);
+  const auto wPosTPCNClsF(pDauPos->GetTPCNclsF()); if (wPosTPCNClsF<=0) return nullptr;
+  const auto wNegTPCNClsF(pDauNeg->GetTPCNclsF()); if (wNegTPCNClsF<=0) return nullptr;
+  const auto dPosXrowsOverFindableClusTPC( ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF) );
+  const auto dNegXrowsOverFindableClusTPC( ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF) );
 
-  Double_t dDauXrowsOverFindableClusTPC = dPosXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC>dNegXrowsOverFindableClusTPC) dDauXrowsOverFindableClusTPC = dNegXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return 0x0;
+  const auto dDauXrowsOverFindableClusTPC((dPosXrowsOverFindableClusTPC<dNegXrowsOverFindableClusTPC) ?
+                                           dPosXrowsOverFindableClusTPC :
+                                           dNegXrowsOverFindableClusTPC);
+  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return nullptr;
 //=============================================================================
 
-  Short_t nPosCharge = pDauPos->Charge();
-  Short_t nNegCharge = pDauNeg->Charge();
-  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return 0x0;
+  const auto nPosCharge(pDauPos->Charge());
+  const auto nNegCharge(pDauNeg->Charge());
+  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return nullptr;
 
   Double_t dPosPxPyPz[3] = { 0., 0., 0. };
   Double_t dNegPxPyPz[3] = { 0., 0., 0. };
@@ -659,29 +641,25 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *p
     pV0->GetNPxPyPz(dNegPxPyPz[0], dNegPxPyPz[1], dNegPxPyPz[2]);
   }
 
-  TVector3 v3Pos(dPosPxPyPz);
-  TVector3 v3Neg(dNegPxPyPz);
-
-  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return 0x0;
-  Double_t dPosEta = v3Pos.Eta(); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return 0x0;
-  Double_t dNegEta = v3Neg.Eta(); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return 0x0;
+  const TVector3 v3Pos(dPosPxPyPz);
+  const TVector3 v3Neg(dNegPxPyPz);
+  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return nullptr;
+  const auto dPosEta(v3Pos.Eta()); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return nullptr;
+  const auto dNegEta(v3Neg.Eta()); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  Bool_t bIsKshort = kFALSE;
-  Bool_t bIsLambda = kFALSE;
-  Bool_t bIsAntiLa = kFALSE;
+  auto bIsKshort(kTRUE);
+  auto bIsLambda(kTRUE);
+  auto bIsAntiLa(kTRUE);
+  const auto dPosPionSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kPion));
+  const auto dNegPionSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kPion));
 
-  Float_t dPosPionSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kPion);
-  Float_t dNegPionSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kPion);
-
-  Float_t dPosProtonSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kProton);
-  Float_t dNegProtonSigmaTPC = fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kProton);
+  const auto dPosProtonSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauPos,AliPID::kProton));
+  const auto dNegProtonSigmaTPC(fRespoPID->NumberOfSigmasTPC(pDauNeg,AliPID::kProton));
 
   if (fCutMaxKshortSigmaTPC>0.) {
     bIsKshort = ((TMath::Abs(dPosPionSigmaTPC)<fCutMaxKshortSigmaTPC) &&
                  (TMath::Abs(dNegPionSigmaTPC)<fCutMaxKshortSigmaTPC));
-  } else {
-    bIsKshort = kTRUE;
   }
 
   if (fCutMaxLambdaSigmaTPC>0.) {
@@ -690,15 +668,12 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *p
 
     bIsAntiLa = ((TMath::Abs(dPosPionSigmaTPC)  <fCutMaxLambdaSigmaTPC) &&
                  (TMath::Abs(dNegProtonSigmaTPC)<fCutMaxLambdaSigmaTPC));
-  } else {
-    bIsLambda = kTRUE;
-    bIsAntiLa = kTRUE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0CosPA = pV0->GetV0CosineOfPointingAngle(fPrimaryVtx[0], fPrimaryVtx[1], fPrimaryVtx[2]);
+  const auto dV0CosPA(pV0->GetV0CosineOfPointingAngle(fPrimaryVtx[0],fPrimaryVtx[1],fPrimaryVtx[2]));
 
   if (bIsKshort) if (dV0CosPA<fCutMinKshortCosPA) {
     bIsKshort = kFALSE;
@@ -709,27 +684,26 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0DistToPV = 0.;
-  for (Int_t i=0; i<3; i++) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
-  Double_t dV0DistToPVoverP = TMath::Sqrt(dV0DistToPV) / (pV0->P()+1e-10);
+  auto dV0DistToPV(0.);
+  for (auto i=0; i<3; ++i) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
+  const auto dV0DistToPVoverP(TMath::Sqrt(dV0DistToPV) / (pV0->P()+1e-10));
 
-  if (bIsKshort) if ((dV0DistToPVoverP*fgkMassKshort)>fCutMaxKshortCtau) {
+  if (bIsKshort) if ((dV0DistToPVoverP*AliPicoBase::MassKshort())>fCutMaxKshortCtau) {
     bIsKshort = kFALSE;
   }
 
-  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*fgkMassLambda)>fCutMaxLambdaCtau) {
+  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*AliPicoBase::MassLambda())>fCutMaxLambdaCtau) {
     bIsLambda = kFALSE;
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0ArmFrac = pV0->PtArmV0() / (TMath::Abs(pV0->AlphaV0())+1e-12);
-
+  const auto dV0ArmFrac(pV0->PtArmV0() / (TMath::Abs(pV0->AlphaV0())+1e-12));
   if (bIsKshort && (fCutMaxKshortArmFrac>0.)) if (dV0ArmFrac>fCutMaxKshortArmFrac) {
     bIsKshort = kFALSE;
   }
@@ -739,132 +713,136 @@ AliPicoV0RD* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateRD(AliESDv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-  TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
+  TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+  TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-  TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-  TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
+  TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+  TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
 
-  TLorentzVector vKshort = vPosPion   + vNegPion;
-  TLorentzVector vLamvda = vPosProton + vNegPion;
-  TLorentzVector vAntiLa = vNegProton + vPosPion;
-
-  Double_t dKshortInvM = vKshort.M();
-  Double_t dLambdaInvM = vLamvda.M();
-  Double_t dAntiLaInvM = vAntiLa.M();
-
-  if (bIsKshort) {
-    Double_t dLower = 0.430006 - 0.0110029*dV0Pt;
-    Double_t dUpper = 0.563707 + 0.0114979*dV0Pt;
-
-    if ((dKshortInvM<dLower) || (dKshortInvM>dUpper)) bIsKshort = kFALSE;
-  }
+  const auto dKshortInvM((vPosPion  +vNegPion).M());
+  const auto dLambdaInvM((vPosProton+vNegPion).M());
+  const auto dAntiLaInvM((vNegProton+vPosPion).M());
+  if (bIsKshort) if ((dKshortInvM<(0.430006 - 0.0110029*dV0Pt)) ||
+                     (dKshortInvM>(0.563707 + 0.0114979*dV0Pt))) bIsKshort = kFALSE;
 
   if (bIsLambda || bIsAntiLa) {
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-
+    const auto dLower(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt));
+    const auto dUpper(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt));
     if (bIsLambda) if ((dLambdaInvM<dLower) || (dLambdaInvM>dUpper)) bIsLambda = kFALSE;
     if (bIsAntiLa) if ((dAntiLaInvM<dLower) || (dAntiLaInvM>dUpper)) bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
   if (bIsKshort && (fCutMinKshortDeltaM>0.)) {
-    if ((TMath::Abs(dLambdaInvM-fgkMassLambda)<fCutMinKshortDeltaM) ||
-        (TMath::Abs(dAntiLaInvM-fgkMassLambda)<fCutMinKshortDeltaM)) {
+    if ((TMath::Abs(dLambdaInvM-AliPicoBase::MassLambda())<fCutMinKshortDeltaM) ||
+        (TMath::Abs(dAntiLaInvM-AliPicoBase::MassLambda())<fCutMinKshortDeltaM)) {
       bIsKshort = kFALSE;
     }
   }
 
   if ((bIsLambda || bIsAntiLa) && (fCutMinLambdaDeletaM>0.)) {
-    if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) {
+    if ((TMath::Abs(dKshortInvM-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) {
       bIsLambda = kFALSE;
       bIsAntiLa = kFALSE;
     }
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  UInt_t wMask = 0;
-  if (bIsKshort) wMask |= AliPicoHeaderCJ::kKshort;
-  if (bIsLambda) wMask |= AliPicoHeaderCJ::kLambda;
-  if (bIsAntiLa) wMask |= AliPicoHeaderCJ::kAntiLambda;
+  UInt_t wMask(0);
+  if (bIsKshort) wMask |= AliPicoBase::kKshort;
+  if (bIsLambda) wMask |= AliPicoBase::kLambda;
+  if (bIsAntiLa) wMask |= AliPicoBase::kAntiLambda;
+//=============================================================================
 
-  Bool_t bPosInJC = kFALSE;
-  Bool_t bNegInJC = kFALSE;
-  AliPicoV0RD *pPicoV0 = new AliPicoV0RD(wMask,
-                                         dV0Radius,
-                                         dV0CosPA,
-                                         dV0DistToPVoverP,
-                                         dDausDCA,
-                                         dPosDCAtoPV,
-                                         dNegDCAtoPV,
-                                         dDauXrowsTPC,
-                                         dDauXrowsOverFindableClusTPC,
-                                         v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
-                                         v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
-                                         bPosInJC, bNegInJC,
-                                         dPosPionSigmaTPC, dPosProtonSigmaTPC,
-                                         dNegPionSigmaTPC, dNegProtonSigmaTPC);
-  
-  return pPicoV0;
+  auto bPosInJC(kFALSE);
+  auto bNegInJC(kFALSE);
+/*if (fJetContisClArr) {
+    const auto idPos(pDauPos->GetID());
+    const auto idNeg(pDauNeg->GetID());
+    for (auto i=0; i<fJetContisClArr->GetEntriesFast(); ++i) {
+      auto pTrk(fJetContisClArr->At(i)); if (!pTrk) continue;
+
+      const auto id(pTrkAOD->GetID());
+      if (idPos==id) bPosInJC = kTRUE;
+      if (idNeg==id) bNegInJC = kTRUE;
+      if (bPosInJC && bNegInJC) break;
+    }
+  }*/
+//=============================================================================
+
+  return (new AliPicoV0RD(wMask,
+                          dV0Radius,
+                          dV0CosPA,
+                          dV0DistToPVoverP,
+                          dDausDCA,
+                          dPosDCAtoPV,
+                          dNegDCAtoPV,
+                          dDauXrowsTPC,
+                          dDauXrowsOverFindableClusTPC,
+                          v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
+                          v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
+                          bPosInJC, bNegInJC,
+                          dPosPionSigmaTPC, dPosProtonSigmaTPC,
+                          dNegPionSigmaTPC, dNegProtonSigmaTPC));
 }
 
 //_____________________________________________________________________________
-AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *pV0RD)
+AliPicoV0MC *AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *pV0RD)
 {
 //
 //  AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC
 //
 
-  if (pV0RD->GetOnFlyStatus()) return 0x0;
-  if ((pV0RD->Chi2V0())>fCutMaxV0Chi2) return 0x0;
+  if (pV0RD->GetOnFlyStatus()) return nullptr;
+  if ((pV0RD->Chi2V0())>fCutMaxV0Chi2) return nullptr;
 
-  Double_t dV0Pt = pV0RD->Pt(); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return 0x0;
+  const auto dV0Pt(pV0RD->Pt()); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return nullptr;
 //=============================================================================
 
   Double_t dV0Vtx[3]; pV0RD->GetXYZ(dV0Vtx);
-  Double_t dV0Radius = TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]);
-  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return 0x0;
+  const auto dV0Radius(TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]));
+  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return nullptr;
 
-  Double_t dDausDCA = pV0RD->DcaV0Daughters(); if (dDausDCA>fCutMaxDausDCA) return 0x0;
-  Double_t dPosDCAtoPV = pV0RD->DcaPosToPrimVertex(); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
-  Double_t dNegDCAtoPV = pV0RD->DcaNegToPrimVertex(); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
+  const auto dDausDCA(pV0RD->DcaV0Daughters()); if (dDausDCA>fCutMaxDausDCA) return nullptr;
+  const auto dPosDCAtoPV(pV0RD->DcaPosToPrimVertex()); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
+  const auto dNegDCAtoPV(pV0RD->DcaNegToPrimVertex()); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
 //=============================================================================
 
-  AliAODTrack *pDauPosRD = (AliAODTrack*)pV0RD->GetDaughter(0); if (!pDauPosRD) return 0x0;
-  AliAODTrack *pDauNegRD = (AliAODTrack*)pV0RD->GetDaughter(1); if (!pDauNegRD) return 0x0;
+  auto pDauPosRD(static_cast<AliAODTrack*>(pV0RD->GetDaughter(0))); if (!pDauPosRD) return nullptr;
+  auto pDauNegRD(static_cast<AliAODTrack*>(pV0RD->GetDaughter(1))); if (!pDauNegRD) return nullptr;
 
-  if (!(pDauPosRD->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if (!(pDauNegRD->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
+  if (!(pDauPosRD->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if (!(pDauNegRD->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
 
-  if ((pDauPosRD->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return 0x0;
-  if ((pDauNegRD->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return 0x0;
+  if ((pDauPosRD->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return nullptr;
+  if ((pDauNegRD->GetProdVertex()->GetType())==((Char_t)AliAODVertex::kKink)) return nullptr;
 
-  Float_t dPosXrowsTPC = pDauPosRD->GetTPCClusterInfo(2,1);
-  Float_t dNegXrowsTPC = pDauNegRD->GetTPCClusterInfo(2,1);
-  Float_t dDauXrowsTPC = dPosXrowsTPC; if (dDauXrowsTPC>dNegXrowsTPC) dDauXrowsTPC = dNegXrowsTPC;
-  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return 0x0;
+  const auto dPosXrowsTPC(pDauPosRD->GetTPCClusterInfo(2,1));
+  const auto dNegXrowsTPC(pDauNegRD->GetTPCClusterInfo(2,1));
+  const auto dDauXrowsTPC(dPosXrowsTPC<dNegXrowsTPC ? dPosXrowsTPC : dNegXrowsTPC);
+  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return nullptr;
 
-  UShort_t wPosTPCNClsF = pDauPosRD->GetTPCNclsF(); if (wPosTPCNClsF<=0) return 0x0;
-  UShort_t wNegTPCNClsF = pDauNegRD->GetTPCNclsF(); if (wNegTPCNClsF<=0) return 0x0;
-  Double_t dPosXrowsOverFindableClusTPC = ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF);
-  Double_t dNegXrowsOverFindableClusTPC = ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF);
+  const auto wPosTPCNClsF(pDauPosRD->GetTPCNclsF()); if (wPosTPCNClsF<=0) return nullptr;
+  const auto wNegTPCNClsF(pDauNegRD->GetTPCNclsF()); if (wNegTPCNClsF<=0) return nullptr;
+  const auto dPosXrowsOverFindableClusTPC( ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF) );
+  const auto dNegXrowsOverFindableClusTPC( ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF) );
 
-  Double_t dDauXrowsOverFindableClusTPC = dPosXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC>dNegXrowsOverFindableClusTPC) dDauXrowsOverFindableClusTPC = dNegXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return 0x0;
+  const auto dDauXrowsOverFindableClusTPC(dPosXrowsOverFindableClusTPC<dNegXrowsOverFindableClusTPC ?
+                                          dPosXrowsOverFindableClusTPC :
+                                          dNegXrowsOverFindableClusTPC);
+  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return nullptr;
 //=============================================================================
 
-  Short_t nPosCharge = pDauPosRD->Charge();
-  Short_t nNegCharge = pDauNegRD->Charge();
-  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return 0x0;
+  const auto nPosCharge(pDauPosRD->Charge());
+  const auto nNegCharge(pDauNegRD->Charge());
+  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return nullptr;
 
   Double_t dPosPxPyPz[3] = { 0., 0., 0. };
   Double_t dNegPxPyPz[3] = { 0., 0., 0. };
@@ -879,49 +857,50 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *p
     dNegPxPyPz[0] = pV0RD->MomNegX(); dNegPxPyPz[1] = pV0RD->MomNegY(); dNegPxPyPz[2] = pV0RD->MomNegZ();
   }
 
-  TVector3 v3Pos(dPosPxPyPz);
-  TVector3 v3Neg(dNegPxPyPz);
-
-  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return 0x0;
-  Double_t dPosEta = v3Pos.Eta(); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return 0x0;
-  Double_t dNegEta = v3Neg.Eta(); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return 0x0;
+  const TVector3 v3Pos(dPosPxPyPz);
+  const TVector3 v3Neg(dNegPxPyPz);
+  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return nullptr;
+  const auto dPosEta(v3Pos.Eta()); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return nullptr;
+  const auto dNegEta(v3Neg.Eta()); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  Int_t inp = TMath::Abs(pDauPosRD->GetLabel()); if (inp<0) return 0x0;
-  Int_t inn = TMath::Abs(pDauNegRD->GetLabel()); if (inn<0) return 0x0;
-  AliAODMCParticle *pDauPosMC = (AliAODMCParticle*)MCEvent()->GetTrack(inp); if (!pDauPosMC) return 0x0;
-  AliAODMCParticle *pDauNegMC = (AliAODMCParticle*)MCEvent()->GetTrack(inn); if (!pDauNegMC) return 0x0;
+  const auto inp(TMath::Abs(pDauPosRD->GetLabel())); if (inp<0) return nullptr;
+  auto pDauPosMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inp))); if (!pDauPosMC) return nullptr;
+  const auto imp(pDauPosMC->GetMother()); if (imp<0) return nullptr;
 
-  Int_t imp = pDauPosMC->GetMother(); if (imp<0) return 0x0;
-  Int_t imn = pDauNegMC->GetMother(); if (imn<0) return 0x0;
-  if (imp != imn) return 0x0;
+  const auto inn(TMath::Abs(pDauNegRD->GetLabel())); if (inn<0) return nullptr;
+  const auto pDauNegMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inn))); if (!pDauNegMC) return nullptr;
+  const auto imn(pDauNegMC->GetMother()); if (imn<0) return nullptr;
 
-  AliAODMCParticle *pV0MC = (AliAODMCParticle*)MCEvent()->GetTrack(imp); if (!pV0MC) return 0x0;
-  if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return 0x0;
+  if (imp != imn) return nullptr;
+  const auto pV0MC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(imp))); if (!pV0MC) return nullptr;
+  if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return nullptr;
 
-  Int_t idvMC = pV0MC->GetPdgCode();
-  Int_t idp = pDauPosMC->GetPdgCode();
-  Int_t idn = pDauNegMC->GetPdgCode();
-  Bool_t bIsKshort = ((idp==211)  && (idn==-211)  && (idvMC== 310));
-  Bool_t bIsLambda = ((idp==2212) && (idn==-211)  && (idvMC== 3122));
-  Bool_t bIsAntiLa = ((idp==211)  && (idn==-2212) && (idvMC==-3122));
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  const auto idvMC(pV0MC->GetPdgCode());
+  const auto idp(pDauPosMC->GetPdgCode());
+  const auto idn(pDauNegMC->GetPdgCode());
+  auto bIsKshort((idp==211)  && (idn==-211)  && (idvMC== 310));
+  auto bIsLambda((idp==2212) && (idn==-211)  && (idvMC== 3122));
+  auto bIsAntiLa((idp==211)  && (idn==-2212) && (idvMC==-3122));
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  UInt_t wsvMC = 0;
-  if (pV0MC->IsPrimary())                wsvMC |= AliPicoHeaderCJ::kPrimary;
-  if (pV0MC->IsPhysicalPrimary())        wsvMC |= AliPicoHeaderCJ::kPhysicalPrimary;
-  if (pV0MC->IsSecondaryFromWeakDecay()) wsvMC |= AliPicoHeaderCJ::kSecondaryFromWeakDecay;
-  if (pV0MC->IsSecondaryFromMaterial())  wsvMC |= AliPicoHeaderCJ::kSecondaryFromMaterial;
+  UInt_t wsvMC(0);
+  if (pV0MC->IsPrimary())                wsvMC |= AliPicoBase::kPrimary;
+  if (pV0MC->IsPhysicalPrimary())        wsvMC |= AliPicoBase::kPhysicalPrimary;
+  if (pV0MC->IsSecondaryFromWeakDecay()) wsvMC |= AliPicoBase::kSecondaryFromWeakDecay;
+  if (pV0MC->IsSecondaryFromMaterial())  wsvMC |= AliPicoBase::kSecondaryFromMaterial;
 
-  Int_t  idmMC = 0;
-  UInt_t wsmMC = 0;
-  Double_t dMotherPt  = 0.;
-  Double_t dMotherEta = 0.;
-  Double_t dMotherRap = 0.;
+  auto idmMC(0);
+  UInt_t wsmMC(0);
+  auto dMotherPt(0.);
+  auto dMotherEta(0.);
+  auto dMotherRap(0.);
   if (bIsLambda || bIsAntiLa) {
-    Int_t imv = pV0MC->GetMother(); if (imv>=0) {
-      AliAODMCParticle *pMother = (AliAODMCParticle*)MCEvent()->GetTrack(imv);
+    const auto imv(pV0MC->GetMother());
+
+    if (imv>=0) {
+      const auto pMother(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(imv)));
 
       if (pMother) {
         idmMC = pMother->GetPdgCode();
@@ -931,17 +910,17 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *p
           dMotherEta = pMother->Eta();
           dMotherRap = pMother->Y();
 
-          if (pMother->IsPrimary())                wsmMC |= AliPicoHeaderCJ::kPrimary;
-          if (pMother->IsPhysicalPrimary())        wsmMC |= AliPicoHeaderCJ::kPhysicalPrimary;
-          if (pMother->IsSecondaryFromWeakDecay()) wsmMC |= AliPicoHeaderCJ::kSecondaryFromWeakDecay;
-          if (pMother->IsSecondaryFromMaterial())  wsmMC |= AliPicoHeaderCJ::kSecondaryFromMaterial;
+          if (pMother->IsPrimary())                wsmMC |= AliPicoBase::kPrimary;
+          if (pMother->IsPhysicalPrimary())        wsmMC |= AliPicoBase::kPhysicalPrimary;
+          if (pMother->IsSecondaryFromWeakDecay()) wsmMC |= AliPicoBase::kSecondaryFromWeakDecay;
+          if (pMother->IsSecondaryFromMaterial())  wsmMC |= AliPicoBase::kSecondaryFromMaterial;
         }
       }
     }
   }
 //=============================================================================
 
-  Double_t dV0CosPA = pV0RD->CosPointingAngle(fPrimaryVtx);
+  const auto dV0CosPA(pV0RD->CosPointingAngle(fPrimaryVtx));
 
   if (bIsKshort) if (dV0CosPA<fCutMinKshortCosPA) {
     bIsKshort = kFALSE;
@@ -952,26 +931,26 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0DistToPV = 0.;
-  for (Int_t i=0; i<3; i++) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
-  Double_t dV0DistToPVoverP = TMath::Sqrt(dV0DistToPV) / (pV0RD->P()+1e-10);
+  auto dV0DistToPV(0.);
+  for (auto i=0; i<3; ++i) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
+  const auto dV0DistToPVoverP(TMath::Sqrt(dV0DistToPV) / (pV0RD->P()+1e-10));
 
-  if (bIsKshort) if ((dV0DistToPVoverP*fgkMassKshort)>fCutMaxKshortCtau) {
+  if (bIsKshort) if ((dV0DistToPVoverP*AliPicoBase::MassKshort())>fCutMaxKshortCtau) {
     bIsKshort = kFALSE;
   }
 
-  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*fgkMassLambda)>fCutMaxLambdaCtau) {
+  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*AliPicoBase::MassLambda())>fCutMaxLambdaCtau) {
     bIsLambda = kFALSE;
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0ArmFrac = pV0RD->PtArmV0() / (TMath::Abs(pV0RD->AlphaV0())+1e-12);
+  const auto dV0ArmFrac(pV0RD->PtArmV0() / (TMath::Abs(pV0RD->AlphaV0())+1e-12));
 
   if (bIsKshort && (fCutMaxKshortArmFrac>0.)) if (dV0ArmFrac>fCutMaxKshortArmFrac) {
     bIsKshort = kFALSE;
@@ -982,157 +961,139 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliAODv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Int_t wMask = 0;
+  UInt_t wMask(0);
   if (bIsKshort) {
-    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
-    TLorentzVector vKshort = vPosPion + vNegPion;
+    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-    Double_t dKshortInvM = vKshort.M();
-    Double_t dLower = 0.430006 - 0.0110029*dV0Pt;
-    Double_t dUpper = 0.563707 + 0.0114979*dV0Pt;
-    if ((dKshortInvM<dLower) || (dKshortInvM>dUpper)) return 0x0;
+    const auto dKshortInvM((vPosPion+vNegPion).M());
+    if ((dKshortInvM<(0.430006-0.0110029*dV0Pt)) ||
+        (dKshortInvM>(0.563707+0.0114979*dV0Pt))) return nullptr;
 
     if (fCutMinKshortDeltaM>0.) {
-      TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-      TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
-
-      TLorentzVector vLamvda = vPosProton + vNegPion;
-      TLorentzVector vAntiLa = vNegProton + vPosPion;
-
-      Double_t dLambdaInvM = vLamvda.M();
-      Double_t dAntiLaInvM = vAntiLa.M();
-      if ((TMath::Abs(dLambdaInvM-fgkMassLambda)<fCutMinKshortDeltaM) ||
-          (TMath::Abs(dAntiLaInvM-fgkMassLambda)<fCutMinKshortDeltaM)) return 0x0;
+      TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+      TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
+      if ((TMath::Abs((vPosProton+vNegPion).M()-AliPicoBase::MassLambda())<fCutMinKshortDeltaM) ||
+          (TMath::Abs((vNegProton+vPosPion).M()-AliPicoBase::MassLambda())<fCutMinKshortDeltaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kKshort;
+    wMask = AliPicoBase::kKshort;
   }
 
   if (bIsLambda) {
-    TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-    TLorentzVector vNegPion;   vNegPion.SetVectM(v3Neg, fgkMassPion);
-    TLorentzVector vLamvda = vPosProton + vNegPion;
+    TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+    TLorentzVector vNegPion;   vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-    Double_t dLambdaInvM = vLamvda.M();
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-    if ((dLambdaInvM<dLower) || (dLambdaInvM>dUpper)) return 0x0;
+    const auto dLambdaInvM((vPosProton+vNegPion).M());
+    if ((dLambdaInvM<(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt))) ||
+        (dLambdaInvM>(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt)))) return nullptr;
 
     if (fCutMinLambdaDeletaM>0.) {
-      TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-      TLorentzVector vKshort = vPosPion + vNegPion;
-
-      Double_t dKshortInvM = vKshort.M();
-      if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) return 0x0;
+      TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+      if ((TMath::Abs((vPosPion+vNegPion).M()-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kLambda;
+    wMask = AliPicoBase::kLambda;
   }
 
   if (bIsAntiLa) {
-    TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
-    TLorentzVector vPosPion;   vPosPion.SetVectM(v3Pos, fgkMassPion);
-    TLorentzVector vAntiLa = vNegProton + vPosPion;
+    TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
+    TLorentzVector vPosPion;   vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
 
-    Double_t dAntiLaInvM = vAntiLa.M();
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-    if ((dAntiLaInvM<dLower) || (dAntiLaInvM>dUpper)) return 0x0;
+    const auto dAntiLaInvM((vNegProton+vPosPion).M());
+    if ((dAntiLaInvM<(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt))) ||
+        (dAntiLaInvM>(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt)))) return nullptr;
 
     if (fCutMinLambdaDeletaM>0.) {
-      TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
-      TLorentzVector vKshort = vPosPion + vNegPion;
-
-      Double_t dKshortInvM = vKshort.M();
-      if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) return 0x0;
+      TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
+      if ((TMath::Abs((vPosPion+vNegPion).M()-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kAntiLambda;
+    wMask = AliPicoBase::kAntiLambda;
   }
 //=============================================================================
 
-  Bool_t bPosInJC = kFALSE;
-  Bool_t bNegInJC = kFALSE;
-  AliPicoV0MC *pPicoV0 = new AliPicoV0MC(wMask,
-                                         dV0Radius,
-                                         dV0CosPA,
-                                         dV0DistToPVoverP,
-                                         dDausDCA,
-                                         dPosDCAtoPV,
-                                         dNegDCAtoPV,
-                                         dDauXrowsTPC,
-                                         dDauXrowsOverFindableClusTPC,
-                                         v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
-                                         v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
-                                         bPosInJC, bNegInJC,
-                                         idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->E(),
-                                         idmMC, wsmMC, dMotherPt, dMotherEta, dMotherRap);
-
-
-  return pPicoV0;
+  auto bPosInJC(kFALSE);
+  auto bNegInJC(kFALSE);
+  return (new AliPicoV0MC(wMask,
+                          dV0Radius,
+                          dV0CosPA,
+                          dV0DistToPVoverP,
+                          dDausDCA,
+                          dPosDCAtoPV,
+                          dNegDCAtoPV,
+                          dDauXrowsTPC,
+                          dDauXrowsOverFindableClusTPC,
+                          v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
+                          v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
+                          bPosInJC, bNegInJC,
+                          idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->E(),
+                          idmMC, wsmMC, dMotherPt, dMotherEta, dMotherRap));
 }
 
 //_____________________________________________________________________________
-AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliESDv0 const *pV0RD)
+AliPicoV0MC *AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliESDv0 const *pV0RD)
 {
 //
 //  AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC
 //
 
-  AliStack *pStack = MCEvent()->Stack(); if (!pStack) return 0x0;
-  Int_t nPrimary = pStack->GetNprimary();
+  const auto pStack(MCEvent()->Stack()); if (!pStack) return nullptr;
 //=============================================================================
 
-  if (pV0RD->GetOnFlyStatus()) return 0x0;
-  if (pV0RD->GetChi2V0()>fCutMaxV0Chi2) return 0x0;
+  if (pV0RD->GetOnFlyStatus()) return nullptr;
+  if (pV0RD->GetChi2V0()>fCutMaxV0Chi2) return nullptr;
 
-  Double_t dV0Pt = pV0RD->Pt(); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return 0x0;
+  const auto dV0Pt(pV0RD->Pt()); if ((dV0Pt<fCutMinV0Pt) || (dV0Pt>fCutMaxV0Pt)) return nullptr;
 //=============================================================================
-  
+
   Double_t dV0Vtx[3];  pV0RD->GetXYZ(dV0Vtx[0], dV0Vtx[1], dV0Vtx[2]);
-  Double_t dV0Radius = TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]);
-  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return 0x0; 
+  const auto dV0Radius(TMath::Sqrt(dV0Vtx[0]*dV0Vtx[0] + dV0Vtx[1]*dV0Vtx[1]));
+  if ((dV0Radius<fCutMinV0Radius) || (dV0Radius>fCutMaxV0Radius)) return nullptr;
 
-  Double_t dDausDCA = pV0RD->GetDcaV0Daughters(); if (dDausDCA>fCutMaxDausDCA) return 0x0;
+  const auto dDausDCA(pV0RD->GetDcaV0Daughters()); if (dDausDCA>fCutMaxDausDCA) return nullptr;
 //=============================================================================
 
-  Int_t nPosIndex = TMath::Abs(pV0RD->GetPindex()); if (nPosIndex<0) return 0x0;
-  Int_t nNegIndex = TMath::Abs(pV0RD->GetNindex()); if (nNegIndex<0) return 0x0;
+  const auto nPosIndex(TMath::Abs(pV0RD->GetPindex())); if (nPosIndex<0) return nullptr;
+  const auto nNegIndex(TMath::Abs(pV0RD->GetNindex())); if (nNegIndex<0) return nullptr;
 
-  AliESDtrack *pDauPosRD = fEventESD->GetTrack(nPosIndex); if (!pDauPosRD) return 0x0;
-  AliESDtrack *pDauNegRD = fEventESD->GetTrack(nNegIndex); if (!pDauNegRD) return 0x0;
+  auto pDauPosRD(fEventESD->GetTrack(nPosIndex)); if (!pDauPosRD) return nullptr;
+  auto pDauNegRD(fEventESD->GetTrack(nNegIndex)); if (!pDauNegRD) return nullptr;
 
-  Double_t dMegField = fEventESD->GetMagneticField();
-  Double_t dPosDCAtoPV = TMath::Abs(pDauPosRD->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)); if (dPosDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
-  Double_t dNegDCAtoPV = TMath::Abs(pDauNegRD->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)); if (dNegDCAtoPV<fCutMinDauDCAtoPV) return 0x0;
+  const auto dMegField(fEventESD->GetMagneticField());
+  const auto dPosDCAtoPV(TMath::Abs(pDauPosRD->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)));
+  if (dPosDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
+
+  const auto dNegDCAtoPV(TMath::Abs(pDauNegRD->GetD(fPrimaryVtx[0],fPrimaryVtx[1],dMegField)));
+  if (dNegDCAtoPV<fCutMinDauDCAtoPV) return nullptr;
 //=============================================================================
 
-  if (!(pDauPosRD->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if (!(pDauNegRD->GetStatus() & AliESDtrack::kTPCrefit)) return 0x0;
-  if ((pDauPosRD->GetKinkIndex(0)>0) || (pDauNegRD->GetKinkIndex(0)>0)) return 0x0;
+  if (!(pDauPosRD->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if (!(pDauNegRD->GetStatus() & AliESDtrack::kTPCrefit)) return nullptr;
+  if ((pDauPosRD->GetKinkIndex(0)>0) || (pDauNegRD->GetKinkIndex(0)>0)) return nullptr;
 
-  Float_t dPosXrowsTPC = pDauPosRD->GetTPCClusterInfo(2,1);
-  Float_t dNegXrowsTPC = pDauNegRD->GetTPCClusterInfo(2,1);
-  Float_t dDauXrowsTPC = dPosXrowsTPC; if (dDauXrowsTPC>dNegXrowsTPC) dDauXrowsTPC = dNegXrowsTPC;
-  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return 0x0;
+  const auto dPosXrowsTPC(pDauPosRD->GetTPCClusterInfo(2,1));
+  const auto dNegXrowsTPC(pDauNegRD->GetTPCClusterInfo(2,1));
+  const auto dDauXrowsTPC((dPosXrowsTPC<dNegXrowsTPC) ? dPosXrowsTPC : dNegXrowsTPC);
+  if (dDauXrowsTPC<fCutMinDauXrowsTPC) return nullptr;
 
-  UShort_t wPosTPCNClsF = pDauPosRD->GetTPCNclsF(); if (wPosTPCNClsF<=0) return 0x0;
-  UShort_t wNegTPCNClsF = pDauNegRD->GetTPCNclsF(); if (wNegTPCNClsF<=0) return 0x0;
-  Double_t dPosXrowsOverFindableClusTPC = ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF);
-  Double_t dNegXrowsOverFindableClusTPC = ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF);
+  const auto wPosTPCNClsF(pDauPosRD->GetTPCNclsF()); if (wPosTPCNClsF<=0) return nullptr;
+  const auto wNegTPCNClsF(pDauNegRD->GetTPCNclsF()); if (wNegTPCNClsF<=0) return nullptr;
+  const auto dPosXrowsOverFindableClusTPC( ((Double_t)dPosXrowsTPC) / ((Double_t)wPosTPCNClsF) );
+  const auto dNegXrowsOverFindableClusTPC( ((Double_t)dNegXrowsTPC) / ((Double_t)wNegTPCNClsF) );
 
-  Double_t dDauXrowsOverFindableClusTPC = dPosXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC>dNegXrowsOverFindableClusTPC) dDauXrowsOverFindableClusTPC = dNegXrowsOverFindableClusTPC;
-  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return 0x0;
+  const auto dDauXrowsOverFindableClusTPC((dPosXrowsOverFindableClusTPC<dNegXrowsOverFindableClusTPC) ?
+                                           dPosXrowsOverFindableClusTPC :
+                                           dNegXrowsOverFindableClusTPC);
+  if (dDauXrowsOverFindableClusTPC<fCutMinDauXrowsOverFindableClusTPC) return nullptr;
 //=============================================================================
 
-  Short_t nPosCharge = pDauPosRD->Charge();
-  Short_t nNegCharge = pDauNegRD->Charge();
-  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return 0x0;
+  const auto nPosCharge(pDauPosRD->Charge());
+  const auto nNegCharge(pDauNegRD->Charge());
+  if ((nPosCharge==0) || (nNegCharge==0) || (nPosCharge==nNegCharge)) return nullptr;
 
   Double_t dPosPxPyPz[3] = { 0., 0., 0. };
   Double_t dNegPxPyPz[3] = { 0., 0., 0. };
@@ -1147,69 +1108,78 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliESDv0 const *p
     pV0RD->GetNPxPyPz(dNegPxPyPz[0], dNegPxPyPz[1], dNegPxPyPz[2]);
   }
 
-  TVector3 v3Pos(dPosPxPyPz);
-  TVector3 v3Neg(dNegPxPyPz);
-
-  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return 0x0;
-  Double_t dPosEta = v3Pos.Eta(); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return 0x0;
-  Double_t dNegEta = v3Neg.Eta(); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return 0x0;
+  const TVector3 v3Pos(dPosPxPyPz);
+  const TVector3 v3Neg(dNegPxPyPz);
+  if ((v3Pos.Pt()<fCutMinDauPt) || (v3Neg.Pt()<fCutMinDauPt)) return nullptr;
+  const auto dPosEta(v3Pos.Eta()); if ((dPosEta<fCutMinDauEta) || (dPosEta>fCutMaxDauEta)) return nullptr;
+  const auto dNegEta(v3Neg.Eta()); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  Int_t inp = TMath::Abs(pDauPosRD->GetLabel()); if (inp<0) return 0x0;
-  Int_t inn = TMath::Abs(pDauNegRD->GetLabel()); if (inn<0) return 0x0;
-  TParticle *pDauPosMC = ((AliMCParticle*)MCEvent()->GetTrack(inp))->Particle(); if (!pDauPosMC) return 0x0;
-  TParticle *pDauNegMC = ((AliMCParticle*)MCEvent()->GetTrack(inn))->Particle(); if (!pDauNegMC) return 0x0;
+  AliMCParticle *pDauTmpMC(nullptr);
+  const auto inp(TMath::Abs(pDauPosRD->GetLabel())); if (inp<0) return nullptr;
+  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(inp)); if (!pDauTmpMC) return nullptr;
+  const auto pDauPosMC(pDauTmpMC->Particle()); if (!pDauPosMC) return nullptr;
+  const auto imp(pDauPosMC->GetFirstMother()); if (imp<0) return nullptr;
 
-  Int_t imp = pDauPosMC->GetFirstMother(); if (imp<0) return 0x0;
-  Int_t imn = pDauNegMC->GetFirstMother(); if (imn<0) return 0x0;
-  if (imp != imn) return 0x0;
+  const auto inn(TMath::Abs(pDauNegRD->GetLabel())); if (inn<0) return nullptr;
+  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(inn)); if (!pDauTmpMC) return nullptr;
+  const auto pDauNegMC(pDauTmpMC->Particle()); if (!pDauNegMC) return nullptr;
+  const auto imn(pDauNegMC->GetFirstMother()); if (imn<0) return nullptr;
 
-  TParticle *pV0MC = ((AliMCParticle*)MCEvent()->GetTrack(imp))->Particle(); if (!pV0MC) return 0x0;
-  if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return 0x0;
+  if (imp != imn) return nullptr;
+  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(imp)); if (!pDauTmpMC) return nullptr;
+  const auto pV0MC(pDauTmpMC->Particle()); if (!pV0MC) return nullptr;
+  if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return nullptr;
 
-  Int_t idvMC = pV0MC->GetPdgCode();
-  Int_t idp = pDauPosMC->GetPdgCode();
-  Int_t idn = pDauNegMC->GetPdgCode();
-  Bool_t bIsKshort = ((idp==211)  && (idn==-211)  && (idvMC== 310));
-  Bool_t bIsLambda = ((idp==2212) && (idn==-211)  && (idvMC== 3122));
-  Bool_t bIsAntiLa = ((idp==211)  && (idn==-2212) && (idvMC==-3122));
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  const auto idvMC(pV0MC->GetPdgCode());
+  const auto idp(pDauPosMC->GetPdgCode());
+  const auto idn(pDauNegMC->GetPdgCode());
+  auto bIsKshort((idp==211)  && (idn==-211)  && (idvMC== 310));
+  auto bIsLambda((idp==2212) && (idn==-211)  && (idvMC== 3122));
+  auto bIsAntiLa((idp==211)  && (idn==-2212) && (idvMC==-3122));
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  UInt_t wsvMC = 0;
-  if (imp<nPrimary)                          wsvMC |= AliPicoHeaderCJ::kPrimary;
-  if (pStack->IsPhysicalPrimary(imp))        wsvMC |= AliPicoHeaderCJ::kPhysicalPrimary;
-  if (pStack->IsSecondaryFromWeakDecay(imp)) wsvMC |= AliPicoHeaderCJ::kSecondaryFromWeakDecay;
-  if (pStack->IsSecondaryFromMaterial(imp))  wsvMC |= AliPicoHeaderCJ::kSecondaryFromMaterial;
+  UInt_t wsvMC(0);
+  if (imp<pStack->GetNprimary())             wsvMC |= AliPicoBase::kPrimary;
+  if (pStack->IsPhysicalPrimary(imp))        wsvMC |= AliPicoBase::kPhysicalPrimary;
+  if (pStack->IsSecondaryFromWeakDecay(imp)) wsvMC |= AliPicoBase::kSecondaryFromWeakDecay;
+  if (pStack->IsSecondaryFromMaterial(imp))  wsvMC |= AliPicoBase::kSecondaryFromMaterial;
 
-  Int_t  idmMC = 0;
-  UInt_t wsmMC = 0;
-  Double_t dMotherPt  = 0.;
-  Double_t dMotherEta = 0.;
-  Double_t dMotherRap = 0.;
+  auto   idmMC(0);
+  UInt_t wsmMC(0);
+  auto dMotherPt(0.);
+  auto dMotherEta(0.);
+  auto dMotherRap(0.);
   if (bIsLambda || bIsAntiLa) {
-    Int_t imv = pV0MC->GetFirstMother(); if (imv>=0) {
-      TParticle *pMother = ((AliMCParticle*)MCEvent()->GetTrack(imv))->Particle();
+    const auto imv(pV0MC->GetFirstMother());
 
-      if (pMother) {
-        idmMC = pMother->GetPdgCode();
-        if ((bIsLambda && ((idmMC== 3312) || (idmMC== 3322))) ||
-            (bIsAntiLa && ((idmMC==-3312) || (idmMC==-3322)))) {
-          dMotherPt  = pMother->Pt();
-          dMotherEta = pMother->Eta();
-          dMotherRap = pMother->Y();
+    if (imv>=0) {
+      pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(imv));
 
-          if (imp<nPrimary)                          wsmMC |= AliPicoHeaderCJ::kPrimary;
-          if (pStack->IsPhysicalPrimary(imv))        wsmMC |= AliPicoHeaderCJ::kPhysicalPrimary;
-          if (pStack->IsSecondaryFromWeakDecay(imv)) wsmMC |= AliPicoHeaderCJ::kSecondaryFromWeakDecay;
-          if (pStack->IsSecondaryFromMaterial(imv))  wsmMC |= AliPicoHeaderCJ::kSecondaryFromMaterial;
+      if (pDauTmpMC) {
+        auto pMother(pDauTmpMC->Particle());
+
+        if (pMother) {
+          idmMC = pMother->GetPdgCode();
+          if ((bIsLambda && ((idmMC== 3312) || (idmMC== 3322))) ||
+              (bIsAntiLa && ((idmMC==-3312) || (idmMC==-3322)))) {
+            dMotherPt  = pMother->Pt();
+            dMotherEta = pMother->Eta();
+            dMotherRap = pMother->Y();
+
+            if (imp<pStack->GetNprimary())             wsmMC |= AliPicoBase::kPrimary;
+            if (pStack->IsPhysicalPrimary(imv))        wsmMC |= AliPicoBase::kPhysicalPrimary;
+            if (pStack->IsSecondaryFromWeakDecay(imv)) wsmMC |= AliPicoBase::kSecondaryFromWeakDecay;
+            if (pStack->IsSecondaryFromMaterial(imv))  wsmMC |= AliPicoBase::kSecondaryFromMaterial;
+          }
         }
       }
     }
   }
 //=============================================================================
 
-  Double_t dV0CosPA = pV0RD->GetV0CosineOfPointingAngle(fPrimaryVtx[0], fPrimaryVtx[1], fPrimaryVtx[2]);
+  const auto dV0CosPA(pV0RD->GetV0CosineOfPointingAngle(fPrimaryVtx[0],fPrimaryVtx[1],fPrimaryVtx[2]));
 
   if (bIsKshort) if (dV0CosPA<fCutMinKshortCosPA) {
     bIsKshort = kFALSE;
@@ -1220,26 +1190,26 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliESDv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0DistToPV = 0.;
-  for (Int_t i=0; i<3; i++) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
-  Double_t dV0DistToPVoverP = TMath::Sqrt(dV0DistToPV) / (pV0RD->P()+1e-10);
+  auto dV0DistToPV(0.);
+  for (auto i=0; i<3; ++i) dV0DistToPV +=  ((dV0Vtx[i]-fPrimaryVtx[i]) * (dV0Vtx[i]-fPrimaryVtx[i]));
+  const auto dV0DistToPVoverP(TMath::Sqrt(dV0DistToPV) / (pV0RD->P()+1e-10));
 
-  if (bIsKshort) if ((dV0DistToPVoverP*fgkMassKshort)>fCutMaxKshortCtau) {
+  if (bIsKshort) if ((dV0DistToPVoverP*AliPicoBase::MassKshort())>fCutMaxKshortCtau) {
     bIsKshort = kFALSE;
   }
 
-  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*fgkMassLambda)>fCutMaxLambdaCtau) {
+  if (bIsLambda || bIsAntiLa) if ((dV0DistToPVoverP*AliPicoBase::MassLambda())>fCutMaxLambdaCtau) {
     bIsLambda = kFALSE;
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Double_t dV0ArmFrac = pV0RD->PtArmV0() / (TMath::Abs(pV0RD->AlphaV0())+1e-12);
+  const auto dV0ArmFrac(pV0RD->PtArmV0() / (TMath::Abs(pV0RD->AlphaV0())+1e-12));
 
   if (bIsKshort && (fCutMaxKshortArmFrac>0.)) if (dV0ArmFrac>fCutMaxKshortArmFrac) {
     bIsKshort = kFALSE;
@@ -1250,99 +1220,77 @@ AliPicoV0MC* AliAnalysisTaskSEPicoV0Maker::SelectV0CandidateMC(AliESDv0 const *p
     bIsAntiLa = kFALSE;
   }
 
-  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return 0x0;
+  if (!(bIsKshort || bIsLambda || bIsAntiLa)) return nullptr;
 //=============================================================================
 
-  Int_t wMask = 0;
-
+  UInt_t wMask(0);
   if (bIsKshort) {
-    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
-    TLorentzVector vKshort = vPosPion + vNegPion;
+    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-    Double_t dKshortInvM = vKshort.M();
-    Double_t dLower = 0.430006 - 0.0110029*dV0Pt;
-    Double_t dUpper = 0.563707 + 0.0114979*dV0Pt;
-    if ((dKshortInvM<dLower) || (dKshortInvM>dUpper)) return 0x0;
+    const auto dKshortInvM((vPosPion+vNegPion).M());
+    if ((dKshortInvM<(0.430006 - 0.0110029*dV0Pt)) ||
+        (dKshortInvM>(0.563707 + 0.0114979*dV0Pt))) return nullptr;
 
     if (fCutMinKshortDeltaM>0.) {
-      TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-      TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
-
-      TLorentzVector vLamvda = vPosProton + vNegPion;
-      TLorentzVector vAntiLa = vNegProton + vPosPion;
-
-      Double_t dLambdaInvM = vLamvda.M();
-      Double_t dAntiLaInvM = vAntiLa.M();
-      if ((TMath::Abs(dLambdaInvM-fgkMassLambda)<fCutMinKshortDeltaM) ||
-          (TMath::Abs(dAntiLaInvM-fgkMassLambda)<fCutMinKshortDeltaM)) return 0x0;
+      TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+      TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
+      if ((TMath::Abs((vPosProton+vNegPion).M()-AliPicoBase::MassLambda())<fCutMinKshortDeltaM) ||
+          (TMath::Abs((vNegProton+vPosPion).M()-AliPicoBase::MassLambda())<fCutMinKshortDeltaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kKshort;
+    wMask = AliPicoBase::kKshort;
   }
 
   if (bIsLambda) {
-    TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, fgkMassProton);
-    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
-    TLorentzVector vLamvda = vPosProton + vNegPion;
+    TLorentzVector vPosProton; vPosProton.SetVectM(v3Pos, AliPicoBase::MassProton());
+    TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
 
-    Double_t dLambdaInvM = vLamvda.M();
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-    if ((dLambdaInvM<dLower) || (dLambdaInvM>dUpper)) return 0x0;
+    const auto dLambdaInvM((vPosProton+vNegPion).M());
+    if ((dLambdaInvM<(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt))) ||
+        (dLambdaInvM>(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt)))) return nullptr;
 
     if (fCutMinLambdaDeletaM>0.) {
-      TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-      TLorentzVector vKshort = vPosPion + vNegPion;
-
-      Double_t dKshortInvM = vKshort.M();
-      if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) return 0x0;
+      TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
+      if ((TMath::Abs((vPosPion+vNegPion).M()-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kLambda;
+    wMask = AliPicoBase::kLambda;
   }
 
   if (bIsAntiLa) {
-    TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, fgkMassProton);
-    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, fgkMassPion);
-    TLorentzVector vAntiLa = vNegProton + vPosPion;
-  
-    Double_t dAntiLaInvM = vAntiLa.M();
-    Double_t dLower = 1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt);
-    Double_t dUpper = 1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt);
-    if ((dAntiLaInvM<dLower) || (dAntiLaInvM>dUpper)) return 0x0;
-  
-    if (fCutMinLambdaDeletaM>0.) {
-      TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, fgkMassPion);
-      TLorentzVector vKshort = vPosPion + vNegPion;
+    TLorentzVector vNegProton; vNegProton.SetVectM(v3Neg, AliPicoBase::MassProton());
+    TLorentzVector vPosPion; vPosPion.SetVectM(v3Pos, AliPicoBase::MassPion());
 
-      Double_t dKshortInvM = vKshort.M();
-      if ((TMath::Abs(dKshortInvM-fgkMassKshort)<fCutMinLambdaDeletaM)) return 0x0;
+    const auto dAntiLaInvM((vNegProton+vPosPion).M());
+    if ((dAntiLaInvM<(1.09501 - 0.00523272*dV0Pt - 0.075269*TMath::Exp(-3.46339*dV0Pt))) ||
+        (dAntiLaInvM>(1.13688 + 0.00527838*dV0Pt + 0.084222*TMath::Exp(-3.80595*dV0Pt)))) return nullptr;
+
+    if (fCutMinLambdaDeletaM>0.) {
+      TLorentzVector vNegPion; vNegPion.SetVectM(v3Neg, AliPicoBase::MassPion());
+      if ((TMath::Abs((vPosPion+vNegPion).M()-AliPicoBase::MassKshort())<fCutMinLambdaDeletaM)) return nullptr;
     }
 
-    wMask = AliPicoHeaderCJ::kAntiLambda;
+    wMask = AliPicoBase::kAntiLambda;
   }
 //=============================================================================
 
-  Bool_t bPosInJC = kFALSE;
-  Bool_t bNegInJC = kFALSE;
-  AliPicoV0MC *pPicoV0 = new AliPicoV0MC(wMask,
-                                         dV0Radius,
-                                         dV0CosPA,
-                                         dV0DistToPVoverP,
-                                         dDausDCA,
-                                         dPosDCAtoPV,
-                                         dNegDCAtoPV,
-                                         dDauXrowsTPC,
-                                         dDauXrowsOverFindableClusTPC,
-                                         v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
-                                         v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
-                                         bPosInJC, bNegInJC,
-                                         idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->Energy(),
-                                         idmMC, wsmMC, dMotherPt, dMotherEta, dMotherRap);
-
-
-  return pPicoV0;
+  auto bPosInJC(kFALSE);
+  auto bNegInJC(kFALSE);
+  return (new AliPicoV0MC(wMask,
+                          dV0Radius,
+                          dV0CosPA,
+                          dV0DistToPVoverP,
+                          dDausDCA,
+                          dPosDCAtoPV,
+                          dNegDCAtoPV,
+                          dDauXrowsTPC,
+                          dDauXrowsOverFindableClusTPC,
+                          v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
+                          v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
+                          bPosInJC, bNegInJC,
+                          idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->Energy(),
+                          idmMC, wsmMC, dMotherPt, dMotherEta, dMotherRap));
 }
 
 //_____________________________________________________________________________
@@ -1353,72 +1301,114 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotAcpt()
 //
 
   fEventAcptMask = 0;
-  if (!InputEvent())  return (fEventAcptMask==0);
-  if (!fInputHandler) return (fEventAcptMask==0);
-
-  if (fCollisionType!=(AliPicoHeaderCJ::kPP)) {
-    fCentInfo = InputEvent()->GetCentrality();
-    if (!fCentInfo) return (fEventAcptMask==0);
-  }
+  if (!InputEvent())  return kTRUE;
+  if (!fInputHandler) return kTRUE;
 
   fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fEventESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if ((!fEventAOD) && (!fEventESD)) return (fEventAcptMask==0);
+  if ((!fEventAOD) && (!fEventESD)) return kTRUE;
+//=============================================================================
 
   fRespoPID = fInputHandler->GetPIDResponse();
   if (!fRespoPID) return kTRUE;
+//=============================================================================
 
-  if (fIsAnaInfoMC) {
-     if (MCEvent()) {
-      if (MCEvent()->GetNumberOfTracks()<=0) return (fEventAcptMask==0);
-    } else return (fEventAcptMask==0);
+  if (fIsAnaUseMC) {
+    if (MCEvent()) {
+      if (MCEvent()->GetNumberOfTracks()<=0) return kTRUE;
+    } else {
+      return kTRUE;
+    }
 
-    AliHeader *pHeader = MCEvent()->Header(); if (!pHeader) return (fEventAcptMask==0);
+    const auto pHeader(MCEvent()->Header()); if (!pHeader) return kTRUE;
 
     if (fIsDPMjetMC) {
-      AliGenDPMjetEventHeader *pDPMjetH = dynamic_cast<AliGenDPMjetEventHeader*>(pHeader->GenEventHeader());
+      const auto pDPMjetH(dynamic_cast<AliGenDPMjetEventHeader*>(pHeader->GenEventHeader()));
 
       if (pDPMjetH) {
-        Int_t nd0=0, nd1=0, nd2=0; pDPMjetH->GetNDiffractive(nd1, nd2, nd0);
-        if ((nd1+nd2) != (pDPMjetH->ProjectileParticipants() + pDPMjetH->TargetParticipants())) return (fEventAcptMask==0);
+        auto nd0(0), nd1(0), nd2(0);
+        pDPMjetH->GetNDiffractive(nd1, nd2, nd0);
+        if ((nd1+nd2) != (pDPMjetH->ProjectileParticipants() + pDPMjetH->TargetParticipants())) return kTRUE;
       }
     }
   }
 
-  fEventAcptMask |= AliPicoHeaderCJ::kEventAccCheck;
+  fEventAcptMask |= AliPicoBase::kEventCheck;
 //=============================================================================
 
-  if (fCollisionType==(AliPicoHeaderCJ::kPP)) {
-    fEventAcptMask |= AliPicoHeaderCJ::kEventAccMult;
-  } else {
-    if (fCentInfo->GetQuality()==0)
-      fEventAcptMask |= AliPicoHeaderCJ::kEventAccMult;
-    else
-      return (fEventAcptMask==0);
+  if ((fMultEsti.GetEntries()>0) || (!fMultEstDef.IsNull())) {
+    Float_t dMult(-999.);
+
+    if (fUseMultOld) {
+      auto pCentSel(InputEvent()->GetCentrality());
+      if (!pCentSel) { fEventAcptMask=0; return kTRUE; }
+      if (pCentSel->GetQuality()!=0) return kFALSE;
+
+      if (fMultEsti.GetEntries()>0) {
+        TObjString *ps(nullptr);
+        const auto next(fMultEsti.MakeIterator());
+        while ((ps = static_cast<TObjString*>((*next)()))) {
+          const auto s(ps->String());
+          const auto p(static_cast<TParameter<Float_t>*>((fMultEsti(s.Data()))));
+          if (p) p->SetVal(pCentSel->GetCentralityPercentile(s.Data()));
+        }
+      }
+
+      if (!fMultEstDef.IsNull()) dMult = pCentSel->GetCentralityPercentile(fMultEstDef.Data());
+    } else {
+      auto pMultSel(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+      if (!pMultSel) { fEventAcptMask=0; return kTRUE; }
+
+      if (fMultEsti.GetEntries()>0) {
+        TObjString *ps(nullptr);
+        const auto next(fMultEsti.MakeIterator());
+        while (((ps = static_cast<TObjString*>((*next)())))) {
+          const auto s(ps->String());
+          const auto p(static_cast<TParameter<Float_t>*>(fMultEsti(s.Data())));
+          if (p) p->SetVal(pMultSel->GetMultiplicityPercentile(s.Data()));
+        }
+      }
+
+      if (!fMultEstDef.IsNull()) dMult = pMultSel->GetMultiplicityPercentile(fMultEstDef.Data());
+    }
+
+    if (!fMultEstDef.IsNull()) if ((dMult<fCutMinMult) || (dMult>=fCutMaxMult)) return kFALSE;
   }
+
+  fEventAcptMask |= AliPicoBase::kEventMult;
 //=============================================================================
 
-  UInt_t wMask = fInputHandler->IsEventSelected();
-  if ((wMask & fTriggerMask) != fTriggerMask) return (fEventAcptMask==0);
-  if (fIsSkipFastOnly) if ((wMask & AliVEvent::kFastOnly) == AliVEvent::kFastOnly) return (fEventAcptMask==0);
+  const UInt_t wMask(fInputHandler->IsEventSelected());
+  if ((wMask & fTriggerMask) != fTriggerMask) return kFALSE;
+  if (fIsSkipFastOnly) if ((wMask & AliVEvent::kFastOnly) == AliVEvent::kFastOnly) return kFALSE;
 
-  fEventAcptMask |= AliPicoHeaderCJ::kEventAccTrigger;
+  fEventAcptMask |= AliPicoBase::kEventTrigger;
 //=============================================================================
 
-  const AliVVertex *pVertex = InputEvent()->GetPrimaryVertex(); if (!pVertex) return (fEventAcptMask==0);
-  pVertex->GetXYZ(fPrimaryVtx); if (TMath::Abs(fPrimaryVtx[2])>fCutMaxEventVzAbs) return (fEventAcptMask==0);
+  const auto pVertex(InputEvent()->GetPrimaryVertex());
+  if (!pVertex) return kFALSE;
+  pVertex->GetXYZ(fPrimaryVtx);
 
-  if ((fCollisionType==(AliPicoHeaderCJ::kPA)) || (fCollisionType==(AliPicoHeaderCJ::kAP))) {
-    if ( fAnaUtils->IsFirstEventInChunk(InputEvent()))    return (fEventAcptMask==0);
-    if (!fAnaUtils->IsVertexSelected2013pA(InputEvent())) return (fEventAcptMask==0);
+  if (fUseAnaUtils) {
+    auto pUtils(new AliAnalysisUtils());
+    if (!pUtils->IsVertexSelected2013pA(InputEvent()))  return kFALSE;
+    if (pUtils->IsSPDClusterVsTrackletBG(InputEvent())) return kFALSE;
+    if (pUtils->IsPileUpEvent(InputEvent())) return kFALSE;
 
-/*  if (fEventAOD) {
+    if ((fCollisionType==(AliPicoBase::kPA)) ||
+        (fCollisionType==(AliPicoBase::kAP))) {
+      if (pUtils->IsFirstEventInChunk(InputEvent())) return kFALSE;
+    }
+  }
+
+/*if ((fCollisionType==(AliPicoBase::kPA)) || (fCollisionType==(AliPicoBase::kAP))) {
+    if (fEventAOD) {
       const AliAODVertex *pVtxSPD = fEventAOD->GetPrimaryVertexSPD();
       const AliAODVertex *pVtxTrk = fEventAOD->GetPrimaryVertex();
       if ((!pVtxSPD) && (!pVtxTrk)) return (fEventAcptMask==0);
-    }*/
+    }
 
-/*  if (fEventESD) {
+    if (fEventESD) {
       Bool_t fHasVertex = kFALSE;
       const AliESDVertex *pVtxESD = fEventESD->GetPrimaryVertexTracks();
       if (pVtxESD->GetNContributors()<1) {
@@ -1433,32 +1423,24 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotAcpt()
       } else fHasVertex = kTRUE;
 
       if (!fHasVertex) return (fEventAcptMask==0);
-    }*/
-
+    }
   } else {
     if (fEventAOD) {
-      const AliAODVertex *pVtxSPD = fEventAOD->GetPrimaryVertexSPD(); if (!pVtxSPD) return (fEventAcptMask==0);
-      const AliAODVertex *pVtxTrk = fEventAOD->GetPrimaryVertex();    if (!pVtxTrk) return (fEventAcptMask==0);
+      const auto pVtxSPD(fEventAOD->GetPrimaryVertexSPD()); if (!pVtxSPD) return (fEventAcptMask==0);
+      const auto pVtxTrk(fEventAOD->GetPrimaryVertex());    if (!pVtxTrk) return (fEventAcptMask==0);
     }
 
     if (fEventESD) {
-      const AliESDVertex *pVtxPri = fEventESD->GetPrimaryVertex();       if (!pVtxPri) return (fEventAcptMask==0);
-      const AliESDVertex *pVtxSPD = fEventESD->GetPrimaryVertexSPD();    if (!pVtxSPD) return (fEventAcptMask==0);
-      const AliESDVertex *pVtxTrk = fEventESD->GetPrimaryVertexTracks(); if (!pVtxTrk) return (fEventAcptMask==0);
-      if ((!(pVtxPri->GetStatus())) && (!(pVtxSPD->GetStatus())) && (!(pVtxTrk->GetStatus()))) return (fEventAcptMask==0);
+      const auto pVtxPri(fEventESD->GetPrimaryVertex());       if (!pVtxPri) return (fEventAcptMask==0);
+      const auto pVtxSPD(fEventESD->GetPrimaryVertexSPD());    if (!pVtxSPD) return (fEventAcptMask==0);
+      const auto pVtxTrk(fEventESD->GetPrimaryVertexTracks()); if (!pVtxTrk) return (fEventAcptMask==0);
+      if ((!(pVtxPri->GetStatus())) &&
+          (!(pVtxSPD->GetStatus())) &&
+          (!(pVtxTrk->GetStatus()))) return (fEventAcptMask==0);
     }
-  }
+  }*/
 
-  fEventAcptMask |= AliPicoHeaderCJ::kEventAccVertex;
-//=============================================================================
-
-  if ((fCollisionType==AliPicoHeaderCJ::kPP) ||
-      (fCollisionType==AliPicoHeaderCJ::kPA) ||
-      (fCollisionType==AliPicoHeaderCJ::kAP)) {
-    if (fAnaUtils->IsPileUpEvent(InputEvent())) return (fEventAcptMask==0);
-  }
-
-  fEventAcptMask |= AliPicoHeaderCJ::kEventAccPileup;
+  fEventAcptMask |= AliPicoBase::kEventVertex;
 //=============================================================================
 
   if (fIsRefitV0sESD && fEventESD) {
@@ -1475,8 +1457,9 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotAcpt()
     aV0vtxer.SetDefaultCuts(dCuts);
     aV0vtxer.Tracks2V0vertices(fEventESD);
   }
+//=============================================================================
 
-  return (fEventAcptMask==0);
+  return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -1486,8 +1469,8 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotINEL()
 //  AliAnalysisTaskSEPicoV0Maker::IsEventNotINEL
 //
 
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccCheck) != AliPicoHeaderCJ::kEventAccCheck) return kTRUE;
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccMult)  != AliPicoHeaderCJ::kEventAccMult)  return kTRUE;
+  if ((fEventAcptMask & AliPicoBase::kEventCheck) != AliPicoBase::kEventCheck) return kTRUE;
+  if ((fEventAcptMask & AliPicoBase::kEventMult)  != AliPicoBase::kEventMult)  return kTRUE;
 
   return kFALSE;
 }
@@ -1500,10 +1483,8 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotMBsa()
 //
 
   if (IsEventNotINEL()) return kTRUE;
-
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccTrigger) != AliPicoHeaderCJ::kEventAccTrigger) return kTRUE;
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccVertex)  != AliPicoHeaderCJ::kEventAccVertex)  return kTRUE;
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccPileup)  != AliPicoHeaderCJ::kEventAccPileup)  return kTRUE;
+  if ((fEventAcptMask & AliPicoBase::kEventTrigger) != AliPicoBase::kEventTrigger) return kTRUE;
+  if ((fEventAcptMask & AliPicoBase::kEventVertex)  != AliPicoBase::kEventVertex)  return kTRUE;
 
   return kFALSE;
 }
@@ -1515,45 +1496,13 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsEH()
 //  AliAnalysisTaskSEPicoV0Maker::FillHistogramsEH
 //
 
-  Float_t dV0M = fCentInfo->GetCentralityPercentile("V0M");
-  Float_t dV0A = fCentInfo->GetCentralityPercentile("V0A");
-  Float_t dCL1 = fCentInfo->GetCentralityPercentile("CL1");
-  Float_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
+  const auto h(static_cast<TH1D*>(fOutputListEH->FindObject("hEventCheck")));
 
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccCheck) == AliPicoHeaderCJ::kEventAccCheck) {
-    ((TH1D*)fOutputListEH->FindObject("hEventAccCheck_V0M"))->Fill(dV0M);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccCheck_V0A"))->Fill(dV0A);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccCheck_CL1"))->Fill(dCL1);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccCheck_ZNA"))->Fill(dZNA);
-  }
-
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccMult) == AliPicoHeaderCJ::kEventAccMult) {
-    ((TH1D*)fOutputListEH->FindObject("hEventAccMult_V0M"))->Fill(dV0M);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccMult_V0A"))->Fill(dV0A);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccMult_CL1"))->Fill(dCL1);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccMult_ZNA"))->Fill(dZNA);
-  }
-
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccTrigger) == AliPicoHeaderCJ::kEventAccTrigger) {
-    ((TH1D*)fOutputListEH->FindObject("hEventAccTrigger_V0M"))->Fill(dV0M);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccTrigger_V0A"))->Fill(dV0A);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccTrigger_CL1"))->Fill(dCL1);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccTrigger_ZNA"))->Fill(dZNA);
-  }
-
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccVertex) == AliPicoHeaderCJ::kEventAccVertex) {
-    ((TH1D*)fOutputListEH->FindObject("hEventAccVertex_V0M"))->Fill(dV0M);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccVertex_V0A"))->Fill(dV0A);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccVertex_CL1"))->Fill(dCL1);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccVertex_ZNA"))->Fill(dZNA);
-  }
-
-  if ((fEventAcptMask & AliPicoHeaderCJ::kEventAccPileup) == AliPicoHeaderCJ::kEventAccPileup) {
-    ((TH1D*)fOutputListEH->FindObject("hEventAccPileup_V0M"))->Fill(dV0M);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccPileup_V0A"))->Fill(dV0A);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccPileup_CL1"))->Fill(dCL1);
-    ((TH1D*)fOutputListEH->FindObject("hEventAccPileup_ZNA"))->Fill(dZNA);
-  }
+  if (fEventAcptMask==0) h->Fill(0.);
+  if ((fEventAcptMask & AliPicoBase::kEventCheck)   == AliPicoBase::kEventCheck)   h->Fill(1.);
+  if ((fEventAcptMask & AliPicoBase::kEventMult)    == AliPicoBase::kEventMult)    h->Fill(2.);
+  if ((fEventAcptMask & AliPicoBase::kEventTrigger) == AliPicoBase::kEventTrigger) h->Fill(3.);
+  if ((fEventAcptMask & AliPicoBase::kEventVertex)  == AliPicoBase::kEventVertex)  h->Fill(4.);
 
   return;
 }
@@ -1565,8 +1514,8 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
 //  AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC
 //
 
-  Int_t   nPrimary = 0;
-  AliStack *pStack = 0;
+  auto nPrimary(0);
+  AliStack *pStack(nullptr);
 
   if (fEventESD) {
     pStack   = MCEvent()->Stack(); if (!pStack) return;
@@ -1574,88 +1523,85 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
   }
 //=============================================================================
 
-  Double_t dEvType = -0.5;
-  if (IsEventNotMBsa()) dEvType = 0.5;
+  const auto n(6+fMultEsti.GetEntries());
+  const auto dEvType(IsEventNotMBsa() ? 1.5 : 0.5);
+  auto hsV0(static_cast<THnSparseD*>(fOutputListMC->FindObject("hsV0")));
+  auto hsXi(static_cast<THnSparseD*>(fOutputListMC->FindObject("hsXi")));
 
-  Double_t dV0M = fCentInfo->GetCentralityPercentile("V0M");
-  Double_t dV0A = fCentInfo->GetCentralityPercentile("V0A");
-  Double_t dCL1 = fCentInfo->GetCentralityPercentile("CL1");
-  Double_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
-
-  THnSparseD *hsV0 = dynamic_cast<THnSparseD*>(fOutputListMC->FindObject("hsV0"));
-  THnSparseD *hsXi = dynamic_cast<THnSparseD*>(fOutputListMC->FindObject("hsXi"));
-
-  if (hsV0 == 0 || hsXi == 0) { // Keep Coverity happy
+  if (!(hsV0 && hsXi)) {
     AliFatal("Cannot find hsV0 or hsXi; should not happen");
     return;
-  }  // Keep Coverity happy
+  }
 //=============================================================================
 
-  TParticle        *pESD = 0;
-  AliAODMCParticle *pAOD = 0;
-  for (Int_t i=0; i<MCEvent()->GetNumberOfTracks(); i++) {
-    if (fEventAOD) { pAOD = (AliAODMCParticle*)MCEvent()->GetTrack(i);              if (!pAOD) continue; }
-    if (fEventESD) { pESD =   ((AliMCParticle*)MCEvent()->GetTrack(i))->Particle(); if (!pESD) continue; }
+  for (auto i=0; i<MCEvent()->GetNumberOfTracks(); ++i) {
+    TParticle *pESD(nullptr);
+    AliAODMCParticle *pAOD(nullptr);
 
-    Bool_t bPri = kFALSE;
-    if (pAOD) bPri = pAOD->IsPrimary();
-    if (pESD) bPri = (i<nPrimary);
+    if (fEventAOD) {
+      pAOD = static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(i));
+      if (!pAOD) continue;
+    }
 
-    Bool_t bPhy = kFALSE;
-    if (pAOD) bPhy =   pAOD->IsPhysicalPrimary();
-    if (pESD) bPhy = pStack->IsPhysicalPrimary(i);
-    if ((!bPri) && (!bPhy)) { pAOD=0; pESD=0; continue; }
+    if (fEventESD) {
+      const auto pMC(static_cast<AliMCParticle*>(MCEvent()->GetTrack(i))); if (!pMC) continue;
+      pESD = pMC->Particle(); if (!pESD) continue;
+    }
+//=============================================================================
 
-    Int_t id = 0;
-    if (pAOD) id = pAOD->GetPdgCode();
-    if (pESD) id = pESD->GetPdgCode();
+    const auto bPri(pAOD ? pAOD->IsPrimary() : (i<nPrimary));
+    const auto bPhy(pAOD ? pAOD->IsPhysicalPrimary() : pStack->IsPhysicalPrimary(i));
+    if (!(bPri || bPhy)) continue;
+//=============================================================================
 
-    Bool_t bXi = (bPri && ((id==3312) || (id==-3312)));
-    Bool_t bV0 = (bPhy && ((id==3122) || (id==-3122) || (id==310)));
-    if (!(bXi || bV0)) { pAOD=0; pESD=0; continue; }
+    const auto id(pAOD ? pAOD->GetPdgCode() : pESD->GetPdgCode());
 
-    Double_t  dEta = 0.;
-    if (pAOD) dEta = pAOD->Eta();
-    if (pESD) dEta = pESD->Eta();
-    if ((dEta<-5.) || (dEta>=5.)) { pAOD=0; pESD=0; continue; }
+    const auto bXi(bPri && ((id==3312) || (id==-3312)));
+    const auto bV0(bPhy && ((id==3122) || (id==-3122) || (id==310)));
+    if (!(bXi || bV0)) continue;
+//=============================================================================
 
-    Double_t  dRapLab = 0.;
-    if (pAOD) dRapLab = pAOD->Y();
-    if (pESD) dRapLab = pESD->Y();
-    if ((dRapLab<-5.) || (dRapLab>=5.)) { pAOD=0; pESD=0; continue; }
+    const auto dEta(pAOD ? pAOD->Eta() : pESD->Eta());
+    if ((dEta<-5.) || (dEta>=5.)) continue;
 
-    Double_t dRapCMS = dRapLab + fRapidityShift;
-    if ((dRapCMS<-5.) || (dRapCMS>=5.)) { pAOD=0; pESD=0; continue; }
+    const auto dRapLab(pAOD ? pAOD->Y() : pESD->Y());
+    if ((dRapLab<-5.) || (dRapLab>=5.)) continue;
 
-    Double_t dVar[10];
-    if (pAOD) dVar[9] = pAOD->Pt();
-    if (pESD) dVar[9] = pESD->Pt();
+    const auto dRapCMS(dRapLab + fRapidityShift);
+    if ((dRapCMS<-5.) || (dRapCMS>=5.)) continue;
+//=============================================================================
 
-    dVar[1] = dEvType;
-    dVar[2] = dV0M;
-    dVar[3] = dV0A;
-    dVar[4] = dCL1;
-    dVar[5] = dZNA;
-    dVar[6] = dEta;
-    dVar[7] = dRapLab;
-    dVar[8] = dRapCMS;
+    Double_t dVar[n];
+    dVar[0] = (pAOD ? pAOD->Pt() : pESD->Pt());
 
-    if (bXi) {
-      if (id== 3312) dVar[0] = -0.5;
-      if (id==-3312) dVar[0] =  0.5;
-      hsXi->Fill(dVar);
+    dVar[1] = dEta;
+    dVar[2] = dRapLab;
+    dVar[3] = dRapCMS;
+    dVar[4] = dEvType;
+
+    auto l(6);
+    TObjString *ps(nullptr);
+    const auto next(fMultEsti.MakeIterator());
+    while ((ps = static_cast<TObjString*>((*next)()))) {
+      const auto s(ps->String());
+      const auto p(static_cast<TParameter<Float_t>*>(fMultEsti(s.Data())));
+      if (p) dVar[l++] = p->GetVal();
     }
 
     if (bV0) {
-      if (id== 310 ) dVar[0] = 0.;
-      if (id== 3122) dVar[0] = 1.;
-      if (id==-3122) dVar[0] = 2.;
+      if (id== 310 ) dVar[5] = 0.;
+      if (id== 3122) dVar[5] = 1.;
+      if (id==-3122) dVar[5] = 2.;
       hsV0->Fill(dVar);
     }
 
-    pAOD = 0;
-    pESD = 0;
+    if (bXi) {
+      if (id== 3312) dVar[5] = 0.;
+      if (id==-3312) dVar[5] = 1.;
+      hsXi->Fill(dVar);
+    }
   }
+//=============================================================================
 
   return;
 }
@@ -1667,48 +1613,25 @@ void AliAnalysisTaskSEPicoV0Maker::CreateHistogramsEH()
 //  AliAnalysisTaskSEPicoV0Maker::CreateHistogramsEH
 //
 
-  Bool_t bStatusTmpH = TH1::AddDirectoryStatus();
+  const auto b(TH1::AddDirectoryStatus());
   TH1::AddDirectory(kFALSE);
 //=============================================================================
 
-  TH1D *h1 = 0;
-  h1 = new TH1D("hEventAccCheck_V0M", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccCheck_V0A", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccCheck_CL1", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccCheck_ZNA", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
+  fOutputListEH->Add(new TH1D("hEventCheck", "", 5, -0.5, 4.5));
+  fOutputListEH->Add(new TH2D("hKshortPtInvM", "", 1000, 0., 100., 300, AliPicoBase::MassKshort()-0.15,
+                                                                        AliPicoBase::MassKshort()+0.15));
 
-  h1 = new TH1D("hEventAccMult_V0M", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccMult_V0A", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccMult_CL1", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccMult_ZNA", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
+  fOutputListEH->Add(new TH2D("hLambdaPtInvM", "", 1000, 0., 100., 200, AliPicoBase::MassLambda()-0.10,
+                                                                        AliPicoBase::MassLambda()+0.10));
 
-  h1 = new TH1D("hEventAccTrigger_V0M", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccTrigger_V0A", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccTrigger_CL1", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccTrigger_ZNA", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
+  fOutputListEH->Add(new TH2D("hAntiLaPtInvM", "", 1000, 0., 100., 200, AliPicoBase::MassLambda()-0.10,
+                                                                        AliPicoBase::MassLambda()+0.10));
 
-  h1 = new TH1D("hEventAccVertex_V0M", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccVertex_V0A", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccVertex_CL1", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccVertex_ZNA", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
+  TH1 *h(nullptr);
+  TListIter next(fOutputListEH);
+  while ((h = static_cast<TH1*>(next()))) h->Sumw2();
 
-  h1 = new TH1D("hEventAccPileup_V0M", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccPileup_V0A", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccPileup_CL1", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-  h1 = new TH1D("hEventAccPileup_ZNA", "", 210, -10., 200.); h1->Sumw2(); fOutputListEH->Add(h1);
-
-
-  TH2D *h2 = 0;
-  h2 = new TH2D("hKshortPtInvM", "", 1000, 0., 100., 300, fgkMassKshort-0.15, fgkMassKshort+0.15);
-  h2->Sumw2(); fOutputListEH->Add(h2); h2=0;
-
-  h2 = new TH2D("hLambdaPtInvM", "", 1000, 0., 100., 200, fgkMassLambda-0.10, fgkMassLambda+0.10);
-  h2->Sumw2(); fOutputListEH->Add(h2); h2=0;
-
-  h2 = new TH2D("hAntiLaPtInvM", "", 1000, 0., 100., 200, fgkMassLambda-0.10, fgkMassLambda+0.10);
-  h2->Sumw2(); fOutputListEH->Add(h2); h2=0;
-
-  TH1::AddDirectory(bStatusTmpH);
+  TH1::AddDirectory(b);
   return;
 }
 
@@ -1719,52 +1642,77 @@ void AliAnalysisTaskSEPicoV0Maker::CreateHistogramsMC()
 //  AliAnalysisTaskSEPicoV0Maker::CreateHistogramsMC
 //
 
-// TODO: add the multiplicity bins
-
-  Bool_t bStatusTmpH = TH1::AddDirectoryStatus();
+  const auto b(TH1::AddDirectoryStatus());
   TH1::AddDirectory(kFALSE);
-
-  const Int_t nV0 = 10; // 0: particle type
-                        //    ==0, Kshort
-                        //    ==1, Lambda
-                        //    ==2, AntiLa
-                        // 1: Event type
-                        //    ==-0.5, INEL
-                        //    == 0.5, MB
-                        // 2: V0M
-                        // 3: V0A
-                        // 4: CL1
-                        // 5: ZNA
-                        // 6: eta
-                        // 7: rap in Lab
-                        // 8: rap in CMS
-                        // 9: Pt
-  const Int_t    nV0Bin[nV0] = {  3,    2,  210,  210,  210,  210, 100, 100, 100, 1000  };
-  const Double_t dV0Min[nV0] = { -0.5, -1., -10., -10., -10., -10., -5., -5., -5.,   0. };
-  const Double_t dV0Max[nV0] = {  2.5,  1., 200., 200., 200., 200.,  5.,  5.,  5., 100. };
-  THnSparseD *hsV0 = new THnSparseD("hsV0", "", nV0, nV0Bin, dV0Min, dV0Max); fOutputListMC->Add(hsV0);
 //=============================================================================
 
-  const Int_t nXi = 10; // 0: particle type
-                        //    ==-0.5, XiNeg
-                        //    == 0.5, XiPos
-                        // 1: Event type
-                        //    ==-0.5, INEL
-                        //    == 0.5, MB
-                        // 2: V0M
-                        // 3: V0A
-                        // 4: CL1
-                        // 5: ZNA
-                        // 6: eta
-                        // 7: rap in Lab
-                        // 8: rap in CMS
-                        // 9: Pt
-  const Int_t    nXiBin[nV0] = {  2,   2,  210,  210,  210,  210, 100, 100, 100, 1000  };
-  const Double_t dXiMin[nV0] = { -1., -1., -10., -10., -10., -10., -5., -5., -5.,   0. };
-  const Double_t dXiMax[nV0] = {  1.,  1., 200., 200., 200., 200.,  5.,  5.,  5., 100. };
-  THnSparseD *hsXi = new THnSparseD("hsXi", "", nXi, nXiBin, dXiMin, dXiMax); fOutputListMC->Add(hsXi);
+  const auto nr(5); // 0: Pt
+                    // 1: eta
+                    // 2: rap in Lab
+                    // 3: rap in CMS
+                    // 4: Event type
+                    //    ==0.5, INEL
+                    //    ==1.5, MB
+                    // 5: particle type
+                    //   V0
+                    //     ==0, Kshort
+                    //     ==1, Lambda
+                    //     ==2, AntiLa
+                    //   Xi
+                    //     ==0, XiNeg
+                    //     ==1, XiPos
+  const Int_t    nBin[nr] = { 1000, 100, 100, 100, 2  };
+  const Double_t dMin[nr] = {   0., -5., -5., -5., 0. };
+  const Double_t dMax[nr] = { 100.,  5.,  5.,  5., 2. };
+  const auto ns(1 + nr + fMultEsti.GetEntries());
+//=============================================================================
 
-  TH1::AddDirectory(bStatusTmpH);
+  Int_t nV0Bin[ns], nXiBin[ns];
+  Double_t dV0Min[ns], dV0Max[ns];
+  Double_t dXiMin[ns], dXiMax[ns];
+
+  for (auto i=0; i<ns; ++i) {
+    if (i<nr) {
+      nV0Bin[i] = nXiBin[i] = nBin[i];
+      dV0Min[i] = dXiMin[i] = dMin[i];
+      dV0Max[i] = dXiMax[i] = dMax[i];
+    }
+
+    if (i==nr) {
+      nV0Bin[i] = 3; dV0Min[i] = -0.5; dV0Max[i] = 2.5;
+      nXiBin[i] = 2; dXiMin[i] = -0.5; dXiMax[i] = 1.5;
+    }
+
+    if (i>nr) {
+      nV0Bin[i] = nXiBin[i] =  110;
+      dV0Min[i] = dXiMin[i] =  -5.;
+      dV0Max[i] = dXiMax[i] = 105.;
+    }
+  }
+//=============================================================================
+
+  const TString sa[nr+1] { "pT", "eta", "y_lab", "y_cms", "evt_t", "par_t" };
+  fOutputListMC->Add(new THnSparseD("hsV0", "", ns, nV0Bin, dV0Min, dV0Max));
+  fOutputListMC->Add(new THnSparseD("hsXi", "", ns, nXiBin, dXiMin, dXiMax));
+
+  TObjString *ps(nullptr);
+  THnSparseD *hs(nullptr);
+  TListIter next(fOutputListMC);
+  const auto pn(fMultEsti.MakeIterator());
+  while ((hs = static_cast<THnSparseD*>(next()))) {
+    for (auto i=0; i<nr; ++i) hs->GetAxis(i)->SetName(sa[i].Data());
+
+    auto l(nr);
+    while ((ps = static_cast<TObjString*>((*pn)()))) {
+      const auto s(ps->String());
+      const auto p(hs->GetAxis(l++));
+      if (p) p->SetName(s.Data());
+    }
+  }
+//=============================================================================
+
+  TH1::AddDirectory(b);
+
   return;
 }
 
@@ -1775,14 +1723,10 @@ void AliAnalysisTaskSEPicoV0Maker::InitAnalysis()
 //  AliAnalysisTaskSEPicoV0Maker::InitAnalysis
 //
 
-  if (fCollisionType==(AliPicoHeaderCJ::kPP)) InitParamsPP();
-  if (fCollisionType==(AliPicoHeaderCJ::kPA)) InitParamsPA();
-  if (fCollisionType==(AliPicoHeaderCJ::kAP)) InitParamsAP();
-  if (fCollisionType==(AliPicoHeaderCJ::kAA)) InitParamsAA();
-
-  fAnaUtils = new AliAnalysisUtils();
-  fAnaUtils->SetMinVtxContr(fCutMinEventVtxContr);
-  fAnaUtils->SetMaxVtxZ(fCutMaxEventVzAbs);
+  if (fCollisionType==(AliPicoBase::kPP)) InitParamsPP();
+  if (fCollisionType==(AliPicoBase::kPA)) InitParamsPA();
+  if (fCollisionType==(AliPicoBase::kAP)) InitParamsAP();
+  if (fCollisionType==(AliPicoBase::kAA)) InitParamsAA();
 
   return;
 }
@@ -1795,8 +1739,6 @@ void AliAnalysisTaskSEPicoV0Maker::InitParamsPP()
 //
 
   fRapidityShift = 0.;
-
-  fCutMaxEventVzAbs = 10.;
 //=============================================================================
 
   fCutMaxV0Chi2   = 33.;

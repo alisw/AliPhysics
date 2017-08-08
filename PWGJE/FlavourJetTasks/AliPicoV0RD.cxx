@@ -7,7 +7,7 @@ ClassImp(AliPicoV0RD)
 
 //_____________________________________________________________________________
 AliPicoV0RD::AliPicoV0RD() :
-AliPicoV0Base(),
+AliPicoV0(),
 fPosPionSigmaTPC(0.),
 fNegPionSigmaTPC(0.),
 fPosProtonSigmaTPC(0.),
@@ -33,18 +33,18 @@ AliPicoV0RD::AliPicoV0RD(UInt_t   wMask,
                          Bool_t   bPosInJC, Bool_t bNegInJC,
                          Float_t  dPosPionSigmaTPC, Float_t dPosProtonSigmaTPC,
                          Float_t  dNegPionSigmaTPC, Float_t dNegProtonSigmaTPC) :
-AliPicoV0Base(wMask,
-              dV0Radius,
-              dV0CosPA,
-              dV0DistToPVoverP,
-              dDausDCA,
-              dPosDCAtoPV,
-              dNegDCAtoPV,
-              dDauXrowsTPC,
-              dDauXrowsOverFindableClusTPC,
-              dPosPx, dPosPy, dPosPz,
-              dNegPx, dNegPy, dNegPz,
-              bPosInJC, bNegInJC),
+AliPicoV0(wMask,
+          dV0Radius,
+          dV0CosPA,
+          dV0DistToPVoverP,
+          dDausDCA,
+          dPosDCAtoPV,
+          dNegDCAtoPV,
+          dDauXrowsTPC,
+          dDauXrowsOverFindableClusTPC,
+          dPosPx, dPosPy, dPosPz,
+          dNegPx, dNegPy, dNegPz,
+          bPosInJC, bNegInJC),
 fPosPionSigmaTPC(dPosPionSigmaTPC),
 fNegPionSigmaTPC(dNegPionSigmaTPC),
 fPosProtonSigmaTPC(dPosProtonSigmaTPC),
@@ -57,7 +57,7 @@ fNegProtonSigmaTPC(dNegProtonSigmaTPC)
 
 //_____________________________________________________________________________
 AliPicoV0RD::AliPicoV0RD(const AliPicoV0RD &src) :
-AliPicoV0Base(src),
+AliPicoV0(src),
 fPosPionSigmaTPC(src.fPosPionSigmaTPC),
 fNegPionSigmaTPC(src.fNegPionSigmaTPC),
 fPosProtonSigmaTPC(src.fPosProtonSigmaTPC),
@@ -77,7 +77,7 @@ AliPicoV0RD& AliPicoV0RD::operator=(const AliPicoV0RD &src)
 
   if (&src==this) return *this;
 
-  AliPicoV0Base::operator=(src);
+  AliPicoV0::operator=(src);
 
   fPosPionSigmaTPC   = src.fPosPionSigmaTPC;
   fNegPionSigmaTPC   = src.fNegPionSigmaTPC;
@@ -102,7 +102,7 @@ Bool_t AliPicoV0RD::IsKshort(Double_t dCuts[10])
 //  AliPicoV0RD::IsKshort
 //
 
-  if (!AliPicoV0Base::IsKshort()) return kFALSE;
+  if (!AliPicoV0::IsKshort()) return kFALSE;
 //=============================================================================
 
   if (dCuts[9]>0.) {
@@ -122,7 +122,7 @@ Bool_t AliPicoV0RD::IsLambda(Double_t dCuts[10])
 //  AliPicoV0RD::IsLambda
 //
 
-  if (!AliPicoV0Base::IsLambda()) return kFALSE;
+  if (!AliPicoV0::IsLambda()) return kFALSE;
 //=============================================================================
 
   if (dCuts[9]>0.) {
@@ -142,7 +142,7 @@ Bool_t AliPicoV0RD::IsAntiLa(Double_t dCuts[10])
 //  AliPicoV0RD::IsAntiLa
 //
 
-  if (!AliPicoV0Base::IsAntiLa()) return kFALSE;
+  if (!AliPicoV0::IsAntiLa()) return kFALSE;
 //=============================================================================
 
   if (dCuts[9]>0.) {

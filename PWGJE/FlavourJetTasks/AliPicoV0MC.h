@@ -3,10 +3,10 @@
 
 #include <TLorentzVector.h>
 
-#include "AliPicoV0Base.h"
+#include "AliPicoV0.h"
 
 
-class AliPicoV0MC : public AliPicoV0Base {
+class AliPicoV0MC : public AliPicoV0 {
 
  public :
 
@@ -49,43 +49,43 @@ class AliPicoV0MC : public AliPicoV0Base {
   Bool_t IsMotherXiNeg() const { return (fMotherPDG== 3312); }
   Bool_t IsMotherXiPos() const { return (fMotherPDG==-3312); }
 
-  Bool_t IsLambdaFd() const { return (AliPicoV0Base::IsLambda() && IsMotherXiNeg()); }
-  Bool_t IsAntiLaFd() const { return (AliPicoV0Base::IsAntiLa() && IsMotherXiPos()); }
+  Bool_t IsLambdaFd() const { return (AliPicoV0::IsLambda() && IsMotherXiNeg()); }
+  Bool_t IsAntiLaFd() const { return (AliPicoV0::IsAntiLa() && IsMotherXiPos()); }
 
   void GetControlVariables(Float_t d[18]);
 //=============================================================================
 
   Bool_t IsV0Primary() const {
-    return ((fV0Status & AliPicoHeaderCJ::kPrimary) == AliPicoHeaderCJ::kPrimary);
+    return ((fV0Status & AliPicoBase::kPrimary) == AliPicoBase::kPrimary);
   }
 
   Bool_t IsV0PhysicalPrimary() const {
-    return ((fV0Status & AliPicoHeaderCJ::kPhysicalPrimary) == AliPicoHeaderCJ::kPhysicalPrimary);
+    return ((fV0Status & AliPicoBase::kPhysicalPrimary) == AliPicoBase::kPhysicalPrimary);
   }
 
   Bool_t IsV0SecondaryFromWeakDecay() const {
-    return ((fV0Status & AliPicoHeaderCJ::kSecondaryFromWeakDecay) == AliPicoHeaderCJ::kSecondaryFromWeakDecay);
+    return ((fV0Status & AliPicoBase::kSecondaryFromWeakDecay) == AliPicoBase::kSecondaryFromWeakDecay);
   }
 
   Bool_t IsV0SecondaryFromMaterial() const {
-    return ((fV0Status & AliPicoHeaderCJ::kSecondaryFromMaterial) == AliPicoHeaderCJ::kSecondaryFromMaterial);
+    return ((fV0Status & AliPicoBase::kSecondaryFromMaterial) == AliPicoBase::kSecondaryFromMaterial);
   }
 //=============================================================================
 
   Bool_t IsMotherPrimary() const {
-    return ((fMotherStatus & AliPicoHeaderCJ::kPrimary) == AliPicoHeaderCJ::kPrimary);
+    return ((fMotherStatus & AliPicoBase::kPrimary) == AliPicoBase::kPrimary);
   }
 
   Bool_t IsMotherPhysicalPrimary() const {
-    return ((fMotherStatus & AliPicoHeaderCJ::kPhysicalPrimary) == AliPicoHeaderCJ::kPhysicalPrimary);
+    return ((fMotherStatus & AliPicoBase::kPhysicalPrimary) == AliPicoBase::kPhysicalPrimary);
   }
 
   Bool_t IsMotherSecondaryFromWeakDecay() const {
-    return ((fMotherStatus & AliPicoHeaderCJ::kSecondaryFromWeakDecay) == AliPicoHeaderCJ::kSecondaryFromWeakDecay);
+    return ((fMotherStatus & AliPicoBase::kSecondaryFromWeakDecay) == AliPicoBase::kSecondaryFromWeakDecay);
   }
 
   Bool_t IsMotherSecondaryFromMaterial() const {
-    return ((fMotherStatus & AliPicoHeaderCJ::kSecondaryFromMaterial) == AliPicoHeaderCJ::kSecondaryFromMaterial);
+    return ((fMotherStatus & AliPicoBase::kSecondaryFromMaterial) == AliPicoBase::kSecondaryFromMaterial);
   }
 //=============================================================================
 
@@ -102,7 +102,7 @@ class AliPicoV0MC : public AliPicoV0Base {
   Double_t fMotherEta;  //
   Double_t fMotherRap;  //
 
-  ClassDef(AliPicoV0MC, 4);
+  ClassDef(AliPicoV0MC, 5);
 };
 
 #endif
