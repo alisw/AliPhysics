@@ -301,6 +301,10 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   else if (SubJetAlgorithm==10) SubJetAlgorithmString="_ReclusteringAlgorithm_Min";
   contName1 += SubJetAlgorithmString;
   contName2 += SubJetAlgorithmString;
+  if (task->GetSoftDropOn()==1) {
+    contName1 += "_SD";
+    contName2 += "_SD";
+  }
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
