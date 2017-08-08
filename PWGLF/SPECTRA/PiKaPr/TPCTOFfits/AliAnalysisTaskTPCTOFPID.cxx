@@ -304,7 +304,7 @@ Bool_t AliAnalysisTaskTPCTOFPID::IsGoodSPDvertexRes(const AliESDVertex * spdVert
   if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) return kFALSE;
   return kTRUE;
 };
-Bool_t AliAnalysisTaskTPCTOFPID::SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity) 
+Bool_t AliAnalysisTaskTPCTOFPID::SelectVertex2015pp(AliESDEvent *esd,  Bool_t *SPDandTrkExists, Bool_t checkSPDres, Bool_t checkProximity) 
 {
   if (!esd) return kFALSE;
   const AliESDVertex * trkVertex = esd->GetPrimaryVertexTracks();
@@ -314,7 +314,10 @@ Bool_t AliAnalysisTaskTPCTOFPID::SelectVertex2015pp(AliESDEvent *esd, Bool_t che
  
   //Note that AliVertex::GetStatus checks that N_contributors is > 0
   //reject events if both are explicitly requested and none is available
-  if (requireSPDandTrk && !(hasSPD && hasTrk)) return kFALSE;
+  //MOD: do not reject if SPD&Trk vtx. not there, but store it to the variable, if requested:
+  if(SPDandTrkExists)
+    (*SPDandTrkExists) = hasSPD&&hasTrk;
+  //  if (requireSPDandTrk && !(hasSPD && hasTrk)) return kFALSE;
   
   //reject events if none between the SPD or track verteces are available
   //if no trk vertex, try to fall back to SPD vertex;
@@ -560,7 +563,9 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     if(ams->GetThisEventHasNoInconsistentVertices()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoInconsistentVtx;
     if(ams->GetThisEventIsNotAsymmetricInVZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoV0Asym;
   };
-  if(SelectVertex2015pp(fESDEvent)) EventSelectionFlag+=AliAnalysisPIDEvent::kVertexSelected2015pp;
+  Bool_t lSPDandTrkVtxExists=kFALSE;
+  if(SelectVertex2015pp(fESDEvent,&lSPDandTrkVtxExists)) EventSelectionFlag+=AliAnalysisPIDEvent::kVertexSelected2015pp;
+  if(lSPDandTrkVtxExists) EventSelectionFlag+=AliAnalysisPIDEvent::kSPDandTrkVtxExists;
   fAnalysisEvent->SetV0Mmultiplicity(V0MPercentile);
   fAnalysisEvent->SetEventFlags(EventSelectionFlag);
   AliVVZERO *v0 = fESDEvent->GetVZEROData();
