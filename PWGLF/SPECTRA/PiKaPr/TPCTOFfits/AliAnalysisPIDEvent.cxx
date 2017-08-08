@@ -531,5 +531,7 @@ void AliAnalysisPIDEvent::PrintEventSelection() {
   printf("Not pileup in MB:    %s\n",(fgFlagToCheck&kNotPileupInMB)?"Yes":"No");
   printf("INEL > 0:            %s\n",(fgFlagToCheck&kINELgtZERO)?"Yes":"No");
   printf("No inconsistent VTX: %s\n",(fgFlagToCheck&kNoInconsistentVtx)?"Yes":"No");
-  printf("No asynn. in V0:    %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
+  printf("No assym. in V0:     %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
+  printf("2015 pp vertex cut:  %s\n",(fgFlagToCheck&kVertexSelected2015pp)?"Yes":"No");
+  printf("Req. SPD & TRK vtx.: %s\n",(fgFlagToCheck&kSPDandTrkVtxExists)?"Yes":"No");
 };
