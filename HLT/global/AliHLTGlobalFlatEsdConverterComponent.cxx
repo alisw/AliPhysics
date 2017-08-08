@@ -70,6 +70,11 @@
 #include "AliFlatESDVertex.h"
 #include "AliFlatESDVZERO.h"
 #include "AliFlatESDVZEROFriend.h"
+#include "AliHLTTPCdEdxData.h"
+#include "AliFlatTPCdEdxInfo.h"
+
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdConverterComponent)
@@ -79,6 +84,7 @@ AliHLTGlobalFlatEsdConverterComponent::AliHLTGlobalFlatEsdConverterComponent()
   , fVerbosity(0)
   , fBenchmark("FlatEsdConverter")
   , fProduceFriend(1)
+  , fBeamTypePbPb(false)
 {
   // see header file for class documentation
   // or
@@ -157,6 +163,7 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
   list.push_back(kAliHLTDataTypeTrackMC);
   list.push_back(kAliHLTDataTypeCaloCluster);
   list.push_back(kAliHLTDataTypedEdx );
+  list.push_back(AliHLTTPCDefinitions::TPCdEdxNew());
   list.push_back(kAliHLTDataTypeESDVertex );
   list.push_back(kAliHLTDataTypeESDObject);
   list.push_back(kAliHLTDataTypeTObject);
@@ -236,6 +243,17 @@ int AliHLTGlobalFlatEsdConverterComponent::DoInit(int argc, const char** argv)
     SetupCTPData();
   }
 
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+
+  if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" ||
+      mgr.GetGRPData()->GetBeamType() == "PbPb" ||
+      mgr.GetGRPData()->GetBeamType() == "A-A" ||
+      mgr.GetGRPData()->GetBeamType() == "AA" )
+  {
+    fBeamTypePbPb = true;
+  }
+
   fBenchmark.SetTimer(0,"total");
 
   return iResult;
@@ -297,15 +315,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   // 2) read dEdx information (if present)
 
-  AliHLTFloat32_t *dEdxTPC = 0;
-  Int_t ndEdxTPC = 0;
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypedEdx|kAliHLTDataOriginTPC);
-       pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
+  AliHLTTPCdEdxData* dEdxInfo = NULL;
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TPCdEdxNew());
+    pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
     fBenchmark.AddInput(pBlock->fSize);
-    dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
-    ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
+    dEdxInfo = (AliHLTTPCdEdxData*) pBlock->fPtr;
   }
-
+ 
   // 3) read  TPC tracks, ITS refitted tracks, ITS OUT tracks
 
   vector<AliHLTGlobalBarrelTrack> tracksTPC;
@@ -574,16 +590,46 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
       if (fVerbosity>0) tpcTrack->Print();
 
-      Float_t tpcDeDx[3]={0,0,0};
+      AliFlatTPCdEdxInfo flatdEdxInfo;
+      bool dEdxFlag = 0;
+      
+      if (dEdxInfo){
+	if (dEdxInfo->fCount <= tpcIter){
+	  HLTWarning("Wrong number of dEdx TPC info");
+	}
+	else{
+	  AliHLTTPCdEdxInfo* info = &dEdxInfo->fdEdxInfo[tpcIter];	 
+	  
+	  float signalTot[4];
+	  float signalMax[4];
+	  char ncl[3];
+	  char nrows[3];
+	  
+	  signalTot[0] = info->fdEdxTotIROC;
+	  signalTot[1] = info->fdEdxTotOROC1;
+	  signalTot[2] = info->fdEdxTotOROC2;
+	  signalTot[3] = info->fdEdxTotOROC;
 
-      if( ndEdxTPC>0 ){
-	if( tpcIter < ndEdxTPC ){
-	  AliHLTFloat32_t *val = &(dEdxTPC[3*tpcIter]);
-	  tpcDeDx[0] = val[0];
-	  tpcDeDx[1] = val[1];
-	  tpcDeDx[2] = val[2];
-	} else {
-	  HLTWarning("Wrong number of dEdx TPC labels");
+	  signalMax[0] = info->fdEdxMaxIROC; 
+	  signalMax[1] = info->fdEdxMaxOROC1;
+	  signalMax[2] = info->fdEdxMaxOROC2;
+	  signalMax[3] = info->fdEdxMaxOROC;
+	  
+	  ncl[0] = info->nHitsIROC;
+	  ncl[1] = info->nHitsOROC1;
+	  ncl[2] = info->nHitsOROC2;
+
+	  nrows[0] = info->nHitsSubThresholdIROC;
+	  nrows[1] = info->nHitsSubThresholdOROC1;
+	  nrows[2] = info->nHitsSubThresholdOROC2;
+	  
+	  flatdEdxInfo.SetSignalTot( signalTot );
+	  flatdEdxInfo.SetSignalMax( signalMax );
+	  flatdEdxInfo.SetNumberOfClusters( ncl );
+	  flatdEdxInfo.SetNumberOfCrossedRows( nrows );
+
+	  flatdEdxInfo.SetTPCsignal(fBeamTypePbPb ? info->fdEdxMaxTPC : info ->fdEdxTotTPC, 0, info->nHitsIROC + info->nHitsOROC1 + info->nHitsOROC2);	   	  
+	  dEdxFlag = 1;
 	}
       }
 
@@ -625,6 +671,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       flatTrack->SetImpactParameters( impPar, impPar+2,impPar[5] );
       flatTrack->SetImpactParametersTPC( impParTPC, impParTPC+2,impParTPC[5] );
 
+      if( dEdxFlag ) flatTrack->SetTPCdEdxInfo( flatdEdxInfo );
+      
       trackSize += flatTrack->GetSize();
       freeSpace -= flatTrack->GetSize();
       nTracks++;
