@@ -382,17 +382,33 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
     Int_t j = 0;
+    //Real Data
+    // bLimits.AddAt(0.00, j++);  //0%
+    // bLimits.AddAt(3.50, j++);  //5%
+    // bLimits.AddAt(4.94, j++);  //10%
+    // bLimits.AddAt(6.98, j++);  //20%
+    // bLimits.AddAt(8.55, j++);  //30%
+    // bLimits.AddAt(9.88, j++);  //40%
+    // bLimits.AddAt(11.04, j++); //50%
+    // bLimits.AddAt(12.09, j++); //60%
+    // bLimits.AddAt(13.05, j++); //70%
+    // bLimits.AddAt(13.97, j++); //80%
+    // bLimits.AddAt(14.96, j++); //90%
+    // bLimits.AddAt(20.00, j++); //100%
+    // bLimits.AddAt(1000.00, j); //Overflow
+
+    //EPOS-LHC
     bLimits.AddAt(0.00, j++);  //0%
-    bLimits.AddAt(3.50, j++);  //5%
-    bLimits.AddAt(4.94, j++);  //10%
-    bLimits.AddAt(6.98, j++);  //20%
-    bLimits.AddAt(8.55, j++);  //30%
-    bLimits.AddAt(9.88, j++);  //40%
-    bLimits.AddAt(11.04, j++); //50%
-    bLimits.AddAt(12.09, j++); //60%
-    bLimits.AddAt(13.05, j++); //70%
-    bLimits.AddAt(13.97, j++); //80%
-    bLimits.AddAt(14.96, j++); //90%
+    bLimits.AddAt(3.47, j++);  //5%
+    bLimits.AddAt(4.90, j++);  //10%
+    bLimits.AddAt(6.93, j++);  //20%
+    bLimits.AddAt(8.48, j++);  //30%
+    bLimits.AddAt(9.80, j++);  //40%
+    bLimits.AddAt(10.95, j++); //50%
+    bLimits.AddAt(12.00, j++); //60%
+    bLimits.AddAt(12.96, j++); //70%
+    bLimits.AddAt(14.00, j++); //80%
+    bLimits.AddAt(15.00, j++); //90%
     bLimits.AddAt(20.00, j++); //100%
     bLimits.AddAt(1000.00, j); //Overflow
     if(j != kEvtMultBins) AliFatal("Somehow index does not sum up");
