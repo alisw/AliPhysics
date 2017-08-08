@@ -112,6 +112,10 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   fOutput        = new TList();
   fOutput->SetOwner(kTRUE);
 
+  // Define the different types of binnings
+  TLinearBinning massBinningK0(500, 0.0, 0.6),massBinningPi0(500, 0., 0.5), ptBinning(300, 0.3, 30.), openingAngleBinning(100, 0., 1.), candidateBinning( 101, -0.5, 100.5), alphaBinning(200, -1., 1.);
+
+
 
   // Connecting input V0 reader
   fV0Reader=dynamic_cast<AliV0ReaderV1*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()));
@@ -142,8 +146,8 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   AliDebug(2, "************* Defining Photon QA Histograms ********************");
 
   // Photon QA
-  fHistos->CreateTH1("hCaloPhotonPt", "p_{t}-distribution of the conversion photons; p_{t} (GeV); Yield", 300, 0., 30.);
-  fHistos->CreateTH1("hConvPhotonPt", "p_{t}-distribution of the conversion photons; p_{t} (GeV); Yield", 300, 0., 30.);
+  fHistos->CreateTH1("hCaloPhotonPt", "p_{t}-distribution of the conversion photons; p_{t} (GeV); Yield", ptBinning);
+  fHistos->CreateTH1("hConvPhotonPt", "p_{t}-distribution of the conversion photons; p_{t} (GeV); Yield", ptBinning);
   fHistos->CreateTH2("hConvPhotonEtaR", "#eta vs conversion radius of conversion photons; #eta; R (cm)", 200, -1.5, 1.5, 300, 0., 300);
 
   AliDebug(2, "************* Defining Pi0 Histograms ********************");
@@ -153,22 +157,22 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   for(const auto &reccase : pi0rec){
 
     // for candidates in a wide mass region
-    fHistos->CreateTH1("hNPi0CandidatesPerEventBefore" +  reccase, "Number of pi0 candidates in event before selection", 101, -0.5, 100.5);
-    fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
+    fHistos->CreateTH1("hNPi0CandidatesPerEventBefore" +  reccase, "Number of pi0 candidates in event before selection",candidateBinning);
+    fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", massBinningPi0, ptBinning);
     // only for candidates in the pi0 mass region
-    fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
-    fHistos->CreateTH2("hAlphavsPtPi0Before" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", 200, -1., 1., 300, 0., 30.);
-    fHistos->CreateTH2("hOpeningAnglevsPtPi0Before" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", 100, 0., 1., 300., 0.3, 30.);
+    fHistos->CreateTH2("hMassvsPtPi0Before" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", massBinningPi0, ptBinning);
+    fHistos->CreateTH2("hAlphavsPtPi0Before" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", alphaBinning, ptBinning);
+    fHistos->CreateTH2("hOpeningAnglevsPtPi0Before" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", openingAngleBinning, ptBinning);
 
     fHistos->CreateTH1("hPi0Selection" + reccase, "Pi0 selection status bit for reconstruction case " + reccase, 2, -0.5, 1.5);
   	  // after selection
-    fHistos->CreateTH1("hNPi0CandidatesPerEventAfter" +  reccase, "Number of pi0 candidates in event before selection", 101, -0.5, 100.5);
-  	  fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
+    fHistos->CreateTH1("hNPi0CandidatesPerEventAfter" +  reccase, "Number of pi0 candidates in event before selection", candidateBinning);
+  	  fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "All", "inv. mass vs. p_{t} for all #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", massBinningPi0, ptBinning);
 
     // only for candidates in the pi0 mass region
-    fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", 500, 0., 0.5, 300, 0.3, 30.);
-    fHistos->CreateTH2("hAlphavsPtPi0After" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", 200, -1., 1., 300, 0., 30.);
-    fHistos->CreateTH2("hOpeningAnglevsPtPi0After" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", 100, 0., 1., 300., 0.3, 30.);
+    fHistos->CreateTH2("hMassvsPtPi0After" + reccase + "Sel", "inv. mass vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)", massBinningPi0, ptBinning);
+    fHistos->CreateTH2("hAlphavsPtPi0After" + reccase, "#alpha vs p_{t} for selected #p^i{0} (" + reccase + ") candidates; #alpha; p_{t}", alphaBinning, ptBinning);
+    fHistos->CreateTH2("hOpeningAnglevsPtPi0After" + reccase, "Opening angle vs. p_{t} for selected #pi^{0} (" + reccase + ") candidates; opening angle; p_{t} (GeV/c)", openingAngleBinning, ptBinning);
 
   }
 
@@ -178,21 +182,21 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   const std::array<TString, 6> k0Shortrec = {"AllConv", "AllCalo", "DiffMixed", "SameMixed", "ConvoCalo","CaloConvo" }; // aka 6 cases
   for(const auto &reccase1 : k0Shortrec){
   	// before selection
-    fHistos->CreateTH1("hNK0CandidatesPerEventBefore" +  reccase1, "Number of K0 candidates in event before selection", 101, -0.5, 100.5);
-    fHistos->CreateTH2("hMassvsPtK0ShortBefore" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.0, 0.6, 300, 0.3, 30.); 
-    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBefore"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
+    fHistos->CreateTH1("hNK0CandidatesPerEventBefore" +  reccase1, "Number of K0 candidates in event before selection", candidateBinning);
+    fHistos->CreateTH2("hMassvsPtK0ShortBefore" + reccase1, "inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  massBinningK0, ptBinning);
+    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBefore"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  openingAngleBinning, ptBinning);
 
     fHistos->CreateTH1("hK0Selection" + reccase1, "Pi0 selection status bit for reconstruction case " + reccase1, 2, -0.5, 1.5);
 
     // after selection
-    fHistos->CreateTH1("hNK0CandidatesPerEventAfter" +  reccase1, "Number of K0 candidates in event after selection", 101, -0.5, 100.5);
-    fHistos->CreateTH2("hMassvsPtK0ShortAfter" + reccase1, "Inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.0, 0.6, 300, 0.3, 30.); 
-    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortAfter"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
+    fHistos->CreateTH1("hNK0CandidatesPerEventAfter" +  reccase1, "Number of K0 candidates in event after selection", candidateBinning);
+    fHistos->CreateTH2("hMassvsPtK0ShortAfter" + reccase1, "Inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  massBinningK0, ptBinning);
+    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortAfter"+ reccase1, "Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  openingAngleBinning, ptBinning);
 
 
     //background histograms
-    fHistos->CreateTH2("hMassvsPtK0ShortBKG" + reccase1, " Background: Inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  500, 0.3, 0.6, 300, 0.3, 30.); 
-    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBKG"+ reccase1, "Background: Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  100, 0., 1., 300., 0.3, 30.); 
+    fHistos->CreateTH2("hMassvsPtK0ShortBKG" + reccase1, " Background: Inv. mass vs. p_{t} for #k^{0}s (" + reccase1 + ") candidates; inv. mass (GeV/c^{2}); p_{t} (GeV/c)",  massBinningK0, ptBinning);
+    fHistos->CreateTH2("hOpeningAnglevsPtK0ShortBKG"+ reccase1, "Background: Opening angle vs. p_{t} for  k0Short (" + reccase1 + ") candidates; opening angle; p_{t} (GeV/c)",  openingAngleBinning, ptBinning);
 
   }
 
