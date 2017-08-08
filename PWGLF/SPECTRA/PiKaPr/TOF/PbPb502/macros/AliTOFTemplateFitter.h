@@ -23,6 +23,7 @@
 #include <AliUtilTOFParams.h>
 #include <UtilMessages.h>
 #include "TMath.h"
+#include "TSystem.h"
 #ifdef USECDECONVOLUTION
 #include "AliCDeconv.h"
 #endif
@@ -126,7 +127,7 @@ Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *
       
       for(Int_t c = 0; c<ntemplates; c++){
         for(Int_t cc = 1 ; cc <= htemplates[c]->GetNbinsX(); cc++){//Excluding empty bins from fit
-          if(htemplates[c]->GetBinContent(cc) == 0 && fit->IsExcluded(cc) == kFALSE) fit->ExcludeBin(cc);
+          if(htemplates[c]->GetBinContent(cc) == 0) fit->ExcludeBin(cc);
         }
       }
       status = fit->Fit();               // perform the fit AGAIN
