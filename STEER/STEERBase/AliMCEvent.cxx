@@ -102,6 +102,11 @@ AliMCEvent& AliMCEvent::operator=(const AliMCEvent& mcEvnt)
     return *this; 
 }
 
+AliMCEvent::~AliMCEvent()
+{
+  if (fSubsidiaryEvents) delete fSubsidiaryEvents;
+}
+
 void AliMCEvent::ConnectTreeE (TTree* tree)
 {
     // Connect the event header tree
@@ -246,7 +251,7 @@ void AliMCEvent::FinishEvent()
     fNparticles = -1;
     fNprimaries = -1;    
     fStack      =  0;
-//    fSubsidiaryEvents->Clear();
+    delete fSubsidiaryEvents;
     fSubsidiaryEvents = 0;
     fNBG = -1;
 }
@@ -511,6 +516,19 @@ void AliMCEvent::ReorderAndExpandTreeTR()
     fTreeTR = fTmpTreeTR;
 }
 
+Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
+{
+  // returns true if particle id is from subsidiary (to which the signal was embedded) event
+  if (id >= BgLabelOffset() && fSubsidiaryEvents) return kTRUE;
+  if (fSubsidiaryEvents) {
+    AliMCEvent* mc;
+    Int_t idx = FindIndexAndEvent(id, mc);
+    if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
+  } 
+  return kFALSE;
+}
+
+
 AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 {
     // Get MC Particle i
@@ -658,9 +676,10 @@ void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event)
 {
     // Add a subsidiary event to the list; for example merged background event.
     if (!fSubsidiaryEvents) {
-	TList* events = new TList();
-	events->Add(new AliMCEvent(*this));
-	fSubsidiaryEvents = events;
+      TList* events = new TList();
+      events->SetOwner(kFALSE);
+      events->Add(new AliMCEvent(*this));
+      fSubsidiaryEvents = events;
     }
     
     fSubsidiaryEvents->Add(event);

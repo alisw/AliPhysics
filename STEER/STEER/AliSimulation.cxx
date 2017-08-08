@@ -178,7 +178,6 @@ AliSimulation *AliSimulation::fgInstance = 0;
 
 const Char_t* AliSimulation::fgkRunHLTAuto = "auto";
 const Char_t* AliSimulation::fgkHLTDefConf = "default";
-
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName,
 			     const char* name, const char* title) :
@@ -626,7 +625,7 @@ void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
 
 void AliSimulation::EmbedInto(const char* fileName, Int_t nSignalPerBkgrd)
 {
-// add a file with background events for embeddin
+// add a file with background events for embedding
   MergeWith(fileName, nSignalPerBkgrd);
   fEmbeddingFlag = kTRUE;
 }
@@ -821,7 +820,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   AliSysInfo::AddStamp("RunQA");
   //
-  StoreUsedCDBMaps();
+  StoreUsedCDBMapsAndEmbPaths();
   //  
   TString snapshotFileOut("");
   if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){ 
@@ -2772,7 +2771,7 @@ time_t AliSimulation::GenerateTimeStamp() const
 }
 
 //_____________________________________________________________________________
-void AliSimulation::StoreUsedCDBMaps() const
+void AliSimulation::StoreUsedCDBMapsAndEmbPaths() const
 {
   // write in galice.root maps with used CDB paths
   //
@@ -2792,7 +2791,13 @@ void AliSimulation::StoreUsedCDBMaps() const
   //
   AliRunLoader::Instance()->CdGAFile();
   gDirectory->WriteObject(cdbMapCopy,"cdbMap","kSingleKey");
-  gDirectory->WriteObject(cdbListCopy,"cdbList","kSingleKey");  
+  gDirectory->WriteObject(cdbListCopy,"cdbList","kSingleKey");
+
+  // store embedding info
+  if (fBkgrdFileNames) {
+    gDirectory->WriteObject(fBkgrdFileNames,AliStack::GetEmbeddingBKGPathsKey(),"kSingleKey");
+  }
+  
   delete runLoader;
   //
   AliInfo(Form("Stored used OCDB entries as TMap %s and TList %s in %s",
