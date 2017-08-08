@@ -25350,8 +25350,6 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
 
   // *************************************************************************
 
-return;
-
   // FINALISE (calculate flow)
 
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
@@ -25898,7 +25896,6 @@ return;
 
         if(Cn2) {
           Double_t Flow2 = Dn2/sqrt(fabs(Cn2));
-//          Double_t Flow2E = pow( pow(Dn2E/sqrt(fabs(Cn2)),2.) + pow(0.5*Cn2E*Dn2/pow(fabs(Cn2),1.5),2.) ,0.5);
           Double_t Flow2E = 0.;
           // change vocabulary, to be changed
           Double_t two = QC2;
@@ -25925,7 +25922,6 @@ return;
 
         if(Cn4Esq>0.) {
           Double_t Flow4 = - Dn4/pow(fabs(Cn4),0.75);
-//          Double_t Flow4E = pow( pow(Dn4E/pow(fabs(Cn4),0.75),2.) + pow(0.75*Cn4E*Dn4/pow(fabs(Cn4),1.75),2.) ,0.5);
           Double_t Flow4E = 0.;
           // change vocabulary, to be changed
           Double_t two = QC2;
@@ -25943,20 +25939,23 @@ return;
           Double_t wCovTwoReducedFourReduced = fFlowQCCorCovHist[h][hr][4]->GetBinContent(pt);
           Double_t wCovTwoFour = fFlowQCRefCorHist[hr][13]->GetBinContent(h+1);
 
-          Double_t v4PrimeErrorSquared = pow(2.*pow(two,2.)-four,-7./2.)
-                                        * (pow(2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced,2.)*pow(twoError,2.)
-                                       + (9./16.)*pow(2.*two*twoReduced-fourReduced,2.)*pow(fourError,2.)
-                                       + 4.*pow(two,2.)*pow(2.*pow(two,2.)-four,2.)*pow(twoReducedError,2.)
-                                       + pow(2.*pow(two,2.)-four,2.)*pow(fourReducedError,2.)
-                                       - (3./2.)*(2.*two*twoReduced-fourReduced)
-                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFour
-                                       - 4.*two*(2.*pow(two,2.)-four)
-                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoTwoReduced
-                                       + 2.*(2.*pow(two,2.)-four)
-                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFourReduced
-                                       + 3.*two*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourTwoReduced
-                                       - (3./2.)*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourFourReduced
-                                       - 4.*two*pow(2.*pow(two,2.)-four,2.)*wCovTwoReducedFourReduced);
+          Double_t v4PrimeErrorSquared = 0.;
+          if(2.*pow(two,2.)-four>0.) {
+            Double_t v4PrimeErrorSquared = pow(2.*pow(two,2.)-four,-7./2.)
+            * (pow(2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced,2.)*pow(twoError,2.)
+            + (9./16.)*pow(2.*two*twoReduced-fourReduced,2.)*pow(fourError,2.)
+            + 4.*pow(two,2.)*pow(2.*pow(two,2.)-four,2.)*pow(twoReducedError,2.)
+            + pow(2.*pow(two,2.)-four,2.)*pow(fourReducedError,2.)
+            - (3./2.)*(2.*two*twoReduced-fourReduced)
+            * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFour
+            - 4.*two*(2.*pow(two,2.)-four)
+            * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoTwoReduced
+            + 2.*(2.*pow(two,2.)-four)
+            * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFourReduced
+            + 3.*two*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourTwoReduced
+            - (3./2.)*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourFourReduced
+            - 4.*two*pow(2.*pow(two,2.)-four,2.)*wCovTwoReducedFourReduced);
+          }
           if(v4PrimeErrorSquared>0.){Flow4E = pow(v4PrimeErrorSquared,0.5);}
 
           if(Flow4E>0.) {
@@ -25980,9 +25979,8 @@ return;
 //        fFlowQCFinalPtDifHist[h][hr][5]->SetBinContent(pt,Dn2EG);
 //        fFlowQCFinalPtDifHist[h][hr][5]->SetBinError(pt,Dn2EGE);
 
-        if(Cn2EG) {
-          Double_t Flow2EG = Dn2EG/sqrt(fabs(Cn2EG));
-//          Double_t Flow2EGE = pow( pow(Dn2EGE/sqrt(fabs(Cn2EG)),2.) + pow(0.5*Cn2EGE*Dn2EG/pow(fabs(Cn2EG),1.5),2.) ,0.5);
+        if(Cn2EG>0.) {
+          Double_t Flow2EG = Dn2EG/sqrt(Cn2EG);
           Double_t Flow2EGE = 0.;
           // change vocabulary, to be changed
           Double_t two = Cn2EG;
@@ -26016,9 +26014,8 @@ return;
 //        fFlowQCFinalPtDifHist[h][hr][5]->SetBinContent(pt,Dn2EG);
 //        fFlowQCFinalPtDifHist[h][hr][5]->SetBinError(pt,Dn2EGE);
 
-        if(Cn2EG) {
-          Double_t Flow2EG = Dn2EGB/sqrt(fabs(Cn2EG));
-          //          Double_t Flow2EGE = pow( pow(Dn2EGE/sqrt(fabs(Cn2EG)),2.) + pow(0.5*Cn2EGE*Dn2EG/pow(fabs(Cn2EG),1.5),2.) ,0.5);
+        if(Cn2EG>0.) {
+          Double_t Flow2EG = Dn2EGB/sqrt(Cn2EG);
           Double_t Flow2EGE = 0.;
           // change vocabulary, to be changed
           Double_t two = Cn2EG;
@@ -26038,9 +26035,8 @@ return;
         }
 
         // 2-particle with Eta Gap, combo
-        if(Cn2EG) {
-          Double_t Flow2EG = Dn2EGB/sqrt(fabs(Cn2EG));
-          //          Double_t Flow2EGE = pow( pow(Dn2EGE/sqrt(fabs(Cn2EG)),2.) + pow(0.5*Cn2EGE*Dn2EG/pow(fabs(Cn2EG),1.5),2.) ,0.5);
+        if(Cn2EG>0.) {
+          Double_t Flow2EG = Dn2EGB/sqrt(Cn2EG);
           Double_t Flow2EGE = 0.;
           // change vocabulary, to be changed
           Double_t two = Cn2EG;
@@ -26377,7 +26373,6 @@ void AliFlowAnalysisCRC::FinalizeFlowGF()
     } // end of for(Int_t i=0; i<fkFlowGFNOrde; i++)
   }
 
-  // covariances
   for (Int_t h=0; h<fkFlowGFNHarm; h++) {
     for(Int_t i=0; i<fkFlowGFNOrde; i++) {
       for(Int_t k=0; k<fkFlowGFNOrde; k++) {
@@ -26455,6 +26450,7 @@ void AliFlowAnalysisCRC::FinalizeFlowGF()
       Double_t wCov46 = fFlowGFIntCovHist[h][1][2]->GetBinContent(pt);
       Double_t wCov48 = fFlowGFIntCovHist[h][1][3]->GetBinContent(pt);
       Double_t wCov68 = fFlowGFIntCovHist[h][2][3]->GetBinContent(pt);
+
       // Statistical error of QC{2}:
       qc2Error = twoError;
       // Statistical error of QC{4}:
@@ -26502,7 +26498,7 @@ void AliFlowAnalysisCRC::FinalizeFlowGF()
       Double_t v4 = 0.; // v{4,QC}
       Double_t v6 = 0.; // v{6,QC}
       Double_t v8 = 0.; // v{8,QC}
-      // Reference flow's statistical errors:
+      // Reference flow statistical errors:
       Double_t v2Error = 0.; // v{2,QC} stat. error
       Double_t v4Error = 0.; // v{4,QC} stat. error
       Double_t v6Error = 0.; // v{6,QC} stat. error
@@ -26534,76 +26530,92 @@ void AliFlowAnalysisCRC::FinalizeFlowGF()
         fFlowGFIntFinalHist[h][3]->SetBinContent(pt,v8);
         fFlowGFIntFinalHist[h][3]->SetBinError(pt,v8Error);
       }
+
       // from eta gap
       Double_t v2EG = fFlowQCIntCorHistEG[h]->GetBinContent(pt);
 
-//      // ratios (with correct errors) ******************************************
+      //      // ratios (with correct errors) ******************************************
 
-      // vn6/vn4
-      Double_t DenTermA = 2.*pow(two,2.)-four;
-      Double_t DenTermB = 12.*pow(two,3.)-9.*two*four+six;
+      Double_t DenTermA=0., DenTermB=0., DenTermC=0.;
+      Double_t DerTwo, DerFour, DerSix, DerEight;
 
-      Double_t DerTwo = (3.*pow(four,2.)-2.*two*six)/(2.*pow(2.,1./3.)*pow(DenTermA,5./4.)*pow(DenTermB,5./6.));
-      Double_t DerFour = (-3.*two*four+six)/(4.*pow(2.,1./3.)*pow(DenTermA,5./4.)*pow(DenTermB,5./6.));
-      Double_t DerSix = 1./(6.*pow(2.,1./3.)*pow(DenTermA,1./4.)*pow(DenTermB,5./6.));
+      if(qc2>0. && qc4<0. && qc6>0.) {
+        // vn6/vn4
+        DenTermA = 2.*pow(two,2.)-four;
+        DenTermB = 12.*pow(two,3.)-9.*two*four+six;
+        if(TMath::Abs(DenTermA)>0. && TMath::Abs(DenTermB)>0.) {
+          DerTwo = (3.*pow(four,2.)-2.*two*six)/(2.*pow(2.,1./3.)*pow(DenTermA,5./4.)*pow(DenTermB,5./6.));
+          DerFour = (-3.*two*four+six)/(4.*pow(2.,1./3.)*pow(DenTermA,5./4.)*pow(DenTermB,5./6.));
+          DerSix = 1./(6.*pow(2.,1./3.)*pow(DenTermA,1./4.)*pow(DenTermB,5./6.));
 
-      Double_t RatioErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerFour*DerSix*wCov46;
-      if(qc6>0. && qc4<0. && RatioErrSquared>0.) {
-        Double_t Ratio = v6/v4;
-        Double_t RatioErr = pow(RatioErrSquared,0.5);
-        // set
-        Double_t RatioSimpleErr = pow(pow(v6/v4,2.)*(pow(v6/v6Error,2.)+pow(v4/v4Error,2.)),0.5);
-        fFlowGFIntExtraHist[h][0]->SetBinContent(pt,Ratio);
-        fFlowGFIntExtraHist[h][0]->SetBinError(pt,RatioErr);
+          Double_t RatioErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerFour*DerSix*wCov46;
+
+          if(RatioErrSquared>0.) {
+            Double_t Ratio = v6/v4;
+            Double_t RatioErr = pow(RatioErrSquared,0.5);
+            fFlowGFIntExtraHist[h][0]->SetBinContent(pt,Ratio);
+            fFlowGFIntExtraHist[h][0]->SetBinError(pt,RatioErr);
+          }
+        }
       }
 
-      // vn8/vn4
-      DenTermA = 2.*pow(two,2.)-four;
-      DenTermB = 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight;
+      if(qc2>0. && qc4<0. && qc6>0. && qc8<0.) {
+        // vn8/vn4
+        DenTermA = 2.*pow(two,2.)-four;
+        DenTermB = 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight;
+        if(TMath::Abs(DenTermA)>0. && TMath::Abs(DenTermB)>0.) {
+          DerTwo = (-12.*two*two*six-2.*four*six+two*(18.*four*four+eight))/(pow(33.,1./8.)*pow(DenTermA,5./4.)*pow(DenTermB,7./8.));
+          DerFour = (4.*two*(-9.*two*four+4.*six)-eight)/(4.*pow(33.,1./8.)*pow(DenTermA,5./4.)*pow(DenTermB,7./8.));
+          DerSix = (2.*two)/(pow(33.,1./8.)*pow(DenTermA,1./4.)*pow(DenTermB,7./8.));
+          DerEight = -1./(8.*pow(33.,1./8.)*pow(DenTermA,1./4.)*pow(DenTermB,7./8.));
 
-      DerTwo = (-12.*two*two*six-2.*four*six+two*(18.*four*four+eight))/(pow(33.,1./8.)*pow(DenTermA,5./4.)*pow(DenTermB,7./8.));
-      DerFour = (4.*two*(-9.*two*four+4.*six)-eight)/(4.*pow(33.,1./8.)*pow(DenTermA,5./4.)*pow(DenTermB,7./8.));
-      DerSix = (2.*two)/(pow(33.,1./8.)*pow(DenTermA,1./4.)*pow(DenTermB,7./8.));
-      Double_t DerEight = -1./(8.*pow(33.,1./8.)*pow(DenTermA,1./4.)*pow(DenTermB,7./8.));
+          Double_t RatioErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+pow(DerEight*eightError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerTwo*DerEight*wCov28+2.*DerFour*DerSix*wCov46+2.*DerFour*DerEight*wCov48+2.*DerSix*DerEight*wCov68;
 
-      RatioErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+pow(DerEight*eightError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerTwo*DerEight*wCov28+2.*DerFour*DerSix*wCov46+2.*DerFour*DerEight*wCov48+2.*DerSix*DerEight*wCov68;
-      if(qc8<0. && qc4<0. && RatioErrSquared>0.) {
-        Double_t Ratio = v8/v4;
-        Double_t RatioErr = pow(RatioErrSquared,0.5);
-        // set
-        Double_t RatioSimpleErr = pow(pow(v8/v4,2.)*(pow(v8/v8Error,2.)+pow(v4/v4Error,2.)),0.5);
-        fFlowGFIntExtraHist[h][1]->SetBinContent(pt,Ratio);
-        fFlowGFIntExtraHist[h][1]->SetBinError(pt,RatioErr);
+          if(RatioErrSquared>0.) {
+            Double_t Ratio = v8/v4;
+            Double_t RatioErr = pow(RatioErrSquared,0.5);
+            // set
+            Double_t RatioSimpleErr = pow(pow(v8/v4,2.)*(pow(v8/v8Error,2.)+pow(v4/v4Error,2.)),0.5);
+            fFlowGFIntExtraHist[h][1]->SetBinContent(pt,Ratio);
+            fFlowGFIntExtraHist[h][1]->SetBinError(pt,RatioErr);
+          }
+        }
       }
 
-      // gamma_1^exp
-      DerTwo = (-36.*pow(2.,2./3.)*pow(two,3.)*four + 2.*pow(2.,2./3.)*two*two*six + 2.*pow(2.,2./3.)*two*(12.*four*four - pow(2.*two*two-four,0.5)*six) + 3.*four*(pow(2.,2./3.)*pow(2.*two*two-four,0.5)*four - pow(2.,2./3.)*six + 2.*pow(2.*two*two-four,1./4.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) )
-      / ( 4.*pow(two-pow(2.*two*two-four,0.5),5./2.) * pow(2.*two*two-four,0.5) * pow(12.*pow(two,3.)-9.*two*four+six,5./6.) );
-      DerFour = (36.*pow(2.,2./3.)*pow(two,4.) - 24.*pow(2.,2./3.)*pow(two,2.)*four + pow(2.,2./3.)*pow(2.*two*two-four,0.5)*six
-                 + two*( -3.*pow(2.,2./3.)*pow(2.*two*two-four,1./2.)*four + 2.*pow(2.,2./3.)*six - 6.*pow(2.*two*two-four,1./4.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)))
-      / ( 8.*pow(two-pow(2.*two*two-four,0.5),5./2.) * pow(2.*two*two-four,0.5)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.) );
-      DerSix = pow(2.*two*two-four,0.5)
-      / ( 6.*pow(2.,1./3.)*pow(two-pow(2.*two*two-four,0.5),3./2.) * pow(12.*pow(two,3.)-9.*two*four+six,5./6.) );
+      if(qc2>0. && qc4<0. && qc6>0. && 2.*two*two-four>0. && 12.*pow(two,3.)-9.*two*four+six>0.) {
+        if(two-pow(2.*two*two-four,0.5)>0.) {
+          // gamma_1^exp
+          DenTermA = 4.*pow(two-pow(2.*two*two-four,0.5),5./2.) * pow(2.*two*two-four,0.5) * pow(12.*pow(two,3.)-9.*two*four+six,5./6.);
+          DenTermB = 8.*pow(two-pow(2.*two*two-four,0.5),5./2.) * pow(2.*two*two-four,0.5)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.);
+          DenTermC = 6.*pow(2.,1./3.)*pow(two-pow(2.*two*two-four,0.5),3./2.) * pow(12.*pow(two,3.)-9.*two*four+six,5./6.);
+          if(TMath::Abs(DenTermA)>0. && TMath::Abs(DenTermB)>0. && TMath::Abs(DenTermC)>0.) {
+            DerTwo = (-36.*pow(2.,2./3.)*pow(two,3.)*four + 2.*pow(2.,2./3.)*two*two*six + 2.*pow(2.,2./3.)*two*(12.*four*four - pow(2.*two*two-four,0.5)*six) + 3.*four*(pow(2.,2./3.)*pow(2.*two*two-four,0.5)*four - pow(2.,2./3.)*six + 2.*pow(2.*two*two-four,1./4.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) )
+            / DenTermA;
+            DerFour = (36.*pow(2.,2./3.)*pow(two,4.) - 24.*pow(2.,2./3.)*pow(two,2.)*four + pow(2.,2./3.)*pow(2.*two*two-four,0.5)*six
+            + two*( -3.*pow(2.,2./3.)*pow(2.*two*two-four,1./2.)*four + 2.*pow(2.,2./3.)*six - 6.*pow(2.*two*two-four,1./4.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)))
+            / DenTermB;
+            DerSix = pow(2.*two*two-four,0.5) / DenTermC;
 
-      Double_t GammaErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerFour*DerSix*wCov46;
+            Double_t GammaErrSquared = pow(DerTwo*twoError,2.)+pow(DerFour*fourError,2.)+pow(DerSix*sixError,2.)+2.*DerTwo*DerFour*wCov24+2.*DerTwo*DerSix*wCov26+2.*DerFour*DerSix*wCov46;
 
-      if(qc8<0. && qc6>0. && qc4<0. && GammaErrSquared>0.) {
-        Double_t Gamma = -6.*sqrt(2.)*pow(v4,2.)*(v4-v6)/pow(v2EG*v2EG-v4*v4,3./2.);
-        Double_t GammaErr = -6.*sqrt(2.)*pow(GammaErrSquared,0.5);
-        // set
-        fFlowGFIntExtraHist[h][2]->SetBinContent(pt,Gamma);
-        fFlowGFIntExtraHist[h][2]->SetBinError(pt,GammaErr);
+            if(GammaErrSquared>0. && v2EG*v2EG-v4*v4>0.) {
+              Double_t Gamma = -6.*sqrt(2.)*pow(v4,2.)*(v4-v6)/pow(v2EG*v2EG-v4*v4,3./2.);
+              Double_t GammaErr = -6.*sqrt(2.)*pow(GammaErrSquared,0.5);
+              // set
+              fFlowGFIntExtraHist[h][2]->SetBinContent(pt,Gamma);
+              fFlowGFIntExtraHist[h][2]->SetBinError(pt,GammaErr);
+            }
+          }
+        }
       }
 
       // v6-v8 TBI
-//      DerTwo = (3.*(4.*two*two-four))/(2.*pow(2.,1./3.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) - (2.*(36.*pow(two,3.)-18.*two*four+six))/(pow(33.,1./8.)*pow( 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight,7./8.));
-//      DerFour = (1./8.)*( (-6.*pow(2.,2./3.)*two)/pow(12.*pow(two,3.)-9.*two*four+six,5./6.) + (12.*(2.*two*two-four))/(pow(11.,1./8.)*pow( 6.*(8.*pow(two,4.)-8.*two*two*four+four*four)+(16./3.)*two*six-(1./3.)*eight,7./8.)) );
-//      DerSix = 1./(6.*pow(2.,1./3.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) - (2.*two)/(pow(33.,1./8.)*pow( 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight,7./8.));
+      //      DerTwo = (3.*(4.*two*two-four))/(2.*pow(2.,1./3.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) - (2.*(36.*pow(two,3.)-18.*two*four+six))/(pow(33.,1./8.)*pow( 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight,7./8.));
+      //      DerFour = (1./8.)*( (-6.*pow(2.,2./3.)*two)/pow(12.*pow(two,3.)-9.*two*four+six,5./6.) + (12.*(2.*two*two-four))/(pow(11.,1./8.)*pow( 6.*(8.*pow(two,4.)-8.*two*two*four+four*four)+(16./3.)*two*six-(1./3.)*eight,7./8.)) );
+      //      DerSix = 1./(6.*pow(2.,1./3.)*pow(12.*pow(two,3.)-9.*two*four+six,5./6.)) - (2.*two)/(pow(33.,1./8.)*pow( 18.*(8.*pow(two,4.)-8.*two*two*four+four*four)+16.*two*six-eight,7./8.));
 
     }
   }
-
-
 
   // MIXED HARMONICS ***********************************************************
 
