@@ -14,7 +14,7 @@
 #include "TF1.h"
 #include "AliPIDResponse.h"
 
-class AliStack;
+//class AliStack;
 class AliMCEvent;
 class TH2F;
 class TH1;
@@ -89,7 +89,7 @@ public TObject
   Float_t GetTPCBetaGamma(Int_t ipart) const {return fTPCmomentum / AliPID::ParticleMass(ipart);}; // get TPC beta-gamma
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
+  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasIntegratedTimes() const{ return (fStatus & AliESDtrack::kTIME);}; // has integrated times
   Bool_t HasTPCPID() const; // has TPC PID
