@@ -18,6 +18,7 @@
 #include <TNamed.h>
 #endif
 
+class TClonesArray;
 class TH1F;
 class TH2F;
 class AliVEvent;
