@@ -990,6 +990,8 @@ public:
   TH2D* GetFlowQCIntCumHistTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntCumHistTest[eg][j][h];};
   void SetFlowQCIntFinHistTest(TH2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntFinHistTest[eg][j][k] = TP;};
   TH2D* GetFlowQCIntFinHistTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntFinHistTest[eg][j][h];};
+  void SetFlowQCIntCorNUAProTest(TProfile2D* const TP, Int_t const eg, Int_t const j) {this->fFlowQCIntCorNUAProTest[eg][j] = TP;};
+  TProfile2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const j) const {return this->fFlowQCIntCorNUAProTest[eg][j];};
 
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
@@ -1911,6 +1913,8 @@ private:
   TH2D *fFlowQCIntCorHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   TH2D *fFlowQCIntCumHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  const static Int_t fkFlowQCnNUATest = 6;
+  TProfile2D *fFlowQCIntCorNUAProTest[fFlowNHarm][fkFlowQCnNUATest]; //!
 
 //  TList* fFlowQCOrdMagList;
 //  const static Int_t fkNOrdMag = 20;
