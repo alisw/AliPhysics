@@ -4,17 +4,17 @@
 #include <TObject.h>
 #include <TVector3.h>
 
-#include "AliPicoHeaderCJ.h"
+#include "AliPicoBase.h"
 
 class TH2D;
 class TLorentzVector;
 
-class AliPicoV0Base : public TObject {
+class AliPicoV0 : public TObject {
 
  public :
 
-  AliPicoV0Base();
-  AliPicoV0Base(UInt_t   wMask,
+  AliPicoV0();
+  AliPicoV0(UInt_t   wMask,
                 Double_t dV0Radius,
                 Double_t dV0CosPA,
                 Double_t dV0DistToPVoverP,
@@ -26,9 +26,9 @@ class AliPicoV0Base : public TObject {
                 Double_t dPosPx, Double_t dPosPy, Double_t dPosPz,
                 Double_t dNegPx, Double_t dNegPy, Double_t dNegPz,
                 Bool_t   bPosInJC, Bool_t   bNegInJC);
-  AliPicoV0Base(const AliPicoV0Base &src);
-  AliPicoV0Base& operator=(const AliPicoV0Base &src);
-  virtual ~AliPicoV0Base();
+  AliPicoV0(const AliPicoV0 &src);
+  AliPicoV0& operator=(const AliPicoV0 &src);
+  virtual ~AliPicoV0();
 //=============================================================================
 
   TVector3 KinePos() const { return  fP3Pos; }
@@ -43,9 +43,9 @@ class AliPicoV0Base : public TObject {
   Double_t RapidityLa();
 //=============================================================================
 
-  Bool_t IsKshort() const { return ((fMask & AliPicoHeaderCJ::kKshort)     == AliPicoHeaderCJ::kKshort);     }
-  Bool_t IsLambda() const { return ((fMask & AliPicoHeaderCJ::kLambda)     == AliPicoHeaderCJ::kLambda);     }
-  Bool_t IsAntiLa() const { return ((fMask & AliPicoHeaderCJ::kAntiLambda) == AliPicoHeaderCJ::kAntiLambda); }
+  Bool_t IsKshort() const { return ((fMask & AliPicoBase::kKshort)     == AliPicoBase::kKshort);     }
+  Bool_t IsLambda() const { return ((fMask & AliPicoBase::kLambda)     == AliPicoBase::kLambda);     }
+  Bool_t IsAntiLa() const { return ((fMask & AliPicoBase::kAntiLambda) == AliPicoBase::kAntiLambda); }
 
   Bool_t IsKaInRapAcc(Double_t dMin, Double_t dMax);
   Bool_t IsLaInRapAcc(Double_t dMin, Double_t dMax);
@@ -116,12 +116,7 @@ class AliPicoV0Base : public TObject {
   Bool_t fIsPosInJC;  // match w/ jet consti
   Bool_t fIsNegInJC;  // match w/ jet consti
 
-  static const Double_t fgkMassPion;    //
-  static const Double_t fgkMassKshort;  //
-  static const Double_t fgkMassLambda;  //
-  static const Double_t fgkMassProton;  //
-
-  ClassDef(AliPicoV0Base, 3)
+  ClassDef(AliPicoV0, 4)
 };
 
 #endif

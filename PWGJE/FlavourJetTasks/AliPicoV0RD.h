@@ -1,9 +1,9 @@
 #ifndef ALIPICOV0RD_H
 #define ALIPICOV0RD_H
 
-#include "AliPicoV0Base.h"
+#include "AliPicoV0.h"
 
-class AliPicoV0RD : public AliPicoV0Base {
+class AliPicoV0RD : public AliPicoV0 {
 
  public :
 
@@ -41,7 +41,7 @@ class AliPicoV0RD : public AliPicoV0Base {
   Float_t fPosProtonSigmaTPC;  //
   Float_t fNegProtonSigmaTPC;  //
 
-  ClassDef(AliPicoV0RD, 3);
+  ClassDef(AliPicoV0RD, 4);
 };
 
 #endif
