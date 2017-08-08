@@ -113,7 +113,7 @@ void AliAnalysisTaskK0toPi0Pi0::UserCreateOutputObjects(){
   fOutput->SetOwner(kTRUE);
 
   // Define the different types of binnings
-  TLinearBinning massBinningK0(700, 0.0, 0.7),massBinningPi0(500, 0., 0.5), ptBinning(300, 0.3, 30.), openingAngleBinning(100, 0., 1.), candidateBinning( 101, -0.5, 100.5), alphaBinning(200, -1., 1.);
+  TLinearBinning massBinningK0(800, 0.0, 0.8),massBinningPi0(500, 0., 0.5), ptBinning(300, 0.3, 30.), openingAngleBinning(100, 0., 1.), candidateBinning( 101, -0.5, 100.5), alphaBinning(200, -1., 1.);
 
 
 
