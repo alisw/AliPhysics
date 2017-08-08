@@ -68,6 +68,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetEtaBinning(Int_t nbins){
     fNEtaBins=nbins;
   }
+  void SetUpperMultiplicity(Double_t maxMult){
+    fMaxMult=maxMult;
+  }
 
  private:
 
@@ -79,8 +82,14 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   
   TList*  fOutput;                   //!<!  list of output histos
 
-  TH1F* fHistNEvents;                //!<!  histo with N of events  
-  TH1F* fHistNTracks;                //!<!  histo with N of tracks
+  TH1F* fHistNEvents;                  //!<!  histo with N of events  
+  TH1F* fHistNTracks;                  //!<!  histo with N of tracks
+  TH2F* fHistNTracksVsTPCclusters;     //!<! histos of track-cluster correlations
+  TH2F* fHistNTracksVsITSclusters;     //!<! histos of track-cluster correlations
+  TH2F* fHistITSclustersVsTPCclusters; //!<! histos of track-cluster correlations
+  TH2F* fHistNTracksFB4VsTPCclusters;  //!<! histos of track-cluster correlations
+  TH2F* fHistNTracksFB4VsITSclusters;  //!<! histos of track-cluster correlations
+
   TH2D* fHistFilterBits;             //!<!  histo of fieter bits
 
   TH1F* fHistITSnClusTPCsel;        //!<! histo of ITS clusters
@@ -164,10 +173,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Int_t fNPtBins;              // number of pt intervals in histos
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
+  Double_t fMaxMult;           // upper limit of multiplicity plots
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,8);
+  ClassDef(AliAnalysisTaskCheckAODTracks,9);
 };
 
 

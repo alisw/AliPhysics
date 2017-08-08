@@ -54,6 +54,11 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
+  fHistNTracksVsTPCclusters{nullptr},
+  fHistNTracksVsITSclusters{nullptr},
+  fHistITSclustersVsTPCclusters{nullptr},
+  fHistNTracksFB4VsTPCclusters{nullptr},
+  fHistNTracksFB4VsITSclusters{nullptr},
   fHistFilterBits{nullptr},
   fHistITSnClusTPCsel{nullptr},
   fHistITSnClusITSsa{nullptr},
@@ -114,6 +119,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fNPtBins(100),
   fMinPt(0.),
   fMaxPt(25.),
+  fMaxMult(500.),
   fReadMC{kFALSE},
   fUseMCId{kFALSE}
 {
@@ -158,6 +164,11 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNTracks;
+    delete fHistNTracksVsTPCclusters;
+    delete fHistNTracksVsITSclusters;
+    delete fHistITSclustersVsTPCclusters;
+    delete fHistNTracksFB4VsTPCclusters;
+    delete fHistNTracksFB4VsITSclusters;
     delete fHistFilterBits;
     delete fHistITSnClusTPCsel;
     delete fHistITSnClusITSsa;
@@ -302,8 +313,18 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
   fOutput->Add(fHistNEvents);
 
-  fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",5001,-0.5,5000.5);
+  fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
   fOutput->Add(fHistNTracks);
+  fHistNTracksVsTPCclusters = new TH2F("hNTracksVsTPCclusters"," ; N_{TPCclusters} ; N_{tracks}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
+  fHistNTracksVsITSclusters = new TH2F("hNTracksVsITSclusters"," ; N_{ITSclusters} ; N_{tracks}",100,0.,10*fMaxMult,100,0.,fMaxMult);
+  fHistITSclustersVsTPCclusters = new TH2F("hITSclustersVsTPCclusters"," ;  N_{ITSclusters} ; N_{TPCclusters}",100,0.,300.*fMaxMult,100,0.,10*fMaxMult);
+  fHistNTracksFB4VsTPCclusters = new TH2F("hNTracksFB4VsTPCclusters"," ; N_{TPCclusters} ; N_{tracks,FB4}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
+  fHistNTracksFB4VsITSclusters = new TH2F("hNTracksFB4VsITSclusters"," ; N_{ITSclusters} ; N_{tracks,FB4}",100,0.,10*fMaxMult,100,0.,fMaxMult);
+  fOutput->Add(fHistNTracksVsTPCclusters);
+  fOutput->Add(fHistNTracksVsITSclusters);
+  fOutput->Add(fHistITSclustersVsTPCclusters);
+  fOutput->Add(fHistNTracksFB4VsTPCclusters);
+  fOutput->Add(fHistNTracksFB4VsITSclusters);
 
   fHistFilterBits = new TH2D("hFilterBits", " ; Filter Bit ; Id ; N_{tracks}",kNumOfFilterBits,-0.5,kNumOfFilterBits-0.5,2,-1,1);
   fHistFilterBits->GetYaxis()->SetBinLabel(1,"Neg. ID");
@@ -500,6 +521,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   AliAODTracklets *mult=aod->GetTracklets();
   if(mult) ntracklets=mult->GetNumberOfTracklets();
   Int_t ncl1 = aod->GetNumberOfITSClusters(1);
+  Int_t totITSclusters=0;
+  for(Int_t il=0; il<6; il++) totITSclusters+=aod->GetNumberOfITSClusters(il);
+  Int_t totTPCclusters=aod->GetNumberOfTPCClusters();
   Int_t ntracksFB4=0;
   Int_t ntracksFB5=0;
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
@@ -543,6 +567,11 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   fHistNTracks->Fill(ntracks);
+  fHistNTracksVsTPCclusters->Fill(totTPCclusters,ntracks);
+  fHistNTracksVsITSclusters->Fill(totITSclusters,ntracks);
+  fHistITSclustersVsTPCclusters->Fill(totTPCclusters,totITSclusters);
+  fHistNTracksFB4VsTPCclusters->Fill(totTPCclusters,ntracksFB4);
+  fHistNTracksFB4VsITSclusters->Fill(totITSclusters,ntracksFB4);
 
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliAODTrack * track = (AliAODTrack*)aod->GetTrack(iTrack);
