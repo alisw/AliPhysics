@@ -403,8 +403,6 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
 	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
 	Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);     /* && trk->IsOn(AliESDtrack::kTPCpid)*/;
-	Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
-	if(!tpcIsOk  ||  !tofIsOk)                                                      {    continue;    }
 
 
 	Float_t pt            = track->Pt();
@@ -413,8 +411,14 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 	if(pt >= 5.0)	{    trig_05_track_num[trig_05_track_count] = i;	    trig_05_track_count++;	}
 	if(pt >= 8.0)	{    trig_08_track_num[trig_08_track_count] = i;	    trig_08_track_count++;	}
 
+	Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
+	if(!tpcIsOk  ||  !tofIsOk)                                                      {    continue;    }
 
+	
 	float   mom           = track->P();
+
+	if(mom > 4.0)                                                                   {    continue;    }
+	
 	Short_t charge        = track->Charge();
 	Float_t sigma_min     = -999.0;
 	Float_t prot_mean     = 0.0;
