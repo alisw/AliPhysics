@@ -19,21 +19,21 @@ public:
   void     GetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
   void     GetTPCSignals(Double_t signal[4]) const;
 
-  void     SetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]);
-  void     SetTPCSignals(Double_t signal[4]);
+  void     SetTPCSignalRegionInfo(const Double_t signal[4], const Char_t ncl[3], const Char_t nrows[3]);
+  void     SetTPCSignals(const Double_t signal[4]);
   
   
   // qMax info
   void     GetTPCSignalRegionInfoQmax(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
   void     GetTPCSignalsQmax(Double_t signal[4]) const;
 
-  void     SetTPCSignalRegionInfoQmax(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]);
-  void     SetTPCSignalsQmax(Double_t signal[4]);
+  void     SetTPCSignalRegionInfoQmax(const Double_t signal[4], const Char_t ncl[3], const Char_t nrows[3]);
+  void     SetTPCSignalsQmax(const Double_t signal[4]);
   
-  Double_t GetSignalTot(Int_t index){ return fTPCsignalRegion[index];}
-  Double_t GetSignalMax(Int_t index){ return fTPCsignalRegionQmax[index];}
-  Double_t GetNumberOfClusters(Int_t index) {return fTPCsignalNRegion[index%3];}
-  Double_t GetNumberOfCrossedRows(Int_t index) {return fTPCsignalNRowRegion[index%3];}
+  Double_t GetSignalTot(Int_t index) const { return fTPCsignalRegion[index];}
+  Double_t GetSignalMax(Int_t index) const { return fTPCsignalRegionQmax[index];}
+  Double_t GetNumberOfClusters(Int_t index) const { return fTPCsignalNRegion[index%3];}
+  Double_t GetNumberOfCrossedRows(Int_t index) const { return fTPCsignalNRowRegion[index%3];}
   //
   Double_t GetTPCsignalShortPad()      const {return fTPCsignalRegion[0];}
   Double_t GetTPCsignalMediumPad()     const {return fTPCsignalRegion[1];}

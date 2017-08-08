@@ -20,6 +20,7 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 #include "AliVMisc.h"
 #include "AliVParticle.h"
 #include "AliFlatExternalTrackParam.h"
+#include "AliFlatTPCdEdxInfo.h"
 
 class AliESDtrack;
 class AliExternalTrackParam;
@@ -73,6 +74,7 @@ class AliFlatESDTrack :public AliVTrack {
     fImpTPC[5] = chi2; 
   }
 
+  void SetTPCdEdxInfo( const AliFlatTPCdEdxInfo &info );
   
   // --------------------------------------------------------------------------------
   // -- Getter methods
@@ -90,15 +92,21 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t GetNumberOfITSClusters() const { return fNITSClusters; } 
     
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
-  
-  const AliFlatESDTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDTrack*>(fContent+fContentSize); }
+
+  const AliFlatTPCdEdxInfo * GetFlatTPCdEdxInfo() const {
+    return ( fTPCdEdxInfoPointer>=0 ) ? reinterpret_cast< const AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer) : NULL;  
+  }
+ 
+  // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
+
+   const AliFlatESDTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDTrack*>(fContent+fContentSize); }
   AliFlatESDTrack *GetNextTrackNonConst() { return reinterpret_cast<AliFlatESDTrack*>(fContent+fContentSize); }
  
   // --------------------------------------------------------------------------------
   // -- Size methods
 
   static size_t EstimateSize(){
-    return sizeof(AliFlatESDTrack) + 5*sizeof(AliFlatExternalTrackParam);
+    return sizeof(AliFlatESDTrack) + 5*sizeof(AliFlatExternalTrackParam) + AliFlatTPCdEdxInfo::GetSize();
   }
 
   size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
@@ -202,7 +210,12 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 
   static UInt_t CountBits(Byte_t field, UInt_t mask = 0xFFFFFFFF);
- 
+
+  AliFlatTPCdEdxInfo * GetFlatTPCdEdxInfoNonConst(){
+    return ( fTPCdEdxInfoPointer>=0 ) ? reinterpret_cast<AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer) : NULL;  
+  }
+
+  
   // --------------------------------------------------------------------------------
   // -- Fixed size member objects
   //    -> Try to align in memory
@@ -214,6 +227,8 @@ class AliFlatESDTrack :public AliVTrack {
    
   Float_t   fImp[6];
   Float_t   fImpTPC[6];
+
+  Long64_t  fTPCdEdxInfoPointer;        // pointer to AliFlatTPCdEdxInfo in fContent
 
   ULong64_t fContentSize;                      // Size of this object
   
@@ -230,6 +245,7 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
   fTrackParamMask(0),
   fNTPCClusters(0),
   fNITSClusters(0),
+  fTPCdEdxInfoPointer(-1),
   fContentSize(0)
 {
   // Default constructor
@@ -276,4 +292,14 @@ inline Bool_t AliFlatESDTrack::IsOn(Int_t mask) const {
   return (GetStatus()&mask)>0;
 }
 
+inline  void AliFlatESDTrack::SetTPCdEdxInfo( const AliFlatTPCdEdxInfo &info )
+{
+  if( fTPCdEdxInfoPointer < 0 ){
+    fTPCdEdxInfoPointer = fContentSize;
+    fContentSize += AliFlatTPCdEdxInfo::GetSize();
+  }
+  AliFlatTPCdEdxInfo *p = reinterpret_cast<AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer);
+  *p = info;  
+}
+  
 #endif
