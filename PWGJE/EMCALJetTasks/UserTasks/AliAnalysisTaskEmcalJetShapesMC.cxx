@@ -415,8 +415,10 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[6] = fjNSubJettiness(jet1,0,1,0,1,0);
       fShapesVar[7] = fjNSubJettiness(jet1,0,2,0,1,0);
       //nsub1 and nsub2 for min_axis
-      fShapesVar[8] =fjNSubJettiness(jet1,0,1,10,1,0);
-      fShapesVar[9] =fjNSubJettiness(jet1,0,2,10,1,0);
+      fShapesVar[8] =0;
+      //fjNSubJettiness(jet1,0,1,10,1,0);
+      fShapesVar[9] = 0;
+      //fjNSubJettiness(jet1,0,2,10,1,0);
       //nsub1 and nsub2 for akt
       fShapesVar[10] = 0;
       //fjNSubJettiness(jet1,0,1,10,1,0);
