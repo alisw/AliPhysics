@@ -2084,6 +2084,7 @@ Int_t AliTRDrawStream::SeekNextLink()
   return (fPayloadCurr - start);
 }
 
+static int hltOnlineMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
 
 void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...)
 {
@@ -2099,14 +2100,12 @@ void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...
   (this->*fStoreError)();
 
   va_list ap;
-  static int hltOnlineMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
   bool suppressError = false;
   if (hltOnlineMode)
   {
     static int hltErrorCounter = 0;
     if (hltErrorCounter++ >= 10) suppressError = true;
   }
-  
   if (!suppressError)
   {
     if (fgErrorDebugLevel[err] > 10)
@@ -2137,15 +2136,24 @@ void AliTRDrawStream::StackError(ErrorCode_t err, const char *const msg, ...)
   (this->*fStoreError)();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 0)
-    AliDebug(fgErrorDebugLevel[err],
+  bool suppressError = false;
+  if (hltOnlineMode)
+  {
+    static int hltErrorCounter = 0;
+    if (hltErrorCounter++ >= 5) suppressError = true;
+  }
+  if (!suppressError)
+  {
+    if (fgErrorDebugLevel[err] > 0)
+      AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d S %i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
-  else
-    AliError(Form("Event %6i: Eq. %2d S %i - %s : %s",
+    else
+      AliError(Form("Event %6i: Eq. %2d S %i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
+  }
   fErrorFlags |= fgErrorBehav[err];
 }
 
@@ -2164,15 +2172,24 @@ void AliTRDrawStream::LinkError(ErrorCode_t err, const char *const msg, ...)
   (this->*fStoreError)();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 0)
-    AliDebug(fgErrorDebugLevel[err],
+  bool suppressError = false;
+  if (hltOnlineMode)
+  {
+    static int hltErrorCounter = 0;
+    if (hltErrorCounter++ >= 5) suppressError = true;
+  }
+  if (!suppressError)
+  {
+    if (fgErrorDebugLevel[err] > 0)
+      AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d S %i l %2i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
-  else
-    AliError(Form("Event %6i: Eq. %2d S %i l %2i - %s : %s",
+    else
+      AliError(Form("Event %6i: Eq. %2d S %i l %2i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
+  }
   fErrorFlags |= fgErrorBehav[err];
 }
 
