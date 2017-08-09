@@ -94,11 +94,12 @@ set(SRCS
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
-    UserTasks/AliAnalysisPHOSClusterTask.cxx
     UserTasks/AliCaloClusterInfo.cxx
     UserTasks/AliPHOSpPbPi0Header.cxx
+    UserTasks/AliAnalysisTaskPHOSCluster.cxx
+    UserTasks/AliCaloClusterContent.cxx
    )
-
+ 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
