@@ -56,6 +56,8 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_qa
  */
+AliReconstruction rec;
+
 void recraw_local(const char *filename,
     const char *cdbURI,
     int minEvent=-1,
@@ -111,8 +113,6 @@ void recraw_local(const char *filename,
   }
 
   // Reconstruction settings
-  AliReconstruction rec;
-
   if (minEvent>=0 || maxEvent>minEvent) {
     if (minEvent<0) minEvent=0;
     if (maxEvent<minEvent) maxEvent=minEvent;
