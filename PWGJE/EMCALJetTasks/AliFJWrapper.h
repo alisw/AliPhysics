@@ -104,15 +104,12 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
   virtual Int_t DoGenericSubtractionJet1subjettiness_ca();
   virtual Int_t DoGenericSubtractionJet2subjettiness_ca();
-  virtual Int_t DoGenericSubtractionJet3subjettiness_ca();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_ca();
   virtual Int_t DoGenericSubtractionJet1subjettiness_akt02();
   virtual Int_t DoGenericSubtractionJet2subjettiness_akt02();
-  virtual Int_t DoGenericSubtractionJet3subjettiness_akt02();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_akt02();
   virtual Int_t DoGenericSubtractionJet1subjettiness_casd();
   virtual Int_t DoGenericSubtractionJet2subjettiness_casd();
-  virtual Int_t DoGenericSubtractionJet3subjettiness_casd();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_casd();
   virtual Int_t DoConstituentSubtraction();
   virtual Int_t DoEventConstituentSubtraction();
