@@ -63,7 +63,7 @@ class CutHandlerNeutralConv{
 void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(    
     Int_t trainConfig                 = 1,
     Bool_t isMC                       = kFALSE,                         //run MC
-    Bool_t enableQAMesonTask          = kTRUE,                          //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
+    Int_t enableQAMesonTask           = 1,                          //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
     TString fileNameInputForWeighting = "MCSpectraInput.root",          // path to file for weigting input
     Bool_t doWeighting                = kFALSE,  //enable Weighting
     TString generatorName             = "HIJING",
@@ -356,7 +356,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
-  if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
+  task->SetDoMesonQA(enableQAMesonTask);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

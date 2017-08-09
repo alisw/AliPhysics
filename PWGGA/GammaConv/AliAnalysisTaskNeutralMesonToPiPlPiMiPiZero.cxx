@@ -68,6 +68,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 //	fBackList(NULL),
 //	fMotherList(NULL),
   fTrueList(NULL),
+  fTrueTreeList(NULL),
   fMCList(NULL),
   fOutputContainer(0),
   fReaderGammas(NULL),
@@ -88,6 +89,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fEventCuts(NULL),
   fConversionCuts(NULL),
   fClusterCuts(NULL),
+  fTreePiPiSameMother(NULL),
+  fCasePiPi(-1),
+  fSamePiPiMotherID(-1),
+  fSamePiPiMotherInvMass(-1),
+  fSamePiPiMotherPt(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -145,6 +151,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoMCOmegaPiPlPiMiPiZeroPt(NULL),
   fHistoMCOmegaPiPlPiMiPiZeroInAccPt(NULL),
   fHistoTrueMotherPiPlPiMiPiZeroInvMassPt(NULL),
+  fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt(NULL),
+  fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt(NULL),
   fHistoTrueMotherGammaGammaInvMassPt(NULL),
   fHistoTrueMotherGammaGammaFromEtaInvMassPt(NULL),
   fHistoTrueMotherGammaGammaFromOmegaInvMassPt(NULL),
@@ -160,6 +168,20 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoTruePionPionFromSameMotherInvMassPt(NULL),
   fHistoTruePionPionFromEtaInvMassPt(NULL),
   fHistoTruePionPionFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
   fHistoDoubleCountTrueOmegaInvMassPt(NULL),
@@ -179,7 +201,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fMoveParticleAccordingToVertex(kFALSE),
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
-  fDoMesonQA(kFALSE),
+  fDoMesonQA(0),
   fIsFromMBHeader(kTRUE),
   fIsMC(kFALSE),
   fNeutralPionMode(0),
@@ -203,6 +225,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 //	fBackList(NULL),
 //	fMotherList(NULL),
   fTrueList(NULL),
+  fTrueTreeList(NULL),
   fMCList(NULL),
   fOutputContainer(0),
   fReaderGammas(NULL),
@@ -223,6 +246,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fEventCuts(NULL),
   fConversionCuts(NULL),
   fClusterCuts(NULL),
+  fTreePiPiSameMother(NULL),
+  fCasePiPi(-1),
+  fSamePiPiMotherID(-1),
+  fSamePiPiMotherInvMass(-1),
+  fSamePiPiMotherPt(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -280,6 +308,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoMCOmegaPiPlPiMiPiZeroPt(NULL),
   fHistoMCOmegaPiPlPiMiPiZeroInAccPt(NULL),
   fHistoTrueMotherPiPlPiMiPiZeroInvMassPt(NULL),
+  fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt(NULL),
+  fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt(NULL),
   fHistoTrueMotherGammaGammaInvMassPt(NULL),
   fHistoTrueMotherGammaGammaFromEtaInvMassPt(NULL),
   fHistoTrueMotherGammaGammaFromOmegaInvMassPt(NULL),
@@ -295,6 +325,20 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoTruePionPionFromSameMotherInvMassPt(NULL),
   fHistoTruePionPionFromEtaInvMassPt(NULL),
   fHistoTruePionPionFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt(NULL),
+  fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt(NULL),
+  fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
   fHistoDoubleCountTrueOmegaInvMassPt(NULL),
@@ -314,7 +358,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fMoveParticleAccordingToVertex(kFALSE),
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
-  fDoMesonQA(kFALSE),
+  fDoMesonQA(0),
   fIsFromMBHeader(kTRUE),
   fIsMC(kFALSE),
   fNeutralPionMode(0),
@@ -515,7 +559,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   fHistoPosPionPhi		= new TH1F*[fnCuts];
   fHistoPionPionInvMassPt	= new TH2F*[fnCuts];
   
-  if( fDoMesonQA ) {			
+  if( fDoMesonQA>0 ) {
     fHistoNegPionEta		= new TH1F*[fnCuts];
     fHistoPosPionEta		= new TH1F*[fnCuts];
     fHistoNegPionClsTPC		= new TH2F*[fnCuts];
@@ -524,6 +568,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fHistoPionDCAz			= new TH2F*[fnCuts];
     fHistoPionTPCdEdxNSigma	= new TH2F*[fnCuts];
     fHistoPionTPCdEdx		= new TH2F*[fnCuts];
+    if(fDoMesonQA>1){
+        fTreePiPiSameMother = new TTree*[fnCuts];
+    }
   }
     fHistoAngleOmegaPiPlPiMi    = new TH2F*[fnCuts];
     fHistoAngleOmegaPiZero      = new TH2F*[fnCuts];
@@ -629,7 +676,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fHistoPionPionInvMassPt[iCut] = new TH2F("ESD_PiPlusPiNeg_InvMassPt","ESD_PiPlusPiNeg_InvMassPt",2000,0.,2.,200,0.,20.);
     fESDList[iCut]->Add(fHistoPionPionInvMassPt[iCut]);
     
-    if ( fDoMesonQA ) {
+    if ( fDoMesonQA>0 ) {
       fHistoNegPionEta[iCut] = new TH1F("ESD_PrimaryNegPions_Eta","ESD_PrimaryNegPions_Eta",600,-1.5,1.5);
       fESDList[iCut]->Add(fHistoNegPionEta[iCut]);
       fHistoPosPionEta[iCut] = new TH1F("ESD_PrimaryPosPions_Eta","ESD_PrimaryPosPions_Eta",600,-1.5,1.5);
@@ -645,7 +692,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fHistoPionTPCdEdxNSigma[iCut] = new TH2F("ESD_PrimaryPions_TPCdEdx","ESD_PrimaryPions_TPCdEdx",150,0.05,20,400,-10,10);
       fESDList[iCut]->Add(fHistoPionTPCdEdxNSigma[iCut]);
       fHistoPionTPCdEdx[iCut] =new TH2F("ESD_PrimaryPions_TPCdEdxSignal","ESD_PrimaryPions_TPCdEdxSignal" ,150,0.05,20.0,800,0.0,200);
-      fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);  			
+      fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
+      if(fDoMesonQA>1){
+        fTreePiPiSameMother[iCut] = new TTree("TreePiPiSameMother","TreePiPiSameMother");
+        fTreePiPiSameMother[iCut]->Branch("fCasePiPi", &fCasePiPi, "fCasePiPi/S");
+        fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherID", &fSamePiPiMotherID, "fSamePiPiMotherID/F");
+        fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherInvMass", &fSamePiPiMotherInvMass, "fSamePiPiMotherInvMass/F");
+        fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherPt", &fSamePiPiMotherPt, "fSamePiPiMotherPt/F");
+        // fTrueTreeList[iCut]->Add(fTreePiPiSameMother[iCut]);
+      }
     }
     fHistoGammaGammaInvMassPt[iCut] = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",450,0.,0.45,250,0,25);
     fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
@@ -701,7 +756,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fHistoAngleSum[iCut] = new TH2F("ESD_Mother_AngleSum_Pt","ESD_Mother_AngleSum_Pt",250,0,25,720,0,2*TMath::Pi());
     fESDList[iCut]->Add(fHistoAngleSum[iCut]);
 
-    if ( fDoMesonQA ) {
+    if ( fDoMesonQA>0 ) {
       TAxis *AxisAfter = fHistoPionTPCdEdxNSigma[iCut]->GetXaxis(); 
       Int_t bins = AxisAfter->GetNbins();
       Double_t from = AxisAfter->GetXmin();
@@ -727,6 +782,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fMCList = new TList*[fnCuts];
     // True Histogramms
     fTrueList = new TList*[fnCuts];
+    fTrueTreeList = new TList*[fnCuts];
     if (fNeutralPionMode < 2){
       fHistoTrueConvGammaPt = new TH1F*[fnCuts];
       fHistoDoubleCountTrueConvGammaRPt = new TH2F*[fnCuts];
@@ -756,24 +812,41 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 // 		hMCPi0DalitzElectronPt = new TH1F*[fnCuts];
 // 		hMCPi0DalitzPositronPt = new TH1F*[fnCuts];
 
-    fHistoMCEtaPiPlPiMiPiZeroPt = new TH1F*[fnCuts];
-    fHistoMCEtaPiPlPiMiPiZeroInAccPt = new TH1F*[fnCuts];
-    fHistoMCOmegaPiPlPiMiPiZeroPt = new TH1F*[fnCuts];
-    fHistoMCOmegaPiPlPiMiPiZeroInAccPt = new TH1F*[fnCuts];
+    fHistoMCEtaPiPlPiMiPiZeroPt                     = new TH1F*[fnCuts];
+    fHistoMCEtaPiPlPiMiPiZeroInAccPt                = new TH1F*[fnCuts];
+    fHistoMCOmegaPiPlPiMiPiZeroPt                   = new TH1F*[fnCuts];
+    fHistoMCOmegaPiPlPiMiPiZeroInAccPt              = new TH1F*[fnCuts];
 
-    fHistoDoubleCountTruePi0InvMassPt = new TH2F*[fnCuts];
-    fHistoDoubleCountTrueEtaInvMassPt = new TH2F*[fnCuts];
-    fHistoDoubleCountTrueOmegaInvMassPt = new TH2F*[fnCuts];
-    fHistoTrueMotherPiPlPiMiPiZeroInvMassPt = new TH2F*[fnCuts];
-    fHistoTrueMotherGammaGammaInvMassPt = new TH2F*[fnCuts];
-    fHistoTrueMotherGammaGammaFromEtaInvMassPt = new TH2F*[fnCuts];
-    fHistoTrueMotherGammaGammaFromOmegaInvMassPt = new TH2F*[fnCuts];
-// 		if (fDoMesonQA){
-    fHistoTruePionPionInvMassPt = 			new TH2F*[fnCuts];
-    fHistoTruePionPionFromSameMotherInvMassPt = 	new TH2F*[fnCuts];
-    fHistoTruePionPionFromEtaInvMassPt = 	new TH2F*[fnCuts];
-    fHistoTruePionPionFromOmegaInvMassPt = 	new TH2F*[fnCuts];
-// 		}
+    fHistoDoubleCountTruePi0InvMassPt               = new TH2F*[fnCuts];
+    fHistoDoubleCountTrueEtaInvMassPt               = new TH2F*[fnCuts];
+    fHistoDoubleCountTrueOmegaInvMassPt             = new TH2F*[fnCuts];
+    fHistoTrueMotherPiPlPiMiPiZeroInvMassPt         = new TH2F*[fnCuts];
+    fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt    = new TH2F*[fnCuts];
+    fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt      = new TH2F*[fnCuts];
+    fHistoTrueMotherGammaGammaInvMassPt             = new TH2F*[fnCuts];
+    fHistoTrueMotherGammaGammaFromEtaInvMassPt      = new TH2F*[fnCuts];
+    fHistoTrueMotherGammaGammaFromOmegaInvMassPt    = new TH2F*[fnCuts];
+if (fDoMesonQA>0){
+    fHistoTruePionPionInvMassPt                     = new TH2F*[fnCuts];
+    fHistoTruePionPionFromSameMotherInvMassPt       = new TH2F*[fnCuts];
+    fHistoTruePionPionFromEtaInvMassPt              = new TH2F*[fnCuts];
+    fHistoTruePionPionFromOmegaInvMassPt            = new TH2F*[fnCuts];
+
+    fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt              = new TH2F*[fnCuts];
+    fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt              = new TH2F*[fnCuts];
+    fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt         = new TH2F*[fnCuts];
+    fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt              = new TH2F*[fnCuts];
+    fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt              = new TH2F*[fnCuts];
+    fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt          = new TH2F*[fnCuts];
+    fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt          = new TH2F*[fnCuts];
+    fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt            = new TH2F*[fnCuts];
+    fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt            = new TH2F*[fnCuts];
+}
     fHistoTrueAngleSum = new TH2F*[fnCuts];
     
     for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -792,6 +865,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       else if (fNeutralPionMode == 2) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
       TString nameMCList = Form("%s MC histograms", fullCutString.Data());
       TString nameTrueRecList = Form("%s True histograms", fullCutString.Data());
+      TString nameTrueRecTTreeList = Form("%s True TTrees", fullCutString.Data());
 
       fMCList[iCut] = new TList();
       fMCList[iCut]->SetName(nameMCList.Data());
@@ -837,6 +911,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fTrueList[iCut]->SetOwner(kTRUE);
       fCutFolder[iCut]->Add(fTrueList[iCut]);
 
+      fTrueTreeList[iCut] = new TList();
+      fTrueTreeList[iCut]->SetName(nameTrueRecTTreeList.Data());
+      fTrueTreeList[iCut]->SetOwner(kTRUE);
+      fCutFolder[iCut]->Add(fTrueTreeList[iCut]);
+
       if (fNeutralPionMode < 2){
         fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
         fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
@@ -869,8 +948,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fTrueList[iCut]->Add(fHistoDoubleCountTrueOmegaInvMassPt[iCut]);
 
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut] = new TH2F("ESD_TrueMotherPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherPiPlPiMiPiZero_InvMass_Pt",500,0.4,0.9,250,0,25);
+      fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut] = new TH2F("ESD_TrueMotherOmegaPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherOmegaPiPlPiMiPiZero_InvMass_Pt",500,0.4,0.9,250,0,25);
+      fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[iCut] = new TH2F("ESD_TrueMotherEtaPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherEtaPiPlPiMiPiZero_InvMass_Pt",500,0.4,0.9,250,0,25);
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]->Sumw2();
+      fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut]->Sumw2();
+      fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[iCut]->Sumw2();
       fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]);
+      fTrueList[iCut]->Add(fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut]);
+      fTrueList[iCut]->Add(fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[iCut]);
     
       fHistoTrueMotherGammaGammaInvMassPt[iCut] = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",450,0.,0.45,250,0,25);
       fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaInvMassPt[iCut]);
@@ -880,7 +965,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaFromOmegaInvMassPt[iCut]);
 
       
-// 			if (fDoMesonQA){
+if (fDoMesonQA>0){
       fHistoTruePionPionInvMassPt[iCut] = new TH2F("ESD_TruePiPlusPiNeg_InvMassPt","ESD_TruePiPlusPiNeg_InvMassPt",2000,0.,2.,200,0.,20.);
       fTrueList[iCut]->Add(fHistoTruePionPionInvMassPt[iCut]);
       fHistoTruePionPionFromSameMotherInvMassPt[iCut] = new TH2F("ESD_TruePiPlusPiNegFromSameMother_InvMassPt","ESD_TruePiPlusPiNegFromSameMother_InvMassPt",2000,0.,2.,200,0.,20.);
@@ -890,7 +975,37 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fHistoTruePionPionFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiPlusPiNegFromOmega_InvMassPt","ESD_TruePiPlusPiNegFromOmega_InvMassPt",2000,0.,2.,200,0.,20.);
       fTrueList[iCut]->Add(fHistoTruePionPionFromOmegaInvMassPt[iCut]);
 
-      // 			}
+      fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt","ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]);
+      fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromOmega_InvMassPt","ESD_TruePiPlPiMiSameMotherFromOmega_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]);
+      fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromRho_InvMassPt","ESD_TruePiPlPiMiSameMotherFromRho_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]);
+      fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromEtaPrime_InvMassPt","ESD_TruePiPlPiMiSameMotherFromEtaPrime_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut]);
+      fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromK0s_InvMassPt","ESD_TruePiPlPiMiSameMotherFromK0s_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]);
+      fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromK0l_InvMassPt","ESD_TruePiPlPiMiSameMotherFromK0l_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]);
+
+      fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut] = new TH2F("ESD_TruePiMiPiZeroSameMotherFromEta_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromEta_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]);
+      fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiMiPiZeroSameMotherFromOmega_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromOmega_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut]);
+      fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut] = new TH2F("ESD_TruePiMiPiZeroSameMotherFromRho_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromRho_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]);
+      fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut] = new TH2F("ESD_TruePiMiPiZeroSameMotherFromK0l_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromK0l_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]);
+
+      fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiZeroSameMotherFromEta_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromEta_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]);
+      fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiZeroSameMotherFromOmega_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromOmega_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut]);
+      fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiZeroSameMotherFromRho_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromRho_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut]);
+      fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt",2000,0.,2.,200,0.,20.);
+      fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]);
+}
       fHistoTrueAngleSum[iCut] = new TH2F("ESD_TrueMother_AngleSum_Pt","ESD_TrueMother_AngleSum_Pt",250,0,25,720,0,2*TMath::Pi());
       fTrueList[iCut]->Add(fHistoTrueAngleSum[iCut]);
     }
@@ -2010,7 +2125,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
       
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
 
-      if (fMCEvent){
+      if (fMCEvent &&(fDoMesonQA>0)){
         if (fPositiveMCParticle && fNegativeMCParticle ) {
           if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
             if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
@@ -2065,7 +2180,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
       Float_t dcaToVertexXYNeg = -1.0;
       Float_t dcaToVertexZNeg  = -1.0;
       
-      if ( fDoMesonQA ) {	
+      if ( fDoMesonQA>0 ) {
         clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
         clsToFNeg = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(negPionCandidate);
         
@@ -2318,7 +2433,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
                         delete mesontmp;
 
                         if(fMCEvent){
-                          ProcessTrueMesonCandidates(mesoncand,neutralPion,vParticle);
+                          ProcessTrueMesonCandidatesNEW(mesoncand,neutralPion,vParticle);
                         }
                     }else{
                         fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
@@ -3045,7 +3160,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
   Int_t trueMesonFlag = TrueNeutralPionCandidate->GetTrueMesonValue();
   Int_t pi0MCLabel= TrueNeutralPionCandidate->GetMCLabel();
 
-  
   if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)) return;
 // 	cout << trueMesonFlag << "\t" << pi0MCLabel << endl;
 
@@ -3125,7 +3239,189 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
             delete PosPiontmp; PosPiontmp = 0x0;
             delete NegPiontmp; NegPiontmp = 0x0;
     }	
+  } else{ // background events
+
   }
+
+}
+
+//______________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidatesNEW(AliAODConversionMother *mesoncand, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualParticleCandidate)
+{
+
+    // Process True Mesons
+
+    Bool_t isTrueEta                    = kFALSE;   // found meson is a true eta which decayed into pi+pi-pi0
+    Bool_t isTrueOmega                  = kFALSE;   // found meson is a true omega which decayed into pi+pi-pi0
+    Bool_t isSameMotherPiPlPiMiPiZero   = kFALSE;   // pi+ pi- and pi0 have the same mother
+    Bool_t isSameMotherPiPlPiMi         = kFALSE;   // pi+ and pi- have the same mother
+    Bool_t isSameMotherPiPlPiZero       = kFALSE;   // pi+ and pi0 have the same mother
+    Bool_t isSameMotherPiMiPiZero       = kFALSE;   // pi- and pi0 have the same mother
+    Bool_t isNoSameMother               = kFALSE;   // none of the pions have the same mother
+    Bool_t isNoPiPiPi                   = kFALSE;   // the decay is not a 3 pion decay
+
+
+    Int_t virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
+    Int_t virtualParticleMotherLabel = -1;
+    Int_t trueMesonFlag  = TrueNeutralPionCandidate->GetTrueMesonValue();
+    Int_t pi0MCLabel     = TrueNeutralPionCandidate->GetMCLabel();
+
+    if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)) return;
+
+    Int_t pi0MotherLabel =  fMCEvent->Particle(pi0MCLabel)->GetMother(0);
+
+    TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(fMCEvent);
+    TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(fMCEvent);
+
+    Int_t posMotherLabelMC = fMCEvent->GetTrack(TrueVirtualParticleCandidate->GetTrackLabelNegative())->GetMother();
+    Int_t negMotherLabelMC = fMCEvent->GetTrack(TrueVirtualParticleCandidate->GetTrackLabelPositive())->GetMother();
+
+    // Check case present
+    if((TMath::Abs(negativeMC->GetPdgCode())==211) && (TMath::Abs(positiveMC->GetPdgCode())==211) && (fMCEvent->Particle(pi0MCLabel)->GetPdgCode()==111)){
+        // three pion decay
+        if(virtualParticleMCLabel!=-1){
+            // pi+ pi- have same mother
+            virtualParticleMotherLabel == virtualParticleMCLabel;
+            if(virtualParticleMotherLabel==pi0MotherLabel){
+                // all pions from same mother
+                if(fMCEvent->Particle(pi0MotherLabel)->GetStatusCode()!=21)
+                    isSameMotherPiPlPiMiPiZero  = kTRUE;
+            } else{
+                // only pi+ pi- from same mother
+                if(fMCEvent->Particle(posMotherLabelMC)->GetStatusCode()!=21)
+                    isSameMotherPiPlPiMi = kTRUE;
+
+            }
+        } else{
+            if(pi0MotherLabel==negMotherLabelMC){
+                // pi0 and pi- same mother
+                if(fMCEvent->Particle(pi0MotherLabel)->GetStatusCode()!=21)isSameMotherPiMiPiZero      = kTRUE;
+            } else if(pi0MotherLabel==posMotherLabelMC){
+                // pi0 and pi+ same mother
+                if(fMCEvent->Particle(pi0MotherLabel)->GetStatusCode()!=21)  isSameMotherPiPlPiZero      = kTRUE;
+            } else{
+                // all pions different mother
+                isNoSameMother              = kTRUE;
+            }
+        }
+    } else{
+        // not a three pion decay
+        isNoPiPiPi = kTRUE;
+
+    }
+
+    Float_t weighted= 1;
+    // Do things for each case
+    if(isSameMotherPiPlPiMiPiZero){
+        if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                        == 221){
+            // eta was found
+            isTrueEta   = kTRUE;
+            fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+
+            AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
+            PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
+            AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
+            NegPiontmp->SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
+            fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp->Angle(mesoncand->Vect()))+(NegPiontmp->Angle(PosPiontmp->Vect()))+(PosPiontmp->Angle(TrueNeutralPionCandidate->Vect()))));
+
+            delete PosPiontmp; PosPiontmp = 0x0;
+            delete NegPiontmp; NegPiontmp = 0x0;
+
+            if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,pi0MotherLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
+        } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                 == 223){
+            // omega was found
+            isTrueOmega = kTRUE;
+            fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+
+            AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
+            PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
+            AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
+            NegPiontmp->SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
+            fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp->Angle(mesoncand->Vect()))+(NegPiontmp->Angle(PosPiontmp->Vect()))+(PosPiontmp->Angle(TrueNeutralPionCandidate->Vect()))));
+
+            if (CheckVectorForDoubleCount(fVectorDoubleCountTrueOmegas,pi0MotherLabel)) fHistoDoubleCountTrueOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
+        } else{
+            // they come from something else
+        }
+    } else if(isSameMotherPiPlPiMi &&  (fDoMesonQA>0 )){
+         if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221){
+             // pi+pi- come from eta
+             fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 223){
+             // pi+pi- come from omega
+             fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()          == 113){
+             // pi+pi- come from rho0
+             fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 331){
+             // pi+pi- come from eta prime
+             fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 310){
+             // pi+pi- come from K0 short
+             fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else{
+             // pi+pi- come from something else
+             if(fDoMesonQA>1){
+                fCasePiPi = 0;
+                // Write "unknown" mother to TTree
+                fSamePiPiMotherID = fMCEvent->Particle(posMotherLabelMC)->GetPdgCode();
+                fSamePiPiMotherInvMass = mesoncand->M();
+                fSamePiPiMotherPt = mesoncand->Pt();
+
+                fTreePiPiSameMother[fiCut]->Fill();
+              }
+         }
+    } else if(isSameMotherPiMiPiZero  &&  (fDoMesonQA>0 )){
+         if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                       == 221){
+             // pi0pi- come from eta
+             fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                == 223){
+             // pi0pi- come from omega
+             fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                ==-213){
+             // pi0pi- come from rho-
+             fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else{
+             // pi0pi- come from something else
+             if(fDoMesonQA>1){
+                fCasePiPi = 1;
+                // Write "unknown" mother to TTree
+                fSamePiPiMotherID = fMCEvent->Particle(pi0MotherLabel)->GetPdgCode();
+                fSamePiPiMotherInvMass = mesoncand->M();
+                fSamePiPiMotherPt = mesoncand->Pt();
+
+                fTreePiPiSameMother[fiCut]->Fill();
+             }
+         }
+    } else if(isSameMotherPiPlPiZero  &&  (fDoMesonQA>0 )){
+         if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221){
+             // pi+pi0 come from eta
+             fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 223){
+             // pi+pi0 come from omega
+             fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 213) {
+             // pi+pi0 come from rho+
+             fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+         } else{
+             // pi+pi0 come from something else
+             if(fDoMesonQA>1){
+                fCasePiPi = 2;
+                // Write "unknown" mother to TTree
+                fSamePiPiMotherID = fMCEvent->Particle(pi0MotherLabel)->GetPdgCode();
+                fSamePiPiMotherInvMass = mesoncand->M();
+                fSamePiPiMotherPt = mesoncand->Pt();
+
+                fTreePiPiSameMother[fiCut]->Fill();
+             }
+         }
+    } else if(isNoSameMother  &&  (fDoMesonQA>0 )){
+        // no same mother
+    } else if(isNoPiPiPi  &&  (fDoMesonQA>0 )){
+        // no pi pi pi decay
+        // investigate here what was missmatched (?)
+    }
+
 
 }
 
