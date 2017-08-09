@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -69,7 +69,8 @@
 #pragma link C++ class AliCaloClusterInfo+;
 #pragma link C++ class AliPHOSpPbPi0Header+;
 #pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
-#pragma link C++ class AliAnalysisPHOSClusterTask+;
+#pragma link C++ class AliAnalysisTaskPHOSCluster+;
+#pragma link C++ class AliCaloClusterContent+;
 
 //PHOS_Correlations
 #pragma link C++ class AliPHOSCorrelations+;
