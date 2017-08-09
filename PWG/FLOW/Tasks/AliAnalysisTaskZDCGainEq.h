@@ -155,13 +155,19 @@ private:
 
   TH2F              *fHist_Vxy_RunAveraged; //!
 
-  TH2F             *fHist_ZDCC_AvgCosNPsi[4]; //! 
-  TH2F             *fHist_ZDCC_AvgSinNPsi[4]; //!
-  TH2F             *fHist_ZDCA_AvgCosNPsi[4]; //! 
-  TH2F             *fHist_ZDCA_AvgSinNPsi[4]; //!
+  TH2F           *fHist_ZDCC_AvgCosNPsi[4]; //! 
+  TH2F           *fHist_ZDCC_AvgSinNPsi[4]; //!
+  TH2F           *fHist_ZDCA_AvgCosNPsi[4]; //! 
+  TH2F           *fHist_ZDCA_AvgSinNPsi[4]; //!
 
-  TH2F             *fHist_ZDC_AvgCosNPsiAC[4]; //! 
-  TH2F             *fHist_ZDC_AvgSinNPsiAC[4]; //!
+  TH2F          *fHist_ZDC_AvgCosNPsiAC[4]; //! 
+  TH2F          *fHist_ZDC_AvgSinNPsiAC[4]; //!
+
+  TH2F              *fHist_ZDCC_AvgQx_VsCR; //!
+  TH2F              *fHist_ZDCC_AvgQy_VsCR; //!
+  TH2F              *fHist_ZDCA_AvgQx_VsCR; //!
+  TH2F              *fHist_ZDCA_AvgQy_VsCR; //!
+
 
 
   TH1F               *fHist_Vx_ArrayFinder; //!
