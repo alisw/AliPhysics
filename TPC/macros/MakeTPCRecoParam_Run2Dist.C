@@ -58,6 +58,7 @@ void MakeTPCRecoParam_Run2Dist(const char* storage="local://OCDB", AliRecoParam:
     // scaling
     tpcRecoParam->SetUseLumiType(AliLumiTools::kLumiCTP);
     tpcRecoParam->SetCorrMapTimeDepMethod(AliTPCRecoParam::kCorrMapGlobalScalingLumi);
+    tpcRecoParam->SetUseMapLumiInfoCOG(kTRUE); // use lumi correction from the map if available
     // add difference to reference distortions as syst. error
     tpcRecoParam->SetUseDistortionFractionAsErrorY(-1);
     tpcRecoParam->SetUseDistortionFractionAsErrorZ(-1);
@@ -121,6 +122,7 @@ void MakeTPCRecoParam_Run2Dist(const char* storage="local://OCDB", AliRecoParam:
     // scaling
     tpcRecoParam->SetUseLumiType(AliLumiTools::kLumiCTP);
     tpcRecoParam->SetCorrMapTimeDepMethod(AliTPCRecoParam::kCorrMapGlobalScalingLumi);
+    tpcRecoParam->SetUseMapLumiInfoCOG(kTRUE); // use lumi correction from the map if available
     // add difference to reference distortions as syst. error
     tpcRecoParam->SetUseDistortionFractionAsErrorY(-1);
     tpcRecoParam->SetUseDistortionFractionAsErrorZ(-1);
