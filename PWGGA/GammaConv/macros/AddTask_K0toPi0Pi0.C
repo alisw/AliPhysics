@@ -169,6 +169,22 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
   	TString Pi0Cut = "0163103700000060"; // calo/calo
   	TString mixedPi0Cut = "0163103700000060"; // conv/calo
   	TString defaultK0Cut = "0163103000000000";
+	}else if (trainConfig == 6){ // 13 TeV EG2
+		TString defaultEventCut = "00085013";
+  	TString defaultConvPhotonCut = "00200009227302008254404000";
+  	TString defaultCaloPhotonCut = "1111113017002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
+	}else if (trainConfig == 7){ // 13 TeV EG1
+		TString defaultEventCut = "00083013";
+  	TString defaultConvPhotonCut = "00200009227302008254404000";
+  	TString defaultCaloPhotonCut = "1111113017002230000"; // default cut string 1111111067032230000, currently energy cut set to 0
+  	TString defaultPi0Cut = "0163103700000010"; // conv conv
+  	TString Pi0Cut = "0163103700000060"; // calo/calo
+  	TString mixedPi0Cut = "0163103700000060"; // conv/calo
+  	TString defaultK0Cut = "0163103000000000";
 	}
 
   //create AliCaloTrackMatcher instance, if there is none present
