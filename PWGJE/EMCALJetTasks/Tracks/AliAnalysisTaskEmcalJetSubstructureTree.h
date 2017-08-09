@@ -138,12 +138,16 @@ public:
     kTOneNSubjettinessTrue = 19,
     kTTwoNSubjettinessMeasured = 20,
     kTTwoNSubjettinessTrue = 21,
-    kTNCharged = 22,
-    kTNNeutral = 23,
-    kTNConstTrue = 24,
-    kTNDroppedMeasured = 25,
-    kTNDroppedTrue = 26,
-    kTNVar = 27
+    kAngularityMeasured = 22,
+    kAngularityTrue = 23,
+    kPtDMeasured = 24,
+    kPtDTrue = 25,
+    kTNCharged = 26,
+    kTNNeutral = 27,
+    kTNConstTrue = 28,
+    kTNDroppedMeasured = 29,
+    kTNDroppedTrue = 30,
+    kTNVar = 31
   };
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
@@ -170,7 +174,11 @@ protected:
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
 
-	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness);
+	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+
+	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
+
+	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd);
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
