@@ -14,12 +14,12 @@
  **************************************************************************/
 
 /*****************************************************************
-  AliFlowEventSimple: A simple event 
-  for flow analysis                  
-                                     
-  origin: Naomi van der Kolk (kolk@nikhef.nl)           
-          Ante Bilandzic     (anteb@nikhef.nl)         
-          Raimond Snellings  (Raimond.Snellings@nikhef.nl)    
+  AliFlowEventSimple: A simple event
+  for flow analysis
+
+  origin: Naomi van der Kolk (kolk@nikhef.nl)
+          Ante Bilandzic     (anteb@nikhef.nl)
+          Raimond Snellings  (Raimond.Snellings@nikhef.nl)
   mods:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
           Redmer A. Bertens  (rbertens@cern.ch)
 *****************************************************************/
@@ -84,6 +84,8 @@ AliFlowEventSimple::AliFlowEventSimple():
   fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
+  fZPCM(0.),
+  fZPAM(0.),
   fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
@@ -141,6 +143,8 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
+  fZPCM(0.),
+  fZPAM(0.),
   fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
@@ -152,7 +156,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
 
   if (method==kGenerate)
     Generate(n,ptDist,phiMin,phiMax,etaMin,etaMax);
- 
+
   fZNCQ = AliFlowVector();
   fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
@@ -202,6 +206,8 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fZNAQ0(anEvent.fZNAQ0),
   fZNCM(anEvent.fZNCM),
   fZNAM(anEvent.fZNAM),
+  fZPCM(anEvent.fZPCM),
+  fZPAM(anEvent.fZPAM),
   fAbsOrbit(anEvent.fAbsOrbit),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
@@ -227,13 +233,13 @@ void AliFlowEventSimple::SetNumberOfPOIs( Int_t numberOfPOIs, Int_t poiType)
   {
     Int_t n = poiType+1;
     Int_t* tmp = new Int_t[n];
-    for (Int_t j=0; j<n; j++) { tmp[j]=0; }       
+    for (Int_t j=0; j<n; j++) { tmp[j]=0; }
     memcpy(tmp,fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
     delete [] fNumberOfPOIs;
     fNumberOfPOIs = tmp;
     fNumberOfPOItypes = n;
   }
-  
+
   fNumberOfPOIs[poiType] = numberOfPOIs;
 }
 
@@ -289,6 +295,8 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fZNAQ0 = anEvent.fZNAQ0;
   fZNCM = anEvent.fZNCM;
   fZNAM = anEvent.fZNAM;
+  fZPCM = anEvent.fZPCM;
+  fZPAM = anEvent.fZPAM;
   fAbsOrbit = anEvent.fAbsOrbit;
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
@@ -321,8 +329,8 @@ void AliFlowEventSimple::SetUseExternalSymmetryPlanes(TF1 *gPsi1Psi3,
 						      TF1 *gPsi2Psi4,
 						      TF1 *gPsi3Psi5) {
   //Use symmetry planes, setup correlations between different Psi_n
-  fUseExternalSymmetryPlanes = kTRUE; 
-    
+  fUseExternalSymmetryPlanes = kTRUE;
+
   //Correlations between Psi_1 and Psi_3
   if(gPsi1Psi3) fPsi1Psi3 = gPsi1Psi3;
   else {
@@ -376,7 +384,7 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
   if(fUseExternalSymmetryPlanes) {
     Double_t betaParameter = gRandom->Gaus(0.,1.3);
     fPsi1Psi3->SetParameter(1,betaParameter);
-    
+
     betaParameter = gRandom->Gaus(0.,0.9);
     fPsi2Psi4->SetParameter(1,betaParameter);
 
@@ -425,7 +433,7 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 void AliFlowEventSimple::ShuffleTracks()
 {
   //shuffle track indexes
-  if (!fShuffledIndexes) 
+  if (!fShuffledIndexes)
   {
     //initialize the table with shuffled indexes
     fShuffledIndexes = new Int_t[fNumberOfTracks];
@@ -462,7 +470,7 @@ void AliFlowEventSimple::TrackAdded()
   if (fShuffledIndexes)
   {
     delete [] fShuffledIndexes;
-    fShuffledIndexes=NULL;  
+    fShuffledIndexes=NULL;
   }
 }
 
@@ -478,10 +486,10 @@ AliFlowTrackSimple* AliFlowEventSimple::MakeNewTrack()
 }
 
 //-----------------------------------------------------------------------
-AliFlowVector AliFlowEventSimple::GetQ( Int_t n, 
-                                        TList *weightsList, 
-                                        Bool_t usePhiWeights, 
-                                        Bool_t usePtWeights, 
+AliFlowVector AliFlowEventSimple::GetQ( Int_t n,
+                                        TList *weightsList,
+                                        Bool_t usePhiWeights,
+                                        Bool_t usePtWeights,
                                         Bool_t useEtaWeights )
 {
   // calculate Q-vector in harmonic n without weights (default harmonic n=2)
@@ -595,11 +603,11 @@ AliFlowVector AliFlowEventSimple::GetQ( Int_t n,
 }
 
 //-----------------------------------------------------------------------
-void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray, 
-                                   Int_t n, 
-                                   TList *weightsList, 
-                                   Bool_t usePhiWeights, 
-                                   Bool_t usePtWeights, 
+void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
+                                   Int_t n,
+                                   TList *weightsList,
+                                   Bool_t usePhiWeights,
+                                   Bool_t usePtWeights,
                                    Bool_t useEtaWeights )
 {
 
@@ -686,22 +694,22 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 
         // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
         //subevent 0
-        if(s == 0)  { 
+        if(s == 0)  {
           if(phiWeightsSub0 && iNbinsPhiSub0)  {
             Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub0/TMath::TwoPi()));
             //use the phi value at the center of the bin
             dPhi  = phiWeightsSub0->GetBinCenter(phiBin);
             dWphi = phiWeightsSub0->GetBinContent(phiBin);
           }
-        } 
+        }
         //subevent 1
-        else if (s == 1) { 
+        else if (s == 1) {
           if(phiWeightsSub1 && iNbinsPhiSub1) {
             Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub1/TMath::TwoPi()));
             //use the phi value at the center of the bin
             dPhi  = phiWeightsSub1->GetBinCenter(phiBin);
             dWphi = phiWeightsSub1->GetBinContent(phiBin);
-          } 
+          }
         }
 
         // determine v'(pt) weight:
@@ -725,7 +733,7 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 
       } // end of if (pTrack->InRPSelection())
     } // loop over particles
-    
+
     Qarray[s].Set(dQX,dQY);
     Qarray[s].SetMult(sumOfWeights);
     Qarray[s].SetHarmonic(iOrder);
@@ -882,6 +890,8 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fZNAQ0(0.),
   fZNCM(0.),
   fZNAM(0.),
+  fZPCM(0.),
+  fZPAM(0.),
   fAbsOrbit(0),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
@@ -898,14 +908,14 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   for (Int_t i=0; i<numberOfInputTracks; i++)
   {
     inputTree->GetEntry(i);   //get input particle
-    
+
     if (!pParticle) continue; //no particle
     if (!pParticle->IsPrimary()) continue;
 
     Bool_t rpOK = (rpCuts->PassesCuts(pParticle)>0);
     Bool_t poiOK = poiCuts->PassesCuts(pParticle);
     Int_t poiType = poiCuts->GetPOItype();
-    
+
     if (rpOK || poiOK)
     {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple(pParticle);
@@ -929,7 +939,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
     }
   }//for i
   delete pParticle;
- 
+
   fZNCQ = AliFlowVector();
   fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
@@ -1085,7 +1095,7 @@ void AliFlowEventSimple::AddV5( Double_t v5 )
 	track->AddV5(v5, fPsi5, fAfterBurnerPrecision);
       else
 	track->AddV5(v5, fMCReactionPlaneAngle, fAfterBurnerPrecision);
-    }  
+    }
   }
   SetUserModified();
 }
@@ -1153,7 +1163,7 @@ void AliFlowEventSimple::TagRP( const AliFlowTrackSimpleCuts* cuts )
     if (!track) continue;
     Bool_t pass=cuts->PassesCuts(track);
     Bool_t rpTrack=track->InRPSelection();
-    if (pass) 
+    if (pass)
     {
       if (!rpTrack) fNumberOfPOIs[0]++; //only increase if not already tagged
     }
@@ -1175,7 +1185,7 @@ void AliFlowEventSimple::TagPOI( const AliFlowTrackSimpleCuts* cuts, Int_t poiTy
     if (!track) continue;
     Bool_t pass=cuts->PassesCuts(track);
     Bool_t poiTrack=track->InPOISelection();
-    if (pass) 
+    if (pass)
     {
       if (!poiTrack) fNumberOfPOIs[poiType]++; //only increase if not already tagged
     }
