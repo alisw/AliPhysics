@@ -59,7 +59,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void SetPionCutList(TList *CutArray){ fPionCutArray = CutArray;}
 		void SetNeutralPionCutList(TList *CutArray){ fNeutralPionMesonCutArray = CutArray; }
 		void SetMesonCutList(TList *CutArray){ fMesonCutArray = CutArray; }
-		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+        void SetDoMesonQA(Int_t flag){ fDoMesonQA = flag; }
 		void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
         void SetTolerance(Double_t tol){fTolerance=tol;}
 
@@ -121,6 +121,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 //		TList 							**fBackList;								// list with THnSparseF for BG
 //		TList 							**fMotherList;								// list with THnSparseF for FG
 		TList 							**fTrueList;								// list with validated reconstructed MC histograms
+        TList                           **fTrueTreeList;                            // list containing TTree's for MC True
 		TList 							**fMCList;									// list with pure MC histograms
 		TList 							*fOutputContainer;							// output container
 		TClonesArray 					*fReaderGammas;								// array with photon from fV0Reader
@@ -142,6 +143,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliConversionPhotonCuts 		*fConversionCuts;							// current conversion cuts
 		AliCaloPhotonCuts				*fClusterCuts;								// current cluster cuts
 		
+        // TTrees
+        TTree                           **fTreePiPiSameMother;                      // Tree containing info about the mother of two pions who have the same mother, if ID isn't covered by current implementations
+        Short_t                          fCasePiPi;                                // 0:PiPlPiMi 1:PiMiPiZero 1:PiPlPiZero
+        Float_t                          fSamePiPiMotherID;                        // ID of mother of two pions
+        Float_t                          fSamePiPiMotherInvMass;                   // Invariant mass of mother of two pions
+        Float_t                          fSamePiPiMotherPt;                        // pT of mother of two pions
 		// reconstructed particles
 		TH1F 							**fHistoConvGammaPt;						// array of histos of conversion photon, pt
 		TH1F 							**fHistoConvGammaEta;						// array of histos of conversion photon, eta
@@ -208,8 +215,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH1F 							**fHistoMCOmegaPiPlPiMiPiZeroInAccPt;		// array of histos of produced omegas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges 
 
 		// reconstructed particles MC validated
-		TH2F 							**fHistoTrueMotherPiPlPiMiPiZeroInvMassPt;	// histos with reconstructed validated eta or omega, inv mass, pT
-		TH2F 							**fHistoTrueMotherGammaGammaInvMassPt;		// histos with reconstructed validated pi0, inv mass, pT
+        TH2F 							**fHistoTrueMotherPiPlPiMiPiZeroInvMassPt;          // histos with reconstructed validated eta or omega, inv mass, pT
+        TH2F 							**fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt;     // histos with reconstructed validated omega, inv mass, pT
+        TH2F 							**fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt;       // histos with reconstructed validated eta, inv mass, pT
+        TH2F 							**fHistoTrueMotherGammaGammaInvMassPt;          // histos with reconstructed validated pi0, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaFromEtaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaFromOmegaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
 		TH1F 							**fHistoTrueConvGammaPt;					// histos with reconstructed validated conv gamma, pT
@@ -224,7 +233,25 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoTruePionPionFromSameMotherInvMassPt;// histos with reconstructed validated two pion from same mother, invariant mass, pT
 		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		// histos with reconstructed validated two pion from eta , invariant mass, pT
 		TH2F 							**fHistoTruePionPionFromOmegaInvMassPt;		// histos with reconstructed validated two pion from omega, invariant mass, pT
-		TH2F				 			**fHistoDoubleCountTruePi0InvMassPt;		//! array of histos with double counted pi0s, invMass, pT
+
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt;       // histos with reconstructed validated pi+ pi-  from omega, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt;     // histos with reconstructed validated pi+ pi-  from eta, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt;       // histos with reconstructed validated pi+ pi-  from rho0, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt;  // histos with reconstructed validated pi+ pi-  from etaprime, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt;       // histos with reconstructed validated pi+ pi-  from K0s, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt;       // histos with reconstructed validated pi+ pi-  from K0s, invariant mass, pT
+
+        TH2F 							**fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt;       // histos with reconstructed validated pi0 pi-  from omega, invariant mass, pT
+        TH2F 							**fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt;     // histos with reconstructed validated pi0 pi-  from eta, invariant mass, pT
+        TH2F 							**fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt;       // histos with reconstructed validated pi0 pi-  from rho0, invariant mass, pT
+        TH2F 							**fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt;       // histos with reconstructed validated pi0 pi-  from rho0, invariant mass, pT
+
+        TH2F 							**fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt;       // histos with reconstructed validated pi0 pi+  from omega, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt;     // histos with reconstructed validated pi0 pi+  from eta, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt;       // histos with reconstructed validated pi0 pi+  from rho0, invariant mass, pT
+        TH2F 							**fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt;       // histos with reconstructed validated pi0 pi+  from rho0, invariant mass, pT
+
+        TH2F				 			**fHistoDoubleCountTruePi0InvMassPt;		//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 			**fHistoDoubleCountTrueEtaInvMassPt;		//! array of histos with double counted etas, invMass, pT
 		TH2F				 			**fHistoDoubleCountTrueOmegaInvMassPt;		//! array of histos with double counted omegas, invMass, pT
 		TH2F				 			**fHistoDoubleCountTrueConvGammaRPt;		//! array of histos with double counted photons, R, pT
@@ -246,7 +273,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t 							fMoveParticleAccordingToVertex;				// Flag to move parice to the vertex
 		Int_t 							fIsHeavyIon;								// Flag for collision system 0: pp, 1: PbPb, 2: pPb
 		Bool_t 							fDoMesonAnalysis;							// Flag for switching on meson analysis
-		Bool_t 							fDoMesonQA;									// Flag for switching on small meson QA
+        Int_t 							fDoMesonQA;									// Switching for meson QA 0: no QA 1: small QA 2: big QA
 		Bool_t 							fIsFromMBHeader;							// Flag for particle whether it belongs to accepted header
 		Bool_t 							fIsMC;										// Flag for MC  
 		Int_t							fNeutralPionMode;							// Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
