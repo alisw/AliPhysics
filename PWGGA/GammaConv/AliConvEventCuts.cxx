@@ -1907,7 +1907,8 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 	  if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
 	  else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
 	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
-      }    }else{
+      }    
+    }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
         if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
