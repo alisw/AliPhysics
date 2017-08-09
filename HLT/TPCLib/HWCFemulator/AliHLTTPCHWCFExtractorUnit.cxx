@@ -42,7 +42,9 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit()
   fRCU2Flag(0),
   fkMCLabels(0),
   fNMCLabels(0),
-  fCurrentMCLabel(0)
+  fCurrentMCLabel(0),
+  fMaxChannelWords(0),
+  fSkipChannel(false)
 {
   //constructor 
   fBunch->fFlag = 0; // wait for the next channel
@@ -68,7 +70,9 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit(const AliHLTTPCHWCFExtrac
   fRCU2Flag(0),
   fkMCLabels(0),
   fNMCLabels(0),
-  fCurrentMCLabel(0)
+  fCurrentMCLabel(0),
+  fMaxChannelWords(0),
+  fSkipChannel(false)
 {
   // dummy
 }
@@ -136,7 +140,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
   if( !fkMapping ) inpStatus = kEndOfData;
 
   AliHLTTPCHWCFBunch *oldBunch = fBunch;
-  AliHLTTPCHWCFBunch *newBunch = ( fBunch == fMemory ) ?fMemory+1 :fMemory;
+  AliHLTTPCHWCFBunch *newBunch = ( fBunch == fMemory ) ? fMemory+1 :fMemory;
 
   if( fStatus == kFinishing || inpStatus == kEndOfData){
     if( fBunch->fFlag == 1 ){
@@ -163,7 +167,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     AliHLTTPCHWCFDigit d;
     d.fQ = fInput;	
     fBunch->fData.push_back(d);
-    fStatus = ( flag == 0x2 ) ?kReadingRCU :kFinishing;
+    fStatus = ( flag == 0x2 ) ? kReadingRCU :kFinishing;
     return oldBunch;   
   }
   
@@ -199,11 +203,15 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     fBunchCurrentTime = -2;
 
     if( (fInput >> 29) & 0x1 ) fBunch->fFlag = 0; // there were readout errors
+    
+    if (fMaxChannelWords) fSkipChannel = fChannelNumWordsLeft > fMaxChannelWords;
 
     //cout<<"Extractor: Header of new channel F "<<fBunch->fFlag
     //<<" R "<<fBunch->fRow<<" P "<<fBunch->fPad<<" NWords10 "<<fChannelNumWordsLeft<<endl;
   
-  } else if( flag==0x0 ){ 
+  } else if( fSkipChannel) {
+    return 0;
+  } else if( flag==0x0 ) { 
     
     // bunch data, read three 10-bit words
     
