@@ -76,7 +76,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate);
 		
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
-        void ProcessTrueMesonCandidatesNEW(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
 		void FixPzToMatchPDGInvMassPi0(AliAODConversionMother* particle);
