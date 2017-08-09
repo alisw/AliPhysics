@@ -1,5 +1,5 @@
-#ifndef AliAnalysisHFETPCTOF_2_cxx
-#define AliAnalysisHFETPCTOF_2_cxx
+#ifndef AliAnalysisHFETPCTOFNew_cxx
+#define AliAnalysisHFETPCTOFNew_cxx
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -48,13 +48,13 @@ class TObjArray;
 //______________________________________________________________________
 
 //______________________________________________________________________
-class AliAnalysisHFETPCTOF_2 : public AliAnalysisTaskSE 
+class AliAnalysisHFETPCTOFNew : public AliAnalysisTaskSE 
 {
 //______________________________________________________________________
 	public:
-	AliAnalysisHFETPCTOF_2();
-	AliAnalysisHFETPCTOF_2(const char *name);
-	virtual ~AliAnalysisHFETPCTOF_2();
+	AliAnalysisHFETPCTOFNew();
+	AliAnalysisHFETPCTOFNew(const char *name);
+	virtual ~AliAnalysisHFETPCTOFNew();
   
 	virtual void   UserCreateOutputObjects();
 	virtual void   UserExec(Option_t *option);
@@ -367,10 +367,10 @@ enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, k
 	
 //______________________________________________________________________
 
-	AliAnalysisHFETPCTOF_2(const AliAnalysisHFETPCTOF_2&); 			// not implemented
-	AliAnalysisHFETPCTOF_2& operator=(const AliAnalysisHFETPCTOF_2&); 		// not implemented
+	AliAnalysisHFETPCTOFNew(const AliAnalysisHFETPCTOFNew&); 			// not implemented
+	AliAnalysisHFETPCTOFNew& operator=(const AliAnalysisHFETPCTOFNew&); 		// not implemented
   
-	ClassDef(AliAnalysisHFETPCTOF_2, 1); 								// example of analysis
+	ClassDef(AliAnalysisHFETPCTOFNew, 1); 								// example of analysis
 //______________________________________________________________________
 };
 

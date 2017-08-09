@@ -120,6 +120,7 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkDoImprovedDCAV0DauPropagation(kFALSE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ),
@@ -330,6 +331,7 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkDoImprovedDCAV0DauPropagation(kFALSE), 
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
@@ -1244,11 +1246,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Step 1: propagate to DCA
         fTreeVariableDcaV0Daughters = -1;
         fTreeVariableDcaV0DaughtersGeometric = -1;
-        Double_t xn, xp, dca=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
+        Double_t xn, xp, dca; //=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
+        
+        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);
+        dca=GetDCAV0Dau(&pt, &nt, xp, xn, lMagneticField);
         
         //Correct for beam pipe material
         //Warning: this is an unfinished implementation and should not do much at this stage
-        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);
+        
         Bool_t corrected=kFALSE;
         if ((nt.GetX() > 3.) && (xn < 3.)) {
             //correct for the beam pipe material
@@ -1259,7 +1264,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             corrected=kTRUE;
         }
         if (corrected) {
-            dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
+            //dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
         }
         
         fTreeVariableDcaV0Daughters = dca; //Pass to TTree object, please
@@ -1812,8 +1817,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             
             fTreeCascVarImprovedCascCosPointingAngle = cascadeimproved.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
             
-            
-            //V0 properties to get started
+            //cascade properties to get started
             Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
             for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
             
@@ -3728,4 +3732,332 @@ Double_t AliAnalysisTaskStrEffStudy::GetErrorInPosition(AliExternalTrackParam *t
     const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
     Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;
     return sx1;
+}
+
+
+Double_t AliAnalysisTaskStrEffStudy::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b) {
+    //--------------------------------------------------------------
+    // Propagates this track and the argument track to the position of the
+    // distance of closest approach.
+    // Returns the (weighed !) distance of closest approach.
+    //--------------------------------------------------------------
+    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
+    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
+    Double_t dx2=dy2;
+    
+    Double_t p1[8]; nt->GetHelixParameters(p1,b);
+    p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+    Double_t p2[8]; pt->GetHelixParameters(p2,b);
+    p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+    
+    if( fkDoImprovedDCAV0DauPropagation){
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // V0 preprocessing: analytical estimate of DCAxy position
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        Double_t nhelix[6], phelix[6];
+        nt->GetHelixParameters(nhelix,b);
+        pt->GetHelixParameters(phelix,b);
+        Double_t lNegCenterR[2], lPosCenterR[2];
+        
+        //Negative track parameters in XY
+        GetHelixCenter( nt , lNegCenterR, b);
+        Double_t xNegCenter = lNegCenterR[0];
+        Double_t yNegCenter = lNegCenterR[1];
+        Double_t NegRadius = TMath::Abs(1./nhelix[4]);
+        
+        //Positive track parameters in XY
+        GetHelixCenter( pt , lPosCenterR, b );
+        Double_t xPosCenter = lPosCenterR[0];
+        Double_t yPosCenter = lPosCenterR[1];
+        Double_t PosRadius = TMath::Abs(1./phelix[4]);
+        
+        //Define convenient coordinate system
+        //Logical zero: position of negative center
+        Double_t ux = xPosCenter - xNegCenter;
+        Double_t uy = yPosCenter - yNegCenter;
+        
+        //Check center-to-center distance
+        Double_t lDist = TMath::Sqrt(
+                                     TMath::Power( xNegCenter - xPosCenter , 2) +
+                                     TMath::Power( yNegCenter - yPosCenter , 2)
+                                     );
+        //Normalize ux, uz to unit vector
+        ux /= lDist; uy /= lDist;
+        
+        //Calculate perpendicular vector (normalized)
+        Double_t vx = -uy;
+        Double_t vy = +ux;
+        
+        Double_t lPreprocessDCAxy = 1e+3; //define outside scope
+        Double_t lPreprocessxp = 0;
+        Double_t lPreprocessxn = 0;
+        
+        if( lDist > NegRadius + PosRadius ){
+            //================================================================
+            //Case 1: distance bigger than sum of radii ("gamma-like")
+            //        re-position tracks along the center-to-center axis
+            //Re-position negative track
+            Double_t xNegOptPosition = xNegCenter + NegRadius*ux;
+            Double_t yNegOptPosition = yNegCenter + NegRadius*uy;
+            Double_t csNeg=TMath::Cos(nt->GetAlpha());
+            Double_t snNeg=TMath::Sin(nt->GetAlpha());
+            Double_t xThisNeg=xNegOptPosition*csNeg + yNegOptPosition*snNeg;
+            
+            //Re-position positive track
+            Double_t xPosOptPosition = xPosCenter - PosRadius*ux;
+            Double_t yPosOptPosition = yPosCenter - PosRadius*uy;
+            Double_t csPos=TMath::Cos(pt->GetAlpha());
+            Double_t snPos=TMath::Sin(pt->GetAlpha());
+            Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
+            
+            if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
+                Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
+                Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
+                lPreprocessDCAxy = TMath::Sqrt(
+                                               TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
+                                               TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
+                                               TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
+                                               );
+                //Pass coordinates
+                lPreprocessxp = xThisPos;
+                lPreprocessxn = xThisNeg;
+            }
+            //================================================================
+        } else {
+            //================================================================
+            //Case 2: distance smaller than sum of radii (cowboy/sailor configs)
+            
+            //Calculate coordinate for radical line
+            Double_t lRadical = (lDist*lDist - PosRadius*PosRadius + NegRadius*NegRadius) / (2*lDist);
+            
+            //Calculate absolute displacement from center-to-center axis
+            Double_t lDisplace = (0.5/lDist) * TMath::Sqrt(
+                                                           (-lDist + PosRadius - NegRadius) *
+                                                           (-lDist - PosRadius + NegRadius) *
+                                                           (-lDist + PosRadius + NegRadius) *
+                                                           ( lDist + PosRadius + NegRadius)
+                                                           );
+            
+            Double_t lCase2aDCA = 1e+3;
+            Double_t lCase2bDCA = 1e+3;
+            
+            //2 cases: positive and negative displacement
+            Double_t xNegOptPosition[2], yNegOptPosition[2], xPosOptPosition[2], yPosOptPosition[2];
+            Double_t csNeg, snNeg, csPos, snPos;
+            Double_t xThisNeg[2], xThisPos[2];
+            
+            csNeg=TMath::Cos(nt->GetAlpha());
+            snNeg=TMath::Sin(nt->GetAlpha());
+            csPos=TMath::Cos(pt->GetAlpha());
+            snPos=TMath::Sin(pt->GetAlpha());
+            
+            //Case 2a: Positive displacement along v vector
+            //Re-position negative track
+            xNegOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+            yNegOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+            xThisNeg[0] = xNegOptPosition[0]*csNeg + yNegOptPosition[0]*snNeg;
+            //Re-position positive track
+            xPosOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+            yPosOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+            xThisPos[0] = xPosOptPosition[0]*csPos + yPosOptPosition[0]*snPos;
+            
+            //Case 2b: Negative displacement along v vector
+            //Re-position negative track
+            xNegOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+            yNegOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+            xThisNeg[1] = xNegOptPosition[1]*csNeg + yNegOptPosition[1]*snNeg;
+            //Re-position positive track
+            xPosOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+            yPosOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+            xThisPos[1] = xPosOptPosition[1]*csPos + yPosOptPosition[1]*snPos;
+            
+            //Test the two cases, please
+            
+            //Case 2a
+            if( xThisNeg[0] < fV0VertexerSels[6] && xThisPos[0] < fV0VertexerSels[6] && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
+                Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
+                Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                lCase2aDCA = TMath::Sqrt(
+                                         TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
+                                         TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
+                                         TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
+                                         );
+            }
+            
+            //Case 2b
+            if( xThisNeg[1] < fV0VertexerSels[6] && xThisPos[1] < fV0VertexerSels[6] && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
+                Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
+                Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
+                lCase2bDCA = TMath::Sqrt(
+                                         TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
+                                         TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
+                                         TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
+                                         );
+            }
+            
+            //Minor detail: all things being equal, prefer closest X
+            Double_t lCase2aSumX = xThisPos[0]+xThisNeg[0];
+            Double_t lCase2bSumX = xThisPos[1]+xThisNeg[1];
+            
+            Double_t lDCAxySmallestR = lCase2aDCA;
+            Double_t lxpSmallestR = xThisPos[0];
+            Double_t lxnSmallestR = xThisNeg[0];
+            
+            Double_t lDCAxyLargestR = lCase2bDCA;
+            Double_t lxpLargestR = xThisPos[1];
+            Double_t lxnLargestR = xThisNeg[1];
+            
+            if( lCase2bSumX < lCase2aSumX ){
+                lDCAxySmallestR = lCase2bDCA;
+                lxpSmallestR = xThisPos[1];
+                lxnSmallestR = xThisNeg[1];
+                lDCAxyLargestR = lCase2aDCA;
+                lxpLargestR = xThisPos[0];
+                lxnLargestR = xThisNeg[0];
+            }
+            
+            //Pass conclusion to lPreprocess variables, please
+            lPreprocessDCAxy = lDCAxySmallestR;
+            lPreprocessxp = lxpSmallestR;
+            lPreprocessxn = lxnSmallestR;
+            if( lDCAxyLargestR < lDCAxySmallestR ){
+                lPreprocessDCAxy = lDCAxyLargestR;
+                lPreprocessxp = lxpLargestR;
+                lPreprocessxn = lxnLargestR;
+            }
+        }
+        //End of preprocessing stage!
+        //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
+        nt->PropagateTo(lPreprocessxn, b);
+        pt->PropagateTo(lPreprocessxp, b);
+        
+        Double_t p1[8]; nt->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        Double_t p2[8]; pt->GetHelixParameters(p2,b);
+        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    }
+    
+    Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+    Evaluate(p1,t1,r1,g1,gg1);
+    Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+    Evaluate(p2,t2,r2,g2,gg2);
+    
+    Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+    Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+    
+    Int_t max=27;
+    while (max--) {
+        Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+        Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+        Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+        (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+        (g1[2]*g1[2] - dz*gg1[2])/dz2;
+        Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+        (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+        (g2[2]*g2[2] + dz*gg2[2])/dz2;
+        Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+        
+        Double_t det=h11*h22-h12*h12;
+        
+        Double_t dt1,dt2;
+        if (TMath::Abs(det)<1.e-33) {
+            //(quasi)singular Hessian
+            dt1=-gt1; dt2=-gt2;
+        } else {
+            dt1=-(gt1*h22 - gt2*h12)/det;
+            dt2=-(h11*gt2 - h12*gt1)/det;
+        }
+        
+        if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+        
+        //check delta(phase1) ?
+        //check delta(phase2) ?
+        
+        if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+            if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+                if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
+                    AliDebug(1," stopped at not a stationary point !");
+                Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+                if (lmb < 0.)
+                    cout<<" stopped at not a minimum !"<<endl;
+                break;
+            }
+        
+        Double_t dd=dm;
+        for (Int_t div=1 ; ; div*=2) {
+            Evaluate(p1,t1+dt1,r1,g1,gg1);
+            Evaluate(p2,t2+dt2,r2,g2,gg2);
+            dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+            dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+            if (dd<dm) break;
+            dt1*=0.5; dt2*=0.5;
+            if (div>512) {
+                AliDebug(1," overshoot !"); break;
+            }
+        }
+        dm=dd;
+        
+        t1+=dt1;
+        t2+=dt2;
+        
+    }
+    
+    if (max<=0) AliDebug(1," too many iterations !");
+    
+    Double_t cs=TMath::Cos(nt->GetAlpha());
+    Double_t sn=TMath::Sin(nt->GetAlpha());
+    xn=r1[0]*cs + r1[1]*sn;
+    
+    cs=TMath::Cos(pt->GetAlpha());
+    sn=TMath::Sin(pt->GetAlpha());
+    xp=r2[0]*cs + r2[1]*sn;
+    
+    return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskStrEffStudy::GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b){
+    // Copied from AliV0ReaderV1::GetHelixCenter
+    // Get Center of the helix track parametrization
+    
+    Int_t charge=track->Charge();
+    
+    Double_t	helix[6];
+    track->GetHelixParameters(helix,b);
+    
+    Double_t xpos =	helix[5];
+    Double_t ypos =	helix[0];
+    Double_t radius = TMath::Abs(1./helix[4]);
+    Double_t phi = helix[2];
+    if(phi < 0){
+        phi = phi + 2*TMath::Pi();
+    }
+    phi -= TMath::Pi()/2.;
+    Double_t xpoint =	radius * TMath::Cos(phi);
+    Double_t ypoint =	radius * TMath::Sin(phi);
+    if(b<0){
+        if(charge > 0){
+            xpoint = - xpoint;
+            ypoint = - ypoint;
+        }
+        if(charge < 0){
+            xpoint =	xpoint;
+            ypoint =	ypoint;
+        }
+    }
+    if(b>0){
+        if(charge > 0){
+            xpoint =	xpoint;
+            ypoint =	ypoint;
+        }
+        if(charge < 0){
+            xpoint = - xpoint;
+            ypoint = - ypoint;
+        }
+    }
+    center[0] =	xpos + xpoint;
+    center[1] =	ypos + ypoint;
+    return;
 }

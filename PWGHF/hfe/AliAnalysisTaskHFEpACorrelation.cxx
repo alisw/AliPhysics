@@ -1118,7 +1118,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //Mixed event analysis -- it was removed from is pp because
     if(fEventMixingFlag && fCorrelationFlag)
     {
-        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
+        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,10000);
         fOutputList->Add(fPoolNevents);
         
         Int_t trackDepth = 100000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
@@ -1217,219 +1217,40 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         if (!isINT7selected){
             fNevent2->Fill(25);
+            PostData(1, fOutputList);
+            printf("Event not selected \n");
             return;
         }
     }
     
-    //______________________________________________________________________
-    //Vertex Selection
-    if(!fIspp){
-        
-        fNevent2->Fill(8);
-        
-        if(fIsAOD)
-        {
-            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-            
-            
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            fZvtx = zvtx;
-            //x
-            Float_t xvtx = -100;
-            xvtx=trkVtx->GetX();
-            
-            //y
-            Float_t yvtx = -100;
-            yvtx=trkVtx->GetY();
-            
-            
-            //events without vertex
-            if(zvtx==0 && xvtx==0 && yvtx==0) fNevent2->Fill(0);
-            
-            
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            TString vtxTtl = trkVtx->GetTitle();
-            if(!vtxTtl.Contains("VertexerTracks")) return;
-            //Float_t zvtx = trkVtx->GetZ();
-            
-            trkVtx->GetZ();
-            fZvtx = zvtx;
-            
-            
-            fVtxZ_new1->Fill(fZvtx);
-            
-            const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
-            if(spdVtx->GetNContributors()<=0) return;
-            TString vtxTyp = spdVtx->GetTitle();
-            Double_t cov[6]={0};
-            spdVtx->GetCovarianceMatrix(cov);
-            Double_t zRes = TMath::Sqrt(cov[5]);
-            
-            fzRes1->Fill(zRes);
-            //Yvonne e-mail from 12 June 2015 says it has a bug on "vertexer:Z".
-            //if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-            
-            //new line:
-            if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
-            
-            fzRes2->Fill(zRes);
-            
-            fSPD_track_vtx1->Fill(spdVtx->GetZ() - trkVtx->GetZ());
-            if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-            fSPD_track_vtx2->Fill(spdVtx->GetZ() - trkVtx->GetZ());
-            
-            
-            
-            if(TMath::Abs(zvtx) > 10){
-                fNevent2->Fill(2);
-                fVtxZ_new2->Fill(fZvtx);
-                return;
-            }
-            
-            //if(fabs(zvtx>10.0))return;
-            
-            fVtxZ_new3->Fill(fZvtx);
-            fNevent2->Fill(4);
-            
-            //Look for kink mother for AOD
-            
-            fNumberOfVertices = 0;
-            fNumberOfMotherkink = 0;
-            
-            if(fIsAOD)
-            {
-                fNumberOfVertices = fAOD->GetNumberOfVertices();
-                
-                fListOfmotherkink = new Double_t[fNumberOfVertices];
-                
-                for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
-                {
-                    AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
-                    if(!aodvertex) continue;
-                    if(aodvertex->GetType()==AliAODVertex::kKink)
-                    {
-                        AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
-                        if(!mother1) continue;
-                        Int_t idmother = mother1->GetID();
-                        fListOfmotherkink[fNumberOfMotherkink] = idmother;
-                        fNumberOfMotherkink++;
-                    }
-                }
-            }
-        }
-        
-        else
-        {
-            
-            
-            
-            /// ESD
-            const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            TString vtxTtl = trkVtx->GetTitle();
-            if(!vtxTtl.Contains("VertexerTracks")) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            
-            
-            const AliESDVertex* spdVtx = fESD->GetPrimaryVertexSPD();
-            if(spdVtx->GetNContributors()<=0) return;
-            TString vtxTyp = spdVtx->GetTitle();
-            Double_t cov[6]={0};
-            spdVtx->GetCovarianceMatrix(cov);
-            Double_t zRes = TMath::Sqrt(cov[5]);
-            if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-            if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-            if(TMath::Abs(zvtx) > 10) return;
-        }
-        
-        
-        
-        fNevent2->Fill(12);
-        
-        //check pA pileup cut as it is done in the hfe package
-        if(fAnalysisUtils->IsPileUpEvent(fVevent)){
-            fNevent2->Fill(14);
-            return;
-        }
-        fNevent2->Fill(16);
-        
-    }//close !Ispp flag
+    //Kinks
     
-    //========================== vertex selection for pp
+    fNumberOfVertices = 0;
+    fNumberOfMotherkink = 0;
     
-    if(fIspp)
+    if(fIsAOD)
     {
-        if(fIsAOD)
+        fNumberOfVertices = fAOD->GetNumberOfVertices();
+        
+        fListOfmotherkink = new Double_t[fNumberOfVertices];
+        
+        for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
         {
-            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            fZvtx = zvtx;
-            //fVtxZ_new1->Fill(fZvtx);
-            
-            if(TMath::Abs(zvtx) > 10) return;
-            //fVtxZ_new2->Fill(fZvtx);
-            
-            //Look for kink mother for AOD
-            
-            fNumberOfVertices = 0;
-            fNumberOfMotherkink = 0;
-            
-            if(fIsAOD)
+            AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+            if(!aodvertex) continue;
+            if(aodvertex->GetType()==AliAODVertex::kKink)
             {
-                fNumberOfVertices = fAOD->GetNumberOfVertices();
-                
-                fListOfmotherkink = new Double_t[fNumberOfVertices];
-                
-                for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
-                {
-                    AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
-                    if(!aodvertex) continue;
-                    if(aodvertex->GetType()==AliAODVertex::kKink)
-                    {
-                        AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
-                        if(!mother1) continue;
-                        Int_t idmother = mother1->GetID();
-                        fListOfmotherkink[fNumberOfMotherkink] = idmother;
-                        fNumberOfMotherkink++;
-                    }
-                }
+                AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
+                if(!mother1) continue;
+                Int_t idmother = mother1->GetID();
+                fListOfmotherkink[fNumberOfMotherkink] = idmother;
+                fNumberOfMotherkink++;
             }
         }
-        else
-        {
-            
-            
-            
-            /// ESD
-            const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            if(TMath::Abs(zvtx) > 10) return;
-        }
     }
-    //______________________________________________________________________
-    //after vertex selection
-    fNevent->Fill(10);
+
     
-    //Only events with at least 2 tracks are accepted
-    Int_t fNOtrks =  fVevent->GetNumberOfTracks();
-    if(fNOtrks<2) return;
-    
-    fNevent->Fill(11);
-    
-    if(fIsAOD){
-        Int_t fNOtrks2 =  fAOD->GetNumberOfTracks();
-        if(fNOtrks2<2) return;
-    }
-    
-    fNevent->Fill(12);
-    
-    
+    fNevent->Fill(20);
     //______________________________________________________________________
     //______________________________________________________________________
     //______________________________________________________________________
@@ -1458,6 +1279,17 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                         fCentralityValue = MultSelection->GetMultiplicityPercentile("V0A");
                     }
                     
+                    fNevent->Fill(10);
+                    
+                    if (MultSelection->GetEvSelCode() != 0)
+                    {
+                        PostData(1, fOutputList);
+                        return;
+                    }
+                    fNevent->Fill(11);
+
+                    
+                    
                 }
             }
             else
@@ -1472,7 +1304,15 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             
             fCentralityHist->Fill(fCentralityValue);
             
-            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax) return;
+            fNevent->Fill(12);
+
+            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax)
+            {
+                PostData(1, fOutputList);
+                return;
+            }
+            
+            fNevent->Fill(13);
             
             fCentralityHistPass->Fill(fCentralityValue);
         }

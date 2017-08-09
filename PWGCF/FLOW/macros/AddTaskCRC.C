@@ -10,7 +10,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Int_t bCutTPCbound=0,
+                             Double_t MaxChi2PerClITS=100.,
                              Bool_t bUseCRCRecenter=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
@@ -21,13 +21,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t dDCAz=1000.,
                              Int_t CRC2nEtaBins=5,
                              Double_t MaxFracSharedTPCCl=0.4,
+                             Double_t MaxFracSharedITSCl=0.75,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bRequireITSRefit=kFALSE,
                              Bool_t bCorrectPhiTracklets=kFALSE,
                              Double_t DeltaEta=0.4,
                              Bool_t bRecZDCVtxRbR=kFALSE,
-                             Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
                              Bool_t bRemoveSplitMergedTracks=kFALSE,
@@ -52,30 +52,30 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   gSystem->Load("libOADB.so");
   gSystem->Load("libPWGflowBase.so");
   gSystem->Load("libPWGflowTasks.so");
-  
+
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
-  
+
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     printf("No analysis manager to connect to!\n");
     return NULL;
   }
-  
+
   // just to see if all went well, check if the input event handler has been connected
   if (!mgr->GetInputEventHandler()) {
     printf("This task requires an input event handler!\n");
     return NULL;
   }
-  
+
   Int_t nCenBin = 10;
   Double_t centrMin=0.;
   Double_t centrMax=100.;
   Double_t CenBinWidth=10.;
   Bool_t bCalculateCRCInt=kFALSE;
-  Bool_t bCalculateCRC2=kTRUE;
+  Bool_t bCalculateCRC2=kFALSE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
   Bool_t bCalculateCRC=kTRUE;
@@ -95,6 +95,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
+  Int_t bCutTPCbound=0;
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
   Bool_t bUsePileUp=kTRUE;
@@ -103,18 +104,19 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bPhiExclZone=kFALSE;
   Bool_t bTestSin=kFALSE;
   Bool_t bZDCCut=kFALSE;
-  Bool_t bRequireTOFSignal=kFALSE,
+  Bool_t bRequireTOFSignal=kFALSE;
+  Bool_t bUsePtWeights = (PtWeightsFileName.EqualTo("")?kFALSE:kTRUE);
   if(MinMulZN>=13) bZDCCut=kTRUE;
-  
+
   // define CRC suffix
   TString CRCsuffix = ":CRC";
-  
+
   TString CentrName = "_";
   CentrName += (Int_t)centrMin;
   CentrName += "-";
   CentrName += (Int_t)centrMax;
   CRCsuffix += CentrName;
-  
+
   TString pTName = "_";
   Int_t rt = (Int_t)(ptMin*10.);
   Int_t r = (Int_t)(ptMin);
@@ -124,16 +126,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   r = (Int_t)(ptMax);
   pTName += ( ptMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
   CRCsuffix += pTName;
-  
+
   if(!Label.EqualTo("")) {
     TString Appendix = "_";
     Appendix += Label;
     CRCsuffix += Appendix;
   }
-  
+
   Double_t etaMin=-0.8;
   Double_t etaMax=0.8;
-  
+
   // create instance of the class: because possible qa plots are added in a second output slot,
   // the flow analysis task must know if you want to save qa plots at the time of class construction
   TString taskFEname = "FlowEventTask";
@@ -176,7 +178,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
-  
+
   if(sDataSet=="2010" && !bZDCMCCen) {
     TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTowerVtx.root";
     TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
@@ -287,10 +289,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
   // set which rings of VZEROs to use
   if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
-  
+
   // add the task to the manager
   mgr->AddTask(taskFE);
-  
+
   // define the event cuts object
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
   cutsEvent->SetCheckPileup(kFALSE);
@@ -344,12 +346,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     if (sDataSet == "2011") cutsEvent->SetLHC11h(kTRUE);
     if (sDataSet == "2010") cutsEvent->SetLHC10h(kTRUE);
   }
-  
+
   // pass these cuts to your flow event task
   taskFE->SetCutsEvent(cutsEvent);
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("RP cuts");
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
-  
+
   if (analysisTypeUser == "MCkine") {
     // Track cuts for RPs
     cutsRP->SetParamType(AliFlowTrackCuts::kMC);
@@ -396,10 +398,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cutsRP->SetMinNClustersTPC(dMinClusTPC);
       cutsRP->SetMinChi2PerClusterTPC(0.1);
       cutsRP->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+      cutsRP->SetCutChi2PerClusterITS(MaxChi2PerClITS);
       cutsRP->SetPtRange(ptMin,ptMax);
       cutsRP->SetEtaRange(etaMin,etaMax);
       cutsRP->SetAcceptKinkDaughters(kFALSE);
       cutsRP->SetMaxFracSharedTPCCluster(MaxFracSharedTPCCl);
+      cutsRP->SetMaxFracSharedITSCluster(MaxFracSharedITSCl);
       if(bCutTPCbound==1) cutsRP->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
       if(bCutTPCbound==2) cutsRP->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
       cutsRP->SetQA(bCutsQA);
@@ -413,6 +417,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsPOI->SetMinNClustersTPC(dMinClusTPC);
     cutsPOI->SetMinChi2PerClusterTPC(0.1);
     cutsPOI->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+    cutsPOI->SetCutChi2PerClusterITS(MaxChi2PerClITS);
     if(bMimicGlobalCuts) {
       cutsPOI->SetMinNClustersTPC(50);
       cutsPOI->SetCutCrossedTPCRows(70,0.8);
@@ -431,6 +436,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsPOI->SetEtaRange(etaMin,etaMax);
     cutsPOI->SetAcceptKinkDaughters(kFALSE);
     cutsPOI->SetMaxFracSharedTPCCluster(MaxFracSharedTPCCl);
+    cutsPOI->SetMaxFracSharedITSCluster(MaxFracSharedITSCl);
     cutsPOI->SetRequireTOFSignal(bRequireTOFSignal);
     if(bCutTPCbound==1) cutsPOI->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
     if(bCutTPCbound==2) cutsPOI->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
@@ -440,19 +446,19 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsRP = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
     cutsPOI = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
   }
-  
+
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
   taskFE->SetSubeventEtaRange(-10.,-1.,1.,10.);
   if (analysisTypeUser == "MCkine")
     taskFE->SetSubeventEtaRange(-3.7,-1.7,2.8,5.1);
-  
+
   // get the default name of the output file ("AnalysisResults.root")
   TString file = "AnalysisResults.root";
-  
+
   // get the common input container from the analysis manager
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
+
   // create a data container for the output of the flow event task
   TString taskFECname = "FlowEventContainer";
   taskFECname += CRCsuffix;
@@ -464,7 +470,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   mgr->ConnectInput(taskFE,0,cinput);
   // and connect the output to the flow event task
   mgr->ConnectOutput(taskFE,1,coutputFE);
-  
+
   // QA OUTPUT CONTAINER
   TString taskFEQAname = file;
   taskFEQAname += ":CutsQA";
@@ -477,9 +483,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // and connect the qa output container to the flow event.
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
-  
+
   //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
-  
+
   // create the flow analysis tasks
   TString taskCRCname = "AnalysisTask";
   taskCRCname += CRCsuffix;
@@ -544,7 +550,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
-  
+
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
@@ -563,7 +569,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCESEFile;
   } // end of if(bSetQAZDC)
-  
+
   if(bCenFlattening) {
     TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
     if(!CenWeightsFile) {
@@ -581,9 +587,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   } // end of if(bCenFlattening)
-  
+
   if(bZDCCut) {
-    TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root","READ");
+    TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut_2.root","READ");
     if(!ZDCCutFile) {
       cout << "ERROR: ZDCCutFile not found!" << endl;
       exit(1);
@@ -591,7 +597,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     TList* ZDCCutList = (TList*)(ZDCCutFile->FindObjectAny("ZDCcut"));
     if(ZDCCutList) {
       taskQC->SetCRCZDC2DCutList(ZDCCutList);
-      cout << "ZDCCut set (from alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut.root)" << endl;
+      cout << "ZDCCut set (from alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut_2.root)" << endl;
     }
     else {
       cout << "ERROR: ZDCCutList not found!" << endl;
@@ -599,7 +605,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCCutFile;
   }
-  
+
   if(sDataSet=="2015") {
     TFile* RefMultRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvRefMult_HIR.root","READ");
     if(!RefMultRbRFile) {
@@ -616,7 +622,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: RefMultRbRPro not found!" << endl;
       exit(1);
     }
-    
+
     TFile* AvEZDCCRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvEZDCCRbR_HIR.root","READ");
     TFile* AvEZDCARbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_AvEZDCARbR_HIR.root","READ");
     if(AvEZDCCRbRFile && AvEZDCARbRFile) {
@@ -624,7 +630,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       TProfile2D* AvQMCRbR = (TProfile2D*)(cav->GetPrimitive("fhAvQMCRbR"));
       TCanvas* cav2 = (TCanvas*)(AvEZDCARbRFile->Get("Canvas_2"));
       TProfile2D* AvQMARbR = (TProfile2D*)(cav2->GetPrimitive("fhAvQMARbR"));
-      
+
       if(AvQMCRbR && AvQMARbR) {
         taskQC->SetAvEZDCRbRPro(AvQMCRbR,AvQMARbR);
         cout << "AvEZDCCRbR set (15o_AvEZDC*RbR_HIR.root)" << endl;
@@ -635,7 +641,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
     }
   }
-  
+
   if(sDataSet=="2015pidfix") {
     TFile* AvEZDCCRbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15opidfix_AvEZDCCRbR_HIR.root","READ");
     TFile* AvEZDCARbRFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15opidfix_AvEZDCARbR_HIR.root","READ");
@@ -644,7 +650,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       TProfile2D* AvQMCRbR = (TProfile2D*)(cav->GetPrimitive("fhAvQMCRbR"));
       TCanvas* cav2 = (TCanvas*)(AvEZDCARbRFile->Get("Canvas_2"));
       TProfile2D* AvQMARbR = (TProfile2D*)(cav2->GetPrimitive("fhAvQMARbR"));
-      
+
       if(AvQMCRbR && AvQMARbR) {
         taskQC->SetAvEZDCRbRPro(AvQMCRbR,AvQMARbR);
         cout << "AvEZDCCRbR set (15opidfix_AvEZDC*RbR_HIR.root)" << endl;
@@ -655,7 +661,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
     }
   }
-  
+
   if(bPhiExclZone) {
     TString PhiExclFileName = "alien:///alice/cern.ch/user/j/jmargutt/PhiExclZone_15o.root";
     TFile* PhiExclFile = TFile::Open(PhiExclFileName,"READ");
@@ -675,7 +681,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete PhiExclFile;
   }
-  
+
   if(bUsePtWeights) {
     taskQC->SetUsePtWeights(bUsePtWeights);
     TFile* PtWeightsFile = TFile::Open(PtWeightsFileName,"READ");
@@ -695,7 +701,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
     }
   } // end of if(bUsePtWeights)
-  
+
   if(MinMulZN==5 && ptMin==0.2 && ptMax==20.2) {
     // set multiplicity weights
     taskQC->SetUseZDCESEMulWeights(kTRUE);
@@ -725,7 +731,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         exit(1);
       }
     }
-    
+
     // set pt weights
     taskQC->SetUseZDCESESpecWeights(kTRUE);
     TString SpecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
@@ -755,7 +761,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
     }
   }
-  
+
   if(bUseCRCRecenter) {
     TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2015" && sIntRuns=="high") {
@@ -784,7 +790,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   } // end of if(bUseCRCRecenter)
-  
+
   if(ZDCCalibFileName != "" && bUseZDC) {
     TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
     if(!ZDCCalibFile) {
@@ -803,7 +809,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCCalibFile;
   } // end of if(bUseZDC)
-  
+
   if(bCalculateCRCVZ==kTRUE && sDataSet=="2015") {
     TString VZEROCalibFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROcalib_Cen.root";
     if(bSpecialVZERORingSelection) {
@@ -826,7 +832,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete VZEROCalibFile;
   }
-  
+
   if(sPhiEtaWeight!="") {
     taskQC->SetUsePhiEtaWeights(kTRUE);
     taskQC->SetPOIExtraWeights(sPhiEtaWeight);
@@ -848,6 +854,14 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
       }
+      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbRITScuts")) {
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768ITScuts_CenPhiEtaWeights_VtxRbR.root";
+      }
+    }
+    if(sDataSet=="2015pidfix") {
+      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "15opidfix_FB768_CenPhiEtaWeights_VtxRbR.root";
+      }
     }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
     if(!PhiEtaWeightsFile) {
@@ -866,12 +880,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete PhiEtaWeightsFile;
   }
-  
+
   taskQC->SetUsePhiEtaCuts(bUsePhiEtaCuts);
-  
+
   // connect the task to the analysis manager
   mgr->AddTask(taskQC);
-  
+
   // initialize output name
   TString outputQC = file;
   outputQC += CRCsuffix;
@@ -886,7 +900,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // and connect the output of the flow analysis task to the output container
   // which will be written to the output file
   mgr->ConnectOutput(taskQC, 1, coutputQC);
-  
+
   return taskQC;
 }
-

@@ -72,13 +72,14 @@
 #include "AliTOFGeometry.h"
 #include "AliCDBManager.h"
 #include "TProfile.h"
+#include "AliGenHepMCEventHeader.h"
 #ifdef USETREECLASS
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
 #endif
 
 
-ClassImp(AliAnalysisTaskTOFSpectra)
+ClassImp(AliAnalysisTaskTOFSpectra);
 
 //________________________________________________________________________
 AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts) :
@@ -100,6 +101,7 @@ fDCAZ(-999),
 fRunNumber(0),
 fEvtPhysSelected(kFALSE),
 fEvtSelected(kFALSE),
+fEvtMCSampSelected(kFALSE),
 fTOFout(kFALSE),
 fTRDout(kFALSE),
 fTime(kFALSE),
@@ -187,6 +189,7 @@ fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fRecalibrateTOF(kFALSE),
+fCutOnMCImpact(kFALSE),
 fFineTOFReso(kFALSE),
 fFineEfficiency(kFALSE),
 
@@ -373,7 +376,49 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     if(i > 0) AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i-1), fMultiplicityBin.At(i)));
 
   }
-
+  //
+  if (fCutOnMCImpact && fMCmode)
+  {
+    AliInfo("Changing the centrality cut to match the data impact parameter b");
+    TArrayD bLimits(kEvtMultBins + 1);
+    Int_t j = 0;
+    bLimits.AddAt(0.00, j++);  //0%
+    bLimits.AddAt(3.50, j++);  //5%
+    bLimits.AddAt(4.94, j++);  //10%
+    bLimits.AddAt(6.98, j++);  //20%
+    bLimits.AddAt(8.55, j++);  //30%
+    bLimits.AddAt(9.88, j++);  //40%
+    bLimits.AddAt(11.04, j++); //50%
+    bLimits.AddAt(12.09, j++); //60%
+    bLimits.AddAt(13.05, j++); //70%
+    bLimits.AddAt(13.97, j++); //80%
+    bLimits.AddAt(14.96, j++); //90%
+    bLimits.AddAt(20.00, j++); //100%
+    bLimits.AddAt(1000.00, j); //Overflow
+    if(j != kEvtMultBins) AliFatal("Somehow index does not sum up");
+    //Copy the values to the cut array
+    for(Int_t i = 0; i <= kEvtMultBins; i++) fMultiplicityBin.AddAt(bLimits.At(i), i);
+  }
+  if(!fHImode){
+    TArrayF ppLimits(9);
+    Int_t j = 0;
+    ppLimits.AddAt(-1000, j++);
+    ppLimits.AddAt(-204, j++);
+    ppLimits.AddAt(-200, j++);
+    ppLimits.AddAt(0, j++);
+    ppLimits.AddAt(5, j++);
+    ppLimits.AddAt(10, j++);
+    ppLimits.AddAt(15, j++);
+    ppLimits.AddAt(23, j++);
+    ppLimits.AddAt(33, j);
+    fMultiplicityBin.Set(j, ppLimits.GetArray());
+  }
+  //Check on the defined binning
+  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
+  {
+    AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) AliFatalF("Multiplicity bin %i is not defined correctly: %.3f > %.3f", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+  }
   //
   //Shift to the TPC signal
   //
@@ -468,12 +513,12 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
 
-      hDenTrkTrigger[charge][species]         = 0x0;
       hDenTrkMCVertexZ[charge][species]       = 0x0;
       hDenTrkVertex[charge][species]          = 0x0;
       hDenTrkVertexMCVertexZ[charge][species] = 0x0;
 
       for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+        hDenTrkTrigger[charge][species][mult]                = 0x0;
         hDenPrimMCYCut[charge][species][mult]                = 0x0;
         hDenPrimMCEtaCut[charge][species][mult]              = 0x0;
         hDenPrimMCEtaYCut[charge][species][mult]             = 0x0;
@@ -688,14 +733,10 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
 
-    hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMult->GetXaxis()->GetBinCenter(hEvtMult->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
+    hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
     fListHist->AddLast(hEvtMult);
 
-    hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(hEvtMultAftEvSel->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
+    hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
     fListHist->AddLast(hEvtMultAftEvSel);
 
     hEvtVtxXYBefSel = new TH1F("hEvtVtxXYBefSel", "XY primary vertex distance Before Selection;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
@@ -1223,10 +1264,6 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
         for(Int_t species = 0; species < 3; species++){//Species loop
 
-          hDenTrkTrigger[charge][species] = new TH1F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-          hDenTrkTrigger[charge][species]->Sumw2();
-          fListHist->AddLast(hDenTrkTrigger[charge][species]);
-
           hDenTrkMCVertexZ[charge][species] = new TH1F(Form("hDenTrkMCVertZ_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
           hDenTrkMCVertexZ[charge][species]->Sumw2();
           fListHist->AddLast(hDenTrkMCVertexZ[charge][species]);
@@ -1240,6 +1277,11 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
 
           for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
+
+            hDenTrkTrigger[charge][species][mult] = new TH1F(Form("hDenTrkTrigger_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
+            hDenTrkTrigger[charge][species][mult]->Sumw2();
+            fListHist->AddLast(hDenTrkTrigger[charge][species][mult]);
+
             hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
             hDenPrimMCYCut[charge][species][mult]->Sumw2();
             fListHist->AddLast(hDenPrimMCYCut[charge][species][mult]);
@@ -1520,32 +1562,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   EvtStart++;
 
   //
-  //Event Selection
-  //
-  //
-  //Check the Event Multiplicity, the event selection is embedded in the Multiplicity selection with the codes reported in the AliMultSelectionCuts
-  //
-  StartTimePerformance(1);
-  if(fHImode){
-    fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
-    if(!fMultSel) {
-      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-    }
-    else{
-      AliDebug(2, "Estimating centrality");
-      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);//Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-    }
-
-  }
-  else{
-    AliDebug(2, "Estimating Multiplicity at midrapidity");
-    fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE);//fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-
-  }
-  StopTimePerformance(1);
-
-  //
   // monitor vertex position before event and physics selection
   //
   const AliESDVertex* vertex = ObtainVertex();
@@ -1555,12 +1571,24 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     hEvtVtxZBefSel->Fill(fPrimVertex[2]);
   }
 
+  if(fMCmode) GatherEventMCInfo();//Get the MC event and get the information on it. NOTE here the information on the reco vertex is needed as it is used
+
+  //
+  //Event Selection
+  //
+  //
+  //Check the Event Multiplicity, the event selection is embedded in the Multiplicity selection with the codes reported in the AliMultSelectionCuts
+  //
+  StartTimePerformance(1);
+  ComputeEvtMultiplicity();//Compute the event multiplicity or centrality depending on the system
+  StopTimePerformance(1);
+
   StartTimePerformance(2);
-  fEvtSelected = SelectEvents(EvtStart);
+  fEvtSelected = SelectEvents(EvtStart);//Perform the cuts for the event selection
   StopTimePerformance(2);
 
   StartTimePerformance(3);
-  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
+  ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event. Event selection needs to be defined already as no outliers are accepted!
   StopTimePerformance(3);
 
 
@@ -2298,6 +2326,7 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar(){
   fMCPrimaries = -999;
   fEvtPhysSelected = kFALSE;
   fEvtSelected = kFALSE;
+  fEvtMCSampSelected = kFALSE;
   StopTimePerformance(8);
 
   StartTimePerformance(9);
@@ -2350,6 +2379,32 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
 //*************************************************************
 
 //________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity(){
+  if(fHImode){
+    if(fMCmode && fCutOnMCImpact){//If requested, using the MC impact parameter instead of the measured centrality
+      fEvtMult = static_cast < AliGenHepMCEventHeader*> (fMCEvt->GenEventHeader())->impact_parameter();
+      return;
+    }
+
+    fMultSel = (AliMultSelection * ) fESD->FindListObject("MultSelection");
+    if(!fMultSel) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+    }
+    else{
+      AliDebug(2, "Estimating centrality");
+      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);//Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+    }
+
+  }
+  else{
+    AliDebug(2, "Estimating Multiplicity at midrapidity");
+    fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE);//fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+
+  }
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
   if(fEvtMultBin != -1){
     AliFatal(Form("Multiplicity bin already assigned to value %i!", fEvtMultBin));
@@ -2381,42 +2436,67 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
-  //   AliInfo("AnalyseMCParticles");
+void AliAnalysisTaskTOFSpectra::GatherEventMCInfo(){
+  //   AliInfo("GatherEventMCInfo");
 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
+  //Get the MC handler
+  AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  //Check on the MC handler
+  if (!eventHandler)
+  {
     AliError("Could not retrieve MC event handler");
     return;
   }
 
-
-  if (eventHandler) fMCEvt = eventHandler->MCEvent();
-  if (!fMCEvt) {
+  //Get the MC Event
+  fMCEvt = eventHandler->MCEvent();
+  // Check on the MC Event
+  if (!fMCEvt)
+  {
     AliError("Could not retrieve MC event");
     return;
   }
+  //Set The PID response on the current MC event
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
 
+  //Get the stack
   fMCStack = fMCEvt->Stack();
-  if (!fMCStack) return;
+  // Check on the Stack
+  if (!fMCStack)
+  {
+    AliError("Could not retrieve MC Stack");
+    return;
+  }
 
   //Get the number of tracks in the event
-  fNMCTracks = fMCEvt->GetNumberOfTracks();//Number of particles
-  fMCPrimaries = fMCEvt->GetNumberOfPrimaries();//Number of primary particles
+  fNMCTracks = fMCEvt->GetNumberOfTracks();      //Number of particles
+  fMCPrimaries = fMCEvt->GetNumberOfPrimaries(); //Number of primary particles
 
   //Get the information of the MC vertex
-  const  AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
-  if (!MCvtx) {
+  const AliVVertex *MCvtx = fMCEvt->GetPrimaryVertex();
+  //Check on the MC vertex
+  if (!MCvtx)
+  {
     AliError("Could not retrieve MC vertex");
     return;
   }
 
-  Bool_t passMCSampSel = kTRUE;//Flag to check that the MC is accepted in the analysis sample
-  if(TMath::Abs(MCvtx->GetZ()) > fVtxZCut) passMCSampSel = kFALSE;//Position on Z of the vertex
+  //Check if the MC vertex is generated in the acceptance
+  if (TMath::Abs(MCvtx->GetZ()) < fVtxZCut)
+    fEvtMCSampSelected = kTRUE; //Position on Z of the vertex
+
+  //Fill histograms with the MC vertex information
   hEvtVtxZMCGen->Fill(MCvtx->GetZ());
-  if(fEvtPhysSelected) hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
-  if(fVertStatus > 1) hEvtVtxZMCReco->Fill(MCvtx->GetZ());
+  if (fEvtPhysSelected)
+    hEvtVtxZMCPhysSel->Fill(MCvtx->GetZ());
+  if (fVertStatus > 1)
+    hEvtVtxZMCReco->Fill(MCvtx->GetZ());
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
+  //   AliInfo("AnalyseMCParticles");
 
   //Check on the definition of the correct Multiplicity
   if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
@@ -2454,8 +2534,8 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
     else fSignMC = kTRUE;             //Particle is negative
 
     if(passy){
-      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC);
-      if(passMCSampSel) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+      hDenTrkTrigger[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      if(fEvtMCSampSelected) hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
     if(!fEvtPhysSelected) continue;//After Physics Selection
@@ -2463,7 +2543,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
 
     if(passy){
       hDenTrkVertex[fSignMC][fPdgIndex]->Fill(fPtMC);
-      if(passMCSampSel) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
+      if(fEvtMCSampSelected) hDenTrkVertexMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
 
     if(!fEvtSelected) continue;//After Event Selection
@@ -2557,20 +2637,9 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
   //
   //Particle production
   if(fMCStack->IsPhysicalPrimary(AbsTrkLabel)) fProdInfo = 0;//Track is Physical Primary
-  else{//If it not physical primary check the Origin
-    Int_t indexMoth = part->GetFirstMother();
-    if(indexMoth >= 0){
-      TParticle* mother = fMCStack->Particle(indexMoth);
-      Float_t PDGcodemother = TMath::Abs(mother->GetPdgCode());
-      mfl = Int_t (PDGcodemother/ TMath::Power(10, Int_t(TMath::Log10(PDGcodemother))));
-    }
-    else mfl = 0;
-
-    uniqueID = part->GetUniqueID();
-
-    if(mfl == 3 && uniqueID == kPDecay) fProdInfo = 1;//Track comes from weak decay
-    else fProdInfo = 2;//Track is from material
-  }
+  else if(fMCStack->IsSecondaryFromWeakDecay(AbsTrkLabel)) fProdInfo = 1;//Track comes from weak decay
+  else if(fMCStack->IsSecondaryFromMaterial(AbsTrkLabel)) fProdInfo = 2;//Track is from material
+  else AliFatal("Particle is not primary, sec. from w.d. or material");
 
   //       AliDebug(2, Form("Track is a %i %i", fSignMC, fPdgIndex));
 

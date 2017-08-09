@@ -108,7 +108,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fUseTPCPIDtoFillTree(kFALSE),
   fSign(2),
   fCheckOrigin(kFALSE),
-  fReconstructSecVtx(kFALSE)
+  fReconstructSecVtx(kFALSE),
+  fDoSingleAnalysisForSystK0SP(0)
 {
   //
   /// Default ctor
@@ -152,7 +153,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fUseTPCPIDtoFillTree(useTPCpid),
   fSign(sign),
   fCheckOrigin(origin),
-  fReconstructSecVtx(kFALSE)
+  fReconstructSecVtx(kFALSE),
+  fDoSingleAnalysisForSystK0SP(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -360,6 +362,11 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
 
   if ( !fIsEventSelected ) return; // don't take into account not selected events
   fCEvents->Fill(7);
+
+  if(fDoSingleAnalysisForSystK0SP>0){
+    MakeSingleAnalysisForSystK0SP(aodEvent,mcArray,fAnalCuts);
+    if(fDoSingleAnalysisForSystK0SP==2) return;
+  }
 
   Int_t nSelectedAnal = 0;
   MakeAnalysisForLc2prK0S(aodEvent,arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
@@ -876,6 +883,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
   Double_t mMinLambdaPDG  = TDatabasePDG::Instance()->GetParticle(2212)->Mass()+
     TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  Double_t mLPDG  = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   TString nameHisto=" ", nameHistoSgn=" ", nameHistoBkg=" ";
   TString titleHisto=" ", titleHistoSgn=" ", titleHistoBkg=" ";
@@ -2222,11 +2230,384 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
   }
 
+  if(fDoSingleAnalysisForSystK0SP){
+    TH2D *hMassvsPtInclusiveK0S = new TH2D("hMassvsPtInclusiveK0S","",100,mK0SPDG-0.05,mK0SPDG+0.05,20,0.,10.);
+    TH2D *hMassvsPtInclusiveK0SSgn = new TH2D("hMassvsPtInclusiveK0SSgn","",100,mK0SPDG-0.05,mK0SPDG+0.05,20,0.,10.);
+    TH3D *hMassvsPtInclusiveLambda = new TH3D("hMassvsPtInclusiveLambda","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
+    TH3D *hMassvsPtInclusiveLambdaSgn = new TH3D("hMassvsPtInclusiveLambdaSgn","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
+    TH3D *hMassvsPtInclusiveLambdaPID = (TH3D*)hMassvsPtInclusiveLambda->Clone();
+    TH3D *hMassvsPtInclusiveLambdaPIDSgn = (TH3D*)hMassvsPtInclusiveLambdaSgn->Clone();
+    fOutputAll->Add(hMassvsPtInclusiveK0S);
+    fOutputAll->Add(hMassvsPtInclusiveK0SSgn);
+    fOutputAll->Add(hMassvsPtInclusiveLambda);
+    fOutputPIDBach->Add(hMassvsPtInclusiveLambdaPID);
+    fOutputAll->Add(hMassvsPtInclusiveLambdaSgn);
+    fOutputPIDBach->Add(hMassvsPtInclusiveLambdaPIDSgn);
+  }
+
   /*
     fOutputAll->Print();
     fOutputPIDBach->Print();
     if (fTrackRotation) fOutputPIDBachTR->Print();
   */
+  return;
+}
+
+//-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *aodEvent,
+							     TClonesArray *mcArray,
+							     AliRDHFCutsLctoV0 *cutsAnal)
+{
+
+  //
+  // make single analysis for the systematics studies
+  // 1: Inclusive K0s (Tracking, K0S cut variation)
+  // 2: Proton from Lambda (PID, Tracking TPC(not yet))
+  //
+
+  Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
+  Int_t nV0s = aodEvent->GetNumberOfV0s();
+
+  Double_t pos[3]; fVtx1->GetXYZ(pos);
+  Double_t cov[6]; fVtx1->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
+  AliESDtrackCuts *trkCuts = fAnalCuts->GetTrackCuts();
+  AliESDtrackCuts *v0trkCuts = fAnalCuts->GetTrackCutsV0daughters();
+  const Float_t *cutVars = fAnalCuts->GetCuts();
+
+  //1: Inclusive K0s
+  for (Int_t iv0 = 0; iv0<nV0s; iv0++) {
+    AliAODv0 *v0 = aodEvent->GetV0(iv0);
+    if(!v0) continue;
+    AliAODTrack *ptrk = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+    if (!ptrk) continue;
+    AliAODTrack *ntrk = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+    if (!ntrk) continue;
+
+    Float_t etaMin=0, etaMax=0; v0trkCuts->GetEtaRange(etaMin,etaMax);
+    if ( (ptrk->Eta()<=etaMin || ptrk->Eta()>=etaMax) ||
+        (ntrk->Eta()<=etaMin || ntrk->Eta()>=etaMax) ) continue;
+    Float_t ptMin=0, ptMax=0; v0trkCuts->GetPtRange(ptMin,ptMax);
+    if ( (ptrk->Pt()<=ptMin || ptrk->Pt()>=ptMax) ||
+        (ntrk->Pt()<=ptMin || ntrk->Pt()>=ptMax) ) continue;
+
+    // Condition on nTPCclusters
+    if (v0trkCuts->GetMinNClusterTPC()>0) {
+      if ( ( ( ptrk->GetTPCClusterInfo(2,1) ) < v0trkCuts->GetMinNClusterTPC() ) || 
+          ( ( ntrk->GetTPCClusterInfo(2,1) ) < v0trkCuts->GetMinNClusterTPC() ) ) continue;
+    }
+
+    if (v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+      Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+      Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+      if (ptrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCPos = ptrk->GetTPCClusterInfo(2,1) / ptrk->GetTPCNclsF();
+      }
+      if (ntrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCNeg = ntrk->GetTPCClusterInfo(2,1) / ntrk->GetTPCNclsF();
+      }
+      if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+          ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < v0trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) ) continue;
+    }
+
+    // kTPCrefit status
+    if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
+      if (v0trkCuts->GetRequireTPCRefit()) {
+        if( !(ptrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(ntrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      }
+    }
+
+    AliESDtrack esdTrackP(ptrk);
+    esdTrackP.SetTPCClusterMap(ptrk->GetTPCClusterMap());
+    esdTrackP.SetTPCSharedMap(ptrk->GetTPCSharedMap());
+    esdTrackP.SetTPCPointsF(ptrk->GetTPCNclsF());
+    esdTrackP.RelateToVertex(&vESD,0.,3.);
+
+    AliESDtrack esdTrackN(ntrk);
+    esdTrackN.SetTPCClusterMap(ntrk->GetTPCClusterMap());
+    esdTrackN.SetTPCSharedMap(ntrk->GetTPCSharedMap());
+    esdTrackN.SetTPCPointsF(ntrk->GetTPCNclsF());
+    esdTrackN.RelateToVertex(&vESD,0.,3.);
+
+    //appliyng TPC crossed rows pT dependent cut
+    TString tmptxt(fAnalCuts->GetMinCrossedRowsTPCPtDep());
+    if(tmptxt.Contains("pt")){
+      tmptxt.ReplaceAll("pt","x");
+      TF1 funcCutMin("funcCutMin",tmptxt);
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      if(nCrossedRowsTPCP<funcCutMin.Eval(esdTrackP.Pt())) continue;
+      if(nCrossedRowsTPCN<funcCutMin.Eval(esdTrackN.Pt())) continue;
+    }
+  
+    //appliyng NTPCcls/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioClsOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nClustersTPCP = esdTrackP.GetTPCNcls();
+      Float_t nClustersTPCN = esdTrackN.GetTPCNcls();
+      if(nCrossedRowsTPCP!=0){ 
+        Float_t ratioP = nClustersTPCP/nCrossedRowsTPCP;
+        if(ratioP<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+      }
+      else continue;
+      if(nCrossedRowsTPCN!=0){ 
+        Float_t ratioN = nClustersTPCN/nCrossedRowsTPCN;
+        if(ratioN<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+      }
+      else continue;
+    }
+
+    //appliyng TPCsignalN/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nTPCsignalP = esdTrackP.GetTPCsignalN();
+      Float_t nTPCsignalN = esdTrackN.GetTPCsignalN();
+      if(nCrossedRowsTPCP!=0){
+        Float_t ratioP = nTPCsignalP/nCrossedRowsTPCP;
+        if(ratioP<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+      }
+      else continue;
+      if(nCrossedRowsTPCN!=0){
+        Float_t ratioN = nTPCsignalN/nCrossedRowsTPCN;
+        if(ratioN<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+      }
+      else continue;
+    }
+
+    // kink condition
+    if (!v0trkCuts->GetAcceptKinkDaughters()) {
+      AliAODVertex *maybeKinkPos = (AliAODVertex*)ptrk->GetProdVertex();
+      AliAODVertex *maybeKinkNeg = (AliAODVertex*)ntrk->GetProdVertex();
+      if (maybeKinkPos->GetType()==AliAODVertex::kKink ||
+          maybeKinkNeg->GetType()==AliAODVertex::kKink) continue;
+    }
+
+    //RDHF cuts
+    if(ptrk->Pt()<cutVars[fAnalCuts->GetGlobalIndex(5,0)] || ntrk->Pt()<cutVars[fAnalCuts->GetGlobalIndex(6,0)]) continue;
+    if(v0->GetDCA()>cutVars[fAnalCuts->GetGlobalIndex(8,0)]) continue;
+    if(v0->CosPointingAngle(pos)<cutVars[fAnalCuts->GetGlobalIndex(9,0)]) continue;
+    if(v0->DcaV0ToPrimVertex()>cutVars[fAnalCuts->GetGlobalIndex(11,0)]) continue;
+    if((v0->PtArmV0()/TMath::Abs(v0->AlphaV0())<cutVars[fAnalCuts->GetGlobalIndex(19,0)])) continue;
+
+    if(TMath::Abs(v0->MassLambda()-mLPDG) < cutVars[fAnalCuts->GetGlobalIndex(13,0)]) continue;
+    if(TMath::Abs(v0->MassAntiLambda()-mLPDG) < cutVars[fAnalCuts->GetGlobalIndex(13,0)]) continue;
+    if(v0->InvMass2Prongs(0,1,11,11) < cutVars[fAnalCuts->GetGlobalIndex(13,0)]) continue;
+
+    ((TH2D*)(fOutputAll->FindObject("hMassvsPtInclusiveK0S")))->Fill(v0->MassK0Short(),v0->Pt());
+
+    if(fUseMCInfo){
+      Int_t pdgdgv0[2]={211,211};
+      Int_t labV0 = v0->MatchToMC(310,mcArray,2,pdgdgv0); // the V0
+      if(labV0>=0){
+        AliAODMCParticle *mcv0 = (AliAODMCParticle*) mcArray->At(labV0);
+        if(mcv0){
+          ((TH2D*)(fOutputAll->FindObject("hMassvsPtInclusiveK0SSgn")))->Fill(v0->MassK0Short(),v0->Pt());
+        }
+      }
+    }
+  }
+
+  //2: Proton from Lambda
+  for (Int_t iv0 = 0; iv0<nV0s; iv0++) {
+    AliAODv0 *v0 = aodEvent->GetV0(iv0);
+    if(!v0) continue;
+    AliAODTrack *ptrk = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+    if (!ptrk) continue;
+    AliAODTrack *ntrk = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+    if (!ntrk) continue;
+
+    Float_t etaMin=0, etaMax=0; trkCuts->GetEtaRange(etaMin,etaMax);
+    if ( (ptrk->Eta()<=etaMin || ptrk->Eta()>=etaMax) ||
+        (ntrk->Eta()<=etaMin || ntrk->Eta()>=etaMax) ) continue;
+    Float_t ptMin=0, ptMax=0; trkCuts->GetPtRange(ptMin,ptMax);
+    if ( (ptrk->Pt()<=ptMin || ptrk->Pt()>=ptMax) ||
+        (ntrk->Pt()<=ptMin || ntrk->Pt()>=ptMax) ) continue;
+
+
+    // kTPCrefit status
+    if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
+      if (trkCuts->GetRequireTPCRefit()) {
+        if( !(ptrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(ntrk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      }
+    }
+
+    // kink condition
+    if (!trkCuts->GetAcceptKinkDaughters()) {
+      AliAODVertex *maybeKinkPos = (AliAODVertex*)ptrk->GetProdVertex();
+      AliAODVertex *maybeKinkNeg = (AliAODVertex*)ntrk->GetProdVertex();
+      if (maybeKinkPos->GetType()==AliAODVertex::kKink ||
+          maybeKinkNeg->GetType()==AliAODVertex::kKink) continue;
+    }
+
+    //Should decay before TPC 
+    Double_t dR = TMath::Sqrt(v0->DecayVertexV0X()*v0->DecayVertexV0X()+v0->DecayVertexV0Y()*v0->DecayVertexV0Y());
+    if(dR>40.) continue;
+
+    Int_t LType = 0;
+    if(TMath::Abs(v0->MassLambda()-mLPDG)<0.02) LType += 1;
+    if(TMath::Abs(v0->MassAntiLambda()-mLPDG)<0.02) LType += 2;
+    if(LType==3) continue;//to avoid complexity
+
+    Bool_t okLcK0Sp = kTRUE; // K0S case
+    Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
+    Bool_t okLcLambdaPi = kTRUE; // Lambda case
+
+    AliAODMCParticle *mcv0 = 0x0;
+    if(fUseMCInfo){
+      Int_t pdgdgv0[2]={2212,211};
+      Int_t labV0 = v0->MatchToMC(3122,mcArray,2,pdgdgv0); // the V0
+      if(labV0>=0){
+        mcv0 = (AliAODMCParticle*) mcArray->At(labV0);
+      }
+    }
+
+    AliESDtrack esdTrackP(ptrk);
+    esdTrackP.SetTPCClusterMap(ptrk->GetTPCClusterMap());
+    esdTrackP.SetTPCSharedMap(ptrk->GetTPCSharedMap());
+    esdTrackP.SetTPCPointsF(ptrk->GetTPCNclsF());
+    esdTrackP.RelateToVertex(&vESD,0.,3.);
+
+    AliESDtrack esdTrackN(ntrk);
+    esdTrackN.SetTPCClusterMap(ntrk->GetTPCClusterMap());
+    esdTrackN.SetTPCSharedMap(ntrk->GetTPCSharedMap());
+    esdTrackN.SetTPCPointsF(ntrk->GetTPCNclsF());
+    esdTrackN.RelateToVertex(&vESD,0.,3.);
+
+    // Condition on nTPCclusters
+    if (trkCuts->GetMinNClusterTPC()>0) {
+      if(LType==1){
+        if ( ( ( ptrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) || 
+            ( ( ntrk->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      }
+      if(LType==2){
+        if ( ( ( ntrk->GetTPCClusterInfo(2,1) ) < trkCuts->GetMinNClusterTPC() ) || 
+            ( ( ptrk->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      }
+    }
+
+    if (trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+      Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+      Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+      if (ptrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCPos = ptrk->GetTPCClusterInfo(2,1) / ptrk->GetTPCNclsF();
+      }
+      if (ntrk->GetTPCNclsF()>0) {
+        ratioCrossedRowsOverFindableClustersTPCNeg = ntrk->GetTPCClusterInfo(2,1) / ntrk->GetTPCNclsF();
+      }
+      if(LType==1){
+        if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+            ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < 0.8 ) ) continue;
+      }
+      if(LType==2){
+        if ( ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < trkCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+            ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < 0.8 ) ) continue;
+      }
+    }
+
+    //appliyng TPC crossed rows pT dependent cut
+    TString tmptxt(fAnalCuts->GetMinCrossedRowsTPCPtDep());
+    if(tmptxt.Contains("pt")){
+      tmptxt.ReplaceAll("pt","x");
+      TF1 funcCutMin("funcCutMin",tmptxt);
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      if(LType==1 && nCrossedRowsTPCP<funcCutMin.Eval(esdTrackP.Pt())) continue;
+      if(LType==2 && nCrossedRowsTPCN<funcCutMin.Eval(esdTrackN.Pt())) continue;
+    }
+  
+    //appliyng NTPCcls/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioClsOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nClustersTPCP = esdTrackP.GetTPCNcls();
+      Float_t nClustersTPCN = esdTrackN.GetTPCNcls();
+      if(LType==1){
+        if(nCrossedRowsTPCP!=0){ 
+          Float_t ratioP = nClustersTPCP/nCrossedRowsTPCP;
+          if(ratioP<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+        }
+        else continue;
+
+      }
+      if(LType==2){
+        if(nCrossedRowsTPCN!=0){ 
+          Float_t ratioN = nClustersTPCN/nCrossedRowsTPCN;
+          if(ratioN<fAnalCuts->GetMinRatioClsOverCrossRowsTPC()) continue;
+        }
+        else continue;
+      }
+    }
+
+    //appliyng TPCsignalN/NTPCcrossedRows cut
+    if(fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()>0){
+      Float_t nCrossedRowsTPCP = esdTrackP.GetTPCCrossedRows();
+      Float_t nCrossedRowsTPCN = esdTrackN.GetTPCCrossedRows();
+      Float_t nTPCsignalP = esdTrackP.GetTPCsignalN();
+      Float_t nTPCsignalN = esdTrackN.GetTPCsignalN();
+      if(LType==1){
+        if(nCrossedRowsTPCP!=0){
+          Float_t ratioP = nTPCsignalP/nCrossedRowsTPCP;
+          if(ratioP<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+        }
+        else continue;
+      }
+      if(LType==2){
+        if(nCrossedRowsTPCN!=0){
+          Float_t ratioN = nTPCsignalN/nCrossedRowsTPCN;
+          if(ratioN<fAnalCuts->GetMinRatioSignalNOverCrossRowsTPC()) continue;
+        }
+        else continue;
+      }
+    }
+
+    if(LType==1){
+      Double_t nTPCsigmas=-9999, nTOFsigmas=-9999;
+      fAnalCuts->GetPidHF()->GetnSigmaTPC(ptrk,4,nTPCsigmas);
+      fAnalCuts->GetPidHF()->GetnSigmaTOF(ptrk,4,nTOFsigmas);
+      Bool_t PIDOK=kFALSE;
+      switch(fAnalCuts->GetPidSelectionFlag()){
+        case 10: 
+          if(TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.){
+            PIDOK = !(ptrk->Pt()>fAnalCuts->GetLowPtCut()&& nTOFsigmas<-2.)&&!(ptrk->Pt()>fAnalCuts->GetLowPtCut()&&nTPCsigmas>2.);
+          }
+          break;
+      }
+      ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+      if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+
+      if(fUseMCInfo && mcv0){
+        ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+        if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+
+      }
+    }
+    if(LType==2){
+      Double_t nTPCsigmas=-9999, nTOFsigmas=-9999;
+      fAnalCuts->GetPidHF()->GetnSigmaTPC(ntrk,4,nTPCsigmas);
+      fAnalCuts->GetPidHF()->GetnSigmaTOF(ntrk,4,nTOFsigmas);
+      Bool_t PIDOK=kFALSE;
+      switch(fAnalCuts->GetPidSelectionFlag()){
+        case 10: 
+          if(TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.){
+            PIDOK = !(ptrk->Pt()>fAnalCuts->GetLowPtCut()&& nTOFsigmas<-2.)&&!(ptrk->Pt()>fAnalCuts->GetLowPtCut()&&nTPCsigmas>2.);
+          }
+          break;
+      }
+      ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+      if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+      if(fUseMCInfo && mcv0){
+        ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+        if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+      }
+    }
+  }
   return;
 }
 

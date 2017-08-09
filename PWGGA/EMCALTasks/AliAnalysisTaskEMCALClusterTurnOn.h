@@ -9,11 +9,11 @@
   ///
   ///
   ///
+  /// 
   ///
-  ///
-  ///
-  ///
-  ///
+  /// 
+  /// 
+  /// 
   ///////////////////////////////////////////////////////////////////////////
 
   //ROOT System
@@ -67,13 +67,14 @@ public:
   AliAnalysisTaskEMCALClusterTurnOn();
   AliAnalysisTaskEMCALClusterTurnOn(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskEMCALClusterTurnOn();
-
+  
   void                     UserCreateOutputObjects();
-
+  
   void                     SetIsoConeRadius(Float_t r)                                     { fIsoConeRadius = r ;}
   void                     SetCTMdeltaEta (Float_t r)                                      { fdetacut = r ;}
   void                     SetCTMdeltaPhi (Float_t r)                                      { fdphicut = r ;}
   void                     SetQA (Bool_t QA)                                               { fQA = QA;}
+  void                     SetThn (Bool_t Th)                                              { fThn = Th;}
   void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut, Int_t NLMmin)                       { fIsNLMCut = isNLMCut;
     fNLMCut = NLMCut; fNLMmin = NLMmin;}
   void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
@@ -86,10 +87,11 @@ public:
   void			   SetPhiBinning(vector<Double_t> binedges)			   { fBinsPhi = binedges; }
   void			   SetEtaClBinning(vector<Double_t> binedges)			   { fBinsClEta = binedges; }
   void			   SetPhiClBinning(vector<Double_t> binedges)			   { fBinsClPhi = binedges; }
+  void                     SetM02cut (Bool_t M02)                                          { fM02cut = M02;}
 
 protected:
-
-
+  
+  
   Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
 
   Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
@@ -97,29 +99,30 @@ protected:
   Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
   Float_t                  RecalEnClust(AliVCluster* cluster, AliVCaloCells * cells);
   void                     RecalAmpCell(Float_t  & amp, Int_t absId) const ;
-
+  
   Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
-
+  
   Double_t*                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                     ExecOnce();
   Bool_t                   Run();
   void                     FillTHnSparse(AliVCluster *coi, TLorentzVector vecCOI, Double_t RejectedAt);
-
+  
   AliAODEvent *fAOD;       //!<!
   AliVEvent *fVevent;      //!<! AliVEvent
-
+  
   AliEMCALRecoUtils          *fEMCALRecoUtils; //!<!  EMCAL utils for cluster rereconstruction.
-
-
+  
+  
     //    TList       *fOutputList; //!<! Output list
     //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
-
+  
   Float_t     fIsoConeRadius;                  // Radius for the Isolation Cont
   Double_t    fdetacut;                        // cut on deta between track and cluster
   Double_t    fdphicut;                        // cut on dphi between track and cluster
   Double_t    fM02mincut;                      // lambda0^2 minimum cut
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
   Bool_t      fQA;                             // Flag for few further QA plots wrt the ones already done in the EMCALTask
+  Bool_t      fThn;                            // Flag for ThnSparse
   Int_t       fNDimensions;                    //!<!number of Dimensions for the THnSPARSE Reconstruction
   Int_t       fClusDimensions;                 //!<!number of Dimensions for the THnSparse with cluster info
   Bool_t      fIsNLMCut;                       // NLM cut available
@@ -128,7 +131,9 @@ protected:
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
   Int_t       fTest1;
-
+  Bool_t      fM02cut;
+  AliAODEvent*        fAODEvent;          //!<! AOD event pointer (cast of fEvent).
+  
     // Initialization of variables for THnSparse
 
   std::vector<Double_t>    fBinsPt;
@@ -140,7 +145,7 @@ protected:
   std::vector<Double_t>    fBinsClEta;
   std::vector<Double_t>    fBinsClPhi;
 
-
+  
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
   TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
@@ -159,15 +164,27 @@ protected:
   TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
   TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
   TH1D        *fClusTime;                       //!<! Time distribution for clusters
-
+  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
+  TH2D        *fTriggerbit;                     //!<! fired Trigger Bits 
+  TH2D        *fADCvsEonline;                   //!<! online ADC vs Patch E
+  TH2D        *fADCvsEall;                      //!<! ADC vs Patch E
+  TH1D        *fL0triggered;
+  TH1D        *fL1triggered;
+  TH1D        *fEventsover10;
+  TH1D        *hPatchADC;
+  TH2D        *hmaxADC;
+  TH2D        *hmaxL0ADC;
+  TH1D        *hL0Amplitude;
+  TH2D        *hFastOrIndex;
+  
   THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
   THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
-
-
+  
+  
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented
   AliAnalysisTaskEMCALClusterTurnOn&operator=(const AliAnalysisTaskEMCALClusterTurnOn&); // not implemented
-
+  
     /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEMCALClusterTurnOn, 10);    //EMCAL Neutrals base analysis task
                                                        /// \endcond

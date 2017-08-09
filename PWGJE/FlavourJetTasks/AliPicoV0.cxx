@@ -2,18 +2,12 @@
 #include <TMath.h>
 #include <TLorentzVector.h>
 
-#include "AliPicoV0Base.h"
+#include "AliPicoV0.h"
 
-ClassImp(AliPicoV0Base)
-
-//_____________________________________________________________________________
-const Double_t AliPicoV0Base::fgkMassPion   = 0.13957;
-const Double_t AliPicoV0Base::fgkMassKshort = 0.497614;
-const Double_t AliPicoV0Base::fgkMassProton = 0.938272;
-const Double_t AliPicoV0Base::fgkMassLambda = 1.11568;
+ClassImp(AliPicoV0)
 
 //_____________________________________________________________________________
-AliPicoV0Base::AliPicoV0Base() :
+AliPicoV0::AliPicoV0() :
 TObject(),
 fMask(0),
 fV0Radius(0.),
@@ -30,12 +24,12 @@ fIsPosInJC(kFALSE),
 fIsNegInJC(kFALSE)
 {
 //
-//  AliPicoV0Base::AliPicoV0Base
+//  AliPicoV0::AliPicoV0
 //
 }
 
 //_____________________________________________________________________________
-AliPicoV0Base::AliPicoV0Base(UInt_t   wMask,
+AliPicoV0::AliPicoV0(UInt_t   wMask,
                              Double_t dV0Radius,
                              Double_t dV0CosPA,
                              Double_t dV0DistToPVoverP,
@@ -64,12 +58,12 @@ fIsPosInJC(bPosInJC),
 fIsNegInJC(bNegInJC)
 {
 //
-//  AliPicoV0Base::AliPicoV0Base
+//  AliPicoV0::AliPicoV0
 //
 }
 
 //_____________________________________________________________________________
-AliPicoV0Base::AliPicoV0Base(const AliPicoV0Base &src) :
+AliPicoV0::AliPicoV0(const AliPicoV0 &src) :
 TObject(src),
 fMask(src.fMask),
 fV0Radius(src.fV0Radius),
@@ -86,15 +80,15 @@ fIsPosInJC(src.fIsPosInJC),
 fIsNegInJC(src.fIsNegInJC)
 {
 //
-//  AliPicoV0Base::AliPicoV0Base
+//  AliPicoV0::AliPicoV0
 //
 }
 
 //_____________________________________________________________________________
-AliPicoV0Base& AliPicoV0Base::operator=(const AliPicoV0Base &src)
+AliPicoV0& AliPicoV0::operator=(const AliPicoV0 &src)
 {
 //
-//  AliPicoV0Base::operator=
+//  AliPicoV0::operator=
 //
 
   if (&src==this) return *this;
@@ -119,15 +113,15 @@ AliPicoV0Base& AliPicoV0Base::operator=(const AliPicoV0Base &src)
 }
 
 //_____________________________________________________________________________
-AliPicoV0Base::~AliPicoV0Base()
+AliPicoV0::~AliPicoV0()
 {
 //
-//  AliPicoV0Base::~AliPicoV0Base
+//  AliPicoV0::~AliPicoV0
 //
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsKa(Double_t dCutMinV0Radius,
+Bool_t AliPicoV0::IsKa(Double_t dCutMinV0Radius,
                            Double_t dCutMinV0CosPA,
                            Double_t dCutMaxV0Ctau,
                            Double_t dCutMaxDausDCA,
@@ -138,7 +132,7 @@ Bool_t AliPicoV0Base::IsKa(Double_t dCutMinV0Radius,
                            Double_t dCutMinDauDeltaM)
 {
 //
-//  AliPicoV0Base::IsKa
+//  AliPicoV0::IsKa
 //
 
   if (!IsCandidateSelected(dCutMinV0Radius,
@@ -155,7 +149,7 @@ Bool_t AliPicoV0Base::IsKa(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsLa(Double_t dCutMinV0Radius,
+Bool_t AliPicoV0::IsLa(Double_t dCutMinV0Radius,
                            Double_t dCutMinV0CosPA,
                            Double_t dCutMaxV0Ctau,
                            Double_t dCutMaxDausDCA,
@@ -166,7 +160,7 @@ Bool_t AliPicoV0Base::IsLa(Double_t dCutMinV0Radius,
                            Double_t dCutMinDauDeltaM)
 {
 //
-//  AliPicoV0Base::IsLa
+//  AliPicoV0::IsLa
 //
 
   if (!IsCandidateSelected(dCutMinV0Radius,
@@ -183,52 +177,52 @@ Bool_t AliPicoV0Base::IsLa(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
+Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
 {
 //
-//  AliPicoV0Base::IsKaSelected
+//  AliPicoV0::IsKaSelected
 //
 
-  if ((fV0DistToPVoverP*fgkMassKshort)>dCutMaxV0Ctau) return kFALSE;
+  if ((fV0DistToPVoverP*AliPicoBase::MassKshort())>dCutMaxV0Ctau) return kFALSE;
 
   if (dCutMinDauDeltaM>0.) {
     Double_t dMassLambda = KineLambda().M();
     Double_t dMassAntiLa = KineAntiLa().M();
-    if ((TMath::Abs(dMassLambda-fgkMassLambda)<dCutMinDauDeltaM) ||
-        (TMath::Abs(dMassAntiLa-fgkMassLambda)<dCutMinDauDeltaM)) return kFALSE;
+    if ((TMath::Abs(dMassLambda-AliPicoBase::MassLambda())<dCutMinDauDeltaM) ||
+        (TMath::Abs(dMassAntiLa-AliPicoBase::MassLambda())<dCutMinDauDeltaM)) return kFALSE;
   }
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
+Bool_t AliPicoV0::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
 {
 //
-//  AliPicoV0Base::IsLaSelected
+//  AliPicoV0::IsLaSelected
 //
 
-  if ((fV0DistToPVoverP*fgkMassLambda)>dCutMaxV0Ctau) return kFALSE;
+  if ((fV0DistToPVoverP*AliPicoBase::MassLambda())>dCutMaxV0Ctau) return kFALSE;
 
   if (dCutMinDauDeltaM>0.) {
     Double_t dMassKshort = KineKshort().M();
-    if (TMath::Abs(dMassKshort-fgkMassKshort)<dCutMinDauDeltaM) return kFALSE;
+    if (TMath::Abs(dMassKshort-AliPicoBase::MassKshort())<dCutMinDauDeltaM) return kFALSE;
   }
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsCandidateSelected(Double_t dCutMinV0Radius,
-                                          Double_t dCutMinV0CosPA,
-                                          Double_t dCutMaxDausDCA,
-                                          Double_t dCutMinPosDCAtoPV,
-                                          Double_t dCutMinNegDCAtoPV,
-                                          Float_t  dCutMinDauXrowsTPC,
-                                          Double_t dCutMinDauXrowsOverFindableClusTPC)
+Bool_t AliPicoV0::IsCandidateSelected(Double_t dCutMinV0Radius,
+                                      Double_t dCutMinV0CosPA,
+                                      Double_t dCutMaxDausDCA,
+                                      Double_t dCutMinPosDCAtoPV,
+                                      Double_t dCutMinNegDCAtoPV,
+                                      Float_t  dCutMinDauXrowsTPC,
+                                      Double_t dCutMinDauXrowsOverFindableClusTPC)
 {
 //
-//  AliPicoV0Base::IsCandidateSelected
+//  AliPicoV0::IsCandidateSelected
 //
 
   if (fV0Radius<dCutMinV0Radius) return kFALSE;
@@ -245,10 +239,10 @@ Bool_t AliPicoV0Base::IsCandidateSelected(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-void AliPicoV0Base::FillKshortPtInvM(TH2D *h)
+void AliPicoV0::FillKshortPtInvM(TH2D *h)
 {
 //
-//  AliPicoV0Base::FillKshortPtInvM
+//  AliPicoV0::FillKshortPtInvM
 //
 
   if (!h) return;
@@ -263,10 +257,10 @@ void AliPicoV0Base::FillKshortPtInvM(TH2D *h)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0Base::FillLambdaPtInvM(TH2D *h)
+void AliPicoV0::FillLambdaPtInvM(TH2D *h)
 {
 //
-//  AliPicoV0Base::FillLambdaPtInvM
+//  AliPicoV0::FillLambdaPtInvM
 //
 
   if (!h) return;
@@ -281,10 +275,10 @@ void AliPicoV0Base::FillLambdaPtInvM(TH2D *h)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0Base::FillAntiLaPtInvM(TH2D *h)
+void AliPicoV0::FillAntiLaPtInvM(TH2D *h)
 {
 //
-//  AliPicoV0Base::FillAntiLaPtInvM
+//  AliPicoV0::FillAntiLaPtInvM
 //
 
   if (!h) return;
@@ -299,10 +293,10 @@ void AliPicoV0Base::FillAntiLaPtInvM(TH2D *h)
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsKaInRapAcc(Double_t dMin, Double_t dMax)
+Bool_t AliPicoV0::IsKaInRapAcc(Double_t dMin, Double_t dMax)
 {
 //
-//  AliPicoV0Base::IsKaInRapAcc
+//  AliPicoV0::IsKaInRapAcc
 //
 
   if (!IsKshort()) return kFALSE;
@@ -310,10 +304,10 @@ Bool_t AliPicoV0Base::IsKaInRapAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsLaInRapAcc(Double_t dMin, Double_t dMax)
+Bool_t AliPicoV0::IsLaInRapAcc(Double_t dMin, Double_t dMax)
 {
 //
-//  AliPicoV0Base::IsLaInRapAcc
+//  AliPicoV0::IsLaInRapAcc
 //
 
   if (!(IsLambda() || IsAntiLa())) return kFALSE;
@@ -321,10 +315,10 @@ Bool_t AliPicoV0Base::IsLaInRapAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsV0InEtaAcc(Double_t dMin, Double_t dMax)
+Bool_t AliPicoV0::IsV0InEtaAcc(Double_t dMin, Double_t dMax)
 {
 //
-//  AliPicoV0Base::IsV0InEtaAcc
+//  AliPicoV0::IsV0InEtaAcc
 //
 
   Double_t dEta = KineRD().Eta();
@@ -334,10 +328,10 @@ Bool_t AliPicoV0Base::IsV0InEtaAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0Base::IsDausInEtaAcc(Double_t dMin, Double_t dMax)
+Bool_t AliPicoV0::IsDausInEtaAcc(Double_t dMin, Double_t dMax)
 {
 //
-//  AliPicoV0Base::IsDausInEtaAcc
+//  AliPicoV0::IsDausInEtaAcc
 //
 
   Double_t dPosEta = fP3Pos.Eta(); if ((dPosEta<dMin) || (dPosEta>=dMax)) return kFALSE;
@@ -347,62 +341,62 @@ Bool_t AliPicoV0Base::IsDausInEtaAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-Double_t AliPicoV0Base::RapidityKa()
+Double_t AliPicoV0::RapidityKa()
 {
 //
-//  AliPicoV0Base::RapidityKa
+//  AliPicoV0::RapidityKa
 //
 
-  TLorentzVector v; v.SetVectM(KineRD(), fgkMassKshort);
+  TLorentzVector v; v.SetVectM(KineRD(), AliPicoBase::MassKshort());
   return v.Rapidity();
 }
 
 //_____________________________________________________________________________
-Double_t AliPicoV0Base::RapidityLa()
+Double_t AliPicoV0::RapidityLa()
 {
 //
-//  AliPicoV0Base::RapidityLa
+//  AliPicoV0::RapidityLa
 //
 
-  TLorentzVector v; v.SetVectM(KineRD(), fgkMassLambda);
+  TLorentzVector v; v.SetVectM(KineRD(), AliPicoBase::MassLambda());
   return v.Rapidity();
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0Base::KineKshort()
+TLorentzVector AliPicoV0::KineKshort()
 {
 //
-//  AliPicoV0Base::KineKshort
+//  AliPicoV0::KineKshort
 //
 
-  TLorentzVector vPos; vPos.SetVectM(fP3Pos, fgkMassPion);
-  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, fgkMassPion);
+  TLorentzVector vPos; vPos.SetVectM(fP3Pos, AliPicoBase::MassPion());
+  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, AliPicoBase::MassPion());
 
   return (vPos + vNeg);
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0Base::KineLambda()
+TLorentzVector AliPicoV0::KineLambda()
 {
 //
-//  AliPicoV0Base::KineLambda
+//  AliPicoV0::KineLambda
 //
 
-  TLorentzVector vPos; vPos.SetVectM(fP3Pos, fgkMassProton);
-  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, fgkMassPion);
+  TLorentzVector vPos; vPos.SetVectM(fP3Pos, AliPicoBase::MassProton());
+  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, AliPicoBase::MassPion());
 
   return (vPos + vNeg);
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0Base::KineAntiLa()
+TLorentzVector AliPicoV0::KineAntiLa()
 {
 //
-//  AliPicoV0Base::KineAntiLa
+//  AliPicoV0::KineAntiLa
 //
 
-  TLorentzVector vPos; vPos.SetVectM(fP3Pos, fgkMassPion);
-  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, fgkMassProton);
+  TLorentzVector vPos; vPos.SetVectM(fP3Pos, AliPicoBase::MassPion());
+  TLorentzVector vNeg; vNeg.SetVectM(fP3Neg, AliPicoBase::MassProton());
 
   return (vPos + vNeg);
 }

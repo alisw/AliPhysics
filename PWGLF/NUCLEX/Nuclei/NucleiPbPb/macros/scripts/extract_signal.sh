@@ -7,8 +7,7 @@ else
 .L src/RooGausExp.cxx+
 .L src/RooGausDExp.cxx+
 .L src/FitModules.cxx+
-.x Signal.C+g
+.x Signal.cc+g
 EOF
 
 fi
-

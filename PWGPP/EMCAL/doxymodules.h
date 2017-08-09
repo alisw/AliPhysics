@@ -43,10 +43,10 @@
  *
  * Time Calibration code
  * ---------------------
- * + macro1.C
- * + macro2.C
- * + macro3.C
- *
+ * + copyFiles.sh
+ * + MakeReferenceFinalPass.C
+ * + MakeReferencePass1.C
+ * + MakeReferenceSM.C
  *
  * Bad Channel Analysis code
  * ---------------------

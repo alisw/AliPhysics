@@ -349,12 +349,6 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) || // LHC15n
-      (fCurrentRun >= 252235 && fCurrentRun <= 264347)) { // 2016 samples
-    SetupRun2pp();
-    return;
-  }
-
   /// Run 2 Pb-Pb
   if ( fCurrentRun >= 244917 && fCurrentRun <= 256145 ) {
     SetupLHC15o();
@@ -370,6 +364,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
   if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
+    return;
+  }
+
+  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) || // 2015 5+13 TeV sample
+      (fCurrentRun >= 252235 && fCurrentRun <= 264347) || // 2016 13 TeV sample
+      (fCurrentRun >= 270531)) {                          //TODO: put end of 2017 13 TeV sample
+    SetupRun2pp();
     return;
   }
 
@@ -602,6 +603,7 @@ void AliEventCuts::SetupLHC11h() {
 }
 
 void AliEventCuts::SetupRun2pA(int iPeriod) {
+  ::Info("AliEventCuts::SetupRun2pA","Event cuts for pA are being set on top of Run2 pp standard selections.");
   /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
   SetupRun2pp();
   /// p--Pb requires nsigma cuts on primary vertex

@@ -1,7 +1,7 @@
 TF1* GetEtaCorrection(){
   TString list=gSystem->Getenv("LIST");
 
-  TString etaMap="$TRAIN_ROOT/hfe_HFE/EtaCorrMapsTest.root";
+  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
@@ -35,6 +35,7 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   int nTOFsigma = static_cast<int>(TOFs*10);
   int nITSsigma = static_cast<int>(ITSs*10);
 
+  printf("File opened: %s\n", in->GetName());
   printf("Getting hadron background for the sigma cut: %d\n", isig);
   printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
   printf("Getting hadron background for ITS sigma (INTEGER*10): %d\n", nITSsigma);
@@ -301,7 +302,12 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     Bool_t status = kTRUE;
     TF1 *hBackground[12];                                                                                // TOF sigma and ITS sigma added
     status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);
-    for(Int_t a=0;a<12;a++) {
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_attempt19072017.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 19/07/2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_22072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 22/07/2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017
+   // status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
+
+  for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
       else printf("not all background functions found\n");

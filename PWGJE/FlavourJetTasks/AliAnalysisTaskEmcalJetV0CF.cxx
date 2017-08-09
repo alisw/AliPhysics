@@ -26,19 +26,19 @@ fKaCutNS(0.),
 fLaCutNS(0.),
 fV0CutMinEta(0.),
 fV0CutMaxEta(0.),
-fEventAOD(0),
-fEventESD(0),
-fCentInfo(0),
-fJetsContRD(0),
-fTracksContRD(0),
-fCaloClustersContRD(0),
-fJetsContMC(0),
-fTracksContMC(0),
-fV0s(0),
-fHistoKshortInvM(0),
-fHistoLambdaInvM(0),
-fHistoAntiLaInvM(0),
-fListUserOutputs(0)
+fEventAOD(nullptr),
+fEventESD(nullptr),
+fCentInfo(nullptr),
+fJetsContRD(nullptr),
+fTracksContRD(nullptr),
+fCaloClustersContRD(nullptr),
+fJetsContMC(nullptr),
+fTracksContMC(nullptr),
+fV0s(nullptr),
+fHistoKshortInvM(nullptr),
+fHistoLambdaInvM(nullptr),
+fHistoAntiLaInvM(nullptr),
+fListUserOutputs(nullptr)
 {
 //
 //  AliAnalysisTaskEmcalJetV0CF::AliAnalysisTaskEmcalJetV0CF
@@ -52,19 +52,19 @@ fKaCutNS(6.),
 fLaCutNS(6.),
 fV0CutMinEta(-10.),
 fV0CutMaxEta(10.),
-fEventAOD(0),
-fEventESD(0),
-fCentInfo(0),
-fJetsContRD(0),
-fTracksContRD(0),
-fCaloClustersContRD(0),
-fJetsContMC(0),
-fTracksContMC(0),
-fV0s(0),
-fHistoKshortInvM(0),
-fHistoLambdaInvM(0),
-fHistoAntiLaInvM(0),
-fListUserOutputs(0)
+fEventAOD(nullptr),
+fEventESD(nullptr),
+fCentInfo(nullptr),
+fJetsContRD(nullptr),
+fTracksContRD(nullptr),
+fCaloClustersContRD(nullptr),
+fJetsContMC(nullptr),
+fTracksContMC(nullptr),
+fV0s(nullptr),
+fHistoKshortInvM(nullptr),
+fHistoLambdaInvM(nullptr),
+fHistoAntiLaInvM(nullptr),
+fListUserOutputs(nullptr)
 {
 //
 //  AliAnalysisTaskEmcalJetV0CF::AliAnalysisTaskEmcalJetV0CF
@@ -72,7 +72,7 @@ fListUserOutputs(0)
 
   AliAnalysisTaskEmcal::fGeneralHistograms = bHistos;
 
-  DefineOutput(2, TList::Class());
+  DefineOutput(bHistos ? 2 : 1, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -82,24 +82,24 @@ AliAnalysisTaskEmcalJetV0CF::~AliAnalysisTaskEmcalJetV0CF()
 //  AliAnalysisTaskEmcalJetV0CF::~AliAnalysisTaskEmcalJetV0CF
 //
 
-  if (fEventAOD) { delete fEventAOD; fEventAOD = 0; }
-  if (fEventESD) { delete fEventESD; fEventESD = 0; }
-  if (fCentInfo) { delete fCentInfo; fCentInfo = 0; }
+  if (fEventAOD) { delete fEventAOD; fEventAOD = nullptr; }
+  if (fEventESD) { delete fEventESD; fEventESD = nullptr; }
+  if (fCentInfo) { delete fCentInfo; fCentInfo = nullptr; }
 
-  if (fJetsContRD)         { delete fJetsContRD;         fJetsContRD         = 0; }
-  if (fTracksContRD)       { delete fTracksContRD;       fTracksContRD       = 0; }
-  if (fCaloClustersContRD) { delete fCaloClustersContRD; fCaloClustersContRD = 0; }
+  if (fJetsContRD)         { delete fJetsContRD;         fJetsContRD         = nullptr; }
+  if (fTracksContRD)       { delete fTracksContRD;       fTracksContRD       = nullptr; }
+  if (fCaloClustersContRD) { delete fCaloClustersContRD; fCaloClustersContRD = nullptr; }
 
-  if (fJetsContMC)   { delete fJetsContMC;   fJetsContMC   = 0; }
-  if (fTracksContMC) { delete fTracksContMC; fTracksContMC = 0; }
+  if (fJetsContMC)   { delete fJetsContMC;   fJetsContMC   = nullptr; }
+  if (fTracksContMC) { delete fTracksContMC; fTracksContMC = nullptr; }
 
-  if (fV0s) { delete fV0s; fV0s = 0; }
+  if (fV0s) { delete fV0s; fV0s = nullptr; }
 
-  if (fHistoKshortInvM) { delete fHistoKshortInvM; fHistoKshortInvM = 0; }
-  if (fHistoLambdaInvM) { delete fHistoLambdaInvM; fHistoLambdaInvM = 0; }
-  if (fHistoAntiLaInvM) { delete fHistoAntiLaInvM; fHistoAntiLaInvM = 0; }
+  if (fHistoKshortInvM) { delete fHistoKshortInvM; fHistoKshortInvM = nullptr; }
+  if (fHistoLambdaInvM) { delete fHistoLambdaInvM; fHistoLambdaInvM = nullptr; }
+  if (fHistoAntiLaInvM) { delete fHistoAntiLaInvM; fHistoAntiLaInvM = nullptr; }
 
-  if (fListUserOutputs) { delete fListUserOutputs; fListUserOutputs = 0; }
+  if (fListUserOutputs) { delete fListUserOutputs; fListUserOutputs = nullptr; }
 }
 
 //_____________________________________________________________________________
@@ -135,7 +135,7 @@ void AliAnalysisTaskEmcalJetV0CF::UserCreateOutputObjects()
   fListUserOutputs = new TList();
   fListUserOutputs->SetOwner();
   CreateUserOutputHistograms();
-  PostData(2, fListUserOutputs);
+  PostData(fCreateHisto ? 2 : 1, fListUserOutputs);
   return;
 }
 
@@ -253,32 +253,31 @@ void AliAnalysisTaskEmcalJetV0CF::CreateUserOutputHistograms()
 
   if (!fListUserOutputs) return;
 
-  Bool_t bStatusTmpH = TH1::AddDirectoryStatus();
+  const auto b(TH1::AddDirectoryStatus());
   TH1::AddDirectory(kFALSE);
 
-  const Int_t nV0 = 8; // 0: particle type
-                       //    ==0, Kshort
-                       //    ==1, Lambda
-                       //    ==2, AntiLa
-                       // 1: Jet pT bin
-                       //    == 0.5, jet pT>10.
-                       //    == 1.5, jet pT>15.
-                       //    == 2.5, jet pT>20.
-                       //    == 3.5, jet pT>25.
-                       // 2: V0M
-                       // 3: V0A
-                       // 4: CL1
-                       // 5: ZNA
-                       // 6: eta
-                       // 7: Pt
+  const Int_t nV0(8); // 0: particle type
+                      //    ==0, Kshort
+                      //    ==1, Lambda
+                      //    ==2, AntiLa
+                      // 1: Jet pT bin
+                      //    == 0.5, jet pT>10.
+                      //    == 1.5, jet pT>15.
+                      //    == 2.5, jet pT>20.
+                      //    == 3.5, jet pT>25.
+                      // 2: V0M
+                      // 3: V0A
+                      // 4: CL1
+                      // 5: ZNA
+                      // 6: eta
+                      // 7: Pt
   const Int_t    nV0Bin[nV0] = {  3,   4,  210,  210,  210,  210, 100, 1000  };
   const Double_t dV0Min[nV0] = { -0.5, 0., -10., -10., -10., -10., -5.,   0. };
   const Double_t dV0Max[nV0] = {  2.5, 4., 200., 200., 200., 200.,  5., 100. };
+  fListUserOutputs->Add(new THnSparseD("hsReco", "", nV0, nV0Bin, dV0Min, dV0Max));
+  fListUserOutputs->Add(new THnSparseD("hsKine", "", nV0, nV0Bin, dV0Min, dV0Max));
 
-  THnSparseD *hsReco = new THnSparseD("hsReco", "", nV0, nV0Bin, dV0Min, dV0Max); fListUserOutputs->Add(hsReco);
-  THnSparseD *hsKine = new THnSparseD("hsKine", "", nV0, nV0Bin, dV0Min, dV0Max); fListUserOutputs->Add(hsKine);
-
-  TH1::AddDirectory(bStatusTmpH);
+  TH1::AddDirectory(b);
   return;
 }
 
@@ -292,81 +291,58 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillRecoInfo()
   if (!fV0s) return kTRUE;
 //=============================================================================
 
-  Double_t dV0M = fCentInfo->GetCentralityPercentile("V0M");
-  Double_t dV0A = fCentInfo->GetCentralityPercentile("V0A");
-  Double_t dCL1 = fCentInfo->GetCentralityPercentile("CL1");
-  Double_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
+  const auto dV0M(fCentInfo->GetCentralityPercentile("V0M"));
+  const auto dV0A(fCentInfo->GetCentralityPercentile("V0A"));
+  const auto dCL1(fCentInfo->GetCentralityPercentile("CL1"));
+  const auto dZNA(fCentInfo->GetCentralityPercentile("ZNA"));
 
-  THnSparseD *hs = dynamic_cast<THnSparseD*>(fListUserOutputs->FindObject("hsReco"));
-  if (!hs)
-    return kTRUE;  // should not happen; make Coverity happen
+  auto hs(static_cast<THnSparseD*>(fListUserOutputs->FindObject("hsReco")));
 //=============================================================================
 
-  AliPicoV0MC *pV0 = 0;
-  for (Int_t i=0; i<fV0s->GetEntriesFast(); i++) {
-    pV0 = static_cast<AliPicoV0MC*>(fV0s->At(i)); if (!pV0) continue;
+  for (auto i=0; i<fV0s->GetEntriesFast(); ++i) {
+    const auto pV0(static_cast<AliPicoV0MC*>(fV0s->At(i))); if (!pV0) continue;
 
-    if (!pV0->IsV0PhysicalPrimary()) { pV0 = 0; continue; }
-    if (!pV0->IsV0InEtaAcc(fV0CutMinEta,fV0CutMaxEta)) { pV0 = 0; continue; }
+    if (!pV0->IsV0PhysicalPrimary()) continue;
+    if (!pV0->IsV0InEtaAcc(fV0CutMinEta,fV0CutMaxEta)) continue;
 
-    TVector3 vV0 = pV0->KineMC().Vect();
-    Double_t dPt = vV0.Pt();
+    const auto bKshort(pV0->IsKshort());
+    const auto bLambda(pV0->IsLambda());
+    const auto bAntiLa(pV0->IsAntiLa());
+    if (!(bKshort || bLambda || bAntiLa)) continue;
+//=============================================================================
+
+    const auto vV0(pV0->KineMC().Vect());
+    const auto dPt(vV0.Pt());
+
+    auto histo(fHistoKshortInvM);
+    if (bLambda) histo = fHistoLambdaInvM;
+    if (bAntiLa) histo = fHistoAntiLaInvM;
+
+    const auto k(histo->FindBin(dPt)); if (k<=0) continue;
+    const auto dMean(histo->GetBinContent(k));
+    const auto dSigma(histo->GetBinError(k));
+
+    const auto dCutNS(bKshort ? fKaCutNS : fLaCutNS);
+    const auto dUpperL(dMean - (dCutNS * dSigma));
+    const auto dLowerR(dMean + (dCutNS * dSigma));
+
+    auto dInvM(pV0->KineKshort().M());
+    if (bLambda) dInvM = pV0->KineLambda().M();
+    if (bAntiLa) dInvM = pV0->KineAntiLa().M();
+    if ((dInvM<dUpperL) || (dInvM>=dLowerR)) continue;
+//=============================================================================
+
     Double_t dVar[8];
-
-    dVar[0] = -1.;
-    if (pV0->IsKshort()) {
-      Int_t k = fHistoKshortInvM->FindBin(dPt); if (k<=0) { pV0 = 0; continue; }
-
-      Double_t dMean  = fHistoKshortInvM->GetBinContent(k);
-      Double_t dSigma = fHistoKshortInvM->GetBinError(k);
-
-      Double_t dUpperL = dMean - (fKaCutNS * dSigma);
-      Double_t dLowerR = dMean + (fKaCutNS * dSigma);
-
-      Double_t dInvM = pV0->KineKshort().M();
-      if ((dInvM<dUpperL) || (dInvM>=dLowerR)) { pV0 = 0; continue; }
-      
-      dVar[0] = 0.;
-    }
-
-    if (pV0->IsLambda()) {
-      Int_t k = fHistoLambdaInvM->FindBin(dPt); if (k<=0) { pV0 = 0; continue; }
-
-      Double_t dMean  = fHistoLambdaInvM->GetBinContent(k);
-      Double_t dSigma = fHistoLambdaInvM->GetBinError(k);
-
-      Double_t dUpperL = dMean - (fLaCutNS * dSigma);
-      Double_t dLowerR = dMean + (fLaCutNS * dSigma);
-
-      Double_t dInvM = pV0->KineLambda().M();
-      if ((dInvM<dUpperL) || (dInvM>=dLowerR)) { pV0 = 0; continue; }
-      
-      dVar[0] = 1.;
-    }
-
-    if (pV0->IsAntiLa()) {
-      Int_t k = fHistoAntiLaInvM->FindBin(dPt); if (k<=0) { pV0 = 0; continue; }
-
-      Double_t dMean  = fHistoAntiLaInvM->GetBinContent(k);
-      Double_t dSigma = fHistoAntiLaInvM->GetBinError(k);
-
-      Double_t dUpperL = dMean - (fLaCutNS * dSigma);
-      Double_t dLowerR = dMean + (fLaCutNS * dSigma);
-
-      Double_t dInvM = pV0->KineAntiLa().M();
-      if ((dInvM<dUpperL) || (dInvM>=dLowerR)) { pV0 = 0; continue; }
-
-      dVar[0] = 2.;
-    }
-
-    if (dVar[0]<-0.5) { pV0 = 0; continue; }
+    if (bKshort) dVar[0] = 0.;
+    if (bLambda) dVar[0] = 1.;
+    if (bAntiLa) dVar[0] = 2.;
 
     dVar[1] = -1.;
     if (IsV0InJet(vV0,10.)) dVar[1] = 0.5;
     if (IsV0InJet(vV0,15.)) dVar[1] = 1.5;
     if (IsV0InJet(vV0,20.)) dVar[1] = 2.5;
     if (IsV0InJet(vV0,25.)) dVar[1] = 3.5;
-    if (dVar[1]<0.) { pV0 = 0; continue; }
+    if (dVar[1]<0.) continue;
 
     dVar[2] = dV0M;
     dVar[3] = dV0A;
@@ -377,9 +353,8 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillRecoInfo()
     dVar[7] = dPt;
 
     hs->Fill(dVar);
-
-    pV0 = 0;
   }
+//=============================================================================
 
   return kFALSE;
 }
@@ -391,46 +366,57 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillKineInfo()
 //  AliAnalysisTaskEmcalJetV0CF::FillKineInfo
 //
 
-  Double_t dV0M = fCentInfo->GetCentralityPercentile("V0M");
-  Double_t dV0A = fCentInfo->GetCentralityPercentile("V0A");
-  Double_t dCL1 = fCentInfo->GetCentralityPercentile("CL1");
-  Double_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
+  const auto dV0M(fCentInfo->GetCentralityPercentile("V0M"));
+  const auto dV0A(fCentInfo->GetCentralityPercentile("V0A"));
+  const auto dCL1(fCentInfo->GetCentralityPercentile("CL1"));
+  const auto dZNA(fCentInfo->GetCentralityPercentile("ZNA"));
 
-  THnSparseD *hs = dynamic_cast<THnSparseD*>(fListUserOutputs->FindObject("hsKine"));
-  if (!hs) {
-    return kTRUE; // Should not happen; make Coverity happy
+  auto hs(dynamic_cast<THnSparseD*>(fListUserOutputs->FindObject("hsKine")));
+//=============================================================================
+
+  AliStack *pStack(nullptr);
+
+  if (fEventESD) {
+    pStack = MCEvent()->Stack();
+    if (!pStack) return kTRUE;
   }
 //=============================================================================
 
-  AliStack *pStack = 0;
-  if (fEventESD) { pStack = MCEvent()->Stack(); if (!pStack) return kTRUE; }
+  for (Int_t i=0; i<MCEvent()->GetNumberOfTracks(); ++i) {
+    TParticle *pESD(nullptr);
+    AliMCParticle *pTmp(nullptr);
+    AliAODMCParticle *pAOD(nullptr);
+
+    if (fEventAOD) {
+      pAOD = static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(i));
+      if (!pAOD) continue;
+    }
+
+    if (fEventESD) {
+      pTmp = static_cast<AliMCParticle*>(MCEvent()->GetTrack(i));
+      if (!pTmp) continue;
+
+      pESD = pTmp->Particle();
+      if (!pESD) continue;
+    }
 //=============================================================================
 
-  TParticle        *pESD = 0;
-  AliAODMCParticle *pAOD = 0;
-  for (Int_t i=0; i<MCEvent()->GetNumberOfTracks(); i++) {
-    if (fEventAOD) { pAOD = (AliAODMCParticle*)MCEvent()->GetTrack(i);              if (!pAOD) continue; }
-    if (fEventESD) { pESD =   ((AliMCParticle*)MCEvent()->GetTrack(i))->Particle(); if (!pESD) continue; }
+    const auto bPhy(pAOD ? pAOD->IsPhysicalPrimary() : pStack->IsPhysicalPrimary(i));
+    if (bPhy) continue;
 
-    Bool_t bPhy = kFALSE;
-    if (pAOD) bPhy =   pAOD->IsPhysicalPrimary();
-    if (pESD) bPhy = pStack->IsPhysicalPrimary(i);
-    if (!bPhy) { pAOD=0; pESD=0; continue; }
+    const auto dEta(pAOD ? pAOD->Eta() : pESD->Eta());
+    if ((dEta<fV0CutMinEta) || (dEta>=fV0CutMaxEta)) continue;
+//=============================================================================
 
-    Double_t  dEta = 0.;
-    if (pAOD) dEta = pAOD->Eta();
-    if (pESD) dEta = pESD->Eta();
-    if ((dEta<fV0CutMinEta) || (dEta>=fV0CutMaxEta)) { pAOD=0; pESD=0; continue; }
+    Double_t dVar[8];
+    const auto id(pAOD ? pAOD->GetPdgCode() : pESD->GetPdgCode());
 
-    Int_t id = 0;
-    if (pAOD) id = pAOD->GetPdgCode();
-    if (pESD) id = pESD->GetPdgCode();
-
-    Double_t dVar[8]; dVar[0] = -1.;
+    dVar[0] = -1.;
     if (id== 310 ) dVar[0] = 0.;
     if (id== 3122) dVar[0] = 1.;
     if (id==-3122) dVar[0] = 2.;
-    if (dVar[0]<-0.5) { pAOD=0; pESD=0; continue; }
+    if (dVar[0]<-0.5) continue;
+//=============================================================================
 
     TVector3 vV0;
     if (pAOD) vV0.SetXYZ(pAOD->Px(), pAOD->Py(), pAOD->Pz());
@@ -441,7 +427,8 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillKineInfo()
     if (IsV0InJet(vV0,15.)) dVar[1] = 1.5;
     if (IsV0InJet(vV0,20.)) dVar[1] = 2.5;
     if (IsV0InJet(vV0,25.)) dVar[1] = 3.5;
-    if (dVar[1]<0.) { pAOD=0; pESD=0; continue; }
+    if (dVar[1]<0.) continue;
+//=============================================================================
 
     dVar[2] = dV0M;
     dVar[3] = dV0A;
@@ -451,10 +438,8 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillKineInfo()
     if (pAOD) dVar[7] = pAOD->Pt();
     if (pESD) dVar[7] = pESD->Pt();
     hs->Fill(dVar);
-
-    pAOD = 0;
-    pESD = 0;
   }
+//=============================================================================
 
   return kFALSE;
 }
@@ -470,16 +455,18 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::IsV0InJet(TVector3 vV0, Double_t dJetPtMin)
 //=============================================================================
 
   TVector3 vJet;
-  Double_t dJetRadius = fJetsContRD->GetJetRadius();
+  const auto dJetRadius(fJetsContRD->GetJetRadius());
+
   fJetsContRD->ResetCurrentID();
-  AliEmcalJet *pJet = fJetsContRD->GetNextAcceptJet(); while (pJet) {
-    Double_t dPt = fJetsContRD->GetJetPtCorr(fJetsContRD->GetCurrentID());
+  auto pJet(fJetsContRD->GetNextAcceptJet()); while (pJet) {
+    const auto dPt(fJetsContRD->GetJetPtCorr(fJetsContRD->GetCurrentID()));
     if (dPt<dJetPtMin) { pJet = fJetsContRD->GetNextAcceptJet(); continue; }
 
     vJet.SetPtEtaPhi(dPt, pJet->Eta(), pJet->Phi());
     if (vJet.DeltaR(vV0)<dJetRadius) return kTRUE;
     pJet = fJetsContRD->GetNextAcceptJet();
   }
+//=============================================================================
 
   return kFALSE;
 }

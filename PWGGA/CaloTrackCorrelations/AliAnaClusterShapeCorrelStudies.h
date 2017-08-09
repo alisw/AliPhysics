@@ -450,6 +450,10 @@ public:
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20  
   TH3F *   fhNCellsPerClusterNLM  [3];           //!<! N cells per cluster vs cluster energy vs nlm  
+
+  TH3F *   fhNCellsPerClusterM02PerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs m02, per SM, per odd/even col
+  TH3F *   fhNCellsPerClusterM20PerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs m20, per SM, per odd/even col  
+  TH3F *   fhNCellsPerClusterNLMPerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs nlm, per SM, per odd/even col  
   
   TH3F *   fhNCellsPerClusterMEta    [3];         //!<! N cells per cluster vs cluster energy vs shape in eta direction
   TH3F *   fhNCellsPerClusterMPhi    [3];         //!<! N cells per cluster vs cluster energy vs shape in phi direction

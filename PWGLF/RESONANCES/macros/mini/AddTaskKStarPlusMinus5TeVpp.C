@@ -1,5 +1,5 @@
 /***************************************************************************
-//            Modified by Pragati Sahoo - 8/3/2017
+//            Modified by Pragati Sahoo - 4/8/2017
 //            Modified by Enrico Fragiacomo - 15/01/2014
 //            Based on AddAnalysisTaskRsnMini
 //
@@ -23,6 +23,19 @@ enum eventMixConfig { kDisabled = -1,
 		      k5Cent,          //=2 //10 events, Dvz = 1cm, DC = 5
 };
 
+enum eventCutSet { kEvtDefault=0,
+		   kNoPileUpCut, //=1
+		   kDefaultVtx12,//=2
+		   kDefaultVtx8, //=3
+		   kDefaultVtx5, //=4
+		   kMCEvtDefault, //=5
+		   kSpecial1, //=6
+		   kSpecial2, //=7
+		   kNoEvtSel, //=8
+		   kSpecial3, //=9
+		   kSpecial4, //=10
+		   kSpecial5 //=11
+};
 
 AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
 (
@@ -30,6 +43,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Bool_t      isPP,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Float_t     cutV = 10.0,
+ Int_t       evtCutSetID = 1,
+ Bool_t      isGT = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  Bool_t      enableSys = kFALSE,
@@ -70,6 +85,14 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                   
   if(isMC) rejectPileUp=kFALSE;
   
+  //   cout<<"EVENTCUTID is    "<<evtCutSetID<<endl;                                                                                        
+  if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm                                                                              
+  if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm                                                                                
+  if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm                                                                                
+  if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
+
+
+
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
@@ -95,6 +118,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);                   
    //   task->SelectCollisionCandidates(triggerMask);                                                                       
+   
+   if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
+    
+
+
+
    task->UseESDTriggerMask(triggerMask);
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -118,15 +148,29 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
+     // For Signal loss************************
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
-   cutVertex->SetCheckZResolutionSPD();
-   cutVertex->SetCheckDispersionSPD(); 
-   cutVertex->SetCheckZDifferenceSPDTrack();
+   if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel ){
+     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+     if(evtCutSetID!=eventCutSet::kSpecial3){
+       cutVertex->SetCheckZResolutionSPD();
+       cutVertex->SetCheckDispersionSPD();
+       cutVertex->SetCheckZDifferenceSPDTrack();
+     }
+     if(evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
+   }
+
+
+
+   AliRsnCutEventUtils* cutEventUtils=0;
+   cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);  
+   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3)
+     {
+       cutEventUtils->SetCheckIncompleteDAQ();
+       cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+     }
    
-   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-   cutEventUtils->SetCheckIncompleteDAQ();
-   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-   
+
    if(!isMC){ //assume pp data
      cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup                                                                  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
@@ -194,7 +238,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix,ptDep,pt1,pt2)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC,isGT, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix,ptDep,pt1,pt2)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

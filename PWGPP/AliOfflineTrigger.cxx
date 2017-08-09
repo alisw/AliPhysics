@@ -578,6 +578,11 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
   TFile * finput = TFile::Open(rawFile);
   if (finput==NULL){
     ::Info(" AliOfflineTrigger::ExtractSelected", "File %s not exist or not accessible within TimeOut %d", rawFile, fDefaultTimeOut);
+    return;
+  }
+  if (finput->IsOpen()==kFALSE || finput->IsZombie()){
+    ::Info(" AliOfflineTrigger::ExtractSelected", "File %s not accessible within TimeOut %d", rawFile, fDefaultTimeOut);
+    return;
   }
   TTree *itree=dynamic_cast<TTree*>(finput->Get("RAW"));
   if (finput==NULL){
