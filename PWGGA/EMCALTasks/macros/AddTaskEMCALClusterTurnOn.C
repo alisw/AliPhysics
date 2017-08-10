@@ -111,7 +111,6 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetPhiClBinning(PhiClBin);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
-  task->SetCaloTriggerPatchInfoName("EmcalTriggers");
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
