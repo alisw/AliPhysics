@@ -134,6 +134,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                             fJetRadius;
   Float_t                             fSubjetRadius;
   Int_t                               fSelectedShapes;                //chose set of shapes
+  Int_t                               fSwitchKtNSub;
+   Int_t                              fSwitchMinNSub;
+    Int_t                             fSwitchAktNSub;
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
