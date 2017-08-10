@@ -177,8 +177,10 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
     fZvtxBins[iBin] = 0.;
     fCentBins[iBin] = 0.;
   }
-  for (Int_t i = 0; i < 6; i++) {
+  for (Int_t i = 0; i < 3; i++) {
     tPrimaryVtxPosition[i] = 0;
+  }
+  for (Int_t i = 0; i < 6; i++) {
     fHistPosNsig[i] = 0;
     fHistNegNsig[i] = 0;
   }
@@ -325,8 +327,10 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
           fZvtxBins[iBin] = 0.;
           fCentBins[iBin] = 0.;
         }
-        for (Int_t i = 0; i < 6; i++) {
+        for (Int_t i = 0; i < 3; i++) {
           tPrimaryVtxPosition[i] = 0;
+	}
+	for (Int_t i = 0; i < 6; i++) {
           fHistPosNsig[i] = 0;
           fHistNegNsig[i] = 0;
 
@@ -1049,6 +1053,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
   UInt_t maskIsSelected = inEvMain->IsEventSelected();
   Bool_t isSelected     = kFALSE;
   isSelected = ((maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7);
+  
   if (!isSelected)  return;
   fHist_Stat->Fill(2);
 
@@ -1361,6 +1366,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::MakeAna() {
     if(lCentrality>=40. && lCentrality<60.) SP_uTPC2[SpAssoc]->Fill(pt,uQ,1);
     if(lCentrality>=60. && lCentrality<100.) SP_uTPC3[SpAssoc]->Fill(pt,uQ,1);
   }
+
+  
   /*
     if(fAnaMode=="TPCV0A" || fAnaMode=="SPDV0A") {
       if(imod>31) selectedTracksAssociated->Add(new
@@ -1841,12 +1848,12 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
 
     Bool_t fTOFV0=kTRUE;
     
-    if(fTOFV0 && myTrackPos->Pt()>0.3 && !fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, myTrackPos) == 0){
+    if(fTOFV0 && myTrackPos->Pt()>0.3 && fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, myTrackPos) != 0){
       bpPion=bpPion && bpPion_tof;
       bpProton=bpProton && bpProton_tof;
     }
     
-    if(fTOFV0 && myTrackNeg->Pt()>0.3 && !fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, myTrackNeg) == 0){
+    if(fTOFV0 && myTrackNeg->Pt()>0.3 && fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, myTrackNeg) != 0){
       bnPion=bnPion && bnPion_tof;
       bnProton=bnProton && bnProton_tof;
     }
@@ -2563,16 +2570,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
       if (!associate)        continue;
       Int_t AssoFirstID = associate->GetIDFirstDaughter();
       Int_t AssoSecondID = associate->GetIDSecondDaughter();
-
       /*
+      
       if(triggerEta<=0){
 	if(associate->Eta()<=0) continue;
       }else if(triggerEta>0){
 	if(associate->Eta()>0) continue;
       }
-      */
-
       
+      */
       if (fasso == "V0" || fasso == "Phi"){
         if (trigID == AssoFirstID || trigID == AssoSecondID){
 	  continue;
@@ -2700,7 +2706,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
         for (Int_t j = 0; j < mixEvents->GetEntriesFast(); j++) {
           AliAssociatedTrackYS *associate =  (AliAssociatedTrackYS *)mixEvents->At(j);
           if (!associate) continue;
-	  /*
+	  /*  
 	  if(triggerEta<=0){
 	    if(associate->Eta()<=0) continue;
 	  }else if(triggerEta>0){
