@@ -286,7 +286,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 14);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 15);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
