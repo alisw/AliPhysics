@@ -467,7 +467,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliJetContainer::antikt_algorithm,
                               AliJetContainer::pt_scheme,
                               jetradius,
-                              AliEmcalJet::kEMCALfid,
+                              isData ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
                               particles, nullptr);
     mcjets->SetName("mcjets");
     mcjets->SetJetPtCut(20.);
