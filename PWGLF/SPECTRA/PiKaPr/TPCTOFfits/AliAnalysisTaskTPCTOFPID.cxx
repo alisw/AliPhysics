@@ -334,9 +334,10 @@ Bool_t AliAnalysisTaskTPCTOFPID::SelectVertex2015pp(AliESDEvent *esd,  Bool_t *S
     }
   }
 
+  //Not needed here, done separately
   //Cut on the vertex z position
-  const AliESDVertex * vertex = esd->GetPrimaryVertex();
-  if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
+  //const AliESDVertex * vertex = esd->GetPrimaryVertex();
+  //if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
   return kTRUE;
 };
 
