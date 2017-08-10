@@ -150,7 +150,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	if (!fSubsidiaryHandlers || fSubsidiaryHandlers->GetEntries()<ib) AddSubsidiaryHandler(new AliMCEventHandler());
 	// if needed, add subsidiary handlers
 	AliMCEventHandler* hs = (AliMCEventHandler*)fSubsidiaryHandlers->At(ib);
-	TString pth = embBKGPaths->At(ib)->GetName();
+	TString pth = gSystem->DirName(embBKGPaths->At(ib)->GetName());
 	// check if the path is relative
 	if ( !pth.BeginsWith("/") && !pth.BeginsWith("alien://")) {
 	  TString pths = fPathName->Data();
