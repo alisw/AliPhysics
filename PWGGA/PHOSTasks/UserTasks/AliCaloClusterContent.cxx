@@ -117,7 +117,6 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
     fCellTime.push_back(dCellTime);
     }
 
-
   fIsFilled = kTRUE;
 }
 
