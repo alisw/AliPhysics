@@ -60,6 +60,9 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fJetRadius(0.4),
   fSubjetRadius(0.2),
   fSelectedShapes(0),
+  fSwitchKtNSub(0), 
+  fSwitchMinNSub(0),
+  fSwitchAktNSub(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -99,7 +102,10 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fJetSelection(kInclusive),
   fPtThreshold(-9999.),
   fRMatching(0.2),
-  fSelectedShapes(0), 
+  fSelectedShapes(0),
+  fSwitchKtNSub(0), 
+  fSwitchMinNSub(0),
+  fSwitchAktNSub(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -412,18 +418,22 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
       //nsub1 and nsub2 for kT
-      fShapesVar[6] = fjNSubJettiness(jet1,0,1,0,1,0);
-      fShapesVar[7] = fjNSubJettiness(jet1,0,2,0,1,0);
+      fShapesVar[6] = 0;
+      if(fSwitchKtNSub==1) fShapesVar[6]=fjNSubJettiness(jet1,0,1,0,1,0);
+      fShapesVar[7] = 0;
+      if(fSwitchKtNSub==1) fShapesVar[7]=fjNSubJettiness(jet1,0,2,0,1,0);
+   
       //nsub1 and nsub2 for min_axis
       fShapesVar[8] =0;
-      //fjNSubJettiness(jet1,0,1,10,1,0);
+      if(fSwitchMinNSub==1) fShapesVar[8]=fjNSubJettiness(jet1,0,1,10,1,0);
       fShapesVar[9] = 0;
-      //fjNSubJettiness(jet1,0,2,10,1,0);
+      if(fSwitchMinNSub==1) fShapesVar[9]=fjNSubJettiness(jet1,0,2,10,1,0);
       //nsub1 and nsub2 for akt
       fShapesVar[10] = 0;
-      //fjNSubJettiness(jet1,0,1,10,1,0);
+       if(fSwitchAktNSub==1) fShapesVar[10]=fjNSubJettiness(jet1,0,1,10,1,0);
       fShapesVar[11] =0;
-      //fjNSubJettiness(jet1,0,2,10,1,0);
+      if(fSwitchAktNSub==1) fShapesVar[11]=fjNSubJettiness(jet1,0,2,10,1,0);
+     
     
       //SoftDropParameters for different reclustering strategies and beta values 
       SoftDrop(jet1,jetCont,0.1,0,0);
@@ -1163,7 +1173,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
   //Int_t nConstituents(fClustSeqSA->constituents(finaljet).size());
   //jet->SetNumberOfTracks(nConstituents);
-  Double_t SymParam, Mu, DeltaR, GroomedPt;
+  Double_t SymParam, Mu, DeltaR, GroomedPt,GroomedMass;
   Int_t NGroomedBranches;
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
   Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
