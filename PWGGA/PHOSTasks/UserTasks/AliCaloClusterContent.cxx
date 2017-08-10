@@ -13,7 +13,7 @@ ClassImp(AliCaloClusterContent)
 AliCaloClusterContent::AliCaloClusterContent():
   fType(0),
   fCellsAbsId(0),
-  frelID(),
+//  frelID(),
   fLabel(0),
   fNCells(0),
   fNTracksMatched(0),
@@ -46,7 +46,7 @@ AliCaloClusterContent::AliCaloClusterContent():
 AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom):
   fType(0),
   fCellsAbsId(0),
-  relID(),
+//  relID(),
   fLabel(0),
   fNCells(0),
   fNTracksMatched(0),
@@ -99,7 +99,6 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
     Int_t irelIDCell[4] = {0};
     fgeom ->AbsToRelNumbering(iCellAbsId, irelIDCell);
 
-    frelID =
     Int_t iMod, iDetector, icellX, icellZ;
     iMod      = irelIDCell[0];
     iDetector = irelIDCell[1];
