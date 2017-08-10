@@ -43,6 +43,7 @@
 #include <TString.h>
 #include <TClonesArray.h>
 #include <TDirectoryFile.h>
+#include <TGrid.h>
 
 ClassImp(AliMCEventHandler)
 
@@ -133,6 +134,9 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     //
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
+    if (fPathName->BeginsWith("alien://") && !gGrid && !TGrid::Connect("alien://")) {
+      AliFatal("Failed to connect to alien");
+    }
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) {
       AliError(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
