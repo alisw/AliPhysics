@@ -438,7 +438,10 @@ void AliTRDcalibDB::Invalidate()
   }
 
   fOnlineGainTableID = 0;
-
+  // Invalidate cached TRAP config
+  fTrapConfigName="";
+  fTrapConfigVersion="";
+  fTrapConfig=0;
 }
 
 //_____________________________________________________________________________
