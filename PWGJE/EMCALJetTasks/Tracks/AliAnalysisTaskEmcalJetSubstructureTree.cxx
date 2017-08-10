@@ -54,7 +54,7 @@
 #include "AliVParticle.h"
 
 /// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree)
+ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
 /// \endcond
 
 namespace EmcalTriggerJets {
@@ -66,7 +66,11 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString("")
+    fTriggerSelectionString(""),
+    fRhoNamePtRec("RhoSparse_Full_R04"),
+    fRhoNameMassRec("RhoMassSparse_Full_R04"),
+    fRhoNamePtSim("RhoSparse_Part_R04"),
+    fRhoNameMassSim("RhoMassSparse_Part_R04")
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
@@ -78,7 +82,11 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString("")
+    fTriggerSelectionString(""),
+    fRhoNamePtRec("RhoSparse_Full_R04"),
+    fRhoNameMassRec("RhoMassSparse_Full_R04"),
+    fRhoNamePtSim("RhoSparse_Part_R04"),
+    fRhoNameMassSim("RhoMassSparse_Part_R04")
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
   DefineOutput(2, TTree::Class());
@@ -145,10 +153,10 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
-  AliRhoParameter *rhoPtRec = GetRhoFromEvent("RhoSparse_Full_R04"),
-                  *rhoMassRec = GetRhoFromEvent("RhoMassSparse_Full_R04"),
-                  *rhoPtSim = GetRhoFromEvent("RhoSparse_Part_R04"),
-                  *rhoMassSim = GetRhoFromEvent("RhoMassSparse_Part_R04");
+  AliRhoParameter *rhoPtRec = GetRhoFromEvent(fRhoNamePtRec),
+                  *rhoMassRec = GetRhoFromEvent(fRhoNameMassRec),
+                  *rhoPtSim = GetRhoFromEvent(fRhoNamePtSim),
+                  *rhoMassSim = GetRhoFromEvent(fRhoNameMassSim);
 
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
