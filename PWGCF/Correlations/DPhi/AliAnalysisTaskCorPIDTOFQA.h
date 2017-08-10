@@ -61,31 +61,34 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 m2_pt_pos_cut_T;             // 18
 	TH2F*                 m2_pt_neg_cut_T;             // 19
 
-	TH2F*                 deut_phi_pt_pos;             // 20
-	TH2F*                 deut_phi_pt_neg;             // 21
-	
-//	TH2F*                 deut_q2_pt_pos_pos;          // 22
-//	TH2F*                 deut_q2_pt_pos_neg;          // 23
-//	TH2F*                 deut_q2_pt_neg_neg;          // 24
+	TH2F*                 deut_phi_pt;                 // 20
+	TH2F*                 deut_phi_pt_pos;             // 21
+	TH2F*                 deut_phi_pt_neg;             // 22
 
-	TH2F*                 deut_phi_pt;                 // 25
-	TH2F*                 trig_05_phi_pt;              // 26a
-	TH2F*                 trig_05_phi_pt_pos;          // 26b
-	TH2F*                 trig_05_phi_pt_neg;          // 26c
+	TH2F*                 trig_05_phi_pt;              // 23
+	TH2F*                 trig_05_phi_pt_pos;          // 24
+	TH2F*                 trig_05_phi_pt_neg;          // 25
 	
-	TH2F*                 trig_08_phi_pt;              // 27a
-	TH2F*                 trig_08_phi_pt_pos;          // 27b
-	TH2F*                 trig_08_phi_pt_neg;          // 27c
+	TH2F*                 trig_08_phi_pt;              // 26
+	TH2F*                 trig_08_phi_pt_pos;          // 27
+	TH2F*                 trig_08_phi_pt_neg;          // 28
 	
-	TH2F*                 deut_dphi_pt_pos_pos_05;     // 28
-	TH2F*                 deut_dphi_pt_pos_neg_05;     // 29
-	TH2F*                 deut_dphi_pt_neg_neg_05;     // 30
+	TH2F*                 deut_dphi_pt_pos_pos_05;     // 29
+	TH2F*                 deut_dphi_pt_pos_neg_05;     // 30
+	TH2F*                 deut_dphi_pt_neg_neg_05;     // 31
 
 	
-	TH2F*                 deut_dphi_pt_pos_pos_08;     // 31
-	TH2F*                 deut_dphi_pt_pos_neg_08;     // 32
-	TH2F*                 deut_dphi_pt_neg_neg_08;     // 33
+	TH2F*                 deut_dphi_pt_pos_pos_08;     // 32
+	TH2F*                 deut_dphi_pt_pos_neg_08;     // 33
+	TH2F*                 deut_dphi_pt_neg_neg_08;     // 34
 
+	TH1F*                 phi_01;                      // 35
+	TH1F*                 phi_02;                      // 36
+	TH1F*                 phi_03;                      // 37
+	TH1F*                 phi_04;                      // 38
+	TH1F*                 phi_05;                      // 39
+	TH1F*                 phi_06;                      // 40
+	
 //	TH2F*                 track_cor_radius_pt;         // 34
 //	TH2F*                 track_cor_radius_pt_cut;     // 35
 	
