@@ -2539,7 +2539,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                   PiPlPiMiPiZeroBackgroundCandidate = 0x0;
                 }
               }
+              if(PiPlPiMiPiZeroBackgroundCandidate!=0x0){
+                  delete PiPlPiMiPiZeroBackgroundCandidate;
+                  PiPlPiMiPiZeroBackgroundCandidate = 0x0;
+              }
             } // end pi- loop
+            if(PiPlPiZeroBackgroundCandidate!=0x0){
+                delete PiPlPiZeroBackgroundCandidate;
+                PiPlPiZeroBackgroundCandidate = 0x0;
+            }
         } // end pi+ loop
       } // end loop over all pi- event
     } // end loop over pi+ events
@@ -2608,7 +2616,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
               PiPlPiMiPiZeroBackgroundCandidate = 0x0;
             }
           }
+          if(PiPlPiMiPiZeroBackgroundCandidate!=0x0){
+              delete PiPlPiMiPiZeroBackgroundCandidate;
+              PiPlPiMiPiZeroBackgroundCandidate = 0x0;
+          }
         } // End loop pi- (from current event)
+        if(PiPlPiZeroBackgroundCandidate!=0x0){
+            delete PiPlPiZeroBackgroundCandidate;
+            PiPlPiZeroBackgroundCandidate = 0x0;
+        }
       } // End loop pi+
     } // end loop over pi+ events
 
@@ -2680,8 +2696,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
               PiPlPiMiPiZeroBackgroundCandidate = 0x0;
             }
           }
-        } // End loop pi- (from current event)
-      } // End loop pi+
+          if(PiPlPiMiPiZeroBackgroundCandidate!=0x0){
+              delete PiPlPiMiPiZeroBackgroundCandidate;
+              PiPlPiMiPiZeroBackgroundCandidate = 0x0;
+          }
+        } // End loop pi+ (from current event)
+        if(PiMiPiZeroBackgroundCandidate!=0x0){
+            delete PiMiPiZeroBackgroundCandidate;
+            PiMiPiZeroBackgroundCandidate = 0x0;
+        }
+      } // End loop pi-
     } // end loop over pi+ events
   } //end loop pi0 candidates
 }
