@@ -15,7 +15,8 @@ class AliReducedTrackCut : public AliReducedVarCut {
   AliReducedTrackCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedTrackCut();
 
-  void SetRejectKinks(Bool_t flag=kTRUE) {fRejectKinks = flag;}
+  void SetRejectKinkDaughters(Bool_t flag=kTRUE) {fRejectKinkDaughters = flag;}
+  void SetRejectKinkMothers(Bool_t flag=kTRUE) {fRejectKinkMothers = flag;}
   void SetRejectTaggedGamma(Bool_t flag = kTRUE) {fRejectTaggedGamma = flag;}
   void SetRejectTaggedPureGamma(Bool_t flag = kTRUE) {fRejectTaggedPureGamma = flag;}
   void SetRequestITSrefit(Bool_t flag = kTRUE) {fRequestITSrefit = flag;}
@@ -28,7 +29,8 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
   void SetRequestTRDmatch(Bool_t flag = kTRUE) {fRequestTRDonlineMatch = flag;}
   
-  Bool_t GetRejectKinks() const {return fRejectKinks;}
+  Bool_t GetRejectKinkDaughters() const {return fRejectKinkDaughters;}
+  Bool_t GetRejectKinkMothers() const {return fRejectKinkMothers;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
   Bool_t GetRejectTaggedPureGamma() const {return fRejectTaggedPureGamma;}
   Bool_t GetRequestITSrefit() const {return fRequestITSrefit;}
@@ -46,7 +48,8 @@ class AliReducedTrackCut : public AliReducedVarCut {
       
   // Cuts on track specific quantities
   // global track quantities
-  Bool_t    fRejectKinks;                       // if true, reject kinks
+  Bool_t    fRejectKinkDaughters;    // if true, reject kink daguhters
+  Bool_t    fRejectKinkMothers;    // if true, reject kink mothers
   Bool_t    fRejectTaggedGamma;       // if true, reject tagged gamma conversions
   Bool_t    fRejectTaggedPureGamma;  // if true, reject only the high purity tagged gamma conversions
    

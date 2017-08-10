@@ -19,7 +19,8 @@ ClassImp(AliReducedTrackCut)
 //____________________________________________________________________________
 AliReducedTrackCut::AliReducedTrackCut() :
   AliReducedVarCut(),
-  fRejectKinks(kFALSE),
+  fRejectKinkDaughters(kFALSE),
+  fRejectKinkMothers(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
   fRequestITSrefit(kFALSE),
@@ -38,7 +39,8 @@ AliReducedTrackCut::AliReducedTrackCut() :
 //____________________________________________________________________________
 AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) :
   AliReducedVarCut(name, title),
-  fRejectKinks(kFALSE),
+  fRejectKinkDaughters(kFALSE),
+  fRejectKinkMothers(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
   fRequestITSrefit(kFALSE),
@@ -95,8 +97,8 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
          if(!fUseANDonITShitMap && (eval==0)) return kFALSE;
       }
    }
-   //if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0) || ((AliReducedBaseTrack*)obj)->IsKink(1) || ((AliReducedBaseTrack*)obj)->IsKink(2))) return kFALSE;
-   if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0))) return kFALSE;
+   if( fRejectKinkDaughters && (((AliReducedBaseTrack*)obj)->IsKinkDaughter(0)) ) return kFALSE;
+   if(fRejectKinkMothers && (((AliReducedBaseTrack*)obj)->IsKinkMother(0)) ) return kFALSE;
    if(fRejectTaggedGamma && ((AliReducedBaseTrack*)obj)->IsGammaLeg()) return kFALSE;
    if(fRejectTaggedPureGamma && ((AliReducedBaseTrack*)obj)->IsPureGammaLeg()) return kFALSE;
    if(fRequestTRDonlineMatch && !((AliReducedBaseTrack*)obj)->IsTRDmatch()) return kFALSE;
