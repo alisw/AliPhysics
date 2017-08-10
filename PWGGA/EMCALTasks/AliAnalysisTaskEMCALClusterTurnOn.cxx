@@ -134,6 +134,7 @@ fOutTHnS_Clust(0)
     // for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
@@ -206,6 +207,7 @@ fOutTHnS_Clust(0)
     //    for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
@@ -334,6 +336,14 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     fPtaftFC->Sumw2();
     fOutput->Add(fPtaftFC);
   
+    hPatchADC = new TH1D("hPatchADC","L1 ADC per patch distribution; ADC", 500,0.,500.);
+    hPatchADC->Sumw2();
+    fOutput->Add(hPatchADC); 
+
+    fADCvsEall = new TH2D("hADCvsEall","ADC vs Patch Energy; ADC; E",400,0.,400.,200,0.,100.);
+    fADCvsEall->Sumw2();
+    fOutput->Add(fADCvsEall);
+
 //  fVz = new TH1D("hVz_NC","Vertex Z distribution",100,-50.,50.);
 //  fVz->Sumw2();
 //  fOutput->Add(fVz);
@@ -355,10 +365,6 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
 //  fADCvsEonline = new TH2D("hADCvsEonline","online ADC vs Patch Energy; ADC; E",400,0.,400.,200,0.,100.);
 //  fADCvsEonline->Sumw2();
 //  fOutput->Add(fADCvsEonline);
-
-  hPatchADC = new TH1D("hPatchADC","L1 ADC per patch distribution; ADC", 500,0.,500.);
-  hPatchADC->Sumw2();
-  fOutput->Add(hPatchADC); 
 
   hmaxADC = new TH2D("hmaxPatchADC_E_L1","L1 max ADC vs patch energy distribution; ADC; E (GeV)", 1000,0.,2000.,100,0.,100.);
   hmaxADC->Sumw2();
@@ -383,10 +389,6 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   fL1triggered = new TH1D("hL1triggered","leading Cluster of L1 triggered Events;#it{E}_{T} (GeV);counts",200,0.,100.);
   fL1triggered->Sumw2();
   fOutput->Add(fL1triggered);
-
-  fADCvsEall = new TH2D("hADCvsEall","ADC vs Patch Energy; ADC; E",400,0.,400.,200,0.,100.);
-  fADCvsEall->Sumw2();
-  fOutput->Add(fADCvsEall);
 
   fPt_trig = new TH2D("hPt_trig",";#it{E}_{T} (GeV);trigger class;Rejection",100,0.,100.,1,0.,1.);
   #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -523,14 +525,14 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       AliEMCALTriggerPatchInfo *pti = static_cast<AliEMCALTriggerPatchInfo*>(triPatchInfo->At(ip));
       if(!pti) continue;
       if(!pti->IsEMCal()) continue;
-      fADCvsEall->Fill(pti->GetADCAmp(),pti->GetPatchE());
+      if(fQA) fADCvsEall->Fill(pti->GetADCAmp(),pti->GetPatchE());
       if(pti->IsLevel0Recalc() && maxL0ADC < pti->GetADCAmp()){
         maxL0ADC = pti->GetADCAmp();
         E_of_maxL0 = pti->GetPatchE();
       }
       if(pti->IsLevel0Recalc() && pti->GetADCAmp() > 106) isL0recalc = kTRUE;
       if(!pti->IsRecalcGamma()) continue;
-      hPatchADC->Fill(pti->GetADCAmp());
+      if(fQA) hPatchADC->Fill(pti->GetADCAmp());
       if(maxADC<pti->GetADCAmp()){
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
@@ -579,7 +581,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(coiTOF< -30. || coiTOF > 30.){
       continue;
     } 
-    if(E_of_maxADC<8.5) fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
+    if(E_of_maxADC<8.4 && isL1) fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
     if(vecCOI.E()>veclclus.E()) veclclus = vecCOI;
   }
   if(veclclus.E() > 10.) fEventsover10->Fill(0);
@@ -731,8 +733,8 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliVCluster *coi,TLorentz
     Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
     Int_t c_eta = 0;
     Int_t c_phi = 0;
-//    outputValues[0] = coi->E();
-//    outputValues[1] = RejectedAt;
+    outputValues[0] = coi->E();
+    outputValues[1] = RejectedAt;
 //    outputValues_clus[0] = vecCOI.Et();
 //    outputValues_clus[1] = RejectedAt;
 //    outputValues_clus[2] = vecCOI.Eta();
