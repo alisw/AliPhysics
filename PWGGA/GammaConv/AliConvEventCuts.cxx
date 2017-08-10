@@ -1899,9 +1899,15 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(esdEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
-      if(fDetectorCentrality==0){
-	                               return MultSelection->GetMultiplicityPercentile("V0M",kTRUE); // default for pPb
-      }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      if(!MultSelection){
+	AliWarning ("AliMultSelection object not found !");
+	return -1;
+      }else{
+	if(fDetectorCentrality==0){
+	  if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+	  else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
+	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      }    
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
@@ -1915,8 +1921,15 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(aodEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
-      if(fDetectorCentrality==0) return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
-      else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      if(!MultSelection){
+	AliWarning ("AliMultSelection object not found !");
+	return -1;
+      } else{
+	if(fDetectorCentrality==0){
+	  if(fIsHeavyIon==2)           return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+	  else                         return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
     }
