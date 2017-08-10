@@ -1170,33 +1170,34 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   GroomedPt=finaljet.perp();
+  GroomedMass=finaljet.m();
   if(beta==0){
   if(ReclusterAlgo==0){
   fShapesVar[12]=SymParam;
   fShapesVar[13]=DeltaR;
   fShapesVar[14]=GroomedPt;
   fShapesVar[15]=NGroomedBranches;
-  fShapesVar[16]=Mu;}
+  fShapesVar[16]=GroomedMass;}
    if(ReclusterAlgo==1){
   fShapesVar[17]=SymParam;
   fShapesVar[18]=DeltaR;
   fShapesVar[19]=GroomedPt;
   fShapesVar[20]=NGroomedBranches;
-  fShapesVar[21]=Mu; }
+  fShapesVar[21]=GroomedMass; }
 
      if(ReclusterAlgo==2){
   fShapesVar[22]=SymParam;
   fShapesVar[23]=DeltaR;
   fShapesVar[24]=GroomedPt;
   fShapesVar[25]=NGroomedBranches;
-  fShapesVar[26]=Mu;
+  fShapesVar[26]=GroomedMass;
      }}
   if(beta==1){
      fShapesVar[27]=SymParam;
   fShapesVar[28]=DeltaR;
   fShapesVar[29]=GroomedPt;
   fShapesVar[30]=NGroomedBranches;
-  fShapesVar[31]=Mu;
+  fShapesVar[31]=GroomedMass;
   }
 
    if(beta==2){
@@ -1204,7 +1205,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[33]=DeltaR;
   fShapesVar[34]=GroomedPt;
   fShapesVar[35]=NGroomedBranches;
-  fShapesVar[36]=Mu; }
+  fShapesVar[36]=GroomedMass; }
 
   
   return;
