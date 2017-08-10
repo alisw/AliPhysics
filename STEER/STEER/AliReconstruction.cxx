@@ -3628,6 +3628,24 @@ Bool_t AliReconstruction::InitRunLoader()
   TFile *gafile = TFile::Open(fGAliceFileName.Data());
   //  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
   if (gafile) { // galice.root exists
+
+    // check if we are in bg.embedding mode, if needed, add MCHandler
+    TObjArray* embBKGPaths = 0;
+    gafile->GetObject(AliStack::GetEmbeddingBKGPathsKey(),embBKGPaths);
+    if (embBKGPaths) {
+      AliInfo("Embedding mode autodetected");
+      if (fMCEventHandlerExt) {
+	AliInfo("MCEvent handler was set externally, skip internal initialization");
+      }
+      else {
+	AliMCEventHandler* mcHandler = new AliMCEventHandler();
+	mcHandler->SetPreReadMode(AliMCEventHandler::kLmPreRead);
+	mcHandler->SetReadTR(kFALSE);
+	SetMCEventHandler(mcHandler);
+      }
+      delete embBKGPaths;
+    }
+
     gafile->Close();
     delete gafile;
 
@@ -3653,6 +3671,7 @@ Bool_t AliReconstruction::InitRunLoader()
     fRunLoader->LoadHeader();
     fRunLoader->LoadKinematics();
 
+    
   } else {               // galice.root does not exist
     if (!fRawReader) {
       AliError(Form("the file %s does not exist", fGAliceFileName.Data()));
