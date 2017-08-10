@@ -250,7 +250,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt;       // histos with reconstructed validated pi0 pi+  from omega, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt;     // histos with reconstructed validated pi0 pi+  from eta, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt;       // histos with reconstructed validated pi0 pi+  from rho0, invariant mass, pT
-    TH2F**                          fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt;       // histos with reconstructed validated pi0 pi+  from rho0, invariant mass, pT
+    TH2F**                          fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt;       // histos with reconstructed validated pi0 pi+  from K0l, invariant mass, pT
+    TH2F**                          fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt;  // histos with reconstructed validated pi+pi-pi0 that are pure combinatorical (do not share a mother)
+    TH2F**                          fHistoTruePiPlPiMiPiZeroContaminationInvMassPt;       // histos with reconstructed pi+pi-pi0 that are not actually pions
 
     TH2F**                          fHistoDoubleCountTruePi0InvMassPt;                    //! array of histos with double counted pi0s, invMass, pT
     TH2F**                          fHistoDoubleCountTrueEtaInvMassPt;                    //! array of histos with double counted etas, invMass, pT

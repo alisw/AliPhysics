@@ -178,6 +178,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt(NULL),
   fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt(NULL),
   fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt(NULL),
+  fHistoTruePiPlPiMiPiZeroContaminationInvMassPt(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
   fHistoDoubleCountTrueOmegaInvMassPt(NULL),
@@ -331,6 +333,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt(NULL),
   fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt(NULL),
   fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(NULL),
+  fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt(NULL),
+  fHistoTruePiPlPiMiPiZeroContaminationInvMassPt(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
   fHistoDoubleCountTrueOmegaInvMassPt(NULL),
@@ -788,6 +792,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt          = new TH2F*[fnCuts];
       fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt            = new TH2F*[fnCuts];
       fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt            = new TH2F*[fnCuts];
+      fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt       = new TH2F*[fnCuts];
+      fHistoTruePiPlPiMiPiZeroContaminationInvMassPt            = new TH2F*[fnCuts];
       if (fDoMesonQA>1){
         fTrueTreeList                                           = new TList*[fnCuts];
         fTreePiPiSameMother                                     = new TTree*[fnCuts];
@@ -955,6 +961,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
         fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut]);
         fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt",2000,0.,2.,200,0.,20.);
         fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]);
+        fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiPiZeroPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiPiZeroPureCombinatorical_InvMassPt",2000,0.,2.,200,0.,20.);
+        fTrueList[iCut]->Add(fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt[iCut]);
+        fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiPiZeroContamination_InvMassPt","ESD_TruePiPlPiMiPiZeroContamination_InvMassPt",2000,0.,2.,200,0.,20.);
+        fTrueList[iCut]->Add(fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[iCut]);
         if(fDoMesonQA>1){
           fTrueTreeList[iCut]                               = new TList();
           fTrueTreeList[iCut]->SetName(nameTrueRecTTreeList.Data());
@@ -2815,6 +2825,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
     } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 310){
       // pi+pi- come from K0 short
       fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 130){
+      // pi+pi- come from K0 short
+      fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     } else{
       // pi+pi- come from something else
       if(fDoMesonQA>1){
@@ -2837,6 +2850,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
     } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                ==-213){
       // pi0pi- come from rho-
       fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                == 130){
+      // pi0pi- come from rho-
+      fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     } else{
       // pi0pi- come from something else
       if(fDoMesonQA>1){
@@ -2859,6 +2875,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
     } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 213) {
       // pi+pi0 come from rho+
       fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 130) {
+      // pi+pi0 come from rho+
+      fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     } else{
       // pi+pi0 come from something else
       if(fDoMesonQA>1){
@@ -2872,10 +2891,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
       }
     }
   } else if(isNoSameMother  &&  (fDoMesonQA>0 )){
-    // no same mother
+    // no same mother purecombinatorical
+    fHistoTruePiPlPiMiPiZeroPureCombinatoricalInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
   } else if(isNoPiPiPi  &&  (fDoMesonQA>0 )){
-    // no pi pi pi decay
+    // no pi pi pi decay contamination
+    fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     // investigate here what was missmatched (?)
+
   }
 }
 
