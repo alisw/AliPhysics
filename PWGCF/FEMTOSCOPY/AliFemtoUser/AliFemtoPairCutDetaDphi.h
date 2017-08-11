@@ -218,7 +218,9 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const Float_t dEta = fabs(CalculateDEta(p1, p2)),
                 dPhi = fabs(CalculateDPhiStar(p1, charge1, p2, charge2, fR, fCurrentMagneticField));
 
-  bool passes;
+  // Initialize to false - so if fCutTechnique is invalid, all pairs
+  // will fail and user will eventually find this comment.
+  bool passes = false;
   switch (fCutTechnique) {
   case Simple:
     passes = PassesSimple(dEta, dPhi);
