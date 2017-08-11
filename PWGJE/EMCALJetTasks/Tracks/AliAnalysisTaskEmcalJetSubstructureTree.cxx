@@ -188,6 +188,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   if(mcjets && !datajets) {
     // pure MC (gen) train - run over MC jets
+    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
     for(auto jet : mcjets->accepted()) {
       try {
         AliJetSubstructureData structure = MakeJetSubstructure(*jet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
@@ -374,8 +375,8 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
 
 AliNSubjettinessParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const {
   AliNSubjettinessParameters result({
-    fastjet::contrib::Nsubjettiness (1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta,cut.fRadius)).result(jet),
-    fastjet::contrib::Nsubjettiness (2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta,cut.fRadius)).result(jet)
+    fastjet::contrib::Nsubjettiness (1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta, cut.fRadius)).result(jet),
+    fastjet::contrib::Nsubjettiness (2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta, cut.fRadius)).result(jet)
   });
   return result;
 }
@@ -456,11 +457,11 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree("JetSubstructureTreemaker_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger);
   mgr->AddTask(treemaker);
   treemaker->SetMakeGeneralHistograms(kTRUE);
-  treemaker->SetVzRange(-10., 10);
 
   // Adding containers
   if(isMC) {
     AliParticleContainer *particles = treemaker->AddMCParticleContainer("mcparticles");
+    particles->SetMinPt(0.);
 
     AliJetContainer *mcjets = treemaker->AddJetContainer(
                               AliJetContainer::kFullJet,
@@ -490,6 +491,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     datajets->SetJetPtCut(20.);
 
     treemaker->SetUseAliAnaUtils(true, true);
+    treemaker->SetVzRange(-10., 10);
 
     // configure trigger selection
     TString triggerstring(trigger);
