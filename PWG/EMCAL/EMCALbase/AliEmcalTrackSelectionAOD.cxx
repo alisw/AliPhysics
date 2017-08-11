@@ -104,7 +104,7 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   }
 
   fTrackBitmap.ResetAllBits();
-  Int_t cutcounter(0);
+  UInt_t cutcounter(0);
   if (fFilterBits) {
     if(aodt->TestFilterBit(fFilterBits)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
