@@ -398,7 +398,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
   // If not random file access, then start from the beginning
-  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
+  if (fFilenameIndex < 0 || static_cast<UInt_t>(fFilenameIndex) >= fFilenames.size()) {
     // Skip notifying on -1 since it will likely be set there due to constructor.
     if (fFilenameIndex != -1) {
       AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
