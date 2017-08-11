@@ -40,7 +40,7 @@ Float_t AliAnalysisPIDEvent::fgTimeZeroSpread = 196.7;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_AND_sigma = 3.87264325235363032e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_A_sigma = 8.27180042372880706e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_C_sigma = 9.73209262235003933e+01;
-Int_t AliAnalysisPIDEvent::fgFlagToCheck = 63;
+Int_t AliAnalysisPIDEvent::fgFlagToCheck = 29;
 
 //___________________________________________________________
 
