@@ -859,8 +859,13 @@ void AliPIPEv3::CreateGeometry()
       new TGeoTube(kRB24CuTubeRi, kRB24CuTubeRo, kRB24CuTubeL/2.), kMedCuH);
   voRB24CuTubeM->AddNode(voRB24CuTube, 1, gGeoIdentity);
   // Air outside tube with higher transport cuts
+  new TGeoTube("shRB24CuTubeA_mother", 25., 100., (kRB24CuTubeL - 144.)/2.); // mother air volume
+  new TGeoTube("shRB24CuTubeA_oldADA",  0., 200., 12./2.); // to avoid overlap with old ADA
+  (new TGeoTranslation("trA_oldADA"   ,  0.,   0., (kRB24CuTubeL - 144.)/2. - 73.0))->RegisterYourself();
+
   TGeoVolume* voRB24CuTubeA  = new TGeoVolume("voRB24CuTubeA", 
-					      new TGeoTube(25., 100., (kRB24CuTubeL - 144.)/2.), kMedAirHigh);
+      new TGeoCompositeShape("shRB24CuTubeA", "shRB24CuTubeA_mother-shRB24CuTubeA_oldADA:trA_oldADA"), kMedAirHigh);
+  // voRB24CuTubeA->SetLineColor(kBlue);  // <- for debug.
   voRB24CuTubeA->SetVisibility(0);
   // Simplified DN 100 Flange
   TGeoVolume* voRB24CuTubeF  = new TGeoVolume("voRB24CuTubeF",
