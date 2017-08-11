@@ -1978,7 +1978,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
   vector<Int_t> lGoodNegPionIndexPrev(0);
   vector<Int_t> lGoodPosPionIndexPrev(0);
 
-    for(Int_t i = 0; i < fSelectorNegPionIndex.size(); i++){
+    for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
     AliESDtrack* negPionCandidate = fESDEvent->GetTrack(fSelectorNegPionIndex[i]);
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
     lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
@@ -2017,7 +2017,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
     }
   }
 
-  for(Int_t i = 0; i < fSelectorPosPionIndex.size(); i++){
+  for(UInt_t i = 0; i < fSelectorPosPionIndex.size(); i++){
     AliESDtrack* posPionCandidate = fESDEvent->GetTrack( fSelectorPosPionIndex[i] );
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
     lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
@@ -2057,11 +2057,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
   }
 
 
-  for(Int_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
+  for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliESDtrack *negPionCandidate = fESDEvent->GetTrack(lGoodNegPionIndexPrev[i]);
     AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
 
-    for(Int_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
+    for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliESDtrack *posPionCandidate = fESDEvent->GetTrack(lGoodPosPionIndexPrev[j]);
       AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
 
