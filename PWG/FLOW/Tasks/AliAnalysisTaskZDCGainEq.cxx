@@ -163,6 +163,11 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fHist_ZDCC_AvgQy_VsCR(NULL),
   fHist_ZDCA_AvgQx_VsCR(NULL),
   fHist_ZDCA_AvgQy_VsCR(NULL),
+  fHist_PsiSumAC_ZeroQn(NULL),
+  fHist_PsiZDCA_ZeroQn(NULL),
+  fHist_PsiZDCC_ZeroQn(NULL),
+  fHist_ZDC_dTermXXYY_VsRun(NULL),
+  fHist_ZDC_dTermXYXY_VsRun(NULL),
   fDataSet("2010"),
   fAnalysisSet("DoGainEq"),
   sCentEstimator("V0")
@@ -247,6 +252,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
     fHist_ZDCA_AvgSin_VsRun[i]  = NULL;
     fHist_ZDC_AvgCosPsiSum_VsRun[i] = NULL;
     fHist_ZDC_AvgSinPsiSum_VsRun[i] = NULL;
+    fHist_ZDC_AvgCosPsiDif_VsRun[i] = NULL;
+    fHist_ZDC_AvgSinPsiDif_VsRun[i] = NULL;
   }
   for(int i=0;i<2;i++){
     fHist_XXYY_vs_Cent_woCorr[i] = NULL;
@@ -350,6 +357,11 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fHist_ZDCC_AvgQy_VsCR(NULL),
   fHist_ZDCA_AvgQx_VsCR(NULL),
   fHist_ZDCA_AvgQy_VsCR(NULL),
+  fHist_PsiSumAC_ZeroQn(NULL),
+  fHist_PsiZDCA_ZeroQn(NULL),
+  fHist_PsiZDCC_ZeroQn(NULL),
+  fHist_ZDC_dTermXXYY_VsRun(NULL),
+  fHist_ZDC_dTermXYXY_VsRun(NULL),
   fDataSet("2010"),
   fAnalysisSet("DoGainEq"),
   sCentEstimator("V0")
@@ -434,6 +446,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     fHist_ZDCA_AvgSin_VsRun[i]  = NULL;
     fHist_ZDC_AvgCosPsiSum_VsRun[i] = NULL;
     fHist_ZDC_AvgSinPsiSum_VsRun[i] = NULL;
+    fHist_ZDC_AvgCosPsiDif_VsRun[i] = NULL;
+    fHist_ZDC_AvgSinPsiDif_VsRun[i] = NULL;
   }
   for(int i=0;i<2;i++){
     fHist_XXYY_vs_Cent_woCorr[i] = NULL;
@@ -660,6 +674,13 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
   fHist_ZDC_AvgXYplusXY_VsRun = new TProfile2D(Form("fHist_ZDCC_AvgXYplusXY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
   fListHistos->Add(fHist_ZDC_AvgXYplusXY_VsRun);
 
+
+  fHist_ZDC_dTermXXYY_VsRun = new TProfile2D(Form("fHist_ZDC_dTermXXYY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
+  fListHistos->Add(fHist_ZDC_dTermXXYY_VsRun);
+  fHist_ZDC_dTermXYXY_VsRun = new TProfile2D(Form("fHist_ZDC_dTermXXYY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
+  fListHistos->Add(fHist_ZDC_dTermXYXY_VsRun);
+
+
   //Shift histograms: Fill Cos(nPsi) Sin(nPsi) vs Cent,Run
   for(int i=0; i<4; i++){
     fHist_ZDCC_AvgCos_VsRun[i] = new TProfile2D(Form("fHist_ZDC_AvgCos%dPsiC_VsCentRun",i+1),"",60,0,60,90,0,90,""); //cent,run
@@ -676,6 +697,11 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
     fListHistos->Add(fHist_ZDC_AvgCosPsiSum_VsRun[i]);
     fHist_ZDC_AvgSinPsiSum_VsRun[i] = new TProfile2D(Form("fHist_ZDC_AvgSin%dPsi_AplusC_VsCentRun",i+1),"",60,0,60,90,0,90,"");
     fListHistos->Add(fHist_ZDC_AvgSinPsiSum_VsRun[i]);
+
+    fHist_ZDC_AvgCosPsiDif_VsRun[i] = new TProfile2D(Form("fHist_ZDC_AvgCos%dPsi_AminusC_VsCentRun",i+1),"",60,0,60,90,0,90,"");
+    fListHistos->Add(fHist_ZDC_AvgCosPsiDif_VsRun[i]);
+    fHist_ZDC_AvgSinPsiDif_VsRun[i] = new TProfile2D(Form("fHist_ZDC_AvgSin%dPsi_AminusC_VsCentRun",i+1),"",60,0,60,90,0,90,"");
+    fListHistos->Add(fHist_ZDC_AvgSinPsiDif_VsRun[i]);
   }
 
 
@@ -760,6 +786,12 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    fListHistos->Add(fHist_PsiSumAC_wiCorr);
 
 
+  fHist_PsiSumAC_ZeroQn  =  new TH1F("fHist_PsiSumAC_ZeroQn","", 200, 0,2.*TMath::Pi());
+  fListHistos->Add(fHist_PsiSumAC_ZeroQn);
+  fHist_PsiZDCA_ZeroQn   =  new TH1F("fHist_PsiZDCA_ZeroQn"," ", 200, 0,2.*TMath::Pi());
+  fListHistos->Add(fHist_PsiZDCA_ZeroQn);
+  fHist_PsiZDCC_ZeroQn   =  new TH1F("fHist_PsiZDCC_ZeroQn"," ", 200, 0,2.*TMath::Pi());
+  fListHistos->Add(fHist_PsiZDCC_ZeroQn);
 
    TString     sNameQn[4] = {"Xa","Xc","Ya","Yc"};
    TString    sNameQn2[4] = {"XaXc","YaYc","XcYa","YcXa"};
@@ -1809,19 +1841,18 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   xyZNA[0] = -1.*xyZNA[0]; //----- Important: zdcA_X = -zdcA_X ---------
 
 
-
+  /*
   if(sqrt(xyZNC[0]*xyZNC[0] + xyZNC[1]*xyZNC[1])>1.5)  return;
 
   fHist_Event_count->Fill(stepCount);
   stepCount++;
 
   if(sqrt(xyZNA[0]*xyZNA[0] + xyZNA[1]*xyZNA[1])>1.5)  return;
+  */
 
   fHist_Event_count->Fill(stepCount);
   stepCount++;
-
-
-
+ 
   Double_t psi1C = TMath::ATan2(xyZNC[1],xyZNC[0]);
   if(psi1C<0){
      psi1C += 2.*TMath::Pi();
@@ -1829,9 +1860,9 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Double_t psi1A = TMath::ATan2(xyZNA[1],xyZNA[0]);
   if(psi1A<0){
      psi1A += 2.*TMath::Pi();
-  }
+  } 
 
-  /*  if(EvtCent>=5 && EvtCent<=45) {
+  /*if(EvtCent>=5 && EvtCent<=45) {
     fHist_Psi1_ZDCC_wGainCorr->Fill(psi1C);
     fHist_Psi1_ZDCA_wGainCorr->Fill(psi1A);
   }*/
@@ -1940,13 +1971,17 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   xyZNA[0] = vQarray[1].Px();
   xyZNA[1] = vQarray[1].Py();
   
+
+
   Double_t Qvect_ModC = TMath::Sqrt(xyZNC[0]*xyZNC[0] + xyZNC[1]*xyZNC[1]); 
   Double_t Qvect_ModA = TMath::Sqrt(xyZNA[0]*xyZNA[0] + xyZNA[1]*xyZNA[1]); 
 
-  fHist_Event_count->Fill(stepCount);
-  stepCount++;
+  Double_t dTermXXYY = xyZNA[0]*xyZNC[0]  - xyZNA[1]*xyZNC[1];
+  Double_t dTermXYXY = xyZNA[0]*xyZNC[1]  + xyZNA[1]*xyZNC[0];
 
-  if(Qvect_ModC<1.e-6 || Qvect_ModA<1.e-6) return;
+  Double_t Qvect_ModSumAC = TMath::Sqrt(dTermXXYY*dTermXXYY + dTermXYXY*dTermXYXY); 
+
+
 
   fHist_Event_count->Fill(stepCount);
   stepCount++;
@@ -1955,6 +1990,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   if(Psi1C<0){
    Psi1C += 2.*TMath::Pi();
   }
+
   Double_t Psi1A = TMath::ATan2(xyZNA[1],xyZNA[0]);
   if(Psi1A<0){
    Psi1A += 2.*TMath::Pi();
@@ -1966,22 +2002,16 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
    PsiSumAC -= 2.*TMath::Pi();
   }
 
-  /*
-  if(TMath::Cos(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(0.5);
-  if(TMath::Sin(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(2.5);
-  if(TMath::Cos(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(4.5);
-  if(TMath::Sin(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(6.5);
-  if(TMath::Cos(Psi1C) < 1.e-5 && TMath::Sin(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(8.5);
-  if(TMath::Cos(Psi1A) < 1.e-5 && TMath::Sin(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(10.5);
-  if(TMath::Cos(Psi1C) < 1.e-5 && TMath::Sin(Psi1C) < 1.e-5 && TMath::Cos(Psi1A) < 1.e-5 && TMath::Sin(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(12.5); */
 
+  fHist_PsiZDCA_ZeroQn->Fill(Psi1A);
+  fHist_PsiZDCC_ZeroQn->Fill(Psi1C);
+  fHist_PsiSumAC_ZeroQn->Fill(PsiSumAC);
+
+
+  if(Qvect_ModC < 1.e-6 || Qvect_ModA < 1.e-6) return;
+
+  fHist_Event_count->Fill(stepCount);
+  stepCount++;
 
   //Shift Histograms in Vxy binning:
   //if(!bCentCutShift){  }
@@ -1996,6 +2026,9 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
       fHist_ZDC_AvgCosPsiSum_VsRun[i]->Fill(EvtCent,runindex,TMath::Cos((i+1)*(Psi1C+Psi1A)));
       fHist_ZDC_AvgSinPsiSum_VsRun[i]->Fill(EvtCent,runindex,TMath::Sin((i+1)*(Psi1C+Psi1A)));
+
+      fHist_ZDC_AvgCosPsiDif_VsRun[i]->Fill(EvtCent,runindex,TMath::Cos((i+1)*(Psi1C-Psi1A)));
+      fHist_ZDC_AvgSinPsiDif_VsRun[i]->Fill(EvtCent,runindex,TMath::Sin((i+1)*(Psi1C-Psi1A)));
     }    
   }
 
@@ -2087,8 +2120,6 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   }
 
 
-
-
   if(Psi1C<0){
    Psi1C += 2.*TMath::Pi();
   }
@@ -2101,28 +2132,6 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   else if(PsiSumAC>2.*TMath::Pi()){
    PsiSumAC -= 2.*TMath::Pi();
   }
-
-
-  /*
-  if(TMath::Cos(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(1.5);
-  if(TMath::Sin(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(3.5);
-  if(TMath::Cos(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(5.5);
-  if(TMath::Sin(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(7.5);
-  if(TMath::Cos(Psi1C) < 1.e-5 && TMath::Sin(Psi1C) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(9.5);
-  if(TMath::Cos(Psi1A) < 1.e-5 && TMath::Sin(Psi1A) < 1.e-5)
-  fHist_ZeroQnXY_Conter->Fill(11.5);
-  if(TMath::Cos(Psi1C) < 1.e-5 && TMath::Sin(Psi1C) < 1.e-5 && TMath::Cos(Psi1A) < 1.e-5 && TMath::Sin(Psi1A) < 1.e-5){
-  fHist_ZeroQnXY_Conter->Fill(13.5);
-  return;
-  } */
-
-  //if(TMath::Sin(Psi1A) < 1.e-5 && TMath::Sin(Psi1C) < 1.e-5)  return;
-
 
 
 
@@ -2139,6 +2148,11 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     fHist_ZDCA_AvgQy_VsRun->Fill(EvtCent,runindex,xyZNA[1]);
     fHist_ZDC_AvgXXminusYY_VsRun->Fill(EvtCent,runindex,(xyZNC[0]*xyZNA[0] - xyZNC[1]*xyZNA[1]));
     fHist_ZDC_AvgXYplusXY_VsRun->Fill (EvtCent,runindex,(xyZNC[1]*xyZNA[0] + xyZNC[0]*xyZNA[1]));
+
+    dTermXXYY = Qvect_ModSumAC*TMath::Cos(PsiSumAC);
+    dTermXYXY = Qvect_ModSumAC*TMath::Sin(PsiSumAC);
+    fHist_ZDC_dTermXXYY_VsRun->Fill(EvtCent,runindex,dTermXXYY);
+    fHist_ZDC_dTermXYXY_VsRun->Fill (EvtCent,runindex,dTermXYXY);
   }
   else if(bUseTrigonQn){//reconstruct the new ZDC-Qvect with Qn:[-1,1] 
     xyZNC[0] =  TMath::Cos(Psi1C);
@@ -2152,6 +2166,11 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     fHist_ZDCA_AvgQy_VsRun->Fill(EvtCent,runindex,xyZNA[1]);
     fHist_ZDC_AvgXXminusYY_VsRun->Fill(EvtCent,runindex,(xyZNC[0]*xyZNA[0] - xyZNC[1]*xyZNA[1]));
     fHist_ZDC_AvgXYplusXY_VsRun->Fill (EvtCent,runindex,(xyZNC[1]*xyZNA[0] + xyZNC[0]*xyZNA[1]));
+
+    dTermXXYY = TMath::Cos(PsiSumAC);
+    dTermXYXY = TMath::Sin(PsiSumAC);
+    fHist_ZDC_dTermXXYY_VsRun->Fill(EvtCent,runindex,dTermXXYY);
+    fHist_ZDC_dTermXYXY_VsRun->Fill (EvtCent,runindex,dTermXYXY);
   }
 
 
@@ -2162,6 +2181,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     xyZNC[1] -= fHist_ZDCC_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
     xyZNA[0] -= fHist_ZDCA_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
     xyZNA[1] -= fHist_ZDCA_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
+
+    //dTermXXYY -= 0; //To be corrected when I have filled <dTermXXYY> over all events
  }
 
 
@@ -2169,8 +2190,10 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   if(bFillZDCQAon){
 
-    fHist_XXYY_vs_Cent_wiCorr[0]->Fill(EvtCent, xyZNC[0]*xyZNA[0] - xyZNC[1]*xyZNA[1]);
-    fHist_XXYY_vs_Cent_wiCorr[1]->Fill(EvtCent, xyZNC[1]*xyZNA[0] + xyZNC[0]*xyZNA[1]);
+    //fHist_XXYY_vs_Cent_wiCorr[0]->Fill(EvtCent, xyZNC[0]*xyZNA[0] - xyZNC[1]*xyZNA[1]);
+    //fHist_XXYY_vs_Cent_wiCorr[1]->Fill(EvtCent, xyZNC[1]*xyZNA[0] + xyZNC[0]*xyZNA[1]);
+    fHist_XXYY_vs_Cent_wiCorr[0]->Fill(EvtCent, dTermXXYY);
+    fHist_XXYY_vs_Cent_wiCorr[1]->Fill(EvtCent, dTermXYXY);
 
     Double_t  FillVsWithNew[5]  = {EvtCent, fRefMult, Vxyz[0], Vxyz[1], Vxyz[2]};
     Double_t  FillValueQxNew[4] = {xyZNA[0],xyZNC[0],xyZNA[1],xyZNC[1]};
@@ -2269,7 +2292,9 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
      Qny_TPC[1] += dUy*pTwgt;
 
      if(cIndex<6){
-       fullTerm = dUx*(xyZNA[0]*xyZNC[0] - xyZNA[1]*xyZNC[1]) + dUy*(xyZNA[0]*xyZNC[1] + xyZNA[1]*xyZNC[0]);
+       //fullTerm = dUx*(xyZNA[0]*xyZNC[0] - xyZNA[1]*xyZNC[1]) + dUy*(xyZNA[0]*xyZNC[1] + xyZNA[1]*xyZNC[0]);
+       fullTerm = dUx*dTermXXYY + dUy*dTermXYXY;
+
        fHist_v2xV1_ZDN_pTDiff_All[cIndex]->Fill(dPt,fullTerm,pTwgt);
      }
 
@@ -2351,8 +2376,10 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     }
 
 
-    fullTerm = Qnx_TPC[1]*(xyZNA[0]*xyZNC[0] - xyZNA[1]*xyZNC[1]) + Qny_TPC[1]*(xyZNA[0]*xyZNC[1] + xyZNA[1]*xyZNC[0]);
-    fullReso = xyZNA[0]*xyZNC[0] + xyZNA[1]*xyZNC[1];
+    //fullTerm = Qnx_TPC[1]*(xyZNA[0]*xyZNC[0] - xyZNA[1]*xyZNC[1]) + Qny_TPC[1]*(xyZNA[0]*xyZNC[1] + xyZNA[1]*xyZNC[0]);
+    fullTerm = Qnx_TPC[1]*dTermXXYY + Qny_TPC[1]*dTermXYXY;
+
+    fullReso = xyZNA[0]*xyZNC[0] + xyZNA[1]*xyZNC[1]; //no change in Resolution?
 
     fHist_v2xV1_ZDN_Norm_All->Fill( EvtCent, fullTerm, CentWgt);
     fHist_v2xV1_ZDN_Cent_All->Fill( EvtCent, fullTerm, CentWgt);

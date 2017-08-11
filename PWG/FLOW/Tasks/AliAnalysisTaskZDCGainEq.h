@@ -190,6 +190,11 @@ private:
 
   TH1F            *fHist_PsiSumAC_woCorr;  //!
   TH1F            *fHist_PsiSumAC_wiCorr;  //!
+
+  TH1F            *fHist_PsiSumAC_ZeroQn;  //!
+  TH1F            *fHist_PsiZDCA_ZeroQn;  //!
+  TH1F            *fHist_PsiZDCC_ZeroQn;  //!
+
   TH1F            *fHist_ZeroQnXY_Conter;  //!
 
   TProfile      *fHist_Qx_wiCorr_RunByRun[4];  //!
@@ -262,13 +267,18 @@ private:
   TProfile2D      *fHist_ZDC_AvgCosPsiSum_VsRun[4];    //!
   TProfile2D      *fHist_ZDC_AvgSinPsiSum_VsRun[4];    //!
 
+  TProfile2D      *fHist_ZDC_AvgCosPsiDif_VsRun[4];    //!
+  TProfile2D      *fHist_ZDC_AvgSinPsiDif_VsRun[4];    //!
+
   TProfile2D      *fHist_ZDCC_AvgQx_VsRun;    //!
   TProfile2D      *fHist_ZDCC_AvgQy_VsRun;    //!
   TProfile2D      *fHist_ZDCA_AvgQx_VsRun;    //!
   TProfile2D      *fHist_ZDCA_AvgQy_VsRun;    //!
 
-  TProfile2D      *fHist_ZDC_AvgXXminusYY_VsRun;    //!
+  TProfile2D      *fHist_ZDC_AvgXXminusYY_VsRun;   //!
   TProfile2D      *fHist_ZDC_AvgXYplusXY_VsRun;    //!
+  TProfile2D      *fHist_ZDC_dTermXXYY_VsRun;      //!
+  TProfile2D      *fHist_ZDC_dTermXYXY_VsRun;      //!
 
   TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
   TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
