@@ -663,10 +663,12 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     const AliESDVertex *vtx = fESDEvent->GetPrimaryVertexTracks();
     if(!vtx || !vtx->GetStatus())
       vtx = fESDEvent->GetPrimaryVertexSPD();
-    if(vtx->GetStatus()) {
-      Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
-      fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
-    };
+    if(vtx)
+      if(vtx->GetStatus()) {
+	Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
+	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
+      } else
+	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(-8);
     if(track->IsEMCAL()) {
       AliVCluster *lvcl = fESDEvent->GetCaloCluster(track->GetEMCALcluster());
       if(lvcl)
