@@ -68,14 +68,14 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fMaxVertexDist(999),
 
   fInitializedConfiguration(false),
-  fInitializedEmbedding(false),
   fInitializedNewFile(false),
+  fInitializedEmbedding(false),
   fWrappedAroundTree(false),
 
   fTreeName(),
   fAnchorRun(169838),
-  fPtHardBin(-1),
   fNPtHardBins(1),
+  fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
