@@ -16,6 +16,10 @@
 #include "AliMultSelection.h"
 #include "AliAODCentralMult.h"
 #include "AliAODMCParticle.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisDataSlot.h"
+
 
 #include "AliAnalysisC2Utils.h"
 #include "AliAnalysisTaskValidation.h"
@@ -77,6 +81,47 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
 
   // Enable mulivertex pileup cuts
   fEventCuts.fPileUpCutMV = true;
+}
+
+AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *suffix) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskValidation", "No analysis manager to connect to.");
+    return NULL;
+  }
+  
+  AliAnalysisDataContainer *coutput1 =
+    mgr->CreateContainer(Form("event_selection_%s", suffix),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("%s", mgr->GetCommonFileName()));
+
+  AliAnalysisDataContainer *cExchange =
+    mgr->CreateContainer("event_selection_xchange",
+			 AliAnalysisTaskValidation::Class(),
+			 AliAnalysisManager::kExchangeContainer,
+			 Form("%s", mgr->GetCommonFileName()));
+  
+  AliAnalysisTaskValidation *taskValidation = new AliAnalysisTaskValidation("TaskValidation");
+  if (!taskValidation) {
+    ::Error("CreateTasks", "Failed to add task!");
+    return NULL;
+  }
+  mgr->AddTask(taskValidation);
+  AliAnalysisDataContainer *inputContainer = mgr->GetCommonInputContainer();
+  if(!inputContainer) {
+    ::Error("CreateTasks", "No input container available. Failed to add task!");
+    return NULL;
+  }
+  mgr->ConnectInput(taskValidation, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskValidation, 1, coutput1);
+  mgr->ConnectOutput(taskValidation, 2, cExchange);
+  return taskValidation;
+}
+
+AliAnalysisDataContainer* AliAnalysisTaskValidation::GetExchangeContainter() {
+  // This is the container defined in the ConnectTask function
+  return this->GetOutputSlot(2)->GetContainer();
 }
 
 void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
@@ -347,14 +392,13 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetFMDhits() const 
 AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetV0hits() const {
   // Relies on the event being vaild (no extra checks if object exists done here)
   Tracks ret_vector;
-  
-  AliVVZERO* vzero = static_cast<AliAODEvent*>(this->InputEvent())->GetVZEROData();
+  AliVVZERO* vzero = this->InputEvent()->GetVZEROData();
   const Int_t nV0_channels = 64;
   // V0 has no pt resolution!
   Double_t pt = 0;
   for (Int_t ich = 0; ich < nV0_channels; ich++) {
     //vzero->GetMultiplicity(ich);
-    Float_t amp = static_cast<AliAODEvent*>(this->InputEvent())->GetVZEROEqMultiplicity(ich);
+    Float_t amp = this->InputEvent()->GetVZEROEqMultiplicity(ich);
     if (amp > 0) {
       Float_t eta = 0.5 * (vzero->GetVZEROEtaMin(ich) + vzero->GetVZEROEtaMax(ich));
       Float_t phi = vzero->GetVZEROAvgPhi(ich);

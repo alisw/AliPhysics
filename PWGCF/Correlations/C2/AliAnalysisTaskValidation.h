@@ -15,6 +15,11 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskValidation();
   AliAnalysisTaskValidation(const char *name);
+
+  /// Set up this task. This function acts as the AddTask macro
+  static AliAnalysisTaskValidation* ConnectTask(const char *suffix);
+  /// The Exchange container which is to be accessed by other classes
+  AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliAnalysisTaskValidation() {};
 
   // Enums describing each event validator. These can be pushed into
