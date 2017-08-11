@@ -1010,6 +1010,9 @@ public:
   TH1D* GetFlowSCCovHist(Int_t const c, Int_t const eg) const {return this->fFlowSCCovHist[c][eg];};
   void SetFlowSCCrossProdPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdPro[c][eg][k] = TP;};
   TProfile* GetFlowSCCrossProdPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdPro[c][eg][k];};
+  void SetFlowSCCrossProdProMult(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdProMult[c][eg][k] = TP;};
+  TProfile* GetFlowSCCrossProdProMult(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdProMult[c][eg][k];};
+
 
   // Flow QC high orders
   void SetFlowQCHOList(TList* const TL) {this->fFlowQCHOList = TL;};
@@ -1969,12 +1972,13 @@ private:
   const static Int_t fSCv2vsZNPtBins = 3;
   const static Int_t fSCv2vsZNHarm = 2;
   const static Int_t fkSCNHist = 6;
-  const static Int_t fkFlowSCNvar = 4;
+  const static Int_t fkFlowSCNvar = 6;
   TProfile *fFlowSCProdPro[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCProdHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCFinalHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCCovHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TProfile *fFlowSCCrossProdPro[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
+  TProfile *fFlowSCCrossProdProMult[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
 
   // Flow SP VZ
   const static Int_t fkFlowSPVZnHist = 4;
@@ -2050,6 +2054,8 @@ private:
   Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
+  Double_t fZPCen; // total energy from ZPC-C
+  Double_t fZPAen; // total energy from ZPC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
   TH2F* fZDCESEMultWeightsHist[5]; //! ZDC-ESE mult weights
   TH2F* fZDCESESpecWeightsHist[5]; //! ZDC-ESE mult weights
@@ -2067,7 +2073,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
 
-  ClassDef(AliFlowAnalysisCRC,65);
+  ClassDef(AliFlowAnalysisCRC,66);
 
 };
 

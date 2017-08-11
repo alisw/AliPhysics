@@ -852,10 +852,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
       if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights_VtxRbR.root";
-        if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
-      }
-      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbRITScuts")) {
-        if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768ITScuts_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && !Label.Contains("ITScut")) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("ITScut")) PhiEtaWeightsFileName += "15oHI_FB768ITScuts_CenPhiEtaWeights_VtxRbR.root";
       }
     }
     if(sDataSet=="2015pidfix") {
