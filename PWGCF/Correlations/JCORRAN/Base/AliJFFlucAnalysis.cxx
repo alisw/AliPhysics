@@ -33,7 +33,7 @@
 //#include "AliJHistManager.h"
 #include "TClonesArray.h"
 #include "AliJEfficiency.h"
-
+#pragma GCC diagnostic warning "-Wall"
 
 ClassImp(AliJFFlucAnalysis)
 
@@ -42,13 +42,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	: AliAnalysisTaskSE(),
 	fInputList(0),
 	//h_phi_module(),
+	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),
-	fHMG(NULL),
-	fEfficiency(0), // pointer to tracking efficiency
 	fEffMode(0),
 	fEffFilterBit(0),
+	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -77,8 +77,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 
 	// pt bins to check pt dist copied from AliJHistos
 	const int nJacek = 73;
-	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-		1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
+	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
+		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
 		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 
 	fNJacek = nJacek;
@@ -95,13 +95,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	: AliAnalysisTaskSE(name),
 	fInputList(0),
 	//h_phi_module(),
+	fEfficiency(0),
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),
-	fHMG(NULL),
-	fEfficiency(0),
 	fEffMode(0),
 	fEffFilterBit(0),
+	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -149,9 +149,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 
 	// pt bins to check pt dist copied from AliJHistos
 	const int nJacek = 73;
-	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-			1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
-			10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
+	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
+		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
+		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 	fNJacek = nJacek;
 	/*fPttJacek = new Double_t[fNJacek+1] ;
 	for(int i=0; i<= fNJacek; i++){
@@ -166,12 +166,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
 	//h_phi_module(a.h_phi_module),
+	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
 	fCent(a.fCent),
-	fHMG(a.fHMG),
-	fEfficiency(a.fEfficiency),
+	fNJacek(a.fNJacek),
 	fEffMode(a.fEffMode),
 	fEffFilterBit(a.fEffFilterBit),
+	fHMG(a.fHMG),
 	fBin_Subset(a.fBin_Subset),
 	fBin_h(a.fBin_h),
 	fBin_k(a.fBin_k),
@@ -541,7 +542,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 
 	if(IsSCptdep == kTRUE){
-		const int SCNH =6; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
+		const int SCNH = 9; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
 		Double_t ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
 		TComplex QnA_pt[SCNH][N_ptbins];
@@ -771,9 +772,9 @@ Double_t AliJFFlucAnalysis::Get_QC_Vn(Double_t QnA_real, Double_t QnA_img, Doubl
 {
 
 	Double_t QAB_real = QnA_real* QnB_real + QnA_img * QnB_img ;
-	Double_t QAB_img = QnA_img * QnB_real - QnA_real * QnB_img;
+	//Double_t QAB_img = QnA_img * QnB_real - QnA_real * QnB_img;
 
-	Double_t QAB_abs = TMath::Sqrt( QAB_real * QAB_real + QAB_img * QAB_img );
+	//Double_t QAB_abs = TMath::Sqrt( QAB_real * QAB_real + QAB_img * QAB_img );
 	//Double_t QC_Vn = TMath::Sqrt(QAB_abs);
 	Double_t QC_Vn = TMath::Sqrt(QAB_real);
 	return QC_Vn;
