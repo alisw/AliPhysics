@@ -232,8 +232,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fLowerEntry       ; //!<! First entry of the current tree to be used for embedding
   Int_t                                         fUpperEntry       ; //!<! Last entry of the current tree to be used for embedding
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
-  Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
-  Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
+  UInt_t                                        fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
+  UInt_t                                        fFileNumber       ; //!<! File number corresponding to the current tree
   THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
@@ -253,7 +253,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 5);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 6);
   /// \endcond
 };
 #endif
