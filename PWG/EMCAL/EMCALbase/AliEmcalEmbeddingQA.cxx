@@ -81,7 +81,7 @@ bool AliEmcalEmbeddingQA::AddQAPlotsToList(TList * list)
 
   if (!fInitialized) {
     AliWarning("Embedding QA histograms are not initialized! Attempting to initialize...");
-    bool res = Initialize();
+    Initialize();
     if (!fInitialized) {
       AliFatal("Unable to initialize the embedding QA hists!");
       // No need to return here, as it will crash anyway
