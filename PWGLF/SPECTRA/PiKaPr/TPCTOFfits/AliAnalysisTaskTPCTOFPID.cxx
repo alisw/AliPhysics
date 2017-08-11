@@ -660,6 +660,13 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     
     /* update and add analysis track */
     fAnalysisTrack->Update(track, fMCEvent,fPIDResponse, trflag);
+    const AliESDVertex *vtx = fESDEvent->GetPrimaryVertexTracks();
+    if(!vtx || !vtx->GetStatus())
+      vtx = fESDEvent->GetPrimaryVertexSPD();
+    if(vtx->GetStatus()) {
+      Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
+      fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
+    };
     if(track->IsEMCAL()) {
       AliVCluster *lvcl = fESDEvent->GetCaloCluster(track->GetEMCALcluster());
       if(lvcl)
