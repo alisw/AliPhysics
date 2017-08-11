@@ -45,6 +45,17 @@ class AliClusterContainer;
 class AliV0ReaderV1;
 class AliGammaConversionAODBGHandler;
 
+/**
+ * @class AliAnalysisTaskK0toPi0Pi0
+ * @brief Class handling analysis of K0s decay into two pi0s.
+ * @author Hannah Bossi
+ * @ingroup GammaConv
+ * @since June 28th 2017
+ *
+ * This task builds K0s from pi0s and distinguishes between the different methods of EMCAL,PCM and EMCAL-PCM.
+ *
+*/
+
 class AliAnalysisTaskK0toPi0Pi0 : public AliAnalysisTaskSE {
 public:
   enum PhotonType_t {
