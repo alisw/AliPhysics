@@ -64,13 +64,14 @@ class CutHandlerNeutralMixed{
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
     Int_t trainConfig                 = 1,
-    Bool_t isMC                       = kFALSE,                         //run MC
-    Int_t enableQAMesonTask          = 1,                          //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
-    TString fileNameInputForWeighting = "MCSpectraInput.root",          // path to file for weigting input
-    Bool_t doWeighting                = kFALSE,  //enable Weighting
+    Bool_t isMC                       = kFALSE,                          //run MC
+    Int_t enableQAMesonTask          = 1,                                //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
+    TString fileNameInputForWeighting = "MCSpectraInput.root",           // path to file for weigting input
+    Bool_t doWeighting                = kFALSE,                          //enable Weighting
     TString generatorName             = "HIJING",
     TString cutnumberAODBranch        = "000000006008400001001500000",
     Double_t tolerance                = -1,
+    TString periodNameV0Reader        = "",                              // period Name for V0Reader
     TString additionalTrainConfig     = "0"                              // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -125,8 +126,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
     TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
     if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 
+    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+
+    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -364,6 +367,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
+
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
