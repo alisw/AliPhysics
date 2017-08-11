@@ -677,7 +677,7 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
 
   fHist_ZDC_dTermXXYY_VsRun = new TProfile2D(Form("fHist_ZDC_dTermXXYY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
   fListHistos->Add(fHist_ZDC_dTermXXYY_VsRun);
-  fHist_ZDC_dTermXYXY_VsRun = new TProfile2D(Form("fHist_ZDC_dTermXXYY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
+  fHist_ZDC_dTermXYXY_VsRun = new TProfile2D(Form("fHist_ZDC_dTermXYXY_VsCentRun"),"",60,0,60,90,0,90,""); //cent,run
   fListHistos->Add(fHist_ZDC_dTermXYXY_VsRun);
 
 
