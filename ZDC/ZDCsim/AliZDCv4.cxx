@@ -1920,8 +1920,8 @@ void AliZDCv4::CreateZDC()
   Float_t zemTable[3] = {55./2., 1.5/2., 110./2.};
   TVirtualMC::GetMC()->Gsvolu("ZETA","BOX ", idtmed[13], zemTable, 3);
   Float_t ytable = ybridge-zemSupp1[1]-zemTable[1];
-  TVirtualMC::GetMC()->Gspos("ZETA", 1, "ALIC", fPosZEM[0], ytable, zbox, 0, "ONLY");
-  TVirtualMC::GetMC()->Gspos("ZETA", 2, "ALIC", fPosZEM[0], ytable-13.+2.*zemTable[1], zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZETA", 1, "ALIC", 0.0, ytable, zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZETA", 2, "ALIC", 0.0, ytable-13.+2.*zemTable[1], zbox, 0, "ONLY");
   //
   //Screens around ZEM
   Float_t zemSupp3[3] = {fDimZEM[2], 2./2., 20./2.};
