@@ -49,8 +49,8 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   fMinTimeStamp(0),
   fMaxTimeStamp(0),
   fTimeStampBinWidth(0),
-  fTriggerPatches(0),
-  fESDEvent(0)
+  fESDEvent(0),
+  fTriggerPatches(0)
 {
 }
 
@@ -68,8 +68,8 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamT
   fMinTimeStamp(0),
   fMaxTimeStamp(0),
   fTimeStampBinWidth(0),
-  fTriggerPatches(0),
-  fESDEvent(0)
+  fESDEvent(0),
+  fTriggerPatches(0)
 {
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
