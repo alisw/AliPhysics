@@ -1217,7 +1217,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
-       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
+       TClass* esdClass = esdTrack->Class();
+       if( esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal") )
          trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
        
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
