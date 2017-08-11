@@ -7,6 +7,11 @@
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
 
+// PHOS_pp_8TeV_2012 
+#pragma link C++ class AliCaloPhoton+;
+#pragma link C++ class AliAnalysisTaskPHOSTrigPi0+;
+#pragma link C++ class AliCaloTriggerSimulator+;
+
 // PHOS_pp_pi0
 #pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnalysisTaskPi0+;
