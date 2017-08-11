@@ -173,14 +173,13 @@ fhZNAvsZPA(0x0),
 fhZNvsZP(0x0),
 fhZNvsVZERO(0x0),
 fhZDCvsVZERO(0x0),
-fhZDCvsTracklets(0x0),
-fhZDCvsNclu1(0x0),
-fhDebunch(0x0),
 fhAsymm(0x0),
 fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
 fhZNCvscentrality(0x0),
 fhZNAvscentrality(0x0),
+fhZPCvscentrality(0x0),
+fhZPAvscentrality(0x0),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
 fDataSet(kAny),
@@ -351,14 +350,13 @@ fhZNAvsZPA(0x0),
 fhZNvsZP(0x0),
 fhZNvsVZERO(0x0),
 fhZDCvsVZERO(0x0),
-fhZDCvsTracklets(0x0),
-fhZDCvsNclu1(0x0),
-fhDebunch(0x0),
 fhAsymm(0x0),
 fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
 fhZNCvscentrality(0x0),
 fhZNAvscentrality(0x0),
+fhZPCvscentrality(0x0),
+fhZPAvscentrality(0x0),
 fDataSet(kAny),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
@@ -688,38 +686,36 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
   }
 
-  fhZNCvsZNA = new TH2F("hZNCvsZNA","hZNCvsZNA",200,-50.,140000,200,-50.,140000);
+  fhZNCvsZNA = new TH2F("hZNCvsZNA","hZNCvsZNA",200,-50.,2.E5,200,-50.,2.E5);
   fOutput->Add(fhZNCvsZNA);
-  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,180000.,200,0.,200000.);
+  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,2.8E5,200,0.,2.8E5);
   fOutput->Add(fhZDCCvsZDCCA);
-  fhZNCvsZPC = new TH2F("hZNCvsZPC","hZNCvsZPC",200,-50.,50000,200,-50.,140000);
+  fhZNCvsZPC = new TH2F("hZNCvsZPC","hZNCvsZPC",200,-50.,0.8E5,200,-50.,2.E5);
   fOutput->Add(fhZNCvsZPC);
-  fhZNAvsZPA = new TH2F("hZNAvsZPA","hZNAvsZPA",200,-50.,50000,200,-50.,140000);
+  fhZNAvsZPA = new TH2F("hZNAvsZPA","hZNAvsZPA",200,-50.,0.8E5,200,-50.,2.E5);
   fOutput->Add(fhZNAvsZPA);
-  fhZNvsZP = new TH2F("hZNvsZP","hZNvsZP",200,-50.,80000,200,-50.,200000);
+  fhZNvsZP = new TH2F("hZNvsZP","hZNvsZP",200,-50.,1.6E5,200,-50.,4.E5);
   fOutput->Add(fhZNvsZP);
-  fhZNvsVZERO = new TH2F("hZNvsVZERO","hZNvsVZERO",250,0.,25000.,200,0.,200000.);
+  fhZNvsVZERO = new TH2F("hZNvsVZERO","hZNvsVZERO",250,0.,35000.,200,0.,4.E5);
   fOutput->Add(fhZNvsVZERO);
-  fhZDCvsVZERO = new TH2F("hZDCvsVZERO","hZDCvsVZERO",250,0.,25000.,250,0.,250000.);
+  fhZDCvsVZERO = new TH2F("hZDCvsVZERO","hZDCvsVZERO",250,0.,35000.,250,0.,5.6E5);
   fOutput->Add(fhZDCvsVZERO);
-  fhZDCvsTracklets = new TH2F("hZDCvsTracklets","hZDCvsTracklets",200,0.,4000.,250,0.,250000.);
-  fOutput->Add(fhZDCvsTracklets);
-  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 200, 0.,8000.,200,0.,250000.);
-  fOutput->Add(fhZDCvsNclu1);
-  fhDebunch = new TH2F("hDebunch","hDebunch",240,-100.,-40.,240,-30.,30.);
-  fOutput->Add(fhDebunch);
 
   fhAsymm = new TH1F("hAsymm" , "Asimmetry ",200,-1.,1.);
   fOutput->Add(fhAsymm);
-  fhZNAvsAsymm = new TH2F("hZNAvsAsymm","ZNA vs. asymm.",200,-1.,1.,200,0.,80.);
+  fhZNAvsAsymm = new TH2F("hZNAvsAsymm","ZNA vs. asymm.",200,-1.,1.,200,-50.,2.E5);
   fOutput->Add(fhZNAvsAsymm);
-  fhZNCvsAsymm = new TH2F("hZNCvsAsymm","ZNC vs. asymm.",200,-1.,1.,200,0.,80.);
+  fhZNCvsAsymm = new TH2F("hZNCvsAsymm","ZNC vs. asymm.",200,-1.,1.,200,-50.,2.E5);
   fOutput->Add(fhZNCvsAsymm);
 
-  fhZNCvscentrality = new TH2F("hZNCvscentrality","ZNC vs. centrality",100,0.,100.,100,0.,100.);
+  fhZNCvscentrality = new TH2F("hZNCvscentrality","hZNCvscentrality",100,0.,100.,200,-50.,2.E5);
   fOutput->Add(fhZNCvscentrality);
-  fhZNAvscentrality = new TH2F("hZNAvscentrality","ZNA vs. centrality",100,0.,100.,100,0.,100.);
+  fhZNAvscentrality = new TH2F("hZNAvscentrality","hZNAvscentrality",100,0.,100.,200,-50.,2.E5);
   fOutput->Add(fhZNAvscentrality);
+  fhZPCvscentrality = new TH2F("hZPCvscentrality","hZPCvscentrality",100,0.,100.,200,-50.,0.8E5);
+  fOutput->Add(fhZPCvscentrality);
+  fhZPAvscentrality = new TH2F("hZPAvscentrality","hZPAvscentrality",100,0.,100.,200,-50.,0.8E5);
+  fOutput->Add(fhZPAvscentrality);
 
   //********************************************************************
 
@@ -1661,6 +1657,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetZNCEnergy(energyZNC);
       fFlowEvent->SetZNAEnergy(energyZNA);
 
+      Double_t energyZPC = ((AliVAODHeader*)aod->GetHeader())->GetZDCP1Energy();
+      Double_t energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
+      fFlowEvent->SetZPCEnergy(energyZPC);
+      fFlowEvent->SetZPAEnergy(energyZPA);
+
       const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
       const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
       Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC, SumEZNC=0.;
@@ -1795,10 +1796,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
       // ******************************************************************************
 
-      Double_t tdcSum = aodZDC->GetZDCTimeSum();
-      Double_t tdcDiff = aodZDC->GetZDCTimeDiff();
-      fhDebunch->Fill(tdcDiff, tdcSum);
-
       for(int i=0; i<5; i++){
         fhZNCPM[i]->Fill(towZNC[i]);
         if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
@@ -1808,11 +1805,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
       }
 
-      Double_t energyZPC  = (Double_t) (aodZDC->GetZPCEnergy());
-      Double_t energyZPA  = (Double_t) (aodZDC->GetZPAEnergy());
-      Double_t energyZEM1 = (Double_t) (aodZDC->GetZEM1Energy());
-      Double_t energyZEM2 = (Double_t) (aodZDC->GetZEM2Energy());
-
       fhZNCvsZNA->Fill(energyZNA, energyZNC);
       fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
       fhZNCvsZPC->Fill(energyZPC, energyZNC);
@@ -1820,16 +1812,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
       fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
       fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
-      fhZDCvsTracklets->Fill((Double_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
 
       Double_t asymmetry = -999.;
       if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
       fhAsymm->Fill(asymmetry);
-      fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
-      fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
+      fhZNAvsAsymm->Fill(asymmetry, energyZNA);
+      fhZNCvsAsymm->Fill(asymmetry, energyZNC);
 
-      fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
-      fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
+      fhZNCvscentrality->Fill(centrperc, energyZNC);
+      fhZNAvscentrality->Fill(centrperc, energyZNA);
+      fhZPCvscentrality->Fill(centrperc, energyZPC);
+      fhZPAvscentrality->Fill(centrperc, energyZPA);
 
     } // PHYSICS SELECTION
 
