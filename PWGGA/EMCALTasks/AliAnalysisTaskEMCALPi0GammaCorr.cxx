@@ -13,6 +13,10 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliAnalysisManager.h"
+
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+
 #include "AliCentrality.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
@@ -30,9 +34,15 @@
 #include "AliVVZERO.h"
 #include "AliESDUtils.h"
 #include "AliEventPoolManager.h"
-#include "AliMCEvent.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGeoParams.h"
+#include "AliESDInputHandler.h"
+#include "AliMCParticleContainer.h"
+
+#include <AliGenPythiaEventHeader.h>
+
+
+#include "TDatabasePDG.h"
 
 #include <memory>
 using std::cout;
@@ -44,8 +54,9 @@ ClassImp(AliAnalysisTaskEMCALPi0GammaCorr)
 AliAnalysisTaskEMCALPi0GammaCorr::AliAnalysisTaskEMCALPi0GammaCorr():
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPi0GammaCorr", kTRUE),
 fIsMC(kFALSE),
+fAODMCParticles(0),
+fmcHeader(0),
 fSavePool(0),
-fEventCuts(0),
 fFiducialCellCut(0x0),
 fHistEffGamma(0x0),
 fHistEffHadron(0x0),
@@ -76,8 +87,9 @@ fPeriod("")
 AliAnalysisTaskEMCALPi0GammaCorr::AliAnalysisTaskEMCALPi0GammaCorr(Bool_t InputDoMixing):
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPi0GammaCorr", kTRUE),
 fIsMC(kFALSE),
+fAODMCParticles(0),
+fmcHeader(0),
 fSavePool(0),
-fEventCuts(0),
 fFiducialCellCut(0x0),
 fHistEffGamma(0x0),
 fHistEffHadron(0x0),
@@ -107,7 +119,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::InitArrays()
 {
     AliWarning("InitArrays is being called");
     fSavePool          =0; //= 0 do not save the pool by default. Use the set function to do this.
-    fUseManualEventCuts=1; //=0 use automatic setting from AliEventCuts. =1 load manual cuts
+    
     //Setting bins for the mixing of events.
     double centmix[kNcentBins+1] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0};
     fMixBCent = new TAxis(kNcentBins,centmix);
@@ -131,32 +143,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 {
     AliWarning("Entering UserCreateOutPutObjects");   
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
-    
-    fEventCutList = new TList();
-    fEventCutList ->SetOwner();
-    fEventCutList ->SetName("EventCutOutput");
-
-    fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
-    
-    if(fUseManualEventCuts==1)
-	{  
-    AliWarning("Setting Manual Event Cuts"); 
-    
-    fEventCuts.SetManualMode();
-    fEventCuts.fCentralityFramework=2; //..only for Run1!!
-    fEventCuts.fTriggerMask = fOffTrigger;
-    fEventCuts.fMinVtz = fMinVz;
-    fEventCuts.fMaxVtz = fMaxVz;
-    fEventCuts.fRequireTrackVertex = true;
-    fEventCuts.fMaxDeltaSpdTrackAbsolute=fZvertexDiff;
-    fEventCuts.fTrackletBGcut = fTklVsClusSPDCut; //(false by default for 15o)
-    fEventCuts.fMinCentrality = fMinCent;
-    fEventCuts.fMaxCentrality = fMaxCent;
-    }
-    fEventCuts.AddQAplotsToList(fEventCutList);
-    fOutput->Add(fEventCutList);
-    //OutputList->Add(fEventCutList);
-    
+       
     AliWarning("Initializing Event Mixer");
     InitEventMixer();
 	
@@ -451,16 +438,14 @@ void AliAnalysisTaskEMCALPi0GammaCorr::AddEventPoolsToOutput(double minCent, dou
 
 void AliAnalysisTaskEMCALPi0GammaCorr::ExecOnce()
 {
+ 
     AliAnalysisTaskEmcal::ExecOnce();
 }
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
 {
-    if (!fEventCuts.AcceptEvent(InputEvent()))
-	{
-	  PostData(1, fOutput);
-	  return kFALSE;
-	}
+    
+   
     TString Trigger;
     Trigger = fInputEvent->GetFiredTriggerClasses();
     bool PassedGammaTrigger = kFALSE;
@@ -470,8 +455,11 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
     if(!PassedGammaTrigger && !PassedMinBiasTrigger && !fIsMC) return kFALSE; //if not MC and does not trigger data, remove
 
     bool isSelected = AliAnalysisTaskEmcal::IsEventSelected();
-    return kTRUE;
-	//return isSelected;
+    //return kTRUE;
+
+
+    
+    return isSelected;
 }
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
@@ -495,6 +483,57 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
       AliWarning(Form("%s - AliAnalysisTaskGammaHadron::Run - Geometry is not available!", GetName()));
       return kFALSE;
     }
+
+
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!eventHandler) {
+      AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
+  }
+  
+  AliMCEvent* mc_truth_event = NULL;
+  if (eventHandler) mc_truth_event = eventHandler->MCEvent();
+  if (!mc_truth_event) AliFatal("Missing MC event");
+
+  if (mc_truth_event != NULL) {
+    mc_truth_event->PreReadAll();
+  }
+
+  AliGenEventHeader *mc_truth_header = mc_truth_event != NULL ?
+      mc_truth_event->GenEventHeader() : NULL;
+
+
+  AliGenPythiaEventHeader *mc_truth_pythia_header;
+
+  if (mc_truth_header != NULL) {
+    //std::cout << " Event WEIGHT " << mc_truth_header->EventWeight() << std::endl;
+    mc_truth_pythia_header =	  dynamic_cast<AliGenPythiaEventHeader *>(mc_truth_header);
+    if (mc_truth_pythia_header != NULL) {
+      //std::cout << "Process Type " <<  mc_truth_pythia_header->ProcessType() << std::endl;
+      //std::cout << "PTHARD " << mc_truth_pythia_header->GetPtHard() << std::endl;
+      //std::cout << "Xsection " << mc_truth_pythia_header->GetXsection() << std::endl;
+      //std::cout << "Trials " << mc_truth_pythia_header->Trials() << std::endl;   
+    }
+  }
+
+  AliStack *stack;
+  if (mc_truth_event != NULL) {
+    stack = mc_truth_event->Stack();
+  }
+
+  fMCEvent = mc_truth_event; 
+
+  for (Int_t i = 0;  i < mc_truth_event->GetNumberOfTracks(); i++) {
+    if (!mc_truth_event->IsPhysicalPrimary(i)) continue; //keep only final state particles
+    const AliMCParticle *p =  static_cast<AliMCParticle *>(mc_truth_event->GetTrack(i));
+    //std::cout << " PDG STATUS  " <<  p->GetStatusCode() << std::endl;
+    // std::cout << " PDG CODE " << p->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(p->PdgCode())->GetName() << "  CHARGE " << p->Charge() << " GenIndex " << p->GetGeneratorIndex() <<  " PT " << p->Pt() << std::endl;
+  }
+
+  // std::cout << " Number of tracks " << mc_truth_event->GetNumberOfTracks() << std::endl;
+
+  for(int itrk = 0; itrk < mc_truth_event->GetNumberOfTracks(); itrk++){
+    AliVParticle *track = mc_truth_event->GetTrack(itrk);
+  }
 
    return kTRUE;
 }
@@ -650,6 +689,8 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust,
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 {
+
+     
 	//..This function is called in AliAnalysisTaskEmcal::UserExec.
 	// 1. First get an event pool corresponding in mult (cent) and
 	//    zvertex to the current event. Once initialized, the pool
@@ -664,7 +705,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 	// 3. The reduced and bgTracks arrays must both be passed into
 	//    FillCorrelations(). Also nMix should be passed in, so a weight
 	//    of 1./nMix can be applied.
-  //  std::cout << "Entering fill histograms " << std::endl;
+  //    std::cout << "Entering fill histograms; centrality= " << fCent << std::endl;
     TString Trigger;
     Trigger = fInputEvent->GetFiredTriggerClasses();
     bool PassedGammaTrigger = kFALSE;
@@ -683,6 +724,11 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     if(PassedGammaTrigger or fIsMC) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
 
    
+    //If MC data, then analyze it: 
+    if(fIsMC){
+      AnalyzeMC();
+    }
+
     AliEventPool* pool = fPoolMgr->GetEventPool(fCent, zVertex);
     if (!pool)	return kFALSE;
     if(pool->IsReady() && PassedGammaTrigger)
@@ -766,6 +812,25 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 	} //end  1 loop over clusters
 
    return 1; 
+}
+
+
+void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband){
+
+  AliClusterContainer* clusters  = GetClusterContainer(0);
+  TLorentzVector reco_photon;
+  clusters->GetMomentum(reco_photon, cluster);
+
+  std::cout << " Reco pT " << reco_photon.Pt() << std::endl;
+  Int_t label = cluster->GetLabel();
+
+  const AliMCParticle *true_photon =  static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+  std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
+  true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
+
+
+
+  return;
 }
 
 
@@ -899,7 +964,13 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster
     if(dphi<-0.5) dphi +=2;
     
     double trackpT = std::min(track->Pt(),10.0);
-    double entries[13] = {fCent, fVertex[2], pi0.Pt(),  
+
+    Double_t zVertex = fVertex[2];
+    if (zVertex>10) zVertex =9.99;
+    if (zVertex<-10) zVertex = -9.99;
+
+
+    double entries[13] = {fCent, zVertex, pi0.Pt(),  
 			 trackpT, dphi, deta, Zt, Xi,
                          pi0.M(), ph_lead.Pt(), ph_sub.Pt(),  cluster_lead->GetM02(), cluster_sub->GetM02()};   
              
@@ -982,8 +1053,12 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
     double openingAngle = 1000.0*std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())); // in mrads
-   
-    double entries[13] = {fCent, fVertex[2], pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
+    Double_t zVertex = fVertex[2];
+    if (zVertex>10) zVertex =9.99;
+    if (zVertex<-10) zVertex = -9.99;  
+ 
+  
+    double entries[13] = {fCent, zVertex, pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
 			  openingAngle,  cluster_lead->GetM02(), cluster_sub->GetM02(), 
 			  dRmin_1, dRmin_2};
 
@@ -1032,10 +1107,22 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     GetIsolation_Cluster(cluster, 0.4, IsoE_Clusters_R04, UE_Clusters_R04);
     GetIsolation_Cluster(cluster, 0.2, IsoE_Clusters_R02, UE_Clusters_R02);
  
+   
+    Double_t IsoE_Truth = 0.0;
+    Double_t UE_Truth   = 0.0;
+    GetIsolation_Truth(cluster, 0.4, IsoE_Truth, UE_Truth); 
+  
     Double_t nTracks = std::min( static_cast<double>(tracks->GetNAcceptedTracks()), 99.9);
     Double_t nClusters = std::min(static_cast<double>(clusters->GetNAcceptedClusters()), 99.9);
 
-    double entries[26] = {RunNumber, fCent, fVertex[2], ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+
+    Double_t zVertex = fVertex[2];
+    if (zVertex>10) zVertex =9.9;
+    if (zVertex<-10) zVertex = -9.99;
+
+
+    
+    double entries[26] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, detamin, dphimin, exoticity, time, nTracks, nClusters,
                           IsoE_Tracks_R04, IsoE_Tracks_R02, UE_Tracks_R04, UE_Tracks_R02, IsoE_Clusters_R04, IsoE_Clusters_R02, UE_Clusters_R04, UE_Clusters_R02};
     histo->Fill(entries);
@@ -1129,3 +1216,9 @@ Int_t AliAnalysisTaskEMCALPi0GammaCorr::FormatRunNumber(Int_t runnumber)
   default : return 0;
   }
 }
+
+void AliAnalysisTaskEMCALPi0GammaCorr::AnalyzeMC(){
+ 
+  return;
+}
+ 
