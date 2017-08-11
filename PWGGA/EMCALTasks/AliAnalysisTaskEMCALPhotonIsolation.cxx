@@ -1274,8 +1274,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     coi->GetMomentum(vecCOI,fVertex);
     
     fPT->Fill(vecCOI.Pt());
-    if(vecCOI.Pt()>14. && vecCOI.Pt()<16. && fWho == 2)
-      fEtaPhiClusVsM02->Fill(vecCOI.Eta(),vecCOI.Phi(),coi->GetM02());
 
     if(fQA)
       FillQAHistograms(coi,vecCOI);
@@ -1318,8 +1316,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       coi->GetMomentum(vecCOI,fVertex);
       
       fPT->Fill(vecCOI.Pt());
-      if(vecCOI.Pt()>14. && vecCOI.Pt()<16. && fWho == 2)
-	fEtaPhiClusVsM02->Fill(vecCOI.Eta(),vecCOI.Phi(),coi->GetM02());
 
       if(fQA)
 	FillQAHistograms(coi,vecCOI);
@@ -1407,6 +1403,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
       
     case 2:
       fM02->Fill(vecCOI.Pt(),m02COI);
+      if(vecCOI.Pt()>14. && vecCOI.Pt()<16.)
+	fEtaPhiClusVsM02->Fill(vecCOI.Eta(),vecCOI.Phi(),m02COI);
       break;
   }
   
