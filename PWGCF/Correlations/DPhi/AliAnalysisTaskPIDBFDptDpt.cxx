@@ -798,7 +798,10 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
   _outputHistoList->SetOwner();
 
   fEventCut = new AliEventCuts();
-  fEventCut->AddQAplotsToList(_outputHistoList);
+  fEventCut->AddQAplotsToList(_outputHistoList, kTRUE);
+  //fEventCut->SetManualMode();
+  fEventCut->fUseVariablesCorrelationCuts = true;
+  fEventCut->fUseStrongVarCorrelationCut = true;
     
   //if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
     
@@ -1392,8 +1395,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 
       if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" )
 	{
-	  fEventCut->SetManualMode();
-	  fEventCut->fUseVariablesCorrelationCuts = true;
 	  if (!fEventCut->AcceptEvent(fAODEvent))
 	    {
 	      PostData(0, _outputHistoList);
