@@ -51,20 +51,23 @@ struct MacroParams {
   Float_t ylm_vmin;
   Float_t ylm_vmax;
 
-  bool ylm_useLCMS;
-
-  bool do_qinv_cf;
-  bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
-  bool do_trueq_cf;
-  bool do_trueq3d_cf;
 
+  bool do_qinv_cf;
+  bool do_kt_qinv_cf;
+  bool do_q3d_cf;
+  bool do_kt_q3d_cf;
+
+  bool do_ylm_cf; // not implemented yet
+  bool ylm_useLCMS;
+
+  // monte-carlo correlation functions
+  bool do_trueq_cf;
+  bool do_kt_trueq_cf;
+  bool do_trueq3d_cf;
   bool do_kt_trueq3d_cf;
 
-  bool do_kt_q3d;
-  bool do_kt_qinv;
-  bool do_ylm_cf; // not implemented yet
 };
 
 void
@@ -89,16 +92,18 @@ ConfigFemtoAnalysis(const TString& param_str="")
   MacroParams macro_config;
 
   // default
-  macro_config.do_qinv_cf = true;
-  macro_config.do_q3d_cf = true;
+  macro_config.do_qinv_cf = false;
+  macro_config.do_kt_qinv_cf = false;
+  macro_config.do_q3d_cf = false;
+  macro_config.do_kt_q3d_cf = false;
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
-  macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
-  macro_config.do_kt_trueq3d_cf = DEFAULT_DO_KT;
-
   macro_config.do_ylm_cf = false;
-  macro_config.do_trueq_cf = true;
-  macro_config.do_trueq3d_cf = true;
+
+  macro_config.do_trueq_cf = false;
+  macro_config.do_kt_trueq_cf = false;
+  macro_config.do_trueq3d_cf = false;
+  macro_config.do_kt_trueq3d_cf = false;
 
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
@@ -111,8 +116,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.delta_eta_min = -0.1;
   macro_config.delta_eta_max =  0.1;
 
-  macro_config.q3d_bin_count = 120;
-  macro_config.q3d_maxq = 0.30;
+  macro_config.q3d_bin_count = 56;
+  macro_config.q3d_maxq = 0.14;
 
   macro_config.ylm_max_l = 3;
   macro_config.ylm_ibin = 30;
@@ -276,7 +281,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(m_cf);
       }
 
-      if (macro_config.do_kt_qinv) {
+      if (macro_config.do_kt_qinv_cf) {
         AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
@@ -288,7 +293,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(kt_qinv);
       }
 
-      if (macro_config.do_kt_q3d && !macro_config.do_kt_trueq3d_cf) {
+      if (macro_config.do_kt_q3d_cf && !macro_config.do_kt_trueq3d_cf) {
         // TString q3d_cf_name = TString("_q3D_") + pair_type_str;
         TString q3d_cf_name("_q3d");
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
