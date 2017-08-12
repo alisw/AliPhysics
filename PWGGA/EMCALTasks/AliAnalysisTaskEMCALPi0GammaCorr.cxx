@@ -252,9 +252,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_BCID    = -0.5;
     double max_BCID    = 3599.5;
 
-    int nbins_IsoE  = 20;
-    double min_IsoE = 0.0;
-    double max_IsoE = 20.0; 
+    int nbins_IsoE  = 30;
+    double min_IsoE = -5.0;
+    double max_IsoE = 10.0; 
  
     int nbins_nTracks = 50;
     double min_nTracks = 0.0;
@@ -272,6 +272,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_Matching = 0.00; 
     double max_Matching = 0.05; 
 
+    int nbins_trueGamma = 2.0;
+    double min_trueGamma = 0.0;
+    double max_trueGamma = 1.0;
     //////////////////////Pion-hadron correlations//////////////////////////
     const int nbins_PionCorr = 13;
     int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt,  //trigger variables
@@ -351,21 +354,22 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 26;
+    const int nbins_Cluster = 25;
     
     axisNames = "Cluster THnSparse; RunNumber; Centrality; Z vertex; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMaxima;";
     axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track;  d#eta to track; d#phi to track; Exoticity; time [ns]; nTracks ; nClusters;";
-    axisNames = axisNames + "SumTrackpT, R < 0.4; SumTrackpT, R<0.2; UE_track R<0.4; UE_track R<0.2;"; 
-    axisNames = axisNames + "SumClusterpT, R < 0.4; SumClusterpT, R<0.2; UE_clus R<0.4; UE_clus R<0.2;";
+    axisNames = axisNames + "ISO Track; UE_track (etaband); UE_track (ortho); ISO Track Subtracted (etaband); ISO Track Subtracted (ortho);"; 
+    axisNames = axisNames + " ISO Truth; IsTrueGamma; " ; 
     int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
                                       nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Matching, nbins_Matching, nbins_Exoticity, nbins_time, nbins_nTracks, nbins_nClusters,
-                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE};
+                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_trueGamma};
     double xminCluster[nbins_Cluster] = {min_RunNumber, min_Centrality, min_zvertex, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
 					 min_DisToBorder, min_DisToBad, min_dR, min_Matching, min_Matching, min_Exoticity, min_time, min_nTracks, min_nClusters, 
-                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE, min_IsoE, min_IsoE, min_IsoE, min_IsoE};
+                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE,  min_IsoE, min_IsoE, min_trueGamma};
     double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_Centrality, max_zvertex, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
 					 max_DisToBorder, max_DisToBad, max_dR, max_Matching, max_Matching, max_Exoticity, max_time, max_nTracks, max_nClusters, 
-                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE};
+                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_trueGamma};
+
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
@@ -815,26 +819,46 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 }
 
 
-void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband){
+void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, double Rmax, double &IsoE){
 
   AliClusterContainer* clusters  = GetClusterContainer(0);
   TLorentzVector reco_photon;
   clusters->GetMomentum(reco_photon, cluster);
 
-  std::cout << " Reco pT " << reco_photon.Pt() << std::endl;
+  // std::cout << " Reco pT " << reco_photon.Pt() << std::endl;
   Int_t label = cluster->GetLabel();
 
+  double sumET= 0.0;
+  
   const AliMCParticle *true_photon =  static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
-  std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
-  true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
+  // std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
+  // true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
 
+  //Loop over final-state particles and sum their 
+  for(int itrk = 0; itrk < fMCEvent->GetNumberOfTracks(); itrk++){
+    if (!fMCEvent->IsPhysicalPrimary(itrk)) continue; //keep only final state particles
+    AliVParticle *track = fMCEvent->GetTrack(itrk);
 
+    double trackphi = TVector2::Phi_mpi_pi(track->Phi());
+    double dphi     = TVector2::Phi_mpi_pi(true_photon->Phi()- trackphi);
+    double deta     = true_photon->Eta()- track->Eta();
+    double dR       = TMath::Sqrt(deta*deta+dphi*dphi);
 
+    double ET = track->E();//*TMath::Sin(track->Theta());
+
+    if(dR<Rmax){ sumET += ET; }
+  
+  } //end loop over particles
+
+ 
+  sumET = std::min(sumET, 9.9);
+  IsoE       = sumET;
+ 
   return;
 }
 
 
-void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband){
+void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband, double &UE_ortho){
 
   AliClusterContainer* clusters  = GetClusterContainer(0);
   AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
@@ -845,41 +869,55 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Track(AliVCluster* cluster, 
   clusters->GetMomentum(ph, cluster);
 
   double sumpT= 0.0;
-  double UE_sumpT = 0.0;
+  double UE_etaband_temp = 0.0;
+  double UE_ortho_temp = 0.0; 
 
-  int NinCone =0;
-  int NinUE  = 0;
+  const double etalimit = 0.9;
+  const double minpT    = 0.200; 
 
   for(auto track : tracks->accepted()){
 
-    if(track->Pt()<0.200) continue; 
-    if(std::abs(track->Eta()) >0.8) continue;
+    if(track->Pt()< minpT) continue; 
+    if(std::abs(track->Eta()) > etalimit) continue;
 
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- trackphi);
     double deta     = ph.Eta()- track->Eta();
     double dR       = TMath::Sqrt(deta*deta+dphi*dphi);
 
-    if(dR<Rmax){
-      sumpT = sumpT + track->Pt();
-      NinCone = NinCone +1;
+
+    double dphi_ortho1  = TVector2::Phi_mpi_pi(ph.Phi() + TMath::Pi()/2.0 - trackphi);
+    double dphi_ortho2    = TVector2::Phi_mpi_pi(ph.Phi() - TMath::Pi()/2.0 - trackphi);
+
+
+    double dR_ortho1       = TMath::Sqrt(deta*deta+dphi_ortho1*dphi_ortho1);
+    double dR_ortho2       = TMath::Sqrt(deta*deta+dphi_ortho2*dphi_ortho2);
+
+    if(dR<Rmax) sumpT = sumpT + track->Pt(); 
+    else{
+      if(std::abs(dphi)<Rmax)   UE_etaband_temp += track->Pt(); //eta-band 
+      if( dR_ortho1<Rmax || dR_ortho2<Rmax  )   UE_ortho_temp += track->Pt(); //orthogonal photon              
     }
-    else if(std::abs(dphi)<Rmax){
-      UE_sumpT = UE_sumpT + track->Pt();
-      NinUE  = NinUE+1;
-    }
+    
+ 
   } //end loop over tracks
 
-  //Restrict variable to 19.9
-  sumpT = std::min(sumpT, 19.9);
-  UE_sumpT = std::min(UE_sumpT, 19.9);
-  UE_etaband = UE_sumpT;
+  //Subtract estimate of UE from the cone.
+  double areaCone = TMath::Pi()*Rmax*Rmax;
+  double AUE = 2*etalimit*2*Rmax - areaCone; // = 0.937 for R=0.4 and eta limit of 0.9. 
+
+  UE_ortho   = UE_ortho_temp/2.0; 
+  UE_etaband = areaCone*(UE_etaband_temp/AUE);
   IsoE       = sumpT;
+
+
+
+
   return;
 }
 
 
-void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband){
+void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband, double&IsoE_sub){
 
   AliClusterContainer* clusters  = GetClusterContainer(0);
   TLorentzVector ph;
@@ -897,8 +935,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster
     clusters->GetMomentum(iph, iclus);
    
     //Consider only clusters with energy above 300 MeV and that pass general QA
-    if (iclus->E() < 0.300) continue;
-    if( !FinalClusterCuts(iclus)) return;
+    if (iclus->E() < 0.300)         continue;
+    //    if (std::abs(iph.Eta()) > 0.67) continue; // only consider clusters with eta < 0.67 
+    if (!FinalClusterCuts(iclus))   continue;
 
     double dphi     = TVector2::Phi_mpi_pi(ph.Phi()- iph.Phi());
     double deta = ph.Eta()- iph.Eta();
@@ -913,11 +952,19 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster
       NinUE  = NinUE+1;      
     }
   }
-  //Restrict that variable to 19.9
-  sumpT = std::min(sumpT, 19.9);
-  UE_sumpT = std::min(UE_sumpT, 19.9);
-  UE_etaband = UE_sumpT;
+
+  //Subtract estimate of UE from the cone. 
+
+  double areaCone = TMath::Pi()*Rmax*Rmax;
+  double AUE = 2*0.67*2*Rmax - areaCone; // = 0.569 for R=0.4
+    
+  UE_etaband = areaCone*(UE_sumpT/AUE);
   IsoE       = sumpT;
+  IsoE_sub   = IsoE - UE_etaband;
+  //Restrict variables to less than 20 GeV, for THnSparse limit. 
+  UE_etaband = std::min(UE_etaband, 9.9);
+  IsoE = std::min(IsoE, 9.9);
+  IsoE_sub = std::min(IsoE_sub, 9.9);
   
   return;
 }
@@ -1092,25 +1139,20 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     Double_t RunNumber = static_cast<double>(FormatRunNumber(fInputEvent->GetRunNumber()));
     Double_t BCID      = static_cast<double>(fInputEvent->GetBunchCrossNumber());
 
-    Double_t UE_Clusters_R04   = 0.0; 
-    Double_t UE_Clusters_R02   = 0.0;
-    Double_t IsoE_Clusters_R04 = 0.0;
-    Double_t IsoE_Clusters_R02 = 0.0;  
-    
-    Double_t UE_Tracks_R04   = 0.0;
-    Double_t UE_Tracks_R02   = 0.0;
-    Double_t IsoE_Tracks_R04 = 0.0;
-    Double_t IsoE_Tracks_R02 = 0.0;
 
-    GetIsolation_Track(cluster, 0.4, IsoE_Tracks_R04, UE_Tracks_R04);
-    GetIsolation_Track(cluster, 0.2, IsoE_Tracks_R02, UE_Tracks_R02);
-    GetIsolation_Cluster(cluster, 0.4, IsoE_Clusters_R04, UE_Clusters_R04);
-    GetIsolation_Cluster(cluster, 0.2, IsoE_Clusters_R02, UE_Clusters_R02);
+    double defValue = -4.9;    
+  
+    Double_t UE_Tracks_etaband = defValue;
+    Double_t UE_Tracks_ortho   = defValue; 
+    Double_t IsoE_Tracks       = defValue;
+
+    Double_t IsoE_Truth        = defValue;
  
+
+    GetIsolation_Track(cluster, 0.4, IsoE_Tracks, UE_Tracks_etaband, UE_Tracks_ortho);
+    
    
-    Double_t IsoE_Truth = 0.0;
-    Double_t UE_Truth   = 0.0;
-    GetIsolation_Truth(cluster, 0.4, IsoE_Truth, UE_Truth); 
+    if(fIsMC) GetIsolation_Truth(cluster, 0.4, IsoE_Truth); 
   
     Double_t nTracks = std::min( static_cast<double>(tracks->GetNAcceptedTracks()), 99.9);
     Double_t nClusters = std::min(static_cast<double>(clusters->GetNAcceptedClusters()), 99.9);
@@ -1120,11 +1162,33 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     if (zVertex>10) zVertex =9.9;
     if (zVertex<-10) zVertex = -9.99;
 
-
+    //Restrict variables to less than 20 GeV, for THnSparse limit.
+    const double ulimit = 9.9;
     
-    double entries[26] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+    double trueGamma = 0.0; 
+    
+    const AliMCParticle *true_photon =  NULL; 
+    if(fIsMC){
+      true_photon = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster->GetLabel()));//
+      //	std::cout << "PDF CODE " << true_photon->PdgCode() << std::endl; 
+        if(true_photon->PdgCode()==22) trueGamma=.60;
+    }
+    // std::cout << " PDG CODE " << true_photon->PdgCode()
+
+
+    double entries[25] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, detamin, dphimin, exoticity, time, nTracks, nClusters,
-                          IsoE_Tracks_R04, IsoE_Tracks_R02, UE_Tracks_R04, UE_Tracks_R02, IsoE_Clusters_R04, IsoE_Clusters_R02, UE_Clusters_R04, UE_Clusters_R02};
+                          std::min(IsoE_Tracks, ulimit),
+                          std::min(UE_Tracks_etaband, ulimit), 
+			  std::min(UE_Tracks_ortho, ulimit),
+			  std::min(IsoE_Tracks- UE_Tracks_etaband, ulimit),
+			  std::min(IsoE_Tracks- UE_Tracks_ortho, ulimit),
+                          std::min(IsoE_Truth, ulimit),
+                          trueGamma
+                          };
+
+
+
     histo->Fill(entries);
     return;
 }
@@ -1188,6 +1252,8 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FinalClusterCuts(AliVCluster* cluster)
 
   Double_t time = cluster->GetTOF()*1000000000; //in ns
   if(std::abs(time)>30) return kFALSE;
+
+
    
   return kTRUE;
 }
