@@ -2731,6 +2731,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vCharge = track->Charge();
 	vEta    = track->Eta();
 	vPt     = track->Pt();
+	vPx     = track->Px();
+	vPy     = track->Py();
 	vY      = track->Y();//true Y
 	
 	if( vPt < fPtMin || vPt > fPtMax)      
@@ -2937,18 +2939,58 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 	
 	//vPhi *= TMath::RadToDeg();
-	
-      //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
-      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
-      } 
-      else{
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
-      } 
+	//caluclation of sphericity
+	sumPt += vPt;
+	if(vPt != 0.) {
+	  s00 += TMath::Power(vPx,2)/vPt;
+	  s11 += TMath::Power(vPy,2)/vPt;
+	  s10 += vPx*vPy/vPt;
+	}
+
+	//=======================================correction
+	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	
+	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+	} 
+	else{
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+	}
+	nAcceptedTracks += 1;
       } //track loop
+      
+      if(nAcceptedTracks >= 2) { 
+	if(sumPt != 0.) { 
+	  s00 /= sumPt;
+	  s11 /= sumPt;
+	  s10 /= sumPt;
+	  
+	  if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	    lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    
+	    if((lambda1 + lambda2) != 0.) {
+	      sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
+	      fHistMeanPtVsSphericity->Fill(sumPt/nAcceptedTracks,sT);
+	      fHistSphericity->Fill(sT);
+	      fHistMultiplicityVsSphericity->Fill(nAcceptedTracks,sT);
+	      
+	      //Use sphericity cut
+	      if(fUseSphericityCut) {
+		if((fSphericityMin <= sT)&&(sT <= fSphericityMax)) {
+		  fHistMeanPtVsSphericityAfter->Fill(sumPt/nAcceptedTracks,sT);
+		  fHistSphericityAfter->Fill(sT);
+		  fHistMultiplicityVsSphericityAfter->Fill(nAcceptedTracks,sT);
+		}
+	      }
+	      
+	      gSphericity = sT;
+	    }
+	  }
+	}
+      }
     }//MC event object
   }//MC
   
