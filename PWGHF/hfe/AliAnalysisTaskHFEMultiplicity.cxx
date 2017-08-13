@@ -161,7 +161,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   
 {   fvalueElectron = new Double_t[9];
   fvaluePHElectron = new Double_t[5];
-  fvalueMulti = new Double_t[11];
+  fvalueMulti = new Double_t[7];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
 
 }
@@ -232,7 +232,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   // constructor
   fvalueElectron = new Double_t[9];
   fvaluePHElectron = new Double_t[5];
-  fvalueMulti = new Double_t[11];
+  fvalueMulti = new Double_t[7];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
   DefineInput(0, TChain::Class());   
   DefineOutput(1, TList::Class());
@@ -348,24 +348,24 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   
 
   
-  Int_t bins[9]		=      	{280, 160, 100, 100, 100, 10, 10, 200,1000};
+  Int_t bins[9]		=      	{280, 160, 100, 100, 100, 1000, 1000, 200,1000};
   Double_t xmin[9]	=	{  2,  -8,   0,   0,   0, 0, 0, 0 ,-50};
-  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 100, 100, 100, 50};
+  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2000, 1000, 100, 50};
 
   fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;SPDTracklets;Cluster Energy;zvtx;",9 ,bins,xmin,xmax);
  
 
-  Int_t binsls[5]	=      	{280, 160, 10, 10, 200};
-  Double_t xminls[5]	=	{  2, -8, 0, 0, 0};
-  Double_t xmaxls[5]	=	{  30,  8, 100, 100, 100};
+  Int_t binsls[4]	=      	{280, 1000, 1000, 200};
+  Double_t xminls[4]	=	{  2, 0, 0, 0};
+  Double_t xmaxls[4]	=	{  30, 2000, 1000, 100};
 
-  fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;nSigma;V0M;SPDTracklets;Cluster Energy;",5 ,binsls,xminls,xmaxls);
-  fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;nSigma;V0M;SPDTracklets;Cluster Energy;",5 ,binsls,xminls,xmaxls);
+  fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;V0M;SPDTracklets;Cluster Energy;",4 ,binsls,xminls,xmaxls);
+  fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;V0M;SPDTracklets;Cluster Energy;",4 ,binsls,xminls,xmaxls);
   
-  Int_t binsm[11]	=      	{ 200, 200, 200, 200,1000,1000,1000,1000,1000,1000,1000};
-  Double_t xminm[11]	=	{     0, 0, 0, 0,-50,0,0,0,0,0,0};
-  Double_t xmaxm[11]	=	{   100, 100, 100, 100,50,2000,1000,2000,1000,1000,2000};
-  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;V0M_percertile;V0A_percertile;V0C_percertile;SPDTracklets_percertile;zvtx;V0M_class;SPDTracklets_class;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M",11,binsm,xminm,xmaxm);
+  Int_t binsm[7]	=      	{1000,1000,1000,1000,1000,1000,1000};
+  Double_t xminm[7]	=	{-50,0,0,0,0,0,0};
+  Double_t xmaxm[7]	=	{ 50,2000,1000,2000,1000,1000,2000};
+  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_class;SPDTracklets_class;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M",7,binsm,xminm,xmaxm);
     
     
 
@@ -429,7 +429,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   if(!fAOD) return;
 
   if(fReadMC){fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));} //MC information
-
+ 
   if(!PassEventSelect(fAOD)) return;
 			
 
@@ -509,29 +509,25 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
     countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,Zvertex1,fRefMult));
   } 
 
-  cout<< " corrected tracklets spd = "<< correctednAcc << " incorrected tracklets spd = "<<nAcc<< endl;
+ 
   //V0M Correction
   Int_t vzeroMultACorr=V0AMult, vzeroMultCCorr=V0CMult, vzeroMultCorr=V0Mult;
   vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(V0AMult,Zvertex1));
   vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(V0CMult,Zvertex1));
   vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
-  cout<< " corrected tracklets V0m = "<< vzeroMultCorr << " incorrected tracklets V0m= "<<V0Mult<< endl;
+ 
 
-  fvalueMulti[0] = lPercentiles[0];
-  fvalueMulti[1] = lPercentiles[1];
-  fvalueMulti[2] = lPercentiles[2];
-  fvalueMulti[3] = lPercentiles[3];
-  fvalueMulti[4] = Zvertex1;
-  fvalueMulti[5] = fMultV0M;
-  fvalueMulti[6] = fMultSPDTracklets;
-  fvalueMulti[7] = V0Mult;
-  fvalueMulti[8] = nAcc;
-  fvalueMulti[9] = correctednAcc;
-  fvalueMulti[10] = vzeroMultCorr;
+  
+  fvalueMulti[0] = Zvertex1;
+  fvalueMulti[1] = fMultV0M;
+  fvalueMulti[2] = fMultSPDTracklets;
+  fvalueMulti[3] = V0Mult;
+  fvalueMulti[4] = nAcc;
+  fvalueMulti[5] = correctednAcc;
+  fvalueMulti[6] = vzeroMultCorr;
   
 
   fSparseMulti->Fill(fvalueMulti);    
-
 
 
   //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
@@ -576,6 +572,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 		
 		
   for (Int_t iTracks=0; iTracks< ntracks; iTracks++) {
+
     AliAODTrack* track = 0x0;
     if(!fUseTender) track = (AliAODTrack*)fAOD->GetTrack(iTracks);
     if(fUseTender) track =  dynamic_cast<AliAODTrack*>(fTracks_tender->At(iTracks));
@@ -656,7 +653,8 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	fvalueElectron[5] = vzeroMultCorr; //V0M, Multiplicity information
 	fvalueElectron[6] = correctednAcc; //SPD Tracklets
 	fvalueElectron[7] = Etrkmatch;  //cluster energy after matching
-	fvalueElectron[8] = Zvertex1;					
+	fvalueElectron[8] = Zvertex1;
+						
 	fSparseElectron->Fill(fvalueElectron);   //Electron information sparse         
 	
 	if(nsigma < -1.  || nsigma > 3.) continue;
@@ -664,10 +662,9 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	if(Eoptrk < 0.8 || Eoptrk > 1.2) continue;
 
 	fvaluePHElectron[0] = TrkPt;
-	fvaluePHElectron[1] = nsigma;
-	fvaluePHElectron[2] = vzeroMultCorr; //V0M, Multiplicity information
-	fvaluePHElectron[3] = correctednAcc; //SPD Tracklets
-	fvaluePHElectron[4] = Etrkmatch;  //cluster energy after matching
+	fvaluePHElectron[1] = vzeroMultCorr; //V0M, Multiplicity information
+	fvaluePHElectron[2] = correctednAcc; //SPD Tracklets
+	fvaluePHElectron[3] = Etrkmatch;  //cluster energy after matching
 	
 	Bool_t fFlagPhotonicElec = kFALSE, fFlagElecLS=kFALSE;
 	SelectNonHFElectron(iTracks,track,fFlagPhotonicElec,fFlagElecLS);					    
@@ -981,6 +978,7 @@ void AliAnalysisTaskHFEMultiplicity::GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODC
   phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 //______________________________________________________________________________
+
 void AliAnalysisTaskHFEMultiplicity::Terminate(Option_t *)
 {
   
