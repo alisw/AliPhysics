@@ -255,6 +255,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_IsoE  = 30;
     double min_IsoE = -5.0;
     double max_IsoE = 10.0; 
+
+    int nbins_IsoETruth  = 40; 
+    double min_IsoETruth = 0.0;
+    double max_IsoETruth = 20.0;
  
     int nbins_nTracks = 50;
     double min_nTracks = 0.0;
@@ -362,13 +366,13 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     axisNames = axisNames + " ISO Truth; IsTrueGamma; " ; 
     int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
                                       nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Matching, nbins_Matching, nbins_Exoticity, nbins_time, nbins_nTracks, nbins_nClusters,
-                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_trueGamma};
+                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoETruth, nbins_trueGamma};
     double xminCluster[nbins_Cluster] = {min_RunNumber, min_Centrality, min_zvertex, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
 					 min_DisToBorder, min_DisToBad, min_dR, min_Matching, min_Matching, min_Exoticity, min_time, min_nTracks, min_nClusters, 
-                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE,  min_IsoE, min_IsoE, min_trueGamma};
+                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE,  min_IsoE, min_IsoETruth, min_trueGamma};
     double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_Centrality, max_zvertex, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
 					 max_DisToBorder, max_DisToBad, max_dR, max_Matching, max_Matching, max_Exoticity, max_time, max_nTracks, max_nClusters, 
-                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_trueGamma};
+                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoETruth, max_trueGamma};
 
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
@@ -851,7 +855,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, 
   } //end loop over particles
 
  
-  sumET = std::min(sumET, 9.9);
+  sumET = std::min(sumET, 19.9);
   IsoE       = sumET;
  
   return;
@@ -1183,7 +1187,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
 			  std::min(UE_Tracks_ortho, ulimit),
 			  std::min(IsoE_Tracks- UE_Tracks_etaband, ulimit),
 			  std::min(IsoE_Tracks- UE_Tracks_ortho, ulimit),
-                          std::min(IsoE_Truth, ulimit),
+                          std::min(IsoE_Truth, 19.9 ),
                           trueGamma
                           };
 
