@@ -27,9 +27,10 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
                                                                  const Bool_t           isQA                      = kFALSE,
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            minNLM                    = 1,
-                                                                 const Int_t            trig                      = 0,
+                                                                 const char*            trig                      = "INT7",
                                                                  const Bool_t           M02cut                    = kTRUE,
-                                                                 const Bool_t           ThnSp                     = kTRUE
+                                                                 const Bool_t           ThnSp                     = kTRUE,
+                                                                 const Bool_t           onlyL1RecalcEvents        = kFALSE
                                                                  )
 {
   
@@ -47,7 +48,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   TString myContName("");
     myContName = Form("Analysis_Neutrals");
   
-  myContName.Append(Form("_Trigger%d_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_M02cut_%s", trig, bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, M02cut ? "On":"Off" ));
+  myContName.Append(Form("_Trigger_%s_L1recalc_%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_M02cut_%s", trig,onlyL1RecalcEvents ? "Yes" : "No", bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, M02cut ? "On":"Off" ));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALClusterTurnOn* task = new AliAnalysisTaskEMCALClusterTurnOn("Analysis",bHisto);
@@ -100,6 +101,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
   task->SetQA(isQA);
   task->SetThn(ThnSp);
+  task->SetOnlyRecalc(onlyL1RecalcEvents);
   task->SetNLMCut(bNLMCut,NLMCut,minNLM);
   task->SetPtBinning(ptBin);
   task->SetPtClBinning(ptClBin);
