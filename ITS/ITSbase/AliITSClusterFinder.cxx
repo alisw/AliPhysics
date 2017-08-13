@@ -321,14 +321,14 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
   //------------------------------------------------------------
   const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
   int ntracks = 0;
-  if (!mcEv) {
+  if (!mcEv) { // we need to filter out labels from bg event in absence of full MCevent info
     AliRunLoader *rl = AliRunLoader::Instance();
     if(!rl) return;
     TTree *trK=(TTree*)rl->TreeK();
     if (!trK) return;
   }
-  else { // we need to filter out labels from bg event in absence of full MCevent info
-    ntracks = gAlice->GetMCApp()->GetNtrack();
+  else { 
+    ntracks = mcEv->GetNumberOfTracks(); //gAlice->GetMCApp()->GetNtrack();
   }
   //
   int labS[10];
