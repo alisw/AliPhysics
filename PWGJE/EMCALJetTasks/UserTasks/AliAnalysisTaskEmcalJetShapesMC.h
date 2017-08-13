@@ -67,6 +67,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
+  void SetSwitchkT(Int_t c)                                 { fSwitchKtNSub   = c   ; }
+  void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
+  void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
