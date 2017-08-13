@@ -1772,8 +1772,8 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         Double_t vy = +ux;
         
         Double_t lPreprocessDCAxy = 1e+3; //define outside scope
-        Double_t lPreprocessxp = 0;
-        Double_t lPreprocessxn = 0;
+        Double_t lPreprocessxp = pt->GetX(); //start at current location
+        Double_t lPreprocessxn = nt->GetX(); //start at current location
         
         if( lDist > NegRadius + PosRadius ){
             //================================================================
@@ -1802,8 +1802,10 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
                                                TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
                                                );
                 //Pass coordinates
-                lPreprocessxp = xThisPos;
-                lPreprocessxn = xThisNeg;
+                if( lPreprocessDCAxy<1e+3){
+                    lPreprocessxp = xThisPos;
+                    lPreprocessxn = xThisNeg;
+                }
             }
             //================================================================
         } else {
@@ -1907,6 +1909,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
                 lPreprocessDCAxy = lDCAxyLargestR;
                 lPreprocessxp = lxpLargestR;
                 lPreprocessxn = lxnLargestR;
+            }
+            //Protection against something too crazy, please
+            if( lPreprocessDCAxy>1e+3){
+                lPreprocessxp = pt->GetX(); //start at current location
+                lPreprocessxn = nt->GetX(); //start at current location
             }
         }
         //End of preprocessing stage!
