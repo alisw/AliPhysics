@@ -75,6 +75,7 @@ public:
   void                     SetCTMdeltaPhi (Float_t r)                                      { fdphicut = r ;}
   void                     SetQA (Bool_t QA)                                               { fQA = QA;}
   void                     SetThn (Bool_t Th)                                              { fThn = Th;}
+  void                     SetOnlyRecalc (Bool_t rec)                                              { fRecalc = rec;}
   void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut, Int_t NLMmin)                       { fIsNLMCut = isNLMCut;
     fNLMCut = NLMCut; fNLMmin = NLMmin;}
   void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
@@ -105,9 +106,9 @@ protected:
   Double_t*                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                     ExecOnce();
   Bool_t                   Run();
-  void                     FillTHnSparse(AliVCluster *coi, TLorentzVector vecCOI, Double_t RejectedAt);
+  void                     FillTHnSparse(AliEMCALGeometry* geom, AliVCluster *coi, TLorentzVector vecCOI, Double_t RejectedAt);
   
-  AliAODEvent *fAOD;       //!<!
+  AliAODEvent *fAODEvent;  //!<!
   AliVEvent *fVevent;      //!<! AliVEvent
   
   AliEMCALRecoUtils          *fEMCALRecoUtils; //!<!  EMCAL utils for cluster rereconstruction.
@@ -123,6 +124,7 @@ protected:
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
   Bool_t      fQA;                             // Flag for few further QA plots wrt the ones already done in the EMCALTask
   Bool_t      fThn;                            // Flag for ThnSparse
+  Bool_t      fRecalc;                         // only analyze events with L1 recalc patch above 2012 threshold
   Int_t       fNDimensions;                    //!<!number of Dimensions for the THnSPARSE Reconstruction
   Int_t       fClusDimensions;                 //!<!number of Dimensions for the THnSparse with cluster info
   Bool_t      fIsNLMCut;                       // NLM cut available
@@ -130,9 +132,6 @@ protected:
   Int_t       fNLMmin;                         // minimum number of NLM
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
-  Int_t       fTest1;
-  Bool_t      fM02cut;
-  AliAODEvent*        fAODEvent;          //!<! AOD event pointer (cast of fEvent).
   
     // Initialization of variables for THnSparse
 
@@ -149,6 +148,7 @@ protected:
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
   TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
+  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
   TH1D        *fPT;                             //!<! Pt distribution
   TH1D        *fE;                              //!<! E distribution
   TH2D        *fNLM;                            //!<! NLM distribution
@@ -156,30 +156,29 @@ protected:
   TH1D        *fEvents;                         //!<! Number of Events
   TH1D        *fPtaftTime;                      //!<! E distribution for clusters after cluster time cut
   TH1D        *fCelldist;                       //!<! Cell distribution after time cut
-  TH1D        *fNLMdist;                        //!<! NLM distribution after nCells cut
   TH1D        *fPtaftCell;                      //!<! Pt distribution for clusters after NCells cut
+  TH1D        *fNLMdist;                        //!<! NLM distribution after nCells cut
   TH1D        *fPtaftNLM;                       //!<! Pt distribution for clusters after NLM cut
   TH1D        *fPtaftTM;                        //!<! E distribution for neutral clusters
   TH1D        *fDTBC;                           //!<! DTBC distribution after TM
   TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
   TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
   TH1D        *fClusTime;                       //!<! Time distribution for clusters
-  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
   TH2D        *fTriggerbit;                     //!<! fired Trigger Bits 
-  TH2D        *fADCvsEonline;                   //!<! online ADC vs Patch E
-  TH2D        *fADCvsEall;                      //!<! ADC vs Patch E
-  TH1D        *fL0triggered;
-  TH1D        *fL1triggered;
-  TH1D        *fEventsover10;
-  TH1D        *hPatchADC;
-  TH2D        *hmaxADC;
   TH2D        *hmaxL0ADC;
+  TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
+  TH2D        *fEventsover10;                   
+  TH1D        *fL1triggered;                    //!<! max cluster energy of L1 triggered events
+  TH2D        *hmaxADC;
+  TH2D        *hL1PatchPosition;
+  TH2D        *hFastOrPatchE;
   TH1D        *hL0Amplitude;
-  TH2D        *hFastOrIndex;
   
   THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
   THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
   
+  TH2D        *hFastOrIndexLeadingCluster;
+  Bool_t      fM02cut;
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented
