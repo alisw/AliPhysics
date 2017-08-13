@@ -23,7 +23,7 @@ class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
   AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnDEtaDPhiTHn& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiTHn();
 
-  
+
   AliFemtoCorrFctnDEtaDPhiTHn& operator=(const AliFemtoCorrFctnDEtaDPhiTHn& aCorrFctn);
 
   virtual AliFemtoString Report();
@@ -55,4 +55,3 @@ class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
 
 
 #endif
-
