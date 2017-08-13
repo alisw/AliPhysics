@@ -170,7 +170,7 @@ Double_t * AliPerformanceObject::CreateLogAxis(Int_t nbins, Double_t xmin, Doubl
 
   xbins[0] = xmin;
   for (Int_t i=1;i<=nbins;i++) {
-    xbins[i] = xmin + TMath::Power(10,logxmin+i*binwidth);
+    xbins[i] = TMath::Power(10,logxmin+i*binwidth);
   }
 
 return xbins;
