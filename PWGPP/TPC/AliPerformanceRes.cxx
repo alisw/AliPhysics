@@ -111,14 +111,14 @@ void AliPerformanceRes::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-1, ptMax = 20.;
+  Double_t ptMin = 15.e-3, ptMax = 20.;
 
   Double_t *binsPt = 0;
 
   if (IsHptGenerator())  { 
         ptMax = 100.;
   } 
-   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
+  binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
 
   Double_t yMin = -0.02, yMax = 0.02;
   Double_t zMin = -12.0, zMax = 12.0;
@@ -1031,14 +1031,14 @@ void AliPerformanceRes::Analyse() {
       //Ranges
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      if (j!=9) fResolHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // pt threshold
-      else fResolHisto->GetAxis(9)->SetRangeUser(0.1,9.99);
+      if (j!=9) fResolHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
+      else fResolHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
 
       if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
-      if (j!=9) fPullHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // pt threshold
-      else fPullHisto->GetAxis(9)->SetRangeUser(0.1,9.99);
+      if (j!=9) fPullHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
+      else fPullHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
       if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
       
       //Resolutions
