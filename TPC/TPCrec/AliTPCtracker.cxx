@@ -1581,7 +1581,7 @@ Int_t  AliTPCtracker::LoadClusters()
   */
 
   if (AliTPCReconstructor::GetCountMCTrackClusters()) {
-    static std::vector<short> nclPerTrack;
+    static std::vector<short> nclPerTrack,nclMPerTrack;
     static Int_t nclTot=0, nclOrphan=0, nMCTracks;
     if (!fMCtrackNClTree) {
       TFile* outF = TFile::Open("nclTPCperMCtrack.root","RECREATE");
@@ -1590,13 +1590,14 @@ Int_t  AliTPCtracker::LoadClusters()
       fMCtrackNClTree->Branch("nclTot",&nclTot);
       fMCtrackNClTree->Branch("nclOrphan",&nclOrphan);
       fMCtrackNClTree->Branch("nclPerTrack",&nclPerTrack);
+      fMCtrackNClTree->Branch("nclMPerTrack",&nclMPerTrack);
     }
     nMCTracks = 0;
     nclTot = 0;
     nclOrphan = 0;
     while(1) {
       const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
-      if (!mcEv) {
+      if (!mcEv) { // we need to filter out labels from bg event in absence of full MCevent info
 	AliRunLoader *rl = AliRunLoader::Instance();
 	TTree* trK = 0;
 	if(!rl || !(trK=(TTree*)rl->TreeK())) {
@@ -1605,12 +1606,15 @@ Int_t  AliTPCtracker::LoadClusters()
 	}
 	nMCTracks = trK->GetEntries();
       }
-      else { // we need to filter out labels from bg event in absence of full MCevent info
-	nMCTracks = gAlice->GetMCApp()->GetNtrack();
+      else { 
+	nMCTracks = mcEv->GetNumberOfTracks();
       }
       //
       nclPerTrack.clear();
       nclPerTrack.resize(nMCTracks,0);
+      nclMPerTrack.clear();
+      nclMPerTrack.resize(nMCTracks,0);
+      int lbReal[3];
       if (nMCTracks) {
 	for (Int_t sec=0;sec<fkNOS;sec++) {
 	  for (Int_t row=0;row<fInnerSec->GetNRows();row++) {
@@ -1618,26 +1622,22 @@ Int_t  AliTPCtracker::LoadClusters()
 	    for (Int_t icl =0;icl< fInnerSec[sec][row].GetN1();icl++) {
 	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	      nclTot++;
-	      for (int ilb=0;ilb<3;ilb++) {
-		int lbl = cl->GetLabel(ilb);
-		if (lbl<0 || lbl>=nMCTracks) {
-		  break;
-		  if (!ilb) nclOrphan++;
-		}
-		nclPerTrack[lbl]++;
+	      int nlb = GetAdjustedLabels(cl,lbReal);
+	      if (!nlb) nclOrphan++;
+	      for (int i=nlb;i--;) {
+		nclPerTrack[lbReal[i]]++;
+		nclMPerTrack[lbReal[i]] += nlb; // to account for clusters with mult. labels
 	      }
 	    }
 	    cla = fInnerSec[sec][row].GetClusters2();
 	    for (Int_t icl =0;icl< fInnerSec[sec][row].GetN2();icl++) {
 	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	      nclTot++;
-	      for (int ilb=0;ilb<3;ilb++) {
-		int lbl = cl->GetLabel(ilb);
-		if (lbl<0 || lbl>=nMCTracks) {
-		  if (!ilb) nclOrphan++;
-		  break;
-		}
-		nclPerTrack[lbl]++;
+	      int nlb = GetAdjustedLabels(cl,lbReal);
+	      if (!nlb) nclOrphan++;
+	      for (int i=nlb;i--;) {
+		nclPerTrack[lbReal[i]]++;
+		nclMPerTrack[lbReal[i]] += nlb; // to account for clusters with mult. labels
 	      }
 	    }
 	  }
@@ -1648,26 +1648,22 @@ Int_t  AliTPCtracker::LoadClusters()
 	    for (Int_t icl =0;icl< fOuterSec[sec][row].GetN1();icl++) {
 	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	      nclTot++;
-	      for (int ilb=0;ilb<3;ilb++) {
-		int lbl = cl->GetLabel(ilb);
-		if (lbl<0 || lbl>=nMCTracks) {
-		  if (!ilb) nclOrphan++;
-		  break;
-		}
-		nclPerTrack[lbl]++;
+	      int nlb = GetAdjustedLabels(cl,lbReal);
+	      if (!nlb) nclOrphan++;
+	      for (int i=nlb;i--;) {
+		nclPerTrack[lbReal[i]]++;
+		nclMPerTrack[lbReal[i]] += nlb; // to account for clusters with mult. labels
 	      }
 	    }
 	    cla = fOuterSec[sec][row].GetClusters2();
 	    for (Int_t icl =0;icl< fOuterSec[sec][row].GetN2();icl++) {
 	      AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	      nclTot++;
-	      for (int ilb=0;ilb<3;ilb++) {
-		int lbl = cl->GetLabel(ilb);
-		if (lbl<0 || lbl>=nMCTracks) {
-		  if (!ilb) nclOrphan++;
-		  break;
-		}
-		nclPerTrack[lbl]++;
+	      int nlb = GetAdjustedLabels(cl,lbReal);
+	      if (!nlb) nclOrphan++;
+	      for (int i=nlb;i--;) {
+		nclPerTrack[lbReal[i]]++;
+		nclMPerTrack[lbReal[i]] += nlb; // to account for clusters with mult. labels
 	      }
 	    }
 	  }
@@ -1680,6 +1676,23 @@ Int_t  AliTPCtracker::LoadClusters()
 
   return 0;
 }
+
+int AliTPCtracker::GetAdjustedLabels(const AliTPCclusterMI* cl, int *lbReal)
+{
+  const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
+  int nlb=0;
+  for (int ilb=0;ilb<3;ilb++) {
+    int lbl = cl->GetLabel(ilb);   
+    if (lbl<0) break;
+    // check for duplicates 
+    Bool_t skip = kFALSE;
+    for (int l0=ilb;l0--;) if (lbl==cl->GetLabel(l0)) skip = kTRUE;
+    if (skip) continue;
+    lbReal[nlb++] = mcEv ? mcEv->Raw2MergedLabel(lbl) : lbl;
+  }
+  return nlb;
+}
+
 
 void  AliTPCtracker::CalculateXtalkCorrection(){
   //
