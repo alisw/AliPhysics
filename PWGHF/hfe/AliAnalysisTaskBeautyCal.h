@@ -85,6 +85,8 @@ private:
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask; //! new Qn vector framework
+    AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
     AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager

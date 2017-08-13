@@ -64,6 +64,9 @@
 #include "AliKFVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
+#include "AliQnCorrectionsManager.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+
 #include "AliAnalysisTaskBeautyCal.h"
 
 using std::cout;
@@ -76,6 +79,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fVevent(0),
   fESD(0),
   fAOD(0),
+  flowQnVectorTask(0),
+  fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
   fCFM(0),
@@ -215,6 +220,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fVevent(0),
   fESD(0),
   fAOD(0),
+  flowQnVectorTask(0),
+  fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
   fCFM(0),
@@ -835,6 +842,34 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     {
      if(centrality < fcentMim || centrality > fcentMax)return;
     }
+
+   ///////// RP  
+
+        flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+
+        if (flowQnVectorTask != NULL) {
+            fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+            //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        }
+        else {
+            AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+            return;
+        }
+
+        TList *qnlist = 0x0;
+        qnlist = fFlowQnVectorMgr->GetQnVectorList();
+        fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        //cout << "EP list ; " << qnlist->Print() << endl; 
+
+        const AliQnCorrectionsQnVector *qnV0;
+        //qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
+        qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQpverM","latest","latest");
+        Double_t evPlaneV0 = 0.0;
+        //if (qnV0 != NULL) evPlaneV0 = qnV0->EventPlane(2);
+        if (qnV0) evPlaneV0 = qnV0->EventPlane(2);
+        cout << "evPlane = " << qnV0 << " ; " << evPlaneV0 << endl;
+
+
 
   ////////////////
   //Event vertex//
