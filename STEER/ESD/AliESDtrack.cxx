@@ -656,8 +656,9 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   SetITSdEdxSamples(itsdEdx);
   //
   SetTPCsignal(track->GetTPCsignal(),fTPCsignalS,track->GetTPCsignalN()); // No signalS in AODPi
-  AliTPCdEdxInfo * dEdxInfo = track->GetTPCdEdxInfo();
-  if (dEdxInfo) SetTPCdEdxInfo(new AliTPCdEdxInfo(*dEdxInfo));
+  
+  AliTPCdEdxInfo dEdxInfo;
+  if (track->GetTPCdEdxInfo( dEdxInfo )) SetTPCdEdxInfo(new AliTPCdEdxInfo(dEdxInfo));
   //
   SetTRDsignal(track->GetTRDsignal());
   int ntrdsl = track->GetNumberOfTRDslices();

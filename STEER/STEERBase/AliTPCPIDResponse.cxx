@@ -747,15 +747,16 @@ Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track,
   Double32_t signal[4]; //0: IROC, 1: OROC medium, 2:OROC long, 3: OROC all (def. truncation used)
   Char_t ncl[3];        //same
   Char_t nrows[3];      //same
-  const AliTPCdEdxInfo* dEdxInfo = track->GetTPCdEdxInfo();
+  AliTPCdEdxInfo dEdxInfo;
+  bool dEdxInfoOK = track->GetTPCdEdxInfo( dEdxInfo );
   
-  if (!dEdxInfo && dedxSource!=kdEdxDefault)  //in one case its ok if we dont have the info
+  if (!dEdxInfoOK && dedxSource!=kdEdxDefault)  //in one case its ok if we dont have the info
   {
     AliError("AliTPCdEdxInfo not available");
     return kFALSE;
   }
 
-  if (dEdxInfo) dEdxInfo->GetTPCSignalRegionInfo(signal,ncl,nrows);
+  if (dEdxInfoOK) dEdxInfo.GetTPCSignalRegionInfo(signal,ncl,nrows);
 
   //check if we cross a bad OROC in which case we reject
   EChamberStatus trackOROCStatus = TrackStatus(track,2);
@@ -1316,9 +1317,9 @@ Double_t AliTPCPIDResponse::GetTrackdEdx(const AliVTrack* track) const
 {
   // get dEdx of the track depending on the selected dEdx type
   if (fdEdxType == kdEdxInfo) {
-    const AliTPCdEdxInfo *dEdxInfo = track->GetTPCdEdxInfo();
-    if (dEdxInfo) {
-      return dEdxInfo->GetWeightedMean(fdEdxChargeType, fdEdxWeightType, fIROCweight, fOROCmedWeight, fOROClongWeight);
+    AliTPCdEdxInfo dEdxInfo;
+    if ( track->GetTPCdEdxInfo( dEdxInfo ) ) {
+      return dEdxInfo.GetWeightedMean(fdEdxChargeType, fdEdxWeightType, fIROCweight, fOROCmedWeight, fOROClongWeight);
     } else {
       AliError("Could not find dEdx info, using default signal");
     }

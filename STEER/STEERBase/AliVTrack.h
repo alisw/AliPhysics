@@ -89,7 +89,7 @@ public:
   virtual const TBits* GetTPCFitMapPtr()     const {return NULL;}
   virtual const TBits* GetTPCSharedMapPtr()  const {return NULL;}
   virtual Float_t  GetTPCClusterInfo(Int_t /*nNeighbours*/, Int_t /*type*/, Int_t /*row0*/=0, Int_t /*row1*/=159, Int_t /*type*/= 0) const {return 0.;}
-  virtual AliTPCdEdxInfo * GetTPCdEdxInfo() const {return 0x0;}
+  virtual Bool_t GetTPCdEdxInfo( AliTPCdEdxInfo & ) const { return 0; } // return 0 if AliTPCdEdxInfo does not exist
   virtual UShort_t GetTPCNcls() const { return 0;}
   virtual UShort_t GetTPCNclsF() const { return 0;}
   virtual Double_t GetTPCchi2() const {return 0;}

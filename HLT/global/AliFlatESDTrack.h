@@ -96,7 +96,13 @@ class AliFlatESDTrack :public AliVTrack {
   const AliFlatTPCdEdxInfo * GetFlatTPCdEdxInfo() const {
     return ( fTPCdEdxInfoPointer>=0 ) ? reinterpret_cast< const AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer) : NULL;  
   }
- 
+
+  Bool_t GetTPCdEdxInfo( AliTPCdEdxInfo &info ) const {
+    const AliFlatTPCdEdxInfo *p = GetFlatTPCdEdxInfo();
+    if( p ){ p->GetTPCdEdxInfo( &info ); return 1; }
+    return 0;
+  };
+
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
 
    const AliFlatESDTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDTrack*>(fContent+fContentSize); }

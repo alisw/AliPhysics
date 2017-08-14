@@ -12,8 +12,7 @@
 
 #include <TObject.h>
 #include "AliPID.h"
-
-class AliTPCdEdxInfo;
+#include "AliTPCdEdxInfo.h"
 
 class AliAODPid : public TObject {
 
@@ -51,7 +50,10 @@ class AliAODPid : public TObject {
   }
   Double_t  GetTPCsignal()       const {return  fTPCsignal;}
   UShort_t  GetTPCsignalN()      const {return  (UShort_t)fTPCsignalN;}
-  AliTPCdEdxInfo * GetTPCdEdxInfo()const{return fTPCdEdxInfo;}
+  Bool_t  GetTPCdEdxInfo( AliTPCdEdxInfo &v) const {
+    if( fTPCdEdxInfo ){ v = *fTPCdEdxInfo; return kTRUE;}
+    return kFALSE;
+  }
 
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Double_t  GetTPCTgl()          const {return  fTPCTgl;}

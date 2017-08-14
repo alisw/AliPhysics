@@ -622,9 +622,12 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  nrows[0] = info->nHitsSubThresholdIROC;
 	  nrows[1] = info->nHitsSubThresholdOROC1;
 	  nrows[2] = info->nHitsSubThresholdOROC2;
+
+	  // We store incorrect qMax in the region and qTot in the qMax region
+	  // to reproduce incorrect implementation in offline AliTPCdEdxInfo...
 	  
-	  flatdEdxInfo.SetSignalTot( signalTot );
-	  flatdEdxInfo.SetSignalMax( signalMax );
+	  flatdEdxInfo.SetSignalTot( signalMax ); // !!! Achtung !!! 
+	  flatdEdxInfo.SetSignalMax( signalTot ); // !!! Achtung !!!
 	  flatdEdxInfo.SetNumberOfClusters( ncl );
 	  flatdEdxInfo.SetNumberOfCrossedRows( nrows );
 

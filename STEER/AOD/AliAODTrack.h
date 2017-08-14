@@ -322,7 +322,7 @@ class AliAODTrack : public AliVTrack {
   Double_t  GetTPCsignalTunedOnData() const { return fTPCsignalTuned;}
   void      SetTPCsignalTunedOnData(Double_t signal) {fTPCsignalTuned = signal;}
   UShort_t  GetTPCsignalN()      const { return fDetPid?fDetPid->GetTPCsignalN():0;    }
-  virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
+  virtual Bool_t GetTPCdEdxInfo( AliTPCdEdxInfo &v) const {return fDetPid?fDetPid->GetTPCdEdxInfo(v):0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTPCTgl()          const { return fDetPid?fDetPid->GetTPCTgl():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.;    }
