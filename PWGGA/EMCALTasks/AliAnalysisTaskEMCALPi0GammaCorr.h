@@ -73,6 +73,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
   double                      GetEff(AliTLorentzVector ParticleVec)                         ;
   void                        AnalyzeMC();
+  Bool_t                      IsRealPion(AliVCluster* cluster_1, AliVCluster* cluster_2, double &truepT); 
 
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   //Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
@@ -108,6 +109,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TString     fPeriod;                         //!<! String containing the LHC period
 
   THnSparse                 *h_Track;                   //!<!
+  THnSparse                 *h_Truth;                   //!<!
   THnSparse                 *h_Cluster;                 //!<!
   THnSparse                 *h_ClusterTrack;                 //!<! THnSparse with info on cluster and track.
   THnSparse                 *h_ClusterTrack_Mixed;                 //!<!

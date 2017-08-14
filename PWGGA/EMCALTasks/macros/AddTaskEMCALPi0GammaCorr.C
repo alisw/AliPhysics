@@ -1,5 +1,5 @@
 // $Id$
-AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC)
+AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
 {  
 
   std::cout << "Beggining AddTaskEMCALPi0GammaCorr" << std::endl;
