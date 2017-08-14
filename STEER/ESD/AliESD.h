@@ -158,7 +158,7 @@ public:
   Float_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
   Float_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
   void GetDiamondCovXY(Float_t cov[3]) const {
-    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
+    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i];
   }
 
   Int_t  GetEventNumberInFile() const {return fEventNumberInFile;}
