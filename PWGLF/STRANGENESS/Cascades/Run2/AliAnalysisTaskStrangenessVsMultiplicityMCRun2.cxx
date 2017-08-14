@@ -443,6 +443,27 @@ fTreeCascVarBachITSClusters3(0),
 fTreeCascVarBachITSClusters4(0),
 fTreeCascVarBachITSClusters5(0),
 
+fTreeCascVarPosITSSharedClusters0(0),
+fTreeCascVarPosITSSharedClusters1(0),
+fTreeCascVarPosITSSharedClusters2(0),
+fTreeCascVarPosITSSharedClusters3(0),
+fTreeCascVarPosITSSharedClusters4(0),
+fTreeCascVarPosITSSharedClusters5(0),
+
+fTreeCascVarNegITSSharedClusters0(0),
+fTreeCascVarNegITSSharedClusters1(0),
+fTreeCascVarNegITSSharedClusters2(0),
+fTreeCascVarNegITSSharedClusters3(0),
+fTreeCascVarNegITSSharedClusters4(0),
+fTreeCascVarNegITSSharedClusters5(0),
+
+fTreeCascVarBachITSSharedClusters0(0),
+fTreeCascVarBachITSSharedClusters1(0),
+fTreeCascVarBachITSSharedClusters2(0),
+fTreeCascVarBachITSSharedClusters3(0),
+fTreeCascVarBachITSSharedClusters4(0),
+fTreeCascVarBachITSSharedClusters5(0),
+
 //Uncertainty information on mass (from KF) for testing purposes
 fTreeCascVarV0LambdaMassError(0),
 fTreeCascVarV0AntiLambdaMassError(0),
@@ -787,6 +808,27 @@ fTreeCascVarBachITSClusters2(0),
 fTreeCascVarBachITSClusters3(0),
 fTreeCascVarBachITSClusters4(0),
 fTreeCascVarBachITSClusters5(0),
+
+fTreeCascVarPosITSSharedClusters0(0),
+fTreeCascVarPosITSSharedClusters1(0),
+fTreeCascVarPosITSSharedClusters2(0),
+fTreeCascVarPosITSSharedClusters3(0),
+fTreeCascVarPosITSSharedClusters4(0),
+fTreeCascVarPosITSSharedClusters5(0),
+
+fTreeCascVarNegITSSharedClusters0(0),
+fTreeCascVarNegITSSharedClusters1(0),
+fTreeCascVarNegITSSharedClusters2(0),
+fTreeCascVarNegITSSharedClusters3(0),
+fTreeCascVarNegITSSharedClusters4(0),
+fTreeCascVarNegITSSharedClusters5(0),
+
+fTreeCascVarBachITSSharedClusters0(0),
+fTreeCascVarBachITSSharedClusters1(0),
+fTreeCascVarBachITSSharedClusters2(0),
+fTreeCascVarBachITSSharedClusters3(0),
+fTreeCascVarBachITSSharedClusters4(0),
+fTreeCascVarBachITSSharedClusters5(0),
 
 //Uncertainty information on mass (from KF) for testing purposes
 fTreeCascVarV0LambdaMassError(0),
@@ -1219,6 +1261,28 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachITSClusters3",&fTreeCascVarBachITSClusters3,"fTreeCascVarBachITSClusters3/O");
             fTreeCascade->Branch("fTreeCascVarBachITSClusters4",&fTreeCascVarBachITSClusters4,"fTreeCascVarBachITSClusters4/O");
             fTreeCascade->Branch("fTreeCascVarBachITSClusters5",&fTreeCascVarBachITSClusters5,"fTreeCascVarBachITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters0",&fTreeCascVarPosITSSharedClusters0,"fTreeCascVarPosITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters1",&fTreeCascVarPosITSSharedClusters1,"fTreeCascVarPosITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters2",&fTreeCascVarPosITSSharedClusters2,"fTreeCascVarPosITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters3",&fTreeCascVarPosITSSharedClusters3,"fTreeCascVarPosITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters4",&fTreeCascVarPosITSSharedClusters4,"fTreeCascVarPosITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters5",&fTreeCascVarPosITSSharedClusters5,"fTreeCascVarPosITSSharedClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters0",&fTreeCascVarNegITSSharedClusters0,"fTreeCascVarNegITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters1",&fTreeCascVarNegITSSharedClusters1,"fTreeCascVarNegITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters2",&fTreeCascVarNegITSSharedClusters2,"fTreeCascVarNegITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters3",&fTreeCascVarNegITSSharedClusters3,"fTreeCascVarNegITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters4",&fTreeCascVarNegITSSharedClusters4,"fTreeCascVarNegITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters5",&fTreeCascVarNegITSSharedClusters5,"fTreeCascVarNegITSSharedClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters0",&fTreeCascVarBachITSSharedClusters0,"fTreeCascVarBachITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters1",&fTreeCascVarBachITSSharedClusters1,"fTreeCascVarBachITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters2",&fTreeCascVarBachITSSharedClusters2,"fTreeCascVarBachITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters3",&fTreeCascVarBachITSSharedClusters3,"fTreeCascVarBachITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters4",&fTreeCascVarBachITSSharedClusters4,"fTreeCascVarBachITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters5",&fTreeCascVarBachITSSharedClusters5,"fTreeCascVarBachITSSharedClusters5/O");
+            
             //Uncertainty information on mass (from KF) for testing purposes
             fTreeCascade->Branch("fTreeCascVarV0LambdaMassError",&fTreeCascVarV0LambdaMassError,"fTreeCascVarV0LambdaMassError/F");
             fTreeCascade->Branch("fTreeCascVarV0AntiLambdaMassError",&fTreeCascVarV0AntiLambdaMassError,"fTreeCascVarV0AntiLambdaMassError/F");
@@ -2285,6 +2349,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarBachITSClusters4 = 0;
         fTreeCascVarBachITSClusters5 = 0;
         
+        fTreeCascVarPosITSSharedClusters0 = 0;
+        fTreeCascVarPosITSSharedClusters1 = 0;
+        fTreeCascVarPosITSSharedClusters2 = 0;
+        fTreeCascVarPosITSSharedClusters3 = 0;
+        fTreeCascVarPosITSSharedClusters4 = 0;
+        fTreeCascVarPosITSSharedClusters5 = 0;
+        
+        fTreeCascVarNegITSSharedClusters0 = 0;
+        fTreeCascVarNegITSSharedClusters1 = 0;
+        fTreeCascVarNegITSSharedClusters2 = 0;
+        fTreeCascVarNegITSSharedClusters3 = 0;
+        fTreeCascVarNegITSSharedClusters4 = 0;
+        fTreeCascVarNegITSSharedClusters5 = 0;
+        
+        fTreeCascVarBachITSSharedClusters0 = 0;
+        fTreeCascVarBachITSSharedClusters1 = 0;
+        fTreeCascVarBachITSSharedClusters2 = 0;
+        fTreeCascVarBachITSSharedClusters3 = 0;
+        fTreeCascVarBachITSSharedClusters4 = 0;
+        fTreeCascVarBachITSSharedClusters5 = 0;
+        
         //Uncertainty information on mass (from KF) for testing purposes
         fTreeCascVarV0LambdaMassError = 1e+4;
         fTreeCascVarV0AntiLambdaMassError = 1e+4;
@@ -2425,6 +2510,28 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarBachITSClusters3 = bachTrackXi->HasPointOnITSLayer(3);
         fTreeCascVarBachITSClusters4 = bachTrackXi->HasPointOnITSLayer(4);
         fTreeCascVarBachITSClusters5 = bachTrackXi->HasPointOnITSLayer(5);
+        
+        //Check its clusters, shared
+        fTreeCascVarPosITSSharedClusters0 = pTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarPosITSSharedClusters1 = pTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarPosITSSharedClusters2 = pTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarPosITSSharedClusters3 = pTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarPosITSSharedClusters4 = pTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarPosITSSharedClusters5 = pTrackXi->HasSharedPointOnITSLayer(5);
+        
+        fTreeCascVarNegITSSharedClusters0 = nTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarNegITSSharedClusters1 = nTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarNegITSSharedClusters2 = nTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarNegITSSharedClusters3 = nTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarNegITSSharedClusters4 = nTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarNegITSSharedClusters5 = nTrackXi->HasSharedPointOnITSLayer(5);
+        
+        fTreeCascVarBachITSSharedClusters0 = bachTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarBachITSSharedClusters1 = bachTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarBachITSSharedClusters2 = bachTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarBachITSSharedClusters3 = bachTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarBachITSSharedClusters4 = bachTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarBachITSSharedClusters5 = bachTrackXi->HasSharedPointOnITSLayer(5);
         
         //Get error parametrization (warning: be careful with offline/on-the-fly differences
         fTreeCascVarV0LambdaMassError = xi->GetKFInfo(4,2,1);
