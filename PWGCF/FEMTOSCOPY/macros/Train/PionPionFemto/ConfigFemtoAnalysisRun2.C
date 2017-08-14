@@ -246,6 +246,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
           model_manager = new AliFemtoModelManager();
           AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
           weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          weight_gen->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
           model_manager->AcceptWeightGenerator(weight_gen);
       }
 
