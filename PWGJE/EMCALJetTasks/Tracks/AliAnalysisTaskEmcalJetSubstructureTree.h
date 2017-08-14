@@ -71,6 +71,7 @@ struct AliSoftDropParameters {
   Double_t fMg;             ///< Groomed jet mass
   Double_t fRg;             ///< Groomed jet radius
   Double_t fPtg;            ///< Groomed jet pt
+  Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
 };
 
@@ -120,38 +121,42 @@ public:
     kTWeight = 1,
     kTPtJetRec = 2,
     kTPtJetSim = 3,
-    kTRhoPtRec = 4,
-    kTRhoPtSim = 5,
-    kTRhoMassRec = 6,
-    kTRhoMassSim = 7,
-    kTAreaRec = 8,
-    kTAreaSim = 9,
-    kTNEFRec = 10,
-    kTNEFSim = 11,
-    kTMassRec = 12,
-    kTMassSim = 13,
-    kTZgMeasured = 14,
-    kTZgTrue = 15,
-    kTRgMeasured = 16,
-    kTRgTrue = 17,
-    kTMgMeasured = 18,
-    kTMgTrue = 19,
-    kTPtgMeasured = 20,
-    kTPtgTrue = 21,
-    kTOneNSubjettinessMeasured = 22,
-    kTOneNSubjettinessTrue = 23,
-    kTTwoNSubjettinessMeasured = 24,
-    kTTwoNSubjettinessTrue = 25,
-    kTAngularityMeasured = 26,
-    kTAngularityTrue = 27,
-    kTPtDMeasured = 28,
-    kTPtDTrue = 29,
-    kTNCharged = 30,
-    kTNNeutral = 31,
-    kTNConstTrue = 32,
-    kTNDroppedMeasured = 33,
-    kTNDroppedTrue = 34,
-    kTNVar = 35
+    kTEJetRec = 4,
+    kTEJetSim = 5,
+    kTRhoPtRec = 6,
+    kTRhoPtSim = 7,
+    kTRhoMassRec = 8,
+    kTRhoMassSim = 9,
+    kTAreaRec = 10,
+    kTAreaSim = 11,
+    kTNEFRec = 12,
+    kTNEFSim = 13,
+    kTMassRec = 14,
+    kTMassSim = 15,
+    kTZgMeasured = 16,
+    kTZgTrue = 17,
+    kTRgMeasured = 18,
+    kTRgTrue = 19,
+    kTMgMeasured = 20,
+    kTMgTrue = 21,
+    kTPtgMeasured = 22,
+    kTPtgTrue = 23,
+    kTMugMeasured = 24,
+    kTMugTrue = 25,
+    kTOneNSubjettinessMeasured = 26,
+    kTOneNSubjettinessTrue = 27,
+    kTTwoNSubjettinessMeasured = 28,
+    kTTwoNSubjettinessTrue = 29,
+    kTAngularityMeasured = 30,
+    kTAngularityTrue = 31,
+    kTPtDMeasured = 32,
+    kTPtDTrue = 33,
+    kTNCharged = 34,
+    kTNNeutral = 35,
+    kTNConstTrue = 36,
+    kTNDroppedMeasured = 37,
+    kTNDroppedTrue = 38,
+    kTNVar = 39
   };
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
@@ -171,7 +176,7 @@ public:
 	  fReclusterizer = reclusterizer;
 	}
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
