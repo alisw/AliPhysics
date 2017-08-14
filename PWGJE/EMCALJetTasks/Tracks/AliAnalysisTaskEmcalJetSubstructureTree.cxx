@@ -366,8 +366,8 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
   fastjet::PseudoJet groomed = softdropAlgorithm(jet);
 
   AliSoftDropParameters result({groomed.structure_of<fastjet::contrib::SoftDrop>().symmetry(),
-                                groomed.structure_of<fastjet::contrib::SoftDrop>().delta_R(),
                                 groomed.structure_of<fastjet::contrib::SoftDrop>().mu(),
+                                groomed.structure_of<fastjet::contrib::SoftDrop>().delta_R(),
                                 groomed.perp(),
                                 groomed.structure_of<fastjet::contrib::SoftDrop>().dropped_count()});
   return result;
