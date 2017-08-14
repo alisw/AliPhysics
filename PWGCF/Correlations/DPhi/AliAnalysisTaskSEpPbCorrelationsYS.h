@@ -93,6 +93,8 @@ private:
   TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
+  void  CalculateSP();
+  TObjArray* GetFMDhitsYS(Bool_t Aside);
   Bool_t IsAcceptedDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedPhiDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedTrack(const AliAODTrack *aodTrack);
@@ -103,14 +105,14 @@ private:
 
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
-  
+
 
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
                              Float_t, Int_t);
-  
-  
+
+
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
@@ -224,6 +226,9 @@ private:
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
+  TH2D*  fh2_FMD_acceptance;
+  TH2D*  fh2_FMD_eta_phi;
+
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
@@ -282,7 +287,7 @@ private:
   TProfile* SP_uVZEROC1[8];
   TProfile* SP_uVZEROC2[8];
   TProfile* SP_uVZEROC3[8];
-  
+
   ClassDef(AliAnalysisTaskSEpPbCorrelationsYS, 2);
 };
 //---------------------------------------------------------------------------------------
