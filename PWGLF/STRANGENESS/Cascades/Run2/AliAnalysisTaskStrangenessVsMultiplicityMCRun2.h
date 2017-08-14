@@ -640,6 +640,28 @@ private:
     Bool_t fTreeCascVarBachITSClusters4;
     Bool_t fTreeCascVarBachITSClusters5;
     
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
+    
     //Uncertainty information on mass (from KF) for testing purposes
     Float_t fTreeCascVarV0LambdaMassError;
     Float_t fTreeCascVarV0AntiLambdaMassError;
