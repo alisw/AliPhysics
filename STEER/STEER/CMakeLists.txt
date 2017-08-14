@@ -91,6 +91,7 @@ set(SRCS
     AliLoader.cxx
     AliLTUConfig.cxx
     AliLumiTools.cxx
+    AliLumiRef.cxx
     AliMatrixSparse.cxx
     AliMatrixSq.cxx
     AliMC.cxx

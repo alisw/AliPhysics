@@ -171,5 +171,7 @@
 #pragma link C++ class AliHLTSimulation+;
 
 #pragma link C++ class AliLumiTools;
+#pragma link C++ class AliLumiRef+;
+
 
 #endif
