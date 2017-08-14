@@ -505,7 +505,6 @@ void AliEMCALTriggerOfflineQAPP::ProcessCell(const AliEMCALCellInfo& cell)
   if (cell.fEnergy < fMinCellAmp) return;
 
   if (fGeom) {
-    Double_t pos[3] = {0., 0., 0.};
     Int_t sm = fGeom->GetSuperModuleNumber(cell.fAbsId);
     if (fGeom->IsDCALSM(sm)) {
       if (!fDCalPlots) return;
