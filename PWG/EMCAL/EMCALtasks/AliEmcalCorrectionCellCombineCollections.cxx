@@ -182,7 +182,7 @@ void AliEmcalCorrectionCellCombineCollections::AddCellsToCombinedCellObject(AliV
   AliDebugStream(3) << "Adding caloCells \"" << inputCells->GetName() << "\" with " << inputCells->GetNumberOfCells() << " cells to the combined cells" << std::endl;
 
   // Loop over the input cells and add them to the combined cells
-  for (unsigned int i = 0; i < inputCells->GetNumberOfCells(); i++)
+  for (unsigned int i = 0; i < static_cast<unsigned int>(inputCells->GetNumberOfCells()); i++)
   {
     getCellResult = inputCells->GetCell(i, cellNumber, ampltidue, time, mcLabel, eFrac);
     if (!getCellResult) {
