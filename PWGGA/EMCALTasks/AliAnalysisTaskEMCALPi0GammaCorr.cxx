@@ -71,6 +71,7 @@ fMixingEventType(AliVEvent::kINT7),
 fCurrentEventTrigger(0),
 fEventCutList(0),
 h_Track(0),
+h_Truth(0),
 h_Cluster(0),
 h_ClusterTrack(0),
 h_ClusterTrack_Mixed(0),
@@ -104,6 +105,7 @@ fMixingEventType(AliVEvent::kINT7),
 fCurrentEventTrigger(0),
 fEventCutList(0),
 h_Track(0),
+h_Truth(0),
 h_Cluster(0),
 h_ClusterTrack(0),
 h_ClusterTrack_Mixed(0),
@@ -279,6 +281,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_trueGamma = 2.0;
     double min_trueGamma = 0.0;
     double max_trueGamma = 1.0;
+
+    int nbins_truePDG  = 3.0;
+    double min_truePDG = 0.0; 
+    double max_truePDG = 3.0;
     //////////////////////Pion-hadron correlations//////////////////////////
     const int nbins_PionCorr = 13;
     int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt,  //trigger variables
@@ -332,26 +338,28 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_ClusterTrack_Mixed);
     
     ///////////////Pi0////////////////////////////////////
-    const int nbins_Pi = 13;
+    const int nbins_Pi = 14;
     axisNames = "Pion THnSparse; Centrality [%]; Z vertex [cm];#pi Mass [GeV]; #pi pT [GeV]; #pi y;"; 
     axisNames = axisNames+ "Asymmetry; ph1_pT [GeV]; ph2_pT [GeV]; #Delta#phi [mrad];";
     axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ";
-    axisNames = axisNames+ "ph1 dR; ph2 dR;";
+    axisNames = axisNames+ "ph1 dR; ph2 dR; true pT";
 
     int binsPi0[nbins_Pi] = {nbins_Centrality, nbins_zvertex, nbins_Mass, nbins_Pt, nbins_eta,   
                              nbins_Asymmetry, nbins_Pt, nbins_Pt, nbins_alpha, 
 			     nbins_M02, nbins_M02, nbins_dR,nbins_dR,
+                             nbins_Pt
 			     };
                             
     double xminPi0[nbins_Pi] = {min_Centrality, min_zvertex, min_Mass, min_Pt, min_eta, 
                                 min_Asymmetry, min_Pt, min_Pt, min_alpha,
-                                min_M02, min_M02,  min_dR, min_dR
+                                min_M02, min_M02,  min_dR, min_dR,
+                                min_Pt
                                 };
 
     double xmaxPi0[nbins_Pi] = {max_Centrality, max_zvertex, max_Mass, max_Pt, max_eta,
                                 max_Asymmetry, max_Pt, max_Pt, max_alpha,
-                                max_M02, max_M02, max_dR, max_dR
-                                };
+                                max_M02, max_M02, max_dR, max_dR,
+                                max_Pt};
                                 
     h_Pi0= new THnSparseD("h_Pi0", axisNames, nbins_Pi, binsPi0, xminPi0, xmaxPi0);
     h_Pi0->Sumw2();
@@ -385,7 +393,26 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double xmaxTrack[3] = {max_Pt, max_eta, max_phi};
     h_Track = new THnSparseD("h_Track", axisNames, 3, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
+
+
+    ///////////////////////////////////TRUTH //////////////////////////////////////////////////////
+    axisNames = "Truth ThnSparse; True Pt; True y ; PDG;";
+    int    binsTruth[3] = {nbins_Pt, nbins_eta, nbins_truePDG};
+    double xminTruth[3] = {min_Pt, min_eta, min_truePDG};
+    double xmaxTruth[3] = {max_Pt, max_eta, max_truePDG};
+    h_Truth = new THnSparseD("h_Track", axisNames, 3, binsTruth, xminTruth, xmaxTruth);
+    h_Truth->Sumw2();
+    fOutput->Add(h_Truth);
+
+  
+
+
     PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
+
+
+
+
+
 }
 
 
@@ -539,9 +566,9 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
 
   // std::cout << " Number of tracks " << mc_truth_event->GetNumberOfTracks() << std::endl;
 
-  for(int itrk = 0; itrk < mc_truth_event->GetNumberOfTracks(); itrk++){
-    AliVParticle *track = mc_truth_event->GetTrack(itrk);
-  }
+  //  for(int itrk = 0; itrk < mc_truth_event->GetNumberOfTracks(); itrk++){
+  //  AliVParticle *track = mc_truth_event->GetTrack(itrk);
+  // }
 
    return kTRUE;
 }
@@ -976,6 +1003,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Cluster(AliVCluster* cluster
 
 void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionCorrelation(AliVCluster* cluster1, AliVCluster* cluster2, AliVParticle* track, THnSparse* histo, double weight){
 
+  
     AliClusterContainer* clusters  = GetClusterContainer(0);
     AliVCluster* cluster_lead = 0;
     AliVCluster* cluster_sub  = 0;
@@ -1069,10 +1097,11 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPhotonCorrelation(AliVCluster* clust
 
 void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, AliVCluster* cluster2, THnSparse* histo){
     
+  //std::cout << " Entering Fill Pion " << std::endl;
     AliClusterContainer* clusters  = GetClusterContainer(0);
 
-    if(cluster1->E() < 3.0) return; 
-    if(cluster2->E() < 3.0) return; 
+    if(cluster1->E() < 0.7) return; 
+    if(cluster2->E() < 0.7) return; 
     if(!FinalClusterCuts(cluster1)) return;
     if(!FinalClusterCuts(cluster2)) return;
 
@@ -1099,22 +1128,54 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     pi0 = ph_lead + ph_sub;
    
     //////////////////Selection/////////////////////////////////////////
-    if( pi0.Pt() < 6.0) return;
+    if( pi0.Pt() < 5.0) return;
     if( pi0.M()  > 0.3) return;
+
+    //std::cout << " Preselectin pions " << pi0.Pt() << " " << pi0.M() <<  std::endl;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
     double openingAngle = 1000.0*std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())); // in mrads
     Double_t zVertex = fVertex[2];
     if (zVertex>10) zVertex =9.99;
     if (zVertex<-10) zVertex = -9.99;  
- 
-  
-    double entries[13] = {fCent, zVertex, pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
+
+
+    //Check whether pion is TRUE pion or not: 
+    double true_pt = 0.0; 
+    if(fIsMC) IsRealPion(cluster_lead, cluster_sub, true_pt);
+    
+    double entries[14] = {fCent, zVertex, pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
 			  openingAngle,  cluster_lead->GetM02(), cluster_sub->GetM02(), 
-			  dRmin_1, dRmin_2};
+			  dRmin_1, dRmin_2, true_pt};
 
     histo->Fill(entries);
     return;
+}
+
+
+Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsRealPion(AliVCluster* cluster_1, AliVCluster* cluster_2, double &truepT){
+
+  AliMCParticle *true_photon_1 =  NULL;
+  AliMCParticle *true_photon_2 =  NULL;
+  AliMCParticle *true_mother =  NULL;
+ 
+  true_photon_1  = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster_1->GetLabel()));//
+  true_photon_2  = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster_2->GetLabel()));//
+ 
+  if(!true_photon_1 or !true_photon_2) return kFALSE;
+  if(true_photon_1->PdgCode()!=22) return kFALSE;
+  if(true_photon_2->PdgCode()!=22 ) return kFALSE; 
+  if(true_photon_1->GetMother()<0) return kFALSE;
+  if(true_photon_2->GetMother()<0) return kFALSE;
+  if(true_photon_1->GetMother()!=true_photon_2->GetMother()) return kFALSE;
+
+  true_mother = static_cast<AliMCParticle *>(fMCEvent->GetTrack(true_photon_1->GetMother()));
+  if(true_mother->PdgCode()!=111) return kFALSE; 
+
+  // std::cout << " true mother " << true_mother->PdgCode() << " pT " << true_mother->Pt() << std::endl;
+ 
+  truepT = true_mother->Pt();
+  return kTRUE;
 }
 
 void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, THnSparse* histo){
@@ -1255,7 +1316,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FinalClusterCuts(AliVCluster* cluster)
   if(exoticity>0.97) return kFALSE;
 
   Double_t time = cluster->GetTOF()*1000000000; //in ns
-  if(std::abs(time)>30) return kFALSE;
+  if(!fIsMC && std::abs(time)>30) return kFALSE;
 
 
    
@@ -1289,6 +1350,27 @@ Int_t AliAnalysisTaskEMCALPi0GammaCorr::FormatRunNumber(Int_t runnumber)
 
 void AliAnalysisTaskEMCALPi0GammaCorr::AnalyzeMC(){
  
+
+  double truepT= 0.0; 
+  double truey = 0.0; 
+  double truePDG = 0.0;
+
+  for(int itrk = 0; itrk < fMCEvent->GetNumberOfTracks(); itrk++){
+    AliVParticle *track = fMCEvent->GetTrack(itrk);
+    
+    switch(track->PdgCode())
+    {
+      case 22: truePDG = 0.5;
+      case 111 : truePDG = 1.5;
+      default: truePDG = 2.5;
+    }
+    
+    truepT = track->Pt(); 
+    truey  = track->Eta();  
+    double entries[3] = {truepT, truey, truePDG}; 
+    h_Truth->Fill(entries);
+  }
+
   return;
 }
  
