@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKPIDBF_H
 
 // Analysis task for the PID BF code:
-// Base Class : AliBalancePsi.cxx
+// Base Class : AliPidBFBase.cxx
 // Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch, noor1989phyalam@gmail.com
 // Supervisor: Subhasis Chattopadhyay: sub.chattopadhyay@gmail.com
 //[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
@@ -16,20 +16,21 @@ class TF1;
 class TH3D;
 class TParticle;
 
-class AliBalancePsi;
+class AliPidBFBase;
 class AliESDtrackCuts;
 class AliEventPoolManager;
 class AliAnalysisUtils;
+class AliEventCuts;
+class AliVTrack;
 class AliAODTrack;
 //class AliTHn;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliBalancePsi.h"
+#include "AliPidBFBase.h"
 //#include "AliTHn.h"
 
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
  
 //================================correction
 #define kCENTRALITY 101  
@@ -54,21 +55,16 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   //========================correction
   // void SetDebugLevel() {fDebugLevel = kTRUE;} //hides overloaded virtual function
 
-  void SetAnalysisObject(AliBalancePsi *const analysis) {
+  void SetAnalysisObject(AliPidBFBase *const analysis) {
     fBalance         = analysis;
     }
-  void SetShufflingObject(AliBalancePsi *const analysisShuffled) {
-    fRunShuffling = kTRUE;
-    fShuffledBalance = analysisShuffled;
-  }
-  void SetMixingObject(AliBalancePsi *const analysisMixed) {
+  
+  void SetMixingObject(AliPidBFBase *const analysisMixed) {
     fRunMixing = kTRUE;
     fMixedBalance = analysisMixed;
   }
   void SetMixingWithEventPlane(Bool_t bMixingWithEventPlane = kTRUE) { fRunMixingEventPlane = bMixingWithEventPlane; }
   void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
-  void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
-    fESDtrackCuts = trackCuts;}
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
     fVxMax = vx;
     fVyMax = vy;
@@ -144,13 +140,12 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
     fNumberOfAcceptedTracksMax = max;}
   
   // additional event cuts (default = kFALSE)
-  void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  void UseOfflineTrigger(Bool_t bCentralTrigger) {fUseOfflineTrigger = bCentralTrigger;}
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void UseMultSelection(Bool_t bCentralTrigger) {fUseMultSelection = bCentralTrigger;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
-  void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
-  Bool_t AcceptEventCentralityWeight(Double_t centrality);
   
   // function to exclude the weak decay products
   Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
@@ -160,29 +155,21 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
     fAcceptanceParameterization = parameterization;}
 
   //pid
-  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
-  enum kDetectorPID_ { kTPCTOFpid_, kTogether_, kTPC_,kTOF_}; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
-  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
-  enum kParticleType_ { kPion_, kKaon_, kProton_ };
+  enum kDetectorPID_ {kTPC_ = 0,kTOF_, kTPCTOFpid_}; //
+  enum kParticleType_ { kPion_ = 0, kKaon_, kProton_,kSpUndefined=999};
+  enum kDetectorName {kITS_D = 0,kTPC_D,kTOF_D,kNDetectors_D};
 
-  void SetUseBayesianPID(Double_t gMinProbabilityValue) {
-    fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
-    fMinAcceptedPIDProbability = gMinProbabilityValue; }
+
+
 
   void SetUseNSigmaPID(Double_t gMaxNSigma) {
-    fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-    fPIDNSigma = gMaxNSigma; }
-
-  void SetParticleOfInterest(kParticleOfInterest poi) {
-    fParticleOfInterest = poi;}
+    fUsePID = kTRUE; fPIDNSigma = gMaxNSigma; }
 
   void SetParticleType(kParticleType_ particletype_) {
     fParticleType_ = particletype_; } 
   void SetDetectorPID(kDetectorPID_ detectorpid_) {
     fDetectorPID_ = detectorpid_; } 
 
-  void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
-    fPidDetectorConfig = detConfig;}
     void SetEventClass(TString receivedEventClass){
         fEventClass = receivedEventClass;
     }
@@ -222,7 +209,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
 // For QA after and before correction 
 
-  void SetQACorrection(Bool_t qacorrection) {fQACorrection = qacorrection;}  
 
   void SetMisMatchTOFProb(Double_t fmistmatchTOF,Bool_t ftofMisMatch){
        fMistMatchTOFProb=fmistmatchTOF;
@@ -245,11 +231,11 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 					      Short_t vCharge, 
 					      Double_t gCentrality);
   //===============================correction
-  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
-  TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
+  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality , Double_t gReactionPlane);
 
-  Double_t GetNsigmas(AliPIDResponse* fPIDResponse , AliAODTrack* track , Int_t specie);
-
+  void GetNsigmas(AliVTrack* track);
+  TH2F* GetHistogram2D(const char * name);
+  Bool_t* GetDoubleCounting(AliVTrack * trk);
 
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
   Double_t GetEqualizationFactor(Int_t run, const char *side);
@@ -257,32 +243,30 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
 // Add On 17.11.2016 For Finding Min sigma between Pion , Koan and Proton
 
-   Int_t MinNsigma(Int_t n, const Double_t *a);
+   Int_t MinNsigma(AliVTrack *trk , Bool_t FillHistos);
 
 // Add By N.Alam on 13/12/2015
-   Bool_t IsTOF(AliAODTrack *track) const; // Here we use TOF Track Pt .6 to 2.0 GeV
-   Bool_t IsTPC(AliAODTrack *track) const;  // For TPC Track Pt .2 to .6 GeV
-   Double_t Beta(AliAODTrack *track); // Particle v/c=Beta calculation
+   void IsTOF(AliVTrack *track) ; // Here we use TOF Track Pt .6 to 2.0 GeV
+   Double_t Beta(AliVTrack *track); // Particle v/c=Beta calculation
+ 
+// Get Particle Species
 
-
+  Int_t GetSpecies(AliVTrack *trk );
  
   Bool_t fDebugLevel; // debug level
 
-  TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
-  AliBalancePsi *fBalance; //BF object
-  Bool_t fRunShuffling;//run shuffling or not
-  AliBalancePsi *fShuffledBalance; //BF object (shuffled)
+  AliPidBFBase *fBalance; //BF object
   Bool_t fRunMixing;//run mixing or not
   Bool_t fRunMixingEventPlane;//run mixing with Event Plane
   Int_t  fMixingTracks;
-  AliBalancePsi *fMixedBalance; //TriggeredBF object (mixed)
+  AliPidBFBase *fMixedBalance; //TriggeredBF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
   TList *fList; //fList object
   TList *fListBF; //fList object
-  TList *fListBFS; //fList object
   TList *fListBFM; //fList object
   TList *fHistListPIDQA;  //! list of histograms
+  TList *QA_AliEventCuts;
 
   TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
@@ -297,8 +281,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistMixEvents; //number of events that is mixed with in the current pool
   TH2F *fHistMixTracks; //number of tracks that is mixed with in the current pool
 
-  TH2F *fHistTPCvsVZEROMultiplicity; //VZERO vs TPC reference multiplicity
-  TH2F *fHistVZEROSignal; //VZERO channel vs signal
 
   TH2F *fHistEventPlane; //event plane distribution
 
@@ -325,12 +307,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   //============PID============//
 
-  // Beta and dEdX plot ------------
-  TH2F *fHistdEdxTPC;
-  TH2F *fHistBetaTOF;
-
-   
-
   TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!
   TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
@@ -341,28 +317,19 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
   
-  // For Nsigma value :
-  Double_t fNsigmaTPC[6];
-  Double_t fNsigmaTOF[6];
-
-  TH1* fCentralityWeights;		     // for centrality flattening
 
   AliPIDResponse *fPIDResponse;     //! PID response object
-  AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  kParticleOfInterest  fParticleOfInterest;//analyzed particle
   kParticleType_ fParticleType_; // particle type for analysis
   kDetectorPID_ fDetectorPID_; // particle type for analysis
-  kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
 
   Bool_t fUsePID; //flag to use PID 
-  Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
-  Bool_t fUsePIDPropabilities;//flag to use probability method for PID
 
 // For TPC and TOF Pt cut variables 
 
-//  Bool_t fHasTOFPID;  //TOF PID is or not
-// Bool_t fHasTPCPID;  // TPC PID is or not
+  Bool_t fHasTOFPID;  //TOF PID is or not
+  Double_t fnsigmas[kProton_+1][kTPCTOFpid_+1];
+  Bool_t fHasDoubleCounting[kProton_+1];
 
   Double_t fPtTOFMin;  // TOF Min Pt
   Double_t fPtTOFMax;  // TOF Max Pt
@@ -370,7 +337,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t fPtTPCMax;  // TPC Max Pt
 
   Double_t fPIDNSigma;//nsigma cut for PID
-  Double_t fMinAcceptedPIDProbability;//probability cut for PID
 
   Bool_t   fElectronRejection;//flag to use electron rejection
   Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
@@ -379,7 +345,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
   //============PID============//
 
-  AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
   Bool_t fUseCentrality;//use the centrality (PbPb) or not (pp)
@@ -395,7 +360,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
   TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks
 
-  Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
@@ -434,95 +398,31 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
-  TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
+  TString fCustomBinning;//for setting customized binning (for output AliTHn of AliPidBFBase)
   
   //VZERO calibration
   TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
   
-   
-  // For QA  after and before correction
-  Bool_t fQACorrection; 
-  TH1D  *fHistQAPtBeforeCorrection;
-  TH2D  *fHistQAPtBeforeCorrectionWithCentrality;
-  TH1D  *fHistQAPtBeforeCorrectionPos;
-  TH2D  *fHistQAPtBeforeCorrectionWithCentralityPos;
-  TH1D  *fHistQAPtBeforeCorrectionNeg;
-  TH2D  *fHistQAPtBeforeCorrectionWithCentralityNeg;
-  TH1D  *fHistQAEtaBeforeCorrection;
-  TH2D  *fHistQAEtaBeforeCorrectionWithCentrality;
-  TH1D  *fHistQAEtaBeforeCorrectionPos;
-  TH2D  *fHistQAEtaBeforeCorrectionWithCentralityPos;
-  TH1D  *fHistQAEtaBeforeCorrectionNeg;
-  TH2D  *fHistQAEtaBeforeCorrectionWithCentralityNeg;
-  TH1D  *fHistQAPhiBeforeCorrection;
-  TH2D  *fHistQAPhiBeforeCorrectionWithCentrality;
-  TH1D  *fHistQAPhiBeforeCorrectionPos;
-  TH2D  *fHistQAPhiBeforeCorrectionWithCentralityPos;
-  TH1D  *fHistQAPhiBeforeCorrectionNeg;
-  TH2D  *fHistQAPhiBeforeCorrectionWithCentralityNeg;
-  TH1D  *fHistQAPtAfterCorrection;
-  TH2D  *fHistQAPtAfterCorrectionWithCentrality;
-  TH1D  *fHistQAPtAfterCorrectionPos;
-  TH2D  *fHistQAPtAfterCorrectionWithCentralityPos;
-  TH1D  *fHistQAPtAfterCorrectionNeg;
-  TH2D  *fHistQAPtAfterCorrectionWithCentralityNeg;
-  TH1D  *fHistQAEtaAfterCorrection;
-  TH2D  *fHistQAEtaAfterCorrectionWithCentrality;
-  TH1D  *fHistQAEtaAfterCorrectionPos;
-  TH2D  *fHistQAEtaAfterCorrectionWithCentralityPos;
-  TH1D  *fHistQAEtaAfterCorrectionNeg;
-  TH2D  *fHistQAEtaAfterCorrectionWithCentralityNeg;
-  TH1D  *fHistQAPhiAfterCorrection;
-  TH2D  *fHistQAPhiAfterCorrectionWithCentrality;
-  TH1D  *fHistQAPhiAfterCorrectionPos;
-  TH2D  *fHistQAPhiAfterCorrectionWithCentralityPos;
-  TH1D  *fHistQAPhiAfterCorrectionNeg;
-  TH2D  *fHistQAPhiAfterCorrectionWithCentralityNeg;
-
-  // Histogram for Species 
 
    TH1D *fPIDSpeciesHisto;
-
-// Histogram for NSigma Plot before and after Cut......
-
-  TH2F  *fHistNsigmaTPCPionBeforePIDCut;
-  TH2F  *fHistNsigmaTPCKaonBeforePIDCut;
-  TH2F  *fHistNsigmaTPCProtonBeforePIDCut;
-
-  TH2F  *fHistNsigmaTOFPionBeforePIDCut;
-  TH2F  *fHistNsigmaTOFKaonBeforePIDCut;
-  TH2F  *fHistNsigmaTOFProtonBeforePIDCut;
-
-  TH2F  *fHistNsigmaTPCTOFPionBeforePIDCut;
-  TH2F  *fHistNsigmaTPCTOFKaonBeforePIDCut;
-  TH2F  *fHistNsigmaTPCTOFProtonBeforePIDCut;
-
-  TH2F  *fHistdEdxTPCAfterPIDCut;
-  TH2F  *fHistBetaTOFAfterPIDCut;
-  TH2F  *fHistNsigmaTPCTOFAfterPIDCut;
-
-  TH1D  *fHistMostProbableNsigma;
-
-
-  TH2F *fHistNsigmaTPCPionAfterPIDCut;
-  TH2F *fHistNsigmaTPCKaonAfterPIDCut;
-  TH2F *fHistNsigmaTPCProtonAfterPIDCut;
-  TH2F *fHistNsigmaTOFPionAfterPIDCut;
-  TH2F *fHistNsigmaTOFKaonAfterPIDCut;
-  TH2F *fHistNsigmaTOFProtonAfterPIDCut;
-
 
 // TOF Mismatch: 
 Double_t fMistMatchTOFProb;
 Bool_t fTOFMisMatch;
 Bool_t fRapidityInsteadOfEta;
 
-
+// Ofline Trigger and Multiplicty selection for 2015 Data
+ Bool_t fUseOfflineTrigger;
+ Bool_t fUseMultSelection;
 
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
+  
+// AliEventCuts:  
+
+  AliEventCuts *fEventCuts; /// Event cuts
 
   AliAnalysisTaskPIDBF(const AliAnalysisTaskPIDBF&); // not implemented
   AliAnalysisTaskPIDBF& operator=(const AliAnalysisTaskPIDBF&); // not implemented
