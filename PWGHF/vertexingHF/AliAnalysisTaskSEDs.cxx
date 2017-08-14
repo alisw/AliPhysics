@@ -1110,7 +1110,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  fMassHist[index]->Fill(invMass,weightKKpi);
 	  fPtVsMass->Fill(invMass,ptCand,weightKKpi);
         
-	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030) {
+	  if(fDoBkgPhiSB && (0.010<TMath::Abs(massKK-massPhi)) && (TMath::Abs(massKK-massPhi)<0.030) ) {
             if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(invMass);
             else fMassRSBkgHistPhi[iPtBin]->Fill(invMass);
 	  }
@@ -1163,7 +1163,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  fMassHist[index]->Fill(invMass,weightpiKK);
 	  fPtVsMass->Fill(invMass,ptCand,weightpiKK);
               
-	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030) {
+	  if(fDoBkgPhiSB && (0.010<TMath::Abs(massKK-massPhi)) && (TMath::Abs(massKK-massPhi)<0.030) ) {
 	    if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(invMass);
 	    else fMassRSBkgHistPhi[iPtBin]->Fill(invMass);
 	  }
@@ -1676,7 +1676,7 @@ void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, 
       energysum += TMath::Sqrt(mProng[j]*mProng[j]+P2Prong[j]);
     }
     Double_t mass = TMath::Sqrt(energysum*energysum-P2);
-    if(fminMass<=mass<fmaxMass) fMassRotBkgHistPhi[iPtBin]->Fill(mass);
+    if( (fminMass<=mass) && (mass<fmaxMass) ) fMassRotBkgHistPhi[iPtBin]->Fill(mass);
   }
 }
 //_________________________________________________________________________
