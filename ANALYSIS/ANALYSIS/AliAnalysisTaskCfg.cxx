@@ -242,11 +242,12 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
          TString classname = fRAddTask->ClassName();
          classname += Form("* __R_ADDTASK__ = (%s*)0x%lx;", classname.Data(),(ULong_t)retval);
          classname.Prepend("  ");
-         TObjString *line = fConfigDeps->GetLineWith("__R_ADDTASK__");
-         if (line) {
-            TList *lines = fConfigDeps->GetListOfLines();
-            lines->AddBefore(line, new TObjString(classname));
-         }
+         TList *lines = fConfigDeps->GetListOfLines();
+         // Only define the __R_ADDTASK__ object if there is a macro configuration function
+         // It doesn't hurt to define __R_ADDTASK__ even if it is not used.
+         if (lines && lines->GetEntries() > 1) {
+            lines->AddAfter(lines->At(0), new TObjString(classname));
+	 }
       }   
    }
    Info("ExecuteMacro", "Macro %s added %d tasks to the manager", fMacro->GetName(), ntasks-ntasks0);
