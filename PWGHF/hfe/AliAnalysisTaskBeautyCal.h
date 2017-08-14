@@ -139,6 +139,7 @@ private:
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
+    TH1F        *fEPV0;
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fHistClustE;//!cluster energy
     TH1F        *fHistClustE_etapos;//!cluster energy
@@ -237,6 +238,7 @@ private:
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
     TH2D        *fTPCcls;
+    TH1F        *fdPhiEP;
     TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;
