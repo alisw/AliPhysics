@@ -162,6 +162,7 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
 fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
@@ -374,6 +375,7 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
 fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
@@ -648,6 +650,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //Create Basic V0 Output Tree
     fTreeV0 = new TTree( "fTreeV0", "Findable V0 Candidates");
     //-----------BASIC-INFO---------------------------
+    fTreeV0->Branch("fTreeVariableGoodV0",&fTreeVariableGoodV0,"fTreeVariableGoodV0/O");
     fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     fTreeV0->Branch("fTreeVariablePosLength",&fTreeVariablePosLength,"fTreeVariablePosLength/F");
     fTreeV0->Branch("fTreeVariableNegLength",&fTreeVariableNegLength,"fTreeVariableNegLength/F");
@@ -1287,6 +1290,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Actual propagation
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
+        
+        //Tag OK V0s (will probably tag >99%? will still have to be studied!)
+        if ( fTreeVariableNegPropagStatus == kTRUE &&
+            fTreeVariablePosPropagStatus == kTRUE )
+            fTreeVariableGoodV0 = kTRUE;
         
         //Acquire the DCA that's not strictly computed with uncertainties (geometric only) for comparison
         Double_t lx1, ly1, lz1, lx2, ly2, lz2, tmp[3];
