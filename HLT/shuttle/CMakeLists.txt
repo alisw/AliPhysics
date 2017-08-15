@@ -20,8 +20,8 @@ set(MODULE HLTshuttle)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/shuttle)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/HLT/BASE
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                    )
 
