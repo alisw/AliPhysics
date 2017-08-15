@@ -1905,7 +1905,11 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         }
         
         //Open fileNameAlter
-        TFile * foadbAlter = TFile::Open(fileNameAlter);
+        TFile * foadbAlter = 0x0;
+        foadbAlter = TFile::Open(fileNameAlter);
+        
+        //Check existence, please
+        if(!foadbAlter) AliFatal(Form("Cannot open OADB file %s", fileNameAlter.Data()));
         if(!foadbAlter->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileNameAlter.Data()));
         
         AliOADBContainer * MultContainerAlter = (AliOADBContainer*) foadbAlter->Get("MultSel");
