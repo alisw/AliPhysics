@@ -53,6 +53,7 @@ class AliAODv0;
 #include "TLegend.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
+#include "TObjectTable.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -359,6 +360,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(0.5, nv0s);
     
+    Info("UserExec","Number of pre-reco'ed V0 vertices: %ld",nv0s);
+    
     if( fkRunV0Vertexer ){
         lESDevent->ResetV0s();
         //Only regenerate candidates if within interesting interval
@@ -540,14 +543,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
                 if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
             
-            AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+            AliExternalTrackParam nt(*ntrk), pt(*ptrk), *ntp=&nt, *ptp=&pt;
             Double_t xn, xp, dca;
             
             //Improved call: use own function, including XY-pre-opt stage
             
             if( fkDoImprovedDCAV0DauPropagation ){
                 //Improved: use own call
-                dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
+                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b);
             }else{
                 //Old: use old call
                 dca=nt.GetDCA(&pt,b,xn,xp);
@@ -613,6 +616,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             event->AddV0(&vertex);
             
             nvtx++;
+            
+            //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
         }
     }
     Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx);
@@ -1892,7 +1897,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             Double_t lxpLargestR = xThisPos[1];
             Double_t lxnLargestR = xThisNeg[1];
             
-            if( lCase2bSumX < lCase2aSumX ){
+            if( lCase2bSumX+1e-6 < lCase2aSumX ){
                 lDCAxySmallestR = lCase2bDCA;
                 lxpSmallestR = xThisPos[1];
                 lxnSmallestR = xThisNeg[1];
@@ -1905,7 +1910,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             lPreprocessDCAxy = lDCAxySmallestR;
             lPreprocessxp = lxpSmallestR;
             lPreprocessxn = lxnSmallestR;
-            if( lDCAxyLargestR < lDCAxySmallestR ){
+            if( lDCAxyLargestR+1e-6 < lDCAxySmallestR ){ //beware epsilon: numerical calculations are unstable here
                 lPreprocessDCAxy = lDCAxyLargestR;
                 lPreprocessxp = lxpLargestR;
                 lPreprocessxn = lxnLargestR;
