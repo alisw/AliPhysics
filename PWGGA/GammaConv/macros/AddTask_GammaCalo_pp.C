@@ -1196,6 +1196,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111114067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM EMC
     cuts.AddCut("00052013","1111123067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt PCMEMC
     cuts.AddCut("00052013","1111124067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 415){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","1111117017032220000","0163103100000060"); // 1000ns timing cut, NL kSDM PCMEMC - fixed E-dependence
+    cuts.AddCut("00010113","1111127017032220000","0163103100000060"); // 1000ns timing cut, NL DExt PCMEMC - fixed E-dependence
+  } else if (trainConfig == 416){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","1111117067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL kSDM PCMEMC - fixed E-dependence
+    cuts.AddCut("00010113","1111127067032220000","0163103100000060"); // -50ns, 30ns timing cut, NL DExt PCMEMC - fixed E-dependence
 
   // 2.76TeV additional configurations for y range change
   } else if (trainConfig == 501){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
