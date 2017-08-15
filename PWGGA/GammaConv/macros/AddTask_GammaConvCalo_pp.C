@@ -966,6 +966,12 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250400000","1111112063032230000","0163103100000010"); // -50ns, 30ns timing cut, NL kSDM EMC
     cuts.AddCut("00010113","00200009327000008250400000","1111121063032230000","0163103100000010"); // -50ns, 30ns timing cut, NL DExt PCMEMC
     cuts.AddCut("00010113","00200009327000008250400000","1111122063032230000","0163103100000010"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 415){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","00200009327000008250400000","1111117013032230000","0163103100000010"); // 1000ns timing cut, NL kSDM PCMEMC - fixed E-dependence
+    cuts.AddCut("00010113","00200009327000008250400000","1111127013032230000","0163103100000010"); // 1000ns timing cut, NL DExt PCMEMC - fixed E-dependence
+  } else if (trainConfig == 416){ // EMCAL clusters - NonLin INT7
+    cuts.AddCut("00010113","00200009327000008250400000","1111117063032230000","0163103100000010"); // -50ns, 30ns timing cut, NL kSDM PCMEMC - fixed E-dependence
+    cuts.AddCut("00010113","00200009327000008250400000","1111127063032230000","0163103100000010"); // -50ns, 30ns timing cut, NL DExt PCMEMC - fixed E-dependence
   
     
   //********************************************************************************************************  
