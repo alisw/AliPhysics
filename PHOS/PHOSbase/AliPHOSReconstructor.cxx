@@ -72,11 +72,11 @@ AliPHOSCalibData * AliPHOSReconstructor::fgCalibData  = 0 ;
 TClonesArray*     AliPHOSReconstructor::fgTriggerDigits = 0;   // Array of PHOS trigger digits
 
 //____________________________________________________________________________
-AliPHOSReconstructor::AliPHOSReconstructor() :
+AliPHOSReconstructor::AliPHOSReconstructor(const char * geoName) :
   fGeom(NULL),fClusterizer(NULL),fTSM(NULL),fPID(NULL),fTmpDigLG(NULL)
 {
   // ctor
-  fGeom          = AliPHOSGeometry::GetInstance("IHEP","");
+  fGeom          = AliPHOSGeometry::GetInstance(geoName,"");
   fClusterizer   = new AliPHOSClusterizerv1      (fGeom);
   fTSM           = new AliPHOSTrackSegmentMakerv1(fGeom);
   fPID           = new AliPHOSPIDv1              (fGeom);
