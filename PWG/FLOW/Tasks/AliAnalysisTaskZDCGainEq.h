@@ -283,6 +283,18 @@ private:
   TProfile      *fHist_XXYY_vs_Cent_woCorr[2];  //!
   TProfile      *fHist_XXYY_vs_Cent_wiCorr[2];  //!
 
+  TProfile           *fHist_Corr3p_ZDN_Norm_PN;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Norm_PP;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Norm_NN;  //! 
+
+  TProfile           *fHist_Corr3p_ZDN_Cent_PN;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Cent_PP;  //! 
+  TProfile           *fHist_Corr3p_ZDN_Cent_NN;  //! 
+
+  TProfile           *fHist_Reso2EP_TPC_Norm; //!
+  TProfile           *fHist_Reso2EP_TPC_Cent; //!
+
+
   //TH2F           *fHist_ZDCAC_AvgCosSin_vsCent;
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
