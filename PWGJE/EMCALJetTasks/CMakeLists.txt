@@ -147,6 +147,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
+    UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
