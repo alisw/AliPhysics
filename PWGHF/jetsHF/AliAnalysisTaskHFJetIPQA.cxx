@@ -85,7 +85,8 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fCombined(nullptr),
     fXsectionWeightingFactor(1),
     fProductionNumberPtHard(-1),
-    fMCglobalDCAxyShift(0.007),
+    fMCglobalDCAxyShift(0.0008),
+    fMCglobalDCASmear(1),
     fVertexRecalcMinPt(1.0)
 {
     SetMakeGeneralHistograms(kTRUE);
@@ -130,7 +131,8 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fCombined(nullptr),
     fXsectionWeightingFactor(1.),
     fProductionNumberPtHard(-1),
-    fMCglobalDCAxyShift(0.007),
+    fMCglobalDCAxyShift(0.000668),
+    fMCglobalDCASmear(1),
     fVertexRecalcMinPt(1.0)
 
 {
@@ -380,45 +382,45 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         }else  if(fProductionNumberPtHard==3){
                             //LHC15G6E
                             if((pTHard >= 5) && (pTHard < 7) )
-                                fXsectionWeightingFactor = 1.389406e+00;
+                                fXsectionWeightingFactor = 1.373298e+00;
                             else if((pTHard >= 7) && (pTHard < 9) )
-                                fXsectionWeightingFactor = 1.246014e+00;
+                                fXsectionWeightingFactor = 1.249965e+00;
                             else if((pTHard >= 9) && (pTHard < 12) )
-                                fXsectionWeightingFactor = 1.135135e+00;
+                                fXsectionWeightingFactor = 1.128812e+00;
                             else if((pTHard >= 12) && (pTHard < 16) )
-                                fXsectionWeightingFactor = 6.494695e-01;
+                                fXsectionWeightingFactor = 6.503685e-01;
                             else if((pTHard >= 16) && (pTHard < 21) )
-                                fXsectionWeightingFactor = 2.801671e-01;
+                                fXsectionWeightingFactor = 2.811221e-01;
                             else if((pTHard >= 21) && (pTHard < 28) )
-                                fXsectionWeightingFactor = 1.177731e-01 ;
+                                fXsectionWeightingFactor = 1.173937e-01 ;
                             else if((pTHard >= 28) && (pTHard < 36) )
-                                fXsectionWeightingFactor = 3.851400e-02;
+                                fXsectionWeightingFactor = 3.849937e-02;
                             else if((pTHard >= 36) && (pTHard < 45) )
-                                fXsectionWeightingFactor = 1.379875e-02;
+                                fXsectionWeightingFactor = 1.380256e-02;
                             else if((pTHard >= 45) && (pTHard < 57) )
-                                fXsectionWeightingFactor = 5.941354e-03;
+                                fXsectionWeightingFactor = 5.961373e-03;
                             else if((pTHard >= 57) && (pTHard < 70) )
-                                fXsectionWeightingFactor =2.086477e-03;
+                                fXsectionWeightingFactor =2.087870e-03;
                             else if((pTHard >= 70) && (pTHard < 85) )
-                                fXsectionWeightingFactor = 8.531533e-04;
+                                fXsectionWeightingFactor = 8.506904e-04;
                             else if((pTHard >= 85) && (pTHard < 99) )
-                                fXsectionWeightingFactor = 3.152257e-04;
+                                fXsectionWeightingFactor = 3.153812e-04;
                             else if((pTHard >= 99) && (pTHard < 115) )
-                                fXsectionWeightingFactor = 1.595340e-04;
+                                fXsectionWeightingFactor = 1.606094e-04;
                             else if((pTHard >= 115) && (pTHard < 132) )
-                                fXsectionWeightingFactor = 7.689516e-05;
+                                fXsectionWeightingFactor = 7.756643e-05;
                             else if((pTHard >= 132) && (pTHard < 150) )
-                                fXsectionWeightingFactor = 3.876765e-05;
+                                fXsectionWeightingFactor = 3.870937e-05;
                             else if((pTHard >= 150) && (pTHard < 169) )
-                                fXsectionWeightingFactor = 2.078694e-05;
+                                fXsectionWeightingFactor = 2.034382e-05;
                             else if((pTHard >= 169) && (pTHard < 190) )
-                                fXsectionWeightingFactor = 1.196729e-05;
+                                fXsectionWeightingFactor = 1.146551e-05;
                             else if((pTHard >= 190) && (pTHard < 212) )
-                                fXsectionWeightingFactor =6.165574e-06;
+                                fXsectionWeightingFactor =6.193996e-06;
                             else if((pTHard >= 212) && (pTHard < 235) )
                                 fXsectionWeightingFactor = 3.415262e-06;
                             else if((pTHard >= 235) && (pTHard < 1000000) )
-                                fXsectionWeightingFactor = 4.853493e-06;
+                                fXsectionWeightingFactor = 4.839478e-06;
                             else
                                 fXsectionWeightingFactor = 0;
 
@@ -2637,6 +2639,11 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     return (TH1*)phist;
 }
 
+void AliAnalysisTaskHFJetIPQA::setFMCglobalDCASmear(const Double_t &value)
+{
+    fMCglobalDCASmear = value;
+}
+
 Double_t AliAnalysisTaskHFJetIPQA::getFVertexRecalcMinPt() const
 {
     return fVertexRecalcMinPt;
@@ -2705,7 +2712,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
             etp.GetXYZ(XYZatDCA);
             etp.GetXYZ(x_at_dca);
             etp.GetPxPyPz(p_at_dca);
+         if(fIsPythia)   dca[0] *= fMCglobalDCASmear;
          if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
+
         } else return kFALSE;
 
 
@@ -2739,7 +2748,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::getJetVtxMass(AliEmcalJet *jet,double &value ){
     /*
     if(!amvf)  amvf = new AliHFAdaptiveMVF(InputEvent()->GetMagneticField());
     amvf->_fitter->_seeder->_vertex_penalty((AliAODVertex*)InputEvent()->GetPrimaryVertex());
-    amvf->_fitter->_run_fitter_jet(jet,(AliAODEvent*)InputEvent());
+    amvf->_fitter->_r_fitter_jet(jet,(AliAODEvent*)InputEvent());
     return kTRUE;*/
 }
 

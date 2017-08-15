@@ -130,6 +130,8 @@ public:
     Double_t getFVertexRecalcMinPt() const;
     void setFVertexRecalcMinPt(const Double_t &value);
 
+    void setFMCglobalDCASmear(const Double_t &value);
+
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
@@ -204,6 +206,8 @@ private:
     Float_t fXsectionWeightingFactor;
     Int_t   fProductionNumberPtHard;//
     Double_t fMCglobalDCAxyShift;//
+    Double_t fMCglobalDCASmear;//
+
     Double_t fVertexRecalcMinPt;//
 
     ClassDef(AliAnalysisTaskHFJetIPQA, 20)
