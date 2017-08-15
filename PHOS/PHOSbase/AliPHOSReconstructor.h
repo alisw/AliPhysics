@@ -68,7 +68,7 @@ class AliPHOSReconstructor : public AliReconstructor {
 
 public:
 
-  AliPHOSReconstructor() ; //ctor            
+  AliPHOSReconstructor(const char * geoName="IHEP") ; //ctor            
   virtual ~AliPHOSReconstructor() ; //dtor            
 
   static void                SetDebug()   { fgDebug = kTRUE ; }
