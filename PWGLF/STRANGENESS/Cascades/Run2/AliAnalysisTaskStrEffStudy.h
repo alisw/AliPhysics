@@ -371,6 +371,7 @@ private:
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
+    Float_t fTreeVariableCentrality;
     Float_t fTreeVariablePosLength;
     Float_t fTreeVariableNegLength;
     Float_t fTreeVariablePosCrossedRows;

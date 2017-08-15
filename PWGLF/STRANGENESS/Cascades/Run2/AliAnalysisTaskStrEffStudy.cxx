@@ -162,6 +162,7 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -373,6 +374,7 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -646,6 +648,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //Create Basic V0 Output Tree
     fTreeV0 = new TTree( "fTreeV0", "Findable V0 Candidates");
     //-----------BASIC-INFO---------------------------
+    fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     fTreeV0->Branch("fTreeVariablePosLength",&fTreeVariablePosLength,"fTreeVariablePosLength/F");
     fTreeV0->Branch("fTreeVariableNegLength",&fTreeVariableNegLength,"fTreeVariableNegLength/F");
     fTreeV0->Branch("fTreeVariablePosCrossedRows",&fTreeVariablePosCrossedRows,"fTreeVariablePosCrossedRows/F");
@@ -1001,7 +1004,18 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
+        //AliWarning("AliMultSelection object not found! Trying to resort to AliCentrality now...");
+        AliCentrality* centrality = 0x0;
+        centrality = lESDevent->GetCentrality();
+        if( centrality ){
+            lPercentile = centrality->GetCentralityPercentileUnchecked("V0M");
+            lPercentileEmbeddedSelection = lPercentile;
+            lEvSelCode = 0;
+            if(centrality->GetQuality()>1){
+                //Not good!
+                lEvSelCode = 999;
+            }
+        }
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
@@ -1016,8 +1030,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     fCentrality = lPercentile;
     
-    //Let's find out why efficiency is so centrality dependent, please 
-    fTreeCascVarCentrality = lPercentile;
+    //Let's find out why efficiency is so centrality dependent, please!
+    fTreeCascVarCentrality  = lPercentile;
+    fTreeVariableCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
