@@ -38,15 +38,14 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   
   // Setters
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
-  void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
-  void SetDoCaloStudy (Bool_t b)                            { fDoCaloStudy = b; }
   void SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts = b; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetNEtaBins(Int_t n)                                 { fNEtaBins = n; }
   void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
   void SetPlotNeutralJets(Bool_t b)                         { fPlotNeutralJets = b; }
   void SetPlotClustersInJets(Bool_t b)                      { fPlotClustersInJets = b; }
-  void SetPlotClusterTHnSparse(Bool_t b)                    { fPlotClusterTHnSparse = b; }
+  void SetPlotClusterHistograms(Bool_t b)                   { fPlotClusterHistograms = b; }
+  void SetPlotCellHistograms(Bool_t b)                      { fPlotCellHistograms = b; }
   void SetPlotClusWithoutNonLinCorr(Bool_t b)               { fPlotClusWithoutNonLinCorr = b; }
   void SetPlotExotics(Bool_t b)                             { fPlotExotics = b; }
 
@@ -58,10 +57,16 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
-  void                        AllocateJetHistograms()                           ;
   void                        AllocateCaloHistograms()                          ;
-  void                        FillJetHistograms()                               ;
+  void                        AllocateClusterHistograms()                       ;
+  void                        AllocateCellHistograms()                          ;
+  void                        AllocateNeutralJetHistograms()                    ;
+  void                        AllocateClustersInJetsHistograms()                ;
   void                        FillCaloHistograms()                              ;
+  void                        FillClusterHistograms()                           ;
+  void                        FillCellHistograms()                              ;
+  void                        FillNeutralJetHistograms()                        ;
+  void                        FillClustersInJetsHistograms()                    ;
   
   // Utility functions
   Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
@@ -74,11 +79,10 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Int_t                       fNPhiBins;                            ///< Number of phi bins in DCal region (for background/correction)
 
   // Analysis configuration and plotting options
-  Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
-  Bool_t                      fDoCaloStudy;                         ///< Set whether to perform calorimeter detector study
+  Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
   Bool_t                      fPlotNeutralJets;                     ///< Set whether to plot neutral jet histo
   Bool_t                      fPlotClustersInJets;                  ///< Set whether to plot histogram of clusters within jets
-  Bool_t                      fPlotClusterTHnSparse;                ///< Set whether to plot cluster thnsparse in calo studies
+  Bool_t                      fPlotCellHistograms;                  ///< Set whether to plot cell histograms
   Bool_t                      fPlotClusWithoutNonLinCorr;           ///< If true, use pre-nonlincorr energy in cluster thnsparse
   Bool_t                      fPlotExotics;                         ///< Set whether to plot exotic cluster study
 
@@ -106,7 +110,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 1);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 2);
   /// \endcond
 };
 #endif

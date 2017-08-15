@@ -37,8 +37,6 @@
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalDownscaleFactorsOCDB.h"
-#include "AliPHOSGeometry.h"
-#include "AliOADBContainer.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
