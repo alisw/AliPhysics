@@ -110,6 +110,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistPhiNeg(0),
   fHistV0M(0),
   fHistRefTracks(0),
+  fHistPhivZ(0),
+  fHistEtavZ(0),
   fHistSphericity(0),
   fHistMultiplicityVsSphericity(0),
   fHistMeanPtVsSphericity(0),
@@ -181,6 +183,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCforKinematics(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
   fVzMax(10.),
@@ -447,6 +450,11 @@ fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#ph
   for(Int_t i = 1; i <= 6; i++)
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
+
+  fHistPhivZ = new TH2F("fHistPhivZ", "#phi vs Vz ; #phi; V_{z}", 200,0.,2*TMath::Pi(), 140,-12.,12.);
+  fList->Add(fHistPhivZ);
+  fHistEtavZ =  new TH2F("fHistEtavZ", "#eta vs Vz ; #eta; V_{z}", 40,-1.6,1.6, 140,-12.,12.);
+  fList->Add(fHistEtavZ);
 
   fHistSphericity = new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05);
   fList->Add(fHistSphericity);
@@ -824,7 +832,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   //Sphericity variable
   Double_t gSphericity = -999.;
   
-  // get the accepted tracks in main event
+  // get the accepted tracks in main event  
   TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
 
@@ -1641,7 +1649,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	AliError(Form("Could not receive track %d", iTracks));
 	continue;
       }
-      
+	    
       // AOD track cuts
       
       // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
@@ -1652,7 +1660,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
 
       if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
-
+      
 
       // additional check on kPrimary flag
       if(fCheckPrimaryFlagAOD){
@@ -1925,6 +1933,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	dcaZ   = pos[2] - v[2];
       }
 
+	    
       // Extra DCA cuts (for systematic studies [!= -1])
       if( fDCAxyCut != -1 && fDCAzCut != -1){
 	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
@@ -1963,6 +1972,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
+	
+      
+      if (fDetailedTracksQA){
+	fHistPhivZ->Fill(vPhi, event->GetPrimaryVertex()->GetZ());
+	fHistEtavZ->Fill(vEta, event->GetPrimaryVertex()->GetZ());
+      }
+      
       if(vCharge > 0) {
 	fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
 			    gCentrality); 		 

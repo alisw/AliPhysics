@@ -177,6 +177,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
     fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
   
+  void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
+    fDetailedTracksQA=useDetailedTracksQA;}
+  
   // function to exclude the weak decay products
   Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
     
@@ -303,6 +306,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPhiNeg;//phi for negative particles (QA histogram)
   TH2F *fHistV0M;//V0 multiplicities (QA histogram)
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
+  TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
+  TH2F *fHistEtavZ;//eta vs Vz (QA histos)
 
   TH1F *fHistSphericity; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
@@ -395,7 +400,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
 
-  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data. 
+  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
+
+  Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -450,7 +457,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 9); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 10); // example of analysis
 };
 
 
