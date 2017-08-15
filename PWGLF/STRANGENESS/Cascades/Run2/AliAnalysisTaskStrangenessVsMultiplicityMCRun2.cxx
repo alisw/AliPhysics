@@ -3266,7 +3266,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                     lblBachSib = lblBachSibV0P;
                 }
                 if( lblBachSib == -9999 ) continue; //Did not find Bachelor in V0
-                BachSibTrack = ((AliESDEvent*)lESDevent)->GetTrack(lblBachSib);
+                //BachSibTrack = ((AliESDEvent*)lESDevent)->GetTrack(lblBachSib); 
                 //Now need to check if sibling comes from same mother as bachellr (K0s)
                 
                 TParticle* mcBachSib = lMCstack->Particle(lblBachSib);
