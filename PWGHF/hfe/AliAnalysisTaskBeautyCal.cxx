@@ -201,7 +201,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
   fTPCcls(0),
-  fdPhiEP(0),
+  fdPhiEP0(0),
+  fdPhiEP1(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -344,7 +345,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
   fTPCcls(0),
-  fdPhiEP(0),
+  fdPhiEP0(0),
+  fdPhiEP1(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -752,8 +754,11 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fTPCcls = new TH2D("fTPCcls","TPC cluster correlations",200,0,200,200,0,200);
   fOutputList->Add(fTPCcls);
 
-  fdPhiEP = new TH1F("fdPhiEP","tr phi w.r.t. EP",628,-6.28,6.28);
-  fOutputList->Add(fEPV0);
+  fdPhiEP0 = new TH1F("fdPhiEP0","tr phi w.r.t. EP",628,-6.28,6.28);
+  fOutputList->Add(fdPhiEP0);
+
+  fdPhiEP1 = new TH1F("fdPhiEP1","tr phi w.r.t. EP",628,-6.28,6.28);
+  fOutputList->Add(fdPhiEP1);
 
   PostData(1,fOutputList);
 
@@ -878,6 +883,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         //if (qnV0 != NULL) evPlaneV0 = qnV0->EventPlane(2);
         if (qnV0) evPlaneV0 = qnV0->EventPlane(2);
         if(evPlaneV0 <0)evPlaneV0 += TMath::Pi();
+
+        Double_t lim_inplane = TMath::Cos(30.0/180.0*TMath::Pi());   
+        Double_t lim_outplane = TMath::Cos(60.0/180.0*TMath::Pi());  
 
 
   ////////////////
@@ -1344,6 +1352,32 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
        }
          
 
+    /////////////////////////////////
+
+    if(fEPana>0)
+      {
+       Double_t dphi_ep_tmp = track->Phi() - evPlaneV0;
+       Double_t dphi_ep = atan2(sin(dphi_ep_tmp),cos(dphi_ep_tmp));
+       cout << "dphi_ep = " << dphi_ep << endl;
+       fdPhiEP0->Fill(dphi_ep); 
+   
+       Double_t cosdphi = TMath::Cos(dphi_ep);
+       Bool_t iInPlane = kFALSE;
+       Bool_t iOutPlane = kFALSE;
+       if(TMath::Abs(cosdphi)>=lim_inplane && TMath::Abs(cosdphi)<=1.0)iInPlane = kTRUE;
+       if(TMath::Abs(cosdphi)>=0.0 && TMath::Abs(cosdphi)<=lim_outplane)iOutPlane = kTRUE;
+
+       if(fEPana==1){
+          if(!iInPlane)continue;   // select inplane tracks
+         } 
+       if(fEPana==2){
+         if(!iOutPlane)continue;  // select outplane tracks
+         }
+
+       fdPhiEP1->Fill(dphi_ep); 
+
+      }
+
     ////////////////////
     //Track properties//
     ///////////////////
@@ -1364,10 +1398,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
     fTPCnsig->Fill(TrkP,fTPCnSigma);
 
-    Double_t dphi_ep = track->Phi() - evPlaneV0;
-    cout << "dphi_ep = " << dphi_ep << endl;
-    fdPhiEP->Fill(dphi_ep);
-    
 
     ///////////////////////////
     //Track matching to EMCAL//
