@@ -506,7 +506,7 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 
 //___________________________________________________________
 void AliAnalysisPIDEvent::SetCheckFlag(Int_t newval) {
-  if(newval>63||newval<0) {
+  if(newval>kAll||newval<0) {
     printf("Flag value %i not defined!\n",newval);
     return;
   };
