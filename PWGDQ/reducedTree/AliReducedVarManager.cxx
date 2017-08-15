@@ -118,6 +118,9 @@ TH2F* AliReducedVarManager::fgTPCelectronCentroidMap = 0x0;
 TH2F* AliReducedVarManager::fgTPCelectronWidthMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothing;
+TH2F* AliReducedVarManager::fgPairEffMap = 0x0;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
 TH1F* AliReducedVarManager::fgRunTotalLuminosity = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
@@ -262,6 +265,10 @@ void AliReducedVarManager::SetVariableDependencies() {
      fgUsedVars[kTPCnSig+kElectron] = kTRUE; 
      fgUsedVars[fgVarDependencyX] = kTRUE; 
      fgUsedVars[fgVarDependencyY] = kTRUE;
+  }
+  if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]){
+    fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
   }
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
@@ -1001,6 +1008,21 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kCosNPhi+ih-1]) values[kCosNPhi+ih-1] = TMath::Cos(p->Phi()*ih);
      if(fgUsedVars[kSinNPhi+ih-1]) values[kSinNPhi+ih-1] = TMath::Sin(p->Phi()*ih);
   }
+
+  //pair efficiency variables
+  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]) && fgPairEffMap) {
+    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
+    if(binX==0) binX = 1;
+    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]);
+    if(binY==0) binY=1;
+    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
+    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    Float_t oneOverPairEff = 1;
+    if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
+    values[kPairEff] = pairEff;
+    values[kOneOverPairEff] = oneOverPairEff;
+  }
   
   // Fill VZERO flow variables
   for(Int_t iVZEROside=0; iVZEROside<3; ++iVZEROside) {
@@ -1358,7 +1380,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   values[kMassV0+1] = -999.0;
   values[kMassV0+2] = -999.0;
   values[kMassV0+3] = -999.0;
-  
+
   FillTrackInfo(&p, values);
   
   // polarization variables
@@ -1623,6 +1645,21 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   if(fgUsedVars[kRap]) values[kRap] = p.Rapidity();
   if(fgUsedVars[kPhi]) values[kPhi] = p.Phi();
   if(fgUsedVars[kTheta]) values[kTheta] = p.Theta();
+
+  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]) && fgPairEffMap) {
+    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
+    if(binX==0) binX = 1;
+    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]); //make sure the values[YVar] are filled for EM
+    if(binY==0) binY=1;
+    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
+    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    Float_t oneOverPairEff = 1;
+    if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
+    values[kPairEff] = pairEff;
+    values[kOneOverPairEff] = oneOverPairEff;
+  }
+  
 }
 
 
@@ -2178,8 +2215,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairPhiCS]         = "#varphi^{*}_{CS}";      fgVariableUnits[kPairPhiCS]         = "rad.";  
   fgVariableNames[kPairThetaHE]       = "cos(#theta^{*}_{HE})";  fgVariableUnits[kPairThetaHE]       = "";  
   fgVariableNames[kPairPhiHE]         = "#varphi^{*}_{HE}";      fgVariableUnits[kPairPhiHE]         = "rad.";
-  fgVariableNames[kPairPhiV]         = "#varphi^{*}_{v}";        fgVariableUnits[kPairPhiV]         = "rad.";
-  for(Int_t i=0;i<2;++i) {
+  fgVariableNames[kPairPhiV]          = "#varphi^{*}_{v}";       fgVariableUnits[kPairPhiV]          = "rad.";
+  fgVariableNames[kPairEff]           = "pair eff.";             fgVariableUnits[kPairEff]           = "";
+  fgVariableNames[kOneOverPairEff]    = "1/pair eff.";           fgVariableUnits[kOneOverPairEff]    = "";
+    for(Int_t i=0;i<2;++i) {
      fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegTPCchi2+i] = "";
      fgVariableNames[kPairLegITSchi2+i] = Form("ITS #chi^{2}, leg %d", i+1);
@@ -2349,6 +2388,29 @@ void AliReducedVarManager::SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F*
      fgTPCelectronWidthMap = (TH2F*)widthMap->Clone(Form("AliReducedVarManager_TPCelectronWidthMap"));
      fgTPCelectronWidthMap->SetDirectory(0x0);
    }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetPairEfficiencyMap(TH2F* effMap, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+  //
+  // initialize the pair efficiency map
+  //
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varY>kNVars || varY<=kNothing) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgEffMapVarDependencyX = varX; 
+  fgEffMapVarDependencyY = varY;
+  if(effMap) {
+    fgPairEffMap = (TH2F*)effMap->Clone(Form("AliReducedVarManager_PairEffMap"));
+    fgPairEffMap->SetDirectory(0x0);
+  }
 }
 
 //____________________________________________________________________________________

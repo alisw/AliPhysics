@@ -443,8 +443,11 @@ class AliReducedVarManager : public TObject {
     kPairDcaZSqrt,
     kMassDcaPtCorr,             // invariant mass, corrected for DCA and pT effects
     kOpAngDcaPtCorr,            // opening angle, corrected for DCA and pT effects
+    kPairEff,                     // pair efficiency
+    kOneOverPairEff,             // 1 / pair efficiency (correction factor) 
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
+
     // Track-only variables -------------------------------------
     kPtTPC=kPairLegTPCchi2+2,     
     kPhiTPC,    
@@ -585,6 +588,7 @@ class AliReducedVarManager : public TObject {
   static TString GetVarUnit(Int_t var) {return fgVariableUnits[var];} 
 
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
+  static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
@@ -614,6 +618,9 @@ class AliReducedVarManager : public TObject {
   static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map
   static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
   static Variables fgVarDependencyY;        // varY in the 2-D electron correction maps
+  static TH2F* fgPairEffMap;       // 2D pair efficiency map
+  static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
+  static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
   
   static TH1F* fgRunTotalLuminosity;      // total luminosity, GRP/GRP/LHCData::GetLumiAliceSBDelivered()
   static TH1F* fgRunTotalIntensity0;        // total intensity beam 1, GRP/GRP/LHCData::GetTotalIntensity(0)
@@ -636,7 +643,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager,2);
+  ClassDef(AliReducedVarManager,3);
 };
 
 #endif
