@@ -2179,7 +2179,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
   //reconstruct the new ZDC-Qvect (with original Modulas).
-  if(!bUseTrigonQn){
+  if(bApplyShiftCorr) {
+   if(!bUseTrigonQn){
     xyZNC[0] = Qvect_ModC*TMath::Cos(Psi1C);
     xyZNC[1] = Qvect_ModC*TMath::Sin(Psi1C);
     xyZNA[0] = Qvect_ModA*TMath::Cos(Psi1A);
@@ -2196,8 +2197,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     dTermXYXY = Qvect_ModSumAC*TMath::Sin(PsiSumAC);
     fHist_ZDC_dTermXXYY_VsRun->Fill(EvtCent,runindex,dTermXXYY);
     fHist_ZDC_dTermXYXY_VsRun->Fill (EvtCent,runindex,dTermXYXY);
-  }
-  else if(bUseTrigonQn){//reconstruct the new ZDC-Qvect with Qn:[-1,1] 
+   }
+   else if(bUseTrigonQn){//reconstruct the new ZDC-Qvect with Qn:[-1,1] 
     xyZNC[0] =  TMath::Cos(Psi1C);
     xyZNC[1] =  TMath::Sin(Psi1C);
     xyZNA[0] =  TMath::Cos(Psi1A);
@@ -2214,8 +2215,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     dTermXYXY = TMath::Sin(PsiSumAC);
     fHist_ZDC_dTermXXYY_VsRun->Fill(EvtCent,runindex,dTermXXYY);
     fHist_ZDC_dTermXYXY_VsRun->Fill (EvtCent,runindex,dTermXYXY);
+   }
   }
-
 
   //do recentering after shift:
 
@@ -2224,7 +2225,6 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     xyZNC[1] -= fHist_ZDCC_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
     xyZNA[0] -= fHist_ZDCA_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
     xyZNA[1] -= fHist_ZDCA_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
-
     //dTermXXYY -= 0; //To be corrected when I have filled <dTermXXYY> over all events
  }
 
@@ -2313,7 +2313,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Double_t mSubEtaNeg = 0;
 
 
-  if(bApplyRecent && bApplyShiftCorr) {
+  if(bApplyRecent) {
    for(int i=0; i<iTracks; i++) {
      pTrack    =    fEvent->GetTrack(i);
      if(!pTrack)               continue;
@@ -2471,7 +2471,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   fullTerm = 0;
   fullReso = 0;
 
-  if(bApplyRecent && bApplyShiftCorr) {
+  if(bApplyRecent) {
 
    if( mNegPoi>0 && mPosPoi>0 ) {
     TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VCRe + (uPRe*uNIm+uPIm*uNRe)*VCIm) / (uPM*uNM) ;
