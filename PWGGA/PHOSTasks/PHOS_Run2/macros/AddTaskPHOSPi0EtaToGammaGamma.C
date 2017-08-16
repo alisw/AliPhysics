@@ -39,7 +39,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
   const Bool_t rejectDAQincomplete = kTRUE;
   const Double_t MaxAbsZ = 10.;
 
-  gROOT->LoadMacro("CreatePHOSEventCuts.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_Run2/macros/CreatePHOSEventCuts.C");
   AliPHOSTriggerHelper *helper = 0x0;
 
   if(trigger == (UInt_t)AliVEvent::kPHI7){
@@ -80,7 +80,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
   else if(CollisionSystem=="PbPb")                          systemID = 1;
   else if(CollisionSystem=="pPb" || CollisionSystem=="Pbp") systemID = 2;
 
-  gROOT->LoadMacro("CreatePHOSClusterCuts.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_Run2/macros/CreatePHOSClusterCuts.C");
   AliPHOSClusterCuts *clustercuts = CreatePHOSClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp);
 
   TString PIDname="";
