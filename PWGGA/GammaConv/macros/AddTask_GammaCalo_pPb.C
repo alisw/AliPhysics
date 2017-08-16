@@ -517,9 +517,9 @@ void AddTask_GammaCalo_pPb(
   //testing different event mix methods
   //-----------------------------------------------------------------------------------------------
   } else if (trainConfig == 81){
-    cuts.AddCut("80000113","1111141057032230000","0163103100000050"); // default (V0 mult)
-    cuts.AddCut("80000113","1111141057032230000","0263103100000050"); // using track mult
-    cuts.AddCut("80000113","1111141057032230000","0963103100000050"); // using PtMax method DeltaR < 0.2
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // default (V0 mult)
+    cuts.AddCut("80000113","1111141057032230000","02631031000000d0"); // using track mult
+    cuts.AddCut("80000113","1111141057032230000","09631031000000d0"); // using PtMax method
 
   // ===============================================================================================
   // test setup for run 2 data EMC clusters
