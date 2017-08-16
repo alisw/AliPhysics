@@ -15,7 +15,7 @@ AliMESppColTask *AddMESppColTask(Bool_t mc)
   mgr->AddTask(ppCol);
   ppCol->SetPostProcess(kFALSE);
   ppCol->SetMCdata(mc);
-  ppCol->SetDebugLevel(0);
+  ppCol->SetDebugLevel(1);
 
   mgr->ConnectInput(ppCol, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
 
