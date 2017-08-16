@@ -1028,8 +1028,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
     
     //just ask AliMultSelection. It will know.
-    fMVPileupFlag = kFALSE;
-    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
+    //fMVPileupFlag = kFALSE;
+    //fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
     
