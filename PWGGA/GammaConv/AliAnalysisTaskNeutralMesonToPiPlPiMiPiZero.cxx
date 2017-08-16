@@ -2867,7 +2867,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
       // eta was found
       isTrueEta   = kTRUE;
       if(!fDoLightOutput) fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-
+      if(!fDoLightOutput) fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
       PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
       AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
@@ -2882,6 +2882,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
       // omega was found
       isTrueOmega = kTRUE;
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+      if(!fDoLightOutput) fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
 
       AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
       PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
