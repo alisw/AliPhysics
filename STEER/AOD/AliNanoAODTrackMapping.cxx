@@ -48,12 +48,12 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTRDnSlices(-1),	  
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
-  fFilterMap(-1),
-  fcovmat{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
-
+  fFilterMap(-1)
 { 
   // default ctor
-
+  for(Int_t i=0; i<21;i++){
+  fcovmat[i]=-1;
+  }
 }
 
 AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
@@ -93,11 +93,13 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTRDnSlices(-1),	  
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
-  fFilterMap(-1),
-  fcovmat{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
-
+  fFilterMap(-1)
 {
   // ctor
+
+  for(Int_t i=0; i<21;i++){
+  fcovmat[i]=-1;
+  }
   //std::cout << "Standard construct " << mappingString << std::endl;
   
   if (fInstance) {
