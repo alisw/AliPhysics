@@ -7,6 +7,7 @@
 #include "AliDAQ.h"
 #endif
 #include "map"
+#include "Includes.h"
 using namespace std;
 // TODO read number of bits from AliVEvent?
 #define NBITS 29
@@ -50,7 +51,7 @@ void AddFillSeparationLines(TH1* h, map<Int_t,Int_t> &fills);
 void AddPeriodSeparationLines(TH1* h,  map<Int_t,TString> &periods);
 
 //void periodLevelQA(TString inputFileName ="/afs/cern.ch/work/a/aliqaevs/www/data/2012/LHC12h/pass1/trending.root"){
-void periodLevelQA(TString inputFileName ="trending.root"){
+void periodLevelQA(TString inputFileName ="trending_merged.root"){
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
   gStyle->SetPadGridX(0);
@@ -265,21 +266,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB");
 //  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
-//    if (run==253660) continue;
-//    if (run>=255042 && run<=255076) continue;
-//    if (TMath::Abs(aV0MOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(bV0MOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(aSPDOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(bSPDOnVsOfVal)<1e-5) continue;    
-
-//    if (!partition->String().Contains("PHYSICS_1")) continue;
-//    if (!lhcState->String().Contains("STABLE")) continue;
-//    if (!lhcPeriod->String().Contains("LHC15o")) continue;
+    if (!partition->String().Contains("PHYSICS_1")) continue;
+    if (!lhcState->String().Contains("STABLE")) continue;
     Double_t thr = 0;
     if (1) {
       man->SetRun(run);
@@ -905,8 +898,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-    hAccStep1Fraction->SetMinimum(elmin-0.1*(elmax-elmin));
-    hAccStep1Fraction->SetMaximum(1.0);
+    hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
+    hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
     // hAcceptedFraction->Draw();
     hAccStep1Fraction->Draw();
