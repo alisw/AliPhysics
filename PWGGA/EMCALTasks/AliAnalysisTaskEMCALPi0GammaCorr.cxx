@@ -1366,7 +1366,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::AnalyzeMC(){
   {
       if(track->PdgCode()!=111 and track->PdgCode()!=22) continue; //only keep photons and pions
       truepT = track->Pt();
-      if(truePt<5.0) continue; //only keep large-momentum pions and photons
+      if(truepT<5.0) continue; //only keep large-momentum pions and photons
       truey  = track->Eta();
       if(track->PdgCode()==111) truePDG = 0.5;
       else if(track->PdgCode()==22) truePDG = 1.5;
