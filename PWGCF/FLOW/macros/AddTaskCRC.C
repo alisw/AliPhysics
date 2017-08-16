@@ -11,8 +11,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Double_t MaxChi2PerClITS=100.,
-                             Bool_t bUseCRCRecenter=kFALSE,
-                             Float_t ZDCGainAlpha=0.395,
+                             Double_t etaMin=-0.8,
+                             Double_t etaMax=0.8,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
@@ -107,6 +107,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bRequireTOFSignal=kFALSE;
   Bool_t bUsePtWeights = (PtWeightsFileName.EqualTo("")?kFALSE:kTRUE);
   if(MinMulZN>=13) bZDCCut=kTRUE;
+  Bool_t bUseCRCRecenter=kFALSE;
+  Float_t ZDCGainAlpha=0.395;
 
   // define CRC suffix
   TString CRCsuffix = ":CRC";
@@ -132,9 +134,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     Appendix += Label;
     CRCsuffix += Appendix;
   }
-
-  Double_t etaMin=-0.8;
-  Double_t etaMax=0.8;
 
   // create instance of the class: because possible qa plots are added in a second output slot,
   // the flow analysis task must know if you want to save qa plots at the time of class construction

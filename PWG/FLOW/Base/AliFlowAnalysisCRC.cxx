@@ -574,6 +574,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     if(fAvVtxPosX[fRunBin]) fVtxPosCor[0] = fVtxPos[0]-fAvVtxPosX[fRunBin];
     if(fAvVtxPosY[fRunBin]) fVtxPosCor[1] = fVtxPos[1]-fAvVtxPosY[fRunBin];
     if(fAvVtxPosZ[fRunBin]) fVtxPosCor[2] = fVtxPos[2]-fAvVtxPosZ[fRunBin];
+  } else {
+    fVtxPosCor[0] = fVtxPos[0];
+    fVtxPosCor[1] = fVtxPos[1];
+    fVtxPosCor[2] = fVtxPos[2];
   }
 
   Double_t ptEta[2] = {0.,0.}; // 0 = dPt, 1 = dEta
@@ -19811,6 +19815,14 @@ Bool_t AliFlowAnalysisCRC::PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Doubl
     }
   }
 
+  if(fMinMulZN==16) {
+    if(fCRCZDC2DCutZDCC[bw][fCenBin]) {
+      if(fRandom->Uniform(0.,1.)>fCRCZDC2DCutZDCC[bw][fCenBin]->GetBinContent(fCRCZDC2DCutZDCC[bw][fCenBin]->GetXaxis()->FindBin(ZCRe*ZAIm),fCRCZDC2DCutZDCC[bw][fCenBin]->GetYaxis()->FindBin(ZCIm*ZARe))) passcut = kFALSE;
+      if(ZCRe*ZAIm < fCRCZDC2DCutZDCC[bw][fCenBin]->GetXaxis()->GetXmin() || ZCRe*ZAIm > fCRCZDC2DCutZDCC[bw][fCenBin]->GetXaxis()->GetXmax()) passcut = kFALSE;
+      if(ZCIm*ZARe < fCRCZDC2DCutZDCC[bw][fCenBin]->GetYaxis()->GetXmin() || ZCIm*ZARe > fCRCZDC2DCutZDCC[bw][fCenBin]->GetYaxis()->GetXmax()) passcut = kFALSE;
+    }
+  }
+
   return passcut;
 }
 
@@ -25396,7 +25408,7 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
     }
     for(Int_t pt=1; pt<=fFlowQCIntCorHist[hr][0]->GetNbinsX(); pt++) {
       Double_t QC2    = fFlowQCIntCorHist[hr][3]->GetBinContent(pt);
-      Double_t QC2Err   = fFlowQCIntCorHist[hr][3]->GetBinError(pt);
+      Double_t QC2Err = fFlowQCIntCorHist[hr][3]->GetBinError(pt);
 
       fFlowQCIntCumHist[hr][3]->SetBinContent(pt,QC2);
       fFlowQCIntCumHist[hr][3]->SetBinError(pt,QC2Err);
@@ -25838,8 +25850,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
               * (sinP1nPsi*cosP1nPhi+cosP1nPsi*sinP1nPhi);
         }
 
-//        fFlowQCFinalPtDifHist[h][hr][3]->SetBinContent(pt,Dn2);
-//        fFlowQCFinalPtDifHist[h][hr][3]->SetBinError(pt,Dn2E);
+       fFlowQCFinalPtDifHist[h][hr][5]->SetBinContent(pt,Dn2);
+       fFlowQCFinalPtDifHist[h][hr][5]->SetBinError(pt,Dn2E);
 
         if(Cn2) {
           Double_t Flow2 = Dn2/sqrt(fabs(Cn2));
@@ -25863,8 +25875,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
 
         if(Dn4Esq>0.) {
           Double_t Dn4E = pow(Dn4Esq,0.5);
-//          fFlowQCFinalPtDifHist[h][hr][4]->SetBinContent(pt,Dn4);
-//          fFlowQCFinalPtDifHist[h][hr][4]->SetBinError(pt,Dn4E);
+         fFlowQCFinalPtDifHist[h][hr][6]->SetBinContent(pt,Dn4);
+         fFlowQCFinalPtDifHist[h][hr][6]->SetBinError(pt,Dn4E);
         }
 
         if(Cn4Esq>0.) {
@@ -25888,7 +25900,7 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
 
           Double_t v4PrimeErrorSquared = 0.;
           if(2.*pow(two,2.)-four>0.) {
-            Double_t v4PrimeErrorSquared = pow(2.*pow(two,2.)-four,-7./2.)
+            v4PrimeErrorSquared = pow(2.*pow(two,2.)-four,-7./2.)
             * (pow(2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced,2.)*pow(twoError,2.)
             + (9./16.)*pow(2.*two*twoReduced-fourReduced,2.)*pow(fourError,2.)
             + 4.*pow(two,2.)*pow(2.*pow(two,2.)-four,2.)*pow(twoReducedError,2.)
@@ -25923,8 +25935,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
           Dn2EG = Dn2EG - Cosq*CosB - Sinq*SinB;
         }
 
-//        fFlowQCFinalPtDifHist[h][hr][5]->SetBinContent(pt,Dn2EG);
-//        fFlowQCFinalPtDifHist[h][hr][5]->SetBinError(pt,Dn2EGE);
+       fFlowQCFinalPtDifHist[h][hr][7]->SetBinContent(pt,Dn2EG);
+       fFlowQCFinalPtDifHist[h][hr][7]->SetBinError(pt,Dn2EGE);
 
         if(Cn2EG>0.) {
           Double_t Flow2EG = Dn2EG/sqrt(Cn2EG);
@@ -31029,10 +31041,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
         zmin = -10.;
         zmax = 10.;
       }
+
       for(Int_t i=0;i<2;i++) {
         for(Int_t c=0;c<fCRCnCen;c++) {
           for (Int_t j=0;j<2;j++) {
-            fCRCZDCQVecDis[i][c][j] = new TH2D(Form("fCRCZDCQVecDis[%d][%d][%d]",i,c,j),Form("fCRCZDCQVecDis[%d][%d][%d]",i,c,j),500,-0.25,0.25,500,-0.25,0.25);
+            fCRCZDCQVecDis[i][c][j] = new TH2D(Form("fCRCZDCQVecDis[%d][%d][%d]",i,c,j),Form("fCRCZDCQVecDis[%d][%d][%d]",i,c,j),200,-2.,2.,200,-2.,2.);
             fCRCZDCQVecDis[i][c][j]->Sumw2();
             fCRCQVecList->Add(fCRCZDCQVecDis[i][c][j]);
           }
