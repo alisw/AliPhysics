@@ -4266,6 +4266,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         else energy *= FunctionNL_kPi0MCv6(energy);
       }  
       break;
+    // case 11 of the 8 TeV (LHC15h1 PYTHIA8) nonlinearity as a general case
+    case 9:
+      if (fClusterType == 1){
+        energy /= FunctionNL_kSDM(energy, 0.96874*0.991*0.9958*0.999, -3.76064, -0.193181);
+      }
+      break;
 
 //----------------------------------------------------------------------------------------------------------
 
