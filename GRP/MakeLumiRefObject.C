@@ -90,7 +90,7 @@ void MakeLumiRefObject(TString cdbPath="local://./")
   AddLumiRef(refArr, 267132, 1590.0, 0.76, "C0TVX-B-NOPF-CENTNOTRD", "taken from old p-Pb");
   AddLumiRef(refArr, 267167,   30.0, 0.40, "C0TVX-B-NOPF-CENTNOTRD", "back to pp at 13TeV");
   AddLumiRef(refArr, 275924,   63.0, 0.84, "CINT7-B-NOPF-CENTNOTRD", "no T0, estimate from Martino");
-
+  AddLumiRef(refArr, 276097,   30.0, 0.40, "C0TVX-B-NOPF-CENTNOTRD", "T0 recovered");
   // add new entries above
   //=======================================================================================
   refArr->Sort(); // Very important
