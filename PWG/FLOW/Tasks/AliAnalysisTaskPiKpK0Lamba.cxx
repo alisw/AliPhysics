@@ -1837,9 +1837,9 @@ void AliAnalysisTaskPiKpK0Lamba::Analyze(AliAODEvent* aod, Float_t vtxZ)
 
         Double_t  lV0Position[3];
         v0->GetXYZ(lV0Position);
-        Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
-                TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
-                TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2));
+//        Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
+//                TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
+//                TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2));
 
         if ( (lDcaPosToPrimVertex < fDCADghtPV) || (lDcaNegToPrimVertex < fDCADghtPV) || (lDcaV0Daughters > fMaxDCADght) || (lV0CosineOfPointingAngle < fCosPA) || (lV0Radius < fMinRad) || (lV0Radius > fMaxRad) || (v0->Pt() < fMinPt) || (v0->Pt() >= fMaxPt) || (TMath::Abs(v0->Eta()) >= fEtaCut) )
             continue;
