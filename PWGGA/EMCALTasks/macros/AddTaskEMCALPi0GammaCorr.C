@@ -1,7 +1,6 @@
 // $Id$
 AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
 {  
-
   std::cout << "Beggining AddTaskEMCALPi0GammaCorr" << std::endl;
   if(isMC) std::cout << "Will analyze MC" << std::endl;
   UInt_t      evtTriggerType         = AliVEvent::kEMCEGA; //AliVEvent::kAnyINT,// AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
@@ -11,7 +10,6 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
   if (!mgr)  ::Error("AddTask", "No analysis manager to connect to.");
   AliVEventHandler* handler = mgr->GetInputEventHandler();
   if (!handler) ::Error("AddTask", "This task requires an input event handler");
- 
  
   //-------------------------------------------------------
   // Built the name of the Task together
@@ -28,6 +26,11 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
   //AnalysisTask->SetPeriod(period.Data());
   AnalysisTask->SetMC(isMC);
 
+  AliEmcalMCTrackSelector *mcPartTask = NULL;
+  if(isMC){ 
+      std::cout << "AddTask MC Track Selector " << std::endl;
+      AddTaskMCTrackSelector("mcparticles", kFALSE, kFALSE, 1, kFALSE); //this is needed only in mC
+  }
   std::cout << "----Adding cluster container, track container" << std::endl;
   AnalysisTask->AddClusterContainer("usedefault");
   
@@ -43,18 +46,11 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
   trackContMatching->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);  
 
 
-
-
   if(isMC){
-    //std::cout << "Adding MC particle container \n" << std::endl;
-    //AliMCParticleContainer *mcpcont = AnalysisTask->AddMCParticleContainer("MCParticles");
-    //if(!mcpcont) ::Error("AddTask", "MC Particle container not found");
-    //mcpcont->SetEtaLimits(-0.5, 0.5);
-
-    //mcpcont->SetName("MCParticles");
-    //AnalysisTask->SetMCParticleContainer("MCParticles");
-
-    //AnalysisTask->SetParticleContainerNameMC("");
+    std::cout << "Adding MC particle container \n" << std::endl;
+    AliMCParticleContainer *mcpcont = AnalysisTask->AddMCParticleContainer("mcparticles");
+    if(!mcpcont) ::Error("AddTask", "MC Particle container not found");
+    mcpcont->SetName("mcparticles");
   }
   else 
   {
@@ -65,7 +61,6 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
   // Add some selection criteria
   //-------------------------------------------------------
   if(!isMC) AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
-  
     //..for Run1 pPb
   //AnalysisTask->SetUseManualEvtCuts(kTRUE);
   AnalysisTask->SetUseAliAnaUtils(kTRUE); //this does automatically some vertex selection and pileup suppression
@@ -79,28 +74,25 @@ AliAnalysisTaskEMCALPi0GammaCorr* AddTaskEMCALPi0GammaCorr(Bool_t isMC=kFALSE)
 
   if(AnalysisTask->GetClusterContainer(0))
   {
-      std::cout << "Setting cuts for clusters" << std::endl;
-	  AnalysisTask->GetClusterContainer(0)->SetClusECut(0);                
-	  AnalysisTask->GetClusterContainer(0)->SetClusPtCut(0.30);       
-	  AnalysisTask->GetClusterContainer(0)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
-	  AnalysisTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    std::cout << "Setting cuts for clusters" << std::endl;
+    AnalysisTask->GetClusterContainer(0)->SetClusECut(0);                
+    AnalysisTask->GetClusterContainer(0)->SetClusPtCut(0.30);       
+    AnalysisTask->GetClusterContainer(0)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
+    AnalysisTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
-
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
   AnalysisTask->SetSavePool(kFALSE);
   AnalysisTask->SetEvtTriggerType(evtTriggerType);   
   AnalysisTask->SetEvtMixType(evtMixingType);       
 
-  
   mgr->AddTask(AnalysisTask);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),TList::Class(),
 	  	  	  	  	  	  	  	  	  	  	  	  	   AliAnalysisManager::kOutputContainer,
 		  	  	  	  	  	  	  	  	  	  	  	  	   Form("%s", AliAnalysisManager::GetCommonFileName()));
-
   mgr->ConnectInput  (AnalysisTask, 0,  cinput1 );
   mgr->ConnectOutput (AnalysisTask, 1, coutput1 );
-  //mgr->ConnectOutput (AnalysisTask, 2, coutput2 );
+ 
   return AnalysisTask;
 }
