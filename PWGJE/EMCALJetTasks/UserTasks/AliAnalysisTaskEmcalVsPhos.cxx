@@ -69,14 +69,14 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fPlotNeutralJets(kFALSE),
   fPlotClustersInJets(kFALSE),
   fPlotClusterHistograms(kTRUE),
   fPlotCellHistograms(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fPlotStandardClusterTHnSparse(kTRUE),
+  fPlotNearestNeighborDistribution(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -99,14 +99,14 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fPlotNeutralJets(kFALSE),
   fPlotClustersInJets(kFALSE),
   fPlotClusterHistograms(kTRUE),
   fPlotCellHistograms(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fPlotStandardClusterTHnSparse(kTRUE),
+  fPlotNearestNeighborDistribution(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -250,7 +250,7 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       fHistManager.CreateTH1(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins);
     }
   
-    // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
+    // Plot cluster THnSparse (centrality, eta, phi, E, E-hadcorr, has matched track, M02, Ncells, passed dispersion cut)
     Int_t dim = 0;
     TString title[20];
     Int_t nbins[20] = {0};
@@ -288,40 +288,50 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     max[dim] = fPtHistBins[fNPtHistBins];
     dim++;
     
-    title[dim] = "#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)";
-    nbins[dim] = fNPtHistBins;
-    binEdges[dim] = fPtHistBins;
-    min[dim] = fPtHistBins[0];
-    max[dim] = fPtHistBins[fNPtHistBins];
-    dim++;
-    
-    title[dim] = "Matched track";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    title[dim] = "M02";
-    nbins[dim] = 50;
-    min[dim] = 0;
-    max[dim] = 5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    title[dim] = "Ncells";
-    nbins[dim] = 30;
-    min[dim] = -0.5;
-    max[dim] = 29.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    title[dim] = "Dispersion cut";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
+    if (fPlotStandardClusterTHnSparse) {
+      title[dim] = "#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Matched track";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "M02";
+      nbins[dim] = 50;
+      min[dim] = 0;
+      max[dim] = 5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "Ncells";
+      nbins[dim] = 30;
+      min[dim] = -0.5;
+      max[dim] = 29.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "Dispersion cut";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
+    if (fPlotNearestNeighborDistribution) {
+      title[dim] = "#DeltaR_{NN}";
+      nbins[dim] = 100;
+      min[dim] = 0.;
+      max[dim] = 1.;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
     
     TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
@@ -330,11 +340,13 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       hn->SetBinEdges(i, binEdges[i]);
     }
     
+    // Plot Fcross distribution
     if (fPlotExotics) {
       histname = TString::Format("%s/hFcrossEMCal", cont->GetArrayName().Data());
       htitle = histname + ";Centrality (%);Fcross;#it{E}_{clus} (GeV/)";
       TH3* hist = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, nExBins, exBins, fNPtHistBins, fPtHistBins);
     }
+    
   }
   
 }
@@ -497,14 +509,14 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClustersInJetsHistograms()
     dim++;
     
     title[dim] = "#eta_{jet}";
-    nbins[dim] = fNEtaBins;
+    nbins[dim] = 40;
     min[dim] = -0.5;
     max[dim] = 0.5;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     title[dim] = "#phi_{jet}";
-    nbins[dim] = fNPhiBins;
+    nbins[dim] = 200;
     min[dim] = 1.;
     max[dim] = 6.;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
@@ -767,7 +779,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         passedDispersionCut = 1;
       }
       
-        Double_t contents[30]={0};
+      Double_t contents[30]={0};
       histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
       THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
       if (!histClusterObservables) return;
@@ -791,6 +803,8 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           contents[i] = it->second->GetNCells();
         else if (title=="Dispersion cut")
           contents[i] = passedDispersionCut;
+        else if (title=="#DeltaR_{NN}")
+          contents[i] = FindNearestNeighborDistance(it->first, clusters);
         else
           AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
@@ -1067,3 +1081,31 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetFcross(AliVCluster *cluster, AliVCaloCel
   
   return Fcross;
 }
+
+/**
+ * Compute the distance to the nearest accepted cluster
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::FindNearestNeighborDistance(AliTLorentzVector clusterRef, AliClusterContainer* clusters)
+{
+  Double_t distNN = 10.;
+  Double_t etaRef = clusterRef.Eta();
+  Double_t phiRef = clusterRef.Phi_0_2pi();
+  
+  AliTLorentzVector clusNNcand;
+  for (auto clusIterator : clusters->accepted_momentum() ) {
+    
+    clusNNcand.Clear();
+    clusNNcand = clusIterator.first;
+    
+    Double_t distNNcand = GetDeltaR(&clusNNcand, etaRef, phiRef);
+    
+    if (distNNcand < distNN && distNNcand > 0.001) {
+      distNN = distNNcand;
+    }
+    
+  }
+  
+  return distNN;
+  
+}
+
