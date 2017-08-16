@@ -8,6 +8,7 @@
 #include "TH2I.h"
 #include "TH3I.h"
 #include "TSystem.h"
+#include "TCanvas.h"
 #include <iostream>
 
 using namespace std;
@@ -201,15 +202,20 @@ TList *ReduceList(TList *lin, const TString criteria){//Macro to produce multipl
 }
 
 //_________________________________________________________________________________________________
-TList *FormListFromFile(TFile *fin, const TString criteria, const TString checklists){
+TList *FormListFromFile(TFile *fin, const TString criteria, const TString checklists, const TString classes){
   TList *result = new TList();
   result->SetOwner();
-  
+  const Bool_t verbose = kFALSE;
+
   TList *lkeys = fin->GetListOfKeys();
   const Int_t max = lkeys->GetEntries();
   Int_t counter = 0;
   TIter next(lkeys);
   TKey *key;
+  TObjArray *lclasses = classes.Tokenize(" ");
+  if (verbose)
+    cout << "Asked only for " << classes << endl;
+  //
   while ((key = (TKey*)next())) {
     TString objclass  = key->GetClassName();
     TString objname  = key->GetName();
@@ -225,13 +231,31 @@ TList *FormListFromFile(TFile *fin, const TString criteria, const TString checkl
         objnameinlist = nextobjinlist->GetName();
         objtitleinlist = nextobjinlist->GetTitle();
         objclassinlist = nextobjinlist->ClassName();
+        if (verbose)
+          cout << "Checking if " << objnameinlist << " (" << objtitleinlist << ") " << objclassinlist << " passes requirements" << endl;
         if(!objnameinlist.Contains(criteria)) continue;
-        
         if(!criteria.IsNull() && !objnameinlist.Contains(criteria)) continue;
-        if(!objclassinlist.Contains("TH1")) continue;
-        TH1F *h = (TH1F*)nextobjinlist->Clone();
-        h->SetDirectory(0);
-        result->Add(static_cast<TH1F*>(h));
+        for (Int_t j = 0; j < lclasses->GetEntries(); j++){
+          if(!objclassinlist.Contains(lclasses->At(j)->GetName())) continue;
+        }
+        //
+        if (verbose)
+          cout << "Adding " << objclassinlist << " to list" << endl;
+        //
+        if (objclassinlist.Contains("TH1"))
+        {
+          TH1F *h = (TH1F *)nextobjinlist->Clone();
+          h->SetDirectory(0);
+          result->Add(static_cast<TH1F *>(h));
+        }
+        else if (objclassinlist.Contains("TCanvas"))
+        {
+          if (verbose)
+            cout << "TCanvas" << endl;
+          //
+          TCanvas *h = (TCanvas *)nextobjinlist->Clone();
+          result->Add(static_cast<TCanvas *>(h));
+        }
         //     PrintProgress(counter, max);
         if(!criteria.IsNull()) Infomsg("FormListFromFile", Form("%i/%i %s", counter, max, objnameinlist.Data()));
         
@@ -239,11 +263,32 @@ TList *FormListFromFile(TFile *fin, const TString criteria, const TString checkl
       
     }
     else{
-      if(!criteria.IsNull() && !objname.Contains(criteria)) continue;
-      if(!objclass.Contains("TH1")) continue;
-      TH1F *h = (TH1F*)key->ReadObj();
-      h->SetDirectory(0);
-      result->Add(static_cast<TH1F*>(h));
+      if (!criteria.IsNull() && !objname.Contains(criteria))
+        continue;
+      for (Int_t j = 0; j < lclasses->GetEntries(); j++)
+      {
+        if (!objclass.Contains(lclasses->At(j)->GetName()))
+          continue;
+      }
+
+      if (verbose)
+      cout << "Adding " << objclass << " to list" << endl;
+      //
+      if (objclass.Contains("TH1"))
+      {
+        TH1F *h = (TH1F*)key->ReadObj();
+        h->SetDirectory(0);
+        result->Add(static_cast<TH1F*>(h));
+      }
+      else if (objclass.Contains("TCanvas"))
+      {
+        if (verbose)
+          cout << "TCanvas" << endl;
+        //
+        TCanvas *h = (TCanvas *)key->ReadObj();
+        result->Add(static_cast<TCanvas *>(h));
+      }
+
       //     PrintProgress(counter, max);
       if(!criteria.IsNull()) Infomsg("FormListFromFile", Form("%i/%i %s", counter, max, objname.Data()));
     }

@@ -57,6 +57,6 @@ void GetHistogram(TDirectory *dir, const TString hname, TH1F *& histo);///Gets t
 TList *ReduceList(TList *lin, const TString criteria);///Macro to produce multiple lists from one -> Useful for writing to file
 
 //_________________________________________________________________________________________________
-TList *FormListFromFile(TFile *fin, const TString criteria = "", const TString checklists = "");
+TList *FormListFromFile(TFile *fin, const TString criteria = "", const TString checklists = "", const TString classes = "TH1");
   
 #endif
