@@ -278,13 +278,21 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_Matching = 0.00; 
     double max_Matching = 0.05; 
 
-    int nbins_trueGamma = 2.0;
+    int nbins_trueGamma = 2;
     double min_trueGamma = 0.0;
     double max_trueGamma = 1.0;
 
-    int nbins_truePDG  = 3.0;
+    int nbins_truePDG  = 2;
     double min_truePDG = 0.0; 
-    double max_truePDG = 3.0;
+    double max_truePDG = 2.0;
+
+    int nbins_TruePt  = 40;
+    double min_TruePt  = 0.0;
+    double max_TruePt  = 20; 
+    
+    int nbins_TrueEta = 40; 
+    double min_TrueEta   = -1.0;
+    double max_TrueEta   = 1.0;
     //////////////////////Pion-hadron correlations//////////////////////////
     const int nbins_PionCorr = 13;
     int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt,  //trigger variables
@@ -397,10 +405,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 
     ///////////////////////////////////TRUTH //////////////////////////////////////////////////////
     axisNames = "Truth ThnSparse; True Pt; True y ; PDG;";
-    int    binsTruth[3] = {nbins_Pt, nbins_eta, nbins_truePDG};
-    double xminTruth[3] = {min_Pt, min_eta, min_truePDG};
-    double xmaxTruth[3] = {max_Pt, max_eta, max_truePDG};
-    h_Truth = new THnSparseD("h_Track", axisNames, 3, binsTruth, xminTruth, xmaxTruth);
+    int    binsTruth[3] = {nbins_TruePt, nbins_TrueEta, nbins_truePDG};
+    double xminTruth[3] = {min_TruePt, min_TrueEta, min_truePDG};
+    double xmaxTruth[3] = {max_TruePt, max_TrueEta, max_truePDG};
+    h_Truth = new THnSparseD("h_Truth", axisNames, 3, binsTruth, xminTruth, xmaxTruth);
     h_Truth->Sumw2();
     fOutput->Add(h_Truth);
 
@@ -520,6 +528,8 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
     }
 
 
+  /*
+
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
       AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
@@ -550,27 +560,14 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::Run(){
     }
   }
 
-  AliStack *stack;
-  if (mc_truth_event != NULL) {
-    stack = mc_truth_event->Stack();
-  }
-
-  fMCEvent = mc_truth_event; 
-
-  for (Int_t i = 0;  i < mc_truth_event->GetNumberOfTracks(); i++) {
-    if (!mc_truth_event->IsPhysicalPrimary(i)) continue; //keep only final state particles
-    const AliMCParticle *p =  static_cast<AliMCParticle *>(mc_truth_event->GetTrack(i));
-    //std::cout << " PDG STATUS  " <<  p->GetStatusCode() << std::endl;
-    // std::cout << " PDG CODE " << p->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(p->PdgCode())->GetName() << "  CHARGE " << p->Charge() << " GenIndex " << p->GetGeneratorIndex() <<  " PT " << p->Pt() << std::endl;
-  }
-
-  // std::cout << " Number of tracks " << mc_truth_event->GetNumberOfTracks() << std::endl;
-
-  //  for(int itrk = 0; itrk < mc_truth_event->GetNumberOfTracks(); itrk++){
-  //  AliVParticle *track = mc_truth_event->GetTrack(itrk);
+  //AliStack *stack;
+  //if (mc_truth_event != NULL) {
+  //  stack = mc_truth_event->Stack();
   // }
-
-   return kTRUE;
+  
+  fMCEvent = mc_truth_event; 
+  */
+  return kTRUE;
 }
 
 Double_t AliAnalysisTaskEMCALPi0GammaCorr::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
@@ -851,34 +848,33 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 
 
 void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, double Rmax, double &IsoE){
-
+  
   AliClusterContainer* clusters  = GetClusterContainer(0);
   TLorentzVector reco_photon;
   clusters->GetMomentum(reco_photon, cluster);
-
-  // std::cout << " Reco pT " << reco_photon.Pt() << std::endl;
-  Int_t label = cluster->GetLabel();
-
+ 
   double sumET= 0.0;
-  
-  const AliMCParticle *true_photon =  static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
-  // std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
-  // true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
+
+  AliMCParticleContainer *mcContainer = GetMCParticleContainer("mcparticles");
+  if(!mcContainer) AliError(Form("Could not retrieve MCParticleContainer !"));
+
+  Int_t label = TMath::Abs(cluster->GetLabel());
+  AliAODMCParticle* true_photon = mcContainer ? mcContainer->GetMCParticleWithLabel(label) : 0x0;   
+  if(!true_photon) AliError(Form("Could not retrieve true_photon !"));
+  //std::cout << " Reco pT " << reco_photon.Pt() << " " << label << std::endl;
+  //std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
+  //true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
 
   //Loop over final-state particles and sum their 
-  for(int itrk = 0; itrk < fMCEvent->GetNumberOfTracks(); itrk++){
-    if (!fMCEvent->IsPhysicalPrimary(itrk)) continue; //keep only final state particles
-    AliVParticle *track = fMCEvent->GetTrack(itrk);
 
+  for (auto track: mcContainer->accepted()){
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi     = TVector2::Phi_mpi_pi(true_photon->Phi()- trackphi);
     double deta     = true_photon->Eta()- track->Eta();
     double dR       = TMath::Sqrt(deta*deta+dphi*dphi);
-
     double ET = track->E();//*TMath::Sin(track->Theta());
 
-    if(dR<Rmax){ sumET += ET; }
-  
+    if(dR<Rmax){ sumET += ET; } 
   } //end loop over particles
 
  
@@ -1155,12 +1151,18 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsRealPion(AliVCluster* cluster_1, AliVCluster* cluster_2, double &truepT){
 
-  AliMCParticle *true_photon_1 =  NULL;
-  AliMCParticle *true_photon_2 =  NULL;
-  AliMCParticle *true_mother =  NULL;
+  
  
-  true_photon_1  = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster_1->GetLabel()));//
-  true_photon_2  = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster_2->GetLabel()));//
+  AliMCParticleContainer *mcContainer = GetMCParticleContainer("mcparticles");
+  if(!mcContainer) AliError(Form("Could not retrieve MCParticleContainer !"));
+  Int_t label_1 = TMath::Abs(cluster_1->GetLabel());
+  Int_t label_2 = TMath::Abs(cluster_2->GetLabel());
+ 
+  AliAODMCParticle* true_photon_1 = mcContainer ? mcContainer->GetMCParticleWithLabel(label_1) : 0x0;
+  AliAODMCParticle* true_photon_2 = mcContainer ? mcContainer->GetMCParticleWithLabel(label_2) : 0x0;
+  
+  if(!true_photon_2 or !true_photon_2) AliError(Form("Could not retrieve true_photon !"));
+  
  
   if(!true_photon_1 or !true_photon_2) return kFALSE;
   if(true_photon_1->PdgCode()!=22) return kFALSE;
@@ -1169,7 +1171,9 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsRealPion(AliVCluster* cluster_1, AliV
   if(true_photon_2->GetMother()<0) return kFALSE;
   if(true_photon_1->GetMother()!=true_photon_2->GetMother()) return kFALSE;
 
-  true_mother = static_cast<AliMCParticle *>(fMCEvent->GetTrack(true_photon_1->GetMother()));
+  Int_t motherlabel = TMath::Abs(true_photon_1->GetMother());
+ 
+  AliAODMCParticle* true_mother = mcContainer ? mcContainer->GetMCParticleWithLabel(motherlabel) : 0x0;
   if(true_mother->PdgCode()!=111) return kFALSE; 
 
   // std::cout << " true mother " << true_mother->PdgCode() << " pT " << true_mother->Pt() << std::endl;
@@ -1232,14 +1236,16 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     
     double trueGamma = 0.0; 
     
-    const AliMCParticle *true_photon =  NULL; 
+    
+
     if(fIsMC){
-      true_photon = static_cast<AliMCParticle *>(fMCEvent->GetTrack(cluster->GetLabel()));//
-      //	std::cout << "PDF CODE " << true_photon->PdgCode() << std::endl; 
+        AliMCParticleContainer *mcContainer = GetMCParticleContainer("mcparticles");
+        if(!mcContainer) AliError(Form("Could not retrieve MCParticleContainer !"));
+        Int_t label = TMath::Abs(cluster->GetLabel());
+        AliAODMCParticle* true_photon = mcContainer ? mcContainer->GetMCParticleWithLabel(label) : 0x0;
+        if(!true_photon) AliError(Form("Could not retrieve true_photon !"));
         if(true_photon->PdgCode()==22) trueGamma=.60;
     }
-    // std::cout << " PDG CODE " << true_photon->PdgCode()
-
 
     double entries[25] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, detamin, dphimin, exoticity, time, nTracks, nClusters,
@@ -1355,22 +1361,20 @@ void AliAnalysisTaskEMCALPi0GammaCorr::AnalyzeMC(){
   double truey = 0.0; 
   double truePDG = 0.0;
 
-  for(int itrk = 0; itrk < fMCEvent->GetNumberOfTracks(); itrk++){
-    AliVParticle *track = fMCEvent->GetTrack(itrk);
-    
-    switch(track->PdgCode())
-    {
-      case 22: truePDG = 0.5;
-      case 111 : truePDG = 1.5;
-      default: truePDG = 2.5;
-    }
-    
-    truepT = track->Pt(); 
-    truey  = track->Eta();  
-    double entries[3] = {truepT, truey, truePDG}; 
-    h_Truth->Fill(entries);
+  AliMCParticleContainer *mcContainer = GetMCParticleContainer("mcparticles");
+  for (auto track: mcContainer->all())
+  {
+      if(track->PdgCode()!=111 and track->PdgCode()!=22) continue; //only keep photons and pions
+      truepT = track->Pt();
+      if(truePt<5.0) continue; //only keep large-momentum pions and photons
+      truey  = track->Eta();
+      if(track->PdgCode()==111) truePDG = 0.5;
+      else if(track->PdgCode()==22) truePDG = 1.5;
+      else truePDG = 2.5;
+      double entries[3] = {truepT, truey, truePDG};
+      h_Truth->Fill(entries);
   }
+  
 
   return;
 }
- 
