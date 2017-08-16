@@ -266,7 +266,7 @@ void periodLevelQA(TString inputFileName ="trending_merged.root"){
   hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB");
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
 //  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
