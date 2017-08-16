@@ -9,13 +9,7 @@
 #pragma link C++ class AliNanoAODCustomSetter+;
 #pragma link C++ class AliAnalysisNanoAODTrackCuts+;
 #pragma link C++ class AliAnalysisNanoAODEventCuts+;
-#pragma link C++ class AliNanoAODSimpleSetter+;         
-// Custom ESE classes: to be removed once the library is not in dev mode any more
-#pragma link C++ class AliESEEvtCut+;
-#pragma link C++ class AliESETrkCut+;
-#pragma link C++ class AliAnalysisESESetter+;         
-#pragma link C++ class AliAnalysisTaskSpectraAllChNanoAOD+;
-
+#pragma link C++ class AliNanoAODSimpleSetter+;
 
 
 #endif
