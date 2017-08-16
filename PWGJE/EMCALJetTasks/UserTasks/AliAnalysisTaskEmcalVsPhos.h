@@ -65,14 +65,14 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
   void SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts = b; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
-  void SetNEtaBins(Int_t n)                                 { fNEtaBins = n; }
-  void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
   void SetPlotNeutralJets(Bool_t b)                         { fPlotNeutralJets = b; }
   void SetPlotClustersInJets(Bool_t b)                      { fPlotClustersInJets = b; }
   void SetPlotClusterHistograms(Bool_t b)                   { fPlotClusterHistograms = b; }
   void SetPlotCellHistograms(Bool_t b)                      { fPlotCellHistograms = b; }
   void SetPlotClusWithoutNonLinCorr(Bool_t b)               { fPlotClusWithoutNonLinCorr = b; }
   void SetPlotExotics(Bool_t b)                             { fPlotExotics = b; }
+  void SetPlotStandardClusterTHnSparse(Bool_t b)            { fPlotStandardClusterTHnSparse = b; }
+  void SetPlotNearestNeighborDistribution(Bool_t b)         { fPlotNearestNeighborDistribution = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -98,10 +98,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
   Double_t                    GetJetType(AliEmcalJet* jet);
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells);
-  
-  // Analysis parameters
-  Int_t                       fNEtaBins;                            ///< Number of eta bins in DCal region (for background/correction)
-  Int_t                       fNPhiBins;                            ///< Number of phi bins in DCal region (for background/correction)
+  Double_t                    FindNearestNeighborDistance(AliTLorentzVector cluster, AliClusterContainer* clusters);
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
@@ -110,6 +107,9 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotCellHistograms;                  ///< Set whether to plot cell histograms
   Bool_t                      fPlotClusWithoutNonLinCorr;           ///< If true, use pre-nonlincorr energy in cluster thnsparse
   Bool_t                      fPlotExotics;                         ///< Set whether to plot exotic cluster study
+  Bool_t                      fPlotStandardClusterTHnSparse;        ///< Set whether to plot "standard" axes in cluster THnSparse
+  Bool_t                      fPlotNearestNeighborDistribution;     ///< Set whether to plot nearest neighbor axis in cluster THnSparse
+
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -135,7 +135,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 2);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 3);
   /// \endcond
 };
 #endif
