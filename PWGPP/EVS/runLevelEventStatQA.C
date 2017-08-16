@@ -1,8 +1,4 @@
 #ifndef __CINT__
-#include "TTree.h"
-#include "TFile.h"
-#include "TMath.h"
-#include "TPad.h"
 #endif
 #include "triggerInfo.C"
 
@@ -50,8 +46,7 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
-Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=272399, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -289,7 +284,9 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
   else if (run>=265304 && run<=265586) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
   else if (run>=265587 && run<=267131) { refSigma=1715.; refEff = 0.82; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // T0 efficiency estimate from MC, refSigma assuming cs(INEL) = 2092
   else if (run>=267132 && run<=267166) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
-  else if (run>=267167               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=267167 && run<=275923) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=275924 && run<=276096) { refSigma= 64.0; refEff = 0.85; refClass = "CINT7-B-NOPF-CENTNOTRD"; } // T0 is not operational, using V0AND
+  else if (run>=276097 )               { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
 
   
   Double_t orbitRate = 11245.;
@@ -611,29 +608,15 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    if (hHistStat->GetNbinsX()!=19) { 
-      // old stat histo without ZDC background monitoring
-      // setting ZDCBG step equal to V0AND and take other steps shifted by 1
-      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j)); 
-      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
-      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
-    } else {
-      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
-      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
-      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
-    }
+    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+    alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+    alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
