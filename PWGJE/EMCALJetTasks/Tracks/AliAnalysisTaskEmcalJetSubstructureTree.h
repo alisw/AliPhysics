@@ -165,11 +165,6 @@ public:
 	void SetTriggerBits(UInt_t triggersel) { fTriggerSelectionBits = triggersel; }
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
 
-  void SetNameRhoPtRec(const char *rhoname) { fRhoNamePtRec = rhoname; }
-  void SetNameRhoMassRec(const char *rhoname) { fRhoNameMassRec =  rhoname; }
-  void SetNameRhoPtSim(const char *rhoname) { fRhoNamePtSim = rhoname; }
-  void SetNameRhoMassSim(const char *rhoname) { fRhoNameMassSim = rhoname; }
-
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
 	  fSDBetaCut = betacut;
@@ -203,12 +198,7 @@ private:
 	Reclusterizer_t              fReclusterizer;              ///< Reclusterizer method
 
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
-	TString                      fTriggerSelectionString;     ///< Trigger selection string
-
-  TString                      fRhoNamePtRec;               ///< Name of the rho parameter coming from the rho task for rec jet (pt)
-  TString                      fRhoNameMassRec;             ///< Name of the rho parameter coming from the rho task for rec jet (mass)
-  TString                      fRhoNamePtSim;               ///< Name of the rho parameter coming from the rho task for mc-level jet (pt)
-  TString                      fRhoNameMassSim;             ///< Name of the rho parameter coming from the rho task for mc-level jet (mass)
+  TString                      fTriggerSelectionString;     ///< Trigger selection string
 
 	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);

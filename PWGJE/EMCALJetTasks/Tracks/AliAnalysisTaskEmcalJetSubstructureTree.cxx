@@ -66,11 +66,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString(""),
-    fRhoNamePtRec("RhoSparse_Full_R04"),
-    fRhoNameMassRec("RhoMassSparse_Full_R04"),
-    fRhoNamePtSim("RhoSparse_Part_R04"),
-    fRhoNameMassSim("RhoMassSparse_Part_R04")
+    fTriggerSelectionString("")
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
@@ -82,11 +78,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString(""),
-    fRhoNamePtRec("RhoSparse_Full_R04"),
-    fRhoNameMassRec("RhoMassSparse_Full_R04"),
-    fRhoNamePtSim("RhoSparse_Part_R04"),
-    fRhoNameMassSim("RhoMassSparse_Part_R04")
+    fTriggerSelectionString("")
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
   DefineOutput(2, TTree::Class());
@@ -157,10 +149,13 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
-  AliRhoParameter *rhoPtRec = GetRhoFromEvent(fRhoNamePtRec),
-                  *rhoMassRec = GetRhoFromEvent(fRhoNameMassRec),
-                  *rhoPtSim = GetRhoFromEvent(fRhoNamePtSim),
-                  *rhoMassSim = GetRhoFromEvent(fRhoNameMassSim);
+  TString rhoTagData = datajets ? TString::Format("R%02d", static_cast<Int_t>(datajets->GetJetRadius() * 10.)) : "",
+          rhoTagMC = mcjets ? TString::Format("R%02d", static_cast<Int_t>(mcjets->GetJetRadius() * 10.)) : "";
+
+  AliRhoParameter *rhoPtRec = GetRhoFromEvent("RhoSparse_Full_" + rhoTagData),
+                  *rhoMassRec = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagData),
+                  *rhoPtSim = GetRhoFromEvent("RhoSparse_Full_" + rhoTagMC),
+                  *rhoMassSim = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagMC);
   AliDebugStream(2) << "Found rho parameter for reconstructed pt:    " << (rhoPtRec ? "yes" : "no") << ", value: " << (rhoPtRec ? rhoPtRec->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for sim pt:              " << (rhoPtSim ? "yes" : "no") << ", value: " << (rhoPtSim ? rhoPtSim->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for reconstructed Mass:  " << (rhoMassRec ? "yes" : "no") << ", value: " << (rhoMassRec ? rhoMassRec->GetVal() : 0.) << std::endl;
@@ -533,7 +528,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   outputfile += TString::Format(":JetSubstructure_R%02d_%s", int(jetradius * 10.), trigger);
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
-  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, Form("JetSubstructureTree_%s.root", trigger)));
+  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, Form("JetSubstructureTree_R%02d_%s.root", static_cast<int>(jetradius*10.), trigger)));
 
   return treemaker;
 }
