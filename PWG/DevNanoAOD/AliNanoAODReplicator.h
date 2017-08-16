@@ -56,6 +56,7 @@ class AliAnalysisTaskSE;
 class AliNanoAODTrack;
 class AliAODTrack;
 class AliNanoAODCustomSetter;
+class AliAODZDC;
 
 class TH1F;
 
@@ -67,6 +68,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliNanoAODReplicator(const char* name,
 		       const char* title,
 		       const char * varlist=0,
+               const char * varListHeader=0,
 		       AliAnalysisCuts* trackCut=0x0,
 		       Int_t mcMode=0
 		       );
@@ -87,6 +89,14 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   // Call backs for custom variables
   AliNanoAODCustomSetter * GetCustomSetter() { return fCustomSetter; }
   void  SetCustomSetter (AliNanoAODCustomSetter * var) { fCustomSetter = var;  }
+    
+  void SetVzero(Int_t b) { fSaveVzero = b;}
+  void SetAODZDC(Int_t b) { fSaveAODZDC = b;}
+  
+  Int_t GetSaveVzero() {return fSaveVzero;}
+  Int_t GetSaveAODZDC() {return fSaveAODZDC;}
+  
+  void SetNumberOfHaederParam(Int_t var){fNumberOfHeaderParam=var;}
 
 
  private:
@@ -120,6 +130,13 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   TString fVarListHeader; // list of variables to be filtered (header)
 
   AliNanoAODCustomSetter * fCustomSetter;  // Setter class for custom variables
+    
+  mutable AliAODVZERO* fVzero; //! internal array of AliAODVZEROs
+  mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
+  Int_t fNumberOfHeaderParam; // number of parameters saved in AliNanoAODHeader
+    
+  Int_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
+  Int_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
 
  private:
 
@@ -127,7 +144,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
   
-  ClassDef(AliNanoAODReplicator,1) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliNanoAODReplicator,2) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
