@@ -50,6 +50,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     }
 
     void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+    void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fEventCutArray = CutArray;
@@ -279,6 +280,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Int_t                           fDoMesonQA;                                           // Switching for meson QA 0: no QA 1: small QA 2: big QA
     Bool_t                          fIsFromMBHeader;                                      // Flag for particle whether it belongs to accepted header
     Bool_t                          fIsMC;                                                // Flag for MC
+    Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
 

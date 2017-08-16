@@ -91,6 +91,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	
 	void PrintCuts();
 	void PrintCutsWithValues();
+
+    void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
 	
 	void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
 	void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName=""){if(!fHistograms){InitCutHistograms(name,preCut,cutName);};}
@@ -121,8 +123,9 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	
 	protected:
 
-	TList *fHistograms;
-	AliPIDResponse *fPIDResponse;
+    TList           *fHistograms;
+    Bool_t          fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    AliPIDResponse  *fPIDResponse;
 	AliESDtrackCuts *fEsdTrackCuts;
 
 	Double_t fEtaCut; //eta cutç
@@ -180,7 +183,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,5)
+    ClassDef(AliPrimaryPionCuts,6)
 };
 
 #endif
