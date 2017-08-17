@@ -96,9 +96,13 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   // Utility functions
   Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
   Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
+  Double_t                    GetDeltaR(Double_t eta1, Double_t phi1, Double_t eta2, Double_t phi2);
   Double_t                    GetJetType(AliEmcalJet* jet);
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells);
   Double_t                    FindNearestNeighborDistance(AliTLorentzVector cluster, AliClusterContainer* clusters);
+  Double_t                    GetConeClusterEnergy(AliEmcalJet* jet, Double_t jetR);
+  Double_t                    GetConeCellEnergy(AliEmcalJet* jet, Double_t jetR);
+  Bool_t                      IsCellRejected(Int_t absId, Int_t cellType);
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
