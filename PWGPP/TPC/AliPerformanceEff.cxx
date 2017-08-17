@@ -35,6 +35,8 @@
 
 #include <TAxis.h>
 #include <TH1D.h>
+#include <TFile.h>
+#include <TTree.h>
 #include "THnSparse.h"
 
 // 
@@ -54,14 +56,22 @@ using namespace std;
 
 ClassImp(AliPerformanceEff)
 
+bool AliPerformanceEff::fReadNClsTree = false;
+
 //_____________________________________________________________________________
 AliPerformanceEff::AliPerformanceEff(TRootIOCtor* b):
   AliPerformanceObject(b),
   // histograms
-  fEffHisto(0),
-  fEffSecHisto(0),
+  fEffHisto(NULL),
+  fEffSecHisto(NULL),
+  fTrackPtNCls(NULL),
+  fTrackNClsFound(NULL),
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(NULL),
+  fNEvent(0),
+  fNClsTreeFile(NULL),
+  fNClsTree(NULL),
+  fNClsVec(NULL)
 {
   // io constructor
 }
@@ -70,11 +80,17 @@ AliPerformanceEff::AliPerformanceEff(TRootIOCtor* b):
 AliPerformanceEff::AliPerformanceEff(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):  AliPerformanceObject(name,title),
 
   // histograms
-  fEffHisto(0),
-  fEffSecHisto(0),
+  fEffHisto(NULL),
+  fEffSecHisto(NULL),
+  fTrackPtNCls(NULL),
+  fTrackNClsFound(NULL),
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(NULL),
+  fNEvent(0),
+  fNClsTreeFile(NULL),
+  fNClsTree(NULL),
+  fNClsVec(NULL)
 {
   // named constructor
   //
@@ -93,6 +109,8 @@ AliPerformanceEff::~AliPerformanceEff()
   if(fEffHisto)  delete  fEffHisto; fEffHisto=0;
   if(fEffSecHisto)  delete  fEffSecHisto; fEffSecHisto=0;
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if(fTrackPtNCls) delete fTrackPtNCls; fTrackPtNCls=0;
+  if(fTrackNClsFound) delete fTrackNClsFound; fTrackNClsFound=0;
 }
 
 //_____________________________________________________________________________
@@ -164,9 +182,24 @@ void AliPerformanceEff::Init()
   fEffSecHisto->GetAxis(10)->SetTitle("nClones");
   fEffSecHisto->GetAxis(11)->SetTitle("nFakes");
   fEffSecHisto->Sumw2();
-
+  
   // init folder
   fAnalysisFolder = CreateFolder("folderEff","Analysis Efficiency Folder");
+  
+  if (fReadNClsTree)
+  {
+    fNClsTreeFile = new TFile("nclTPCperMCtrack.root");
+    fNClsTree = (TTree*) fNClsTreeFile->Get("nclPerMCtrack");
+    if (fNClsTree == NULL)
+    {
+      AliDebug(AliLog::kFatal, "Stack not available for event");
+    }
+    fNClsTree->SetBranchAddress("nclPerTrack", &fNClsVec);
+    fNEvent = -1;
+
+    fTrackPtNCls = new TH1D("fTrackPtNCls", "total number of cluster vs track Pt", nPtBins, binsPt);
+    fTrackNClsFound = new TH2D("fTrackNClsFound", "found number of clusters vs mc number of clusters", 80, 0., 320, 40, 0., 160);
+  }
 }
 
 //_____________________________________________________________________________
@@ -221,6 +254,14 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
   //
   Int_t nPart  = mcEvent->GetNumberOfTracks();
   Int_t nPrim  = mcEvent->GetNumberOfPrimaries();
+  if (fReadNClsTree)
+  {
+    fNClsTree->GetEntry(fNEvent);
+    if (nPart != fNClsVec->size())
+    {
+      AliDebug(AliLog::kFatal, "nMCTracks mismatch");
+    }
+  }
   //Int_t nPart  = stack->GetNprimary();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) {
     if (iMc == 0) continue;		//Cannot distinguish between track or fake track
@@ -228,7 +269,10 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     if (!particle) continue;
     if (!particle->GetPDG()) continue; 
     if (particle->GetPDG()->Charge() == 0.0) continue;
-    
+
+    Float_t mcpt = particle->Pt();
+    if (fReadNClsTree) fTrackPtNCls->Fill(mcpt, (*fNClsVec)[iMc]);
+
     // physical primary
     Bool_t prim = mcEvent->IsPhysicalPrimary(iMc);
     if(!prim) continue;
@@ -252,16 +296,19 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
       }
     }*/
     if (!HasTPCReference(mcEvent, iMc)) continue; //Filter particles that do not touch the TPC
+    if (fReadNClsTree && (*fNClsVec)[iMc] == 0) continue;
     Bool_t findable = IsFindable(mcEvent,iMc);
 
     Bool_t recStatus = kFALSE;
     Int_t nClones = 0, nFakes = 0;
+    Int_t nClsRec = 0;
     for(Int_t iRec=0; iRec<vEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
       if(iMc == labelsRec[iRec]) {
         if (recStatus && nClones < fgkMaxClones) nClones++;
         recStatus = kTRUE;
+        if (fReadNClsTree) nClsRec = ((AliVTrack*) vEvent->GetTrack(iRec))->GetTPCNcls();
       }
       //In order to relate the fake track to track parameters, we assign it to the best matching ESD track.
       if (labelsRec[iRec] < 0 && -labelsRec[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
@@ -278,10 +325,10 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     Float_t mceta =  particle->Eta();
     Float_t mcphi =  particle->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = particle->Pt();
     Float_t charge = 0.;
     if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+    if (fReadNClsTree && recStatus) fTrackNClsFound->Fill((*fNClsVec)[iMc], nClsRec);
 
     // Fill histograms
     Double_t vEffHisto[9] = {mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
@@ -355,6 +402,14 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
  
     Int_t nPart  = mcEvent->GetNumberOfTracks();
     //Int_t nPart  = stack->GetNprimary();
+    if (fReadNClsTree)
+    {
+      fNClsTree->GetEntry(fNEvent);
+      if (nPart != fNClsVec->size())
+      {
+        AliDebug(AliLog::kFatal, "nMCTracks mismatch");
+      }
+    }
     for (Int_t iMc = 0; iMc < nPart; ++iMc) 
       {
 	if (iMc == 0) continue;		//Cannot distinguish between track or fake track
@@ -390,18 +445,21 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
 	((AliMCParticle*) mcEvent->GetTrack(iMc))->XvYvZv(xyz);
 	if ((xyz[2] >= 250 && particle->Pz() > 0) || (xyz[2] <= -250 && particle->Pz() < 0)) continue; //Filter particles created at high Z in the TPC readout electronics and flying away
 	if (sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]) - fabs(666. / particle->Pt()) > 250) continue; //will never touch the TPC
+	if (fReadNClsTree && (*fNClsVec)[iMc] == 0) continue;
 	
 	Bool_t findable = IsFindable(mcEvent,iMc);
 	
 	Bool_t recStatus = kFALSE;
 	Int_t nClones = 0, nFakes = 0;
+	Int_t nClsRec = 0;
 	for(Int_t iRec=0; iRec<multRec; ++iRec) 
 	  {
 	    // check reconstructed
-	    if(iMc == labelsRecSec[iRec]) 
+	    if(iMc == labelsRecSec[iRec])
 	      {
 		if (recStatus && nClones < fgkMaxClones) nClones++;
 		recStatus = kTRUE;
+		if (fReadNClsTree) nClsRec = ((AliVTrack*) vEvent->GetTrack(iRec))->GetTPCNcls();
 	      }
 	    //In order to relate the fake track to track parameters, we assign it to the best matching ESD track.
 	    if (labelsRecSec[iRec] < 0 && -labelsRecSec[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
@@ -418,13 +476,14 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
 	if(mcphi<0) mcphi += 2.*TMath::Pi();
 	Float_t mcpt = particle->Pt();
 	Float_t mcR = particle->R();
+	if (fReadNClsTree && recStatus) fTrackNClsFound->Fill((*fNClsVec)[iMc], nClsRec);
 	
 	// get info about mother
 	Int_t motherLabel = particle->GetMother(0);
 	if(motherLabel < 0) continue;
 	TParticle *mother = ((AliMCParticle*)mcEvent->GetTrack(motherLabel))->Particle(); 
 	if(!mother) continue; 
-    
+
 	Float_t mother_eta = mother->Eta();
 	Float_t mother_phi = mother->Phi();
 	if(mother_phi<0) mother_phi += 2.*TMath::Pi();
@@ -435,7 +494,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
 	
 	// Fill histograms
 	Double_t vEffSecHisto[12] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), mcR, mother_phi, mother_eta, static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
-	  fEffSecHisto->Fill(vEffSecHisto);
+	fEffSecHisto->Fill(vEffSecHisto);
       }
   }
   
@@ -655,7 +714,8 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliVEvent 
 void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend)
 {
   // Process comparison information 
-  //
+  
+  fNEvent++;
   if(!vEvent) 
   {
     Error("Exec","vEvent not available");
@@ -736,6 +796,10 @@ Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label)
   //
   // Determine if track is findable
   //
+  if (fReadNClsTree)
+  {
+      return((*fNClsVec)[label] > 70);
+  }
   if(!mcEvent) return kFALSE;
 
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
@@ -844,6 +908,8 @@ Long64_t AliPerformanceEff::Merge(TCollection* const list)
   
     fEffHisto->Add(entry->fEffHisto);
     fEffSecHisto->Add(entry->fEffSecHisto);
+    if (fTrackPtNCls && entry->fTrackPtNCls) fTrackPtNCls->Add(entry->fTrackPtNCls);
+    if (fTrackNClsFound && entry->fTrackNClsFound) fTrackNClsFound->Add(entry->fTrackNClsFound);
     count++;
   }
 
