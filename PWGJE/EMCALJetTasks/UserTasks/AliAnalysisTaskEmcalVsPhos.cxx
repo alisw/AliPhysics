@@ -453,6 +453,20 @@ void AliAnalysisTaskEmcalVsPhos::AllocateNeutralJetHistograms()
     binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
     dimJet++;
     
+    axisTitle[dimJet] = "#it{E}_{T}, acc clus within R (GeV)";
+    nbinsJet[dimJet] = fNPtHistBins;
+    binEdgesJet[dimJet] = fPtHistBins;
+    minJet[dimJet] = fPtHistBins[0];
+    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+    dimJet++;
+    
+    axisTitle[dimJet] = "#it{E}_{T}, acc cell within R (GeV)";
+    nbinsJet[dimJet] = fNPtHistBins;
+    binEdgesJet[dimJet] = fPtHistBins;
+    minJet[dimJet] = fPtHistBins[0];
+    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+    dimJet++;
+    
     TString thnname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dimJet, nbinsJet, minJet, maxJet);
     for (Int_t i = 0; i < dimJet; i++) {
@@ -912,6 +926,10 @@ void AliAnalysisTaskEmcalVsPhos::FillNeutralJetHistograms()
           contents[i] = jet->Pt() / jet->Area();
         else if (title=="N_{clusters}")
           contents[i] = jet->GetNumberOfClusters();
+        else if (title=="#it{E}_{T}, acc clus within R (GeV)")
+          contents[i] = GetConeClusterEnergy(jet, jets->GetJetRadius());
+        else if (title=="#it{E}_{T}, acc cell within R (GeV)")
+          contents[i] = GetConeCellEnergy(jet, jets->GetJetRadius());
         else
           AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
@@ -990,6 +1008,17 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(AliTLorentzVector* part, Double_t
 {
   Double_t deltaPhi = TMath::Abs(part->Phi_0_2pi() - phiRef);
   Double_t deltaEta = TMath::Abs(part->Eta() - etaRef);
+  Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
+  return deltaR;
+}
+
+/**
+ * Get deltaR of two points.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(Double_t eta1, Double_t phi1, Double_t eta2, Double_t phi2)
+{
+  Double_t deltaPhi = TMath::Abs(phi1-phi2);
+  Double_t deltaEta = TMath::Abs(eta1-eta2);
   Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
   return deltaR;
 }
@@ -1107,5 +1136,131 @@ Double_t AliAnalysisTaskEmcalVsPhos::FindNearestNeighborDistance(AliTLorentzVect
   
   return distNN;
   
+}
+
+/**
+ * Compute the cluster energy within a cone centered at the jet axis
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(AliEmcalJet* jet, Double_t jetR)
+{
+  Double_t etaRef = jet->Eta();
+  Double_t phiRef = jet->Phi_0_2pi();
+  
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliTLorentzVector clus;
+  Double_t energy = 0.;
+  for (auto clusIterator : clusCont->accepted_momentum() ) {
+    
+    clus.Clear();
+    clus = clusIterator.first;
+    
+    if (GetDeltaR(&clus, etaRef, phiRef) < jetR) {
+      energy += clus.E();
+    }
+  }
+  return energy;
+}
+
+/**
+ * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(AliEmcalJet* jet, Double_t jetR)
+{
+  Double_t etaRef = jet->Eta();
+  Double_t phiRef = jet->Phi_0_2pi();
+  
+  Double_t energy = 0.;
+  
+  // Get cells from event
+  fCaloCells = InputEvent()->GetEMCALCells();
+  AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+  
+  Double_t eta;
+  Double_t phi;
+  Int_t absId;
+  TVector3 pos;
+  
+  for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = fCaloCells->GetCellNumber(i);
+    
+    fGeom->EtaPhiFromIndex(absId, eta, phi);
+    phi = TVector2::Phi_0_2pi(phi);
+
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < jetR) {
+
+      if (IsCellRejected(absId, kEMCal)) {
+        continue;
+      }
+
+      energy += fCaloCells->GetCellAmplitude(absId);
+    }
+    
+  }
+  
+  for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = phosCaloCells->GetCellNumber(i);
+    
+    fPHOSGeo->RelPosInAlice(absId, pos); // pos then contains (x,y,z) coordinate of cell
+    eta = pos.Eta();
+    phi = pos.Phi();
+    phi = TVector2::Phi_0_2pi(phi);
+    
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < jetR) {
+
+      if (IsCellRejected(absId, kPHOS)) {
+        continue;
+      }
+
+      energy += phosCaloCells->GetCellAmplitude(absId);
+    }
+    
+  }
+  
+  return energy;
+}
+
+/**
+ * Determine whether a cell belongs to a rejected cluster
+ */
+Bool_t AliAnalysisTaskEmcalVsPhos::IsCellRejected(Int_t absId, Int_t cellType)
+{
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliVCluster* cluster;
+  
+  UInt_t rejectionReason;
+  Bool_t skipCell = kFALSE;
+  Int_t clusType;
+  
+  AliClusterIterableMomentumContainer itcont = clusCont->all_momentum();
+  for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+  
+    if (!clusCont->AcceptCluster(it.current_index(), rejectionReason)) {
+      
+      cluster = it->second;
+      
+      // check that the cell type and cluster type are the same
+      if (cluster->IsEMCAL()) {
+        clusType = kEMCal;
+      }
+      if (cluster->GetType() == AliVCluster::kPHOSNeutral) {
+        clusType = kPHOS;
+      }
+      if (clusType != cellType) {
+        continue;
+      }
+      
+      // skip the cell if it belongs to a rejected cluster
+      for (Int_t i = 0; i < cluster->GetNCells(); i++) {
+        
+        if (absId == cluster->GetCellAbsId(i)) {
+          skipCell = kTRUE;
+        }
+        
+      }
+    }
+  }
+  return skipCell;
 }
 
