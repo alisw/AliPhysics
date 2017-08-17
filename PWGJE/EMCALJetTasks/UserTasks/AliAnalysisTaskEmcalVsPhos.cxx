@@ -80,6 +80,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotClusterCone(kFALSE),
   fPlotCaloCentrality(kFALSE),
   fPlotFineGrainedEtaPhi(kFALSE),
+  fPlotEvenOddEta(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -113,6 +114,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotClusterCone(kFALSE),
   fPlotCaloCentrality(kFALSE),
   fPlotFineGrainedEtaPhi(kFALSE),
+  fPlotEvenOddEta(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -336,6 +338,16 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
     }
+    
+    if (fPlotEvenOddEta) {
+      title[dim] = "Even/odd eta";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
+    
     if (fPlotNearestNeighborDistribution) {
       title[dim] = "#DeltaR_{NN}";
       nbins[dim] = 100;
@@ -727,6 +739,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
   Int_t absId;
   Double_t ecell;
   Double_t leadEcell;
+  Int_t leadAbsId;
   
   // Get cells from event
   fCaloCells = InputEvent()->GetEMCALCells();
@@ -807,6 +820,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
           if (ecell > leadEcell) {
             leadEcell = ecell;
+            leadAbsId = absId;
           }
         }
         // Plot also the leading cell
@@ -862,15 +876,25 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         passedDispersionCut = 1;
       }
       
+      // Fill info about the cluster
       Double_t eta = it->first.Eta();
       Double_t phi = it->first.Phi_0_2pi();
       Double_t M02 = it->second->GetM02();
       Int_t nCells = it->second->GetNCells();
       Double_t distNN = FindNearestNeighborDistance(it->first, clusters);
       
+      // If cluster is EMCal, find whether the eta column is even or odd
+      Int_t isOddEta = -1;
+      Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
+      if (it->second->IsEMCAL()) {
+        fGeom->GetCellIndex(leadAbsId, nSupMod, nModule, nIphi, nIeta);
+        fGeom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
+        isOddEta = ieta % 2;
+      }
+
       // Standard option: fill once per cluster
       if (!fPlotClusterCone && !fPlotCaloCentrality) {
-          FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN);
+          FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta);
       }
       
       if (fPlotCaloCentrality) {
@@ -905,13 +929,13 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       if (fPlotClusterCone) {
 
         // cluster cone, R=0.05
-        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
         // cluster cone, R=0.1
-        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
         // cell cone, R=0.05
-        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
         // cell cone, R=0.1
-        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
         
       }
 
@@ -922,7 +946,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
 /*
  * This function fills the cluster THnSparse.
  */
-void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t coneType, Double_t R, Double_t Econe)
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType, Double_t R, Double_t Econe)
 {
   Double_t contents[30]={0};
   TString histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
@@ -950,6 +974,8 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clust
       contents[i] = passedDispersionCut;
     else if (title=="#DeltaR_{NN}")
       contents[i] = distNN;
+    else if (title=="Even/odd eta")
+      contents[i] = isOddEta;
     else if (title=="Cone type")
       contents[i] = coneType;
     else if (title=="R")

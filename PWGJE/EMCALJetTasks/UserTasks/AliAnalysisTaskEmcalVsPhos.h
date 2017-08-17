@@ -76,6 +76,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotClusterCone(Bool_t b)                         { fPlotClusterCone = b; }
   void SetPlotCaloCentrality(Bool_t b)                      { fPlotCaloCentrality = b; }
   void SetPlotFineGrainedEtaPhi(Bool_t b)                   { fPlotFineGrainedEtaPhi = b; }
+  void SetPlotEvenOddEta(Bool_t b)                          { fPlotEvenOddEta = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -95,7 +96,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        FillCellHistograms()                              ;
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
-  void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
+  void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
   void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
   // Utility functions
@@ -122,6 +123,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotClusterCone;                     ///< Set whether to plot sum of energy surrounding cluster in THnSparse
   Bool_t                      fPlotCaloCentrality;                  ///< Set whether to bin cluster THnSparse in calorimeter local density
   Bool_t                      fPlotFineGrainedEtaPhi;               ///< Set whether to plot fine-grained eta-phi bins in cluster THnSparse
+  Bool_t                      fPlotEvenOddEta;                      ///< Set whether to add axis to THnSparse separating even/odd eta columns
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -147,7 +149,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 4);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 5);
   /// \endcond
 };
 #endif
