@@ -68,6 +68,15 @@
 //    kEleCon   = 13;
 //    kUnknown  = 14;
 
+//  event trigger selection
+//  if(datajets)
+//  {
+//      if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
+//      if(fTriggerSelectionString.Length())
+//      {
+//	  if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+//      }
+//  }
 
 
 
@@ -401,10 +410,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     //
     // pull out track numbers for high-pt triggers and also deutons
 
-    int beginning_bin = 462;
-//    int ending_bin = 499;
-//    int width_bin = beginning_bin - ending_bin;
-    
+   
     for(Int_t i(0); i < iTracks; i++)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -440,7 +446,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	float   mom           = track->P();
 	Short_t charge        = track->Charge();
-	Float_t sigma_min     = -999.0;
 	Float_t deut_mean     = 0.0;
 	Float_t deut_sigma    = 0.0;
 
@@ -570,9 +575,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
 
 	    Float_t phi_H       = trackH->Phi();
-	    Float_t px_H        = trackH->Px();
-	    Float_t py_H        = trackH->Py();
-	    Float_t pz_H        = trackH->Pz();
 	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    
@@ -590,9 +592,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		{
 		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
 		
-		    Float_t px_A        = trackA->Px();
-		    Float_t py_A        = trackA->Py();
-		    Float_t pz_A        = trackA->Pz();
 		    Float_t phi_A       = trackA->Phi();
 		    Short_t charge_A    = trackA->Charge();
 		    Float_t pt_A        = trackA->Pt();
@@ -631,9 +630,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
 
 	    Float_t phi_H       = trackH->Phi();
-	    Float_t px_H        = trackH->Px();
-	    Float_t py_H        = trackH->Py();
-	    Float_t pz_H        = trackH->Pz();
 	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
 	    
@@ -652,9 +648,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		{
 		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
 		    
-		    Float_t px_A        = trackA->Px();
-		    Float_t py_A        = trackA->Py();
-		    Float_t pz_A        = trackA->Pz();
 		    Float_t phi_A       = trackA->Phi();
 		    Short_t charge_A    = trackA->Charge();
 		    Float_t pt_A        = trackA->Pt();
