@@ -82,15 +82,10 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 deut_dphi_pt_pos_neg_08;     // 33
 	TH2F*                 deut_dphi_pt_neg_neg_08;     // 34
 
-	TH1F*                 phi_01;                      // 35
-	TH1F*                 phi_02;                      // 36
-	TH1F*                 phi_03;                      // 37
-	TH1F*                 phi_04;                      // 38
-	TH1F*                 phi_05;                      // 39
-	TH1F*                 phi_06;                      // 40
-	
-//	TH2F*                 track_cor_radius_pt;         // 34
-//	TH2F*                 track_cor_radius_pt_cut;     // 35
+	TH2F*                 tof_phi_eta_pos;             // 35
+	TH2F*                 tof_phi_eta_neg;             // 36
+	TH2F*                 tof_phi_eta_pos_deut;        // 37
+	TH2F*                 tof_phi_eta_neg_deut;        // 38
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented

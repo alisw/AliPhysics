@@ -1,11 +1,20 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
+
+
+// PHOS_Run2
+#pragma link C++ class AliAnalysisTaskPHOSObjectCreator+;
+#pragma link C++ class AliPHOSEventCuts+;
+#pragma link C++ class AliPHOSClusterCuts+;
+#pragma link C++ class AliPHOSTriggerHelper+;
+#pragma link C++ class AliAnalysisTaskPHOSPi0EtaToGammaGamma+;
+
 
 // PHOS_pp_8TeV_2012 
 #pragma link C++ class AliCaloPhoton+;
@@ -74,6 +83,8 @@
 #pragma link C++ class AliCaloClusterInfo+;
 #pragma link C++ class AliPHOSpPbPi0Header+;
 #pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
+#pragma link C++ class AliAnalysisTaskPHOSCluster+;
+#pragma link C++ class AliCaloClusterContent+;
 
 //PHOS_Correlations
 #pragma link C++ class AliPHOSCorrelations+;

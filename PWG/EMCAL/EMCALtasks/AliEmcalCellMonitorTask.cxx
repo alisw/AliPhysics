@@ -46,7 +46,7 @@
 #include "AliVEvent.h"
 
 /// \cond CLASSIMP
-ClassImp(PWG::EMCAL::AliEmcalCellMonitorTask)
+ClassImp(PWG::EMCAL::AliEmcalCellMonitorTask);
 /// \endcond
 
 using namespace PWG::EMCAL;
@@ -58,8 +58,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
-   fBadChannelContainer(""),
    fTriggerString(""),
+   fBadChannelContainer(""),
    fNumberOfCells(12288),
    fOldRun(-1),
    fMaskedCells()
@@ -74,8 +74,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
-   fBadChannelContainer(""),
    fTriggerString(""),
+   fBadChannelContainer(""),
    fNumberOfCells(12288),
    fOldRun(-1),
    fMaskedCells()

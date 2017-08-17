@@ -38,6 +38,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_8TeV_2012
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
@@ -94,13 +95,20 @@ set(SRCS
     PHOS_pp_pi0/AliCaloPhoton.cxx
     PHOS_pp_8TeV_2012/AliAnalysisTaskPHOSTrigPi0.cxx
     PHOS_pp_8TeV_2012/AliCaloTriggerSimulator.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSObjectCreator.cxx
+    PHOS_Run2/AliPHOSTriggerHelper.cxx
+    PHOS_Run2/AliPHOSEventCuts.cxx
+    PHOS_Run2/AliPHOSClusterCuts.cxx
+    PHOS_Run2/AliAnalysisTaskPHOSPi0EtaToGammaGamma.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
     UserTasks/AliCaloClusterInfo.cxx
     UserTasks/AliPHOSpPbPi0Header.cxx
+    UserTasks/AliAnalysisTaskPHOSCluster.cxx
+    UserTasks/AliCaloClusterContent.cxx
    )
-
+ 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -181,6 +189,7 @@ install(DIRECTORY PHOS_pPb                  DESTINATION PWGGA/PHOSTasks)
 install(DIRECTORY PHOS_Run2embedding/macros DESTINATION PWGGA//PHOSTasks/PHOS_Run2embedding)
 install(DIRECTORY CPVperf/macros            DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(DIRECTORY PHOS_pp_8TeV_2012/macros  DESTINATION PWGGA/PHOSTasks/PHOS_pp_8TeV_2012)
+install(DIRECTORY PHOS_Run2/macros          DESTINATION PWGGA/PHOSTasks/PHOS_Run2)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C   DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)

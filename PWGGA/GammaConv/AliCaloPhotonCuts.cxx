@@ -4266,6 +4266,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         else energy *= FunctionNL_kPi0MCv6(energy);
       }  
       break;
+    // case 11 of the 8 TeV (LHC15h1 PYTHIA8) nonlinearity as a general case
+    case 9:
+      if (fClusterType == 1){
+        energy /= FunctionNL_kSDM(energy, 0.96874*0.991*0.9958*0.999, -3.76064, -0.193181);
+      }
+      break;
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -4456,6 +4462,19 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }  
       break;
 
+    // New PCM-EMC nonlinearity with energy squared
+    case 17:
+      if( fCurrentMC==k16k5a ){
+        if(fClusterType==1){
+          energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
+        }
+      } else if( fCurrentMC==k17e2 ){
+        if(fClusterType==1){
+          energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
+        }
+      } else fPeriodNameAvailable = kFALSE;
+      break;
+
 // *************** 20 + x **** modified tender Settings 1 - pp
     // NonLinearity pp ConvCalo - only shifting MC - no timing cut
     case 21:
@@ -4576,6 +4595,19 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         energy *= FunctionNL_kTestBeamv3(energy);
         goto label_case_22;// goto previous case for shifting MC
       }  
+      break;
+
+    // New PCM-EMC nonlinearity with energy squared
+    case 27:
+      if( fCurrentMC==k16k5a ){
+        if(fClusterType==1){
+          energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
+        }
+      } else if( fCurrentMC==k17e2 ){
+        if(fClusterType==1){
+          energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
+        }
+      } else fPeriodNameAvailable = kFALSE;
       break;
       
 // *************** 30 + x **** modified tender Settings 2 - pp

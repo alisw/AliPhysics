@@ -1540,11 +1540,13 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==10){
-    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
+    //fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedCutoffMeasure(Beta,fR,10.0)); //testing for KineTrain
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
     SubJets=nSub.currentSubjets();
   }
+  
 
 
   
@@ -1687,7 +1689,8 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
     SubJet_Axes=nSub.currentAxes();
   }
   else if (Algorithm==10){
-    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,JetR));
+    //fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,JetR));
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedCutoffMeasure(Beta,JetR,10.0)); //testing for Kine trains
     Result= nSub.result(jet);
     SubJet_Axes=nSub.currentAxes();
   }

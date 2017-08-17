@@ -58,6 +58,12 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
+  TH3F* hEtaPhiPtPosChargeTPCsel=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCsel");
+  TH3F* hEtaPhiPtPosChargeTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselITSref");
+  TH3F* hEtaPhiPtPosChargeTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselSPDany");
+  TH3F* hEtaPhiPtNegChargeTPCsel=(TH3F*)l->FindObject("hEtaPhiPtNegChargeTPCsel");
+  TH3F* hEtaPhiPtNegChargeTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtNegChargeTPCselITSref");
+  TH3F* hEtaPhiPtNegChargeTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtNegChargeTPCselSPDany");
 
   Int_t etamin=hEtaPhiPtTPCsel->GetXaxis()->FindBin(-0.799);
   Int_t etamax=hEtaPhiPtTPCsel->GetXaxis()->FindBin(0.799);
@@ -146,25 +152,83 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hPhiEtaPosTPCselITSrefHighPt->Sumw2();
   hPhiEtaPosTPCselSPDanyHighPt->Sumw2();
 
-  TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
-  cdist->Divide(2,2);
-  cdist->cd(1);
-  gPad->SetLogy();
-  DrawDistrib(hPtEtaNegTPCsel,hPtEtaNegTPCselITSref,hPtEtaNegTPCselSPDany,kTRUE);
-  TLegend* legd=new TLegend(0.16,0.16,0.5,0.4);
-  legd->AddEntry(hPtEtaNegTPCsel,"TPC only cuts","L")->SetTextColor(hPtEtaNegTPCsel->GetLineColor());
-  legd->AddEntry(hPtEtaNegTPCselITSref,"ITSrefit","L")->SetTextColor(hPtEtaNegTPCselITSref->GetLineColor());
-  legd->AddEntry(hPtEtaNegTPCselSPDany,"SPD any","L")->SetTextColor(hPtEtaNegTPCselSPDany->GetLineColor());
-  legd->Draw();
-  cdist->cd(2);
-  gPad->SetLogy();
-  DrawDistrib(hPtEtaPosTPCsel,hPtEtaPosTPCselITSref,hPtEtaPosTPCselSPDany,kTRUE);
-  cdist->cd(3);
-  DrawDistrib(hPhiEtaNegTPCsel,hPhiEtaNegTPCselITSref,hPhiEtaNegTPCselSPDany,kFALSE);
-  legd->Draw();
-  cdist->cd(4);
-  DrawDistrib(hPhiEtaPosTPCsel,hPhiEtaPosTPCselITSref,hPhiEtaPosTPCselSPDany,kFALSE);
-  cdist->SaveAs("TracksPtPhiDistrib.png");
+  if(hEtaPhiPtPosChargeTPCsel){
+    TH1D* hPtEtaNegPosChargeTPCsel=hEtaPhiPtPosChargeTPCsel->ProjectionZ("hPtEtaNegPosChargeTPCsel",etamin,eta0m);
+    TH1D* hPtEtaPosPosChargeTPCsel=hEtaPhiPtPosChargeTPCsel->ProjectionZ("hPtEtaPosPosChargeTPCsel",eta0p,etamax);
+    TH1D* hPtEtaNegNegChargeTPCsel=hEtaPhiPtNegChargeTPCsel->ProjectionZ("hPtEtaNegNegChargeTPCsel",etamin,eta0m);
+    TH1D* hPtEtaPosNegChargeTPCsel=hEtaPhiPtNegChargeTPCsel->ProjectionZ("hPtEtaPosNegChargeTPCsel",eta0p,etamax);
+    TH1D* hPtEtaNegPosChargeTPCselITSref=hEtaPhiPtPosChargeTPCselITSref->ProjectionZ("hPtEtaNegPosChargeTPCselITSref",etamin,eta0m);
+    TH1D* hPtEtaPosPosChargeTPCselITSref=hEtaPhiPtPosChargeTPCselITSref->ProjectionZ("hPtEtaPosPosChargeTPCselITSref",eta0p,etamax);
+    TH1D* hPtEtaNegNegChargeTPCselITSref=hEtaPhiPtNegChargeTPCselITSref->ProjectionZ("hPtEtaNegNegChargeTPCselITSref",etamin,eta0m);
+    TH1D* hPtEtaPosNegChargeTPCselITSref=hEtaPhiPtNegChargeTPCselITSref->ProjectionZ("hPtEtaPosNegChargeTPCselITSref",eta0p,etamax);
+    TH1D* hPtEtaNegPosChargeTPCselSPDany=hEtaPhiPtPosChargeTPCselSPDany->ProjectionZ("hPtEtaNegPosChargeTPCselSPDany",etamin,eta0m);
+    TH1D* hPtEtaPosPosChargeTPCselSPDany=hEtaPhiPtPosChargeTPCselSPDany->ProjectionZ("hPtEtaPosPosChargeTPCselSPDany",eta0p,etamax);
+    TH1D* hPtEtaNegNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaNegNegChargeTPCselSPDany",etamin,eta0m);
+    TH1D* hPtEtaPosNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaPosNegChargeTPCselSPDany",eta0p,etamax);
+    TH1D* hRatioPosNegEtaNegTPCsel=ComputeRatio(hPtEtaNegPosChargeTPCsel,hPtEtaNegNegChargeTPCsel,"hRatioPosNegEtaNegTPCsel",kGray+1,21,"p_{T} (GeV/c)");
+    hRatioPosNegEtaNegTPCsel->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
+    TH1D* hRatioPosNegEtaPosTPCsel=ComputeRatio(hPtEtaPosPosChargeTPCsel,hPtEtaPosNegChargeTPCsel,"hRatioPosNegEtaPosTPCsel",kGray+1,21,"p_{T} (GeV/c)");
+    hRatioPosNegEtaPosTPCsel->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
+
+    TH1D* hRatioPosNegEtaNegTPCselSPDany=ComputeRatio(hPtEtaNegPosChargeTPCselSPDany,hPtEtaNegNegChargeTPCselSPDany,"hRatioPosNegEtaNegTPCsel",kGray+1,21,"p_{T} (GeV/c)");
+    hRatioPosNegEtaNegTPCselSPDany->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
+    TH1D* hRatioPosNegEtaPosTPCselSPDany=ComputeRatio(hPtEtaPosPosChargeTPCselSPDany,hPtEtaPosNegChargeTPCselSPDany,"hRatioPosNegEtaPosTPCsel",kGray+1,21,"p_{T} (GeV/c)");
+    hRatioPosNegEtaPosTPCselSPDany->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
+
+    TCanvas* cdist=new TCanvas("cdist","Pt Distrib TPD sel",900,900);
+    cdist->Divide(2,2);
+    cdist->cd(1);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaNegTPCsel,hPtEtaNegPosChargeTPCsel,hPtEtaNegNegChargeTPCsel,kTRUE);
+    TLegend* legd=new TLegend(0.46,0.66,0.79,0.89);
+    legd->AddEntry(hPtEtaNegTPCsel,"All charges","L")->SetTextColor(hPtEtaNegTPCsel->GetLineColor());
+    legd->AddEntry(hPtEtaNegPosChargeTPCsel,"Positive","L")->SetTextColor(hPtEtaNegTPCselITSref->GetLineColor());
+    legd->AddEntry(hPtEtaNegNegChargeTPCsel,"Negative","L")->SetTextColor(hPtEtaNegTPCselSPDany->GetLineColor());
+    legd->Draw();
+    cdist->cd(2);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaPosTPCsel,hPtEtaPosPosChargeTPCsel,hPtEtaPosNegChargeTPCsel,kTRUE);
+    cdist->cd(3);
+    hRatioPosNegEtaNegTPCsel->Draw();
+    cdist->cd(4);
+    hRatioPosNegEtaPosTPCsel->Draw();
+    cdist->SaveAs("TracksPtDistrib-TPCsel.png");
+
+    TCanvas* cdists=new TCanvas("cdists","Pt Distrib SPDany",900,900);
+    cdists->Divide(2,2);
+    cdists->cd(1);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaNegTPCselSPDany,hPtEtaNegPosChargeTPCselSPDany,hPtEtaNegNegChargeTPCselSPDany,kTRUE);
+    legd->Draw();
+    cdists->cd(2);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaPosTPCselSPDany,hPtEtaPosPosChargeTPCselSPDany,hPtEtaPosNegChargeTPCselSPDany,kTRUE);
+    cdists->cd(3);
+    hRatioPosNegEtaNegTPCsel->Draw();
+    cdists->cd(4);
+    hRatioPosNegEtaPosTPCsel->Draw();
+    cdists->SaveAs("TracksPtDistrib-TPCselSPDany.png");
+  }else{
+    TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
+    cdist->Divide(2,2);
+    cdist->cd(1);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaNegTPCsel,hPtEtaNegTPCselITSref,hPtEtaNegTPCselSPDany,kTRUE);
+    TLegend* legd=new TLegend(0.16,0.16,0.5,0.4);
+    legd->AddEntry(hPtEtaNegTPCsel,"TPC only cuts","L")->SetTextColor(hPtEtaNegTPCsel->GetLineColor());
+    legd->AddEntry(hPtEtaNegTPCselITSref,"ITSrefit","L")->SetTextColor(hPtEtaNegTPCselITSref->GetLineColor());
+    legd->AddEntry(hPtEtaNegTPCselSPDany,"SPD any","L")->SetTextColor(hPtEtaNegTPCselSPDany->GetLineColor());
+    legd->Draw();
+    cdist->cd(2);
+    gPad->SetLogy();
+    DrawDistrib(hPtEtaPosTPCsel,hPtEtaPosTPCselITSref,hPtEtaPosTPCselSPDany,kTRUE);
+    cdist->cd(3);
+    DrawDistrib(hPhiEtaNegTPCsel,hPhiEtaNegTPCselITSref,hPhiEtaNegTPCselSPDany,kFALSE);
+    legd->Draw();
+    cdist->cd(4);
+    DrawDistrib(hPhiEtaPosTPCsel,hPhiEtaPosTPCselITSref,hPhiEtaPosTPCselSPDany,kFALSE);
+    cdist->SaveAs("TracksPtPhiDistrib.png");
+  }
 
   TCanvas* cdist2=new TCanvas("cdist2","Phi Distrib",900,900);
   cdist2->Divide(2,2);
@@ -512,7 +576,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hratiosecdecip->GetYaxis()->SetTitleOffset(1.2);
     hratiosecdecip->Draw();
     hratiosecmatip->Draw("same");
-    cps1->SaveAs("PrimSecTracks.gif");
+    cps1->SaveAs("PrimSecTracks.png");
   }
   
   TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefpi");
@@ -1032,23 +1096,22 @@ TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_
 }
 
 TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
+  hnumer->Sumw2();
+  hdenom->Sumw2();
   TH1D* hratio=(TH1D*)hnumer->Clone(name.Data());
-  TH1D* hsum=(TH1D*)hnumer->Clone("tmp");
-  hsum->Add(hnumer,hdenom);
-  hratio->Divide(hnumer,hsum,1.,1.,"B");
+  hratio->Divide(hnumer,hdenom);
   hratio->SetLineColor(iCol);
   hratio->SetMarkerColor(iCol);
   hratio->SetMarkerStyle(iMarker);
   hratio->GetXaxis()->SetTitle(xtitle.Data());
-  hratio->GetYaxis()->SetTitle("Fraction of protons tracked with wrong mass");
+  hratio->GetYaxis()->SetTitle("Ratio");
+  hratio->SetTitle(" ");
   hratio->GetYaxis()->SetTitleOffset(1.25);
-  hratio->SetMinimum(0.0005);
-  hratio->SetMaximum(1.05);
+  hratio->SetMinimum(0.);
+  hratio->SetMaximum(2.);
   hratio->SetStats(0);
-  delete hsum;
   return hratio;
 }
-
 
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms, TGraphErrors* gRel){
   Int_t jpt=0;

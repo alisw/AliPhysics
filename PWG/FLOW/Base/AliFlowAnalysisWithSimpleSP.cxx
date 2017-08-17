@@ -347,21 +347,7 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
     //Normalizing: weight the Q vectors for the subevents
     Double_t dNa = dMa;//fNormalizationType ? dMa: vQa.Mod(); // SP corresponds to true
     Double_t dNb = dMb;//fNormalizationType ? dMb: vQb.Mod(); // SP corresponds to true
-    Double_t dWa = 1.;//fNormalizationType ? dMa: 1; // SP corresponds to true
-    Double_t dWb = 1.;//NormalizationType ? dMb: 1; // SP corresponds to true
 
-    // in the original SP method, event weights correspond to multiplicity
-    // for the V0 this does not necessarily make sense as the eq mult
-    // does not scale directly with charged track mult / centrality
-
-    // this task does not support EP style running, as this is 
-    // ambiguous at best
-
-    //Scalar product of the two subevents vectors
-    Double_t dQaQb = (vQa*vQb);
-
-    //      01    10     11   <===   fTotalQVector
-    // Q ?= Qa or Qb or QaQb
     AliFlowVector vQm;
     vQm.Set(0.0,0.0);
     AliFlowVector vQTPC;
@@ -376,19 +362,11 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
         vQm += vQb;
         dNq += dMb;
     }
-    Double_t dWq = 1.;//fNormalizationType ? dNq: 1; // SP corresponds to true
-
-
     // if we dont normalize the q-vectors to the multiplicity, just use 1 here
     if(!fScaling) {
         dNa = 1.;
         dNb = 1.;
     }
-
-    // this profile stores the scalar product of the two 
-    // subevent q-vectors (the denominator or 'resolution' of the
-    // measurement)
-    // fHistProQaQbNorm->Fill(1., dQaQb/dNa/dNb); 
 
     //loop over the tracks of the event
     AliFlowTrackSimple*   pTrack = NULL; 
@@ -427,7 +405,6 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
         }
 
         dNq = dMq;//fNormalizationType ? dMq : vQm.Mod();
-        dWq = 1;//fNormalizationType ? dMq : 1;
 
         // this little guy is the enumerator of the final equation
         Double_t dUQ = vU*vQm;
@@ -441,7 +418,6 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
                 continue;
             fHistProUQ[iPOI][0]->Fill(dPt ,fCentralityWeight*dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
             fHistProUQ[iPOI][1]->Fill(dEta,fCentralityWeight*dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
-            //fHistProUQQaQb[iPOI][0]-> Fill(dPt,(dUQ*dUQ/dNq)/(dQaQb/dNa/dNb)); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
         }
     }//loop over tracks
     //Filling QA (for compatibility with previous version)

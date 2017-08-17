@@ -1607,6 +1607,7 @@ private:
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
   TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep
   TH3D* fCRCQVecPhiHistRefMul[fCRCMaxnCen]; //!
+  TH3D* fCRCQVecPhiHistVtxAll[fCRCMaxnCen]; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1836,7 +1837,6 @@ private:
   TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
   const static Int_t fZDCPtDiffNBins = 3;
-  TH3D* fCRCQVecPhiHistChPt[2][fZDCPtDiffNBins]; //! phi ditribution POIs bins ch and pT
 
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1939,7 +1939,6 @@ private:
   TH2D *fFlowQCSpectraPubBin; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
-  TH2F *fFlowQCMetricCent; //!
 
   // flow QC high order
   TList *fFlowQCHOList;    //! QC high order List

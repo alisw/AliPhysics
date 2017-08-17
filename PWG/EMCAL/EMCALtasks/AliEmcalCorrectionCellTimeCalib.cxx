@@ -22,11 +22,11 @@ RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> AliEmcalCorrectionC
  */
 AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellTimeCalib")
+  ,fCellTimeDistBefore(0)
+  ,fCellTimeDistAfter(0)
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fUseAutomaticTimeCalib(1)
-  ,fCellTimeDistBefore(0)
-  ,fCellTimeDistAfter(0)
 {
 }
 

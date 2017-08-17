@@ -63,6 +63,9 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
  */
 AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterizer"),
+  fHistCPUTime(nullptr),
+  fHistRealTime(nullptr),
+  fTimer(nullptr),
   fDigitsArr(0),
   fClusterArr(0),
   fRecParam(new AliEMCALRecParam),
@@ -87,11 +90,11 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fSetCellMCLabelFromCluster(0),
   fSetCellMCLabelFromEdepFrac(0),
   fRemapMCLabelForAODs(0),
+  fRecalDistToBadChannels(kFALSE),
+  fRecalShowerShape(kFALSE),
   fCaloClusters(0),
   fEsd(0),
-  fAod(0),
-  fRecalDistToBadChannels(kFALSE),
-  fRecalShowerShape(kFALSE)
+  fAod(0)
 {
   for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
   for(Int_t j = 0; j < fgkTotalCellNumber;                 j++)

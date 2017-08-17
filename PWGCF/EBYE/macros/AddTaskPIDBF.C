@@ -1,30 +1,14 @@
-// now in options
-//=============================================//
-//const char* centralityEstimator = "V0M";
-//const char* centralityEstimator = "CL1";
-//const char* centralityEstimator = "TRK";
-//=============================================//
-//Bool_t gRunShuffling = kFALSE;
-//Bool_t gRunShuffling = kTRUE;
-//=============================================//
-
 
 //Task for  BF with PID --------------------------------------
 //[Noor Alam : sk.noor.alam@cern.ch/noor1989phyalam@gmail.com]
 //[Varibale Energy Cyclotron Centre, Kolkata, India]
 //------------------------------------------------------------ 
 
-//PID config
-//#include "AliBalancePsi.h"
-//#include "AliAnalysisTaskPIDBF.h"
 Bool_t kUseNSigmaPID = kTRUE;
-Bool_t kUseBayesianPID = kFALSE;
-Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
 AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 	                           Double_t centrMax=100.,
-				   Bool_t gRunShuffling=kFALSE,
 			           Bool_t gRunMixing=kTRUE,
 				   Bool_t gRunMixingWithEventPlane=kFALSE,
 				   TString centralityEstimator="V0M",
@@ -61,7 +45,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   TString correctionFileName = "",
 			           Int_t nCentralityArrayBinsForCorrection = -1,
 	                           Double_t *gCentralityArrayForCorrections = 0x0,
-                                   Bool_t bMomentumOrdering = kTRUE) {
+                                   Bool_t bMomentumOrdering = kTRUE,
+                                   Bool_t bCentralTrigger=kFALSE) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -89,65 +74,49 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     ::Info("AddTaskBF",Form("Analysis Type manually set to %s",analysisType.Data()));
   }
 
-  // for local changed BF configuration
-  //gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
-//  gROOT->LoadMacro("configBalanceFunctionPsiAnalysis.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
-  AliBalancePsi *bf  = 0;  // Balance Function object
-  AliBalancePsi *bfs = 0;  // shuffled Balance function object
-  AliBalancePsi *bfm = 0;  // mixing Balance function object
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/InitAnalysisBase.C");
+  AliPidBFBase *bf  = 0;  // Balance Function object
+  AliPidBFBase *bfm = 0;  // mixing Balance function object
 
   //maximum Delta eta range
   Double_t deltaEtaMax=TMath::Abs(etaMax-etaMin);
 
-  if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
+  if (analysisType=="AOD"){
+   bf  = GetBaseBF("AOD",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
+  if(gRunMixing)  bfm= GetBaseBF("AOD",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
   }
-  else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-  }
- else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-  }
+
   else if (analysisType=="MCAOD"){
-    bf  = GetBalanceFunctionObject("MCAOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MCAOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("MCAOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-  }
+ bf  = GetBaseBF("MCAOD",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
+  if(gRunMixing)  bfm= GetBaseBF("MCAOD",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
+}
   else if (analysisType=="MCAODrec"){
-    bf  = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-  }
-  else if (analysisType=="AODnano"){
-    bf  = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning,bMomentumOrdering);
-  }
+ bf  = GetBaseBF("MCAODrec",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
+  if(gRunMixing)  bfm= GetBaseBF("MCAODrec",centralityEstimator,centrMin,centrMax,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,bVertexBinning,fArgEventClass,bMomentumOrdering,3,6);
+  
+}
  else{
     ::Error("AddTaskBF", "analysis type NOT known.");
     return NULL;
   }
-
-//cout<<" Print the Analysis level of Task ------------------------------------------------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<bf->GetAnalysisLevel()<<endl;
-
-
-  // Create the task, add it to manager and configure it.
-  //===========================================================================
+  
+  // Task to add manager 
+ 
   AliAnalysisTaskPIDBF *taskBF = new AliAnalysisTaskPIDBF(Form("TaskBFPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()));
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
-//  taskBF->SetCustomBinning("pTVertex: 0.2,0.6,2.0");
-  //taskBF->SetCustomBinning("multiplicity:0,260");
-  
-  if(fArgEventClass == "Multiplicity") {
+  taskBF->UseOfflineTrigger(bCentralTrigger);
+  taskBF->UseMultSelection(bCentralTrigger);
+/*
+  taskBF->SetRapidityUse(kFALSE);
+  taskBF->SetMisMatchTOFProb(.01,kTRUE);*/
+
+// Set Check Pile up : 
+//   taskBF->CheckPileUp();
+
+ 
+   if(fArgEventClass == "Multiplicity") {
     taskBF->SetMultiplicityRange(centrMin,centrMax);
     taskBF->SetMultiplicityEstimator(centralityEstimator);
     //cout<<"Multiplicity estimator "<<centralityEstimator.Data()<<endl;
@@ -162,19 +131,14 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
      // cout<<"Centrality estimator "<<centralityEstimator.Data()<<endl;
     }
   }
+ 
 
-  //++++++++++++++++++++++
-  // Efficiency + Contamination corrections
-  // If correctionFileName = "", do not use corrections
+  //  correction factor from MC data : 
 
    if(correctionFileName != "")
     taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
-    
-  //+++++++++++++++++++++
-
 
   taskBF->SetAnalysisObject(bf);
-  if(gRunShuffling) taskBF->SetShufflingObject(bfs);
   if(gRunMixing){
     taskBF->SetMixingObject(bfm);
     taskBF->SetMixingTracks(50000);
@@ -183,20 +147,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     }
   }
 
-  if(analysisType == "ESD") {
-    AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
-    taskBF->SetAnalysisCutObject(trackCuts);
-    if(kUsePID) {
-      if(kUseBayesianPID)
-	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
-      else if(kUseNSigmaPID)
-	taskBF->SetUseNSigmaPID(nSigmaMax);
-      taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kPion);
-      taskBF->SetDetectorUsedForPID(AliAnalysisTaskPIDBF::kTOFpid);
-    }
-  }
-  else if(analysisType == "AOD" || analysisType == "AODnano") {
-    // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
+ 
+  if(analysisType == "AOD") {
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
 
@@ -214,9 +166,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 
     //++++++++++++++++//
     if(kUsePID) {
-      if(kUseBayesianPID)
-	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
-      else if(kUseNSigmaPID)
+       if(kUseNSigmaPID){
  	taskBF->SetUseNSigmaPID(nSigmaMax);
         taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
         taskBF->SetDetectorPID(DetectorType_);   // Added  Noor Alam
@@ -225,12 +175,13 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
       //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
      // taskBF->SetDetectorUsedForPID(AliAnalysisTaskPIDBF::kTPCTOF); //TOFpid,TPCpid
     }
+}
     //++++++++++++++++//
 
   }
-  else if(analysisType == "MC") {
-    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
-  }
+ 
+
+ 
   else if(analysisType == "MCAOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
@@ -241,8 +192,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     taskBF->SetParticleType(ParticleType_);
     }   
   }
+
   else if(analysisType == "MCAODrec") {     //++++++++++++++++
-    // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
     taskBF->ExcludeElectronsInMC();
@@ -260,55 +211,48 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     }
  
     if(kUsePID) {
-      if(kUseBayesianPID)
-        taskBF->SetUseBayesianPID(gMinAcceptedProbability);
-      else if(kUseNSigmaPID)
+       if(kUseNSigmaPID){
         taskBF->SetUseNSigmaPID(nSigmaMax);
         taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
         taskBF->SetDetectorPID(DetectorType_);   // Added  Noor Alam
         taskBF->SetTPCPtMinMax(ptMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
         taskBF->SetTOFPtMinMax(kTPCPtMax,ptMax); // TOF Pt min and max (N.Alam)
-      //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
-     // taskBF->SetDetectorUsedForPID(AliAnalysisTaskPIDBF::kTPCTOF); //TOFpid,TPCpid
     }
+}
 
   }//++++++++++++++++
 
-  // offline trigger selection (AliVEvent.h)
-  // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
-  // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
-  // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
-  if(bCentralTrigger) taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else                taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+     if(bCentralTrigger) taskBF->SelectCollisionCandidates(AliVEvent::kINT7);
+
+     else taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+
+
 
   // centrality estimator (default = V0M)
   taskBF->SetCentralityEstimator(centralityEstimator);
   
   // vertex cut (x,y,z)
   taskBF->SetVertexDiamond(3.,3.,vertexZ);
-  
 
-
-  //bf->PrintAnalysisSettings();
   mgr->AddTask(taskBF);
   
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputBalanceFunctionPsiAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQAPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBFPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFPsiShuffled_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunMixing) AliAnalysisDataContainer *coutBFM = mgr->CreateContainer(Form("listBFPsiMixed_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(kUsePID || sigmaElectronRejection > 0) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+
+   AliAnalysisDataContainer *coutQA_AliEventCuts = mgr->CreateContainer(Form("listQA_AliEventCuts_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
-  if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
-  if(gRunMixing) mgr->ConnectOutput(taskBF, 4, coutBFM);
-  if(kUsePID||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  if(gRunMixing) mgr->ConnectOutput(taskBF, 3, coutBFM);
+  if(kUsePID||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 4, coutQAPID);
+  mgr->ConnectOutput(taskBF, 5, coutQA_AliEventCuts);
   //if((kUsePID && analysisType == "AOD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
   //if((kUsePID && analysisType == "ESD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
 

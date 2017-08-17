@@ -162,6 +162,8 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -373,6 +375,8 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -646,6 +650,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //Create Basic V0 Output Tree
     fTreeV0 = new TTree( "fTreeV0", "Findable V0 Candidates");
     //-----------BASIC-INFO---------------------------
+    fTreeV0->Branch("fTreeVariableGoodV0",&fTreeVariableGoodV0,"fTreeVariableGoodV0/O");
+    fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     fTreeV0->Branch("fTreeVariablePosLength",&fTreeVariablePosLength,"fTreeVariablePosLength/F");
     fTreeV0->Branch("fTreeVariableNegLength",&fTreeVariableNegLength,"fTreeVariableNegLength/F");
     fTreeV0->Branch("fTreeVariablePosCrossedRows",&fTreeVariablePosCrossedRows,"fTreeVariablePosCrossedRows/F");
@@ -1001,7 +1007,18 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
+        //AliWarning("AliMultSelection object not found! Trying to resort to AliCentrality now...");
+        AliCentrality* centrality = 0x0;
+        centrality = lESDevent->GetCentrality();
+        if( centrality ){
+            lPercentile = centrality->GetCentralityPercentileUnchecked("V0M");
+            lPercentileEmbeddedSelection = lPercentile;
+            lEvSelCode = 0;
+            if(centrality->GetQuality()>1){
+                //Not good!
+                lEvSelCode = 999;
+            }
+        }
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
@@ -1011,13 +1028,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
     
     //just ask AliMultSelection. It will know.
-    fMVPileupFlag = kFALSE;
-    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
+    //fMVPileupFlag = kFALSE;
+    //fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
     
-    //Let's find out why efficiency is so centrality dependent, please 
-    fTreeCascVarCentrality = lPercentile;
+    //Let's find out why efficiency is so centrality dependent, please!
+    fTreeCascVarCentrality  = lPercentile;
+    fTreeVariableCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
@@ -1272,6 +1290,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Actual propagation
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
+        
+        //Tag OK V0s (will probably tag >99%? will still have to be studied!)
+        if ( fTreeVariableNegPropagStatus == kTRUE &&
+            fTreeVariablePosPropagStatus == kTRUE )
+            fTreeVariableGoodV0 = kTRUE;
         
         //Acquire the DCA that's not strictly computed with uncertainties (geometric only) for comparison
         Double_t lx1, ly1, lz1, lx2, ly2, lz2, tmp[3];
