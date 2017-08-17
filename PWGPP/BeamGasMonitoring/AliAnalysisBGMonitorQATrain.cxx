@@ -174,8 +174,8 @@ void AliAnalysisBGMonitorQATrain::Exec(Option_t *)
     ntr = 10;
     nbunch = 21;
     AliVVZERO *vzero = fESD->GetVZEROData();
-    AliAnalysisUtils *utils = new AliAnalysisUtils();
-    bgID = utils->IsSPDClusterVsTrackletBG(fESD);
+    AliAnalysisUtils utils; // Hans: suggest to make this a data member
+    bgID = utils.IsSPDClusterVsTrackletBG(fESD);
     //--- SPD cluster and tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
     fSpdC1 = 0;
