@@ -463,7 +463,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       else h.ReadPITConditionsFromDB(runNumber,man->GetDefaultStorage()->GetURI().Data());
       AliITSTriggerConditions* tri = h.GetTriggerConditions();
       if (tri) {
-        Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
         if (fTriggerOADB->GetSH1OuterThreshold()<0) {
           Int_t val = tri->GetAlgoParamValueLI("0SH1",1);
           AliInfo(Form("  SH1OuterThreshold set to %i",val));
