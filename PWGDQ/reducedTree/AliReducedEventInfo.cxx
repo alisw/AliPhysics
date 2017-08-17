@@ -183,6 +183,64 @@ AliReducedEventInfo::~AliReducedEventInfo()
   //
 }
 
+
+void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
+   //
+   // overloading assignment operator
+   //   
+   ClearEvent();
+   AliReducedBaseEvent::CopyEventHeader(other);
+   
+   fEventNumberInFile = other->fEventNumberInFile;
+   fL0TriggerInputs = other->fL0TriggerInputs;
+   fL1TriggerInputs = other->fL1TriggerInputs;
+   fL2TriggerInputs = other->fL2TriggerInputs;
+   fBC = other->fBC;
+   fTimeStamp = other->fTimeStamp;
+   fEventType = other->fEventType;
+   fTriggerMask = other->fTriggerMask;
+   for(Int_t i=0; i<10; ++i) {
+      fMultiplicityEstimators[i] = other->fMultiplicityEstimators[i];
+      fMultiplicityEstimatorPercentiles[i] = other->fMultiplicityEstimatorPercentiles[i];
+   }
+   fIsPhysicsSelection = other->fIsPhysicsSelection;
+   fIsSPDPileup = other->fIsSPDPileup;
+   fIsSPDPileupMultBins = other->fIsSPDPileupMultBins;
+   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = other->fIRIntClosestIntMap[i];
+   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i] = other->fVtxCovMatrix[i];
+   for(Int_t i=0; i<3; ++i) fVtxTPC[i] = other->fVtxTPC[i];
+   fNVtxTPCContributors = other->fNVtxTPCContributors;
+   for(Int_t i=0; i<3; ++i) fVtxSPD[i] = other->fVtxSPD[i];
+   fNVtxSPDContributors = other->fNVtxSPDContributors;
+   fNpileupSPD = other->fNpileupSPD;
+   fNpileupTracks = other->fNpileupTracks;
+   fNTPCclusters = other->fNTPCclusters;
+   fNPMDtracks = other->fNPMDtracks;
+   fNTRDtracks = other->fNTRDtracks;
+   fNTRDtracklets = other->fNTRDtracklets;
+   fSPDntracklets = other->fSPDntracklets;
+   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = other->fSPDntrackletsEta[i];
+   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i] = other->fSPDFiredChips[i];
+   for(Int_t i=0; i<6; ++i) fITSClusters[i] = other->fITSClusters[i];
+   fSPDnSingle = other->fSPDnSingle;
+   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = other->fNtracksPerTrackingFlag[i];
+   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = other->fVZEROMult[i];
+   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = other->fVZEROTotalMult[i];
+   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i] = other->fZDCnEnergy[i];
+   for(Int_t i=0; i<10; ++i) fZDCpEnergy[i] = other->fZDCpEnergy[i];
+   for(Int_t i=0; i<2; ++i) fZDCnTotalEnergy[i] = other->fZDCnTotalEnergy[i];
+   for(Int_t i=0; i<2; ++i) fZDCpTotalEnergy[i] = other->fZDCpTotalEnergy[i];
+   for(Int_t i=0; i<26; ++i) fT0amplitude[i] = other->fT0amplitude[i];
+   for(Int_t i=0; i<3; ++i) fT0TOF[i] = other->fT0TOF[i];
+   for(Int_t i=0; i<3; ++i) fT0TOFbest[i] = other->fT0TOFbest[i];
+   fT0zVertex = other->fT0zVertex;
+   fT0start = other->fT0start;
+   fT0pileup = other->fT0pileup;
+   fT0sattelite = other->fT0sattelite;
+   fEventPlane.CopyEvent(&other->fEventPlane);
+}
+
+
 //_____________________________________________________________________________
 void AliReducedEventInfo::ClearEvent() {
   //

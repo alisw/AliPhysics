@@ -15,6 +15,7 @@ class AliReducedPairInfo;
 class AliReducedBaseEvent : public TObject {
 
   friend class AliAnalysisTaskReducedTreeMaker;     // friend analysis task which fills the object
+  friend class AliReducedAnalysisFilterTrees;
   
  public:
   enum ETrackOption {
@@ -27,6 +28,8 @@ class AliReducedBaseEvent : public TObject {
   AliReducedBaseEvent();
   AliReducedBaseEvent(const Char_t* name, Int_t trackOption=kNoInit);
   virtual ~AliReducedBaseEvent();
+  
+  virtual void CopyEventHeader(const AliReducedBaseEvent* other);
 
   // getters
   ULong64_t EventTag()                        const {return fEventTag;}
@@ -46,12 +49,15 @@ class AliReducedBaseEvent : public TObject {
   Int_t     NTracks()                         const {return fNtracks[1];}
   Int_t     NV0CandidatesTotal()              const {return fNV0candidates[0];}
   Int_t     NV0Candidates()                   const {return fNV0candidates[1];}
+  Int_t     NPairs()                   const {return fCandidates->GetEntries();}
   
   AliReducedBaseTrack* GetTrack(Int_t i) const {return (i<fNtracks[1] ? (AliReducedBaseTrack*)fTracks->At(i) : 0x0);}
   TClonesArray* GetTracks()          const {return fTracks;}
   
   AliReducedPairInfo* GetV0Pair(Int_t i)         const 
   {return (i>=0 && i<fNV0candidates[1] ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
+  AliReducedPairInfo* GetPair(Int_t i)         const 
+  {return (i>=0 && i<fCandidates->GetEntries() ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
   TClonesArray* GetPairs()                       const {return fCandidates;}
   
   Bool_t    TestEventTag(UShort_t iflag) const {return (iflag<8*sizeof(ULong64_t) ? fEventTag&(ULong64_t(1)<<iflag) : kFALSE);}
@@ -75,8 +81,8 @@ class AliReducedBaseEvent : public TObject {
   TClonesArray* fCandidates;        //->   array containing pair candidates
   static TClonesArray* fgCandidates;  // pair candidates
   
-  AliReducedBaseEvent(const AliReducedBaseEvent &c);
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
+  AliReducedBaseEvent(const AliReducedBaseEvent &c);
 
   ClassDef(AliReducedBaseEvent, 2);
 };

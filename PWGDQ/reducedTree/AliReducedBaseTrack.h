@@ -15,9 +15,11 @@ class AliReducedBaseTrack : public TObject {
   
   public:
     AliReducedBaseTrack();
+    AliReducedBaseTrack(const AliReducedBaseTrack &c);
     virtual ~AliReducedBaseTrack();
   
     // getters
+    UShort_t TrackId()                     const {return fTrackId;}
     Float_t Px()  const {return (fIsCartesian ? fP[0] : TMath::Abs(fP[0])*TMath::Cos(fP[1]));}
     Float_t Py()  const {return (fIsCartesian ? fP[1] : TMath::Abs(fP[0])*TMath::Sin(fP[1]));}
     Float_t Pz()  const {return (fIsCartesian ? fP[2] : TMath::Abs(fP[0])*TMath::SinH(fP[2]));}
@@ -69,6 +71,7 @@ class AliReducedBaseTrack : public TObject {
     Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestQualityFlag(iflag)) fQualityFlags^=(ULong_t(1)<<iflag); return kTRUE;}
         
   protected:
+    UShort_t fTrackId;            // track id 
     Float_t fP[3];         // 3-momentum vector
     Bool_t  fIsCartesian;  // if false then the 3-momentum vector is in spherical coordinates (pt,phi,eta)
     Char_t  fCharge;       // electrical charge
@@ -108,10 +111,9 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT4 toggled for pure V0 photon candidates
                                                    
         
-    AliReducedBaseTrack(const AliReducedBaseTrack &c);      
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
     
-    ClassDef(AliReducedBaseTrack, 2)
+    ClassDef(AliReducedBaseTrack, 3)
 };
 
 //_______________________________________________________________________________
