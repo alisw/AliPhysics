@@ -63,6 +63,7 @@ public :
   Bool_t IsRecConstrained(AliVTrack *track);
 
   Bool_t IsFindable(const AliMCEvent *mcEvent, Int_t label);
+  Bool_t HasTPCReference(const AliMCEvent *mcEvent, Int_t label);
   Int_t TransformToPID(TParticle *mcPart);
 
   THnSparseF* GetEffHisto() const {return fEffHisto;}

@@ -50,6 +50,8 @@
 
 using namespace std;
 
+#define TPC_PRIMARY_MIN_PT 0.05
+
 ClassImp(AliPerformanceEff)
 
 //_____________________________________________________________________________
@@ -101,7 +103,8 @@ void AliPerformanceEff::Init()
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-2, ptMax = 20.;
+  Double_t ptMin = 0.015, ptMax = 20.;
+  if (GetAnalysisMode() == 0) ptMin = TPC_PRIMARY_MIN_PT;
 
   Double_t *binsPt = 0;
 
@@ -739,7 +742,7 @@ Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label)
   if(!mcParticle) return kFALSE;
 
   Int_t counter;
-  Float_t tpcTrackLength = mcParticle->GetTPCTrackLength(AliTracker::GetBz(),0.05,counter,3.0); 
+  Float_t tpcTrackLength = mcParticle->GetTPCTrackLength(AliTracker::GetBz(),TPC_PRIMARY_MIN_PT,counter,3.0); 
   //printf("tpcTrackLength %f \n", tpcTrackLength);
   return (tpcTrackLength>fCutsMC.GetMinTrackLength());
 }
@@ -773,7 +776,6 @@ Bool_t AliPerformanceEff::IsRecTPC(AliVTrack *vTrack)
   const AliExternalTrackParam *track = vTrack->GetTPCInnerParam();
   if(!track) return recStatus;
   
-
   if(vTrack->GetTPCNcls()>fCutsRC.GetMinNClustersTPC()) recStatus = kTRUE;
 
   return recStatus;
@@ -866,10 +868,10 @@ void AliPerformanceEff::Analyse()
   if(GetAnalysisMode() != 5) {
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99);   // pt range  , primaries below 0.1 do not exist in TPC
+  fEffHisto->GetAxis(2)->SetRangeUser(TPC_PRIMARY_MIN_PT,19.99);   // pt range  , primaries below 0.1 do not exist in TPC
 
   // rec efficiency vs pt
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(2, "ptRecEff", "rec. efficiency", 0));
@@ -919,7 +921,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(2, "ptRecEffPPos", "rec. efficiency (protons) pos.", 0));
 
   // findable efficiency vs pt
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
   fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
@@ -939,11 +941,11 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.49); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.01,19.99); // pt range
-  fEffHisto->GetAxis(5)->SetRangeUser(0.,1.0);   // all
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
+  fEffHisto->GetAxis(5)->SetRange(1,0); //reset
 
   // rec efficiency vs eta
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.);  // reconstructed 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(0, "etaRecEff", "rec. efficiency", 0));
@@ -994,7 +996,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(0, "etaRecEffPPos", "rec. efficiency (protons) pos.", 0));
 
   // findable efficiency vs eta
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
   fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
@@ -1014,11 +1016,11 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.01,19.99); // pt range
-  fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
+  fEffHisto->GetAxis(5)->SetRange(1,0); //reset
 
   // rec efficiency vs phi
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.);  // reconstructed 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(1, "phiRecEff", "rec. efficiency", 0));
@@ -1068,7 +1070,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiRecEffPPos", "rec. efficiency (protons) pos.", 0));
 
   // findable efficiency vs phi
-  fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
   fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
@@ -1087,7 +1089,7 @@ void AliPerformanceEff::Analyse()
   // 
   Float_t minEta=-1.5, maxEta=1.49;
   Float_t minR=0.0, maxR=150.0;
-  Float_t minPt=0.040, maxPt=19.99;
+  Float_t minPt=15e-3, maxPt=19.99;
 
   // mother eta range
   fEffSecHisto->GetAxis(8)->SetRangeUser(minEta,maxEta);
@@ -1095,8 +1097,8 @@ void AliPerformanceEff::Analyse()
   // particle creation radius range 
   fEffSecHisto->GetAxis(6)->SetRangeUser(minR,maxR);
 
-  //
-  fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
+  // particle eta and pt cut
+  fEffSecHisto->GetAxis(0)->SetRangeUser(-0.9,0.89);
   fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
 
   // rec efficiency vs pt
@@ -1119,8 +1121,8 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(2, "ptRecEffP", "rec. efficiency (protons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-
+  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
+  
   // findable efficiency vs pt
 
   fEffSecHisto->GetAxis(5)->SetRange(2,2); // findable
@@ -1131,9 +1133,9 @@ void AliPerformanceEff::Analyse()
   //
   // efficiency vs eta
   //
-  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
-  fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
-  fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
+  fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
+  fEffSecHisto->GetAxis(2)->SetRangeUser(0.1,maxPt);
+  fEffSecHisto->GetAxis(5)->SetRange(1,0); //reset
 
   aFolderObj->Add(AddHistoEff(0, "etaRecEff", "rec. efficiency", 0, 1));
   aFolderObj->Add(AddHistoEff(0, "etaClone", "clone rate", 1, 1));
@@ -1152,7 +1154,7 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(0, "etaRecEffP", "rec. efficiency (protons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
+  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset
 
   // findable efficiency vs eta
 
@@ -1165,11 +1167,9 @@ void AliPerformanceEff::Analyse()
   // efficiency vs phi
   //
 
-  fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
-  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
-
-  fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
-  fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
+  fEffSecHisto->GetAxis(0)->SetRangeUser(-0.9,0.89);
+  fEffSecHisto->GetAxis(2)->SetRangeUser(0.1,maxPt);
+  fEffSecHisto->GetAxis(5)->SetRange(1,0); //reset
 
   aFolderObj->Add(AddHistoEff(1, "phiRecEff", "rec. efficiency", 0, 1));
   aFolderObj->Add(AddHistoEff(1, "phiClone", "clone rate", 1, 1));
@@ -1188,7 +1188,7 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(1, "phiRecEffP", "rec. efficiency (protons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
+  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,5.); //reset 
 
   // findable efficiency vs phi
 
@@ -1198,9 +1198,10 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiFakeF", "fake rate (findable)", 2, 1));
   }
 
-  for (Int_t i = 0;i < fEffHisto->GetNdimensions();i++)
+  THnSparseF* h = (GetAnalysisMode() != 5) ? fEffHisto : fEffSecHisto;
+  for (Int_t i = 0;i < h->GetNdimensions();i++)
   {
-	  fEffHisto->GetAxis(i)->SetRange(1,0);				//Reset Range
+	  h->GetAxis(i)->SetRange(1,0);				//Reset Range
   }
 
   // export objects to analysis folder
