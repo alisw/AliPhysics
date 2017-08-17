@@ -250,7 +250,7 @@ void AliAnalysisBGMonitorQATrain::FillHist(Int_t* ftrigger, Int_t fSpdT, Int_t f
     for(Int_t itrig = 0 ; itrig<9 ; itrig++){
         if(ftrigger[itrig]){
             Bool_t SelGoodEvent = 0;
-            Printf(Form("%s triggred",fNames[itrig]));
+            Printf("%s triggred",fNames[itrig]);
             ((TH1F*)fList->FindObject(Form("hTotalTrkVsClsSPID_%s",fNames[itrig])))->Fill(fSpdT, fSpdC1+fSpdC2); // No PF Selection
                //((TH1F*)fList->At(hTotalTrkVsClsSPID[itrig][0]))->Fill(fSpdT, fSpdC1+fSpdC2); //Not working
             for(Int_t ii=1; ii<33; ii++){
