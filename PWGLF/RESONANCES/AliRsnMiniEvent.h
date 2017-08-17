@@ -31,7 +31,7 @@ public:
    Float_t            &Angle()     {return fAngle;}
    TClonesArray       &Particles() {return fParticles;}
    Bool_t              IsEmpty()   {return fParticles.IsEmpty();}
-   void 	             Clear(Option_t *opt="");
+   void                Clear(Option_t *opt="");
 
    Int_t               CountParticles(TArrayI &found, Char_t charge = 0, Int_t cutID = -1);
    AliRsnMiniParticle *GetParticle(Int_t i);
