@@ -74,6 +74,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotStandardClusterTHnSparse(Bool_t b)            { fPlotStandardClusterTHnSparse = b; }
   void SetPlotNearestNeighborDistribution(Bool_t b)         { fPlotNearestNeighborDistribution = b; }
   void SetPlotClusterCone(Bool_t b)                         { fPlotClusterCone = b; }
+  void SetPlotCaloCentrality(Bool_t b)                      { fPlotCaloCentrality = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -94,6 +95,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
   void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
+  void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
   // Utility functions
   Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
@@ -103,7 +105,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells);
   Double_t                    FindNearestNeighborDistance(AliTLorentzVector cluster, AliClusterContainer* clusters);
   Double_t                    GetConeClusterEnergy(Double_t etaRef, Double_t phiRef, Double_t R);
-  Double_t                    GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R);
+  Double_t                    GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells = kFALSE);
+  Double_t                    GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells = kFALSE);
   Bool_t                      IsCellRejected(Int_t absId, Int_t cellType);
 
   // Analysis configuration and plotting options
@@ -116,6 +119,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotStandardClusterTHnSparse;        ///< Set whether to plot "standard" axes in cluster THnSparse
   Bool_t                      fPlotNearestNeighborDistribution;     ///< Set whether to plot nearest neighbor axis in cluster THnSparse
   Bool_t                      fPlotClusterCone;                     ///< Set whether to plot sum of energy surrounding cluster in THnSparse
+  Bool_t                      fPlotCaloCentrality;                  ///< Set whether to bin cluster THnSparse in calorimeter local density
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit

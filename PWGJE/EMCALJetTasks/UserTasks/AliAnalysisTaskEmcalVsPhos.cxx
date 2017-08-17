@@ -78,6 +78,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotStandardClusterTHnSparse(kTRUE),
   fPlotNearestNeighborDistribution(kFALSE),
   fPlotClusterCone(kFALSE),
+  fPlotCaloCentrality(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -109,6 +110,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotStandardClusterTHnSparse(kTRUE),
   fPlotNearestNeighborDistribution(kFALSE),
   fPlotClusterCone(kFALSE),
+  fPlotCaloCentrality(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -358,6 +360,38 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       max[dim] = fPtHistBins[fNPtHistBins];
       dim++;
     
+    }
+    
+    if (fPlotCaloCentrality) {
+      
+      title[dim] = "#it{E}_{cell cone} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Ncells cone";
+      nbins[dim] = 100;
+      min[dim] = -0.5;
+      max[dim] = 99.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#it{E}_{cell SM} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Ncells SM";
+      nbins[dim] = 100;
+      min[dim] = -0.5;
+      max[dim] = 999.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
     }
     
     TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
@@ -827,8 +861,36 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       Double_t distNN = FindNearestNeighborDistance(it->first, clusters);
       
       // Standard option: fill once per cluster
-      if (!fPlotClusterCone) {
+      if (!fPlotClusterCone && !fPlotCaloCentrality) {
           FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN);
+      }
+      
+      if (fPlotCaloCentrality) {
+        
+        // Get the SM number
+        Int_t sm = -1;
+        if (clusType == kEMCal) {
+          sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+        }
+        if (clusType == kPHOS) {
+          Int_t relid[4];
+          fPHOSGeo->AbsToRelNumbering(it->second->GetCellAbsId(0), relid);
+          sm = relid[0];
+        }
+        
+        // Only fill the THnSparse if the cluster is located in a full SM of EMCal or PHOS
+        if ( (clusType == kEMCal && sm < 10 ) || (clusType == kPHOS && sm < 4) ) {
+          
+          Double_t eCellCone = GetConeCellEnergy(eta, phi, 0.07);
+          Int_t nCellsCone = (Int_t)GetConeCellEnergy(eta, phi, 0.07, kTRUE);
+       
+          Double_t eCellSM = GetSMCellEnergy(sm, clusType);
+          Int_t nCellsSM = (Int_t)GetSMCellEnergy(sm, clusType, kTRUE);
+        
+          FillClusterTHnSparse(clusters, eta, phi, Enonlin, eCellCone, eCellSM, nCellsCone, nCellsSM);
+          
+        }
+        
       }
       
       // If cluster cone option enabled, fill for each R and cone type
@@ -891,6 +953,40 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clust
                               }
   histClusterObservables->Fill(contents);
 
+}
+
+/*
+ * This function fills the cluster THnSparse (alternate signature, used for local density option).
+ */
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM)
+{
+  Double_t contents[30]={0};
+  TString histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
+  THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+  if (!histClusterObservables) return;
+  for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
+    TString title(histClusterObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = fCent;
+    else if (title=="#eta")
+      contents[i] = eta;
+    else if (title=="#phi")
+      contents[i] = phi;
+    else if (title=="#it{E}_{clus} (GeV)")
+      contents[i] = Enonlin;
+    else if (title=="#it{E}_{cell cone} (GeV)")
+      contents[i] = eCellCone;
+    else if (title=="Ncells cone")
+      contents[i] = nCellsCone;
+    else if (title=="#it{E}_{cell SM} (GeV)")
+      contents[i] = eCellSM;
+    else if (title=="Ncells SM")
+      contents[i] = nCellsSM;
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+  histClusterObservables->Fill(contents);
+  
 }
 
 /*
@@ -1223,11 +1319,13 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(Double_t etaRef, Doubl
 }
 
 /**
- * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters
+ * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters.
+ * Optionally, can instead return the number of cells.
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R)
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells)
 {
   Double_t energy = 0.;
+  Double_t nCells = 0.;
   
   // Get cells from event
   fCaloCells = InputEvent()->GetEMCALCells();
@@ -1252,6 +1350,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
       }
 
       energy += fCaloCells->GetCellAmplitude(absId);
+      nCells += 1.;
     }
     
   }
@@ -1272,8 +1371,78 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
       }
 
       energy += phosCaloCells->GetCellAmplitude(absId);
+      nCells += 1.;
     }
     
+  }
+  
+  if (returnNcells) {
+    return nCells;
+  }
+  
+  return energy;
+}
+
+/**
+ * Compute the cell energy within a SM, excluding cells from rejected clusters.
+ * Optionally, can instead return the number of cells.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells)
+{
+  Double_t energy = 0.;
+  Double_t nCells = 0.;
+  Int_t absId;
+  Int_t cellSM;
+  Int_t relid[4];
+  
+  if (clusType == kEMCal) {
+    
+    fCaloCells = InputEvent()->GetEMCALCells();
+  
+    for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+      
+      absId = fCaloCells->GetCellNumber(i);
+      cellSM = fGeom->GetSuperModuleNumber(absId);
+      
+      if (cellSM == sm) {
+        
+        if (IsCellRejected(absId, kEMCal)) {
+          continue;
+        }
+        
+        energy += fCaloCells->GetCellAmplitude(absId);
+        nCells += 1.;
+      
+      }
+    }
+  }
+  
+  if (clusType == kPHOS) {
+    
+    AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+  
+    for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+      
+      absId = phosCaloCells->GetCellNumber(i);
+
+      fPHOSGeo->AbsToRelNumbering(absId, relid);
+      cellSM = relid[0];
+    
+      if (cellSM == sm) {
+        
+        if (IsCellRejected(absId, kPHOS)) {
+          continue;
+        }
+          
+        energy += phosCaloCells->GetCellAmplitude(absId);
+        nCells += 1.;
+        
+      }
+    }
+  }
+  
+  if (returnNcells) {
+    return nCells;
   }
   
   return energy;
