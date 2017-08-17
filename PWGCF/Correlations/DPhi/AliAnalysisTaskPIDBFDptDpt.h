@@ -26,6 +26,7 @@ class TH3D;
 class TProfile;
 class AliAnalysisUtils;
 class AliEventCuts;
+class AliHelperPID;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
@@ -43,6 +44,8 @@ public:
   Double_t TOFBetaCalculation( AliVTrack * track ) const;
   Double_t massSquareCalculation( AliVTrack * track ) const;
   Float_t TPC_EventPlane(AliAODEvent *event);
+  Bool_t Is2015PileUpEvent();
+  Bool_t StoreEventMultiplicities(AliVEvent *event);
     
 private:
     Double_t fnsigmas[4][2]; //nsigma values
@@ -53,7 +56,7 @@ private:
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
 
-    AliAnalysisUtils *fUtils;//AliAnalysisUtils
+    AliAnalysisUtils *fUtils;
     AliEventCuts *   fEventCut;
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -110,6 +113,7 @@ public:
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
     virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
+    virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
@@ -160,7 +164,9 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
- 
+
+    AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
+    void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid;  }
 
     void SetParticleSpecies( int species )            { particleSpecies = species; }
 
@@ -185,6 +191,8 @@ protected:
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
     AliPIDResponse*          fPIDResponse;
+
+    AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
@@ -200,6 +208,7 @@ protected:
     int      _singlesOnly;
     bool      PIDparticle;
     bool      use_pT_cut;
+    bool      useAliHelperPID;
     bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
@@ -236,6 +245,11 @@ protected:
 
     Bool_t fExcludeResonancesInMC;
     Bool_t fExcludeElectronsInMC;
+
+    TFormula *f2015V0MtoTrkTPCout;
+    Int_t fV0Multiplicity;
+    Int_t fV0Multiplicity_Victor;
+    Int_t fNoOfTPCoutTracks;
     
     int _tpcnclus;
     double _chi2ndf;
@@ -422,6 +436,7 @@ protected:
     TH2F *  _msquare_p;
     TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
+    TH2F *  _fhV0MvsTracksTPCout_after;
     
     // PARTICLE 1 (satisfies filter 1)
     // Primary filled quantities
