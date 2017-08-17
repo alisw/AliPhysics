@@ -180,6 +180,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
         fGridPID = -1;
     }
 
+
     //Create TH2F for armenteros plot. Filled if creating v0 tree
     fArmPlot = new TH2F("ArmPlot", "Armenteros Plot", 100, -1, 1, 100, 0, 0.4);
     if(fIsV0tree){
