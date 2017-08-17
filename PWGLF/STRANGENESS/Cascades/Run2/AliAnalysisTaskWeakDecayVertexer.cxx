@@ -1554,6 +1554,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 //move V0 forward, please: I already know where to!
                 xyz[0] += lV0travel*ux;
                 xyz[1] += lV0travel*uy;
+                xyz[2] += lV0travel*uz;
                 
                 //find helix intersection point
                 Double_t bX = lBachCenter[0]+lDistSign*lBachRadius*vx;
@@ -1615,17 +1616,21 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 
                 
                 if( l3DdistA + 1e-6 < l3DdistB ){
-                    //A is the better point! move there
-                    for(Int_t icoord = 0; icoord<3; icoord++) {
-                        xyz[icoord] = lV0xyzptA[icoord];
+                    //A is the better point! move there, if DCA isn't crazy
+                    if( l3DdistA < 999 ) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptA[icoord];
+                        }
+                        t->PropagateTo( xBachA , b );
                     }
-                    t->PropagateTo( xBachA , b );
                 }else{
                     //B is the better point! move there
-                    for(Int_t icoord = 0; icoord<3; icoord++) {
-                        xyz[icoord] = lV0xyzptB[icoord];
+                    if( l3DdistB < 999 ) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptB[icoord];
+                        }
+                        t->PropagateTo( xBachB , b );
                     }
-                    t->PropagateTo( xBachB , b );
                 }
             }
         }
