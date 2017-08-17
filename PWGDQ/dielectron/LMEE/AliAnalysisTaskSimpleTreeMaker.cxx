@@ -743,6 +743,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Int_t iPdg       = 0;
             Int_t iPdgMother = 0;
             Int_t label = -999;
+            Int_t motherLabel = -9999999;
 
             if(fIsMC){
                 label = posTrack->GetLabel();
@@ -755,9 +756,26 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
                 iPdg = mcTrack->PdgCode();
 
+              
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliVParticle* motherTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(gMotherIndex));
-                iPdgMother = motherTrack->PdgCode();
+				
+				if(!(gMotherIndex < 0)){
+                    if(fIsAOD){
+                	    motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }else{
+                	    motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }
+                	iPdgMother = motherMCtrack->PdgCode();
+                    motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+				}
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
                 "pt="         << pt << 
@@ -783,6 +801,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "mcPt="       << mcPt <<
                 "pdg="        << iPdg <<
                 "pdgMother="  << iPdgMother <<
+                "motherLabel=" << motherLabel << 
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -863,9 +882,27 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
                 iPdg = mcTrack->PdgCode();
 
+              
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliVParticle* motherTrack = dynamic_cast<AliVParticle*>((mcEvent->GetTrack(gMotherIndex)));
-                iPdgMother = motherTrack->PdgCode();
+				
+				if(!(gMotherIndex < 0)){
+                    if(fIsAOD){
+                	    motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }else{
+                	    motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+					    //Check for mother particle. 
+					    if(!motherMCtrack){
+						    continue;
+					    }
+                    }
+                	iPdgMother = motherMCtrack->PdgCode();
+                    motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+				}
+
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
                 "pt="         << pt << 
@@ -891,6 +928,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "mcPt="       << mcPt <<
                 "pdg="        << iPdg <<
                 "pdgMother="  << iPdgMother <<
+                "motherLabel=" << motherLabel << 
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -974,7 +1012,6 @@ Int_t AliAnalysisTaskSimpleTreeMaker::IsEventAccepted(AliVEvent *event){
         }
     }
     else{
-        Printf("werd");
         if(TMath::Abs(event->GetPrimaryVertexSPD()->GetZ()) < 10){
                 return 1;
         }
@@ -1032,7 +1069,7 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliA
       return kFALSE;
     }
 
-    AliAODVertex *vtx =dynamic_cast<AliAODVertex*>((event->GetPrimaryVertex()));
+    const AliAODVertex *vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
     Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
