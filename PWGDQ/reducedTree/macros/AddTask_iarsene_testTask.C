@@ -78,21 +78,21 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
   evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   //processor->AddEventCut(evCut1);
-  evCut2->AddEventTriggerFilter(AliReducedVarManager::kTRD);
+  //evCut2->AddEventTriggerFilter(AliReducedVarManager::kTRD);
   //evCut2->AddEventL1InputFilter((UInt_t(1)<<10));          // HSE
   evCut2->AddCut(AliReducedVarManager::kIsPhysicsSelection, 0.1, 2.);   // request physics selection
   processor->AddEventCut(evCut2);
   
   // Set track cuts
   AliReducedTrackCut* trackCut1 = new AliReducedTrackCut("Pt","Pt selection");
-  trackCut1->AddCut(AliReducedVarManager::kPt, 1.,100.0);
+  trackCut1->AddCut(AliReducedVarManager::kPt, 0.,100.0);
   trackCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddTrackCut(trackCut1);  
   
   // Set pair cuts
   AliReducedTrackCut* pairCut1 = new AliReducedTrackCut("Ptpair","Pt pair selection");
   pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
-  pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
+  //pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddPairCut(pairCut1);
 }
 
@@ -155,7 +155,9 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "PairQA_OfflinePureALambda;";
   histClasses += "PairQA_OnTheFlyALambda;";
   histClasses += "PairQA_OnTheFlyPureALambda;";
-    
+  histClasses += "PairQA_Jpsi2EE_PP;PairQA_Jpsi2EE_PM;PairQA_Jpsi2EE_MM;";  
+  histClasses += "PairQA_ADzeroToKplusPiminus_PP;PairQA_ADzeroToKplusPiminus_PM;PairQA_ADzeroToKplusPiminus_MM;";
+  
   Int_t runNBins = 0;
   Double_t runHistRange[2] = {0.0,0.0};
   
