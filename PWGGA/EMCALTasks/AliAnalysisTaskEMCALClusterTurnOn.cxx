@@ -516,10 +516,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Int_t maxL0ADC = 0;
   Double_t E_of_maxADC = 0.;
   Double_t E_of_maxL0 = 0.;
-  Double_t EtaMax = 0.;
-  Double_t EtaMin = 0.;
-  Double_t PhiMax = 0.;
-  Double_t PhiMin = 0.;
   if(triPatchInfo){
     Int_t nPatch = triPatchInfo->GetEntries();
     for(Int_t ip = 0;ip<nPatch;ip++){
@@ -602,7 +598,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Int_t FastOrIndex = -1;
   if(veclclus != dummy){
     geom->GetAbsCellIdFromEtaPhi(veclclus.Eta(),veclclus.Phi(),cellID);
-    if(cellID >= 0 && cellID < 11520){
+    if(cellID >= 0 ){
       geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
       hFastOrIndexLeadingCluster->Fill(FastOrIndex,veclclus.Pt());
     }
