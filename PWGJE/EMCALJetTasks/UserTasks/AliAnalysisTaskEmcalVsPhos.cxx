@@ -77,6 +77,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotExotics(kFALSE),
   fPlotStandardClusterTHnSparse(kTRUE),
   fPlotNearestNeighborDistribution(kFALSE),
+  fPlotClusterCone(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -107,6 +108,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotExotics(kFALSE),
   fPlotStandardClusterTHnSparse(kTRUE),
   fPlotNearestNeighborDistribution(kFALSE),
+  fPlotClusterCone(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -331,6 +333,31 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       max[dim] = 1.;
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
+    }
+    
+    if (fPlotClusterCone) {
+
+      title[dim] = "Cone type";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "R";
+      nbins[dim] = 2;
+      min[dim] = 0;
+      max[dim] = 0.15;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#it{E}_{cone} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+    
     }
     
     TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
@@ -793,40 +820,77 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         passedDispersionCut = 1;
       }
       
-      Double_t contents[30]={0};
-      histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
-      THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
-      if (!histClusterObservables) return;
-      for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
-        TString title(histClusterObservables->GetAxis(i)->GetTitle());
-        if (title=="Centrality %")
-          contents[i] = fCent;
-        else if (title=="#eta")
-          contents[i] = it->first.Eta();
-        else if (title=="#phi")
-          contents[i] = it->first.Phi_0_2pi();
-        else if (title=="#it{E}_{clus} (GeV)")
-          contents[i] = Enonlin;
-        else if (title=="#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)")
-          contents[i] = Ehadcorr;
-        else if (title=="Matched track")
-          contents[i] = hasMatchedTrack;
-        else if (title=="M02")
-          contents[i] = it->second->GetM02();
-        else if (title=="Ncells")
-          contents[i] = it->second->GetNCells();
-        else if (title=="Dispersion cut")
-          contents[i] = passedDispersionCut;
-        else if (title=="#DeltaR_{NN}")
-          contents[i] = FindNearestNeighborDistance(it->first, clusters);
-        else
-          AliWarning(Form("Unable to fill dimension %s!",title.Data()));
-      }
-      histClusterObservables->Fill(contents);
+      Double_t eta = it->first.Eta();
+      Double_t phi = it->first.Phi_0_2pi();
+      Double_t M02 = it->second->GetM02();
+      Int_t nCells = it->second->GetNCells();
+      Double_t distNN = FindNearestNeighborDistance(it->first, clusters);
       
-    }
+      // Standard option: fill once per cluster
+      if (!fPlotClusterCone) {
+          FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN);
+      }
+      
+      // If cluster cone option enabled, fill for each R and cone type
+      if (fPlotClusterCone) {
 
+        // cluster cone, R=0.05
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
+        // cluster cone, R=0.1
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
+        // cell cone, R=0.05
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
+        // cell cone, R=0.1
+        FillClusterTHnSparse(clusters, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
+        
+      }
+
+    }
   }
+}
+
+/*
+ * This function fills the cluster THnSparse.
+ */
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t coneType, Double_t R, Double_t Econe)
+{
+  Double_t contents[30]={0};
+  TString histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
+  THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+  if (!histClusterObservables) return;
+  for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
+    TString title(histClusterObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = fCent;
+    else if (title=="#eta")
+      contents[i] = eta;
+    else if (title=="#phi")
+      contents[i] = phi;
+    else if (title=="#it{E}_{clus} (GeV)")
+      contents[i] = Enonlin;
+    else if (title=="#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)")
+      contents[i] = Ehadcorr;
+    else if (title=="Matched track")
+      contents[i] = hasMatchedTrack;
+    else if (title=="M02")
+      contents[i] = M02;
+    else if (title=="Ncells")
+      contents[i] = nCells;
+    else if (title=="Dispersion cut")
+      contents[i] = passedDispersionCut;
+    else if (title=="#DeltaR_{NN}")
+      contents[i] = distNN;
+    else if (title=="Cone type")
+      contents[i] = coneType;
+    else if (title=="R")
+      contents[i] = R;
+    else if (title=="#it{E}_{cone} (GeV)")
+      contents[i] = Econe;
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+                              }
+  histClusterObservables->Fill(contents);
+
 }
 
 /*
@@ -927,9 +991,9 @@ void AliAnalysisTaskEmcalVsPhos::FillNeutralJetHistograms()
         else if (title=="N_{clusters}")
           contents[i] = jet->GetNumberOfClusters();
         else if (title=="#it{E}_{T}, acc clus within R (GeV)")
-          contents[i] = GetConeClusterEnergy(jet, jets->GetJetRadius());
+          contents[i] = GetConeClusterEnergy(jet->Eta(), jet->Phi_0_2pi(), jets->GetJetRadius());
         else if (title=="#it{E}_{T}, acc cell within R (GeV)")
-          contents[i] = GetConeCellEnergy(jet, jets->GetJetRadius());
+          contents[i] = GetConeCellEnergy(jet->Eta(), jet->Phi_0_2pi(), jets->GetJetRadius());
         else
           AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
@@ -1139,13 +1203,10 @@ Double_t AliAnalysisTaskEmcalVsPhos::FindNearestNeighborDistance(AliTLorentzVect
 }
 
 /**
- * Compute the cluster energy within a cone centered at the jet axis
+ * Compute the cluster energy within a cone of radius R centered at etaRef,phiRef.
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(AliEmcalJet* jet, Double_t jetR)
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(Double_t etaRef, Double_t phiRef, Double_t R)
 {
-  Double_t etaRef = jet->Eta();
-  Double_t phiRef = jet->Phi_0_2pi();
-  
   AliClusterContainer* clusCont = GetClusterContainer(0);
   AliTLorentzVector clus;
   Double_t energy = 0.;
@@ -1154,7 +1215,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(AliEmcalJet* jet, Doub
     clus.Clear();
     clus = clusIterator.first;
     
-    if (GetDeltaR(&clus, etaRef, phiRef) < jetR) {
+    if (GetDeltaR(&clus, etaRef, phiRef) < R) {
       energy += clus.E();
     }
   }
@@ -1164,11 +1225,8 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(AliEmcalJet* jet, Doub
 /**
  * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(AliEmcalJet* jet, Double_t jetR)
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R)
 {
-  Double_t etaRef = jet->Eta();
-  Double_t phiRef = jet->Phi_0_2pi();
-  
   Double_t energy = 0.;
   
   // Get cells from event
@@ -1187,7 +1245,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(AliEmcalJet* jet, Double_
     fGeom->EtaPhiFromIndex(absId, eta, phi);
     phi = TVector2::Phi_0_2pi(phi);
 
-    if (GetDeltaR(eta, phi, etaRef, phiRef) < jetR) {
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
 
       if (IsCellRejected(absId, kEMCal)) {
         continue;
@@ -1207,7 +1265,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(AliEmcalJet* jet, Double_
     phi = pos.Phi();
     phi = TVector2::Phi_0_2pi(phi);
     
-    if (GetDeltaR(eta, phi, etaRef, phiRef) < jetR) {
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
 
       if (IsCellRejected(absId, kPHOS)) {
         continue;
