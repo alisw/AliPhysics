@@ -602,7 +602,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
       hFastOrIndexLeadingCluster->Fill(FastOrIndex,veclclus.Pt());
     }
-    else cout << "CellID: " << cellID << " eta: " << veclclus.Eta() << " phi: " << veclclus.Phi() << endl;
   }
   
     //Fill Vertex Z histogram
