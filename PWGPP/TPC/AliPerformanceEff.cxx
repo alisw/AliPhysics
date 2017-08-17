@@ -248,6 +248,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
         break;
       }
     }*/
+    if (!HasTPCReference(mcEvent, iMc)) continue; //Filter particles that do not touch the TPC
     Bool_t findable = IsFindable(mcEvent,iMc);
 
     Bool_t recStatus = kFALSE;
@@ -381,6 +382,12 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
 	  break;
 	  }
 	  }*/
+	if (!HasTPCReference(mcEvent, iMc)) continue; //Filter particles that do not touch the TPC
+	double xyz[3];
+	((AliMCParticle*) mcEvent->GetTrack(iMc))->XvYvZv(xyz);
+	if ((xyz[2] >= 250 && particle->Pz() > 0) || (xyz[2] <= -250 && particle->Pz() < 0)) continue; //Filter particles created at high Z in the TPC readout electronics and flying away
+	if (sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]) - fabs(666. / particle->Pt()) > 250) continue; //will never touch the TPC
+	
 	Bool_t findable = IsFindable(mcEvent,iMc);
 	
 	Bool_t recStatus = kFALSE;
@@ -735,6 +742,23 @@ Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label)
   Float_t tpcTrackLength = mcParticle->GetTPCTrackLength(AliTracker::GetBz(),0.05,counter,3.0); 
   //printf("tpcTrackLength %f \n", tpcTrackLength);
   return (tpcTrackLength>fCutsMC.GetMinTrackLength());
+}
+
+Bool_t AliPerformanceEff::HasTPCReference(const AliMCEvent *mcEvent, Int_t label) 
+{
+  //
+  // Determine if track is findable
+  //
+  if(!mcEvent) return kFALSE;
+
+  AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
+  if(!mcParticle) return kFALSE;
+
+  for (int i = 0;i < mcParticle->GetNumberOfTrackReferences();i++)
+  {
+    if (mcParticle->GetTrackReference(i)->DetectorId() == AliTrackReference::kTPC) return(true);
+  }
+  return(false);
 }
 
 //_____________________________________________________________________________
