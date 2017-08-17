@@ -1218,8 +1218,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
        TClass* esdClass = esdTrack->Class();
-       if( esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal") )
-         trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       if(esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal"))
+          trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
        
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
@@ -1348,7 +1348,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
       
-      trackInfo->fTrackId = aodTrack->GetID(); 
+      trackInfo->fTrackId = aodTrack->GetID();
       trackInfo->fTRDntracklets[0] = aodTrack->GetTRDntrackletsPID();
       trackInfo->fTRDntracklets[1] = aodTrack->GetTRDntrackletsPID();
       pidResponse->ComputeTRDProbability(aodTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ1D);
