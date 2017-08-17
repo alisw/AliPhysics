@@ -173,7 +173,6 @@ void AliAnalysisBGMonitorQATrain::Exec(Option_t *)
     runNumber = fESD->GetRunNumber();
     ntr = 10;
     nbunch = 21;
-    static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
     AliVVZERO *vzero = fESD->GetVZEROData();
     AliAnalysisUtils *utils = new AliAnalysisUtils();
     bgID = utils->IsSPDClusterVsTrackletBG(fESD);
@@ -227,7 +226,6 @@ void AliAnalysisBGMonitorQATrain::Exec(Option_t *)
     if(ftrigger[0]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(1);
     if(ftrigger[1]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(2);
     if(ftrigger[2]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(3);
-    static Bool_t SelGoodEvent;
     //
     // List of the information needed to fill the histograms---------------------------------------------------
     // fSpdT: GetNumberOfTracklets(), Int value
