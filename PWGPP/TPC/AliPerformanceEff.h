@@ -68,6 +68,8 @@ public :
 
   THnSparseF* GetEffHisto() const {return fEffHisto;}
   THnSparseF* GetEffSecHisto() const {return fEffSecHisto;}
+  
+  static void SetfReadNClsTree(bool v) {fReadNClsTree = v;}
 
 private:
 
@@ -80,14 +82,23 @@ private:
   // Control histograms
   THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:charge
   THnSparseF *fEffSecHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:mcR:mother_phi:mother_eta:charge
+  
+  TH1D* fTrackPtNCls; //
+  TH2D* fTrackNClsFound; //
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
+  
+  int fNEvent; //!
+  static bool fReadNClsTree; //
+  TFile* fNClsTreeFile; //!
+  TTree* fNClsTree; //!
+  std::vector<short>* fNClsVec; //!
 
   AliPerformanceEff(const AliPerformanceEff&); // not implemented
   AliPerformanceEff& operator=(const AliPerformanceEff&); // not implemented
 
-  ClassDef(AliPerformanceEff,3);
+  ClassDef(AliPerformanceEff,4);
 };
 
 #endif
