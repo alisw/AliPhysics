@@ -121,7 +121,7 @@ void AliPerformanceEff::Init()
   }
   */
 
-  //mceta:mcphi:mcpt:pid:recStatus:findable:charge
+  //mceta:mcphi:mcpt:pid:recStatus:findable:charge:clones:fakes
   Int_t binsEffHisto[9]={30,144,nPtBins,5,2,2,3,fgkMaxClones+1,fgkMaxFakes+1};
   Double_t minEffHisto[9]={-1.5,0.,ptMin,0.,0.,0.,-1.5,0,0};
   Double_t maxEffHisto[9]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,1.5,fgkMaxClones+1,fgkMaxFakes+1};
@@ -140,7 +140,7 @@ void AliPerformanceEff::Init()
   fEffHisto->GetAxis(8)->SetTitle("nFakes");
   fEffHisto->Sumw2();
 
-  //mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge
+  //mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge:clones:fakes
   Int_t binsEffSecHisto[12]={30,60,nPtBins,5,2,2,100,60,30,3,fgkMaxClones+1,fgkMaxFakes+1};
   Double_t minEffSecHisto[12]={-1.5,0.,ptMin,0.,0.,0.,0.,0.,-1.5,-1.5,0,0};
   Double_t maxEffSecHisto[12]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,200,2.*TMath::Pi(),1.5,1.5,fgkMaxClones+1,fgkMaxFakes+1};
