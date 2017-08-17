@@ -112,6 +112,7 @@ fPtaftFC(0),
 fTriggerbit(0), 
 hL0Amplitude(0),
 hmaxADC(0),
+hADCpos0(0),
 hmaxL0ADC(0),
 hL1PatchPosition(0),
 hFastOrPatchE(0),
@@ -183,6 +184,7 @@ fPtaftFC(0),
 fTriggerbit(0), 
 hL0Amplitude(0),
 hmaxADC(0),
+hADCpos0(0),
 hmaxL0ADC(0),
 hL1PatchPosition(0),
 hFastOrPatchE(0),
@@ -354,6 +356,10 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   hmaxADC->Sumw2();
   fOutput->Add(hmaxADC); 
 
+  hADCpos0 = new TH2D("hADCpos0","ADC vs E_{patch} for patches with EtaGeo = PhiGeo = 0",1000,0.,2000.,80,0.,80.);
+  hADCpos0->Sumw2();
+  fOutput->Add(hADCpos0);
+
   hmaxL0ADC = new TH2D("hmaxPatchADC_E_L0","L0 max ADC vs patch energy distribution; ADC; E (GeV)", 6000,100000.,400000.,60,0.,60.);
   hmaxL0ADC->Sumw2();
   fOutput->Add(hmaxL0ADC); 
@@ -510,6 +516,10 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Int_t maxL0ADC = 0;
   Double_t E_of_maxADC = 0.;
   Double_t E_of_maxL0 = 0.;
+  Double_t EtaMax = 0.;
+  Double_t EtaMin = 0.;
+  Double_t PhiMax = 0.;
+  Double_t PhiMin = 0.;
   if(triPatchInfo){
     Int_t nPatch = triPatchInfo->GetEntries();
     for(Int_t ip = 0;ip<nPatch;ip++){
@@ -526,14 +536,20 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
       }
+      if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
+       hADCpos0->Fill(pti->GetADCAmp(),pti->GetPatchE());
+       continue;
+      }
       if(pti->GetADCAmp() > 130){  
         isL1 = kTRUE;
         hL1PatchPosition->Fill(pti->GetEtaGeo(), pti->GetPhiGeo());
         Int_t AbsCellID = -1;
         Int_t fastor = -1;
         geom->GetAbsCellIdFromEtaPhi(pti->GetEtaGeo(), pti->GetPhiGeo(),AbsCellID);
-        geom->GetFastORIndexFromCellIndex(AbsCellID,fastor);
-        hFastOrPatchE->Fill(fastor,pti->GetPatchE());
+        if(AbsCellID > -1){
+          geom->GetFastORIndexFromCellIndex(AbsCellID,fastor);
+          hFastOrPatchE->Fill(fastor,pti->GetPatchE());
+        }
 //        break;
       }
     }
@@ -566,7 +582,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       }
     }
   }
-  TLorentzVector veclclus;
+  TLorentzVector veclclus, dummy;
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi) {
@@ -584,10 +600,14 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   }
   Int_t cellID = -1;
   Int_t FastOrIndex = -1;
-  geom->GetAbsCellIdFromEtaPhi(veclclus.Eta(),veclclus.Phi(),cellID);
-  geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
-  hFastOrIndexLeadingCluster->Fill(FastOrIndex,veclclus.Pt());
-
+  if(veclclus != dummy){
+    geom->GetAbsCellIdFromEtaPhi(veclclus.Eta(),veclclus.Phi(),cellID);
+    if(cellID >= 0 && cellID < 11520){
+      geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+      hFastOrIndexLeadingCluster->Fill(FastOrIndex,veclclus.Pt());
+    }
+    else cout << "CellID: " << cellID << " eta: " << veclclus.Eta() << " phi: " << veclclus.Phi() << endl;
+  }
   
     //Fill Vertex Z histogram
   if(fQA) fVz->Fill(fVertex[2]);

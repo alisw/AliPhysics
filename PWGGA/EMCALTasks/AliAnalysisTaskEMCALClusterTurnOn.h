@@ -169,6 +169,7 @@ protected:
   TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
   TH2D        *fEventsover10;                   
   TH1D        *fL1triggered;                    //!<! max cluster energy of L1 triggered events
+  TH2D        *hADCpos0;
   TH2D        *hmaxADC;
   TH2D        *hL1PatchPosition;
   TH2D        *hFastOrPatchE;
