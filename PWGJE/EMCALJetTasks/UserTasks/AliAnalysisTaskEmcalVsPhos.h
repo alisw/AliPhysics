@@ -75,6 +75,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotNearestNeighborDistribution(Bool_t b)         { fPlotNearestNeighborDistribution = b; }
   void SetPlotClusterCone(Bool_t b)                         { fPlotClusterCone = b; }
   void SetPlotCaloCentrality(Bool_t b)                      { fPlotCaloCentrality = b; }
+  void SetPlotFineGrainedEtaPhi(Bool_t b)                   { fPlotFineGrainedEtaPhi = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -120,6 +121,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotNearestNeighborDistribution;     ///< Set whether to plot nearest neighbor axis in cluster THnSparse
   Bool_t                      fPlotClusterCone;                     ///< Set whether to plot sum of energy surrounding cluster in THnSparse
   Bool_t                      fPlotCaloCentrality;                  ///< Set whether to bin cluster THnSparse in calorimeter local density
+  Bool_t                      fPlotFineGrainedEtaPhi;               ///< Set whether to plot fine-grained eta-phi bins in cluster THnSparse
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit

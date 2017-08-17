@@ -79,6 +79,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotNearestNeighborDistribution(kFALSE),
   fPlotClusterCone(kFALSE),
   fPlotCaloCentrality(kFALSE),
+  fPlotFineGrainedEtaPhi(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -111,6 +112,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotNearestNeighborDistribution(kFALSE),
   fPlotClusterCone(kFALSE),
   fPlotCaloCentrality(kFALSE),
+  fPlotFineGrainedEtaPhi(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -273,6 +275,9 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     
     title[dim] = "#eta";
     nbins[dim] = 28;
+    if (fPlotFineGrainedEtaPhi) {
+      nbins[dim] = 100;
+    }
     min[dim] = -0.7;
     max[dim] = 0.7;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
@@ -280,6 +285,9 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     
     title[dim] = "#phi";
     nbins[dim] = 100;
+    if (fPlotFineGrainedEtaPhi) {
+      nbins[dim] = 357;
+    }
     min[dim] = 1.;
     max[dim] = 6.;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
