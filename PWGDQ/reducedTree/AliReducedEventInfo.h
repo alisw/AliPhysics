@@ -16,12 +16,15 @@ class AliReducedTrackInfo;
 class AliReducedEventInfo : public AliReducedBaseEvent {
 
   friend class AliAnalysisTaskReducedTreeMaker;     // friend analysis task which fills the object
-
+  friend class AliReducedAnalysisFilterTrees;
+  
  public:
   AliReducedEventInfo();
   AliReducedEventInfo(const Char_t* name, Int_t trackOption = AliReducedBaseEvent::kNoInit);
   virtual ~AliReducedEventInfo();
 
+  virtual void CopyEventHeader(const AliReducedEventInfo* c);
+  
   // getters
   Int_t     EventNumberInFile()               const {return fEventNumberInFile;}
   UInt_t    L0TriggerInputs()                 const {return fL0TriggerInputs;}
@@ -195,8 +198,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   //AliReducedEventPlaneInfo* fEventPlane;     //-> container for event plane information
   AliReducedEventPlaneInfo fEventPlane;     // container for event plane information
   
-  AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
+  AliReducedEventInfo(const AliReducedEventInfo &c);
 
   ClassDef(AliReducedEventInfo, 6);
 };

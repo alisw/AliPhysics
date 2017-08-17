@@ -18,7 +18,6 @@ ClassImp(AliReducedTrackInfo)
 //_______________________________________________________________________________
 AliReducedTrackInfo::AliReducedTrackInfo() :
   AliReducedBaseTrack(),
-  fTrackId(0),
   fStatus(0),
   fTPCPhi(0.0),
   fTPCPt(0.0),
@@ -71,6 +70,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   // Constructor
   //
   fDCA[0] = 0.0; fDCA[1]=0.0;
+  fTPCDCA[0] = 0.0; fTPCDCA[1]=0.0;
   for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.; }
   fHelixCenter[0] = 0.0; fHelixCenter[1] = 0.0;
   fTRDntracklets[0]=0; fTRDntracklets[1]=0;
@@ -82,6 +82,57 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   for(Int_t i=0;i<21;++i) {fCovMatrix[i]=0.;}
 }
 
+//_______________________________________________________________________________
+AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
+  AliReducedBaseTrack(c),
+  fStatus(c.fStatus),
+  fTPCPhi(c.fTPCPhi),
+  fTPCPt(c.fTPCPt),
+  fTPCEta(c.fTPCEta),
+  fMomentumInner(c.fMomentumInner),
+  fTrackLength(c.fTrackLength),
+  fMassForTracking(c.fMassForTracking),
+  fChi2TPCConstrainedVsGlobal(c.fChi2TPCConstrainedVsGlobal),
+  fHelixRadius(c.fHelixRadius),
+  fITSclusterMap(c.fITSclusterMap),
+  fITSSharedClusterMap(c.fITSSharedClusterMap),
+  fITSsignal(c.fITSsignal),
+  fITSchi2(c.fITSchi2),
+  fTPCNcls(c.fTPCNcls),
+  fTPCCrossedRows(c.fTPCCrossedRows),
+  fTPCNclsF(c.fTPCNclsF),
+  fTPCNclsShared(c.fTPCNclsShared),
+  fTPCClusterMap(c.fTPCClusterMap),
+  fTPCsignal(c.fTPCsignal),
+  fTPCsignalN(c.fTPCsignalN),
+  fTPCchi2(c.fTPCchi2),
+  fTPCActiveLength(c.fTPCActiveLength),
+  fTPCGeomLength(c.fTPCGeomLength),
+  fTOFbeta(c.fTOFbeta),
+  fTOFtime(c.fTOFtime),
+  fTOFdx(c.fTOFdx),
+  fTOFdz(c.fTOFdz),
+  fTOFmismatchProbab(c.fTOFmismatchProbab),
+  fTOFchi2(c.fTOFchi2),
+  fTOFdeltaBC(c.fTOFdeltaBC),
+  fCaloClusterId(c.fCaloClusterId),
+  fMCGeneratorIndex(c.fMCGeneratorIndex)
+{
+   //
+   // copy constructor
+   //
+   fDCA[0] = c.fDCA[0]; fDCA[1]=c.fDCA[1];
+   fTPCDCA[0] = c.fTPCDCA[0]; fTPCDCA[1]=c.fTPCDCA[1];
+   fHelixCenter[0] = c.fHelixCenter[0]; fHelixCenter[1] = c.fHelixCenter[1];
+   fTRDntracklets[0]=c.fTRDntracklets[0]; fTRDntracklets[1]=c.fTRDntracklets[1];
+   fTRDpid[0]=c.fTRDpid[0]; fTRDpid[1]=c.fTRDpid[1];
+   fTRDpidLQ2D[0] = c.fTRDpidLQ2D[0]; fTRDpidLQ2D[1] = c.fTRDpidLQ2D[1];
+   for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=c.fTPCnSig[i]; fTOFnSig[i]=c.fTOFnSig[i]; fITSnSig[i]=c.fITSnSig[i];}
+   for(Int_t i=0;i<6;++i) {fTrackParam[i]=c.fTrackParam[i];}
+   for(Int_t i=0;i<21;++i) {fCovMatrix[i]=c.fCovMatrix[i];}
+   for(Int_t i=0;i<3;++i) {fMCMom[i]=c.fMCMom[i]; fMCFreezeout[i]=c.fMCFreezeout[i];}
+   for(Int_t i=0;i<4;++i) {fMCLabels[i]=c.fMCLabels[i]; fMCPdg[i]=c.fMCPdg[i];}
+}
 
 //_______________________________________________________________________________
 AliReducedTrackInfo::~AliReducedTrackInfo()
