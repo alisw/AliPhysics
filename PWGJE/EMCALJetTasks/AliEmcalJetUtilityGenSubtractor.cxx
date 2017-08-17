@@ -164,9 +164,9 @@ void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
    fjw.DoGenericSubtractionJet1subjettiness_akt02();
    fjw.DoGenericSubtractionJet2subjettiness_akt02();
    fjw.DoGenericSubtractionJetOpeningAngle_akt02();
-   fjw.DoGenericSubtractionJet1subjettiness_casd();
-   fjw.DoGenericSubtractionJet2subjettiness_casd();
-   fjw.DoGenericSubtractionJetOpeningAngle_casd();
+   //fjw.DoGenericSubtractionJet1subjettiness_casd();
+   //fjw.DoGenericSubtractionJet2subjettiness_casd();
+   //fjw.DoGenericSubtractionJetOpeningAngle_casd();
  }
 }
 
@@ -388,7 +388,7 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_derivative());
       jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].first_order_subtracted());
       jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_order_subtracted());
-    }
+      }
   }
 
 #endif
