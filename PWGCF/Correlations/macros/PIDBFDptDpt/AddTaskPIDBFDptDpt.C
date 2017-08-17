@@ -22,13 +22,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb_2015_kTRUE",
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
- bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
+ bool    Use_PT_Cut             =  1,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
  bool    useEventPlane          =  0,   // 0: No      1: Yes
  double  EventPlaneMin          =  -3.1415927/6,
  double  EventPlaneMax          =  3.1415927/6,
- int    CentralityGroup         =  9,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
- int    singlesOnly             =  0,   // 0: full correlations    1: singles only
+ int    CentralityGroup         =  15,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
@@ -45,8 +45,12 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  4,
+ int nCentrality                =  9,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
+ bool Use_AliHelperPID          =  1,  // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
+ int pidType                    =  2,  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+ Bool_t requestTOFPID           =  1,
+ Bool_t isMC                    =  0,
  double nSigmaCut               =  2.0,
  double ElectronVetoCut         =  1.0,
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
@@ -383,14 +387,16 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetPtTOFlowerBoundary( ptTOFlowerMin );
       task->SetElectronNSigmaVetoCut( ElectronVetoCut );
       task->SetfRemoveTracksT0Fill( remove_Tracks_T0 );
-      
-      /*
-      AliEventCuts* EventCuts = new AliEventCuts();
-      EventCuts->SetManualMode();
-      EventCuts->fUseVariablesCorrelationCuts = true;
-      EventCuts->fUseStrongVarCorrelationCut = true;
-      task->SetAliEventCuts( EventCuts );
-      */
+      task->SetUse_AliHelperPID(  Use_AliHelperPID  );
+
+      // assign initial values to AliHelperPID object
+      AliHelperPID* helperpid = new AliHelperPID();
+      helperpid -> SetNSigmaCut( nSigmaCut );
+      helperpid -> SetPIDType( pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+      helperpid -> SetfRequestTOFPID( requestTOFPID );
+      helperpid -> SetfPtTOFPID( ptTOFlowerMin );
+      helperpid -> SetisMC( isMC );
+      task->SetHelperPID( helperpid );
       
       if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb, PbPb_2015
       else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb & pp
