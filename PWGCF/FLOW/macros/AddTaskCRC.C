@@ -860,6 +860,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         if(AODfilterBit==768) PhiEtaWeightsFileName += "15opidfix_FB768_CenPhiEtaWeights_VtxRbR.root";
       }
     }
+    if(sDataSet=="2010") {
+      if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
+        if(AODfilterBit==96) PhiEtaWeightsFileName += "10h_FB96_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "10h_FB768_CenPhiEtaWeights_VtxRbR.root";
+      }
+    }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
     if(!PhiEtaWeightsFile) {
       cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
