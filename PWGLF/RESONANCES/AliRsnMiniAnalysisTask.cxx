@@ -15,7 +15,6 @@
 
 #include <Riostream.h>
 
-#include <TSystem.h>
 #include <TH1.h>
 #include <TList.h>
 #include <TTree.h>
@@ -444,7 +443,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 //
    // increment event counter
    fEvNum++;
-   
+
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
