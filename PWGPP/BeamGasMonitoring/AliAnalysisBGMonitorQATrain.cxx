@@ -56,13 +56,13 @@ fSpdC1(0),
 fSpdC2(0),
 fSpdT(0),
 ntracks(0),
-bgID(0),
-ntr(0),
-nbunch(0),
 nV0A(0),
 nV0C(0),
 nV0ABG(0),
 nV0CBG(0)
+bgID(0),
+ntr(0),
+nbunch(0),
 {
 }
 //________________________________________________________________________
@@ -77,13 +77,13 @@ fSpdC1(0),
 fSpdC2(0),
 fSpdT(0),
 ntracks(0),
-bgID(0),
-ntr(0),
-nbunch(0),
 nV0A(0),
 nV0C(0),
 nV0ABG(0),
 nV0CBG(0)
+bgID(0),
+ntr(0),
+nbunch(0),
 {
     // Constructor
     DefineInput(0, TChain::Class());
