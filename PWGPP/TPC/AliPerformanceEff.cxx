@@ -234,14 +234,8 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     // use only particles with no daughters in the list of primaries
     Int_t nDaughters = 0;// particle->GetNDaughters();
     
-    for( Int_t iDaught=particle->GetFirstDaughter(); iDaught < particle->GetNDaughters(); iDaught++ ) {
-      if (iDaught<nPrim) {
-	//      if( particle->GetDaughter(iDaught) < stack->GetNprimary() )
-	nDaughters++;
-	break; //RS we just need to know if there are prim. daughters
-      }
-    }
-    if( nDaughters > 0 ) continue;
+    //RS we just need to know if there are prim. daughters
+    if (particle->GetFirstDaughter() != -1 && particle->GetFirstDaughter() < nPrim) break;
     // --- check for double filling in stack
     
     /*Bool_t findable = kFALSE;
