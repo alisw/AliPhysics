@@ -128,7 +128,12 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fFilterBit(4),
     fGridPID(-1)
 {
-    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+    if(!fIsV0tree){
+        fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+    }
+    else{
+        fESDtrackCuts = AliESDtrackCuts::GetStandardV0DaughterCuts();
+    }
 
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -698,6 +703,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Double_t EnSigmaITS = -999;
             Double_t PnSigmaITS = -999;
             Double_t KnSigmaITS = -999;
+
             if(fHasSDD){
                 EnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kElectron);
                 PnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kPion);
@@ -709,13 +715,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kPion);
             Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(posTrack,(AliPID::EParticleType)AliPID::kKaon);
             Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kKaon);
+
             //DCA values
             Float_t ImpParamXY = 0.;
-            Float_t ImpParamZ = 0.;
+            Float_t ImpParamZ  = 0.;
+
             posTrack->GetImpactParameters( &ImpParamXY, &ImpParamZ);
 
             Int_t nITS = 0;
             Double_t fITS_shared = 0;
+
             if(fHasSDD){
                 //ITS clusters and shared clusters
                 nITS = posTrack->GetNumberOfITSClusters();
@@ -737,8 +746,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             if(fIsMC){
                 label = posTrack->GetLabel();
 				AliVEvent* mcEvent = MCEvent();
-                AliVParticle* mcTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
-                TParticle* mcParticle = static_cast<TParticle*>(mcTrack->Particle());
+                AliVParticle* mcTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+                TParticle* mcParticle = dynamic_cast<TParticle*>(mcTrack->Particle());
                 mcEta = mcTrack->Eta();
                 mcPhi = mcTrack->Phi();
                 mcPt = mcTrack->Pt();
@@ -746,7 +755,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 iPdg = mcTrack->PdgCode();
 
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliVParticle* motherTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(gMotherIndex));
+                AliVParticle* motherTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(gMotherIndex));
                 iPdgMother = motherTrack->PdgCode();
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
@@ -845,8 +854,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             if(fIsMC){
                 label = negTrack->GetLabel();
 				AliVEvent* mcEvent = MCEvent();
-                AliVParticle* mcTrack = static_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
-                TParticle* mcParticle = static_cast<TParticle*>(mcTrack->Particle());
+                AliVParticle* mcTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+                TParticle* mcParticle = dynamic_cast<TParticle*>(mcTrack->Particle());
                 mcEta = mcTrack->Eta();
                 mcPhi = mcTrack->Phi();
                 mcPt = mcTrack->Pt();
@@ -854,7 +863,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 iPdg = mcTrack->PdgCode();
 
                 Int_t gMotherIndex = mcTrack->GetMother();
-                AliVParticle* motherTrack = static_cast<AliVParticle*>((mcEvent->GetTrack(gMotherIndex)));
+                AliVParticle* motherTrack = dynamic_cast<AliVParticle*>((mcEvent->GetTrack(gMotherIndex)));
                 iPdgMother = motherTrack->PdgCode();
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
@@ -951,7 +960,9 @@ void AliAnalysisTaskSimpleTreeMaker::Terminate(Option_t *) {
 
 Int_t AliAnalysisTaskSimpleTreeMaker::IsEventAccepted(AliVEvent *event){
     
+    
     if(!fIsV0tree){
+        Printf("fail");
         if(TMath::Abs(event->GetPrimaryVertexSPD()->GetZ()) < 10){
             if(event->GetPrimaryVertexSPD()->GetNContributors() >0){ 
                 return 1; 
@@ -961,7 +972,12 @@ Int_t AliAnalysisTaskSimpleTreeMaker::IsEventAccepted(AliVEvent *event){
             }   
         }
     }
-    
+    else{
+        Printf("werd");
+        if(TMath::Abs(event->GetPrimaryVertexSPD()->GetZ()) < 10){
+                return 1;
+        }
+    }
     return 0;
 }
 
@@ -975,12 +991,12 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
     if( eta < fEtaMin || eta > fEtaMax ){ return answer; } 
 
     if(!fIsAOD){
-        if(!(fESDtrackCuts->AcceptTrack(static_cast<AliESDtrack*>(track)))){
+        if(!(fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))){
             return answer;
         }
     }
     else{
-        if(!(static_cast<AliAODTrack*>(track))->TestFilterBit(fFilterBit)){
+        if(!(dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fFilterBit)){
             return answer;
         }
     }
@@ -1015,7 +1031,7 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliA
       return kFALSE;
     }
 
-    AliAODVertex *vtx =(AliAODVertex*)(event->GetPrimaryVertex());
+    AliAODVertex *vtx =dynamic_cast<AliAODVertex*>((event->GetPrimaryVertex()));
     Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
