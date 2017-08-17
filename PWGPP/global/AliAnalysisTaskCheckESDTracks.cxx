@@ -767,7 +767,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t statusTrack=track->GetStatus();
     if(statusTrack&AliESDtrack::kITSrefit) itsRefit=kTRUE; 
     UChar_t clumap=track->GetITSClusterMap();
-    Double_t chi2clus=track->GetTPCchi2()/track->GetTPCNcls();
+    Double_t chi2clus = track->GetTPCNcls() ? track->GetTPCchi2()/track->GetTPCNcls() : -999.;
     Double_t curvrelerr = TMath::Sqrt(track->GetSigma1Pt2())/track->OneOverPt();
     Bool_t spdAny=kFALSE;
     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) spdAny=kTRUE;
