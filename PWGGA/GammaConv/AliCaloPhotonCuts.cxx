@@ -4464,15 +4464,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
     // New PCM-EMC nonlinearity with energy squared
     case 17:
-      if( fCurrentMC==k16k5a ){
-        if(fClusterType==1){
-          energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
-        }
-      } else if( fCurrentMC==k17e2 ){
-        if(fClusterType==1){
-          energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
-        }
-      } else fPeriodNameAvailable = kFALSE;
+      if(isMC>0){
+        if( fCurrentMC==k16k5a ){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
+          }
+        } else if( fCurrentMC==k17e2 ){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.945037, -3.42935, -0.384718);
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
       break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
@@ -4599,15 +4601,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
     // New PCM-EMC nonlinearity with energy squared
     case 27:
-      if( fCurrentMC==k16k5a ){
-        if(fClusterType==1){
-          energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
-        }
-      } else if( fCurrentMC==k17e2 ){
-        if(fClusterType==1){
-          energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
-        }
-      } else fPeriodNameAvailable = kFALSE;
+      if(isMC>0){
+        if( fCurrentMC==k16k5a ){
+          if(fClusterType==1){
+            energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
+          }
+        } else if( fCurrentMC==k17e2 ){
+          if(fClusterType==1){
+            energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
       break;
       
 // *************** 30 + x **** modified tender Settings 2 - pp
