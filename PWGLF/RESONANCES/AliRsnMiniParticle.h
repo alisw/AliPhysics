@@ -50,6 +50,8 @@ public:
    void           SetCutBit(Int_t i)         {UShort_t bit = 1 << i; fCutBits |=   bit;}
    void           ClearCutBit(Int_t i)       {UShort_t bit = 1 << i; fCutBits &= (~bit);}
 
+   void 	      Clear(Option_t *opt="");
+
    void           Set4Vector(TLorentzVector &v, Float_t mass=-1.0, Bool_t mc=kFALSE);
    void           CopyDaughter(AliRsnDaughter *daughter);
 
