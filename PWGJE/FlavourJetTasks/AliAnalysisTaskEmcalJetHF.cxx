@@ -510,8 +510,8 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
                         Int_t    JetTrackLabel = Vtrack->GetID();
                         //Double_t JetTrackP = track->P();
                         //Double_t JetTrackPt = track->Pt();
-                        Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
-                        Double_t deta = track->Eta() - jet->Eta();
+                        //Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
+                        //Double_t deta = track->Eta() - jet->Eta();
                         //Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
 
                         //+++++----Track matching to EMCAL
@@ -815,7 +815,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         //return;
     }
 
-    const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+    //const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
 
     fpidResponse = fInputHandler->GetPIDResponse();
     if (!fpidResponse) {
