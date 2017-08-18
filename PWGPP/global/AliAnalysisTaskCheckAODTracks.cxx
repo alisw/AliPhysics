@@ -794,17 +794,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(isProton) fHistImpParXYPtMulProtonTPCselSPDany->Fill(pttrack,impactXY*10000.,ncl1);
     }
 
-    if(fReadMC){
+    if(fReadMC && pttrack>0.){
       fHistPtResidVsPtTPCselAll->Fill(pttrack,(pttrack-ptgen));
-      fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-1./ptgen));
+      fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
       if (itsRefit){
 	fHistPtResidVsPtTPCselITSrefAll->Fill(pttrack,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-1./ptgen));
+	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
       }
-      for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
+      for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
         if (pid[iS]) {
 	  Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
-	  Double_t oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-1./ptgen);
+	  Double_t oneOverPtDiff=0;
+	  if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
 	  fHistPtResidVsPtTPCsel[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),ptDiff);
 	  fHistOneOverPtResidVsPtTPCsel[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),oneOverPtDiff);
 	  if (itsRefit){ 
