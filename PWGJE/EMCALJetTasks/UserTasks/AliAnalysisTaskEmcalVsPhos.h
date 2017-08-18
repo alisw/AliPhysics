@@ -96,16 +96,16 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        FillCellHistograms()                              ;
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
-  void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
-  void                        FillClusterTHnSparse(AliClusterContainer* clusters, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
+  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
+  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
   // Utility functions
-  Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
-  Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
+  Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
+  Double_t                    GetDeltaR(AliTLorentzVector part, Double_t etaRef, Double_t phiRef);
   Double_t                    GetDeltaR(Double_t eta1, Double_t phi1, Double_t eta2, Double_t phi2);
-  Double_t                    GetJetType(AliEmcalJet* jet);
-  Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells);
-  Double_t                    FindNearestNeighborDistance(AliTLorentzVector cluster, AliClusterContainer* clusters);
+  Double_t                    GetJetType(const AliEmcalJet* jet);
+  Double_t                    GetFcross(const AliVCluster *cluster, AliVCaloCells *cells);
+  Double_t                    FindNearestNeighborDistance(AliTLorentzVector cluster);
   Double_t                    GetConeClusterEnergy(Double_t etaRef, Double_t phiRef, Double_t R);
   Double_t                    GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells = kFALSE);
   Double_t                    GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells = kFALSE);
@@ -149,7 +149,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 5);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 6);
   /// \endcond
 };
 #endif
