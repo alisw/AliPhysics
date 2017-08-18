@@ -12,8 +12,6 @@ ClassImp(AliCaloClusterContent)
 //________________________________________________________________________
 AliCaloClusterContent::AliCaloClusterContent():
   fType(0),
-  fCellsAbsId(0),
-//  frelID(),
   fLabel(0),
   fNCells(0),
   fNTracksMatched(0),
@@ -45,8 +43,6 @@ AliCaloClusterContent::AliCaloClusterContent():
 //________________________________________________________________________
 AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom):
   fType(0),
-  fCellsAbsId(0),
-//  relID(),
   fLabel(0),
   fNCells(0),
   fNTracksMatched(0),
@@ -70,7 +66,6 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fCellRelIDX(0),
   fCellRelIDZ(0),
   fCellEnergy(0),
-  tempVecSize(0),
   fCellTime(0)
 {
 // read out cluster information
@@ -209,10 +204,6 @@ void AliCaloClusterContent::Reset(){
   fCellRelIDZ.clear();
   fCellEnergy.clear();
   fCellTime.clear();
- /// fCellType.clear();
-
-  tempVecSize = 0;
-
 
 
   fIsFilled = kFALSE;

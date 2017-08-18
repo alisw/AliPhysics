@@ -26,12 +26,8 @@
     void     SetEnergy(Float_t a) {fEnergy = a;}
 
 
-///TODO insert fRelIDX, fRelIDZ, fDetector, fMod		(for cluster)
-///TODO delete         const UShort_t* fCellsAbsId; //[4]
-
 	 Char_t GetType()              {return fType;}
 
-//	 Int_t* GetRelID()             {return frelID;}
     Int_t  GetLabel()             {return fLabel;}
     Int_t  GetNCells()            {return fNCells;}
     Int_t  GetNTracksMatched()    {return fNTracksMatched;}
@@ -66,11 +62,7 @@
 	 //Char_t
     Char_t  fType;
 
-    //Short_t
-    const UShort_t* fCellsAbsId; //[4]
-
     //Int_t
-//    Int_t  frelID[4];        // Position of cluster in PHOS
     Int_t  fLabel;          // Cluster lable
     Int_t  fNCells;         // Number of cells in cluster
     Int_t  fNTracksMatched; // Number of matched tracks
@@ -80,9 +72,6 @@
 	 Bool_t  fIsExotic;
 	 Bool_t  fIsEMCAL;
 	 Bool_t  fIsPHOS;
-
-	 //Float_t
-
 
 	 //Double_t
     Double_t  fCoreEnergy;            // Energy of the core of cluster
@@ -95,10 +84,6 @@
     Double_t  fTOF;
     Double_t  fTrackDx;
     Double_t  fTrackDz;
-
-
-
-	 Int_t tempVecSize;												// for testing only
 
     std::vector<Int_t>    fCellAbsID;    // Absolute ID of cell
     std::vector<Int_t>    fCellDetector; // Detector type (0==PHOS, -1==CPV)
