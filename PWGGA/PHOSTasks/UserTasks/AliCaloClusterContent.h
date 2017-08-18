@@ -26,7 +26,8 @@
     void     SetEnergy(Float_t a) {fEnergy = a;}
 
 
-
+///TODO insert fRelIDX, fRelIDZ, fDetector, fMod		(for cluster)
+///TODO delete         const UShort_t* fCellsAbsId; //[4]
 
 	 Char_t GetType()              {return fType;}
 
@@ -66,7 +67,7 @@
     Char_t  fType;
 
     //Short_t
-    const UShort_t* fCellsAbsId;
+    const UShort_t* fCellsAbsId; //[4]
 
     //Int_t
 //    Int_t  frelID[4];        // Position of cluster in PHOS
@@ -84,11 +85,11 @@
 
 
 	 //Double_t
-    Double_t  fCoreEnergy;  // Energy of the core of cluster
-    Double_t  fDispersion;  // Dispersion of cluster
+    Double_t  fCoreEnergy;            // Energy of the core of cluster
+    Double_t  fDispersion;            // Dispersion of cluster
     Double_t  fDistanceToBadChannel;
     Double_t  fEmcCpvDistance;
-    Double_t  fEnergy;      // Cell energy
+    Double_t  fEnergy;                // Cluster energy
     Double_t  fM02;
     Double_t  fM20;
     Double_t  fTOF;

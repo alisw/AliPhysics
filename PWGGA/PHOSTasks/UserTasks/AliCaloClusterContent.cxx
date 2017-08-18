@@ -92,7 +92,6 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fTrackDx              = clust ->GetTrackDx();
   fTrackDz              = clust ->GetTrackDz();
 
-
 // Loop over all cells of current cluster
   for(int icell=0; icell<fNCells; icell++){
     Int_t iCellAbsId = clust->GetCellAbsId(icell);
