@@ -36,14 +36,15 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    const char             *suffix,
    AliRsnCutSet           *PairCutsSame,
    AliRsnCutSet           *PairCutsMix,
-   Bool_t                  ptDep,
-   Double_t                pt1,
-   Double_t                pt2
+   UInt_t                  triggerMask=AliVEvent::kINT7
 )
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
 
+   Int_t MultBins=aodFilterBit/100;
+   aodFilterBit=aodFilterBit%100;
+   
    
    /////////////////////////////////////////////////////
    // selections for the pion from the decay of KStarPlusMinus*
@@ -78,10 +79,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
 
-   if(ptDep){
-     esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
-   }else
-     esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
+
+   esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
   
 
 
@@ -190,6 +189,15 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
    /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
 
+
+   Double_t multbins[200];
+  int j,nmult=0;
+  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+  if(triggerMask==AliVEvent::kHighMultV0){multbins[nmult]=1.; nmult++;}
+  else for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
 
    
    //
@@ -312,6 +320,34 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
      if(isGT) out->AddAxis(sdpt,100,0.,10.);
+
+
+     AliRsnMiniOutput* outmf=task->CreateOutput(Form("kstarPM_MotherFine%s", suffix),"SPARSE","MOTHER");
+     outmf->SetDaughter(0, AliRsnDaughter::kKaon0);
+     outmf->SetDaughter(1, AliRsnDaughter::kPion);
+     outmf->SetMotherPDG(-323);
+     outmf->SetMotherMass(0.89166);
+     outmf->SetPairCuts(PairCutsMix);
+     outmf->AddAxis(imID, 90, 0.6, 1.5);
+     outmf->AddAxis(ptID, 300, 0.0, 30.0);
+     
+     if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
+     else outmf->AddAxis(centID,161,-0.5,160.5);
+   
+     
+     //get phase space of the decay from mothers
+     AliRsnMiniOutput* outps=task->CreateOutput(Form("kstarPM_phaseSpace%s", suffix),"HIST","TRUE");
+     outps->SetDaughter(0, AliRsnDaughter::kKaon0);
+     outps->SetDaughter(1, AliRsnDaughter::kPion);
+     outps->SetCutID(0,iCutK0s);
+     outps->SetCutID(1,iCutPi);
+     outps->SetMotherPDG(-323);
+     outps->SetMotherMass(0.89166);
+     outps->SetPairCuts(PairCutsMix);
+     outps->AddAxis(fdpt,100,0.,10.);
+     outps->AddAxis(sdpt,100,0.,10.);
+     outps->AddAxis(ptID,200,0.,20.);
+     // upto here....
    }
    
    return kTRUE;
