@@ -94,10 +94,10 @@ Bool_t AliESDkinkCuts::IsGoodPionKink(const AliESDkink* kink, const AliESDEvent*
 	  TVector3 daughter3MomentumAtKinkVtx(kink->GetDaughterP());
 		TVector3 transferedMom = mother3MomentumAtKinkVtx-daughter3MomentumAtKinkVtx;
 		Float_t energyDaughterMu = TMath::Sqrt(daughter3MomentumAtKinkVtx.Mag()*daughter3MomentumAtKinkVtx.Mag()+fMuonMass*fMuonMass);
-    Float_t invariantMassKmu = (energyDaughterMu+transferedMom.Mag())*(energyDaughterMu+transferedMom.Mag())-mother3MomentumAtKinkVtx.Mag()*mother3MomentumAtKinkVtx.Mag();
+    //Float_t invariantMassKmu = (energyDaughterMu+transferedMom.Mag())*(energyDaughterMu+transferedMom.Mag())-mother3MomentumAtKinkVtx.Mag()*mother3MomentumAtKinkVtx.Mag();
     //if ( /*(mother3MomentumAtKinkVtx.Mag() < fMinKaonMomentum) &&*/ ( (invariantMassKmu < 0) || (TMath::Sqrt(invariantMassKmu) > fInvMassKmuMaxAngle) ) ) return kFALSE; // Kmu cut	
 		//if(!IsKink(esd, kinkMother->GetKinkIndex(0), kinkMother3Momentum)) return kFALSE;
-		Double_t maxDecAngKmu = fMaxDecayAngleCurveKmu->Eval(mother3MomentumAtKinkVtx.Mag(), 0., 0., 0.);
+		//Double_t maxDecAngKmu = fMaxDecayAngleCurveKmu->Eval(mother3MomentumAtKinkVtx.Mag(), 0., 0., 0.);
 		Double_t maxDecAngpimu = fMaxDecayAngleCurvePimu->Eval(mother3MomentumAtKinkVtx.Mag(), 0., 0., 0.);
 		if ( kinkAngle > maxDecAngpimu ) return kFALSE; // Possibly kaon, reject above theoretical pion kink curve
 		//if( (mother3MomentumAtKinkVtx.Mag() > fMinKaonMomentum) && ( kinkAngle > maxDecAngKmu) ) return kFALSE; // Reject above theoretical kaon kink curve
