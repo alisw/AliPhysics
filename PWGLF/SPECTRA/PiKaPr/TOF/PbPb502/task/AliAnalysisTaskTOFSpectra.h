@@ -16,6 +16,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TH3I;
+class TH3S;
 class TList;
 class TObjArray;
 class AliESDEvent;
