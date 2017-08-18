@@ -2517,7 +2517,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
     // VZERO event plane
     TVector2 qvec;
-    TVector2 *qVecQnFramework;
+    // TVector2 *qVecQnFramework;
     Double_t qx = 0, qy = 0;
 
     ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
