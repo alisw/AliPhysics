@@ -64,6 +64,7 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TH3I.h"
+#include "TH3S.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TObjArray.h"

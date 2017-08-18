@@ -1,6 +1,16 @@
 #ifndef UtilFiles_h
 #define UtilFiles_h
 
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Utilities for file management et similia                              //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TString.h"
 
 class TFile;
