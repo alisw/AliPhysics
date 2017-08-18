@@ -66,7 +66,7 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
     AliPHOSCalibData*      fPHOSCalibData;            //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
     AliAnalysisUtils*      fUtils;                    //utils for zvtxcut
     AliVCluster*           fCluster;                  // Cluster of current event TODO remove ! maybe it helps to fill Ttree correctly
-    AliVCaloCells*         fClusterCells;             // Cluster cells  //TODO change to AliESDCaloCells
+    AliVCaloCells*         fClusterCells;             // Cluster cells
     AliCaloClusterContent* fClusterCellsInformation;  // Saves information about clusters and their belonging cells
 
     TRefArray*         fcaloClusters;         // Cluster array
