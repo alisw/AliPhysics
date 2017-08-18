@@ -97,10 +97,18 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fTPCvsAll{nullptr},
   fMultvsV0M{nullptr},
   fTPCvsTrkl{nullptr},
-  fVZEROvsTPCout{nullptr}
+  fVZEROvsTPCout{nullptr},
+  fFB32trackCuts{nullptr},
+  fTPConlyCuts{nullptr}
 {
   SetName("AliEventCuts");
   SetOwner(true);
+}
+
+AliEventCuts::~AliEventCuts() { 
+  delete fMultiplicityV0McorrCut; 
+  delete fFB32trackCuts;
+  delete fFB32trackCuts;
 }
 
 bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
@@ -402,14 +410,15 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
     unsigned long evid = ((unsigned long)(ev->GetBunchCrossNumber()) << 32) + ev->GetTimeStamp();
     fNewEvent = (tmp_cont->fEventId != evid);
     tmp_cont->fEventId = evid;
-    //if (fNewEvent) ::Info("AliEventCuts::AcceptEvent","New event. %Lu", evid);
-    //else ::Info("AliEventCuts::AcceptEvent","Old event. %Lu", evid);
 
     if (!fNewEvent) {
       fContainer = *tmp_cont;
       return;
     }
-  } else tmp_cont = new AliEventCutsContainer;
+  } else {
+    tmp_cont = new AliEventCutsContainer;
+    ev->AddObject(tmp_cont);
+  }
 
   bool isAOD = false;
   if (dynamic_cast<AliAODEvent*>(ev))
@@ -417,8 +426,8 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
   else if (!dynamic_cast<AliESDEvent*>(ev))
     AliFatal("I don't find the AOD event nor the ESD one, aborting.");
 
-  std::unique_ptr<AliESDtrackCuts> FB32cuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()};
-  std::unique_ptr<AliESDtrackCuts> TPConlyCuts{AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()};
+  if (!fFB32trackCuts) fFB32trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  if (!fTPConlyCuts) fTPConlyCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
   const int nTracks = ev->GetNumberOfTracks();
   tmp_cont->fMultESD = (isAOD) ? ((AliAODHeader*)ev->GetHeader())->GetNumberOfESDTracks() : dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTracks();
@@ -448,7 +457,7 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
 
       if (esdTrack->GetStatus() & AliESDtrack::kTPCout) tmp_cont->fMultTrkTPCout++;
 
-      if (FB32cuts->AcceptTrack(esdTrack)) {
+      if (fFB32trackCuts->AcceptTrack(esdTrack)) {
         tmp_cont->fMultTrkFB32++;
         if (TMath::Abs(esdTrack->GetTOFsignalDz()) <= 10 && esdTrack->GetTOFsignal() >= 12000 && esdTrack->GetTOFsignal() <= 25000)
           tmp_cont->fMultTrkFB32TOF++;
@@ -460,7 +469,7 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
       /// TPC only tracks, with the same cuts of the filter bit 128
       AliESDtrack tpcParam;
       if (!esdTrack->FillTPCOnlyTrack(tpcParam)) continue;
-      if (!TPConlyCuts->AcceptTrack(&tpcParam)) continue;
+      if (!fTPConlyCuts->AcceptTrack(&tpcParam)) continue;
       if (tpcParam.Pt() > 0.) {
         // only constrain tracks above threshold
         AliExternalTrackParam exParam;
@@ -478,7 +487,6 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
     for(int ich=0; ich < 64; ich++)
       tmp_cont->fMultVZERO += vzero->GetMultiplicity(ich);
   }
-  ev->AddObject(tmp_cont);
   fContainer = *tmp_cont;
 }
 
