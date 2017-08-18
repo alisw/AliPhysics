@@ -168,6 +168,8 @@ private:
   TH2F              *fHist_ZDCA_AvgQx_VsCR; //!
   TH2F              *fHist_ZDCA_AvgQy_VsCR; //!
 
+  TH2F           *fHist_ZDC_dTermXXYY_VsCR; //!
+  TH2F           *fHist_ZDC_dTermXYXY_VsCR; //!
 
 
   TH1F               *fHist_Vx_ArrayFinder; //!
@@ -293,6 +295,13 @@ private:
 
   TProfile           *fHist_Reso2EP_TPC_Norm; //!
   TProfile           *fHist_Reso2EP_TPC_Cent; //!
+
+  TH1F            *fHist_NormalCentralityBins;  //!
+
+  TProfile2D      *fHist_XX_vs_QnC_2DwoCorr_PosMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnA_2DwoCorr_PosMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnC_2DwoCorr_NegMag[4][6];    //!
+  TProfile2D      *fHist_XX_vs_QnA_2DwoCorr_NegMag[4][6];    //!
 
 
   //TH2F           *fHist_ZDCAC_AvgCosSin_vsCent;
