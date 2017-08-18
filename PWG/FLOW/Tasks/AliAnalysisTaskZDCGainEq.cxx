@@ -176,6 +176,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fHist_Corr3p_ZDN_Cent_NN(NULL),
   fHist_Reso2EP_TPC_Norm(NULL),
   fHist_Reso2EP_TPC_Cent(NULL),
+  fHist_ZDC_dTermXXYY_VsCR(NULL),
+  fHist_ZDC_dTermXYXY_VsCR(NULL),
+  fHist_NormalCentralityBins(NULL),
   fDataSet("2010"),
   fAnalysisSet("DoGainEq"),
   sCentEstimator("V0")
@@ -266,6 +269,15 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   for(int i=0;i<2;i++){
     fHist_XXYY_vs_Cent_woCorr[i] = NULL;
     fHist_XXYY_vs_Cent_wiCorr[i] = NULL;
+  }
+
+  for(int i=0;i<4;i++){
+   for(int j=0;j<6;j++){
+    fHist_XX_vs_QnC_2DwoCorr_PosMag[i][j] = NULL;
+    fHist_XX_vs_QnA_2DwoCorr_PosMag[i][j] = NULL;
+    fHist_XX_vs_QnC_2DwoCorr_NegMag[i][j] = NULL;
+    fHist_XX_vs_QnA_2DwoCorr_NegMag[i][j] = NULL;
+   }
   }
 
   DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
@@ -378,6 +390,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fHist_Corr3p_ZDN_Cent_NN(NULL),
   fHist_Reso2EP_TPC_Norm(NULL),
   fHist_Reso2EP_TPC_Cent(NULL),
+  fHist_ZDC_dTermXXYY_VsCR(NULL),
+  fHist_ZDC_dTermXYXY_VsCR(NULL),
+  fHist_NormalCentralityBins(NULL),
   fDataSet("2010"),
   fAnalysisSet("DoGainEq"),
   sCentEstimator("V0")
@@ -468,6 +483,14 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   for(int i=0;i<2;i++){
     fHist_XXYY_vs_Cent_woCorr[i] = NULL;
     fHist_XXYY_vs_Cent_wiCorr[i] = NULL;
+  }
+  for(int i=0;i<4;i++){
+   for(int j=0;j<6;j++){
+    fHist_XX_vs_QnC_2DwoCorr_PosMag[i][j] = NULL;
+    fHist_XX_vs_QnA_2DwoCorr_PosMag[i][j] = NULL;
+    fHist_XX_vs_QnC_2DwoCorr_NegMag[i][j] = NULL;
+    fHist_XX_vs_QnA_2DwoCorr_NegMag[i][j] = NULL;
+   }
   }
 
   //fDataSet="2010";
@@ -802,12 +825,13 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    fListHistos->Add(fHist_PsiSumAC_wiCorr);
 
 
-  fHist_PsiSumAC_ZeroQn  =  new TH1F("fHist_PsiSumAC_ZeroQn","", 200, 0,2.*TMath::Pi());
-  fListHistos->Add(fHist_PsiSumAC_ZeroQn);
-  fHist_PsiZDCA_ZeroQn   =  new TH1F("fHist_PsiZDCA_ZeroQn"," ", 200, 0,2.*TMath::Pi());
-  fListHistos->Add(fHist_PsiZDCA_ZeroQn);
-  fHist_PsiZDCC_ZeroQn   =  new TH1F("fHist_PsiZDCC_ZeroQn"," ", 200, 0,2.*TMath::Pi());
-  fListHistos->Add(fHist_PsiZDCC_ZeroQn);
+   fHist_PsiSumAC_ZeroQn  =  new TH1F("fHist_PsiSumAC_ZeroQn","", 200, 0,2.*TMath::Pi());
+   fListHistos->Add(fHist_PsiSumAC_ZeroQn);
+   fHist_PsiZDCA_ZeroQn   =  new TH1F("fHist_PsiZDCA_ZeroQn"," ", 200, 0,2.*TMath::Pi());
+   fListHistos->Add(fHist_PsiZDCA_ZeroQn);
+   fHist_PsiZDCC_ZeroQn   =  new TH1F("fHist_PsiZDCC_ZeroQn"," ", 200, 0,2.*TMath::Pi());
+   fListHistos->Add(fHist_PsiZDCC_ZeroQn);
+
 
    TString     sNameQn[4] = {"Xa","Xc","Ya","Yc"};
    TString    sNameQn2[4] = {"XaXc","YaYc","XcYa","YcXa"};
@@ -815,6 +839,32 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    Int_t     nBinNumVs[5] = {100,  100,       50,       50, 400}; // number of bins for "Cent", "Mult", "Vx","Vy","Vz"
    Double_t  lBinLowVs[5] = {  0,    0, VxCut[0], VyCut[0], -10}; // bin low  value: "Cent", "Mult", "Vx", "Vy", "Vz"
    Double_t lBinHighVs[5] = {100, 4000, VxCut[1], VyCut[1],  10}; // bin high value: "Cent", "Mult", "Vx", "Vy", "Vz"
+   Double_t fNormCent[11] = {0,5,10,20,30,40,50,60,70,80,90};
+
+   fHist_NormalCentralityBins = new TH1F("fHist_NormalCentralityBins","",10,fNormCent);
+   fListHistos->Add(fHist_NormalCentralityBins);
+
+   //here:
+   for(int i=0;i<6;i++) {
+     for(int j=0;j<4;j++) {
+       sprintf(name,"fHist_%s_vs_Cx_Cy_woCorr_PosMag_Cent%d",static_cast<const char*>(sNameQn2[j]),i);
+       fHist_XX_vs_QnC_2DwoCorr_PosMag[j][i] = new TProfile2D(name,"",100, -1.0, 1.0, 100, -1.0, 1.0, "");
+       fListHistos->Add(fHist_XX_vs_QnC_2DwoCorr_PosMag[j][i]);
+
+       sprintf(name,"fHist_%s_vs_Ax_Ay_woCorr_PosMag_Cent%d",static_cast<const char*>(sNameQn2[j]),i);
+       fHist_XX_vs_QnA_2DwoCorr_PosMag[j][i] = new TProfile2D(name,"",100, -1.0, 1.0, 100, -1.0, 1.0, "");
+       fListHistos->Add(fHist_XX_vs_QnA_2DwoCorr_PosMag[j][i]);
+
+       sprintf(name,"fHist_%s_vs_Cx_Cy_woCorr_NegMag_Cent%d",static_cast<const char*>(sNameQn2[j]),i);
+       fHist_XX_vs_QnC_2DwoCorr_NegMag[j][i] = new TProfile2D(name,"",100, -1.0, 1.0, 100, -1.0, 1.0, "");
+       fListHistos->Add(fHist_XX_vs_QnC_2DwoCorr_NegMag[j][i]);
+
+       sprintf(name,"fHist_%s_vs_Ax_Ay_woCorr_NegMag_Cent%d",static_cast<const char*>(sNameQn2[j]),i);
+       fHist_XX_vs_QnA_2DwoCorr_NegMag[j][i] = new TProfile2D(name,"",100, -1.0, 1.0, 100, -1.0, 1.0, "");
+       fListHistos->Add(fHist_XX_vs_QnA_2DwoCorr_NegMag[j][i]);
+     }
+   }
+
 
 
    for(int i=0;i<4;i++) {
@@ -1109,6 +1159,9 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
      fHist_ZDCC_AvgQy_VsCR = (TH2F *) fListZDCQxy->FindObject(Form("fHist_ZDCC_AvgQy_VsCR"));
      fHist_ZDCA_AvgQx_VsCR = (TH2F *) fListZDCQxy->FindObject(Form("fHist_ZDCA_AvgQx_VsCR"));
      fHist_ZDCA_AvgQy_VsCR = (TH2F *) fListZDCQxy->FindObject(Form("fHist_ZDCA_AvgQy_VsCR"));
+
+     fHist_ZDC_dTermXXYY_VsCR = (TH2F *) fListZDCQxy->FindObject(Form("fHist_ZDC_dTermXXYY_VsCR"));
+     fHist_ZDC_dTermXYXY_VsCR = (TH2F *) fListZDCQxy->FindObject(Form("fHist_ZDC_dTermXYXY_VsCR"));
    }
    else{
      printf("\n\n ******** Running without Centrality weight, No Shift Correction !!******** \n\n");
@@ -1360,7 +1413,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   }
  //-----------------------------------------
 
-
+ //Get MagneticField:
+ Double_t fMagField = aod->GetMagneticField();
 
 
 
@@ -2051,7 +2105,9 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   fHist_PsiSumAC_ZeroQn->Fill(PsiSumAC);
 
 
-  if(Qvect_ModC < 1.e-6 || Qvect_ModA < 1.e-6) return;
+  if(Qvect_ModC < 1.e-6 || Qvect_ModA < 1.e-6)   return;
+  //std::cout<<"Cx = "<<xyZNC[0]<<"\tCy = "<<xyZNC[1]<<"\tAx = "<<xyZNA[0]<<"\tAy = "<<xyZNA[1]<<std::endl;
+
 
   fHist_Event_count->Fill(stepCount);
   stepCount++;
@@ -2088,6 +2144,20 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
     Double_t  FillValueQxTrig[4] = {TMath::Cos(Psi1A),TMath::Cos(Psi1C),TMath::Sin(Psi1A),TMath::Sin(Psi1C)};
     Double_t  FillValueXXTrig[4] = {TMath::Cos(Psi1A)*TMath::Cos(Psi1C),TMath::Sin(Psi1A)*TMath::Sin(Psi1C),TMath::Cos(Psi1C)*TMath::Sin(Psi1A),TMath::Cos(Psi1A)*TMath::Sin(Psi1C)};
+
+    Int_t centIndex = fHist_NormalCentralityBins->FindBin(EvtCent) - 1;
+    if(centIndex<6) {
+      for(int i=0;i<4;i++){
+	if(fMagField>0){
+	 fHist_XX_vs_QnC_2DwoCorr_PosMag[i][centIndex]->Fill(xyZNC[0],xyZNC[1],FillValueXX[i]);
+	 fHist_XX_vs_QnA_2DwoCorr_PosMag[i][centIndex]->Fill(xyZNA[0],xyZNA[1],FillValueXX[i]);
+	}
+	else if(fMagField<0){
+	 fHist_XX_vs_QnC_2DwoCorr_NegMag[i][centIndex]->Fill(xyZNC[0],xyZNC[1],FillValueXX[i]);
+	 fHist_XX_vs_QnA_2DwoCorr_NegMag[i][centIndex]->Fill(xyZNA[0],xyZNA[1],FillValueXX[i]);
+	}
+      }
+    }
 
     for(int i=0;i<4;i++){
 
@@ -2196,7 +2266,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
     dTermXXYY = Qvect_ModSumAC*TMath::Cos(PsiSumAC);
     dTermXYXY = Qvect_ModSumAC*TMath::Sin(PsiSumAC);
     fHist_ZDC_dTermXXYY_VsRun->Fill(EvtCent,runindex,dTermXXYY);
-    fHist_ZDC_dTermXYXY_VsRun->Fill (EvtCent,runindex,dTermXYXY);
+    fHist_ZDC_dTermXYXY_VsRun->Fill(EvtCent,runindex,dTermXYXY);
    }
    else if(bUseTrigonQn){//reconstruct the new ZDC-Qvect with Qn:[-1,1] 
     xyZNC[0] =  TMath::Cos(Psi1C);
@@ -2219,13 +2289,20 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   }
 
   //do recentering after shift:
+  Double_t CorrC[2] = {0.,};
+  Double_t CorrA[2] = {0.,};
 
  if(bApplyShiftCorr) {
-    xyZNC[0] -= fHist_ZDCC_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
-    xyZNC[1] -= fHist_ZDCC_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
-    xyZNA[0] -= fHist_ZDCA_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
-    xyZNA[1] -= fHist_ZDCA_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
-    //dTermXXYY -= 0; //To be corrected when I have filled <dTermXXYY> over all events
+   if(!bShiftCombinedEP) {
+     xyZNC[0] -= fHist_ZDCC_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
+     xyZNC[1] -= fHist_ZDCC_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
+     xyZNA[0] -= fHist_ZDCA_AvgQx_VsCR->GetBinContent(iCentBin,runindex+1);
+     xyZNA[1] -= fHist_ZDCA_AvgQy_VsCR->GetBinContent(iCentBin,runindex+1);
+   }
+   if(bShiftCombinedEP){
+     dTermXXYY -= fHist_ZDC_dTermXXYY_VsCR->GetBinContent(iCentBin,runindex+1);
+     dTermXYXY -= fHist_ZDC_dTermXYXY_VsCR->GetBinContent(iCentBin,runindex+1);
+   }
  }
 
 
@@ -2575,7 +2652,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   //if(fievent%20==0) {
   //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
-  //std::cout<<"C0 = "<<ShiftCosC[0]<<"\t C3 = "<<ShiftCosC[3]<<"\t A0 = "<<ShiftCosA[0]<<"\t A3 = "<<ShiftCosA[3]<<std::endl;
+  //std::cout<<" <XXYY> = "<<CorrC[0]<<"\t <XYXY> = "<<CorrC[1]<<"\t MagField = "<<fMagField<<std::endl;
   //}
 
 
