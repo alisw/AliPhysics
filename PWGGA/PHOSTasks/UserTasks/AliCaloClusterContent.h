@@ -4,9 +4,9 @@
 #include <vector>
 #include <Rtypes.h>
 #include "TObject.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
-#include "AliPHOSGeometry.h"
+class AliVCluster;
+class AliVCaloCells;
+class AliPHOSGeometry;
 
 
 
@@ -23,8 +23,6 @@
 
     void     Reset();                                            // Reset the object (clear all variables)
     void     SetClusterAndCells(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom);        // Define cluster and cells
-    void     SetEnergy(Float_t a) {fEnergy = a;}
-
 
 	 Char_t GetType()              {return fType;}
 

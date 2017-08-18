@@ -50,7 +50,8 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
     void           SetHitmapFillingCellByCell(Bool_t b) {fFillHitmapCellByCell = b;}
 
 
-  protected:
+//  protected:
+  private:
     TList*         fOutput;                 // Output List
     TTree*         fClusterTree;            // Tree to save the AliVClusters
 
@@ -80,7 +81,6 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
 
 
 
-  private:
     AliAnalysisTaskPHOSCluster(const AliAnalysisTaskPHOSCluster&);            //! Not implemented
     AliAnalysisTaskPHOSCluster& operator=(const AliAnalysisTaskPHOSCluster&); //! Not implemented
     ClassDef(AliAnalysisTaskPHOSCluster,1);
