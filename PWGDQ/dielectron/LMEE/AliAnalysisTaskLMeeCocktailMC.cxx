@@ -525,7 +525,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
 
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
     if (yPre == 0.) continue;
-    Double_t y = 0.5*TMath::Log(yPre); 
+    //Double_t y = 0.5*TMath::Log(yPre); 
     //if (fabs(y) > fMaxY) continue; // this cut done later in acceptance cuts
     
     // We have an electron with a mother. Check mother that mother is primary and number of daughters
