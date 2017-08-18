@@ -486,13 +486,17 @@ public:
   ///Bins numbers
   enum {kEtaBins = 36, kPhiBins = 18, kEvtMultBins = 12, kChannelBins = 3276, kTimeBins = 10000};
 
-  //Standard track cuts
+  //Standard track and event cuts
   AliEventCuts fEventCut;            //!<! basic cut variables for events
   AliESDtrackCuts* fESDtrackCuts;    /// basic cut variables
   AliESDtrackCuts* fESDtrackCutsPrm; /// basic cut variables for primaries
 
 
 private:
+
+  /////////////////////
+  // Utility objects //
+  /////////////////////
   AliESDEvent* fESD;                 //!<! ESD object
   AliMCEvent* fMCEvt;                //!<! MC event
   AliStack* fMCStack;                //!<! Stack
@@ -504,18 +508,25 @@ private:
   AliTOFcalib *fTOFcalib;            //!<! TOF calibration object
   AliTOFT0maker *fTOFT0maker;        //!<! TOF T0 maker object
 
+  //PID utilities
+  AliPIDResponse* fPIDResponse;     //!<! PID response object
+  AliTOFPIDResponse fTOFPIDResponse;//!<! TOF PID response object
+  AliESDpid *fESDpid;               //!<! ESD PID
+
   //TOF specific parameters
   const Double_t fTimeResolution;    ///  TOF time resolutions expected
 
-  //Output containers
-  //TList
+  ///////////////////////
+  // Output containers //
+  ///////////////////////
   TList* fListHist;         //!<! TList for histograms
-  //TTree
   TTree* fTreeTrack;        //!<! TTree to store information of the single track
   TClonesArray *ArrayAnTrk; //!<! Array containing all tracks from one event in the format of AliAnTOFtrack
   TTree* fTreeTrackMC;      //!<! TTree to store MC information of the single track
 
-  //Configuration Flags
+  /////////////////////////
+  // Configuration Flags //
+  /////////////////////////
   Bool_t fHImode;               ///<  Flag for the Heavy Ion Mode
   Bool_t fMCmode;               ///<  Flag for the Monte Carlo Mode
   Bool_t fTreemode;             ///<  Flag for the Tree analysis Mode
@@ -531,67 +542,44 @@ private:
   const Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
   const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
   const Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
+  const Float_t fDCAXYshift;       ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
   UInt_t fSelectBit;            ///<  Mask for Trigger selection
 
-  //PID utilities
-  AliPIDResponse* fPIDResponse;     //!<! PID response object
-  AliTOFPIDResponse fTOFPIDResponse;//!<! TOF PID response object
-  AliESDpid *fESDpid;               //!<! ESD PID
+  /////////////////////
+  // Event Variables //
+  /////////////////////
 
-  //General Variables
-
-  //Masks to store the event and track information in the Tree
-  UChar_t fEvtMask;      ///< Event information mask
-  UShort_t fTrkMask;     ///< Track information mask
-  UChar_t fTPCPIDMask;   ///< TPC PID information mask
-  UShort_t fTrkCutMask;  ///< Mask with the information for the cut variation
-  UChar_t fMCTrkMask;    ///< MC information mask
-  #ifdef TESTFLAG
-  static_assert ( kLimitfEvtMask <= 8*sizeof(fEvtMask) , "Wrong dimension of fEvtMask");
-  static_assert ( kLimitfTrkMask <= 8*sizeof(fTrkMask) , "Wrong dimension of fTrkMask");
-  static_assert ( kLimitfTPCPIDMask <= 8*sizeof(fTPCPIDMask) , "Wrong dimension of fTPCPIDMask");
-  static_assert ( kLimitfTrkCutMask <= 8*sizeof(fTrkCutMask) , "Wrong dimension of fTrkCutMask");
-  static_assert ( kLimitfMCTrkMask <= 8*sizeof(fMCTrkMask) , "Wrong dimension of fMCTrkMask");
-  #endif
-
-  //Vertex Info
-  Double_t fPrimVertex[3];  ///<  X,Y,Z position of the primary vertex
-  Int_t fNContrPrimVertex;  ///<  Contributors to the primary vertex
-  Short_t fVertStatus;      ///<  vertex status (0) vertex does not exist, (1) not enough Contributors, (2) vertex exists but outside the fiducial volume, (3) Good vertex
-
-  //MC Info
-  Double_t fRapidityMC;///<  Rapidity of the track with MC truth
-  Double_t fPtMC;      ///<  Transverse momentum of the track with MC truth
-  Double_t fPMC;       ///<  Momentum of the track with MC truth
-  Bool_t fSignMC;      ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
-  Double_t fPhiMC;     ///<  Phi information of the track with MC truth
-  Double_t fEtaMC;     ///<  eta information of the track with MC truth
-  Short_t fProdInfo;   ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
-  Int_t fPdgcode;      ///<  PID identity of the track with MC truth -> Real PDG code
-  Short_t fPdgIndex;   ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
-  Int_t fNMCTracks;    ///<  Number of MC tracks in the event
-  Int_t fMCPrimaries;  ///<  Number of MC primary tracks in the event
-  Int_t fMCTOFMatch;   ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
-
-  //Multiplicity
-  Float_t fEvtMult;          ///<  Event Multiplicity
-  Short_t fEvtMultBin;       ///<  Event Multiplicity bin to compact the information in the Tree
-  TArrayF fMultiplicityBin;  ///<  Array of the Event Multiplicity bins
-
-  //Cut values
+  //Event Cut values
   const Double_t fVtxZCut;     ///<  Max Z displacement of the vertex position
-  const Double_t fTOFmax;      ///<  Max TOF time mesured for tracks
-  const Double_t fTOFmin;      ///<  Min TOF time mesured for tracks
-  const Double_t fLengthmin;   ///<  Min length for tracks
-  const Double_t fRapidityCut; ///<  Max rapidity for tracks
 
-  //Run variables
+  //Event variables
   Int_t fRunNumber;        ///<  Run number under analysis
 
   //Event flags
   Bool_t fEvtPhysSelected;   ///<  Event is selected by the Physics Selection
   Bool_t fEvtSelected;       ///<  Event is selected by the Event Selection
   Bool_t fEvtMCSampSelected; ///<  Event is selected by the MC Sample Selection
+
+  //Vertex Info
+  Double_t fPrimVertex[3];  ///<  X,Y,Z position of the primary vertex
+  Int_t fNContrPrimVertex;  ///<  Contributors to the primary vertex
+  Short_t fVertStatus;      ///<  vertex status (0) vertex does not exist, (1) not enough Contributors, (2) vertex exists but outside the fiducial volume, (3) Good vertex
+
+  //Multiplicity
+  Float_t fEvtMult;          ///<  Event Multiplicity
+  Short_t fEvtMultBin;       ///<  Event Multiplicity bin to compact the information in the Tree
+  TArrayF fMultiplicityBin;  ///<  Array of the Event Multiplicity bins
+
+  /////////////////////
+  // Track Variables //
+  /////////////////////
+
+  //Track Cut values
+  const Double_t fTOFmax;      ///<  Max TOF time mesured for tracks
+  const Double_t fTOFmin;      ///<  Min TOF time mesured for tracks
+  const Double_t fLengthmin;   ///<  Min length for tracks
+  const Double_t fRapidityCut; ///<  Max rapidity for tracks
+  const Double_t fEtaRange;    ///<  Max pseudorapidity for tracks coincides with the range in eta of the histograms
 
   //Track flags
   ///
@@ -608,6 +596,8 @@ private:
   Bool_t fITSTPCMatch;   ///<  Track is matched to the TPC
 
   //Track values
+  Int_t fBinPtIndex;               ///<  Index of the Pt bin for the track
+
   ///
   ///Method to set the values of the track
   void SetTrackValues(const AliESDtrack *track, const AliESDVertex* vertex);
@@ -629,7 +619,6 @@ private:
   Double_t fP;                     ///<  Momentum of the track
   Double_t fPTPC;                  ///<  Momentum of the track in the TPC
   Double_t fPt;                    ///<  Transverse momentum of the track
-  const Float_t fDCAXYshift;       ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
   Float_t fDCAXY;                  ///<  DCAxy of the track
   Float_t fDCAZ;                   ///<  DCAz of the track
 
@@ -648,7 +637,7 @@ private:
   Float_t fTOFSigma[kExpSpecies];             ///<  Measured Number of Sigmas of the TOF signal in the hypothesis (0) Electron, (1) Muon, (2) Pion, (3) Kaon, (4) Proton
   Double_t fTOFPIDProbability[kExpSpecies];   ///<  TOF PID Probability of the track
   Int_t fNTOFClusters;                        ///<  Number of TOF clusters matched to track
-  Int_t *fTOFClusters;                        //!   TOF clusters matched to the track
+  Int_t *fTOFClusters;                        //!<! TOF clusters matched to the track
 
   //TPC values
   Float_t fTPCSignal;                         ///<  TPC signal
@@ -658,14 +647,45 @@ private:
   Double_t fYout;                             ///<  Y position of the external Track
   Double_t fZout;                             ///<  Z position of the external Track
   Double_t fTPCShift[3][kPtBins];             ///<  Shift of the TPC sigmas in order to be centered to zero
-  //Combined values                           ///<
+
+  //Combined PID values                       ///<
   Float_t fCombinedSigma[3];                  ///<  Measured Sigma of the combined TOF and TPC signal in the three hypothesis
 
+  //MC info
+  Double_t fRapidityMC;///<  Rapidity of the track with MC truth
+  Double_t fPtMC;      ///<  Transverse momentum of the track with MC truth
+  Double_t fPMC;       ///<  Momentum of the track with MC truth
+  Bool_t fSignMC;      ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
+  Double_t fPhiMC;     ///<  Phi information of the track with MC truth
+  Double_t fEtaMC;     ///<  eta information of the track with MC truth
+  Short_t fProdInfo;   ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
+  Int_t fPdgcode;      ///<  PID identity of the track with MC truth -> Real PDG code
+  Short_t fPdgIndex;   ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
+  Int_t fNMCTracks;    ///<  Number of MC tracks in the event
+  Int_t fMCPrimaries;  ///<  Number of MC primary tracks in the event
+  Int_t fMCTOFMatch;   ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
 
-  //Histograms
+
+
+  //Masks to store the event and track information in the Tree
+  UChar_t fEvtMask;      ///< Event information mask
+  UShort_t fTrkMask;     ///< Track information mask
+  UChar_t fTPCPIDMask;   ///< TPC PID information mask
+  UShort_t fTrkCutMask;  ///< Mask with the information for the cut variation
+  UChar_t fMCTrkMask;    ///< MC information mask
+  #ifdef TESTFLAG
+  static_assert ( kLimitfEvtMask <= 8*sizeof(fEvtMask) , "Wrong dimension of fEvtMask");
+  static_assert ( kLimitfTrkMask <= 8*sizeof(fTrkMask) , "Wrong dimension of fTrkMask");
+  static_assert ( kLimitfTPCPIDMask <= 8*sizeof(fTPCPIDMask) , "Wrong dimension of fTPCPIDMask");
+  static_assert ( kLimitfTrkCutMask <= 8*sizeof(fTrkCutMask) , "Wrong dimension of fTrkCutMask");
+  static_assert ( kLimitfMCTrkMask <= 8*sizeof(fMCTrkMask) , "Wrong dimension of fMCTrkMask");
+  #endif
+
+  ////////////////
+  // Histograms //
+  ////////////////
+
   //Bin and range definition
-  Int_t fBinPtIndex;                       ///<  Index of the Pt bin for the track
-  const Double_t fEtaRange;                ///<  Range in eta of the histograms
   //157248 number of Channels
   //48 * 2 number of Channels per strip
   //1638 number of full strips
@@ -734,6 +754,8 @@ private:
   //->TOF information
   TH1F* hTOFResidualX;                          ///<  Histogram with the Impact Residual X
   TH1F* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
+  TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
+  TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH1F* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
   TH1F* hT0;                                    ///<  Histogram with the T0 used for each track
   TH1F* hT0Resolution;                          ///<  Histogram with the resolution on the T0
@@ -743,8 +765,6 @@ private:
   TH1F* hTimeOfFlightResNoMismatch;             ///<  Histogram to compute the Time Of Flight resolution for PID consistent with TPC for Pi K P
   TH2F* hTimeOfFlightResFine;                   ///<  Histogram to compute the Time Of Flight resolution as a function of the matched tracks to TOF
   TH1F* hTimeOfFlightResFinePerEvent;           ///<  Histogram to compute the Time Of Flight resolution per event, this particular one should not be added to the output list as it yields no information but it is rather auxiliary to the computation of the TOF resolution as a function of the TOF tracks
-  TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
-  TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
   TProfile* hBetaExpected[kExpSpecies];         ///<  TProfile with the track beta vs the track momentum obtained with the exoected time
   TProfile* hBetaExpectedTOFPID[kExpSpecies];   ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
@@ -755,10 +775,12 @@ private:
   TH2I* hBetaNoMismatchCentral;                 ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchCentralEtaCut;           ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchCentralEtaCutOut;        ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
-  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
   TH2I* hChannelTime;                           ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
   TH1F* hTOFClusters;                           ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                    ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
+  //->TPC information
+  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins];///<  Histogram with the PID separation of the TPC and TOF signal
   #ifdef CHECKCOMPUTEDVALUES// Only if checks on computed values are required
   TH1F* hTOFExpectedComputed[kExpSpecies];      ///<  Histogram with the difference of the expected TOF calculated with the formula and extracated from the track
