@@ -84,33 +84,81 @@ ClassImp(AliAnalysisTaskTOFSpectra);
 //________________________________________________________________________
 AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts) :
 AliAnalysisTaskSE(taskname),
-
-fEvtMult(-999),
-fEvtMultBin(-1),
-fVertStatus(-1),
-fNContrPrimVertex(-999),
-
-fEvtMask(0),
-fTrkMask(0),
-fTPCPIDMask(0),
-fTrkCutMask(0),
-fMCTrkMask(0),
+//Standard track and event cuts
+fEventCut(0),
+fESDtrackCuts(0x0),
+fESDtrackCutsPrm(0x0),
+//Utility objects
+fESD(0x0),
+fMCEvt(0x0),
+fMCStack(0x0),
+fMultSel(0x0),
+//TOF specific objects
+fTOFcls(0x0),
+fTOFcalib(0x0),
+fTOFT0maker(0x0),
+//PID utilities
+fPIDResponse(0x0),
+fTOFPIDResponse(),
+fESDpid(0x0),
+fTimeResolution(60.),
+//Output containers
+fListHist(0x0),
+fTreeTrack(0x0),
+ArrayAnTrk(0x0),
+fTreeTrackMC(0x0),
+//Task configuration flags
+fHImode(hi),
+fMCmode(mc),
+fTreemode(tree),
+fChannelmode(chan),
+fCutmode(cuts),
+fSimpleCutmode(simplecuts),
+//Task setup parameters
+fUseAliEveCut(kTRUE),
+fBuilTPCTOF(kFALSE),
+fBuilDCAchi2(kFALSE),
+fUseTPCShift(kFALSE),
+fPerformance(kFALSE),
+fRecalibrateTOF(kFALSE),
+fCutOnMCImpact(kFALSE),
+fFineTOFReso(kFALSE),
+fFineEfficiency(kFALSE),
 fDCAXYshift(0),
-fDCAXY(-999),
-fDCAZ(-999),
+//Mask for physics selection
+fSelectBit(AliVEvent::kINT7),
+//Event Cut values
+fVtxZCut(10.),
+//Event variables
 fRunNumber(0),
+//Event flags
 fEvtPhysSelected(kFALSE),
 fEvtSelected(kFALSE),
 fEvtMCSampSelected(kFALSE),
+//Vertex Info
+fNContrPrimVertex(-999),
+fVertStatus(-1),
+//Multiplicity
+fEvtMult(-999),
+fEvtMultBin(-1),
+fMultiplicityBin(kEvtMultBins+1),
+//Track Cut values
+fTOFmax(80000),
+fTOFmin(10000),
+fLengthmin(350),
+fRapidityCut(0.5),
+fEtaRange(0.8),
+//Track flags
 fTOFout(kFALSE),
 fTRDout(kFALSE),
 fTime(kFALSE),
+fSign(kFALSE),
 fMismatch(kFALSE),
 fPassGoldenChi2(kFALSE),
 fPassDCAxy(kFALSE),
 fPassDCAz(kFALSE),
 fITSTPCMatch(kFALSE),
-fT0UsedMask(-999),
+//Track values
 fBinPtIndex(-999),
 fTPCClusters(0),
 fTPCFindClusters(0),
@@ -124,85 +172,69 @@ fGoldenChi2(-999),
 fLengthActiveZone(-999),
 fLength(-999),
 fLengthRatio(-999),
-fSign(kFALSE),
-fTOFTime(-999),
-fTOFMismatchTime(-999),
-fTOFchan(-999),
 fEta(-999),
 fPhi(-999),
-fPt(-999),
-fTOFSignalTot(-999),
 fP(-999),
 fPTPC(-999),
+fPt(-999),
+fDCAXY(-999),
+fDCAZ(-999),
+//TOF values
+fTOFTime(-999),
+fTOFMismatchTime(-999),
+fTOFSignalTot(-999),
 fTOFImpactDZ(-999),
 fTOFImpactDX(-999),
+fTOFchan(-999),
 fT0TrkTime(-999),
+fT0UsedMask(-999),
+fT0TrkSigma(-999),
 fNTOFClusters(-999),
 fTOFClusters(0x0),
+//TPC values
 fTPCSignal(-999),
 fPhiout(-999),
 fXout(-999),
 fYout(-999),
 fZout(-999),
-//MC information
-fNMCTracks(-999),
-fMCPrimaries(-999),
-fMCTOFMatch(-999),
-fT0TrkSigma(-999),
+
+
+
+
+
+
+
+
+
+//MC info
+fRapidityMC(-999),
 fPtMC(-999),
 fPMC(-999),
+fSignMC(kFALSE),
 fPhiMC(-999),
 fEtaMC(-999),
 fProdInfo(-999),
 fPdgcode(-999),
 fPdgIndex(-999),
-fRapidityMC(-999),
-fSignMC(kFALSE),
+fNMCTracks(-999),
+fMCPrimaries(-999),
+fMCTOFMatch(-999),
 
-fESD(0x0),
-fMCEvt(0x0),
-fMCStack(0x0),
-fEventCut(0),
-fESDtrackCuts(0x0),
-fESDtrackCutsPrm(0x0),
-fMultSel(0x0),
-fTOFcls(0x0),
-fTOFcalib(0x0),
-fTOFT0maker(0x0),
-fTimeResolution(60.),
-fListHist(0x0),
-fTreeTrack(0x0),
-ArrayAnTrk(0x0),
-fTreeTrackMC(0x0),
+//Storage masks
+fEvtMask(0),
+fTrkMask(0),
+fTPCPIDMask(0),
+fTrkCutMask(0),
+fMCTrkMask(0),
 
-fHImode(hi),
-fMCmode(mc),
-fTreemode(tree),
-fChannelmode(chan),
-fCutmode(cuts),
-fSimpleCutmode(simplecuts),
-
-//Task setup flags
-fUseAliEveCut(kTRUE),
-fBuilTPCTOF(kFALSE),
-fBuilDCAchi2(kFALSE),
-fUseTPCShift(kFALSE),
-fPerformance(kFALSE),
-fRecalibrateTOF(kFALSE),
-fCutOnMCImpact(kFALSE),
-fFineTOFReso(kFALSE),
-fFineEfficiency(kFALSE),
-
-//Mask for physics selection
-fSelectBit(AliVEvent::kINT7),
-
+//Bin and range definition
+fChannelFirst(0),
+fChannelLast(157248),
+//    -> Histograms <-
 tb(),//TBenchmark
 hPerformanceTime(0x0),
 hPerformanceCPUTime(0x0),
-
-fPIDResponse(0x0),
-fTOFPIDResponse(),
-fESDpid(0x0),
+//Event info
 hNEvt(0x0),
 hEvtMult(0x0),
 hEvtMultAftEvSel(0x0),
@@ -213,23 +245,14 @@ hEvtVtxZ(0x0),
 hEvtVtxZMCGen(0x0),
 hEvtVtxZMCPhysSel(0x0),
 hEvtVtxZMCReco(0x0),
+//Track Info
 hNTrk(0x0),
-hPadDist(0x0),
-hTOFDist(0x0),
-//Beta Performance Plots
-hBeta(0x0),
-hBetaNoMismatch(0x0),
-hBetaNoMismatchEtaCut(0x0),
-hBetaNoMismatchEtaCutOut(0x0),
-hBetaCentral(0x0),
-hBetaNoMismatchCentral(0x0),
-hBetaNoMismatchCentralEtaCut(0x0),
-hBetaNoMismatchCentralEtaCutOut(0x0),
-hTPCdEdx(0x0),
 hCutVariation(0x0),
 //TOF Geometrical information
 hTOFResidualX(0x0),
 hTOFResidualZ(0x0),
+hPadDist(0x0),
+hTOFDist(0x0),
 hTOFChannel(0x0),
 //TOF and T0 distributions for resolution
 hT0(0x0),
@@ -240,19 +263,21 @@ hTimeOfFlightGoodRes(0x0),
 hTimeOfFlightResNoMismatch(0x0),
 hTimeOfFlightResFine(0x0),
 hTimeOfFlightResFinePerEvent(0x0),
-
-fMultiplicityBin(kEvtMultBins+1),
-fEtaRange(0.8),
-fVtxZCut(10.),
-fTOFmax(80000),
-fTOFmin(10000),
-fLengthmin(350),
-fRapidityCut(0.5),
+//Beta Performance Plots
+hBeta(0x0),
+hBetaNoMismatch(0x0),
+hBetaNoMismatchEtaCut(0x0),
+hBetaNoMismatchEtaCutOut(0x0),
+hBetaCentral(0x0),
+hBetaNoMismatchCentral(0x0),
+hBetaNoMismatchCentralEtaCut(0x0),
+hBetaNoMismatchCentralEtaCutOut(0x0),
+//Channel and clusters in TOF
 hChannelTime(0x0),
 hTOFClusters(0x0),
 hTOFClustersDCApass(0x0),
-fChannelFirst(0),
-fChannelLast(157248)
+//TPC energy loss
+hTPCdEdx(0x0)
 {
 
   //
@@ -382,17 +407,33 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
     Int_t j = 0;
+    //Real Data
+    // bLimits.AddAt(0.00, j++);  //0%
+    // bLimits.AddAt(3.50, j++);  //5%
+    // bLimits.AddAt(4.94, j++);  //10%
+    // bLimits.AddAt(6.98, j++);  //20%
+    // bLimits.AddAt(8.55, j++);  //30%
+    // bLimits.AddAt(9.88, j++);  //40%
+    // bLimits.AddAt(11.04, j++); //50%
+    // bLimits.AddAt(12.09, j++); //60%
+    // bLimits.AddAt(13.05, j++); //70%
+    // bLimits.AddAt(13.97, j++); //80%
+    // bLimits.AddAt(14.96, j++); //90%
+    // bLimits.AddAt(20.00, j++); //100%
+    // bLimits.AddAt(1000.00, j); //Overflow
+
+    //EPOS-LHC
     bLimits.AddAt(0.00, j++);  //0%
-    bLimits.AddAt(3.50, j++);  //5%
-    bLimits.AddAt(4.94, j++);  //10%
-    bLimits.AddAt(6.98, j++);  //20%
-    bLimits.AddAt(8.55, j++);  //30%
-    bLimits.AddAt(9.88, j++);  //40%
-    bLimits.AddAt(11.04, j++); //50%
-    bLimits.AddAt(12.09, j++); //60%
-    bLimits.AddAt(13.05, j++); //70%
-    bLimits.AddAt(13.97, j++); //80%
-    bLimits.AddAt(14.96, j++); //90%
+    bLimits.AddAt(3.47, j++);  //5%
+    bLimits.AddAt(4.90, j++);  //10%
+    bLimits.AddAt(6.93, j++);  //20%
+    bLimits.AddAt(8.48, j++);  //30%
+    bLimits.AddAt(9.80, j++);  //40%
+    bLimits.AddAt(10.95, j++); //50%
+    bLimits.AddAt(12.00, j++); //60%
+    bLimits.AddAt(12.96, j++); //70%
+    bLimits.AddAt(14.00, j++); //80%
+    bLimits.AddAt(15.00, j++); //90%
     bLimits.AddAt(20.00, j++); //100%
     bLimits.AddAt(1000.00, j); //Overflow
     if(j != kEvtMultBins) AliFatal("Somehow index does not sum up");
@@ -2606,7 +2647,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
   const Int_t TrkLabel = trk->GetLabel(); /*The Get*Label() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track. */
   const Int_t AbsTrkLabel = TMath::Abs(TrkLabel);
   Int_t TOFTrkLabel[3] = {-1};//This can contain three particles wich occupy the same cluster
-  Int_t mfl, uniqueID;
+  // Int_t mfl, uniqueID;
 
   trk->GetTOFLabel(TOFTrkLabel);//Gets the labels of the tracks matched to the TOF, this can be used to remove the mismatch and to compute the efficiency! The label to check is the first one, the others can come from different tracks
 
