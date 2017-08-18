@@ -74,13 +74,13 @@ ClassImp(AliAnalysisTaskEmcalJetHF);
  */
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
 AliAnalysisTaskEmcalJet(),
+fHistManager(),
 fVevent(),
 fESD(),
 fAOD(),
 fpidResponse(),
 fEventCounter(),
 fInvmassCut(),
-fHistManager(),
 fdEdx(),  //Histo's
 fM20(),
 fM02(),
@@ -108,13 +108,13 @@ fHistClusTrackMatchdEta()
  */
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
 AliAnalysisTaskEmcalJet(name, kTRUE),
+fHistManager(name),
 fVevent(0),
 fESD(0),
 fAOD(0),
 fpidResponse(0),
 fEventCounter(0),
 fInvmassCut(0),
-fHistManager(name),
 fdEdx(0),  //Histo's
 fM20(0),
 fM02(0),
