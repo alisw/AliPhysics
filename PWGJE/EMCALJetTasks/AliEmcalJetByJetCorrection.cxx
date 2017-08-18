@@ -118,8 +118,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fhSmoothEfficiency(other.fhSmoothEfficiency),
   fCorrectpTtrack(other.fCorrectpTtrack),
   fpAppliedEfficiency(other.fpAppliedEfficiency),
-  fRndm(other.fRndm)
-  fhNmissing(other.fhNmissing),
+  fRndm(other.fRndm),
+  fhNmissing(other.fhNmissing)
 {
   // Copy constructor.
 }
