@@ -69,14 +69,18 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fPlotNeutralJets(kFALSE),
   fPlotClustersInJets(kFALSE),
   fPlotClusterHistograms(kTRUE),
   fPlotCellHistograms(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fPlotStandardClusterTHnSparse(kTRUE),
+  fPlotNearestNeighborDistribution(kFALSE),
+  fPlotClusterCone(kFALSE),
+  fPlotCaloCentrality(kFALSE),
+  fPlotFineGrainedEtaPhi(kFALSE),
+  fPlotEvenOddEta(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -99,14 +103,18 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fPlotNeutralJets(kFALSE),
   fPlotClustersInJets(kFALSE),
   fPlotClusterHistograms(kTRUE),
   fPlotCellHistograms(kTRUE),
   fPlotClusWithoutNonLinCorr(kFALSE),
   fPlotExotics(kFALSE),
+  fPlotStandardClusterTHnSparse(kTRUE),
+  fPlotNearestNeighborDistribution(kFALSE),
+  fPlotClusterCone(kFALSE),
+  fPlotCaloCentrality(kFALSE),
+  fPlotFineGrainedEtaPhi(kFALSE),
+  fPlotEvenOddEta(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -250,7 +258,7 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       fHistManager.CreateTH1(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins);
     }
   
-    // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
+    // Plot cluster THnSparse (centrality, eta, phi, E, E-hadcorr, has matched track, M02, Ncells, passed dispersion cut)
     Int_t dim = 0;
     TString title[20];
     Int_t nbins[20] = {0};
@@ -269,6 +277,9 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     
     title[dim] = "#eta";
     nbins[dim] = 28;
+    if (fPlotFineGrainedEtaPhi) {
+      nbins[dim] = 100;
+    }
     min[dim] = -0.7;
     max[dim] = 0.7;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
@@ -276,6 +287,9 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     
     title[dim] = "#phi";
     nbins[dim] = 100;
+    if (fPlotFineGrainedEtaPhi) {
+      nbins[dim] = 357;
+    }
     min[dim] = 1.;
     max[dim] = 6.;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
@@ -288,40 +302,117 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     max[dim] = fPtHistBins[fNPtHistBins];
     dim++;
     
-    title[dim] = "#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)";
-    nbins[dim] = fNPtHistBins;
-    binEdges[dim] = fPtHistBins;
-    min[dim] = fPtHistBins[0];
-    max[dim] = fPtHistBins[fNPtHistBins];
-    dim++;
+    if (fPlotStandardClusterTHnSparse) {
+      title[dim] = "#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Matched track";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "M02";
+      nbins[dim] = 50;
+      min[dim] = 0;
+      max[dim] = 5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "Ncells";
+      nbins[dim] = 30;
+      min[dim] = -0.5;
+      max[dim] = 29.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "Dispersion cut";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
     
-    title[dim] = "Matched track";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
+    if (fPlotEvenOddEta) {
+      title[dim] = "Even/odd eta";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
     
-    title[dim] = "M02";
-    nbins[dim] = 50;
-    min[dim] = 0;
-    max[dim] = 5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
+    if (fPlotNearestNeighborDistribution) {
+      title[dim] = "#DeltaR_{NN}";
+      nbins[dim] = 100;
+      min[dim] = 0.;
+      max[dim] = 1.;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+    }
     
-    title[dim] = "Ncells";
-    nbins[dim] = 30;
-    min[dim] = -0.5;
-    max[dim] = 29.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
+    if (fPlotClusterCone) {
+
+      title[dim] = "Cone type";
+      nbins[dim] = 2;
+      min[dim] = -0.5;
+      max[dim] = 1.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "R";
+      nbins[dim] = 2;
+      min[dim] = 0;
+      max[dim] = 0.15;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#it{E}_{cone} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
     
-    title[dim] = "Dispersion cut";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
+    }
+    
+    if (fPlotCaloCentrality) {
+      
+      title[dim] = "#it{E}_{cell cone} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Ncells cone";
+      nbins[dim] = 100;
+      min[dim] = -0.5;
+      max[dim] = 99.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+      title[dim] = "#it{E}_{cell SM} (GeV)";
+      nbins[dim] = fNPtHistBins;
+      binEdges[dim] = fPtHistBins;
+      min[dim] = fPtHistBins[0];
+      max[dim] = fPtHistBins[fNPtHistBins];
+      dim++;
+      
+      title[dim] = "Ncells SM";
+      nbins[dim] = 100;
+      min[dim] = -0.5;
+      max[dim] = 999.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      dim++;
+      
+    }
     
     TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
@@ -330,11 +421,13 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       hn->SetBinEdges(i, binEdges[i]);
     }
     
+    // Plot Fcross distribution
     if (fPlotExotics) {
       histname = TString::Format("%s/hFcrossEMCal", cont->GetArrayName().Data());
       htitle = histname + ";Centrality (%);Fcross;#it{E}_{clus} (GeV/)";
       TH3* hist = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, nExBins, exBins, fNPtHistBins, fPtHistBins);
     }
+    
   }
   
 }
@@ -441,6 +534,20 @@ void AliAnalysisTaskEmcalVsPhos::AllocateNeutralJetHistograms()
     binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
     dimJet++;
     
+    axisTitle[dimJet] = "#it{E}_{T}, acc clus within R (GeV)";
+    nbinsJet[dimJet] = fNPtHistBins;
+    binEdgesJet[dimJet] = fPtHistBins;
+    minJet[dimJet] = fPtHistBins[0];
+    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+    dimJet++;
+    
+    axisTitle[dimJet] = "#it{E}_{T}, acc cell within R (GeV)";
+    nbinsJet[dimJet] = fNPtHistBins;
+    binEdgesJet[dimJet] = fPtHistBins;
+    minJet[dimJet] = fPtHistBins[0];
+    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+    dimJet++;
+    
     TString thnname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dimJet, nbinsJet, minJet, maxJet);
     for (Int_t i = 0; i < dimJet; i++) {
@@ -497,14 +604,14 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClustersInJetsHistograms()
     dim++;
     
     title[dim] = "#eta_{jet}";
-    nbins[dim] = fNEtaBins;
+    nbins[dim] = 40;
     min[dim] = -0.5;
     max[dim] = 0.5;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     title[dim] = "#phi_{jet}";
-    nbins[dim] = fNPhiBins;
+    nbins[dim] = 200;
     min[dim] = 1.;
     max[dim] = 6.;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
@@ -632,6 +739,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
   Int_t absId;
   Double_t ecell;
   Double_t leadEcell;
+  Int_t leadAbsId;
   
   // Get cells from event
   fCaloCells = InputEvent()->GetEMCALCells();
@@ -639,14 +747,19 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
     
   // Loop through clusters and plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   AliClusterContainer* clusters = 0;
+  const AliVCluster* clus;
+  TString clustersName;
   TIter nextClusColl(&fClusterCollArray);
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
     AliClusterIterableMomentumContainer itcont = clusters->all_momentum();
+    clustersName = clusters->GetArrayName();
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+      
+      clus = it->second;
     
       // Determine cluster type (EMCal/DCal/Phos)
       ClusterType clusType = kNA;
-      if (it->second->IsEMCAL()) {
+      if (clus->IsEMCAL()) {
         Double_t phi = it->first.Phi_0_2pi();
         Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
         if (isDcal == 0) {
@@ -654,19 +767,19 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         } else if (isDcal == 1) {
           clusType = kDCal;
         }
-      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+      } else if (clus->GetType() == AliVCluster::kPHOSNeutral){
         clusType = kPHOS;
       }
       
       // rejection reason plots, to make efficiency correction
-      if (it->second->IsEMCAL()) {
+      if (clus->IsEMCAL()) {
         histname = TString::Format("%s/hClusterRejectionReasonEMCal", clusters->GetArrayName().Data());
         UInt_t rejectionReason = 0;
         if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
           fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), it->first.E());
           continue;
         }
-      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+      } else if (clus->GetType() == AliVCluster::kPHOSNeutral){
         histname = TString::Format("%s/hClusterRejectionReasonPHOS", clusters->GetArrayName().Data());
         UInt_t rejectionReason = 0;
         if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
@@ -680,24 +793,24 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       // Fill cluster spectra by SM, and fill cell histograms
       Enonlin = 0;
       Ehadcorr = 0;
-      if (it->second->IsEMCAL()) {
+      if (clus->IsEMCAL()) {
         
-        Ehadcorr = it->second->GetHadCorrEnergy();
-        Enonlin = it->second->GetNonLinCorrEnergy();
+        Ehadcorr = clus->GetHadCorrEnergy();
+        Enonlin = clus->GetNonLinCorrEnergy();
         if (fPlotClusWithoutNonLinCorr) {
-          Enonlin = it->second->E();
+          Enonlin = clus->E();
         }
         
         if (fPlotExotics) {
           histname = TString::Format("%s/hFcrossEMCal", clusters->GetArrayName().Data());
-          Double_t Fcross = GetFcross(it->second, fCaloCells);
-          fHistManager.FillTH3(histname, fCent, Fcross, it->second->E());
+          Double_t Fcross = GetFcross(clus, fCaloCells);
+          fHistManager.FillTH3(histname, fCent, Fcross, clus->E());
         }
         
-        Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+        Int_t sm = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
           histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
-          fHistManager.FillTH1(histname, it->second->E());
+          fHistManager.FillTH1(histname, clus->E());
         }
         else {
           AliError(Form("Supermodule %d does not exist!", sm));
@@ -706,30 +819,31 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
         histname = TString::Format("Cells/hCellEnergyAccepted");
         leadEcell = 0;
-        for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
-          absId = it->second->GetCellAbsId(iCell);
+        for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++){
+          absId = clus->GetCellAbsId(iCell);
           ecell = fCaloCells->GetCellAmplitude(absId);
           fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
           if (ecell > leadEcell) {
             leadEcell = ecell;
+            leadAbsId = absId;
           }
         }
         // Plot also the leading cell
         histname = TString::Format("Cells/hCellEnergyLeading");
         fHistManager.FillTH3(histname, leadEcell, fCent, kEMCal);
         
-      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+      } else if (clus->GetType() == AliVCluster::kPHOSNeutral){
         
-        Ehadcorr = it->second->GetCoreEnergy();
-        Enonlin = it->second->E();
+        Ehadcorr = clus->GetCoreEnergy();
+        Enonlin = clus->E();
         
         Int_t relid[4];
         if (fPHOSGeo) {
-          fPHOSGeo->AbsToRelNumbering(it->second->GetCellAbsId(0), relid);
+          fPHOSGeo->AbsToRelNumbering(clus->GetCellAbsId(0), relid);
           Int_t sm = relid[0];
           if (sm >=1 && sm < 5) {
             histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
-            fHistManager.FillTH1(histname, it->second->E());
+            fHistManager.FillTH1(histname, clus->E());
           }
           else {
             AliError(Form("Supermodule %d does not exist!", sm));
@@ -739,8 +853,8 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
         histname = TString::Format("Cells/hCellEnergyAccepted");
         leadEcell = 0;
-        for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
-          absId = it->second->GetCellAbsId(iCell);
+        for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++){
+          absId = clus->GetCellAbsId(iCell);
           ecell = phosCaloCells->GetCellAmplitude(absId);
           fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
           if (ecell > leadEcell) {
@@ -754,7 +868,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       
       // Check if the cluster has a matched track
       Int_t hasMatchedTrack = -1;
-      Int_t nMatchedTracks = it->second->GetNTracksMatched();
+      Int_t nMatchedTracks = clus->GetNTracksMatched();
       if (nMatchedTracks == 0) {
         hasMatchedTrack = 0;
       } else if (nMatchedTracks > 0) {
@@ -763,42 +877,155 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       
       // Check if the cluster passes the dispersion cut for photon-like cluster (meaningful only for PHOS)
       Int_t passedDispersionCut = 0;
-      if (it->second->Chi2() < 2.5*2.5) {
+      if (clus->Chi2() < 2.5*2.5) {
         passedDispersionCut = 1;
       }
       
-        Double_t contents[30]={0};
-      histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
-      THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
-      if (!histClusterObservables) return;
-      for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
-        TString title(histClusterObservables->GetAxis(i)->GetTitle());
-        if (title=="Centrality %")
-          contents[i] = fCent;
-        else if (title=="#eta")
-          contents[i] = it->first.Eta();
-        else if (title=="#phi")
-          contents[i] = it->first.Phi_0_2pi();
-        else if (title=="#it{E}_{clus} (GeV)")
-          contents[i] = Enonlin;
-        else if (title=="#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)")
-          contents[i] = Ehadcorr;
-        else if (title=="Matched track")
-          contents[i] = hasMatchedTrack;
-        else if (title=="M02")
-          contents[i] = it->second->GetM02();
-        else if (title=="Ncells")
-          contents[i] = it->second->GetNCells();
-        else if (title=="Dispersion cut")
-          contents[i] = passedDispersionCut;
-        else
-          AliWarning(Form("Unable to fill dimension %s!",title.Data()));
-      }
-      histClusterObservables->Fill(contents);
+      // Fill info about the cluster
+      Double_t eta = it->first.Eta();
+      Double_t phi = it->first.Phi_0_2pi();
+      Double_t M02 = clus->GetM02();
+      Int_t nCells = clus->GetNCells();
+      Double_t distNN = FindNearestNeighborDistance(it->first);
       
-    }
+      // If cluster is EMCal, find whether the eta column is even or odd
+      Int_t isOddEta = -1;
+      Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
+      if (clus->IsEMCAL()) {
+        fGeom->GetCellIndex(leadAbsId, nSupMod, nModule, nIphi, nIeta);
+        fGeom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
+        isOddEta = ieta % 2;
+      }
 
+      // Standard option: fill once per cluster
+      if (!fPlotClusterCone && !fPlotCaloCentrality) {
+          FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta);
+      }
+      
+      if (fPlotCaloCentrality) {
+        
+        // Get the SM number
+        Int_t sm = -1;
+        if (clusType == kEMCal) {
+          sm = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
+        }
+        if (clusType == kPHOS) {
+          Int_t relid[4];
+          fPHOSGeo->AbsToRelNumbering(clus->GetCellAbsId(0), relid);
+          sm = relid[0];
+        }
+        
+        // Only fill the THnSparse if the cluster is located in a full SM of EMCal or PHOS
+        if ( (clusType == kEMCal && sm < 10 ) || (clusType == kPHOS && sm < 4) ) {
+          
+          Double_t eCellCone = GetConeCellEnergy(eta, phi, 0.07);
+          Int_t nCellsCone = (Int_t)GetConeCellEnergy(eta, phi, 0.07, kTRUE);
+       
+          Double_t eCellSM = GetSMCellEnergy(sm, clusType);
+          Int_t nCellsSM = (Int_t)GetSMCellEnergy(sm, clusType, kTRUE);
+        
+          FillClusterTHnSparse(clustersName, eta, phi, Enonlin, eCellCone, eCellSM, nCellsCone, nCellsSM);
+          
+        }
+        
+      }
+      
+      // If cluster cone option enabled, fill for each R and cone type
+      if (fPlotClusterCone) {
+
+        // cluster cone, R=0.05
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
+        // cluster cone, R=0.1
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
+        // cell cone, R=0.05
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
+        // cell cone, R=0.1
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
+        
+      }
+
+    }
   }
+}
+
+/*
+ * This function fills the cluster THnSparse.
+ */
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType, Double_t R, Double_t Econe)
+{
+  Double_t contents[30]={0};
+  TString histname = TString::Format("%s/clusterObservables", clustersName.Data());
+  THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+  if (!histClusterObservables) return;
+  for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
+    TString title(histClusterObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = fCent;
+    else if (title=="#eta")
+      contents[i] = eta;
+    else if (title=="#phi")
+      contents[i] = phi;
+    else if (title=="#it{E}_{clus} (GeV)")
+      contents[i] = Enonlin;
+    else if (title=="#it{E}_{clus, hadcorr} or #it{E}_{core} (GeV)")
+      contents[i] = Ehadcorr;
+    else if (title=="Matched track")
+      contents[i] = hasMatchedTrack;
+    else if (title=="M02")
+      contents[i] = M02;
+    else if (title=="Ncells")
+      contents[i] = nCells;
+    else if (title=="Dispersion cut")
+      contents[i] = passedDispersionCut;
+    else if (title=="#DeltaR_{NN}")
+      contents[i] = distNN;
+    else if (title=="Even/odd eta")
+      contents[i] = isOddEta;
+    else if (title=="Cone type")
+      contents[i] = coneType;
+    else if (title=="R")
+      contents[i] = R;
+    else if (title=="#it{E}_{cone} (GeV)")
+      contents[i] = Econe;
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+                              }
+  histClusterObservables->Fill(contents);
+
+}
+
+/*
+ * This function fills the cluster THnSparse (alternate signature, used for local density option).
+ */
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM)
+{
+  Double_t contents[30]={0};
+  TString histname = TString::Format("%s/clusterObservables", clustersName.Data());
+  THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+  if (!histClusterObservables) return;
+  for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
+    TString title(histClusterObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = fCent;
+    else if (title=="#eta")
+      contents[i] = eta;
+    else if (title=="#phi")
+      contents[i] = phi;
+    else if (title=="#it{E}_{clus} (GeV)")
+      contents[i] = Enonlin;
+    else if (title=="#it{E}_{cell cone} (GeV)")
+      contents[i] = eCellCone;
+    else if (title=="Ncells cone")
+      contents[i] = nCellsCone;
+    else if (title=="#it{E}_{cell SM} (GeV)")
+      contents[i] = eCellSM;
+    else if (title=="Ncells SM")
+      contents[i] = nCellsSM;
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+  histClusterObservables->Fill(contents);
+  
 }
 
 /*
@@ -898,6 +1125,10 @@ void AliAnalysisTaskEmcalVsPhos::FillNeutralJetHistograms()
           contents[i] = jet->Pt() / jet->Area();
         else if (title=="N_{clusters}")
           contents[i] = jet->GetNumberOfClusters();
+        else if (title=="#it{E}_{T}, acc clus within R (GeV)")
+          contents[i] = GetConeClusterEnergy(jet->Eta(), jet->Phi_0_2pi(), jets->GetJetRadius());
+        else if (title=="#it{E}_{T}, acc cell within R (GeV)")
+          contents[i] = GetConeCellEnergy(jet->Eta(), jet->Phi_0_2pi(), jets->GetJetRadius());
         else
           AliWarning(Form("Unable to fill dimension %s!",title.Data()));
       }
@@ -913,11 +1144,14 @@ void AliAnalysisTaskEmcalVsPhos::FillNeutralJetHistograms()
 void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
 {
   TString histname;
+  Double_t rho;
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
-    for (auto jet : jets->accepted()) {
+    rho = jets->GetRhoVal();
+    
+    for (const auto jet : jets->accepted()) {
 
       // Fill cluster spectra of clusters within jets
       //(centrality, cluster energy, jet pT, jet eta, jet phi)
@@ -926,7 +1160,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
       AliVCluster* clus;
       for (Int_t iClus = 0; iClus < nClusters; iClus++) {
         clus = jet->Cluster(iClus);
-        Double_t x[5] = {fCent, clus->E(), GetJetPt(jets, jet), jet->Eta(), jet->Phi_0_2pi()};
+        Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
         fHistManager.FillTHnSparse(histname, x);
       }
         
@@ -946,7 +1180,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
             }
           }
           histname = TString::Format("%s/hCaloJESshift", jets->GetArrayName().Data());
-          fHistManager.FillTH3(histname, GetJetType(jet), GetJetPt(jets, jet), shiftSum);
+          fHistManager.FillTH3(histname, GetJetType(jet), GetJetPt(jet, rho), shiftSum);
         }
       }
     
@@ -955,27 +1189,32 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
 }
 
 /**
- * Get pT of jet -- background subtracted, unless hard-core jet
+ * Get pT of jet -- background subtracted
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet)
+Double_t AliAnalysisTaskEmcalVsPhos::GetJetPt(const AliEmcalJet* jet, Double_t rho)
 {
-  // Get eta-phi dependent jet pT scale factor
-  Double_t jetPt = jet->Pt();
-  
-  // Compute pTcorr
-  Double_t rho = jetCont->GetRhoVal();
-  Double_t pT = jetPt - rho * jet->Area();
-  
+  Double_t pT = jet->Pt() - rho * jet->Area();
   return pT;
 }
 
 /**
  * Get deltaR of a track/cluster and a reference point.
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef)
+Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(AliTLorentzVector part, Double_t etaRef, Double_t phiRef)
 {
-  Double_t deltaPhi = TMath::Abs(part->Phi_0_2pi() - phiRef);
-  Double_t deltaEta = TMath::Abs(part->Eta() - etaRef);
+  Double_t deltaPhi = TMath::Abs(part.Phi_0_2pi() - phiRef);
+  Double_t deltaEta = TMath::Abs(part.Eta() - etaRef);
+  Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
+  return deltaR;
+}
+
+/**
+ * Get deltaR of two points.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(Double_t eta1, Double_t phi1, Double_t eta2, Double_t phi2)
+{
+  Double_t deltaPhi = TMath::Abs(phi1-phi2);
+  Double_t deltaEta = TMath::Abs(eta1-eta2);
   Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
   return deltaR;
 }
@@ -983,7 +1222,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetDeltaR(AliTLorentzVector* part, Double_t
 /**
  * Get calo acceptance type of jet
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetJetType(AliEmcalJet* jet)
+Double_t AliAnalysisTaskEmcalVsPhos::GetJetType(const AliEmcalJet* jet)
 {
   UInt_t jetType = jet->GetJetAcceptanceType();
   Double_t type = -1;
@@ -1003,7 +1242,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetJetType(AliEmcalJet* jet)
 /**
  * Compute Fcross of a cluster
  */
-Double_t AliAnalysisTaskEmcalVsPhos::GetFcross(AliVCluster *cluster, AliVCaloCells *cells)
+Double_t AliAnalysisTaskEmcalVsPhos::GetFcross(const AliVCluster *cluster, AliVCaloCells *cells)
 {
   Int_t    AbsIdseed  = -1;
   Double_t Eseed      = 0;
@@ -1067,3 +1306,225 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetFcross(AliVCluster *cluster, AliVCaloCel
   
   return Fcross;
 }
+
+/**
+ * Compute the distance to the nearest accepted cluster
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::FindNearestNeighborDistance(AliTLorentzVector clusterRef)
+{
+  Double_t distNN = 10.;
+  Double_t etaRef = clusterRef.Eta();
+  Double_t phiRef = clusterRef.Phi_0_2pi();
+  
+  AliClusterContainer* clusters = GetClusterContainer(0);
+  AliTLorentzVector clusNNcand;
+  for (auto clusIterator : clusters->accepted_momentum() ) {
+    
+    clusNNcand.Clear();
+    clusNNcand = clusIterator.first;
+    
+    Double_t distNNcand = GetDeltaR(clusNNcand, etaRef, phiRef);
+    
+    if (distNNcand < distNN && distNNcand > 0.001) {
+      distNN = distNNcand;
+    }
+    
+  }
+  
+  return distNN;
+  
+}
+
+/**
+ * Compute the cluster energy within a cone of radius R centered at etaRef,phiRef.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(Double_t etaRef, Double_t phiRef, Double_t R)
+{
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliTLorentzVector clus;
+  Double_t energy = 0.;
+  for (auto clusIterator : clusCont->accepted_momentum() ) {
+    
+    clus.Clear();
+    clus = clusIterator.first;
+    
+    if (GetDeltaR(clus, etaRef, phiRef) < R) {
+      energy += clus.E();
+    }
+  }
+  return energy;
+}
+
+/**
+ * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters.
+ * Optionally, can instead return the number of cells.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells)
+{
+  Double_t energy = 0.;
+  Double_t nCells = 0.;
+  
+  // Get cells from event
+  fCaloCells = InputEvent()->GetEMCALCells();
+  AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+  
+  Double_t eta;
+  Double_t phi;
+  Int_t absId;
+  TVector3 pos;
+  
+  for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = fCaloCells->GetCellNumber(i);
+    
+    fGeom->EtaPhiFromIndex(absId, eta, phi);
+    phi = TVector2::Phi_0_2pi(phi);
+
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
+
+      if (IsCellRejected(absId, kEMCal)) {
+        continue;
+      }
+
+      energy += fCaloCells->GetCellAmplitude(absId);
+      nCells += 1.;
+    }
+    
+  }
+  
+  for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+    
+    absId = phosCaloCells->GetCellNumber(i);
+    
+    fPHOSGeo->RelPosInAlice(absId, pos); // pos then contains (x,y,z) coordinate of cell
+    eta = pos.Eta();
+    phi = pos.Phi();
+    phi = TVector2::Phi_0_2pi(phi);
+    
+    if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
+
+      if (IsCellRejected(absId, kPHOS)) {
+        continue;
+      }
+
+      energy += phosCaloCells->GetCellAmplitude(absId);
+      nCells += 1.;
+    }
+    
+  }
+  
+  if (returnNcells) {
+    return nCells;
+  }
+  
+  return energy;
+}
+
+/**
+ * Compute the cell energy within a SM, excluding cells from rejected clusters.
+ * Optionally, can instead return the number of cells.
+ */
+Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells)
+{
+  Double_t energy = 0.;
+  Double_t nCells = 0.;
+  Int_t absId;
+  Int_t cellSM;
+  Int_t relid[4];
+  
+  if (clusType == kEMCal) {
+    
+    fCaloCells = InputEvent()->GetEMCALCells();
+  
+    for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
+      
+      absId = fCaloCells->GetCellNumber(i);
+      cellSM = fGeom->GetSuperModuleNumber(absId);
+      
+      if (cellSM == sm) {
+        
+        if (IsCellRejected(absId, kEMCal)) {
+          continue;
+        }
+        
+        energy += fCaloCells->GetCellAmplitude(absId);
+        nCells += 1.;
+      
+      }
+    }
+  }
+  
+  if (clusType == kPHOS) {
+    
+    AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+  
+    for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
+      
+      absId = phosCaloCells->GetCellNumber(i);
+
+      fPHOSGeo->AbsToRelNumbering(absId, relid);
+      cellSM = relid[0];
+    
+      if (cellSM == sm) {
+        
+        if (IsCellRejected(absId, kPHOS)) {
+          continue;
+        }
+          
+        energy += phosCaloCells->GetCellAmplitude(absId);
+        nCells += 1.;
+        
+      }
+    }
+  }
+  
+  if (returnNcells) {
+    return nCells;
+  }
+  
+  return energy;
+}
+
+/**
+ * Determine whether a cell belongs to a rejected cluster
+ */
+Bool_t AliAnalysisTaskEmcalVsPhos::IsCellRejected(Int_t absId, Int_t cellType)
+{
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliVCluster* cluster;
+  
+  UInt_t rejectionReason;
+  Bool_t skipCell = kFALSE;
+  Int_t clusType;
+  
+  AliClusterIterableMomentumContainer itcont = clusCont->all_momentum();
+  for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+  
+    if (!clusCont->AcceptCluster(it.current_index(), rejectionReason)) {
+      
+      cluster = it->second;
+      
+      // check that the cell type and cluster type are the same
+      if (cluster->IsEMCAL()) {
+        clusType = kEMCal;
+      }
+      if (cluster->GetType() == AliVCluster::kPHOSNeutral) {
+        clusType = kPHOS;
+      }
+      if (clusType != cellType) {
+        continue;
+      }
+      
+      // skip the cell if it belongs to a rejected cluster
+      for (Int_t i = 0; i < cluster->GetNCells(); i++) {
+        
+        if (absId == cluster->GetCellAbsId(i)) {
+          skipCell = kTRUE;
+        }
+        
+      }
+    }
+  }
+  return skipCell;
+}
+
