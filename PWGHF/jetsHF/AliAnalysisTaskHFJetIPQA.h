@@ -131,6 +131,10 @@ public:
     void setFVertexRecalcMinPt(const Double_t &value);
 
     void setFMCglobalDCASmear(const Double_t &value);
+    void setFParam_Smear_Sigma(const Double_t &value);
+    void setFParam_Smear_Mean(const Double_t &value);
+    void SmearTrack(AliAODTrack *track);
+    void setFRunSmearing(const Bool_t &value);
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
@@ -165,12 +169,18 @@ private:
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
     Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+
+
     //Functions to allow jet probability/TC System 8 efficiency estimation
     Bool_t IsJetTaggedTC(int n =0 ,double thres = 0.1);
     Bool_t IsJetTaggedJetProb(double thresProb = 0.90);
     TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
     TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
+    Double_t fParam_Smear_Sigma;//<-
+    Double_t fParam_Smear_Mean;//<-
+    Bool_t   fRunSmearing;//<-
+
     Bool_t fUsePIDJetProb;//
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
