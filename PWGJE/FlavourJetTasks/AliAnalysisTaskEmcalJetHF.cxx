@@ -456,13 +456,13 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
 
 
 
-            Float_t ptLeading = jetCont->GetLeadingHadronPt(jet);
-            Float_t corrPt = jet->Pt() - rhoVal * jet->Area();
+            //Float_t ptLeading = jetCont->GetLeadingHadronPt(jet);
+            //Float_t corrPt = jet->Pt() - rhoVal * jet->Area();
             TLorentzVector leadPart;
             jetCont->GetLeadingHadronMomentum(leadPart, jet);
 
-            Double_t JetPhi = jet->Phi();
-            Double_t JetEta = jet->Eta();
+            //Double_t JetPhi = jet->Phi();
+            //Double_t JetEta = jet->Eta();
             Double_t ep = jet->Phi() - fEPV0;
             while (ep < 0) ep += TMath::Pi();
             while (ep >= TMath::Pi()) ep -= TMath::Pi();//Get Event Plane info
@@ -508,11 +508,11 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
                         */
 
                         Int_t    JetTrackLabel = Vtrack->GetID();
-                        Double_t JetTrackP = track->P();
-                        Double_t JetTrackPt = track->Pt();
+                        //Double_t JetTrackP = track->P();
+                        //Double_t JetTrackPt = track->Pt();
                         Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
                         Double_t deta = track->Eta() - jet->Eta();
-                        Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
+                        //Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
 
                         //+++++----Track matching to EMCAL
                         Int_t EMCalIndex = -1;
@@ -527,9 +527,9 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
 
                         if(clusmatch->E() < 0.500) continue;//Bad Cluster matching below 500 MeV
                         if(!(clusmatch && clusmatch->IsEMCAL())) continue;
-                        Double_t clustMatchE = clusmatch->E();
+                        //Double_t clustMatchE = clusmatch->E();
                         Double_t clustMatchNonLinE = clusmatch->GetNonLinCorrEnergy();
-                        Double_t clustMatchHadCorr = clusmatch->GetHadCorrEnergy();
+                        //Double_t clustMatchHadCorr = clusmatch->GetHadCorrEnergy();
                         //++++---EMCal Cluster Position----
                         TVector3 clustpos;
                         Float_t  emcx[3]; // cluster pos
@@ -544,25 +544,25 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
                         Double_t fTPCnSigma = 0.0;
                         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
 
-                        Double_t JetElectronEovP = clustMatchNonLinE / track->P();
+                        //Double_t JetElectronEovP = clustMatchNonLinE / track->P();
                         TrackEtaEMC  = Vtrack->GetTrackEtaOnEMCal();
                         TrackPhiEMC  = Vtrack->GetTrackPhiOnEMCal();
                         TrackPEMC    = Vtrack->GetTrackPOnEMCal();
                         TrackPtEMC   = Vtrack->GetTrackPtOnEMCal();
                         detaTrckClus = TrackEtaEMC - track->Eta();
                         dphiTrckClus = TrackPhiEMC - track->Phi();
-                        Double_t M20 = clusmatch->GetM20();
-                        Double_t M02 = clusmatch->GetM02();
+                        //Double_t M20 = clusmatch->GetM20();
+                        //Double_t M02 = clusmatch->GetM02();
 
                         //if(fTPCnSigma > -1 && fTPCnSigma < 3 && JetElectronEovP>0.8 && JetElectronEovP<1.2 && M02 > 0.006 && M02 < 0.35)
                         //{
                         //++++---Photonic Electrons----
                         Bool_t fFlagPhotonicElec = kFALSE;
 
-                        Double_t Me  = 0.0005109989;
-                        Double_t Me2 = Me * Me;
+                        //Double_t Me  = 0.0005109989;
+                        //Double_t Me2 = Me * Me;
 
-                        AliParticleContainer* partContHFE = 0;
+                        //AliParticleContainer* partContHFE = 0;
                         TIter next(&fParticleCollArray);
 
                         SelectPhotonicElectron(JetTrackLabel, Vtrack, fFlagPhotonicElec);
@@ -581,7 +581,7 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
                         */
 
                         //++++---Jet HFE Electron Correlations----
-                        Double_t dPhiJetTrk = -999., dEtaJetPhi = -999.;
+                        //Double_t dPhiJetTrk = -999., dEtaJetPhi = -999.;
 
 
                         fHistJetEovP->Fill(clustMatchNonLinE / Vtrack->P());
@@ -795,7 +795,7 @@ void AliAnalysisTaskEmcalJetHF::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetHF::Run()
 {
-    UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    //UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     if (!fVevent) {
@@ -827,8 +827,8 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
     ntracks = fVevent->GetNumberOfTracks();
     //printf("There are %d tracks in this event\n",ntracks);
 
-    Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
-    Double_t NcontV = pVtx->GetNContributors();
+    //Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
+    //Double_t NcontV = pVtx->GetNContributors();
 
    // if(NcontV<2)return kTRUE;  //Events with 2 Tracks
 
