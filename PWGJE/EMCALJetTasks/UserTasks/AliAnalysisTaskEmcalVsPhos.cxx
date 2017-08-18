@@ -1372,6 +1372,8 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
   Double_t phi;
   Int_t absId;
   TVector3 pos;
+  Int_t relid[4];
+  Int_t sm;
   
   for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
     
@@ -1395,7 +1397,13 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
   for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
     
     absId = phosCaloCells->GetCellNumber(i);
-    
+
+    fPHOSGeo->AbsToRelNumbering(absId, relid);
+    sm = relid[0];
+    if (sm < 1 || sm > 4) {
+      continue;
+    }
+
     fPHOSGeo->RelPosInAlice(absId, pos); // pos then contains (x,y,z) coordinate of cell
     eta = pos.Eta();
     phi = pos.Phi();
