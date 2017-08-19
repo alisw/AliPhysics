@@ -1469,6 +1469,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHMSH2-B-";
       break;
+    case 6: // V0 high mult trigger with pileup condition on
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="V0Mult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMV0M-B-SPD2";
+      break;
 
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -1907,7 +1914,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 	  if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
 	  else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
 	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
-      }    
+      }
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
