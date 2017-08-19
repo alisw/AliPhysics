@@ -916,7 +916,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     nBinsClusterPt            = 800;
     minClusterPt              = 0;
     maxClusterPt              = 80;
-  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ){
+  } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
     nBinsPt                   = 600;
     minPt                     = 0;
     maxPt                     = 60;
