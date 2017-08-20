@@ -46,7 +46,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   
   printf("Creating container names for cluster analysis\n");
   TString myContName("");
-    myContName = Form("Analysis_Neutrals");
+    myContName = Form("NeutralCluster");
   
   myContName.Append(Form("_Trigger_%s_L1recalc_%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_M02cut_%s", trig,onlyL1RecalcEvents ? "Yes" : "No", bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, M02cut ? "On":"Off" ));
   
@@ -141,7 +141,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   manager->AddTask(task);
   
   
-  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:TriggerQA",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
