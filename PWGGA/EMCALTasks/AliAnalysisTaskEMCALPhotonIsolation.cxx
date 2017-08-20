@@ -40,6 +40,7 @@
 #include "TRandom3.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisUtils.h"
+#include <AliEMCALTriggerPatchInfo.h>
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
 
@@ -220,7 +221,8 @@ fOutputQATree(0),
 fOutputTree(0),
 fphietaPhotons(0),
 fphietaOthers(0),
-fphietaOthersBis(0)
+fphietaOthersBis(0),
+f2012EGA(0)
   // tracks(0),
   // clusters(0)
 {
@@ -231,6 +233,7 @@ fphietaOthersBis(0)
     // for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  if(f2012EGA) SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
@@ -403,7 +406,8 @@ fOutputQATree(0),
 fOutputTree(0),
 fphietaPhotons(0),
 fphietaOthers(0),
-fphietaOthersBis(0)
+fphietaOthersBis(0),
+f2012EGA(0)
   // tracks(0),
   // clusters(0)
 {
@@ -414,6 +418,7 @@ fphietaOthersBis(0)
     //  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  if(f2012EGA) SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
@@ -1204,6 +1209,30 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   if(fRejectionEventWithoutTracks && (nbTracksEvent == 0))
     return kFALSE;
   
+// reject events below 2012 EGA threshold
+  if(f2012EGA){
+    TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers")); 
+    Bool_t isL1 = kFALSE;
+    if(triPatchInfo){
+      Int_t nPatch = triPatchInfo->GetEntries();
+      for(Int_t ip = 0;ip<nPatch;ip++){
+        AliEMCALTriggerPatchInfo *pti = static_cast<AliEMCALTriggerPatchInfo*>(triPatchInfo->At(ip));
+        if(!pti) continue;
+        if(!pti->IsEMCal()) continue;
+        if(!pti->IsRecalcGamma()) continue;
+//        if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
+//         continue;
+//        }
+        if(pti->GetADCAmp() > 130){  
+          isL1 = kTRUE;
+          break;
+        }
+      }
+    }                      
+
+    if(!isL1) return kFALSE;
+  }
+
   fEvents->Fill(0); // Fill event number histogram
   
   if(fIsMC){
