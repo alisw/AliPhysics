@@ -532,12 +532,12 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
       }
-      if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
-       hADCpos0->Fill(pti->GetADCAmp(),pti->GetPatchE());
-       continue;
-      }
       if(pti->GetADCAmp() > 130){  
         isL1 = kTRUE;
+        if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
+         hADCpos0->Fill(pti->GetADCAmp(),pti->GetPatchE());
+         continue;
+        }
         hL1PatchPosition->Fill(pti->GetEtaGeo(), pti->GetPhiGeo());
         Int_t AbsCellID = -1;
         Int_t fastor = -1;
@@ -615,7 +615,21 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   TObjString* triggerClass = 0;
   while ((triggerClass = static_cast<TObjString*>(next())) != NULL) fPt_trig->Fill(veclclus.Pt(),triggerClass->GetString(),1);
 
+  Bool_t FillMinBiOver10 = kTRUE;
+  Bool_t FillMinBiOver12 = kTRUE;
+  Bool_t FillMinBiOver14 = kTRUE;
   
+  Bool_t FillEMC1Over10 = kTRUE;
+  Bool_t FillEMC1Over12 = kTRUE;
+  Bool_t FillEMC1Over14 = kTRUE;
+  
+  Bool_t FillEMC2Over10 = kTRUE;
+  Bool_t FillEMC2Over12 = kTRUE;
+  Bool_t FillEMC2Over14 = kTRUE;
+  
+  Bool_t FillEGAOver10 = kTRUE;
+  Bool_t FillEGAOver12 = kTRUE;
+  Bool_t FillEGAOver14 = kTRUE;
 
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
@@ -689,27 +703,67 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(fM02cut){
       if(coiM02 < 0.1) continue;
     }
-    if(vecCOI.Pt() > 10.) fEventsover10->Fill(1,1);
-    if(vecCOI.Pt() > 12.) fEventsover10->Fill(2,1);
-    if(vecCOI.Pt() > 14.) fEventsover10->Fill(3,1);
+
+
+////////////////////////////////////////////////
+    if(vecCOI.Pt() > 10. && FillMinBiOver10){
+      fEventsover10->Fill(1,1);
+      FillMinBiOver10 = kFALSE;
+    }
+    if(vecCOI.Pt() > 12. && FillMinBiOver12){
+      fEventsover10->Fill(2,1);
+      FillMinBiOver12 = kFALSE;
+    }
+    if(vecCOI.Pt() > 14. && FillMinBiOver14){
+      fEventsover10->Fill(3,1);
+      FillMinBiOver14 = kFALSE;
+    }
     if(isL0){
-      if(vecCOI.Pt() > 10.) fEventsover10->Fill(1,2);
-      if(vecCOI.Pt() > 12.) fEventsover10->Fill(2,2);
-      if(vecCOI.Pt() > 14.) fEventsover10->Fill(3,2);
+      if(vecCOI.Pt() > 10. && FillEMC1Over10){
+        fEventsover10->Fill(1,2);
+        FillEMC1Over10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEMC1Over12){
+        fEventsover10->Fill(2,2);
+        FillEMC1Over12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEMC1Over14){
+        fEventsover10->Fill(3,2);
+        FillEMC1Over14 = kFALSE;
+      }
       fL0triggered->Fill(vecCOI.Pt());
     }
     if(isL0recalc){
-      if(vecCOI.Pt() > 10.) fEventsover10->Fill(1,3);
-      if(vecCOI.Pt() > 12.) fEventsover10->Fill(2,3);
-      if(vecCOI.Pt() > 14.) fEventsover10->Fill(3,3);
+      if(vecCOI.Pt() > 10. && FillEMC2Over10){
+        fEventsover10->Fill(1,3);
+        FillEMC2Over10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEMC2Over12){
+        fEventsover10->Fill(2,3);
+        FillEMC2Over12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEMC2Over14){
+        fEventsover10->Fill(3,3);
+        FillEMC2Over14 = kFALSE;
+      }
     }
     if(isL1){
-      if(vecCOI.Pt() > 10.) fEventsover10->Fill(1,4);
-      if(vecCOI.Pt() > 12.) fEventsover10->Fill(2,4);
-      if(vecCOI.Pt() > 14.) fEventsover10->Fill(3,4);
+      if(vecCOI.Pt() > 10. && FillEGAOver10){
+        fEventsover10->Fill(1,4);
+        FillEGAOver10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEGAOver12){
+        fEventsover10->Fill(2,4);
+        FillEGAOver12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEGAOver14){
+        fEventsover10->Fill(3,4);
+        FillEGAOver14 = kFALSE;
+      }
       fL1triggered->Fill(vecCOI.Pt());
     }
-  
+////////////////////////////////////////////////  
+
     
     if(fTMClusterRejected)
     {
