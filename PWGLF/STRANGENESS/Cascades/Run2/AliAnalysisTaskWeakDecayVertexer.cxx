@@ -1616,16 +1616,16 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 
                 
                 if( l3DdistA + 1e-6 < l3DdistB ){
-                    //A is the better point! move there, if DCA isn't crazy
-                    if( l3DdistA < 999 ) {
+                    //A is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistA < 999 && xBachA > 0.0 && xBachA < fCascadeVertexerSels[7]) {
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptA[icoord];
                         }
                         t->PropagateTo( xBachA , b );
                     }
                 }else{
-                    //B is the better point! move there
-                    if( l3DdistB < 999 ) {
+                    //B is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistB < 999 && xBachB > 0.0 && xBachB < fCascadeVertexerSels[7] ) {
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptB[icoord];
                         }
