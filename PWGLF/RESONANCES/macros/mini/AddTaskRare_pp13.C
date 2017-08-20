@@ -675,7 +675,7 @@ Bool_t Config_kxk0(
   Bool_t enableMonitor=kTRUE;
   
   // set cuts for primary K+/-
-  if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
+  if(!(TrackCutsKx%10000)) TrackCutsKx+=3020;//default settings
   Float_t nsigmaKxTPC=0.1*(TrackCutsKx%100);
   Float_t nsigmaKxTOF=0.1*((TrackCutsKx/100)%100);
 
