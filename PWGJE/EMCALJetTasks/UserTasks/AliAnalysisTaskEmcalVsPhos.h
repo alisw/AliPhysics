@@ -77,6 +77,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotCaloCentrality(Bool_t b)                      { fPlotCaloCentrality = b; }
   void SetPlotFineGrainedEtaPhi(Bool_t b)                   { fPlotFineGrainedEtaPhi = b; }
   void SetPlotEvenOddEta(Bool_t b)                          { fPlotEvenOddEta = b; }
+  void SetPlotCellSMDensity(Bool_t b)                       { fPlotCellSMDensity = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -124,6 +125,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotCaloCentrality;                  ///< Set whether to bin cluster THnSparse in calorimeter local density
   Bool_t                      fPlotFineGrainedEtaPhi;               ///< Set whether to plot fine-grained eta-phi bins in cluster THnSparse
   Bool_t                      fPlotEvenOddEta;                      ///< Set whether to add axis to THnSparse separating even/odd eta columns
+  Bool_t                      fPlotCellSMDensity;                   ///< Set whether to plot SM cell density when computing local density
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -149,7 +151,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 6);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 7);
   /// \endcond
 };
 #endif
