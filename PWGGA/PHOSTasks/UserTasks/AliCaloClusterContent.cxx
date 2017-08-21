@@ -37,7 +37,14 @@ AliCaloClusterContent::AliCaloClusterContent():
   fCellEnergy(0),
   fCellTime(0)
 {
-
+// allocate memory
+  fCellAbsID.reserve(30);
+  fCellMod.reserve(30);
+  fCellDetector.reserve(30);
+  fCellRelIDX.reserve(30);
+  fCellRelIDZ.reserve(30);
+  fCellEnergy.reserve(30);
+  fCellTime.reserve(30);
 }
 
 //________________________________________________________________________
@@ -86,6 +93,18 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fTOF                  = clust ->GetTOF();
   fTrackDx              = clust ->GetTrackDx();
   fTrackDz              = clust ->GetTrackDz();
+
+// allocate memory
+  fCellAbsID.reserve(2*fNCells);
+  fCellMod.reserve(2*fNCells);
+  fCellDetector.reserve(2*fNCells);
+  fCellRelIDX.reserve(2*fNCells);
+  fCellRelIDZ.reserve(2*fNCells);
+  fCellEnergy.reserve(2*fNCells);
+  fCellTime.reserve(2*fNCells);
+
+
+
 
 // Loop over all cells of current cluster
   for(int icell=0; icell<fNCells; icell++){
