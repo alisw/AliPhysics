@@ -64,8 +64,8 @@ public:
       , fTimeStamp(0)
       , fL0Inputs(0)
       , fL1Inputs(0)
-      , fRunNumber(0)
       , fEventNumberInFile(0)
+      , fRunNumber(0)
       , fnTrklet(0)
       , fOrbitID(0)
       , fInputFileName("") {
