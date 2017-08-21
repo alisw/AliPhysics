@@ -399,10 +399,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     if(TMath::Abs(fEventVertex->GetZ())>=fAnalysisCuts[bAnalysisCut_MaxVtxZ]) {
             return kFALSE;
         }
-
+/*
 Printf("fProductionNumberPtHard %i",fProductionNumberPtHard);
 Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1: 0 );
-
+*/
     this->fXsectionWeightingFactor=1;
     if(fIsPythia){
             if(fProductionNumberPtHard>0){
