@@ -133,6 +133,8 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
   fClusterCellsInformation = new AliCaloClusterContent();
 
+  OpenFile(1);
+
   fClusterTree   = new TTree("fClusterTree", "AliPHOSCluster");
   fClusterTree ->Branch("fClusterCellsInformation", &fClusterCellsInformation);
   fClusterTree ->SetAutoSave(100000);

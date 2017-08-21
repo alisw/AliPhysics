@@ -75,6 +75,20 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fCellEnergy(0),
   fCellTime(0)
 {
+
+  Int_t NCells = clust ->GetNCells();
+// allocate memory
+  fCellAbsID.reserve(2*NCells);
+  fCellMod.reserve(2*NCells);
+  fCellDetector.reserve(2*NCells);
+  fCellRelIDX.reserve(2*NCells);
+  fCellRelIDZ.reserve(2*NCells);
+  fCellEnergy.reserve(2*NCells);
+  fCellTime.reserve(2*NCells);
+
+  this->SetClusterAndCells(clust, cells, fgeom);
+
+/*
 // read out cluster information
   fType                 = clust ->GetType();
   fLabel                = clust ->GetLabel();
@@ -131,6 +145,7 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
     }
 
   fIsFilled = kTRUE;
+  */
 }
 
 //________________________________________________________________________
