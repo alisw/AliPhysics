@@ -48,7 +48,6 @@ void AliAnalysisTaskEventCutsValidation::UserCreateOutputObjects() {
   fList = new TList();
   fList->SetOwner(true);
   fEventCut.AddQAplotsToList(fList,true);
-  fEventCut.fUseVariablesCorrelationCuts = true;
 
   PostData(1,fList);
   if (fStoreCuts) PostData(2,&fEventCut);
