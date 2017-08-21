@@ -254,7 +254,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 	moving_marker = moving_marker + pt_binning[i] * 0.005;
     }
 
-    cout<<endl<<endl<<"moving_marker: "<<moving_marker<<endl<<endl;
+//    cout<<endl<<endl<<"moving_marker: "<<moving_marker<<endl<<endl;
     
      
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
