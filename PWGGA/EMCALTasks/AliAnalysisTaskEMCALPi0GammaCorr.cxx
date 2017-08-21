@@ -1300,7 +1300,7 @@ Int_t  AliAnalysisTaskEMCALPi0GammaCorr::GetMaxDistanceFromBorder(AliVCluster* c
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PreSelection(AliVCluster* cluster)
 {
     if(!cluster->IsEMCAL()) return kFALSE;
-    if(cluster->E()<3.0) return kFALSE;
+    if(cluster->E()<0.7) return kFALSE;
     return kTRUE;
 }
 
