@@ -30,7 +30,7 @@ class AliPHOSGeometry;
     Int_t  GetNCells()            {return fNCells;}
     Int_t  GetNTracksMatched()    {return fNTracksMatched;}
 
-    Bool_t IsFilled()             {return fIsFilled;}
+	 Bool_t IsFilled()             {return fIsFilled;}
     Bool_t IsExotic()             {return fIsExotic;}
     Bool_t IsEMCAL()              {return fIsEMCAL;}
     Bool_t IsPHOS()               {return fIsPHOS;}
