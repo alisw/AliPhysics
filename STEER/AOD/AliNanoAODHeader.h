@@ -4,7 +4,7 @@
 
 #include "AliVAODHeader.h"
 #include "AliNanoAODStorage.h"
-
+#include <map>
 
 
 class AliNanoAODHeader : public AliVAODHeader, public AliNanoAODStorage
@@ -91,7 +91,7 @@ public:
   Double_t  GetMagneticField()      const { return GetVar(fMagField); }
   Double_t  GetCentrality () const; 
   Double_t  GetCentr (const char *x) const; 
-  Int_t  GetRunNumber() const { return Int_t(GetVar(fRunNumber)); }
+  virtual Int_t  GetRunNumber() const; 
 
   TString GetCentralityMethod() const {return fCentralityMethod;}
   void SetCentralityMethod(const char * method)  { fCentralityMethod = method; } 
@@ -110,6 +110,11 @@ public:
   Int_t GetCentrCL1Index   () { return fCentrCL1  ; }
   Int_t GetMagFieldIndex   () { return fMagField  ; }
   Int_t GetRunNumberIndex  () { return fRunNumber ; }
+
+  std::map<TString,int> GetMapCstVar () { return fMapCstVar; } 
+  void SetMapCstVar (std::map<TString,int> cstmap) { fMapCstVar = cstmap; } 
+
+  Int_t GetVarIndex(TString varName); 
   
   ClassDef(AliNanoAODHeader, 2)
 private:
@@ -123,6 +128,8 @@ private:
   Int_t fCentrCL1;   // index of stored variable
   Int_t fMagField;   // index of stored variable
   Int_t fRunNumber;  // index of stored variable 
+
+  std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
 };
 
 #endif /* _ALINANOAODHEADER_H_ */
