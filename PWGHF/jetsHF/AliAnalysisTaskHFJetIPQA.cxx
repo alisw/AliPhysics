@@ -61,9 +61,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
-    fParam_Smear_Sigma(1),
-    fParam_Smear_Mean(0),
-    fRunSmearing(kFALSE),
+    fParam_Smear_Sigma(1.),
+    fParam_Smear_Mean(0.),
+    fRunSmearing(kTRUE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -110,9 +110,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
-    fParam_Smear_Sigma(1),
-    fParam_Smear_Mean(0),
-    fRunSmearing(kFALSE),
+    fParam_Smear_Sigma(1.),
+    fParam_Smear_Mean(0.),
+    fRunSmearing(kTRUE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -189,7 +189,9 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
 
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
+
     if(!fIsPythia) return;
+
     // Get reconstructed track parameters
   AliExternalTrackParam et; et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
@@ -398,6 +400,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             return kFALSE;
         }
 
+Printf("fProductionNumberPtHard %i",fProductionNumberPtHard);
+Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1: 0 );
 
     this->fXsectionWeightingFactor=1;
     if(fIsPythia){
@@ -588,6 +592,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     continue;
                 }
              if(fRunSmearing)SmearTrack((AliAODTrack*)trackV);
+
              IncHist("fh1dTracksAccepeted",2);
             FillHist("fh2dAcceptedTracksEtaPhi",trackV->Eta(),trackV->Phi(), this->fXsectionWeightingFactor );
             TrackWeight =1;dca[0]=-9999;dca[1]=-9999;cov[0]=-9999;cov[1]=-9999;cov[2]=-9999;
@@ -2573,15 +2578,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetPtCorrectedMC(const AliEmcalJet *jet)
     return -1.;
 }
 
-void AliAnalysisTaskHFJetIPQA::setFParam_Smear_Mean(const Double_t &value)
-{
-    fParam_Smear_Mean = value;
-}
 
-void AliAnalysisTaskHFJetIPQA::setFParam_Smear_Sigma(const Double_t &value)
-{
-    fParam_Smear_Sigma = value;
-}
 /*! \brief IsJetTaggedTC
  * unused
  *
@@ -2764,12 +2761,9 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     return (TH1*)phist;
 }
 
-void AliAnalysisTaskHFJetIPQA::setFRunSmearing(const Bool_t &value)
-{
-    fRunSmearing = value;
-}
 
-void AliAnalysisTaskHFJetIPQA::setFMCglobalDCASmear(const Double_t &value)
+
+void AliAnalysisTaskHFJetIPQA::setFMCglobalDCASmear(const Double_t value)
 {
     fMCglobalDCASmear = value;
 }
@@ -2794,10 +2788,7 @@ void AliAnalysisTaskHFJetIPQA::setFMCglobalDCAxyShift(const Double_t &value)
     fMCglobalDCAxyShift = value;
 }
 
-void AliAnalysisTaskHFJetIPQA::setFProductionNumberPtHard(const Int_t &value)
-{
-    fProductionNumberPtHard = value;
-}
+
 
 
 
