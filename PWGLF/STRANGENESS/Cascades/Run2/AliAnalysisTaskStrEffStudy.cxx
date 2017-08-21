@@ -284,12 +284,10 @@ fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
 
 //Full track info for DCA minim optimization
-fTreeCascVarBachTrackHelixParams{0.},
-fTreeCascVarPosTrackHelixParams{0.},
-fTreeCascVarNegTrackHelixParams{0.},
-fTreeCascVarBachXYZ{0.},
-fTreeCascVarNegXYZ{0.},
-fTreeCascVarPosXYZ{0.},
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
+
 
 //Histos
 fHistEventCounter(0),
@@ -481,12 +479,9 @@ fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
 
 //Full track info for DCA minim optimization
-fTreeCascVarBachTrackHelixParams{0.},
-fTreeCascVarPosTrackHelixParams{0.},
-fTreeCascVarNegTrackHelixParams{0.},
-fTreeCascVarBachXYZ{0.},
-fTreeCascVarNegXYZ{0.},
-fTreeCascVarPosXYZ{0.},
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
 
 //Histos
 fHistEventCounter(0),
@@ -764,15 +759,11 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarBachPzMC",&fTreeCascVarBachPzMC,"fTreeCascVarBachPzMC/F");
     
     //Full track info for DCA minim optimization
-    fTreeCascade->Branch("fTreeCascVarBachTrackHelixParams",&fTreeCascVarBachTrackHelixParams,"fTreeCascVarBachTrackHelixParams[6]/F");
-    fTreeCascade->Branch("fTreeCascVarPosTrackHelixParams",&fTreeCascVarPosTrackHelixParams,"fTreeCascVarPosTrackHelixParams[6]/F");
-    fTreeCascade->Branch("fTreeCascVarNegTrackHelixParams",&fTreeCascVarNegTrackHelixParams,"fTreeCascVarNegTrackHelixParams[6]/F");
-    
-    fTreeCascade->Branch("fTreeCascVarBachXYZ",&fTreeCascVarBachXYZ,"fTreeCascVarBachXYZ[3]/F");
-    fTreeCascade->Branch("fTreeCascVarNegXYZ",&fTreeCascVarNegXYZ,"fTreeCascVarNegXYZ[3]/F");
-    fTreeCascade->Branch("fTreeCascVarPosXYZ",&fTreeCascVarPosXYZ,"fTreeCascVarPosXYZ[3]/F");
+    fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
+    fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
+    fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
     //------------------------------------------------
-    
+
     //------------------------------------------------
     // Particle Identification Setup
     //------------------------------------------------
@@ -1471,16 +1462,6 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarBachPyMC = 0.0;
         fTreeCascVarBachPzMC = 0.0;
         
-        for(Int_t ivar=0; ivar<3; ivar++){
-            fTreeCascVarBachXYZ[ivar]=-1.0;
-            fTreeCascVarNegXYZ[ivar]=-1.0;
-            fTreeCascVarPosXYZ[ivar]=-1.0;
-        }
-        for(Int_t ivar=0; ivar<6; ivar++){
-            fTreeCascVarBachTrackHelixParams[ivar]=-1.0;
-            fTreeCascVarNegTrackHelixParams[ivar]=-1.0;
-            fTreeCascVarPosTrackHelixParams[ivar]=-1.0;
-        }
         //-----------------------------------------------------------------
         //3a: get basic track characteristics
         fTreeCascVarPosLength  = -1;
@@ -1624,6 +1605,25 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarInvMassOmegaMinus = cascade.GetEffMassXi();
             cascade.ChangeMassHypothesis(lV0quality ,-3334);
             fTreeCascVarInvMassOmegaPlus = cascade.GetEffMassXi();
+            
+            Double_t lBMom[3], lNMom[3], lPMom[3];
+            cascade.GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+            cascade.GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+            cascade.GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+            
+            fTreeCascVarNegPx = lNMom[0];
+            fTreeCascVarNegPy = lNMom[1];
+            fTreeCascVarNegPz = lNMom[2];
+            fTreeCascVarPosPx = lPMom[0];
+            fTreeCascVarPosPy = lPMom[1];
+            fTreeCascVarPosPz = lPMom[2];
+            fTreeCascVarBachPx = lBMom[0];
+            fTreeCascVarBachPy = lBMom[1];		
+            fTreeCascVarBachPz = lBMom[2];
+            
+            fTreeCascVarBachTrack = pbt;
+            fTreeCascVarPosTrack = ptp;
+            fTreeCascVarNegTrack = ntp;
             
         }
         

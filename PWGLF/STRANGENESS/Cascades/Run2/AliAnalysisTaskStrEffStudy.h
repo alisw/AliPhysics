@@ -505,16 +505,11 @@ private:
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
     
-    //Variables to debug distance minimization algorithm
-    Float_t fTreeCascVarBachTrackHelixParams[6];
-    Float_t fTreeCascVarPosTrackHelixParams[6];
-    Float_t fTreeCascVarNegTrackHelixParams[6];
+    //Save full AliExternalTrackParam for debugging and development purposes
+    AliExternalTrackParam *fTreeCascVarBachTrack;
+    AliExternalTrackParam *fTreeCascVarPosTrack;
+    AliExternalTrackParam *fTreeCascVarNegTrack;
     
-    Float_t fTreeCascVarBachXYZ[3];
-    Float_t fTreeCascVarNegXYZ[3];
-    Float_t fTreeCascVarPosXYZ[3];
-    
-
 //===========================================================================================
 //   Histograms
 //===========================================================================================
