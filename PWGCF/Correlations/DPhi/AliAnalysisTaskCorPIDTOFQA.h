@@ -31,13 +31,18 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
 	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
-	Double_t cut_width  = 2.0;
+	Double_t cut_width  = 3.0;
 	
     private:
 
         AliAODEvent*          fAOD;               //! input event
         TList*                fOutputList;        //! output list
 	AliPIDResponse*       fPIDResponse;
+
+
+//	TFile*                f;
+	TTree*                htree;
+	AliAODEvent*          helperAOD;                   //! input event
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
