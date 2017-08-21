@@ -17,6 +17,9 @@ void sim(Int_t nev, const char * config, const char * det)  {
   gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/lego/commonConfig.C");
 
   AliSimulation simulator(config);
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
+  simulator.SetSpecificStorage("GRP/GRP/Data",
+			       Form("local://%s",gSystem->pwd()));
   TString configFunction("Config(\"");
   configFunction.Append(det);
   configFunction.Append(TString("\");"));

@@ -13,6 +13,7 @@ void aod(){
     gSystem->Load("libTender");
     gSystem->Load("libPWGPP");
 
+    AliGeomManager::LoadGeometry("../geometry.root");
     AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
     gROOT->Macro("${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C(\"AliESDs.root\",\"AliAODs.root\",\"local://$ALIROOT_OCDB_ROOT/OCDB\",\"local://..\",kFALSE)");
