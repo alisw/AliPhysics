@@ -158,10 +158,12 @@ public:
       , fPx(0)
       , fPy(0)
       , fPz(0)
+      , fLength(0)
       , fITSsignal(0)
       , fTPCsignal(0)
       , fTOFsignal(0)
-      , fFilterMap(0) {
+      , fFilterMap(0)
+      , fFlags(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
       for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
@@ -175,6 +177,7 @@ public:
 
     Double32_t fSign;                          //[-1,1,2]
     Float_t    fPx,fPy,fPz;
+    Float_t    fLength;
     Float_t    fITSsignal, fTPCsignal, fTOFsignal;
     Double32_t fNumSigmaITS[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
@@ -183,7 +186,8 @@ public:
     Short_t    fChipKey[2];                    // L0,L1 (SPD)
     Int_t      fStatus[2];                     // L0,L1 (SPD)
     UInt_t     fFilterMap;
-    ClassDef(TrackData, 5);
+    ULong_t    fFlags;
+    ClassDef(TrackData, 6);
   } ;
 
   struct SPD_0STG : public TObject {
