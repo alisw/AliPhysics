@@ -1581,11 +1581,11 @@ void AliAnalysisTaskUpcEtaC::RunAODtree()
     fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
     fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
     fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-    fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-    fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-    fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
-    fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
-    fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+    fTrigger[8]  = trigger.Contains("CCUP8-B"); // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+    fTrigger[9]  = trigger.Contains("CCUP9-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
+    fTrigger[10]  = trigger.Contains("CCUP10-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
+    fTrigger[11]  = trigger.Contains("CCUP11-B"); // *0UBA *0UBC 0STP 0OMU
+    fTrigger[12]  = trigger.Contains("CCUP12-B"); // *0UBA *0UBC 0STP
     fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
   }
   if(fTracking == 8) {
@@ -2289,8 +2289,8 @@ void AliAnalysisTaskUpcEtaC::RunESDtree()
   fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
   fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
   fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  fTrigger[8]  = trigger.Contains("CCUP8-B"); // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  fTrigger[9]  = trigger.Contains("CCUP9-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
   
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
