@@ -234,6 +234,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_curves[1][1][2] = 0.00346519;
 
 
+//    cout<<endl<<endl<<endl<<fAOD->GetRunNumber()<<endl<<endl<<endl;
+	
+    
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
@@ -244,67 +247,75 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     Double_t pt_binning[2001];
 
 
-    Float_t moving_marker = 0.10;
-    for(int i=0; i<1202; i++)
+    Float_t moving_marker = 0.010;
+    for(int i=0; i<1602; i++)
     {
 	pt_binning[i] = moving_marker;
 	moving_marker = moving_marker + pt_binning[i] * 0.005;
     }
-    
+
+    cout<<endl<<endl<<"moving_marker: "<<moving_marker<<endl<<endl;
     
      
-    fHistPt                    = new TH1F("fHistPt",                    "Pt()",                        800,       pt_binning);                              //  1
+    fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
     cent_ntracks               = new TH2F("cent_ntracks",               "cent_ntracks",                100,        0,    100,     100,       0,     800);   //  2
     
-    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  3
-    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  4
-    beta_p_pos                 = new TH2F("beta_p_pos",                 "beta_p_pos",                  800,       pt_binning,    3000,     0.1,     1.1);   //  5
-    beta_p_neg                 = new TH2F("beta_p_neg",                 "beta_p_neg",                  800,       pt_binning,    3000,     0.1,     1.1);   //  6
-    deltat_pt_pos              = new TH2F("deltat_pt_pos",              "deltat_pt_pos",               800,       pt_binning,    7100,    -1.0,    70.0);   //  7
-    deltat_pt_neg              = new TH2F("deltat_pt_neg",              "deltat_pt_neg",               800,       pt_binning,    7100,    -1.0,    70.0);   //  8
+    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                  1300,       pt_binning,    2400,    -1.0,     7.0);   //  3
+    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                  1300,       pt_binning,    2400,    -1.0,     7.0);   //  4
+    beta_p_pos                 = new TH2F("beta_p_pos",                 "beta_p_pos",                 1300,       pt_binning,    3000,     0.1,     1.1);   //  5
+    beta_p_neg                 = new TH2F("beta_p_neg",                 "beta_p_neg",                 1300,       pt_binning,    3000,     0.1,     1.1);   //  6
+    deltat_pt_pos              = new TH2F("deltat_pt_pos",              "deltat_pt_pos",              1300,       pt_binning,    7100,    -1.0,    70.0);   //  7
+    deltat_pt_neg              = new TH2F("deltat_pt_neg",              "deltat_pt_neg",              1300,       pt_binning,    7100,    -1.0,    70.0);   //  8
 
-    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  9
-    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   // 10
-    beta_p_pos_cut             = new TH2F("beta_p_pos_cut",             "beta_p_pos_cut",              800,       pt_binning,    3000,     0.1,     1.1);   // 11
-    beta_p_neg_cut             = new TH2F("beta_p_neg_cut",             "beta_p_neg_cut",              800,       pt_binning,    3000,     0.1,     1.1);   // 12
-    deltat_pt_pos_cut          = new TH2F("deltat_pt_pos_cut",          "deltat_pt_pos_cut",           800,       pt_binning,    7100,    -1.0,    70.0);   // 13
-    deltat_pt_neg_cut          = new TH2F("deltat_pt_neg_cut",          "deltat_pt_neg_cut",           800,       pt_binning,    7100,    -1.0,    70.0);   // 14
+    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",              1300,       pt_binning,    2400,    -1.0,     7.0);   //  9
+    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",              1300,       pt_binning,    2400,    -1.0,     7.0);   // 10
+    beta_p_pos_cut             = new TH2F("beta_p_pos_cut",             "beta_p_pos_cut",             1300,       pt_binning,    3000,     0.1,     1.1);   // 11
+    beta_p_neg_cut             = new TH2F("beta_p_neg_cut",             "beta_p_neg_cut",             1300,       pt_binning,    3000,     0.1,     1.1);   // 12
+    deltat_pt_pos_cut          = new TH2F("deltat_pt_pos_cut",          "deltat_pt_pos_cut",          1300,       pt_binning,    7100,    -1.0,    70.0);   // 13
+    deltat_pt_neg_cut          = new TH2F("deltat_pt_neg_cut",          "deltat_pt_neg_cut",          1300,       pt_binning,    7100,    -1.0,    70.0);   // 14
 
 
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 15
 //  deut_per_event_pos         = new TH1I("deut_per_event_pos",         "deut_per_event_pos",           12,        0,     12);                              // 16
 //  deut_per_event_neg         = new TH1I("deut_per_event_neg",         "deut_per_event_neg",           12,        0,     12);                              // 17
-    m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   // 18
-    m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   // 19
+    m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",            1300,       pt_binning,    2400,    -1.0,     7.0);   // 18
+    m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",            1300,       pt_binning,    2400,    -1.0,     7.0);   // 19
 
-    deut_phi_pt                = new TH2F("deut_phi_pt",                "deut_phi_pt",                 800,       pt_binning,     300, -1.6708,  4.8124);   // 20
-    deut_phi_pt_pos            = new TH2F("deut_phi_pt_pos",            "deut_phi_pt_pos",             800,       pt_binning,     300, -1.6708,  4.8124);   // 21
-    deut_phi_pt_neg            = new TH2F("deut_phi_pt_neg",            "deut_phi_pt_neg",             800,       pt_binning,     300, -1.6708,  4.8124);   // 22
+    deut_phi_pt                = new TH2F("deut_phi_pt",                "deut_phi_pt",                1300,       pt_binning,     300, -1.6708,  4.8124);   // 20
+    deut_phi_pt_pos            = new TH2F("deut_phi_pt_pos",            "deut_phi_pt_pos",            1300,       pt_binning,     300, -1.6708,  4.8124);   // 21
+    deut_phi_pt_neg            = new TH2F("deut_phi_pt_neg",            "deut_phi_pt_neg",            1300,       pt_binning,     300, -1.6708,  4.8124);   // 22
 
 
-    trig_05_phi_pt             = new TH2F("trig_05_phi_pt",             "trig_05_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 23
-    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 24
-    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 25
-    trig_08_phi_pt             = new TH2F("trig_08_phi_pt",             "trig_08_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 26
-    trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 27
-    trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",         1200,       pt_binning,     300, -1.6708,  4.8124);   // 28
+    trig_05_phi_pt             = new TH2F("trig_05_phi_pt",             "trig_05_phi_pt",             1600,       pt_binning,     300, -1.6708,  4.8124);   // 23
+    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",         1600,       pt_binning,     300, -1.6708,  4.8124);   // 24
+    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",         1600,       pt_binning,     300, -1.6708,  4.8124);   // 25
+    trig_08_phi_pt             = new TH2F("trig_08_phi_pt",             "trig_08_phi_pt",             1600,       pt_binning,     300, -1.6708,  4.8124);   // 26
+    trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",         1600,       pt_binning,     300, -1.6708,  4.8124);   // 27
+    trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",         1600,       pt_binning,     300, -1.6708,  4.8124);   // 28
     
-    deut_dphi_pt_pos_pos_05    = new TH2F("deut_dphi_pt_pos_pos_05",    "deut_dphi_pt_pos_pos_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 29
-    deut_dphi_pt_pos_neg_05    = new TH2F("deut_dphi_pt_pos_neg_05",    "deut_dphi_pt_pos_neg_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 30
-    deut_dphi_pt_neg_neg_05    = new TH2F("deut_dphi_pt_neg_neg_05",    "deut_dphi_pt_neg_neg_05",     800,       pt_binning,     300, -1.6708,  4.8124);   // 31
+    deut_dphi_pt_pos_pos_05    = new TH2F("deut_dphi_pt_pos_pos_05",    "deut_dphi_pt_pos_pos_05",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 29
+    deut_dphi_pt_pos_neg_05    = new TH2F("deut_dphi_pt_pos_neg_05",    "deut_dphi_pt_pos_neg_05",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 30
+    deut_dphi_pt_neg_neg_05    = new TH2F("deut_dphi_pt_neg_neg_05",    "deut_dphi_pt_neg_neg_05",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 31
     
-    deut_dphi_pt_pos_pos_08    = new TH2F("deut_dphi_pt_pos_pos_08",    "deut_dphi_pt_pos_pos_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 32
-    deut_dphi_pt_pos_neg_08    = new TH2F("deut_dphi_pt_pos_neg_08",    "deut_dphi_pt_pos_neg_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 33
-    deut_dphi_pt_neg_neg_08    = new TH2F("deut_dphi_pt_neg_neg_08",    "deut_dphi_pt_neg_neg_08",     800,       pt_binning,     300, -1.6708,  4.8124);   // 34
+    deut_dphi_pt_pos_pos_08    = new TH2F("deut_dphi_pt_pos_pos_08",    "deut_dphi_pt_pos_pos_08",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 32
+    deut_dphi_pt_pos_neg_08    = new TH2F("deut_dphi_pt_pos_neg_08",    "deut_dphi_pt_pos_neg_08",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 33
+    deut_dphi_pt_neg_neg_08    = new TH2F("deut_dphi_pt_neg_neg_08",    "deut_dphi_pt_neg_neg_08",    1300,       pt_binning,     300, -1.6708,  4.8124);   // 34
 
     tof_phi_eta_pos            = new TH2F("tof_phi_eta_pos",            "tof_phi_eta_pos",             600,  -1.6708, 4.8124,     300,    0.82,    0.82);   // 35
     tof_phi_eta_neg            = new TH2F("tof_phi_eta_neg",            "tof_phi_eta_neg",             600,  -1.6708, 4.8124,     300,    0.82,    0.82);   // 36
 
     tof_phi_eta_pos_deut       = new TH2F("tof_phi_eta_pos_deut",       "tof_phi_eta_pos_deut",        600,  -1.6708, 4.8124,     300,    0.82,    0.82);   // 37
     tof_phi_eta_neg_deut       = new TH2F("tof_phi_eta_neg_deut",       "tof_phi_eta_neg_deut",        600,  -1.6708, 4.8124,     300,    0.82,    0.82);   // 38
-    
+
+//    f                          = new TFile("195529", "RECREATE","ROOT file with histograms & tree");
+
+    htree                      = new TTree("htree","Event tree with a few branches");
     // objects added to output file
 
+    helperAOD                  = new AliAODEvent;
+    
+//    MyDataClass* p_object = new MyDataClass;
+    htree->Branch("AODevent", &helperAOD);
 
 
     fOutputList->Add(fHistPt);                     //  1
@@ -355,7 +366,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(tof_phi_eta_pos_deut);        // 37
     fOutputList->Add(tof_phi_eta_neg_deut);        // 38
 
-
+    fOutputList->Add(htree);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -383,7 +394,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     Int_t iTracks(fAOD->GetNumberOfTracks());
 
-
+//    cout<<fAOD->GetRunNumber()<<endl;
     
     //////////////////////////////////////// MULTIPLICITY PART ////////////////////////////////////////
 
@@ -404,7 +415,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     Float_t pio2 = TMath::PiOver2();
     Float_t twopi  = TMath::TwoPi();
-    // markA
+
+
 
     // loop over all these tracks
     //
@@ -561,8 +573,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //    deut_per_event_neg->Fill(NDeut_neg);
 
 
-//    cout<<endl<<endl;
-    // markA
+
+
+    if(deut_count > 0)
+    {
+	helperAOD = fAOD;
+	htree->Fill();
+    }
     
     if(deut_count > 0  &&  trig_05_track_count > 0)
     {
@@ -570,6 +587,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //	cout<<trig_05_track_count<<","<<deut_count<<" ";
 	for(int i=0; i<trig_05_track_count; i++)  // trigger loop
 	{
+
+
+	    //mark1
+
 	    
 	    int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
