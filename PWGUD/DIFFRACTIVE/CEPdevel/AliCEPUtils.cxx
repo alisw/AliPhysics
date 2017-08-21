@@ -664,8 +664,7 @@ void AliCEPUtils::V0Analysis (
   AliESDv0 *V0;
   AliESDtrack *trackPos, *trackNeg;
   Double_t pos0[3], pos1[3];
-  Double_t d, cosTh, pTArm, alphaArm;
-  Double_t mom1[3], mom2[3];
+  Double_t d, pTArm, alphaArm;
   Double_t pV0;
   Bool_t goodPair = kFALSE;
 
@@ -1389,7 +1388,7 @@ void AliCEPUtils::DetermineMCprocessType (
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
       // printf("MC generator name: %s\n",fMCGenerator.Data());
-      Int_t nprod = header->NProduced();
+      // Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia

@@ -281,12 +281,13 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fIR2InteractionMap()
   , fFastOrMap()
   , fFiredChipMap()
-  , fFiredTriggerClasses()
   , fVertexSPD()
   , fVertexTPC()
   , fVertexTracks()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 3)
+  , fFiredTriggerClasses()
+  , fTreeData()
   , fSPD_0STG_Online()
   , fSPD_0STG_Offline()
   , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTracksSave)
@@ -431,7 +432,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   PostData(1, fList);
 
   TDirectory *owd = gDirectory;
-  TFile *fSave = OpenFile(1);
+  OpenFile(1);
   fTE = new TTree(GetTreeName(), "");
   SetBranches(fTE, fTrackFilterMask != 0);
   PostData(2, fTE);

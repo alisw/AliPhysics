@@ -56,7 +56,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   UInt_t ETmaskNDG, UInt_t ETpatternNDG,
   UInt_t TTmask, UInt_t TTpattern):
 	AliAnalysisTaskSE(name)
-	, fAnalysisStatus(state)
   , frnummin(rnummin)
   , frnummax(rnummax)
   , fnumTracksMax(numTracksMax)
@@ -68,14 +67,16 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
-  , fLHCPeriod(TString(""))
   , fRun(-1)
   , fESDRun(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
+  , fAnalysisStatus(state)
+  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -85,14 +86,13 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fEventCuts(0x0)
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , fCEPUtil(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
-  , fCEPUtil(0x0)
 {
 
 	// ensures that the histograms are all deleted on exit!
@@ -109,7 +109,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
 //------------------------------------------------------------------------------
 AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	AliAnalysisTaskSE()
-	, fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
   , frnummin(100000)
   , frnummax(300000)
   , fnumTracksMax(6)
@@ -121,13 +120,15 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
-  , fLHCPeriod(TString(""))
   , fRun(-1)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
+  , fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
+  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -137,7 +138,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fEventCuts(0x0)
 	, fTrackCuts(0x0)
   , fMartinSel(0x0)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , fCEPUtil(0x0)
   , flQArnum(0x0)
   , flBBFlag(0x0)
 	, flSPDpileup(0x0)
@@ -148,7 +149,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
-  , fCEPUtil(0x0)
 {
 
 }
@@ -534,7 +534,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // magnetic field strenght
   Double_t fMagField = fEvent->GetMagneticField();
   // number of tracks
-  Int_t fNumTracks = fEvent->GetNumberOfTracks();
+  // Int_t fNumTracks = fEvent->GetNumberOfTracks();
   // Number of V0s
   Int_t fNumV0s = fEvent->GetNumberOfV0s();
   
@@ -777,8 +777,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
     
   // use the AliCEPUtils::GetCEPTracks method
-  TArrayI *Pindices  = new TArrayI();
-  Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
+  // TArrayI *Pindices  = new TArrayI();
+  // Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
   // if (nMartinSel>0 || nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   // get the tracks which meet the TT conditions
@@ -954,7 +954,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       TParticle* prot1 = NULL;
       stack = fMCEvent->Stack();
       if (stack) {
-        Int_t nPrimaries = stack->GetNprimary();
+        // Int_t nPrimaries = stack->GetNprimary();
         //printf("number of tracks: primaries - %i, reconstructed - %i\n",
         //  nPrimaries,nTracks);
         prot1 = stack->Particle(0);
