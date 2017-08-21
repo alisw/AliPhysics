@@ -34,7 +34,7 @@ AliUPCEvent::AliUPCEvent()
   fVtxSPDchi2perNDF(0), fVtxSPDnContributors(0), fVtxSPDtitle(0x0),
   fNTracklets(0), fNSPDfiredInner(0), fNSPDfiredOuter(0), fFOmap(0x0),
   fV0ADecision(0), fV0CDecision(0), fBBtriggerV0C(0), fBBFlagV0C(0), fBBtriggerV0A(0), fBBFlagV0A(0),
-  fADADecision(0), fADCDecision(0), fBBtriggerADC(0), fBBFlagADC(0), fBBtriggerADA(0), fBBFlagADA(0),
+   fBBtriggerADC(0), fBBFlagADC(0), fBBtriggerADA(0), fBBFlagADA(0), fADADecision(0), fADCDecision(0),
   fZNCEnergy(0), fZPCEnergy(0), fZNAEnergy(0), fZPAEnergy(0),
   fZNCtdc(0), fZPCtdc(0), fZNAtdc(0), fZPAtdc(0),
   fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),
