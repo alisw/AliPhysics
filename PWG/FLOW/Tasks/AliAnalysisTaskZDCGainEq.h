@@ -303,6 +303,7 @@ private:
   TProfile2D      *fHist_XX_vs_QnC_2DwoCorr_NegMag[4][6];    //!
   TProfile2D      *fHist_XX_vs_QnA_2DwoCorr_NegMag[4][6];    //!
 
+  TProfile2D      *fHist_VZERO_Mult_vsRun[90];    //!
 
   //TH2F           *fHist_ZDCAC_AvgCosSin_vsCent;
 

@@ -280,6 +280,11 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
    }
   }
 
+  for(int i=0;i<90;i++){
+   fHist_VZERO_Mult_vsRun[i] = NULL;
+  }
+
+
   DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
   DefineInput(2, AliFlowEventSimple::Class()); // Input slot #2 for ZDC flow event
 
@@ -492,6 +497,11 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     fHist_XX_vs_QnA_2DwoCorr_NegMag[i][j] = NULL;
    }
   }
+
+  for(int i=0;i<90;i++){
+   fHist_VZERO_Mult_vsRun[i] = NULL;
+  }
+
 
   //fDataSet="2010";
   //fAnalysisSet="DoGainEq";
@@ -965,9 +975,10 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    }
   }
 
-
-
-
+  for(int i=0;i<90;i++){
+    fHist_VZERO_Mult_vsRun[i]  = new TProfile2D(Form("fHist_V0Mult_vsCent_Run%d",runArray_2015[i]),"",90,0,90,64,0,64,""); //cent,channel
+    //added to second list
+  }
 
 
   Double_t centRange[12]    = {0,5,10,20,30,40,50,60,70,80,90,100};
@@ -1308,6 +1319,9 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
 
 
 
+
+
+
   PostData(1,fListHistos); 
 
   if(!bApplyRecent && fAnalysisSet=="DoGainEq") {
@@ -1317,6 +1331,9 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
     fListDummy1 = new TList();
     fListDummy1->SetOwner(kTRUE);
     fListDummy1->Add(fHist_Event_count);
+    for(int i=0;i<90;i++){
+      fListDummy1->Add(fHist_VZERO_Mult_vsRun[i]);
+    }
 
     PostData(2,fListDummy1); 
   }
@@ -2061,6 +2078,20 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   xyZNA[1] = xyZNA[1] - meanAy;
   */
 
+
+  const AliAODVZERO *fvzero = aod->GetVZEROData();
+
+  Float_t fV0Mult[64] = {0.,}; //0-31 v0c and 32-63 is v0A
+
+  for(int i=0;i<64;i++){
+    fV0Mult[i] = fvzero->GetMultiplicity(i); 
+  }
+
+  for(int i=0;i<64;i++){
+   fHist_VZERO_Mult_vsRun[runindex]->Fill(EvtCent,i+0.5,fV0Mult[i]);
+  }
+
+
   //use Jacopo's flowEvent ZDC Q-vectors:
 
   xyZNC[0] = vQarray[0].Px();
@@ -2390,7 +2421,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Double_t mSubEtaNeg = 0;
 
 
-  if(bApplyRecent) {
+  if(bApplyRecent && bApplyShiftCorr) {
    for(int i=0; i<iTracks; i++) {
      pTrack    =    fEvent->GetTrack(i);
      if(!pTrack)               continue;
@@ -2651,8 +2682,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
   //if(fievent%20==0) {
-  //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
-  //std::cout<<" <XXYY> = "<<CorrC[0]<<"\t <XYXY> = "<<CorrC[1]<<"\t MagField = "<<fMagField<<std::endl;
+    //std::cout<<" cent= "<<EvtCent<<"\tV0C[1] = "<<fV0Mult[1]<<"\t V0A[63] = "<<fV0Mult[63]<<"\tRefMult = "<<nRefMult<<std::endl;
+    //std::cout<<" <XXYY> = "<<CorrC[0]<<"\t <XYXY> = "<<CorrC[1]<<"\t MagField = "<<fMagField<<std::endl;
   //}
 
 
