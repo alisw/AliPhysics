@@ -230,10 +230,12 @@ void AliAnalysisTaskDG::TrackData::Fill(AliVTrack *tr, AliPIDResponse *pidRespon
     AliErrorF("tr=%p pidResponse=%p", tr, pidResponse);
     return;
   }
+  fFlags = tr->GetStatus();
   fSign = GetTrackSign(tr);
   fPx   = tr->Px();
   fPy   = tr->Py();
   fPz   = tr->Pz();
+  fLength = tr->GetIntegratedLength();
   fITSsignal = tr->GetITSsignal();
   fTPCsignal = tr->GetTPCsignal();
   fTOFsignal = tr->GetTOFsignal();
