@@ -582,9 +582,9 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
       for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
         AliESDtrack* track = (AliESDtrack*) fInputEvent->GetTrack(ipart);
         ULong_t status = track->GetStatus();
-        if (status & AliESDtrack::kITSin     == 0) continue;
-        if (status & AliESDtrack::kTPCin     != 0) continue;
-        if (status & AliESDtrack::kITSpureSA != 0) continue;
+        if ((status & AliESDtrack::kITSin)     == 0) continue;
+        if ((status & AliESDtrack::kTPCin)     != 0) continue;
+        if ((status & AliESDtrack::kITSpureSA) != 0) continue;
         UChar_t itsMap = track->GetITSClusterMap();
         if (!TESTBIT(itsMap,0) && !TESTBIT(itsMap,1)) continue;
         Float_t pt     = track->Pt();
