@@ -117,14 +117,14 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
   Double_t magfield = header->GetMagneticField();
   Int_t runNumber = event->GetRunNumber();
 
-  if (varListHeader.CompareTo("")==0) varListHeader = "cstCentr,cstMagField";
-
-  static const char * validatorString[] = {"cstCentr","cstMagField","cstCentrTRK","cstCentrCL0", "cstCentrCL1", "cstRunNumber", 0};
+  static const char * validatorString[] = {"Centr","MagField","CentrTRK","CentrCL0", "CentrCL1", "RunNumber", 0};
   TObjArray * vars = varListHeader.Tokenize(",");
   Int_t size = vars->GetSize();
   TIter it(vars);
   TObjString *token  = 0;
   Int_t index=0;
+
+  std::map<TString,int> cstMap = head->GetMapCstVar();
 
   while ((token = (TObjString*) it.Next())) {
     TString var = token->GetString().Strip(TString::kBoth, ' ');
@@ -136,18 +136,24 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
       if(var == validatorString[ivalidator++]) isValid = kTRUE;
     }
 
-    if (!isValid) AliFatal(Form("Invalid var [%s]", var.Data()));
-    if     (var == "cstCentr"      ) head->SetCentrIndex      (index);
-    else if(var == "cstCentrTRK"   ) head->SetCentrTRKIndex   (index);
-    else if(var == "cstCentrCL0"   ) head->SetCentrCL0Index   (index);
-    else if(var == "cstCentrCL1"   ) head->SetCentrCL1Index   (index);
-    else if(var == "cstMagField"   ) head->SetMagFieldIndex   (index);
-    else if(var == "cstRunNumber"  ) head->SetRunNumberIndex  (index);
+    if (!( isValid || var.BeginsWith("cst"))) AliFatal(Form("Invalid var [%s]", var.Data()));
+    if     (var == "Centr"      ) head->SetCentrIndex      (index);
+    else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index);
+    else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index);
+    else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index);
+    else if(var == "MagField"   ) head->SetMagFieldIndex   (index);
+    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index);
+    else {
+      cstMap[var] = index;
+      std::cout << "ADDING " << index << " " << cstMap[var] << " " << var.Data() << std::endl;
+      
+    }
 
     index++;
   }
   size = index;
   if(vars) vars->Delete();
+  head->SetMapCstVar(cstMap);
 
   if ((head->GetCentrIndex())!=-1)     head->SetVar(head->GetCentrIndex()    ,           centrV0M );
   if ((head->GetCentrTRKIndex())!=-1)  head->SetVar(head->GetCentrTRKIndex() ,           centrTRK );
@@ -155,5 +161,6 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
   if ((head->GetCentrCL0Index())!=-1)  head->SetVar(head->GetCentrCL0Index() ,           centrCL0 );
   if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
   if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), Double_t(runNumber));
+
 
 }
