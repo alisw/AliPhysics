@@ -219,21 +219,22 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
 //  TGraph* gDelivered = (TGraph*) fDelivered->Get("gIntegrated");
   TGraph* gSeen    = GetStat("Seen",1,0);
 
-  TGraph* gINT = GetStat("CINT7-B-NOPF-CENT",1,goodOnly);
-  TGraph* gINTFAST = GetStat("CINT7-B-NOPF-MUFAST",1,goodOnly);
-  TGraph* gV0M = GetStat("CVHMV0M-B-NOPF-CENT",1,goodOnly);
-  TGraph* gMUL = GetStat("CMUL7-B-NOPF-MUFAST",1,goodOnly);
-  TGraph* gMSL = GetStat("CMSL7-B-NOPF-MUFAST",1,goodOnly);
-  TGraph* gEMC1 = GetStat("CEMC7EJ1-B-NOPF-CENTNOTRD",1,goodOnly);
-  TGraph* gEMC2 = GetStat("CEMC7EJ2-B-NOPF-CENT",1,goodOnly);
-  TGraph* gPHI  = GetStat("CPHI7-B-NOPF-CENTNOTRD",1,goodOnly);
-  TGraph* gDG   = GetStat("CCUP25-B-SPD1-CENTNOTRD",1,goodOnly);
-  TGraph* gStatV0M   = GetStat("CVHMV0M-B-NOPF-CENT",0,goodOnly);
-  TGraph* gStatINT   = GetStat("CINT7-B-NOPF-CENT",0,goodOnly);
-  TGraph* gStatINT10 = GetStat("CINT10-B-NOPF-CENTNOTRD",0,goodOnly);
-  TGraph* gStatINT11 = GetStat("CINT11-B-NOPF-CENTNOTRD",0,goodOnly);
+  TGraph* gINT          = GetStat("CINT7-B-NOPF-CENT",1,goodOnly);
+  TGraph* gINTFAST      = GetStat("CINT7-B-NOPF-MUFAST",1,goodOnly);
+  TGraph* gV0M          = GetStat("CVHMV0M-B-NOPF-CENT",1,goodOnly);
+  TGraph* gMUL          = GetStat("CMUL7-B-NOPF-MUFAST",1,goodOnly);
+  TGraph* gMSL          = GetStat("CMSL7-B-NOPF-MUFAST",1,goodOnly);
+  TGraph* gEMC1         = GetStat("CEMC7EJ1-B-NOPF-CENTNOTRD",1,goodOnly);
+  TGraph* gEMC2         = GetStat("CEMC7EJ2-B-NOPF-CENT",1,goodOnly);
+  TGraph* gPHI          = GetStat("CPHI7-B-NOPF-CENTNOTRD",1,goodOnly);
+  TGraph* gDG           = GetStat("CCUP25-B-SPD1-CENTNOTRD",1,goodOnly);
+  TGraph* gStatV0M      = GetStat("CVHMV0M-B-NOPF-CENT",0,goodOnly);
+  TGraph* gStatINT      = GetStat("CINT7-B-NOPF-CENT",0,goodOnly);
+  TGraph* gStatINT10    = GetStat("CINT10-B-NOPF-CENTNOTRD",0,goodOnly);
+  TGraph* gStatINT11    = GetStat("CINT11-B-NOPF-CENTNOTRD",0,goodOnly);
   TGraph* gMuonCaloHigh = GetStat("CEMC7MUL-B-NOPF-ALLNOTRD",1,goodOnly);
-  TGraph* gMuonCaloLow = GetStat("CEMC7MSL-B-NOPF-ALLNOTRD",1,goodOnly);
+  TGraph* gMuonCaloLow  = GetStat("CEMC7MSL-B-NOPF-ALLNOTRD",1,goodOnly);
+  TGraph* gTRDqrkNuc    = GetStat("CINT7HNU-T-NOPF-CENT",1,goodOnly);
   // Projection graphs
   TGraph* gProjMUL      = GetProjection(0.115,gSeen->GetXaxis()->GetXmax()-timeCorr);
   TGraph* gProjEMC1     = GetProjection(0.053,gSeen->GetXaxis()->GetXmax()-timeCorr);
@@ -260,6 +261,7 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   gStatINT11->SetLineColor(kMagenta);
   gMuonCaloHigh->SetLineColor(kRed);
   gMuonCaloLow->SetLineColor(kYellow+4);
+  gTRDqrkNuc->SetLineColor(kCyan+2);
   gProjMUL->SetLineColor(kGray);
   gProjMUL->SetLineStyle(9);
   gProjEMC1->SetLineColor(kMagenta+2);
@@ -293,6 +295,8 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   latex->DrawLatex(x,y-=dy,Form("Di-#mu, single #mu high-p_{T}: %.3f pb^{-1} / 15 pb^{-1}",gMUL->GetY()[gMUL->GetN()-1]));
   latex->SetTextColor(gMSL->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("Single #mu low-p_{T}: %.3f pb^{-1} / 0.9 pb^{-1}",gMSL->GetY()[gMSL->GetN()-1]));
+  latex->SetTextColor(gTRDqrkNuc->GetLineColor());
+  latex->DrawLatex(x,y-=dy,Form("TRD quarkonia and nuclei: %.4f pb^{-1}",gTRDqrkNuc->GetY()[gTRDqrkNuc->GetN()-1]));
   latex->SetTextColor(gMuonCaloHigh->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("#mu-CALO high: %.3f pb^{-1}",gMuonCaloHigh->GetY()[gMuonCaloHigh->GetN()-1]));
   latex->SetTextColor(gMuonCaloLow->GetLineColor());
@@ -321,6 +325,7 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   gDG->Draw();
   gMuonCaloHigh->Draw();
   gMuonCaloLow->Draw();
+  gTRDqrkNuc->Draw();
 
   gPad->Print("lumi.png");
   delete f1;
