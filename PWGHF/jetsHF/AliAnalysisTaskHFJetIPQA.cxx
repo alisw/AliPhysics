@@ -61,6 +61,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
+    fParam_Smear_Sigma(1.),
+    fParam_Smear_Mean(0.),
+    fRunSmearing(kTRUE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -85,7 +88,8 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fCombined(nullptr),
     fXsectionWeightingFactor(1),
     fProductionNumberPtHard(-1),
-    fMCglobalDCAxyShift(0.007),
+    fMCglobalDCAxyShift(0.0008),
+    fMCglobalDCASmear(1),
     fVertexRecalcMinPt(1.0)
 {
     SetMakeGeneralHistograms(kTRUE);
@@ -106,6 +110,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
+    fParam_Smear_Sigma(1.),
+    fParam_Smear_Mean(0.),
+    fRunSmearing(kTRUE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -130,7 +137,8 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fCombined(nullptr),
     fXsectionWeightingFactor(1.),
     fProductionNumberPtHard(-1),
-    fMCglobalDCAxyShift(0.007),
+    fMCglobalDCAxyShift(0.000668),
+    fMCglobalDCASmear(1),
     fVertexRecalcMinPt(1.0)
 
 {
@@ -178,6 +186,115 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
  *
  * Set default number of its clusters cuts
  */
+
+
+void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
+
+    if(!fIsPythia) return;
+
+    // Get reconstructed track parameters
+  AliExternalTrackParam et; et.CopyFromVTrack(track);
+  Double_t *param=const_cast<Double_t*>(et.GetParameter());
+  Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
+
+  // Get MC info
+  Int_t imc=track->GetLabel();
+  if (imc<=0) return;
+  const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCArray->At(imc));
+  Double_t mcx[3];
+  Double_t mcp[3];
+  Double_t mccv[36]={0.};
+  Short_t  mcc;
+  mc->XvYvZv(mcx);
+  mc->PxPyPz(mcp);
+  mcc=mc->Charge();
+  AliExternalTrackParam mct(mcx,mcp,mccv,mcc);
+  const Double_t *parammc=mct.GetParameter();
+//TODO:  const Double_t *covermc=mct.GetCovariance();
+  AliVertex vtx(mcx,1.,1);
+
+  // Correct reference points and frames according to MC
+  // TODO: B-Field correct?
+  // TODO: failing propagation....
+  et.PropagateToDCA(&vtx,track->GetBz(),10.);
+  et.Rotate(mct.GetAlpha());
+
+  // Select appropriate smearing functions
+  Double_t sd0rpn=fParam_Smear_Sigma;
+  Double_t sd0mrpn=fParam_Smear_Mean;//mu m
+  Double_t sd0zn =1.;
+  Double_t spt1n =1.;
+  Double_t sd0rpo=1;
+  Double_t sd0mrpo=0;
+  Double_t sd0zo =1.;
+  Double_t spt1o =1.;
+
+//FillPArameter heere
+
+
+
+  // Use the same units (i.e. cm and GeV/c)! TODO: pt!
+  sd0rpo*=1.e-4;
+  sd0zo *=1.e-4;
+  sd0rpn*=1.e-4;
+  sd0zn *=1.e-4;
+  sd0mrpo*=1.e-4;
+  sd0mrpn*=1.e-4;
+
+  // Apply the smearing
+  Double_t d0zo  =param  [1];
+  Double_t d0zmc =parammc[1];
+  Double_t d0rpo =param  [0];
+  Double_t d0rpmc=parammc[0];
+  Double_t pt1o  =param  [4];
+  Double_t pt1mc =parammc[4];
+
+
+
+  Double_t dd0zo =d0zo-d0zmc;
+  Double_t dd0zn =dd0zo *(sd0zo >0. ? (sd0zn /sd0zo ) : 1.);
+  Double_t d0zn  =d0zmc+dd0zn;
+  Double_t dd0rpo=d0rpo-d0rpmc;
+  Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
+  Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
+  Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
+  Double_t dpt1o =pt1o-pt1mc;
+  Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
+  Double_t pt1n  =pt1mc+dpt1n;
+  param[0]=d0rpn;
+  param[1]=d0zn ;
+  param[4]=pt1n ;
+
+   //cov matrix update
+  if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
+  if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
+  if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
+  if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
+  if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
+  if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
+  if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
+  if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
+  if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
+
+  // Copy the smeared parameters to the AOD track
+  Double_t x[3];
+  Double_t p[3];
+  et.GetXYZ(x);
+  et.GetPxPyPz(p);
+  Double_t cv[21];
+  et.GetCovarianceXYZPxPyPz(cv);
+  track->SetPosition(x,kFALSE);
+  track->SetP(p,kTRUE);
+  track->SetCovMatrix(cv);
+
+
+  // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))
+  UChar_t itsClusterMap = track->GetITSClusterMap();
+  SETBIT(itsClusterMap,7);
+  track->SetITSClusterMap(itsClusterMap);
+  //
+}
+
 
 int AliAnalysisTaskHFJetIPQA::GetMCTruth(AliAODTrack * track, int &motherpdg){
     if(!fIsPythia) return 0;
@@ -282,8 +399,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     if(TMath::Abs(fEventVertex->GetZ())>=fAnalysisCuts[bAnalysisCut_MaxVtxZ]) {
             return kFALSE;
         }
-
-
+/*
+Printf("fProductionNumberPtHard %i",fProductionNumberPtHard);
+Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1: 0 );
+*/
     this->fXsectionWeightingFactor=1;
     if(fIsPythia){
             if(fProductionNumberPtHard>0){
@@ -380,45 +499,45 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         }else  if(fProductionNumberPtHard==3){
                             //LHC15G6E
                             if((pTHard >= 5) && (pTHard < 7) )
-                                fXsectionWeightingFactor = 1.389406e+00;
+                                fXsectionWeightingFactor = 1.373298e+00;
                             else if((pTHard >= 7) && (pTHard < 9) )
-                                fXsectionWeightingFactor = 1.246014e+00;
+                                fXsectionWeightingFactor = 1.249965e+00;
                             else if((pTHard >= 9) && (pTHard < 12) )
-                                fXsectionWeightingFactor = 1.135135e+00;
+                                fXsectionWeightingFactor = 1.128812e+00;
                             else if((pTHard >= 12) && (pTHard < 16) )
-                                fXsectionWeightingFactor = 6.494695e-01;
+                                fXsectionWeightingFactor = 6.503685e-01;
                             else if((pTHard >= 16) && (pTHard < 21) )
-                                fXsectionWeightingFactor = 2.801671e-01;
+                                fXsectionWeightingFactor = 2.811221e-01;
                             else if((pTHard >= 21) && (pTHard < 28) )
-                                fXsectionWeightingFactor = 1.177731e-01 ;
+                                fXsectionWeightingFactor = 1.173937e-01 ;
                             else if((pTHard >= 28) && (pTHard < 36) )
-                                fXsectionWeightingFactor = 3.851400e-02;
+                                fXsectionWeightingFactor = 3.849937e-02;
                             else if((pTHard >= 36) && (pTHard < 45) )
-                                fXsectionWeightingFactor = 1.379875e-02;
+                                fXsectionWeightingFactor = 1.380256e-02;
                             else if((pTHard >= 45) && (pTHard < 57) )
-                                fXsectionWeightingFactor = 5.941354e-03;
+                                fXsectionWeightingFactor = 5.961373e-03;
                             else if((pTHard >= 57) && (pTHard < 70) )
-                                fXsectionWeightingFactor =2.086477e-03;
+                                fXsectionWeightingFactor =2.087870e-03;
                             else if((pTHard >= 70) && (pTHard < 85) )
-                                fXsectionWeightingFactor = 8.531533e-04;
+                                fXsectionWeightingFactor = 8.506904e-04;
                             else if((pTHard >= 85) && (pTHard < 99) )
-                                fXsectionWeightingFactor = 3.152257e-04;
+                                fXsectionWeightingFactor = 3.153812e-04;
                             else if((pTHard >= 99) && (pTHard < 115) )
-                                fXsectionWeightingFactor = 1.595340e-04;
+                                fXsectionWeightingFactor = 1.606094e-04;
                             else if((pTHard >= 115) && (pTHard < 132) )
-                                fXsectionWeightingFactor = 7.689516e-05;
+                                fXsectionWeightingFactor = 7.756643e-05;
                             else if((pTHard >= 132) && (pTHard < 150) )
-                                fXsectionWeightingFactor = 3.876765e-05;
+                                fXsectionWeightingFactor = 3.870937e-05;
                             else if((pTHard >= 150) && (pTHard < 169) )
-                                fXsectionWeightingFactor = 2.078694e-05;
+                                fXsectionWeightingFactor = 2.034382e-05;
                             else if((pTHard >= 169) && (pTHard < 190) )
-                                fXsectionWeightingFactor = 1.196729e-05;
+                                fXsectionWeightingFactor = 1.146551e-05;
                             else if((pTHard >= 190) && (pTHard < 212) )
-                                fXsectionWeightingFactor =6.165574e-06;
+                                fXsectionWeightingFactor =6.193996e-06;
                             else if((pTHard >= 212) && (pTHard < 235) )
                                 fXsectionWeightingFactor = 3.415262e-06;
                             else if((pTHard >= 235) && (pTHard < 1000000) )
-                                fXsectionWeightingFactor = 4.853493e-06;
+                                fXsectionWeightingFactor = 4.839478e-06;
                             else
                                 fXsectionWeightingFactor = 0;
 
@@ -428,7 +547,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 }
         }
 
-    Printf("fXsectionWeightingFactor %e",fXsectionWeightingFactor);
     FillHist("fh1dPtHardMonitor",fPtHard,fXsectionWeightingFactor);
 
     Bool_t HasImpactParameter = kFALSE;
@@ -461,17 +579,21 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     for(long itrack= 0; itrack<InputEvent()->GetNumberOfTracks();++itrack)
         {
             trackV = static_cast<AliVTrack*>(InputEvent()->GetTrack(itrack));
+
             if(!trackV) {
                     AliInfo("Could not retrieve Track");
                     continue;
                 }
+
+
             IncHist("fh1dTracksAccepeted",1);
             if(!IsTrackAccepted(trackV,6)) {
                     IncHist("fh1dTracksAccepeted",3);
                     continue;
                 }
+             if(fRunSmearing)SmearTrack((AliAODTrack*)trackV);
 
-            IncHist("fh1dTracksAccepeted",2);
+             IncHist("fh1dTracksAccepeted",2);
             FillHist("fh2dAcceptedTracksEtaPhi",trackV->Eta(),trackV->Phi(), this->fXsectionWeightingFactor );
             TrackWeight =1;dca[0]=-9999;dca[1]=-9999;cov[0]=-9999;cov[1]=-9999;cov[2]=-9999;
             HasImpactParameter =kFALSE;
@@ -2455,6 +2577,8 @@ Double_t AliAnalysisTaskHFJetIPQA::GetPtCorrectedMC(const AliEmcalJet *jet)
         return jet->Pt() - jetconrec->GetRhoVal() * jet->Area();
     return -1.;
 }
+
+
 /*! \brief IsJetTaggedTC
  * unused
  *
@@ -2637,6 +2761,13 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     return (TH1*)phist;
 }
 
+
+
+void AliAnalysisTaskHFJetIPQA::setFMCglobalDCASmear(const Double_t value)
+{
+    fMCglobalDCASmear = value;
+}
+
 Double_t AliAnalysisTaskHFJetIPQA::getFVertexRecalcMinPt() const
 {
     return fVertexRecalcMinPt;
@@ -2657,10 +2788,7 @@ void AliAnalysisTaskHFJetIPQA::setFMCglobalDCAxyShift(const Double_t &value)
     fMCglobalDCAxyShift = value;
 }
 
-void AliAnalysisTaskHFJetIPQA::setFProductionNumberPtHard(const Int_t &value)
-{
-    fProductionNumberPtHard = value;
-}
+
 
 
 
@@ -2705,7 +2833,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
             etp.GetXYZ(XYZatDCA);
             etp.GetXYZ(x_at_dca);
             etp.GetPxPyPz(p_at_dca);
-         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
+//         if(fIsPythia)   dca[0] *= fMCglobalDCASmear;
+//         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
+
         } else return kFALSE;
 
 
@@ -2739,7 +2869,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::getJetVtxMass(AliEmcalJet *jet,double &value ){
     /*
     if(!amvf)  amvf = new AliHFAdaptiveMVF(InputEvent()->GetMagneticField());
     amvf->_fitter->_seeder->_vertex_penalty((AliAODVertex*)InputEvent()->GetPrimaryVertex());
-    amvf->_fitter->_run_fitter_jet(jet,(AliAODEvent*)InputEvent());
+    amvf->_fitter->_r_fitter_jet(jet,(AliAODEvent*)InputEvent());
     return kTRUE;*/
 }
 

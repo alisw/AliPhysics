@@ -8,9 +8,10 @@
 #pragma link C++ class AliAnalysisTaskFlavourJetCorrelations+;
 
 #pragma link C++ class AliPicoJet+;
-#pragma link C++ class AliPicoJetHeader+;
-#pragma link C++ class AliPicoHeaderCJ+;
-#pragma link C++ class AliPicoV0Base+;
+#pragma link C++ class AliPicoHeaderJet+;
+#pragma link C++ class AliPicoHeaderV0+;
+#pragma link C++ class AliPicoBase+;
+#pragma link C++ class AliPicoV0+;
 #pragma link C++ class AliPicoV0MC+;
 #pragma link C++ class AliPicoV0RD+;
 #pragma link C++ class AliAnalysisTaskEmcalJetV0CF+;

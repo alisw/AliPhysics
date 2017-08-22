@@ -60,6 +60,8 @@ public:
     void SetEtaRange(Int_t etarange){fetarange = etarange;};
 
     void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};  
+ 
+    void SetEPana(Int_t EPana){fEPana = EPana;};
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
@@ -85,6 +87,8 @@ private:
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask; //! new Qn vector framework
+    AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
     AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
@@ -122,6 +126,7 @@ private:
     Double_t fptAssocut;  
     Int_t fetarange;  
     Bool_t fEnablePileupRejVZEROTPCout;   
+    Int_t fEPana;  
 
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
@@ -137,6 +142,7 @@ private:
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
+    TH1F        *fEPV0;
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fHistClustE;//!cluster energy
     TH1F        *fHistClustE_etapos;//!cluster energy
@@ -235,6 +241,8 @@ private:
     TH2D        *fHistIncTPCchi2; 
     TH2D        *fHistIncITSchi2; 
     TH2D        *fTPCcls;
+    TH1F        *fdPhiEP0;
+    TH1F        *fdPhiEP1;
     TF1         *Eop010Corr;
 
     AliHFEcuts  *fhfeCuts;

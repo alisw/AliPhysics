@@ -26,6 +26,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestSPDany() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kFALSE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestSPDboth() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kTRUE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
+  void SetRequestTRDmatch(Bool_t flag = kTRUE) {fRequestTRDonlineMatch = flag;}
   
   Bool_t GetRejectKinks() const {return fRejectKinks;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
@@ -36,6 +37,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   Bool_t GetUseANDonITShitMap() const {return fUseANDonITShitMap;}
   Bool_t GetUseCutOnITShitMap() const {return fRequestCutOnITShitMap;}
   Bool_t GetRequestTOFout() const {return fRequestTOFout;}
+  Bool_t GetRequestTRDmatch() const {return fRequestTRDonlineMatch;}
   
   virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(TObject* obj, Float_t* values);
@@ -64,12 +66,14 @@ class AliReducedTrackCut : public AliReducedVarCut {
    
    // TOF quantities
    Bool_t   fRequestTOFout;               // if true, request TOF out
-   
+
+   // TRD selections
+   Bool_t   fRequestTRDonlineMatch;    // if true, request the track to be matched to a TRD online track
    
   AliReducedTrackCut(const AliReducedTrackCut &c);
   AliReducedTrackCut& operator= (const AliReducedTrackCut &c);
   
-  ClassDef(AliReducedTrackCut,1);
+  ClassDef(AliReducedTrackCut,2);
 };
 
 #endif

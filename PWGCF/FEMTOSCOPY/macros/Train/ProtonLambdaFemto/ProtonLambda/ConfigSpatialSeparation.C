@@ -1,3 +1,12 @@
+///
+/// \file ConfigSpatialSeparation.C
+///
+/// \brief Configuration macro for the spatial separation analysis.
+///
+/// \author Jeremi Niedziela
+/// \email jeremi.niedziela@cern.ch
+///
+
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
 #include "AliFemtoModelManager.h"
@@ -7,28 +16,42 @@
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoV0TrackCut.h"
 #include "AliFemtoSpatialSeparationFunction.h"
+#include "AliFemtoAngularSpatialSeparationFunction.h"
 #include "AliESDtrack.h"
 #endif
 
 enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton};
 
+// system
 enum ESys { kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
 const char *sysNames[nSys] = { "LL", "ALAL", "LAL", "PL", "APL", "PAL", "APAL","PP","PAP","APAP" };
-int runSys[nSys] = {0, 0, 1, 1, 1, 1, 1, 0, 1, 0};
+int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
+// centrality/multiplicity
 const int nMult = 10;
-int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
 int multBins[nMult+1] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
+int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
 
+// event plane
+const int nEventPlane = 7;
+int runEventPlane[nEventPlane] = {1, 1, 1, 1, 1, 1, 1};
+
+// pT binning
+const int nPt = 6;
+int runPt[nPt] = {1, 1, 1, 1, 1, 1};
+double pTbins[nPt] = {0.0, 1.32, 1.68, 2.056, 2.624, 5.0};
+
+// declaration of functions
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
 AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle);
+bool AreIdentical(ESys system);
 
-//________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
+// main function
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool doPtBinning = false, bool doAngular = false)
 {
   // create analysis managers
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -45,51 +68,95 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015)
     Manager->SetEventReader(Reader2011);
   }
   
-  AliFemtoEventAnalysis *femtoAnalysis[nSys*nMult];
-  AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult];
+  // prepare objets for analysis and cuts
+  AliFemtoEventAnalysis                  *femtoAnalysis[nSys*nMult*nEventPlane*nPt];
+  AliFemtoBasicEventCut                       *eventCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoSpatialSeparationFunction *separationFunction[nSys*nMult*nEventPlane*nPt];
+  AliFemtoAngularSpatialSeparationFunction *angularSeparationFunction[nSys*nMult*nEventPlane*nPt];
   
-  AliFemtoBasicEventCut *eventCut = GetEventCut();
+  AliFemtoV0TrackCut    *firstV0TrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoV0TrackCut   *secondV0TrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoESDTrackCut  *firstESDTrackCut[nSys*nMult*nEventPlane*nPt];
+  AliFemtoESDTrackCut *secondESDTrackCut[nSys*nMult*nEventPlane*nPt];
   
   int anIter = 0;
-  for (int imult=0; imult<nMult; imult++)
+  
+  for(int iSys=0;iSys<nSys;iSys++) // iterate on systems
   {
-    if (!runMult[imult]) continue;
+    if (!runSys[iSys]) continue;
     
-    for(int iSys=0;iSys<nSys;iSys++)
+    EPart firstParticle, secondParticle;
+    GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle);
+    
+    for (int iMult=0; iMult<nMult; iMult++) // iterate on centrality bins
     {
-      if (!runSys[iSys]) continue;
+      if (!runMult[iMult]) continue;
+     
+      for (int iEventPlane=0; iEventPlane<nEventPlane; iEventPlane++) // iterate on event plane bins
+      {
+        if (!runEventPlane[iEventPlane]) continue;
       
-      anIter = imult * nSys + iSys;
-      
-      femtoAnalysis[iSys] = new AliFemtoEventAnalysis(multBins[imult], multBins[imult+1]);
-      separationFunction[iSys] = new AliFemtoSpatialSeparationFunction(Form("%s_M%i",sysNames[iSys],imult));
-      
-      EPart firstParticle, secondParticle;
-      GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle);
-      
-      AliFemtoV0TrackCut  *firstV0TrackCut    = GetV0TrackCut(firstParticle);
-      AliFemtoV0TrackCut  *secondV0TrackCut   = GetV0TrackCut(secondParticle);
-      AliFemtoESDTrackCut *firstESDTrackCut   = GetESDTrackCut(firstParticle);
-      AliFemtoESDTrackCut *secondESDTrackCut  = GetESDTrackCut(secondParticle);
-      
-    
-      femtoAnalysis[iSys]->SetEventCut(eventCut);
-      femtoAnalysis[iSys]->SetNumEventsToMix(10);
-      femtoAnalysis[iSys]->SetV0SharedDaughterCut(true);
-      
-      if(firstV0TrackCut)
-        femtoAnalysis[iSys]->SetFirstParticleCut(firstV0TrackCut);
-      else
-        femtoAnalysis[iSys]->SetFirstParticleCut(firstESDTrackCut);
-      if(secondV0TrackCut)
-        femtoAnalysis[iSys]->SetSecondParticleCut(secondV0TrackCut);
-      else
-        femtoAnalysis[iSys]->SetSecondParticleCut(secondESDTrackCut);
-      
-      
-      femtoAnalysis[iSys]->AddCorrFctn(separationFunction[iSys]);
-      
-      Manager->AddAnalysis(femtoAnalysis[iSys]);
+        for (int iPt=0; iPt<(nPt-1); iPt++) // iterate on pT bins
+        {
+          if (!runPt[iPt] && doPtBinning) continue;
+          if(!doPtBinning && iPt!=0) continue;
+          
+          // create analysis
+          femtoAnalysis[anIter] = new AliFemtoEventAnalysis(multBins[iMult], multBins[iMult+1]);
+          femtoAnalysis[anIter]->SetIdenticalParticles(AreIdentical(iSys));
+          femtoAnalysis[anIter]->SetNumEventsToMix(10);
+          femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
+          
+          // create a separation function
+          
+          separationFunction[anIter]        = new AliFemtoSpatialSeparationFunction(Form("%s_M%i_EP%i_pT%i",sysNames[iSys],iMult,iEventPlane,iPt));
+          angularSeparationFunction[anIter] = new AliFemtoAngularSpatialSeparationFunction(Form("%s_M%i_EP%i_pT%i",sysNames[iSys],iMult,iEventPlane,iPt));
+          
+          // setup event cuts
+          eventCut[anIter] = GetEventCut();
+          
+          if (iEventPlane == (nEventPlane-1))
+            eventCut[anIter]->SetEPVZERO(-TMath::Pi()/2.,TMath::Pi()/2.);
+          else
+            eventCut[anIter]->SetEPVZERO(-TMath::Pi()/2. +  iEventPlane    * TMath::Pi()/6.,
+                                         -TMath::Pi()/2. + (iEventPlane+1) * TMath::Pi()/6.);
+          
+          femtoAnalysis[anIter]->SetEventCut(eventCut[anIter]);
+          
+          
+          firstV0TrackCut[anIter]    = GetV0TrackCut(firstParticle);
+          secondV0TrackCut[anIter]   = GetV0TrackCut(secondParticle);
+          firstESDTrackCut[anIter]   = GetESDTrackCut(firstParticle);
+          secondESDTrackCut[anIter]  = GetESDTrackCut(secondParticle);
+          
+          // setup particle cuts
+          if(firstV0TrackCut[anIter])
+          {
+            if(doPtBinning) firstV0TrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut[anIter]);
+          }
+          else
+          {
+            if(doPtBinning) firstESDTrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetFirstParticleCut(firstESDTrackCut[anIter]);
+          }
+          if(secondV0TrackCut[anIter])
+          {
+            if(doPtBinning) secondV0TrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut[anIter]);
+          }
+          else
+          {
+            if(doPtBinning) secondESDTrackCut[anIter]->SetPt(pTbins[iPt],pTbins[iPt+1]);
+            femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut[anIter]);
+          }
+          // add correlation function to analysis and analysis to the manager
+          if(doAngular) femtoAnalysis[anIter]->AddCorrFctn(angularSeparationFunction[anIter]);
+          else        femtoAnalysis[anIter]->AddCorrFctn(separationFunction[anIter]);
+          Manager->AddAnalysis(femtoAnalysis[anIter]);
+          anIter++;
+        }
+      }
     }
   }
   return Manager;
@@ -208,6 +275,11 @@ void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParti
   if(system == kAPAP) {firstParticle = kEAntiProton;   secondParticle = kEAntiProton;}
 }
 
+bool AreIdentical(ESys system)
+{
+  if(system == kLL || system == kALAL || system == kPP || system == kAPAP) return true;
+  else return false;
+}
 
 
 

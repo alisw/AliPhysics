@@ -200,7 +200,7 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
   if (!ev) AliFatal("No event returned");
   int run = ev->GetRunNumber();
   // Intercept when the run number changed
-  if (fRun != run) {
+  if (fRun != run && run>0) {
     fRun = run;
     InitGRP();
   }

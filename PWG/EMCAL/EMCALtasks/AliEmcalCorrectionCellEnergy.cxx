@@ -22,10 +22,10 @@ RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> AliEmcalCorrectionCell
  */
 AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellEnergy")
-  ,fUseAutomaticRecalib(1)
-  ,fUseAutomaticRunDepRecalib(1)
   ,fCellEnergyDistBefore(0)
   ,fCellEnergyDistAfter(0)
+  ,fUseAutomaticRecalib(1)
+  ,fUseAutomaticRunDepRecalib(1)
 {
 }
 

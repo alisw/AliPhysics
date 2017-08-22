@@ -50,8 +50,8 @@ class AliFJWrapper
   virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
   Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
-  Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
-  Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0, Int_t Measure=0);
+  Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
+  Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; }
@@ -64,6 +64,15 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_kt()       const {return fGenSubtractorInfoJet2subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet3subjettiness_kt()       const {return fGenSubtractorInfoJet3subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_kt()       const {return fGenSubtractorInfoJetOpeningAngle_kt ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet1subjettiness_ca()       const {return fGenSubtractorInfoJet1subjettiness_ca ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_ca()       const {return fGenSubtractorInfoJet2subjettiness_ca ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_ca()       const {return fGenSubtractorInfoJetOpeningAngle_ca ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet1subjettiness_akt02()       const {return fGenSubtractorInfoJet1subjettiness_akt02 ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_akt02()       const {return fGenSubtractorInfoJet2subjettiness_akt02 ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_akt02()       const {return fGenSubtractorInfoJetOpeningAngle_akt02 ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet1subjettiness_casd()       const {return fGenSubtractorInfoJet1subjettiness_casd ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_casd()       const {return fGenSubtractorInfoJet2subjettiness_casd ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_casd()       const {return fGenSubtractorInfoJetOpeningAngle_casd ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
   const std::vector<fastjet::PseudoJet>                      GetGroomedJets()            const {return fGroomedJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
@@ -80,6 +89,7 @@ class AliFJWrapper
 
   virtual Int_t Run();
   virtual Int_t Filter();
+  virtual void  DoGenericSubtraction(const fastjet::FunctionOfPseudoJet<Double32_t>& jetshape, std::vector<fastjet::contrib::GenericSubtractorInfo>& output);
   virtual Int_t DoGenericSubtractionJetMass();
   virtual Int_t DoGenericSubtractionGR(Int_t ijet);
   virtual Int_t DoGenericSubtractionJetAngularity();
@@ -92,6 +102,15 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJet2subjettiness_kt();
   virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
+  virtual Int_t DoGenericSubtractionJet1subjettiness_ca();
+  virtual Int_t DoGenericSubtractionJet2subjettiness_ca();
+  virtual Int_t DoGenericSubtractionJetOpeningAngle_ca();
+  virtual Int_t DoGenericSubtractionJet1subjettiness_akt02();
+  virtual Int_t DoGenericSubtractionJet2subjettiness_akt02();
+  virtual Int_t DoGenericSubtractionJetOpeningAngle_akt02();
+  virtual Int_t DoGenericSubtractionJet1subjettiness_casd();
+  virtual Int_t DoGenericSubtractionJet2subjettiness_casd();
+  virtual Int_t DoGenericSubtractionJetOpeningAngle_casd();
   virtual Int_t DoConstituentSubtraction();
   virtual Int_t DoEventConstituentSubtraction();
   virtual Int_t DoSoftDrop();
@@ -194,6 +213,15 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet3subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_kt;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet1subjettiness_ca;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_ca;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_ca;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet1subjettiness_akt02;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_akt02;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_akt02;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet1subjettiness_casd;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_casd;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_casd;       //!
 #endif
   Bool_t                                   fDoFilterArea;         //!
   Bool_t                                   fLegacyMode;           //!
@@ -288,6 +316,16 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractorInfoJet2subjettiness_kt ( )
   , fGenSubtractorInfoJet3subjettiness_kt ( )
   , fGenSubtractorInfoJetOpeningAngle_kt ( )
+  , fGenSubtractorInfoJet1subjettiness_ca ( )
+  , fGenSubtractorInfoJet2subjettiness_ca ( )
+  , fGenSubtractorInfoJetOpeningAngle_ca ( )
+  , fGenSubtractorInfoJet1subjettiness_akt02 ( )
+  , fGenSubtractorInfoJet2subjettiness_akt02 ( )
+  , fGenSubtractorInfoJetOpeningAngle_akt02 ( )
+  , fGenSubtractorInfoJet1subjettiness_casd ( )
+  , fGenSubtractorInfoJet2subjettiness_casd ( )
+  , fGenSubtractorInfoJetOpeningAngle_casd ( )
+      
 #endif
   , fDoFilterArea      (false)
   , fLegacyMode        (false)
@@ -847,6 +885,23 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
 }
 
 //_________________________________________________________________________________________________
+void AliFJWrapper::DoGenericSubtraction(const fastjet::FunctionOfPseudoJet<Double32_t>& jetshape, std::vector<fastjet::contrib::GenericSubtractorInfo>& output) {
+  //Do generic subtraction for 1subjettiness
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+  
+  // clear the generic subtractor info vector
+  output.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo info_jetshape;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(jetshape, fInclusiveJets[i], info_jetshape);
+    output.push_back(info_jetshape);
+  }
+#endif
+}
+
+//_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
@@ -1030,19 +1085,9 @@ Int_t AliFJWrapper::DoGenericSubtractionJetLeSub() {
 Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_kt() {
   //Do generic subtraction for 1subjettiness
 #ifdef FASTJET_VERSION
-  CreateGenSub();
-
   // Define jet shape
   AliJetShape1subjettiness_kt shape1subjettiness_kt;
-
-  // clear the generic subtractor info vector
-  fGenSubtractorInfoJet1subjettiness_kt.clear();
-  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    fj::contrib::GenericSubtractorInfo info1subjettiness_kt;
-    if(fInclusiveJets[i].perp()>1.e-4)
-      double subtracted_shape = (*fGenSubtractor)(shape1subjettiness_kt, fInclusiveJets[i], info1subjettiness_kt);
-    fGenSubtractorInfoJet1subjettiness_kt.push_back(info1subjettiness_kt);
-  }
+  DoGenericSubtraction(shape1subjettiness_kt, fGenSubtractorInfoJet1subjettiness_kt);
 #endif
   return 0;
 }
@@ -1051,19 +1096,9 @@ Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_kt() {
 Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_kt() {
   //Do generic subtraction for 2subjettiness
 #ifdef FASTJET_VERSION
-  CreateGenSub();
-
   // Define jet shape
   AliJetShape2subjettiness_kt shape2subjettiness_kt;
-
-  // clear the generic subtractor info vector
-  fGenSubtractorInfoJet2subjettiness_kt.clear();
-  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    fj::contrib::GenericSubtractorInfo info2subjettiness_kt;
-    if(fInclusiveJets[i].perp()>1.e-4)
-      double subtracted_shape = (*fGenSubtractor)(shape2subjettiness_kt, fInclusiveJets[i], info2subjettiness_kt);
-    fGenSubtractorInfoJet2subjettiness_kt.push_back(info2subjettiness_kt);
-  }
+  DoGenericSubtraction(shape2subjettiness_kt, fGenSubtractorInfoJet2subjettiness_kt);
 #endif
   return 0;
 }
@@ -1072,19 +1107,9 @@ Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_kt() {
 Int_t AliFJWrapper::DoGenericSubtractionJet3subjettiness_kt() {
   //Do generic subtraction for 3subjettiness
 #ifdef FASTJET_VERSION
-  CreateGenSub();
-
   // Define jet shape
   AliJetShape3subjettiness_kt shape3subjettiness_kt;
-
-  // clear the generic subtractor info vector
-  fGenSubtractorInfoJet3subjettiness_kt.clear();
-  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    fj::contrib::GenericSubtractorInfo info3subjettiness_kt;
-    if(fInclusiveJets[i].perp()>1.e-4)
-      double subtracted_shape = (*fGenSubtractor)(shape3subjettiness_kt, fInclusiveJets[i], info3subjettiness_kt);
-    fGenSubtractorInfoJet3subjettiness_kt.push_back(info3subjettiness_kt);
-  }
+  DoGenericSubtraction(shape3subjettiness_kt, fGenSubtractorInfoJet3subjettiness_kt);
 #endif
   return 0;
 }
@@ -1093,19 +1118,109 @@ Int_t AliFJWrapper::DoGenericSubtractionJet3subjettiness_kt() {
 Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_kt() {
   //Do generic subtraction for 2subjettiness axes opening angle
 #ifdef FASTJET_VERSION
-  CreateGenSub();
-
   // Define jet shape
   AliJetShapeOpeningAngle_kt shapeOpeningAngle_kt;
+  DoGenericSubtraction(shapeOpeningAngle_kt, fGenSubtractorInfoJetOpeningAngle_kt);
+#endif
+  return 0;
+}
 
-  // clear the generic subtractor info vector
-  fGenSubtractorInfoJetOpeningAngle_kt.clear();
-  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    fj::contrib::GenericSubtractorInfo infoOpeningAngle_kt;
-    if(fInclusiveJets[i].perp()>1.e-4)
-      double subtracted_shape = (*fGenSubtractor)(shapeOpeningAngle_kt, fInclusiveJets[i], infoOpeningAngle_kt);
-    fGenSubtractorInfoJetOpeningAngle_kt.push_back(infoOpeningAngle_kt);
-  }
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_ca() {
+  //Do generic subtraction for 1subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape1subjettiness_ca shape1subjettiness_ca;
+  DoGenericSubtraction(shape1subjettiness_ca, fGenSubtractorInfoJet1subjettiness_ca);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_ca() {
+  //Do generic subtraction for 2subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape2subjettiness_ca shape2subjettiness_ca;
+  DoGenericSubtraction(shape2subjettiness_ca, fGenSubtractorInfoJet2subjettiness_ca);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_ca() {
+  //Do generic subtraction for 2subjettiness axes opening angle
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShapeOpeningAngle_ca shapeOpeningAngle_ca;
+  DoGenericSubtraction(shapeOpeningAngle_ca, fGenSubtractorInfoJetOpeningAngle_ca);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_akt02() {
+  //Do generic subtraction for 1subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape1subjettiness_akt02 shape1subjettiness_akt02;
+  DoGenericSubtraction(shape1subjettiness_akt02, fGenSubtractorInfoJet1subjettiness_akt02);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_akt02() {
+  //Do generic subtraction for 2subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape2subjettiness_akt02 shape2subjettiness_akt02;
+  DoGenericSubtraction(shape2subjettiness_akt02, fGenSubtractorInfoJet2subjettiness_akt02);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_akt02() {
+  //Do generic subtraction for 2subjettiness axes opening angle
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShapeOpeningAngle_akt02 shapeOpeningAngle_akt02;
+  DoGenericSubtraction(shapeOpeningAngle_akt02, fGenSubtractorInfoJetOpeningAngle_akt02);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_casd() {
+  //Do generic subtraction for 1subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape1subjettiness_casd shape1subjettiness_casd;
+  DoGenericSubtraction(shape1subjettiness_casd, fGenSubtractorInfoJet1subjettiness_casd);
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_casd() {
+  //Do generic subtraction for 2subjettiness
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShape2subjettiness_casd shape2subjettiness_casd;
+  DoGenericSubtraction(shape2subjettiness_casd, fGenSubtractorInfoJet2subjettiness_casd);
+#endif
+  return 0;
+}
+
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_casd() {
+  //Do generic subtraction for 2subjettiness axes opening angle
+#ifdef FASTJET_VERSION
+  // Define jet shape
+  AliJetShapeOpeningAngle_casd shapeOpeningAngle_casd;
+  DoGenericSubtraction(shapeOpeningAngle_casd, fGenSubtractorInfoJetOpeningAngle_casd);
 #endif
   return 0;
 }
@@ -1309,7 +1424,7 @@ void AliFJWrapper::SetupStrategyfromOpt(const char *option)
   if (!opt.compare("plugin"))          fStrategy = fj::plugin_strategy;
 }
 
-Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure, Double_t Beta_SD, Double_t ZCut){
+Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure, Double_t Beta_SD, Double_t ZCut, Int_t SoftDropOn){
 
 
   //Option 0=Nsubjettiness result, 1=opening angle between axes in Eta-Phi plane, 2=Distance between axes in Eta-Phi plane
@@ -1333,6 +1448,27 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   std::vector<fastjet::PseudoJet> SubJets;
   fj::PseudoJet SubJet1;
   fj::PseudoJet SubJet2;
+
+
+  if (Option==3 || Option==4 || SoftDropOn==1){
+    //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
+    Beta_SD=0.0; //change these later so they are actually variable. currently not variable due to Kine trains
+    ZCut=0.1;
+    fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
+    //Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned----clarify what this actually is
+    fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(fFilteredJets[0]);
+    if (Soft_Dropped_Jet==0) Result_SoftDrop=-3; 
+    else{ 
+      if (Soft_Dropped_Jet.constituents().size()>1){
+	if (Option==3) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
+	else if (Option==4) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().symmetry();
+      }
+      if (SoftDropOn==1 && Soft_Dropped_Jet.constituents().size()>=N) fFilteredJets[0]=Soft_Dropped_Jet;
+      else if (SoftDropOn==1 && Soft_Dropped_Jet.constituents().size()<N) return -1;
+    }
+  }
+
+  
   if (Algorithm==0){
     Beta = 1.0;
     fR=0.4;
@@ -1404,11 +1540,13 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==10){
-    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
+    //fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedCutoffMeasure(Beta,fR,10.0)); //testing for KineTrain
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
     SubJets=nSub.currentSubjets();
   }
+  
 
 
   
@@ -1461,17 +1599,7 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     }
   }
 
-  //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
-  Beta_SD=0.0;
-  ZCut=0.1;
-  fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
-  Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned
-  fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(fFilteredJets[0]);
-  if (Soft_Dropped_Jet==0) Result_SoftDrop=-1;
-  else{
-    if (Option==3) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
-    if (Option==4) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().symmetry();
-  }
+ 
 
 
   if (Option==0) return Result;
@@ -1488,12 +1616,28 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
 
 
 
-Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option, Int_t Measure){ //For derivative subtraction
+Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option, Int_t Measure, Double_t Beta_SD, Double_t ZCut, Int_t SoftDropOn){ //For derivative subtraction
 
   Double_t Result=-1;
   std::vector<fastjet::PseudoJet> SubJet_Axes;
   fj::PseudoJet SubJet1_Axis;
   fj::PseudoJet SubJet2_Axis;
+
+
+  if (SoftDropOn==1){
+    // Beta_SD=0.0; //change these later so they are actually variable. currently not variable due to Kine trains
+    // ZCut=0.1;
+    fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
+    //Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned----clarify what this actually is
+    fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(jet);
+    if (Soft_Dropped_Jet==0) return -3; 
+    else{ 
+      if (Soft_Dropped_Jet.constituents().size()>=N) jet=Soft_Dropped_Jet;
+      else if (Soft_Dropped_Jet.constituents().size()<N) return -1;
+    }
+  }
+
+  
   if (Algorithm==0){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
     Result= nSub.result(jet);
@@ -1545,7 +1689,8 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
     SubJet_Axes=nSub.currentAxes();
   }
   else if (Algorithm==10){
-    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,JetR));
+    //fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,JetR));
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedCutoffMeasure(Beta,JetR,10.0)); //testing for Kine trains
     Result= nSub.result(jet);
     SubJet_Axes=nSub.currentAxes();
   }

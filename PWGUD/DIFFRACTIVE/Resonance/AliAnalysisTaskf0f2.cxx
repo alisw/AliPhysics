@@ -271,8 +271,6 @@ void AliAnalysisTaskf0f2::UserExec(Option_t* )
 
     Bool_t IsMinimumBias = kFALSE;
     fEventNumbers -> Fill("All",1);
-    Bool_t IsMBOR = kFALSE;
-    Bool_t IsMBAND= kFALSE;
 
     if(fRunTable->IsAA() || fRunTable->IsPA()){
         IsMinimumBias = (inputHandler -> IsEventSelected()) 
@@ -356,13 +354,11 @@ Bool_t AliAnalysisTaskf0f2::GoodTracksSelection(){
 
 void AliAnalysisTaskf0f2::FillTracks(){
     Double_t        pionmass = AliPID::ParticleMass(AliPID::kPion);
-    Double_t        kaonmass = AliPID::ParticleMass(AliPID::kKaon);
 
     AliVTrack *track1, *track2;
     // charged track, pion, kaon
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
-    UInt_t ptbin ;
     UInt_t centbin;
     UInt_t ntracks = goodtrackindices.size();
     if (!FindCentBin(fCent,centbin)) return;
@@ -439,11 +435,11 @@ Int_t AliAnalysisTaskf0f2::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
     }
 
     // derive information, whether tof pid is available
-    if (0){
+#if 0
         const Bool_t ka = !(trk->GetStatus() & AliESDtrack::kTOFmismatch);
         const Bool_t kb =  (trk->GetStatus() & AliESDtrack::kTOFpid);
         const Bool_t ktof = ka && kb;
-    }
+#endif
 
    if (lsigma>3 ) return kUnknown;
    else  return ipid; 

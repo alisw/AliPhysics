@@ -14,7 +14,7 @@
 #include "TF1.h"
 #include "AliPIDResponse.h"
 
-class AliStack;
+//class AliStack;
 class AliMCEvent;
 class TH2F;
 class TH1;
@@ -89,7 +89,7 @@ public TObject
   Float_t GetTPCBetaGamma(Int_t ipart) const {return fTPCmomentum / AliPID::ParticleMass(ipart);}; // get TPC beta-gamma
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
+  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasIntegratedTimes() const{ return (fStatus & AliESDtrack::kTIME);}; // has integrated times
   Bool_t HasTPCPID() const; // has TPC PID
@@ -129,6 +129,8 @@ public TObject
   static Bool_t LoadTuningExpTimeTh(const Char_t *filename); // load tuning exp time th
   Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
   Bool_t CheckExtraCuts(Float_t minTPCNcr=70, Float_t maxChi2PerFindableCluster = 4, Float_t maxDCAz = 2);
+  Double_t GetChi2TPCConstrainedVsGlobal() { return fChi2TPCConstrainedVsGlobal; };
+  void SetChi2TPCConstrainedVsGlobal(Double_t newval) { fChi2TPCConstrainedVsGlobal = newval; };
   //  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
 
   static AliTOFPIDResponse *GetTOFResponse() {return fgTOFResponse;}; // getter
@@ -173,6 +175,7 @@ public TObject
   UShort_t fTPCNcls; // number of clusters TPC
   UShort_t fTPCNclsF; // number of findable clusters TPC
   Float_t fTPCNcr; // number of crossed rows TPC
+  Double_t fChi2TPCConstrainedVsGlobal;
   /*** TOF PID info ***/
   Int_t fTOFIndex; // index
   Float_t fTOFTime; // time
@@ -237,7 +240,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDTrack, 3);
+  ClassDef(AliAnalysisPIDTrack, 4);
 };
 
 #endif /* ALIANALYSISPIDTRACK_H */

@@ -1123,6 +1123,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     if(matchedInTRD) reducedParticle->fQualityFlags |= (ULong_t(1)<<26);
 
     if(isESD) {
+       reducedParticle->fTrackId          = (UShort_t)esdTrack->GetID();
        for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
        for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
        
@@ -1160,6 +1161,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
      } */
    }
    if(isAOD) {
+      reducedParticle->fTrackId = aodTrack->GetID();
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
       for(Int_t idx=0; idx<11; ++idx) if(aodTrack->TestFilterBit(BIT(idx))) reducedParticle->SetQualityFlag(15+idx);
@@ -1217,10 +1219,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
-       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
-         trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       TClass* esdClass = esdTrack->Class();
+       if(esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal"))
+          trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
        
-      trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 
       //trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
@@ -1347,7 +1349,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
       
-      trackInfo->fTrackId = aodTrack->GetID(); 
       trackInfo->fTRDntracklets[0] = aodTrack->GetTRDntrackletsPID();
       trackInfo->fTRDntracklets[1] = aodTrack->GetTRDntrackletsPID();
       pidResponse->ComputeTRDProbability(aodTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ1D);

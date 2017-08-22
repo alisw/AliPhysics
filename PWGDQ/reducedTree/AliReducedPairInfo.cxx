@@ -12,6 +12,25 @@
 
 ClassImp(AliReducedPairInfo)
 
+const Char_t* AliReducedPairInfo::fgkDecayChannelNames[AliReducedPairInfo::kNMaxCandidateTypes][4] = 
+{
+   "GammaConv",               "#gamma #rightarrow e^{+} e^{-}",                     "e^{+}", "e^{-}",
+   "K0sToPiPi",                    "K^{0}_{s} #rightarrow #pi^{+} #pi^{-}",           "#pi^{+}", "#pi^{-}",
+   "Lambda0ToPPi",            "#Lambda^{0} #rightarrow p #pi^{-}",                  "p", "#pi^{-}",
+   "ALambda0ToPPi",          "#bar{#Lambda} #rightarrow #bar{p} #pi^{+}", "#bar{p}", "#pi^{+}",
+   "PhiToKK",                       "#phi #rightarrow K^{+} K^{-}",                            "K^{+}", "K^{-}",
+   "JpsiToEE",                      "J/#psi #rightarrow e^{+} e^{-}",                           "e^{+}", "e^{-}",
+   "Upsilon",                        "#Upsilon #rightarrow e^{+} e^{-}",                      "e^{+}", "e^{-}",
+   "DplusToK0sPiplus",        "D^{+} #rightarrow K^{0}_{s} #pi^{+}",            "K^{0}_{s}", "#pi^{+}",
+   "DplusToK0sKplus",         "D^{+} #rightarrow K^{0}_{s} K^{+}",               "K^{0}_{s}", "K^{+}",
+   "DplusToPhiPiplus",         "D^{+} #rightarrow #phi #pi^{+}",                      "#phi", "#pi^{+}",
+   "DminusToK0sPiminus",  "D^{-} #rightarrow K^{0}_{s} #pi^{-}",              "K^{0}_{s}", "#pi^{-}",
+   "DminusToK0sKminus",   "D^{-} #rightarrow K^{0}_{s} K^{-}",                 "K^{0}_{s}", "K^{-}",
+   "DminusToPhiPiminus",   "D^{-} #rightarrow #phi #pi^{-}",                        "#phi", "#pi^{-}",
+   "ADzeroToKplusPiminus", "#bar{D^{0}} #rightarrow K^{+} #pi^{-}",       "K^{+}", "#pi^{-}",
+   "DsplusToK0sKplus",         "D^{+}_{s} #rightarrow K^{0}_{s} K^{+}",     "K^{0}_{s}", "K^{+}",
+   "DsminusToK0sKminus",   "D^{-}_{s} #rightarrow K^{0}_{s} K^{-}",        "K^{0}_{s}", "K^{-}", 
+};
 
 //_______________________________________________________________________________
 AliReducedPairInfo::AliReducedPairInfo() :

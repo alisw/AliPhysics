@@ -67,7 +67,7 @@ public:
     }
     
     void Setv2ForSystematics(Double_t v2had, Double_t v2D){fv2had = v2had; fv2Dmeson = v2D; }
-    void Setv2ForSystematics(Double_t v2had, Int_t nbins, std::vector<Double_t>& v2Dbins) {fv2had = v2had; for(Int_t i;i<nbins;i++) fv2DmesonVsPt.push_back(v2Dbins.at(i));}
+    void Setv2ForSystematics(Double_t v2had, Int_t nbins, std::vector<Double_t>& v2Dbins) {fv2had = v2had; for(Int_t i=0;i<nbins;i++) fv2DmesonVsPt.push_back(v2Dbins.at(i));}
     
     
     void CheckBaselineRanges();

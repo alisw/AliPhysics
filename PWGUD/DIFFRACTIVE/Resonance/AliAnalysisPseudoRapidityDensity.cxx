@@ -220,7 +220,7 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 			binEventClass, binCent, binZ, binParType ,binEta  },"s");
 
 
-	Double_t xAxis1[26] = {0.01, 0.0154155, 0.0237639, 0.0366333, 0.0564723, 0.0870551, 0.1342, 0.206877, 0.318912, 0.49162, 0.757858, 1.16828, 1.80097, 2.77629, 4.2798, 6.59754, 10.1705, 15.6783, 24.169, 37.2578, 57.4349, 88.539, 136.488, 210.403, 324.348, 500};
+	// Double_t xAxis1[26] = {0.01, 0.0154155, 0.0237639, 0.0366333, 0.0564723, 0.0870551, 0.1342, 0.206877, 0.318912, 0.49162, 0.757858, 1.16828, 1.80097, 2.77629, 4.2798, 6.59754, 10.1705, 15.6783, 24.169, 37.2578, 57.4349, 88.539, 136.488, 210.403, 324.348, 500};
 
 	PostData(1, fHistos->GetListOfHistograms());
 
@@ -275,7 +275,6 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 	AliMCEvent *mcEvent = MCEvent();
 	// ----------------------------------------------------------------------
 
-	Bool_t IsMC = kFALSE;
 	TArrayF vtxMC3d(3);
 
 	Double_t eta, phi, pt;
@@ -413,7 +412,6 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 	if (IsMinimumBias) fHistos -> FillTH1("hEventNumbers","PSpileup",1);
 	// -----------------------------------------------------------------------
 
-	const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
 	const AliVVertex* spdVtx	  = fEvt->GetPrimaryVertexSPD() ;
 
 	Bool_t IsGoodVertex = kFALSE;
@@ -438,7 +436,6 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 
 	if (IsMinimumBias && IsGoodVertexCut){
 		fMultiplicity = fEvt -> GetMultiplicity();
-    Double_t eta;
 		for (auto it=0u; it<fMultiplicity->GetNumberOfTracklets(); it++) {
 			Double_t eta = fMultiplicity->GetEta(it);
       if ( btrigc[kMBOR] && fabs(eta) < 1.0 ) btrigc[ kMBORg0 ] = true;
@@ -653,15 +650,14 @@ void AliAnalysisPseudoRapidityDensity::StrangenessMeasure( Bool_1d btrigc){
 	Int_t nv0s = 0;
   AliESDEvent *evt = dynamic_cast<AliESDEvent*> (fEvt);
 	nv0s = evt->GetNumberOfV0s();
-	Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
+	Int_t    lOnFlyStatus = 0;
 	Double_t lChi2V0 = 0;
 	Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
 	Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
 	Double_t lV0CosineOfPointingAngle = 0;
 	Double_t lV0Radius = 0;
 	Double_t lV0DecayLength = 0;
-	Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-	Double_t lPt       = 0, lRapK0s = 0, lRapLambda = 0;
+	Double_t lPt       = 0;
 	Double_t lAlphaV0  = 0, lPtArmV0 = 0;
 	Double_t tV0Position[3];
 	Double_t lMagneticField      = 999;

@@ -61,7 +61,7 @@ class AliAnalysisTaskPiKpK0Lamba : public AliAnalysisTaskSE {
         virtual void  SetRemovePhiReg(Bool_t remPhiReg){fRemPhiReg = remPhiReg;}
         virtual void  SetCutMultESDdif(Float_t cutMultESDdif){fCutMultESDdif = cutMultESDdif;}
         virtual void  SetCrsRowsFrcShClsCuts(Bool_t crsRowsFrcShCls){fCrsRowsFrcShCls = crsRowsFrcShCls;}
-        virtual void  SetFlagPsi42A(Bool_t flagPsi42A){flagPsi42A = flagPsi42A;}
+        virtual void  SetFlagPsi42A(Bool_t flag){flagPsi42A = flag;}
         virtual void  SetNPtBins(Int_t nPtB){fNPtBins = nPtB;}
         virtual void  SetNcrFind(Float_t ncrFind){fNcrFind = ncrFind;}
         virtual void  SetDCADghtPV(Float_t dcaDghtPV){fDCADghtPV = dcaDghtPV;}

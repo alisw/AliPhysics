@@ -7,7 +7,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults",
-					  Double_t etaMax = 1.5,
+					  Double_t etaMin = -3.5,
+                                          Double_t etaMax = 5,
 					  Double_t ptMin  = 0.05,
 					  Double_t ptMax  = 20.0,
 					  Int_t chargePOI = 0,
@@ -16,7 +17,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
 					  Double_t gImpactParameterMax = 100.0,
 					  Int_t gRefMultMin = 0,
 					  Int_t gRefMultMax = 100,
-					  Bool_t MCEP     = kTRUE,
+					  Bool_t MCEP     = kFALSE,
 					  Bool_t SP       = kTRUE,
 					  Bool_t GFC      = kFALSE,
 					  Bool_t QC       = kTRUE,
@@ -30,9 +31,9 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
 					  Bool_t NL       = kFALSE,
 					  Int_t side      = 0) {	  
   // Define the range for eta subevents (for SP method)
-  Double_t minA = -etaMax;
-  Double_t maxA = -0.5;
-  Double_t minB = 0.5;
+  Double_t minA = etaMin;
+  Double_t maxA = 0.0;
+  Double_t minB = 0.0;
   Double_t maxB = etaMax;
 
   // AFTERBURNER
@@ -88,7 +89,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   cutsRefMult->SetParamType(rptype);
   cutsRefMult->SetParamMix(rpmix);
   cutsRefMult->SetPtRange(ptMin,ptMax);
-  cutsRefMult->SetEtaRange(-etaMax,etaMax);
+  cutsRefMult->SetEtaRange(etaMin,etaMax);
   cutsRefMult->SetRequireCharge(kTRUE);
   cutsRefMult->SetQA(kFALSE);
 
@@ -97,7 +98,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(ptMin,ptMax);
-  cutsRP->SetEtaRange(-etaMax,etaMax);
+  cutsRP->SetEtaRange(etaMin,etaMax);
   cutsRP->SetQA(kFALSE);
 
   // POI TRACK CUTS:
@@ -108,15 +109,15 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
 
   // side A
   if(side < 0)
-    cutsPOI->SetEtaRange(-etaMax,-0.5);
+    cutsPOI->SetEtaRange(etaMin,-0.0);
 
   // side C
   else if(side > 0)
-  cutsPOI->SetEtaRange(0.5,etaMax);
+  cutsPOI->SetEtaRange(0.0,etaMax);
 
   // both sides
   else
-    cutsPOI->SetEtaRange(-etaMax,etaMax);
+    cutsPOI->SetEtaRange(etaMin,etaMax);
   if(chargePOI != 0)
     cutsPOI->SetCharge(chargePOI);
   cutsPOI->SetQA(kFALSE);

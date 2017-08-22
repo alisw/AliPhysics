@@ -41,6 +41,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
 
   deu->SetParticleType(part);
   deu->SetPDG(pdgCode);
+  deu->SetYRange(-0.8,0.8);
   deu->SetIsMC(isMC);
   deu->SetDCABins(80,-0.5,0.5);
 
@@ -62,7 +63,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   };
   deu->SetDCABins(34,dcabins);
 
-  deu->fEventCut.fCentralityFramework = 1;
+  deu->fEventCut.fCentralityFramework = !isMC;
 
   mgr->AddTask(deu);
 

@@ -426,6 +426,8 @@ private:
     Float_t fTreeCascVarDCAPosToPrimVtx;  //!
     Float_t fTreeCascVarDCANegToPrimVtx;  //!
     Float_t fTreeCascVarCascCosPointingAngle;         //!
+    Float_t fTreeCascVarCascDCAtoPVxy;         //!
+    Float_t fTreeCascVarCascDCAtoPVz;         //!
     Float_t fTreeCascVarCascRadius;                   //!
     Float_t fTreeCascVarV0Mass;                       //!
     Float_t fTreeCascVarV0CosPointingAngle;           //!
@@ -546,6 +548,8 @@ private:
     Float_t fTreeCascVarMagField; // for X-checks
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
+    Float_t fTreeCascVarV0ChiSquare; //! //V0 chi2 (defined only for on-the-fly or refitted offline)
+    
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
@@ -577,7 +581,19 @@ private:
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
 
-    //MC-only Variabless
+    //Bachelor Sibling Testing Variables
+    Float_t fTreeCascVarBachSibPt; //!
+    Float_t fTreeCascVarBachSibDcaV0ToPrimVertex; //!
+    Float_t fTreeCascVarBachSibDcaV0Daughters; //!
+    Float_t fTreeCascVarBachSibV0CosineOfPointingAngle; //!
+    Float_t fTreeCascVarBachSibV0V0Radius; //!
+    Float_t fTreeCascVarBachSibV0DcaPosToPrimVertex; //!
+    Float_t fTreeCascVarBachSibV0DcaNegToPrimVertex; //!
+    Float_t fTreeCascVarBachSibV0InvMassK0s; //!
+    Float_t fTreeCascVarBachSibV0InvMassLambda; //!
+    Float_t fTreeCascVarBachSibV0InvMassAntiLambda; //!
+
+    //MC-only Variables
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
     Int_t   fTreeCascVarPIDNegative;         //!
@@ -589,6 +605,8 @@ private:
     Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
     Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
     Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
+    Int_t   fTreeCascVarBachCousinStatus;         //!
+    Int_t   fTreeCascVarV0BachSibIsValid;         //!
 
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
@@ -599,7 +617,7 @@ private:
     Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
-    
+
     //Cluster information for all daughter tracks
     Bool_t fTreeCascVarPosITSClusters0;
     Bool_t fTreeCascVarPosITSClusters1;
@@ -614,13 +632,35 @@ private:
     Bool_t fTreeCascVarNegITSClusters3;
     Bool_t fTreeCascVarNegITSClusters4;
     Bool_t fTreeCascVarNegITSClusters5;
-
+    
     Bool_t fTreeCascVarBachITSClusters0;
     Bool_t fTreeCascVarBachITSClusters1;
     Bool_t fTreeCascVarBachITSClusters2;
     Bool_t fTreeCascVarBachITSClusters3;
     Bool_t fTreeCascVarBachITSClusters4;
     Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
     
     //Uncertainty information on mass (from KF) for testing purposes
     Float_t fTreeCascVarV0LambdaMassError;

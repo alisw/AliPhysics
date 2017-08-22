@@ -66,8 +66,17 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
                                               Int_t & ancPDG, Int_t & ancStatus, 
                                               TLorentzVector & momentum, TVector3 & prodVertex) 
 {  
-  Int_t label1[100];
-  Int_t label2[100];
+  if ( index1 < 0 || index2 < 0 )
+  {
+    ancPDG    = -10000;
+    ancStatus = -10000;
+    momentum.SetXYZT(0,0,0,0);
+    prodVertex.SetXYZ(-10,-10,-10);
+    //printf("\t Negative index (%d, %d)\n",index1,index2);
+  }
+
+  Int_t label1[1000];
+  Int_t label2[1000];
   label1[0]= index1;
   label2[0]= index2;
   Int_t counter1 = 0;
@@ -75,16 +84,15 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
   
   if(label1[0]==label2[0])
   {
-    //printf("AliMCAnalysisUtils::CheckCommonAncestor() - Already the same label: %d\n",label1[0]);
+    //printf("\t Already the same label: %d\n",label1[0]);
     counter1=1;
     counter2=1;
   }
   else
   {
     Int_t label=label1[0];
-    if(label < 0) return -1;
     
-    while(label > -1 && counter1 < 99)
+    while(label > -1 && counter1 < 999)
     {
       counter1++;
       AliVParticle * mom = mcevent->GetTrack(label);
@@ -93,14 +101,13 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
         label  = mom->GetMother() ;
         label1[counter1]=label;
       }
-      //printf("\t counter %d, label %d\n", counter1,label);
+      //printf("\t 1) counter %d, mom label %d, pdg %d\n", counter1,label, mom->PdgCode());
     }
     
     //printf("Org label2=%d,\n",label2[0]);
     label=label2[0];
-    if(label < 0) return -1;
     
-    while(label > -1 && counter2 < 99)
+    while(label > -1 && counter2 < 999)
     {
       counter2++;
       AliVParticle * mom = mcevent->GetTrack(label);
@@ -109,25 +116,27 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
         label  = mom->GetMother() ;
         label2[counter2]=label;
       }
-      //printf("\t counter %d, label %d\n", counter2,label);
+      //printf("\t 2) counter %d, mom label %d, pdg %d \n", counter2,label, mom->PdgCode());
     }
   }//First labels not the same
   
-//  if((counter1==99 || counter2==99) && fDebug >=0)
-//    printf("AliMCAnalysisUtils::CheckCommonAncestor() - Genealogy too large c1: %d, c2= %d\n", counter1, counter2);
+  if((counter1==999 || counter2==999))
+    AliWarning(Form("Genealogy too large, generations: cluster1: %d, cluster2= %d", counter1, counter2));
+  
   //printf("CheckAncestor:\n");
   
-  Int_t commonparents = 0;
+  //Int_t commonparents = 0;
   Int_t ancLabel = -1;
   //printf("counters %d %d \n",counter1, counter2);
   for (Int_t c1 = 0; c1 < counter1; c1++)
   {
     for (Int_t c2 = 0; c2 < counter2; c2++)
     {
-      if(label1[c1]==label2[c2] && label1[c1]>-1)
+      if ( label1[c1]==label2[c2] && label1[c1]>-1 &&
+           ancLabel < label1[c1]                      ) // make sure to take the first common parent, not needed since array is ordered, just in case
       {
         ancLabel = label1[c1];
-        commonparents++;
+        //commonparents++;
         
         AliVParticle * mom = mcevent->GetTrack(label1[c1]);
         
@@ -137,17 +146,21 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
           ancStatus = mom->MCStatusCode();
           momentum.SetPxPyPzE(mom->Px(),mom->Py(),mom->Pz(),mom->E());
           prodVertex.SetXYZ(mom->Xv(),mom->Yv(),mom->Zv());
+          //printf("Ancestor label %d PDG %d, status %d\n",ancLabel,ancPDG,ancStatus);
         }
         
         //First ancestor found, end the loops
-        counter1=0;
-        counter2=0;
+        //counter1=0;
+        //counter2=0;
       }//Ancestor found
     }//second cluster loop
   }//first cluster loop
   
+  //printf("common ancestors %d\n",commonparents);
+  
   if(ancLabel < 0)
   {
+    //printf("No ancestor found!\n");
     ancPDG    = -10000;
     ancStatus = -10000;
     momentum.SetXYZT(0,0,0,0);

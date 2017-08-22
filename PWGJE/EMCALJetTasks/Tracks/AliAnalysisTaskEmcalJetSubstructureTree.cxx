@@ -33,8 +33,10 @@
 #include <fastjet/contrib/Nsubjettiness.hh>
 #include <fastjet/contrib/SoftDrop.hh>
 
+#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TString.h>
+#include <TVector3.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -47,11 +49,12 @@
 #include "AliLog.h"
 #include "AliParticleContainer.h"
 #include "AliTrackContainer.h"
+#include "AliRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 
 /// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree)
+ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
 /// \endcond
 
 namespace EmcalTriggerJets {
@@ -59,26 +62,26 @@ namespace EmcalTriggerJets {
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
     fJetSubstructureTree(nullptr),
-    fJetSubstructureInfo(),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString("")
 {
+  memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree(const char *name) :
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fJetSubstructureTree(nullptr),
-    fJetSubstructureInfo(),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString("")
 {
-
+  memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
+  DefineOutput(2, TTree::Class());
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTree() {
@@ -88,38 +91,54 @@ AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTre
 void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  OpenFile(2);
   fJetSubstructureTree = new TTree("jetSubstructure", "Tree with jet substructure information");
-  std::stringstream leaflist;
-  leaflist  << "fR/D:"
-            << "fEventWeight:"
-            << "fPtJetRec:"
-            << "fPtJetSim:"
-            << "fAreaRec:"
-            << "fAreaSim:"
-            << "fNEFRec:"
-            << "fNEFSim:"
-            << "fZgMeasured:"
-            << "fZgTrue:"
-            << "fRgMeasured:"
-            << "fRgTrue:"
-            << "fMgMeasured:"
-            << "fMgTrue:"
-            << "fPtgMeasured:"
-            << "fPtgTrue:"
-            << "fOneSubjettinessMeasured:"
-            << "fOneSubjettinessTrue:"
-            << "fTwoSubjettinessMeasured:"
-            << "fTwoSubjettinessTrue:"
-            << "fNCharged/I:"
-            << "fNNeutral:"
-            << "fNTrueConst:"
-            << "fNDroppedMeasured:"
-            << "fNDroppedTrue";
-  std::string leafstring = leaflist.str();
-  printf("branch string: %s\n", leafstring.c_str());
-  fJetSubstructureTree->Branch("JetInfo", &fJetSubstructureInfo, leafstring.c_str(), sizeof(fJetSubstructureInfo));
-  fOutput->Add(fJetSubstructureTree);
+  TString varnames[kTNVar];
+  varnames[0] = "Radius";
+  varnames[1] = "EventWeight";
+  varnames[2] = "PtJetRec";
+  varnames[3] = "PtJetSim";
+  varnames[4] = "EJetRec";
+  varnames[5] = "EJetSim";
+  varnames[6] = "RhoPtRec";
+  varnames[7] = "RhoPtSim";
+  varnames[8] = "RhoMassRec";
+  varnames[9] = "RhoMassSim";
+  varnames[10] = "AreaRec";
+  varnames[11] = "AreaSim";
+  varnames[12] = "NEFRec";
+  varnames[13] = "NEFSim";
+  varnames[14] = "MassRec";
+  varnames[15] = "MassSim";
+  varnames[16] = "ZgMeasured";
+  varnames[17] = "ZgTrue";
+  varnames[18] = "RgMeasured";
+  varnames[19] = "RgTrue";
+  varnames[20] = "MgMeasured";
+  varnames[21] = "MgTrue";
+  varnames[22] = "PtgMeasured";
+  varnames[23] = "PtgTrue";
+  varnames[24] = "MugMeasured";
+  varnames[25] = "MugTrue";
+  varnames[26] = "OneSubjettinessMeasured";
+  varnames[27] = "OneSubjettinessTrue";
+  varnames[28] = "TwoSubjettinessMeasured";
+  varnames[29] = "TwoSubjettinessTrue";
+  varnames[30] = "AngularityMeasured";
+  varnames[31] = "AngularityTrue";
+  varnames[32] = "PtDMeasured";
+  varnames[33] = "PtDTrue";
+  varnames[34] = "NCharged";
+  varnames[35] = "NNeutral";
+  varnames[36] = "NConstTrue";
+  varnames[37] = "NDroppedMeasured";
+  varnames[38] = "NDroppedTrue";
+
+  for(int ib = 0; ib < kTNVar; ib++){
+    fJetSubstructureTree->Branch(varnames[ib], fJetTreeData + ib, Form("%s/D", varnames[ib].Data()));
+  }
   PostData(1, fOutput);
+  PostData(2, fJetSubstructureTree);
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
@@ -130,6 +149,18 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
+  TString rhoTagData = datajets ? TString::Format("R%02d", static_cast<Int_t>(datajets->GetJetRadius() * 10.)) : "",
+          rhoTagMC = mcjets ? TString::Format("R%02d", static_cast<Int_t>(mcjets->GetJetRadius() * 10.)) : "";
+
+  AliRhoParameter *rhoPtRec = GetRhoFromEvent("RhoSparse_Full_" + rhoTagData),
+                  *rhoMassRec = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagData),
+                  *rhoPtSim = GetRhoFromEvent("RhoSparse_Full_" + rhoTagMC),
+                  *rhoMassSim = GetRhoFromEvent("RhoMassSparse_Full_" + rhoTagMC);
+  AliDebugStream(2) << "Found rho parameter for reconstructed pt:    " << (rhoPtRec ? "yes" : "no") << ", value: " << (rhoPtRec ? rhoPtRec->GetVal() : 0.) << std::endl;
+  AliDebugStream(2) << "Found rho parameter for sim pt:              " << (rhoPtSim ? "yes" : "no") << ", value: " << (rhoPtSim ? rhoPtSim->GetVal() : 0.) << std::endl;
+  AliDebugStream(2) << "Found rho parameter for reconstructed Mass:  " << (rhoMassRec ? "yes" : "no") << ", value: " << (rhoMassRec ? rhoMassRec->GetVal() : 0.) << std::endl;
+  AliDebugStream(2) << "Found rho parameter for sim Mass:            " << (rhoMassSim ? "yes" : "no") << ", value: " << (rhoMassSim ? rhoMassSim->GetVal() : 0.) << std::endl;
+
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
     if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
@@ -139,6 +170,11 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   }
 
   Double_t weight = 1;
+  Double_t rhoparameters[4]; memset(rhoparameters, 0, sizeof(Double_t) * 4);
+  if(rhoPtRec) rhoparameters[0] = rhoPtRec->GetVal();
+  if(rhoPtSim) rhoparameters[1] = rhoPtSim->GetVal();
+  if(rhoMassRec) rhoparameters[2] = rhoMassRec->GetVal();
+  if(rhoMassSim) rhoparameters[3] = rhoMassSim->GetVal();
 
   AliSoftdropDefinition softdropSettings;
   softdropSettings.fBeta = fSDBetaCut;
@@ -155,32 +191,44 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   if(mcjets && !datajets) {
     // pure MC (gen) train - run over MC jets
+    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
     for(auto jet : mcjets->accepted()) {
       try {
         AliJetSubstructureData structure = MakeJetSubstructure(*jet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
-        FillTree(mcjets->GetJetRadius(), weight, nullptr, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness));
+        Double_t angularity[2] = {0., MakeAngularity(*jet, particles, nullptr)},
+                 ptd[2] = {0., MakePtD(*jet, particles, nullptr)};
+        FillTree(mcjets->GetJetRadius(), weight, nullptr, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
       } catch (ReclusterizerException &e) {
         AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
       }
     }
   }
 
+
   if(datajets) {
+    AliDebugStream(1) << "In data jets branch: found" <<  datajets->GetNJets() << " jets, " << datajets->GetNAcceptedJets() << " were accepted\n";
+    AliDebugStream(1) << "Having MC information: " << (mcjets ? TString::Format("yes, with %d jets", mcjets->GetNJets()) : "no") << std::endl; 
     for(auto jet : datajets->accepted()) {
+      double pt = jet->Pt(), pz = jet->Pz(), E = jet->E(), M = TMath::Sqrt(E*E - pt*pt - pz*pz);
+      AliDebugStream(2) << "Next jet: pt:" << jet->Pt() << ", E: " << E << ", pz: " << pz << ", M(self): " << M << "M(fj)" << jet->M() << std::endl;
       AliEmcalJet *associatedJet = jet->MatchedJet();
       if(mcjets) {
         if(!associatedJet) continue;
         try {
-          AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, mcjets->GetJetRadius() * 2., particles, nullptr, {softdropSettings, nsubjettinessSettings}),
+          AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
                                  structureMC = MakeJetSubstructure(*associatedJet, mcjets->GetJetRadius() * 2, particles, nullptr, {softdropSettings, nsubjettinessSettings});
-          FillTree(datajets->GetJetRadius(), weight, jet, associatedJet, &(structureData.fSoftDrop), &(structureMC.fSoftDrop), &(structureData.fNsubjettiness), &(structureMC.fNsubjettiness));
+          Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), MakeAngularity(*associatedJet, particles, nullptr)},
+                   ptd[2] = {MakePtD(*jet, tracks, clusters), MakePtD(*associatedJet, particles, nullptr)};
+          FillTree(datajets->GetJetRadius(), weight, jet, associatedJet, &(structureData.fSoftDrop), &(structureMC.fSoftDrop), &(structureData.fNsubjettiness), &(structureMC.fNsubjettiness), angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
         }
       } else {
         try {
           AliJetSubstructureData structure = MakeJetSubstructure(*jet, 0.4, tracks, clusters, {softdropSettings, nsubjettinessSettings});
-          FillTree(datajets->GetJetRadius(), weight, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), nullptr);
+          Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), 0.},
+                   ptd[2] = {MakePtD(*jet, tracks, clusters), 0.};
+          FillTree(datajets->GetJetRadius(), weight, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), nullptr, angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
         }
@@ -194,78 +242,100 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
                                                        const AliEmcalJet *datajet, const AliEmcalJet *mcjet,
                                                        AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcSoftdrop,
-                                                       AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness){
-  fJetSubstructureInfo.fR = r;
-  fJetSubstructureInfo.fEventWeight = weight;
+                                                       AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness,
+                                                       Double_t *angularity, Double_t *ptd, Double_t *rhoparameters){
+  fJetTreeData[kTRadius] = r;
+  fJetTreeData[kTWeight] = weight;
+  fJetTreeData[kTRhoPtRec] = rhoparameters[0]; 
+  fJetTreeData[kTRhoPtSim] = rhoparameters[1]; 
+  fJetTreeData[kTRhoMassRec] = rhoparameters[2]; 
+  fJetTreeData[kTRhoMassSim] = rhoparameters[3]; 
   if(datajet) {
-    fJetSubstructureInfo.fPtJetRec = TMath::Abs(datajet->Pt());
-    fJetSubstructureInfo.fNCharged = datajet->GetNumberOfTracks();
-    fJetSubstructureInfo.fNNeutral = datajet->GetNumberOfClusters();
-    fJetSubstructureInfo.fAreaRec = datajet->Area();
-    fJetSubstructureInfo.fNEFRec = datajet->NEF();
+    fJetTreeData[kTPtJetRec] = TMath::Abs(datajet->Pt());
+    fJetTreeData[kTNCharged] = datajet->GetNumberOfTracks();
+    fJetTreeData[kTNNeutral] = datajet->GetNumberOfClusters();
+    fJetTreeData[kTAreaRec] = datajet->Area();
+    fJetTreeData[kTNEFRec] = datajet->NEF();
+    fJetTreeData[kTMassRec] = datajet->M();
+    fJetTreeData[kTEJetRec] = datajet->E();
   } else {
-    fJetSubstructureInfo.fPtJetRec = 0.;
-    fJetSubstructureInfo.fNCharged = 0;
-    fJetSubstructureInfo.fNNeutral = 0;
-    fJetSubstructureInfo.fAreaRec = 0.;
-    fJetSubstructureInfo.fNEFRec = 0.;
+    fJetTreeData[kTPtJetRec] = 0.;
+    fJetTreeData[kTNCharged] = 0;
+    fJetTreeData[kTNNeutral] = 0;
+    fJetTreeData[kTAreaRec] = 0.;
+    fJetTreeData[kTNEFRec] = 0.;
+    fJetTreeData[kTMassRec] = 0.;
+    fJetTreeData[kTEJetRec] = 0.;
   }
 
   if(mcjet) {
-    fJetSubstructureInfo.fPtJetSim = TMath::Abs(mcjet->Pt());
-    fJetSubstructureInfo.fNTrueConst = mcjet->GetNumberOfConstituents();
-    fJetSubstructureInfo.fAreaSim = mcjet->Area();
-    fJetSubstructureInfo.fNEFSim = mcjet->NEF();
+    fJetTreeData[kTPtJetSim] = TMath::Abs(mcjet->Pt());
+    fJetTreeData[kTNConstTrue] = mcjet->GetNumberOfConstituents();
+    fJetTreeData[kTAreaSim] = mcjet->Area();
+    fJetTreeData[kTNEFSim] = mcjet->NEF();
+    fJetTreeData[kTMassSim] = mcjet->M();
+    fJetTreeData[kTEJetSim] = mcjet->E();
   } else {
-    fJetSubstructureInfo.fPtJetSim = 0.;
-    fJetSubstructureInfo.fNTrueConst = 0;
-    fJetSubstructureInfo.fAreaSim = 0.;
-    fJetSubstructureInfo.fNEFSim = 0.;
+    fJetTreeData[kTPtJetSim] = 0.;
+    fJetTreeData[kTNConstTrue] = 0;
+    fJetTreeData[kTAreaSim] = 0.;
+    fJetTreeData[kTNEFSim] = 0.;
+    fJetTreeData[kTMassSim] = 0.;
+    fJetTreeData[kTEJetSim] = 0.;
   }
 
   if(dataSoftdrop) {
-    fJetSubstructureInfo.fZgMeasured = dataSoftdrop->fZg;
-    fJetSubstructureInfo.fRgMeasured = dataSoftdrop->fRg;
-    fJetSubstructureInfo.fMgMeasured = dataSoftdrop->fMg;
-    fJetSubstructureInfo.fPtgMeasured = dataSoftdrop->fPtg;
-    fJetSubstructureInfo.fNDroppedMeasured = dataSoftdrop->fNDropped;
+    fJetTreeData[kTZgMeasured] = dataSoftdrop->fZg;
+    fJetTreeData[kTRgMeasured] = dataSoftdrop->fRg;
+    fJetTreeData[kTMgMeasured] = dataSoftdrop->fMg;
+    fJetTreeData[kTPtgMeasured] = dataSoftdrop->fPtg;
+    fJetTreeData[kTMugMeasured] = dataSoftdrop->fMug;
+    fJetTreeData[kTNDroppedMeasured] = dataSoftdrop->fNDropped;
   } else {
-    fJetSubstructureInfo.fZgMeasured = 0.;
-    fJetSubstructureInfo.fRgMeasured = 0.;
-    fJetSubstructureInfo.fMgMeasured = 0.;
-    fJetSubstructureInfo.fPtgMeasured = 0.;
-    fJetSubstructureInfo.fNDroppedMeasured = 0;
+    fJetTreeData[kTZgMeasured] = 0.;
+    fJetTreeData[kTRgMeasured] = 0.;
+    fJetTreeData[kTMgMeasured] = 0.;
+    fJetTreeData[kTPtgMeasured] = 0.;
+    fJetTreeData[kTMugMeasured] = 0.;
+    fJetTreeData[kTNDroppedMeasured] = 0;
   }
 
   if(mcSoftdrop) {
-    fJetSubstructureInfo.fZgTrue = mcSoftdrop->fZg;
-    fJetSubstructureInfo.fRgTrue = mcSoftdrop->fRg;
-    fJetSubstructureInfo.fMgTrue = mcSoftdrop->fMg;
-    fJetSubstructureInfo.fPtgTrue = mcSoftdrop->fPtg;
-    fJetSubstructureInfo.fNDroppedTrue = mcSoftdrop->fNDropped;
+    fJetTreeData[kTZgTrue] = mcSoftdrop->fZg;
+    fJetTreeData[kTRgTrue] = mcSoftdrop->fRg;
+    fJetTreeData[kTMgTrue] = mcSoftdrop->fMg;
+    fJetTreeData[kTPtgTrue] = mcSoftdrop->fPtg;
+    fJetTreeData[kTMugTrue] = mcSoftdrop->fMug;
+    fJetTreeData[kTNDroppedTrue] = mcSoftdrop->fNDropped;
   } else {
-    fJetSubstructureInfo.fZgTrue = 0.;
-    fJetSubstructureInfo.fRgTrue = 0.;
-    fJetSubstructureInfo.fMgTrue = 0.;
-    fJetSubstructureInfo.fPtgTrue = 0.;
-    fJetSubstructureInfo.fNDroppedTrue = 0;
+    fJetTreeData[kTZgTrue] = 0.;
+    fJetTreeData[kTRgTrue] = 0.;
+    fJetTreeData[kTMgTrue] = 0.;
+    fJetTreeData[kTPtgTrue] = 0.;
+    fJetTreeData[kTMugTrue] = 0.;
+    fJetTreeData[kTNDroppedTrue] = 0;
   }
 
   if(dataSubjettiness) {
-    fJetSubstructureInfo.fOneSubjettinessMeasured = dataSubjettiness->fOneSubjettiness;
-    fJetSubstructureInfo.fTwoSubjettinessMeasured = dataSubjettiness->fTwoSubjettiness;
+    fJetTreeData[kTOneNSubjettinessMeasured] = dataSubjettiness->fOneSubjettiness;
+    fJetTreeData[kTTwoNSubjettinessMeasured] = dataSubjettiness->fTwoSubjettiness;
   } else {
-    fJetSubstructureInfo.fOneSubjettinessMeasured = 0.;
-    fJetSubstructureInfo.fTwoSubjettinessMeasured = 0.;
+    fJetTreeData[kTOneNSubjettinessMeasured] = 0.;
+    fJetTreeData[kTTwoNSubjettinessMeasured] = 0.;
   }
 
   if(mcSubjettiness) {
-    fJetSubstructureInfo.fOneSubjettinessTrue = mcSubjettiness->fOneSubjettiness;
-    fJetSubstructureInfo.fTwoSubjettinessTrue = mcSubjettiness->fTwoSubjettiness;
+    fJetTreeData[kTOneNSubjettinessTrue] = mcSubjettiness->fOneSubjettiness;
+    fJetTreeData[kTTwoNSubjettinessTrue] = mcSubjettiness->fTwoSubjettiness;
   } else {
-    fJetSubstructureInfo.fOneSubjettinessTrue = 0.;
-    fJetSubstructureInfo.fTwoSubjettinessTrue = 0.;
+    fJetTreeData[kTOneNSubjettinessTrue] = 0.;
+    fJetTreeData[kTTwoNSubjettinessTrue] = 0.;
   }
+
+  fJetTreeData[kTAngularityMeasured] = angularity[0];
+  fJetTreeData[kTAngularityTrue] = angularity[1];
+  fJetTreeData[kTPtDMeasured] = ptd[0];
+  fJetTreeData[kTPtDTrue] = ptd[1];
 
   fJetSubstructureTree->Fill();
 }
@@ -312,22 +382,87 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
   fastjet::PseudoJet groomed = softdropAlgorithm(jet);
 
   AliSoftDropParameters result({groomed.structure_of<fastjet::contrib::SoftDrop>().symmetry(),
+                                groomed.m(),
                                 groomed.structure_of<fastjet::contrib::SoftDrop>().delta_R(),
-                                groomed.structure_of<fastjet::contrib::SoftDrop>().mu(),
                                 groomed.perp(),
+                                groomed.structure_of<fastjet::contrib::SoftDrop>().mu(),
                                 groomed.structure_of<fastjet::contrib::SoftDrop>().dropped_count()});
   return result;
 }
 
 AliNSubjettinessParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const {
   AliNSubjettinessParameters result({
-    fastjet::contrib::Nsubjettiness (1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta,cut.fRadius)).result(jet),
-    fastjet::contrib::Nsubjettiness (2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(cut.fBeta,cut.fRadius)).result(jet)
+    fastjet::contrib::Nsubjettiness (1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedCutoffMeasure(cut.fBeta, cut.fRadius, 1e100)).result(jet),
+    fastjet::contrib::Nsubjettiness (2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedCutoffMeasure(cut.fBeta, cut.fRadius, 1e100)).result(jet)
   });
   return result;
 }
 
-AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, const char *trigger){
+Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const {
+  if(!jet.GetNumberOfTracks()) return 0;
+  TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
+  Double_t den(0.), num(0.);
+  if(tracks){
+    for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
+      AliVParticle *track = jet.TrackAt(itrk, tracks->GetArray());
+      if(!track){
+        AliErrorStream() << "Associated constituent particle / track not found\n";
+        continue;
+      }
+      TVector3 trackvec(track->Px(), track->Py(), track->Pz());
+
+      num +=  track->Pt() * trackvec.DrEtaPhi(jetvec);
+      den += +track->Pt();
+    }
+  }
+  if(clusters) {
+    for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
+      AliVCluster *clust = jet.ClusterAt(icl, clusters->GetArray());
+      if(!clust) {
+        AliErrorStream() << "Associated constituent cluster not found\n";
+        continue;
+      }
+      TLorentzVector clusterp;
+      clust->GetMomentum(clusterp, fVertex);
+
+      num += clusterp.Pt() * clusterp.Vect().DrEtaPhi(jetvec);
+      den += clusterp.Pt();
+    }
+  }
+  return num/den;
+}
+
+Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const {
+  if (!jet.GetNumberOfTracks()) return 0;
+  Double_t den(0.), num(0.);
+  if(particles){
+    for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
+      AliVParticle *trk = jet.TrackAt(itrk, particles->GetArray());
+      if(!trk){
+        AliErrorStream() << "Associated constituent particle / track not found\n";
+        continue;
+      }
+      num += trk->Pt() * trk->Pt();
+      den += trk->Pt();
+    }
+  }
+  if(clusters){
+    for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
+      AliVCluster *clust = jet.ClusterAt(icl, clusters->GetArray());
+      if(!clust) {
+        AliErrorStream() << "Associated constituent cluster not found\n";
+        continue;
+      }
+      TLorentzVector clusterp;
+      clust->GetMomentum(clusterp, fVertex);
+      num += clusterp.Pt() * clusterp.Pt();
+      den += clusterp.Pt();
+    }
+  }
+  return TMath::Sqrt(num)/den;
+}
+
+AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -339,18 +474,18 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree("JetSubstructureTreemaker_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger);
   mgr->AddTask(treemaker);
   treemaker->SetMakeGeneralHistograms(kTRUE);
-  treemaker->SetVzRange(-10., 10);
 
   // Adding containers
   if(isMC) {
     AliParticleContainer *particles = treemaker->AddMCParticleContainer("mcparticles");
+    particles->SetMinPt(0.);
 
     AliJetContainer *mcjets = treemaker->AddJetContainer(
                               AliJetContainer::kFullJet,
                               AliJetContainer::antikt_algorithm,
-                              AliJetContainer::pt_scheme,
+                              recombinationScheme,
                               jetradius,
-                              AliEmcalJet::kEMCALfid,
+                              isData ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
                               particles, nullptr);
     mcjets->SetName("mcjets");
     mcjets->SetJetPtCut(20.);
@@ -365,7 +500,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     AliJetContainer *datajets = treemaker->AddJetContainer(
                               AliJetContainer::kFullJet,
                               AliJetContainer::antikt_algorithm,
-                              AliJetContainer::pt_scheme,
+                              recombinationScheme,
                               jetradius,
                               AliEmcalJet::kEMCALfid,
                               tracks, clusters);
@@ -373,6 +508,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     datajets->SetJetPtCut(20.);
 
     treemaker->SetUseAliAnaUtils(true, true);
+    treemaker->SetVzRange(-10., 10);
 
     // configure trigger selection
     TString triggerstring(trigger);
@@ -391,7 +527,8 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   TString outputfile = mgr->GetCommonFileName();
   outputfile += TString::Format(":JetSubstructure_R%02d_%s", int(jetradius * 10.), trigger);
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructure_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, Form("JetSubstructureTree_R%02d_%s.root", static_cast<int>(jetradius*10.), trigger)));
 
   return treemaker;
 }

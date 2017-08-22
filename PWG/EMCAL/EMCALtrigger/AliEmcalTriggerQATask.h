@@ -67,7 +67,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void SetTimeStampRange(UInt_t min, UInt_t max)    { fMinTimeStamp            = min ; fMaxTimeStamp = max; }
   void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
-  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && i < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
+  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && static_cast<std::size_t>(i) < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
 
   static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", EBeamType_t beamType = kpp, ETriggerAnalysisType_t anaType=kTriggerOfflineExpertAnalysis, TString subdir = "", TString suffix = "");
   static void AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);

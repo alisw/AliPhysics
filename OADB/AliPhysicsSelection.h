@@ -44,6 +44,7 @@ class AliOADBPhysicsSelection;
 class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
+class StringToRegexp;
 
 typedef std::pair<R5TFormula, std::vector<AliTriggerAnalysis::Trigger>> FormulaAndBits;
 typedef std::map<std::string, FormulaAndBits> StringToFormula;
@@ -124,7 +125,10 @@ protected:
   StringToFormula *fTriggerToFormula; //! Map trigger strings to TFormulas
   FormulaAndBits& FindForumla(const char* triggerLogic); //! Returns pair of TFormula and trigger bits
 
-  ClassDef(AliPhysicsSelection, 23)
+  StringToRegexp* fTriggerToRegexp; //!
+  TPRegexp& FindRegexp(const std::string& triggers) const;
+
+  ClassDef(AliPhysicsSelection, 24)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);

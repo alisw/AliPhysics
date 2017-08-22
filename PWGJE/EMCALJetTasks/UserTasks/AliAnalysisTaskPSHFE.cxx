@@ -623,10 +623,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Initialize event pool stuff
     Double_t vertexBins[5] = { -10, -4,  0, 4, 10 };
     Int_t nZvtxBins  = 4;
-    Double_t multBins[4] = {0, 100, 300, 500};
-    Int_t nMultBins = 3;
+    Double_t multBins[12] = {0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 200};
+    Int_t nMultBins = 11;
 
-    fPoolMan = new AliEventPoolManager(50, 50, nMultBins, multBins, nZvtxBins, vertexBins);
+    fPoolMan = new AliEventPoolManager(1000, 10000, nMultBins, multBins, nZvtxBins, vertexBins);
     fPoolMan->Validate();
 
     //Some strings for histograms
@@ -853,83 +853,83 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     }
 
     //DPhi for candidate electrons 2-8 gev and assoc. particles >3gev
-    fHistDPhi28_MB = new TH1F("fHistDPhi28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhi28_MB = new TH1F("fHistDPhi28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi28_MB->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhi28_EMC7 = new TH1F("fHistDPhi28_EMC7", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhi28_EMC7 = new TH1F("fHistDPhi28_EMC7", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi28_EMC7->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhi28_EMCEGA = new TH1F("fHistDPhi28_EMCEGA", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhi28_EMCEGA = new TH1F("fHistDPhi28_EMCEGA", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi28_EMCEGA->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhi28_EMCJet = new TH1F("fHistDPhi28_EMCJet", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhi28_EMCJet = new TH1F("fHistDPhi28_EMCJet", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi28_EMCJet->GetYaxis()->SetTitle("Cts");
 
     //DPhi by Eta for triggered particles 2-8 gev and assoc. particles >3gev
-    fHistDPhiDEta28_MB = new TH2F("fHistDPhiDEta28_MB", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEta28_MB = new TH2F("fHistDPhiDEta28_MB", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEta28_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEta28_MB->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEta28_MB->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEta28_EMC7 = new TH2F("fHistDPhiDEta28_EMC7", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEta28_EMC7 = new TH2F("fHistDPhiDEta28_EMC7", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 550, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEta28_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEta28_EMC7->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEta28_EMC7->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEta28_EMCEGA = new TH2F("fHistDPhiDEta28_EMCEGA", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEta28_EMCEGA = new TH2F("fHistDPhiDEta28_EMCEGA", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEta28_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEta28_EMCEGA->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEta28_EMCEGA->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEta28_EMCJet = new TH2F("fHistDPhiDEta28_EMCJet", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEta28_EMCJet = new TH2F("fHistDPhiDEta28_EMCJet", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEta28_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEta28_EMCJet->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEta28_EMCJet->GetZaxis()->SetTitle("Cts");
 
     //DPhi for candidate electrons 2-8 gev and assoc. particles >2Gev for Mixed Events
-    fHistDPhiMix28_MB = new TH1F("fHistDPhiMix28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhiMix28_MB = new TH1F("fHistDPhiMix28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhiMix28_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiMix28_MB->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhiMix28_EMC7 = new TH1F("fHistDPhiMix28_EMC7", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhiMix28_EMC7 = new TH1F("fHistDPhiMix28_EMC7", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhiMix28_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiMix28_EMC7->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhiMix28_EMCEGA = new TH1F("fHistDPhiMix28_EMCEGA", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhiMix28_EMCEGA = new TH1F("fHistDPhiMix28_EMCEGA", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhiMix28_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiMix28_EMCEGA->GetYaxis()->SetTitle("Cts");
 
-    fHistDPhiMix28_EMCJet = new TH1F("fHistDPhiMix28_EMCJet", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+    fHistDPhiMix28_EMCJet = new TH1F("fHistDPhiMix28_EMCJet", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhiMix28_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiMix28_EMCJet->GetYaxis()->SetTitle("Cts");
 
     //DPhi by Eta for triggered particles 2-8 gev and assoc. particles >3gev
-    fHistDPhiDEtaMix28_MB = new TH2F("fHistDPhiDEtaMix28_MB", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEtaMix28_MB = new TH2F("fHistDPhiDEtaMix28_MB", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEtaMix28_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEtaMix28_MB->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEtaMix28_MB->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEtaMix28_EMC7 = new TH2F("fHistDPhiDEtaMix28_EMC7", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEtaMix28_EMC7 = new TH2F("fHistDPhiDEtaMix28_EMC7", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEtaMix28_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEtaMix28_EMC7->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEtaMix28_EMC7->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEtaMix28_EMCEGA = new TH2F("fHistDPhiDEtaMix28_EMCEGA", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEtaMix28_EMCEGA = new TH2F("fHistDPhiDEtaMix28_EMCEGA", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEtaMix28_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEtaMix28_EMCEGA->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEtaMix28_EMCEGA->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhiDEtaMix28_EMCJet = new TH2F("fHistDPhiDEtaMix28_EMCJet", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 100, -0.9, 0.9);
+    fHistDPhiDEtaMix28_EMCJet = new TH2F("fHistDPhiDEtaMix28_EMCJet", "Delta-Phi by Delta-Eta for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev for Mixed Events", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 50, -0.9, 0.9);
     fHistDPhiDEtaMix28_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhiDEtaMix28_EMCJet->GetYaxis()->SetTitle("Delta-Eta");
     fHistDPhiDEtaMix28_EMCJet->GetZaxis()->SetTitle("Cts");
 
     //DPhi by dEdx for triggered particles 2-8 gev and assoc. particles >2gev
-    fHistDPhi18Spe_MB = new TH2F("fHistDPhi18Spe_MB", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_MB = new TH2F("fHistDPhi18Spe_MB", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_MB->GetYaxis()->SetTitle("Species");
     fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(1, "Unkown");
@@ -941,7 +941,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_MB->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhi18Spe_EMC7 = new TH2F("fHistDPhi18Spe_EMC7", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMC7 = new TH2F("fHistDPhi18Spe_EMC7", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMC7->GetYaxis()->SetTitle("Species");
     fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(1, "Unkown");
@@ -953,7 +953,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_EMC7->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhi18Spe_EMCEGA = new TH2F("fHistDPhi18Spe_EMCEGA", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMCEGA = new TH2F("fHistDPhi18Spe_EMCEGA", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMCEGA->GetYaxis()->SetTitle("Species");
     fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(1, "Unkown");
@@ -965,7 +965,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_EMCEGA->GetZaxis()->SetTitle("Cts");
 
-    fHistDPhi18Spe_EMCJet = new TH2F("fHistDPhi18Spe_EMCJet", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMCJet = new TH2F("fHistDPhi18Spe_EMCJet", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 50, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMCJet->GetYaxis()->SetTitle("Species");
     fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(1, "Unkown");
@@ -979,100 +979,100 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
 
     // Delta Phi for tracks > 300MeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_1_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi300_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi300_1_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi300_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi300_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi300_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi300_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi300_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi300_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 1GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi1_2_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi1_2_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi1_2_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi1_2_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi1_2_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi1_2_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(),50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi1_2_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi1_2_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi1_2_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi1_2_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi1_2_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi1_2_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi1_2_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi1_2_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_1-2Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi1_2_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi1_2_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 2GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_4_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi2_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi2_4_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi2_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi2_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi2_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi2_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi2_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi2_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 3GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhi4_8_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_MB[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi4_8_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi4_8_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi4_8_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi4_8_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi4_8_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi4_8_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhi4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhi4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhi_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhi4_8_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhi4_8_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
@@ -1084,100 +1084,100 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     // Delta Phi for tracks > 300MeV
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_1_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix300_1_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix300_1_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix300_1_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix300_1_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix300_1_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix300_1_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix300_1_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_.3-1Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated .3Gev<pt<1Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix300_1_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix300_1_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 1GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix1_2_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix1_2_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix1_2_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix1_2_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix1_2_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix1_2_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix1_2_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix1_2_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix1_2_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix1_2_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix1_2_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix1_2_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix1_2_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix1_2_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_1-2Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 1Gev<pt<2Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix1_2_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix1_2_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 2GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_4_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix2_4_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix2_4_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix2_4_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix2_4_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix2_4_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix2_4_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix2_4_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_2-4Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 2Gev<pt<4Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix2_4_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix2_4_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
 
     // Delta Phi for tracks > 3GeV
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_8_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_MB[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_MB",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix4_8_MB[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix4_8_MB[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMC7[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMC7",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix4_8_EMC7[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix4_8_EMC7[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMCEGA[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCEGA",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix4_8_EMCEGA[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix4_8_EMCEGA[i]->GetYaxis()->SetTitle("Cts");
     }
 
     for(Int_t i=0; i<3; i++){
-        fHistDPhiMix4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
+        fHistDPhiMix4_8_EMCJet[i] = new TH1F(TString::Format("fHistDPhiMix_trig_%s_assoc_4-8Gev_EMCJet",ptRangesDPhi[i].Data()).Data(), TString::Format("Delta-Phi for candidate electrons w/ pt=%s and Associated 4Gev<pt<8Gev for Mixed Events",ptRangesDPhi[i].Data()).Data(), 50, -TMath::Pi()/2, 3*TMath::Pi()/2);
         fHistDPhiMix4_8_EMCJet[i]->GetXaxis()->SetTitle("Delta-Phi");
         fHistDPhiMix4_8_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
@@ -1730,7 +1730,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     EMCEGAtrg = fSelectMask & AliVEvent::kEMCEGA;
     EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
 
-    trigVal= EMC7trg?EMC7:EMCEGAtrg?EMCEGA:EMCJettrg?EMCJE:NONE;
+    trigVal= EMCJettrg?EMCJE:EMC7trg?EMC7:EMCEGAtrg?EMCEGA:NONE;
 
     Int_t elecIDs[1000];
     Int_t elecCnt=0;

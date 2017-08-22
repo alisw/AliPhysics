@@ -42,12 +42,9 @@ ClassImp(AliAnalysisTaskReducedEventProcessor);
 AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
   AliAnalysisTaskSE(),
   fReducedTask(0x0),
-  //fOutputSlot(),
-  //fContainerType(),
-  //fNoutputSlots(),
   fRunningMode(kUseEventsFromTree),
-  fEventNumber(0),
-  fReducedEvent()
+  fReducedEvent(),
+  fWriteFilteredTree(kFALSE)
 {
   //
   // Default constructor
@@ -55,15 +52,12 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
 }
 
 //_________________________________________________________________________________
-AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name, Int_t runningMode) :
+AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name, Int_t runningMode, Bool_t writeFilteredTree) :
   AliAnalysisTaskSE(name),
   fReducedTask(0x0),
-  //fOutputSlot(),
-  //fContainerType(),
-  //fNoutputSlots(0),
   fRunningMode(runningMode),
-  fEventNumber(0),
-  fReducedEvent()
+  fReducedEvent(),
+  fWriteFilteredTree(writeFilteredTree)
 {
   //
   // Constructor
@@ -74,6 +68,8 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const
       DefineInput(0,TChain::Class());
    
   DefineOutput(1,THashList::Class());
+  if(fWriteFilteredTree) 
+     DefineOutput(2, TTree::Class());
 }
 
 
@@ -111,8 +107,13 @@ void AliAnalysisTaskReducedEventProcessor::UserCreateOutputObjects()
   //
   fReducedTask->GetHistogramManager()->AddHistogramsToOutputList();
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
-  //fReducedTask->Init();                                       
-  //for(Int_t i=0; i<fNoutputSlots; i++)   DefineOutput(1, fOutputSlot[i]->Class());
+  
+  if(fWriteFilteredTree) {
+     OpenFile(2);
+     fReducedTask->InitFilteredTree();
+     PostData(2, fReducedTask->GetFilteredTree());
+  }  
+  
   return;
 }
 
@@ -138,15 +139,14 @@ void AliAnalysisTaskReducedEventProcessor::UserExec(Option_t *){
   }
   
   if(!event) return;
-  
-  
-  //cout << "event number / vtxZ=" << fEventNumber << "/" << event->Vertex(2) << endl;
-  
+    
   fReducedTask->SetEvent(event);
   fReducedTask->Process();
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
-  ++fEventNumber;
-  //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==1) PostData(i, fOutputSlot[i]);
+  
+  if(fWriteFilteredTree)  {
+     PostData(2, fReducedTask->GetFilteredTree());
+  }
 } 
 
 
@@ -161,5 +161,8 @@ void AliAnalysisTaskReducedEventProcessor::FinishTaskOutput()
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==0) PostData(i, fOutputSlot[i]);
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
   cout << "AliAnalysisTaskReducedEventProcessor::FinishTaskOutput() 1 " << endl;
+  if(fWriteFilteredTree)
+     PostData(2, fReducedTask->GetFilteredTree());
+  
   return;
 }

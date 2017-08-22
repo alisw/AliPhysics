@@ -100,6 +100,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistEta(0),
   fHistRapidity(0),
   fHistPhi(0),
+  fHistEtaVzPos(0),
+  fHistEtaVzNeg(0),
   fHistEtaPhiPos(0), 	       	 
   fHistEtaPhiNeg(0), 
   fHistPhiBefore(0),
@@ -108,6 +110,14 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistPhiNeg(0),
   fHistV0M(0),
   fHistRefTracks(0),
+  fHistPhivZ(0),
+  fHistEtavZ(0),
+  fHistSphericity(0),
+  fHistMultiplicityVsSphericity(0),
+  fHistMeanPtVsSphericity(0),
+  fHistSphericityAfter(0),
+  fHistMultiplicityVsSphericityAfter(0),
+  fHistMeanPtVsSphericityAfter(0),
   fHistdEdxVsPTPCbeforePID(NULL),
   fHistBetavsPTOFbeforePID(NULL), 
   fHistProbTPCvsPtbeforePID(NULL), 
@@ -173,6 +183,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCforKinematics(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+  fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
   fVzMax(10.),
@@ -188,6 +199,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
   fTPCsharedCut(-1),
+  fSphericityMin(-999.),
+  fSphericityMax(999.),
+  fUseSphericityCut(kFALSE),
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
@@ -411,9 +425,15 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistRapidity);
   fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
-  fHistEtaPhiPos  = new TH3F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 		 	 
+
+  fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
+  fList->Add(fHistEtaVzPos); 			 
+  fHistEtaVzNeg  = new TH3F("fHistEtaVzNeg","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
+  fList->Add(fHistEtaVzNeg); 			 
+
+  fHistEtaPhiPos  = new TH3F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistEtaPhiPos); 			 
-  fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
+fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNeg);
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
@@ -430,6 +450,29 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   for(Int_t i = 1; i <= 6; i++)
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
+
+  fHistPhivZ = new TH2F("fHistPhivZ", "#phi vs Vz ; #phi; V_{z}", 200,0.,2*TMath::Pi(), 140,-12.,12.);
+  fList->Add(fHistPhivZ);
+  fHistEtavZ =  new TH2F("fHistEtavZ", "#eta vs Vz ; #eta; V_{z}", 40,-1.6,1.6, 140,-12.,12.);
+  fList->Add(fHistEtavZ);
+
+  fHistSphericity = new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05);
+  fList->Add(fHistSphericity);
+
+  fHistMultiplicityVsSphericity = new TH2F("fHistMultiplicityVsSphericity",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05);
+  fList->Add(fHistMultiplicityVsSphericity);
+  
+  fHistMeanPtVsSphericity = new TH2F("fHistMeanPtVsSphericity",";#LT p_{T} #GT;S_{T};Counts",1000,-0.01,9.99,501,-0.05,1.05);
+  fList->Add(fHistMeanPtVsSphericity);
+
+  fHistSphericityAfter = new TH1F("fHistSphericityAfter",";S_{T};Counts",501,-0.05,1.05);
+  fList->Add(fHistSphericityAfter);
+
+  fHistMultiplicityVsSphericityAfter = new TH2F("fHistMultiplicityVsSphericityAfter",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05);
+  fList->Add(fHistMultiplicityVsSphericityAfter);
+  
+  fHistMeanPtVsSphericityAfter = new TH2F("fHistMeanPtVsSphericityAfter",";#LT p_{T} #GT;S_{T};Counts",1000,-0.01,9.99,501,-0.05,1.05);
+  fList->Add(fHistMeanPtVsSphericityAfter);
 
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
@@ -786,9 +829,20 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     }
   }
 
-  // get the accepted tracks in main event
-  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane);
+  //Sphericity variable
+  Double_t gSphericity = -999.;
+  
+  // get the accepted tracks in main event  
+  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
+
+  //Use sphericity cut
+  if(fUseSphericityCut) {
+    if((fSphericityMin > gSphericity)||(gSphericity > fSphericityMax)) {
+      AliInfo(Form("The event got rejected due to its sphericity value of %.1f (accepted ranges: %.1f - %.1f",gSphericity,fSphericityMin,fSphericityMax));
+      return;
+    }
+  }
   
   //multiplicity cut (used in pp)
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,lMultiplicityVar);
@@ -1564,7 +1618,7 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
 }
 
 //________________________________________________________________________
-TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane){
+TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity){
   // Returns TObjArray with tracks after all track cuts (only for AOD!)
   // Fills QA histograms
 
@@ -1578,7 +1632,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
   Double_t vEta;
   Double_t vY;
   Double_t vPhi;
-  Double_t vPt;
+  Double_t vPt = 0., vPx = 0., vPy = 0.;
+
+  //Variables for the calculation of sphericity
+  Double_t sT = -999.;
+  Double_t s00 = 0., s11 = 0., s10 = 0.;
+  Double_t sumPt = 0.;
+  Double_t lambda1 = 0., lambda2 = 0.;
+  Int_t nAcceptedTracks = 0;
 
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
     // Loop over tracks in event
@@ -1588,7 +1649,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	AliError(Form("Could not receive track %d", iTracks));
 	continue;
       }
-      
+	    
       // AOD track cuts
       
       // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
@@ -1599,7 +1660,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
 
       if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
-
+      
 
       // additional check on kPrimary flag
       if(fCheckPrimaryFlagAOD){
@@ -1612,6 +1673,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vEta    = aodTrack->Eta();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+      vPx      = aodTrack->Px();
+      vPy      = aodTrack->Py();
       vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
       
       
@@ -1846,7 +1909,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
-
+    
        // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
@@ -1870,6 +1933,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	dcaZ   = pos[2] - v[2];
       }
 
+	    
       // Extra DCA cuts (for systematic studies [!= -1])
       if( fDCAxyCut != -1 && fDCAzCut != -1){
 	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
@@ -1890,6 +1954,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
+      //caluclation of sphericity
+      sumPt += vPt;
+      if(vPt != 0.) {
+	s00 += TMath::Power(vPx,2)/vPt;
+	s11 += TMath::Power(vPy,2)/vPt;
+	s10 += vPx*vPy/vPt;
+      }
+ 
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -1900,8 +1972,23 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+	
+      
+      if (fDetailedTracksQA){
+	fHistPhivZ->Fill(vPhi, event->GetPrimaryVertex()->GetZ());
+	fHistEtavZ->Fill(vEta, event->GetPrimaryVertex()->GetZ());
+      }
+      
+      if(vCharge > 0) {
+	fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      }
+      else if(vCharge < 0) {
+	fHistEtaVzNeg->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality);
+	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      }
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -1913,8 +2000,42 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       } 
       else{
 	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
-      } 
+      }
+
+      nAcceptedTracks += 1;
     }//track loop
+
+    if(nAcceptedTracks >= 2) { 
+      if(sumPt != 0.) { 
+	s00 /= sumPt;
+	s11 /= sumPt;
+	s10 /= sumPt;
+	
+	if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	  lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	  lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	  
+	  if((lambda1 + lambda2) != 0.) {
+	    sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
+	    fHistMeanPtVsSphericity->Fill(sumPt/nAcceptedTracks,sT);
+	    fHistSphericity->Fill(sT);
+	    fHistMultiplicityVsSphericity->Fill(nAcceptedTracks,sT);
+
+	    
+	    //Use sphericity cut
+	    if(fUseSphericityCut) {
+	      if((fSphericityMin <= sT)&&(sT <= fSphericityMax)) {
+		fHistMeanPtVsSphericityAfter->Fill(sumPt/nAcceptedTracks,sT);
+		fHistSphericityAfter->Fill(sT);
+		fHistMultiplicityVsSphericityAfter->Fill(nAcceptedTracks,sT);
+	      }
+	    }
+	    
+	    gSphericity = sT;
+	  }
+	}
+      }
+    }
   }// AOD analysis
 
 
@@ -1951,8 +2072,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      if(vCharge > 0) {
+	fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      }
+      else if(vCharge < 0) {
+	fHistEtaVzNeg->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      }
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -2047,8 +2176,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
 	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
 	fHistPhi->Fill(vPhi,gCentrality);
-	if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-	else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+	if(vCharge > 0) {
+	  fHistEtaVzPos->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	  fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+	}
+	else if(vCharge < 0) {
+	  fHistEtaVzNeg->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	  fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+	}
 	
 	//=======================================correction
 	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -2319,8 +2456,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      if(vCharge > 0) {
+	fHistEtaVzPos->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      }
+      else if(vCharge < 0) {
+	fHistEtaVzNeg->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      }
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -2531,8 +2676,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
       else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       fHistRapidity->Fill(vY,gCentrality);
-      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      if(vCharge > 0) {
+	fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistPhiPos->Fill(vPhi,gCentrality);
+      }
+      else if(vCharge < 0) {
+	fHistEtaVzNeg->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	fHistPhiNeg->Fill(vPhi,gCentrality);
+      }
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -2594,6 +2747,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vCharge = track->Charge();
 	vEta    = track->Eta();
 	vPt     = track->Pt();
+	vPx     = track->Px();
+	vPy     = track->Py();
 	vY      = track->Y();//true Y
 	
 	if( vPt < fPtMin || vPt > fPtMax)      
@@ -2762,8 +2917,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistRapidity->Fill(vY,gCentrality);
 	//if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),gCentrality);
 	//else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),gCentrality);
-	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+	if(vCharge > 0) {
+	  fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			    gCentrality); 		 
+	  fHistPhiPos->Fill(vPhi,gCentrality);
+	}
+	else if(vCharge < 0) {
+	  fHistEtaVzNeg->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
+			      gCentrality); 		 
+	  fHistPhiNeg->Fill(vPhi,gCentrality);
+	}
 	
 	//Flow after burner
 	if(fUseFlowAfterBurner) {
@@ -2792,18 +2955,58 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 	
 	//vPhi *= TMath::RadToDeg();
-	
-      //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
-      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
-      } 
-      else{
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
-      } 
+	//caluclation of sphericity
+	sumPt += vPt;
+	if(vPt != 0.) {
+	  s00 += TMath::Power(vPx,2)/vPt;
+	  s11 += TMath::Power(vPy,2)/vPt;
+	  s10 += vPx*vPy/vPt;
+	}
+
+	//=======================================correction
+	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	
+	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+	} 
+	else{
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+	}
+	nAcceptedTracks += 1;
       } //track loop
+      
+      if(nAcceptedTracks >= 2) { 
+	if(sumPt != 0.) { 
+	  s00 /= sumPt;
+	  s11 /= sumPt;
+	  s10 /= sumPt;
+	  
+	  if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	    lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    
+	    if((lambda1 + lambda2) != 0.) {
+	      sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
+	      fHistMeanPtVsSphericity->Fill(sumPt/nAcceptedTracks,sT);
+	      fHistSphericity->Fill(sT);
+	      fHistMultiplicityVsSphericity->Fill(nAcceptedTracks,sT);
+	      
+	      //Use sphericity cut
+	      if(fUseSphericityCut) {
+		if((fSphericityMin <= sT)&&(sT <= fSphericityMax)) {
+		  fHistMeanPtVsSphericityAfter->Fill(sumPt/nAcceptedTracks,sT);
+		  fHistSphericityAfter->Fill(sT);
+		  fHistMultiplicityVsSphericityAfter->Fill(nAcceptedTracks,sT);
+		}
+	      }
+	      
+	      gSphericity = sT;
+	    }
+	  }
+	}
+      }
     }//MC event object
   }//MC
   

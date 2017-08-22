@@ -583,6 +583,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MatchEffITSTPC",        "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9}",  ""},
   {"MatchEffITSTPCinPlane", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #||{#phi^{Track}-#Psi^{TPC}} < #frac{#pi}{4} || #frac{3#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #pi}",  ""},
   {"MatchEffITSTPCoutPlane", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #frac{#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #frac{3#pi}{4}}",  ""},
+  {"MatchEffITSTPCinPlaneV0C", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #||{#phi^{Track}-#Psi^{V0C}} < #frac{#pi}{4} || #frac{3#pi}{4} < #||{#phi^{Track}-#Psi^{V0C}} < #pi}",  ""},
+  {"MatchEffITSTPCoutPlaneV0C", "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9, #frac{#pi}{4} < #||{#phi^{Track}-#Psi^{TPC}} < #frac{3#pi}{4}}",  ""},
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
   {"NaccTrcklts09",          "N_{acc. trkl} #cbar_{#||{#eta}<0.9}",                ""},
   {"NaccTrcklts10",          "N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                ""},
@@ -643,7 +645,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
-  {"MixingBin",              "mixing bin",                                         ""}
+  {"MixingBin",              "mixing bin",                                         ""},
+  {"LegSource",              "Leg source",                                         ""}
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;

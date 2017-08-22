@@ -296,7 +296,7 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 }
 
 //_____________________________________________________________________________
-Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane){
+Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane, Bool_t useV0Cep){
   // recalulate the its-tpc matching efficiecy
   if (!ev) return -1;
   Bool_t bDebug = kFALSE;
@@ -344,6 +344,9 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
   Float_t tpcChi2Cl = -99.;
   Float_t eventplane = -99.;
 
+  TString epDetector = "TPC";
+  if(useV0Cep)  epDetector = "V0C";
+
 
 
   if(bEventPlane){
@@ -355,9 +358,9 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
         AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
         TList *qnlist = flowQnVectorMgr->GetQnVectorList();
         if(qnlist != NULL){
-          const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"TPC","latest","latest");
+          const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList( qnlist, epDetector.Data(), "latest", "latest" );
           if(qVecQnFrameworkTPC != NULL){
-            TVector2 qVectorTPC(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
+            TVector2 qVectorTPC( qVecQnFrameworkTPC->Qx(2), qVecQnFrameworkTPC->Qy(2) );
             eventplane = TVector2::Phi_mpi_pi(qVectorTPC.Phi())/2;
           }
         }

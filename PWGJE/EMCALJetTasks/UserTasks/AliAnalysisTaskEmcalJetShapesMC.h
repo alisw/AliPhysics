@@ -67,6 +67,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
+  void SetSwitchkT(Int_t c)                                 { fSwitchKtNSub   = c   ; }
+  void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
+  void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -128,12 +131,15 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[33];              //     jet shapes used for the tagging
+  Float_t                             fShapesVar[38];              //     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
   Float_t                             fSubjetRadius;
   Int_t                               fSelectedShapes;                //chose set of shapes
+  Int_t                               fSwitchKtNSub;
+   Int_t                              fSwitchMinNSub;
+    Int_t                             fSwitchAktNSub;
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 

@@ -17,7 +17,7 @@ class THnSparse;
 class THnSparse;
 class AliVVZERO;
 class AliEvtPoolManager;
-
+class AliAODMCHeader;
 using std::vector;
 
 class AliAnalysisTaskEMCALPi0GammaCorr : public AliAnalysisTaskEmcal {
@@ -31,16 +31,16 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   void SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-  void SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
+ 
   void SetPeriod(const char *period)                         { fPeriod = period; }
-
+  void SetMC (Bool_t MC)                                     { fIsMC = MC; }
 
   void SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
   AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
   void AddEventPoolsToOutput(double minCent, double maxCent,  double minZvtx, double maxZvtx, double minPt, double maxPt);
   
   private:
-  AliEventCuts fEventCuts;                  
+
   
   void                        InitArrays()                                                 ;
   // overwritten EMCal framework functions
@@ -62,8 +62,9 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   int                         CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t MixedEvent, double Weight);
   Bool_t                      PreSelection(AliVCluster* caloCluster);
   Bool_t                      FinalClusterCuts(AliVCluster* cluster);
-  void                      GetIsolation_Track(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband);
-  void                        GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband);
+  void                        GetIsolation_Track(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband, double &IsoE_sub);
+  void                        GetIsolation_Cluster(AliVCluster* cluster, double Rmax, double &IsoE, double &UE_etaband, double &IsoE_sub);
+  void                        GetIsolation_Truth(AliVCluster* cluster, double Rmax, double &IsoE);
   Int_t                       GetMaxDistanceFromBorder(AliVCluster* cluster);
   Double_t                    GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t                    GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
@@ -71,9 +72,12 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   Int_t                       FormatRunNumber(Int_t runnumber);  
   TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
   double                      GetEff(AliTLorentzVector ParticleVec)                         ;
+  void                        AnalyzeMC();
+  Bool_t                      IsRealPion(AliVCluster* cluster_1, AliVCluster* cluster_2, double &truepT); 
 
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
-  Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
+  //Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
+  Bool_t                      fIsMC; /// Whether analysis is on MC or not. 
   
   //..Input histograms
   THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
@@ -84,12 +88,19 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   static const int          kNcentBins=8;              ///< centrality bins in which the ME are mixed
   double                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
+
+  TClonesArray             *fAODMCParticles; //!<!
+  AliAODMCHeader           *fmcHeader; //!<!
+  
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
   int                       fTrackDepth;               ///<  #tracks to fill pool
   int                       fPoolSize;                 ///<  Maximum number of events
+  
+
+
   vector<vector<double> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
 
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
@@ -98,6 +109,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TString     fPeriod;                         //!<! String containing the LHC period
 
   THnSparse                 *h_Track;                   //!<!
+  THnSparse                 *h_Truth;                   //!<!
   THnSparse                 *h_Cluster;                 //!<!
   THnSparse                 *h_ClusterTrack;                 //!<! THnSparse with info on cluster and track.
   THnSparse                 *h_ClusterTrack_Mixed;                 //!<!

@@ -64,6 +64,9 @@
 #include "AliKFVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
+#include "AliQnCorrectionsManager.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+
 #include "AliAnalysisTaskBeautyCal.h"
 
 using std::cout;
@@ -76,6 +79,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fVevent(0),
   fESD(0),
   fAOD(0),
+  flowQnVectorTask(0),
+  fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
   fCFM(0),
@@ -109,6 +114,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fOutputList(0),
   fNevents(0),
   fCent(0),
+  fEPV0(0),
   fVtxZ(0),
   fHistClustE(0),
   fHistClustE_etapos(0),
@@ -195,6 +201,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
   fTPCcls(0),
+  fdPhiEP0(0),
+  fdPhiEP1(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -215,6 +223,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fVevent(0),
   fESD(0),
   fAOD(0),
+  flowQnVectorTask(0),
+  fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
   fCFM(0),
@@ -248,6 +258,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fOutputList(0),
   fNevents(0),
   fCent(0), 
+  fEPV0(0),
   fVtxZ(0),
   fHistClustE(0),
   fHistClustE_etapos(0),
@@ -334,6 +345,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistIncTPCchi2(0),
   fHistIncITSchi2(0),
   fTPCcls(0),
+  fdPhiEP0(0),
+  fdPhiEP1(0),
   Eop010Corr(0),
   fhfeCuts(0) 
 {
@@ -457,6 +470,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fCent = new TH1F("fCent","Centrality",100,0,100);
   fOutputList->Add(fCent);
+
+  fEPV0 = new TH1F("fEPV0","EP V0A",100,0,TMath::Pi());
+  fOutputList->Add(fEPV0);
 
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",100,-50,50);
   fOutputList->Add(fVtxZ);
@@ -738,6 +754,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fTPCcls = new TH2D("fTPCcls","TPC cluster correlations",200,0,200,200,0,200);
   fOutputList->Add(fTPCcls);
 
+  fdPhiEP0 = new TH1F("fdPhiEP0","tr phi w.r.t. EP",628,-6.28,6.28);
+  fOutputList->Add(fdPhiEP0);
+
+  fdPhiEP1 = new TH1F("fdPhiEP1","tr phi w.r.t. EP",628,-6.28,6.28);
+  fOutputList->Add(fdPhiEP1);
+
   PostData(1,fOutputList);
 
   Eop010Corr = new TF1("Eop010Corr","pol3");
@@ -835,6 +857,36 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     {
      if(centrality < fcentMim || centrality > fcentMax)return;
     }
+
+   ///////// RP  
+
+        flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+
+        if (flowQnVectorTask != NULL) {
+            fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+            //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        }
+        else {
+            AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+            return;
+        }
+
+        TList *qnlist = 0x0;
+        qnlist = fFlowQnVectorMgr->GetQnVectorList();
+        //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        //cout << "EP list ; " << qnlist->Print() << endl; 
+
+        const AliQnCorrectionsQnVector *qnV0;
+        //qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
+        qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROAQoverM","latest","latest");
+        Double_t evPlaneV0 = 0.0;
+        //if (qnV0 != NULL) evPlaneV0 = qnV0->EventPlane(2);
+        if (qnV0) evPlaneV0 = qnV0->EventPlane(2);
+        if(evPlaneV0 <0)evPlaneV0 += TMath::Pi();
+
+        Double_t lim_inplane = TMath::Cos(30.0/180.0*TMath::Pi());   
+        Double_t lim_outplane = TMath::Cos(60.0/180.0*TMath::Pi());  
+
 
   ////////////////
   //Event vertex//
@@ -957,6 +1009,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   if(TMath::Abs(Zvertex)>10.0)return;
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
+  cout << "evPlane = " << qnV0 << " ; " << evPlaneV0 << endl;
+  fEPV0->Fill(evPlaneV0);
 
   //cout << "check MC in the event ....." << endl;
   if(fMCarray)CheckMCgen(fMCheader);
@@ -1298,6 +1352,32 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
        }
          
 
+    /////////////////////////////////
+
+    if(fEPana>0)
+      {
+       Double_t dphi_ep_tmp = track->Phi() - evPlaneV0;
+       Double_t dphi_ep = atan2(sin(dphi_ep_tmp),cos(dphi_ep_tmp));
+       cout << "dphi_ep = " << dphi_ep << endl;
+       fdPhiEP0->Fill(dphi_ep); 
+   
+       Double_t cosdphi = TMath::Cos(dphi_ep);
+       Bool_t iInPlane = kFALSE;
+       Bool_t iOutPlane = kFALSE;
+       if(TMath::Abs(cosdphi)>=lim_inplane && TMath::Abs(cosdphi)<=1.0)iInPlane = kTRUE;
+       if(TMath::Abs(cosdphi)>=0.0 && TMath::Abs(cosdphi)<=lim_outplane)iOutPlane = kTRUE;
+
+       if(fEPana==1){
+          if(!iInPlane)continue;   // select inplane tracks
+         } 
+       if(fEPana==2){
+         if(!iOutPlane)continue;  // select outplane tracks
+         }
+
+       fdPhiEP1->Fill(dphi_ep); 
+
+      }
+
     ////////////////////
     //Track properties//
     ///////////////////
@@ -1317,6 +1397,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     fdEdx->Fill(TrkP,dEdx);
     fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
     fTPCnsig->Fill(TrkP,fTPCnSigma);
+
 
     ///////////////////////////
     //Track matching to EMCAL//

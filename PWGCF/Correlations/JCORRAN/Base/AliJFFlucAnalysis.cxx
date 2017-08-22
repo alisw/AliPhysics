@@ -33,7 +33,7 @@
 //#include "AliJHistManager.h"
 #include "TClonesArray.h"
 #include "AliJEfficiency.h"
-
+#pragma GCC diagnostic warning "-Wall"
 
 ClassImp(AliJFFlucAnalysis)
 
@@ -42,13 +42,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	: AliAnalysisTaskSE(),
 	fInputList(0),
 	//h_phi_module(),
+	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),
-	fHMG(NULL),
-	fEfficiency(0), // pointer to tracking efficiency
 	fEffMode(0),
 	fEffFilterBit(0),
+	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -66,25 +66,27 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_vn_vn()
 {
 	const int NCent = 7;
-	Double_t CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
+	static Double_t CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
-	fCentBin = new Double_t[fNCent+1];
+	/*fCentBin = new Double_t[fNCent+1];
 	for(int ic=0; ic<=NCent; ic++){
 		fCentBin[ic] = CentBin[ic];
-	}
+	}*/
+	fCentBin = CentBin;
 
 
 	// pt bins to check pt dist copied from AliJHistos
 	const int nJacek = 73;
-	Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-		1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
+	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
+		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
 		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 
 	fNJacek = nJacek;
-	fPttJacek = new Double_t[fNJacek+1] ;
+	/*fPttJacek = new Double_t[fNJacek+1] ;
 	for(int i=0; i<= fNJacek; i++){
 		fPttJacek[i] = pttJacek[i];
-	}
+	}*/
+	fPttJacek = pttJacek;
 
 	// Constructor
 }
@@ -93,13 +95,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	: AliAnalysisTaskSE(name),
 	fInputList(0),
 	//h_phi_module(),
+	fEfficiency(0),
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),
-	fHMG(NULL),
-	fEfficiency(0),
 	fEffMode(0),
 	fEffFilterBit(0),
+	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -126,8 +128,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fEffMode = 0;
 	fEffFilterBit =0;
 	fInFileName ="";
-	Bool_t IsPhiModule = kFALSE;
-	Bool_t IsSCptdep = kFALSE;
+	IsPhiModule = kFALSE;
+	IsSCptdep = kFALSE;
 	fEta_min = 0;
 	fEta_max = 0;
 	fQC_eta_cut_min = -0.8; // default setting
@@ -147,19 +149,15 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 
 	// pt bins to check pt dist copied from AliJHistos
 	const int nJacek = 73;
-	Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-			1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
-			10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
-
+	static Double_t pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
+		0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9,
+		10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 	fNJacek = nJacek;
-	fPttJacek = new Double_t[fNJacek+1] ;
+	/*fPttJacek = new Double_t[fNJacek+1] ;
 	for(int i=0; i<= fNJacek; i++){
-			fPttJacek[i] = pttJacek[i];
-	}
-
-
-
-	// Constructor
+		fPttJacek[i] = pttJacek[i];
+	}*/
+	fPttJacek = pttJacek;
 	// Define input and output slots here
 }
 
@@ -168,12 +166,13 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
 	//h_phi_module(a.h_phi_module),
+	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
 	fCent(a.fCent),
-	fHMG(a.fHMG),
-	fEfficiency(a.fEfficiency),
+	fNJacek(a.fNJacek),
 	fEffMode(a.fEffMode),
 	fEffFilterBit(a.fEffFilterBit),
+	fHMG(a.fHMG),
 	fBin_Subset(a.fBin_Subset),
 	fBin_h(a.fBin_h),
 	fBin_k(a.fBin_k),
@@ -226,7 +225,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(17);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(19);
 
 	fBin_Nptbins .Set("PtBin","PtBin", "Pt:%d", AliJBin::kSingle).SetBin(N_ptbins);
 
@@ -353,8 +352,8 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 	delete fInputList;
 	delete fHMG;
 	delete fEfficiency;
-	delete []fPttJacek;
-	delete []fCentBin;
+	//delete []fPttJacek;
+	//delete []fCentBin;
 }
 
 //________________________________________________________________________
@@ -494,14 +493,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex V6V2star_3 = QnA[6] * TComplex::Power( QnB_star[2] , 3) ;
 	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
 	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3];
-
+	TComplex V8V2starV3star_2 = QnA[8] * QnB_star[2] * TComplex::Power(QnB_star[3],2);
+	TComplex V8V2star_4 = QnA[8] * TComplex::Power(QnB_star[2],4);
 
 	// New correlattors (Modified by You's corretion term for self-correlations)
 	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
 	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
-
-
 
 	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] ))
@@ -516,8 +514,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex nV4V4V3V3 = (QnA[4]*QnB_star[4]*QnA[3]*QnB_star[3]) - ((1/(NSubTracks[1]-1) * QnB_star[7] * QnA[4] *QnA[3] ))
 		- ((1/(NSubTracks[0]-1) * QnA[7]*QnB_star[4] * QnB_star[3])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[7]*QnB_star[7] );
 
-
-
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
 	fh_correlator[2][fCBin]->Fill( V4V2star.Re() ) ; // added 2015.3.18
@@ -528,7 +524,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re() );
 	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re() ) ;
 
-	fh_correlator[9][fCBin]->Fill( nV4V2star.Re() ); // added 2015. 6. 10
+	fh_correlator[9][fCBin]->Fill( nV4V2star.Re() ); // added 2015.6.10
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
@@ -540,9 +536,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() , ebe_4p_weight);
 	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() , ebe_4p_weight);
 
+	//higher order correlators, added 2017.8.10
+	fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re() );
+	fh_correlator[18][fCBin]->Fill( V8V2star_4.Re() );
+
 
 	if(IsSCptdep == kTRUE){
-		const int SCNH =6; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
+		const int SCNH = 9; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
 		Double_t ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
 		TComplex QnA_pt[SCNH][N_ptbins];
@@ -587,7 +587,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			TComplex nV3V3V2V2_pt = (QnA_pt[3][ipt]*QnB_pt_star[3][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[5][ipt] * QnA_pt[3][ipt] *QnA_pt[2][ipt] ))
 				- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[5][ipt]*QnB_pt_star[3][ipt] * QnB_pt_star[2][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[5][ipt]*QnB_pt_star[5][ipt] );
 
-			//add hihger order 5225, 5335, 4334
+			//add higher order 5225, 5335, 4334
 			TComplex nV5V5V3V3_pt =  (QnA_pt[5][ipt]*QnB_pt_star[5][ipt]*QnA_pt[3][ipt]*QnB_pt_star[3][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[8][ipt] * QnA_pt[5][ipt] *QnA_pt[3][ipt] ))
 				- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[8][ipt]*QnB_pt_star[5][ipt] * QnB_pt_star[3][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[8][ipt]*QnB_pt_star[8][ipt] );
 			TComplex nV5V5V2V2_pt =  (QnA_pt[5][ipt]*QnB_pt_star[5][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[7][ipt] * QnA_pt[5][ipt] *QnA_pt[2][ipt] ))
@@ -595,8 +595,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			TComplex nV4V4V3V3_pt =  (QnA_pt[4][ipt]*QnB_pt_star[4][ipt]*QnA_pt[3][ipt]*QnB_pt_star[3][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[7][ipt] * QnA_pt[4][ipt] *QnA_pt[3][ipt] ))
 				- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[7][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[3][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[7][ipt]*QnB_pt_star[7][ipt] );
 
-
-			int ik=1;
 			fh_SC_ptdep_4corr[2][1][4][1][fCBin][ipt]->Fill( nV4V4V2V2_pt.Re());
 			fh_SC_ptdep_4corr[2][1][3][1][fCBin][ipt]->Fill( nV3V3V2V2_pt.Re());
 			fh_SC_ptdep_4corr[2][1][5][1][fCBin][ipt]->Fill( nV5V5V2V2_pt.Re() );
@@ -774,9 +772,9 @@ Double_t AliJFFlucAnalysis::Get_QC_Vn(Double_t QnA_real, Double_t QnA_img, Doubl
 {
 
 	Double_t QAB_real = QnA_real* QnB_real + QnA_img * QnB_img ;
-	Double_t QAB_img = QnA_img * QnB_real - QnA_real * QnB_img;
+	//Double_t QAB_img = QnA_img * QnB_real - QnA_real * QnB_img;
 
-	Double_t QAB_abs = TMath::Sqrt( QAB_real * QAB_real + QAB_img * QAB_img );
+	//Double_t QAB_abs = TMath::Sqrt( QAB_real * QAB_real + QAB_img * QAB_img );
 	//Double_t QC_Vn = TMath::Sqrt(QAB_abs);
 	Double_t QC_Vn = TMath::Sqrt(QAB_real);
 	return QC_Vn;

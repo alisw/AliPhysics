@@ -99,6 +99,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fBeta_SD(0),
   fZCut(0.1),
   fReclusteringAlgorithm(0),
+  fSoftDropOn(0),
   fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
@@ -252,6 +253,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fBeta_SD(0),
   fZCut(0.1),
   fReclusteringAlgorithm(0),
+  fSoftDropOn(0),
   fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
@@ -1670,16 +1672,22 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Algorithm==10 -> min_axes;
 
 
+  //fSoftDropOn==1    All the below are done on the jet after it has undergone softdrop with CA. Option 3 and 4 are done whether this is turned on or not.
+
+  
   //Option==0 returns Nsubjettiness Value
   //Option==1 && N==2 returns opening angle between two subjet axes(Delta R?)
   //Option==2 && N==2 returns Delta R
-  //Option==3 returns first splitting distance for soft dropped jet
-  //Option==4 returns Symmetry measure (Zg) for soft dropped jet
+  //Option==3 returns first splitting distance for soft dropped jet (CA)
+  //Option==4 returns Symmetry measure (Zg) for soft dropped jet  (CA)
   //Option==5 returns Pt of Subjet1
   //Option==6 returns Pt of Subjet2
   //Options==7 trutns deltaR of subjets...Is this different to before??
   //Option==8 Subjet1 Leading track Pt
   //Option==9 Subjet1 Leading track Pt
+
+  
+  
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
@@ -1697,6 +1705,42 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_kt();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_kt();
     }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==1) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_ca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_ca();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_ca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_ca();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_ca();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_ca();
+    }   
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==2) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_akt02();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_akt02();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==2) && (Beta==1.0) && (Option==0)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_akt02();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_akt02();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==2) && (Beta==1.0) && (Option==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_akt02();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_akt02();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_casd();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_casd();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==0) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_casd();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_casd();
+    }
+    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==1) && (Beta==1.0) && (Option==1) && (Beta_SD==0.0) && (ZCut==0.1) && (fSoftDropOn==1)){
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_casd();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_casd();
+    } 
     else{
       if (fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly) Algorithm=fReclusteringAlgorithm;   //Lazy programming!! Change this later, just a quick fix for now...it stops you being able to fill tree with two different reclutering algorithms or change algortihm inside this .cxx  (can only be changed via the external setter).
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
@@ -1709,15 +1753,15 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
 	const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
 	Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut);
+	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
       }
       else{
 	Double_t dVtx[3]={1,1,1};
 	if (!fNsubMeasure){
-	  return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut);
+	  return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
 	}
 	else{
-	  if (Option==3) return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut);
+	  if (Option==3) return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
 	  else return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,1);
 	}
       }

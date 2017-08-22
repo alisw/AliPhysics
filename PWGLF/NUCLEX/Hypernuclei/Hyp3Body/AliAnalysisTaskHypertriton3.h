@@ -223,6 +223,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
   TH2F               *fHistTOFdeusignal;                    //!<! TOF PID: deuteron candidates
   TH2F               *fHistTOFprosignal;                    //!<! TOF PID: proton candidates
+  TH2F               *fHistTOFpionsignal;                   //!<! TOF PID: pion candidates
   //TH1F               *fHistTOFdeumass;                    //!<! TOF mass of deuteron identified with TPC
   //TH1F               *fHistTOFpromass;                    //!<! TOF mass of proton identified with TPC
 
@@ -368,8 +369,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   UShort_t           fTppion;
   Char_t             fTTPCnsigmapion;
   Short_t            fTTOFnsigmapion;
-  //Float_t            fTDCAXYpioprvtx;
-  //Float_t            fTDCAZpioprvtx;
+  Short_t            fTDCAXYpioprvtx;
+  Short_t            fTDCAZpioprvtx;
   // Triplet
   UShort_t           fTDCAdp;
   UShort_t           fTDCAdpi;
@@ -414,6 +415,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTDecayLengthProper;
   UShort_t           fTDecayLengthNorm;
   Float_t            fTCosPA;
+  UShort_t           fTTransverseMom;
   Float_t            fTInvariantMass;
 
 

@@ -120,6 +120,8 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkDoImprovedDCAV0DauPropagation(kFALSE),
+fkDoImprovedDCACascDauPropagation(kFALSE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ),
@@ -161,6 +163,8 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -231,8 +235,8 @@ fTreeCascVarDCAxyV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
 
-fTreeCascVarDCACascDaughtersClassical(0),
-fTreeCascVarCascPropagationClassical(0),
+fTreeCascVarDCACascDaughters(0),
+fTreeCascVarCascPropagation(0),
 
 fTreeCascVarDecayX(0),
 fTreeCascVarDecayY(0),
@@ -247,22 +251,6 @@ fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
 
-fTreeCascVarCascPropagationImprovedIterations(0),
-fTreeCascVarCascPropagationImprovedStatus(0),
-fTreeCascVarDCACascDaughtersImproved(0),
-
-fTreeCascVarImprovedDecayX(0),
-fTreeCascVarImprovedDecayY(0),
-fTreeCascVarImprovedDecayZ(0),
-fTreeCascVarImprovedCascCosPointingAngle(0),
-fTreeCascVarImprovedCascDCAxyToPV(0),
-fTreeCascVarImprovedCascDCAzToPV(0),
-
-fTreeCascVarImprovedInvMassXiMinus(0),
-fTreeCascVarImprovedInvMassXiPlus(0),
-fTreeCascVarImprovedInvMassOmegaMinus(0),
-fTreeCascVarImprovedInvMassOmegaPlus(0),
-
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
 fTreeCascVarPIDBachelor(0),
@@ -274,9 +262,6 @@ fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
-
-fTreeCascVarBachPropagationParameterClassical(0),
-fTreeCascVarBachPropagationParameterImproved(0),
 
 //Full momentum information
 fTreeCascVarNegPx(0),
@@ -297,6 +282,12 @@ fTreeCascVarPosPzMC(0),
 fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
+
+//Full track info for DCA minim optimization
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
+
 
 //Histos
 fHistEventCounter(0),
@@ -330,6 +321,8 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
+fkDoImprovedDCAV0DauPropagation(kFALSE),
+fkDoImprovedDCACascDauPropagation(kFALSE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
@@ -371,6 +364,8 @@ fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableGoodV0(kFALSE),
+fTreeVariableCentrality(0),
 fTreeVariablePosLength(0),
 fTreeVariableNegLength(0),
 fTreeVariablePosCrossedRows(0),
@@ -438,8 +433,8 @@ fTreeCascVarDCAxyV0ToPrimVtx(0),
 fTreeCascVarInvMassLambda(0),
 fTreeCascVarInvMassAntiLambda(0),
 
-fTreeCascVarDCACascDaughtersClassical(0),
-fTreeCascVarCascPropagationClassical(0),
+fTreeCascVarDCACascDaughters(0),
+fTreeCascVarCascPropagation(0),
 
 fTreeCascVarDecayX(0),
 fTreeCascVarDecayY(0),
@@ -450,22 +445,6 @@ fTreeCascVarInvMassXiMinus(0),
 fTreeCascVarInvMassXiPlus(0),
 fTreeCascVarInvMassOmegaMinus(0),
 fTreeCascVarInvMassOmegaPlus(0),
-
-fTreeCascVarCascPropagationImprovedIterations(0),
-fTreeCascVarCascPropagationImprovedStatus(0),
-fTreeCascVarDCACascDaughtersImproved(0),
-
-fTreeCascVarImprovedDecayX(0),
-fTreeCascVarImprovedDecayY(0),
-fTreeCascVarImprovedDecayZ(0),
-fTreeCascVarImprovedCascCosPointingAngle(0),
-fTreeCascVarImprovedCascDCAxyToPV(0),
-fTreeCascVarImprovedCascDCAzToPV(0),
-
-fTreeCascVarImprovedInvMassXiMinus(0),
-fTreeCascVarImprovedInvMassXiPlus(0),
-fTreeCascVarImprovedInvMassOmegaMinus(0),
-fTreeCascVarImprovedInvMassOmegaPlus(0),
 
 fTreeCascVarPIDPositive(0),
 fTreeCascVarPIDNegative(0),
@@ -478,9 +457,6 @@ fTreeCascVarPosDistanceToTrueDecayPt(0),
 fTreeCascVarNegDistanceToTrueDecayPt(0),
 fTreeCascVarBachDistanceToTrueDecayPt(0),
 fTreeCascVarV0DistanceToTrueDecayPt(0),
-
-fTreeCascVarBachPropagationParameterClassical(0),
-fTreeCascVarBachPropagationParameterImproved(0),
 
 //Full momentum information
 fTreeCascVarNegPx(0),
@@ -501,6 +477,11 @@ fTreeCascVarPosPzMC(0),
 fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
+
+//Full track info for DCA minim optimization
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
 
 //Histos
 fHistEventCounter(0),
@@ -644,6 +625,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     //Create Basic V0 Output Tree
     fTreeV0 = new TTree( "fTreeV0", "Findable V0 Candidates");
     //-----------BASIC-INFO---------------------------
+    fTreeV0->Branch("fTreeVariableGoodV0",&fTreeVariableGoodV0,"fTreeVariableGoodV0/O");
+    fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     fTreeV0->Branch("fTreeVariablePosLength",&fTreeVariablePosLength,"fTreeVariablePosLength/F");
     fTreeV0->Branch("fTreeVariableNegLength",&fTreeVariableNegLength,"fTreeVariableNegLength/F");
     fTreeV0->Branch("fTreeVariablePosCrossedRows",&fTreeVariablePosCrossedRows,"fTreeVariablePosCrossedRows/F");
@@ -726,8 +709,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarInvMassAntiLambda",&fTreeCascVarInvMassAntiLambda,"fTreeCascVarInvMassAntiLambda/F");
     
     //CLASSICAL BACK-PROPAGATION VARIABLES
-    fTreeCascade->Branch("fTreeCascVarDCACascDaughtersClassical",&fTreeCascVarDCACascDaughtersClassical,"fTreeCascVarDCACascDaughtersClassical/F");
-    fTreeCascade->Branch("fTreeCascVarCascPropagationClassical",&fTreeCascVarCascPropagationClassical,"fTreeCascVarCascPropagationClassical/O");
+    fTreeCascade->Branch("fTreeCascVarDCACascDaughters",&fTreeCascVarDCACascDaughters,"fTreeCascVarDCACascDaughters/F");
+    fTreeCascade->Branch("fTreeCascVarCascPropagation",&fTreeCascVarCascPropagation,"fTreeCascVarCascPropagation/O");
     
     fTreeCascade->Branch("fTreeCascVarDecayX",&fTreeCascVarDecayX,"fTreeCascVarDecayX/F");
     fTreeCascade->Branch("fTreeCascVarDecayY",&fTreeCascVarDecayY,"fTreeCascVarDecayY/F");
@@ -742,24 +725,6 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarInvMassOmegaMinus",&fTreeCascVarInvMassOmegaMinus,"fTreeCascVarInvMassOmegaMinus/F");
     fTreeCascade->Branch("fTreeCascVarInvMassOmegaPlus",&fTreeCascVarInvMassOmegaPlus,"fTreeCascVarInvMassOmegaPlus/F");
     
-    //IMPROVED BACK-PROPAGATION VARIABLES
-    fTreeCascade->Branch("fTreeCascVarCascPropagationImprovedIterations",&fTreeCascVarCascPropagationImprovedIterations,"fTreeCascVarCascPropagationImprovedIterations/I");
-    fTreeCascade->Branch("fTreeCascVarCascPropagationImprovedStatus",&fTreeCascVarCascPropagationImprovedStatus,"fTreeCascVarCascPropagationImprovedStatus/I");
-    fTreeCascade->Branch("fTreeCascVarDCACascDaughtersImproved",&fTreeCascVarDCACascDaughtersImproved,"fTreeCascVarDCACascDaughtersImproved/F");
-    
-    fTreeCascade->Branch("fTreeCascVarImprovedDecayX",&fTreeCascVarImprovedDecayX,"fTreeCascVarImprovedDecayX/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedDecayY",&fTreeCascVarImprovedDecayY,"fTreeCascVarImprovedDecayY/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedDecayZ",&fTreeCascVarImprovedDecayZ,"fTreeCascVarImprovedDecayZ/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedCascCosPointingAngle",&fTreeCascVarImprovedCascCosPointingAngle,"fTreeCascVarImprovedCascCosPointingAngle/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedCascDCAxyToPV",&fTreeCascVarImprovedCascDCAxyToPV,"fTreeCascVarImprovedCascDCAxyToPV/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedCascDCAzToPV",&fTreeCascVarImprovedCascDCAzToPV,"fTreeCascVarImprovedCascDCAzToPV/F");
-    
-    fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiMinus",&fTreeCascVarImprovedInvMassXiMinus,"fTreeCascVarImprovedInvMassXiMinus/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedInvMassXiPlus",&fTreeCascVarImprovedInvMassXiPlus,"fTreeCascVarImprovedInvMassXiPlus/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedInvMassOmegaMinus",&fTreeCascVarImprovedInvMassOmegaMinus,"fTreeCascVarImprovedInvMassOmegaMinus/F");
-    fTreeCascade->Branch("fTreeCascVarImprovedInvMassOmegaPlus",&fTreeCascVarImprovedInvMassOmegaPlus,"fTreeCascVarImprovedInvMassOmegaPlus/F");
-    
-    
     //MC VARIABLES
     fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
     fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
@@ -772,9 +737,6 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarNegDistanceToTrueDecayPt",&fTreeCascVarNegDistanceToTrueDecayPt,"fTreeCascVarNegDistanceToTrueDecayPt/F");
     fTreeCascade->Branch("fTreeCascVarBachDistanceToTrueDecayPt",&fTreeCascVarBachDistanceToTrueDecayPt,"fTreeCascVarBachDistanceToTrueDecayPt/F");
     fTreeCascade->Branch("fTreeCascVarV0DistanceToTrueDecayPt",&fTreeCascVarV0DistanceToTrueDecayPt,"fTreeCascVarV0DistanceToTrueDecayPt/F");
-    
-    fTreeCascade->Branch("fTreeCascVarBachPropagationParameterClassical",&fTreeCascVarBachPropagationParameterClassical,"fTreeCascVarBachPropagationParameterClassical/F");
-    fTreeCascade->Branch("fTreeCascVarBachPropagationParameterImproved",&fTreeCascVarBachPropagationParameterImproved,"fTreeCascVarBachPropagationParameterImproved/F");
     
     //full momentum info
     fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
@@ -795,8 +757,13 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarBachPxMC",&fTreeCascVarBachPxMC,"fTreeCascVarBachPxMC/F");
     fTreeCascade->Branch("fTreeCascVarBachPyMC",&fTreeCascVarBachPyMC,"fTreeCascVarBachPyMC/F");
     fTreeCascade->Branch("fTreeCascVarBachPzMC",&fTreeCascVarBachPzMC,"fTreeCascVarBachPzMC/F");
-    //------------------------------------------------
     
+    //Full track info for DCA minim optimization
+    fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
+    fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
+    fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
+    //------------------------------------------------
+
     //------------------------------------------------
     // Particle Identification Setup
     //------------------------------------------------
@@ -999,7 +966,18 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
+        //AliWarning("AliMultSelection object not found! Trying to resort to AliCentrality now...");
+        AliCentrality* centrality = 0x0;
+        centrality = lESDevent->GetCentrality();
+        if( centrality ){
+            lPercentile = centrality->GetCentralityPercentileUnchecked("V0M");
+            lPercentileEmbeddedSelection = lPercentile;
+            lEvSelCode = 0;
+            if(centrality->GetQuality()>1){
+                //Not good!
+                lEvSelCode = 999;
+            }
+        }
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
@@ -1009,13 +987,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
     
     //just ask AliMultSelection. It will know.
-    fMVPileupFlag = kFALSE;
-    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
+    //fMVPileupFlag = kFALSE;
+    //fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
     
-    //Let's find out why efficiency is so centrality dependent, please 
-    fTreeCascVarCentrality = lPercentile;
+    //Let's find out why efficiency is so centrality dependent, please!
+    fTreeCascVarCentrality  = lPercentile;
+    fTreeVariableCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
@@ -1244,11 +1223,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Step 1: propagate to DCA
         fTreeVariableDcaV0Daughters = -1;
         fTreeVariableDcaV0DaughtersGeometric = -1;
-        Double_t xn, xp, dca=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
+        Double_t xn, xp, dca; //=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
+        
+        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);
+        dca=GetDCAV0Dau(&pt, &nt, xp, xn, lMagneticField);
         
         //Correct for beam pipe material
         //Warning: this is an unfinished implementation and should not do much at this stage
-        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);
+        
         Bool_t corrected=kFALSE;
         if ((nt.GetX() > 3.) && (xn < 3.)) {
             //correct for the beam pipe material
@@ -1259,7 +1241,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             corrected=kTRUE;
         }
         if (corrected) {
-            dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
+            //dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
         }
         
         fTreeVariableDcaV0Daughters = dca; //Pass to TTree object, please
@@ -1267,6 +1249,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Actual propagation
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
+        
+        //Tag OK V0s (will probably tag >99%? will still have to be studied!)
+        if ( fTreeVariableNegPropagStatus == kTRUE &&
+            fTreeVariablePosPropagStatus == kTRUE )
+            fTreeVariableGoodV0 = kTRUE;
         
         //Acquire the DCA that's not strictly computed with uncertainties (geometric only) for comparison
         Double_t lx1, ly1, lz1, lx2, ly2, lz2, tmp[3];
@@ -1526,22 +1513,17 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //Step 1: propagate to DCA
         fTreeCascVarDcaV0Daughters = -1;
         
-        Double_t xn, xp, dca=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
-        
         //Correct for beam pipe material
         //Warning: this is an unfinished implementation and should not do much at this stage
-        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);
-        Bool_t corrected=kFALSE;
-        if ((nt.GetX() > 3.) && (xn < 3.)) {
-            //correct for the beam pipe material
-            corrected=kTRUE;
-        }
-        if ((pt.GetX() > 3.) && (xp < 3.)) {
-            //correct for the beam pipe material
-            corrected=kTRUE;
-        }
-        if (corrected) {
-            dca=nt.GetDCA(&pt,lMagneticField,xn,xp);
+        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos), *ntp=&nt, *ptp=&pt;
+        Double_t xn, xp, dca;
+        
+        if( fkDoImprovedDCAV0DauPropagation ){
+            //Improved: use own call
+            dca=GetDCAV0Dau(ptp, ntp, xp, xn, b);
+        }else{
+            //Old: use old call
+            dca=nt.GetDCA(&pt,b,xn,xp);
         }
         
         fTreeCascVarDcaV0Daughters = dca; //Pass to TTree object, please
@@ -1579,15 +1561,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         //---] Cascade PART [----------------------------------------------
         
-        //Step 1: propagation (CLASSICAL)
+        //Step 1: propagation (encapsulated in PropagateToDCA, see appropriate options)
         AliESDv0 v0(vertex);
         AliESDv0 *pv0=&v0;
         AliExternalTrackParam bt(*esdTrackBach), *pbt=&bt;
         Double_t cascdca = PropagateToDCA(pv0,pbt,lESDevent,lMagneticField);
         
-        fTreeCascVarDCACascDaughtersClassical = 1e+10;
-        fTreeCascVarCascPropagationClassical = kFALSE;
-        fTreeCascVarBachPropagationParameterClassical = -100;
+        fTreeCascVarDCACascDaughters = 1e+10;
+        fTreeCascVarCascPropagation = kFALSE;
         
         fTreeCascVarDecayX = -100;
         fTreeCascVarDecayY = -100;
@@ -1600,10 +1581,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarInvMassOmegaPlus = -100;
         
         //Check if propagation successful
-        if (cascdca < 1e+32){
-            fTreeCascVarDCACascDaughtersClassical = cascdca;
-            fTreeCascVarCascPropagationClassical = kTRUE;
-            fTreeCascVarBachPropagationParameterClassical = pbt->GetX();
+        if (cascdca < 1e+4){
+            fTreeCascVarDCACascDaughters = cascdca;
+            fTreeCascVarCascPropagation = kTRUE;
             
             //Construct cascade
             AliESDcascade cascade(*pv0,*pbt,lCascBachTrackArray[iCasc]);
@@ -1638,212 +1618,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarPosPy = lPMom[1];
             fTreeCascVarPosPz = lPMom[2];
             fTreeCascVarBachPx = lBMom[0];
-            fTreeCascVarBachPy = lBMom[1];
+            fTreeCascVarBachPy = lBMom[1];		
             fTreeCascVarBachPz = lBMom[2];
-        }
-        
-        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        //Step 1 IMPROVED: Propagate one to each other using improved techniques
-        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        //Status code
-        fTreeCascVarCascPropagationImprovedStatus = 0; //started
-        fTreeCascVarImprovedDecayX = -100;
-        fTreeCascVarImprovedDecayY = -100;
-        fTreeCascVarImprovedDecayZ = -100;
-        fTreeCascVarImprovedCascCosPointingAngle = -100;
-        fTreeCascVarImprovedCascDCAxyToPV = -100;
-        fTreeCascVarImprovedCascDCAzToPV = -100;
-        fTreeCascVarBachPropagationParameterImproved = -100;
-        fTreeCascVarDCACascDaughtersImproved = -100;
-        
-        fTreeCascVarImprovedInvMassXiMinus = -100;
-        fTreeCascVarImprovedInvMassXiPlus = -100;
-        fTreeCascVarImprovedInvMassOmegaMinus = -100;
-        fTreeCascVarImprovedInvMassOmegaPlus = -100;
-        
-        //Use copy
-        AliESDv0 v0imp(vertex);
-        AliESDv0 *pv0imp=&v0imp;
-        AliExternalTrackParam btimp(*esdTrackBach), *pbtimp=&btimp;
-        
-        //Uncertainties: bachelor track as well as V0
-        //Harmonic mean-like: errors as weights to combine the errors (approx)
-        Double_t dy2V0 = TMath::Power(1/(esdTrackPos->GetSigmaY2()+1e-8)+1/(esdTrackNeg->GetSigmaY2()+1e-8)+1e-8,-1);
-        Double_t dz2V0 = TMath::Power(1/(esdTrackPos->GetSigmaZ2()+1e-8)+1/(esdTrackNeg->GetSigmaZ2()+1e-8)+1e-8,-1);
-        
-        Double_t dy2=pbtimp->GetSigmaY2() + dy2V0;
-        Double_t dz2=pbtimp->GetSigmaZ2() + dz2V0;
-        Double_t dx2=dy2;
-        
-        //For testing purposes: try geometric criterion only, disregard uncertainties
-        if( fkIfImprovedExtraPrecisionFactor<0.9){
-            dx2 = fkIfImprovedExtraPrecisionFactor;
-            dy2 = fkIfImprovedExtraPrecisionFactor;
-            dz2 = fkIfImprovedExtraPrecisionFactor;
-        }
-        
-        //Create dummy V0 track
-        //V0 properties to get started
-        Double_t xyz[3], pxpypz[3], cv[21];
-        for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
-        
-        pv0imp->GetXYZ(xyz[0],xyz[1],xyz[2]);
-        pv0imp->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
-        
-        //Mockup track for V0 trajectory (no covariance)
-        AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
-        hV0Traj->ResetCovariance(1); //won't use
-        
-        Double_t p1[8]; pbtimp->GetHelixParameters(p1,lMagneticField);
-        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
-        Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
-        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
-        
-        Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
-        Evaluate(p1,t1,r1,g1,gg1);
-        Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
-        Evaluate(p2,t2,r2,g2,gg2);
-        
-        Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
-        Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
-        
-        Int_t max=fMaxIterationsCascadeDCA;
-        while (max--) {
-            Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
-            Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
-            Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
-            (g1[1]*g1[1] - dy*gg1[1])/dy2 +
-            (g1[2]*g1[2] - dz*gg1[2])/dz2;
-            Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
-            (g2[1]*g2[1] + dy*gg2[1])/dy2 +
-            (g2[2]*g2[2] + dz*gg2[2])/dz2;
-            Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
             
-            Double_t det=h11*h22-h12*h12;
-            
-            Double_t dt1,dt2;
-            if (TMath::Abs(det)<1.e-33) {
-                //(quasi)singular Hessian
-                dt1=-gt1; dt2=-gt2;
-            } else {
-                dt1=-(gt1*h22 - gt2*h12)/det;
-                dt2=-(h11*gt2 - h12*gt1)/det;
-            }
-            
-            if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
-            
-            //check delta(phase1) ?
-            //check delta(phase2) ?
-            
-            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < fPrecisionCutoffCascadeDCA)
-                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < fPrecisionCutoffCascadeDCA) {
-                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
-                        AliDebug(1," stopped at not a stationary point !");
-                        //Count not stationary point
-                        fTreeCascVarCascPropagationImprovedStatus += 1; //not stationary
-                    }
-                    Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
-                    if (lmb < 0.){
-                        
-                        AliDebug(1," stopped at not a minimum !");
-                        //Count stopped at not a minimum
-                        fTreeCascVarCascPropagationImprovedStatus += 10; //not minimum
-                    }
-                    break;
-                }
-            
-            Double_t dd=dm;
-            for (Int_t div=1 ; ; div*=2) {
-                Evaluate(p1,t1+dt1,r1,g1,gg1);
-                Evaluate(p2,t2+dt2,r2,g2,gg2);
-                dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
-                dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
-                if (dd<dm) break;
-                dt1*=0.5; dt2*=0.5;
-                if (div>512) {
-                    AliDebug(1," overshoot !"); break;
-                    //Count overshoots
-                    fTreeCascVarCascPropagationImprovedStatus += 100; //overshoot!
-                }
-            }
-            dm=dd;
-            
-            t1+=dt1;
-            t2+=dt2;
+            fTreeCascVarBachTrack = pbt;
+            fTreeCascVarPosTrack = ptp;
+            fTreeCascVarNegTrack = ntp;
             
         }
-        
-        if (max<=0){
-            AliDebug(1," too many iterations !");
-        }
-        
-        fTreeCascVarCascPropagationImprovedIterations = max;
-        
-        Double_t cs=TMath::Cos(pbtimp->GetAlpha());
-        Double_t sn=TMath::Sin(pbtimp->GetAlpha());
-        Double_t xthis=r1[0]*cs + r1[1]*sn;
-        fTreeCascVarBachPropagationParameterImproved = xthis;
-        
-        //Memory cleanup
-        hV0Traj->Delete();
-        hV0Traj=0x0;
-        
-        //Propagate bachelor to the point of DCA
-        if (!pbtimp->PropagateTo(xthis,lMagneticField)) {
-            //AliWarning(" propagation failed !";
-            //HOLY CRAP, propagation failed!
-            fTreeCascVarCascPropagationImprovedStatus += 1000; //failure: add 1000
-        }
-        
-        if( fTreeCascVarCascPropagationImprovedStatus < 999 ){
-            
-            //V0 distance to bachelor: the desired distance
-            Double_t rBachDCAPt[3]; pbtimp->GetXYZ(rBachDCAPt);
-            fTreeCascVarDCACascDaughtersImproved = pv0imp->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
-            
-            //Construct cascade
-            AliESDcascade cascadeimproved(*pv0imp,*pbtimp,lCascBachTrackArray[iCasc]);
-            
-            //Decay Position
-            Double_t xcascimp,ycascimp,zcascimp; cascadeimproved.GetXYZcascade(xcascimp,ycascimp,zcascimp);
-            fTreeCascVarImprovedDecayX = xcascimp;
-            fTreeCascVarImprovedDecayY = ycascimp;
-            fTreeCascVarImprovedDecayZ = zcascimp;
-            
-            fTreeCascVarImprovedCascCosPointingAngle = cascadeimproved.GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-            
-            
-            //V0 properties to get started
-            Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
-            for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
-            
-            Int_t lChargeCascade = -1;
-            if ( fTreeCascVarBachSign > 0 ) lChargeCascade = +1;
-            
-            //Don't forget: set properties, please...
-            cascadeimproved.GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
-            cascadeimproved.GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
-            
-            AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
-            
-            fTreeCascVarImprovedCascDCAxyToPV = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
-                                                                            lBestPrimaryVtxPos[1],
-                                                                            lMagneticField) );
-            Float_t dzcascade[2];
-            hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
-            fTreeCascVarImprovedCascDCAzToPV = dzcascade[1];
-            
-            Double_t lV0quality  = 0.;
-            cascadeimproved.ChangeMassHypothesis(lV0quality , 3312);
-            fTreeCascVarImprovedInvMassXiMinus = cascadeimproved.GetEffMassXi();
-            cascadeimproved.ChangeMassHypothesis(lV0quality ,-3312);
-            fTreeCascVarImprovedInvMassXiPlus = cascadeimproved.GetEffMassXi();
-            cascadeimproved.ChangeMassHypothesis(lV0quality , 3334);
-            fTreeCascVarImprovedInvMassOmegaMinus = cascadeimproved.GetEffMassXi();
-            cascadeimproved.ChangeMassHypothesis(lV0quality ,-3334);
-            fTreeCascVarImprovedInvMassOmegaPlus = cascadeimproved.GetEffMassXi();
-        }
-        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         //-----------------------------------------------------------------
         //3c: Get perfect MC information for bookkeeping
@@ -3527,6 +3309,10 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
+    
+    //Count received
+    //fHistV0ToBachelorPropagationStatus->Fill(0.5);
+    
     Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
     Double_t r[3]; t->GetXYZ(r);
     Double_t x1=r[0], y1=r[1], z1=r[2];
@@ -3559,12 +3345,19 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         
         x1=x1*cs1 + y1*sn1;
         if (!t->PropagateTo(x1,b)) {
+            //Count linear propagation failures
+            //fHistV0ToBachelorPropagationStatus->Fill(1.5);
             Error("PropagateToDCA","Propagation failed !");
             return 1.e+33;
         }
+        //Count linear propagation successes
+        //fHistV0ToBachelorPropagationStatus->Fill(2.5);
     }
     
     if( fkDoImprovedCascadeVertexFinding ){
+        //Count Improved Cascade propagation received
+        //fHistV0ToBachelorPropagationStatus->Fill(3.5); //bin 4
+        
         //DCA Calculation improved -> non-linear propagation
         //Preparatory step 1: get two tracks corresponding to V0
         UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
@@ -3577,10 +3370,12 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
         Double_t dx2=dy2;
         
-        //For testing purposes
-        dx2 = dx2/fkIfImprovedExtraPrecisionFactor;
-        dy2 = dy2/fkIfImprovedExtraPrecisionFactor;
-        dz2 = dz2/fkIfImprovedExtraPrecisionFactor;
+        if( TMath::Abs(fkIfImprovedExtraPrecisionFactor-1.0)>1e-4 ){
+            //For testing purposes: override uncertainties, please
+            dx2 = fkIfImprovedExtraPrecisionFactor;
+            dy2 = fkIfImprovedExtraPrecisionFactor;
+            dz2 = fkIfImprovedExtraPrecisionFactor;
+        }
         
         //Create dummy V0 track
         //V0 properties to get started
@@ -3590,12 +3385,133 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         v->GetXYZ(xyz[0],xyz[1],xyz[2]);
         v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
         
-        //Mockup track for V0 trajectory (no covariance)
-        AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
-        hV0Traj->ResetCovariance(1); //won't use
-        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //EXPERIMENTAL: Improve initial position guess based on (neutral!) cowboy/sailor
+        //Check bachelor trajectory properties
         Double_t p1[8]; t->GetHelixParameters(p1,b);
         p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        
+        if ( fkDoImprovedDCACascDauPropagation ) {
+            //Look for XY plane characteristics: determine relevant helix properties
+            Double_t lBachRadius = TMath::Abs(1./p1[4]);
+            Double_t lBachCenter[2];
+            GetHelixCenter( t, lBachCenter, b);
+            
+            //Algebra: define V0 momentum unit vector
+            Double_t ux = pxpypz[0];
+            Double_t uy = pxpypz[1];
+            Double_t uz = pxpypz[2]; //needed to propagate in 3D (but will be norm to 2D modulus!)
+            Double_t umod = TMath::Sqrt(ux*ux+uy*uy);
+            ux /= umod; uy /= umod; uz /= umod;
+            //perpendicular vector (for projection)
+            Double_t vx = -uy;
+            Double_t vy = +ux;
+            
+            //Step 1: calculate distance between line and helix center
+            Double_t lDist = (xyz[0]-lBachCenter[0])*vx + (xyz[1]-lBachCenter[1])*vy;
+            Double_t lDistSign = lDist / TMath::Abs(lDist);
+            
+            //Step 2: two cases
+            if( TMath::Abs(lDist) > lBachRadius ){
+                //only one starting point would sound reasonable
+                //check necessary distance to travel for V0
+                Double_t lV0travel = (lBachCenter[0]-xyz[0])*ux + (lBachCenter[1]-xyz[1])*uy;
+                
+                //move V0 forward, please: I already know where to!
+                xyz[0] += lV0travel*ux;
+                xyz[1] += lV0travel*uy;
+                xyz[2] += lV0travel*uz;
+                
+                //find helix intersection point
+                Double_t bX = lBachCenter[0]+lDistSign*lBachRadius*vx;
+                Double_t bY = lBachCenter[1]+lDistSign*lBachRadius*vy;
+                
+                Double_t cs=TMath::Cos(t->GetAlpha());
+                Double_t sn=TMath::Sin(t->GetAlpha());
+                Double_t lPreprocessX = bX*cs + bY*sn;
+                
+                //Propagate bachelor track: already know where to!
+                t->PropagateTo(lPreprocessX,b);
+                
+            }else{
+                //test two points in which DCAxy=0 for their DCA3D, pick smallest
+                //Step 1: find V0-to-center DCA
+                Double_t aX = lBachCenter[0]+lDistSign*lDist*vx;
+                Double_t aY = lBachCenter[1]+lDistSign*lDist*vy;
+                
+                //Step 2: find half-axis distance
+                Double_t lh = TMath::Sqrt(lBachRadius*lBachRadius - lDist*lDist); //always positive
+                
+                //Step 3: find 2 points in which XY intersection happens
+                Double_t lptAx = aX + lh*ux;
+                Double_t lptAy = aY + lh*uy;
+                Double_t lptBx = aX - lh*ux;
+                Double_t lptBy = aY - lh*uy;
+                
+                //Step 4: calculate 3D DCA in each point: bachelor
+                Double_t xyzptA[3], xyzptB[3];
+                Double_t csBach=TMath::Cos(t->GetAlpha());
+                Double_t snBach=TMath::Sin(t->GetAlpha());
+                Double_t xBachA = lptAx*csBach + lptAy*snBach;
+                Double_t xBachB = lptBx*csBach + lptBy*snBach;
+                t->GetXYZAt(xBachA,b, xyzptA);
+                t->GetXYZAt(xBachB,b, xyzptB);
+                
+                //Propagate V0 to relevant points
+                Double_t lV0travelA = (lptAx-xyz[0])*ux + (lptAy-xyz[1])*uy;
+                Double_t lV0travelB = (lptBx-xyz[0])*ux + (lptBy-xyz[1])*uy;
+                Double_t lV0xyzptA[3], lV0xyzptB[3];
+                lV0xyzptA[0] = xyz[0] + lV0travelA*ux;
+                lV0xyzptA[1] = xyz[1] + lV0travelA*uy;
+                lV0xyzptA[2] = xyz[2] + lV0travelA*uz;
+                lV0xyzptB[0] = xyz[0] + lV0travelB*ux;
+                lV0xyzptB[1] = xyz[1] + lV0travelB*uy;
+                lV0xyzptB[2] = xyz[2] + lV0travelB*uz;
+                
+                //Enough info now available to decide on 3D distance
+                Double_t l3DdistA = TMath::Sqrt(
+                                                TMath::Power(lV0xyzptA[0] - xyzptA[0], 2) +
+                                                TMath::Power(lV0xyzptA[1] - xyzptA[1], 2) +
+                                                TMath::Power(lV0xyzptA[2] - xyzptA[2], 2)
+                                                );
+                Double_t l3DdistB = TMath::Sqrt(
+                                                TMath::Power(lV0xyzptB[0] - xyzptB[0], 2) +
+                                                TMath::Power(lV0xyzptB[1] - xyzptB[1], 2) +
+                                                TMath::Power(lV0xyzptB[2] - xyzptB[2], 2)
+                                                );
+                
+                
+                if( l3DdistA + 1e-6 < l3DdistB ){
+                    //A is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistA < 999 && xBachA > 0.0 && xBachA < 200.0 ) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptA[icoord];
+                        }
+                        t->PropagateTo( xBachA , b );
+                    }
+                }else{
+                    //B is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistB < 999 && xBachB > 0.0 && xBachB < 200.0 ) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptB[icoord];
+                        }
+                        t->PropagateTo( xBachB , b );
+                    }
+                }
+            }
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
+        //Mockup track for V0 trajectory (no covariance)
+        //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+        AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
+        hV0Traj->ResetCovariance(1); //won't use
+        
+        //Re-acquire helix parameters for bachelor (necessary!)
+        t->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]);
+        p1[7]=TMath::Cos(p1[2]);
+        
         Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
         p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
         
@@ -3637,11 +3553,17 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
             
             if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
                 if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
-                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
+                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
                         AliDebug(1," stopped at not a stationary point !");
+                        //Count not stationary point
+                        //fHistV0ToBachelorPropagationStatus->Fill(4.5); //bin 5
+                    }
                     Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
-                    if (lmb < 0.)
+                    if (lmb < 0.){
+                        //Count stopped at not a minimum
+                        //fHistV0ToBachelorPropagationStatus->Fill(5.5);
                         AliDebug(1," stopped at not a minimum !");
+                    }
                     break;
                 }
             
@@ -3655,6 +3577,8 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
                 dt1*=0.5; dt2*=0.5;
                 if (div>512) {
                     AliDebug(1," overshoot !"); break;
+                    //Count overshoots
+                    //fHistV0ToBachelorPropagationStatus->Fill(6.5);
                 }
             }
             dm=dd;
@@ -3664,7 +3588,11 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
             
         }
         
-        if (max<=0) AliDebug(1," too many iterations !");
+        if (max<=0){
+            AliDebug(1," too many iterations !");
+            //Count excessive iterations
+            //fHistV0ToBachelorPropagationStatus->Fill(7.5);
+        }
         
         Double_t cs=TMath::Cos(t->GetAlpha());
         Double_t sn=TMath::Sin(t->GetAlpha());
@@ -3677,6 +3605,8 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         //Propagate bachelor to the point of DCA
         if (!t->PropagateTo(xthis,b)) {
             //AliWarning(" propagation failed !";
+            //Count curved propagation failures
+            //fHistV0ToBachelorPropagationStatus->Fill(8.5);
             return 1e+33;
         }
         
@@ -3684,6 +3614,7 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
         dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+        //fHistV0ToBachelorPropagationStatus->Fill(9.5);
     }
     
     return dca;
@@ -3728,4 +3659,345 @@ Double_t AliAnalysisTaskStrEffStudy::GetErrorInPosition(AliExternalTrackParam *t
     const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
     Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;
     return sx1;
+}
+
+
+Double_t AliAnalysisTaskStrEffStudy::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b) {
+    //--------------------------------------------------------------
+    // Propagates this track and the argument track to the position of the
+    // distance of closest approach.
+    // Returns the (weighed !) distance of closest approach.
+    //--------------------------------------------------------------
+    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
+    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
+    Double_t dx2=dy2;
+    
+    Double_t p1[8]; nt->GetHelixParameters(p1,b);
+    p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+    Double_t p2[8]; pt->GetHelixParameters(p2,b);
+    p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+    
+    if( fkDoImprovedDCAV0DauPropagation){
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // V0 preprocessing: analytical estimate of DCAxy position
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        Double_t nhelix[6], phelix[6];
+        nt->GetHelixParameters(nhelix,b);
+        pt->GetHelixParameters(phelix,b);
+        Double_t lNegCenterR[2], lPosCenterR[2];
+        
+        //Negative track parameters in XY
+        GetHelixCenter( nt , lNegCenterR, b);
+        Double_t xNegCenter = lNegCenterR[0];
+        Double_t yNegCenter = lNegCenterR[1];
+        Double_t NegRadius = TMath::Abs(1./nhelix[4]);
+        
+        //Positive track parameters in XY
+        GetHelixCenter( pt , lPosCenterR, b );
+        Double_t xPosCenter = lPosCenterR[0];
+        Double_t yPosCenter = lPosCenterR[1];
+        Double_t PosRadius = TMath::Abs(1./phelix[4]);
+        
+        //Define convenient coordinate system
+        //Logical zero: position of negative center
+        Double_t ux = xPosCenter - xNegCenter;
+        Double_t uy = yPosCenter - yNegCenter;
+        
+        //Check center-to-center distance
+        Double_t lDist = TMath::Sqrt(
+                                     TMath::Power( xNegCenter - xPosCenter , 2) +
+                                     TMath::Power( yNegCenter - yPosCenter , 2)
+                                     );
+        //Normalize ux, uz to unit vector
+        ux /= lDist; uy /= lDist;
+        
+        //Calculate perpendicular vector (normalized)
+        Double_t vx = -uy;
+        Double_t vy = +ux;
+        
+        Double_t lPreprocessDCAxy = 1e+3; //define outside scope
+        Double_t lPreprocessxp = pt->GetX(); //start at current location
+        Double_t lPreprocessxn = nt->GetX(); //start at current location
+        
+        if( lDist > NegRadius + PosRadius ){
+            //================================================================
+            //Case 1: distance bigger than sum of radii ("gamma-like")
+            //        re-position tracks along the center-to-center axis
+            //Re-position negative track
+            Double_t xNegOptPosition = xNegCenter + NegRadius*ux;
+            Double_t yNegOptPosition = yNegCenter + NegRadius*uy;
+            Double_t csNeg=TMath::Cos(nt->GetAlpha());
+            Double_t snNeg=TMath::Sin(nt->GetAlpha());
+            Double_t xThisNeg=xNegOptPosition*csNeg + yNegOptPosition*snNeg;
+            
+            //Re-position positive track
+            Double_t xPosOptPosition = xPosCenter - PosRadius*ux;
+            Double_t yPosOptPosition = yPosCenter - PosRadius*uy;
+            Double_t csPos=TMath::Cos(pt->GetAlpha());
+            Double_t snPos=TMath::Sin(pt->GetAlpha());
+            Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
+            
+            if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
+                Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
+                Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
+                lPreprocessDCAxy = TMath::Sqrt(
+                                               TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
+                                               TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
+                                               TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
+                                               );
+                //Pass coordinates
+                if( lPreprocessDCAxy<999){
+                    lPreprocessxp = xThisPos;
+                    lPreprocessxn = xThisNeg;
+                }
+            }
+            //================================================================
+        } else {
+            if( lDist > TMath::Abs(NegRadius-PosRadius) ){ //otherwise this algorithm will fail!
+                //================================================================
+                //Case 2: distance smaller than sum of radii (cowboy/sailor configs)
+                
+                //Calculate coordinate for radical line
+                Double_t lRadical = (lDist*lDist - PosRadius*PosRadius + NegRadius*NegRadius) / (2*lDist);
+                
+                //Calculate absolute displacement from center-to-center axis
+                Double_t lDisplace = (0.5/lDist) * TMath::Sqrt(
+                                                               (-lDist + PosRadius - NegRadius) *
+                                                               (-lDist - PosRadius + NegRadius) *
+                                                               (-lDist + PosRadius + NegRadius) *
+                                                               ( lDist + PosRadius + NegRadius)
+                                                               );
+                
+                Double_t lCase2aDCA = 1e+3;
+                Double_t lCase2bDCA = 1e+3;
+                
+                //2 cases: positive and negative displacement
+                Double_t xNegOptPosition[2], yNegOptPosition[2], xPosOptPosition[2], yPosOptPosition[2];
+                Double_t csNeg, snNeg, csPos, snPos;
+                Double_t xThisNeg[2], xThisPos[2];
+                
+                csNeg=TMath::Cos(nt->GetAlpha());
+                snNeg=TMath::Sin(nt->GetAlpha());
+                csPos=TMath::Cos(pt->GetAlpha());
+                snPos=TMath::Sin(pt->GetAlpha());
+                
+                //Case 2a: Positive displacement along v vector
+                //Re-position negative track
+                xNegOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+                yNegOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+                xThisNeg[0] = xNegOptPosition[0]*csNeg + yNegOptPosition[0]*snNeg;
+                //Re-position positive track
+                xPosOptPosition[0] = xNegCenter + lRadical*ux + lDisplace*vx;
+                yPosOptPosition[0] = yNegCenter + lRadical*uy + lDisplace*vy;
+                xThisPos[0] = xPosOptPosition[0]*csPos + yPosOptPosition[0]*snPos;
+                
+                //Case 2b: Negative displacement along v vector
+                //Re-position negative track
+                xNegOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+                yNegOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+                xThisNeg[1] = xNegOptPosition[1]*csNeg + yNegOptPosition[1]*snNeg;
+                //Re-position positive track
+                xPosOptPosition[1] = xNegCenter + lRadical*ux - lDisplace*vx;
+                yPosOptPosition[1] = yNegCenter + lRadical*uy - lDisplace*vy;
+                xThisPos[1] = xPosOptPosition[1]*csPos + yPosOptPosition[1]*snPos;
+                
+                //Test the two cases, please
+                
+                //Case 2a
+                if( xThisNeg[0] < 200 && xThisPos[0] < 200 && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
+                    Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
+                    Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                    lCase2aDCA = TMath::Sqrt(
+                                             TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
+                                             TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
+                                             TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
+                                             );
+                }
+                
+                //Case 2b
+                if( xThisNeg[1] < 200 && xThisPos[1] < 200 && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
+                    Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
+                    Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
+                    lCase2bDCA = TMath::Sqrt(
+                                             TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
+                                             TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
+                                             TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
+                                             );
+                }
+                
+                //Minor detail: all things being equal, prefer closest X
+                Double_t lCase2aSumX = xThisPos[0]+xThisNeg[0];
+                Double_t lCase2bSumX = xThisPos[1]+xThisNeg[1];
+                
+                Double_t lDCAxySmallestR = lCase2aDCA;
+                Double_t lxpSmallestR = xThisPos[0];
+                Double_t lxnSmallestR = xThisNeg[0];
+                
+                Double_t lDCAxyLargestR = lCase2bDCA;
+                Double_t lxpLargestR = xThisPos[1];
+                Double_t lxnLargestR = xThisNeg[1];
+                
+                if( lCase2bSumX+1e-6 < lCase2aSumX ){
+                    lDCAxySmallestR = lCase2bDCA;
+                    lxpSmallestR = xThisPos[1];
+                    lxnSmallestR = xThisNeg[1];
+                    lDCAxyLargestR = lCase2aDCA;
+                    lxpLargestR = xThisPos[0];
+                    lxnLargestR = xThisNeg[0];
+                }
+                
+                //Pass conclusion to lPreprocess variables, please
+                lPreprocessDCAxy = lDCAxySmallestR;
+                lPreprocessxp = lxpSmallestR;
+                lPreprocessxn = lxnSmallestR;
+                if( lDCAxyLargestR+1e-6 < lDCAxySmallestR ){ //beware epsilon: numerical calculations are unstable here
+                    lPreprocessDCAxy = lDCAxyLargestR;
+                    lPreprocessxp = lxpLargestR;
+                    lPreprocessxn = lxnLargestR;
+                }
+                //Protection against something too crazy, please
+                if( lPreprocessDCAxy>999){
+                    lPreprocessxp = pt->GetX(); //start at current location
+                    lPreprocessxn = nt->GetX(); //start at current location
+                }
+            }
+        }
+        //End of preprocessing stage!
+        //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
+        if( lPreprocessDCAxy < 999 ) { //some improvement... otherwise discard in all cases, please
+            nt->PropagateTo(lPreprocessxn, b);
+            pt->PropagateTo(lPreprocessxp, b);
+        }
+        
+        //don't redefine!
+        nt->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]);
+        p1[7]=TMath::Cos(p1[2]);
+        pt->GetHelixParameters(p2,b);
+        p2[6]=TMath::Sin(p2[2]);
+        p2[7]=TMath::Cos(p2[2]);
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    }
+    
+    Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+    Evaluate(p1,t1,r1,g1,gg1);
+    Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+    Evaluate(p2,t2,r2,g2,gg2);
+    
+    Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+    Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+    
+    Int_t max=27;
+    while (max--) {
+        Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+        Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+        Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+        (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+        (g1[2]*g1[2] - dz*gg1[2])/dz2;
+        Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+        (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+        (g2[2]*g2[2] + dz*gg2[2])/dz2;
+        Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+        
+        Double_t det=h11*h22-h12*h12;
+        
+        Double_t dt1,dt2;
+        if (TMath::Abs(det)<1.e-33) {
+            //(quasi)singular Hessian
+            dt1=-gt1; dt2=-gt2;
+        } else {
+            dt1=-(gt1*h22 - gt2*h12)/det;
+            dt2=-(h11*gt2 - h12*gt1)/det;
+        }
+        
+        if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+        
+        //check delta(phase1) ?
+        //check delta(phase2) ?
+        
+        if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+            if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+                if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
+                    AliDebug(1," stopped at not a stationary point !");
+                Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+                if (lmb < 0.)
+                    AliDebug(1," stopped at not a minimum !");
+                break;
+            }
+        
+        Double_t dd=dm;
+        for (Int_t div=1 ; ; div*=2) {
+            Evaluate(p1,t1+dt1,r1,g1,gg1);
+            Evaluate(p2,t2+dt2,r2,g2,gg2);
+            dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+            dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+            if (dd<dm) break;
+            dt1*=0.5; dt2*=0.5;
+            if (div>512) {
+                AliDebug(1," overshoot !"); break;
+            }
+        }
+        dm=dd;
+        
+        t1+=dt1;
+        t2+=dt2;
+        
+    }
+    
+    if (max<=0) AliDebug(1," too many iterations !");
+    
+    Double_t cs=TMath::Cos(nt->GetAlpha());
+    Double_t sn=TMath::Sin(nt->GetAlpha());
+    xn=r1[0]*cs + r1[1]*sn;
+    
+    cs=TMath::Cos(pt->GetAlpha());
+    sn=TMath::Sin(pt->GetAlpha());
+    xp=r2[0]*cs + r2[1]*sn;
+    
+    return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskStrEffStudy::GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b){
+    // Copied from AliV0ReaderV1::GetHelixCenter
+    // Get Center of the helix track parametrization
+    
+    Int_t charge=track->Charge();
+    
+    Double_t	helix[6];
+    track->GetHelixParameters(helix,b);
+    
+    Double_t xpos =	helix[5];
+    Double_t ypos =	helix[0];
+    Double_t radius = TMath::Abs(1./helix[4]);
+    Double_t phi = helix[2];
+    if(phi < 0){
+        phi = phi + 2*TMath::Pi();
+    }
+    phi -= TMath::Pi()/2.;
+    Double_t xpoint =	radius * TMath::Cos(phi);
+    Double_t ypoint =	radius * TMath::Sin(phi);
+    if(b<0){
+        if(charge > 0){
+            xpoint = - xpoint;
+            ypoint = - ypoint;
+        }
+        if(charge < 0){
+            xpoint =	xpoint;
+            ypoint =	ypoint;
+        }
+    }
+    if(b>0){
+        if(charge > 0){
+            xpoint =	xpoint;
+            ypoint =	ypoint;
+        }
+        if(charge < 0){
+            xpoint = - xpoint;
+            ypoint = - ypoint;
+        }
+    }
+    center[0] =	xpos + xpoint;
+    center[1] =	ypos + ypoint;
+    return;
 }

@@ -170,7 +170,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDoMultiplicityWeighting(kFALSE),
   fPathReweightingMult(""),
   fNameHistoReweightingMultData(""),
-  fNameHistoReweightingMultMC(""), 
+  fNameHistoReweightingMultMC(""),
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
   fDebugLevel(0)
@@ -283,7 +283,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
   fPathReweightingMult(ref.fPathReweightingMult),
   fNameHistoReweightingMultData(ref.fNameHistoReweightingMultData),
-  fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC), 
+  fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC),
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
   fDebugLevel(ref.fDebugLevel)
@@ -365,7 +365,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hReweightMultMC->SetName(Form("hReweightMultMC_%s",GetCutNumber().Data()));
     fHistograms->Add(hReweightMultMC);
   }
-  
+
   if(!fDoLightOutput){
     hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
     fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
@@ -378,7 +378,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
     fHistograms->Add(hCentrality);
   }
-    
+
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
@@ -394,7 +394,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(hPileupVertexToPrimZSPDPileup);
   hPileupVertexToPrimZTrackletvsHits  = new TH1F(Form("PileupVertexDistance_TrackletvsHits %s",GetCutNumber().Data()),"PileupVertexDistance_TrackletvsHits",600,-15,15);
   fHistograms->Add(hPileupVertexToPrimZTrackletvsHits);
-  
+
   if(fIsHeavyIon == 1){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
     fHistograms->Add(hEventPlaneAngle);
@@ -492,7 +492,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
     hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
     fHistograms->Add(hTriggerClassSelected);
-    
+
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
       hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",10,-0.5,9.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
@@ -507,7 +507,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 10,"kEMCEG2");
       fHistograms->Add(hTriggerClassesCorrelated);
     }
-    
+
   }
   TH1::AddDirectory(kTRUE);
 }
@@ -544,8 +544,8 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
     isMC = kTRUE;
   }
 
-  
-  
+
+
   // Event Trigger
   //    cout << "before event trigger" << endl;
   if(!IsTriggerSelected(event, isMC )){
@@ -589,7 +589,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
   Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
-  
+
   Double_t distZMax     = 0;
   if(event->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)event)->GetNumberOfPileupVerticesSPD();
@@ -608,9 +608,9 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
         }
       }
       if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
-    }  
+    }
   }
-  
+
   // Pile Up Rejection
   if (fIsHeavyIon == 2){
     if(fUtils->IsFirstEventInChunk(event)){
@@ -630,7 +630,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
         if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
         fEventQuality = 11;
         return kFALSE;
-      }  
+      }
     }
   } else if(fRemovePileUp){
     if(event->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
@@ -644,7 +644,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
       if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       fEventQuality = 11;
       return kFALSE;
-    }  
+    }
   }
   cutindex++;
 
@@ -670,7 +670,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
   //      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
   //                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
   //                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-  
+
   if(fIsHeavyIon == 1){
     AliEventplane *EventPlane = event->GetEventplane();
     fEventPlaneAngle = EventPlane->GetEventplane("V0",event,2);
@@ -703,7 +703,7 @@ void AliConvEventCuts::LoadWeightingFlatCentralityFromFile() {
     AliError(Form("file for centrality flattening %s not found",fPathWeightsFlatCent.Data()));
     return;
   }
-  
+
   if (fNameHistoNotFlatCentrality.CompareTo("") != 0 && (fDoCentralityFlat > 0)){
     cout << "I have to find: " <<  fNameHistoNotFlatCentrality.Data() << endl;
     TH1D *hCentralityNotFlattemp = (TH1D*)w->Get(fNameHistoNotFlatCentrality.Data());
@@ -726,7 +726,7 @@ void AliConvEventCuts::LoadWeightingMultiplicityFromFile() {
     AliError(Form("file for multiplicity reweighting %s not found",fPathReweightingMult.Data()));
     return;
   }
-  
+
   if (fNameHistoReweightingMultData.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
     cout << "I have to find: " <<  fNameHistoReweightingMultData.Data() << endl;
     TH1D *hReweightMultDatatemp = (TH1D*)w->Get(fNameHistoReweightingMultData.Data());
@@ -803,7 +803,7 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
-    cout << "I have to find: " <<  fNameFitDataK0s.Data() << endl; 
+    cout << "I have to find: " <<  fNameFitDataK0s.Data() << endl;
     TF1 *fFitDataK0stemp = (TF1*)f->Get(fNameFitDataK0s.Data());
     fFitDataK0s = new TF1(*fFitDataK0stemp);
     if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
@@ -823,7 +823,7 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     AliInfo("Centrality flattening was enabled");
     LoadWeightingFlatCentralityFromFile();
   }
-  
+
   if (fDoMultiplicityWeighting){
     AliInfo("Multiplicity weighting was enabled");
     LoadWeightingMultiplicityFromFile();
@@ -832,7 +832,7 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     AliInfo("Particle Weighting was enabled");
     LoadReweightingHistosMCFromFile();
   }
-    
+
 
   AliInfo(Form("Set Event Cut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -966,31 +966,31 @@ void AliConvEventCuts::PrintCutsWithValues() {
         printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
       }
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps");
-    } else if (fSpecialTrigger > 1){ 
+    } else if (fSpecialTrigger > 1){
       printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
     }
     if ( !(fCentralityMin == 0 && fCentralityMax == 0) && !(fCentralityMax < fCentralityMin) ){
       printf("\t Multiplicity cut %d - %d \n", fCentralityMin, fCentralityMax);
     }
-  } else if (fIsHeavyIon == 1){ 
+  } else if (fIsHeavyIon == 1){
     printf("Running in PbPb mode \n");
     if (fDetectorCentrality == 0){
       printf("\t centrality selection based on V0M \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
-    } 
+    }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
-    } else if ( fModCentralityClass == 1){ 
+    } else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
-    } else if ( fModCentralityClass == 2){ 
+    } else if ( fModCentralityClass == 2){
       printf("\t %d - %d \n", fCentralityMin*5+45, fCentralityMax*5+45);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
-    } else if ( fModCentralityClass == 4){ 
+    } else if ( fModCentralityClass == 4){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
-    } else if ( fModCentralityClass == 5){ 
+    } else if ( fModCentralityClass == 5){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5+45, fCentralityMax*5+45);
     }
     if (fSpecialTrigger == 0){
@@ -1007,13 +1007,13 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0A \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
-    } 
+    }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     }
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
-    } else if (fSpecialTrigger > 1){ 
+    } else if (fSpecialTrigger > 1){
       printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
     }
@@ -1129,14 +1129,14 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fSpecialTrigger=1; // V0AND
     break;
 //   case 2:
-//     fSpecialTrigger=2; // 
+//     fSpecialTrigger=2; //
 //     break;
-  case 3:       
+  case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
     fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kMB";
     break;
   case 4:
-    fSpecialTrigger=4; // trigger alias kTRD 
+    fSpecialTrigger=4; // trigger alias kTRD
     fOfflineTriggerMask=AliVEvent::kTRD;
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="AliVEvent::kTRD";
@@ -1192,11 +1192,11 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     switch(selectSpecialSubTriggerClass){
     case 0://with VZERO
       fSpecialTrigger=0;
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
 //       AliInfo("Info: Nothing to be done");
       break;
     case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
 //       cout << "V0OR with SDD requested" << endl;
       break;
     default:
@@ -1207,26 +1207,26 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     switch(selectSpecialSubTriggerClass){
     case 0:  //with VZERO general implementation of V0AND (periods LHC11c onwards)
       fSpecialTrigger=0;
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fOfflineTriggerMask=AliVEvent::kINT7;
       fTriggerSelectedManually = kTRUE;
       fSpecialTriggerName="AliVEvent::kINT7";
     break;
     case 1: //with TZERO
       fSpecialTrigger=0;
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fOfflineTriggerMask=AliVEvent::kINT8;
       fTriggerSelectedManually = kTRUE;
       fSpecialTriggerName="AliVEvent::kINT8";
       break;
     case 2: //with VZERO (will only work with LHC11a dataset)
       fSpecialTrigger=1;
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
 //       AliInfo("Info: Nothing to be done");
       break;
     case 3: //V0AND with SDD requested (will only work with LHC11a dataset)
       fSpecialTrigger=1;
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -1235,60 +1235,60 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
   } else if (fSpecialTrigger == 3){ // Selecting kCentral and kSemiCentral from trigger classes, not aliases
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // kCentral - no vertex restriction
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN";
 //       cout << "kCentralOpen" << endl;
       break;
     case 2: // kCentral - T00 +- 10 cm
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CCENT";
 //       cout << "kCentralVertex" << endl;
       break;
     case 3: // kCentral - both
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
 //       cout << "kCentral both" << endl;
       break;
     case 4: // kSemiCentral - no vertex restriction
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVLN";
 //       cout << "kSemiCentralOpen" << endl;
       break;
     case 5: // kSemiCentral - T00 +- 10 cm
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI";
 //       cout << "kSemiCentralVertex" << endl;
       break;
     case 6: // kSemiCentral - both
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI%CVLN";
 //       cout << "kSemiCentral both" << endl;
       break;
     case 7: // kMB
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI1_|CPBI1-";
 //       cout << "kMB 1" << endl;
       break;
     case 8: // kMB
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_|CPBI2-";
 //       cout << "kMB 2" << endl;
       break;
     case 9: // kMB
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
 //       cout << "kMB both" << endl;
@@ -1300,70 +1300,70 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
   } else if (fSpecialTrigger == 4){ // Subdivision of TRD trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7WUHSH - V0AND with single electron in TRD & EMCAL
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7WUHEE";
       break;
     case 2: // 8WUHSH - T0AND with single electron in TRD & EMCAL
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8WUHEE";
       break;
     case 3: // 7WUHSE - V0AND with single high pt electron in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7WUHSE";
       break;
     case 4: // 8WUHSE - T0AND with single high pt electron in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8WUHSE";
       break;
     case 5: // 7WUHJE - V0AND with jet in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7WUHJT";
       break;
     case 6: // 8WUHJE - T0AND with jet in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8WUHJT";
       break;
     case 7: // 7WUHQU - V0AND with dielectron pair in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7WUHQU";
       break;
     case 8: // 8WUHQU - T0AND with dielectron pair in TRD
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8WUHQU";
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   } else if (fSpecialTrigger == 5){ // Subdivision of kEMC trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kEMC1;
       fSpecialTriggerName="AliVEvent::kEMC1";
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CEMC1";
       break;
-    case 2: // CEMC7 - V0AND and EMCAL fired 
-      fSpecialSubTrigger=1; 
+    case 2: // CEMC7 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kEMC7;
       fSpecialTriggerName="AliVEvent::kEMC7";
       fNSpecialSubTriggerOptions=1;
@@ -1372,7 +1372,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 3: // CEMC8  - T0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kEMC8;
       fSpecialTriggerName="AliVEvent::kEMC8";
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CEMC8";
       break;
@@ -1383,7 +1383,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CDMC1";
       break;
-    case 5: // CDMC7 - V0AND and DCAL fired 
+    case 5: // CDMC7 - V0AND and DCAL fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kEMC7;
       fSpecialTriggerName="AliVEvent::kEMC7";
@@ -1400,23 +1400,23 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   }else if (fSpecialTrigger == 6){ // Subdivision of kPHI trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and EMCAL fired 
-      fSpecialSubTrigger=1; 
+    case 2: // CEMC7 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
@@ -1425,141 +1425,148 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 3: // CEMC8  - T0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI8";
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   } else if (fSpecialTrigger == 7){ // Subdivision of kHighMult trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CSHM1 - V0OR and high mult fired
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSHM1";
       break;
-    case 2: // CSHM7 - V0AND and high mult fired 
-      fSpecialSubTrigger=1; 
+    case 2: // CSHM7 - V0AND and high mult fired
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSHM7";
       break;
     case 3: // CSHM8  - T0OR and high mult fired
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSHM8";
       break;
     case 4: // V0 high mult trigger
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kAny;
       fSpecialTriggerName="V0Mult";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHMV0M-B-";
       break;
     case 5: // SPD high mult trigger
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kAny;
       fSpecialTriggerName="SPMult";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHMSH2-B-";
       break;
+    case 6: // V0 high mult trigger with pileup condition on
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="V0Mult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMV0M-B-SPD2";
+      break;
 
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   }else if (fSpecialTrigger == 8){ // Subdivision of kEMCEGA trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EGA - CINT7 EGA
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EGA";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 2: // 8EGA - CINT8 EGA
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EGA";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 3: // 7EG1 - CINT7 EG1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
     case 4: // 8EG1 - CINT8 EG1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
     case 5: // 7EG2 - CINT7 EG2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 6: // 8EG2 - CINT8 EG2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 7: // 7DGA - CINT7 DGA
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DGA";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 8: // 8DGA - CINT8 DGA
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DGA";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 9: // 7DG1 - CINT7 DG1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
     case 10: // 8DG1 - CINT8 DG1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
     case 11: // 7DG2 - CINT7 DG2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
     case 12: // 8DG2 - CINT8 DG2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG2";
       fTriggersEMCALSelected= 0;
@@ -1569,79 +1576,79 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   } else if (fSpecialTrigger == 9){ // Subdivision of kEMCEGA trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
-      fSpecialSubTrigger=0; 
+      fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
 //       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EJE - CINT7 EJE
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EJE";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
     case 2: // 8EJE - CINT8 EJE
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EJE";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
     case 3: // 7EJ1 - CINT7 EJ1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EJ1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ1);
       break;
     case 4: // 8EJ1 - CINT8 EJ1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EJ1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ1);
       break;
     case 5: // 7EJ2 - CINT7 EJ2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7EJ2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
     case 6: // 8EJ2 - CINT8 EJ2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8EJ2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
    case 7: // 7DJ1 - CINT7 DJ1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DJ1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ1);
       break;
     case 8: // 8DJ1 - CINT8 DJ1
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DJ1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ1);
       break;
     case 9: // 7DJ2 - CINT7 DJ2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DJ2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
     case 10: // 8DJ2 - CINT8 DJ2
-      fSpecialSubTrigger=1; 
+      fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DJ2";
       fTriggersEMCALSelected= 0;
@@ -1651,7 +1658,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    } 
+    }
   }
   return 1;
 }
@@ -1841,29 +1848,29 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 
   switch(vertexCut){
   case 0: // no Vertex required // NOT fully working yet
-    fEnableVertexCut   = kFALSE; 
+    fEnableVertexCut   = kFALSE;
     fMaxVertexZ     = 1000;
-    break; 
+    break;
   case 1: // vertex within +-15 cm
-    fEnableVertexCut   = kTRUE; 
+    fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 15;
-    break; 
+    break;
   case 2: // vertex within +-12.5 cm
-    fEnableVertexCut   = kTRUE; 
+    fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 12.5;
-    break; 
+    break;
   case 3: // vertex within +-10 cm
-    fEnableVertexCut   = kTRUE; 
+    fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 10.0;
-    break; 
+    break;
   case 4: // vertex within +-7.5 cm
-    fEnableVertexCut   = kTRUE; 
+    fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 7.5;
-    break; 
+    break;
   case 5: // vertex within +-5 cm
-    fEnableVertexCut   = kTRUE; 
+    fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 5.;
-    break; 
+    break;
   default:
     AliError(Form("Vertex Cut not defined %d",vertexCut));
     return kFALSE;
@@ -1872,7 +1879,7 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 }
 
 //-------------------------------------------------------------
-Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){ 
+Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
   if (fPeriodEnum == kLHC15o ||                                                                                            // PbPb 5TeV
       fPeriodEnum == kLHC15k1a1 || fPeriodEnum == kLHC15k1a2 || fPeriodEnum == kLHC15k1a3  || fPeriodEnum == kLHC16j7 ||   // MC PbPb 5TeV LowIR
       fPeriodEnum == kLHC16h4 ||                                                                                           // MC PbPb 5TeV added signals
@@ -1888,7 +1895,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       return kTRUE;
   } else {
      return kFALSE;
-  } 
+  }
 }
 
 //-------------------------------------------------------------
@@ -1899,9 +1906,15 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(esdEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
-      if(fDetectorCentrality==0){
-	                               return MultSelection->GetMultiplicityPercentile("V0M",kTRUE); // default for pPb
-      }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      if(!MultSelection){
+	AliWarning ("AliMultSelection object not found !");
+	return -1;
+      }else{
+	if(fDetectorCentrality==0){
+	  if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+	  else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
+	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      }
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
@@ -1915,8 +1928,15 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(aodEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
-      if(fDetectorCentrality==0) return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
-      else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      if(!MultSelection){
+	AliWarning ("AliMultSelection object not found !");
+	return -1;
+      } else{
+	if(fDetectorCentrality==0){
+	  if(fIsHeavyIon==2)           return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+	  else                         return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+	}else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+      }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
     }
@@ -1932,8 +1952,8 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
     if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
       return kTRUE;
     } else {
-      Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15, 
-                                  30,  50,  100,  1000 
+      Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15,
+                                  30,  50,  100,  1000
                                   };
       Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
       if ( nprimaryTracks >= primaryTracksPP[fCentralityMin] && nprimaryTracks < primaryTracksPP[fCentralityMax]){
@@ -1972,7 +1992,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
-      {9999,9999}, //  0 //1550 changed to 9999 on 9 Dec 
+      {9999,9999}, //  0 //1550 changed to 9999 on 9 Dec
       {1210, 928}, // 10
       { 817, 658}, // 20
       { 536, 435}, // 30
@@ -2000,7 +2020,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
     };
   Int_t PrimaryTracks5a[11][2] =
     {
-      {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec 
+      {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec
       {1485,1168}, // 5
       {1210, 928}, // 10
       { 995, 795}, // 15
@@ -2127,15 +2147,15 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
   AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(event);
   if(fESDEvent){
     fVertexZSPD = fESDEvent->GetPrimaryVertexSPD()->GetZ();
-  } 
+  }
   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(event);
   if(fAODEvent){
     fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
   }
-  
+
   if(TMath::Abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
-  
+
   if (fPeriodEnum == kLHC11h){
     if (TMath::Abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
   }
@@ -2169,7 +2189,7 @@ Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *event)
   Int_t ir1skip     = 0;
   for (Int_t i=pf1;i<=pf2;i++) {
     if (i==0) continue;
-    if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up 
+    if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up
     if (i>0 && i<=ir1skip) continue; // skip next 2 for old IR definitions
     isOutOfBunchPileup|=fIR1.TestBitNumber(90+i); // V0-based clean-up
   }
@@ -2182,13 +2202,13 @@ Bool_t AliConvEventCuts::IsPileUpV0MTPCout(AliVEvent *event)
   Bool_t isPileUpV0MTPCout=0;
 
   Double_t multV0M;
-  Double_t valFunc;  
+  Double_t valFunc;
   if (fIsHeavyIon==2){
       multV0M =  event->GetVZEROData()->GetMTotV0A();
   }else{
       multV0M = event->GetVZEROData()->GetMTotV0A() + event->GetVZEROData()->GetMTotV0C() ;
   }
- 
+
   if ( fFPileUpRejectV0MTPCout != 0x0 ){
   valFunc= fFPileUpRejectV0MTPCout->Eval(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfTPCoutTracks());
     if (multV0M < valFunc  ) isPileUpV0MTPCout=1;
@@ -2243,21 +2263,21 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 }
 
 //________________________________________________________________________
-// Analysing Jet-Jet MC's 
+// Analysing Jet-Jet MC's
 //________________________________________________________________________
 Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
   weight                               = -1;
   fMaxPtJetMC                          = 0;
-  
+
   if (  fPeriodEnum != kLHC17f8a &&  fPeriodEnum != kLHC17f8b  && fPeriodEnum != kLHC17f8c &&       // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17f8d &&  fPeriodEnum != kLHC17f8e &&
         fPeriodEnum != kLHC16h3  &&                                                                 // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
+        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus                                     // LHC12 JetJet MC
      ){
 
@@ -2273,7 +2293,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     weight = 1;
     return kTRUE;
   }
-  
+
   if(headerFound){
     TList *genHeaders         = 0x0;
     if(cHeader) genHeaders    = cHeader->GetHeaders();
@@ -2294,7 +2314,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if(jet->Pt() > fMaxFacPtHard * ptHard){
             eventAccepted= kFALSE;
           }
-          if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+          if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt();
         }
         if (jet) delete jet;
         if (mcEvent){
@@ -2309,8 +2329,38 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
           }
         }
-        
-        if ( fPeriodEnum == kLHC16h3 ){
+
+	if ( fPeriodEnum == kLHC17f8b) {
+          Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+          Double_t weightsBins[20]     = {  43.7553,  13.5848, 6.788, 2.67826, 0.975255,
+					    0.39069, 0.127342, 0.0465597, 0.0206539, 0.00750243,
+					    0.00319118, 0.00122291, 0.000641232, 0.000321437, 0.000168273,
+					    9.17033e-05, 5.34755e-05, 3.01354e-05, 1.74518e-05, 2.8004e-05};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+	} else  if ( fPeriodEnum == kLHC17f8c ){
+         Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+	 Double_t weightsBins[20]     = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+					  0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+					  0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+					  9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+        } else  if ( fPeriodEnum == kLHC16h3 ){
           Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
                                            21, 28, 36, 45, 57,
                                            70, 85, 99, 115, 132,
@@ -2344,9 +2394,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                              21,      28,     36,     45,      57 };
     //                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
     //                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
-    //                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
+    //                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02,
     //                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};
-                    // LHC15g1a                                    
+                    // LHC15g1a
           Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
                                               6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
                                               2.62906, 1.12884, 0.656873, 0.262822,  0.0876732,
@@ -2410,7 +2460,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if (bin < 7) weight = weightsBins[bin];
 
         } else if ( fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ){
-          Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57, 
+          Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57,
                                              84,    117,   152,  191,    234,
                                              1000};
           Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
@@ -2428,7 +2478,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
       }
     }
-  } else {    
+  } else {
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     TString eventHeaderName     = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
@@ -2444,7 +2494,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if(jet->Pt() > fMaxFacPtHard * ptHard){
           eventAccepted= kFALSE;
         }
-        if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+        if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt();
       }
       if (mcEvent){
         for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
@@ -2455,10 +2505,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               eventAccepted= kFALSE;
             }
           }
-          
+
         }
       }
-      
+
       if ( fPeriodEnum == kLHC16h3 ){
           Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
                                            21, 28, 36, 45, 57,
@@ -2475,8 +2525,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
 
       } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
-        Double_t ptHardBinRanges[13]   = {  5,   7,   9,   12, 16, 
-                          21,  28, 36, 45, 57, 
+        Double_t ptHardBinRanges[13]   = {  5,   7,   9,   12, 16,
+                          21,  28, 36, 45, 57,
                           70, 85, 1000};
         Double_t weightsBins[12]     = {  7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
                           1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
@@ -2492,9 +2542,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                            21,     28,     36,     45,     57 };
 //                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
 //                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
-//                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
+//                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02,
 //                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};
-                // LHC15g1a                                    
+                // LHC15g1a
         Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
                                             6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
                                             2.62906, 1.12884, 0.656873, 0.262822,  0.0876732,
@@ -2511,7 +2561,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                            84,     117,    152,    191,    1000000,
                                             5,      7,      9,      12,     16,
                                            21,     28,     36,     45,     57 };
-                // LHC15a3a                                    
+                // LHC15a3a
         Double_t weightsBins[19]        = { 4.43897 , 0.495766, 0.039486, 0.00383011, 0.000447104,
                                             6.37277e-05, 1.03166e-05, 2.26971e-06, 7.59023e-07, 0,
                                             2.63331, 1.12815, 0.657034, 0.262756,  0.0877227,
@@ -2558,7 +2608,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 7) weight = weightsBins[bin];
 
       } else if ( fPeriodEnum == kLHC13b4_plus ||  fPeriodEnum == kLHC13b4_fix ){
-        Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57, 
+        Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57,
                                            84,    117,  152,  191,  234,
                                           1000};
         Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
@@ -2569,7 +2619,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       } else {
         weight = 1;
       }
-      
+
       if (weight == -1) return kFALSE;
       else return eventAccepted;
 
@@ -2577,7 +2627,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       return kFALSE;
     }
   }
-  
+
   return kFALSE;
 }
 
@@ -2595,7 +2645,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
+        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus                                     // LHC12 JetJet MC
      ){
     NTrials = -1;
@@ -2647,19 +2697,19 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
 
 
 //________________________________________________________________________
-// Analysing Jet-Jet MC's 
+// Analysing Jet-Jet MC's
 //________________________________________________________________________
 Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
-  
+
   if (  fPeriodEnum != kLHC17f8a && fPeriodEnum != kLHC17f8b && fPeriodEnum != kLHC17f8c &&         // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17f8d && fPeriodEnum != kLHC17f8e &&
         fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
+        fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c2 && fPeriodEnum != kLHC16c2_plus                                     // LHC12 JetJet MC
     ) return -1;
 
@@ -2670,7 +2720,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
     //no mcEvent available -> not running on MC
     return -1;
   }
-  
+
   if(headerFound){
     TList *genHeaders         = 0x0;
     if(cHeader) genHeaders    = cHeader->GetHeaders();
@@ -2680,9 +2730,9 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
       TString GeneratorName   = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
         return dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
-      } 
+      }
     }
-  } else {    
+  } else {
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     if(eventHeader){
       TString eventHeaderName     = eventHeader->ClassName();
@@ -2691,7 +2741,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
       }
     }
   }
-  
+
   return -1;
 }
 
@@ -2701,7 +2751,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   // abort if mimicing not enabled
 
   if (!fMimicTrigger) return kTRUE;
-  
+
   Int_t runRangesEMCalL0 [35]   = { 144871, 145288, 146375, 146382,  // LHC11a
                                     146502, 148522,         // LHC11a
                                     150209, 153056, 153911, 153915, // LHC11b,c,d
@@ -2710,44 +2760,44 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     161525, 161556, 161558, 161609, 161630,
                                     161724, // LHC11d,e
                                     173731, 177144, 177147, 177653, 177724, 178327,
-                                    195180,              // LHC13b-f  
+                                    195180,              // LHC13b-f
                                     197469, 197692            // LHC13g
   };
-  
+
   Double_t thresholdEMCalL0[34] = { 2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
                                     3.43,           // LHC11a  2.76TeV
                                     1.94, 3.39, 4.01, 5.25, 5.5,     // LHC11b, LHC11c, LHC11d
                                     2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
                                     2.01, 1.75, 1.52, 2.01, 1.52, 1.85,
                                     3.2,
-                                    /*2.01*/1.8 
+                                    /*2.01*/1.8
   };
   Double_t spreadEMCalL0[34]    = { 0., 0., 0, 0,   // LHC11a 7TeV
-                                    /*0.7*/0.65,           // LHC11a 2.76TeV    
+                                    /*0.7*/0.65,           // LHC11a 2.76TeV
                                     0., 0., 0., 0., 0.,     // LHC11b, LHC11c, LHC11d
                                     0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                     0., 0., 0., 0., 0.2, 0.2,/*0.,0.,*/
                                     0.1,
-                                    /*0.1*/0.12 
+                                    /*0.1*/0.12
   };
 
   Int_t runRangesEMCalL1[4]     = { 179796,             // LHC12c-i
-                                    195180,              // LHC13b-f  
+                                    195180,              // LHC13b-f
                                     197469, 197692            // LHC13g
   };
-  
+
   Double_t thresholdEMCalL1[3]  = { 9.5/*8.398*/, 11.5, /*6.*/5.5};
   Double_t spreadEMCalL1[3]     = { 1.0/*0.*/, 0.5, /*0.4*/0.6};
-  
-  Int_t runRangesEMCalL1G2[3]   = { 195180,              // LHC13b-f  
+
+  Int_t runRangesEMCalL1G2[3]   = { 195180,              // LHC13b-f
                                     197469, 197692            // LHC13g
   };
-  
+
   Double_t thresholdEMCalL1G2[2]  = { 7.2, /*3.9*/3.75};
   Double_t spreadEMCalL1G2[2]     = { 0.3, /*0.2*/0.25};
-  
+
   Int_t runnumber = event->GetRunNumber();
-  
+
   if (fSpecialTrigger == 5 ){
     if (runnumber < runRangesEMCalL0[0]) return kTRUE;
     Int_t binRun = 0;
@@ -2757,7 +2807,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     }
     if (binRun==34) return kFALSE;
     Double_t threshold = thresholdEMCalL0[binRun];
-    
+
     if (isMC && spreadEMCalL0[binRun] != 0.){
       TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
       triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
@@ -2766,17 +2816,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       threshold = triggerSmearing->GetRandom();
       delete triggerSmearing;
     }
-    
+
 //     cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
-    
+
     Int_t nclus = 0;
     nclus = event->GetNumberOfCaloClusters();
-  
+
     if(nclus == 0)  return kFALSE;
-    
+
     // Loop over EMCal clusters
     Bool_t eventIsAccepted = kFALSE;
-    for(Int_t i = 0; i < nclus; i++){  
+    for(Int_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
       clus = event->GetCaloCluster(i);
       if (!clus) continue;
@@ -2789,7 +2839,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       }
     }
     return eventIsAccepted;
-    
+
   } else if (fSpecialTrigger == 6 ) {
 
     return kTRUE;
@@ -2812,17 +2862,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         threshold = triggerSmearing->GetRandom();
         delete triggerSmearing;
       }
-      
+
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
-      
+
       Int_t nclus = 0;
       nclus = event->GetNumberOfCaloClusters();
-    
+
       if(nclus == 0)  return kFALSE;
-      
+
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){  
+      for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
         clus = event->GetCaloCluster(i);
         if (!clus) continue;
@@ -2835,7 +2885,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         }
       }
       return eventIsAccepted;
-    } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){  
+    } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){
       if (runnumber < runRangesEMCalL1G2[0]) return kTRUE;
       Int_t binRun = 0;
       while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 2 ){
@@ -2853,15 +2903,15 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         delete triggerSmearing;
       }
 //       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
-      
+
       Int_t nclus = 0;
       nclus = event->GetNumberOfCaloClusters();
-    
+
       if(nclus == 0)  return kFALSE;
-      
+
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){  
+      for(Int_t i = 0; i < nclus; i++){
         AliVCluster* clus = NULL;
         clus = event->GetCaloCluster(i);
         if (!clus) continue;
@@ -2880,8 +2930,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     return kTRUE;
   } else {
     return kTRUE;
-  } 
-  
+  }
+
   return kTRUE;
 }
 
@@ -2892,20 +2942,20 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 
   AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-  
+
   UInt_t isSelected = AliVEvent::kAny;
-  
+
   if (fInputHandler==NULL) return kFALSE;
   if( fInputHandler->GetEventSelection() || event->IsA()==AliAODEvent::Class()) {
-  
+
     TString firedTrigClass = event->GetFiredTriggerClasses();
     // if no trigger has been selected manually, select kAny in case of presel (also important for AOD filtering!)
     // in other cases select standards depending on system
     if (!fTriggerSelectedManually){
       if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
-      else {     
+      else {
         if (fIsHeavyIon == 1){
-            fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;    
+            fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
         } else if (fIsHeavyIon == 2){
             fOfflineTriggerMask = AliVEvent::kINT7;
         } else {
@@ -2924,9 +2974,9 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         fOfflineTriggerMask = AliVEvent::kAny;
       }
     }
-  
+
     if (fOfflineTriggerMask){
-      isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected(); 
+      isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){
 //         cout << firedTrigClass.Data() << endl;
 //         cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
@@ -2936,7 +2986,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 //         }
         if (fSpecialSubTrigger>0 && !isMC){
           if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
-          if (fRejectTriggerOverlap){            
+          if (fRejectTriggerOverlap){
             // trigger rejection EMC1,7,8
             if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC7") == 0){
               if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
@@ -3014,7 +3064,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               }
             }
           }
-          
+
         } else if (isMC){
           if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
 //             isSelected = 0;
@@ -3025,7 +3075,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 //             }
           }
         }
-        //if for specific centrality trigger selection 
+        //if for specific centrality trigger selection
         if(fSpecialSubTrigger == 1){
           if(fSpecialSubTriggerName.Contains("|")  && GetCentrality(event) <= 10.){
             TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("|");
@@ -3065,7 +3115,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
 //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
-  
+
   // Fill Histogram
   if(hTriggerClass){
     if (fIsSDDFired) hTriggerClass->Fill(33);
@@ -3158,7 +3208,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClassSelected->Fill(29);
       if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClassSelected->Fill(30);
       if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
-    } 
+    }
     if (mimickedTrigger && fMimicTrigger) hTriggerClassSelected->Fill(34);
   }
 
@@ -3192,7 +3242,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
   }
 
   if(rejection == 0) return; // No Rejection
-  
+
   AliGenCocktailEventHeader *cHeader   = 0x0;
   AliAODMCHeader *cHeaderAOD       = 0x0;
   Bool_t headerFound           = kFALSE;
@@ -3253,9 +3303,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
-                  
+
                 }
-              } 
+              }
               if ( fMCEventAOD){
                 AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA));
                 if (aodMCParticle && (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c) ){
@@ -3266,7 +3316,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                         if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
-                      } 
+                      }
                     }
                     continue;
                   }
@@ -3274,7 +3324,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
-                } 
+                }
               }
               continue;
             }
@@ -3287,7 +3337,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       }
     }
     if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
-    
+
     fNotRejectedStart         = new Int_t[fnHeaders];
     fNotRejectedEnd         = new Int_t[fnHeaders];
     fGeneratorNames         = new TString[fnHeaders];
@@ -3303,7 +3353,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     Int_t firstindex         = 0;
     Int_t lastindex         =  -1;
     Int_t number           = 0;
-    
+
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName     = gh->GetName();
@@ -3334,7 +3384,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                 number++;
                 continue;
               }
-            } 
+            }
             if ( fMCEventAOD){
               AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex));
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
@@ -3346,17 +3396,17 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                       fNotRejectedStart[number] = firstindex;
                       fGeneratorNames[number] = GeneratorName;
                       number++;
-                    } 
+                    }
                     continue;
                   }
-                } 
+                }
               } else {
                 fNotRejectedStart[number] = firstindex;
                 fNotRejectedEnd[number] = lastindex;
                 fGeneratorNames[number] = GeneratorName;
                 number++;
                 continue;
-              } 
+              }
             }
             continue;
           } else {
@@ -3367,7 +3417,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
             number++;
             continue;
           }
-          
+
         }
       }
       firstindex           = firstindex + gh->NProduced();
@@ -3388,12 +3438,12 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       fNotRejectedStart[0]     = -1;
       fNotRejectedEnd[0]       = -1;
     }
-    
+
     fGeneratorNames         = new TString[1];
     fGeneratorNames[0]         = "NoCocktailGeneratorFound";
 //     SetRejectExtraSignalsCut(0);
   }
-  
+
 }
 
 //_________________________________________________________________________
@@ -3445,7 +3495,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
   Bool_t isMC = kFALSE;
   if (mcEvent){isMC = kTRUE;}
-  
+
   if ( !IsTriggerSelected(event, isMC) )
     return 3;
 
@@ -3454,35 +3504,35 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
   Bool_t hasV0And = ReaderCuts->HasV0AND();
   Bool_t isSDDFired = ReaderCuts->IsSDDFired();
-  
+
   if( ( (IsSpecialTrigger() == 0 && IsSpecialSubTrigger() == 1) || (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 1) ) && !isSDDFired && !mcEvent)
   //if V0OR with SDD requested or V0AND with SDD request but the SDD has not fired
   return 7; // V0 with SDD requested but no fired
 
-  if( ( (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 0) || (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 1) ) && !hasV0And) 
+  if( ( (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 0) || (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 1) ) && !hasV0And)
   //if V0AND (only) or V0AND with SDD requested but V0AND requested but no fired
   return 8; // V0AND requested but no fired
 
-  
+
   if( (IsSpecialTrigger() == 2 || IsSpecialTrigger() == 3) && !isSDDFired && !mcEvent)
     return 7; // With SDD requested but no fired
 
   if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
     return 8; // V0AND requested but no fired
 
-  // Special EMCAL checks due to hardware issues in LHC11a  
+  // Special EMCAL checks due to hardware issues in LHC11a
   if (isEMCALAnalysis || IsSpecialTrigger() == 5 || IsSpecialTrigger() == 8 || IsSpecialTrigger() == 9 ){
     Int_t runnumber = event->GetRunNumber();
-    if ((runnumber>=144871) && (runnumber<=146860)) { 
+    if ((runnumber>=144871) && (runnumber<=146860)) {
 
       AliVCaloCells *cells   = event->GetEMCALCells();
       const Short_t nCells   = cells->GetNumberOfCells();
-      
+
       if (event->IsA()==AliESDEvent::Class()) AliAnalysisManager::GetAnalysisManager()->LoadBranch("EMCALCells.");
 
       AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
       if (!fInputHandler) return 3;
-      
+
       // count cells above threshold
       Int_t nCellCount[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
       for(Int_t iCell=0; iCell<nCells; ++iCell) {
@@ -3508,14 +3558,14 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       }
     }
   }
-        
+
   // SPD clusters vs tracklets to check for pileup/background
   Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
   Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
   Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
-  
+
   Double_t distZMax     = 0;
   if(event->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)event)->GetNumberOfPileupVerticesSPD();
@@ -3534,7 +3584,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
         }
       }
       if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
-    }  
+    }
   }
   if(GetPastFutureLowBC()!=0 && GetPastFutureHighBC()!=0 ){
     if(IsOutOfBunchPileupPastFuture(event))
@@ -3567,7 +3617,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
        return 13;
      }
   }
-  
+
   if(hCentrality)hCentrality->Fill(GetCentrality(event));
 
   if(hVertexZ)hVertexZ->Fill(event->GetPrimaryVertex()->GetZ());
@@ -3575,7 +3625,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 //    hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
 //                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
 //                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-  
+
   if(fIsHeavyIon == 1){
     AliEventplane *EventPlane = event->GetEventplane();
     fEventPlaneAngle = EventPlane->GetEventplane("V0",event,2);
@@ -3609,13 +3659,13 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *event){
       }
     }
   }
-        
+
   //Get the maximum vlaue from the reference distribution and interpolated value
   Float_t GetValueForWeight = 1.;
   Float_t maximum = 1.;
   Double_t weightCentrality = 1.;
   Bool_t CorrCentrLoop = kFALSE;
-  
+
   //depending on the value of the flag, flattening in different cent. range
   if ( fDoCentralityFlat == 1 && (centrality >= 0. && centrality <= 10.) ){
     GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
@@ -3632,7 +3682,7 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *event){
   } else {
     CorrCentrLoop = kFALSE;
   }
-  
+
   if (CorrCentrLoop && GetValueForWeight != 0. && maximum !=0. && isfinite(GetValueForWeight) && isfinite(maximum) ){
       weightCentrality = maximum/GetValueForWeight;
       if (!isfinite(GetValueForWeight)) weightCentrality = 1.;
@@ -3646,24 +3696,24 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *event){
 Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 
   Double_t weightMult         = 1.;
-  
+
   Float_t valueMultData       = -1.;
   Float_t valueMultMC         = -1.;
-  
+
   if (hReweightMultData == NULL || hReweightMultMC == NULL ) return weightMult;
-  
+
   valueMultData               = hReweightMultData->Interpolate(mult);
   valueMultMC                 = hReweightMultMC->Interpolate(mult);
-  
+
   Float_t relativeErrorMC     = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult))/hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
   Float_t relativeErrorData   = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult))/hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
-  
+
   if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
      if (isfinite(valueMultData) && isfinite(valueMultMC) ){
         weightMult               = valueMultData/valueMultMC;
-     } 
+     }
   }
-  
+
   return weightMult;
 }
 
@@ -3680,7 +3730,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   Int_t kCaseGen = 0;
 
   if(index < 0) return 0; // No Particle
-    
+
   if (IsParticleFromBGEvent(index, mcEvent, event)){
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b || fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14a1a || fPeriodEnum ==  kLHC14a1b || fPeriodEnum ==  kLHC14a1c       ||
       fPeriodEnum == kLHC14b2 || fPeriodEnum == kLHC14e2a || fPeriodEnum == kLHC14e2b || fPeriodEnum == kLHC14e2c || fPeriodEnum == kLHC12f1a || fPeriodEnum == kLHC12f1b || fPeriodEnum == kLHC12i3){
@@ -3735,12 +3785,12 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
     if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
       weight = functionResultData/functionResultMC;
       if ( kCaseGen == 3){
-        if (PDGCode ==  111){ 
+        if (PDGCode ==  111){
         if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
           weight = 1.;
         }
-        } 
-        if (PDGCode ==  221){ 
+        }
+        if (PDGCode ==  221){
         if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
           weight = 1.;
         }
@@ -3780,7 +3830,7 @@ AliEMCALTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
 {
   //get main trigger match; if not known yet, look for it and cache
 
-  if (fMainTriggerPatchEMCAL) 
+  if (fMainTriggerPatchEMCAL)
     return fMainTriggerPatchEMCAL;
 
   if (!fTriggerPatchInfo) {
@@ -3809,7 +3859,7 @@ AliEMCALTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
 void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *event)
 {
 //   cout << "entered EMCAL trigger initialization" << endl;
-  
+
   // Init the analysis.
   if (fCaloTriggersName.IsNull()){
     if (event->IsA()==AliESDEvent::Class()){
@@ -3818,11 +3868,11 @@ void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *event)
       fCaloTriggersName = "emcalTrigger";
     }
   }
-  
+
   if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
     fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(event->FindListObject(fCaloTriggersName));
     if (!fCaloTriggers) {
-      AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
+      AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data()));
     return;
     }
   }
@@ -3834,11 +3884,11 @@ void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *event)
       fCaloTriggerPatchInfoName = "EmcalTriggers";
     }
   }
-  
+
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
     fTriggerPatchInfo = GetArrayFromEvent(event, fCaloTriggerPatchInfoName.Data(), "AliEMCALTriggerPatchInfo");
     if (!fTriggerPatchInfo) {
-      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
+      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data()));
     return;
     }
 
@@ -3887,8 +3937,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
 //       cout << "fired L0" << endl;
       nL0++;
     }
-//     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
-//          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
+//     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()
+//          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0()
 //        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())
 //        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
@@ -3900,14 +3950,14 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     AliDebug(2, Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1));
     AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
   }
-    
+
 //   if (nPatch > 0){
 //     cout <<     Form("Number of patches: %d", nPatch) << endl;
 //     cout <<     Form("Level0: [%d]" ,nL0) << endl;
 //     cout <<     Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
 //     cout <<     Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
 //   }
-    
+
   ULong_t triggers(0);
   if (nG1>0)
     SETBIT(triggers, kG1);
@@ -3942,7 +3992,7 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* event, const char *
   if (!sname.IsNull()) {
     arr = dynamic_cast<TClonesArray*>(event->FindListObject(sname));
     if (!arr) {
-    AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name)); 
+    AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name));
     return 0;
     }
   } else {
@@ -3955,8 +4005,8 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* event, const char *
   TString objname(arr->GetClass()->GetName());
   TClass cls(objname);
   if (!cls.InheritsFrom(clname)) {
-    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
-            GetName(), cls.GetName(), name, clname)); 
+    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!",
+            GetName(), cls.GetName(), name, clname));
     return 0;
   }
   return arr;
@@ -3967,7 +4017,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
 
   if (eventpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)mcEvent->Particle(eventpos);
-  if (!particle) return kFALSE; 
+  if (!particle) return kFALSE;
   if (TMath::Abs(particle->GetPdgCode()) == 11 ){
     if (particle->GetMother(0) != -1){
       TParticle* particleMother = (TParticle *)mcEvent->Particle(particle->GetMother(0));
@@ -3984,10 +4034,10 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
 
     //Double_t realRadius2D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
     Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
-    
+
 
     Bool_t dalitzCand = kFALSE;
-    
+
     TParticle* firstmother = (TParticle *)mcEvent->Particle(particle->GetMother(0));
     if (!firstmother) return kFALSE;
     Int_t pdgCodeFirstMother     = firstmother->GetPdgCode();
@@ -3997,7 +4047,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
       dalitzCand = kTRUE;
 //       cout << "dalitz candidate found" << endl;
     }
-  
+
     Long_t source = particle->GetMother(0);
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
@@ -4011,7 +4061,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
 //       }
       while (depth < 20){
         TParticle* mother   = (TParticle *)mcEvent->Particle(source);
-        source         = mother->GetMother(0); 
+        source         = mother->GetMother(0);
 //         if (particle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
         Int_t pdgCodeMother     = mother->GetPdgCode();
 //         if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
@@ -4024,15 +4074,15 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
           foundShower = kTRUE;
           depth =20;
         }
-        
+
         // particles to be excluded:
-        // K0s     - 310  
+        // K0s     - 310
         // K0l     - 130
         // K+/-    - 321
         // Lambda  - 3122
         // Sigma0  - 3212
         // Sigma+/-  - 3222, 3112
-        // Cascades  - 3322, 3312  
+        // Cascades  - 3322, 3312
         if (TMath::Abs(pdgCodeMother) == 310   || TMath::Abs(pdgCodeMother) == 130   || TMath::Abs(pdgCodeMother) == 321  ||
           TMath::Abs(pdgCodeMother) == 3122   || TMath::Abs(pdgCodeMother) == 3212   || TMath::Abs(pdgCodeMother) == 3222 ||
           TMath::Abs(pdgCodeMother) == 3112   || TMath::Abs(pdgCodeMother) == 3322   || TMath::Abs(pdgCodeMother) == 3312
@@ -4043,7 +4093,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
         pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
         pdgCodeMotherPrev = pdgCodeMother;
         if (source == -1) depth = 20;
-        
+
 //         if (particle->GetPdgCode() == 22)cout << depth << endl;
         depth++;
       }
@@ -4227,7 +4277,7 @@ Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliM
     // is the secondary photon from something else
     else if ( TMath::Abs(pdgSecondary) != 0 )
       return 1;
-    
+
   }
 
   return 0;
@@ -4290,28 +4340,28 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
     // is the secondary photon from something else
     else if ( TMath::Abs(pdgSecondary) != 0 )
       return 1;
-    
+
   }
 
   return 0;
 }
 
 void AliConvEventCuts::SetPeriodEnum (TString periodName){
-  
+
   if (periodName.CompareTo("") == 0){
     periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-  } 
-  
+  }
+
   if (periodName.CompareTo("") == 0) {
     fPeriodEnum = kNoPeriod;
     fEnergyEnum = kUnset;
     AliError("No correct period could be set, periodName string empty");
     return;
   }
-  
+
   // Data
   if (periodName.CompareTo("LHC10b") == 0 || periodName.CompareTo("LHC10c") == 0 || periodName.CompareTo("LHC10d") == 0 || periodName.CompareTo("LHC10e") == 0 ||
-      periodName.CompareTo("LHC10f") == 0 || periodName.CompareTo("LHC10g") == 0 
+      periodName.CompareTo("LHC10f") == 0 || periodName.CompareTo("LHC10g") == 0 || periodName.CompareTo("LHC10bg") == 0
   ){
     fPeriodEnum = kLHC10bg;
     fEnergyEnum = k7TeV;
@@ -4329,19 +4379,19 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   ) {
     fPeriodEnum = kLHC11cg;
     fEnergyEnum = k7TeV;
-  } else if (periodName.CompareTo("LHC11h") == 0) {  
+  } else if (periodName.CompareTo("LHC11h") == 0) {
     fPeriodEnum = kLHC11h;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 ||
-            periodName.CompareTo("LHC12e") == 0 || periodName.CompareTo("LHC12f") == 0 || periodName.CompareTo("LHC12g") == 0 || periodName.CompareTo("LHC12h") == 0 || 
-            periodName.CompareTo("LHC12i") == 0 
+            periodName.CompareTo("LHC12e") == 0 || periodName.CompareTo("LHC12f") == 0 || periodName.CompareTo("LHC12g") == 0 || periodName.CompareTo("LHC12h") == 0 ||
+            periodName.CompareTo("LHC12i") == 0 || periodName.CompareTo("LHC12ai") == 0
   ) {
     fPeriodEnum = kLHC12;
     fEnergyEnum = k8TeV;
-  } else if (periodName.CompareTo("LHC13b") == 0 || periodName.CompareTo("LHC13c") == 0 ){
+  } else if (periodName.CompareTo("LHC13b") == 0 || periodName.CompareTo("LHC13c") == 0 || periodName.CompareTo("LHC13bc") == 0){
     fPeriodEnum = kLHC13bc;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC13d") == 0 || periodName.CompareTo("LHC13e") == 0 ){
+  } else if (periodName.CompareTo("LHC13d") == 0 || periodName.CompareTo("LHC13e") == 0 || periodName.CompareTo("LHC13de") == 0){
     fPeriodEnum = kLHC13de;
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC13f") == 0 ){
@@ -4350,8 +4400,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC13g") == 0 ){
     fPeriodEnum = kLHC13g;
     fEnergyEnum = k2760GeV;
-  } else if (periodName.CompareTo("LHC15f") == 0 || periodName.CompareTo("LHC15g") == 0 || periodName.CompareTo("LHC15h") == 0 || periodName.CompareTo("LHC15i") == 0 ||
-            periodName.CompareTo("LHC15j") == 0 || periodName.CompareTo("LHC15k") == 0 || periodName.CompareTo("LHC15l") == 0 || periodName.CompareTo("LHC15m") == 0 
+  } else if ( periodName.CompareTo("LHC15f") == 0 || periodName.CompareTo("LHC15g") == 0 || periodName.CompareTo("LHC15h") == 0 || periodName.CompareTo("LHC15i") == 0 ||
+              periodName.CompareTo("LHC15j") == 0 || periodName.CompareTo("LHC15k") == 0 || periodName.CompareTo("LHC15l") == 0 || periodName.CompareTo("LHC15m") == 0 ||
+              periodName.CompareTo("LHC15fm") == 0
   ) {
     fPeriodEnum = kLHC15fm;
     fEnergyEnum = k13TeV;
@@ -4403,68 +4454,68 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16t") == 0 ){
     fPeriodEnum = kLHC16t;
     fEnergyEnum = kpPb5TeV;
-    
+
   // LHC10x anchored MCs
   } else if (periodName.CompareTo("LHC10d1") == 0){
     fPeriodEnum = kLHC10d1;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10d2") == 0){
-    fPeriodEnum = kLHC10d2; 
+    fPeriodEnum = kLHC10d2;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10d4a") == 0){
-    fPeriodEnum = kLHC10d4a; 
+    fPeriodEnum = kLHC10d4a;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10d4") == 0){
-    fPeriodEnum = kLHC10d4; 
+    fPeriodEnum = kLHC10d4;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10e12") == 0){
-    fPeriodEnum = kLHC10e12; 
+    fPeriodEnum = kLHC10e12;
     fEnergyEnum = k900GeV;
   } else if (periodName.CompareTo("LHC10e13") == 0){
-    fPeriodEnum = kLHC10e13; 
+    fPeriodEnum = kLHC10e13;
     fEnergyEnum = k900GeV;
   } else if (periodName.CompareTo("LHC10e20") == 0){
-    fPeriodEnum = kLHC10e20; 
+    fPeriodEnum = kLHC10e20;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10e21") == 0){
-    fPeriodEnum = kLHC10e21; 
+    fPeriodEnum = kLHC10e21;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10f6a") == 0){
-    fPeriodEnum = kLHC10f6a; 
+    fPeriodEnum = kLHC10f6a;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC10f6") == 0){
-    fPeriodEnum = kLHC10f6; 
+    fPeriodEnum = kLHC10f6;
     fEnergyEnum = k7TeV;
   } else if (periodName.Contains("LHC14j4")){
-    fPeriodEnum = kLHC14j4; 
+    fPeriodEnum = kLHC14j4;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC13d2") == 0){
-    fPeriodEnum = kLHC13d2; 
+    fPeriodEnum = kLHC13d2;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC13d2b") == 0){
-    fPeriodEnum = kLHC13d2b; 
+    fPeriodEnum = kLHC13d2b;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11a") == 0){
-    fPeriodEnum = kLHC12a11a; 
+    fPeriodEnum = kLHC12a11a;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11b") == 0){
-    fPeriodEnum = kLHC12a11b; 
+    fPeriodEnum = kLHC12a11b;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11c") == 0){
-    fPeriodEnum = kLHC12a11c;  
+    fPeriodEnum = kLHC12a11c;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11d") == 0){
-    fPeriodEnum = kLHC12a11d;  
+    fPeriodEnum = kLHC12a11d;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11e") == 0){
-    fPeriodEnum = kLHC12a11e;  
+    fPeriodEnum = kLHC12a11e;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC12a11f") == 0){
-    fPeriodEnum = kLHC12a11f;  
+    fPeriodEnum = kLHC12a11f;
     fEnergyEnum = kPbPb2760GeV;
   // LHC11x anchored MCs
   } else if (periodName.CompareTo("LHC12a15c") == 0){
-    fPeriodEnum = kLHC12a15c;   
+    fPeriodEnum = kLHC12a15c;
     fEnergyEnum = k2760GeV;
   } else if (periodName.Contains("LHC12f1a") ){
     fPeriodEnum = kLHC12f1a;
@@ -4482,41 +4533,41 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC15g1b;
     fEnergyEnum = k2760GeV;
   } else if (periodName.CompareTo("LHC13e4") == 0){
-    fPeriodEnum = kLHC13e4;   
+    fPeriodEnum = kLHC13e4;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC13e5") == 0){
-    fPeriodEnum = kLHC13e5;   
+    fPeriodEnum = kLHC13e5;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC14k1a") == 0){
-    fPeriodEnum = kLHC14k1a;   
+    fPeriodEnum = kLHC14k1a;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC14k1b") == 0){
-    fPeriodEnum = kLHC14k1b;   
+    fPeriodEnum = kLHC14k1b;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC12a15f") == 0){
-    fPeriodEnum = kLHC12a15f;   
+    fPeriodEnum = kLHC12a15f;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC12a15g") == 0){
-    fPeriodEnum = kLHC12a15g;   
+    fPeriodEnum = kLHC12a15g;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC12f2a") == 0){
-    fPeriodEnum = kLHC12f2a;   
+    fPeriodEnum = kLHC12f2a;
     fEnergyEnum = k7TeV;
   } else if (periodName.CompareTo("LHC14a1a") == 0){
-    fPeriodEnum = kLHC14a1a;   
+    fPeriodEnum = kLHC14a1a;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC14a1b") == 0){
-    fPeriodEnum = kLHC14a1b;   
+    fPeriodEnum = kLHC14a1b;
     fEnergyEnum = kPbPb2760GeV;
   } else if (periodName.CompareTo("LHC14a1c") == 0){
-    fPeriodEnum = kLHC14a1c;   
+    fPeriodEnum = kLHC14a1c;
     fEnergyEnum = kPbPb2760GeV;
   // LHC12x anchored MCs
   } else if (periodName.CompareTo("LHC14e2a") == 0){
-    fPeriodEnum = kLHC14e2a;   
+    fPeriodEnum = kLHC14e2a;
     fEnergyEnum = k8TeV;
   } else if (periodName.CompareTo("LHC14e2b") == 0){
-    fPeriodEnum = kLHC14e2b;   
+    fPeriodEnum = kLHC14e2b;
     fEnergyEnum = k8TeV;
   } else if (periodName.CompareTo("LHC14e2c") == 0){
     fPeriodEnum = kLHC14e2c;
@@ -4528,7 +4579,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC15h2;
     fEnergyEnum = k8TeV;
   } else if (periodName.CompareTo("LHC16c2") == 0){
-    fPeriodEnum = kLHC16c2;   
+    fPeriodEnum = kLHC16c2;
     fEnergyEnum = k8TeV;
   } else if (periodName.CompareTo("LHC16c2_plus") == 0){
     fPeriodEnum = kLHC16c2_plus;
@@ -4896,7 +4947,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
 
 
-  // MC upgrade 
+  // MC upgrade
   } else if (periodName.Contains("LHC13d19")){
     fPeriodEnum = kLHC13d19;
     fEnergyEnum = kPbPb5TeV;

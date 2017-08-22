@@ -79,6 +79,8 @@ ClassImp(AliV0ReaderV1)
 
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
+  kAddv0sInESDFilter(kFALSE),
+  fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
   fConversionGammas(NULL),
@@ -86,7 +88,6 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fUseOwnXYZCalculation(kTRUE),
   fUseConstructGamma(kFALSE),
   kUseAODConversionPhoton(kTRUE),
-  kAddv0sInESDFilter(kFALSE),
   fCreateAOD(kFALSE),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
@@ -147,8 +148,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fImpactParamTree(NULL),
   fVectorFoundGammas(0),
   fCurrentFileName(""),
-  fMCFileChecked(kFALSE),
-  fPCMv0BitField(NULL)
+  fMCFileChecked(kFALSE)
 {
   // Default constructor
 
@@ -1710,9 +1710,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   Float_t negX;
   Float_t negPt;
   Float_t R;
-  TBranch *Branch_Pt = fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
-  TBranch *Branch_Y = fImpactParamTree->Branch("posY",&posY,"posY/F");
-  TBranch *Branch_R = fImpactParamTree->Branch("R",&R,"R/F");
+  fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
+  fImpactParamTree->Branch("posY",&posY,"posY/F");
+  fImpactParamTree->Branch("R",&R,"R/F");
   posZ = positiveTrack->GetZ();
   posY = positiveTrack->GetY();
   posX = positiveTrack->GetX();

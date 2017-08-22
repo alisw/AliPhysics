@@ -15,10 +15,10 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   
  public:
   AliReducedTrackInfo();
+  AliReducedTrackInfo(const AliReducedTrackInfo &c);
   virtual ~AliReducedTrackInfo();
 
   // getters
-  UShort_t TrackId()                     const {return fTrackId;}
   ULong_t  Status()                      const {return fStatus;}
   Bool_t   CheckTrackStatus(UInt_t flag) const {return (flag<8*sizeof(ULong_t) ? (fStatus&(1<<flag)) : kFALSE);}
   Float_t  PxTPC()                       const {return fTPCPt*TMath::Cos(fTPCPhi);}
@@ -100,7 +100,6 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
      
  protected:
-  UShort_t fTrackId;            // track id 
   ULong_t fStatus;              // tracking status
   Float_t fTPCPhi;              // inner param phi
   Float_t fTPCPt;               // inner param pt  
@@ -163,14 +162,10 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t    fMCLabels[4];           // MC label for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
   Int_t    fMCPdg[4];                // MC PDG code for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
   Short_t fMCGeneratorIndex;    // generator index (used for cocktail generators ?)
-  
 
-  
-          
-  AliReducedTrackInfo(const AliReducedTrackInfo &c);
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
-
-  ClassDef(AliReducedTrackInfo, 4);
+  
+  ClassDef(AliReducedTrackInfo, 5);
 };
 
 //_______________________________________________________________________________

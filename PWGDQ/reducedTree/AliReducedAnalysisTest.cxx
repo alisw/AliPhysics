@@ -219,9 +219,21 @@ void AliReducedAnalysisTest::Process() {
           fHistosManager->FillHistClass("TPCclusterMap", fValues);
         }
       }
-      if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+      if(track->IsGammaLeg()) {
+         fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+         for(UShort_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
+         }
+      }
       if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
-      if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+      if(track->IsK0sLeg()) {
+         fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+         for(UShort_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
+         }
+      }
       if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
       if(track->IsLambdaLeg()) {
         if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
@@ -260,6 +272,7 @@ void AliReducedAnalysisTest::Process() {
         AliReducedVarManager::FillPairQualityFlag(pair, iflag, fValues);
         fHistosManager->FillHistClass(Form("PairQualityFlags_%s",pairTypeStr.Data()), fValues);
       }
+      TString type[3]={"PP","PM","MM"};
       
       AliReducedVarManager::FillPairInfo(pair, fValues);
       switch (pair->CandidateId()) {
@@ -279,6 +292,12 @@ void AliReducedAnalysisTest::Process() {
 	  fHistosManager->FillHistClass(Form("PairQA_%sALambda", pairTypeStr.Data()),fValues);
 	  if(pair->IsPureV0ALambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureALambda",pairTypeStr.Data()),fValues);
 	  break;
+        case AliReducedPairInfo::kJpsiToEE :
+           fHistosManager->FillHistClass(Form("PairQA_Jpsi2EE_%s", type[pair->PairType()].Data()),fValues);
+           break;  
+        case AliReducedPairInfo::kADzeroToKplusPiminus :
+           fHistosManager->FillHistClass(Form("PairQA_ADzeroToKplusPiminus_%s", type[pair->PairType()].Data()),fValues);
+           break;     
       };
       fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
     }  // end loop over pairs

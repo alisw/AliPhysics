@@ -29,7 +29,17 @@ class TH1F;
 class TH2F;
 class AliAODConversionPhoton;
 
-using namespace std;
+#if (__GNUC__ >= 3) && !defined(__INTEL_COMPILER)
+// gcc warns in level Weffc++ about non-virtual destructor
+// in std::iterator. It is a false positive, therefore Weffc++
+// needs to be disabled for AliV0ReaderV1
+#pragma GCC system_header
+#endif
+
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40600
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
 
 class AliV0ReaderV1 : public AliAnalysisTaskSE {
 
@@ -247,6 +257,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     ClassDef(AliV0ReaderV1, 16)
 
 };
+
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40600
+#pragma GCC diagnostic pop
+#endif
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){
   if(fConversionCuts != NULL){

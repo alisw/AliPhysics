@@ -289,7 +289,9 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
   else if (run>=265304 && run<=265586) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
   else if (run>=265587 && run<=267131) { refSigma=1715.; refEff = 0.82; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // T0 efficiency estimate from MC, refSigma assuming cs(INEL) = 2092
   else if (run>=267132 && run<=267166) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
-  else if (run>=267167               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=267167 && run<=275923) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=275924 && run<=276096) { refSigma= 64.0; refEff = 0.85; refClass = "CINT7-B-NOPF-CENTNOTRD"; } // T0 is not operational, using V0AND
+  else if (run>=276097 )               { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
 
   
   Double_t orbitRate = 11245.;

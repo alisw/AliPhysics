@@ -1,9 +1,5 @@
-/**************************************************************************************************                                                                                                               
- *      Leading Charged Track+V0 Correlations.(Works for Real  Data)  *                                                                                                                                           
- *                 Yuko Sekiguchi * Center for Nuclear Study(CNS) , University of Tokyo                              *                                                                                            
- *                    Email:y_sekiguchi@cns.s.u-tokyo.ac.jp *                                                                                                                                                     
- **************************************************************************************************/
-
+/*
+ *****************************************************************************************/
 #ifndef ALIANALYSISTASKSEPPBCORRELATIONS
 #define ALIANALYSISTASKSEPPBCORRELATIONS
 
@@ -31,6 +27,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
+class TProfile;
 
 #ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
@@ -96,6 +93,8 @@ private:
   TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
+  void  CalculateSP();
+  TObjArray* GetFMDhitsYS(Bool_t Aside);
   Bool_t IsAcceptedDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedPhiDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedTrack(const AliAODTrack *aodTrack);
@@ -106,6 +105,13 @@ private:
 
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
+
+
+  void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
+                             TObjArray *selectedTrackArray, AliTHn *triggerHist,
+                             AliTHn *associateHist, Bool_t, Float_t, Float_t,
+                             Float_t, Int_t);
+
 
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
@@ -146,7 +152,10 @@ private:
   Int_t ffilterbit;
   Double_t fPtMin;
   Double_t fEtaMax;
+  Double_t fEtaMaxExtra;
+  Double_t fEtaMinExtra;
   // V0 particles
+  Double_t fEtaMaxV0;
   Double_t fEtaMinV0;
   Double_t fdcaDaughtersToPrimVtx;
   Double_t fdcaBetweenDaughters;
@@ -162,6 +171,7 @@ private:
   Double_t fclustermin;
   Double_t fratiocluster;
   Double_t fEtaMaxDaughter;
+  Double_t fEtaMinDaughter;
   THnSparseF *fHistMass_K0s;
   THnSparseF *fHistMass_K0s_MC;
   THnSparseF *fHistMass_Lambda;
@@ -175,12 +185,13 @@ private:
   THnSparseF *fHist_V0QA;
   THnSparseF *fHist_CascadeQA;
   TH2D *fHist_AP[6];
-  TH2D *fHistPosNsig[3];
+  TH2D *fHistPosNsig[6];
   TH2D *fHistNsig[6];
   TH2D *fHistNsigcorr[6];
-  TH2D *fHistNegNsig[3];
+  TH2D *fHistNegNsig[6];
   TH2D *fHistPosNsigQA[6];
-
+  TH3D* fh3NegNsig[3];
+  TH3D* fh3PosNsig[3];
 
   THnSparseF *fHistMass_Lambda_MC;
 
@@ -215,6 +226,9 @@ private:
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
+  TH2D*  fh2_FMD_acceptance;
+  TH2D*  fh2_FMD_eta_phi;
+
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
@@ -236,6 +250,43 @@ private:
   AliTHn *fHistReconstTrack;
   AliTHn *fHistTriggerTrackMix;
   AliTHn *fHistReconstTrackMix;
+
+  TH2D* fHistQna;
+  TH2D* fHistQnc;
+  TH2D* fHistCorrQna[4];
+  TH2D* fHistCorrQnc[4];
+  TH2D* fHistQn;
+  TH2D* fHistQna_VZERO;
+  TH2D* fHistQnc_VZERO;
+  TH2D* fHistQn_VZERO;
+  TH1D* fHistVn;
+  TH1D* fHistQAQB[4];
+  TH1D* fHistQAQB_VZERO[4];
+  TProfile* SP_TPCATPCC;
+  TProfile* SP_TPCATPCC_default;
+  TProfile* SP_V0AV0C_default;
+  TProfile* SP_V0ATPC_default;
+  TProfile* SP_V0CTPC_default;
+  TH1F* fHist_V0AV0C;
+  TH1F* fHist_V0ATPC;
+  TH1F* fHist_V0CTPC;
+  TProfile* SP_uTPCA;
+  TProfile* SP_uTPCC;
+  TProfile* SP_uTPC_PP[8];
+  TProfile* SP_uTPC[8];
+  TProfile* SP_uTPC1[8];
+  TProfile* SP_uTPC2[8];
+  TProfile* SP_uTPC3[8];
+  TProfile* SP_uVZEROA_PP[8];
+  TProfile* SP_uVZEROA[8];
+  TProfile* SP_uVZEROA1[8];
+  TProfile* SP_uVZEROA2[8];
+  TProfile* SP_uVZEROA3[8];
+  TProfile* SP_uVZEROC_PP[8];
+  TProfile* SP_uVZEROC[8];
+  TProfile* SP_uVZEROC1[8];
+  TProfile* SP_uVZEROC2[8];
+  TProfile* SP_uVZEROC3[8];
 
   ClassDef(AliAnalysisTaskSEpPbCorrelationsYS, 2);
 };

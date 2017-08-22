@@ -84,6 +84,8 @@ public:
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
     AliAnalysisTaskHFJetIPQA(const char *name);
+    AliAnalysisTaskHFJetIPQA(const AliAnalysisTaskHFJetIPQA&); // not implemented
+    AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&); // not implemented
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
     virtual Bool_t Run();
@@ -113,7 +115,10 @@ public:
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
-    void setFProductionNumberPtHard(const Int_t &value);
+    void setFProductionNumberPtHard(Int_t value=-1)
+    {
+        fProductionNumberPtHard = value;
+    }
     Double_t CalculateJetProb(AliEmcalJet *jet);
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
     Double_t CalculatePSTrackPID(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass, Int_t species);
@@ -126,9 +131,23 @@ public:
     Bool_t SetResFunctionPID(const char * filename);
     Double_t getFMCglobalDCAxyShift() const;
     void setFMCglobalDCAxyShift(const Double_t &value);
-
     Double_t getFVertexRecalcMinPt() const;
     void setFVertexRecalcMinPt(const Double_t &value);
+    void setFMCglobalDCASmear(const Double_t value);
+    void setFParam_Smear_Sigma(Double_t value)
+    {
+        fParam_Smear_Sigma = value;
+    }
+    void setFParam_Smear_Mean(Double_t value)
+    {
+        fParam_Smear_Mean = value;
+    }
+
+    void SmearTrack(AliAODTrack *track);
+    void setFRunSmearing(Bool_t value)
+    {
+        fRunSmearing = value;
+    }
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
@@ -163,13 +182,19 @@ private:
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
     Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+
+
     //Functions to allow jet probability/TC System 8 efficiency estimation
     Bool_t IsJetTaggedTC(int n =0 ,double thres = 0.1);
     Bool_t IsJetTaggedJetProb(double thresProb = 0.90);
     TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
     TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
-    Bool_t fUsePIDJetProb;//
+private:
+    Bool_t   fUsePIDJetProb;//
+    Double_t fParam_Smear_Sigma;//
+    Double_t fParam_Smear_Mean;//
+    Bool_t   fRunSmearing;//
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -201,12 +226,14 @@ private:
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[11]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
-    Float_t fXsectionWeightingFactor;
+    Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Double_t fMCglobalDCAxyShift;//
+    Double_t fMCglobalDCASmear;//
+
     Double_t fVertexRecalcMinPt;//
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 20)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 21)
 };
 
 #endif

@@ -362,7 +362,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	// Others ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Int_t setStartNumber = 0;
+	//Int_t setStartNumber = 0;
 //	fMixedEvent = kTRUE;
 	fMixedEvent = kFALSE;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -373,8 +373,8 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 
 	// Get or calculate constant ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Double_t mElectronPDG = TDatabasePDG::Instance()->GetParticle(11)->Mass();//0.000511
-	Double_t mPionPDG     = TDatabasePDG::Instance()->GetParticle(211)->Mass();//0.139570
-	Double_t mKaonPDG     = TDatabasePDG::Instance()->GetParticle(321)->Mass();//0.493677
+	//Double_t mPionPDG     = TDatabasePDG::Instance()->GetParticle(211)->Mass();//0.139570
+	//Double_t mKaonPDG     = TDatabasePDG::Instance()->GetParticle(321)->Mass();//0.493677
 	Double_t mProtonPDG   = TDatabasePDG::Instance()->GetParticle(2212)->Mass();//0.938272
 	Double_t mLambdaPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();//1.115680
 //  Double_t mXiPDG       = TDatabasePDG::Instance()->GetParticle(3312)->Mass();//1.321710
@@ -391,12 +391,12 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
   }
 
   // Initialization of parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Int_t posID[nV0s];
-	Int_t negID[nV0s];
-	Double_t infoV0Tracks[nV0s][15];
+	//Int_t posID[nV0s];
+	//Int_t negID[nV0s];
+	//Double_t infoV0Tracks[nV0s][15];
 
-	Int_t nLambda     = 0;
-	Int_t nAntiLambda = 0;
+	//Int_t nLambda     = 0;
+	//Int_t nAntiLambda = 0;
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -446,16 +446,16 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	Double_t PosPV[3];
 	esdPV->GetXYZ(PosPV);
 
-	Double_t vPVX = PosPV[0];
-	Double_t vPVY = PosPV[1];
-	Double_t vPVZ = PosPV[2];
+	//Double_t vPVX = PosPV[0];
+	//Double_t vPVY = PosPV[1];
+	//Double_t vPVZ = PosPV[2];
 
-	Int_t runNumber;
+	//Int_t runNumber;
 	AliCentrality *cent = (AliCentrality*)fESDEvent->GetCentrality();
 	fCentrality = cent->GetCentralityClass10("V0M");
-	runNumber = fESDEvent->GetRunNumber();
+	Int_t runNumber = fESDEvent->GetRunNumber();
 
-	Int_t eventNumber = fESDEvent->GetEventNumberInFile();
+	//Int_t eventNumber = fESDEvent->GetEventNumberInFile();
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -636,9 +636,9 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			pos1Trk->GetPxPyPz(MomPosOri1);
 			neg1Trk->GetPxPyPz(MomNegOri1);
 
-			Double_t MomPosOri1P  = GetPaFromPxPyPz(MomPosOri1);
+			//Double_t MomPosOri1P  = GetPaFromPxPyPz(MomPosOri1);
 			Double_t MomPosOri1Pt = GetPtFromPxPyPz(MomPosOri1);
-			Double_t MomNegOri1P  = GetPaFromPxPyPz(MomNegOri1);
+			//Double_t MomNegOri1P  = GetPaFromPxPyPz(MomNegOri1);
 			Double_t MomNegOri1Pt = GetPtFromPxPyPz(MomNegOri1);
 
 			Double_t InvMassLambdaOri1 = -9.;
@@ -656,9 +656,9 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	//------------------------------------------------------------------------------------------
 
 			Double_t ReturnV01[6];//0:DCAxy, 1:CPA, 2:COA, 3:DCAz, 4:V0xy, 5:V0r
-			Double_t ReturnV01ESD[6];//0:DCAxy, 1:CPA, 2:COA, 3:DCAz, 4:V0xy, 5:V0r
+			//Double_t ReturnV01ESD[6];//0:DCAxy, 1:CPA, 2:COA, 3:DCAz, 4:V0xy, 5:V0r
 			Double_t MomV01[3], PosV01[3], MomV01Pos[3], MomV01Neg[3];
-			Double_t MomV01ESD[3], PosV01ESD[3], MomV01PosESD[3], MomV01NegESD[3];
+			//Double_t MomV01ESD[3], PosV01ESD[3], MomV01PosESD[3], MomV01NegESD[3];
 			Bool_t IsV01    = kFALSE;
 			Bool_t IsESDv01 = kFALSE;
 			IsV01    = GetSelfV0Momentum(1,pos1Trk,neg1Trk,ReturnV01,MomV01,PosV01,MomV01Pos,MomV01Neg);
@@ -748,10 +748,10 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			ntrk = fESDEvent->GetTrack(esdV02->GetPindex());
 		}
 
-		Double_t ptrkTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrk, AliPID::kProton));
-		Double_t ptrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrk, AliPID::kPion  ));
-		Double_t ntrkTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kProton));
-		Double_t ntrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kPion  ));
+		//Double_t ptrkTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrk, AliPID::kProton));
+		//Double_t ptrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrk, AliPID::kPion  ));
+		//Double_t ntrkTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kProton));
+		//Double_t ntrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kPion  ));
 
 		Int_t pos2ID = ptrk->GetID();
 		Int_t neg2ID = ntrk->GetID();
@@ -778,15 +778,15 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		Double_t zV01toV02  = PosV02[2] - PosV01[2];
 		Double_t xyV01toV02 = TMath::Sqrt(xV01toV02*xV01toV02+yV01toV02*yV01toV02);
 		Double_t rV01toV02  = TMath::Sqrt(xV01toV02*xV01toV02+yV01toV02*yV01toV02+zV01toV02*zV01toV02);
-		Double_t MomV02Pt  = GetPtFromPxPyPz(MomV02);
+		//Double_t MomV02Pt  = GetPtFromPxPyPz(MomV02);
 		Double_t MomV02P   = GetPaFromPxPyPz(MomV02);
 		Double_t ctau1to2L  = rV01toV02*mLambdaPDG/MomV02P;
 		Double_t cpa2 = (xV01toV02*MomV02[0]+yV01toV02*MomV02[1]+zV01toV02*MomV02[2])/rV01toV02/MomV02P;
 		if ( cpa2<fCPAV01toV02 ) continue;
 		Double_t cpa2ESD  = esdV02->GetV0CosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2]);
 
-		Double_t Mom2PosPt  = GetPtFromPxPyPz(MomV02Pos);
-		Double_t Mom2NegPt  = GetPtFromPxPyPz(MomV02Neg);
+		//Double_t Mom2PosPt  = GetPtFromPxPyPz(MomV02Pos);
+		//Double_t Mom2NegPt  = GetPtFromPxPyPz(MomV02Neg);
 		Double_t Mom2PosP   = GetPaFromPxPyPz(MomV02Pos);
 		Double_t Mom2NegP   = GetPaFromPxPyPz(MomV02Neg);
 		Double_t coa2PosNeg = (MomV02Pos[0]*MomV02Neg[0]+MomV02Pos[1]*MomV02Neg[1]+MomV02Pos[2]*MomV02Neg[2])/Mom2PosP/Mom2NegP;
@@ -1063,8 +1063,8 @@ Bool_t AliAnalysisTaskNOmegaLPK::GetEsdV0Momentum(Int_t typeV0, Int_t id1, Int_t
 			Double_t MomV0P   = GetPaFromPxPyPz(MomV0);
 			Double_t cpa = (xPVtoV0*MomV0[0]+yPVtoV0*MomV0[1]+zPVtoV0*MomV0[2])/rPVtoV0/MomV0P;
 
-			Double_t MomPosPt  = GetPtFromPxPyPz(MomV0Pos);
-			Double_t MomNegPt  = GetPtFromPxPyPz(MomV0Neg);
+			//Double_t MomPosPt  = GetPtFromPxPyPz(MomV0Pos);
+			//Double_t MomNegPt  = GetPtFromPxPyPz(MomV0Neg);
 			Double_t MomPosP   = GetPaFromPxPyPz(MomV0Pos);
 			Double_t MomNegP   = GetPaFromPxPyPz(MomV0Neg);
 			Double_t coaPosNeg = (MomV0Pos[0]*MomV0Neg[0]+MomV0Pos[1]*MomV0Neg[1]+MomV0Pos[2]*MomV0Neg[2])/MomPosP/MomNegP;
@@ -1179,7 +1179,7 @@ Bool_t AliAnalysisTaskNOmegaLPK::GetSelfV0Momentum(Int_t typeV0, AliESDtrack *po
   Double_t PosPV[3];
   esdPV->GetXYZ(PosPV);
 
-	Int_t eventNumber = fESDEvent->GetEventNumberInFile();
+	//Int_t eventNumber = fESDEvent->GetEventNumberInFile();
 
 	for (Int_t i=0; i<3; i++) {
 	  MomV0[i] = -999.;
@@ -1262,7 +1262,7 @@ Bool_t AliAnalysisTaskNOmegaLPK::GetSelfV0Momentum(Int_t typeV0, AliESDtrack *po
 	posEtp.PropagateTo(xPos,fBzkG);
 	negEtp.PropagateTo(xNeg,fBzkG);
 
-	Double_t chargeV0 = posEtp.GetSign() + negEtp.GetSign();
+	//Double_t chargeV0 = posEtp.GetSign() + negEtp.GetSign();
 	posEtp.GetPxPyPz(MomPos);
 	negEtp.GetPxPyPz(MomNeg);
 	Double_t MomPosP  = GetPaFromPxPyPz(MomPos);

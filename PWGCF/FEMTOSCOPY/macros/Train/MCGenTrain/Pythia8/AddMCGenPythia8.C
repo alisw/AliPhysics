@@ -23,11 +23,11 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms) {
   
   //to be added in "macro body" in train"
   //tune of PYTHIA
-  (AliPythia8::Instance())->ReadString("Tune:ee = 0");
-  (AliPythia8::Instance())->ReadString("Beams:idA = 11"); //default 
-  (AliPythia8::Instance())->ReadString("Beams:idB = -11");
-  (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on"); //default on
-  (AliPythia8::Instance())->ReadString("Init:showAllSettings = on");
+  //(AliPythia8::Instance())->ReadString("Tune:ee = 0");
+  //(AliPythia8::Instance())->ReadString("Beams:idA = 11"); //default 
+  //(AliPythia8::Instance())->ReadString("Beams:idB = -11");
+  //(AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on"); //default on
+  //(AliPythia8::Instance())->ReadString("Init:showAllSettings = on");
 
 
   return gener;

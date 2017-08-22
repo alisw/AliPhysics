@@ -22,7 +22,11 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb_2015_kTRUE",
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
+ bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
+ bool    useEventPlane          =  1,   // 0: No      1: Yes
+ double  EventPlaneMin          =  -3.1415927/6,
+ double  EventPlaneMax          =  3.1415927/6,
  int    CentralityGroup         =  9,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
@@ -42,7 +46,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  4,
- int particleID                 =  0,   // Pion=0, Kaon=1, Proton=2
+ int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               =  2.0,
  double ElectronVetoCut         =  1.0,
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
@@ -328,9 +332,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetSameFilter(          sameFilter      );
       task->SetSinglesOnly(         singlesOnly     );
       task->SetPIDparticle(         pidparticle     );
+      task->SetUse_pT_cut(          Use_PT_Cut      );
       task->SetIfContaminationInMC(   PurePIDinMC   );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
+      task->SetEventPlane(         useEventPlane     );
+      task->SetEPmin(              EventPlaneMin     );
+      task->SetEPmax(              EventPlaneMax     );
       task->SetRejectPileup(        rejectPileup    );
       task->SetRejectPairConversion(rejectPairConversion);
       task->SetVertexZMin(          zMin            );
@@ -390,7 +398,8 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
         
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
-      analysisManager->ConnectOutput(task,  0, taskOutputContainer );
+      analysisManager->ConnectOutput(task,  1, taskOutputContainer );
+      //analysisManager->ConnectOutput(task,  0, taskOutputContainer );
         
       iTask++;
     }            

@@ -116,6 +116,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
   void                     SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
   void                     SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
+  void                     Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -211,6 +212,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
   TString     fPeriod;                         // String containing the LHC period
   Float_t     fFiducialCut;                    // Variable fiducial cut from the border of the EMCal/TPC acceptance
+  Bool_t      f2012EGA;                        // Analyze only Events with EGA recalc patches above threshold
   
   // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters
@@ -304,6 +306,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3D        *fPtvsM02vsSumEta;
   TH3D        *fPtvsM02vsSum;
   TH3D        *fPtvsM02vsSumUE;
+  TH2D        *fPtvsSum_MC;
   TH3D        *fTrackMultvsSumChargedvsUE;
   TH2D        *fTrackMultvsPt;
   TH3D        *fTracksConeEtaPt;
@@ -322,9 +325,11 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F        *fEtaTracksVSclustPt;            //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
-  TH3D        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (energy integrated from 0 to 100 GeV)
-  TH3D        *fClusEtVsEtaPhiMatched;         //!<! Track-matched cluster eta vs. phi vs. E_T
-  TH3D        *fClusEtVsEtaPhiUnmatched;       //!<! Not track-matched cluster eta vs. phi vs. E_T
+  TH3F        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
+  TH3F        *fEtaPhiClusVsEtIsoClus;         //!<! Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F        *fEtaPhiClusVsPtIsoTrack;         //!<! Cluster eta vs. phi vs. charged contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F        *fClusEtVsEtaPhiMatched;         //!<! Track-matched cluster eta vs. phi vs. E_T
+  TH3F        *fClusEtVsEtaPhiUnmatched;       //!<! Not track-matched cluster eta vs. phi vs. E_T
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output // Isolation on pTMax

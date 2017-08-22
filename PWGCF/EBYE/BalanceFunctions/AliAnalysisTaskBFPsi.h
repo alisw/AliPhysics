@@ -100,6 +100,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fTPCsharedCut = minTPCsharedCut;
   }
 
+   void SetSphericityCut(Double_t sphericityMin, Double_t sphericityMax) {
+     fSphericityMin = sphericityMin;
+     fSphericityMax = sphericityMax;
+     fUseSphericityCut = kTRUE;
+   }
+   
   //==============MC analysis==============//
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
@@ -171,6 +177,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
     fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
   
+  void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
+    fDetailedTracksQA=useDetailedTracksQA;}
+  
   // function to exclude the weak decay products
   Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
     
@@ -236,7 +245,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 					      Short_t vCharge, 
 					      Double_t gCentrality);
   //===============================correction
-  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
+  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
 
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
@@ -287,7 +296,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistEta;//pseudorapidity (QA histogram)
   TH2F *fHistRapidity;//rapidity (QA histogram)
   TH2F *fHistPhi;//phi (QA histogram)
-  TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 		 	 
+  TH3F *fHistEtaVzPos;//eta vs Vz pos particles (QA histogram) 
+  TH3F *fHistEtaVzNeg;//eta vs Vz neg particles (QA histogram)
+  TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
@@ -295,6 +306,15 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPhiNeg;//phi for negative particles (QA histogram)
   TH2F *fHistV0M;//V0 multiplicities (QA histogram)
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
+  TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
+  TH2F *fHistEtavZ;//eta vs Vz (QA histos)
+
+  TH1F *fHistSphericity; //sphericity of accepted tracks
+  TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
+  TH2F *fHistMeanPtVsSphericity; //mean pT vs sphericity of accepted tracks
+  TH1F *fHistSphericityAfter; //sphericity of accepted tracks
+  TH2F *fHistMultiplicityVsSphericityAfter; //multiplicity vs sphericity of accepted tracks
+  TH2F *fHistMeanPtVsSphericityAfter; //mean pT vs sphericity of accepted tracks
 
   //============PID============//
   TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
@@ -380,7 +400,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
 
-  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data. 
+  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
+
+  Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -401,6 +423,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
   Int_t fTPCsharedCut;//only used for AODs
+
+  Double_t fSphericityMin;//sphericity min cut (currently only for AODs)
+  Double_t fSphericityMax;//sphericity max cut (currently only for AODs)
+  Bool_t fUseSphericityCut;//sphericity cut (currently only for AODs)
 
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
 
@@ -431,7 +457,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 9); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 10); // example of analysis
 };
 
 
