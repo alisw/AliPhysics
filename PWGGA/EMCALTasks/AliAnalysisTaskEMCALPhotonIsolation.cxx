@@ -665,7 +665,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtIsoTrack->Sumw2();
         fOutput->Add(fPtIsoTrack);
 
-        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone} distribution for non isolated clusters",200,0.,100.,400,0.,4.,200,0.,100.);
+        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone} distribution for isolated clusters",200,0.,100.,400,0.,4.,200,0.,100.);
         fPtvsM02vsSum->Sumw2();
         fOutput->Add(fPtvsM02vsSum);
         
@@ -792,6 +792,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  #it{p}_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
 	  fTrackMultvsPt->Sumw2();
 	  fOutput->Add(fTrackMultvsPt);
+	}
+
+	if(fIsMC){
+	  fPtvsSum_MC = new TH2D("hPtvsSum_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone} distribution for isolated clusters",200,0.,100.,200,0.,100.);
+	  fPtvsSum_MC->Sumw2();
+	  fOutput->Add(fPtvsSum_MC);
 	}
       }
         break;
@@ -3944,7 +3950,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         // fill some histograms or a THnSparse or a TTree.
         //	AliError(Form("Fill something in Analize MC"));
       if(fWho==1)
-        fOutMCTruth -> Fill(outputValuesMC);
+        fOutMCTruth->Fill(outputValuesMC);
+      if(fWho==2)
+	fPtvsSum_MC->Fill(eT, sumEiso);
     }
   }
   else{
@@ -4036,6 +4044,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       // Fill the Output TTree for MC Truth
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
+    if(fWho==2)
+      fPtvsSum_MC->Fill(mcfirstEnergy, sumEiso);
   }
   
   return;
