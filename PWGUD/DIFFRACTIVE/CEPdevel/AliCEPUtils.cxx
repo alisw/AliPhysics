@@ -788,7 +788,7 @@ void AliCEPUtils::FMDAnalysis (
 
   // loop over A and C side
   for (Int_t ii=0; ii<2; ii++) {
-
+  
     if (ii == 0) side = AliTriggerAnalysis::kASide;
     if (ii == 1) side = AliTriggerAnalysis::kCSide;
 
@@ -940,13 +940,13 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       trackstat |= AliCEPBase::kTTeta;
 
     // accepted by ITSTPC and ITSSA criteria
-    if ((cut = (AliESDtrackCuts*)fTrackCutListPrim->At(0)))
+    if (cut == (AliESDtrackCuts*)fTrackCutListPrim->At(0))
     {
       if (cut->AcceptTrack(track)) {
         trackstat |= AliCEPBase::kTTAccITSTPC;
       }
     }
-    if ((cut = (AliESDtrackCuts*)fTrackCutListPrim->At(1)))
+    if (cut == (AliESDtrackCuts*)fTrackCutListPrim->At(1))
     {
       if (cut->AcceptTrack(track))
         trackstat |= AliCEPBase::kTTAccITSSA;
