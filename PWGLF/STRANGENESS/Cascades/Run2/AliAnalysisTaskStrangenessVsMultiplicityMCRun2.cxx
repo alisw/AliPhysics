@@ -469,6 +469,10 @@ fTreeCascVarBachITSSharedClusters5(0),
 fTreeCascVarV0LambdaMassError(0),
 fTreeCascVarV0AntiLambdaMassError(0),
 
+fTreeCascVarBachIsKink(0),
+fTreeCascVarPosIsKink(0),
+fTreeCascVarNegIsKink(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -835,6 +839,10 @@ fTreeCascVarBachITSSharedClusters5(0),
 //Uncertainty information on mass (from KF) for testing purposes
 fTreeCascVarV0LambdaMassError(0),
 fTreeCascVarV0AntiLambdaMassError(0),
+
+fTreeCascVarBachIsKink(0),
+fTreeCascVarPosIsKink(0),
+fTreeCascVarNegIsKink(0),
 
 
 //Histos
@@ -1289,6 +1297,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarV0LambdaMassError",&fTreeCascVarV0LambdaMassError,"fTreeCascVarV0LambdaMassError/F");
             fTreeCascade->Branch("fTreeCascVarV0AntiLambdaMassError",&fTreeCascVarV0AntiLambdaMassError,"fTreeCascVarV0AntiLambdaMassError/F");
             
+            fTreeCascade->Branch("fTreeCascVarBachIsKink",&fTreeCascVarBachIsKink,"fTreeCascVarBachIsKink/O");
+            fTreeCascade->Branch("fTreeCascVarPosIsKink",&fTreeCascVarPosIsKink,"fTreeCascVarPosIsKink/O");
+            fTreeCascade->Branch("fTreeCascVarNegIsKink",&fTreeCascVarNegIsKink,"fTreeCascVarNegIsKink/O");
         }
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
@@ -2593,6 +2604,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarV0LambdaMassError = 1e+4;
         fTreeCascVarV0AntiLambdaMassError = 1e+4;
         
+        fTreeCascVarBachIsKink=kFALSE;
+        fTreeCascVarPosIsKink=kFALSE;
+        fTreeCascVarNegIsKink=kFALSE;
+        
         fTreeCascVarBachV0Tagging = -1;
         
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
@@ -2764,6 +2779,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Get error parametrization (warning: be careful with offline/on-the-fly differences
         fTreeCascVarV0LambdaMassError = xi->GetKFInfo(4,2,1);
         fTreeCascVarV0AntiLambdaMassError = xi->GetKFInfo(2,4,1);
+        
+        //GetKinkIndex condition
+        if( bachTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink = kTRUE;
+        if( pTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarPosIsKink = kTRUE;
+        if( nTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarNegIsKink = kTRUE;
         
         //Get track uncertainties
         //WARNING: THIS REFERS TO THE UNCERTAINTIES CLOSEST TO THE PV
