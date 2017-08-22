@@ -1,0 +1,16 @@
+This is COMPASS event generator for double pomeron exchange processes in PP collisions modified for ALICE experiment.
+C++ interface provides acces beetween fortran routines and AliRoot framework. 
+
+Currently generates pp->pXp reaction where X decays into pi+pi- pair.
+Process numbers:
+1 -- generates continuum mass spectrum
+2 -- generates f0(500)
+3 -- generates rho0(770) (which is not expected in Pomeron-Pomeron fusion)
+4 -- generates f0(980)
+5 -- generates f2(1270) (isotropic decay = S-wave)
+6 -- generates f2(1270) D0 wave in Gottfried-Jackson frame (Pomeron along z-axis)
+7 -- generates f2(1270) 50%D+ 50%D- waves in Gottfried-Jackson frame (Pomeron along z-axis)
+8 -- generates f2(1270) D0 wave in GJ' frame (proton along z-axis)
+9 -- generates f2(1270) 50%D+ 50%D- waves in GJ' frame (proton along z-axis)
+10-- generates f2(1270) user-setted polarization in Gottfried-Jackson frame (Pomeron along z-axis)
+11-- generates f2(1270) user-setted polarization in GJ' frame (proton along z-axis)
