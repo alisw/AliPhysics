@@ -139,8 +139,8 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
     if (fSmoothing >= 2)
     {
       if (n == 1) q = fOutput.fData[i].fQ * 2;
-      else if (i == 0) q = fOutput.fData[0].fQ + fOutput.fData[1].fQ;
-      else if (i == n - 1) q = fOutput.fData[n - 1].fQ + fOutput.fData[n - 2].fQ;
+      else if (i == 0) q = (3 * fOutput.fData[0].fQ + fOutput.fData[1].fQ) / 2;
+      else if (i == n - 1) q = (3 * fOutput.fData[n - 1].fQ + fOutput.fData[n - 2].fQ) / 2;
       else q = (fOutput.fData[i - 1].fQ + fOutput.fData[i + 1].fQ) / 2 + fOutput.fData[i].fQ;
     }
     else if (fSmoothing)
