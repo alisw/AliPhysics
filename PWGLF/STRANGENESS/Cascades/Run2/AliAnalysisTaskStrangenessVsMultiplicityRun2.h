@@ -464,6 +464,11 @@ private:
     Float_t fTreeCascVarCentrality; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
+    
+    //Kink tagging
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
 
 //===========================================================================================
 //   Histograms
