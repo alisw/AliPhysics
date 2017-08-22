@@ -53,8 +53,8 @@ private:
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
 
-    AliAnalysisUtils *fUtils;//AliAnalysisUtils
-    AliEventCuts *   fEventCut;
+    AliAnalysisUtils *fUtils; //!
+    AliEventCuts *   fEventCut;  //!
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -184,11 +184,11 @@ protected:
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
-    AliPIDResponse*          fPIDResponse;
+    AliPIDResponse*          fPIDResponse; //!
     
     // Histogram settings
     //TList*              _inputHistoList;
-    TList*              _outputHistoList;
+    TList*              _outputHistoList;   //!
     //int _outputSlot;
     
     
