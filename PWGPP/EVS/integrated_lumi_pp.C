@@ -34,8 +34,8 @@ Int_t timeStart;
 Int_t timeEnd;
 Int_t timeStartSB = 1497139200;// June 12,2017, 00:00:00 (TTimeStamp)
 Int_t timeDay = 84600;// 1 day in seconds
-Int_t timeCorr = 7*timeDay;
-Int_t timeSBday[366]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,29,30,31,32,33,34,35,36,37,38,39,40,41,42,47,48,49,50,
+Int_t timeCorr = 8*timeDay;
+Int_t timeSBday[366]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,29,30,31,32,33,34,35,36,37,38,39,40,41,42,47,48,49,50,// 37 days in this line
                   51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,
                   84,85,86,87,88,89,90,91,92,93,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,
                   123,124,125,126,127,128,129,130,131,132,133,139,140,141,142,143,144,145,146,147,148,149,150,151,152,
@@ -131,7 +131,7 @@ TGraph* GetStat(TString className="CINT7-B-NOPF-CENT",Bool_t lumi=1, Bool_t good
   return gStat;
 }
 
-TGraph* GetProjection(Double_t lumiProjectedPerDay,Double_t timeLimit){
+TGraph* GetProjection(Double_t lumiProjectedPerDay,Double_t timeLimit,Int_t startDay = 0){
   Double_t stat[100000];
   Double_t time_stamp[100000];
   Int_t n = 0;
@@ -148,19 +148,19 @@ TGraph* GetProjection(Double_t lumiProjectedPerDay,Double_t timeLimit){
 //  }
 
   // Loop to prepare points for TGraph - step version
-  time_stamp[0] = timeStartSB;
+  time_stamp[0] = timeStartSB+timeDay*timeSBday[startDay];
   stat[0]       = 0;
   Int_t iDay(0);
-  for (Int_t iSBday=1;iSBday<366;iSBday++){
-    if (timeStartSB+timeDay*timeSBday[iSBday]>timeLimit) break;
+  for (Int_t iSBday=1;iSBday<366-startDay;iSBday++){
+    if (timeStartSB+timeDay*timeSBday[iSBday+startDay]>timeLimit) break;
     n++;
-    if (timeSBday[iSBday]-timeSBday[iSBday-1]>1){
-      time_stamp[iSBday] = timeStartSB+timeDay*timeSBday[iSBday];
-      stat[iSBday]       = lumiProjectedPerDay*(iDay);
+    if (timeSBday[iSBday+startDay]-timeSBday[iSBday-1+startDay]>1){
+      time_stamp[iSBday] = timeStartSB+timeDay*timeSBday[iSBday+startDay];
+      stat[iSBday]       = lumiProjectedPerDay*iDay;
       }
     else {
       iDay++;
-      time_stamp[iSBday] = timeStartSB+timeDay*timeSBday[iSBday];
+      time_stamp[iSBday] = timeStartSB+timeDay*timeSBday[iSBday+startDay];
       stat[iSBday]       = lumiProjectedPerDay*iDay;
     }
 //    printf("Iteration number %i, n: %i, time: %f, stat: %f\n",iDay,n,time_stamp[iDay],stat[iDay]);
@@ -235,12 +235,12 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   TGraph* gMuonCaloHigh = GetStat("CEMC7MUL-B-NOPF-ALLNOTRD",1,goodOnly);
   TGraph* gMuonCaloLow  = GetStat("CEMC7MSL-B-NOPF-ALLNOTRD",1,goodOnly);
   TGraph* gTRDqrkNuc    = GetStat("CINT7HNU-T-NOPF-CENT",1,goodOnly);
+  TGraph* gTRDjet       = GetStat("CINT7HJT-T-NOPF-CENT",1,goodOnly);
   // Projection graphs
   TGraph* gProjMUL      = GetProjection(0.115,gSeen->GetXaxis()->GetXmax()-timeCorr);
-  TGraph* gProjEMC1     = GetProjection(0.053,gSeen->GetXaxis()->GetXmax()-timeCorr);
   TGraph* gProjV0M      = GetProjection(0.053,gSeen->GetXaxis()->GetXmax()-timeCorr);
-  TGraph* gProjPHI      = GetProjection(0.053,gSeen->GetXaxis()->GetXmax()-timeCorr);
   TGraph* gProjStatINT  = GetProjection(7.390,gSeen->GetXaxis()->GetXmax()-timeCorr);
+  TGraph* gProjTRDjet   = GetProjection(0.0095,gSeen->GetXaxis()->GetXmax()-timeCorr,53);// Start 17/8/2017, which is 53. day of stable beams
 
 
 //  gDelivered->SetLineWidth(2);
@@ -262,16 +262,15 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   gMuonCaloHigh->SetLineColor(kRed);
   gMuonCaloLow->SetLineColor(kYellow+4);
   gTRDqrkNuc->SetLineColor(kCyan+2);
-  gProjMUL->SetLineColor(kGray);
+  gTRDjet->SetLineColor(kCyan+4);
+  gProjMUL->SetLineColor(kGray+2);
   gProjMUL->SetLineStyle(9);
-  gProjEMC1->SetLineColor(kMagenta+2);
-  gProjEMC1->SetLineStyle(9);
   gProjV0M->SetLineColor(kRed+1);
   gProjV0M->SetLineStyle(9);
-  gProjPHI->SetLineColor(kBlue+4);
-  gProjPHI->SetLineStyle(9);
   gProjStatINT->SetLineColor(kRed+1);
   gProjStatINT->SetLineStyle(9);
+  gProjTRDjet->SetLineColor(kCyan-5);
+  gProjTRDjet->SetLineStyle(9);
 
   TCanvas* c1 = new TCanvas("c1","",800,700);
   Double_t xminLumi = gSeen->GetXaxis()->GetXmin();
@@ -296,7 +295,9 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   latex->SetTextColor(gMSL->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("Single #mu low-p_{T}: %.3f pb^{-1} / 0.9 pb^{-1}",gMSL->GetY()[gMSL->GetN()-1]));
   latex->SetTextColor(gTRDqrkNuc->GetLineColor());
-  latex->DrawLatex(x,y-=dy,Form("TRD quarkonia and nuclei: %.4f pb^{-1}",gTRDqrkNuc->GetY()[gTRDqrkNuc->GetN()-1]));
+  latex->DrawLatex(x,y-=dy,Form("TRD quarkonia and nuclei: %.3f pb^{-1} / 0.85 pb^{-1}",gTRDqrkNuc->GetY()[gTRDqrkNuc->GetN()-1]));
+  latex->SetTextColor(gTRDjet->GetLineColor());
+  latex->DrawLatex(x,y-=dy,Form("TRD jet: %.3f pb^{-1} / 0.85 pb^{-1}",gTRDjet->GetY()[gTRDjet->GetN()-1]));
   latex->SetTextColor(gMuonCaloHigh->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("#mu-CALO high: %.3f pb^{-1}",gMuonCaloHigh->GetY()[gMuonCaloHigh->GetN()-1]));
   latex->SetTextColor(gMuonCaloLow->GetLineColor());
@@ -326,6 +327,7 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   gMuonCaloHigh->Draw();
   gMuonCaloLow->Draw();
   gTRDqrkNuc->Draw();
+  gTRDjet->Draw();
 
   gPad->Print("lumi.png");
   delete f1;
@@ -454,10 +456,16 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   latex->DrawLatex(x,y-=dy,Form("Lumi expected (Di-#mu): %.3f pb^{-1} / 15 pb^{-1}",gProjMUL->GetY()[gProjMUL->GetN()-1]));
   latex->SetTextColor(gProjV0M->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("Lumi expected (E/DCal, PHOS, V0-HM): %.3f pb^{-1} / 7 pb^{-1}",gProjV0M->GetY()[gProjV0M->GetN()-1]));
+  latex->SetTextColor(gProjTRDjet->GetLineColor());
+  latex->DrawLatex(x,y-=dy,Form("Lumi expected (TRD): %.3f pb^{-1} / 0.85 pb^{-1}",gProjTRDjet->GetY()[gProjTRDjet->GetN()-1]));
   latex->SetTextColor(gSeen->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("Seen: %.3f pb^{-1}",gSeen->GetY()[gSeen->GetN()-1]));
   latex->SetTextColor(gMUL->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("Di-#mu, single #mu high-p_{T}: %.3f pb^{-1} / 15 pb^{-1}",gMUL->GetY()[gMUL->GetN()-1]));
+  latex->SetTextColor(gTRDqrkNuc->GetLineColor());
+  latex->DrawLatex(x,y-=dy,Form("TRD quarkonia and nuclei: %.3f pb^{-1} / 0.85 pb^{-1}",gTRDqrkNuc->GetY()[gTRDqrkNuc->GetN()-1]));
+  latex->SetTextColor(gTRDjet->GetLineColor());
+  latex->DrawLatex(x,y-=dy,Form("TRD jet: %.3f pb^{-1} / 0.85 pb^{-1}",gTRDjet->GetY()[gTRDjet->GetN()-1]));
   latex->SetTextColor(gEMC1->GetLineColor());
   latex->DrawLatex(x,y-=dy,Form("E/DCal high: %.3f pb^{-1} / 7 pb^{-1}",gEMC1->GetY()[gEMC1->GetN()-1]));
   latex->SetTextColor(gPHI->GetLineColor());
@@ -471,7 +479,10 @@ void integrated_lumi_pp(Bool_t goodOnly=0){
   gEMC1->Draw();
   gPHI->Draw();
   gV0M->Draw();
+  gTRDqrkNuc->Draw();
+  gTRDjet->Draw();
   gProjV0M->Draw();
+  gProjTRDjet->Draw();
 
   gPad->Print("lumi_projection.png");
   delete f1;
