@@ -42,6 +42,7 @@ class AliHLTTPCHWCFExtractorUnit
   const AliHLTTPCHWCFBunch *OutputStream();
   
   void SetMaxChannelWords(int c) {fMaxChannelWords = c;}
+  void SetMaxSequenceWords(int c) {fMaxSequenceWords = c;}
 
  private: 
 
@@ -72,7 +73,9 @@ class AliHLTTPCHWCFExtractorUnit
   AliHLTUInt32_t fCurrentMCLabel;            // mc label to read next
   
   int fMaxChannelWords; //HWCF setting
+  int fMaxSequenceWords; //HWCF setting
   bool fSkipChannel; //Skip reading this channel
+  bool fSkipSequence; //Skip reading current time sequence
 };
 
 #endif

@@ -44,7 +44,8 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit()
   fNMCLabels(0),
   fCurrentMCLabel(0),
   fMaxChannelWords(0),
-  fSkipChannel(false)
+  fSkipChannel(false),
+  fSkipSequence(false)
 {
   //constructor 
   fBunch->fFlag = 0; // wait for the next channel
@@ -72,7 +73,8 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit(const AliHLTTPCHWCFExtrac
   fNMCLabels(0),
   fCurrentMCLabel(0),
   fMaxChannelWords(0),
-  fSkipChannel(false)
+  fSkipChannel(false),
+  fSkipSequence(false)
 {
   // dummy
 }
@@ -236,6 +238,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
 	  fBunch->fGain = oldBunch->fGain;
 	  fBunch->fData.clear();	  
 	  fBunchNumWordsLeft = word10;
+	  if (fMaxSequenceWords) fSkipSequence = fBunchNumWordsLeft > fMaxSequenceWords;
 	  fBunchCurrentTime = -2;
 	}
       } else { // continue the bunch
@@ -263,6 +266,8 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     }
   }
 
+  if (fSkipSequence) return 0;
+  
   if( fBunch==newBunch && oldBunch->fFlag==1 && oldBunch->fData.size()>0 ){
     return oldBunch;
   }

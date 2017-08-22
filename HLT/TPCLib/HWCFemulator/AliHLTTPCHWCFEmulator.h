@@ -94,6 +94,7 @@ class AliHLTTPCHWCFEmulator
   void SetImprovedDeconvolution(int d) {fChannelProcessor.SetImprovedDeconvolution(d);}
   void SetCorrectEdgeClusters(int c) {fDivisionUnit.SetCorrectEdgeClusters(c);}
   void SetMaxChannelWords(int c) {fChannelExtractor.SetMaxChannelWords(c);}
+  void SetMaxSequenceWords(int c) {fChannelExtractor.SetMaxSequenceWords(c);}
 
  private: 
 
