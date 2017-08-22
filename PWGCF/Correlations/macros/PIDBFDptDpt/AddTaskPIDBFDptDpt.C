@@ -398,7 +398,8 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
         
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
-      analysisManager->ConnectOutput(task,  0, taskOutputContainer );
+      analysisManager->ConnectOutput(task,  1, taskOutputContainer );
+      //analysisManager->ConnectOutput(task,  0, taskOutputContainer );
         
       iTask++;
     }            
