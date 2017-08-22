@@ -930,7 +930,33 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111114067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC+BTv3
     cuts.AddCut("00010113","1111123067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC+BTv3
     cuts.AddCut("00010113","1111124067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC+BTv3
-
+    // 5 TeV JetJet configs without trackmatching
+  } else if (trainConfig == 430){ // EMCAL clusters no NonLin
+    cuts.AddCut("00010113","1111100060032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL INT7
+    cuts.AddCut("00052013","1111100060032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL EMC7
+    cuts.AddCut("00085013","1111100060032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL EG2
+    cuts.AddCut("00083013","1111100060032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL EG1
+  } else if (trainConfig == 431){ // EMCAL clusters - NonLin INT7 - no trackmatching for 5TeV JJ
+    cuts.AddCut("00010113","1111111060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00010113","1111112060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM EMC
+    cuts.AddCut("00010113","1111121060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00010113","1111122060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 432){ // EMCAL clusters - NonLin EMC7 - no trackmatching for 5TeV JJ
+    cuts.AddCut("00052013","1111111060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00052013","1111112060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM EMC
+    cuts.AddCut("00052013","1111121060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00052013","1111122060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 433){ // EMCAL clusters - NonLin EG2  - no trackmatching for 5TeV JJ
+    cuts.AddCut("00085013","1111111060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00085013","1111112060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM EMC
+    cuts.AddCut("00085013","1111121060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00085013","1111122060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt EMC
+  } else if (trainConfig == 434){ // EMCAL clusters - NonLin EG1  - no trackmatching for 5TeV JJ
+    cuts.AddCut("00083013","1111111060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
+    cuts.AddCut("00083013","1111112060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM EMC
+    cuts.AddCut("00083013","1111121060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC
+    cuts.AddCut("00083013","1111122060032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt EMC
+    
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
   // *********************************************************************************************************
