@@ -239,7 +239,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     if( iEnd  > iPeak + kHalfTimeBinWindow + 1) iEnd = iPeak + kHalfTimeBinWindow + 1;
   }
 
-  fOutput.fQmax = qPeak*fkBunch->fGain;
+  fOutput.fQmax = 0;
   fOutput.fQ = 0;
   fOutput.fT = 0;
   fOutput.fT2 = 0;
@@ -255,7 +255,8 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
 
   for( AliHLTUInt32_t i=iStart; i<iEnd; i++ ){
     const AliHLTTPCHWCFDigit &d = fkBunch->fData[i];
-    AliHLTUInt64_t q = d.fQ*fkBunch->fGain;      
+    AliHLTUInt64_t q = d.fQ*fkBunch->fGain;
+    if (q > fOutput.fQmax) fOutput.fQmax = q;
     fOutput.fQ += q;
     fOutput.fT += q*d.fTime;
     fOutput.fT2+= q*d.fTime*d.fTime;
