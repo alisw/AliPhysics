@@ -662,10 +662,14 @@ private:
     Bool_t fTreeCascVarBachITSSharedClusters3;
     Bool_t fTreeCascVarBachITSSharedClusters4;
     Bool_t fTreeCascVarBachITSSharedClusters5;
-    
+
     //Uncertainty information on mass (from KF) for testing purposes
     Float_t fTreeCascVarV0LambdaMassError;
     Float_t fTreeCascVarV0AntiLambdaMassError;
+    
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
     
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
