@@ -22,6 +22,9 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliVTrack.h"
+#include "AliAODVZERO.h"
+#include "AliVHeader.h"
+#include "AliVVertex.h"
 #include "AliVParticle.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h" 
@@ -49,6 +52,8 @@
 #include "TFile.h"
 #include <iostream>
 #include "AliEventCuts.h"
+#include "AliAODTracklets.h"
+
 
 
 // Analysis task for the PID BF code:
@@ -183,7 +188,13 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fDetectorPID_(kTPCTOFpid_),
   fUseOfflineTrigger(kFALSE),
   fUseMultSelection(kFALSE),
-  fHasTOFPID(kFALSE)
+  fHasTOFPID(kFALSE),
+  fLowCut(0),
+  fHighCut(0),
+  fMultTOFLowCut(0),
+  fMultTOFHighCut(0),
+  fMultCentLowCut(0),
+  fCutMultESDdif(0)
  {
   // Constructor
   // Define input and output slots here
@@ -310,6 +321,29 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
  fEventCuts->fMaxCentrality = fCentralityPercentileMax;
 
 }
+
+// Pile up Function 
+
+    fLowCut = new TF1("fLowCut", "[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fHighCut = new TF1("fHighCut", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+
+
+    fMultTOFLowCut = new TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
+
+    fMultTOFHighCut = new TF1("fMultTOFHighCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x + 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
+
+
+    fMultCentLowCut = new TF1("fMultCentLowCut", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+
+
+    fLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+    fHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+
+    fMultTOFLowCut->SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
+    fMultTOFHighCut->SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
+
+    fMultCentLowCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
+
 
   //Event stats.
   TString gCutName[7] = {"Total","Offline trigger",
@@ -748,9 +782,34 @@ Float_t gCalculateCentrality =-1;
   return;
 }
 
+IsProperVertexPileUp(eventMain);
+
+Float_t vtxX = -999;
+Float_t vtxY = -999;
+Float_t vtxZ = -999;
+
+  const AliAODVertex *trkVtx = (AliAODVertex*)eventMain->GetPrimaryVertex();
+
+    if (!trkVtx || trkVtx->GetNContributors()<=0)
+    return ;
+
+    vtxX = trkVtx->GetX();
+    vtxY = trkVtx->GetY();
+    vtxZ = trkVtx->GetZ();
+
+    if(vtxX > fVxMax ) return;
+    if(vtxY > fVyMax ) return;
+    if(vtxZ > fVzMax ) return;
+    fHistEventStats->Fill(4,-1);//analyzed events
+
   if((lMultiplicityVar = IsEventAccepted(eventMain)) < 0){ 
     return;
   }
+
+   fHistVx->Fill(vtxX);
+   fHistVy->Fill(vtxY);
+   fHistVz->Fill(vtxZ,lMultiplicityVar);
+
 
 
   // get the reaction plane
@@ -831,6 +890,165 @@ Float_t gCalculateCentrality =-1;
   // calculate shuffled balance function
 }      
 
+
+//_______________________________________________________________________  
+void AliAnalysisTaskPIDBF::IsProperVertexPileUp(AliVEvent *event){
+
+   //Centrality
+    Float_t v0Centr    = -100.;
+    Float_t cl1Centr   = -100.;
+    Float_t cl0Centr   = -100.;
+
+    AliMultSelection* MultSelection = 0x0;
+    MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+    if( !MultSelection) {
+        AliWarning("AliMultSelection object not found!");
+        return;
+    } else {
+        v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+        cl1Centr = MultSelection->GetMultiplicityPercentile("CL1");
+        cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
+    }
+
+    if (v0Centr >= 90. || v0Centr < 0)
+        return;
+
+
+    Int_t nITSClsLy0 = event->GetNumberOfITSClusters(0);
+    Int_t nITSClsLy1 = event->GetNumberOfITSClusters(1);
+    Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+
+/*
+    AliAODTracklets* aodTrkl = (AliAODTracklets*)event->GetTracklets();
+    Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+*/
+
+    const Int_t nTracks = event->GetNumberOfTracks();
+    Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+
+    Int_t multTrk = 0;
+    Int_t multTrkBefC = 0;
+    Int_t multTrkTOFBefC = 0;
+    Int_t multTPC = 0;
+    Int_t multTPCout = 0;
+
+    for (Int_t it = 0; it < nTracks; it++) {
+
+     AliAODTrack* aodTrk = (AliAODTrack*)event->GetTrack(it);
+
+        if (!aodTrk){
+            delete aodTrk;
+            continue;
+        }
+
+        if (aodTrk->GetFlags()&AliESDtrack::kTPCout)
+            multTPCout++;
+
+        if (aodTrk->TestFilterBit(32)){
+
+            multTrkBefC++;
+
+            if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+                multTrkTOFBefC++;
+
+            if ((TMath::Abs(aodTrk->Eta()) < fEtaMax) && (aodTrk->GetTPCNcls() >= fNClustersTPCCut) && (aodTrk->Pt() >= fPtMin) && (aodTrk->Pt() < fPtMax))
+                multTrk++;
+
+        }
+
+         if (aodTrk->TestFilterBit(128))
+            multTPC++;
+
+} // track loop end 
+
+    Float_t multTPCn = multTPC;
+    Float_t multEsdn = multEsd;
+    Float_t multESDTPCDif = multEsdn - multTPCn*3.38;
+
+    //cout<<" multTPC"<<multTPC<<""<<"multEsd"<<multEsd<<""<<"multESDTPCDif"<<multESDTPCDif<<endl;
+
+    AliAODVZERO* aodV0 = (AliAODVZERO*) event->GetVZEROData();
+//    AliVVZERO* aodV0 = event->GetVZEROData();
+    Float_t multV0a = aodV0->GetMTotV0A();
+    Float_t multV0c = aodV0->GetMTotV0C();
+    Float_t multV0Tot = multV0a + multV0c;
+
+//   cout<<" multV0a"<<multV0a<<""<<"multV0c"<<multV0c<<""<<"multV0Tot"<<multV0Tot<<endl;
+
+
+ //new vertex selection
+      const AliAODVertex* vtTrc = (AliAODVertex*) event->GetPrimaryVertex();
+      const AliAODVertex* vtSPD = (AliAODVertex*) event->GetPrimaryVertexSPD();
+
+  //     const AliVVertex *vtTrc = event->GetPrimaryVertex();
+ //     const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+
+    if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)
+        return; // one of vertices is missing
+
+    double covTrc[6], covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+
+    double dz = vtTrc->GetZ() - vtSPD->GetZ();
+
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = dz/errTot;
+    double nsigTrc = dz/errTrc;
+
+    if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)
+        return; // bad vertexing
+
+
+    // vertex cut from old selection
+    TString vtxTyp = vtSPD->GetTitle();
+    Double_t zRes = TMath::Sqrt(covSPD[5]);
+    if ((vtxTyp.Contains("vertexer:Z")) && (zRes>0.25) && (vtSPD->GetNContributors() < 20))
+        return;
+
+
+    if(fCheckPileUp){
+      
+     if (cl0Centr < fLowCut->Eval(v0Centr)) 
+        return;
+
+        if (cl0Centr > fHighCut->Eval(v0Centr))
+            return;
+
+
+        if (multESDTPCDif > fCutMultESDdif)
+            return;
+
+        if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)))
+            return;
+
+        if (Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC)))
+            return;
+ 
+         //Short_t isPileup = event->IsPileupFromSPD(3);
+         Short_t isPileup = event->IsPileupFromSPD(5,0.8,3.,2.,.5);
+        if (isPileup != 0)
+            return; 
+
+        if (((AliAODHeader*)event->GetHeader())->GetRefMultiplicityComb08() < 0)
+            return;
+
+        //new function for 2015 to remove incomplete events
+        if (event->IsIncompleteDAQ())
+            return;
+
+
+        //new cut to remove outliers
+        if (Float_t(multTrk) < fMultCentLowCut->Eval(v0Centr))
+            return;
+    
+
+    }
+
+
+}
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskPIDBF::IsEventAccepted(AliVEvent *event){
   // Checks the Event cuts
@@ -850,27 +1068,6 @@ Double_t AliAnalysisTaskPIDBF::IsEventAccepted(AliVEvent *event){
       return -1.;
     fHistEventStats->Fill(6,gRefMultiplicity); 
   }
-  // check for pile-up event
-  AliAnalysisUtils ut;
-  if(fCheckPileUp){
-   fUtils->SetUseMVPlpSelection(kTRUE);
-   fUtils->SetUseOutOfBunchPileUp(kTRUE);
-
-   fUtils->SetMinPlpContribMV(5);
-   fUtils->SetMaxPlpChi2MV(5);
-   fUtils->SetMinWDistMV(15);
-   fUtils->SetCheckPlpFromDifferentBCMV(kTRUE);
-   Bool_t isPileupFromMV = fUtils->IsPileUpMV(event);
-
-   //Bool_t isPileupfromSPD=event->IsPileupFromSPD(fSPDContributorsCut,fSPDZDiffCut);
-  // Bool_t isPileupfromSPD=event->IsPileupFromSPD(5,0.8);
-   //Bool_t isPileupfromSPDmulbins=event->IsPileupFromSPDInMultBins();
-
-//  if(isPileupfromSPD || fUtils->IsPileUpEvent(event) || isPileupfromSPDmulbins || isPileupFromMV ) { cout<< " pile up events removing "<<endl; return -1;}
-  if(fUtils->IsPileUpEvent(event) || isPileupFromMV ) { return -1;}
-
-    fHistEventStats->Fill(7,gRefMultiplicity); 
-  }
 
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
@@ -887,48 +1084,17 @@ else {
  
   if(isTriggerselected) {
     fHistEventStats->Fill(2,gRefMultiplicity); //triggered events
- 
-      const AliVVertex *vertex = event->GetPrimaryVertex();
       
-      if(vertex) {
-	Double32_t fCov[6];
-	vertex->GetCovarianceMatrix(fCov);
-	if(vertex->GetNContributors() > 0) {
-	  if(fCov[5] != 0) {
-	    fHistEventStats->Fill(3,gRefMultiplicity); //proper vertex
-	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
 
-		  // get the reference multiplicty or centrality
-		  if((fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
-		    if ((fMultiplicityEstimator == "V0MUtils")) 
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0MEq");
-		    if ((fMultiplicityEstimator == "V0AUtils")) 
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0AEq");
-		    if ((fMultiplicityEstimator == "V0CUtils")) 
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0CEq");
-		    else 
-		      AliError("The requested estimator from AliAnalysisUtils is not supported");
-		  }//use the framework to define the multiplicity class
-		  
-		  else{
 		    gRefMultiplicity = GetRefMultiOrCentrality(event);
 
-                    }
 		  
 		  // take only events inside centrality class
 		  if(fUseCentrality) {
 		    if((gRefMultiplicity > fCentralityPercentileMin) && (gRefMultiplicity < fCentralityPercentileMax)){
-
-		      // centrality weighting (optional for 2011 if central and semicentral triggers are used)
 		      
 		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
                        
-		      fHistVx->Fill(vertex->GetX());
-		      fHistVy->Fill(vertex->GetY());
-		      fHistVz->Fill(vertex->GetZ(),gRefMultiplicity);
 		      return gRefMultiplicity;	
 		    }//centrality class
 		  }
@@ -943,12 +1109,6 @@ else {
 		      return gRefMultiplicity;
 		    }
 		  }//multiplicity range
-		}//Vz cut
-	      }//Vy cut
-	    }//Vx cut
-	  }//proper vertex resolution
-	}//proper number of contributors
-      }// proper vertex
     }//trigger
   
   // in all other cases return -1 (event not accepted)
@@ -1205,9 +1365,6 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vPt     = aodTrack->Pt();
  
 
-      Float_t dcaXY = 0.;
-      Float_t DCAZ  = 0.;   // this is the DCA from global track (not exactly what is cut on)
-
      // dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
       //DCAZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 
@@ -1215,31 +1372,34 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
     if( vPt < fPtMin || vPt > fPtMax)      continue;
 
     if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-     
+    
+    Double_t b[2] = {-99., -99.};
+    Double_t bCov[3] = {-99., -99., -99.};
+
+    AliAODTrack* trackAODClone = new AliAODTrack(*aodTrack);
+    if (!trackAODClone) {
+      AliWarning("Clone of AOD track failed.");
+      delete trackAODClone;
+      continue;
+    }   
+    if (!trackAODClone->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov)){
+      delete trackAODClone;
+      continue;
+    } else {
+      delete trackAODClone;
+    }
+    
+    Float_t dcaXY   = b[0];
+    Float_t DCAZ   = b[1]; 
+ 
      if( fDCAxyCut != -1 && fDCAzCut != -1){
-
-      Double_t posTrack[3];
-      Double_t vertexPos[3];
-      
-   
-
-      const AliVVertex *vertex = event->GetPrimaryVertex();
-        vertex->GetXYZ(vertexPos);
-        aodTrack->GetXYZ(posTrack);
-
-        Float_t  DCAX = posTrack[0] - vertexPos[0];
-        Float_t  DCAY = posTrack[1] - vertexPos[1];
-        DCAZ = posTrack[2] - vertexPos[2];
-
-
-        dcaXY  = TMath::Sqrt(DCAX*DCAX + DCAY*DCAY);
 
 
         if (DCAZ     <  -fDCAzCut || DCAZ   > fDCAzCut ||  dcaXY    > fDCAxyCut ) continue;
 
-   //     if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(DCAZ*DCAZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-     //     continue;  // 2D cut
-       // }
+//        if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(DCAZ*DCAZ)/(fDCAzCut*fDCAzCut)) > 1 )
+  //        continue;  // 2D cut
+       
 }
 
         Int_t nITSclus = aodTrack->GetITSNcls();
@@ -1251,7 +1411,7 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
         continue;
       }
-      if( fNClustersTPCCut != -1 && (aodTrack->GetTPCNcls() < fNClustersTPCCut || aodTrack->GetTPCNcls() >200 )){
+      if( fNClustersTPCCut != -1 && (aodTrack->GetTPCNcls() < fNClustersTPCCut || aodTrack->GetTPCNcls() >150 )){
         continue;
       }
 
