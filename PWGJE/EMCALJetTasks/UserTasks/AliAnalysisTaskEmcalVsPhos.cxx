@@ -81,6 +81,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotCaloCentrality(kFALSE),
   fPlotFineGrainedEtaPhi(kFALSE),
   fPlotEvenOddEta(kFALSE),
+  fPlotCellSMDensity(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -115,6 +116,7 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotCaloCentrality(kFALSE),
   fPlotFineGrainedEtaPhi(kFALSE),
   fPlotEvenOddEta(kFALSE),
+  fPlotCellSMDensity(kFALSE),
   fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
@@ -904,6 +906,9 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       
       if (fPlotCaloCentrality) {
         
+        Double_t eCellSM = 0.;
+        Int_t nCellsSM = 0;
+        
         // Get the SM number
         Int_t sm = -1;
         if (clusType == kEMCal) {
@@ -921,8 +926,10 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           Double_t eCellCone = GetConeCellEnergy(eta, phi, 0.07);
           Int_t nCellsCone = (Int_t)GetConeCellEnergy(eta, phi, 0.07, kTRUE);
        
-          Double_t eCellSM = GetSMCellEnergy(sm, clusType);
-          Int_t nCellsSM = (Int_t)GetSMCellEnergy(sm, clusType, kTRUE);
+          if (fPlotCellSMDensity) {
+            eCellSM = GetSMCellEnergy(sm, clusType);
+            nCellsSM = (Int_t)GetSMCellEnergy(sm, clusType, kTRUE);
+          }
         
           FillClusterTHnSparse(clustersName, eta, phi, Enonlin, eCellCone, eCellSM, nCellsCone, nCellsSM);
           
@@ -1372,6 +1379,8 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
   Double_t phi;
   Int_t absId;
   TVector3 pos;
+  Int_t relid[4];
+  Int_t sm;
   
   for (Int_t i=0; i<fCaloCells->GetNumberOfCells(); i++) {
     
@@ -1395,7 +1404,13 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
   for (Int_t i=0; i<phosCaloCells->GetNumberOfCells(); i++) {
     
     absId = phosCaloCells->GetCellNumber(i);
-    
+
+    fPHOSGeo->AbsToRelNumbering(absId, relid);
+    sm = relid[0];
+    if (sm < 1 || sm > 4) {
+      continue;
+    }
+
     fPHOSGeo->RelPosInAlice(absId, pos); // pos then contains (x,y,z) coordinate of cell
     eta = pos.Eta();
     phi = pos.Phi();
