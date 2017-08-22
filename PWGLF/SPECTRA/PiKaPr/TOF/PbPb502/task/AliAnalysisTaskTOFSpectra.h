@@ -906,8 +906,8 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   //DCA Histograms
   //-> Data and MC
-  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];           ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
-  TH1F* hDCAxyGoldenChi2[2][3][kPtBins][kEvtMultBins]; ///< DCAxy Distribution in Pt bins for all the reconstructed tracks but with the cut on the golden Chi2
+  TH2F* hDCAxy[2][3][kPtBins];           ///< DCAxy Distribution in Pt and Multiplicity/Centrality bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH2F* hDCAxyGoldenChi2[2][3][kPtBins]; ///< DCAxy Distribution in Pt and Multiplicity/Centrality bins for all the reconstructed tracks but with the cut on the golden Chi2
   //-> MC only
   TH1F* hDCAxyPrimMC[2][3][kPtBins];   ///< DCAxy Distribution in Pt bins for Primary reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecStMC[2][3][kPtBins];  ///< DCAxy Distribution in Pt bins for Secondary from Strangeness reconstructed tracks identified with MC Truth
