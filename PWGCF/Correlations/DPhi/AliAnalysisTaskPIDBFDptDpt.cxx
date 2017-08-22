@@ -426,6 +426,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   fUtils(0),
   fEventCut(0)
 {
+  // Au-Au added this block of code to use his own PID functions
+  for( Int_t ipart = 0; ipart < 4; ipart++ )
+    for( Int_t ipid = 0; ipid < 2; ipid++ )
+      fnsigmas[ipart][ipid] = 999.;
+  
   printf("Default constructor called \n");  
   printf("passed \n ");
 }
@@ -781,8 +786,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
     for( Int_t ipid = 0; ipid < 2; ipid++ )
       fnsigmas[ipart][ipid] = 999.;
   
-  printf("2nd constructor called ");    
-  DefineOutput(0, TList::Class());   
+  printf("2nd constructor called ");
+  //DefineOutput(0, TList::Class()); 
+  DefineOutput(1, TList::Class());   
   printf("passed  ");   
 }
 
@@ -793,7 +799,6 @@ AliAnalysisTaskPIDBFDptDpt::~AliAnalysisTaskPIDBFDptDpt()
 
 void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
 {
-  OpenFile(0);
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
 
@@ -1032,7 +1037,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
 	
   createHistograms();
 
-  PostData(0,_outputHistoList);
+  PostData(1,_outputHistoList);
   
   //cout<< "AliAnalysisTaskPIDBFDptDpt::CreateOutputObjects() DONE " << endl;
     
@@ -1397,7 +1402,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	{
 	  if (!fEventCut->AcceptEvent(fAODEvent))
 	    {
-	      PostData(0, _outputHistoList);
+	      PostData(1, _outputHistoList);
 	      return;
 	    }
 	}
@@ -2233,7 +2238,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     }    
     
   AliInfo("AliAnalysisTaskPIDBFDptDpt::UserExec()   -----------------Event Done ");
-  PostData(0,_outputHistoList);    
+  PostData(1,_outputHistoList);
 } // End of UserExec
 
 void   AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput()
@@ -2242,7 +2247,7 @@ void   AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput()
   Printf("= 0 ====================================================================");
   finalizeHistograms();
   AliInfo("= 1 ====================================================================");
-  PostData(0,_outputHistoList);
+  PostData(1,_outputHistoList);
   AliInfo("= 2 ====================================================================");
   AliInfo("AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput() Done.");
 }
