@@ -1,5 +1,5 @@
 #!/bin/bash
-SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB
+SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2017/OCDB
 TARGET=/opt/HLT/data/HCDB_new_tmp#
 FUTURE_RUN=500000
 SOURCE_RUN=260014
@@ -130,21 +130,21 @@ rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/*
 mkdir -p $TARGET/HLT/ConfigTPC/TPCDataCompressor
 mkdir -p $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
 
-#First object used in 2010, replaced by updated objects below
-#cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressor/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressor
-#cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
-
 #Create a default huffman table with diffential compression to match HLT settings in data replay, will have low version number, so it is overwritten by new tables for new runs
-aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2016/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
-aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2016/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressor/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+#aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2017/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run276551_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+#aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\""`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2017/OCDB,g"`"/HLT/ConfigTPC/TPCDataCompressor/Run276551_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+#NOT USED ANYMORE, INSTALL ALL OBJECTS FOR ALL RUNS, SO YOU CAN PROCESS OLD RAW FILES WITH THIS HCDB. CURRENT OBJECT FOR NEW RUNS IS AUTOMATICALLY INSTALLED
+
+#First object used in 2010, replaced by updated objects below
+cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressor/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressor
+cp `echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/2010/OCDB,g"`/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run0*.root $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
 
 #Year from which to take the OCDB objects. First objects would be from 2010, but we overwrite all these objects with a default object from 2016 that has differential compression enabled.
-#STARTYEAR=2010
-STARTYEAR=2016
+STARTYEAR=2010
 
 CURYEAR=`date +%Y`
-VERCONF=2
-VERTABLE=2
+VERCONF=1
+VERTABLE=1
 for i in `seq $STARTYEAR $CURYEAR`; do
     TMPSOURCE=`echo $SOURCE | sed "s,data/[0-9]*/OCDB,data/$i/OCDB,g"`
     for j in `ls $TMPSOURCE/HLT/ConfigTPC/TPCDataCompressor | grep -v Run0`; do
