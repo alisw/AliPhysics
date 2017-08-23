@@ -298,6 +298,13 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   if (SubJetAlgorithm==0) SubJetAlgorithmString="_ReclusteringAlgorithm_kT";
   else if (SubJetAlgorithm==1) SubJetAlgorithmString="_ReclusteringAlgorithm_CA";
   else if (SubJetAlgorithm==2) SubJetAlgorithmString="_ReclusteringAlgorithm_AkT";
+  else if (SubJetAlgorithm==3) SubJetAlgorithmString="_ReclusteringAlgorithm_WTA_kT";
+  else if (SubJetAlgorithm==4) SubJetAlgorithmString="_ReclusteringAlgorithm_WTA_CA";
+  else if (SubJetAlgorithm==5) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_kT";
+  else if (SubJetAlgorithm==6) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_CA";
+  else if (SubJetAlgorithm==7) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_AkT";
+  else if (SubJetAlgorithm==8) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_WTA_kT";
+  else if (SubJetAlgorithm==9) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_WTA_CA";
   else if (SubJetAlgorithm==10) SubJetAlgorithmString="_ReclusteringAlgorithm_Min";
   contName1 += SubJetAlgorithmString;
   contName2 += SubJetAlgorithmString;
