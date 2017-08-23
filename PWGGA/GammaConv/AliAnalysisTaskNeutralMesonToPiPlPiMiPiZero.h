@@ -145,10 +145,15 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     // TTrees
     TTree**                           fTreePiPiSameMother;                                // Tree containing info about the mother of two pions who have the same mother,
                                                                                           // if ID isn't covered by current implementations
+    TTree**                           fTreePiPiPiSameMother;                              // Tree containing info about the mother of three pions who have the same mother,
+                                                                                          // if ID isn't covered by current implementations
     Short_t                           fCasePiPi;                                          // 0:PiPlPiMi 1:PiMiPiZero 1:PiPlPiZero
     Float_t                           fSamePiPiMotherID;                                  // ID of mother of two pions
     Float_t                           fSamePiPiMotherInvMass;                             // Invariant mass of mother of two pions
     Float_t                           fSamePiPiMotherPt;                                  // pT of mother of two pions
+    Float_t                           fSamePiPiPiMotherID;                                  // ID of mother of two pions
+    Float_t                           fSamePiPiPiMotherInvMass;                             // Invariant mass of mother of two pions
+    Float_t                           fSamePiPiPiMotherPt;                                  // pT of mother of two pions
     // reconstructed particles
     TH1F**                            fHistoConvGammaPt;                                  // array of histos of conversion photon, pt
     TH1F**                            fHistoConvGammaEta;                                 // array of histos of conversion photon, eta
@@ -288,7 +293,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 15);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 16);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
