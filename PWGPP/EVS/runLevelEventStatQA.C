@@ -468,8 +468,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
     if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
     Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
-    TString
-    refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+    TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
     refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
@@ -626,15 +625,29 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
-    alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
-    alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    if (hHistStat->GetNbinsX()!=19) {
+      // old stat histo without ZDC background monitoring
+      // setting ZDCBG step equal to V0AND and take other steps shifted by 1
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+    } else {
+      alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+      alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+      alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+      alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+      alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+      alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+      alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
+      alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
+    }
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
