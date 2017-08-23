@@ -677,6 +677,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsM02vsSumUE->Sumw2();
 	fOutput->Add(fPtvsM02vsSumUE);
 
+	fTestEnergyConeNorm = new TH3F("hTestEnergyConeVSpT_Norm","Test energy clusters and tracks in cone (already normalised by cone area)",200,0.,100.,250,0.,100.,250,0.,100.);
+	fTestEnergyConeNorm->SetXTitle("#it{p}_{T}^{cluster}");
+	fTestEnergyConeNorm->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
+	fTestEnergyConeNorm->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
+	fTestEnergyConeNorm->Sumw2();
+	fOutput->Add(fTestEnergyConeNorm);
+
           // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
           // fPtvsM02vsSumPi0->Sumw2();
           // fOutput->Add(fPtvsM02vsSumPi0);
@@ -959,13 +966,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fTestEnergyCone->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
   fTestEnergyCone->Sumw2();
   fOutput->Add(fTestEnergyCone);
-
-  fTestEnergyConeNorm = new TH3F("hTestEnergyConeVSpT_Norm","Test energy clusters and tracks in cone (already normalised by cone area)",200,0.,100.,250,0.,100.,250,0.,100.);
-  fTestEnergyConeNorm->SetXTitle("#it{p}_{T}^{cluster}");
-  fTestEnergyConeNorm->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
-  fTestEnergyConeNorm->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
-  fTestEnergyConeNorm->Sumw2();
-  fOutput->Add(fTestEnergyConeNorm);
   
     // fTracksConeEtaPt = new TH3D("hTracksConeEtaPt","#Sigma vs #eta vs E_{T}",200,0.,100.,320,-0.8,0.8,200,0.,100.);
     // fTracksConeEtaPt->Sumw2();
@@ -2354,7 +2354,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
 
-  if(fFiducialCut < 0.4){
+  if(fWho == 2 && fFiducialCut < 0.4){
     ComputeConeArea(c, isoConeArea);
     fTestEnergyConeNorm->Fill(c.Pt(), sumEnergyConeClus/isoConeArea, sumpTConeCharged/isoConeArea);
   }
