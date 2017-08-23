@@ -265,6 +265,9 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   param[1]=d0zn ;
   param[4]=pt1n ;
 
+
+  //Disable since we do not correctly accoutn for them --- thas why we smear
+  /*
    //cov matrix update
   if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
   if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
@@ -275,7 +278,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
   if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
   if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
-
+*/
   // Copy the smeared parameters to the AOD track
   Double_t x[3];
   Double_t p[3];
