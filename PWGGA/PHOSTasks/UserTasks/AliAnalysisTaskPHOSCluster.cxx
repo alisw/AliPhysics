@@ -7,26 +7,17 @@
 
 #include "AliAnalysisTaskPHOSCluster.h"
 
-#include <TFile.h>
-#include <TChain.h>
-#include <TParticle.h>
-#include <TTree.h>
-
-
-
 #include <vector>
-#include <Riostream.h>
-#include <TChain.h>
-#include <TClonesArray.h>
-#include <TTree.h>
-#include <TF1.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TH3D.h>
-#include <TList.h>
+
+#include "TRefArray.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TChain.h"
+#include "TParticle.h"
+#include "TTree.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TList.h"
 
 //AliRoot include files
 #include "AliAnalysisTaskSE.h"
@@ -52,21 +43,8 @@
 
 
 
-
-///TODO check before pull request
-//#include "AliAnalysisUtils.h"
-//#include "AliStack.h"
-//#include "AliESDtrackCuts.h"
-//#include "AliExternalTrackParam.h"
-//#include "AliAODMCParticle.h"
-
-#include <TRefArray.h>
-
-
 using std::cout;
 using std::endl;
-
-//#include <climits>		///What is this?
 
 ClassImp(AliAnalysisTaskPHOSCluster);
 
@@ -155,9 +133,11 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
   fClusterCellsInformation = new AliCaloClusterContent();
 
+  OpenFile(1);
+
   fClusterTree   = new TTree("fClusterTree", "AliPHOSCluster");
   fClusterTree ->Branch("fClusterCellsInformation", &fClusterCellsInformation);
-  fClusterTree ->SetAutoSave(100000000);
+  fClusterTree ->SetAutoSave(100000);
 
 
   fcaloClusters = new TRefArray();
@@ -381,15 +361,15 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 		else fPHOSHitmap ->Fill((modNrClusterPos-1)*64 + cellX, cellZ, fCluster->E());  // fill histogramm cluster by cluster
 
 		// Fill histogramms
-		if(fCluster->GetM02()    > 0) fClusterEnergyVsM02 ->Fill(fCluster->E(), fCluster->GetM02());
-		if(fCluster->GetM20()    > 0) fClusterEnergyVsM20 ->Fill(fCluster->E(), fCluster->GetM20());
-		if(fCluster->GetNCells() > 0) fClusterEnergyVsNoC ->Fill(fCluster->E(), fCluster->GetNCells());
+		if(fCluster->GetM02()    >= 0) fClusterEnergyVsM02 ->Fill(fCluster->E(), fCluster->GetM02());
+		if(fCluster->GetM20()    >= 0) fClusterEnergyVsM20 ->Fill(fCluster->E(), fCluster->GetM20());
+		if(fCluster->GetNCells() >= 0) fClusterEnergyVsNoC ->Fill(fCluster->E(), fCluster->GetNCells());
 
 		fClusterCellsInformation->SetClusterAndCells(fCluster, fClusterCells, fPHOSGeo);  // save information about cluster and its cells
 		fClusterTree ->Fill();
 
-      if(fClusterCellsInformation->IsFilled()) fClusterCellsInformation->Reset();  // Reset cluster object
-
+//    if(fClusterCellsInformation->IsFilled()) fClusterCellsInformation->Reset();  // Reset cluster object
+      fClusterCellsInformation->Reset();  // Reset cluster object
 
     } // if(fCluster->IsPHOS())
   } // cluster loop
@@ -398,3 +378,8 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
   fEventCounter++;
   PostData(1,fOutput);
 }
+
+
+
+
+//TODO histo mit events wie viele mit und ohne cluster

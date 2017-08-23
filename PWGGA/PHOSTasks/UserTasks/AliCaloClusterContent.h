@@ -4,9 +4,9 @@
 #include <vector>
 #include <Rtypes.h>
 #include "TObject.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
-#include "AliPHOSGeometry.h"
+class AliVCluster;
+class AliVCaloCells;
+class AliPHOSGeometry;
 
 
 
@@ -23,19 +23,14 @@
 
     void     Reset();                                            // Reset the object (clear all variables)
     void     SetClusterAndCells(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom);        // Define cluster and cells
-    void     SetEnergy(Float_t a) {fEnergy = a;}
-
-
-
 
 	 Char_t GetType()              {return fType;}
 
-//	 Int_t* GetRelID()             {return frelID;}
     Int_t  GetLabel()             {return fLabel;}
     Int_t  GetNCells()            {return fNCells;}
     Int_t  GetNTracksMatched()    {return fNTracksMatched;}
 
-    Bool_t IsFilled()             {return fIsFilled;}
+	 Bool_t IsFilled()             {return fIsFilled;}
     Bool_t IsExotic()             {return fIsExotic;}
     Bool_t IsEMCAL()              {return fIsEMCAL;}
     Bool_t IsPHOS()               {return fIsPHOS;}
@@ -65,11 +60,7 @@
 	 //Char_t
     Char_t  fType;
 
-    //Short_t
-    const UShort_t* fCellsAbsId;
-
     //Int_t
-//    Int_t  frelID[4];        // Position of cluster in PHOS
     Int_t  fLabel;          // Cluster lable
     Int_t  fNCells;         // Number of cells in cluster
     Int_t  fNTracksMatched; // Number of matched tracks
@@ -80,24 +71,17 @@
 	 Bool_t  fIsEMCAL;
 	 Bool_t  fIsPHOS;
 
-	 //Float_t
-
-
 	 //Double_t
-    Double_t  fCoreEnergy;  // Energy of the core of cluster
-    Double_t  fDispersion;  // Dispersion of cluster
+    Double_t  fCoreEnergy;            // Energy of the core of cluster
+    Double_t  fDispersion;            // Dispersion of cluster
     Double_t  fDistanceToBadChannel;
     Double_t  fEmcCpvDistance;
-    Double_t  fEnergy;      // Cell energy
+    Double_t  fEnergy;                // Cluster energy
     Double_t  fM02;
     Double_t  fM20;
     Double_t  fTOF;
     Double_t  fTrackDx;
     Double_t  fTrackDz;
-
-
-
-	 Int_t tempVecSize;												// for testing only
 
     std::vector<Int_t>    fCellAbsID;    // Absolute ID of cell
     std::vector<Int_t>    fCellDetector; // Detector type (0==PHOS, -1==CPV)

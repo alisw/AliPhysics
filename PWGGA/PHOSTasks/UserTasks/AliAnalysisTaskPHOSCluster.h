@@ -50,7 +50,8 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
     void           SetHitmapFillingCellByCell(Bool_t b) {fFillHitmapCellByCell = b;}
 
 
-  protected:
+//  protected:
+  private:
     TList*         fOutput;                 // Output List
     TTree*         fClusterTree;            // Tree to save the AliVClusters
 
@@ -66,7 +67,7 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
     AliPHOSCalibData*      fPHOSCalibData;            //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
     AliAnalysisUtils*      fUtils;                    //utils for zvtxcut
     AliVCluster*           fCluster;                  // Cluster of current event TODO remove ! maybe it helps to fill Ttree correctly
-    AliVCaloCells*         fClusterCells;             // Cluster cells  //TODO change to AliESDCaloCells
+    AliVCaloCells*         fClusterCells;             // Cluster cells
     AliCaloClusterContent* fClusterCellsInformation;  // Saves information about clusters and their belonging cells
 
     TRefArray*         fcaloClusters;         // Cluster array
@@ -80,7 +81,6 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
 
 
 
-  private:
     AliAnalysisTaskPHOSCluster(const AliAnalysisTaskPHOSCluster&);            //! Not implemented
     AliAnalysisTaskPHOSCluster& operator=(const AliAnalysisTaskPHOSCluster&); //! Not implemented
     ClassDef(AliAnalysisTaskPHOSCluster,1);
