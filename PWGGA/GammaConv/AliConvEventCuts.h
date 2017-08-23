@@ -244,14 +244,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
 	kLHC17f8d,         //!< anchored LHC16j pass 1 - Pythia8+JJ 
 	kLHC17f8e,         //!< anchored LHC16o pass 1 - Pythia8+JJ   
 	//General purpose- pPb
-        kLHC17a2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17a2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17a2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17a2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17a2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17a3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
         kLHC17a3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
@@ -268,11 +260,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17a4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
         kLHC17a4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
         kLHC17a4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
-
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
         kLHC17f2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
         kLHC17f2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f2a_fast_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only  2nd cycle
+        kLHC17f2a_cent_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT       2nd cycle
+        kLHC17f2a_cent_woSDD_fix, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD 2nd cycle
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
         kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
@@ -653,7 +647,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,34)
+      ClassDef(AliConvEventCuts,35)
       /// \endcond
 };
 
