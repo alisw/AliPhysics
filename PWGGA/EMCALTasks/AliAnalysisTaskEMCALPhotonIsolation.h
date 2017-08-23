@@ -128,7 +128,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     PtIsoTrackEtaBand(TLorentzVector c, Double_t &ptIso, Double_t &etaBand);             // PIsoCone via Track UE via EtaBand TPC
   void                     PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);             // PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);                // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
-  
+  void                     ComputeConeArea(TLorentzVector c, Double_t &coneArea);                               // Isolation cone area depending on the cluster position
+
   Bool_t                   ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
 
   Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
@@ -299,6 +300,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D        *fTestIndexE;                     //!<! Index vs cluster energy test
   TH2D        *fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F        *fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
+  TH3F        *fTestEnergyConeNorm;             //!<! Energy cone clusters vs tracks test (area normalised)
   TH2D        *fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D        *fInvMassM02iso;
   TH3D        *fInvMassM02noiso;
@@ -356,7 +358,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 18); // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 19); // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
