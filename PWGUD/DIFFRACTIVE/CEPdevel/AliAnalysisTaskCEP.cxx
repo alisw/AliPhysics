@@ -69,6 +69,9 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fTTpattern(TTpattern)
   , fRun(-1)
   , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
@@ -87,9 +90,13 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fCEPUtil(0x0)
+	, flQArnum(0x0) 
+	, flBBFlag(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
+	, flV0(0x0)
+	, flFMD(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
@@ -121,6 +128,10 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
   , fRun(-1)
+  , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
@@ -587,9 +598,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
      
   // EventCuts only works with run2 data
   // this is doing a lot more than the physics selection (by default uses kAny)
-  // run number > 225000
+  // run number > 256146 (LHC16j)
   Bool_t isEventCutsel = kFALSE;
-  if (fRun >= 225000 && fRun <= 260187) {
+  if (fRun >= 256146) {
     isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
@@ -625,7 +636,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The following is needed to replay the DG trigger
   // The STG trigger in 2016 required two online tracklets without additional
   // topology.
-  TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  TBits foMap = mult->GetFastOrFiredChips();
   Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
     
   Bool_t isDGTrigger = kFALSE;
@@ -641,26 +653,26 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
     isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
     
-    // printf("DG trigger replaied: %i %i %i\n",
-    //  isSTGtriggerFired,!isV0Afired,!isV0Cfired);
+    // printf("DG trigger replaied: %i %i %i -> %i\n",
+    //   isSTGtriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
   
   } else {
   
     if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
       isDGTrigger = kTRUE;
       
-      fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-      ((TH1F*)flQArnum->At(1))->Fill(fRun);
-
       // past-future trigger protection
       if (flBBFlag)
         fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
   }
+  if (isDGTrigger) {
+    fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
+    ((TH1F*)flQArnum->At(1))->Fill(fRun);
+  }
   
   
   // number of tracklets
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
@@ -972,7 +984,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
     
-      // proper poiter into fTracks and fTrackStatus
+      // proper pointer into fTracks and fTrackStatus
       Int_t trkIndex = TTindices->At(ii);
       
       // the original track
