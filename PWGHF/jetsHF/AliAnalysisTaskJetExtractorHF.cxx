@@ -213,6 +213,16 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
 
+  // Track QA plots
+  AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hTrackPhi", "Track angular distribution in #phi", "LEGO2", 180, 0., 2*TMath::Pi(), 100, 0, 100, "#phi", "Centrality", "dN^{Tracks}/(d#phi)");
+  AddHistogram2D<TH2D>("hTrackEta", "Track angular distribution in #eta", "LEGO2", 100, -2.5, 2.5, 100, 0, 100, "#eta", "Centrality", "dN^{Tracks}/(d#eta)");
+  AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Tracks}/d#phi d#eta");
+
+  AddHistogram2D<TH2D>("hTrackEtaPt", "Track angular distribution in #eta vs. p_{T}", "LEGO2", 100, -2.5, 2.5, 300, 0., 300., "#eta", "p_{T} (GeV/c)", "dN^{Tracks}/(d#eta dp_{T})");
+  AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
+
+
   TH1* tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets", "", 5, 0, 5, "stage","N^{jets}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "Centrality");
@@ -270,7 +280,7 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   if(fExtractionCutUseIC)
   {
     passedCutPID = kFALSE;
-    for(Int_t i=0; i<fExtractionListPIDsIC.size(); i++)
+    for(size_t i=0; i<fExtractionListPIDsIC.size(); i++)
     {
       if (fExtractionListPIDsIC.at(i) == fCurrentJetTypeIC)
         passedCutPID = kTRUE;
@@ -280,7 +290,7 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   else if(fExtractionCutUseHM)
   {
     passedCutPID = kFALSE;
-    for(Int_t i=0; i<fExtractionListPIDsHM.size(); i++)
+    for(size_t i=0; i<fExtractionListPIDsHM.size(); i++)
     {
       if (fExtractionListPIDsHM.at(i) == fCurrentJetTypeHM)
         passedCutPID = kTRUE;
@@ -412,6 +422,16 @@ void AliAnalysisTaskJetExtractorHF::FillJetControlHistograms(AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskJetExtractorHF::FillTrackControlHistograms(AliVTrack* track)
+{
+  FillHistogram("hTrackPt", track->Pt(), fCent);
+  FillHistogram("hTrackPhi", track->Phi(), fCent);
+  FillHistogram("hTrackEta", track->Eta(), fCent);
+  FillHistogram("hTrackEtaPt", track->Eta(), track->Pt());
+  FillHistogram("hTrackPhiPt", track->Phi(), track->Pt());
+  FillHistogram("hTrackPhiEta", track->Phi(), track->Eta());
+}
+//________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractorHF::Run()
 {
   CalculateEventProperties();
@@ -428,6 +448,11 @@ Bool_t AliAnalysisTaskJetExtractorHF::Run()
     FillJetControlHistograms(jet);
     AddJetToTree(jet);
   }
+
+  // ### Particle loop
+  fTracksCont->ResetCurrentID();
+  while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+    FillTrackControlHistograms(track);
 
   FillEventControlHistograms();
 
