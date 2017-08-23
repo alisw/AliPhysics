@@ -3876,35 +3876,29 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetCosPA(AliESDtrack *lPos
 //Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
 {
     Float_t lCosPA = -1;
-    AliESDtrack* lNegClone = (AliESDtrack*) lNegTrack->Clone("lNegClone"); //need clone, in order not to change track parameters
-    AliESDtrack* lPosClone = (AliESDtrack*) lPosTrack->Clone("lPosClone"); //need clone, in order not to change track parameters
-
+    
     //Get Magnetic field and primary vertex
     Double_t b=lEvent->GetMagneticField();
     const AliESDVertex *vtxT3D=lEvent->GetPrimaryVertex();
     Double_t xPrimaryVertex=vtxT3D->GetX();
     Double_t yPrimaryVertex=vtxT3D->GetY();
     Double_t zPrimaryVertex=vtxT3D->GetZ();
-
-    //Get ExternalTrackParam
-    AliExternalTrackParam nt(*lNegClone), pt(*lPosClone);
-
+    
+    //Copy AliExternalParam for handling
+    AliExternalTrackParam nt(*lNegTrack), pt(*lPosTrack), *lNegClone=&nt, *lPosClone=&pt;
+    
     //Find DCA
     Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
-
+    
     //Propagate to it
     nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
-
+    
     //Create V0 object to do propagation
     AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
-
+    
     //Get CosPA
     lCosPA=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
-
-    //Cleanup
-    delete lNegClone;
-    delete lPosClone;
-
+    
     //Return value
     return lCosPA;
 }
