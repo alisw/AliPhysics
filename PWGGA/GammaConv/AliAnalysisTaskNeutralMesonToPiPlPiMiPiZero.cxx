@@ -88,10 +88,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fConversionCuts(NULL),
   fClusterCuts(NULL),
   fTreePiPiSameMother(NULL),
+  fTreePiPiPiSameMother(NULL),
   fCasePiPi(-1),
   fSamePiPiMotherID(-1),
   fSamePiPiMotherInvMass(-1),
   fSamePiPiMotherPt(-1),
+  fSamePiPiPiMotherID(-1),
+  fSamePiPiPiMotherInvMass(-1),
+  fSamePiPiPiMotherPt(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -244,10 +248,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fConversionCuts(NULL),
   fClusterCuts(NULL),
   fTreePiPiSameMother(NULL),
+  fTreePiPiPiSameMother(NULL),
   fCasePiPi(-1),
   fSamePiPiMotherID(-1),
   fSamePiPiMotherInvMass(-1),
   fSamePiPiMotherPt(-1),
+  fSamePiPiPiMotherID(-1),
+  fSamePiPiPiMotherInvMass(-1),
+  fSamePiPiPiMotherPt(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -810,6 +818,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
             if (fDoMesonQA>1){
                 fTrueTreeList                                           = new TList*[fnCuts];
                 fTreePiPiSameMother                                     = new TTree*[fnCuts];
+                fTreePiPiPiSameMother                                   = new TTree*[fnCuts];
             }
         }
     }
@@ -995,6 +1004,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
                   fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherInvMass", &fSamePiPiMotherInvMass, "fSamePiPiMotherInvMass/F");
                   fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherPt", &fSamePiPiMotherPt, "fSamePiPiMotherPt/F");
                   fTrueTreeList[iCut]->Add(fTreePiPiSameMother[iCut]);
+
+                  fTreePiPiPiSameMother[iCut]                         = new TTree("TreePiPiPiSameMother","TreePiPiPiSameMother");
+                  fTreePiPiPiSameMother[iCut]->Branch("fSamePiPiPiMotherID", &fSamePiPiPiMotherID, "fSamePiPiPiMotherID/F");
+                  fTreePiPiPiSameMother[iCut]->Branch("fSamePiPiPiMotherInvMass", &fSamePiPiPiMotherInvMass, "fSamePiPiPiMotherInvMass/F");
+                  fTreePiPiPiSameMother[iCut]->Branch("fSamePiPiPiMotherPt", &fSamePiPiPiMotherPt, "fSamePiPiPiMotherPt/F");
+                  fTrueTreeList[iCut]->Add(fTreePiPiPiSameMother[iCut]);
               }
           }
       }
@@ -2819,8 +2834,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
   Int_t trueMesonFlag  = TrueNeutralPionCandidate->GetTrueMesonValue();
   Int_t pi0MCLabel     = TrueNeutralPionCandidate->GetMCLabel();
 
-  if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)) return;
+  Float_t weighted= 1;
 
+  if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)){
+    fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    return;
+  }
   Int_t pi0MotherLabel =  fMCEvent->Particle(pi0MCLabel)->GetMother(0);
 
   TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(fMCEvent);
@@ -2859,7 +2878,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
     isNoPiPiPi = kTRUE;
   }
 
-  Float_t weighted= 1;
   // Do things for each case
   if(isSameMotherPiPlPiMiPiZero){
     if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                        == 221){
@@ -2891,7 +2909,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 
       if (CheckVectorForDoubleCount(fVectorDoubleCountTrueOmegas,pi0MotherLabel) && (!fDoLightOutput)) fHistoDoubleCountTrueOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
     } else{
-      // they come from something else
+      if(fDoMesonQA>1 && (!fDoLightOutput)){
+        // Write "unknown" mother to TTree
+        fSamePiPiPiMotherID       = fMCEvent->Particle(posMotherLabelMC)->GetPdgCode();
+        fSamePiPiPiMotherInvMass  = mesoncand->M();
+        fSamePiPiPiMotherPt       = mesoncand->Pt();
+
+        fTreePiPiPiSameMother[fiCut]->Fill();
+      }
     }
   } else if(isSameMotherPiPlPiMi &&  (fDoMesonQA>0 ) && (!fDoLightOutput)){
     if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221){
