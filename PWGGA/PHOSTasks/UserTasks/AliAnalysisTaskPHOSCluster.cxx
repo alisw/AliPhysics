@@ -68,6 +68,7 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster()
   fClusterEnergyVsNoC(0x0),
   fClusterEnergyVsM02(0x0),
   fClusterEnergyVsM20(0x0),
+  fEventCluster(0x0),
   fEventCuts(0x0),
   fClusterCuts(0x0),
   fFillHitmapCellByCell(0)
@@ -95,6 +96,7 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster(const char* name)
   fClusterEnergyVsNoC(0x0),
   fClusterEnergyVsM02(0x0),
   fClusterEnergyVsM20(0x0),
+  fEventCluster(0x0),
   fEventCuts(0x0),
   fClusterCuts(0x0),
   fFillHitmapCellByCell(0)
@@ -123,8 +125,9 @@ AliAnalysisTaskPHOSCluster::~AliAnalysisTaskPHOSCluster() {
 // Called once (on the worker node)
 void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
   cout << "AliAnalysisTaskPHOSCluster - Input settings:" << endl;
-  cout << Form("Z Vertex cut: %.3f", fZVertex) << endl;
-  cout << Form("MinCells cut: %d", fMinCells) << endl;
+  cout << "Z vertex cut: " << fZVertex << endl;
+  cout << "Min. cells cut: " << fMinCells << endl;
+  if(fFillHitmapCellByCell) cout << "Filling hitmap cell wise" << endl; else cout << "Filling hitmap cluster wise" << endl;
 
 
   if (!fOutput) fOutput = new TList();
@@ -133,7 +136,7 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
   fClusterCellsInformation = new AliCaloClusterContent();
 
-  OpenFile(1);
+//  OpenFile(1);
 
   fClusterTree   = new TTree("fClusterTree", "AliPHOSCluster");
   fClusterTree ->Branch("fClusterCellsInformation", &fClusterCellsInformation);
@@ -145,6 +148,12 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
 
 // Creation of the histograms
+  fEventCluster = new TH1F("fEventCluster", "Events w and wo clusters", 2, 0., 2.);
+  fEventCluster ->GetXaxis()->SetBinLabel(1, "Events without cluster");
+  fEventCluster ->GetXaxis()->SetBinLabel(2, "Events with cluster");
+  fEventCluster ->GetYaxis()->SetTitle("# Clusters");
+
+
   fClusterCuts = new TH1F("fClusterCuts", "N o Cluster after cuts", 3, 0., 3.);
   fClusterCuts ->GetXaxis()->SetBinLabel(1, "All clusters");
   fClusterCuts ->GetXaxis()->SetBinLabel(2, "PHOS Cluster");
@@ -171,14 +180,15 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
   fClusterEnergyVsM20 ->GetYaxis()->SetTitle("M20");
 
   fPHOSHitmap         = new TH2F("fPHOSHitmap", "Hitmap of PHOS", 4*64, 0., 4*64., 56, 0., 56.);
-  fPHOSHitmap         ->GetXaxis()->SetTitle("#it{#phi} (rad)");
-  fPHOSHitmap         ->GetYaxis()->SetTitle("#it{#eta}");
+  fPHOSHitmap         ->GetXaxis()->SetTitle("Cell X");
+  fPHOSHitmap         ->GetYaxis()->SetTitle("Cell Z");
 
 
 
 
   fOutput ->Add(fClusterTree);
 
+  fOutput ->Add(fEventCluster);
   fOutput ->Add(fClusterCuts);
   fOutput ->Add(fEventCuts);
   fOutput ->Add(fClusterEnergyVsNoC);
@@ -188,6 +198,7 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
 
   PostData(1,fOutput);
+//  PostData(1,fClusterTree);
 }
 
 //_______________________________________ UserExec _______________________________________
@@ -312,6 +323,9 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
   Int_t nCluster = 0;
   nCluster = fAnyEv ->GetNumberOfCaloClusters();
 
+  if(nCluster < 1) fEventCluster->Fill(0.5);
+  else             fEventCluster->Fill(1.5);
+
 
 
   for(Int_t iCurrentCluster=0; iCurrentCluster<nCluster; iCurrentCluster++){
@@ -366,6 +380,7 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 		if(fCluster->GetNCells() >= 0) fClusterEnergyVsNoC ->Fill(fCluster->E(), fCluster->GetNCells());
 
 		fClusterCellsInformation->SetClusterAndCells(fCluster, fClusterCells, fPHOSGeo);  // save information about cluster and its cells
+
 		fClusterTree ->Fill();
 
 //    if(fClusterCellsInformation->IsFilled()) fClusterCellsInformation->Reset();  // Reset cluster object

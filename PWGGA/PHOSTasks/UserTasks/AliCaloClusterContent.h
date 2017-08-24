@@ -92,7 +92,7 @@ class AliPHOSGeometry;
     std::vector<Double_t> fCellTime;     // Cell timing
 
 
-    ClassDef(AliCaloClusterContent, 2);
+    ClassDef(AliCaloClusterContent, 4);
 
   };
 
