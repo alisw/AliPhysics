@@ -814,6 +814,7 @@ void AliCEPUtils::FMDAnalysis (
             if (mult > 0.005)
               totalMult = totalMult + mult;
             else {
+              // printf("FMD total multipliciy: %f\n",totalMult);
               ((TH1F*)lhh->At(2*ii+1))->Fill(totalMult);
               totalMult = 0;
             }
@@ -944,14 +945,14 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       trackstat |= AliCEPBase::kTTeta;
 
     // accepted by ITSTPC and ITSSA criteria
-    if (cut == (AliESDtrackCuts*)fTrackCutListPrim->At(0))
-    {
+    cut = (AliESDtrackCuts*)fTrackCutListPrim->At(0);
+    if (cut) {
       if (cut->AcceptTrack(track)) {
         trackstat |= AliCEPBase::kTTAccITSTPC;
       }
     }
-    if (cut == (AliESDtrackCuts*)fTrackCutListPrim->At(1))
-    {
+    cut = (AliESDtrackCuts*)fTrackCutListPrim->At(1);
+    if (cut) {
       if (cut->AcceptTrack(track))
         trackstat |= AliCEPBase::kTTAccITSSA;
     }
