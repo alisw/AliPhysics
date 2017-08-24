@@ -478,15 +478,22 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
 }
 
 AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracklets() const {
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  AliAODTracklets* aodTracklets = aodEvent->GetTracklets();
-
-  const Double_t pt = 0;
+  const Double_t dummy_pt = 0;
   AliAnalysisTaskValidation::Tracks ret_vector;
-  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    auto eta = aodTracklets->GetEta(i);
-    auto phi = aodTracklets->GetPhi(i);
-    ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, 1));
+
+  // Using the aptly named parent class AliVMultiplicity
+  AliVMultiplicity* mult = this->fInputEvent->GetMultiplicity();
+  Int_t nTracklets = mult->GetNumberOfTracklets();
+  for (Int_t i=0; i < nTracklets; i++){
+    // Using a dphi cut in units of mrad; This cut is motivated in
+    // https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/lmilano/2017-Aug-11-analysis_note-note.pdf
+    auto dphi  = mult->GetDeltaPhi(i);
+    if (TMath::Abs(dphi) * 1000 > 5) {
+      continue;
+    }
+    auto phi   = mult->GetPhi(i);
+    auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
+    ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, dummy_pt, 1));
   }
   return ret_vector;
 }
