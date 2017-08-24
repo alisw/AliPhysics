@@ -85,6 +85,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fMCHeader(0),
+  fRan(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -160,6 +161,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fMCHeader(0),
+  fRan(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -468,6 +470,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     AddObjectToEvent(fCombinedDmesonsBkg);
     if(fUseMCInfo) AddObjectToEvent(fMCCombinedDmesons);
   }
+  
+  fRan  = new TRandom3(0);
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -1482,8 +1486,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
         
         if (allMCDaughters.Remove(mcpart) == 0) {
             if(fUseRejTracks){
-              TRandom3 *ran = new TRandom3();
-              if(ran->Rndm() < fTrackIneff) continue;
+              if(fRan->Rndm() < fTrackIneff) continue;
             }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;

@@ -28,6 +28,7 @@
 
 class TH2;
 class TString;
+class TRandom3;
 class TClonesArray;
 class AliAODMCHeader;
 class AliRDHFCuts;
@@ -157,6 +158,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;               //!
   AliAODMCHeader *fMCHeader;		   //!
+  TRandom3	 *fRan;			   //! Random number generator
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
