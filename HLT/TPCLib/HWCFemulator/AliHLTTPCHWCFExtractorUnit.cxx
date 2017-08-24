@@ -211,8 +211,6 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     //cout<<"Extractor: Header of new channel F "<<fBunch->fFlag
     //<<" R "<<fBunch->fRow<<" P "<<fBunch->fPad<<" NWords10 "<<fChannelNumWordsLeft<<endl;
   
-  } else if( fSkipChannel) {
-    return 0;
   } else if( flag==0x0 ) { 
     
     // bunch data, read three 10-bit words
@@ -266,7 +264,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     }
   }
 
-  if (fSkipSequence) return 0;
+  if (fSkipSequence || fSkipChannel) return 0;
   
   if( fBunch==newBunch && oldBunch->fFlag==1 && oldBunch->fData.size()>0 ){
     return oldBunch;
