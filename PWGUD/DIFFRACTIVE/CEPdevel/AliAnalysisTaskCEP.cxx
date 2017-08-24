@@ -620,15 +620,23 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
      
+  // count number of recorded triggers
+  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(1))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(2))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+  
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
   // the trigger needs to be replaied
   // different triggers are considered
-  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e]
+  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
   // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p]
-  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   Bool_t isReplay = fMCEvent
     || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
     || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
@@ -666,11 +674,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
   }
-  if (isDGTrigger) {
+  if (isDGTrigger)
     fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-    ((TH1F*)flQArnum->At(1))->Fill(fRun);
-  }
-  
   
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -721,10 +726,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
 
-  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
-  if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
-  if (isADDG) ((TH1F*)flQArnum->At(5))->Fill(fRun);
-  if (isFMDDG)((TH1F*)flQArnum->At(6))->Fill(fRun);
+  if (isMBOR) ((TH1F*)flQArnum->At(4))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(6))->Fill(fRun);
+  if (isADDG) ((TH1F*)flQArnum->At(7))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(8))->Fill(fRun);
   
   
   // compre isSPD and isSTGtriggerFired
@@ -913,14 +918,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if ( isToSave ) {
     
     // update fhStatsFlow
-    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+    ((TH1F*)flQArnum->At(5))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
     if (isToSaveDG) {
-      ((TH1F*)flQArnum->At(7))->Fill(fRun);
+      ((TH1F*)flQArnum->At(9))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinDG);
     }
     if (isToSaveNDG) {
-      ((TH1F*)flQArnum->At(8))->Fill(fRun);
+      ((TH1F*)flQArnum->At(10))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     }
     
