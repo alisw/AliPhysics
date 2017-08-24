@@ -396,6 +396,7 @@ Float_t AliAnalysisTaskC2::GetEventClassifierValue() {
       (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
       ->GetEstimator(this->fSettings.fMultEstimator);
     // const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
+    // const Float_t multiplicity = (Float_t)multEstimator->GetValue();
     const Float_t multiplicity = multEstimator->GetPercentile();
     return multiplicity;
   }
