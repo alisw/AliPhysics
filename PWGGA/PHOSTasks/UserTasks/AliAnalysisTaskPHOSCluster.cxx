@@ -198,7 +198,6 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
 
   PostData(1,fOutput);
-//  PostData(1,fClusterTree);
 }
 
 //_______________________________________ UserExec _______________________________________
