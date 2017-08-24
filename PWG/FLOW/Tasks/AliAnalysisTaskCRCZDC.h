@@ -308,6 +308,13 @@ private:
   TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
 
+  TH3D *fQATrackTPCNcls; //!
+  TH3D *fQATrackITSNcls; //!
+  TH3D *fQATrackTPCchi2; //!
+  TH3D *fQATrackITSchi2; //!
+  TH3D *fQATrackTPCScls; //!
+  TH3D *fQATrackITSScls; //!
+
   const static Int_t fCRCMaxnRun = 211;
 
 //  TH3D *fhZNSpectraRbR[fCRCMaxnRun]; //! ZNA vs. centrality

@@ -94,6 +94,10 @@
 #include "AliFlowEventCuts.h"
 #include "AliFlowCommonConstants.h"
 
+//NanoAODs
+#include "AliNanoAODTrack.h"
+#include "AliNanoAODHeader.h"
+
 ClassImp(AliAnalysisTaskCRCZDC)
 
 //________________________________________________________________________
@@ -214,7 +218,13 @@ fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
 fhZNSpectraPow(0x0),
-fhZNBCCorr(0x0)
+fhZNBCCorr(0x0),
+fQATrackTPCNcls(NULL),
+fQATrackITSNcls(NULL),
+fQATrackTPCchi2(NULL),
+fQATrackITSchi2(NULL),
+fQATrackTPCScls(NULL),
+fQATrackITSScls(NULL)
 {
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
@@ -396,9 +406,14 @@ fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
 fhZNSpectraPow(0x0),
-fhZNBCCorr(0x0)
+fhZNBCCorr(0x0),
+fQATrackTPCNcls(NULL),
+fQATrackITSNcls(NULL),
+fQATrackTPCchi2(NULL),
+fQATrackITSchi2(NULL),
+fQATrackTPCScls(NULL),
+fQATrackITSScls(NULL)
 {
-
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
     fhZNAPM[i] = 0x0;
@@ -633,6 +648,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fhZNSpectraPow);
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
+
+  fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",20,0.,5.,16,-0.8,0.8,50,50.,150.);
+  fOutput->Add(fQATrackTPCNcls);
+  fQATrackITSNcls = new TH3D("fQATrackITSNcls","fQATrackITSNcls",20,0.,5.,16,-0.8,0.8,6,0.,6.);
+  fOutput->Add(fQATrackITSNcls);
+  fQATrackTPCchi2 = new TH3D("fQATrackTPCchi2","fQATrackTPCchi2",20,0.,5.,16,-0.8,0.8,50,0.,5.);
+  fOutput->Add(fQATrackTPCchi2);
+  fQATrackITSchi2 = new TH3D("fQATrackITSchi2","fQATrackITSchi2",20,0.,5.,16,-0.8,0.8,50,0.,50.);
+  fOutput->Add(fQATrackITSchi2);
+  fQATrackTPCScls = new TH3D("fQATrackTPCScls","fQATrackTPCScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fOutput->Add(fQATrackTPCScls);
+  fQATrackITSScls = new TH3D("fQATrackITSScls","fQATrackITSScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fOutput->Add(fQATrackITSScls);
 
   if(fAnalysisType == kMCAOD) {
 
@@ -876,20 +904,28 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     return;
   }
 
-  Int_t RunBin=-1, bin=0;
-  Int_t RunNum = aod->GetRunNumber();
-  for(Int_t c=0;c<fCRCnRun;c++) {
-    if(fRunList[c]==RunNum) RunBin=bin;
-    else bin++;
+  Int_t numTracks =  aod->GetNumberOfTracks();
+  if (numTracks==0) return;
+
+  TObject *head = aod->GetHeader();
+  Int_t RunBin=-1, bin=0, RunNum=-1;
+
+  if(!head->InheritsFrom("AliNanoAODStorage")){ //no nanoAOD
+      RunNum = aod->GetRunNumber();
+      for(Int_t c=0;c<fCRCnRun;c++) {
+          if(fRunList[c]==RunNum) RunBin=bin;
+          else bin++;
+      }
+      if(RunBin==-1) return;
+      if(fDataSet==kAny) RunBin=0;
   }
-  if(RunBin==-1) return;
-  if(fDataSet==kAny) RunBin=0;
 
   //DEFAULT - automatically takes care of everything
   if (fAnalysisType == kAUTOMATIC || fAnalysisType == kTracklets) {
 
     // get centrality
     Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
+  if(!head->InheritsFrom("AliNanoAODStorage")){
     if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix) {
       centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
       centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
@@ -907,6 +943,23 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
       }
     }
+  }else{
+
+      AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+      RunNum = nanoAodHeader->GetRunNumber();
+      for(Int_t c=0;c<fCRCnRun;c++) {
+          if(fRunList[c]==RunNum) RunBin=bin;
+          else bin++;
+      }
+      if(RunBin==-1) return;
+      if(fDataSet==kAny) RunBin=0;
+
+      centrV0M = nanoAodHeader->GetCentr("V0M");
+      centrTRK = nanoAodHeader->GetCentr("TRK");
+      centrCL1 = nanoAodHeader->GetCentr("CL1");
+      centrCL0 = nanoAodHeader->GetCentr("CL0");
+
+  }
 
     //check event cuts
     if (InputEvent()) {
@@ -970,15 +1023,26 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     fFlowEvent->SetCentralityCL1(centrCL1);
     fFlowEvent->SetCentralityTRK(centrTRK);
     //   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
+
     Double_t SumV0=0.;
-    for(Int_t i=0; i<64; i++) {
-      if(std::isfinite(aod->GetVZEROEqMultiplicity(i))) SumV0 += aod->GetVZEROEqMultiplicity(i);
+    UInt_t period, orbit24;
+
+    if(!head->InheritsFrom("AliNanoAODStorage")){
+      for(Int_t i=0; i<64; i++) {
+        if(std::isfinite(aod->GetVZEROEqMultiplicity(i))) SumV0 += aod->GetVZEROEqMultiplicity(i);
+      }
+      period = aod->GetPeriodNumber();
+      orbit24 = aod->GetOrbitNumber(); // wrapped down to 24 bits
+    }else{
+      AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+      SumV0 = nanoAodHeader->GetSumV0();
+      period = nanoAodHeader->GetPeriod();
+      orbit24 = nanoAodHeader->GetOrbit(); // wrapped down to 24 bits
     }
     fFlowEvent->SetNITSCL1(SumV0);
 
     // set absolute orbit number
-    UInt_t period = aod->GetPeriodNumber();
-    UInt_t orbit24 = aod->GetOrbitNumber(); // wrapped down to 24 bits
+
     if (period > 255) { // 8 bits
       period = 255;
       orbit24 = (1<<24) - 1;
@@ -1484,13 +1548,21 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
 
-    if(hdr->IsEventSelected() && AliVEvent::kAny) {
+      if(hdr->IsEventSelected()==0 && !head->InheritsFrom("AliNanoAODStorage")) return;
+    //if(hdr->IsEventSelected() && AliVEvent::kAny) {
 
       Double_t centrperc = fFlowEvent->GetCentrality();
       Int_t cenb = (Int_t)centrperc;
 
-      AliAODTracklets *trackl = aod->GetTracklets();
-      Int_t nTracklets = trackl->GetNumberOfTracklets();
+      Int_t nTracklets ;
+      if(!head->InheritsFrom("AliNanoAODStorage")){
+          AliAODTracklets *trackl = aod->GetTracklets();
+          nTracklets = trackl->GetNumberOfTracklets();
+      }else{
+          AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+          nTracklets = nanoAodHeader->GetNumberOfTracklets();
+      }
+
 
       // get VZERO data
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
@@ -1824,7 +1896,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fhZPCvscentrality->Fill(centrperc, energyZPC);
       fhZPAvscentrality->Fill(centrperc, energyZPA);
 
-    } // PHYSICS SELECTION
+   // } // PHYSICS SELECTION
 
   }
 
@@ -1842,6 +1914,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
 {
   Bool_t BisPileup=kFALSE;
+
+    TObject *head =aod->GetHeader();
+    if (head->InheritsFrom("AliNanoAODStorage")){
+
+        AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
+        if (nanohead->IsPileUp()==0) BisPileup=kFALSE;
+        if (nanohead->IsPileUp()==1) BisPileup=kTRUE;
+
+    } else {
+
   Double_t centrV0M=300., centrCL1=300.;
 
   if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
@@ -2007,6 +2089,51 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
       if (aodTrk->TestFilterBit(128))
         multTPC++;
 
+      if (centrV0M<10. && aodTrk->TestFilterBit(768)) {
+
+          // cut on # TPC clusters
+          Int_t ntpccls = aodTrk->GetTPCNcls();
+          fQATrackTPCNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),ntpccls);
+
+          // cut on # ITS clusters
+          Int_t nitscls = aodTrk->GetITSNcls();
+          fQATrackITSNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),nitscls);
+
+          // cut on chi2 / # TPC clusters
+          Double_t chi2tpc = 0.;
+          if(ntpccls>0) {
+            chi2tpc = aodTrk->Chi2perNDF();
+          }
+          fQATrackTPCchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2tpc);
+
+          // cut on chi2 / # ITS clusters
+          Double_t chi2its = 0.;
+          if(nitscls>0) {
+            chi2its = aodTrk->GetITSchi2()/aodTrk->GetITSNcls();
+          }
+          fQATrackITSchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2its);
+
+          // cut on fraction shared TPC clusters
+          Double_t fshtpccls = 0.;
+          if(ntpccls>0) {
+            Int_t ntpcclsS = aodTrk->GetTPCnclsS();
+            fshtpccls = 1.*ntpcclsS/ntpccls;
+          }
+          fQATrackTPCScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshtpccls);
+
+          // cut on fraction shared ITS clusters
+          Double_t fshitscls = 0.;
+          Int_t nshcl = 0;
+          if(nitscls>0) {
+            for (Int_t i=0; i<6; i++) {
+              if(aodTrk->HasSharedPointOnITSLayer(i)) nshcl++;
+            }
+            fshitscls = 1.*nshcl/nitscls;
+          }
+          fQATrackITSScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshitscls);
+
+      }
+
     } // end of for (Int_t it = 0; it < nTracks; it++)
 
     Double_t multTPCn = multTPC;
@@ -2031,6 +2158,8 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
       }
     }
   }
+    }
+
 
   return BisPileup;
 }
