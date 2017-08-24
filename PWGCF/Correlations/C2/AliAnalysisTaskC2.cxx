@@ -200,6 +200,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     PostData(1, this->fOutputList);
     return;
   }
+
   const Float_t multiplicity = this->GetEventClassifierValue();
   const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
@@ -212,6 +213,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   {
     TAxis* zvtxAxis = fEventCounter->GetAxis(cEventCounterDims::kZvtx);
     if (zvtxAxis->FindBin(zvtx) == 0
@@ -219,6 +221,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   const Double_t evWeight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? mcEvent->GenEventHeader()->EventWeight()
     : 1;
@@ -358,10 +361,15 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
     if (this->fSettings.fUseSPDclusters) {
       AliError("SPD clusters not yet implemented");
     }
-    else if (this->fSettings.fUseSPDtracklets) {
-      auto spdhits = ev_val->GetSPDtracklets();
+    else if (this->fSettings.fUseTracklets) {
+      auto spdhits = ev_val->GetTracklets();
       ret_vector.insert(ret_vector.end(), spdhits.begin(), spdhits.end());
     }
+    else if (this->fSettings.fUseTracks) {
+      auto trks = ev_val->GetTracks();
+      ret_vector.insert(ret_vector.end(), trks.begin(), trks.end());
+    }
+
     // Append the fmd hits to this vector if we are looking at reconstructed data,
     // All hits on the FMD (above the internally used threshold) are "valid"
     if (this->fSettings.fUseFMD) {
@@ -391,6 +399,7 @@ Float_t AliAnalysisTaskC2::GetEventClassifierValue() {
       (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
       ->GetEstimator(this->fSettings.fMultEstimator);
     // const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
+    // const Float_t multiplicity = (Float_t)multEstimator->GetValue();
     const Float_t multiplicity = multEstimator->GetPercentile();
     return multiplicity;
   }
