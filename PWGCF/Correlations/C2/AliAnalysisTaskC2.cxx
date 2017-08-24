@@ -200,6 +200,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     PostData(1, this->fOutputList);
     return;
   }
+
   const Float_t multiplicity = this->GetEventClassifierValue();
   const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
@@ -212,6 +213,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   {
     TAxis* zvtxAxis = fEventCounter->GetAxis(cEventCounterDims::kZvtx);
     if (zvtxAxis->FindBin(zvtx) == 0
@@ -219,6 +221,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   const Double_t evWeight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? mcEvent->GenEventHeader()->EventWeight()
     : 1;
