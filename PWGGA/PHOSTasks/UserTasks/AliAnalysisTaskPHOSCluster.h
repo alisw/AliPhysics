@@ -50,7 +50,8 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
     void           SetHitmapFillingCellByCell(Bool_t b) {fFillHitmapCellByCell = b;}
 
 
-  protected:
+//  protected:
+  private:
     TList*         fOutput;                 // Output List
     TTree*         fClusterTree;            // Tree to save the AliVClusters
 
@@ -61,29 +62,32 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
 
     Float_t        fZVertex;                // Variable for Z-Vertex cut
 
+
     AliVEvent*             fAnyEv;                    //!pointer to input event
     AliPHOSGeometry*       fPHOSGeo;                  //!PHOS geometry
     AliPHOSCalibData*      fPHOSCalibData;            //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
     AliAnalysisUtils*      fUtils;                    //utils for zvtxcut
     AliVCluster*           fCluster;                  // Cluster of current event TODO remove ! maybe it helps to fill Ttree correctly
-    AliVCaloCells*         fClusterCells;             // Cluster cells  //TODO change to AliESDCaloCells
+    AliVCaloCells*         fClusterCells;             // Cluster cells
     AliCaloClusterContent* fClusterCellsInformation;  // Saves information about clusters and their belonging cells
 
     TRefArray*         fcaloClusters;         // Cluster array
+
+    TH1F*              fEventCluster;         //! Count event with and without clusters
+    TH1F*              fEventCuts;			    //! Histogramm for event cuts
+    TH1F*              fClusterCuts;          //! Histogramm for cluster cuts
 
     TH2F*              fPHOSHitmap;				 //! PHOS hitmap
     TH2F*              fClusterEnergyVsNoC;	 //! Histogramm cluster energy vs number of cells in cluster
     TH2F*              fClusterEnergyVsM02;	 //! Histogramm cluster energy vs M02
     TH2F*              fClusterEnergyVsM20;	 //! Histogramm cluster energy vs M20
-    TH1F*              fEventCuts;			    //! Histogramm for event cuts
-    TH1F*              fClusterCuts;          //! Histogramm for cluster cuts
 
 
 
-  private:
+
     AliAnalysisTaskPHOSCluster(const AliAnalysisTaskPHOSCluster&);            //! Not implemented
     AliAnalysisTaskPHOSCluster& operator=(const AliAnalysisTaskPHOSCluster&); //! Not implemented
-    ClassDef(AliAnalysisTaskPHOSCluster,1);
+    ClassDef(AliAnalysisTaskPHOSCluster,3);
 };
 
 #endif
