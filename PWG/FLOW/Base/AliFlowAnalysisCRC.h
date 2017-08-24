@@ -1882,7 +1882,7 @@ private:
   // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCRbRnHist = 2;
+  const static Int_t fkFlowQCRbRnHist = 3;
   const static Int_t fkFlowQCRbRnHar = 3;
   TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnHist]; //!
 
@@ -2047,7 +2047,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
 
-  ClassDef(AliFlowAnalysisCRC,67);
+  ClassDef(AliFlowAnalysisCRC,68);
 
 };
 

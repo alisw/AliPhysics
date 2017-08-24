@@ -34,7 +34,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseTightPileUp=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
-                             Bool_t bCenFlattening=kTRUE,
+                             Bool_t bRequireTOFSignal=kFALSE,
                              TString CenWeightsFileName="",
                              const char* suffix="") {
   // load libraries
@@ -104,7 +104,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bPhiExclZone=kFALSE;
   Bool_t bTestSin=kFALSE;
   Bool_t bZDCCut=kFALSE;
-  Bool_t bRequireTOFSignal=kFALSE;
   Bool_t bUsePtWeights = (PtWeightsFileName.EqualTo("")?kFALSE:kTRUE);
   if(MinMulZN>=13) bZDCCut=kTRUE;
   Bool_t bUseCRCRecenter=kFALSE;
@@ -569,7 +568,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     delete ZDCESEFile;
   } // end of if(bSetQAZDC)
 
-  if(bCenFlattening) {
+  if(!CenWeightsFileName.EqualTo("")) {
     TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
     if(!CenWeightsFile) {
       cout << "ERROR: CenWeightsFile not found!" << endl;
@@ -585,7 +584,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: CenHist not found!" << endl;
       exit(1);
     }
-  } // end of if(bCenFlattening)
+  } // end of if(!CenWeightsFileName.EqualTo(""))
 
   if(bZDCCut) {
     TFile* ZDCCutFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCQcut_2.root","READ");
