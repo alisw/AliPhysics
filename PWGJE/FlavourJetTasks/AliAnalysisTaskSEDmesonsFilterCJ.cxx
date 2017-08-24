@@ -31,6 +31,7 @@
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TH3F.h>
+#include <TRandom3.h>
 
 #include "AliLog.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -62,6 +63,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(0),
   fCandidateName(""),
@@ -135,6 +138,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(candtype),
   fCandidateName(""),
@@ -1473,7 +1478,13 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
           bool isInj = IsMCTrackInjected(mcpart, fMCHeader, fMCarray);
           if(!isInj) continue;
         }
+      
+        
         if (allMCDaughters.Remove(mcpart) == 0) {
+            if(fUseRejTracks){
+              TRandom3 *ran = new TRandom3();
+              if(ran->Rndm() < fTrackIneff) continue;
+            }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
