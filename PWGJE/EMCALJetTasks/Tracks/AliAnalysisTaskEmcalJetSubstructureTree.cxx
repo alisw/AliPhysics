@@ -351,13 +351,15 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
     constituents.push_back(constituentTrack);
   }
 
-  for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
-    AliVCluster *cluster = jet.ClusterAt(icl, clusters->GetArray());
-    TLorentzVector clustervec;
-    cluster->GetMomentum(clustervec, fVertex);
-    fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
-    constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
-    constituents.push_back(constituentCluster);
+  if(clusters){
+    for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
+      AliVCluster *cluster = jet.ClusterAt(icl, clusters->GetArray());
+      TLorentzVector clustervec;
+      cluster->GetMomentum(clustervec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
+      constituents.push_back(constituentCluster);
+    }
   }
 
   // Redo jet finding on constituents with a
@@ -423,7 +425,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
         continue;
       }
       TLorentzVector clusterp;
-      clust->GetMomentum(clusterp, fVertex);
+      clust->GetMomentum(clusterp, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
 
       num += clusterp.Pt() * clusterp.Vect().DrEtaPhi(jetvec);
       den += clusterp.Pt();
@@ -454,7 +456,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
         continue;
       }
       TLorentzVector clusterp;
-      clust->GetMomentum(clusterp, fVertex);
+      clust->GetMomentum(clusterp, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
       num += clusterp.Pt() * clusterp.Pt();
       den += clusterp.Pt();
     }
@@ -462,7 +464,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   return TMath::Sqrt(num)/den;
 }
 
-AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
+AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -481,7 +483,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     particles->SetMinPt(0.);
 
     AliJetContainer *mcjets = treemaker->AddJetContainer(
-                              AliJetContainer::kFullJet,
+                              jettype == kFull ? AliJetContainer::kFullJet : AliJetContainer::kChargedJet,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
@@ -494,11 +496,18 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   if(isData) {
     AliTrackContainer *tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
-    AliClusterContainer *clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
-    clusters->SetMinE(0.3); // 300 MeV E-cut
+    AliClusterContainer *clusters(nullptr);
+    if(jettype == kFull){
+      std::cout << "Using full jets ..." << std::endl;
+      clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+      clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
+      clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    } else {
+      std::cout << "Using charged jets ... " << std::endl;
+    }
 
     AliJetContainer *datajets = treemaker->AddJetContainer(
-                              AliJetContainer::kFullJet,
+                              jettype == kFull ? AliJetContainer::kFullJet : AliJetContainer::kChargedJet,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
