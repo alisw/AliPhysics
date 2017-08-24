@@ -34,7 +34,7 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fMultBinEdges = edgeContainer(_multbins, _multbins + sizeof(_multbins) / sizeof(_multbins[0]));
 
   // Resolution of fmd is 0.05 [eta]
-  const Double_t eta_bin_width = 0.10;
+  const Double_t eta_bin_width = 0.20;
   for (Double_t etaEdge= -3.1; etaEdge <= -1.7 + 0.0001; etaEdge += eta_bin_width) {
     this->fEtaEdgesBwd.push_back(etaEdge);
   }
