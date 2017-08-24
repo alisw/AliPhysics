@@ -116,7 +116,7 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh02);
   TH1F* fhh03 = new TH1F("nINT11","nINT11",nch,rnummin,rnummax);
   lhh->Add(fhh03);
-  TH1F* fhh04 = new TH1F("nINT11","nCCUP2",nch,rnummin,rnummax);
+  TH1F* fhh04 = new TH1F("nCCUP2","nCCUP2",nch,rnummin,rnummax);
   lhh->Add(fhh04);
   TH1F* fhh05 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
   lhh->Add(fhh05);
