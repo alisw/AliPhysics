@@ -71,8 +71,8 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
   fEventValidators.push_back(EventValidation::kHasEntriesV0);
   fEventValidators.push_back(EventValidation::kHasValidVertex);
   fEventValidators.push_back(EventValidation::kHasMultSelection);
-  fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+  // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
+  // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
   fEventValidators.push_back(EventValidation::kNotSPDPU);
   fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
   fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
