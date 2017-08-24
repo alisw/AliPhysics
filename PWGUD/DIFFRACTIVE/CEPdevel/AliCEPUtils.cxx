@@ -107,27 +107,31 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   TList *lhh = new TList();
   lhh->SetOwner();
 
-  // define the histograms and and add them to the list lhh
+  // define the histograms and add them to the list lhh
   printf("Preparing QArnum histograms %i - %i\n",rnummin,rnummax);
   // number of input events
   TH1F* fhh01 = new TH1F("nGood","nGood",nch,rnummin,rnummax);
   lhh->Add(fhh01);
-  TH1F* fhh02 = new TH1F("nDGtrigger","nDGtrigger",nch,rnummin,rnummax);
+  TH1F* fhh02 = new TH1F("nCCUP13","nCCUP13",nch,rnummin,rnummax);
   lhh->Add(fhh02);
-  TH1F* fhh03 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
+  TH1F* fhh03 = new TH1F("nINT11","nINT11",nch,rnummin,rnummax);
   lhh->Add(fhh03);
-  TH1F* fhh04 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
+  TH1F* fhh04 = new TH1F("nCCUP2","nCCUP2",nch,rnummin,rnummax);
   lhh->Add(fhh04);
-  TH1F* fhh05 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
+  TH1F* fhh05 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
   lhh->Add(fhh05);
-  TH1F* fhh06 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
+  TH1F* fhh06 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
   lhh->Add(fhh06);
-  TH1F* fhh07 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
+  TH1F* fhh07 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
   lhh->Add(fhh07);
-  TH1F* fhh08 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  TH1F* fhh08 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
   lhh->Add(fhh08);
-  TH1F* fhh09 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  TH1F* fhh09 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
   lhh->Add(fhh09);
+  TH1F* fhh10 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  lhh->Add(fhh10);
+  TH1F* fhh11 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  lhh->Add(fhh11);
 
   return lhh;
 
@@ -543,7 +547,7 @@ void AliCEPUtils::SPDVtxAnalysis (
     Double_t distZ=TMath::Abs(z2-z1);
     Double_t distZdiam=TMath::Abs(z2-esd->GetDiamondZ());
     Double_t cutZdiam=nSigmaDiamZ*TMath::Sqrt(esd->GetSigma2DiamondZ());
-    if(esd->GetSigma2DiamondZ()<0.0001)cutZdiam=99999.; //protection for missing z diamond information
+    if(esd->GetSigma2DiamondZ()<0.0001) cutZdiam=99999.; //protection for missing z diamond information
     ((TH1F*)lhh->At(3))->Fill(distZ);
     ((TH1F*)lhh->At(6))->Fill(distZdiam);
 
