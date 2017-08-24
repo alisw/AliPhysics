@@ -31,13 +31,18 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
 	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
-	Double_t cut_width  = 2.0;
+	Double_t cut_width  = 4.0;
 	
     private:
 
         AliAODEvent*          fAOD;               //! input event
         TList*                fOutputList;        //! output list
 	AliPIDResponse*       fPIDResponse;
+
+
+//	TFile*                f;
+	TTree*                htree;
+	AliAODEvent*          helperAOD;                   //! input event
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
@@ -56,8 +61,13 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*	              deltat_pt_neg_cut;           // 14
 
 	TH1I*                 deut_per_event;              // 15
-//	TH1I*                 deut_per_event_pos;          // 16
-//	TH1I*                 deut_per_event_neg;  	   // 17
+
+	TH2F*                 m2_pt_pos_deut_events;       // 16a
+	TH2F*                 m2_pt_neg_deut_events;       // 16b
+
+	TH2F*                 m2_pt_pos_hipt_events;       // 17a
+	TH2F*                 m2_pt_neg_hipt_events;       // 17b
+		
 	TH2F*                 m2_pt_pos_cut_T;             // 18
 	TH2F*                 m2_pt_neg_cut_T;             // 19
 
@@ -86,6 +96,11 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 tof_phi_eta_neg;             // 36
 	TH2F*                 tof_phi_eta_pos_deut;        // 37
 	TH2F*                 tof_phi_eta_neg_deut;        // 38
+
+	TH3F*                 dedx_pt_deltat_deut_pos;     // 39
+	TH3F*                 dedx_pt_deltat_deut_neg;     // 40
+
+
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
