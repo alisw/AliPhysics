@@ -271,6 +271,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _beta_p_AliHelperPID_no_Undefined (0),
   _inverse_beta_p_AliHelperPID_no_Undefined (0),
   _msquare_p_AliHelperPID_no_Undefined (0),
+  _fhV0MvsTracksTPCout_after(0),
   
   _etadis_POI_AliHelperPID ( 0),
   _ydis_POI_AliHelperPID ( 0),
@@ -632,6 +633,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _beta_p_AliHelperPID_no_Undefined (0),
   _inverse_beta_p_AliHelperPID_no_Undefined (0),
   _msquare_p_AliHelperPID_no_Undefined (0),
+  _fhV0MvsTracksTPCout_after(0),
   
   _etadis_POI_AliHelperPID ( 0),
   _ydis_POI_AliHelperPID ( 0),
