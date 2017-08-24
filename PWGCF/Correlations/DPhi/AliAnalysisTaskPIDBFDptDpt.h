@@ -191,7 +191,7 @@ protected:
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
     AliPIDResponse*          fPIDResponse; //!
-    AliHelperPID* fHelperPID;       //! points to class for PID
+    AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
