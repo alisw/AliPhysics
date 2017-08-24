@@ -25,7 +25,8 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fUseFMD(false),
   fUseV0(false),
   fUseSPDclusters(false),
-  fUseSPDtracklets(false)
+  fUseTracklets(false),
+  fUseTracks(false)
 {
   Double_t _ptbins[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   fPtBinEdges = edgeContainer(_ptbins, _ptbins + sizeof(_ptbins) / sizeof(_ptbins[0]));
