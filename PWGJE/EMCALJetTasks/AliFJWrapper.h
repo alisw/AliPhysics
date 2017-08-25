@@ -142,6 +142,7 @@ class AliFJWrapper
   void SetMinJetPt(Double_t MinPt) {fMinJetPt=MinPt;}
   void SetEventSub(Bool_t b) {fEventSub = b;}
   void SetMaxDelR(Double_t r)  {fUseMaxDelR = kTRUE; fMaxDelR = r;}
+  void SetAlpha(Double_t a)  {fUseAlpha = kTRUE; fAlpha = a;}
 
  protected:
   TString                                fName;               //!
@@ -193,6 +194,8 @@ class AliFJWrapper
   Bool_t                                 fEventSub;
   Bool_t                                 fUseMaxDelR;
   Double_t                               fMaxDelR;
+  Bool_t                                 fUseAlpha;
+  Double_t                               fAlpha;
 #ifdef FASTJET_VERSION
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
@@ -298,6 +301,8 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fEventSub          (kFALSE)
   , fUseMaxDelR        (kFALSE)
   , fMaxDelR           (0.4)
+  , fUseAlpha          (kFALSE)
+  , fAlpha             (0)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
   , fGenSubtractor     (0)
@@ -1230,7 +1235,8 @@ Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
   CreateConstituentSub();
-  // fConstituentSubtractor->set_alpha(/* double alpha */);
+  if(fUseAlpha) fConstituentSubtractor->set_alpha(fAlpha);
+  if(fUseMaxDelR) fConstituentSubtractor->set_max_standardDeltaR(fMaxDelR);
   // fConstituentSubtractor->set_max_deltaR(/* double max_deltaR */);
 
   //clear constituent subtracted jets
