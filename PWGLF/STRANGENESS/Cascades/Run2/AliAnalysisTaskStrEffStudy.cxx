@@ -1627,6 +1627,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarDCACascDaughters = 1e+10;
         fTreeCascVarCascPropagation = kFALSE;
         
+        fTreeCascVarNegPx = -100;
+        fTreeCascVarNegPy = -100;
+        fTreeCascVarNegPz = -100;
+        fTreeCascVarPosPx = -100;
+        fTreeCascVarPosPy = -100;
+        fTreeCascVarPosPz = -100;
+        fTreeCascVarBachPx = -100;
+        fTreeCascVarBachPy = -100;
+        fTreeCascVarBachPz = -100;
+        
         fTreeCascVarDecayX = -100;
         fTreeCascVarDecayY = -100;
         fTreeCascVarDecayZ = -100;
