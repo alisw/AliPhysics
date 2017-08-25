@@ -67,7 +67,10 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
+<<<<<<< HEAD
   , fisSTGTriggerFired(kFALSE)
+=======
+>>>>>>> 470e61a8d3f40a8b1bc7b57bc1a9ad7dc40cd2ea
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -129,7 +132,10 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
+<<<<<<< HEAD
   , fisSTGTriggerFired(kFALSE)
+=======
+>>>>>>> 470e61a8d3f40a8b1bc7b57bc1a9ad7dc40cd2ea
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -688,10 +694,15 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
   // in addition to CCUP13
   fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
+<<<<<<< HEAD
   // if ( isDGTrigger ) {
   //   printf("Number of fired TOF MaxiPads = %i / %i\n",
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
   // }
+=======
+  printf("Number of fired TOF MaxiPads = %i / %i/n",
+    fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
+>>>>>>> 470e61a8d3f40a8b1bc7b57bc1a9ad7dc40cd2ea
   
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -957,7 +968,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+<<<<<<< HEAD
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
+=======
+>>>>>>> 470e61a8d3f40a8b1bc7b57bc1a9ad7dc40cd2ea
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
     
     // FP Flags of V0 and AD
