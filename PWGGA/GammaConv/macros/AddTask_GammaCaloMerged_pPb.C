@@ -76,6 +76,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, this has to be always the last parameter
 ) {
 
+  Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -103,6 +104,12 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
         cout << "found: " << histoAcc << endl;
       }
     }
+  }
+
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaCalo_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
   if (additionalTrainConfig.Atoi() > 0){
