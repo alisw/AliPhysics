@@ -625,17 +625,6 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-<<<<<<< HEAD
-    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
-    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
-    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
-    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
-    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
-    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
-    alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
-    alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
-=======
     if (hHistStat->GetNbinsX()!=19) {
       // old stat histo without ZDC background monitoring
       // setting ZDCBG step equal to V0AND and take other steps shifted by 1
@@ -659,7 +648,6 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       alias_acc_step8[ibit]     = Int_t(hHistStat->GetBinContent(10,j));
       alias_acc_step9[ibit]     = Int_t(hHistStat->GetBinContent(11,j));
     }
->>>>>>> db0e2f0eb9df51e17380790895f80faa50964dcb
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
