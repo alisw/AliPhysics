@@ -80,6 +80,9 @@ private:
   UInt_t fETmaskDG,  fETpatternDG;
   UInt_t fETmaskNDG, fETpatternNDG;
   UInt_t fTTmask, fTTpattern;
+  
+  // some hit information
+  Bool_t fisSTGTriggerFired;
   Int_t  fnTOFmaxipads;
 
 	// event information
