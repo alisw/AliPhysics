@@ -7,6 +7,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliVEvent.h"
 #include "AliVCaloTrigger.h"
+#include "AliPHOSClusterCuts.h"
 
 class AliPHOSGeometry;
 class AliVEvent;
@@ -16,14 +17,12 @@ class AliPHOSTriggerHelper : public TObject {
   public:
     AliPHOSTriggerHelper();
     AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0);
-    //AliPHOSTriggerHelper(Int_t xmin, Int_t zmin, Int_t xmax, Int_t zmax);
     virtual ~AliPHOSTriggerHelper();
 
     void SetPHOSTRUBadMap(Int_t mod, TH2I *h)
     {
       if(fPHOSTRUBadMap[mod]) delete fPHOSTRUBadMap[mod];
       fPHOSTRUBadMap[mod] = new TH2I(*h);
-      AliInfo(Form("Setting Bad Map Histogram  %s",fPHOSTRUBadMap[mod]->GetName()));
     }
 
     TH2I* GetPHOSTRUBadMap(Int_t mod) {return fPHOSTRUBadMap[mod];}
@@ -44,7 +43,7 @@ class AliPHOSTriggerHelper : public TObject {
       fZmax = zmax;
     }
 
-    Bool_t IsPHI7(AliVEvent *event);
+    Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts);
 
   private:
     AliPHOSGeometry *fPHOSGeo;
@@ -65,7 +64,7 @@ class AliPHOSTriggerHelper : public TObject {
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 4);
+    ClassDef(AliPHOSTriggerHelper, 6);
 
 };
 

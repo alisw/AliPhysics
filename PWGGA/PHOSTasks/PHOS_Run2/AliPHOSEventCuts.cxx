@@ -1,4 +1,3 @@
-#include "stdio.h"
 #include "iostream"
 #include "TH2.h"
 #include "TMath.h"
@@ -22,6 +21,7 @@
 #include "AliAnalysisUtils.h"
 
 #include "AliPHOSTriggerHelper.h"
+#include "AliPHOSClusterCuts.h"
 #include "AliPHOSEventCuts.h"
 
 using namespace std;
@@ -39,7 +39,8 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
   fRejectDAQIncomplete(kTRUE),
   fIsPHOSTriggerAnalysis(kFALSE),
   fTriggerHelper(0x0),
-  fPHOSGeo(0x0)
+  fPHOSGeo(0x0),
+  fPHOSClusterCuts(0x0)
 {
   // Constructor
 
@@ -47,12 +48,10 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
     fPHOSTRUBadMap[i] = 0x0;
   }
 
-  AliInfo("event selection constructor");
 }
 //________________________________________________________________________
 AliPHOSEventCuts::~AliPHOSEventCuts()
 {
-  AliInfo("event selection destructor");
 
 
 
@@ -60,8 +59,6 @@ AliPHOSEventCuts::~AliPHOSEventCuts()
 //________________________________________________________________________
 Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
 {
-  AliAODEvent *fAODEvent = dynamic_cast<AliAODEvent*>(event);
-  AliESDEvent *fESDEvent = dynamic_cast<AliESDEvent*>(event);
 
   //select event which PHOS was readout from trigger cluster point of view.
   //for example, PHOS was not in MUFAST cluster.
@@ -131,6 +128,8 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
     IsZvtxOut = kTRUE;
   }
 
+//  AliAODEvent *fAODEvent = dynamic_cast<AliAODEvent*>(event);
+//  AliESDEvent *fESDEvent = dynamic_cast<AliESDEvent*>(event);
 //  if(fESDEvent){
 //    if(fESDEvent->IsPileupFromSPD()) {
 //      eventPileup = kTRUE;
@@ -163,7 +162,7 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   Bool_t IsPHI7fired = kFALSE;
   //additional criteriat for only PHOS trigger analysis
   if(fIsPHOSTriggerAnalysis){
-    IsPHI7fired = fTriggerHelper->IsPHI7(event);
+    IsPHI7fired = fTriggerHelper->IsPHI7(event,fPHOSClusterCuts);
     if(!IsPHI7fired) return kFALSE;
   }//end of PHOS trigger decision.
 

@@ -17,7 +17,6 @@ AliPHOSClusterCuts::AliPHOSClusterCuts(const char *name):
 {
   //Constructor
   SetName(name);
-  AliInfo(Form("Cut Parameter | CPV:%2.1f sigma , Dispersion:%2.1f sigma.",fNsigmaCPV,fNsigmaDisp));
 
 }
 //________________________________________________________________________

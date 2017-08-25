@@ -57,7 +57,13 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     //Int_t FindHighestAmplitudeCellAbsId(AliVCluster *clu, AliVCaloCells *cells);
     Int_t FindPrimary(AliCaloPhoton *ph,  Bool_t&sure);
 
+    void EstimateSTDCutEfficiency(TClonesArray *array);
+    Bool_t PassSTDCut(AliVCluster *cluster);
+
   protected:
+    THashList *fOutputContainer;
+    TH2F *fHistoMggvsEProbe;
+    TH2F *fHistoMggvsEPassingProbe;
     AliVEvent *fEvent;
     AliAODEvent *fAODEvent;
     AliESDEvent *fESDEvent;
@@ -82,7 +88,7 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 10);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 11);
 };
 
 #endif

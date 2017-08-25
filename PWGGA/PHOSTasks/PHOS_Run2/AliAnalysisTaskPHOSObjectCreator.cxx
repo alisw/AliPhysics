@@ -4,6 +4,9 @@
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TMath.h"
+#include "THashList.h"
+#include "TChain.h"
+
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TParticle.h"
@@ -24,7 +27,6 @@
 #include "TGeoGlobalMagField.h"
 #include "AliAnalysisManager.h"
 
-#include "AliPHOSEventCuts.h"
 #include "AliAnalysisTaskPHOSObjectCreator.h"
 
 ClassImp(AliAnalysisTaskPHOSObjectCreator)
@@ -32,6 +34,9 @@ ClassImp(AliAnalysisTaskPHOSObjectCreator)
 //________________________________________________________________________
 AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *name):
   AliAnalysisTaskSE(name),
+  fOutputContainer(0x0),
+  fHistoMggvsEProbe(0x0),
+  fHistoMggvsEPassingProbe(0x0),
   fEvent(0x0),
   fAODEvent(0x0),
   fESDEvent(0x0),
@@ -63,12 +68,12 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fUserNonLinCorr = new TF1("usernonlin","pol0(0)",0.,100.);
   fUserNonLinCorr->SetParameter(0,1);
  
-//  // Define input and output slots here
-//  // Input slot #0 works with a TChain
-//  DefineInput(0, TChain::Class());
-//  // Output slot #0 id reserved by the base class for AOD
-//  // Output slot #1 writes into a TH1 container
-//  DefineOutput(1, THashList::Class());
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Output slot #0 id reserved by the base class for AOD
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, THashList::Class());
 
 }
 //________________________________________________________________________
@@ -92,15 +97,32 @@ void AliAnalysisTaskPHOSObjectCreator::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
+  fOutputContainer = new THashList();
+  fOutputContainer->SetOwner(kTRUE);
+
+  const Int_t NpTgg = 101;
+  Double_t pTgg[NpTgg]={};
+
+  for(Int_t i=0;i<50;i++)     pTgg[i] = 0.1 * i;            //every 0.1 GeV/c, up to 5 GeV/c
+  for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
+  for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
+
+  fHistoMggvsEProbe = new TH2F("hMgg_STDCut_Probe","Probe #gamma for standard cluster cut",60,0,0.24,NpTgg-1,pTgg);
+  fHistoMggvsEProbe->Sumw2();
+  fHistoMggvsEProbe->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+  fHistoMggvsEProbe->SetYTitle("E_{#gamma} (GeV)");
+
+  fHistoMggvsEPassingProbe = new TH2F("hMgg_STDCut_PassingProbe","Passing Probe #gamma for standard cluster cut",60,0,0.24,NpTgg-1,pTgg);
+  fHistoMggvsEPassingProbe->Sumw2();
+  fHistoMggvsEPassingProbe->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+  fHistoMggvsEPassingProbe->SetYTitle("E_{#gamma} (GeV)");
+
+  fOutputContainer->Add(fHistoMggvsEProbe);
+  fOutputContainer->Add(fHistoMggvsEPassingProbe);
+
   Init();//initialize PHOS object array
 
-  //for(Int_t i=0;i<100;i++){
-  //  Double_t e = 0.1*i;
-  //  Double_t corr = fUserNonLinCorr->Eval(e);
-  //  printf("h1->SetBinContent(%d,%f);\n",i+1,corr);
-  //}
-
-
+  PostData(1,fOutputContainer);
 }
 //________________________________________________________________________
 void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option) 
@@ -177,10 +199,12 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     cluster = (AliVCluster*)fEvent->GetCaloCluster(iclu);
 
     if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < 0.1 // MIP cut
+        || cluster->E() < 0.2 // MIP cut
 //        || cluster->GetNCells() < 2 //accidental noise, effectively remove exotic cluster
 //        || cluster->GetM02() < 0.2 //too small shower shape
       ) continue;
+
+    //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) continue;//energy is high enough, but eigen value of 2nd momentum of shower shape is too small. -> reject.
 
     distance = cluster->GetDistanceToBadChannel();
 
@@ -208,10 +232,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     }
     //cluster->SetNCells(Ncell);
 
-    //cout << "max cell amp = " << eMax << " , absId = " << maxAbsId << endl;
-
-    //if(cluster->GetNCells() < 2) continue;//accidental noise
-
     if(distance < fMinDistBC) continue;
 
     cluster->GetPosition(position);
@@ -231,23 +251,15 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-    //fPHOSGeo->RelToAbsNumbering(relId, absId);
     Bool_t isHG = cells->GetCellHighGain(maxAbsId);
-    //cout << "module = " << module << " , cellx = " << cellx << " , cellz = " << cellz << " , maxAbsId = " << maxAbsId << " , isHG = " << isHG << " , e = " << cluster->E()  << endl;
 
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
     cluster->GetMomentum(p1,fVertex);
     cluster->GetMomentum(p1core,fVertex);
-    //cout << "Ncell after = " << digMult << endl;
 
-    //cout << "energy p1 before corr = " << p1.E() << endl;
-
-    //Double_t e_before_full = p1.E();
     p1 *= fUserNonLinCorr->Eval(p1.E());
-
-    //cout << "e before nonlin = " << energy << " , corr = " << fUserNonLinCorr->Eval(energy) << " , e after nonlin = " << p1.E() << endl;
 
     new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
@@ -264,7 +276,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     //if(!isHG) ph->SetTOFBit(kTRUE);//force to set kTRUE to TOFBit
 
     if(fIsMC){
-      //Int_t label = cluster->GetLabel();
       Bool_t sure = kTRUE;
       Int_t label = FindPrimary(ph,sure);
       ph->SetPrimary(label);
@@ -312,24 +323,30 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
       else r = 999;//no matched track
     }
 
-    //cout << "R2 = " << R2 << endl;
-    //cout << "coreR2 = " << coreR2 << endl;
-
     ph->SetLambdas(M20,M02);
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
 
-    //cout << "original energy = " << energy << " , original core E = " << coreE << endl;
-
-    //coreE *= fUserNonLinCorr->Eval(coreE);
     p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
 
-    //cout << "corr = " << fUserNonLinCorr->Eval(coreE) << " , coreE = " << p1core.E() << endl;
-
     inPHOS++;
   }
+
+  EstimateSTDCutEfficiency(fPHOSObjectArray);
+
+  const Int_t Nph = fPHOSObjectArray->GetEntries();
+
+  for(Int_t iph=0;iph<Nph;iph++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSObjectArray->At(iph);
+    AliVCluster *cluster = (AliVCluster*)ph->GetCluster();
+    if(!PassSTDCut(cluster)){
+      AliInfo("cluster is rejected by the standard cluster cut.");
+      fPHOSObjectArray->Remove(ph);
+    }
+  }
+  fPHOSObjectArray->Compress();
 
   AliInfo("PHOS object array name = PHOSClusterArray.");
 
@@ -990,6 +1007,41 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
   delete[]  Ekin;
   return clu->GetLabelAt(iMax);
 }
-
 //________________________________________________________________________
+Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
+{
+  if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
+  else return kTRUE;
 
+}
+//________________________________________________________________________
+void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *array)
+{
+  const Int_t multClust = array->GetEntriesFast();
+
+  TLorentzVector p12;
+  Double_t m12=0,pt12=0;
+  Double_t energy=0;
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
+    if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
+
+    for(Int_t i2=0;i2<multClust;i2++){
+      AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);
+      AliVCluster *cluster = (AliVCluster*)ph2->GetCluster();
+
+      if(i2==i1) continue;//reject same cluster combination
+
+      p12 = *ph1 + *ph2;
+      m12 = p12.M();
+      energy = ph2->Energy();
+
+      fHistoMggvsEProbe->Fill(m12,energy);
+      if(PassSTDCut(cluster)) fHistoMggvsEPassingProbe->Fill(m12,energy);
+
+    }//end of ph2
+
+  }//end of ph1
+
+}

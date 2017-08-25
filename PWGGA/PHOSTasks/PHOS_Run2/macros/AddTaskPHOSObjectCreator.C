@@ -62,9 +62,11 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  const TString listname = Form("hist_%s",name);
 
-  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());//event characerization
-  //mgr->ConnectOutput(task, 1, coutput1);
+  TString outputFile = AliAnalysisManager::GetCommonFileName();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",listname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
+  mgr->ConnectOutput(task, 1, coutput1);
 
   return task;
 }
