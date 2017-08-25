@@ -42,17 +42,18 @@ public:
 	void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; }
 	void SetDebugLevel( int dblv ){ fDebugLevel = dblv; }
 	void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
-	void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl; }
-	void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl; }
-	void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl; }
+	void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
+	void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
+	void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
 	void SetQCEtaCut( Double_t QC_eta_cut_min, Double_t QC_eta_cut_max){
 		fQC_eta_cut_min=QC_eta_cut_min; fQC_eta_cut_max=QC_eta_cut_max; cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
 
 
-	void SetEventTracksQA(float tpc, float glb){ fTPCtrks = tpc; fGlbtrks = glb;};
-
-	inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
+	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
+	void SetEventFB32TracksQA(unsigned int fb32, unsigned int fb32tof){ fFB32trks = (float)fb32; fFB32TOFtrks = (float)fb32tof;}
+	
+	inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;}
 
 	TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
 
@@ -93,6 +94,8 @@ private:
 	int fEffFilterBit;
 	float fTPCtrks;
 	float fGlbtrks;
+	float fFB32trks;
+	float fFB32TOFtrks;
 	TString fInFileName;
 	Bool_t IsPhiModule;
 	Bool_t IsSCwithQC; // flag to check SC with QC method
@@ -136,9 +139,10 @@ private:
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
 	AliJTH1D fh_vn_vn;//! // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
-	AliJTH1D fh_correlator;//! // some more complex correlator
+	AliJTH1D fh_correlator;//! // some more complex correlators
 	AliJTH2D fh_TrkQA_TPCvsGlob;//! // QA histos
 	AliJTH2D fh_TrkQA_TPCvsCent;//! // QA histos
+	AliJTH2D fh_TrkQA_FB32_vs_FB32TOF;//!
 
 	// addtinal variables for ptbins(Standard Candles only)
 	enum{kPt0, kPt1, kPt2, kPt3, kPt4, kPt5, kPt6, kPt7, N_ptbins};
