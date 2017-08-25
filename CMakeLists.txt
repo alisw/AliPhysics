@@ -155,7 +155,13 @@ else()
   if(CXX_COMPILER_HAS_WNO_MISSING_BRACES)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
   endif()
-  
+
+  # Enable -Werror if requested
+  if(WARNINGS_AS_ERRORS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    message(WARNING "Treating all C++ compile warnings as errors!")
+  endif()
+
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
       message(WARNING "AliRoot Core has been built without with AliEn support: some features might be unavailable!")
