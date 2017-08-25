@@ -3,6 +3,7 @@
 #include "AliAODEvent.h"
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODTrack.h"
+#include "AliMultSelection.h"
 #include <iomanip>
 
 ClassImp(AliAnalysisNanoAODTrackCuts)
@@ -81,14 +82,85 @@ Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
 }
 
 
-void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head  ) {
+void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) {
 
   AliAODHeader * header = dynamic_cast<AliAODHeader*>(event->GetHeader());
   if (!header) AliFatal("Not a standard AOD");
+
   // Set custom nano aod vars
-  Double_t centr    = header->GetCentralityP()->GetCentralityPercentile("V0M");
+  Double_t centrV0M=-1;
+  Double_t centrTRK=-1;
+  Double_t centrCL1=-1;
+  Double_t centrCL0=-1;
+
+      //2015 multiplicity selection
+      AliMultSelection *MultSelection = 0x0; 
+      MultSelection = (AliMultSelection *) event->FindListObject("MultSelection");
+
+      if(MultSelection){
+        centrV0M = MultSelection->GetMultiplicityPercentile("V0M");
+        centrCL1 = MultSelection->GetMultiplicityPercentile("CL1");
+        centrCL0 = MultSelection->GetMultiplicityPercentile("CL0");
+        centrTRK = MultSelection->GetMultiplicityPercentile("TRK");
+
+      }else{
+        //2011 
+        AliCentrality * centralityObj = header->GetCentralityP();
+        centrV0M = centralityObj->GetCentralityPercentile("V0M");
+        centrTRK = centralityObj->GetCentralityPercentile("TRK");
+        centrCL1 = centralityObj->GetCentralityPercentile("CL1");
+        centrCL0 = centralityObj->GetCentralityPercentile("CL0");
+
+      }
+
+
   Double_t magfield = header->GetMagneticField();
-  head->SetVar(0, centr);
-  head->SetVar(1, magfield);
+  Int_t runNumber = event->GetRunNumber();
+
+  static const char * validatorString[] = {"Centr","MagField","CentrTRK","CentrCL0", "CentrCL1", "RunNumber", 0};
+  TObjArray * vars = varListHeader.Tokenize(",");
+  Int_t size = vars->GetSize();
+  TIter it(vars);
+  TObjString *token  = 0;
+  Int_t index=0;
+
+  std::map<TString,int> cstMap = head->GetMapCstVar();
+
+  while ((token = (TObjString*) it.Next())) {
+    TString var = token->GetString().Strip(TString::kBoth, ' ');
+
+    // Check if string is in the allowed list
+    Bool_t isValid = kFALSE;
+    Int_t ivalidator = 0;
+    while (validatorString[ivalidator]) {
+      if(var == validatorString[ivalidator++]) isValid = kTRUE;
+    }
+
+    if (!( isValid || var.BeginsWith("cst"))) AliFatal(Form("Invalid var [%s]", var.Data()));
+    if     (var == "Centr"      ) head->SetCentrIndex      (index);
+    else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index);
+    else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index);
+    else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index);
+    else if(var == "MagField"   ) head->SetMagFieldIndex   (index);
+    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index);
+    else {
+      cstMap[var] = index;
+      std::cout << "ADDING " << index << " " << cstMap[var] << " " << var.Data() << std::endl;
+      
+    }
+
+    index++;
+  }
+  size = index;
+  if(vars) vars->Delete();
+  head->SetMapCstVar(cstMap);
+
+  if ((head->GetCentrIndex())!=-1)     head->SetVar(head->GetCentrIndex()    ,           centrV0M );
+  if ((head->GetCentrTRKIndex())!=-1)  head->SetVar(head->GetCentrTRKIndex() ,           centrTRK );
+  if ((head->GetCentrCL1Index())!=-1)  head->SetVar(head->GetCentrCL1Index() ,           centrCL1 );
+  if ((head->GetCentrCL0Index())!=-1)  head->SetVar(head->GetCentrCL0Index() ,           centrCL0 );
+  if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
+  if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), Double_t(runNumber));
+
 
 }

@@ -68,7 +68,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   // constructor
 
   Double_t position[3];
-  Bool_t isPosAvailable = aodTrack->GetPosition(position);
+  Bool_t isPosAvailable = !(aodTrack->GetXYZ(position)); // GetXYZ() returns kTRUE, if it's DCA information
   AliNanoAODTrackMapping::GetInstance(vars);
 
   // Create internal structure
@@ -111,7 +111,20 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "TRDsignal"              ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDsignal()        , aodTrack->GetTRDsignal()            );
     else if(varString == "TRDChi2"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDChi2()          , aodTrack->GetTRDchi2()              );
     else if(varString == "TRDnSlices"             ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()       , aodTrack->GetNumberOfTRDslices()    );  
-    else if(varString == "covmat"                 ) AliFatal("cov matrix To be implemented"                            );
+    else if(varString == "IsMuonTrack"             ) {
+        if (aodTrack->IsMuonTrack()) SetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack(), 1.);
+        else SetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack(), 0.);
+    }
+    else if(varString == "TPCnclsS"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS()         , aodTrack->GetTPCnclsS()             );
+    else if(varString == "FilterMap"               ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()        , aodTrack->GetFilterMap()            );
+    else if(varString == "covmat0"                 ) {
+        Double_t covMatrix[21];
+        Bool_t covmatrix = aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
+        for(Int_t i=0;i<21;i++){
+            SetVar(AliNanoAODTrackMapping::GetInstance()->GetCovMat(i)       , covMatrix[i]                        );
+        }
+        index+=20;
+    }
   }
 
 
@@ -329,8 +342,12 @@ template <typename T> void AliNanoAODTrack::SetP(const T *p, const Bool_t cartes
 
   if (p) {
     if (cartesian) {
-      // This is inherited from AliAODtrack... I don't think we want/need this in the special track
-      AliFatal("Not implemented");
+      Double_t pt2 = p[0]*p[0] + p[1]*p[1];
+      Double_t pp  = TMath::Sqrt(pt2 + p[2]*p[2]);
+        
+      SetVar(AliNanoAODTrackMapping::GetInstance()->GetPt() ,TMath::Sqrt(pt2)); // pt
+      SetVar(AliNanoAODTrackMapping::GetInstance()->GetPhi() , (pt2 != 0.) ? TMath::Pi()+TMath::ATan2(-p[1], -p[0]) : -999); // phi
+      SetVar(AliNanoAODTrackMapping::GetInstance()->GetTheta() , (pp != 0.) ? TMath::ACos(p[2] / pp) : -999.); // theta
     } else {
       SetVar(AliNanoAODTrackMapping::GetInstance()->GetPt()      , p[0]);  
       SetVar(AliNanoAODTrackMapping::GetInstance()->GetPhi()     , p[1]);  
@@ -416,7 +433,7 @@ Bool_t AliNanoAODTrack::PropagateToDCA(const AliVVertex *vtx,
 
   // allowed only for tracks inside the beam pipe
   Float_t xstart2 = GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX())*GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX())+GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY())*GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY());
-  
+
   if(xstart2 > 3.*3.) { // outside beampipe radius
     AliError("This method can be used only for propagation inside the beam pipe");
     return kFALSE; 
@@ -525,8 +542,18 @@ Bool_t AliNanoAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 
   return Local2GlobalPosition(r,alpha);
 }
-
-
+//_______________________________________________________
+Bool_t AliNanoAODTrack::GetCovarianceXYZPxPyPz(Double_t cv[21]) const
+{
+    
+    for (Int_t i=0; i<21; i++){
+        
+        cv[i]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetCovMat(i));
+        
+    }
+    
+    return kTRUE;
+}
 //_______________________________________________________
 
 void  AliNanoAODTrack::Clear(Option_t * /*opt*/) {
