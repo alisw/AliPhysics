@@ -80,9 +80,10 @@ private:
   UInt_t fETmaskDG,  fETpatternDG;
   UInt_t fETmaskNDG, fETpatternNDG;
   UInt_t fTTmask, fTTpattern;
+  Int_t  fnTOFmaxipads;
 
 	// event information
-	Int_t fRun;                     //  run number
+	Int_t           fRun;           //  run number
   AliESDRun      *fESDRun;        //! esd run object
   Bool_t          fisESD;         //!
   Bool_t          fisAOD;         //!
