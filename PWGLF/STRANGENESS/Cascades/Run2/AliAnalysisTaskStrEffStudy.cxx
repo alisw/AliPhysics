@@ -1203,8 +1203,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         for(Long_t jTrack = iTrack+1; jTrack<nTracksOfInterest; jTrack++){
             if( lTrackMotherArray[iTrack]==lTrackMotherArray[jTrack]){
                 //This is a findable V0! Yay! Check daughters before indexing
-                AliESDtrack *esdTrack1 = lESDevent->GetTrack( lTrackArray[iTrack] );
-                AliESDtrack *esdTrack2 = lESDevent->GetTrack( lTrackArray[jTrack] );
+                AliESDtrack *esdTrack1 = 0x0;
+                AliESDtrack *esdTrack2 = 0x0;
+                esdTrack1 = lESDevent->GetTrack( lTrackArray[iTrack] );
+                esdTrack2 = lESDevent->GetTrack( lTrackArray[jTrack] );
+                
+                //Check for non-existing
+                if ( !esdTrack1 || !esdTrack2 ) continue;
+                
                 if( esdTrack1->GetSign() < 0 && esdTrack2->GetSign() < 0 ) continue;
                 if( esdTrack1->GetSign() > 0 && esdTrack2->GetSign() > 0 ) continue;
                 
@@ -1613,6 +1619,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliExternalTrackParam bt(*esdTrackBach), *pbt=&bt;
         Double_t cascdca = PropagateToDCA(pv0,pbt,lESDevent,lMagneticField);
         
+        //Sandbox information: always, regardless of status
+        fTreeCascVarBachTrack = pbt;
+        fTreeCascVarPosTrack = ptp;
+        fTreeCascVarNegTrack = ntp;
+        
         fTreeCascVarDCACascDaughters = 1e+10;
         fTreeCascVarCascPropagation = kFALSE;
         
@@ -1666,11 +1677,6 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             fTreeCascVarBachPx = lBMom[0];
             fTreeCascVarBachPy = lBMom[1];		
             fTreeCascVarBachPz = lBMom[2];
-            
-            fTreeCascVarBachTrack = pbt;
-            fTreeCascVarPosTrack = ptp;
-            fTreeCascVarNegTrack = ntp;
-            
         }
         
         //-----------------------------------------------------------------
