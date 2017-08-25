@@ -283,11 +283,19 @@ fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
 
-//Full track info for DCA minim optimization
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//Save full info for full re-vertex offline replay ('sandbox mode')
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarMagneticField(0),
+fTreeCascVarBachOriginalX(0),
+fTreeCascVarPosOriginalX(0),
+fTreeCascVarNegOriginalX(0),
+fTreeCascVarPVx(0),
+fTreeCascVarPVy(0),
+fTreeCascVarPVz(0),
 
 
 //Histos
@@ -479,11 +487,19 @@ fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
 
-//Full track info for DCA minim optimization
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//Save full info for full re-vertex offline replay ('sandbox mode')
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarMagneticField(0),
+fTreeCascVarBachOriginalX(0),
+fTreeCascVarPosOriginalX(0),
+fTreeCascVarNegOriginalX(0),
+fTreeCascVarPVx(0),
+fTreeCascVarPVy(0),
+fTreeCascVarPVz(0),
 
 //Histos
 fHistEventCounter(0),
@@ -767,6 +783,14 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     
     //for sandbox mode
     fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
+    
+    fTreeCascade->Branch("fTreeCascVarBachOriginalX",&fTreeCascVarBachOriginalX,"fTreeCascVarBachOriginalX/F");
+    fTreeCascade->Branch("fTreeCascVarPosOriginalX",&fTreeCascVarPosOriginalX,"fTreeCascVarPosOriginalX/F");
+    fTreeCascade->Branch("fTreeCascVarNegOriginalX",&fTreeCascVarNegOriginalX,"fTreeCascVarNegOriginalX/F");
+    
+    fTreeCascade->Branch("fTreeCascVarPVx",&fTreeCascVarPVx,"fTreeCascVarPVx/F");
+    fTreeCascade->Branch("fTreeCascVarPVy",&fTreeCascVarPVy,"fTreeCascVarPVy/F");
+    fTreeCascade->Branch("fTreeCascVarPVz",&fTreeCascVarPVz,"fTreeCascVarPVz/F");
     //------------------------------------------------
 
     //------------------------------------------------
@@ -901,6 +925,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     AliMCEvent  *lMCevent  = 0x0;
     AliStack    *lMCstack  = 0x0;
     
+    fTreeCascVarPVx = -100;
+    fTreeCascVarPVy = -100;
+    fTreeCascVarPVz = -100;
+    
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
     
@@ -963,6 +991,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+    
+    //sandbox info
+    fTreeCascVarPVx = lBestPrimaryVtxPos[0];
+    fTreeCascVarPVy = lBestPrimaryVtxPos[1];
+    fTreeCascVarPVz = lBestPrimaryVtxPos[2];
     
     //------------------------------------------------
     // Multiplicity Information Acquistion
@@ -1450,6 +1483,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDtrack *esdTrackPos  = lESDevent->GetTrack( lCascPosTrackArray[iCasc] );
         AliESDtrack *esdTrackNeg  = lESDevent->GetTrack( lCascNegTrackArray[iCasc] );
         AliESDtrack *esdTrackBach = lESDevent->GetTrack( lCascBachTrackArray[iCasc] );
+        
+        //get original X values (sandbox mode)
+        fTreeCascVarBachOriginalX = esdTrackBach->GetX();
+        fTreeCascVarPosOriginalX  = esdTrackPos->GetX();
+        fTreeCascVarNegOriginalX  = esdTrackNeg->GetX();
         
         fTreeCascVarNegPx = 0.0;
         fTreeCascVarNegPy = 0.0;
