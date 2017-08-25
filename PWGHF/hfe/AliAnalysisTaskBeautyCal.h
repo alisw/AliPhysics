@@ -76,6 +76,7 @@ public:
     Bool_t IsDdecay(int mpid);
     Bool_t IsBdecay(int mpid);
     Bool_t IsPdecay(int mpid);
+    void GetEP(Double_t &evPlaneV0);
 
     void SetHFECuts(AliHFEcuts * const hfecuts) {fhfeCuts = hfecuts;};
 

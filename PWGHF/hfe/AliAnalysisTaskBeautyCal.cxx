@@ -859,34 +859,18 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     }
 
    ///////// RP  
-
-        flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
-
-        if (flowQnVectorTask != NULL) {
-            fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-            //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-        }
-        else {
-            AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
-            return;
-        }
-
-        TList *qnlist = 0x0;
-        qnlist = fFlowQnVectorMgr->GetQnVectorList();
-        //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-        //cout << "EP list ; " << qnlist->Print() << endl; 
-
-        const AliQnCorrectionsQnVector *qnV0;
-        //qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
-        qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROAQoverM","latest","latest");
-        Double_t evPlaneV0 = 0.0;
-        //if (qnV0 != NULL) evPlaneV0 = qnV0->EventPlane(2);
-        if (qnV0) evPlaneV0 = qnV0->EventPlane(2);
-        if(evPlaneV0 <0)evPlaneV0 += TMath::Pi();
-
+  
+        Double_t evPlane = -99.9;
+ 
+        if(fEPana>0)
+          {
+           GetEP(evPlane);
+           if(evPlane==-99.9)return;
+          } 
+ 
         Double_t lim_inplane = TMath::Cos(30.0/180.0*TMath::Pi());   
         Double_t lim_outplane = TMath::Cos(60.0/180.0*TMath::Pi());  
-
+ 
 
   ////////////////
   //Event vertex//
@@ -1009,8 +993,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   if(TMath::Abs(Zvertex)>10.0)return;
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
-  cout << "evPlane = " << qnV0 << " ; " << evPlaneV0 << endl;
-  fEPV0->Fill(evPlaneV0);
+  cout << "evPlane = " << evPlane << endl;
+  fEPV0->Fill(evPlane);
 
   //cout << "check MC in the event ....." << endl;
   if(fMCarray)CheckMCgen(fMCheader);
@@ -1356,7 +1340,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     if(fEPana>0)
       {
-       Double_t dphi_ep_tmp = track->Phi() - evPlaneV0;
+       Double_t dphi_ep_tmp = track->Phi() - evPlane;
        Double_t dphi_ep = atan2(sin(dphi_ep_tmp),cos(dphi_ep_tmp));
        cout << "dphi_ep = " << dphi_ep << endl;
        fdPhiEP0->Fill(dphi_ep); 
@@ -2108,6 +2092,45 @@ void AliAnalysisTaskBeautyCal::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredE
     if(patch->GetADCAmp()>fThresholdEG1)  hasfiredEG1=1;
   }
 }
+
+//______________________________________________________________________
+
+void AliAnalysisTaskBeautyCal::GetEP(Double_t &evPlane)
+{
+
+        flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+
+        if (flowQnVectorTask != NULL) {
+            fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+            //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        }
+        else {
+            AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+            return;
+        }
+
+        TList *qnlist = 0x0;
+        qnlist = fFlowQnVectorMgr->GetQnVectorList();
+        //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
+        //cout << "EP list ; " << qnlist->Print() << endl; 
+
+        const AliQnCorrectionsQnVector *qnV0;
+        //qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
+        qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZEROAQoverM","latest","latest");
+        //Double_t evPlaneV0 = -99.9;
+        //if (qnV0 != NULL) evPlaneV0 = qnV0->EventPlane(2);
+        if (qnV0)
+           {
+            evPlane = qnV0->EventPlane(2);
+            if(evPlane <0)evPlane += TMath::Pi();
+           }
+        else
+           {
+            evPlane = -99.9;
+           }
+
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskBeautyCal::Terminate(Option_t *)
