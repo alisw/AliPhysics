@@ -449,6 +449,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
   values[kIsSPDPileup5]         = event->EventTag(11);
+  values[kIsPileupMV]           = event->EventTag(1);
   values[kIsSPDPileupMultBins]  = event->IsSPDPileupMultBins();
   values[kNSPDpileups]          = event->NpileupSPD();
   values[kNTrackPileups]        = event->NpileupTracks();
@@ -513,61 +514,106 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[ GetMultiplicityEstimator(kSPDntracklets08) ] = 0.;
   values[ GetMultiplicityEstimator(kSPDntracklets16) ] = 0.;
   values[ GetMultiplicityEstimator(kSPDntrackletsOuterEta) ] = 0.;
+  values[ GetMultiplicityEstimator(kSPDnTrackletsEtaVtxCorr) ] = 0.;
+  
+  
+  
+  
   for(Int_t ieta=0;ieta<32;++ieta) {
-    values[kSPDntrackletsEta+ieta] = event->SPDntracklets(ieta);
-    values[ GetMultiplicityEstimator(kSPDntracklets16) ] += event->SPDntracklets(ieta);
+    values[ GetMultiplicityEstimator(kSPDntrackletsEtaBin+ieta) ] = event->SPDntracklets(ieta);
     if( ieta > 7 && ieta < 24 ) values[ GetMultiplicityEstimator(kSPDntracklets08) ] += event->SPDntracklets(ieta);
     if( ieta < 7 || ieta > 24 ) values[ GetMultiplicityEstimator(kSPDntrackletsOuterEta) ] += event->SPDntracklets(ieta);
   }
 
   for( Int_t iEstimator = 0; iEstimator < kNMultiplicityEstimators; ++iEstimator){
-    if( fgAvgMultVsVtxAndRun[iEstimator] ){
-      Int_t vtxBin = fgAvgMultVsVtxAndRun[iEstimator]->GetYaxis()->FindBin( values[kVtxZ] );
-      Int_t runBin = fgAvgMultVsVtxAndRun[iEstimator]->GetXaxis()->FindBin( values[kRunID] );
-      Double_t multRaw = values[ GetMultiplicityEstimator(iEstimator) ];
-      for( Int_t iCorrection = 0; iCorrection < kNCorrections; ++iCorrection  ){
-        for(Int_t iReference = 0 ; iReference <  kNReferenceMultiplicities; ++iReference ){
-          Int_t indexNotSmeared = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kNoSmearing );
-          Int_t indexSmeared    = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kPoissonSmearing );
-          Double_t multCorr = multRaw;
-          Double_t multCorrSmeared = multRaw;
-  // apply vertex and gain loss correction simultaneously
-          if( iCorrection == kVertexCorrection2D  ){
-            Double_t localAvg = fgAvgMultVsVtxAndRun[iEstimator]->GetBinContent( vtxBin, runBin);
-            Double_t refMult  = fgRefMultVsVtxAndRun[iEstimator][iReference];
-            multCorr *=  localAvg ?  refMult / localAvg : 1.;
-            Double_t deltaM =  localAvg ?  multRaw * ( refMult/localAvg - 1) : 0.;
-            multCorrSmeared += (deltaM>0 ? 1. : -1.) * gRandom->Poisson(TMath::Abs(deltaM));
-          }
-          else{
-  // first apply vertex correction
-            Double_t localAvgVsVtx, refMultVsVtx;
-            switch( iCorrection ){
-              case kVertexCorrectionGlobal:
-              case kVertexCorrectionGlobalGainLoss:
-                localAvgVsVtx = fgAvgMultVsVtxGlobal[iEstimator]->GetBinContent( vtxBin );
-                refMultVsVtx = fgRefMultVsVtxGlobal[iEstimator][iReference];
-                break;
-              case kVertexCorrectionRunwise:
-              case kVertexCorrectionRunwiseGainLoss:
-                localAvgVsVtx = fgAvgMultVsVtxRunwise[iEstimator]->GetBinContent( vtxBin );
-                refMultVsVtx = fgRefMultVsVtxRunwise[iEstimator][iReference];
-                break;
+    if( iEstimator == kVZEROACTotalMult || iEstimator == kSPDnTrackletsEtaVtxCorr ){
+       for( Int_t iCorrection = 0; iCorrection < kNCorrections; ++iCorrection  ){
+          for(Int_t iReference = 0 ; iReference <  kNReferenceMultiplicities; ++iReference ){
+            Int_t indexNotSmeared = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kNoSmearing );
+            Int_t indexSmeared    = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kPoissonSmearing );
+            values[indexNotSmeared] = 0.;
+            values[indexSmeared] = 0.;
+
+            if( iEstimator == kSPDnTrackletsEtaVtxCorr ){
+              for( Int_t ieta=6; ieta<26; ++ieta ) {
+                Int_t indexBinNotSmeared = GetMultiplicityEstimator( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kNoSmearing );
+                Int_t indexBinSmeared    = GetMultiplicityEstimator( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kPoissonSmearing );
+                
+                if( fgUsedVars[indexBinNotSmeared]) values[ indexNotSmeared ] += values[ indexBinNotSmeared ];
+                if( fgUsedVars[indexBinSmeared]) values[ indexSmeared ] += values[ indexBinSmeared ];
+              }
             }
-            multCorr        *= localAvgVsVtx ? refMultVsVtx / localAvgVsVtx : 1.;
-            Double_t deltaM  = localAvgVsVtx ? multRaw  * ( refMultVsVtx/localAvgVsVtx - 1) : 0.;
-            multCorrSmeared += (deltaM>0 ? 1. : -1.) * gRandom->Poisson(TMath::Abs(deltaM));
-  // then apply gain loss correction
-            if( iCorrection == kVertexCorrectionGlobalGainLoss || iCorrection == kVertexCorrectionRunwiseGainLoss  ){
-              Double_t localAvgVsRun = fgAvgMultVsRun[iEstimator]->GetBinContent( runBin );
-              Double_t refMultVsRun  = fgRefMultVsRun[iEstimator][iReference];
-              multCorr        *= localAvgVsRun ? refMultVsRun / localAvgVsRun : 1.;
-              deltaM           = localAvgVsRun ? multCorrSmeared  * ( refMultVsRun/localAvgVsRun - 1) : 0;
+            else{
+              Int_t indexAnotSmeared = GetMultiplicityEstimator( kVZEROATotalMult, iCorrection, iReference, kNoSmearing );
+              Int_t indexCnotSmeared = GetMultiplicityEstimator( kVZEROCTotalMult, iCorrection, iReference, kNoSmearing );
+              
+              Int_t indexAsmeared = GetMultiplicityEstimator( kVZEROATotalMult, iCorrection, iReference, kPoissonSmearing );
+              Int_t indexCsmeared = GetMultiplicityEstimator( kVZEROCTotalMult, iCorrection, iReference, kPoissonSmearing );
+              
+              values[ indexNotSmeared ] = values[ indexAnotSmeared ] + values[ indexCnotSmeared ];
+              values[ indexSmeared ]    = values[ indexAsmeared ] + values[ indexCsmeared ];
+            }
+            
+            
+          }
+       }
+      
+      
+      
+    }
+    
+    else{
+      if( fgAvgMultVsVtxAndRun[iEstimator] ){
+        Int_t vtxBin = fgAvgMultVsVtxAndRun[iEstimator]->GetYaxis()->FindBin( values[kVtxZ] );
+        Int_t runBin = fgAvgMultVsVtxAndRun[iEstimator]->GetXaxis()->FindBin( values[kRunID] );
+        Double_t multRaw = values[ GetMultiplicityEstimator(iEstimator) ];
+        for( Int_t iCorrection = 0; iCorrection < kNCorrections; ++iCorrection  ){
+          for(Int_t iReference = 0 ; iReference <  kNReferenceMultiplicities; ++iReference ){
+            Int_t indexNotSmeared = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kNoSmearing );
+            Int_t indexSmeared    = GetMultiplicityEstimator( iEstimator, iCorrection, iReference, kPoissonSmearing );
+            Double_t multCorr        = multRaw;
+            Double_t multCorrSmeared = multRaw;
+    // apply vertex and gain loss correction simultaneously
+            if( iCorrection == kVertexCorrection2D  ){
+              Double_t localAvg = fgAvgMultVsVtxAndRun[iEstimator]->GetBinContent( vtxBin, runBin);
+              Double_t refMult  = fgRefMultVsVtxAndRun[iEstimator][iReference];
+              multCorr *=  localAvg ?  refMult / localAvg : 1.;
+              Double_t deltaM =  localAvg ?  multRaw * ( refMult/localAvg - 1) : 0.;
               multCorrSmeared += (deltaM>0 ? 1. : -1.) * gRandom->Poisson(TMath::Abs(deltaM));
             }
+            else{
+    // first apply vertex correction
+              Double_t localAvgVsVtx, refMultVsVtx;
+              switch( iCorrection ){
+                case kVertexCorrectionGlobal:
+                case kVertexCorrectionGlobalGainLoss:
+                  localAvgVsVtx = fgAvgMultVsVtxGlobal[iEstimator]->GetBinContent( vtxBin );
+                  refMultVsVtx = fgRefMultVsVtxGlobal[iEstimator][iReference];
+                  break;
+                case kVertexCorrectionRunwise:
+                case kVertexCorrectionRunwiseGainLoss:
+                  localAvgVsVtx = fgAvgMultVsVtxRunwise[iEstimator]->GetBinContent( vtxBin );
+                  refMultVsVtx = fgRefMultVsVtxRunwise[iEstimator][iReference];
+                  break;
+              }
+              multCorr        *= localAvgVsVtx ? refMultVsVtx / localAvgVsVtx : 1.;
+              Double_t deltaM  = localAvgVsVtx ? multRaw  * ( refMultVsVtx/localAvgVsVtx - 1) : 0.;
+              multCorrSmeared += (deltaM>0 ? 1. : -1.) * gRandom->Poisson(TMath::Abs(deltaM));
+    // then apply gain loss correction
+              if( iCorrection == kVertexCorrectionGlobalGainLoss || iCorrection == kVertexCorrectionRunwiseGainLoss  ){
+                Double_t localAvgVsRun = fgAvgMultVsRun[iEstimator]->GetBinContent( runBin );
+                Double_t refMultVsRun  = fgRefMultVsRun[iEstimator][iReference];
+                multCorr        *= localAvgVsRun ? refMultVsRun / localAvgVsRun : 1.;
+                deltaM           = localAvgVsRun ? multCorrSmeared  * ( refMultVsRun/localAvgVsRun - 1) : 0;
+                multCorrSmeared += (deltaM>0 ? 1. : -1.) * gRandom->Poisson(TMath::Abs(deltaM));
+              }
+            }
+            values[ indexNotSmeared ] = multCorr;
+            values[ indexSmeared ]    = multCorrSmeared;
+            fgUsedVars [indexNotSmeared] = kTRUE;
+            fgUsedVars [indexSmeared] = kTRUE;
+            
           }
-          values[ indexNotSmeared ] = multCorr;
-          values[ indexSmeared ]    = multCorrSmeared;
         }
       }
     }
@@ -1939,6 +1985,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kIsPhysicsSelection]   = "Physics selection ON";            fgVariableUnits[kIsPhysicsSelection]   = "";
   fgVariableNames[kIsSPDPileup]          = "SPD pileup ON";                   fgVariableUnits[kIsSPDPileup]          = "";
   fgVariableNames[kIsSPDPileup5]          = "SPD pileup (5 contributors) ON";                   fgVariableUnits[kIsSPDPileup5]          = "";
+  fgVariableNames[kIsPileupMV]          = "MV pileup ON";                   fgVariableUnits[kIsPileupMV]          = "";
   fgVariableNames[kIsSPDPileupMultBins]  = "SPD pileup multiplicity bins ON"; fgVariableUnits[kIsSPDPileupMultBins]  = "";
   fgVariableNames[kNSPDpileups]          = "Number of SPD pileup events";     fgVariableUnits[kNSPDpileups]          = "";
   fgVariableNames[kNTrackPileups]        = "Number of track pileup events";   fgVariableUnits[kNTrackPileups]        = "";
@@ -2024,11 +2071,49 @@ void AliReducedVarManager::SetDefaultVarNames() {
     "SPDntracklets08",
     "SPDntracklets16",
     "SPDntrackletsOuterEta",
+    "SPDntrackletsEtaBin00",
+    "SPDntrackletsEtaBin01",
+    "SPDntrackletsEtaBin02",
+    "SPDntrackletsEtaBin03",
+    "SPDntrackletsEtaBin04",
+    "SPDntrackletsEtaBin05",
+    "SPDntrackletsEtaBin06",
+    "SPDntrackletsEtaBin07",
+    "SPDntrackletsEtaBin08",
+    "SPDntrackletsEtaBin09",
+    "SPDntrackletsEtaBin10",
+    "SPDntrackletsEtaBin11",
+    "SPDntrackletsEtaBin12",
+    "SPDntrackletsEtaBin13",
+    "SPDntrackletsEtaBin14",
+    "SPDntrackletsEtaBin15",
+    "SPDntrackletsEtaBin16",
+    "SPDntrackletsEtaBin17",
+    "SPDntrackletsEtaBin18",
+    "SPDntrackletsEtaBin19",
+    "SPDntrackletsEtaBin20",
+    "SPDntrackletsEtaBin21",
+    "SPDntrackletsEtaBin22",
+    "SPDntrackletsEtaBin23",
+    "SPDntrackletsEtaBin24",
+    "SPDntrackletsEtaBin25",
+    "SPDntrackletsEtaBin26",
+    "SPDntrackletsEtaBin27",
+    "SPDntrackletsEtaBin28",
+    "SPDntrackletsEtaBin29",
+    "SPDntrackletsEtaBin30",
+    "SPDntrackletsEtaBin31",
+    "SPDntrackletsVtxEta",
     "VZEROTotalMult",
     "VZEROATotalMult",
     "VZEROCTotalMult",
+    "VZEROAplusCTotalMult"
   };
 
+
+  
+  
+  
   TString corrections[kNCorrections] = {
     ", Vtx. corr. (global)",
     ", Vtx. corr. (run-wise)",
@@ -2045,7 +2130,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
 
   TString smearingMethods[kNSmearingMethods] = {
     "",
-    ", Poisson smeared",
+    ", Poisson smeared"
   };
 
   for( int iEstimator=0; iEstimator < kNMultiplicityEstimators; ++iEstimator){
@@ -2072,10 +2157,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
     }
   }
 
-  for(Int_t ieta=0;ieta<32;++ieta) {
-    fgVariableNames[kSPDntrackletsEta+ieta] = Form("No.SPD tracklets in %.1f<#eta<%.1f", -1.6+0.1*ieta, -1.6+0.1*(ieta+1));
-    fgVariableUnits[kSPDntrackletsEta+ieta] = "";
-  }
+  
+
   for(Int_t il=0;il<2;++il) {
     fgVariableNames[kSPDFiredChips+il] = Form("Fired chips in SPD layer %d", il+1); 
     fgVariableUnits[kSPDFiredChips+il] = "";

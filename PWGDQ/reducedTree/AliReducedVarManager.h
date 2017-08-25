@@ -165,9 +165,12 @@ class AliReducedVarManager : public TObject {
     kSPDntracklets08,
     kSPDntracklets16,
     kSPDntrackletsOuterEta,
+    kSPDntrackletsEtaBin,
+    kSPDnTrackletsEtaVtxCorr = kSPDntrackletsEtaBin + 32,
     kVZEROTotalMult,
     kVZEROATotalMult,
     kVZEROCTotalMult,
+    kVZEROACTotalMult,
     kNMultiplicityEstimators
   };
 
@@ -233,6 +236,7 @@ class AliReducedVarManager : public TObject {
     kIsPhysicsSelection,    // physics selection 
     kIsSPDPileup,          // whether is SPD pileup
     kIsSPDPileup5,          // whether is SPD pileup (5 vertex contributors)
+    kIsPileupMV,            // pileup from multi vertexer
     kIsSPDPileupMultBins,  // whether is SPD pileup in multiplicity bins
     kNSPDpileups,         // number of pileup events from SPD
     kNTrackPileups,       // number of pileup events from tracks
@@ -308,8 +312,7 @@ class AliReducedVarManager : public TObject {
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
     kMultiplicity,
-    kSPDntrackletsEta = kMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods ),  // SPD number of tracklets in -1.6+0.1*i < eta < -1.6+0.1*(i+1)
-    kSPDFiredChips=kSPDntrackletsEta+32,   // SPD fired chips in first and second layer
+    kSPDFiredChips = kMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods ), // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
     kEventMixingId,     // Id of the event mixing category 
