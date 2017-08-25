@@ -505,12 +505,23 @@ private:
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
     
-    //Save full AliExternalTrackParam for debugging and development purposes
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Save full info for full re-vertex offline replay ('sandbox mode')
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     AliExternalTrackParam *fTreeCascVarBachTrack;
     AliExternalTrackParam *fTreeCascVarPosTrack;
     AliExternalTrackParam *fTreeCascVarNegTrack;
     
-    Float_t fTreeCascVarMagneticField; 
+    Float_t fTreeCascVarMagneticField;
+    
+    Float_t fTreeCascVarBachOriginalX;
+    Float_t fTreeCascVarPosOriginalX;
+    Float_t fTreeCascVarNegOriginalX;
+    
+    Float_t fTreeCascVarPVx;
+    Float_t fTreeCascVarPVy;
+    Float_t fTreeCascVarPVz;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
 //===========================================================================================
 //   Histograms
