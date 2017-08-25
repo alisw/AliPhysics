@@ -287,6 +287,7 @@ fTreeCascVarBachPzMC(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarMagneticField(0),
 
 
 //Histos
@@ -482,6 +483,7 @@ fTreeCascVarBachPzMC(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarMagneticField(0),
 
 //Histos
 fHistEventCounter(0),
@@ -762,6 +764,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
     fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
     fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
+    
+    //for sandbox mode
+    fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
     //------------------------------------------------
 
     //------------------------------------------------
@@ -932,6 +937,9 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
+    
+    //sandbox mode
+    fTreeCascVarMagneticField = lMagneticField;
     
     //------------------------------------------------
     // Event Selection ---

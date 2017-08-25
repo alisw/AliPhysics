@@ -510,6 +510,8 @@ private:
     AliExternalTrackParam *fTreeCascVarPosTrack;
     AliExternalTrackParam *fTreeCascVarNegTrack;
     
+    Float_t fTreeCascVarMagneticField; 
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================
