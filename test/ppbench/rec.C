@@ -1,4 +1,5 @@
 void rec() {
+  gSystem->Load("libpythia6.so");
   AliReconstruction reco;
 
   reco.SetWriteESDfriend();

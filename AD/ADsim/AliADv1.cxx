@@ -2674,14 +2674,14 @@ TGeoVolume * AliADv1::CreateWarmModuleSupport()
   TGeoVolume * voADTubeepr = new TGeoVolume("voADTubeepr", shTubeepr, kMedSteelSh);
   voADTubeepr -> SetLineColor(kGreen);
   TGeoVolumeAssembly * voADsuppVab15 = new TGeoVolumeAssembly("voADsuppVab15");
-  voADsuppVab15 -> AddNode(voADFlatBar , 1 , new TGeoCombiTrans(14.3      , 10.0+8.8 , 0.    , Rz90 )); 
-  voADsuppVab15 -> AddNode(voADSheet   , 1 , new TGeoTranslation(14.3     , 0.       , 86.65 ));
-  voADsuppVab15 -> AddNode(voADSheet   , 2 , new TGeoTranslation(14.3     , 0.       , 79.75 )); 
-  voADsuppVab15 -> AddNode(voADTubeepr , 1 , new TGeoTranslation(14.3     , 0.       , 40.   )); 
-  voADsuppVab15 -> AddNode(voADBolt    , 1 , new TGeoTranslation(14.3+7.7 , 8.3      , 83.2  )); 
-  voADsuppVab15 -> AddNode(voADBolt    , 2 , new TGeoTranslation(14.3-7.7 , 8.3      , 83.2  )); 
-  voADsuppVab15 -> AddNode(voADBolt    , 3 , new TGeoTranslation(14.3+7.7 , -8.3     , 83.2  )); 
-  voADsuppVab15 -> AddNode(voADBolt    , 4 , new TGeoTranslation(14.3-7.7 , -8.3     , 83.2  )); 
+  voADsuppVab15 -> AddNode(voADFlatBar , 1 , new TGeoCombiTrans (/*14.3*/+0.0 , 10.0+8.8 , 0.    , Rz90 )); 
+  voADsuppVab15 -> AddNode(voADSheet   , 1 , new TGeoTranslation(/*14.3*/+0.0 ,  0.      , 86.65 ));
+  voADsuppVab15 -> AddNode(voADSheet   , 2 , new TGeoTranslation(/*14.3*/+0.0 ,  0.      , 79.75 )); 
+  voADsuppVab15 -> AddNode(voADTubeepr , 1 , new TGeoTranslation(/*14.3*/+0.0 ,  0.      , 40.   )); 
+  voADsuppVab15 -> AddNode(voADBolt    , 1 , new TGeoTranslation(/*14.3*/+7.7 ,  8.3     , 83.2  )); 
+  voADsuppVab15 -> AddNode(voADBolt    , 2 , new TGeoTranslation(/*14.3*/-7.7 ,  8.3     , 83.2  )); 
+  voADsuppVab15 -> AddNode(voADBolt    , 3 , new TGeoTranslation(/*14.3*/+7.7 , -8.3     , 83.2  )); 
+  voADsuppVab15 -> AddNode(voADBolt    , 4 , new TGeoTranslation(/*14.3*/-7.7 , -8.3     , 83.2  )); 
   new TGeoVolumeAssembly("voADsuppVab15_a");
   voWarmModuleSupport ->AddNode(voADsuppVab15, 1, new TGeoCombiTrans(0., 0., 0., Rx90m ));
 

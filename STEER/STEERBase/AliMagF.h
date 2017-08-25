@@ -78,6 +78,9 @@ class AliMagF : public TVirtualMagField
 				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
 				 Bool_t returnNullOnInvalidCurrent = kFALSE);
   //
+  static void   SetFastFieldDefault(Bool_t v) {fgAllowFastField = v;}
+  static Bool_t GetFastFieldDefault()         {return fgAllowFastField;}
+  
  protected:
   // not supposed to be changed during the run, set only at the initialization via constructor
   void         InitMachineField(BeamType_t btype, Double_t benergy);
@@ -109,6 +112,7 @@ class AliMagF : public TVirtualMagField
   //
   static const Double_t  fgkSol2DipZ;    // conventional Z of transition from L3 to Dipole field
   static const UShort_t  fgkPolarityConvention; // convention for the mapping of the curr.sign on main component sign
+  static Bool_t          fgAllowFastField;  // default setting for fast field usage
   //   
   ClassDef(AliMagF, 2)           // Class for all Alice MagField wrapper for measured data + Tosca parameterization
 };

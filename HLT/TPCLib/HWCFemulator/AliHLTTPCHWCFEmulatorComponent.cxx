@@ -76,6 +76,8 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fPadNoiseReduction(0),
+  fMaxChannelWords(0),
+  fMaxSequenceWords(0),
   fSmoothing(0),
   fSmoothingThreshold(0),
   fIORatioCorrection(1.),
@@ -121,6 +123,8 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fPadNoiseReduction(0),
+  fMaxChannelWords(0),
+  fMaxSequenceWords(0),
   fSmoothing(0),
   fSmoothingThreshold(0),
   fIORatioCorrection(1.),
@@ -427,6 +431,20 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       HLTInfo( "Pad Noise Reduction parameter is set to: %d", fPadNoiseReduction );
       continue;
     }
+    
+    if ( argument.CompareTo( "-max-channel-words" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fMaxChannelWords  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Max channel words parameter is set to: %d", fMaxChannelWords );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-max-sequence-words" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fMaxSequenceWords  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Max sequence words parameter is set to: %d", fMaxSequenceWords );
+      continue;
+    }
 
     if ( argument.CompareTo( "-smoothing" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
@@ -729,6 +747,8 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 		fCFEmulator.SetNoiseSuppressionMinimum(fNoiseSuppressionMinimum);
 		fCFEmulator.SetNoiseSuppressionNeighbor(fNoiseSuppressionNeighbor);
 		fCFEmulator.SetPadNoiseReduction(fPadNoiseReduction);
+        fCFEmulator.SetMaxChannelWords(fMaxChannelWords);
+        fCFEmulator.SetMaxSequenceWords(fMaxSequenceWords);
 		fCFEmulator.SetSmoothing(fSmoothing);
 		fCFEmulator.SetSmoothingThreshold(fSmoothingThreshold);
 		fCFEmulator.SetClusterQMaxLowerLimit(fClusterQMaxLowerLimit);

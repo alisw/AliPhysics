@@ -252,6 +252,8 @@ int main(int argc, char **argv) {
 	  sprintf(filnam,"SDDbase_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDbase_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
+	}else{
+	  printf("EMPTY DATA from DDL %d Carlos %d Side %d -> output file not saved\n",iddl,imod,isid);
 	}
       }
     }  

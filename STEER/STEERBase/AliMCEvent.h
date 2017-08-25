@@ -38,7 +38,7 @@ class AliMCEvent : public AliVEvent {
 public:
 
     AliMCEvent();
-    virtual ~AliMCEvent() {;} 
+    virtual ~AliMCEvent();
     AliMCEvent(const AliMCEvent& mcEvnt); 
     AliMCEvent& operator=(const AliMCEvent& mcEvnt);
     //
@@ -164,6 +164,7 @@ public:
   virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const; //RS
 
   Bool_t HasSubsidiaries() const {return fSubsidiaryEvents!=0;}
+  Bool_t IsFromSubsidiaryEvent(int id) const;
   
 private:
     virtual void      ReorderAndExpandTreeTR();

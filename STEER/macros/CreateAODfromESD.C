@@ -26,7 +26,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliESDInputHandler* inpHandler = new AliESDInputHandler();
     inpHandler->SetReadFriends(kFALSE);
     inpHandler->SetReadTags();
-    inpHandler->NeedField();
+    inpHandler->SetNeedField();
     mgr->SetInputEventHandler  (inpHandler);
     // Output
     AliAODHandler* aodHandler   = new AliAODHandler();

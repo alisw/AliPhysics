@@ -191,7 +191,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
   //set correct BB parameters. Assume the ones from the ALIROOT OCDB were used for simulation
   AliCDBManager *man=AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   man->SetRun(0);
   const AliCDBEntry *eParam   = man->Get("TPC/Calib/Parameters");
   AliTPCParam *params   = (AliTPCParam*)eParam->GetObject();

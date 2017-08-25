@@ -70,7 +70,11 @@ public:
   Int_t GetTRDsignal()        const { return fTRDsignal;        }
   Int_t GetTRDChi2()          const { return fTRDChi2;          }
   Int_t GetTRDnSlices()       const { return fTRDnSlices;       }
-  Int_t Getcovmat()           const { return fcovmat;           }
+  Int_t GetIsMuonTrack()      const { return fIsMuonTrack;      }
+  Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
+  Int_t GetFilterMap()        const { return fFilterMap;        }
+  Int_t GetCovMat(Int_t index)  const { return fcovmat[index];  }
+
   
   // TODO: implement custom variables
 
@@ -116,7 +120,11 @@ private:
   Int_t fTRDsignal;	  // Mapping variable
   Int_t fTRDChi2;	  // Mapping variable
   Int_t fTRDnSlices;	  // Mapping variable
-  Int_t fcovmat;          // Mapping variable
+  Int_t fIsMuonTrack;     // Mapping variable
+  Int_t fTPCnclsS;    // Mapping variable
+  Int_t fFilterMap;      // Mapping variable
+  Int_t fcovmat[21];          // Mapping variables
+
   
   // Setters are private because we don't want the mapping to change once the class has been instantiated 
   void  SetPt               (Int_t var) { fPt = var;               }
@@ -153,12 +161,16 @@ private:
   void  SetTRDsignal        (Int_t var) { fTRDsignal = var;        }
   void  SetTRDChi2          (Int_t var) { fTRDChi2 = var;          }
   void  SetTRDnSlices       (Int_t var) { fTRDnSlices = var;       }
-  void  Setcovmat           (Int_t var) { fcovmat = var;           }
+  void  SetIsMuonTrack      (Int_t var) { fIsMuonTrack = var;      }
+  void  SetTPCnclsS         (Int_t var) { fTPCnclsS = var;         }
+  void  SetFilterMap        (Int_t var) { fFilterMap = var;        }
+  void  SetCovMat           (Int_t var, Int_t index) { fcovmat[index] = var; }
+
 
   static AliNanoAODTrackMapping * fInstance; //instance, needed for the singleton implementation
   static TString fMappingString; // the string which this class was initialized with
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
-  ClassDef(AliNanoAODTrackMapping, 1)
+  ClassDef(AliNanoAODTrackMapping, 2)
   
 };
 

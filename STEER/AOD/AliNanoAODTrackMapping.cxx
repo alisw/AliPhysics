@@ -46,11 +46,14 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
-  fcovmat(-1)
-
+  fIsMuonTrack(-1),
+  fTPCnclsS(-1),
+  fFilterMap(-1)
 { 
   // default ctor
-
+  for(Int_t i=0; i<21;i++){
+  fcovmat[i]=-1;
+  }
 }
 
 AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
@@ -88,10 +91,15 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
-  fcovmat(-1)
-
+  fIsMuonTrack(-1),
+  fTPCnclsS(-1),
+  fFilterMap(-1)
 {
   // ctor
+
+  for(Int_t i=0; i<21;i++){
+  fcovmat[i]=-1;
+  }
   //std::cout << "Standard construct " << mappingString << std::endl;
   
   if (fInstance) {
@@ -101,7 +109,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   }
   fMappingString = mappingString;
 
-  static const char * validatorString[] = {"pt", "theta", "phi", "chi2perNDF", "posx", "posy", "posz", "covmat", "posDCAx","posDCAy", "pDCAx", "pDCAy", "pDCAz", "RAtAbsorberEnd", "TPCnclsF", "TPCNCrossedRows", "TrackPhiOnEMCal", "TrackEtaOnEMCal", "TrackPtOnEMCal", "ITSsignal", "TPCsignal", "TPCsignalTuned", "TPCsignalN", "TPCmomentum", "TPCTgl", "TOFsignal", "integratedLenght", "TOFsignalTuned", "HMPIDsignal", "HMPIDoccupancy", "TRDsignal", "TRDChi2", "TRDnSlices", 0};
+  static const char * validatorString[] = {"pt", "theta", "phi", "chi2perNDF", "posx", "posy", "posz", "covmat", "posDCAx","posDCAy", "pDCAx", "pDCAy", "pDCAz", "RAtAbsorberEnd", "TPCncls", "TPCnclsF", "TPCnclsS", "TPCNCrossedRows", "TrackPhiOnEMCal", "TrackEtaOnEMCal", "TrackPtOnEMCal", "ITSsignal", "TPCsignal", "TPCsignalTuned", "TPCsignalN", "TPCmomentum", "TPCTgl", "TOFsignal", "integratedLenght", "TOFsignalTuned", "HMPIDsignal", "HMPIDoccupancy", "TRDsignal", "TRDChi2", "TRDnSlices", "covmat", "FilterMap", "IsMuonTrack", 0};
   
   // Tokenize list of variables
   TString varString(mappingString);
@@ -158,7 +166,16 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TRDsignal"        ) fTRDsignal         = index;
     else if(var == "TRDChi2"          ) fTRDChi2           = index;
     else if(var == "TRDnSlices"       ) fTRDnSlices        = index;
-    else if(var == "covmat"           ) AliFatal("cov matrix To be implemented");
+    else if(var == "IsMuonTrack"      ) fIsMuonTrack       = index;
+    else if(var == "TPCnclsS"         ) fTPCnclsS          = index;
+    else if(var == "FilterMap"        ) fFilterMap         = index;
+    else if(var == "covmat"           ) {
+          
+        for(Int_t i=0;i<21;i++){
+            fcovmat[i] = index +i;
+        }
+          
+    }
     else {
       fMapCstVar[var] = index;
       std::cout << "ADDING " << index << " " << fMapCstVar[var] << " " << var.Data() << std::endl;
@@ -166,7 +183,12 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     }
 
     // init kin vars to 0
-    index++;
+    if (var == "covmat"){
+         index+=21;
+    }else{
+         index++;
+    }
+    
   }
   fSize = index;
   if(vars) vars->Delete();
@@ -210,6 +232,10 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TRDsignal"        ) return fTRDsignal        ;
     else if(varName == "TRDChi2"          ) return fTRDChi2          ;
     else if(varName == "TRDnSlices"       ) return fTRDnSlices       ;
+    else if(varName == "IsMuonTrack"      ) return fIsMuonTrack      ;
+    else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
+    else if(varName == "FilterMap"        ) return fFilterMap        ;
+    else if(varName == "covmat0"          ) return fcovmat[0]        ;
 
     std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
     if(it != fMapCstVar.end()) {
@@ -257,6 +283,14 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fTRDsignal        )  return "TRDsignal"        ;
     else if(index == fTRDChi2          )  return "TRDChi2"          ;
     else if(index == fTRDnSlices       )  return "TRDnSlices"       ;
+    else if(index == fIsMuonTrack      )  return "IsMuonTrack"      ;
+    else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
+    else if(index == fFilterMap        )  return "FilterMap"        ;
+    for (Int_t i=0; i<21; i++){
+        
+        if(index == fcovmat[i]) return TString::Format("covmat%d",i).Data();
+        
+    }
     if (index >= fSize) {
       AliWarning(Form("Invalid index %d", index));
       return "<Invalid index>";

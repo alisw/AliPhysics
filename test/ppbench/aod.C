@@ -1,5 +1,6 @@
 void aod(){
 
+    gSystem->Load("libpythia6.so");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
 
@@ -13,6 +14,7 @@ void aod(){
     gSystem->Load("libTender");
     gSystem->Load("libPWGPP");
 
+    AliGeomManager::LoadGeometry("geometry.root");
     AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
     gROOT->Macro("${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C(\"AliESDs.root\",\"AliAOD.root\",\"local://$ALIROOT_OCDB_ROOT/OCDB\",\"local://.\")");

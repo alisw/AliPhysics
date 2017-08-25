@@ -5,7 +5,7 @@
 
 /* $Id: AliPythia.h,v 1.22 2007/10/09 08:43:24 morsch Exp $ */
 
-#include "Analysis.h"
+#include "Pythia8/Analysis.h"
 #include "AliPythiaBase.h"
 #include "AliTPythia8.h"
 

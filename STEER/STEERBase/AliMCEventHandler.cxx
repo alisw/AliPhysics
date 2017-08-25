@@ -43,6 +43,7 @@
 #include <TString.h>
 #include <TClonesArray.h>
 #include <TDirectoryFile.h>
+#include <TGrid.h>
 
 ClassImp(AliMCEventHandler)
 
@@ -133,13 +134,46 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     //
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
+    if (fPathName->BeginsWith("alien://") && !gGrid && !TGrid::Connect("alien://")) {
+      AliFatal("Failed to connect to alien");
+    }
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) {
       AliError(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
       fInitOk = kFALSE;
       return kFALSE;
     }
-    
+
+    // check if AliRun refers to some background file of embedding
+    TObjArray* embBKGPaths = 0;
+    fFileE->GetObject(AliStack::GetEmbeddingBKGPathsKey(),embBKGPaths);
+    if (embBKGPaths) {
+      AliInfo("galice.root contains paths of background for embedding");
+      embBKGPaths->Print();
+      for (int ib=0;ib<embBKGPaths->GetEntriesFast();ib++) {
+	if (!fSubsidiaryHandlers || fSubsidiaryHandlers->GetEntries()<ib) AddSubsidiaryHandler(new AliMCEventHandler());
+	// if needed, add subsidiary handlers
+	AliMCEventHandler* hs = (AliMCEventHandler*)fSubsidiaryHandlers->At(ib);
+	TString pth = gSystem->DirName(embBKGPaths->At(ib)->GetName());
+	// check if the path is relative
+	if ( !pth.BeginsWith("/") && !pth.BeginsWith("alien://")) {
+	  TString pths = fPathName->Data();
+	  if (pths.EndsWith("#")) { // archive is used
+	    int indSl = pths.Last('/')+1;
+	    if (!pth.EndsWith("/")) pth += "/";
+	    pths.Insert(indSl,pth);
+	  }
+	  else {
+	    pths += pth; // pths ends by "/"
+	  }
+	  pth = pths;	      
+	}
+	hs->SetInputPath(pth.Data());
+	hs->SetReadTR(fReadTR);
+	AliInfoF("Set subsidiary event#%d path to %s",ib,hs->GetInputPath()->Data());
+      }
+      delete embBKGPaths;
+    }
     //
     // Tree E
     fFileE->GetObject("TE", fTreeE);
@@ -574,7 +608,14 @@ void AliMCEventHandler::SetInputPath(const char* fname)
 {
     // Set the input path name
     delete fPathName;
-    fPathName = new TString(fname);
+    TString tmps = fname;
+    if (tmps.IsNull()) {
+      tmps = "./";
+    }
+    else if (!tmps.EndsWith("#")) { // not archive ?
+      if (!tmps.EndsWith("/")) tmps += "/";
+    }
+    fPathName = new TString(tmps);
 }
 
 void AliMCEventHandler::AddSubsidiaryHandler(AliMCEventHandler* handler)

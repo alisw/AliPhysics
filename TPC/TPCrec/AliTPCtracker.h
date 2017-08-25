@@ -189,6 +189,8 @@ public:
    static Int_t GetTrackSector(double alpha);
 
 private:
+
+  int GetAdjustedLabels(const AliTPCclusterMI* cl, int *lbReal);
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
   AliTPCtracker &operator=(const AliTPCtracker& r);//dummy assignment operator

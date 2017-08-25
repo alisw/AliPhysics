@@ -125,7 +125,7 @@ public:
   AliLego* Lego() const {return fLego;}
   virtual  void  FinishRun();
   //
-  void StoreUsedCDBMaps() const; 
+  void StoreUsedCDBMapsAndEmbPaths() const; 
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
@@ -151,7 +151,8 @@ public:
   Bool_t          GetUseDetectorsFromGRP()               const {return fUseDetectorsFromGRP;}
   void            SetUseDetectorsFromGRP(Bool_t v=kTRUE)       {fUseDetectorsFromGRP = v;}
   //
-private:
+
+ private:
 
   AliSimulation(const AliSimulation&); // Not implemented
   AliSimulation& operator = (const AliSimulation&); // Not implemented
@@ -236,7 +237,6 @@ private:
 
   static const Char_t *fgkRunHLTAuto;         // flag for automatic HLT mode detection
   static const Char_t *fgkHLTDefConf;         // default configuration to run HLT
-
   ClassDef(AliSimulation, 15)  // class for running generation, simulation and digitization
 };
 

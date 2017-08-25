@@ -25,7 +25,7 @@ class AliLumiTools : public TObject
   static void     SetScaleFactor(double v=1) {fgScaleFactor = v;}
   //
  protected:
-  static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma, double &refEff);
+  static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma, double &refEff, const char* ocdbPathDef);
   static TObject* GetCDBObjectForRun(int run, const char* path, const char* ocdbPathDef);
 
  protected:

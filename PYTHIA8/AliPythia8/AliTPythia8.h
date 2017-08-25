@@ -60,7 +60,7 @@
 */
 
 #include "TGenerator.h"
-#include "Pythia.h"
+#include "Pythia8/Pythia.h"
 
 
 class TClonesArray;

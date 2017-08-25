@@ -203,9 +203,9 @@ AliZDCv4::AliZDCv4(const char *name, const char *title) :
   fFibZP[1] = 0.0275;
   fFibZP[2] = 75.;
   // Parameters for EM calorimeter geometry
-  fPosZEM[0] = 8.5;
+  fPosZEM[0] = 9.69;
   fPosZEM[1] = 0.;
-  fPosZEM[2] = 735.;
+  fPosZEM[2] = 760.; // Position measured in survey for beginning of front face
   Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
   Float_t kDimZEMAir = 0.001; 			// scotch
   Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
@@ -219,9 +219,7 @@ AliZDCv4::AliZDCv4(const char *name, const char *title) :
 void AliZDCv4::CreateGeometry()
 {
   //
-  // Create the geometry for the Zero Degree Calorimeter version 2
-  //* Initialize COMMON block ZDC_CGEOM
-  //*
+  // Create the geometry for the Zero Degree Calorimeter version 4
 
   CreateBeamLine();
   CreateZDC();
@@ -233,7 +231,7 @@ void AliZDCv4::CreateBeamLine()
   //
   // Create the beam line elements
   //
-  if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
+  //if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
   Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
   Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
@@ -1889,16 +1887,91 @@ void AliZDCv4::CreateZDC()
   
   // -------------------------------------------------------------------------------
   // -> EM calorimeter (ZEM)  
-  
-  TVirtualMC::GetMC()->Gsvolu("ZEM ", "PARA", idtmed[10], fDimZEM, 6);
-
   Int_t irot1, irot2;
   TVirtualMC::GetMC()->Matrix(irot1,0.,0.,90.,90.,-90.,0.); 		       // Rotation matrix 1  
   TVirtualMC::GetMC()->Matrix(irot2,180.,0.,90.,fDimZEM[3]+90.,90.,fDimZEM[3]);// Rotation matrix 2
   //printf("irot1 = %d, irot2 = %d \n", irot1, irot2);
   
-  TVirtualMC::GetMC()->Gsvolu("ZEMF", "TUBE", idtmed[3], fFibZEM, 3); 	// Active material
+  // Platform and supports
+  Float_t zemBoxPar[3] = {10.5/2., 100./2., 95./2.};
+  Float_t bthickness[3] = {0.25/2., 2./2., 2./2.};
+  Float_t ybox = fPosZEM[1]-fDimZEM[1]-2.*2.*bthickness[1]+zemBoxPar[1];
+  Float_t zSupport = fPosZEM[2]-3.5; //to take into account the titlted front face
+  Float_t zbox = zSupport+zemBoxPar[2];
+  printf("  ZEM box position y %f z %f\n",ybox, zbox);
+  //
+  // Bridge
+  Float_t zemSupp1[3] = {15./2, 3./2., 95./2.};
+  TVirtualMC::GetMC()->Gsvolu("ZESH","BOX ", idtmed[13], zemSupp1, 3);
+  Float_t foot = 5.;
+  Float_t ybridge = fPosZEM[1]-fDimZEM[1]-2.*2.*bthickness[1]-foot-zemSupp1[1];
+  TVirtualMC::GetMC()->Gspos("ZESH", 1, "ALIC", fPosZEM[0], ybridge, zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZESH", 2, "ALIC", -fPosZEM[0], ybridge, zbox, 0, "ONLY");
+  printf(" Positioning ZEM ZESH %f %f %f\n",fPosZEM[0], ybridge, zbox);
+  //
+  Float_t zemSupp2[3] = {2./2, 5./2., zemBoxPar[2]};
+  TVirtualMC::GetMC()->Gsvolu("ZESV","BOX ", idtmed[13], zemSupp2, 3);
+  TVirtualMC::GetMC()->Gspos("ZESV", 1, "ALIC", fPosZEM[0]-zemBoxPar[0]+zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZESV", 2, "ALIC", fPosZEM[0]+zemBoxPar[0]-zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZESV", 3, "ALIC", -(fPosZEM[0]-zemBoxPar[0]+zemSupp2[0]), ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZESV", 4, "ALIC", -(fPosZEM[0]+zemBoxPar[0]-zemSupp2[0]), ybox-zemBoxPar[1]-zemSupp2[1], zbox, 0, "ONLY");
+  printf(" Positioning ZEM ZESV %f %f %f\n",fPosZEM[0]-zemBoxPar[0]+zemSupp2[0], ybox-zemBoxPar[1]-zemSupp2[1], zbox);
+  //\// Table
+  Float_t zemTable[3] = {55./2., 1.5/2., 110./2.};
+  TVirtualMC::GetMC()->Gsvolu("ZETA","BOX ", idtmed[13], zemTable, 3);
+  Float_t ytable = ybridge-zemSupp1[1]-zemTable[1];
+  TVirtualMC::GetMC()->Gspos("ZETA", 1, "ALIC", 0.0, ytable, zbox, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZETA", 2, "ALIC", 0.0, ytable-13.+2.*zemTable[1], zbox, 0, "ONLY");
+  //
+  //Screens around ZEM
+  Float_t zemSupp3[3] = {fDimZEM[2], 2./2., 20./2.};
+  TVirtualMC::GetMC()->Gsvolu("ZEFL","BOX ", idtmed[13], zemSupp3, 3);
+  TVirtualMC::GetMC()->Gspos("ZEFL", 1, "ALIC", fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2], 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEFL", 2, "ALIC", -fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2], 0, "ONLY");
+  printf("  ZEM ZEFL dim %f %f %f\n",2*fDimZEM[2], 2.*zemSupp3[1], 2.*zemSupp3[2]);
+  printf(" Positioning ZEM cover %f %f %f\n",fPosZEM[0], -fDimZEM[1]-zemSupp3[1], zSupport+zemSupp3[2]);
+  //
+  Float_t zemSupp4[6] = {20./2., fDimZEM[1], 1.5/2., 45., 0., 0.};
+  TVirtualMC::GetMC()->Gsvolu("ZELA", "PARA", idtmed[13], zemSupp4, 6);
+  TVirtualMC::GetMC()->Gspos("ZELA", 1, "ALIC", fPosZEM[0]-fDimZEM[2]-zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZELA", 2, "ALIC", fPosZEM[0]+fDimZEM[2]+zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZELA", 3, "ALIC", -(fPosZEM[0]-fDimZEM[2]-zemSupp4[2]), fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZELA", 4, "ALIC", -(fPosZEM[0]+fDimZEM[2]+zemSupp4[2]), fPosZEM[1], fPosZEM[2]+zemSupp4[0], irot1, "ONLY");
+  printf(" Positioning ZEM ZELA in %f %f %f\n",fPosZEM[0]-fDimZEM[2]-zemSupp4[2], fPosZEM[1], fPosZEM[2]+zemSupp4[0]);
 
+  // Containers for ZEM calorimeters
+  Float_t wallh[3] = {10.5/2., bthickness[1], 95./2.};
+  Float_t wallvf[3] = {10.5/2., (100.-2.)/2., 0.2};
+  Float_t wallvb[3] = {10.5/2., (100.-2.)/2., bthickness[2]};
+  Float_t wallvl[3] = {bthickness[0], (100.-2.)/2., (95.-2.)/2.};
+  TVirtualMC::GetMC()->Gsvolu("ZEW1","BOX ", idtmed[13], wallh, 3);
+  TVirtualMC::GetMC()->Gsvolu("ZEW2","BOX ", idtmed[13], wallvf, 3);
+  TVirtualMC::GetMC()->Gsvolu("ZEW3","BOX ", idtmed[13], wallvb, 3);
+  TVirtualMC::GetMC()->Gsvolu("ZEW4","BOX ", idtmed[7], wallvl, 3);
+  //
+  Float_t yh1 = fPosZEM[1]-fDimZEM[1]-2*zemSupp3[1]-wallh[1];
+  Float_t zh1 = zSupport+wallh[2];
+  TVirtualMC::GetMC()->Gspos("ZEW1", 1, "ALIC", fPosZEM[0], yh1, zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW1", 2, "ALIC", fPosZEM[0], yh1+2*zemBoxPar[1], zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW1", 3, "ALIC", -fPosZEM[0], yh1, zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW1", 4, "ALIC", -fPosZEM[0], yh1+2*zemBoxPar[1], zh1, 0, "ONLY");
+  //
+  TVirtualMC::GetMC()->Gspos("ZEW2", 1, "ALIC", fPosZEM[0], yh1+zemBoxPar[1], zSupport-wallvf[2], 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW3", 1, "ALIC", fPosZEM[0], yh1+zemBoxPar[1], zSupport+2*wallh[2], 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW2", 2, "ALIC", -fPosZEM[0], yh1+zemBoxPar[1], zSupport-wallvf[2], 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW3", 2, "ALIC", -fPosZEM[0], yh1+zemBoxPar[1], zSupport+2*wallh[2], 0, "ONLY");
+  //
+  Float_t xl1= fPosZEM[0]-fDimZEM[2]-2.*zemSupp4[2]-wallvl[0];
+  Float_t xl2= fPosZEM[0]+fDimZEM[2]+2.*zemSupp4[2]+wallvl[0];
+  TVirtualMC::GetMC()->Gspos("ZEW4", 1, "ALIC", xl1, yh1+zemBoxPar[1], zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW4", 2, "ALIC", xl2, yh1+zemBoxPar[1], zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW4", 3, "ALIC", -xl1, yh1+zemBoxPar[1], zh1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ZEW4", 4, "ALIC", -xl2, yh1+zemBoxPar[1], zh1, 0, "ONLY");
+
+  // -------------------------------------------------------------------------------
+  
+  TVirtualMC::GetMC()->Gsvolu("ZEM ", "PARA", idtmed[10], fDimZEM, 6);
+  TVirtualMC::GetMC()->Gsvolu("ZEMF", "TUBE", idtmed[3], fFibZEM, 3); 	// Active material
   TVirtualMC::GetMC()->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     	// Tranches 
   
   dimPb[0] = kDimZEMPb;					// Lead slices 
@@ -1943,16 +2016,19 @@ void AliZDCv4::CreateZDC()
 
   // --- Positioning the ZEM into the ZDC - rotation for 90 degrees  
   // NB -> ZEM is positioned in ALIC (instead of in ZDC) volume
+
   TVirtualMC::GetMC()->Gspos("ZEM ", 1,"ALIC", -fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  printf(" Positioning ZEM1 in %f %f %f \n",-fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0]);
   
   // Second EM ZDC (same side w.r.t. IP, just on the other side w.r.t. beam pipe)
   TVirtualMC::GetMC()->Gspos("ZEM ", 2,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  printf(" Positioning ZEM2 in %f %f %f \n", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0]);
   
   // --- Adding last slice at the end of the EM calorimeter 
   Float_t zLastSlice = fPosZEM[2]+kDimZEMPb+2*fDimZEM[0];
   TVirtualMC::GetMC()->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
   //Ch debug
-  //printf("\n ZEM lenght = %f cm\n",2*fZEMLength);
+  printf("\n ZEM lenght = %f cm\n",2*fZEMLength);
   printf("\n ZEM -> %f < z < %f cm\n\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+kDimZEMPb);
   
 }
@@ -2015,8 +2091,8 @@ void AliZDCv4::CreateMaterials()
   AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // --- Tatalum 
-  ubuf[0] = 1.1;
-  AliMaterial(13, "TANT", 183.84, 74., 19.3, 0.35, 0., ubuf, 1);
+  // ubuf[0] = 1.1;
+  // AliMaterial(13, "TANT", 183.84, 74., 19.3, 0.35, 0., ubuf, 1);
     
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
@@ -2039,10 +2115,10 @@ void AliZDCv4::CreateMaterials()
   AliMixture(12, "Air    $", aAir, zAir, dAir, 4, wAir);
   
   // --- Aluminum 
-  AliMaterial(14, "ALUM", 26.98, 13., 2.7, 8.9, 0., ubuf, 1);
+  AliMaterial(13, "ALUM", 26.98, 13., 2.7, 8.9, 0., ubuf, 1);
   
   // --- Carbon 
-  AliMaterial(15, "GRAPH", 12.011, 6., 2.265, 18.8, 49.9);
+  AliMaterial(14, "GRAPH", 12.011, 6., 2.265, 18.8, 49.9);
   
   // ---  Definition of tracking media: 
   

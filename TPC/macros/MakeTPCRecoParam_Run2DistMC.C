@@ -58,6 +58,7 @@ void MakeTPCRecoParam_Run2DistMC(const char* storage="local://OCDB", AliRecoPara
     // scaling
     tpcRecoParam->SetUseLumiType(AliLumiTools::kLumiCTP);
     tpcRecoParam->SetCorrMapTimeDepMethod(AliTPCRecoParam::kCorrMapGlobalScalingLumi);
+    tpcRecoParam->SetUseMapLumiInfoCOG(kTRUE); // use lumi correction from the map if available
     // add difference to reference distortions as syst. error
     tpcRecoParam->SetUseDistortionFractionAsErrorY(-1);
     tpcRecoParam->SetUseDistortionFractionAsErrorZ(-1);
@@ -121,6 +122,7 @@ void MakeTPCRecoParam_Run2DistMC(const char* storage="local://OCDB", AliRecoPara
     // scaling
     tpcRecoParam->SetUseLumiType(AliLumiTools::kLumiCTP);
     tpcRecoParam->SetCorrMapTimeDepMethod(AliTPCRecoParam::kCorrMapGlobalScalingLumi);
+    tpcRecoParam->SetUseMapLumiInfoCOG(kTRUE); // use lumi correction from the map if available
     // add difference to reference distortions as syst. error
     tpcRecoParam->SetUseDistortionFractionAsErrorY(-1);
     tpcRecoParam->SetUseDistortionFractionAsErrorZ(-1);
@@ -247,7 +249,7 @@ void MakeTPCRecoParam_Run2DistMC(const char* storage="local://OCDB", AliRecoPara
   md->SetComment("Reconstruction parameters TPC, as used for Run2 data with distortions");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
-  AliCDBId id("TPC/Calib/RecoParam",0,AliCDBRunRange::Infinity());
+  AliCDBId id("TPC/Calib/RecoParam",227735,AliCDBRunRange::Infinity());
   cdb->GetDefaultStorage()->Put(recoParamArray,id, md);
   return;
 }

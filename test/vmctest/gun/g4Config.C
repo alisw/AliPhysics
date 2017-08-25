@@ -87,7 +87,7 @@ void Config()
     geant4->ProcessGeantCommand("/process/optical/processActivation OpWLS false");
     geant4->ProcessGeantCommand("/process/optical/processActivation OpMieHG false");
     geant4->ProcessGeantCommand("/process/optical/setTrackSecondariesFirst Cerenkov false");
-    geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
+    //PH    geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
 
     // Activate saving random engine status
     // (the file per event will be re-written with each new event)

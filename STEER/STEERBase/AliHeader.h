@@ -66,7 +66,8 @@ public:
 
   Int_t    GetSgPerBgEmbedded()      const {return fSgPerBgEmbedded;}
   void     SetSgPerBgEmbedded(int i)       {fSgPerBgEmbedded = i;}
-
+  Int_t    GetBgReuseID()            const {return fSgPerBgEmbedded ? (fEventNrInRun%fSgPerBgEmbedded) : 0;}
+  
   AliHeader& operator=(const AliHeader& head) 
     {head.Copy(*this); return *this;}
   

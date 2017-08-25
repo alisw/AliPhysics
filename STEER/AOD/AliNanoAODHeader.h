@@ -4,15 +4,15 @@
 
 #include "AliVAODHeader.h"
 #include "AliNanoAODStorage.h"
-
+#include <map>
 
 
 class AliNanoAODHeader : public AliVAODHeader, public AliNanoAODStorage
 {
 public:
   using AliVHeader::ClassName;
-  AliNanoAODHeader()  {;}
-  AliNanoAODHeader(Int_t size){ AllocateInternalStorage(size);}
+  AliNanoAODHeader();
+  AliNanoAODHeader(Int_t size);
   virtual ~AliNanoAODHeader(){;}
 
 
@@ -35,7 +35,6 @@ public:
   virtual void     SetMuonMagFieldScale(Double_t /*magFldScl*/) {NotImplemented();};
   virtual void     SetDiamond(Float_t */*xy[2]*/,Float_t */*cov[3]*/) {NotImplemented();}; 
   virtual void     SetDiamondZ(Float_t /*z*/, Float_t /*sig2z*/)    {NotImplemented();};
-  virtual Int_t    GetRunNumber()                  const    {NotImplemented(); return 0;};
   virtual Double_t GetMuonMagFieldScale()          const    {NotImplemented(); return 0;};
   virtual Double_t GetDiamondX()                   const    {NotImplemented(); return 0;};
   virtual Double_t GetDiamondY()                   const    {NotImplemented(); return 0;};
@@ -89,12 +88,48 @@ public:
 
   virtual Int_t     GetRefMultiplicity()    const { NotImplemented(); return 0; }
 
-  Double_t  GetMagneticField()      const { return GetVar(1); }
-  Double_t  GetCentrality (/*estimator = "V0M"*/) const { return GetVar(0);}
+  Double_t  GetMagneticField()      const { return GetVar(fMagField); }
+  Double_t  GetCentrality () const; 
+  Double_t  GetCentr (const char *x) const; 
+  virtual Int_t  GetRunNumber() const; 
+
+  TString GetCentralityMethod() const {return fCentralityMethod;}
+  void SetCentralityMethod(const char * method)  { fCentralityMethod = method; } 
+
+  void SetCentrIndex      (Int_t var) { fCentr     = var; }
+  void SetCentrTRKIndex   (Int_t var) { fCentrTRK  = var; }
+  void SetCentrCL0Index   (Int_t var) { fCentrCL0  = var; }
+  void SetCentrCL1Index   (Int_t var) { fCentrCL1  = var; }
+  void SetMagFieldIndex   (Int_t var) { fMagField  = var; }
+  void SetRunNumberIndex  (Int_t var) { fRunNumber = var; }
+
+
+  Int_t GetCentrIndex      () { return fCentr     ; }
+  Int_t GetCentrTRKIndex   () { return fCentrTRK  ; }
+  Int_t GetCentrCL0Index   () { return fCentrCL0  ; }
+  Int_t GetCentrCL1Index   () { return fCentrCL1  ; }
+  Int_t GetMagFieldIndex   () { return fMagField  ; }
+  Int_t GetRunNumberIndex  () { return fRunNumber ; }
+
+  std::map<TString,int> GetMapCstVar () { return fMapCstVar; } 
+  void SetMapCstVar (std::map<TString,int> cstmap) { fMapCstVar = cstmap; } 
+
+  Int_t GetVarIndex(TString varName); 
   
-  ClassDef(AliNanoAODHeader, 1)
+  ClassDef(AliNanoAODHeader, 2)
 private:
   void NotImplemented() const;
+
+  TString fCentralityMethod;
+
+  Int_t fCentr;      // index of stored variable
+  Int_t fCentrTRK;   // index of stored variable
+  Int_t fCentrCL0;   // index of stored variable
+  Int_t fCentrCL1;   // index of stored variable
+  Int_t fMagField;   // index of stored variable
+  Int_t fRunNumber;  // index of stored variable 
+
+  std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
 };
 
 #endif /* _ALINANOAODHEADER_H_ */
