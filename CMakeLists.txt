@@ -146,6 +146,16 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=delete-non-virtual-dtor")
   endif()
 
+  # Turn on "all" warnings, but skip missing braces warning
+  check_cxx_compiler_flag(-Wall CXX_COMPILER_HAS_WALL)
+  if(CXX_COMPILER_HAS_WALL)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  endif()
+  check_cxx_compiler_flag(-Wno-missing-braces CXX_COMPILER_HAS_WNO_MISSING_BRACES)
+  if(CXX_COMPILER_HAS_WNO_MISSING_BRACES)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+  endif()
+  
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
       message(WARNING "AliRoot Core has been built without with AliEn support: some features might be unavailable!")
