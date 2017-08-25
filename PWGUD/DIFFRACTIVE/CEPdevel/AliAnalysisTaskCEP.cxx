@@ -692,6 +692,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //   printf("Number of fired TOF MaxiPads = %i / %i\n",
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
   // }
+  printf("Number of fired TOF MaxiPads = %i / %i/n",
+    fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
   
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
