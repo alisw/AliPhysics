@@ -637,11 +637,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000513","2444400041013200000","0163103100000010"); // no non lin
     cuts.AddCut("80000513","2444400011013200000","0163103100000010"); // no non lin 1000 \mus
   } else if (trainConfig == 345) {  // PHOS  INT7 with cents
-    cuts.AddCut("80000513","2444400011013200000","0163103100000010"); // PHOS group standard 0-100%
-    cuts.AddCut("80200513","2444400011013200000","0163103100000010"); // PHOS group standard 0-20%
-    cuts.AddCut("82400513","2444400011013200000","0163103100000010"); // PHOS group standard 20-40%
-    cuts.AddCut("84600513","2444400011013200000","0163103100000010"); // PHOS group standard 40-60%
-    cuts.AddCut("86000513","2444400011013200000","0163103100000010"); // PHOS group standard 60-100%
+    cuts.AddCut("80000513","2444400011013200000","0163103100000010"); // no non lin 0-100%
+    cuts.AddCut("80200513","2444400011013200000","0163103100000010"); // no non lin 0-20%
+    cuts.AddCut("82400513","2444400011013200000","0163103100000010"); // no non lin 20-40%
+    cuts.AddCut("84600513","2444400011013200000","0163103100000010"); // no non lin 40-60%
+    cuts.AddCut("86000513","2444400011013200000","0163103100000010"); // no non lin 60-100%
 
   // Cent dependent
   } else if (trainConfig == 350) {  // PHOS INT7, PF on, 1.075\mus
