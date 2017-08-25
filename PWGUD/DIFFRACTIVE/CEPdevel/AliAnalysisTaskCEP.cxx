@@ -67,6 +67,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
+  , fisSTGTriggerFired(kFALSE)
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -128,6 +129,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
+  , fisSTGTriggerFired(kFALSE)
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -651,7 +653,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // topology.
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
-  Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
+  fisSTGTriggerFired = IsSTGFired(&foMap);
     
   Bool_t isDGTrigger = kFALSE;
   if (isReplay) {
@@ -664,7 +666,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
     for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
 
-    isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
+    isDGTrigger = fisSTGTriggerFired && !isV0Afired && !isV0Cfired;
     
     // printf("DG trigger replaied: %i %i %i -> %i\n",
     //   isSTGtriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
@@ -686,8 +688,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
   // in addition to CCUP13
   fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
-  printf("Number of fired TOF MaxiPads = %i / %i/n",
-    fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
+  // if ( isDGTrigger ) {
+  //   printf("Number of fired TOF MaxiPads = %i / %i\n",
+  //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
+  // }
   
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -953,6 +957,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
     
     // FP Flags of V0 and AD
