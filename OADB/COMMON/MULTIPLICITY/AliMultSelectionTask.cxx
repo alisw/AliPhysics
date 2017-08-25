@@ -1811,8 +1811,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         if( !lItsThere ){
             //Override options: go to default OADBs depending on generator
             AliWarning(" OADB for this production does not exist! Checking generator type...");
-            Bool_t lItsHijing = IsHijing();
-            Bool_t lItsDPMJet = IsDPMJet();
+            Bool_t lItsHijing    = IsHijing();
+            Bool_t lItsDPMJet    = IsDPMJet();
+            Bool_t lItsEPOSLHC   = IsEPOSLHC();
             if ( lItsHijing ){
                 lProductionName = Form("%s-DefaultMC-HIJING",lPeriodName.Data());
                 AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
@@ -1820,6 +1821,11 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             if ( lItsDPMJet ){
                 lProductionName = Form("%s-DefaultMC-DPMJet",lPeriodName.Data());
                 AliWarning(Form(" This is DPMJet! Will use OADB named %s",lProductionName.Data()));
+            }
+            if ( lItsEPOSLHC ){
+                lProductionName = Form("%s-DefaultMC-EPOSLHC",lPeriodName.Data());
+                AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
+                AliWarning(" This feature is being developed NOW! Hang in there! ");
             }
             if ( (!lItsHijing) && (!lItsDPMJet) ){
                 AliWarning(" Unable to detect generator type from header. Sorry.");
@@ -2424,6 +2430,23 @@ Bool_t AliMultSelectionTask::IsDPMJet() const {
             }
         }
         return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsEPOSLHC() const {
+    //Function to check if this is DPMJet
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        //A bit uncivilized, but hey, if it works...
+        TString lHeaderTitle = mcGenH->GetName();
+        if (lHeaderTitle.Contains("EPOSLHC")) {
+            //This header has "EPOS" in its title!
+            lReturnValue = kTRUE;
+        }
+    }
+    return lReturnValue;
 }
 
 //______________________________________________________________________
