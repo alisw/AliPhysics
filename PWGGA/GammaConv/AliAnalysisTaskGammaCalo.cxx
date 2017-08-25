@@ -3998,9 +3998,9 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
           currentAvePhi += currentV0->GetPhotonPt()*currentV0->GetPhotonPhi();
           if(currentV0->GetPhotonPt() > currentPtMax){ currentPtMax = currentV0->GetPhotonPt(); currentEta = currentV0->GetPhotonEta(); currentPhi = currentV0->GetPhotonPhi(); }
         }
-        currentAveEta \= currentAvePt;
-        currentAvePhi \= currentAvePt;
-        currentAvePt \= fClusterCandidates->GetEntries();
+        currentAveEta /= currentAvePt;
+        currentAvePhi /= currentAvePt;
+        currentAvePt /= fClusterCandidates->GetEntries();
         for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
             AliAODConversionPhoton *previousV0 = (AliAODConversionPhoton*)(previousEventV0s->at(iPrevious));
             previousAvePt += previousV0->GetPhotonPt();
@@ -4008,9 +4008,9 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
             previousAvePhi += previousV0->GetPhotonPt()*previousV0->GetPhotonPhi();
             if(previousV0->GetPhotonPt() > previousPtMax){ previousPtMax = previousV0->GetPhotonPt(); previousEta = previousV0->GetPhotonEta(); previousPhi = previousV0->GetPhotonPhi(); }
         }
-        previousAveEta \= previousAvePt;
-        previousAvePhi \= previousAvePt;
-        previousAvePt \= previousEventV0s->size();
+        previousAveEta /= previousAvePt;
+        previousAvePhi /= previousAvePt;
+        previousAvePt /= previousEventV0s->size();
         if(currentPtMax > 0. && previousPtMax > 0.){
          //if(TMath::Sqrt(pow((currentEta-previousEta),2)+pow((currentPhi-previousPhi),2)) < 0.2) acceptedPtMax = kTRUE;
          if(TMath::Abs(previousAveEta-currentAveEta)<0.4 && TMath::Abs(previousAvePhi-currentAvePhi)<0.6 && (previousAvePt/currentAvePt)<4. && (previousAvePt/currentAvePt)>0.25) acceptedPtMax = kTRUE;
