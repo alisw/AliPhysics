@@ -122,6 +122,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkDoImprovedCascadePosition( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ),
@@ -163,6 +164,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkDoImprovedCascadePosition ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ), //pre-selection
@@ -1517,13 +1519,133 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         v->GetXYZ(xyz[0],xyz[1],xyz[2]);
         v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
         
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //EXPERIMENTAL: Improve initial position guess based on (neutral!) cowboy/sailor
+        //Check bachelor trajectory properties
+        Double_t p1[8]; t->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        
+        if ( fkDoImprovedDCACascDauPropagation ) {
+            //Look for XY plane characteristics: determine relevant helix properties
+            Double_t lBachRadius = TMath::Abs(1./p1[4]);
+            Double_t lBachCenter[2];
+            GetHelixCenter( t, lBachCenter, b);
+            
+            //Algebra: define V0 momentum unit vector
+            Double_t ux = pxpypz[0];
+            Double_t uy = pxpypz[1];
+            Double_t uz = pxpypz[2]; //needed to propagate in 3D (but will be norm to 2D modulus!)
+            Double_t umod = TMath::Sqrt(ux*ux+uy*uy);
+            ux /= umod; uy /= umod; uz /= umod;
+            //perpendicular vector (for projection)
+            Double_t vx = -uy;
+            Double_t vy = +ux;
+            
+            //Step 1: calculate distance between line and helix center
+            Double_t lDist = (xyz[0]-lBachCenter[0])*vx + (xyz[1]-lBachCenter[1])*vy;
+            Double_t lDistSign = lDist / TMath::Abs(lDist);
+            
+            //Step 2: two cases
+            if( TMath::Abs(lDist) > lBachRadius ){
+                //only one starting point would sound reasonable
+                //check necessary distance to travel for V0
+                Double_t lV0travel = (lBachCenter[0]-xyz[0])*ux + (lBachCenter[1]-xyz[1])*uy;
+                
+                //move V0 forward, please: I already know where to!
+                xyz[0] += lV0travel*ux;
+                xyz[1] += lV0travel*uy;
+                xyz[2] += lV0travel*uz;
+                
+                //find helix intersection point
+                Double_t bX = lBachCenter[0]+lDistSign*lBachRadius*vx;
+                Double_t bY = lBachCenter[1]+lDistSign*lBachRadius*vy;
+                
+                Double_t cs=TMath::Cos(t->GetAlpha());
+                Double_t sn=TMath::Sin(t->GetAlpha());
+                Double_t lPreprocessX = bX*cs + bY*sn;
+                
+                //Propagate bachelor track: already know where to!
+                t->PropagateTo(lPreprocessX,b);
+                
+            }else{
+                //test two points in which DCAxy=0 for their DCA3D, pick smallest
+                //Step 1: find V0-to-center DCA
+                Double_t aX = lBachCenter[0]+lDistSign*lDist*vx;
+                Double_t aY = lBachCenter[1]+lDistSign*lDist*vy;
+                
+                //Step 2: find half-axis distance
+                Double_t lh = TMath::Sqrt(lBachRadius*lBachRadius - lDist*lDist); //always positive
+                
+                //Step 3: find 2 points in which XY intersection happens
+                Double_t lptAx = aX + lh*ux;
+                Double_t lptAy = aY + lh*uy;
+                Double_t lptBx = aX - lh*ux;
+                Double_t lptBy = aY - lh*uy;
+                
+                //Step 4: calculate 3D DCA in each point: bachelor
+                Double_t xyzptA[3], xyzptB[3];
+                Double_t csBach=TMath::Cos(t->GetAlpha());
+                Double_t snBach=TMath::Sin(t->GetAlpha());
+                Double_t xBachA = lptAx*csBach + lptAy*snBach;
+                Double_t xBachB = lptBx*csBach + lptBy*snBach;
+                t->GetXYZAt(xBachA,b, xyzptA);
+                t->GetXYZAt(xBachB,b, xyzptB);
+                
+                //Propagate V0 to relevant points
+                Double_t lV0travelA = (lptAx-xyz[0])*ux + (lptAy-xyz[1])*uy;
+                Double_t lV0travelB = (lptBx-xyz[0])*ux + (lptBy-xyz[1])*uy;
+                Double_t lV0xyzptA[3], lV0xyzptB[3];
+                lV0xyzptA[0] = xyz[0] + lV0travelA*ux;
+                lV0xyzptA[1] = xyz[1] + lV0travelA*uy;
+                lV0xyzptA[2] = xyz[2] + lV0travelA*uz;
+                lV0xyzptB[0] = xyz[0] + lV0travelB*ux;
+                lV0xyzptB[1] = xyz[1] + lV0travelB*uy;
+                lV0xyzptB[2] = xyz[2] + lV0travelB*uz;
+                
+                //Enough info now available to decide on 3D distance
+                Double_t l3DdistA = TMath::Sqrt(
+                                                TMath::Power(lV0xyzptA[0] - xyzptA[0], 2) +
+                                                TMath::Power(lV0xyzptA[1] - xyzptA[1], 2) +
+                                                TMath::Power(lV0xyzptA[2] - xyzptA[2], 2)
+                                                );
+                Double_t l3DdistB = TMath::Sqrt(
+                                                TMath::Power(lV0xyzptB[0] - xyzptB[0], 2) +
+                                                TMath::Power(lV0xyzptB[1] - xyzptB[1], 2) +
+                                                TMath::Power(lV0xyzptB[2] - xyzptB[2], 2)
+                                                );
+                
+                
+                if( l3DdistA + 1e-6 < l3DdistB ){
+                    //A is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistA < 999 && xBachA > 0.0 && xBachA < fCascadeVertexerSels[7]) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptA[icoord];
+                        }
+                        t->PropagateTo( xBachA , b );
+                    }
+                }else{
+                    //B is the better point! move there, if DCA isn't crazy + x is OK
+                    if( l3DdistB < 999 && xBachB > 0.0 && xBachB < fCascadeVertexerSels[7] ) {
+                        for(Int_t icoord = 0; icoord<3; icoord++) {
+                            xyz[icoord] = lV0xyzptB[icoord];
+                        }
+                        t->PropagateTo( xBachB , b );
+                    }
+                }
+            }
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
         //Mockup track for V0 trajectory (no covariance)
         //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
         AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
         hV0Traj->ResetCovariance(1); //won't use
         
-        Double_t p1[8]; t->GetHelixParameters(p1,b);
-        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+        //Re-acquire helix parameters for bachelor (necessary!)
+        t->GetHelixParameters(p1,b);
+        p1[6]=TMath::Sin(p1[2]);
+        p1[7]=TMath::Cos(p1[2]);
+        
         Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
         p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
         

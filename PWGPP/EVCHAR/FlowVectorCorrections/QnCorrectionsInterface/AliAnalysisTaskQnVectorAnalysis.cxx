@@ -301,7 +301,7 @@ void AliAnalysisTaskQnVectorAnalysis::UserExec(Option_t *){
      */
 
   /* this is another option more convenient and which provides support for future functionality */
-  AliQnCorrectionsManager *flowQnVectorMgr;
+  AliQnCorrectionsManager *flowQnVectorMgr = NULL;
   AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
       dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
   if (flowQnVectorTask != NULL) {
@@ -319,8 +319,6 @@ void AliAnalysisTaskQnVectorAnalysis::UserExec(Option_t *){
   if(!IsEventSelected(values)) return;
   fEventPlaneHistos->FillHistClass("Event_Analysis", values);
 
-  TList* newTrkQvecList[nTrackDetectors] = {NULL};
-  TList* newEPQvecList[nEPDetectors] = {NULL};
   const AliQnCorrectionsQnVector* newTrk_qvec[nTrackDetectors] = {NULL};
   const AliQnCorrectionsQnVector* newEP_qvec[nEPDetectors] = {NULL};
 

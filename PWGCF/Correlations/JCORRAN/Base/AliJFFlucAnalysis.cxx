@@ -246,6 +246,10 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH2D("h_trk_Glob_vs_TPC", "h_trk_Glob_vs_TPC", 100, 0, 2000, 100, 0, 3000)
 		<< "END";
 
+	fh_TrkQA_FB32_vs_FB32TOF
+		<< TH2D("h_trk_FB32_vs_FB32TOF", "h_trk_FB32_vs_FB32TOF", 200, 0, 4000, 100, 0, 2000)
+		<< "END";
+
 	fh_vertex
 		<< TH1D("h_vertex","h_vertex", 400, -20, 20)
 		<< fVertexBin
@@ -725,11 +729,12 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 				fh_phi[fCBin][1]->Fill( phi_module_corr * phi, 1./effCorr) ;
 		}
 	}
-	for(int iaxis=0; iaxis<3; iaxis++){
-		fh_vertex[iaxis]->Fill(  fVertex[iaxis] );
-	}
-	fh_TrkQA_TPCvsCent->Fill( fCent, fTPCtrks);
-	fh_TrkQA_TPCvsGlob->Fill( fGlbtrks, fTPCtrks);
+	for(int iaxis=0; iaxis<3; iaxis++)
+		fh_vertex[iaxis]->Fill( fVertex[iaxis] );
+
+	fh_TrkQA_TPCvsCent->Fill(fCent,fTPCtrks);
+	fh_TrkQA_TPCvsGlob->Fill(fGlbtrks,fTPCtrks);
+	fh_TrkQA_FB32_vs_FB32TOF->Fill(fFB32trks,fFB32TOFtrks);
 }
 
 //________________________________________________________________________

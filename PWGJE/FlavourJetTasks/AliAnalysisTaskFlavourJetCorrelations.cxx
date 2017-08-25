@@ -61,6 +61,8 @@ AliAnalysisTaskEmcalJet("AliAnalysisTaskFlavourJetCorrelations",kTRUE),
 fUseMCInfo(kTRUE), 
 fUseReco(kTRUE),
 fUsePythia(kFALSE),
+fBuildRM(kFALSE),
+fBuildRMEff(kFALSE),
 fCandidateType(),
 fCorrelationMethod(),
 fPDGmother(),
@@ -73,8 +75,6 @@ fMaxMass(),
 fCandidateArray(0),
 fSideBandArray(0),
 fAnalyseDBkg(kFALSE),
-fBuildRM(kFALSE),
-fBuildRMEff(kFALSE),
 fNAxesBigSparse(9),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
@@ -105,6 +105,8 @@ AliAnalysisTaskEmcalJet(name,kTRUE),
 fUseMCInfo(kTRUE),
 fUseReco(kTRUE),  
 fUsePythia(kFALSE),
+fBuildRM(kFALSE),
+fBuildRMEff(kFALSE),
 fCandidateType(),
 fCorrelationMethod(),
 fPDGmother(),
@@ -117,8 +119,6 @@ fMaxMass(),
 fCandidateArray(0),
 fSideBandArray(0),
 fAnalyseDBkg(kFALSE),
-fBuildRM(kFALSE),
-fBuildRMEff(kFALSE),
 fNAxesBigSparse(9),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
@@ -586,7 +586,7 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* 
     Double_t JetPtGen = MCjet->Pt();
     Double_t JetEtaGen = MCjet->Eta();
     Double_t DPtGen = Dgen->Pt();
-    Double_t DEtaGen = Dgen->Eta();
+    //Double_t DEtaGen = Dgen->Eta();
     
     Double_t zRec = -999;
     Double_t JetPtRec = -999;

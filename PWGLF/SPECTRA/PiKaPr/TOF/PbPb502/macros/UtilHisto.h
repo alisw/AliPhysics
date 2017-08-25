@@ -9,6 +9,16 @@
 #include "TH2.h"
 #include "TH3.h"
 
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Utilities for histogram management et similia                         //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
+
 //_________________________________________________________________________________________________
 Bool_t SameBinning(const TH1 *h1, const TH1 *h2, const Bool_t check = kFALSE){
   Infomsg("SameBinning", "Checking same binning");

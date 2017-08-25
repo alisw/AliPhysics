@@ -1,7 +1,7 @@
 int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int save=2,double tolerance=0.001){
   /* Author: Anders G. Knospe, The University of Texas at Austin
      Created: 26 January 2014
-     Last Modified: 11 December 2016
+     Last Modified: 19 August 2017
 
      This macro implements an iterative procedure to re-weight efficiencies.
      See the following analysis note for more information:
@@ -26,7 +26,7 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
      - The fit function (see NOTE 7)
      - The correction factor (see NOTE 3)
      - The generated and reconstructed histograms
-     - The generated and reconstructed histograms, rebinned
+     - The generated and reconstructed histograms, rebinned (note: these are not scaled by the bin width; if you want to plot them, you should scale them by dpT yourself.)
 
      NOTES:
      1.) The histograms M, G, and R and the function F are all modified in this macro to contain the final results (see also note 7).
@@ -106,11 +106,16 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
 	B=g[i][0]->GetXaxis()->GetBinLowEdge(j+1);
 	w=F->Integral(A,B)/(B-A);
 	y=g[i][0]->GetBinContent(j);
-	g[i][0]->SetBinContent(j,w);
-	w/=y;
-	g[i][0]->SetBinError(j,w*g[i][0]->GetBinError(j));
-	r[i][0]->SetBinContent(j,w*r[i][0]->GetBinContent(j));
-	r[i][0]->SetBinError(j,w*r[i][0]->GetBinError(j));
+	if(fabs(y)>1.e-30){
+	  g[i][0]->SetBinContent(j,w);
+	  w/=y;
+	  g[i][0]->SetBinError(j,w*g[i][0]->GetBinError(j));
+	  r[i][0]->SetBinContent(j,w*r[i][0]->GetBinContent(j));
+	  r[i][0]->SetBinError(j,w*r[i][0]->GetBinError(j));
+	}else{
+	  r[i][0]->SetBinContent(j,0.);
+	  r[i][0]->SetBinError(j,0.);
+	}
       }
     }
 
@@ -128,11 +133,18 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
       r0=r[0][1]->GetBinContent(j);
       g1=g[i][1]->GetBinContent(j);
       r1=r[i][1]->GetBinContent(j);
-      w=r0/g0*g1/r1;//ratio of the old (input) efficiency to the new efficiency
-      m[i]->SetBinContent(j,w*m[i]->GetBinContent(j));
-      m[i]->SetBinError(j,w*m[i]->GetBinError(j));
-      c[i]->SetBinContent(j,w);
-      c[i]->SetBinError(j,0.);
+      if(fabs(g0)>1.e-30 && fabs(r1)>1.e-30){
+	w=r0/g0*g1/r1;//ratio of the old (input) efficiency to the new efficiency
+	m[i]->SetBinContent(j,w*m[i]->GetBinContent(j));
+	m[i]->SetBinError(j,w*m[i]->GetBinError(j));
+	c[i]->SetBinContent(j,w);
+	c[i]->SetBinError(j,0.);
+      }else{
+	m[i]->SetBinContent(j,0.);
+	m[i]->SetBinError(j,0.);
+	c[i]->SetBinContent(j,0.);
+	c[i]->SetBinError(j,0.);
+      }
     }
 
     //Check the adjusted measured histogram.  Are the differences between this and the previous iteration small enough (<tolerance) that the process can stop?

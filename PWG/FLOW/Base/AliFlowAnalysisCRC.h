@@ -118,7 +118,6 @@ public:
   virtual void InitializeArraysForCRC2();
   virtual void InitializeArraysForFlowEbE();
   virtual void InitializeArraysForFlowQC();
-  virtual void InitializeArraysForFlowQCHighOrders();
   virtual void InitializeArraysForFlowGF();
   virtual void InitializeArraysForFlowSPZDC();
   virtual void InitializeArraysForFlowSPVZ();
@@ -152,7 +151,6 @@ public:
   virtual void BookEverythingForCRC2();
   virtual void BookEverythingForFlowEbE();
   virtual void BookEverythingForFlowQC();
-  virtual void BookEverythingForFlowQCHighOrders();
   virtual void BookEverythingForFlowGF();
   virtual void BookEverythingForFlowSPZDC();
   virtual void BookEverythingForFlowSPVZ();
@@ -238,7 +236,6 @@ public:
   virtual void CalculateCMEZDC();
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
-  virtual void CalculateFlowQCHighOrders();
   virtual void CalculateFlowGF();
   virtual void CalculateFlowSCZDC();
   virtual void CalculateFlowSPZDC(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm, Double_t dPhi, Double_t dEta, Double_t dPt, Double_t wPhiEta, Double_t dCharge, Int_t dCnt);
@@ -295,7 +292,6 @@ public:
   virtual void FinalizeCMEZDC();
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
-  virtual void FinalizeFlowQCHighOrders();
   virtual void FinalizeFlowGF();
   virtual void FinalizeFlowSPZDC();
   virtual void FinalizeFlowSPVZ();
@@ -324,7 +320,6 @@ public:
   virtual void GetPointersForQVec();
   virtual void GetPointersForCME();
   virtual void GetPointersForFlowQC();
-  virtual void GetPointersForFlowQCHighOrders();
   virtual void GetPointersForFlowGF();
   virtual void GetPointersForFlowSPZDC();
   virtual void GetPointersForFlowSPVZ();
@@ -958,8 +953,6 @@ public:
   TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   void SetFlowQCCorProPhi(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorProPhi[c][eg][h] = TP;};
   TProfile* GetFlowQCCorProPhi(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorProPhi[c][eg][h];};
-  void SetFlowQCIntCorProVtx(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCorProVtx[r][c][eg][h] = TP;};
-  TProfile* GetFlowQCIntCorProVtx(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProVtx[r][c][eg][h];};
 
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
@@ -1012,16 +1005,6 @@ public:
   TProfile* GetFlowSCCrossProdPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdPro[c][eg][k];};
   void SetFlowSCCrossProdProMult(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdProMult[c][eg][k] = TP;};
   TProfile* GetFlowSCCrossProdProMult(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdProMult[c][eg][k];};
-
-
-  // Flow QC high orders
-  void SetFlowQCHOList(TList* const TL) {this->fFlowQCHOList = TL;};
-  void SetFlowQCIntCorHOPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOPro[c][eg] = TP;};
-  TProfile* GetFlowQCIntCorHOPro(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOPro[c][eg];};
-  void SetFlowQCIntCorHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntCorHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOHist[c][eg];};
-  void SetFlowQCIntQCHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntQCHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntQCHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntQCHOHist[c][eg];};
 
   // Flow Generic Framework
   void SetFlowGFList(TList* const TL) {this->fFlowGFList = TL;};
@@ -1899,9 +1882,9 @@ private:
   // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCnVtx = 6;
-  const static Int_t fkFlowQCnHarVtx = 3;
-  TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
+  const static Int_t fkFlowQCRbRnHist = 3;
+  const static Int_t fkFlowQCRbRnHar = 3;
+  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnHist]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1940,17 +1923,8 @@ private:
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
 
-  // flow QC high order
-  TList *fFlowQCHOList;    //! QC high order List
-  const static Int_t fFlowNHarmHighOrd = 2;
-  const static Int_t fFlowQCHONHist = 4;
-  const static Int_t fFlowQCHOCenBin = 100;
-  TProfile *fFlowQCIntCorHOPro[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntCorHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntQCHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-
   // flow Generic Framework
-  TList *fFlowGFList;    //! QC high order List
+  TList *fFlowGFList;    //! QC with Generic Framework List
   const static Int_t fkFlowGFNHarm = 4;
   const static Int_t fkFlowGFNOrde = 4;
   const static Int_t fFlowGFCenBin = 100;
@@ -1958,7 +1932,8 @@ private:
   TH1D *fFlowGFIntCorHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCumHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntFinalHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
-  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  const static Int_t fkFlowGFNExtra = 5;
+  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNExtra]; //!
   TProfile *fFlowGFIntCovPro[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCovHist[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
 
@@ -2072,7 +2047,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
 
-  ClassDef(AliFlowAnalysisCRC,66);
+  ClassDef(AliFlowAnalysisCRC,68);
 
 };
 

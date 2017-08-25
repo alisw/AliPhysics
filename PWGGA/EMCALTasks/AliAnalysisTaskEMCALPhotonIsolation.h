@@ -116,6 +116,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
   void                     SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
   void                     SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
+  void                     Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -127,7 +128,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     PtIsoTrackEtaBand(TLorentzVector c, Double_t &ptIso, Double_t &etaBand);             // PIsoCone via Track UE via EtaBand TPC
   void                     PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);             // PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);                // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
-  
+  void                     ComputeConeArea(TLorentzVector c, Double_t &coneArea);                               // Isolation cone area depending on the cluster position
+
   Bool_t                   ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
 
   Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
@@ -211,6 +213,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
   TString     fPeriod;                         // String containing the LHC period
   Float_t     fFiducialCut;                    // Variable fiducial cut from the border of the EMCal/TPC acceptance
+  Bool_t      f2012EGA;                        // Analyze only Events with EGA recalc patches above threshold
   
   // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters
@@ -297,6 +300,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D        *fTestIndexE;                     //!<! Index vs cluster energy test
   TH2D        *fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F        *fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
+  TH3F        *fTestEnergyConeNorm;             //!<! Energy cone clusters vs tracks test (area normalised)
   TH2D        *fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D        *fInvMassM02iso;
   TH3D        *fInvMassM02noiso;
@@ -304,6 +308,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3D        *fPtvsM02vsSumEta;
   TH3D        *fPtvsM02vsSum;
   TH3D        *fPtvsM02vsSumUE;
+  TH2D        *fPtvsSum_MC;
   TH3D        *fTrackMultvsSumChargedvsUE;
   TH2D        *fTrackMultvsPt;
   TH3D        *fTracksConeEtaPt;
@@ -353,7 +358,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 18); // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 19); // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif

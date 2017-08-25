@@ -13,8 +13,7 @@ AliAnalysisTaskPHOSCluster* AddTaskPHOSCluster (Float_t fZVertex  = 10.0,
   AliAnalysisTaskPHOSCluster* task = new AliAnalysisTaskPHOSCluster(tskname.Data());
   task ->SetZVertexCut(fZVertex);
   task ->SetMinCellsPerCluster(fMinCells);
-  task ->SetHitmapFillingCellByCell(fHitmapFilling)
-
+  task ->SetHitmapFillingCellByCell(fHitmapFilling);
 
   // Add task to the manager
   mgr->AddTask(task);

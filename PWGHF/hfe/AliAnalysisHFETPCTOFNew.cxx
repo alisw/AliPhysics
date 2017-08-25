@@ -1661,11 +1661,12 @@ if(fIsMC)
 			fNonHFE = new AliSelectNonHFE();
 		      
 			fNonHFE->SetAODanalysis(fIsAOD);
+			fNonHFE->SetEtaCutForPart(-0.9,0.9);
 
 			if(fMassCutFlag) fNonHFE->SetInvariantMassCut(fMass);
 			if(fAngleCutFlag) fNonHFE->SetOpeningAngleCut(fAngleCut);
 			if(fChi2CutFlag) fNonHFE->SetChi2OverNDFCut(fChi2Cut);
-			if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
+			if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut); //dca between two tracks
 			fNonHFE->SetAlgorithm("DCA"); //KF
 			fNonHFE->SetPIDresponse(fPidResponse);
 			fNonHFE->SetTrackCuts(-3.5,3.5); 

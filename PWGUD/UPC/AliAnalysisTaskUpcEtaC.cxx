@@ -65,33 +65,171 @@ using std::endl;
 // christopher.anson@cern.ch
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC() 
-  : AliAnalysisTaskSE(),fType(0),fTracking(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fEtaCK0sChannelTree(0),fEtaCTree(0),fMeritCutChoice(0),
-    fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFmask(0),fIsPhysicsSelected(kFALSE),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
-    fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),
-    fJPsiAODTracks(0),fJPsiESDTracks(0),fEtaCAODTracks(0),fEtaCESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
-    fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
-  f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
-  f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fPionK0sChannelPt(0),fKaonK0sChannelPt(0),fK0sPtVsMinv(0),
-fK0sOtherKPiPtVsMinv(0),fMK0svsMPiK(0),
-fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fEtaCPtVsMinvK0sChannel(0),fK0sDecayLength(0),
-  fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
-  fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
-    fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
-  fNSigmaPionTPCvsNSigmaPionTOFLowPt(0),fNSigmaPionTPCvsNSigmaPionTOFMidPt(0),fNSigmaPionTPCvsNSigmaPionTOFHighPt(0),
-  fNSigmaKaonTPCvsNSigmaKaonTOFLowPt(0),fNSigmaKaonTPCvsNSigmaKaonTOFMidPt(0),fNSigmaKaonTPCvsNSigmaKaonTOFHighPt(0),
-  fTPCdEdxVsTOFbetaAll(0),fTPCdEdxVsTOFbetaPionsWithPID(0),fTPCdEdxVsTOFbetaKaonsWithPID(0),
-  fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
-  fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
-    fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
+AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
+  : AliAnalysisTaskSE()
+  , fType(0)
+  , fTracking(0)
+  , isMC(kFALSE)
+  , fRunTree(kTRUE)
+  , fRunHist(kTRUE)
+  , fRunSystematics(kFALSE)
+  , fMeritCutChoice(0)
+  , fPIDResponse(0)
+  , fEtaCK0sChannelTree(0)
+  , fEtaCTree(0)
+  , fRunNum(0)
+  , fPerNum(0)
+  , fOrbNum(0)
+  , fL0inputs(0)
+  , fL1inputs(0)
+  , fTOFmask(0)
+  , fIsPhysicsSelected(kFALSE)
+  , fVtxContrib(0)
+  , fVtxChi2(0)
+  , fVtxNDF(0)
+  , fSpdVtxContrib(0)
+  , fBCrossNum(0)
+  , fNtracklets(0)
+  , fNLooseTracks(0)
+  , fZNAenergy(0)
+  , fZNCenergy(0)
+  , fZPAenergy(0)
+  , fZPCenergy(0)
+  , fZDCAtime(0)
+  , fZDCCtime(0)
+  , fV0Adecision(0)
+  , fV0Cdecision(0)
+  , fADAdecision(0)
+  , fADCdecision(0)
+  , fDataFilnam(0)
+  , fRecoPass(0)
+  , fEvtNum(0)
+  , fJPsiAODTracks(0)
+  , fJPsiESDTracks(0)
+  , fEtaCAODTracks(0)
+  , fEtaCESDTracks(0)
+  , fGenPart(0)
+  , fListTrig(0)
+  , fHistCcup4TriggersPerRun(0)
+  , fHistCcup7TriggersPerRun(0)
+  , fHistCcup2TriggersPerRun(0)
+  , fHistCint1TriggersPerRun(0)
+  , fHistCint6TriggersPerRun(0)
+  , fHistC0tvxAndCint1TriggersPerRun(0)
+  , fHistZedTriggersPerRun(0)
+  , fHistCvlnTriggersPerRun(0)
+  , fHistMBTriggersPerRun(0)
+  , fHistCentralTriggersPerRun(0)
+  , fHistSemiCentralTriggersPerRun(0)
+  , fHistCTest58TriggersPerRun(0)
+  , fHistCTest59TriggersPerRun(0)
+  , fHistCTest60TriggersPerRun(0)
+  , fHistCTest61TriggersPerRun(0)
+  , fHistCcup8TriggersPerRun(0)
+  , fHistCcup9TriggersPerRun(0)
+  , fHistCcup10TriggersPerRun(0)
+  , fHistCcup11TriggersPerRun(0)
+  , fHistCcup12TriggersPerRun(0)
+  , fHistCtrueTriggersPerRun(0)
+  , fListHist(0)
+  , fHistNeventsEtaC(0)
+  , fMPiKvsMPiK(0)
+  , f2KstarPtPiPlus(0)
+  , f2KstarPtPiMinus(0)
+  , f2KstarPtKPlus(0)
+  , f2KstarPtKMinus(0)
+  , f2KstarTPCsignalPion(0)
+  , f2KstarTPCsignalKaon(0)
+  , f2KstarDedxVsPtPion(0)
+  , f2KstarDedxVsPtKaon(0)
+  , f2KstarTPCsignalVsQPtPion(0)
+  , f2KstarTPCsignalVsQPtKaon(0)
+  , f2KstarPtVsMinvFirstKstar(0)
+  , f2KstarPtVsMinvSecondKstar(0)
+  , f2KstarPtVsMinvEtaC(0)
+  , f1KstarPtPiPlus(0)
+  , f1KstarPtPiMinus(0)
+  , f1KstarPtKPlus(0)
+  , f1KstarPtKMinus(0)
+  , f1KstarTPCsignalPion(0)
+  , f1KstarTPCsignalKaon(0)
+  , f1KstarDedxVsPtPion(0)
+  , f1KstarDedxVsPtKaon(0)
+  , f1KstarTPCsignalVsQPtPion(0)
+  , f1KstarTPCsignalVsQPtKaon(0)
+  , f1KstarPtVsMinvKstar(0)
+  , f1KstarPtVsMinvOtherPiKcombo(0)
+  , f1KstarPtVsMinvEtaC(0)
+  , f0KstarPtPiPlus(0)
+  , f0KstarPtPiMinus(0)
+  , f0KstarPtKPlus(0)
+  , f0KstarPtKMinus(0)
+  , f0KstarTPCsignalPion(0)
+  , f0KstarTPCsignalKaon(0)
+  , f0KstarDedxVsPtPion(0)
+  , f0KstarDedxVsPtKaon(0)
+  , f0KstarTPCsignalVsQPtPion(0)
+  , f0KstarTPCsignalVsQPtKaon(0)
+  , f0KstarPtVsMinvFirstPiKcombo(0)
+  , f0KstarPtVsMinvSecondPiKcombo(0)
+  , f0KstarPtVsMinvEtaC(0)
+  , fHistK0sCandidatesPerEvent(0)
+  , fK0sPosDaughterPt(0)
+  , fK0sNegDaughterPt(0)
+  , fK0sPosVsNegDaughterPt(0)
+  , fPionK0sChannelPt(0)
+  , fKaonK0sChannelPt(0)
+  , fK0sPtVsMinv(0)
+  , fKPiPtVsMinvK0sChannel(0)
+  , fMK0sVsMKPiK0sChannel(0)
+  , fEtaCPtVsMinvK0sChannel(0)
+  , fK0sDecayLength(0)
+  , fMK0svsMPiK(0)
+  , fK0sOtherKPiPtVsMinv(0)
+
+  , fHistEtaCMassVsPt(0)
+  , fHistEtaCMassCoherent(0)
+
+  , fHistNeventsEtaCK0sChannel(0)
+
+  , fHistNpion(0)
+  , fHistNK0sPion(0)
+  , fHistNkaon(0)
+  , fHistPiMinusK(0)
+
+  , fNSigmaPionTPCvsNSigmaPionTOFLowPt(0)
+  , fNSigmaPionTPCvsNSigmaPionTOFMidPt(0)
+  , fNSigmaPionTPCvsNSigmaPionTOFHighPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFLowPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFMidPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFHighPt(0)
+  , fTPCdEdxVsTOFbetaAll(0)
+  , fTPCdEdxVsTOFbetaPionsWithPID(0)
+  , fTPCdEdxVsTOFbetaKaonsWithPID(0)
+  , fTOFTimeVsTPCdEdxAll(0)
+  , fTOFTimeVsTPCdEdxPionsWithPID(0)
+  , fTOFTimeVsTPCdEdxKaonsWithPID(0)
+  , fTOFbetaVsPtAll(0)
+  , fTOFbetaVsPtPionsWithPID(0)
+  , fTOFbetaVsPtKaonsWithPID(0)
+  , fNTracksWithTOFPIDPerEvent(0)
+  , fNTracksMissingDueToTOFPerEvent(0)
+
+  , fV0DaughterDca(0)
+  , fK0sDcaToPrimVertex(0)
+  , fK0sDaughterDcaToPrimVertex(0)
+  , fK0sMassDistribution(0)
+  , fV0DecayLength(0)
+  , fV0Eta(0)
+  , fCosPointingAngle(0)
+
+  , fHistZDCCuts(0)
+
+  , fListSystematics(0)
+  , fListJPsiLoose(0)
+  , fListJPsiTight(0)
+  , fListEtaCLoose(0)
+  , fListEtaCTight(0)
 
 {
 
@@ -101,35 +239,171 @@ fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fEtaCPtVsMinvK0sChannel(0),fK
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),fTracking(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fEtaCK0sChannelTree(0),fEtaCTree(0),fMeritCutChoice(0),
-    fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFmask(0),fIsPhysicsSelected(kFALSE),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
-    fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),
-    fJPsiAODTracks(0),fJPsiESDTracks(0),fEtaCAODTracks(0),fEtaCESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
-    fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-  fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
-  f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
-  f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fPionK0sChannelPt(0),fKaonK0sChannelPt(0),fK0sPtVsMinv(0),
-fK0sOtherKPiPtVsMinv(0),fMK0svsMPiK(0),
-fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fEtaCPtVsMinvK0sChannel(0),fK0sDecayLength(0),
-  fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
-  fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
-  
-    fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
-  fNSigmaPionTPCvsNSigmaPionTOFLowPt(0),fNSigmaPionTPCvsNSigmaPionTOFMidPt(0),fNSigmaPionTPCvsNSigmaPionTOFHighPt(0),
-  fNSigmaKaonTPCvsNSigmaKaonTOFLowPt(0),fNSigmaKaonTPCvsNSigmaKaonTOFMidPt(0),fNSigmaKaonTPCvsNSigmaKaonTOFHighPt(0),
-  fTPCdEdxVsTOFbetaAll(0),fTPCdEdxVsTOFbetaPionsWithPID(0),fTPCdEdxVsTOFbetaKaonsWithPID(0),
-  fTOFTimeVsTPCdEdxAll(0),fTOFTimeVsTPCdEdxPionsWithPID(0),fTOFTimeVsTPCdEdxKaonsWithPID(0),fNTracksWithTOFPIDPerEvent(0),fNTracksMissingDueToTOFPerEvent(0),
-  fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
-    fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
+AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
+  : AliAnalysisTaskSE(name)
+  , fType(0)
+  , fTracking(0)
+  , isMC(kFALSE)
+  , fRunTree(kTRUE)
+  , fRunHist(kTRUE)
+  , fRunSystematics(kFALSE)
+  , fMeritCutChoice(0)
+  , fPIDResponse(0)
+  , fEtaCK0sChannelTree(0)
+  , fEtaCTree(0)
+  , fRunNum(0)
+  , fPerNum(0)
+  , fOrbNum(0)
+  , fL0inputs(0)
+  , fL1inputs(0)
+  , fTOFmask(0)
+  , fIsPhysicsSelected(kFALSE)
+  , fVtxContrib(0)
+  , fVtxChi2(0)
+  , fVtxNDF(0)
+  , fSpdVtxContrib(0)
+  , fBCrossNum(0)
+  , fNtracklets(0)
+  , fNLooseTracks(0)
+  , fZNAenergy(0)
+  , fZNCenergy(0)
+  , fZPAenergy(0)
+  , fZPCenergy(0)
+  , fZDCAtime(0)
+  , fZDCCtime(0)
+  , fV0Adecision(0)
+  , fV0Cdecision(0)
+  , fADAdecision(0)
+  , fADCdecision(0)
+  , fDataFilnam(0)
+  , fRecoPass(0)
+  , fEvtNum(0)
+  , fJPsiAODTracks(0)
+  , fJPsiESDTracks(0)
+  , fEtaCAODTracks(0)
+  , fEtaCESDTracks(0)
+  , fGenPart(0)
+  , fListTrig(0)
+  , fHistCcup4TriggersPerRun(0)
+  , fHistCcup7TriggersPerRun(0)
+  , fHistCcup2TriggersPerRun(0)
+  , fHistCint1TriggersPerRun(0)
+  , fHistCint6TriggersPerRun(0)
+  , fHistC0tvxAndCint1TriggersPerRun(0)
+  , fHistZedTriggersPerRun(0)
+  , fHistCvlnTriggersPerRun(0)
+  , fHistMBTriggersPerRun(0)
+  , fHistCentralTriggersPerRun(0)
+  , fHistSemiCentralTriggersPerRun(0)
+  , fHistCTest58TriggersPerRun(0)
+  , fHistCTest59TriggersPerRun(0)
+  , fHistCTest60TriggersPerRun(0)
+  , fHistCTest61TriggersPerRun(0)
+  , fHistCcup8TriggersPerRun(0)
+  , fHistCcup9TriggersPerRun(0)
+  , fHistCcup10TriggersPerRun(0)
+  , fHistCcup11TriggersPerRun(0)
+  , fHistCcup12TriggersPerRun(0)
+  , fHistCtrueTriggersPerRun(0)
+  , fListHist(0)
+  , fHistNeventsEtaC(0)
+  , fMPiKvsMPiK(0)
+  , f2KstarPtPiPlus(0)
+  , f2KstarPtPiMinus(0)
+  , f2KstarPtKPlus(0)
+  , f2KstarPtKMinus(0)
+  , f2KstarTPCsignalPion(0)
+  , f2KstarTPCsignalKaon(0)
+  , f2KstarDedxVsPtPion(0)
+  , f2KstarDedxVsPtKaon(0)
+  , f2KstarTPCsignalVsQPtPion(0)
+  , f2KstarTPCsignalVsQPtKaon(0)
+  , f2KstarPtVsMinvFirstKstar(0)
+  , f2KstarPtVsMinvSecondKstar(0)
+  , f2KstarPtVsMinvEtaC(0)
+  , f1KstarPtPiPlus(0)
+  , f1KstarPtPiMinus(0)
+  , f1KstarPtKPlus(0)
+  , f1KstarPtKMinus(0)
+  , f1KstarTPCsignalPion(0)
+  , f1KstarTPCsignalKaon(0)
+  , f1KstarDedxVsPtPion(0)
+  , f1KstarDedxVsPtKaon(0)
+  , f1KstarTPCsignalVsQPtPion(0)
+  , f1KstarTPCsignalVsQPtKaon(0)
+  , f1KstarPtVsMinvKstar(0)
+  , f1KstarPtVsMinvOtherPiKcombo(0)
+  , f1KstarPtVsMinvEtaC(0)
+  , f0KstarPtPiPlus(0)
+  , f0KstarPtPiMinus(0)
+  , f0KstarPtKPlus(0)
+  , f0KstarPtKMinus(0)
+  , f0KstarTPCsignalPion(0)
+  , f0KstarTPCsignalKaon(0)
+  , f0KstarDedxVsPtPion(0)
+  , f0KstarDedxVsPtKaon(0)
+  , f0KstarTPCsignalVsQPtPion(0)
+  , f0KstarTPCsignalVsQPtKaon(0)
+  , f0KstarPtVsMinvFirstPiKcombo(0)
+  , f0KstarPtVsMinvSecondPiKcombo(0)
+  , f0KstarPtVsMinvEtaC(0)
+  , fHistK0sCandidatesPerEvent(0)
+  , fK0sPosDaughterPt(0)
+  , fK0sNegDaughterPt(0)
+  , fK0sPosVsNegDaughterPt(0)
+  , fPionK0sChannelPt(0)
+  , fKaonK0sChannelPt(0)
+  , fK0sPtVsMinv(0)
+  , fKPiPtVsMinvK0sChannel(0)
+  , fMK0sVsMKPiK0sChannel(0)
+  , fEtaCPtVsMinvK0sChannel(0)
+  , fK0sDecayLength(0)
+  , fMK0svsMPiK(0)
+  , fK0sOtherKPiPtVsMinv(0)
 
+  , fHistEtaCMassVsPt(0)
+  , fHistEtaCMassCoherent(0)
+
+  , fHistNeventsEtaCK0sChannel(0)
+
+  , fHistNpion(0)
+  , fHistNK0sPion(0)
+  , fHistNkaon(0)
+  , fHistPiMinusK(0)
+
+  , fNSigmaPionTPCvsNSigmaPionTOFLowPt(0)
+  , fNSigmaPionTPCvsNSigmaPionTOFMidPt(0)
+  , fNSigmaPionTPCvsNSigmaPionTOFHighPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFLowPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFMidPt(0)
+  , fNSigmaKaonTPCvsNSigmaKaonTOFHighPt(0)
+  , fTPCdEdxVsTOFbetaAll(0)
+  , fTPCdEdxVsTOFbetaPionsWithPID(0)
+  , fTPCdEdxVsTOFbetaKaonsWithPID(0)
+  , fTOFTimeVsTPCdEdxAll(0)
+  , fTOFTimeVsTPCdEdxPionsWithPID(0)
+  , fTOFTimeVsTPCdEdxKaonsWithPID(0)
+  , fTOFbetaVsPtAll(0)
+  , fTOFbetaVsPtPionsWithPID(0)
+  , fTOFbetaVsPtKaonsWithPID(0)
+  , fNTracksWithTOFPIDPerEvent(0)
+  , fNTracksMissingDueToTOFPerEvent(0)
+
+  , fV0DaughterDca(0)
+  , fK0sDcaToPrimVertex(0)
+  , fK0sDaughterDcaToPrimVertex(0)
+  , fK0sMassDistribution(0)
+  , fV0DecayLength(0)
+  , fV0Eta(0)
+  , fCosPointingAngle(0)
+
+  , fHistZDCCuts(0)
+
+  , fListSystematics(0)
+  , fListJPsiLoose(0)
+  , fListJPsiTight(0)
+  , fListEtaCLoose(0)
+  , fListEtaCTight(0)
 {
 
   // Constructor
@@ -1007,13 +1281,13 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Int_t nGoodTracks = 0;
   Int_t trackIndex[7] = {-1,-1,-1,-1,-1,-1,-1};
   Int_t missingTOFPID[7] = {-1,-1,-1,-1,-1,-1,-1};
-  Int_t missingTOFPIDK0s[7] = {-1,-1,-1,-1,-1,-1,-1};
+  //  Int_t missingTOFPIDK0s[7] = {-1,-1,-1,-1,-1,-1,-1};
   
-  TLorentzVector vPion[7], vKaon[7], vK0sPion[7], vK0sKaon[7], vKPiK0sChannel, vK0s[7], vKPi[7], vKstar[7], vCandidate;
-  Short_t qKaon[7], qPion[7], qK0sPion[7], qK0sKaon[7];
-  UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
-  Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
-  Int_t fChannel = 0;
+  TLorentzVector vPion[7], vKaon[7],vKPiK0sChannel, vK0s[7], vKPi[7], vKstar[7], vCandidate;
+  Short_t qKaon[7], qPion[7];
+  UInt_t nKaon=0, nPion=0, nSpdHits=0;
+  Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7];
+  //  Int_t fChannel = 0;
   Double_t trackPt[7]={0,0,0,0,0,0,0};
   
    
@@ -1581,11 +1855,11 @@ void AliAnalysisTaskUpcEtaC::RunAODtree()
     fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
     fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
     fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-    fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-    fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-    fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
-    fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
-    fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+    fTrigger[8]  = trigger.Contains("CCUP8-B"); // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+    fTrigger[9]  = trigger.Contains("CCUP9-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
+    fTrigger[10]  = trigger.Contains("CCUP10-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
+    fTrigger[11]  = trigger.Contains("CCUP11-B"); // *0UBA *0UBC 0STP 0OMU
+    fTrigger[12]  = trigger.Contains("CCUP12-B"); // *0UBA *0UBC 0STP
     fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
   }
   if(fTracking == 8) {
@@ -1977,9 +2251,9 @@ void AliAnalysisTaskUpcEtaC::RunESDhist()
   Double_t kStarMass = partKstar->Mass();
   Double_t kStarWidth = partKstar->Width();
 
-  TParticlePDG *partK0short = pdgdat->GetParticle( 310 );
-  Double_t k0ShortMass = partK0short->Mass();
-  Double_t k0ShortWidth = partK0short->Width();
+  // TParticlePDG *partK0short = pdgdat->GetParticle( 310 );
+  // Double_t k0ShortMass = partK0short->Mass();
+  // Double_t k0ShortWidth = partK0short->Width();
 
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
@@ -2035,7 +2309,7 @@ void AliAnalysisTaskUpcEtaC::RunESDhist()
   Int_t trackIndex[5] = {-1,-1,-1,-1,-1};
   
   TLorentzVector vPion[4], vKaon[4], vKstar[4], vCandidate;
-  Short_t qKaon[4], qPion[4], qKstar[4];
+  Short_t qKaon[4], qPion[4];
   UInt_t nKaon=0, nPion=0;
   Double_t fRecTPCsignalPion[5], fRecTPCsignalKaon[5];
 
@@ -2289,8 +2563,8 @@ void AliAnalysisTaskUpcEtaC::RunESDtree()
   fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
   fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
   fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  fTrigger[8]  = trigger.Contains("CCUP8-B"); // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  fTrigger[9]  = trigger.Contains("CCUP9-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
   
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {

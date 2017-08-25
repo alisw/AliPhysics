@@ -97,7 +97,7 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
+    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
       fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -107,6 +107,35 @@ AliMultSelectionTask::AliMultSelectionTask()
       fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
       //don't change the default, or we'll be in big trouble!
       fStoredObjectName("MultSelection"),
+      fESDtrackCuts(0), fUtils(0),
+      fAmplitude_V0A(0),
+      fAmplitude_V0A1(0),
+      fAmplitude_V0A2(0),
+      fAmplitude_V0A3(0),
+      fAmplitude_V0A4(0),
+      fAmplitude_V0C(0),
+      fAmplitude_V0C1(0),
+      fAmplitude_V0C2(0),
+      fAmplitude_V0C3(0),
+      fAmplitude_V0C4(0),
+      fAmplitude_V0Apartial(0),
+      fAmplitude_V0Cpartial(0),
+      fAmplitude_V0AEq(0),
+      fAmplitude_V0CEq(0),
+      fAmplitude_OnlineV0A(0),
+      fAmplitude_OnlineV0C(0),
+      fAmplitude_V0AADC(0),
+      fAmplitude_V0CADC(0),
+      fnSPDClusters(0),
+      fnSPDClusters0(0),
+      fnSPDClusters1(0),
+      fnTracklets(0),
+      fnTracklets08(0),
+      fnTracklets15(0),
+      fRefMultEta5(0),
+      fRefMultEta8(0),
+      fMultiplicity_ADA(0),
+      fMultiplicity_ADC(0),
       fZncEnergy(0),
       fZpcEnergy(0),
       fZnaEnergy(0),
@@ -117,44 +146,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fZncTower(0),
       fZpaTower(0),
       fZpcTower(0),
-      fZnaFired(0),
-      fZncFired(0),
-      fZpaFired(0),
-      fZpcFired(0),
-      fNTracks(0),
-      fNTracksGlobal2015(0),
-      fNTracksGlobal2015Trigger(0),
-      fNTracksITSsa2010(0),
-      fCurrentRun(-1),
-      fMultiplicity_ADA (0),
-      fMultiplicity_ADC (0),
-      fAmplitude_V0A   (0),
-      fAmplitude_V0C   (0),
-      fAmplitude_V0Apartial   (0),
-      fAmplitude_V0Cpartial   (0),
-      fAmplitude_V0AEq (0),
-      fAmplitude_V0CEq (0),
-      fAmplitude_OnlineV0A(0),
-      fAmplitude_OnlineV0C(0),
-      fAmplitude_V0A1(0),
-      fAmplitude_V0A2(0),
-      fAmplitude_V0A3(0),
-      fAmplitude_V0A4(0),
-      fAmplitude_V0C1(0),
-      fAmplitude_V0C2(0),
-      fAmplitude_V0C3(0),
-      fAmplitude_V0C4(0),
-      fAmplitude_V0AADC   (0),
-      fAmplitude_V0CADC   (0),
-      fnSPDClusters(0),
-      fnTracklets(0),
-      fnTracklets08(0),
-      fnTracklets15(0),
-      fnSPDClusters0(0),
-      fnSPDClusters1(0),
-      fnContributors(0),
-      fRefMultEta5(0),
-      fRefMultEta8(0),
+      fEvSel_VtxZ(0),
       fRunNumber(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -167,7 +159,18 @@ AliMultSelectionTask::AliMultSelectionTask()
       fEvSel_IsNotAsymmetricInVZERO(0),
       fEvSel_IsNotIncompleteDAQ(0),
       fEvSel_HasGoodVertex2016(0),
-      fEvSel_VtxZ(0),
+      fnContributors(0),
+      fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), 
+      fZnaFired(0),
+      fZncFired(0),
+      fZpaFired(0),
+      fZpcFired(0),
+      fNTracks(0),
+      fNTracksGlobal2015(0),
+      fNTracksGlobal2015Trigger(0),
+      fNTracksITSsa2010(0),
+      fCurrentRun(-1),
+      fQuantiles{0.}, /*added Hans*/
       fEvSelCode(0),
       fNDebug(1),
       fAliCentralityV0M(0),
@@ -1808,8 +1811,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         if( !lItsThere ){
             //Override options: go to default OADBs depending on generator
             AliWarning(" OADB for this production does not exist! Checking generator type...");
-            Bool_t lItsHijing = IsHijing();
-            Bool_t lItsDPMJet = IsDPMJet();
+            Bool_t lItsHijing    = IsHijing();
+            Bool_t lItsDPMJet    = IsDPMJet();
+            Bool_t lItsEPOSLHC   = IsEPOSLHC();
             if ( lItsHijing ){
                 lProductionName = Form("%s-DefaultMC-HIJING",lPeriodName.Data());
                 AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
@@ -1817,6 +1821,11 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             if ( lItsDPMJet ){
                 lProductionName = Form("%s-DefaultMC-DPMJet",lPeriodName.Data());
                 AliWarning(Form(" This is DPMJet! Will use OADB named %s",lProductionName.Data()));
+            }
+            if ( lItsEPOSLHC ){
+                lProductionName = Form("%s-DefaultMC-EPOSLHC",lPeriodName.Data());
+                AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
+                AliWarning(" This feature is being developed NOW! Hang in there! ");
             }
             if ( (!lItsHijing) && (!lItsDPMJet) ){
                 AliWarning(" Unable to detect generator type from header. Sorry.");
@@ -2421,6 +2430,23 @@ Bool_t AliMultSelectionTask::IsDPMJet() const {
             }
         }
         return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsEPOSLHC() const {
+    //Function to check if this is DPMJet
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        //A bit uncivilized, but hey, if it works...
+        TString lHeaderTitle = mcGenH->GetName();
+        if (lHeaderTitle.Contains("EPOSLHC")) {
+            //This header has "EPOS" in its title!
+            lReturnValue = kTRUE;
+        }
+    }
+    return lReturnValue;
 }
 
 //______________________________________________________________________

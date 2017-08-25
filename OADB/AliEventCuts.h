@@ -11,6 +11,7 @@ using std::string;
 #include "AliVEvent.h"
 #include "AliAnalysisUtils.h"
 
+class AliESDtrackCuts;
 class TList;
 class TH1D;
 class TH1I;
@@ -43,7 +44,7 @@ class AliEventCutsContainer : public TNamed {
 class AliEventCuts : public TList {
   public:
     AliEventCuts(bool savePlots = false);
-    virtual ~AliEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
+    virtual ~AliEventCuts();
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
@@ -174,7 +175,10 @@ class AliEventCuts : public TList {
     TH2F* fTPCvsTrkl[2];           //!<!
     TH2F* fVZEROvsTPCout[2];       //!<!
 
-    ClassDef(AliEventCuts,2)
+    AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
+    AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
+
+    ClassDef(AliEventCuts,3)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
