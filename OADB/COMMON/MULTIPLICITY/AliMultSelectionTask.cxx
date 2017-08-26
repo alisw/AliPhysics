@@ -1773,7 +1773,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     AliWarning(Form("Event type: %i",lEventType));
     
     //For now: very trivial way of storing event type
-    fHistEventCounter->SetTitle(Form("Event type: %i",lEventType));
+    TString lHistTitle = Form("Event type: %i",lEventType);
+    
 
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
@@ -1841,18 +1842,25 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
 
+    TString lOADBref = lPeriodName.Data();
+    
     //Full Manual Bypass Mode (DEBUG ONLY)
     if ( fAlternateOADBFullManualBypass.EqualTo("")==kFALSE ) {
         AliWarning(" Extra option detected: FULL MANUAL BYPASS of DATA OADB Location ");
         AliWarning(" --- Warning: Use with care ---");
         AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypass.Data() ));
         fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
+        //If bypassed, pass info
+        lOADBref = Form("BYPASS: %s", fAlternateOADBFullManualBypass.Data());
     }
 
     //Open File without calling InitFromFile, don't load it all!
     TFile * foadb = TFile::Open(fileName);
     if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileName.Data()));
 
+    //Managed to open, save name of opened OADB file
+    lHistTitle.Append(Form(", OADB: %s",lOADBref.Data()));
+    
     AliOADBContainer * MultContainer = (AliOADBContainer*) foadb->Get("MultSel");
     if(!MultContainer) AliFatal(Form("OADB file %s does not contain OADBContainer named MultSel, stopping here", fileName.Data()));
     
@@ -1903,6 +1911,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("Extra option detected: Load estimators from OADB file called: ");
         AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
 
+        TString lmuOADBref = fAlternateOADBForEstimators.Data();
+        
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
 
         //Full Manual Bypass Mode (DEBUG ONLY)
@@ -1911,7 +1921,12 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             AliWarning(" --- Warning: Use with care ---");
             AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
             fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+            //If bypassed, pass info
+            lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
         }
+        
+        //Managed to open, save name of opened OADB file
+        lHistTitle.Append(Form(", muOADB: %s",lmuOADBref.Data()));
         
         //Open fileNameAlter
         TFile * foadbAlter = 0x0;
@@ -1992,7 +2007,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else {
         AliWarning("Weird! No AliMultSelectionCuts found...");
     }
-
+    
+    //Set histo name for posterity
+    fHistEventCounter->SetTitle(lHistTitle.Data());
     return 0;
 }
 
