@@ -97,6 +97,7 @@ set(SRCS
     PHOS_pp_8TeV_2012/AliCaloTriggerSimulator.cxx
     PHOS_Run2/AliAnalysisTaskPHOSObjectCreator.cxx
     PHOS_Run2/AliPHOSTriggerHelper.cxx
+    PHOS_Run2/AliPHOSJetJetMC.cxx
     PHOS_Run2/AliPHOSEventCuts.cxx
     PHOS_Run2/AliPHOSClusterCuts.cxx
     PHOS_Run2/AliAnalysisTaskPHOSPi0EtaToGammaGamma.cxx
