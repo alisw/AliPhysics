@@ -33,6 +33,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
  AliPIDResponse::EBeamType  collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2 outNameSuffix
  Bool_t      isMC          = 0,     //MC flag
  UInt_t      triggerMask   = AliVEvent::kINT7, //trigger selection
+ Bool_t      enaMultSel    = kTRUE,    //enable multiplicity axis
  Int_t       evtCutSetID   = eventCutSet::kEvtDefault, //event selection
  Int_t       pairCutSetID  = pairYCutSet::kPairDefault, //pair cuts
  Int_t       aodFilterBit  = 5,     //AOD filter bit for AOD only
@@ -339,7 +340,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
-  if (!ConfigF0(task, isMC, collSys, cutsPair, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableMonitor) ) return 0x0;
+  if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableMonitor) ) return 0x0;
    
   // -- CONTAINERS --------------------------------------------------------------------------------
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
