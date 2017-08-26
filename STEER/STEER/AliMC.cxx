@@ -369,18 +369,32 @@ void  AliMC::AddParticles()
   // Heavy vector mesons
   // D*+
   TVirtualMC::GetMC()->DefineParticle(413, "D*+", kPTHadron, 2.0103, 1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // D*-
+  TVirtualMC::GetMC()->DefineParticle(-413, "D*-", kPTHadron, 2.0103, -1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // D*0
   TVirtualMC::GetMC()->DefineParticle(423, "D*0", kPTHadron, 2.0007, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // D*0bar
+  TVirtualMC::GetMC()->DefineParticle(-423, "D*0bar", kPTHadron, 2.0007, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // D*_s+
   TVirtualMC::GetMC()->DefineParticle(433, "D*_s+", kPTHadron, 2.1123, 1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // D*_s-
+  TVirtualMC::GetMC()->DefineParticle(-433, "D*_s-", kPTHadron, 2.1123, -1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // B*0
   TVirtualMC::GetMC()->DefineParticle(513, "B*0", kPTHadron, 5.3251, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // B*0bar
+  TVirtualMC::GetMC()->DefineParticle(-513, "B*0bar", kPTHadron, 5.3251, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // B*+
   TVirtualMC::GetMC()->DefineParticle(523, "B*+", kPTHadron, 5.3251, 1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // B*-
+  TVirtualMC::GetMC()->DefineParticle(-523, "B*-", kPTHadron, 5.3251, -1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // B*_s0
   TVirtualMC::GetMC()->DefineParticle(533, "B*_s0", kPTHadron, 5.4128, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // B*_s0bar
+  TVirtualMC::GetMC()->DefineParticle(-533, "B*_s0bar", kPTHadron, 5.4128, 0.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
   // B*_c+
   TVirtualMC::GetMC()->DefineParticle(543, "B*_c+", kPTHadron, 6.6020, 1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
+  // B*_c-
+  TVirtualMC::GetMC()->DefineParticle(-543, "B*_c-", kPTHadron, 6.6020, -1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
 
   // Define the 2- and 3-body phase space decay for the Hyper-Triton
   Int_t mode[6][3];
