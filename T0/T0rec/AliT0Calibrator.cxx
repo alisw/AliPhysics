@@ -148,7 +148,7 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
   if (fEqualized == 0)
     timeEq= time - fTimeDelayCFD[ipmt]-walk;
   else 
-    timeEq = time - walk -  refAmp;
+    timeEq = time - walk - cfdVStimestamp;
   
   //   printf(" ipmt %i time before %i timeWalk %i , walk %i  qt %i fTimeDelayCFD[ipmt] %i timeEq %i \n ",
   //	 ipmt, time,timeWalk, walk, qt,fTimeDelayCFD[ipmt], timeEq );

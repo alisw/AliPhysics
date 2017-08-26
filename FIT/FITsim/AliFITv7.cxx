@@ -172,7 +172,7 @@ void AliFITv7::CreateGeometry()
 
   Double_t crad = 82.;		//define concave c-side radius here
     
-  Double_t dP = pmcp[0]; 	//side length of mcp divided by 2
+  Double_t dP = 3.31735114408; 	// Work in Progress side length
 
   //uniform angle between detector faces==
   Double_t btta = 2*TMath::ATan(dP/crad);
@@ -184,18 +184,20 @@ void AliFITv7::CreateGeometry()
     gridpoints[i] = crad*TMath::Sin((1 - 1/(2*TMath::Abs(grdin[i])))*grdin[i]*btta);
   } 
 
-  Double_t xi[28] = {gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],
-       		     gridpoints[0],gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],gridpoints[5],
-       		     gridpoints[0],gridpoints[1],gridpoints[4],gridpoints[5],
-       		     gridpoints[0],gridpoints[1],gridpoints[4],gridpoints[5],
-       		     gridpoints[0],gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4],gridpoints[5],
-       		     gridpoints[1],gridpoints[2],gridpoints[3],gridpoints[4]};
-  Double_t yi[28] = {gridpoints[5],gridpoints[5],gridpoints[5],gridpoints[5],
-       		     gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],gridpoints[4],
-   	             gridpoints[3],gridpoints[3],gridpoints[3],gridpoints[3],
-	             gridpoints[2],gridpoints[2],gridpoints[2],gridpoints[2],
-	             gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],gridpoints[1],
-	             gridpoints[0],gridpoints[0],gridpoints[0],gridpoints[0]}; 
+  vector<Double_t> xi,yi;
+    
+  for(Int_t j = 5; j >= 0; j--){
+      for(Int_t i = 0; i < 6; i++){
+          if(!(((j == 5 || j == 0) && (i == 5 || i == 0)) || 
+               ((j == 3 || j == 2) && (i == 3 || i == 2))))
+          {
+              xi.push_back(gridpoints[i]);
+              yi.push_back(gridpoints[j]);
+          }
+      }
+      
+  }
+  
   Double_t zi[28];
   for(Int_t i = 0; i < 28; i++) {
     zi[i] = TMath::Sqrt(TMath::Power(crad, 2) - TMath::Power(xi[i], 2) - TMath::Power(yi[i], 2));
@@ -306,6 +308,9 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
 {
   cout<<"AliFITv7::SetOneMCP "<<ins<<endl;
   Double_t x,y,z;
+  Double_t crad = 82.;		//define concave c-side radius here
+  Double_t dP = 3.31735114408; 	// Work in Progress side length
+  
   Int_t *idtmed = fIdtmed->GetArray();
   Float_t pinstart[3] = {2.95,2.95,4.34};
   Float_t pmcp[3] = {2.949, 2.949, 2.8}; //MCP
@@ -331,6 +336,38 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   
    TVirtualMC::GetMC()->Gsvolu("0PAL","BOX",idtmed[kAl],pal,3); // 5mmAl top on the radiator
   TGeoVolume *altop = gGeoManager->GetVolume("0PAL");
+  
+  Double_t thet = TMath::ATan(dP/crad);
+  Double_t rat = TMath::Tan(thet)/2.0;
+    
+  //Al housing definition  
+  Double_t mgon[16];
+    
+  mgon[0]  = -45;
+  mgon[1]  = 360.0;
+  mgon[2]  = 4;
+  mgon[3]  = 4;
+  
+  z = -pinstart[2] + 2*pal[2];
+  mgon[4]  = z;
+  mgon[5]  = 2*ptop[0] + preg[2];
+  mgon[6]  = dP+rat*z*4/3;
+  
+  z = -pinstart[2] + 2*pal[2] + 2*ptopref[2];
+  mgon[7]  = z;
+  mgon[8]  = mgon[5];
+  mgon[9]  = dP+z*rat;
+  mgon[10] = z;
+  mgon[11] = pmcp[0] + preg[2];
+  mgon[12] = mgon[9];
+  
+  z = -pinstart[2] + 2*pal[2] + 2*ptopref[2] + 2*preg[2] + 2*pmcp[2];
+  mgon[13] = z;
+  mgon[14] = mgon[11];
+  mgon[15] = dP+z*rat*pmcp[2]*9/10;  
+  
+  TVirtualMC::GetMC()->Gsvolu("0SUP","PGON",idtmed[kAl], mgon, 16); //Al Housing for Support Structure
+  TGeoVolume *alsup = gGeoManager->GetVolume("0SUP");
 
 
   //wrapped radiator +  reflectiong layers 
@@ -373,6 +410,9 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   z=-pinstart[2] + 2*pal[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
   //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
+  
+  // Al Housing for Support Structure
+  ins->AddNode(alsup,1);
 }
   
 //_________________________________________
