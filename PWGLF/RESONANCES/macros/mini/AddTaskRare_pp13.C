@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe: anders.knospe@cern.ch
-                  last modified on 14/8/2017
+                  last modified on 26/8/2017
   Macro to configure the resonance package for searches for rare resonances.
 
 ****************************************************************************/
@@ -120,7 +120,9 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
 
   Double_t multbins[200];
   int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  multbins[nmult]=0.; nmult++;
+  multbins[nmult]=1.e-30; nmult++;
+  for(j=1;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
@@ -132,7 +134,10 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-  TH2F* hmc=new TH2F("MultiVsCent","", 110,0.,110., 400,0.5,400.5);
+  double ybins[500];
+  for(j=0;j<=401;j++) ybins[j]=j-0.5;
+
+  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
@@ -812,7 +817,7 @@ Bool_t Config_kxk0(
   for(Int_t i=0;i<6;i++){
     if (!use[i]) continue;
     // create output
-    AliRsnMiniOutput* out=task->CreateOutput(Form("pik0_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    AliRsnMiniOutput* out=task->CreateOutput(Form("kxk0_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
     out->SetCutID(1,cutID2[i]);
@@ -1134,7 +1139,7 @@ Bool_t Config_pk0(
   for(Int_t i=0;i<6;i++){
     if (!use[i]) continue;
     // create output
-    AliRsnMiniOutput* out=task->CreateOutput(Form("pik0_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    AliRsnMiniOutput* out=task->CreateOutput(Form("pk0_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
     out->SetCutID(1,cutID2[i]);
@@ -2082,7 +2087,7 @@ Bool_t Config_Lambdap(
   for(Int_t i=0;i<18;i++){
     if(!use[i]) continue;
     // create output
-    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdapi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    AliRsnMiniOutput* out=task->CreateOutput(Form("Lambdap_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
     out->SetCutID(1,cutID2[i]);
