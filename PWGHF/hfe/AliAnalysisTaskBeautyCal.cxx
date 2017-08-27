@@ -871,7 +871,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         Double_t lim_inplane = TMath::Cos(30.0/180.0*TMath::Pi());   
         Double_t lim_outplane = TMath::Cos(60.0/180.0*TMath::Pi());  
  
-
   ////////////////
   //Event vertex//
   ////////////////
@@ -1334,7 +1333,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
            WeightPho = fEta3040_1->Eval(pTmom);
           }
        }
-         
 
     /////////////////////////////////
 
@@ -1348,14 +1346,23 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
        Double_t cosdphi = TMath::Cos(dphi_ep);
        Bool_t iInPlane = kFALSE;
        Bool_t iOutPlane = kFALSE;
+      
        if(TMath::Abs(cosdphi)>=lim_inplane && TMath::Abs(cosdphi)<=1.0)iInPlane = kTRUE;
        if(TMath::Abs(cosdphi)>=0.0 && TMath::Abs(cosdphi)<=lim_outplane)iOutPlane = kTRUE;
 
+       // path RAA
        if(fEPana==1){
           if(!iInPlane)continue;   // select inplane tracks
          } 
        if(fEPana==2){
          if(!iOutPlane)continue;  // select outplane tracks
+         }
+       // flow
+       if(fEPana==3){
+          if(cosdphi<0)continue;   // select inplane tracks
+         } 
+       if(fEPana==4){
+          if(cosdphi>0)continue;   // select inplane tracks
          }
 
        fdPhiEP1->Fill(dphi_ep); 
