@@ -3706,10 +3706,6 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
         Double_t sn=TMath::Sin(t->GetAlpha());
         Double_t xthis=r1[0]*cs + r1[1]*sn;
         
-        //Memory cleanup
-        hV0Traj->Delete();
-        hV0Traj=0x0;
-        
         //Propagate bachelor to the point of DCA
         if (!t->PropagateTo(xthis,b)) {
             //AliWarning(" propagation failed !";
@@ -3717,8 +3713,7 @@ Double_t AliAnalysisTaskStrEffStudy::PropagateToDCA(AliESDv0 *v, AliExternalTrac
             //fHistV0ToBachelorPropagationStatus->Fill(8.5);
             return 1e+33;
         }
-        
-        
+    
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
         dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
