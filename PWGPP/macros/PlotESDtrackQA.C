@@ -24,9 +24,49 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
 void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s);
 
-
-void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=-1){
+void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_t runNumber=270827){
   
+  TTree* trtree=new TTree("trending","tree of trending variables");
+  trtree->Branch("nrun",&runNumber,"nrun/I");
+  // match eff variables
+  Double_t ptForTrend[3]={0.35,1.,4.};
+  Double_t ptForBadHyp[3]={0.35,0.6,0.9};
+  Double_t ptForResol[4]={0.35,1.,4.,10.};
+
+  Float_t vecMatchEff[24];
+  for(Int_t itof=0; itof<2; itof++){
+    TString tof="";
+    if(itof==1) tof="TOFbc";
+    for(Int_t ispd=0; ispd<2; ispd++){
+      TString spd="";
+      if(ispd==1) spd="SPDany";
+      for(Int_t isid=0; isid<2; isid++){
+	TString side="Pos";
+	if(isid==1) side="Neg";
+	for(Int_t ipt=0; ipt<3; ipt++){
+	  TString bName=Form("MatchEff%sPt%dEta%s%s",spd.Data(),TMath::Nint(ptForTrend[ipt]*1000.),side.Data(),tof.Data());
+	  Int_t index=itof*12+ispd*6+isid*3+ipt;
+	  trtree->Branch(bName.Data(),&vecMatchEff[index],Form("%s/F",bName.Data()));
+	}
+      }
+    }
+  }
+  Float_t vecPosNeg[12];
+  for(Int_t ispd=0; ispd<2; ispd++){
+    TString spd="";
+    if(ispd==1) spd="SPDany";
+    for(Int_t isid=0; isid<2; isid++){
+      TString side="Pos";
+      if(isid==1) side="Neg";
+      for(Int_t ipt=0; ipt<3; ipt++){
+	TString bName=Form("PosNegCharge%sPt%dEta%s",spd.Data(),TMath::Nint(ptForTrend[ipt]*1000.),side.Data());
+	Int_t index=ispd*6+isid*3+ipt;
+	trtree->Branch(bName.Data(),&vecPosNeg[index],Form("%s/F",bName.Data()));
+      }
+    }
+  }
+
+
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckESDTracks");
   TList* l=(TList*)df->Get(Form("clistCheckESDTracks%s",suffix.Data()));
@@ -34,6 +74,9 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
+  TH3F* hEtaPhiPtTPCselTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselTOFbc");
+  TH3F* hEtaPhiPtTPCselITSrefTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefTOFbc");
+  TH3F* hEtaPhiPtTPCselSPDanyTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDanyTOFbc");
   TH3F* hEtaPhiPtPosChargeTPCsel=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCsel");
   TH3F* hEtaPhiPtPosChargeTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselITSref");
   TH3F* hEtaPhiPtPosChargeTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselSPDany");
@@ -86,6 +129,12 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPhiEtaNegTPCselSPDanyHighPt=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaNegTPCselSPDanyHighPt",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselSPDanyHighPt=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaPosTPCselSPDanyHighPt",eta0p,etamax,ptone,ptten);
 
+  TH1D* hPtEtaNegTPCselTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionZ("hPtEtaNegTPCselTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionZ("hPtEtaPosTPCselTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselITSrefTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionZ("hPtEtaNegTPCselITSrefTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselITSrefTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionZ("hPtEtaPosTPCselITSrefTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselSPDanyTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionZ("hPtEtaNegTPCselSPDanyTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselSPDanyTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionZ("hPtEtaPosTPCselSPDanyTOFbc",eta0p,etamax);
 
 
   hPhiEtaNegTPCsel->SetMinimum(0);
@@ -137,6 +186,85 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hPhiEtaPosTPCselHighPt->Sumw2();
   hPhiEtaPosTPCselITSrefHighPt->Sumw2();
   hPhiEtaPosTPCselSPDanyHighPt->Sumw2();
+
+
+  TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtNegEtaSPDany=ComputeMatchEff(hPtEtaNegTPCselSPDany,hPtEtaNegTPCsel,"hMatchEffVsPtNegEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaSPDany=ComputeMatchEff(hPtEtaPosTPCselSPDany,hPtEtaPosTPCsel,"hMatchEffVsPtPosEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
+
+  TH1D* hMatchEffVsPtNegEtaTOFbc=ComputeMatchEff(hPtEtaNegTPCselITSrefTOFbc,hPtEtaNegTPCselTOFbc,"hMatchEffVsPtNegEtaTOFbc",kRed+1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaTOFbc=ComputeMatchEff(hPtEtaPosTPCselITSrefTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaTOFbc",kRed+1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtNegEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaNegTPCselSPDanyTOFbc,hPtEtaNegTPCselTOFbc,"hMatchEffVsPtNegEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaPosTPCselSPDanyTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
+  hMatchEffVsPtNegEta->SetTitle("#eta<0");
+  hMatchEffVsPtPosEta->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaSPDany->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaSPDany->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaTOFbc->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaSPDanyTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaSPDanyTOFbc->SetTitle("#eta>0");
+  hMatchEffVsPtNegEta->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtPosEta->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtNegEtaSPDany->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtPosEtaSPDany->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtNegEtaTOFbc->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtPosEtaTOFbc->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtNegEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,10);
+  hMatchEffVsPtPosEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,10);
+
+  for(Int_t ipt=0; ipt<3; ipt++){
+    Int_t thePtBin=hMatchEffVsPtNegEta->GetXaxis()->FindBin(ptForTrend[ipt]*0.9999);
+    vecMatchEff[ipt]=hMatchEffVsPtPosEta->GetBinContent(thePtBin);
+    vecMatchEff[ipt+3]=hMatchEffVsPtNegEta->GetBinContent(thePtBin);
+    vecMatchEff[ipt+6]=hMatchEffVsPtPosEtaSPDany->GetBinContent(thePtBin);
+    vecMatchEff[ipt+9]=hMatchEffVsPtNegEtaSPDany->GetBinContent(thePtBin);
+    vecMatchEff[ipt+12]=hMatchEffVsPtPosEtaTOFbc->GetBinContent(thePtBin);
+    vecMatchEff[ipt+15]=hMatchEffVsPtNegEtaTOFbc->GetBinContent(thePtBin);
+    vecMatchEff[ipt+18]=hMatchEffVsPtPosEtaSPDanyTOFbc->GetBinContent(thePtBin);
+    vecMatchEff[ipt+21]=hMatchEffVsPtNegEtaSPDanyTOFbc->GetBinContent(thePtBin);
+  }
+
+  TCanvas* cme=new TCanvas("cme","MatchEff All",900,900);
+  cme->Divide(2,2);
+  cme->cd(1);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtNegEta->Draw("PE");
+  hMatchEffVsPtNegEtaSPDany->Draw("samepe");
+  TLegend* legn=new TLegend(0.27,0.17,0.6,0.39);
+  legn->AddEntry(hMatchEffVsPtNegEta,"ITSrefit","P");
+  legn->AddEntry(hMatchEffVsPtNegEtaSPDany,"SPD any","P");
+  legn->Draw();
+  cme->cd(2);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtPosEta->Draw("PE");
+  hMatchEffVsPtPosEtaSPDany->Draw("samepe");
+  cme->cd(3);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtNegEtaTOFbc->Draw("PE");
+  hMatchEffVsPtNegEtaSPDanyTOFbc->Draw("samepe");
+  TLegend* legt=new TLegend(0.27,0.17,0.89,0.39);
+  legt->AddEntry(hMatchEffVsPtNegEtaTOFbc,"ITSrefit, TOF bc=0","P");
+  legt->AddEntry(hMatchEffVsPtNegEtaSPDanyTOFbc,"SPD any, TOF bc=0","P");
+  legt->Draw();
+  cme->cd(4);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtPosEtaTOFbc->Draw("PE");
+  hMatchEffVsPtPosEtaSPDanyTOFbc->Draw("samepe");
+
 
   if(hEtaPhiPtPosChargeTPCsel){
     TH1D* hPtEtaNegPosChargeTPCsel=hEtaPhiPtPosChargeTPCsel->ProjectionZ("hPtEtaNegPosChargeTPCsel",etamin,eta0m);
@@ -190,10 +318,17 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogy();
     DrawDistrib(hPtEtaPosTPCselSPDany,hPtEtaPosPosChargeTPCselSPDany,hPtEtaPosNegChargeTPCselSPDany,kTRUE);
     cdists->cd(3);
-    hRatioPosNegEtaNegTPCsel->Draw();
+    hRatioPosNegEtaNegTPCselSPDany->Draw();
     cdists->cd(4);
-    hRatioPosNegEtaPosTPCsel->Draw();
+    hRatioPosNegEtaPosTPCselSPDany->Draw();
     cdists->SaveAs("TracksPtDistrib-TPCselSPDany.png");
+    for(Int_t ipt=0; ipt<3; ipt++){
+      Int_t thePtBin=hRatioPosNegEtaPosTPCsel->GetXaxis()->FindBin(ptForTrend[ipt]*0.9999);
+      vecPosNeg[ipt]=hRatioPosNegEtaPosTPCsel->GetBinContent(thePtBin);
+      vecPosNeg[ipt+3]=hRatioPosNegEtaNegTPCsel->GetBinContent(thePtBin);
+      vecPosNeg[ipt+6]=hRatioPosNegEtaPosTPCselSPDany->GetBinContent(thePtBin);
+      vecPosNeg[ipt+9]=hRatioPosNegEtaNegTPCselSPDany->GetBinContent(thePtBin);
+    }
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
     cdist->Divide(2,2);
@@ -236,6 +371,8 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
 
   
   const Int_t checkSpecies=2;
+  Float_t vecFracBadHyp[9*checkSpecies];
+
   TString pNames[checkSpecies]={"Pion","Proton"};
   TString trType[3]={"TPCsel","TPCselITSref","TPCselSPDany"};
   TH3F* hEtaPhiPtGoodHyp[3][checkSpecies];
@@ -359,8 +496,24 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hRatioBadGoodVsPtEtaPos[0][iSp]->Draw();
     hRatioBadGoodVsPtEtaPos[1][iSp]->Draw("same");
     hRatioBadGoodVsPtEtaPos[2][iSp]->Draw("same");
- 
-    
+    cdistp->SaveAs(Form("MassHypoInTracking-%s.png",pNames[iSp].Data()));
+
+
+    for(Int_t ipt=0; ipt<3; ipt++){
+      TString bName1=Form("frac%sBadHypPt%d",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
+      Int_t index1=iSp*9+ipt*3;
+      trtree->Branch(bName1.Data(),&vecFracBadHyp[index1],Form("%s/F",bName1.Data()));
+      TString bName2=Form("frac%sBadHypPt%dITSref",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
+      Int_t index2=index1+1;
+      trtree->Branch(bName2.Data(),&vecFracBadHyp[index2],Form("%s/F",bName2.Data()));
+      TString bName3=Form("frac%sBadHypPt%dSPDany",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
+      Int_t index3=index2+1;
+      trtree->Branch(bName3.Data(),&vecFracBadHyp[index3],Form("%s/F",bName3.Data()));
+      Int_t thePtBin=hRatioBadGoodVsPtEtaPos[0][iSp]->GetXaxis()->FindBin(ptForBadHyp[ipt]*0.9999);
+      vecFracBadHyp[index1]=hRatioBadGoodVsPtEtaPos[0][iSp]->GetBinContent(thePtBin);
+      vecFracBadHyp[index2]=hRatioBadGoodVsPtEtaPos[1][iSp]->GetBinContent(thePtBin);
+      vecFracBadHyp[index3]=hRatioBadGoodVsPtEtaPos[2][iSp]->GetBinContent(thePtBin);
+    }
 
     TCanvas* cmep=new TCanvas(Form("cmep%d",iSp),Form("MatchEff %s",pNames[iSp].Data()),900,900);
     cmep->Divide(2,2);
@@ -452,6 +605,24 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   leg->AddEntry(pptresSPD,"SPD any","P");
   leg->Draw();
   cptcm->SaveAs("PtResolCovMat.png");
+
+  Float_t vecPtResol[12];
+
+  for(Int_t ipt=0; ipt<4; ipt++){
+    TString bName1=Form("PtResolTPCCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
+    Int_t index1=ipt*3;
+    trtree->Branch(bName1.Data(),&vecPtResol[index1],Form("%s/F",bName1.Data()));
+    TString bName2=Form("PtResolITSrefCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
+    Int_t index2=index1+1;
+    trtree->Branch(bName2.Data(),&vecPtResol[index2],Form("%s/F",bName2.Data()));
+    TString bName3=Form("PtResolSPDanyCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
+    Int_t index3=index2+1;
+    trtree->Branch(bName3.Data(),&vecPtResol[index3],Form("%s/F",bName3.Data()));
+    Int_t thePtBin=pptresTPC->GetXaxis()->FindBin(ptForResol[ipt]*0.9999);
+    vecPtResol[index1]=pptresTPC->GetBinContent(thePtBin);
+    vecPtResol[index2]=pptresITS->GetBinContent(thePtBin);
+    vecPtResol[index3]=pptresSPD->GetBinContent(thePtBin);
+  }
 
   TH2F* hPtResidVsPtTPCselITSrefPiong=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefGoodHyppi");
   TH2F* hPtResidVsPtTPCselITSrefKaong=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefGoodHypK");
@@ -718,12 +889,36 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cv0->cd(1);
   hInvMassK0s->Draw();
   InitFuncAndFit(hInvMassK0s,fmassk0,kTRUE);
+  Float_t mK0=fmassk0->GetParameter(3);
+  Float_t emK0=fmassk0->GetParError(3);
+  Float_t sigK0=fmassk0->GetParameter(4);
+  Float_t esigK0=fmassk0->GetParError(4);
+  trtree->Branch("massK0",&mK0,"massK0/F");
+  trtree->Branch("errmassK0",&emK0,"errmassK0/F");
+  trtree->Branch("sigmaK0",&sigK0,"sigmaK0/F");
+  trtree->Branch("errsigmaK0",&esigK0,"errsigmaK0/F");
   cv0->cd(2);
   hInvMassLambda->Draw();
   InitFuncAndFit(hInvMassLambda,fmassL,kFALSE);
+  Float_t mL=fmassL->GetParameter(3);
+  Float_t emL=fmassL->GetParError(3);
+  Float_t sigL=fmassL->GetParameter(4);
+  Float_t esigL=fmassL->GetParError(4);
+  trtree->Branch("massLambda",&mL,"massLambda/F");
+  trtree->Branch("errmassLambda",&emL,"errmassLambda/F");
+  trtree->Branch("sigmaLambda",&sigL,"sigmaLambda/F");
+  trtree->Branch("errsigmaLambda",&esigL,"errsigmaLambda/F");
   cv0->cd(3);
   hInvMassAntiLambda->Draw();
   InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE);
+  Float_t mLb=fmassL->GetParameter(3);
+  Float_t emLb=fmassL->GetParError(3);
+  Float_t sigLb=fmassL->GetParameter(4);
+  Float_t esigLb=fmassL->GetParError(4);
+  trtree->Branch("massLambdabar",&mLb,"massLambdabar/F");
+  trtree->Branch("errmassLambdabar",&emLb,"errmassLambdabar/F");
+  trtree->Branch("sigmaLambdabar",&sigLb,"sigmaLambdabar/F");
+  trtree->Branch("errsigmaLambdabar",&esigLb,"errsigmaLambdabar/F");
   cv0->SaveAs("MassSpectraV0-integrated.png");
 
   TCanvas* clam=new TCanvas("clam","Lambda vs R",1400,900);
@@ -731,6 +926,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->cd(1);
   hInvMassLambdaR1->Draw();
   InitFuncAndFit(hInvMassLambdaR1,fmassL,kFALSE);
+  Float_t mLRad1=fmassL->GetParameter(3);
+  Float_t emLRad1=fmassL->GetParError(3);
+  Float_t sigLRad1=fmassL->GetParameter(4);
+  Float_t esigLRad1=fmassL->GetParError(4);
+  TString radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)));
+  trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad1,Form("massLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad1,Form("errmassLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("sigmaLambda%s",radbininfo.Data()),&sigLRad1,Form("sigmaLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errsigmaLambda%s",radbininfo.Data()),&esigLRad1,Form("errsigmaLambda%s/F",radbininfo.Data()));
   TLatex* tr1=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1))));
   tr1->SetNDC();
   tr1->SetTextFont(43);
@@ -739,6 +943,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->cd(2);
   hInvMassLambdaR2->Draw();
   InitFuncAndFit(hInvMassLambdaR2,fmassL,kFALSE);
+  Float_t mLRad2=fmassL->GetParameter(3);
+  Float_t emLRad2=fmassL->GetParError(3);
+  Float_t sigLRad2=fmassL->GetParameter(4);
+  Float_t esigLRad2=fmassL->GetParError(4);
+  radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z2+1)));
+  trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad2,Form("massLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad2,Form("errmassLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("sigmaLambda%s",radbininfo.Data()),&sigLRad2,Form("sigmaLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errsigmaLambda%s",radbininfo.Data()),&esigLRad2,Form("errsigmaLambda%s/F",radbininfo.Data()));
   TLatex* tr2=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z2+1))));
   tr2->SetNDC();
   tr2->SetTextFont(43);
@@ -747,6 +960,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->cd(3);
   hInvMassLambdaR3->Draw();
   InitFuncAndFit(hInvMassLambdaR3,fmassL,kFALSE);
+  Float_t mLRad3=fmassL->GetParameter(3);
+  Float_t emLRad3=fmassL->GetParError(3);
+  Float_t sigLRad3=fmassL->GetParameter(4);
+  Float_t esigLRad3=fmassL->GetParError(4);
+  radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z4+1)));
+  trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad3,Form("massLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad3,Form("errmassLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("sigmaLambda%s",radbininfo.Data()),&sigLRad3,Form("sigmaLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errsigmaLambda%s",radbininfo.Data()),&esigLRad3,Form("errsigmaLambda%s/F",radbininfo.Data()));
   TLatex* tr3=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z4+1))));
   tr3->SetNDC();
   tr3->SetTextFont(43);
@@ -755,6 +977,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->cd(4);
   hInvMassLambdaR4->Draw();
   InitFuncAndFit(hInvMassLambdaR4,fmassL,kFALSE);
+  Float_t mLRad4=fmassL->GetParameter(3);
+  Float_t emLRad4=fmassL->GetParError(3);
+  Float_t sigLRad4=fmassL->GetParameter(4);
+  Float_t esigLRad4=fmassL->GetParError(4);
+  radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z6+1)));
+  trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad4,Form("massLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad4,Form("errmassLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("sigmaLambda%s",radbininfo.Data()),&sigLRad4,Form("sigmaLambda%s/F",radbininfo.Data()));
+  trtree->Branch(Form("errsigmaLambda%s",radbininfo.Data()),&esigLRad4,Form("errsigmaLambda%s/F",radbininfo.Data()));
   TLatex* tr4=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z6+1))));
   tr4->SetNDC();
   tr4->SetTextFont(43);
@@ -767,6 +998,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->cd(1);
   hInvMassK0sP1->Draw();
   InitFuncAndFit(hInvMassK0sP1,fmassk0,kTRUE);
+  Float_t mK0Pt1=fmassk0->GetParameter(3);
+  Float_t emK0Pt1=fmassk0->GetParError(3);
+  Float_t sigK0Pt1=fmassk0->GetParameter(4);
+  Float_t esigK0Pt1=fmassk0->GetParError(4);
+  TString ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)*1000.));
+  trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt1,Form("massK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt1,Form("errmassK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("sigmaK0%s",ptbininfo.Data()),&sigK0Pt1,Form("sigmaK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errsigmaK0%s",ptbininfo.Data()),&esigK0Pt1,Form("errsigmaK0%s/F",ptbininfo.Data()));
   TLatex* tp1=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)));
   tp1->SetNDC();
   tp1->SetTextFont(43);
@@ -775,6 +1015,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->cd(2);
   hInvMassK0sP2->Draw();
   InitFuncAndFit(hInvMassK0sP2,fmassk0,kTRUE);
+  Float_t mK0Pt2=fmassk0->GetParameter(3);
+  Float_t emK0Pt2=fmassk0->GetParError(3);
+  Float_t sigK0Pt2=fmassk0->GetParameter(4);
+  Float_t esigK0Pt2=fmassk0->GetParError(4);
+  ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)*1000.));
+  trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt2,Form("massK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt2,Form("errmassK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("sigmaK0%s",ptbininfo.Data()),&sigK0Pt2,Form("sigmaK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errsigmaK0%s",ptbininfo.Data()),&esigK0Pt2,Form("errsigmaK0%s/F",ptbininfo.Data()));
   TLatex* tp2=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)));
   tp2->SetNDC();
   tp2->SetTextFont(43);
@@ -783,6 +1032,15 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->cd(3);
   hInvMassK0sP3->Draw();
   InitFuncAndFit(hInvMassK0sP3,fmassk0,kTRUE);
+  Float_t mK0Pt3=fmassk0->GetParameter(3);
+  Float_t emK0Pt3=fmassk0->GetParError(3);
+  Float_t sigK0Pt3=fmassk0->GetParameter(4);
+  Float_t esigK0Pt3=fmassk0->GetParError(4);
+  ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p3+1)*1000.));
+  trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt3,Form("massK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt3,Form("errmassK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("sigmaK0%s",ptbininfo.Data()),&sigK0Pt3,Form("sigmaK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errsigmaK0%s",ptbininfo.Data()),&esigK0Pt3,Form("errsigmaK0%s/F",ptbininfo.Data()));
   TLatex* tp3=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p3+1)));
   tp3->SetNDC();
   tp3->SetTextFont(43);
@@ -791,12 +1049,30 @@ void PlotESDtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->cd(4);
   hInvMassK0sP4->Draw();
   InitFuncAndFit(hInvMassK0sP4,fmassk0,kTRUE);
+  Float_t mK0Pt4=fmassk0->GetParameter(3);
+  Float_t emK0Pt4=fmassk0->GetParError(3);
+  Float_t sigK0Pt4=fmassk0->GetParameter(4);
+  Float_t esigK0Pt4=fmassk0->GetParError(4);
+  ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p4)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p5+1)*1000.));
+  trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt4,Form("massK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt4,Form("errmassK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("sigmaK0%s",ptbininfo.Data()),&sigK0Pt4,Form("sigmaK0%s/F",ptbininfo.Data()));
+  trtree->Branch(Form("errsigmaK0%s",ptbininfo.Data()),&esigK0Pt4,Form("errsigmaK0%s/F",ptbininfo.Data()));
   TLatex* tp4=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p4),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p5+1)));
   tp4->SetNDC();
   tp4->SetTextFont(43);
   tp4->SetTextSize(26);
   tp4->Draw();
   ck0->SaveAs("K0s-MassSpectra-VsPt.png");
+
+  trtree->Fill();
+
+  if(runNumber>0){
+    TFile* fouttree=new TFile("trending.root","recreate");
+    trtree->Write();
+    fouttree->Close();
+    delete fouttree;
+  }
 }
 
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
@@ -871,8 +1147,8 @@ void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s){
 
 
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
-  hnumer->Sumw2();
-  hdenom->Sumw2();
+  if(hnumer->GetSumw2N()==0) hnumer->Sumw2();
+  if(hdenom->GetSumw2N()==0) hdenom->Sumw2();
   TH1D* hratio=(TH1D*)hnumer->Clone(name.Data());
   hratio->Divide(hnumer,hdenom,1.,1.,"B");
   hratio->SetLineColor(iCol);
@@ -888,8 +1164,8 @@ TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_
 }
 
 TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
-  hnumer->Sumw2();
-  hdenom->Sumw2();
+  if(hnumer->GetSumw2N()==0) hnumer->Sumw2();
+  if(hdenom->GetSumw2N()==0) hdenom->Sumw2();
   TH1D* hratio=(TH1D*)hnumer->Clone(name.Data());
   hratio->Divide(hnumer,hdenom);
   hratio->SetLineColor(iCol);
@@ -906,8 +1182,8 @@ TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t i
 }
 
 TH1D* ComputeFraction(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
-  hnumer->Sumw2();
-  hdenom->Sumw2();
+  if(hnumer->GetSumw2N()==0) hnumer->Sumw2();
+  if(hdenom->GetSumw2N()==0) hdenom->Sumw2();
   TH1D* hratio=(TH1D*)hnumer->Clone(name.Data());
   TH1D* hsum=(TH1D*)hnumer->Clone("tmp");
   hsum->Add(hnumer,hdenom);
@@ -1048,5 +1324,5 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
   }else{
     h3->Draw("same");
   }
-    h3->Draw("histosame");
+  h3->Draw("histosame");
 }
