@@ -20,11 +20,11 @@
 AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString System                 = "PbPb_2015_kTRUE",
+ TString System                 = "PbPb",
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
- bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
+ bool    Use_PT_Cut             =  1,   // 0: Use_P_Cut ( TOF lower & higher boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
- int    CentralityGroup         =  9,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroup         =  1,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
@@ -42,7 +42,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  4,
+ int nCentrality                =  8,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
  bool Use_AliHelperPID          =  1,  // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
  int pidType                    =  2,  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
@@ -55,7 +55,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  double ptTOFlowerMin           =  0.6, // boundary between TPC & TOF region
- int nBinsPhi                   =  36,  // 36 is default value
+ int nBinsPhi                   =  72,  // 36 is default value
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
