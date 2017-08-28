@@ -31,21 +31,29 @@ class AliPicoV0 : public TObject {
   virtual ~AliPicoV0();
 //=============================================================================
 
-  TVector3 KinePos() const { return  fP3Pos; }
-  TVector3 KineNeg() const { return  fP3Neg; }
-  TVector3 KineRD()  const { return (fP3Pos + fP3Neg); }
+  const TVector3 KinePos() const { return  fP3Pos; }
+  const TVector3 KineNeg() const { return  fP3Neg; }
+  const TVector3 KineRD()  const { return (fP3Pos + fP3Neg); }
 
-  TLorentzVector KineKshort();
-  TLorentzVector KineLambda();
-  TLorentzVector KineAntiLa();
+  const TLorentzVector KineKshort() const;
+  const TLorentzVector KineLambda() const;
+  const TLorentzVector KineAntiLa() const;
 
-  Double_t RapidityKa();
-  Double_t RapidityLa();
+  const Double_t RapidityKa() const;
+  const Double_t RapidityLa() const;
 //=============================================================================
 
-  Bool_t IsKshort() const { return ((fMask & AliPicoBase::kKshort)     == AliPicoBase::kKshort);     }
-  Bool_t IsLambda() const { return ((fMask & AliPicoBase::kLambda)     == AliPicoBase::kLambda);     }
-  Bool_t IsAntiLa() const { return ((fMask & AliPicoBase::kAntiLambda) == AliPicoBase::kAntiLambda); }
+  virtual Bool_t IsKshort(Double_t */*dCuts*/=nullptr) const {
+    return ((fMask & AliPicoBase::kKshort) == AliPicoBase::kKshort);
+  }
+
+  virtual Bool_t IsLambda(Double_t */*dCuts*/=nullptr) const {
+    return ((fMask & AliPicoBase::kLambda) == AliPicoBase::kLambda);
+  }
+
+  virtual Bool_t IsAntiLa(Double_t */*dCuts*/=nullptr) const {
+    return ((fMask & AliPicoBase::kAntiLambda) == AliPicoBase::kAntiLambda);
+  }
 
   Bool_t IsKaInRapAcc(Double_t dMin, Double_t dMax);
   Bool_t IsLaInRapAcc(Double_t dMin, Double_t dMax);
@@ -56,6 +64,9 @@ class AliPicoV0 : public TObject {
   Bool_t IsNegInJC() const { return  fIsNegInJC; }
   Bool_t IsTwoInJC() const { return (fIsPosInJC && fIsNegInJC); }
   Bool_t IsOneInJC() const { return (fIsPosInJC || fIsNegInJC); }
+
+  virtual void GetControlVariables(Float_t */*d*/=nullptr) const = 0;
+//=============================================================================
 
   void FillKshortPtInvM(TH2D *h);
   void FillLambdaPtInvM(TH2D *h);
@@ -72,7 +83,7 @@ class AliPicoV0 : public TObject {
               Double_t dCutMinNegDCAtoPV                  = 0.06,
               Float_t  dCutMinDauXrowsTPC                 = 70.,
               Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
-              Double_t dCutMinDauDeltaM                   = 0.005);
+              Double_t dCutMinDauDeltaM                   = 0.005) const;
 
   Bool_t IsLa(Double_t dCutMinV0Radius                    = 0.5,
               Double_t dCutMinV0CosPA                     = 0.995,
@@ -82,7 +93,7 @@ class AliPicoV0 : public TObject {
               Double_t dCutMinNegDCAtoPV                  = 0.06,
               Float_t  dCutMinDauXrowsTPC                 = 70.,
               Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
-              Double_t dCutMinDauDeltaM                   = 0.01);
+              Double_t dCutMinDauDeltaM                   = 0.01) const;
 
   Bool_t IsCandidateSelected(Double_t dCutMinV0Radius,
                              Double_t dCutMinV0CosPA,
@@ -90,10 +101,10 @@ class AliPicoV0 : public TObject {
                              Double_t dCutMinPosDCAtoPV,
                              Double_t dCutMinNegDCAtoPV,
                              Float_t  dCutMinDauXrowsTPC,
-                             Double_t dCutMinDauXrowsOverFindableClusTPC);
+                             Double_t dCutMinDauXrowsOverFindableClusTPC) const;
 
-  Bool_t IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM);
-  Bool_t IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM);
+  Bool_t IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const;
+  Bool_t IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const;
 //=============================================================================
 
   UInt_t fMask;  //
@@ -116,7 +127,7 @@ class AliPicoV0 : public TObject {
   Bool_t fIsPosInJC;  // match w/ jet consti
   Bool_t fIsNegInJC;  // match w/ jet consti
 
-  ClassDef(AliPicoV0, 4)
+  ClassDef(AliPicoV0, 5)
 };
 
 #endif

@@ -30,6 +30,13 @@ class AliPicoV0MC : public AliPicoV0 {
   virtual ~AliPicoV0MC();
 //=============================================================================
 
+  virtual Bool_t IsKshort(Double_t dCuts[9]) const;
+  virtual Bool_t IsLambda(Double_t dCuts[9]) const;
+  virtual Bool_t IsAntiLa(Double_t dCuts[9]) const;
+
+  virtual void GetControlVariables(Float_t d[18]) const;
+//=============================================================================
+
   TLorentzVector KineMC() const { return fV0Kine; }
 
   Double_t MotherPt()  const { return fMotherPt;  }
@@ -37,22 +44,17 @@ class AliPicoV0MC : public AliPicoV0 {
   Double_t MotherRap() const { return fMotherRap; }
 //=============================================================================
 
-  Bool_t IsKshort(Double_t dCuts[9]);
-  Bool_t IsLambda(Double_t dCuts[9]);
-  Bool_t IsAntiLa(Double_t dCuts[9]);
   Bool_t IsV0InRapAcc(Double_t dMin, Double_t dMax);
 
-  Bool_t IsKshort() const { return (fV0PDG== 310);  }
-  Bool_t IsLambda() const { return (fV0PDG== 3122); }
-  Bool_t IsAntiLa() const { return (fV0PDG==-3122); }
+  Bool_t IsKshortMC() const { return (fV0PDG== 310);  }
+  Bool_t IsLambdaMC() const { return (fV0PDG== 3122); }
+  Bool_t IsAntiLaMC() const { return (fV0PDG==-3122); }
 
   Bool_t IsMotherXiNeg() const { return (fMotherPDG== 3312); }
   Bool_t IsMotherXiPos() const { return (fMotherPDG==-3312); }
 
   Bool_t IsLambdaFd() const { return (AliPicoV0::IsLambda() && IsMotherXiNeg()); }
   Bool_t IsAntiLaFd() const { return (AliPicoV0::IsAntiLa() && IsMotherXiPos()); }
-
-  void GetControlVariables(Float_t d[18]);
 //=============================================================================
 
   Bool_t IsV0Primary() const {

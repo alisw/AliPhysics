@@ -110,10 +110,10 @@ AliPicoV0MC::~AliPicoV0MC()
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsKshort
+//  Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
 //
 
   if (!AliPicoV0::IsKshort()) return kFALSE;
@@ -125,10 +125,10 @@ Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsLambda
+//  Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
 //
 
   if (!AliPicoV0::IsLambda()) return kFALSE;
@@ -140,10 +140,10 @@ Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9])
+Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9]) const
 {
 //
-//  AliPicoV0MC::IsAntiLa
+//  Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9]) const
 //
 
   if (!AliPicoV0::IsAntiLa()) return kFALSE;
@@ -166,7 +166,7 @@ Bool_t AliPicoV0MC::IsV0InRapAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0MC::GetControlVariables(Float_t d[18])
+void AliPicoV0MC::GetControlVariables(Float_t d[18]) const
 {
 //
 //  AliPicoV0MC::GetControlVariables

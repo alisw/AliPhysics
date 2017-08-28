@@ -129,7 +129,7 @@ Bool_t AliPicoV0::IsKa(Double_t dCutMinV0Radius,
                            Double_t dCutMinNegDCAtoPV,
                            Float_t  dCutMinDauXrowsTPC,
                            Double_t dCutMinDauXrowsOverFindableClusTPC,
-                           Double_t dCutMinDauDeltaM)
+                           Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsKa
@@ -157,7 +157,7 @@ Bool_t AliPicoV0::IsLa(Double_t dCutMinV0Radius,
                            Double_t dCutMinNegDCAtoPV,
                            Float_t  dCutMinDauXrowsTPC,
                            Double_t dCutMinDauXrowsOverFindableClusTPC,
-                           Double_t dCutMinDauDeltaM)
+                           Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsLa
@@ -177,7 +177,7 @@ Bool_t AliPicoV0::IsLa(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
+Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsKaSelected
@@ -196,7 +196,7 @@ Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM)
+Bool_t AliPicoV0::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsLaSelected
@@ -219,7 +219,7 @@ Bool_t AliPicoV0::IsCandidateSelected(Double_t dCutMinV0Radius,
                                       Double_t dCutMinPosDCAtoPV,
                                       Double_t dCutMinNegDCAtoPV,
                                       Float_t  dCutMinDauXrowsTPC,
-                                      Double_t dCutMinDauXrowsOverFindableClusTPC)
+                                      Double_t dCutMinDauXrowsOverFindableClusTPC) const
 {
 //
 //  AliPicoV0::IsCandidateSelected
@@ -341,7 +341,7 @@ Bool_t AliPicoV0::IsDausInEtaAcc(Double_t dMin, Double_t dMax)
 }
 
 //_____________________________________________________________________________
-Double_t AliPicoV0::RapidityKa()
+const Double_t AliPicoV0::RapidityKa() const
 {
 //
 //  AliPicoV0::RapidityKa
@@ -352,7 +352,7 @@ Double_t AliPicoV0::RapidityKa()
 }
 
 //_____________________________________________________________________________
-Double_t AliPicoV0::RapidityLa()
+const Double_t AliPicoV0::RapidityLa() const
 {
 //
 //  AliPicoV0::RapidityLa
@@ -363,7 +363,7 @@ Double_t AliPicoV0::RapidityLa()
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0::KineKshort()
+const TLorentzVector AliPicoV0::KineKshort() const
 {
 //
 //  AliPicoV0::KineKshort
@@ -376,7 +376,7 @@ TLorentzVector AliPicoV0::KineKshort()
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0::KineLambda()
+const TLorentzVector AliPicoV0::KineLambda() const
 {
 //
 //  AliPicoV0::KineLambda
@@ -389,7 +389,7 @@ TLorentzVector AliPicoV0::KineLambda()
 }
 
 //_____________________________________________________________________________
-TLorentzVector AliPicoV0::KineAntiLa()
+const TLorentzVector AliPicoV0::KineAntiLa() const
 {
 //
 //  AliPicoV0::KineAntiLa
