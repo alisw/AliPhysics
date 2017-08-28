@@ -1257,7 +1257,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   int iEtaPhi_Etaminus1 = 0;
   int iZEtaPhiPt_Etaplus1 = 0;
   int iZEtaPhiPt_Etaminus1 = 0;
-
+  Double_t nsigmaElectron = 999.;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if ( !manager ) { return; }
@@ -1521,6 +1521,14 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      //******************************************************************************************************************************************************************
 	      if ( PIDparticle )
 		{
+		  if( useAliHelperPID )
+		    {
+		      if( pt < _min_pt_1 || pt > ptUpperLimit) continue;
+		      CalculateTPCNSigmasElectron( t );
+		      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+		      if( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) && ( nsigmaElectron < electronNSigmaVeto ) )    continue;  // reject TPC region electrons
+		    }
+
 		  if ( use_pT_cut )
 		    {
 		      if ( useAliHelperPID ) IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE);
@@ -1574,7 +1582,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( particleSpecies == 2 )  mass = mproton;
 		  y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
 		  if( y < _min_eta_1 || y > _max_eta_1 ) continue;
-
+		  
 		  //Filling QA plots ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		  // QA for POI
 		  if ( _singlesOnly )
@@ -1615,7 +1623,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		{
 		  if( pt < _min_pt_1 || pt > ptUpperLimit ) continue;
 		  CalculateTPCNSigmasElectron( t );
-		  Double_t nsigmaElectron = 999.;
 		  nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
 		  if( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) && ( nsigmaElectron < electronNSigmaVeto ) )    continue;  // reject TPC region electrons
 		  if( eta < _min_eta_1 || eta > _max_eta_1 ) continue;
