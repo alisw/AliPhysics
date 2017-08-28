@@ -43,15 +43,15 @@ class AliPicoV0 : public TObject {
   const Double_t RapidityLa() const;
 //=============================================================================
 
-  virtual Bool_t IsKshort(Double_t */*dCuts*/=nullptr) const {
+  virtual Bool_t IsKshort(Double_t const */*dCuts*/=nullptr) const {
     return ((fMask & AliPicoBase::kKshort) == AliPicoBase::kKshort);
   }
 
-  virtual Bool_t IsLambda(Double_t */*dCuts*/=nullptr) const {
+  virtual Bool_t IsLambda(Double_t const */*dCuts*/=nullptr) const {
     return ((fMask & AliPicoBase::kLambda) == AliPicoBase::kLambda);
   }
 
-  virtual Bool_t IsAntiLa(Double_t */*dCuts*/=nullptr) const {
+  virtual Bool_t IsAntiLa(Double_t const */*dCuts*/=nullptr) const {
     return ((fMask & AliPicoBase::kAntiLambda) == AliPicoBase::kAntiLambda);
   }
 
@@ -68,43 +68,43 @@ class AliPicoV0 : public TObject {
   virtual void GetControlVariables(Float_t */*d*/=nullptr) const = 0;
 //=============================================================================
 
-  void FillKshortPtInvM(TH2D *h);
-  void FillLambdaPtInvM(TH2D *h);
-  void FillAntiLaPtInvM(TH2D *h);
+  void FillKshortPtInvM(TH2D* const h, Double_t const *dCuts=nullptr) const;
+  void FillLambdaPtInvM(TH2D* const h, Double_t const *dCuts=nullptr) const;
+  void FillAntiLaPtInvM(TH2D* const h, Double_t const *dCuts=nullptr) const;
 //=============================================================================
 
  protected :
 
-  Bool_t IsKa(Double_t dCutMinV0Radius                    = 0.5,
-              Double_t dCutMinV0CosPA                     = 0.97,
-              Double_t dCutMaxV0Ctau                      = 20.,
-              Double_t dCutMaxDausDCA                     = 1.,
-              Double_t dCutMinPosDCAtoPV                  = 0.06,
-              Double_t dCutMinNegDCAtoPV                  = 0.06,
-              Float_t  dCutMinDauXrowsTPC                 = 70.,
-              Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
-              Double_t dCutMinDauDeltaM                   = 0.005) const;
+  Bool_t IsKa(const Double_t dCutMinV0Radius                    = 0.5,
+              const Double_t dCutMinV0CosPA                     = 0.97,
+              const Double_t dCutMaxV0Ctau                      = 20.,
+              const Double_t dCutMaxDausDCA                     = 1.,
+              const Double_t dCutMinPosDCAtoPV                  = 0.06,
+              const Double_t dCutMinNegDCAtoPV                  = 0.06,
+              const Float_t  dCutMinDauXrowsTPC                 = 70.,
+              const Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
+              const Double_t dCutMinDauDeltaM                   = 0.005) const;
 
-  Bool_t IsLa(Double_t dCutMinV0Radius                    = 0.5,
-              Double_t dCutMinV0CosPA                     = 0.995,
-              Double_t dCutMaxV0Ctau                      = 30.,
-              Double_t dCutMaxDausDCA                     = 1.,
-              Double_t dCutMinPosDCAtoPV                  = 0.06,
-              Double_t dCutMinNegDCAtoPV                  = 0.06,
-              Float_t  dCutMinDauXrowsTPC                 = 70.,
-              Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
-              Double_t dCutMinDauDeltaM                   = 0.01) const;
+  Bool_t IsLa(const Double_t dCutMinV0Radius                    = 0.5,
+              const Double_t dCutMinV0CosPA                     = 0.995,
+              const Double_t dCutMaxV0Ctau                      = 30.,
+              const Double_t dCutMaxDausDCA                     = 1.,
+              const Double_t dCutMinPosDCAtoPV                  = 0.06,
+              const Double_t dCutMinNegDCAtoPV                  = 0.06,
+              const Float_t  dCutMinDauXrowsTPC                 = 70.,
+              const Double_t dCutMinDauXrowsOverFindableClusTPC = 0.8,
+              const Double_t dCutMinDauDeltaM                   = 0.01) const;
 
-  Bool_t IsCandidateSelected(Double_t dCutMinV0Radius,
-                             Double_t dCutMinV0CosPA,
-                             Double_t dCutMaxDausDCA,
-                             Double_t dCutMinPosDCAtoPV,
-                             Double_t dCutMinNegDCAtoPV,
-                             Float_t  dCutMinDauXrowsTPC,
-                             Double_t dCutMinDauXrowsOverFindableClusTPC) const;
+  Bool_t IsCandidateSelected(const Double_t dCutMinV0Radius,
+                             const Double_t dCutMinV0CosPA,
+                             const Double_t dCutMaxDausDCA,
+                             const Double_t dCutMinPosDCAtoPV,
+                             const Double_t dCutMinNegDCAtoPV,
+                             const Float_t  dCutMinDauXrowsTPC,
+                             const Double_t dCutMinDauXrowsOverFindableClusTPC) const;
 
-  Bool_t IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const;
-  Bool_t IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const;
+  Bool_t IsKaSelected(const Double_t dCutMaxV0Ctau, const Double_t dCutMinDauDeltaM) const;
+  Bool_t IsLaSelected(const Double_t dCutMaxV0Ctau, const Double_t dCutMinDauDeltaM) const;
 //=============================================================================
 
   UInt_t fMask;  //

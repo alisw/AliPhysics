@@ -30,9 +30,9 @@ class AliPicoV0MC : public AliPicoV0 {
   virtual ~AliPicoV0MC();
 //=============================================================================
 
-  virtual Bool_t IsKshort(Double_t dCuts[9]) const;
-  virtual Bool_t IsLambda(Double_t dCuts[9]) const;
-  virtual Bool_t IsAntiLa(Double_t dCuts[9]) const;
+  virtual Bool_t IsKshort(Double_t const dCuts[9]) const;
+  virtual Bool_t IsLambda(Double_t const dCuts[9]) const;
+  virtual Bool_t IsAntiLa(Double_t const dCuts[9]) const;
 
   virtual void GetControlVariables(Float_t d[18]) const;
 //=============================================================================

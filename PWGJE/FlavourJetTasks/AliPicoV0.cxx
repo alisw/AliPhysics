@@ -121,15 +121,15 @@ AliPicoV0::~AliPicoV0()
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsKa(Double_t dCutMinV0Radius,
-                           Double_t dCutMinV0CosPA,
-                           Double_t dCutMaxV0Ctau,
-                           Double_t dCutMaxDausDCA,
-                           Double_t dCutMinPosDCAtoPV,
-                           Double_t dCutMinNegDCAtoPV,
-                           Float_t  dCutMinDauXrowsTPC,
-                           Double_t dCutMinDauXrowsOverFindableClusTPC,
-                           Double_t dCutMinDauDeltaM) const
+Bool_t AliPicoV0::IsKa(const Double_t dCutMinV0Radius,
+                       const Double_t dCutMinV0CosPA,
+                       const Double_t dCutMaxV0Ctau,
+                       const Double_t dCutMaxDausDCA,
+                       const Double_t dCutMinPosDCAtoPV,
+                       const Double_t dCutMinNegDCAtoPV,
+                       const Float_t  dCutMinDauXrowsTPC,
+                       const Double_t dCutMinDauXrowsOverFindableClusTPC,
+                       const Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsKa
@@ -149,15 +149,15 @@ Bool_t AliPicoV0::IsKa(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsLa(Double_t dCutMinV0Radius,
-                           Double_t dCutMinV0CosPA,
-                           Double_t dCutMaxV0Ctau,
-                           Double_t dCutMaxDausDCA,
-                           Double_t dCutMinPosDCAtoPV,
-                           Double_t dCutMinNegDCAtoPV,
-                           Float_t  dCutMinDauXrowsTPC,
-                           Double_t dCutMinDauXrowsOverFindableClusTPC,
-                           Double_t dCutMinDauDeltaM) const
+Bool_t AliPicoV0::IsLa(const Double_t dCutMinV0Radius,
+                       const Double_t dCutMinV0CosPA,
+                       const Double_t dCutMaxV0Ctau,
+                       const Double_t dCutMaxDausDCA,
+                       const Double_t dCutMinPosDCAtoPV,
+                       const Double_t dCutMinNegDCAtoPV,
+                       const Float_t  dCutMinDauXrowsTPC,
+                       const Double_t dCutMinDauXrowsOverFindableClusTPC,
+                       const Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsLa
@@ -177,7 +177,7 @@ Bool_t AliPicoV0::IsLa(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const
+Bool_t AliPicoV0::IsKaSelected(const Double_t dCutMaxV0Ctau, const Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsKaSelected
@@ -196,7 +196,7 @@ Bool_t AliPicoV0::IsKaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM) const
+Bool_t AliPicoV0::IsLaSelected(const Double_t dCutMaxV0Ctau, const Double_t dCutMinDauDeltaM) const
 {
 //
 //  AliPicoV0::IsLaSelected
@@ -213,13 +213,13 @@ Bool_t AliPicoV0::IsLaSelected(Double_t dCutMaxV0Ctau, Double_t dCutMinDauDeltaM
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0::IsCandidateSelected(Double_t dCutMinV0Radius,
-                                      Double_t dCutMinV0CosPA,
-                                      Double_t dCutMaxDausDCA,
-                                      Double_t dCutMinPosDCAtoPV,
-                                      Double_t dCutMinNegDCAtoPV,
-                                      Float_t  dCutMinDauXrowsTPC,
-                                      Double_t dCutMinDauXrowsOverFindableClusTPC) const
+Bool_t AliPicoV0::IsCandidateSelected(const Double_t dCutMinV0Radius,
+                                      const Double_t dCutMinV0CosPA,
+                                      const Double_t dCutMaxDausDCA,
+                                      const Double_t dCutMinPosDCAtoPV,
+                                      const Double_t dCutMinNegDCAtoPV,
+                                      const Float_t  dCutMinDauXrowsTPC,
+                                      const Double_t dCutMinDauXrowsOverFindableClusTPC) const
 {
 //
 //  AliPicoV0::IsCandidateSelected
@@ -239,14 +239,14 @@ Bool_t AliPicoV0::IsCandidateSelected(Double_t dCutMinV0Radius,
 }
 
 //_____________________________________________________________________________
-void AliPicoV0::FillKshortPtInvM(TH2D *h)
+void AliPicoV0::FillKshortPtInvM(TH2D* const h, const Double_t *dCuts) const
 {
 //
 //  AliPicoV0::FillKshortPtInvM
 //
 
   if (!h) return;
-  if (!IsKshort()) return;
+  if (!IsKshort(dCuts)) return;
 //=============================================================================
 
   TLorentzVector v = KineKshort();
@@ -257,14 +257,14 @@ void AliPicoV0::FillKshortPtInvM(TH2D *h)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0::FillLambdaPtInvM(TH2D *h)
+void AliPicoV0::FillLambdaPtInvM(TH2D* const h, const Double_t *dCuts) const
 {
 //
 //  AliPicoV0::FillLambdaPtInvM
 //
 
   if (!h) return;
-  if (!IsLambda()) return;
+  if (!IsLambda(dCuts)) return;
 //=============================================================================
 
   TLorentzVector v = KineLambda();
@@ -275,14 +275,14 @@ void AliPicoV0::FillLambdaPtInvM(TH2D *h)
 }
 
 //_____________________________________________________________________________
-void AliPicoV0::FillAntiLaPtInvM(TH2D *h)
+void AliPicoV0::FillAntiLaPtInvM(TH2D* const h, const Double_t *dCuts) const
 {
 //
 //  AliPicoV0::FillAntiLaPtInvM
 //
 
   if (!h) return;
-  if (!IsAntiLa()) return;
+  if (!IsAntiLa(dCuts)) return;
 //=============================================================================
 
   TLorentzVector v = KineAntiLa();
@@ -299,7 +299,6 @@ Bool_t AliPicoV0::IsKaInRapAcc(Double_t dMin, Double_t dMax)
 //  AliPicoV0::IsKaInRapAcc
 //
 
-  if (!IsKshort()) return kFALSE;
   Double_t dRap = RapidityKa(); return ((dRap>=dMin) && (dRap<dMax));
 }
 
@@ -310,7 +309,6 @@ Bool_t AliPicoV0::IsLaInRapAcc(Double_t dMin, Double_t dMax)
 //  AliPicoV0::IsLaInRapAcc
 //
 
-  if (!(IsLambda() || IsAntiLa())) return kFALSE;
   Double_t dRap = RapidityLa(); return ((dRap>=dMin) && (dRap<dMax));
 }
 

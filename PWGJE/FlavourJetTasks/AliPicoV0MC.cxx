@@ -110,13 +110,15 @@ AliPicoV0MC::~AliPicoV0MC()
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
+Bool_t AliPicoV0MC::IsKshort(Double_t const dCuts[9]) const
 {
 //
 //  Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
 //
 
+  if (!IsKshortMC()) return kFALSE;
   if (!AliPicoV0::IsKshort()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsKa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;
@@ -125,13 +127,15 @@ Bool_t AliPicoV0MC::IsKshort(Double_t dCuts[9]) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
+Bool_t AliPicoV0MC::IsLambda(Double_t const dCuts[9]) const
 {
 //
 //  Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
 //
 
+  if (!IsLambdaMC()) return kFALSE;
   if (!AliPicoV0::IsLambda()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsLa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;
@@ -140,13 +144,15 @@ Bool_t AliPicoV0MC::IsLambda(Double_t dCuts[9]) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9]) const
+Bool_t AliPicoV0MC::IsAntiLa(Double_t const dCuts[9]) const
 {
 //
 //  Bool_t AliPicoV0MC::IsAntiLa(Double_t dCuts[9]) const
 //
 
+  if (!IsAntiLaMC()) return kFALSE;
   if (!AliPicoV0::IsAntiLa()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (!IsLa(dCuts[0],dCuts[1],dCuts[2],dCuts[3],dCuts[4],dCuts[5],dCuts[6],dCuts[7],dCuts[8])) return kFALSE;

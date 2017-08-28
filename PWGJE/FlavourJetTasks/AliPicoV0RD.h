@@ -26,9 +26,9 @@ class AliPicoV0RD : public AliPicoV0 {
   AliPicoV0RD& operator=(const AliPicoV0RD &src);
   virtual ~AliPicoV0RD();
 
-  virtual Bool_t IsKshort(Double_t dCuts[10]) const;
-  virtual Bool_t IsLambda(Double_t dCuts[10]) const;
-  virtual Bool_t IsAntiLa(Double_t dCuts[10]) const;
+  virtual Bool_t IsKshort(Double_t const dCuts[10]) const;
+  virtual Bool_t IsLambda(Double_t const dCuts[10]) const;
+  virtual Bool_t IsAntiLa(Double_t const dCuts[10]) const;
 
   virtual void GetControlVariables(Float_t d[20]) const;
 //=============================================================================
