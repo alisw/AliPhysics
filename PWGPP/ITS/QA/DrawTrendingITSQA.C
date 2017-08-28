@@ -122,6 +122,10 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   Float_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
   Float_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
   Float_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;
+  Float_t meanVtxOCDBx,meanVtxOCDBy,meanVtxOCDBz;
+  Float_t sigmaVtxOCDBx,sigmaVtxOCDBy,sigmaVtxOCDBz;
+  Float_t diamondX=-999.,diamondY=-999.,diamondZ=-999.;
+  Float_t diamondSigX=-999.,diamondSigY=-999.,diamondSigZ=-999.;
   Float_t pileupSPD, errpileupSPD;
 
   ttree->SetBranchAddress("meanVtxTRKx",&meanVtxTRKx); // mean of tracks vertex position - x
@@ -148,8 +152,15 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("sigmaVtxSPDxErr",&sigmaVtxSPDxErr); // error sigma of tracks vertex position - x
   ttree->SetBranchAddress("sigmaVtxSPDyErr",&sigmaVtxSPDyErr); // error sigma of tracks vertex position - y
   ttree->SetBranchAddress("sigmaVtxSPDzErr",&sigmaVtxSPDzErr); // error sigma of tracks vertex position - z
-    ttree->SetBranchAddress("pileupSPD",&pileupSPD); // fraction of events with SPD pileup vertex
-    ttree->SetBranchAddress("errpileupSPD",&errpileupSPD); // fraction of events with SPD pileup vertex
+  ttree->SetBranchAddress("diamondX",&meanVtxOCDBx); // mean of OCDB vertex position - x
+  ttree->SetBranchAddress("diamondY",&meanVtxOCDBy); // mean of OCDB vertex position - y
+  ttree->SetBranchAddress("diamondZ",&meanVtxOCDBz); // mean of OCDB vertex position - z
+  ttree->SetBranchAddress("diamondSigX",&sigmaVtxOCDBx); // sigma of OCDB vertex position - x
+  ttree->SetBranchAddress("diamondSigY",&sigmaVtxOCDBy); // sigma of OCDB vertex position - y
+  ttree->SetBranchAddress("diamondSigZ",&sigmaVtxOCDBz); // sigma of CODB vertex position - z
+
+  ttree->SetBranchAddress("pileupSPD",&pileupSPD); // fraction of events with SPD pileup vertex
+  ttree->SetBranchAddress("errpileupSPD",&errpileupSPD); // fraction of events with SPD pileup vertex
 
 
   //************************************************ SSD (25) **************************************************//
@@ -623,6 +634,42 @@ TH1F *hMeanVxSPD = new TH1F("hMeanVxSPD","Track Vertex Vx Distribution",nRuns,0.
     hSigmaVzSPD->SetLineColor(2);
     hSigmaVzSPD->SetMarkerColor(2);
     hSigmaVzSPD->SetMarkerStyle(20);
+
+TH1F *hMeanVxOCDB = new TH1F("hMeanVxOCDB","Diamond OCDB Vx",nRuns,0.,nRuns);
+    hMeanVxOCDB->SetLineWidth(2);
+    hMeanVxOCDB->SetLineColor(kMagenta+2);
+    hMeanVxOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVxOCDB->SetMarkerStyle(25);
+    
+  TH1F *hMeanVyOCDB = new TH1F("hMeanVyOCDB","Diamond OCDB Vy",nRuns,0.,nRuns);
+    hMeanVyOCDB->SetLineWidth(2);
+    hMeanVyOCDB->SetLineColor(kMagenta+2);
+    hMeanVyOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVyOCDB->SetMarkerStyle(25);
+    
+  TH1F *hMeanVzOCDB = new TH1F("hMeanVzOCDB","Diamond OCDB Vz",nRuns,0.,nRuns);
+    hMeanVzOCDB->SetLineWidth(2);
+    hMeanVzOCDB->SetLineColor(kMagenta+2);
+    hMeanVzOCDB->SetMarkerColor(kMagenta+2);
+    hMeanVzOCDB->SetMarkerStyle(25);
+    
+  TH1F *hSigmaVxOCDB = new TH1F("hSigmaVxOCDB","Diamond OCDB SigmaVx",nRuns,0.,nRuns);
+    hSigmaVxOCDB->SetLineWidth(2);
+    hSigmaVxOCDB->SetLineColor(kMagenta+2);
+    hSigmaVxOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVxOCDB->SetMarkerStyle(25);
+  TH1F *hSigmaVyOCDB = new TH1F("hSigmaVyOCDB","Diamond OCDB SigmaVy",nRuns,0.,nRuns);
+    hSigmaVyOCDB->SetLineWidth(2);
+    hSigmaVyOCDB->SetLineColor(kMagenta+2);
+    hSigmaVyOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVyOCDB->SetMarkerStyle(25);
+  TH1F *hSigmaVzOCDB = new TH1F("hSigmaVzOCDB","Diamond OCDB SigmaVz",nRuns,0.,nRuns);
+    hSigmaVzOCDB->SetLineWidth(2);
+    hSigmaVzOCDB->SetLineColor(kMagenta+2);
+    hSigmaVzOCDB->SetMarkerColor(kMagenta+2);
+    hSigmaVzOCDB->SetMarkerStyle(25);
+ 
+
   TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",nRuns,0.,nRuns);
         hpileupSPD->SetMarkerStyle(20);
   
@@ -1478,10 +1525,28 @@ TH1F *hMeanVxSPD = new TH1F("hMeanVxSPD","Track Vertex Vx Distribution",nRuns,0.
       hSigmaVzSPD->SetBinContent(i+1,sigmaVtxSPDz);
       hSigmaVzSPD->SetBinError(i+1,sigmaVtxSPDzErr);
       hSigmaVzSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVxOCDB->SetBinContent(i+1,meanVtxOCDBx);
+      hMeanVxOCDB->SetBinError(i+1,0.00000001);
+      hMeanVxOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVyOCDB->SetBinContent(i+1,meanVtxOCDBy);
+      hMeanVyOCDB->SetBinError(i+1,0.00000001);
+      hMeanVyOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hMeanVzOCDB->SetBinContent(i+1,meanVtxOCDBz);
+      hMeanVzOCDB->SetBinError(i+1,0.00000001);
+      hMeanVzOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVxOCDB->SetBinContent(i+1,sigmaVtxOCDBx);
+      hSigmaVxOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVxOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVyOCDB->SetBinContent(i+1,sigmaVtxOCDBy);
+      hSigmaVyOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVyOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hSigmaVzOCDB->SetBinContent(i+1,sigmaVtxOCDBz);
+      hSigmaVzOCDB->SetBinError(i+1,0.00000001);
+      hSigmaVzOCDB->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
-        hpileupSPD->SetBinContent(i+1,pileupSPD);
-        hpileupSPD->SetBinError(i+1,errpileupSPD);
-        hpileupSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+      hpileupSPD->SetBinContent(i+1,pileupSPD);
+      hpileupSPD->SetBinError(i+1,errpileupSPD);
+      hpileupSPD->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
 
       //======= SSD =======
@@ -2053,6 +2118,7 @@ if(hMeanVx->GetEntries()>0){
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
     if(hMeanVxSPD->GetBinContent(1)>-500.)hMeanVxSPD->Draw("same");
+    if(hMeanVxOCDB->GetBinContent(1)>-500.)hMeanVxOCDB->Draw("same");
     TLegend* legVtx=new TLegend(0.70,0.83,1.00,0.93);
     legVtx->SetFillColor(kWhite);
     legVtx->SetFillStyle(1001);
@@ -2061,6 +2127,8 @@ if(hMeanVx->GetEntries()>0){
     entVtx->SetTextColor(hMeanVx->GetMarkerColor());
     entVtx=legVtx->AddEntry(hMeanVxSPD,"Tracklets vertex","PL");
     entVtx->SetTextColor(hMeanVxSPD->GetMarkerColor());
+    entVtx=legVtx->AddEntry(hMeanVxOCDB,"OCDB diamond","PL");
+    entVtx->SetTextColor(hMeanVxOCDB->GetMarkerColor());
     legVtx->Draw();
     
     cVertexDisto->cd(2);
@@ -2076,6 +2144,7 @@ if(hMeanVx->GetEntries()>0){
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
     if(hMeanVySPD->GetBinContent(1)>-500.)hMeanVySPD->Draw("same");
+    if(hMeanVyOCDB->GetBinContent(1)>-500.)hMeanVyOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(3);
@@ -2085,6 +2154,7 @@ if(hMeanVx->GetEntries()>0){
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
         if(hMeanVzSPD->GetBinContent(1)>-500.)hMeanVzSPD->Draw("same");
+	if(hMeanVzOCDB->GetBinContent(1)>-500.)hMeanVzOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(4);
@@ -2094,6 +2164,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVx->GetXaxis()->SetTitle("run number");
         hSigmaVx->Draw();
         if(hSigmaVxSPD->GetBinContent(1)>0)hSigmaVxSPD->Draw("same");
+	if(hSigmaVxOCDB->GetBinContent(1)>-500.)hSigmaVxOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(5);
@@ -2103,6 +2174,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVy->GetXaxis()->SetTitle("run number");
         hSigmaVy->Draw();
         if(hSigmaVySPD->GetBinContent(1)>0)hSigmaVySPD->Draw("same");
+	if(hSigmaVyOCDB->GetBinContent(1)>-500.)hSigmaVyOCDB->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(6);
@@ -2112,6 +2184,7 @@ if(hMeanVx->GetEntries()>0){
         hSigmaVz->GetXaxis()->SetTitle("run number");
         hSigmaVz->Draw();
         if(hSigmaVzSPD->GetBinContent(1)>0)hSigmaVzSPD->Draw("same");
+	if(hSigmaVzOCDB->GetBinContent(1)>-500.)hSigmaVzOCDB->Draw("same");
     legVtx->Draw();
         cVertexDisto->SaveAs("Vertex_trend.pdf");
         //    pdfFileNames+=" Vertex_trend.pdf";
