@@ -1531,6 +1531,7 @@ private:
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
+  TH2F *fPtWeightsCent; //!
   TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
   TH3D *fPhiEtaRbRWeights; //!
   TH3D *fPhiEtaRbRWeightsCh[2]; //!
@@ -2047,7 +2048,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
 
-  ClassDef(AliFlowAnalysisCRC,68);
+  ClassDef(AliFlowAnalysisCRC,69);
 
 };
 
