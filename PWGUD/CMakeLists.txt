@@ -13,8 +13,6 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-
 add_subdirectory(base)
 add_subdirectory(DIFFRACTIVE)
 add_subdirectory(FirstPhysics)
