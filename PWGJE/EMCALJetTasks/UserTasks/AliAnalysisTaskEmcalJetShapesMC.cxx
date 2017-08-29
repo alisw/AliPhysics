@@ -137,7 +137,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<42;i++){
+  for(Int_t i=0;i<48;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -175,7 +175,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 43;
+  const Int_t nVar = 48;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -221,7 +221,12 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[39] = "SDGroomedFracBetanegzcut025"; 
   fShapesVarNames[40] = "SDGroomedNBetanegzcut025";
   fShapesVarNames[41] = "SDMassBetanegzcut025";
-  fShapesVarNames[42] = "weightPythia"; 
+ fShapesVarNames[42] = "SDSymmForm";
+  fShapesVarNames[43] = "SDDeltaRForm";
+  fShapesVarNames[44] = "SDGroomedFracForm"; 
+  fShapesVarNames[45] = "SDGroomedNForm";
+  fShapesVarNames[46] = "SDMassForm";
+  fShapesVarNames[47] = "weightPythia"; 
 
 
   
@@ -382,7 +387,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
         Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
         kWeight=partonsInfo->GetPythiaEventWeight();
         //Printf("kWeight=%f",  kWeight);
-        fShapesVar[42] = kWeight;
+        fShapesVar[47] = kWeight;
         
         Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
         fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
@@ -453,7 +458,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
       SoftDrop(jet1,jetCont,0.25,-1,0); 
-          
+      SoftDrop(jet1,jetCont,0.1,-2,0); 
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1110,7 +1115,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-  cout<<"CALL TO SOFTDROP"<<endl;
+  //cout<<"CALL TO SOFTDROP"<<endl;
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
   Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
   UShort_t FJNTracks=0,EmcalJetNTracks=0;
@@ -1287,7 +1292,13 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[39]=GroomedPt;
   fShapesVar[40]=NGroomedBranches;
   fShapesVar[41]=GroomedMass; }
-   
+
+  if((beta==-2) && (zcut==0.1)){
+  fShapesVar[42]=SymParam;
+  fShapesVar[43]=DeltaR;
+  fShapesVar[44]=GroomedPt;
+  fShapesVar[45]=NGroomedBranches;
+  fShapesVar[46]=GroomedMass; }
   
   return;
 
