@@ -174,7 +174,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_phi = 1.0;
     double max_phi = TMath::Pi();
 
-    int nbins_zvertex = 5;
+    int nbins_zvertex = 25; //it as 5
     double min_zvertex = -10;
     double max_zvertex = +10;
 
@@ -293,6 +293,16 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     int nbins_TrueEta = 40; 
     double min_TrueEta   = -1.0;
     double max_TrueEta   = 1.0;
+
+
+    int nbins_d0 = 100;
+    double min_d0 = -1500.0;
+    double max_d0 = 1500.0;
+  
+    int nbins_z0 = 100;
+    double min_z0   = -20.0;
+    double max_z0   = +20.0;
+
     //////////////////////Pion-hadron correlations//////////////////////////
     const int nbins_PionCorr = 13;
     int bins[nbins_PionCorr]    = {nbins_Centrality, nbins_zvertex, nbins_Pt,  //trigger variables
@@ -313,11 +323,11 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
 
     h_Pi0Track = new THnSparseD("h_Pi0Track", axisNames, nbins_PionCorr, bins, xmin,xmax);
     h_Pi0Track->Sumw2();
-    fOutput->Add(h_Pi0Track);
+    //fOutput->Add(h_Pi0Track);
 
     h_Pi0Track_Mixed = new THnSparseD("h_Pi0Track_Mixed", axisNames, nbins_PionCorr, bins, xmin,xmax);
     h_Pi0Track_Mixed->Sumw2();
-    fOutput->Add(h_Pi0Track_Mixed);
+    //fOutput->Add(h_Pi0Track_Mixed);
     
     //////////////////////////////Cluster-Track correlations:///////////////////////////////////////
     const int nbins_ClusterCorr = 10;
@@ -339,18 +349,18 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
      
     h_ClusterTrack = new THnSparseD("h_ClusterTrack", axisNames, nbins_ClusterCorr, binsClusterCorr, xminClusterCorr,xmaxClusterCorr);
     h_ClusterTrack->Sumw2();
-    fOutput->Add(h_ClusterTrack);
+    //fOutput->Add(h_ClusterTrack);
     
     h_ClusterTrack_Mixed = new THnSparseD("h_ClusterTrack_Mixed", axisNames, nbins_ClusterCorr, binsClusterCorr, xminClusterCorr,xmaxClusterCorr);
     h_ClusterTrack_Mixed->Sumw2();
-    fOutput->Add(h_ClusterTrack_Mixed);
+    //fOutput->Add(h_ClusterTrack_Mixed);
     
     ///////////////Pi0////////////////////////////////////
     const int nbins_Pi = 14;
     axisNames = "Pion THnSparse; Centrality [%]; Z vertex [cm];#pi Mass [GeV]; #pi pT [GeV]; #pi y;"; 
     axisNames = axisNames+ "Asymmetry; ph1_pT [GeV]; ph2_pT [GeV]; #Delta#phi [mrad];";
     axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ";
-    axisNames = axisNames+ "ph1 dR; ph2 dR; true pT";
+    axisNames = axisNames+ "ph1 dR; ph2 dR; true pT;";
 
     int binsPi0[nbins_Pi] = {nbins_Centrality, nbins_zvertex, nbins_Mass, nbins_Pt, nbins_eta,   
                              nbins_Asymmetry, nbins_Pt, nbins_Pt, nbins_alpha, 
@@ -395,14 +405,14 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     fOutput->Add(h_Cluster);
     
     ///////////////////Tracks////////////////////////////////////////////////
-    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi;";
-    int    binsTrack[3] = {nbins_Pt, nbins_eta, nbins_phi};
-    double xminTrack[3] = {min_Pt, min_eta, min_phi};
-    double xmaxTrack[3] = {max_Pt, max_eta, max_phi};
-    h_Track = new THnSparseD("h_Track", axisNames, 3, binsTrack, xminTrack, xmaxTrack);
+    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; ";
+    int    binsTrack[5] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0};
+    double xminTrack[5] = {min_Pt, min_eta, min_phi, min_d0, min_z0};
+    double xmaxTrack[5] = {max_Pt, max_eta, max_phi, max_d0, max_z0};
+    h_Track = new THnSparseD("h_Track", axisNames, 5, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
-
-
+    fOutput->Add(h_Track); 
+   
     ///////////////////////////////////TRUTH //////////////////////////////////////////////////////
     axisNames = "Truth ThnSparse; True Pt; True y ; PDG;";
     int    binsTruth[3] = {nbins_TruePt, nbins_TrueEta, nbins_truePDG};
@@ -808,10 +818,29 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     double Weight=1.0;    
     Weight=InputWeight; //..for mixed events normalize per events in pool
     
+    AliTrackContainer* tracksForMatching = GetTrackContainer("ForMatching");
+    if(!tracksForMatching) return 0;
+   
+    if(!MixedEvent){ 
+        for(auto track : tracksForMatching->accepted()){
+            if(!track) continue;
+            Float_t d0=-999.0;  
+            Float_t z0=-999.0;
+            track->GetImpactParametersTPC(d0, z0);
+  
+            if(d0<-1500) d0 = -1499;
+            else if(d0>1500) d0 = 1499;
+    
+   
+            double entries[5] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0};
+            h_Track->Fill(entries, Weight);    
+         }
+    } 
+   
      for(auto cluster: clusters->accepted()){
         if(!PreSelection(cluster))continue ;
         if(MixedEvent){
-	  for(auto track_mix: *bgTracksArray){
+	      for(auto track_mix: *bgTracksArray){
 	      FillPhotonCorrelation(cluster, static_cast<AliPicoTrack*>(track_mix), h_ClusterTrack_Mixed, Weight);
 	  }//end loop over tracks
         }// end if mixed events
