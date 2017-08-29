@@ -48,13 +48,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  int pidType                    =  2,  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
  Bool_t requestTOFPID           =  1,
  Bool_t isMC                    =  0,
- double nSigmaCut               =  2.0,
+ double nSigmaCut               =  3.0,
  double ElectronVetoCut         =  1.0,
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
  double ptCUTupperMax           =  2.0, // pt range upper limit cut
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
- double ptTOFlowerMin           =  0.6, // boundary between TPC & TOF region
+ double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
  int nBinsPhi                   =  72,  // 36 is default value
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
@@ -72,7 +72,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   Bool_t trigger                = kFALSE;
   Bool_t remove_Tracks_T0       = 1;
   bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
-  bool    useEventPlane         = 1;   // 0: No      1: Yes
+  bool    useEventPlane         = 0;   // 0: No      1: Yes
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
   
