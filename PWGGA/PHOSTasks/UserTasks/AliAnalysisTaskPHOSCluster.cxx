@@ -52,26 +52,26 @@ ClassImp(AliAnalysisTaskPHOSCluster);
 AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster()
   :AliAnalysisTaskSE(),
   fOutput(0),
-  fAnyEv(0),
-  fEventCounter(0),
   fClusterTree(0),
-  fClusterCellsInformation(0),
-  fZVertex(0),
+  fFillHitmapCellByCell(0),
   fMinCells(0),
+  fEventCounter(0),
+  fZVertex(0),
+  fAnyEv(0),
   fPHOSGeo(0),
   fPHOSCalibData(0),
   fUtils(0),
-  fcaloClusters(0x0),
   fCluster(0x0),
   fClusterCells(0x0),
-  fPHOSHitmap(0x0),
-  fClusterEnergyVsNoC(0x0),
-  fClusterEnergyVsM02(0x0),
-  fClusterEnergyVsM20(0x0),
+  fClusterCellsInformation(0),
+  fcaloClusters(0x0),
   fEventCluster(0x0),
   fEventCuts(0x0),
   fClusterCuts(0x0),
-  fFillHitmapCellByCell(0)
+  fPHOSHitmap(0x0),
+  fClusterEnergyVsNoC(0x0),
+  fClusterEnergyVsM02(0x0),
+  fClusterEnergyVsM20(0x0)
 {
 // Dummy constructor always needed for I/O
 }
@@ -80,26 +80,26 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster()
 AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster(const char* name)
   :AliAnalysisTaskSE(name),
   fOutput(0),
-  fAnyEv(0),
-  fEventCounter(0),
   fClusterTree(0),
-  fClusterCellsInformation(0),
-  fZVertex(0),
+  fFillHitmapCellByCell(0),
   fMinCells(0),
+  fEventCounter(0),
+  fZVertex(0),
+  fAnyEv(0),
   fPHOSGeo(0),
   fPHOSCalibData(0),
   fUtils(0),
-  fcaloClusters(0x0),
   fCluster(0x0),
   fClusterCells(0x0),
-  fPHOSHitmap(0x0),
-  fClusterEnergyVsNoC(0x0),
-  fClusterEnergyVsM02(0x0),
-  fClusterEnergyVsM20(0x0),
+  fClusterCellsInformation(0),
+  fcaloClusters(0x0),
   fEventCluster(0x0),
   fEventCuts(0x0),
   fClusterCuts(0x0),
-  fFillHitmapCellByCell(0)
+  fPHOSHitmap(0x0),
+  fClusterEnergyVsNoC(0x0),
+  fClusterEnergyVsM02(0x0),
+  fClusterEnergyVsM20(0x0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -154,10 +154,11 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
   fEventCluster ->GetYaxis()->SetTitle("# Clusters");
 
 
-  fClusterCuts = new TH1F("fClusterCuts", "N o Cluster after cuts", 3, 0., 3.);
+  fClusterCuts = new TH1F("fClusterCuts", "N o Cluster after cuts", 4, 0., 4.);
   fClusterCuts ->GetXaxis()->SetBinLabel(1, "All clusters");
   fClusterCuts ->GetXaxis()->SetBinLabel(2, "PHOS Cluster");
   fClusterCuts ->GetXaxis()->SetBinLabel(3, "Min. Cells");
+  fClusterCuts ->GetXaxis()->SetBinLabel(4, "E>0");
   fClusterCuts ->GetYaxis()->SetTitle("# Clusters");
 
   fEventCuts   = new TH1F("fEventCuts", "N o Events after cuts", 4, 0., 4.);
@@ -341,17 +342,18 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 
       if(fMinCells > fCluster->GetNCells()) continue; // remove clusters with less than 2 cells
       fClusterCuts->Fill(2.5);
+      if(0 ==  fCluster->E()) continue; // remove cluster with no energy (e.g. disabled by badmap)
+      fClusterCuts->Fill(3.5);
 
+		  Float_t pos[3] = {0,0,0};  // get cluster coordinates
+		  fCluster->GetPosition(pos);
+		  TVector3 vpos(pos);
 
-		Float_t pos[3] = {0,0,0};  // get cluster coordinates
-		fCluster->GetPosition(pos);
-		TVector3 vpos(pos);
-
-		Int_t    modNrClusterPos, relId[4], cellX, cellZ;
-		fPHOSGeo->GlobalPos2RelId(vpos,relId);  // calculate relative id
-		modNrClusterPos  = relId[0];
-		cellX = relId[2];
-		cellZ = relId[3];
+		  Int_t    modNrClusterPos, relId[4], cellX, cellZ;
+		  fPHOSGeo->GlobalPos2RelId(vpos,relId);  // calculate relative id
+		  modNrClusterPos  = relId[0];
+		  cellX = relId[2];
+		  cellZ = relId[3];
 
 
 //		if(fRecalibrateModuleWise) { // apply recalibration of cluster energy
@@ -361,7 +363,7 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 
       UShort_t* CellsID = fCluster ->GetCellsAbsId();  // get all cells of cluster
       UShort_t  NCells  = fCluster ->GetNCells();
-		fClusterCells = fAnyEv->GetPHOSCells();   // get PHOS cells
+		  fClusterCells = fAnyEv->GetPHOSCells();   // get PHOS cells
       Int_t cellRelID[4];
 
 
@@ -370,17 +372,17 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
           fPHOSGeo ->AbsToRelNumbering(CellsID[icell], cellRelID);
           fPHOSHitmap ->Fill((cellRelID[0]-1)*64+cellRelID[2], cellRelID[3], fClusterCells->GetCellAmplitude(CellsID[icell]));  // fill histogramm cell by cell
         }
-	   }
-		else fPHOSHitmap ->Fill((modNrClusterPos-1)*64 + cellX, cellZ, fCluster->E());  // fill histogramm cluster by cluster
+      }
+		  else fPHOSHitmap ->Fill((modNrClusterPos-1)*64 + cellX, cellZ, fCluster->E());  // fill histogramm cluster by cluster
 
-		// Fill histogramms
-		if(fCluster->GetM02()    >= 0) fClusterEnergyVsM02 ->Fill(fCluster->E(), fCluster->GetM02());
-		if(fCluster->GetM20()    >= 0) fClusterEnergyVsM20 ->Fill(fCluster->E(), fCluster->GetM20());
-		if(fCluster->GetNCells() >= 0) fClusterEnergyVsNoC ->Fill(fCluster->E(), fCluster->GetNCells());
+		  // Fill histogramms
+		  if(fCluster->GetM02()    >= 0) fClusterEnergyVsM02 ->Fill(fCluster->E(), fCluster->GetM02());
+		  if(fCluster->GetM20()    >= 0) fClusterEnergyVsM20 ->Fill(fCluster->E(), fCluster->GetM20());
+		  if(fCluster->GetNCells() >= 0) fClusterEnergyVsNoC ->Fill(fCluster->E(), fCluster->GetNCells());
 
-		fClusterCellsInformation->SetClusterAndCells(fCluster, fClusterCells, fPHOSGeo);  // save information about cluster and its cells
+		  fClusterCellsInformation->SetClusterAndCells(fCluster, fClusterCells, fPHOSGeo);  // save information about cluster and its cells
 
-		fClusterTree ->Fill();
+		  fClusterTree ->Fill();
 
 //    if(fClusterCellsInformation->IsFilled()) fClusterCellsInformation->Reset();  // Reset cluster object
       fClusterCellsInformation->Reset();  // Reset cluster object
@@ -392,8 +394,3 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
   fEventCounter++;
   PostData(1,fOutput);
 }
-
-
-
-
-//TODO histo mit events wie viele mit und ohne cluster
