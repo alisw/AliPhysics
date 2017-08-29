@@ -170,7 +170,7 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToXY(AliAODTrack *muon, Double_t xy[2],
   else if (r[0]<r[1] && r[1]>r[2]) {
     printf("E-AliMFTAnalysisTools::ExtrapAODMuonToXY: Point of closest approach cannot be found (no minima)\n");
     delete param;
-    delete points;
+    delete[] points;
     return kFALSE;
   }
   
@@ -189,7 +189,7 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToXY(AliAODTrack *muon, Double_t xy[2],
     if (TMath::Abs(z[0])>900.) {
       printf("E-AliMFTAnalysisTools::ExtrapAODMuonToXY: Point of closest approach cannot be found (no minima in the fiducial region)\n");
       delete param;
-      delete points;
+      delete[] points;
       return kFALSE;
     }
     
@@ -430,7 +430,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   else if (r[0]<r[1] && r[1]>r[2]) {
     printf("E-AliMFTAnalysisTools::CalculatePCA: Point of closest approach cannot be found for dimuon (no minima)\n");
     for (Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
-    delete points;
+    delete[] points;
     return kFALSE;
   }	
   
@@ -449,7 +449,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     if (TMath::Abs(z[0])>900.) {
       printf("E-AliMFTAnalysisTools::CalculatePCA: Point of closest approach cannot be found for dimuon (no minima in the fiducial region)\n");
       for (Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
-      delete points;
+      delete[] points;
       return kFALSE;
     }
     
@@ -535,7 +535,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     Double_t wOffset = 0;
     if (!GetAODMuonWeightedOffset(muon[iMu],fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach, wOffset)) {
       for(Int_t jMu=0;jMu<nMuons;jMu++) delete param[jMu];
-      delete points;
+      delete[] points;
       return kFALSE;
     }
     Double_t f = TMath::Exp(-0.5 * wOffset);
@@ -546,7 +546,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   else pcaQuality = 0.;
   
   for(Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
-  delete points;
+  delete[] points;
   return kTRUE;
   
 }
