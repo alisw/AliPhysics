@@ -1110,7 +1110,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
- 
+  cout<<"CALL TO SOFTDROP"<<endl;
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
   Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
   UShort_t FJNTracks=0,EmcalJetNTracks=0;
@@ -1134,34 +1134,55 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
   fRandom->SetSeed(0);
   //here add N tracks with random phi and eta and theta according to bdmps distrib.
+  fastjet::PseudoJet MyJet(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+  
   for(Int_t i=0;i<fAdditionalTracks;i++){
-    Double_t ppx,ppy,ppz,pTscale,ppE;
-    Double_t lim1=20;
+    Double_t ppx,ppy,ppz,kTscale,pTscale,ppE;
     Double_t lim2=2;
+    Double_t lim1=10;
     Double_t xpower=-4;
-  
-  
-    Double_t ppeta = JetEta+(2*fJetRadius*fRandom->Uniform()-fJetRadius);
-    Double_t ppphi = JetPhi+(2*fJetRadius*fRandom->Uniform()-fJetRadius);
-    Double_t ppteta = 2.*TMath::ATan(TMath::Exp(-1.*(ppeta)));
-  
-    //generation of kT according to 1/kT^4 , with minimum QS=2 GeV					  
-     Double_t part1=(TMath::Power(lim1,xpower+1)-TMath::Power(lim2,xpower+1))*fRandom->Uniform();
-     Double_t part2=TMath::Power(lim2,xpower+1);
-     pTscale=TMath::Power(part1+part2,1/(xpower+1));
-    					
-     ppx    = pTscale * TMath::Cos(ppphi);
-     ppy    = pTscale * TMath::Sin(ppphi);
-     ppz    = pTscale/TMath::Tan(ppteta);
-     ppE    =     TMath::Sqrt(pTscale*pTscale+ppz*ppz);
+    Double_t xpowero=-2;
     
-     //    cout<<"Adding extra tracks to test the grooming"<<ppx<<" "<<ppy<<" "<<ppz<<" "<<ppE<<endl;
-    fastjet::PseudoJet PseudoTracksExtra(ppx,ppy,ppz,ppE);
-     PseudoTracksExtra.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
-    fInputVectors.push_back(PseudoTracksExtra);}
+  
+    Double_t part1=0;
+    Double_t part2=0;
+    Double_t part1o=0;
+    Double_t part2o=0;
+
+    //coordinates in the reference frame of the jet
+     Double_t ppphi =2*TMath::Pi()*fRandom->Uniform();
+     //generation of kT according to 1/kT^4, with minimum QS=2 GeV					  
+     part1=(TMath::Power(lim1,xpower+1)-TMath::Power(lim2,xpower+1))*fRandom->Uniform();
+     part2=TMath::Power(lim2,xpower+1);
+     kTscale=TMath::Power(part1+part2,1/(xpower+1));
 
 
 
+     
+     //generation of w according to 1/w2, with minimum wc
+     //omega needs to be larger than kT so to have well defined angles
+     Double_t lim1o=10;
+     Double_t lim2o=kTscale; 
+     part1o=(TMath::Power(lim1o,xpowero+1)-TMath::Power(lim2o,xpowero+1))*fRandom->Uniform();
+     part2o=TMath::Power(lim2o,xpowero+1);
+     Double_t omega=TMath::Power(part1o+part2o,1/(xpowero+1));
+     
+     Double_t sinpptheta=kTscale/omega;
+     Double_t pptheta=TMath::ASin(sinpptheta);
+    
+     if(pptheta>0.4) continue;
+     fastjet::PseudoJet PseudoTracksCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+     //cout<<PseudoTracksCMS.px()<<" "<<PseudoTracksCMS.py()<<" "<<PseudoTracksCMS.perp()<<" "<<PseudoTracksCMS.e()<<endl;
+     //boost the particle to the lab frame
+     fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
+     //cout<<" "<<PseudoTracksLab.px()<<" "<<PseudoTracksLab.py()<<" "<<PseudoTracksLab.pz()<<" "<<PseudoTracksLab.e()<<" "<<PseudoTracksLab.perp()<<endl;
+     //cout<<" "<<fJet->Px()<<" "<<fJet->Py()<<" "<<fJet->Pz()<<" "<<fJet->E()<<" "<<fJet->Pt()<<endl;
+        
+     PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
+     fInputVectors.push_back(PseudoTracksLab);}
+
+
+  
   
   fastjet::JetDefinition                *fJetDef;         
   fastjet::ClusterSequence              *fClustSeqSA;
