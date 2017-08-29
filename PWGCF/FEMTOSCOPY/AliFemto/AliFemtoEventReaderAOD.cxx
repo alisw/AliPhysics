@@ -80,8 +80,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMinPlpContribSPD(0),
   fDCAglobalTrack(0),
   fFlatCent(kFALSE),
-  fShiftPosition(0.),
   fPrimaryVertexCorrectionTPCPoints(kFALSE),
+  fShiftPosition(0.),
   f1DcorrectionsPions(0),
   f1DcorrectionsKaons(0),
   f1DcorrectionsProtons(0),
@@ -134,8 +134,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
   fDCAglobalTrack(aReader.fDCAglobalTrack),
   fFlatCent(aReader.fFlatCent),
-  fShiftPosition(aReader.fShiftPosition),
   fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints),
+  fShiftPosition(aReader.fShiftPosition),
   f1DcorrectionsPions(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
   f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
@@ -208,8 +208,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent = aReader.fFlatCent;
-  fShiftPosition = aReader.fShiftPosition;
   fPrimaryVertexCorrectionTPCPoints = aReader.fPrimaryVertexCorrectionTPCPoints;
+  fShiftPosition = aReader.fShiftPosition;
   f1DcorrectionsPions = aReader.f1DcorrectionsPions;
   f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
   f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
