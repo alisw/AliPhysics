@@ -34,6 +34,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   Double_t ptForResol[4]={0.35,1.,4.,10.};
 
   Float_t vecMatchEff[24];
+  Float_t vecErrMatchEff[24];
   for(Int_t itof=0; itof<2; itof++){
     TString tof="";
     if(itof==1) tof="TOFbc";
@@ -46,12 +47,15 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
 	for(Int_t ipt=0; ipt<3; ipt++){
 	  TString bName=Form("MatchEff%sPt%dEta%s%s",spd.Data(),TMath::Nint(ptForTrend[ipt]*1000.),side.Data(),tof.Data());
 	  Int_t index=itof*12+ispd*6+isid*3+ipt;
+	  TString errbName=Form("err%s",bName.Data());
 	  trtree->Branch(bName.Data(),&vecMatchEff[index],Form("%s/F",bName.Data()));
+	  trtree->Branch(errbName.Data(),&vecErrMatchEff[index],Form("%s/F",errbName.Data()));
 	}
       }
     }
   }
   Float_t vecPosNeg[12];
+  Float_t vecErrPosNeg[12];
   for(Int_t ispd=0; ispd<2; ispd++){
     TString spd="";
     if(ispd==1) spd="SPDany";
@@ -62,6 +66,8 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
 	TString bName=Form("PosNegCharge%sPt%dEta%s",spd.Data(),TMath::Nint(ptForTrend[ipt]*1000.),side.Data());
 	Int_t index=ispd*6+isid*3+ipt;
 	trtree->Branch(bName.Data(),&vecPosNeg[index],Form("%s/F",bName.Data()));
+	TString errbName=Form("err%s",bName.Data());
+	trtree->Branch(errbName.Data(),&vecErrPosNeg[index],Form("%s/F",errbName.Data()));
       }
     }
   }
@@ -224,6 +230,14 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     vecMatchEff[ipt+15]=hMatchEffVsPtNegEtaTOFbc->GetBinContent(thePtBin);
     vecMatchEff[ipt+18]=hMatchEffVsPtPosEtaSPDanyTOFbc->GetBinContent(thePtBin);
     vecMatchEff[ipt+21]=hMatchEffVsPtNegEtaSPDanyTOFbc->GetBinContent(thePtBin);
+    vecErrMatchEff[ipt]=hMatchEffVsPtPosEta->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+3]=hMatchEffVsPtNegEta->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+6]=hMatchEffVsPtPosEtaSPDany->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+9]=hMatchEffVsPtNegEtaSPDany->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+12]=hMatchEffVsPtPosEtaTOFbc->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+15]=hMatchEffVsPtNegEtaTOFbc->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+18]=hMatchEffVsPtPosEtaSPDanyTOFbc->GetBinError(thePtBin);
+    vecErrMatchEff[ipt+21]=hMatchEffVsPtNegEtaSPDanyTOFbc->GetBinError(thePtBin);
   }
 
   TCanvas* cme=new TCanvas("cme","MatchEff All",900,900);
@@ -328,6 +342,10 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
       vecPosNeg[ipt+3]=hRatioPosNegEtaNegTPCsel->GetBinContent(thePtBin);
       vecPosNeg[ipt+6]=hRatioPosNegEtaPosTPCselSPDany->GetBinContent(thePtBin);
       vecPosNeg[ipt+9]=hRatioPosNegEtaNegTPCselSPDany->GetBinContent(thePtBin);
+      vecErrPosNeg[ipt]=hRatioPosNegEtaPosTPCsel->GetBinError(thePtBin);
+      vecErrPosNeg[ipt+3]=hRatioPosNegEtaNegTPCsel->GetBinError(thePtBin);
+      vecErrPosNeg[ipt+6]=hRatioPosNegEtaPosTPCselSPDany->GetBinError(thePtBin);
+      vecErrPosNeg[ipt+9]=hRatioPosNegEtaNegTPCselSPDany->GetBinError(thePtBin);
     }
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
@@ -372,6 +390,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   
   const Int_t checkSpecies=2;
   Float_t vecFracBadHyp[9*checkSpecies];
+  Float_t vecErrFracBadHyp[9*checkSpecies];
 
   TString pNames[checkSpecies]={"Pion","Proton"};
   TString trType[3]={"TPCsel","TPCselITSref","TPCselSPDany"};
@@ -503,16 +522,25 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
       TString bName1=Form("frac%sBadHypPt%d",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
       Int_t index1=iSp*9+ipt*3;
       trtree->Branch(bName1.Data(),&vecFracBadHyp[index1],Form("%s/F",bName1.Data()));
+      TString errbName1=Form("err%s",bName1.Data());
+      trtree->Branch(errbName1.Data(),&vecErrFracBadHyp[index1],Form("%s/F",errbName1.Data()));
       TString bName2=Form("frac%sBadHypPt%dITSref",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
       Int_t index2=index1+1;
       trtree->Branch(bName2.Data(),&vecFracBadHyp[index2],Form("%s/F",bName2.Data()));
+      TString errbName2=Form("err%s",bName2.Data());
+      trtree->Branch(errbName2.Data(),&vecErrFracBadHyp[index2],Form("%s/F",errbName2.Data()));
       TString bName3=Form("frac%sBadHypPt%dSPDany",pNames[iSp].Data(),TMath::Nint(ptForBadHyp[ipt]*1000.));
       Int_t index3=index2+1;
       trtree->Branch(bName3.Data(),&vecFracBadHyp[index3],Form("%s/F",bName3.Data()));
+      TString errbName3=Form("err%s",bName3.Data());
+      trtree->Branch(errbName3.Data(),&vecErrFracBadHyp[index3],Form("%s/F",errbName3.Data()));
       Int_t thePtBin=hRatioBadGoodVsPtEtaPos[0][iSp]->GetXaxis()->FindBin(ptForBadHyp[ipt]*0.9999);
       vecFracBadHyp[index1]=hRatioBadGoodVsPtEtaPos[0][iSp]->GetBinContent(thePtBin);
       vecFracBadHyp[index2]=hRatioBadGoodVsPtEtaPos[1][iSp]->GetBinContent(thePtBin);
       vecFracBadHyp[index3]=hRatioBadGoodVsPtEtaPos[2][iSp]->GetBinContent(thePtBin);
+      vecErrFracBadHyp[index1]=hRatioBadGoodVsPtEtaPos[0][iSp]->GetBinError(thePtBin);
+      vecErrFracBadHyp[index2]=hRatioBadGoodVsPtEtaPos[1][iSp]->GetBinError(thePtBin);
+      vecErrFracBadHyp[index3]=hRatioBadGoodVsPtEtaPos[2][iSp]->GetBinError(thePtBin);
     }
 
     TCanvas* cmep=new TCanvas(Form("cmep%d",iSp),Form("MatchEff %s",pNames[iSp].Data()),900,900);
@@ -607,21 +635,31 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   cptcm->SaveAs("PtResolCovMat.png");
 
   Float_t vecPtResol[12];
+  Float_t vecErrPtResol[12];
 
   for(Int_t ipt=0; ipt<4; ipt++){
     TString bName1=Form("PtResolTPCCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
     Int_t index1=ipt*3;
     trtree->Branch(bName1.Data(),&vecPtResol[index1],Form("%s/F",bName1.Data()));
+    TString errbName1=Form("err%s",bName1.Data());
+    trtree->Branch(errbName1.Data(),&vecErrPtResol[index1],Form("%s/F",errbName1.Data()));
     TString bName2=Form("PtResolITSrefCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
     Int_t index2=index1+1;
     trtree->Branch(bName2.Data(),&vecPtResol[index2],Form("%s/F",bName2.Data()));
+    TString errbName2=Form("err%s",bName2.Data());
+    trtree->Branch(errbName2.Data(),&vecErrPtResol[index2],Form("%s/F",errbName2.Data()));
     TString bName3=Form("PtResolSPDanyCovMatPt%d",TMath::Nint(ptForResol[ipt]*1000.));
     Int_t index3=index2+1;
     trtree->Branch(bName3.Data(),&vecPtResol[index3],Form("%s/F",bName3.Data()));
+    TString errbName3=Form("err%s",bName3.Data());
+    trtree->Branch(errbName3.Data(),&vecErrPtResol[index3],Form("%s/F",errbName3.Data()));
     Int_t thePtBin=pptresTPC->GetXaxis()->FindBin(ptForResol[ipt]*0.9999);
     vecPtResol[index1]=pptresTPC->GetBinContent(thePtBin);
     vecPtResol[index2]=pptresITS->GetBinContent(thePtBin);
     vecPtResol[index3]=pptresSPD->GetBinContent(thePtBin);
+    vecErrPtResol[index1]=pptresTPC->GetBinError(thePtBin);
+    vecErrPtResol[index2]=pptresITS->GetBinError(thePtBin);
+    vecErrPtResol[index3]=pptresSPD->GetBinError(thePtBin);
   }
 
   TH2F* hPtResidVsPtTPCselITSrefPiong=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefGoodHyppi");
