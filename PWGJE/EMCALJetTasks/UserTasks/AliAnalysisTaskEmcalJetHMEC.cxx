@@ -54,19 +54,19 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fClusterBias(5),
   fDoEventMixing(kFALSE),
   fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
-  fPoolMgr(0), 
+  fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fDoEffCorrection(0),
-  fJESCorrectionHist(0),
   fNoMixedEventJESCorrection(kFALSE),
-  fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fHistTrackPt(0),
-  fHistJetEtaPhi(0), 
-  fHistJHPsi(0),
-  fHistJetHEtaPhi(0), 
-  fhnMixedEvents(0),
-  fhnJH(0)
+  fJESCorrectionHist(nullptr),
+  fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fHistTrackPt(nullptr),
+  fHistJetEtaPhi(nullptr),
+  fHistJetHEtaPhi(nullptr),
+  fHistJHPsi(nullptr),
+  fhnMixedEvents(nullptr),
+  fhnJH(nullptr)
 {
   // Default Constructor
   InitializeArraysToZero();
@@ -79,19 +79,19 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fClusterBias(5),
   fDoEventMixing(kFALSE),
   fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
-  fPoolMgr(0), 
+  fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fDoEffCorrection(0),
-  fJESCorrectionHist(0),
   fNoMixedEventJESCorrection(kFALSE),
-  fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fHistTrackPt(0),
-  fHistJetEtaPhi(0), 
-  fHistJHPsi(0),
-  fHistJetHEtaPhi(0),
-  fhnMixedEvents(0),
-  fhnJH(0)
+  fJESCorrectionHist(nullptr),
+  fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
+  fHistTrackPt(nullptr),
+  fHistJetEtaPhi(nullptr),
+  fHistJetHEtaPhi(nullptr),
+  fHistJHPsi(nullptr),
+  fhnMixedEvents(nullptr),
+  fhnJH(nullptr)
 {
   // Constructor
   InitializeArraysToZero();
@@ -103,15 +103,15 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
 void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
 {
   for(Int_t trackPtBin = 0; trackPtBin < kMaxTrackPtBins; trackPtBin++){
-    fHistTrackEtaPhi[trackPtBin]=0;
+    fHistTrackEtaPhi[trackPtBin] = nullptr;
   }
   for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
-    fHistJetPt[centralityBin]=0;
-    fHistJetPtBias[centralityBin]=0;
+    fHistJetPt[centralityBin] = nullptr;
+    fHistJetPtBias[centralityBin] = nullptr;
     for(Int_t jetPtBin = 0; jetPtBin < kMaxJetPtBins; ++jetPtBin){
       for(Int_t etaBin = 0; etaBin < kMaxEtaBins; ++etaBin){
-        fHistJetH[centralityBin][jetPtBin][etaBin]=0;
-        fHistJetHBias[centralityBin][jetPtBin][etaBin]=0;
+        fHistJetH[centralityBin][jetPtBin][etaBin] = nullptr;
+        fHistJetHBias[centralityBin][jetPtBin][etaBin] = nullptr;
       }
     }
   }
