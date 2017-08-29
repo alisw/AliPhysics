@@ -295,9 +295,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double max_TrueEta   = 1.0;
 
 
-    int nbins_d0 = 100;
-    double min_d0 = -1500.0;
-    double max_d0 = 1500.0;
+    int nbins_d0 = 200;
+    double min_d0 = -3000.0;
+    double max_d0 = 3000.0;
   
     int nbins_z0 = 100;
     double min_z0   = -20.0;
@@ -404,12 +404,26 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     h_Cluster->Sumw2();
     fOutput->Add(h_Cluster);
     
+
+    int nbins_nTPCclusters = 180;
+    double min_nTPCclusters = 0.0;
+    double max_nTPCclusters = 180;
+
+    int nbins_TPCsignal = 200;
+    double min_TPCsignal  =0.0; 
+    double max_TPCsignal = 150;
+
+    int nbins_fTPC = 180;
+    double min_fTPC =0.0;
+    double max_fTPC = 180;   
     ///////////////////Tracks////////////////////////////////////////////////
-    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; ";
-    int    binsTrack[5] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0};
-    double xminTrack[5] = {min_Pt, min_eta, min_phi, min_d0, min_z0};
-    double xmaxTrack[5] = {max_Pt, max_eta, max_phi, max_d0, max_z0};
-    h_Track = new THnSparseD("h_Track", axisNames, 5, binsTrack, xminTrack, xmaxTrack);
+
+
+    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; # of TPC clusters; TPC signal; Crossed rows; ";
+    int    binsTrack[8] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0, nbins_nTPCclusters, nbins_TPCsignal, nbins_fTPC};
+    double xminTrack[8] = {0.0, -1.0, 0.0,           min_d0, min_z0, min_nTPCclusters, min_TPCsignal, min_fTPC};
+    double xmaxTrack[8] = {20.0,  1.0, 2*TMath::Pi(), max_d0, max_z0, max_nTPCclusters, max_TPCsignal, max_fTPC};
+    h_Track = new THnSparseD("h_Track", axisNames, 8, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
     fOutput->Add(h_Track); 
    
@@ -828,11 +842,13 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
             Float_t z0=-999.0;
             track->GetImpactParametersTPC(d0, z0);
   
-            if(d0<-1500) d0 = -1499;
-            else if(d0>1500) d0 = 1499;
-    
-   
-            double entries[5] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0};
+            if(d0<-3000) d0 = -1999;
+            else if(d0>3000) d0 = 1999;
+            double fTPC =static_cast<double>(1.0*track->GetTPCNclsF());
+	    // std::cout<< track->GetTPCNclsF() << std::endl;
+       
+            double TPCsignal= std::min(static_cast<double>(track->GetTPCsignal()), 149.0);
+            double entries[8] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0, static_cast<double>(track->GetTPCNcls()), TPCsignal, track->GetTPCCrossedRows() };
             h_Track->Fill(entries, Weight);    
          }
     } 
