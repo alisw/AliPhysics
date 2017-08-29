@@ -562,8 +562,6 @@ void BeginSlides ( TString period, TString pass, TString authors, ofstream &outF
   outFile << "\\setlength{\\TPHorizModule}{1bp}" << endl;
   outFile << "\\setlength{\\TPVertModule}{1bp}" << endl;
   outFile << "\\textblockorigin{0bp}{0bp}" << endl;
-  outFile << endl;
-  outFile << "\\graphicspath{{images/}}" << endl;
 
   outFile << endl;
   outFile << "\\begin{frame}[plain]" << endl;
