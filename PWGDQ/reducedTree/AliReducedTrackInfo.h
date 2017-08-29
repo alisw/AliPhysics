@@ -15,10 +15,10 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   
  public:
   AliReducedTrackInfo();
+  AliReducedTrackInfo(const AliReducedTrackInfo &c);
   virtual ~AliReducedTrackInfo();
 
   // getters
-  UShort_t TrackId()                     const {return fTrackId;}
   ULong_t  Status()                      const {return fStatus;}
   Bool_t   CheckTrackStatus(UInt_t flag) const {return (flag<8*sizeof(ULong_t) ? (fStatus&(1<<flag)) : kFALSE);}
   Float_t  PxTPC()                       const {return fTPCPt*TMath::Cos(fTPCPhi);}
@@ -95,13 +95,11 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t MCFreezeout(Int_t dim) {return (dim>=0 && dim<3 ? fMCFreezeout[dim] : 0.0);}
   Int_t MCLabel(Int_t history=0) {return (history>=0 && history<4 ? fMCLabels[history] : -9999);}
   Int_t MCPdg(Int_t history=0) {return (history>=0 && history<4 ? fMCPdg[history] : -9999);}
-  Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
 
      
  protected:
-  UShort_t fTrackId;            // track id 
   ULong_t fStatus;              // tracking status
   Float_t fTPCPhi;              // inner param phi
   Float_t fTPCPt;               // inner param pt  
@@ -162,17 +160,12 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fMCMom[3];             // MC truth 3-momentum information in cartezian coordinates
   Float_t fMCFreezeout[3];    // MC truth 3-position information in cartezian coordinates
   Int_t    fMCLabels[4];           // MC label for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
-  Int_t    fMCPdg[4];                // MC PDG code for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother
-  Int_t    fHFProc;             // Heavy Flavour Process number in the event for the particle  
+  Int_t    fMCPdg[4];                // MC PDG code for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
   Short_t fMCGeneratorIndex;    // generator index (used for cocktail generators ?)
-  
 
-  
-          
-  AliReducedTrackInfo(const AliReducedTrackInfo &c);
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
-
-  ClassDef(AliReducedTrackInfo, 4);
+  
+  ClassDef(AliReducedTrackInfo, 5);
 };
 
 //_______________________________________________________________________________

@@ -63,7 +63,6 @@ AliDielectronMC* AliDielectronMC::Instance()
 
   AnalysisType type=kUNSET;
   Bool_t hasMC=kFALSE;
-  Bool_t checkHF=kFALSE;
   if (AliAnalysisManager::GetAnalysisManager()){
     if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()) type=kESD;
     else if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()) type=kAOD;
@@ -76,8 +75,6 @@ AliDielectronMC* AliDielectronMC::Instance()
 
   fgInstance->SetHasMC(hasMC);
 
-  fgInstance->SetCheckHF(checkHF);
-
   return fgInstance;
 }
 
@@ -87,8 +84,6 @@ AliDielectronMC::AliDielectronMC(AnalysisType type):
   fStack(0x0),
   fAnaType(type),
   fHasMC(kTRUE),
-  fCheckHF(kFALSE),
-  fhfproc(),
   fHasHijingHeader(-1),
   fMcArray(0x0)
 {
@@ -204,8 +199,6 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     fMCEvent = mcEvent;
 
     if (!UpdateStack()) return kFALSE;
-
-    if(fCheckHF) LoadHFPairs(); // So far only compatible with ESD
   }
   else if(fAnaType == kAOD)
   {
@@ -1716,19 +1709,4 @@ Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY,
     primVtxZ = mcHead->GetVtxZ();
   }
   return kTRUE;
-}
-
-
-//____________________________________________________________
-Bool_t AliDielectronMC::LoadHFPairs()
-{
-  // To be implemented  
-  return kTRUE;					   
-}
-
-//____________________________________________________________
-Int_t AliDielectronMC::GetHFProcess(const Int_t label)
-{
-  // To be implemented  
-  return 0;
 }
