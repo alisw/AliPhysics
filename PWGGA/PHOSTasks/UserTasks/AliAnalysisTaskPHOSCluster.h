@@ -87,7 +87,7 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
 
     AliAnalysisTaskPHOSCluster(const AliAnalysisTaskPHOSCluster&);            //! Not implemented
     AliAnalysisTaskPHOSCluster& operator=(const AliAnalysisTaskPHOSCluster&); //! Not implemented
-    ClassDef(AliAnalysisTaskPHOSCluster,3);
+    ClassDef(AliAnalysisTaskPHOSCluster,4);
 };
 
 #endif
