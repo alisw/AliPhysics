@@ -489,7 +489,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	Double32_t time[24],  adcmip[24], ampnewmip[24];
 	Int_t adc[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
-	  if(timeCFD[ipmt] >  0 && amplitude[ipmt]>0 ){
+	  if(timeCFD[ipmt] >  0 && amplitude[ipmt]>=0 ){
 	   //for simulated data
 	     //for physics  data
 	    //	   adc[ipmt] = fAmplitude[ipmt];
@@ -524,7 +524,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	Int_t npmtsC=0;
 	for (Int_t ipmt=0; ipmt<12; ipmt++){
 	  if(time[ipmt] !=0 &&  time[ipmt] > -9000 
-	     /*&& badpmt[ipmt]==0 */
+	     /*&& badpmt[ipmt]==0 */ 
 	    &&  adcmip[ipmt]>lowAmpThreshold )
 	    {
 	      if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
