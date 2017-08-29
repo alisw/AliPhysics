@@ -693,6 +693,14 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   // run-by-run corrections ********************************************************************************************
 
   if(fRunNum!=fCachedRunNum) {
+    for (Int_t cb=0; cb<fCRCnCen; cb++) {
+      if(fPtWeightsHist[cb]){
+        for (Int_t bx=1; bx<=fPtWeightsHist[cb]->GetNbinsX(); bx++) {
+          fPtWeightsCent->SetBinContent(bx,cb+1,fPtWeightsHist[cb]->GetBinContent(bx));
+        }
+      }
+    }
+
     if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhiRbR) {
       if(fWeightsList->FindObject(Form("fCRCQVecPhiHistRbR[%d]",fRunNum))) {
         fPhiEtaRbRWeights = (TH3D*)(fWeightsList->FindObject(Form("fCRCQVecPhiRbRHist[%d]",fRunNum)));
@@ -756,9 +764,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         wProbCut = 0.;
         // pT weights
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
-          if(dPt>fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin() && dPt<fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax()) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
-          else if(dPt<fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin())  wt = fPtWeightsHist[fCenBin]->Interpolate(fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin());
-          else if(dPt>fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax())  wt = fPtWeightsHist[fCenBin]->Interpolate(fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax());
+          if(dPt>fPtWeightsCent->GetXaxis()->GetXmin() && dPt<fPtWeightsCent->GetXaxis()->GetXmax()) wt = fPtWeightsCent->Interpolate(dPt,fCentralityEBE);
+          else if(dPt<fPtWeightsCent->GetXaxis()->GetXmin())  wt = fPtWeightsCent->Interpolate(fPtWeightsCent->GetXaxis()->GetXmin(),fCentralityEBE);
+          else if(dPt>fPtWeightsCent->GetXaxis()->GetXmax())  wt = fPtWeightsCent->Interpolate(fPtWeightsCent->GetXaxis()->GetXmax(),fCentralityEBE);
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
 
@@ -776,6 +784,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if((fPOIExtraWeights==kEtaPhiVtx || fPOIExtraWeights==kEtaPhiVtxRbR) && fPhiEtaWeightsVtx[fCenBin]) // determine phieta weight for POI:
         {
           wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPosCor[2],dPhi,dEta));
+          if(wt==0.) continue;
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
@@ -917,9 +926,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
 
         // pT weights
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
-          if(dPt>fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin() && dPt<fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax()) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
-          else if(dPt<fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin())  wt = fPtWeightsHist[fCenBin]->Interpolate(fPtWeightsHist[fCenBin]->GetXaxis()->GetXmin());
-          else if(dPt>fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax())  wt = fPtWeightsHist[fCenBin]->Interpolate(fPtWeightsHist[fCenBin]->GetXaxis()->GetXmax());
+          if(dPt>fPtWeightsCent->GetXaxis()->GetXmin() && dPt<fPtWeightsCent->GetXaxis()->GetXmax()) wt = fPtWeightsCent->Interpolate(dPt,fCentralityEBE);
+          else if(dPt<fPtWeightsCent->GetXaxis()->GetXmin())  wt = fPtWeightsCent->Interpolate(fPtWeightsCent->GetXaxis()->GetXmin(),fCentralityEBE);
+          else if(dPt>fPtWeightsCent->GetXaxis()->GetXmax())  wt = fPtWeightsCent->Interpolate(fPtWeightsCent->GetXaxis()->GetXmax(),fCentralityEBE);
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
 
@@ -937,6 +946,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if((fPOIExtraWeights==kEtaPhiVtx || fPOIExtraWeights==kEtaPhiVtxRbR) && fPhiEtaWeightsVtx[fCenBin]) // determine phieta weight for POI:
         {
           wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPosCor[2],dPhi,dEta));
+          if(wt==0.) continue;
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
@@ -2155,11 +2165,21 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
 {
   // Book and fill histograms which hold phi, pt and eta weights.
 
-//  if(!fWeightsList)
-//  {
-//    printf("\n WARNING (QC): fWeightsList is NULL in AFAWQC::BAFWH() !!!! \n\n");
-//    exit(0);
-//  }
+  if(!fWeightsList)
+  {
+    printf("\n WARNING (QC): fWeightsList is NULL in AFAWQC::BAFWH() !!!! \n\n");
+    exit(0);
+  }
+
+  Double_t ptbinsforweights[200001] = {0.};
+  for (Int_t phib=0; phib<200001; phib++) {
+    ptbinsforweights[phib] = 0.2 + phib*(50.-0.2)/200000.;
+  }
+  Double_t cenbinsforweights[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+  if(fPtWeightsHist[0]) {
+    fPtWeightsCent = new TH2F("fPtWeightsCent","fPtWeightsCent",200000,ptbinsforweights,10,cenbinsforweights);
+    fTempList->Add(fPtWeightsCent);
+  }
 
   // // POIs
   // for(Int_t c=0; c<2; c++)
@@ -5812,6 +5832,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 {
   fWeightsList = new TList();
+  fPtWeightsCent = NULL;
   fPhiEtaWeights = NULL;
   fPhiEtaRbRWeights = NULL;
   for (Int_t i=0; i<2; i++) {

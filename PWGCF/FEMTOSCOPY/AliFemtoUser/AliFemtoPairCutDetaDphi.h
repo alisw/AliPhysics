@@ -271,7 +271,6 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
   const Double_t radius_in_meters)
 {
   const double PI_OVER_2 = TMath::Pi() / 2.0,
-              PI_TIMES_2 = TMath::Pi() * 2.0,
                RADIUS_CM = radius_in_meters * 100.0;
 
   const double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),

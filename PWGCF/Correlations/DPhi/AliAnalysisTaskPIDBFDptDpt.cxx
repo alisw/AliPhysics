@@ -1442,9 +1442,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       // "MCAODreco" -- for a MC reconstructed production dataset, e.g. Hijing_PbPb_LHC10h
       if ( fAnalysisType == "RealData" || fAnalysisType == "MCAODreco" )
 	{
-	  EP = TPC_EventPlane( fAODEvent );
-	  _psi_EventPlane -> Fill( EP );
-	  
+	  if ( _useEventPlane )
+	    {
+	     EP = TPC_EventPlane( fAODEvent );
+	     _psi_EventPlane -> Fill( EP );
+	    }
+		      
 	  //Track Loop starts here
 	  for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
 	    {

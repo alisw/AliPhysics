@@ -371,8 +371,8 @@ AliFemtoPionLambdaCutMonitor::Lambda::Fill(const AliFemtoV0* track)
              p_pion = (type_is_lambda) ? track->MomNeg().Mag() : track->MomPos().Mag(),
            p_proton = (type_is_lambda) ? track->MomPos().Mag() : track->MomNeg().Mag(),
 
-           eta_pion = (type_is_lambda) ? track->EtaNeg() : track->EtaPos(),
-         eta_proton = (type_is_lambda) ? track->EtaPos() : track->EtaNeg(),
+//         eta_pion = (type_is_lambda) ? track->EtaNeg() : track->EtaPos(),
+//       eta_proton = (type_is_lambda) ? track->EtaPos() : track->EtaNeg(),
 
           dedx_pion = (type_is_lambda) ? track->DedxNeg() : track->DedxPos(),
         dedx_proton = (type_is_lambda) ? track->DedxPos() : track->DedxNeg();
@@ -507,8 +507,8 @@ AliFemtoPionLambdaCutMonitor::Pair::Fill(const AliFemtoPair *pair)
                                   *mc_2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
     if (mc_1 && mc_2) {
 
-      const AliFemtoV0 *lambda = pair->Track1()->V0();
-      const AliFemtoTrack *pion = pair->Track2()->Track();
+      // const AliFemtoV0 *lambda = pair->Track1()->V0();
+      // const AliFemtoTrack *pion = pair->Track2()->Track();
 
       // get true momentums
       const AliFemtoThreeVector &momentum_1 = *mc_1->GetTrueMomentum(),
