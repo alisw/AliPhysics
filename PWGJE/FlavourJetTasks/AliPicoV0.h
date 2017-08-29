@@ -31,9 +31,9 @@ class AliPicoV0 : public TObject {
   virtual ~AliPicoV0();
 //=============================================================================
 
-  const TVector3 KinePos() const { return  fP3Pos; }
-  const TVector3 KineNeg() const { return  fP3Neg; }
-  const TVector3 KineRD()  const { return (fP3Pos + fP3Neg); }
+  const TVector3 &KinePos() const { return  fP3Pos; }
+  const TVector3 &KineNeg() const { return  fP3Neg; }
+  const TVector3  KineRD()  const { return (fP3Pos + fP3Neg); }
 
   const TLorentzVector KineKshort() const;
   const TLorentzVector KineLambda() const;
