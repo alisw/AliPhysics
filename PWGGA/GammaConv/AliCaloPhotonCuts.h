@@ -153,6 +153,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f3b,
       k17f4a,
       k17f4b,
+      k17g8b,
+      k17g8c,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -506,7 +508,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,46)
+    ClassDef(AliCaloPhotonCuts,47)
 };
 
 #endif

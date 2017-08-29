@@ -2777,7 +2777,25 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
     // else if run2 data use 2015 PbPb cuts
     }else if (runNumber>=209122){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+      // EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+      // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+      EsdTrackCuts = new AliESDtrackCuts();
+      EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+      EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+      EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+      // ITS
+      EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+      EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                                              AliESDtrackCuts::kAny);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
     // else use 2011 version of track cuts
     }else{
       EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
@@ -4983,6 +5001,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17f3b") == 0  )     return k17f3b;
   else if ( namePeriod.CompareTo("LHC17f4a") == 0  )     return k17f4a;
   else if ( namePeriod.CompareTo("LHC17f4b") == 0  )     return k17f4b;
+  else if ( namePeriod.CompareTo("LHC17g8b") == 0  )     return k17g8b;
+  else if ( namePeriod.CompareTo("LHC17g8c") == 0  )     return k17g8c;
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
             namePeriod.CompareTo("LHC10c") == 0 ||
             namePeriod.CompareTo("LHC10d") == 0 ||
