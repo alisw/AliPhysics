@@ -330,6 +330,31 @@ void  AliMC::AddParticles()
   // f2(1270) (PDG: width = 185 MeV)
   TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
 
+  // Xi_0(1820)
+  TVirtualMC::GetMC()->DefineParticle( 123324,"Xi_0_1820",    kPTNeutron,1.8234,0.0,2.742550e-24,"Hadron",0.24, 3, -1, 0, 1,  1, 0, 0,  1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-123324,"Xi_0_Bar_1820",kPTNeutron,1.8234,0.0,2.742550e-24,"Hadron",0.24, 3, -1, 0, 1, -1, 0, 0, -1, kTRUE);
+
+  int xi_0_1820_mode[6][3] = {{0}};
+  float xi_0_1820_ratio[6] = {100.f,0.f,0.f,0.f,0.f,0.f};
+  xi_0_1820_mode[0][0] = 3122; // Lambda
+  xi_0_1820_mode[0][1] = 310;  // K0s
+  TVirtualMC::GetMC()->SetDecayMode(123324,xi_0_1820_ratio,xi_0_1820_mode);
+  xi_0_1820_mode[0][0] = -3122; // Lambda-bar
+  TVirtualMC::GetMC()->SetDecayMode(-123324,xi_0_1820_ratio,xi_0_1820_mode);
+
+  // Xi-+(1820)
+  TVirtualMC::GetMC()->DefineParticle(123314,"Xi_Minus_1820",kPTHadron,1.8234,-1.0,2.742550e-24,"Hadron",0.24, 3, -1, 0, 1, -1, 0, 0,  1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-123314,"Xi_Plus_1820",kPTHadron,1.8234, 1.0,2.742550e-24,"Hadron",0.24, 3, -1, 0, 1,  1, 0, 0, -1, kTRUE);
+
+  int xi_charged_1820_mode[6][3] = {{0}};
+  float xi_charged_1820_ratio[6] = {100.f,0.f,0.f,0.f,0.f,0.f};
+  xi_charged_1820_mode[0][0] = 3122; // Lambda
+  xi_charged_1820_mode[0][1] = -321;  // K-
+  TVirtualMC::GetMC()->SetDecayMode(123314,xi_charged_1820_ratio,xi_charged_1820_mode);
+  xi_charged_1820_mode[0][0] = -3122; // Lambda-bar
+  xi_charged_1820_mode[0][1] = 321;  // K+
+  TVirtualMC::GetMC()->SetDecayMode(-123314,xi_charged_1820_ratio,xi_charged_1820_mode);
+
   // Ps - hidden strange (s-sbar) pentaquarks
   TVirtualMC::GetMC()->DefineParticle( 9322134, "Ps_2100", kPTHadron, 2.1 ,  1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0,  1, kTRUE);
   TVirtualMC::GetMC()->DefineParticle(-9322134, "AntiPs_2100", kPTHadron, 2.1 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0, -1, kTRUE);
