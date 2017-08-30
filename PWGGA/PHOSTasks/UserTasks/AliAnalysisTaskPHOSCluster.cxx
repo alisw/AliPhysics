@@ -54,9 +54,11 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster()
   fOutput(0),
   fClusterTree(0),
   fFillHitmapCellByCell(0),
+  runNumber(0),
   fMinCells(0),
   fEventCounter(0),
   fZVertex(0),
+  fFiredTriggerClasses(0),
   fAnyEv(0),
   fPHOSGeo(0),
   fPHOSCalibData(0),
@@ -82,9 +84,11 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster(const char* name)
   fOutput(0),
   fClusterTree(0),
   fFillHitmapCellByCell(0),
+  runNumber(0),
   fMinCells(0),
   fEventCounter(0),
   fZVertex(0),
+  fFiredTriggerClasses(0),
   fAnyEv(0),
   fPHOSGeo(0),
   fPHOSCalibData(0),
@@ -140,6 +144,8 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
 
   fClusterTree   = new TTree("fClusterTree", "AliPHOSCluster");
   fClusterTree ->Branch("fClusterCellsInformation", &fClusterCellsInformation);
+  fClusterTree ->Branch("RunNumber", &runNumber);
+  fClusterTree ->Branch("FiredTriggerClasses", &fFiredTriggerClasses);
   fClusterTree ->SetAutoSave(100000);
 
 
@@ -255,8 +261,9 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 
 
   // ========== START Setting PHOS matrix ========== //
-  Int_t runNumber = 0;
+//  Int_t runNumber = 0;
   runNumber = fAnyEv->GetRunNumber();
+  fFiredTriggerClasses = fAnyEv->GetFiredTriggerClasses();
   if (fPHOSGeo==0) {
 
     fPHOSGeo = AliPHOSGeometry::GetInstance() ;

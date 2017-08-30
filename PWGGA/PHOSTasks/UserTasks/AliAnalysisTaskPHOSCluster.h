@@ -57,11 +57,13 @@ class AliAnalysisTaskPHOSCluster : public AliAnalysisTaskSE {
 
     Bool_t         fFillHitmapCellByCell;    // if true fill hitmap cell by cell, else cluster by cluster
 
+    Int_t          runNumber;               //
     Int_t          fMinCells;               // Variable for MinCells cut
     Int_t          fEventCounter;           // number of analyzed events
 
     Float_t        fZVertex;                // Variable for Z-Vertex cut
 
+    TString        fFiredTriggerClasses;
 
     AliVEvent*             fAnyEv;                    //!pointer to input event
     AliPHOSGeometry*       fPHOSGeo;                  //!PHOS geometry
