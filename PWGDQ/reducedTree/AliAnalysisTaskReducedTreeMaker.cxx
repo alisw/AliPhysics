@@ -106,6 +106,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -164,6 +165,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -833,7 +835,8 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    AliDielectronMC* mcHandler = AliDielectronMC::Instance();
    
    Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
-   
+
+   if(fFillHFInfo) mcHandler->SetCheckHF(kTRUE);
    //cout << "Event+++++++++++++++++++++++++" << endl;
    
    for(Int_t i=0; i<nPrimary; ++i) {
@@ -898,6 +901,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
            }
         }
       }
+
+      if(fFillHFInfo)      trackInfo->fHFProc = mcHandler->GetHFProcess(particle->GetLabel());
+
       
       /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
         << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"

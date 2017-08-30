@@ -95,6 +95,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t MCFreezeout(Int_t dim) {return (dim>=0 && dim<3 ? fMCFreezeout[dim] : 0.0);}
   Int_t MCLabel(Int_t history=0) {return (history>=0 && history<4 ? fMCLabels[history] : -9999);}
   Int_t MCPdg(Int_t history=0) {return (history>=0 && history<4 ? fMCPdg[history] : -9999);}
+  Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
 
@@ -161,6 +162,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fMCFreezeout[3];    // MC truth 3-position information in cartezian coordinates
   Int_t    fMCLabels[4];           // MC label for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
   Int_t    fMCPdg[4];                // MC PDG code for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
+  Int_t    fHFProc;             // Heavy Flavour Process number in the event for the particle  
   Short_t fMCGeneratorIndex;    // generator index (used for cocktail generators ?)
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);

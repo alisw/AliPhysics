@@ -41,6 +41,9 @@ public:
   void SetHasMC(Bool_t hasMC) { fHasMC=hasMC; }
   Bool_t HasMC() const { return fHasMC; }
 
+  void SetCheckHF(Bool_t checkHF) { fCheckHF=checkHF; }
+  Bool_t CheckHF() const { return fCheckHF; }
+  
   static AliDielectronMC* Instance();
 
   void Initialize();                              // initialization
@@ -71,7 +74,8 @@ public:
   Bool_t IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const;
   Int_t GetMothersLabel(Int_t daughterLabel) const;
   Int_t GetPdgFromLabel(Int_t label) const;
-
+  Int_t GetHFProcess(Int_t label); 
+  
   Bool_t IsPrimary(Int_t label) const;
   Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
   Bool_t IsSecondary(Int_t label) const;
@@ -118,6 +122,10 @@ private:
 
   AnalysisType fAnaType;    // Analysis type
   Bool_t fHasMC;            // Do we have an MC handler?
+  Bool_t fCheckHF;          // Do we look for HF correlated pairs?
+  
+  std::map<Int_t,Int_t> fhfproc; // quark label and HF process
+  
   mutable Int_t  fHasHijingHeader;  //! //mutable needed to change it in a const function.
 
   static AliDielectronMC* fgInstance; //! singleton pointer
@@ -130,6 +138,8 @@ private:
   Bool_t IsMCMotherToEEesd(const AliMCParticle *particle, Int_t pdgMother);
   Bool_t IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_t pdgMother);
 
+
+
   Int_t GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
 
@@ -140,6 +150,9 @@ private:
   Bool_t CheckStackParticle(Int_t labelPart, Int_t requiredPDG) const;
   Bool_t CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PDGexclusion, Bool_t CheckBothChargesDaughter) const;
 
+  //MC - Heavy Flavour related methods
+  Bool_t LoadHFPairs();
+  
   ClassDef(AliDielectronMC, 1)
 };
 
