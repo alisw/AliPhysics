@@ -611,6 +611,27 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80062213","2444451011013200000","0163103100000010"); // masking 2.25 \mus
     cuts.AddCut("80062513","2444451011013200000","0163103100000010"); // masking 1.075 \mus
     cuts.AddCut("80062413","2444451011013200000","0163103100000010"); // masking 0.25 \mus
+    
+  } else if(trainConfig == 325){ // first set of variations CLUSTER
+    cuts.AddCut("80000113","2444451041073200000","0163103100000010"); // min energy 0.2 GeV
+    cuts.AddCut("80000113","2444451041083200000","0163103100000010"); // min energy 0.4 GeV
+    cuts.AddCut("80000113","2444451041023200000","0163103100000010"); // min energy 0.5 GeV
+  } else if(trainConfig == 326){ // second set of variations CLUSTER
+    cuts.AddCut("80000113","2444451041013270000","0163103100000010"); // min/max M02  0.1<M<1
+    cuts.AddCut("80000113","2444451041013280000","0163103100000010"); // min/max M02  0.1<M<1
+    cuts.AddCut("80000113","2444451041012200000","0163103100000010"); // min number 2 cells
+    cuts.AddCut("80000113","2444451041014200000","0163103100000010"); // min number 4 cells
+  } else if(trainConfig == 327){ // MESON
+    cuts.AddCut("80000113","2444451041013200000","0163403100000010"); // rapidity variation  y<0.5
+    cuts.AddCut("80000113","2444451041013200000","0163803100000010"); // rapidity variation  y<0.25
+    cuts.AddCut("80000113","2444451041013200000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
+    cuts.AddCut("80000113","2444451041013200000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
+  } else if(trainConfig == 328){ // fourth set of variations
+    cuts.AddCut("80000113","2444451044013200000","0163103100000010"); // tm variation
+    cuts.AddCut("80000113","2444451045013200000","0163103100000010"); // tm variation
+    cuts.AddCut("80000113","2444451046013200000","0163103100000010"); // tm variation
+    cuts.AddCut("80000113","2444451041013200000","0163103100000000"); // min opening angle 0    -> open
+    cuts.AddCut("80000113","2444451041013200000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
 
   //-----------------------------------------------------------------------------------------------
   // PHOS run 2
