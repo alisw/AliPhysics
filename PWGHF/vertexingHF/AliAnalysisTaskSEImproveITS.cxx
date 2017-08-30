@@ -85,6 +85,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -92,15 +93,16 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
 {
   //
   // Default constructor.
-
-  for(Int_t ih=0; ih<4; ih++){
-    fD0RPMeanPCur[ih]=0x0;
-    fD0RPMeanKCur[ih]=0x0;
-    fD0RPMeanPiCur[ih]=0x0;
-    fD0RPMeanPUpg[ih]=0x0;
-    fD0RPMeanKUpg[ih]=0x0;
-    fD0RPMeanPiUpg[ih]=0x0;
+  for(Int_t jh=0; jh<2; jh++){
+    for(Int_t ih=0; ih<4; ih++){
+      fD0RPMeanPCur[jh][ih]=0x0;
+      fD0RPMeanKCur[jh][ih]=0x0;
+      fD0RPMeanPiCur[jh][ih]=0x0;
+      fD0RPMeanPUpg[jh][ih]=0x0;
+      fD0RPMeanKUpg[jh][ih]=0x0;
+      fD0RPMeanPiUpg[jh][ih]=0x0;
     }
+  }
   //
 }
 
@@ -148,6 +150,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -161,26 +164,30 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   // One may also specify for how many tracks debug information
   // is written to the output.
   //
-  for(Int_t ih=0; ih<4; ih++){
-    fD0RPMeanPCur[ih]=0x0;
-    fD0RPMeanKCur[ih]=0x0;
-    fD0RPMeanPiCur[ih]=0x0;
-    fD0RPMeanPUpg[ih]=0x0;
-    fD0RPMeanKUpg[ih]=0x0;
-    fD0RPMeanPiUpg[ih]=0x0;
+  for(Int_t jh=0; jh<2; jh++){
+    for(Int_t ih=0; ih<4; ih++){
+      fD0RPMeanPCur[jh][ih]=0x0;
+      fD0RPMeanKCur[jh][ih]=0x0;
+      fD0RPMeanPiCur[jh][ih]=0x0;
+      fD0RPMeanPUpg[jh][ih]=0x0;
+      fD0RPMeanKUpg[jh][ih]=0x0;
+      fD0RPMeanPiUpg[jh][ih]=0x0;
+    }
   }
   
   TFile *resfileCur=TFile::Open(resfileCurURI);
   fD0RPResPCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResP" )));
   fD0RPResKCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResK" )));
   fD0RPResPiCur=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPi")));
-  for(Int_t i=0; i<4; i++){
-    fD0RPMeanPCur[i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanP_phi%d",i))));
-    fD0RPMeanKCur[i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanK_phi%d",i))));
-    fD0RPMeanPiCur[i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanPi_phi%d",i))));
-    fD0RPMeanPCur[i]->SetName(Form("D0RPMeanPCur_phi%d",i));
-    fD0RPMeanKCur[i]->SetName(Form("D0RPMeanKCur_phi%d",i));
-    fD0RPMeanPiCur[i]->SetName(Form("D0RPMeanPiCur_phi%d",i));
+  for(Int_t j=0; j<2; j++){
+    for(Int_t i=0; i<4; i++){
+      fD0RPMeanPCur[j][i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanP_B%d_phi%d",j,i))));
+      fD0RPMeanKCur[j][i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanK_B%d_phi%d",j,i))));
+      fD0RPMeanPiCur[j][i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanPi_B%d_phi%d",j,i))));
+      fD0RPMeanPCur[j][i]->SetName(Form("D0RPMeanPCur_B%d_phi%d",j,i));
+      fD0RPMeanKCur[j][i]->SetName(Form("D0RPMeanKCur_B%d_phi%d",j,i));
+      fD0RPMeanPiCur[j][i]->SetName(Form("D0RPMeanPiCur_B%d_phi%d",j,i));
+    }
   }
   fD0ZResPCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResP"  )));
   fD0ZResKCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResK"  )));
@@ -220,13 +227,15 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   fD0RPResPUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )));
   fD0RPResKUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResK" )));
   fD0RPResPiUpg=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPi")));
-  for(Int_t j=0; j<4; j++){
-    fD0RPMeanPUpg[j]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanP_phi%d",j))));
-    fD0RPMeanKUpg[j]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanK_phi%d",j))));
-    fD0RPMeanPiUpg[j]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanPi_phi%d",j))));
-    fD0RPMeanPUpg[j]->SetName(Form("D0RPMeanPUpg_phi%d",j));
-    fD0RPMeanKUpg[j]->SetName(Form("D0RPMeanKUpg_phi%d",j));
-    fD0RPMeanPiUpg[j]->SetName(Form("D0RPMeanPiUpg_phi%d",j));
+  for(Int_t j=0; j<2; j++){
+    for(Int_t i=0; i<4; i++){
+      fD0RPMeanPUpg[j][i]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanP_B%d_phi%d",j,i))));
+      fD0RPMeanKUpg[j][i]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanK_B%d_phi%d",j,i))));
+      fD0RPMeanPiUpg[j][i]=new TGraph(*static_cast<TGraph*>(resfileUpg->Get(Form("D0RPMeanPi_B%d_phi%d",j,i))));
+      fD0RPMeanPUpg[j][i]->SetName(Form("D0RPMeanPUpg_B%d_phi%d",j,i));
+      fD0RPMeanKUpg[j][i]->SetName(Form("D0RPMeanKUpg_B%d_phi%d",j,i));
+      fD0RPMeanPiUpg[j][i]->SetName(Form("D0RPMeanPiUpg_B%d_phi%d",j,i));
+    }
   }
   fD0ZResPUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResP"  )));
   fD0ZResKUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResK"  )));
@@ -287,13 +296,15 @@ void AliAnalysisTaskSEImproveITS::UserCreateOutputObjects() {
   fDebugOutput->Add(fD0RPResPCur );
   fDebugOutput->Add(fD0RPResKCur );
   fDebugOutput->Add(fD0RPResPiCur);
-  for(Int_t j=0; j<4; j++){
-    fDebugOutput->Add(fD0RPMeanPCur[j]);
-    fDebugOutput->Add(fD0RPMeanKCur[j]);
-    fDebugOutput->Add(fD0RPMeanPiCur[j]);
-    fDebugOutput->Add(fD0RPMeanPUpg[j]);
-    fDebugOutput->Add(fD0RPMeanKUpg[j]);
-    fDebugOutput->Add(fD0RPMeanPiUpg[j]);
+  for(Int_t j=0; j<2; j++){
+    for(Int_t i=0; i<4; i++){
+      fDebugOutput->Add(fD0RPMeanPCur[j][i]);
+      fDebugOutput->Add(fD0RPMeanKCur[j][i]);
+      fDebugOutput->Add(fD0RPMeanPiCur[j][i]);
+      fDebugOutput->Add(fD0RPMeanPUpg[j][i]);
+      fDebugOutput->Add(fD0RPMeanKUpg[j][i]);
+      fDebugOutput->Add(fD0RPMeanPiUpg[j][i]);
+    }
   }
   fDebugOutput->Add(fD0ZResPCur  ); 
   fDebugOutput->Add(fD0ZResKCur  );
@@ -327,7 +338,34 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
+  // first loop on candidates to fill them in case of reduced AODs
+  // this is done to have the same behaviour of the improver with full (pp, p-Pb) and recuced (Pb-Pb) candidates
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
+  // D0->Kpi
+  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
+  if (array2Prong) {
+    for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
+    }
+  }
+  // Dstar->Kpipi
+  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
+  if (arrayCascade) {
+    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
+    }
+  }
+  // Three prong
+  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
+  if (array3Prong) {
+    for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
+    }
+  }
 
 
   // Smear all tracks
@@ -337,18 +375,16 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
       AliAODTrack * trk = dynamic_cast<AliAODTrack*>(ev->GetTrack(itrack));
       if(!trk) AliFatal("Not a standard AOD");
-      SmearTrack(trk,mcs);
+      SmearTrack(trk,mcs,bz);
     }
   }
 
   // TODO: recalculated primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
 
-  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   
   // Recalculate all candidates
   // D0->Kpi
-  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
   if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
@@ -369,13 +405,13 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v12->GetXYZ(pos);
-      
+      v12->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
-      //!!!!TODO: covariance matrix
-
       // update d0 
       Double_t d0z0[2],covd0z0[3];
       Double_t d0[2],d0err[2];
@@ -396,23 +432,23 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       decay->SetDCA(dca);
 
       
-      delete v12;
 
       Double_t px[2],py[2],pz[2];
       for (Int_t i=0;i<2;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam et;
+        et.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        et.PropagateToDCA(v12,bz,100.,d0z0,covd0z0);
+        px[i]=et.Px();
+        py[i]=et.Py();
+        pz[i]=et.Pz();
       }
       decay->SetPxPyPzProngs(2,px,py,pz);
+      delete v12;
     }
   }
 
 
   // Dstar->Kpipi
-  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
-  
   if (arrayCascade) {
     for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
@@ -463,7 +499,6 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 
   // Three prong
-  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
   if (array3Prong) {
     for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
@@ -484,10 +519,12 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v123->GetXYZ(pos);
+      v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
-      //TODO: covariance matrix
 
       // update d0 for all progs
       Double_t d0z0[2],covd0z0[3];
@@ -525,23 +562,26 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
                                         +(v23->GetY()-pos[1])*(v23->GetY()-pos[1])
                                         +(v23->GetZ()-pos[2])*(v23->GetZ()-pos[2])));
  
-      delete v123;delete v12;delete v23;
 
       Double_t px[3],py[3],pz[3];
       for (Int_t i=0;i<3;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam et;
+        et.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        et.PropagateToDCA(v123,bz,100.,d0z0,covd0z0);
+        px[i]=et.Px();
+        py[i]=et.Py();
+        pz[i]=et.Pz();
       }
       decay->SetPxPyPzProngs(3,px,py,pz);
+
+      delete v123;delete v12;delete v23;
     }
   }
   delete vHF;
 
 }
 
-void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArray *mcs) {
+void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArray *mcs, Double_t bz) {
   // Early exit, if this track has nothing in common with the ITS
 
   if (!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))
@@ -585,6 +625,9 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   Double_t ptmc=TMath::Abs(mc->Pt());
   Double_t phimc=mc->Phi();
   Int_t phiBin=PhiBin(phimc);
+  Int_t magfield=0;
+  if(bz<0.) magfield=0;
+  else if(bz>0.)magfield=1;
   Double_t sd0rpn=0.;
   Double_t sd0mrpn=0.;
   Double_t sd0zn =0.;
@@ -601,8 +644,8 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     sd0rpn=EvalGraph(ptmc,fD0RPResPUpg,fD0RPResPUpgSA);
     sd0zn =EvalGraph(ptmc,fD0ZResPUpg,fD0ZResPUpgSA);
     spt1n =EvalGraph(ptmc,fPt1ResPUpg,fPt1ResPUpgSA);
-    sd0mrpo=EvalGraph(ptmc,fD0RPMeanPCur[phiBin],fD0RPMeanPCur[phiBin]);
-    sd0mrpn=EvalGraph(ptmc,fD0RPMeanPUpg[phiBin],fD0RPMeanPUpg[phiBin]);
+    sd0mrpo=EvalGraph(ptmc,fD0RPMeanPCur[magfield][phiBin],fD0RPMeanPCur[magfield][phiBin]);
+    sd0mrpn=EvalGraph(ptmc,fD0RPMeanPUpg[magfield][phiBin],fD0RPMeanPUpg[magfield][phiBin]);
     break;
   case 321: case -321:
     sd0rpo=EvalGraph(ptmc,fD0RPResKCur,fD0RPResKCurSA);
@@ -611,8 +654,8 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     sd0rpn=EvalGraph(ptmc,fD0RPResKUpg,fD0RPResKUpgSA);
     sd0zn =EvalGraph(ptmc,fD0ZResKUpg,fD0ZResKUpgSA);
     spt1n =EvalGraph(ptmc,fPt1ResKUpg,fPt1ResKUpgSA);
-    sd0mrpo=EvalGraph(ptmc,fD0RPMeanKCur[phiBin],fD0RPMeanKCur[phiBin]);
-    sd0mrpn=EvalGraph(ptmc,fD0RPMeanKUpg[phiBin],fD0RPMeanKUpg[phiBin]);
+    sd0mrpo=EvalGraph(ptmc,fD0RPMeanKCur[magfield][phiBin],fD0RPMeanKCur[magfield][phiBin]);
+    sd0mrpn=EvalGraph(ptmc,fD0RPMeanKUpg[magfield][phiBin],fD0RPMeanKUpg[magfield][phiBin]);
     break;
   case 211: case -211:
     sd0rpo=EvalGraph(ptmc,fD0RPResPiCur,fD0RPResPiCurSA);
@@ -621,8 +664,8 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     sd0rpn=EvalGraph(ptmc,fD0RPResPiUpg,fD0RPResPiUpgSA);
     sd0zn =EvalGraph(ptmc,fD0ZResPiUpg,fD0ZResPiUpgSA);
     spt1n =EvalGraph(ptmc,fPt1ResPiUpg,fPt1ResPiUpgSA);
-    sd0mrpo=EvalGraph(ptmc,fD0RPMeanPiCur[phiBin],fD0RPMeanPiCur[phiBin]);
-    sd0mrpn=EvalGraph(ptmc,fD0RPMeanPiUpg[phiBin],fD0RPMeanPiUpg[phiBin]);
+    sd0mrpo=EvalGraph(ptmc,fD0RPMeanPiCur[magfield][phiBin],fD0RPMeanPiCur[magfield][phiBin]);
+    sd0mrpn=EvalGraph(ptmc,fD0RPMeanPiUpg[magfield][phiBin],fD0RPMeanPiUpg[magfield][phiBin]);
     break;
   default:
     return;
@@ -665,8 +708,11 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
   if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
   if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
-  if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
-  if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
+  if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o);//ypt
+  if(sd0zo>0. && spt1o>0.) covar[11]*=(sd0zn/sd0zo)*(spt1n/spt1o);//zpt
+  if(spt1o>0.)             covar[12]*=(spt1n/spt1o);//sinPhipt
+  if(spt1o>0.)             covar[13]*=(spt1n/spt1o);//tanTpt
+  if(spt1o>0.)             covar[14]*=(spt1n/spt1o)*(spt1n/spt1o);//ptpt
 
   // Copy the smeared parameters to the AOD track
   Double_t x[3];

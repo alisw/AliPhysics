@@ -34,7 +34,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -122,6 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fUseVPhotonMCPSmearing(kFALSE),
     fUseElectronMCPSmearing(kFALSE),
     fCutString(NULL),
+    fCutStringRead(""),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
     hITSdEdxbefore(NULL),
@@ -376,12 +377,12 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack)
+Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent)
 {   
-        if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
-        //if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
+        if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
+        //if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
 
-        TParticle* particle = fMCStack->Particle(labelParticle);
+        TParticle* particle = mcEvent->Particle(labelParticle);
 
         if( TMath::Abs( particle->GetPdgCode() ) != 11 )  return kFALSE;
         
@@ -822,6 +823,8 @@ Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+  fCutStringRead = Form("%s",analysisCutSelection.Data());
+  
    // Initialize Cuts from a given Cut string
 
 //   out<<"Set Cut Number: "<<analysisCutSelection.Data()<<endl;
@@ -831,13 +834,15 @@ Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysis
 	AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
 	return kFALSE;
   }
-  if(!analysisCutSelection.IsDigit()){
-	AliError("Cut selection contains characters");
+  if(!analysisCutSelection.IsAlnum()){
+	AliError("Cut selection is not alphanumeric");
 	return kFALSE;
   }
   
-  const char *cutSelection = analysisCutSelection.Data();
-  #define ASSIGNARRAY(i)	fCuts[i] = cutSelection[i] - '0'
+  TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
+  analysisCutSelectionLowerCase.ToLower();
+  const char *cutSelection = analysisCutSelectionLowerCase.Data();
+  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
   for(Int_t ii=0;ii<kNCuts;ii++){
       ASSIGNARRAY(ii);
   }
@@ -2160,11 +2165,7 @@ Bool_t AliDalitzElectronCuts::SetUseVPhotonMCPmearing(Int_t useMCPSmearing)
 ///________________________________________________________________________
 TString AliDalitzElectronCuts::GetCutNumber(){
     // returns TString with current cut number
-  TString a(kNCuts);
-  for(Int_t ii=0;ii<kNCuts;ii++){
-	a.Append(Form("%d",fCuts[ii]));
-  }
-  return a;
+  return fCutStringRead;
 }
 
 

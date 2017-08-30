@@ -42,6 +42,7 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetIsAOD(Bool_t isAOD) { fIsAOD=isAOD; return; }
   void SetSelectedPdg(Int_t pdg) { fSelectedPdg=pdg; return; }
   void SetUseDiamond(Bool_t use=kFALSE) { fUseDiamond=use; return; }
+  void SetUseRecoVertex(Bool_t use=kFALSE) { fUseRecoVertex=use; return; }
   void SetSkipTrack(Bool_t skip=kFALSE) { fSkipTrack=skip; return; }
   void SetMultiplicityRange(Int_t min,Int_t max) { fMinMult=min; fMaxMult=max; }
   void SetCheckSDDIsIn(Int_t check=0) { fCheckSDDIsIn=check; }
@@ -79,6 +80,7 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Bool_t fReadMC;       // flag used to switch on/off MC reading
   Int_t  fSelectedPdg;  // only for a given particle species (-1 takes all tracks)
   Bool_t fUseDiamond;   // use diamond constraint in primary vertex
+  Bool_t fUseRecoVertex;   // use reco vertex also when reading MC
   Bool_t fSkipTrack;    // redo primary vertex for each track
   Int_t  fMinMult; // minimum multiplicity
   Int_t  fMaxMult; // maximum multiplicity
@@ -103,17 +105,19 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   THnSparseF *fImpParrphiSparsePtzVtxEtaPhi; //!<! sparse
   THnSparseF *fImpParrphiSparsePtEtaPhi; //!<! sparse
   THnSparseF *fImpParPullrphiSparsePtEtaPhi; //!<! sparse
+  THnSparseF *fImpParPullrphiSparsePtBchargePhi; //!<! sparse
   THnSparseF *fImpParzSparsePtBchargePhi; //!<! sparse
   THnSparseF *fImpParzSparsePtzVtxEtaPhi; //!<! sparse
   THnSparseF *fImpParzSparsePtEtaPhi; //!<! sparse
   THnSparseF *fImpParPullzSparsePtEtaPhi; //!<! sparse
+  THnSparseF *fImpParPullzSparsePtBchargePhi; //!<! sparse
   TH1F *fPtDistrib; //!<!
   TH1F *fhPtWeights;           // histo with pt weights
   Int_t fUseptWeights;  //0 no weights, 1 pp weights, 2 pPb weights, 3 PbPb weights
   Float_t fScalingFactPtWeight;
   TList *fOutput;  //! 
 
-  ClassDef(AliAnalysisTaskSEImpParResSparse,2); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParResSparse,3); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

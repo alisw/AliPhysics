@@ -11,6 +11,7 @@ using std::string;
 #include "AliVEvent.h"
 #include "AliAnalysisUtils.h"
 
+class AliESDtrackCuts;
 class TList;
 class TH1D;
 class TH1I;
@@ -25,7 +26,9 @@ class AliEventCutsContainer : public TNamed {
     fMultTrkFB32(-1),
     fMultTrkFB32Acc(-1),
     fMultTrkFB32TOF(-1),
-    fMultTrkTPC(-1) {}
+    fMultTrkTPC(-1),
+    fMultTrkTPCout(-1),
+    fMultVZERO(-1.) {}
 
     unsigned long fEventId;
     int fMultESD;
@@ -33,18 +36,25 @@ class AliEventCutsContainer : public TNamed {
     int fMultTrkFB32Acc;
     int fMultTrkFB32TOF;
     int fMultTrkTPC;
-  ClassDef(AliEventCutsContainer,1)
+    int fMultTrkTPCout;
+    double fMultVZERO;
+  ClassDef(AliEventCutsContainer,2)
 };
 
 class AliEventCuts : public TList {
   public:
     AliEventCuts(bool savePlots = false);
-    virtual ~AliEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
+    virtual ~AliEventCuts();
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
       kBfield,
       kTrigger,
+      kVertexSPD,
+      kVertexTracks,
+      kVertex,
+      kVertexPositionSPD,
+      kVertexPositionTracks,
       kVertexPosition,
       kVertexQuality,
       kPileUp,
@@ -65,7 +75,7 @@ class AliEventCuts : public TList {
     void   SetupRun2pp();
     void   SetupRun2pA(int iPeriod);
 
-    /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
+    /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
@@ -79,6 +89,7 @@ class AliEventCuts : public TList {
 
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
+    bool          fGreenLight;                    ///< If true it will bypass all the selections.
     bool          fMC;                            ///< Set to true by the automatic setup when analysing MC (in manual mode *you* are responsible for it). In MC the correlations cuts are disabled.
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex
@@ -109,6 +120,7 @@ class AliEventCuts : public TList {
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
+    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -118,6 +130,7 @@ class AliEventCuts : public TList {
     double        fESDvsTPConlyLinearCut[2];      ///< Linear cut in the ESD track vs TPC only track plane
     TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
     double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
+    double        fVZEROvsTPCoutPolCut[5];        ///< Cut on VZERO multipliciy vs the number of tracks with kTPCout on
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
@@ -126,8 +139,8 @@ class AliEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
-    AliEventCuts(const AliEventCuts& copy) {}
-    AliEventCuts operator=(const AliEventCuts& copy) {return *this;}
+    AliEventCuts(const AliEventCuts& copy);
+    AliEventCuts operator=(const AliEventCuts& copy);
     void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
@@ -148,7 +161,8 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
-    TH1I* fCutStats;               //!<! Cuts statistics
+    TH1I* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
+    TH1I* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex
     TH1D* fCentrality[2];          //!<! Centrality percentile distribution
@@ -159,8 +173,12 @@ class AliEventCuts : public TList {
     TH2F* fTPCvsAll[2];            //!<!
     TH2F* fMultvsV0M[2];           //!<!
     TH2F* fTPCvsTrkl[2];           //!<!
+    TH2F* fVZEROvsTPCout[2];       //!<!
 
-    ClassDef(AliEventCuts,1)
+    AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
+    AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
+
+    ClassDef(AliEventCuts,3)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

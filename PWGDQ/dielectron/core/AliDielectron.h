@@ -172,6 +172,10 @@ public:
   void SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunctionTOF(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunctionTOF(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
   void SetQnVectorNormalisation(TString norm) {fQnVectorNorm = norm;}
@@ -193,6 +197,8 @@ private:
   TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
   TH1 *fPostPIDWdthCorrITS; // post pid correction object for electron sigma widths in ITS
+  TH1 *fPostPIDCntrdCorrTOF;// post pid correction object for electron sigma centroids in TOF
+  TH1 *fPostPIDWdthCorrTOF; // post pid correction object for electron sigma widths in TOF
                             /// @TODO: smart way to store corrections, potentially for all detectors.
   TObject *fLegEffMap;      // single electron efficiency map
   TObject *fPairEffMap;      // pair efficiency map

@@ -25,6 +25,10 @@ public:
   virtual void AddRealPair(AliFemtoPair* aPair);
   virtual void AddMixedPair(AliFemtoPair* aPir);
 
+  virtual void AddFirstParticle(AliFemtoParticle *particle,bool mixing);
+  virtual void AddSecondParticle(AliFemtoParticle *particle);
+  virtual void CalculateAnglesForEvent();
+  
   virtual void EventBegin(const AliFemtoEvent* aEvent);
   virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish() = 0;

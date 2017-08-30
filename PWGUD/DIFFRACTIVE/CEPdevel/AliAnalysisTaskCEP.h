@@ -48,8 +48,8 @@ public:
     Int_t rnummin=100000, Int_t rnummax=300000,
     Int_t numTracksMax=6,
     Double_t fracDG=1.0, Double_t fracNDG=0.0,
-    UInt_t ETmaskDG=AliCEPBase::kBitBaseLine, UInt_t ETpatternDG=AliCEPBase::kBitBaseLine,
-    UInt_t ETmaskNDG=AliCEPBase::kBitBaseLine, UInt_t ETpatternNDG=AliCEPBase::kBitBaseLine,
+    UInt_t ETmaskDG=AliCEPBase::kETBaseLine, UInt_t ETpatternDG=AliCEPBase::kETBaseLine,
+    UInt_t ETmaskNDG=AliCEPBase::kETBaseLine, UInt_t ETpatternNDG=AliCEPBase::kETBaseLine,
     UInt_t TTmask=AliCEPBase::kTTBaseLine,  UInt_t TTpattern=AliCEPBase::kTTBaseLine);
   // class  destructor
 	virtual ~AliAnalysisTaskCEP();
@@ -69,6 +69,7 @@ private:
 	//-------------------------------------------------------------------
 	Bool_t CheckInput();
 	void PostOutputs();
+  Bool_t IsSTGFired(TBits* fFOmap,Int_t dphiMin=0,Int_t dphiMax=10);
 
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
@@ -121,6 +122,7 @@ private:
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
+  TList *flFMD     ;    //! list of QA histograms for FMD study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

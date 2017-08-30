@@ -43,15 +43,17 @@ AliDJetVReader::AliDJetVReader():
   TObject(),
   fpTmin(0),
   fpTmax(0),
-  fzmin(0),
-  fzmax(0),
   fnDbins(0),
   fDbinpTedges(nullptr),
-  fnJetbins(0),
-  fJetbinpTedges(nullptr),
+  fnJetPtbins(0),
+  fJetPtBinEdges(nullptr),
+  fnJetzbins(0),
+  fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
+  fMassRebin(1),
   fMassPlot(nullptr),
-  fMassVsJetPtPlot(nullptr)
+  fMassVsJetPtPlot(nullptr),
+  fMassVsJetzPlot(nullptr)
 {
 }
 
@@ -63,15 +65,17 @@ AliDJetVReader::AliDJetVReader(const AliDJetVReader &source):
   TObject(),
   fpTmin(source.fpTmin),
   fpTmax(source.fpTmax),
-  fzmin(source.fzmin),
-  fzmax(source.fzmax),
   fnDbins(0),
   fDbinpTedges(nullptr),
-  fnJetbins(0),
-  fJetbinpTedges(nullptr),
+  fnJetPtbins(0),
+  fJetPtBinEdges(nullptr),
+  fnJetzbins(0),
+  fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
+  fMassRebin(source.fMassRebin),
   fMassPlot(nullptr),
-  fMassVsJetPtPlot(nullptr)
+  fMassVsJetPtPlot(nullptr),
+  fMassVsJetzPlot(nullptr)
 {
   if (source.fnDbins > 0) {
     fnDbins = source.fnDbins;
@@ -80,10 +84,15 @@ AliDJetVReader::AliDJetVReader(const AliDJetVReader &source):
     fDEffValues = new Double_t[fnDbins+1];
     memcpy(fDEffValues, source.fDEffValues, sizeof(Double_t)*(fnDbins+1));
   }
-  if (source.fnJetbins > 0) {
-    fnJetbins = source.fnJetbins;
-    fJetbinpTedges = new Double_t[fnJetbins+1];
-    memcpy(fJetbinpTedges, source.fJetbinpTedges, sizeof(Double_t)*(fnJetbins+1));
+  if (source.fnJetPtbins > 0) {
+    fnJetPtbins = source.fnJetPtbins;
+    fJetPtBinEdges = new Double_t[fnJetPtbins+1];
+    memcpy(fJetPtBinEdges, source.fJetPtBinEdges, sizeof(Double_t)*(fnJetPtbins+1));
+  }
+  if (source.fnJetzbins > 0) {
+    fnJetzbins = source.fnJetzbins;
+    fJetzBinEdges = new Double_t[fnJetzbins+1];
+    memcpy(fJetzBinEdges, source.fJetzBinEdges, sizeof(Double_t)*(fnJetzbins+1));
   }
 }
 
@@ -94,6 +103,7 @@ AliDJetVReader::~AliDJetVReader()
 {
   if (fMassPlot) delete fMassPlot;
   if (fMassVsJetPtPlot) delete fMassVsJetPtPlot;
+  if (fMassVsJetzPlot) delete fMassVsJetzPlot;
 }
 
 /**
@@ -120,14 +130,31 @@ void AliDJetVReader::SetDmesonPtBins(Int_t nbins, Double_t* ptedges)
  */
 void AliDJetVReader::SetJetPtBins(Int_t nbins, Double_t* ptedges)
 {
-  fnJetbins = nbins;
-  if (fJetbinpTedges) {
-    delete[] fJetbinpTedges;
-    fJetbinpTedges = nullptr;
+  fnJetPtbins = nbins;
+  if (fJetPtBinEdges) {
+    delete[] fJetPtBinEdges;
+    fJetPtBinEdges = nullptr;
   }
   if (nbins == 0) return;
-  fJetbinpTedges = new Double_t[fnJetbins + 1];
-  memcpy(fJetbinpTedges, ptedges, sizeof(Double_t) * (fnJetbins + 1));
+  fJetPtBinEdges = new Double_t[fnJetPtbins + 1];
+  memcpy(fJetPtBinEdges, ptedges, sizeof(Double_t) * (fnJetPtbins + 1));
+}
+
+/**
+ * Set the jet z bins
+ * @param[in] nbins Number of pt bins
+ * @param[in] zedges Edges of the pt bins
+ */
+void AliDJetVReader::SetJetzBins(Int_t nbins, Double_t* zedges)
+{
+  fnJetzbins = nbins;
+  if (fJetzBinEdges) {
+    delete[] fJetzBinEdges;
+    fJetzBinEdges = nullptr;
+  }
+  if (nbins == 0) return;
+  fJetzBinEdges = new Double_t[fnJetzbins + 1];
+  memcpy(fJetzBinEdges, zedges, sizeof(Double_t) * (fnJetzbins + 1));
 }
 
 /**

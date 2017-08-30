@@ -41,6 +41,7 @@
 #include "TF1.h"
 #include "THnSparse.h"
 #include "AliHFMassFitter.h"
+#include "AliHFCorrelationUtils.h"
 
 class AliDhCorrelationExtraction : public TObject
 {
@@ -116,7 +117,7 @@ public:
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
-    TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHisto_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig, Int_t softPiME=1);
@@ -152,7 +153,7 @@ public:
     Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractNumberOfTriggers_MC();
     Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
-    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax);
+    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect=kTRUE);
     
 private:
     

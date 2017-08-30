@@ -47,7 +47,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fInputEvent(NULL),
   fNumberOfESDTracks(0),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(kFALSE),
@@ -139,7 +138,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fInputEvent(NULL),
   fNumberOfESDTracks(0),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(kFALSE),
@@ -482,7 +480,6 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   }
   fInputEvent = InputEvent();
   if(fIsMC) fMCEvent = MCEvent();
-  if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){ fMCStack = fMCEvent->Stack(); }
 
   Int_t eventNotAccepted =
     fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
@@ -523,9 +520,9 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
     if(fMCEvent && fEventCuts->GetSignalRejection() != 0){
-      if(!fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fInputEvent))
+      if(!fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fInputEvent))
         continue;
-      if(!fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fInputEvent))
+      if(!fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCEvent, fInputEvent))
         continue;
     }
     if(!fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
@@ -705,7 +702,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
   hPositronNSigmaPiondEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kPion));
   
   //TOF signal
-  if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((negTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
     Double_t timesNeg[9];
     negTrack->GetIntegratedTimes(timesNeg,9);
@@ -714,7 +711,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
     hElectronTOFP->Fill(negTrack->P() ,dTneg);
     hElectronNSigmaTOFP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron));
   }
-  if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((posTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
     Double_t timesPos[9];
     posTrack->GetIntegratedTimes(timesPos,9);
@@ -789,8 +786,8 @@ void AliAnalysisTaskConversionQA::CountTracks(){
 UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate)
 {
   UInt_t kind = 9;
-  TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCStack);
-  TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
+  TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
+  TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
   Int_t motherLabelPhoton; 
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0; 
@@ -823,12 +820,12 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
     if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
     if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
   }else{		
-    TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
+    TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCEvent);
     pdgCodePos=posDaughter->GetPdgCode();
     pdgCodeNeg=negDaughter->GetPdgCode();
     motherLabelPhoton= Photon->GetMother(0);
-    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-    if ( TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode(); 
+    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode();
 
     if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) return 2; // true from hadronic decays
     else if ( !(pdgCodeNeg==pdgCodePos)){

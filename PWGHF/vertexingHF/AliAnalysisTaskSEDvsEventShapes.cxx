@@ -1221,7 +1221,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     if(nSelectedPID>0)  fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
     if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
     
-    if(fFillTrackHisto && fReadMC) FillTrackControlHisto(aod, countCorr, spherocity, genspherocity, nSelectedInMassPeak);
+    if(fFillTrackHisto) FillTrackControlHisto(aod, countCorr, spherocity, genspherocity, nSelectedInMassPeak);
     
     PostData(1,fOutput);
     PostData(2,fListCuts);
@@ -1429,10 +1429,10 @@ Bool_t AliAnalysisTaskSEDvsEventShapes::FillTrackControlHisto(AliAODEvent* aod, 
     
     for(Int_t iselt=0; iselt<nSelTracks; iselt++) {
         fHistnTrackvsEtavsPhi->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
-        fHistTrueSovsMeasSo->Fill(genspherocity, spherocity, nSelTrkCorr);
+        if(fReadMC) fHistTrueSovsMeasSo->Fill(genspherocity, spherocity, nSelTrkCorr);
         if(nSelectedEvwithCand>0){
             fHistnTrackvsEtavsPhiEvWithCand->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
-            fHistTrueSovsMeasSoEvWithCand->Fill(genspherocity, spherocity, nSelTrkCorr);
+            if(fReadMC) fHistTrueSovsMeasSoEvWithCand->Fill(genspherocity, spherocity, nSelTrkCorr);
         }
     }
     

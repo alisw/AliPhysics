@@ -71,8 +71,12 @@
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliAnalysisUtils.h"
+#include "TVector2.h"
+#include "AliEventCuts.h"
+#include <AliVVZERO.h>
+#include "AliHelperPID.h"
 
-
+using namespace AliHelperPIDNameSpace;
 using namespace std;
 
 ClassImp(AliAnalysisTaskPIDBFDptDpt)
@@ -94,9 +98,16 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _debugLevel    ( 0),
   _singlesOnly   ( 0),
   PIDparticle   ( 0),
+  use_pT_cut   ( 0),
+  useAliHelperPID( 0),
+  fHelperPID(0),
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
+  _useEventPlane   ( 0),
+  EP_min( -3.1415927/6 ),
+  EP_max( 3.1415927/6 ),
+  _psi_EventPlane ( 0),
   _sameFilter    ( false),
   _rejectPileup  ( 1),
   _rejectPairConversion ( 0),
@@ -243,9 +254,6 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _realTOF_1d_POI (0),
   _trackLength_POI (0),
   _trackLength_GetIntegratedLength_POI(0),
-
-  _nsigmakaon_1d (0),
-  _nsigmaTOFkaon_1d (0), 
   
   _dedx_p (0),
   _beta_p (0), 
@@ -263,6 +271,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _beta_p_AliHelperPID_no_Undefined (0),
   _inverse_beta_p_AliHelperPID_no_Undefined (0),
   _msquare_p_AliHelperPID_no_Undefined (0),
+  _fhV0MvsTracksTPCout_after(0),
   
   _etadis_POI_AliHelperPID ( 0),
   _ydis_POI_AliHelperPID ( 0),
@@ -419,8 +428,18 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
-  fUtils(0)
+  fUtils(0),
+  f2015V0MtoTrkTPCout(NULL),
+  fV0Multiplicity(0),
+  fV0Multiplicity_Victor(0),
+  fNoOfTPCoutTracks(0),
+  fEventCut(0)
 {
+  // Au-Au added this block of code to use his own PID functions
+  for( Int_t ipart = 0; ipart < 4; ipart++ )
+    for( Int_t ipid = 0; ipid < 2; ipid++ )
+      fnsigmas[ipart][ipid] = 999.;
+  
   printf("Default constructor called \n");  
   printf("passed \n ");
 }
@@ -442,9 +461,16 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _debugLevel    ( 0),
   _singlesOnly   ( 0),
   PIDparticle    ( 0),
+  use_pT_cut     ( 0),
+  useAliHelperPID( 0),
+  fHelperPID(0),
   NoContamination   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
+  _useEventPlane   ( 0),
+  EP_min( -3.1415927/6 ),
+  EP_max( 3.1415927/6 ),
+  _psi_EventPlane ( 0),
   _sameFilter    ( false),
   _rejectPileup  ( 1),
   _rejectPairConversion ( 0),
@@ -591,9 +617,6 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _trackLength_POI (0),
   _trackLength_GetIntegratedLength_POI(0),
   
-  _nsigmakaon_1d (0),
-  _nsigmaTOFkaon_1d (0), 
-  
   _dedx_p (0),
   _beta_p (0), 
   _inverse_beta_p (0),
@@ -610,6 +633,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _beta_p_AliHelperPID_no_Undefined (0),
   _inverse_beta_p_AliHelperPID_no_Undefined (0),
   _msquare_p_AliHelperPID_no_Undefined (0),
+  _fhV0MvsTracksTPCout_after(0),
   
   _etadis_POI_AliHelperPID ( 0),
   _ydis_POI_AliHelperPID ( 0),
@@ -766,15 +790,21 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
-  fUtils(0)
+  fUtils(0),
+  f2015V0MtoTrkTPCout(NULL),
+  fV0Multiplicity(0),
+  fV0Multiplicity_Victor(0),
+  fNoOfTPCoutTracks(0),
+  fEventCut(0)
 {
   // Au-Au added this block of code to use his own PID functions
   for( Int_t ipart = 0; ipart < 4; ipart++ )
     for( Int_t ipid = 0; ipid < 2; ipid++ )
       fnsigmas[ipart][ipid] = 999.;
   
-  printf("2nd constructor called ");    
-  DefineOutput(0, TList::Class());   
+  printf("2nd constructor called ");
+  //DefineOutput(0, TList::Class()); 
+  DefineOutput(1, TList::Class());   
   printf("passed  ");   
 }
 
@@ -785,11 +815,19 @@ AliAnalysisTaskPIDBFDptDpt::~AliAnalysisTaskPIDBFDptDpt()
 
 void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
 {
-  OpenFile(0);
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
-    
-  //if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
+
+  if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" )
+    {
+      fEventCut = new AliEventCuts();
+      fEventCut->AddQAplotsToList(_outputHistoList, kTRUE);
+      //fEventCut->SetManualMode();
+      fEventCut->fUseVariablesCorrelationCuts = true;
+      fEventCut->fUseStrongVarCorrelationCut = true;
+    }
+  
+  if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
     
   _nBins_M0 = 500; _min_M0   = 0.;    _max_M0    = 5000.;  _width_M0 = (_max_M0-_min_M0)/_nBins_M0;
   _nBins_M1 = 500; _min_M1   = 0.;    _max_M1    = 5000.;  _width_M1 = (_max_M1-_min_M1)/_nBins_M1;
@@ -1018,7 +1056,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
 	
   createHistograms();
 
-  PostData(0,_outputHistoList);
+  PostData(1,_outputHistoList);
   
   //cout<< "AliAnalysisTaskPIDBFDptDpt::CreateOutputObjects() DONE " << endl;
     
@@ -1041,6 +1079,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
   name = "m7"; _m7      = createHisto1D(name,name,_nBins_M7, _min_M7, _max_M7, _title_m7, _title_counts);
   name = "m8"; _m8      = createHisto1D(name,name,_nBins_M8, _min_M8, _max_M8, _title_m8, _title_counts);
   name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
+  name = "psi_EventPlane"; _psi_EventPlane = createHisto1F(name,name, 360, 0.0, 6.4, "#psi","counts");
 
   // histos for tracks:
   if ( _singlesOnly )
@@ -1049,7 +1088,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
       name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");       
       name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");   
+      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");      
       name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
       name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");    
       name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
@@ -1067,19 +1106,18 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "dedx_p";   _dedx_p = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "beta_p";   _beta_p = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p";   _inverse_beta_p = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-      name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");   
-      name = "nsigmakaon_1d";   _nsigmakaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmakaon","counts");
-      name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");  
+      name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");  
       name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "nSigmaTOF_p";       _nSigmaTOF_p     = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF","counts");
-      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 80, -4.0, 4.0,  "p", "nSigmaTOF_POI","counts");
+      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF_POI","counts");
       name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");    
       name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "beta_p_AliHelperPID_no_Undefined";   _beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p_POI_AliHelperPID";   _inverse_beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
       name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
+      name = "V0MvsTracksTPCout_after";   _fhV0MvsTracksTPCout_after = createHisto2F(name,name,200,0,20000,400,0,40000, "# tracks with kTPCout on", "V0 multiplicity","counts"); //V0 multiplicity vs tracks with kTPCout on after cut
       //name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
       //name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
       name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
@@ -1178,6 +1216,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 {    
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
+  int    IDrec;
   float  q, phi, pt, eta, y, y_direct, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; // Au-Au put p here to make _dedx_p and _beta_p plots. 
   int    ij;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
@@ -1197,6 +1236,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   const float mkaon   = 0.493677; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
+  double EP = 0;
     
   float slope_vZ = 0;
   float vZ_bin_center = 0;
@@ -1217,7 +1257,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   int iEtaPhi_Etaminus1 = 0;
   int iZEtaPhiPt_Etaplus1 = 0;
   int iZEtaPhiPt_Etaminus1 = 0;
-
+  Double_t nsigmaElectron = 999.;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if ( !manager ) { return; }
@@ -1264,6 +1304,23 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
   if( fAODEvent )
     {
+      if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" )
+	{
+	  if (!fEventCut->AcceptEvent(fAODEvent))
+	    {
+	      PostData(1, _outputHistoList);
+	      return;
+	    }
+	  StoreEventMultiplicities( fAODEvent );
+	  f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",""),"-1250+3.125*x");
+	  //cout << "fV0Multiplicity = " << fV0Multiplicity <<endl;
+	  //cout << "fV0Multiplicity_Victor = " << fV0Multiplicity_Victor <<endl;
+	  //cout << "fNoOfTPCoutTracks = " << fNoOfTPCoutTracks <<endl;
+	  if(Is2015PileUpEvent()) return;
+	  _fhV0MvsTracksTPCout_after->Fill(fNoOfTPCoutTracks, fV0Multiplicity);
+	}
+
+      _eventAccounting -> Fill( 1 ); // count all events afer "official" pile-up cut
       
       if( fSystemType == "PbPb" || fSystemType == "pPb" )
 	{
@@ -1306,7 +1363,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	  fUtils->SetUseMVPlpSelection(kTRUE);
 	  fUtils->SetUseOutOfBunchPileUp(kTRUE);
 	  if(fUtils->IsPileUpEvent(fAODEvent))   return;
-	  _eventAccounting -> Fill( 1 ); // number of events ( no pile-up ) 
+	  _eventAccounting -> Fill( 4 ); // number of events ( no pile-up ) 
 	  
 	  v0Centr  = fUtils->GetMultiplicityPercentile(fAODEvent,"V0MEq");
 	  v0ACentr = fUtils->GetMultiplicityPercentile(fAODEvent,"V0AEq");
@@ -1377,7 +1434,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         }
 	
       _eventAccounting -> Fill( 3 ); // count all events with right centrality & vertexZ
-
+      
       //=========================================================================================================
       //*********************************************************************************************************            
       // "RealData" & "MCAODreco" share this same piece of code; if needed, seperate these 2 parts later 
@@ -1385,6 +1442,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       // "MCAODreco" -- for a MC reconstructed production dataset, e.g. Hijing_PbPb_LHC10h
       if ( fAnalysisType == "RealData" || fAnalysisType == "MCAODreco" )
 	{
+	  if ( _useEventPlane )
+	    {
+	     EP = TPC_EventPlane( fAODEvent );
+	     _psi_EventPlane -> Fill( EP );
+	    }
+		      
 	  //Track Loop starts here
 	  for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
 	    {
@@ -1461,8 +1524,28 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      //******************************************************************************************************************************************************************
 	      if ( PIDparticle )
 		{
-		  Int_t IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		  if( useAliHelperPID )
+		    {
+		      if( pt < _min_pt_1 || pt > ptUpperLimit) continue;
+		      CalculateTPCNSigmasElectron( t );
+		      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+		      if( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) && ( nsigmaElectron < electronNSigmaVeto ) )    continue;  // reject TPC region electrons
+		    }
 
+		  if ( use_pT_cut )
+		    {
+		      if ( useAliHelperPID ) IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE);
+		      else    IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		    }
+		  else // use_p_cut
+		    {
+		      if ( useAliHelperPID )
+			{
+			  // NOT COMPLETE YET!!! need a line for p cut here!!!
+			  IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE);
+			}
+		      else    IDrec = TellParticleSpecies_by_P( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		    }
 
 		  // QA for all identified hadrons
 		  if ( IDrec != 999 )
@@ -1502,7 +1585,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( particleSpecies == 2 )  mass = mproton;
 		  y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
 		  if( y < _min_eta_1 || y > _max_eta_1 ) continue;
-
+		  
 		  //Filling QA plots ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		  // QA for POI
 		  if ( _singlesOnly )
@@ -1543,7 +1626,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		{
 		  if( pt < _min_pt_1 || pt > ptUpperLimit ) continue;
 		  CalculateTPCNSigmasElectron( t );
-		  Double_t nsigmaElectron = 999.;
 		  nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
 		  if( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) && ( nsigmaElectron < electronNSigmaVeto ) )    continue;  // reject TPC region electrons
 		  if( eta < _min_eta_1 || eta > _max_eta_1 ) continue;
@@ -1562,7 +1644,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    
 	      if ( _useRapidity )  eta = y;  //switch from eta to y
 	      //*************************************************************************************************************************************************************
-	    
+
+	      if ( _useEventPlane )
+		{
+		  if( !( ((phi-EP)>=EP_min) && ((phi-EP)<=EP_max)) && !( ((phi-EP-TMath::Pi())>=EP_min) && ((phi-EP-TMath::Pi())<=EP_max)) ) continue;
+		}
+
+	      
 	      //Particle 1
 	      if ( _requestedCharge_1 == charge )
 		//&& dedx >=  _dedxMin && dedx < _dedxMax)
@@ -2192,7 +2280,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     }    
     
   AliInfo("AliAnalysisTaskPIDBFDptDpt::UserExec()   -----------------Event Done ");
-  PostData(0,_outputHistoList);    
+  PostData(1,_outputHistoList);
 } // End of UserExec
 
 void   AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput()
@@ -2201,7 +2289,7 @@ void   AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput()
   Printf("= 0 ====================================================================");
   finalizeHistograms();
   AliInfo("= 1 ====================================================================");
-  PostData(0,_outputHistoList);
+  PostData(1,_outputHistoList);
   AliInfo("= 2 ====================================================================");
   AliInfo("AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput() Done.");
 }
@@ -2627,6 +2715,44 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
   return 999;
 }
 
+
+//________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  //function to determine the particle ID
+{  
+  CalculateNSigmas( trk );
+
+  Double_t nsigmaPion = 999., nsigmaKaon = 999., nsigmaProton = 999., nsigmaElectron = 999.;
+
+  CheckTOF( trk );
+  
+  if( fHasTOFPID && ( trk->P() > ptTOFlowerBoundary ) ) // !!! diff from TellParticleSpecies
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][1] ); //Pion_TOF
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][1] ); //Kaon_TOF
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+    }
+  else
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][0] ); //Pion_TPC
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][0] ); //Kaon_TPC
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 0; //Pion 
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 2; //Proton
+    }
+
+  // else, return undefined
+  return 999;
+}
+
+
 //________________________________________________________________________________________________________________
 Double_t AliAnalysisTaskPIDBFDptDpt::TOFBetaCalculation( AliVTrack * track ) const
 {
@@ -2648,4 +2774,72 @@ Double_t AliAnalysisTaskPIDBFDptDpt::massSquareCalculation( AliVTrack * track ) 
 {
   Double_t massSquare = track->P() * track->P() * ( 1 / ( TOFBetaCalculation(track) * TOFBetaCalculation(track) ) - 1 ); 
   return massSquare;
+}
+
+
+//________________________________________________________________________________________________________________
+Float_t AliAnalysisTaskPIDBFDptDpt::TPC_EventPlane(AliAODEvent *fAOD)
+{
+  Int_t ntracks = fAOD->GetNumberOfTracks();
+        
+  TVector2 mQ;
+  float mypsi=0;
+  float mQx=0, mQy=0;
+
+  for(Int_t i=0; i<ntracks; i++)
+    {
+      AliAODTrack *track =(AliAODTrack *)fAOD->GetTrack(i); // pointer to reconstructed to track
+      if(!track) {
+	AliError(Form("ERROR: Could not retrieve aod track %d\n",i));
+	continue;
+      }                        
+      mQx += (cos(2*track->Phi()))*(track->Pt());
+      mQy += (sin(2*track->Phi()))*(track->Pt());
+    }
+            
+  mQ.Set(mQx,mQy);
+            
+  mypsi=(TMath::ATan2(-mQy,-mQx))/2.;
+  //cout<<"mypsi_fct :"<<mypsi<<endl;
+  return mypsi+TMath::Pi();
+}
+
+//________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskPIDBFDptDpt::Is2015PileUpEvent()
+{
+  Bool_t IsPileUpEvent2015 = kTRUE;
+  if (fV0Multiplicity  < f2015V0MtoTrkTPCout->Eval(fNoOfTPCoutTracks)) IsPileUpEvent2015 = kTRUE;
+  else IsPileUpEvent2015 = kFALSE;
+  return IsPileUpEvent2015;
+}
+
+//________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskPIDBFDptDpt::StoreEventMultiplicities(AliVEvent *event)
+{  
+  AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
+
+  fNoOfTPCoutTracks = 0;
+  //fV0Multiplicity_Victor = aodEvent->GetVZEROData()->GetMTotV0A()+event->GetVZEROData()->GetMTotV0C(); //Victor's way
+
+  AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+  if(vzero)
+    {
+      fV0Multiplicity = 0;
+      for(int ich=0; ich < 64; ich++)
+      fV0Multiplicity += vzero->GetMultiplicity(ich);
+    } // AliEventCuts
+  
+  Int_t nTracks = 0;
+  nTracks = aodEvent->GetNumberOfTracks();
+  
+  for (Int_t itrk = 0; itrk < nTracks; itrk++)
+    {
+      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
+      
+      //if ((TMath::Abs(aodt->Eta()) < 0.8) && (aodt->GetTPCNcls() >= 70) && (aodt->Pt() >= 0.2) && (aodt->Pt() < 50.))
+      //{
+      if ((aodt->GetStatus() & AliVTrack::kTPCout) && aodt->GetID() > 0 )   fNoOfTPCoutTracks++;
+      //}
+    } 
+  return kTRUE;
 }

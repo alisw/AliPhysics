@@ -137,6 +137,9 @@ class AliEmcalContainer : public TObject {
   Double_t                    GetMaxEta()                     const { return fMaxEta ; }
   Double_t                    GetMinPhi()                     const { return fMinPhi ; }
   Double_t                    GetMaxPhi()                     const { return fMaxPhi ; }
+  Double_t                    GetEtaSwing()                   const { return fMaxEta - fMinEta; }
+  Double_t                    GetPhiSwing()                   const { return fMaxPhi - fMinPhi; }
+  Double_t                    GetAcceptance()                 const { return GetEtaSwing() * GetPhiSwing(); }
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
@@ -151,6 +154,7 @@ class AliEmcalContainer : public TObject {
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(const AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
+  void                        SetVertex(Double_t *vtx)              { memcpy(fVertex, vtx, sizeof(Double_t) * 3); }
   void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
   void                        SortArray()                           { fClArray->Sort()                  ; }

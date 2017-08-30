@@ -244,15 +244,15 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
   
   if (!fFullTree){
-    const Int_t nVarMin = 18;
+    const Int_t nVarMin = 20;
     TString *fJetInfoVarNames = new TString [nVarMin];
   
     fJetInfoVarNames[0] = "Pt";
     fJetInfoVarNames[1] = "Pt_Truth";
     fJetInfoVarNames[2] = "SymParam";
     fJetInfoVarNames[3] = "SymParam_Truth";
-    fJetInfoVarNames[4] = "Tau1";
-    fJetInfoVarNames[5] = "Tau1_Truth";
+    fJetInfoVarNames[4] = "Masss";
+    fJetInfoVarNames[5] = "Mass_Truth";
     fJetInfoVarNames[6] = "Tau2";
     fJetInfoVarNames[7] = "Tau2_Truth";
     fJetInfoVarNames[8] = "PTD";
@@ -265,6 +265,8 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[15] = "N_Groomed_Branches_Truth";
     fJetInfoVarNames[16] = "Groomed_Jet_Pt";
     fJetInfoVarNames[17] = "Groomed_Jet_Pt_Truth";
+    fJetInfoVarNames[18] = "Groomed_Mass";
+    fJetInfoVarNames[19] = "Groomed_Mass_Truth";
 
   
     
@@ -462,6 +464,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
 	  fhJetMass->Fill(Jet1->M());
+	  fJetInfoVar[4]=Jet1->M();
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
@@ -477,6 +480,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[13]=0;
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[17]=0;
+	    fJetInfoVar[19]=0;
 	    
 	  }
 	  else{
@@ -492,6 +496,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[16]=0;
 	    fJetInfoVar[17]=0;
+	    fJetInfoVar[18]=0;
+	    fJetInfoVar[19]=0;
 	  }		    
 	  fJetInfoVar[8]=PTD(Jet1,0);
 	  fJetInfoVar[9]=0;
@@ -583,7 +589,11 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	fJetInfoVar[15]=0;
 	fJetInfoVar[16]=0;
 	fJetInfoVar[17]=0;
-      }		    
+	fJetInfoVar[18]=0;
+	fJetInfoVar[19]=0;
+      }
+      fJetInfoVar[4]=JetHybridS->M();
+      fJetInfoVar[5]=JetPythTrue->M();
       fJetInfoVar[8]=PTD(JetHybridS,0);
       fJetInfoVar[9]=PTD(JetPythTrue,0);
       fJetInfoVar[10]=Angularity(JetHybridS,0);
@@ -671,7 +681,11 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[16]=0;
 	    fJetInfoVar[17]=0;
-	  }		    
+	    fJetInfoVar[18]=0;
+	    fJetInfoVar[19]=0;
+	  }
+	  fJetInfoVar[4]=JetDet->M();
+	  fJetInfoVar[5]=JetTrue->M();
 	  fJetInfoVar[8]=PTD(JetDet,0);
 	  fJetInfoVar[9]=PTD(JetTrue,0);
 	  fJetInfoVar[10]=Angularity(JetDet,0);
@@ -747,7 +761,11 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[16]=0;
 	    fJetInfoVar[17]=0;
-	  }		    
+	    fJetInfoVar[18]=0;
+	    fJetInfoVar[19]=0;
+	  }
+	  fJetInfoVar[4]=Jet1->M();
+	  fJetInfoVar[5]=0;
 	  fJetInfoVar[8]=PTD(Jet1,0);
 	  fJetInfoVar[9]=0;
 	  fJetInfoVar[10]=Angularity(Jet1,0);
@@ -883,12 +901,12 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   for(Int_t j=1; j<3; j++){
     if(jet_constituents.size() < j){
       if(!fTruthJet){
-	if(j==1) fJetInfoVar[4]=-5;
-	else if(j==2) fJetInfoVar[6]=-5;
+	//if(j==1) fJetInfoVar[4]=-5;
+	if(j==2) fJetInfoVar[6]=-5;
       }
       else {
-	if(j==1) fJetInfoVar[5]=-5;
-	else if(j==2) fJetInfoVar[7]=-5;
+	//if(j==1) fJetInfoVar[5]=-5;
+	if(j==2) fJetInfoVar[7]=-5;
       }
       continue;
     }
@@ -920,12 +938,12 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     }
   }
     if(!fTruthJet){
-      fJetInfoVar[4]=NSubjettinessResult[1];
+      //fJetInfoVar[4]=NSubjettinessResult[1];
       fJetInfoVar[6]=NSubjettinessResult[2];
       // fJetInfoVar[12]=DelR;
     }
     else {
-      fJetInfoVar[5]=NSubjettinessResult[1];
+      //fJetInfoVar[5]=NSubjettinessResult[1];
       fJetInfoVar[7]=NSubjettinessResult[2];
       // fJetInfoVar[13]=DelR;
     }
@@ -985,6 +1003,8 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp());
     else fJetInfoVar[17]=(finaljet.perp());
   }
+  if(!fTruthJet) fJetInfoVar[18]=(finaljet.m());
+  else fJetInfoVar[19]=(finaljet.m());
   
   return;
 

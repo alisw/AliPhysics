@@ -28,6 +28,7 @@
 
 class TString;
 class TList;
+class TProfile2D;
 class AliFlowEventSimple;
 class AliFlowEvent;
 class AliFlowAnalysisCRC;
@@ -186,6 +187,8 @@ public:
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
   Bool_t GetUseZDC() const {return this->fUseZDC;};
+  void SetRemoveSplitMergedTracks(Bool_t const uPhiEtaW) {this->fRemoveSplitMergedTracks = uPhiEtaW;};
+  Bool_t GetRemoveSplitMergedTracks() const {return this->fRemoveSplitMergedTracks;};
   void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
   Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
   void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
@@ -207,6 +210,7 @@ public:
   TList* GetZDCESEList() const {return this->fZDCESEList;};
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = (TList*)wlist->Clone();}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = (TList*)wlist->Clone();}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = (TList*)wlist->Clone();}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
   void SetCRCZDCResList(TList* const wlist) {this->fCRCZDCResList = (TList*)wlist->Clone();}
@@ -231,6 +235,8 @@ public:
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = B;};
   void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
   TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -250,6 +256,7 @@ public:
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -329,6 +336,7 @@ private:
   Bool_t fCalculateFlowVZ;
   Bool_t fUseVZERO;
   Bool_t fUseZDC;
+  Bool_t fRemoveSplitMergedTracks;
   Bool_t fRecenterZDC;
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
@@ -349,10 +357,14 @@ private:
   TString fCorrWeight;
   TList *fQVecList;       // list with weights
   TList *fCRCZDCCalibList; // ZDC calibration
+  TList *fCRCZDC2DCutList; // ZDC calibration
   TList *fCRCVZEROCalibList; // ZDC calibration
   TList *fCRCZDCResList; // ZDC rescaling
   TList *fZDCESEList;       // list with weights
   TH1D* fCenWeightsHist;
+  TProfile2D *fRefMultRbRPro;
+  TProfile2D *fAvEZDCCRbRPro;
+  TProfile2D *fAvEZDCARbRPro;
   TH1D* fPtWeightsHist[10];
   TH1D* fEtaWeightsHist[10][21][2];
   TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
@@ -363,8 +375,9 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
+  Bool_t fUseTracklets;
   
-  ClassDef(AliAnalysisTaskCRC,11);
+  ClassDef(AliAnalysisTaskCRC,12);
 };
 
 //================================================================================================================

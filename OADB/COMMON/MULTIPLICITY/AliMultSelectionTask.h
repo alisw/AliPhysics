@@ -34,6 +34,7 @@ class TProfile;
 class TVector3;
 class THnSparse;
 class TObject;
+class TRandom3;
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -81,8 +82,9 @@ public:
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
-    Bool_t IsHijing() const;
-    Bool_t IsDPMJet() const; 
+    Bool_t IsHijing()  const;
+    Bool_t IsDPMJet()  const;
+    Bool_t IsEPOSLHC() const;
  
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     
@@ -117,6 +119,9 @@ public:
     void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
     Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
+    //Calibration mode downscaling for manageable output
+    void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
+    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
@@ -146,6 +151,11 @@ private:
     //Default options
     Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
     Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
+    
+    //Downscale factor:
+    //-> if smaller than unity, reduce change of accepting a given event for calib tree
+    Double_t fDownscaleFactor;
+    TRandom3 *fRand; //PRNG (MT) for random downscaling
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -270,17 +280,33 @@ private:
     TH2D *fHistEventSelections; //! For keeping track of 
     
     //Simple QA histograms
-    TH1D *fHistQA_V0M; 
+    TH1D *fHistQA_V0M;
+    TH1D *fHistQA_V0A;
+    TH1D *fHistQA_V0C;
     TH1D *fHistQA_CL0; 
-    TH1D *fHistQA_CL1; 
+    TH1D *fHistQA_CL1;
+    TH1D *fHistQA_SPDClusters;
+    TH1D *fHistQA_SPDTracklets;
+    TH1D *fHistQA_ZNA;
+    TH1D *fHistQA_ZNC;
+    TH1D *fHistQA_ZNApp;
+    TH1D *fHistQA_ZNCpp;
     TProfile *fHistQA_TrackletsVsV0M; 
     TProfile *fHistQA_TrackletsVsCL0; 
     TProfile *fHistQA_TrackletsVsCL1; 
     
-    TH1D *fHistQASelected_V0M; 
+    TH1D *fHistQASelected_V0M;
+    TH1D *fHistQASelected_V0A;
+    TH1D *fHistQASelected_V0C;
     TH1D *fHistQASelected_CL0; 
-    TH1D *fHistQASelected_CL1; 
-    TProfile *fHistQASelected_TrackletsVsV0M; 
+    TH1D *fHistQASelected_CL1;
+    TH1D *fHistQASelected_SPDClusters;
+    TH1D *fHistQASelected_SPDTracklets;
+    TH1D *fHistQASelected_ZNA;
+    TH1D *fHistQASelected_ZNC;
+    TH1D *fHistQASelected_ZNApp;
+    TH1D *fHistQASelected_ZNCpp;
+    TProfile *fHistQASelected_TrackletsVsV0M;
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
 
@@ -305,7 +331,8 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 2);
+    ClassDef(AliMultSelectionTask, 3);
+    //3 - extra QA histograms
 };
 
 #endif

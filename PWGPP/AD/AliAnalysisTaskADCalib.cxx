@@ -476,7 +476,10 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (1c) set up the TF1 depending on the BC
   switch (bc) {
   case  9:
-    f->SetParameters(1024.0, slope/1024.0, 0.0, 0.0);
+    f->SetParameters(1000.0, slope/1000.0, 0.0, 0.0);
+    f->SetParLimits(0, 512.0, 1024.0);
+    f->SetParLimits(2, -20.0,   20.0);
+    f->SetParLimits(3, -10.0,   10.0);
     break;
   case 10:
     f->SetParameters(0, slope);

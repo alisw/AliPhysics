@@ -67,7 +67,7 @@
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
 #pragma link C++ class  AliAnalysisTaskEMCalHFEpA+;
-#pragma link C++ class  AliAnalysisHFETPCTOF+;
+
 #pragma link C++ class  AliAnalysisTaskHFEpACorrelation+;
 #pragma link C++ class  AliEHCParticle+;
 #pragma link C++ class  AliHFEHCParticle+;
@@ -104,7 +104,13 @@
 #pragma link C++ class  AliHFEhadronicbackground+;
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
+#pragma link C++ class  AliAnalysisTaskHaHFECorrel+;
 
+#pragma link C++ class  AliBasicParticleHaHFE+;
 #pragma link C++ class  AliehDPhiBasicParticle+;
+
+#pragma link C++ class  AliAnalysisHFETPCTOFNew+;
+#pragma link C++ class  AliAnalysisTaskTPCCalBeauty+;
+
 
 #endif

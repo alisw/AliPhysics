@@ -54,7 +54,31 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-
+    void SetDoImprovedCascadeVertexFinding( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedCascadeVertexFinding = lOpt;
+    }
+    void SetDoImprovedCascadePosition( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedCascadePosition = lOpt;
+    }
+    void SetDoImprovedDCAV0DauPropagation( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedDCAV0DauPropagation = lOpt;
+    }
+    void SetDoImprovedDCACascDauPropagation( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedDCACascDauPropagation = lOpt;
+    }
+    void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkIfImprovedPerformInitialLinearPropag = lOpt;
+    }
+    void SetIfImprovedExtraPrecisionFactor( Double_t lOpt ){
+        //Highly experimental, use with care!
+        fkIfImprovedExtraPrecisionFactor = lOpt;
+    }
+    
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -67,6 +91,8 @@ public:
         fkRunCascadeVertexer = lRunVertexer;
     }
     void SetUseUncheckedChargeCascadeVertexer ( Bool_t lOpt = kTRUE) {
+        //WARNING: Experimental vertexer which disregards bachelor charge when creating candidates!
+        //         The user has to take care... 
         fkUseUncheckedChargeCascadeVertexer = lOpt;
     }
     void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
@@ -159,9 +185,17 @@ public:
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
                  Double_t a10,Double_t a11,Double_t a12,
                  Double_t a20,Double_t a21,Double_t a22) const;
-    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
+    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, AliESDEvent *event, Double_t b);
+    void Evaluate(const Double_t *h, Double_t t,
+                  Double_t r[3],  //radius vector
+                  Double_t g[3],  //first defivatives
+                  Double_t gg[3]); //second derivatives
     void CheckChargeV0(AliESDv0 *v0);
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
+    //Improved DCA V0 Dau
+    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b);
+    void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
+    //---------------------------------------------------------------------------------------
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -178,6 +212,12 @@ private:
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
     Bool_t fkUseOnTheFlyV0Cascading;
+    Bool_t fkDoImprovedCascadeVertexFinding;
+    Bool_t fkDoImprovedCascadePosition;
+    Bool_t fkDoImprovedDCAV0DauPropagation;
+    Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkIfImprovedPerformInitialLinearPropag;
+    Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
 
     //Objects Controlling Task Behaviour: has to be streamed!
@@ -210,6 +250,9 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
     TH1D *fHistNumberOfCandidates; //!
+    
+     
+    TH1D *fHistV0ToBachelorPropagationStatus; //! 
 
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented

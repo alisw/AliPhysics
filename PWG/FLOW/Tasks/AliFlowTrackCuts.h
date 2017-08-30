@@ -123,6 +123,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMaxFracSharedTPCCluster( Float_t a ) {fMaxFracSharedTPCCluster=a;fCutFracSharedTPCCluster=kTRUE;}
+  void SetMaxFracSharedITSCluster( Float_t a ) {fMaxFracSharedITSCluster=a;fCutFracSharedITSCluster=kTRUE;}
   void SetCutCrossedTPCRows( Int_t a, Float_t b) {fCutCrossedTPCRows=kTRUE; fMinNCrossedRows=a; fMinCrossedRowsOverFindableClusters=b;}
   void SetCutGoldenChi2( Double_t m ) {fCutGoldenChi2=kTRUE; fMaxGoldenChi2=m;}
   void SetRequireTOFSignal( Bool_t a ) {fRequireTOFSignal=a;}
@@ -407,6 +408,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
   Bool_t fCutFracSharedTPCCluster; //cut on fraction of shared TPC clusters
   Float_t fMaxFracSharedTPCCluster; //max fraction of shared TPC clusters
+  Bool_t fCutFracSharedITSCluster; //cut on fraction of shared ITS clusters
+  Float_t fMaxFracSharedITSCluster; //max fraction of shared ITS clusters
   Bool_t fCutCrossedTPCRows;     //cut on number crossed TPC rows
   Int_t fMinNCrossedRows;        //minimum number of crossed rows
   Float_t fMinCrossedRowsOverFindableClusters; //min. number of crossed rows / findable clusters
@@ -415,13 +418,13 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fRequireTOFSignal;      //require TOF signal
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
-  Bool_t fCutChi2PerClusterITS;  //cut on chi2 per ITS cluster
-  Bool_t fCutITSClusterGlobal;   //cut on ITS clusters: either any hit on SPD or no hit on SPD and hit on first layer SDD (like global tracks)
-  Float_t fMaxChi2PerClusterITS; //max chi2 per ITS cluster
   Int_t fNClustersTPCMin;        //min tpc clusters  
   Bool_t fCutNClustersITS;       //cut on clusters?
   Int_t fNClustersITSMax;        //max tpc ncls
   Int_t fNClustersITSMin;        //min tpc clusters  
+  Bool_t fCutChi2PerClusterITS;  //cut on chi2 per ITS cluster
+  Bool_t fCutITSClusterGlobal;   //cut on ITS clusters: either any hit on SPD or no hit on SPD and hit on first layer SDD (like global tracks)
+  Float_t fMaxChi2PerClusterITS; //max chi2 per ITS cluster
   Bool_t fUseAODFilterBit;       //use AOD filter bit selection?
   UInt_t fAODFilterBit;          //AOD filter bit to select
   Bool_t fCutDCAToVertexXY;      //dca xy cut
@@ -528,7 +531,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t  fMaxITSChi2;                // fMaxITSChi2
   Int_t         fRun;                   // run number
   
-  ClassDef(AliFlowTrackCuts,20)
+  ClassDef(AliFlowTrackCuts,21)
 };
 
 #endif

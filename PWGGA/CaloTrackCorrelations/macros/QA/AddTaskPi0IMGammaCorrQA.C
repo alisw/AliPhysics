@@ -1007,8 +1007,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
   ana->SwitchOffStudyBadClusters();
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOffFillAllPi0Histogram()  ;
   ana->SwitchOffCorrelation();
   ana->SwitchOffFillAllCellAbsIdHistogram();

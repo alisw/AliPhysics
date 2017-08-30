@@ -169,6 +169,9 @@ bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
     if(aXi->DecayLengthXi()>fMaxDecayLengthXi)
       return false;
     
+    //fiducial volume radius
+    if(aXi->RadiusXi()<fRadiusXiMin || aXi->RadiusXi()>fRadiusXiMax)
+      return false;
  
   if(fParticleTypeXi == kAll)
     return true;

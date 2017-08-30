@@ -1,8 +1,6 @@
 ///
-/// \class AliFemtoModelWeightGeneratorBasic
-/// \brief Basic femtoscopic weight generator only return a simple
-/// \author Adam Kisiel <kisiel@mps.ohio-state.edu>
-///
+/// \file AliFemtoModelWeightGeneratorBasic.cxx
+/// \author Adam Kisiel kisiel@mps.ohio-state.edu
 ///
 
 #ifdef __ROOT__
@@ -16,13 +14,15 @@
 
 //________________________
 AliFemtoModelWeightGeneratorBasic::AliFemtoModelWeightGeneratorBasic():
-  AliFemtoModelWeightGenerator()
+  AliFemtoModelWeightGenerator(),
+  fPrintEmptyParticleNotification(true)
 {
   /* no-op */
 }
 //________________________
 AliFemtoModelWeightGeneratorBasic::AliFemtoModelWeightGeneratorBasic(const AliFemtoModelWeightGeneratorBasic &aModel) :
-  AliFemtoModelWeightGenerator(aModel)
+  AliFemtoModelWeightGenerator(aModel),
+  fPrintEmptyParticleNotification(aModel.fPrintEmptyParticleNotification)
 {
   /* no-op */
 }
@@ -38,6 +38,8 @@ AliFemtoModelWeightGeneratorBasic& AliFemtoModelWeightGeneratorBasic::operator=(
   if (this != &aModel) {
     AliFemtoModelWeightGenerator::operator=(aModel);
   }
+
+  fPrintEmptyParticleNotification = aModel.fPrintEmptyParticleNotification;
 
   return *this;
 }
@@ -55,32 +57,25 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
   AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
+  AliFemtoModelHiddenInfo &info1 = *(AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo(),
+                          &info2 = *(AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo();
+
+  const auto &p1 = *info1.GetTrueMomentum(),
+             &p2 = *info2.GetTrueMomentum();
+
+  const auto P = p1 + p2;
+
   // Calculate pair variables
-  /*
-  Double_t tPx = inf1->GetTrueMomentum()->x()+inf2->GetTrueMomentum()->x();
-  Double_t tPy = inf1->GetTrueMomentum()->y()+inf2->GetTrueMomentum()->y();
-  Double_t tPz = inf1->GetTrueMomentum()->z()+inf2->GetTrueMomentum()->z();
-  */
-  Double_t tPx = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->x();
-  Double_t tPy = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->y();
-  Double_t tPz = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->z();
 
+  const Double_t tPx = P.x(),
+                 tPy = P.y(),
+                 tPz = P.z();
 
+  Double_t tM1 = info1.GetMass();
+  Double_t tM2 = info2.GetMass();
 
-  //  double tE  = inf1->GetTrueMomentum()->e +inf2->GetTrueMomentum()->.e;
-  /*
-  Double_t tM1 = inf1->GetMass();
-  Double_t tM2 = inf2->GetMass();
-  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->Mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->Mag2());
-  */
-
-  Double_t tM1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
-  Double_t tM2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
-
-  Double_t tE1 = sqrt(tM1*tM1 + ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->Mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->Mag2());
-
+  Double_t tE1 = sqrt(tM1*tM1 + p1.Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + p2.Mag2());
 
   Double_t tE  = tE1 + tE2;
   Double_t tPt = tPx*tPx + tPy*tPy;
@@ -88,20 +83,18 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   Double_t tM  = (tMt - tPt > 0.0) ? sqrt(tMt - tPt) : 0.0;
 
   if (tMt == 0 || tE == 0 || tM == 0 || tPt == 0 ) {
-    cout << " weight generator zero tPt || tMt || tM || tPt " << tM1 << " " << tM2 << endl;
-    return 0;
+    if (fPrintEmptyParticleNotification) {
+      cout << " weight generator zero tPt || tMt || tM || tPt " << tM1 << " " << tM2 << endl;
+    }
+    return 0.0;
   }
 
   tMt = sqrt(tMt);
   tPt = sqrt(tPt);
-  Double_t tBetat = tPt/tMt;
 
-
-
-  Double_t pX=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x();
-  Double_t pY=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y();
-  Double_t pZ=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z();
-	   
+  Double_t pX = p1.x();
+  Double_t pY = p1.y();
+  Double_t pZ = p1.z();
 
   // Boost to LCMS
   Double_t tBeta = tPz/tE;
@@ -147,7 +140,7 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   // Boost to pair cms
   fKStarOut = tMt/tM * (fKStarOut - tPt/tMt * tE1L);
 
-  tBetat = tPt/tMt;
+//   Double_t tBetat = tPt/tMt;
 //   Double_t tGammat = 1.0/sqrt(1.0-tBetat*tBetat);
 
 //   Double_t tP1xp = tGammat*(tP1xl - tBetat*tP1tl);
@@ -161,22 +154,13 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
 //   Double_t tRL = (tP1zl - tP2zl)/0.197327;
 //   Double_t tDT = (tP1tl - tP2tl)/0.197327;
 
-/*
-  Double_t tDX = inf1->GetEmissionPoint()->x()-inf2->GetEmissionPoint()->x();
-  Double_t tDY = inf1->GetEmissionPoint()->y()-inf2->GetEmissionPoint()->y();
-  Double_t tRLong = inf1->GetEmissionPoint()->z()-inf2->GetEmissionPoint()->z();
-  Double_t tDTime = inf1->GetEmissionPoint()->t()-inf2->GetEmissionPoint()->t();
-*/
+  // separation distance
+  const auto D = *info1.GetEmissionPoint() - *info2.GetEmissionPoint();
 
- Double_t tDX =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->x();
-  
-  Double_t tDY =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->y();
-
- Double_t tRLong =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->z();
-
-Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->t()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->t();
-
-
+  Double_t tDX = D.x();
+  Double_t tDY = D.y();
+  Double_t tRLong = D.z();
+  Double_t tDTime = D.t();
 
   Double_t tROut = (tDX*tPx + tDY*tPy)/tPt;
   Double_t tRSide = (-tDX*tPy + tDY*tPx)/tPt;
@@ -194,29 +178,21 @@ Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionP
   fRStarOut = tGamma*(tROut - tBeta* tDTimePairLCMS);
   Double_t tROS = fRStarOut/0.197327;
 //   Double_t tDTimePairCMS = tGamma*(tDTimePairLCMS - tBeta* tROut);
-  fRStar = ::sqrt(fRStarOut*fRStarOut + fRStarSide*fRStarSide +
-			   fRStarLong*fRStarLong);
+  fRStar = ::sqrt(fRStarOut*fRStarOut + fRStarSide*fRStarSide + fRStarLong*fRStarLong);
   fKStar = ::sqrt(fKStarOut*fKStarOut + fKStarSide*fKStarSide + fKStarLong*fKStarLong);
 //   Double_t tRSt = fRStar/0.197327;
 
-  if (fPairType != fgkPairTypeNone) {
-    if ((fPairType == PionPlusPionPlus()) || (fPairType == KaonPlusKaonPlus()))
-      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-    else if (fPairType == ProtonProton())
-      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-    else
-      return 1.0;
-  }
-  else {
-    Int_t tPairType = GetPairTypeFromPair(aPair);
-    if ((tPairType == PionPlusPionPlus()) || (tPairType == KaonPlusKaonPlus()))
-      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-    else if (tPairType == ProtonProton())
-      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-    else
-      return 1.0;
+  // if type not set, use pair to determine type
+  auto pair_type = (fPairType == fgkPairTypeNone)
+                 ? GetPairTypeFromPair(aPair)
+                 : fPairType;
 
-  }
+  if ((pair_type == PionPlusPionPlus()) || (pair_type == KaonPlusKaonPlus()))
+      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+  else if (pair_type == ProtonProton())
+      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+  else
+      return 1.0;
 }
 
 //________________________

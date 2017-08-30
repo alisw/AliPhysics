@@ -20,7 +20,7 @@ inputObjects:                                       # Define all of the input ob
             # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                               # Cluster min E.
             minPt: 0.0                              # Cluster min pt.
-            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask() 
+            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask()
     trackContainers:                                # Configure tracks
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
@@ -90,7 +90,6 @@ Clusterizer:                                        # Clusterizer component
     setCellMCLabelFromCluster: 0                    # Enables setting the cell MC label from the cluster. There are different modes depending on the value
     diffEAggregation: 0.03                          # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
     useTestPatternForInput: false                   # Use test pattern for input instead of cells. Intended for testing and debugging.
-    embeddedCellEnergyType: kNonEmbedded            # Select which part of the embedded energy to use for clusterization. Disabled by default.
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
@@ -98,6 +97,9 @@ Clusterizer:                                        # Clusterizer component
 ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
+    fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
+    fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
@@ -143,6 +145,11 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
         - defaultTrackContainer                     # This object is defined above in the track section of the input objects
+PHOSCorrections:                                    # PHOS recalibration component (wraps PHOS Tender Supply)
+    enabled: false                                  # Whether to enable the task
+    isMC: false                                     # Whether is MC
+    options: ""                                     # Options for MC decalibration
+    isEmbedded: false                               # Whether to correct clusters from main event or embedded event (if applicable)
 # Determines the order of execution for the correction components. Only experts needs to be any changes here!
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
@@ -156,3 +163,4 @@ executionOrder:
     - ClusterNonLinearity
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
+    - PHOSCorrections

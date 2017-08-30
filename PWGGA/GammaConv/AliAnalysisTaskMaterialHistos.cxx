@@ -65,7 +65,6 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fIsMC(0),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fnCuts(0),
   fiCut(0),
   hNEvents(NULL),
@@ -184,7 +183,6 @@ fConversionCutArray(NULL),
   fIsMC(0),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fnCuts(0),							
   fiCut(0),
   hNEvents(NULL),
@@ -420,7 +418,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     
     
     
-    hNEvents[iCut]            = new TH1F("NEvents","NEvents",12,-0.5,11.5);
+    hNEvents[iCut]            = new TH1F("NEvents","NEvents",14,-0.5,13.5);
     hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -439,6 +437,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);  
     
     
@@ -751,9 +751,6 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   if (fInputEvent==NULL) return;
   
   if(fIsMC>0) fMCEvent = MCEvent();
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
-    fMCStack = fMCEvent->Stack();
-  }
   
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
@@ -837,11 +834,10 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 }
 
 // ///________________________________________________________________________
-void AliAnalysisTaskMaterialHistos::FillMCTree(Int_t stackPos){
-  //	AliStack *MCStack = fMCEvent->Stack();
-  TParticle* candidate = (TParticle *)fMCStack->Particle(stackPos);
+void AliAnalysisTaskMaterialHistos::FillMCTree(Int_t eventPos){
+  TParticle* candidate = (TParticle *)fMCEvent->Particle(eventPos);
   
-  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCStack,kFALSE)){
+  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCEvent,kFALSE)){
     fGammaMCPt = candidate->Pt();
     fGammaMCTheta = candidate->Theta();
     
@@ -854,11 +850,11 @@ void AliAnalysisTaskMaterialHistos::FillMCTree(Int_t stackPos){
   Double_t minPtHigh=2.0;
   Double_t maxPtHigh=4.0;
   
-  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCStack,kTRUE)){
+  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCEvent,kTRUE)){
     fGammaMCConvPt = candidate->Pt();
     fGammaMCConvTheta = candidate->Theta();
-    TParticle* daughter1 = (TParticle *)fMCStack->Particle(candidate->GetFirstDaughter()); 
-    //		TParticle* daughter2 = (TParticle *)fMCStack->Particle(candidate->GetLastDaughter()); 
+    TParticle* daughter1 = (TParticle *)fMCEvent->Particle(candidate->GetFirstDaughter());
+    //		TParticle* daughter2 = (TParticle *)fMCEvent->Particle(candidate->GetLastDaughter());
     
     //		hMCConversionMappingRZ[fiCut]->Fill(daughter1->Vz(),daughter1->R());         
     hMCConversionMappingRPhi[fiCut]->Fill(candidate->Phi(),daughter1->R());      
@@ -884,22 +880,21 @@ void AliAnalysisTaskMaterialHistos::FillMCTree(Int_t stackPos){
 // ///________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
   // Loop over all primary MC particle
-  //	AliStack *ffMCStack = fMCEvent->Stack();
-  for(Int_t i = 0; i < fMCStack->GetNprimary(); i++) {
-    TParticle* particle = (TParticle *)fMCStack->Particle(i);
+  for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
+    TParticle* particle = (TParticle *)fMCEvent->Particle(i);
     if (!particle) continue;
     
     
-    if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+    if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
       Int_t isPosFromMBHeader
-  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent);
+  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
       Int_t isNegFromMBHeader
-  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent);
+  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
       if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
     }
     
     
-    if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= fMCStack->GetNprimary()){
+    if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= fMCEvent->GetNumberOfPrimaries()){
       // 			cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
       for (Int_t j = 0; j < 2 ; j++){
   FillMCTree(particle->GetDaughter(j));
@@ -968,24 +963,21 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     fKind = 9;	
     
     if(fIsMC>0){
-      // 			cout << "generating MC stack"<< endl;
-      AliStack *fMCStack = fMCEvent->Stack();
-      if (!fMCStack) continue;
-      
+
       const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
       Double_t mcProdVtxX 	= primVtxMC->GetX();
       Double_t mcProdVtxY 	= primVtxMC->GetY();
       Double_t mcProdVtxZ 	= primVtxMC->GetZ();
       
-      TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
-      TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
+      TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
+      TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
       // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
       
-      if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+      if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
   Int_t isPosFromMBHeader
-    = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fInputEvent);
+    = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fInputEvent);
   Int_t isNegFromMBHeader
-    = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fInputEvent);
+    = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCEvent, fInputEvent);
   if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
       }
       
@@ -1025,14 +1017,14 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
   if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
   // 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
   Int_t pdgCode; 
-  if (gamma->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCStack)->GetPdgCode(); else continue;
+  if (gamma->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCEvent)->GetPdgCode(); else continue;
   // 				cout << "PDG code: " << pdgCode << endl;
   if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
     fKind = 2; // combinatorics from hadronic decays
   else if ( !(pdgCodeNeg==pdgCodePos)){
-    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
+    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
     Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
-    Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(pdgCode == 111) 
       fKind = 3; // pi0 Dalitz
     else if (pdgCode == 221) 
@@ -1041,7 +1033,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
       if(pdgCode == 22 && gammaIsPrimary){
         fKind = 0; // primary photons
         mcPhotonR= negDaughter->R();
-        mcPhotonPt=gamma->GetMCParticle(fMCStack)->Pt();
+        mcPhotonPt=gamma->GetMCParticle(fMCEvent)->Pt();
       } else if (pdgCode == 22){
         fKind = 5; //secondary photons
       }		
@@ -1204,12 +1196,6 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
   if(fInputEvent->IsA()==AliESDEvent::Class()){
   // Using standard function for setting Cuts
     
-    AliStack *fMCStack = NULL;
-    if (fMCEvent){
-      fMCStack= fMCEvent->Stack();
-      if (!fMCStack) return 0;
-    }	
-        
     Bool_t selectPrimaries=kTRUE;
               AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
     EsdTrackCuts->SetMaxDCAToVertexZ(2);
@@ -1221,8 +1207,8 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
       if(!curTrack) continue;
       if(EsdTrackCuts->AcceptTrack(curTrack) ){
         if (fMCEvent){
-          if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
             if( (isFromMBHeader < 1) ) continue;
           }					
         }	
@@ -1241,12 +1227,6 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     // Using standard function for setting Cuts
     
-    AliStack *fMCStack = NULL;
-    if (fMCEvent){
-      fMCStack= fMCEvent->Stack();
-      if (!fMCStack) return 0;
-    }	
-
     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     EsdTrackCuts->SetMaxDCAToVertexZ(5);
     EsdTrackCuts->SetEtaRange(0.9, 1.4);
@@ -1257,8 +1237,8 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
       if(!curTrack) continue;
       if(EsdTrackCuts->AcceptTrack(curTrack) ){
         if (fMCEvent){
-          if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
             if( (isFromMBHeader < 1) ) continue;
           }					
         }	
@@ -1271,8 +1251,8 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
       if(!curTrack) continue;
       if(EsdTrackCuts->AcceptTrack(curTrack) ){
         if (fMCEvent){
-          if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
             if( (isFromMBHeader < 1) ) continue;
           }					
         }	

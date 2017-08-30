@@ -1,5 +1,5 @@
 /// \file AddTaskEMCALTimeCalibration.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of task AliAnalysisTaskEMCALTimeCalib.
 ///
 /// Configuration of task AliAnalysisTaskEMCALTimeCalib
@@ -23,6 +23,7 @@
 /// \param fillHeavyHistos: Bool_t, flag to fill heavy histograms with time per channel
 /// \param badMapType: Int_t,settype of bad channel map acces
 /// \param badMapFileName: TString, file with bad channels map (absID)
+/// \param mostEneCellOnly: Bool_t, flag to calibrate only on most energetic cell in cluster
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
@@ -47,7 +48,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Bool_t   badReconstruction = kFALSE,
 							     Bool_t   fillHeavyHistos = kFALSE,
 							     Int_t    badMapType = 0,
-							     TString  badMapFileName = "")
+							     TString  badMapFileName = "",
+							     Bool_t   mostEneCellOnly = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -85,6 +87,9 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   if(fillHeavyHistos) taskmbemcal->SwithOnFillHeavyHisto();
   else taskmbemcal->SwithOffFillHeavyHisto();
 
+  if(mostEneCellOnly) taskmbemcal->SwitchOnMostEneCellOnly();
+  else taskmbemcal->SwitchOffMostEneCellOnly();
+  
   // pass1
   taskmbemcal->SetRawTimeHisto(200,400.,800.);
   taskmbemcal->SetPassTimeHisto (200,400.,800.);

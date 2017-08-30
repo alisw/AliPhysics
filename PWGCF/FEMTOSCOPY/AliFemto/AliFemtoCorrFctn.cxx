@@ -7,6 +7,10 @@
 void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 
+void AliFemtoCorrFctn::AddFirstParticle(AliFemtoParticle*,bool) { cout << "Not implemented" << endl; }
+void AliFemtoCorrFctn::AddSecondParticle(AliFemtoParticle*) { cout << "Not implemented" << endl; }
+void AliFemtoCorrFctn::CalculateAnglesForEvent(){ cout << "Not implemented" << endl; }
+
 AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& /* c */):fyAnalysis(0),fPairCut(0x0) {}
 AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0),fPairCut(0x0) {/* no-op */}
 void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }

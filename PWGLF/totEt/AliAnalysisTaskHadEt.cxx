@@ -194,33 +194,47 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     //if(!fEsdtrackCutsITSTPC){
     cout<<"Using track cut option "<<trackcutoption<<endl;
-    if(trackcutoption<=2){
-      cout<<"Setting standard track cuts as 2010 TPCITS track cuts"<<endl;
-      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    if(trackcutoption<20){
+      if(trackcutoption<=2){
+	cout<<"Setting standard track cuts as 2010 TPCITS track cuts"<<endl;
+	fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+	fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      }
+      else{
+	cout<<"Setting standard track cuts as 2011 TPCITS track cuts"<<endl;
+	fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries);
+	fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      }
     }
     else{
-      cout<<"Setting standard track cuts as 2011 TPCITS track cuts"<<endl;
-      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries);
-      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      if(trackcutoption<=30){//numbers 21-30 reserved for 2010 track cuts.  2010 track cuts default to 0
+	cout<<"Setting standard track cuts as 2010 TPCITS track cuts with cluster cuts on"<<endl;
+	fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries,1);
+	fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      }
+      else{//numbers above are 2011 track cuts.  2011 track cuts default to 1
+	cout<<"Setting standard track cuts as 2011 TPCITS track cuts with cluster cuts off"<<endl;
+	fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries,0);
+	fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      }
     }
     cout<<"Selected track cut option "<<trackcutoption<<endl;
-      if(trackcutoption==1){
+      if(trackcutoption==1 || trackcutoption==21){
 	cout<<"Selecting switches for track cuts option 1"<<endl;
 	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
 	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
       }
-      if(trackcutoption==2){
+      if(trackcutoption==2 || trackcutoption==22){
 	cout<<"Selecting switches for track cuts option 2"<<endl;
 	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
 	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(2.0);
       }
-      if(trackcutoption==3){
+      if(trackcutoption==3 || trackcutoption==31){
 	cout<<"Selecting switches for track cuts option 3"<<endl;
 	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
 	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
       }
-      if(trackcutoption==4){
+      if(trackcutoption==4 || trackcutoption==32){
 	cout<<"Selecting switches for track cuts option 4"<<endl;
 	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
 	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(3.0);

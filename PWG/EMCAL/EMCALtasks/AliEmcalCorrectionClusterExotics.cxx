@@ -23,7 +23,10 @@ AliEmcalCorrectionClusterExotics::AliEmcalCorrectionClusterExotics() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterExotics"),
   fEtaPhiDistBefore(0),
   fEtaPhiDistAfter(0),
-  fEnergyExoticClusters(0)
+  fEnergyExoticClusters(0),
+  fExoticMinCellAmplitude(0),
+  fMaxFcross(0),
+  fCellCrossMaxTimeDiff(0)
 {
 }
 
@@ -44,10 +47,20 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   
   GetProperty("createHistos", fCreateHisto);
   
+  Float_t fExoticMinCellAmplitude = 4.;
+  GetProperty("fExoticMinCellAmplitude", fExoticMinCellAmplitude);
+  Float_t fMaxFcross = 0.97;
+  GetProperty("fMaxFcross", fMaxFcross);
+  Float_t fCellCrossMaxTimeDiff = 1e6;
+  GetProperty("fCellCrossMaxTimeDiff", fCellCrossMaxTimeDiff);
+  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
   fRecoUtils->SwitchOnRejectExoticCluster();
+  fRecoUtils->SetExoticCellMinAmplitudeCut(fExoticMinCellAmplitude);
+  fRecoUtils->SetExoticCellFractionCut(fMaxFcross);
+  fRecoUtils->SetExoticCellDiffTimeCut(fCellCrossMaxTimeDiff);
   if (fRecoUtils)
     fRecoUtils->Print("");
 

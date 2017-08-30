@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
@@ -38,6 +39,7 @@ set(SRCS
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
     AliAnalysisTaskEMCALTimeCalib.cxx
+    BadChannelAna.cxx
    )
 
 # Headers from sources

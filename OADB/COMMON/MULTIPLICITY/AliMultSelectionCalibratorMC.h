@@ -57,6 +57,9 @@ public:
     //Configure standard input
     void SetupStandardInput();
     
+    //Switch to configure <Ntracklet> fit type
+    void SetUseQuadraticMapping(Bool_t lOpt){ fkUseQuadraticMapping=lOpt; } 
+    
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();
     
@@ -79,7 +82,10 @@ private:
     TString fInputFileNameMC;    // Filename for TTree object for calibration purposes
     TString fBufferFileNameData; // Filename for TTree object (buffer file)
     TString fBufferFileNameMC;   // Filename for TTree object (buffer file)
-    TString fOutputFileName;     // Filename for calibration OADB output (MC) 
+    TString fOutputFileName;     // Filename for calibration OADB output (MC)
+    
+    //Configuration
+    Bool_t fkUseQuadraticMapping; //switch to toggle quadratic <Ntracklets> fits
     
     // Object for storing event selection configuration
     AliMultSelectionCuts *fMultSelectionCuts;

@@ -49,6 +49,10 @@ set(SRCS
     AliAnalysisTaskRhoMass.cxx
     AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
+    AliAnalysisTaskJetUE.cxx
+    AliAnalysisTaskRhoBaseDev.cxx
+    AliAnalysisTaskRhoDev.cxx
+    AliAnalysisTaskRhoTransDev.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalPicoTrackInGridMaker.cxx
@@ -121,12 +125,13 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDensityData.cxx
     Tracks/AliEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
-    Tracks/AliAnalysisTaskEmcalMaxPatch.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
+    UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
@@ -142,6 +147,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
+    UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
@@ -224,6 +230,7 @@ if(FASTJET_FOUND)
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
+	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
         )
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})

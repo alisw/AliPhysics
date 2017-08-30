@@ -266,6 +266,7 @@ fIsSelected(kFALSE),
 fVtxOK(kFALSE),
 fUseSpecialOutput(kFALSE),
 fUseBCMod(kFALSE),
+fMCCalib(kFALSE),
 fBCMod4(2),
 fCutOnPhi(kFALSE),
 fCalibfilePath(""),
@@ -477,13 +478,10 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   }
 
 
-
   if (fUseMC) {
     // fill matrix
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
   }
-
-
 
 
   //
@@ -651,53 +649,15 @@ AliMultSelection *MultSelection = (AliMultSelection*) esd -> FindListObject("Mul
 static Bool_t skipCentrality = (fUseCentralityVar == "MB"); // If the centrality var is MB, the centrality selection is skept
 Double_t centPercentile = -1;
 if(!skipCentrality) {
-  if (fUseMC) {
-    // TFile *mcCalib1 = NULL;
-    //
-    // if (hPythia) {
-    //   TString str1 = handler->GetTree()->GetCurrentFile()->GetName();
-    //
-    //   if (str1.Contains("LHC15g3c3")) {
-    //     printf("loading PYTHIA6 Perugia-0 V0M calibration (LHC15g3c3)\n");
-    //
-    //     if (TString(fCalibfilePath).BeginsWith("alien:")) {
-    //       TGrid::Connect("alien:");
-    //       mcCalib1 = TFile::Open(fCalibfilePath);
-    //     }
-    //     else    mcCalib1 = TFile::Open(fCalibfilePath);
-    //
-    //   }
-    //   else if (str1.Contains("LHC15g3a3")) {
-    //     printf("loading PYTHIA8 Monash V0M calibration (LHC15g3a3)\n");
-    //
-    //     if (TString(fCalibfilePath).BeginsWith("alien:")) {
-    //       TGrid::Connect("alien:");
-    //       mcCalib1 = TFile::Open(fCalibfilePath);
-    //     }
-    //     else   mcCalib1 = TFile::Open(fCalibfilePath);
-    //   }
-    // }
-    //
-    // else {
-    //   printf("loading EPOS-LHC V0M calibration (LHC16d3)\n");
-    //   if (TString(fCalibfilePath).BeginsWith("alien:")) {
-    //     TGrid::Connect("alien:");
-    //     mcCalib1 = TFile::Open(fCalibfilePath);
-    //   }
-    //   else    mcCalib1 = TFile::Open(fCalibfilePath);
-    // }
-    //
-    // hMCcalib1 = (TH1 *)mcCalib1->Get("h3");
-
+  if (fMCCalib) {
     Float_t multV01=0;
     AliESDVZERO* esdV01 = esd->GetVZEROData();
     multV01 = esdV01->GetMTotV0A()+esdV01->GetMTotV0C();
     multV01 *= fMCV0Scale;
 
-    //    centPercentile = hMCcalib1->Interpolate(multV01);
-
     centPercentile = fHcalib3->Interpolate(multV01);
-    //  printf(" centPercentile =  %f \n", centPercentile);
+
+//printf(" centPercentile ------------->   %f \n", centPercentile);
 
     fCurrCentBin = GetCentralityBin(centPercentile);
   }
@@ -790,6 +750,7 @@ if ( !vtxESD->IsFromVertexerZ() || (vtxESD->GetDispersion()<0.02)) {
 
 }
 //
+
 if (fIsSelected) hstat->Fill(kBinEntries+kEvPassPS + kEntriesPerBin*fCurrCentBin, fWeight);
 //
 if (fVtxOK && fIsSelected) {
@@ -813,7 +774,7 @@ for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
 }
 }
 
-((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency. 
+((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency.
 
 
 
@@ -942,7 +903,7 @@ void AliAnalysisTaskdNdEtapp13::RegisterStat()
 //________________________________________________________________________
 void AliAnalysisTaskdNdEtapp13::Terminate(Option_t *)
 {
-  Printf("Terminating...");
+  Printf("Terminating 9.8.1...");
   RegisterStat();
 }
 

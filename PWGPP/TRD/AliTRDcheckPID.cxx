@@ -1206,7 +1206,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
         h1->GetYaxis()->SetRangeUser(0.,40.);
       }
-      (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
+      /*h = (TH1F*)*/h1->DrawClone(kFIRST ? "c" : "samec");
       //legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       kFIRST = kFALSE;
     }

@@ -1,4 +1,5 @@
 /*
+   gSystem->AddIncludePath("-I$AliPhysics_SRC/PWGPP/ -I$AliPhysics_SRC/OADB/");  // ? why not in the alienv,  why not available ?
   .L $AliPhysics_SRC/PWGPP/rawmerge/makeOfflineTriggerList.C+
   makeOfflineTriggerList(gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filtered.list"))
   //
@@ -6,7 +7,7 @@
   // configuration parameters are taken fro env variables  defined in makeOfflineTriggerListSetupXXX.sh
   // 
    
-  aliroot -b -q $AliPhysics_SRC/PWGPP/rawmerge/makeOfflineTriggerList.C+\(\"$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filtered.list\"\) >makeOfflineTriggerList.log
+  aliroot -b -q $AliPhysics_SRC/PWGPP/rawmerge/makeOfflineTriggerList.C+\(\"filtered.list\"\) |tee makeOfflineTriggerList.log
 
 */
 
@@ -31,6 +32,8 @@
 #include "TStatToolkit.h"
 #include "AliExternalInfo.h"
 #include "TStopwatch.h"
+#include "AliDrawStyle.h"
+#include "AliAnalysisTaskFilteredTree.h"
 
 using namespace std;
 using std::cout;
@@ -49,7 +52,7 @@ void GetRawSummary();
 
  
 
-void makeOfflineTriggerList(const char * chinput){  
+void makeOfflineTriggerList(const char * chinput){
   //
   // 
   // Make high mulitplicity event selection for the calibration
@@ -58,6 +61,9 @@ void makeOfflineTriggerList(const char * chinput){
     ::Info("makeOfflineTriggerList","makeOfflineTriggerList");
     return GetRawSummary();
   }
+  AliDrawStyle::SetDefaults();
+  AliDrawStyle::ApplyStyle("figTemplate");
+
   Long64_t  highMultiplicityNTracksPrim=500000;   // default 500000 tracks for the calibration
   Float_t highMultiplicityFractionTracks=0.8;   //
   Long64_t  highMultiplicityNEvents=10000000;
@@ -230,8 +236,9 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
     tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0,1);
     treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0,1);
   }
-
+  
   tree->SetEstimate(tree->GetEntries());
+  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(tree);
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredHighPt.root","recreate");
   // Dump selected Events
   tree->GetUserInfo()->AddLast(new TObjString("highPt"));
@@ -248,7 +255,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredHighPt.list");
   //
-  tree->Draw("-esdTrack.Pt():mult:ntracks","cutHighPt","goff",nEvents);
+  tree->Draw("-esdTrack.Pt():mult:ntracks","cutHighPt&&esdTrack.Pt()<100","goff",nEvents);
   Double_t meanMult=TMath::Mean(tree->GetSelectedRows(),tree->GetV2());
   Double_t meanNTracks=TMath::Mean(tree->GetSelectedRows(),tree->GetV3());
   Double_t mult95=TMath::KOrdStat(tree->GetSelectedRows(),tree->GetV2(),Long64_t(tree->GetSelectedRows()*0.95));
@@ -259,26 +266,27 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   //
   // QA plots
   TString qaHistograms="";
-  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
-  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
   qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
   qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
-  qaHistograms+=TString::Format("esdTrack.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
-  qaHistograms+=TString::Format("esdTrack.Pt():#cutHighPt>>hisPtSelected(100,0,%.0f);",2.*ptQuant95);
+  qaHistograms+=TString::Format("qPt:#1>>hisQPtAll(200,-5,5);",2.*ptQuant95);
+  qaHistograms+=TString::Format("qPt:#cutHighPt>>hisQPtSelected(200,-5,5);",2.*ptQuant95);
   TStopwatch timer; TObjArray *hisArray = AliTreePlayer::MakeHistograms(tree, qaHistograms, "cutHighPt",0,nEvents,nEvents,15); timer.Print();
   //
   TString drawExpression="";
   drawExpression="[1,1,1,1]:";
-  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,10000)(0)(err);hisMultSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
-  drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisQPtAll(0,200)(0)(err);hisQPtSelected(0,200)(0)(err):";
   TObjArray *keepArray = new TObjArray(100);
   TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
   ((TCanvas*)pad)->SetWindowSize(1800,1000);
   pad->SaveAs("triggerHighPt.png");
+  pad->SaveAs("triggerHighPt.C");
   pcstream->GetFile()->cd();
   hisArray->Write("hisArray",TObjArray::kSingleKey);
   keepArray->Write("keepArray",TObjArray::kSingleKey);
@@ -329,7 +337,8 @@ void TriggerHighPtV0s( const char * chinput,  const char * filter, Long64_t nEve
     tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0,1);
     treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0,1);
   }
-  tree->SetEstimate(tree->GetEntries());
+  tree->SetEstimate(tree->GetEntries()); 
+  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(tree);
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredHighPtV0s.root","recreate");
   //
   tree->SetAlias("filterMask",TString::Format("((track0.fFlags&%x)+(track1.fFlags&%x)>0)",filterMask,filterMask).Data());
@@ -527,6 +536,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   // fill high pt calibration events
   //
   treeHighPt->SetEstimate(treeHighPt->GetEntries());
+  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(treeHighPt);
   // Dump selected Events
   Int_t triggerIndex = treeHighPt->GetUserInfo()->GetEntries()-1;  
   treeHighPt->Draw("mult/ntracks:mult",filter,"goff",nEvents);
@@ -558,10 +568,10 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   //
   // QA plots
   TString qaHistograms="";
-  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
-  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
   qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
   qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
   qaHistograms+=TString::Format("esdTrack.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
@@ -570,7 +580,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   //
   TString drawExpression="";
   drawExpression="[1,1,1,1]:";
-  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,200)(0)(err);hisMultSelected(0,200)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
@@ -578,6 +588,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
   ((TCanvas*)pad)->SetWindowSize(1800,1000);
   pad->SaveAs("triggerCalibHighPt.png");
+  pad->SaveAs("triggerCalibHighPt.C");
   pcstream->GetFile()->cd();
   hisArray->Write("hisArray",TObjArray::kSingleKey);
   keepArray->Write("keepArray",TObjArray::kSingleKey);
@@ -643,7 +654,8 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   //
   // fill high pt calibration events
   //
-  treeV0->SetEstimate(treeV0->GetEntries());
+  treeV0->SetEstimate(treeV0->GetEntries()); 
+  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(treeV0);
   // Dump selected Events
   Int_t triggerIndex = treeV0->GetUserInfo()->GetEntries()-1;  
   treeV0->Draw("mult/ntracks:mult",filter,"goff",nEvents);
@@ -675,10 +687,10 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   //
   // QA plots
   TString qaHistograms="";
-  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
-  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
-  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",TMath::Min(2*mult95,200.),2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",TMath::Min(ntracks95,200.),2*ntracks95);
   qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
   qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
   qaHistograms+=TString::Format("v0.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
@@ -687,7 +699,7 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   //
   TString drawExpression="";
   drawExpression="[1,1,1,1]:";
-  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,200)(0)(err);hisMultSelected(0,200)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
   drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
@@ -695,6 +707,7 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
   ((TCanvas*)pad)->SetWindowSize(1400,800);
   pad->SaveAs("triggerCalibV0.png");
+  pad->SaveAs("triggerCalibV0.C");
   pcstream->GetFile()->cd();
   hisArray->Write("hisArray",TObjArray::kSingleKey);
   keepArray->Write("keepArray",TObjArray::kSingleKey);
@@ -830,6 +843,7 @@ void SummarizeLogs(const char * logTreeFile="log.tree", const char * pass=0){
   legend->Draw();
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.png");
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.pdf");
+  canvasStat->SaveAs("makeOfflineTriggerListEventSummary.C");
   // make period counter summary
   gStyle->SetOptStat(0);
   logTree.SetMarkerStyle(21);
@@ -838,12 +852,14 @@ void SummarizeLogs(const char * logTreeFile="log.tree", const char * pass=0){
   logTree.GetHistogram()->GetYaxis()->SetTitle("#Events/1000000");
   logTree.GetHistogram()->Draw("hist TEXT0");
   canvasStat->SaveAs("numberOfEventsTriggered.png");
+  canvasStat->SaveAs("numberOfEventsTriggered.C");
   // make period fraction summary
   logTree.GetHistogram()->Scale(1/logTree.GetHistogram()->GetBinContent(1));
   logTree.GetHistogram()->GetXaxis()->SetRangeUser(1,10000);
   logTree.GetHistogram()->GetYaxis()->SetTitle("fraction");
   logTree.GetHistogram()->Draw("hist TEXT0");
   canvasStat->SaveAs("fractionOfEventsTriggered.png");
+  canvasStat->SaveAs("fractionOfEventsTriggered.C");
 
 }
 
@@ -867,6 +883,7 @@ void checkReconstuctedTrigger(){
   esdTree->Scan("gid%1000","","",3);
   treeHighPt.Draw("Tracks[].Pt()>>hisPt(100, 2,30)","gid==E.gid&&Tracks[].fFlags&&0x44==0x44&&Tracks[].fTPCncls>100","",10000);
   gPad->SaveAs("TracksPt.png");
+  gPad->SaveAs("TracksPt.C");
   //
   // High mult
   //

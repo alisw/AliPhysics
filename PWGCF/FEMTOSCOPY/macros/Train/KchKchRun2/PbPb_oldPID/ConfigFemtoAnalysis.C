@@ -57,11 +57,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
   const int cMu=4;
-  const int cKt=3;
+  const int cKt=8;
 
   //-------Single track cuts------------------------------------------------->
-  double DCAxy=0.2;  //2.4;// cm // our standard is 0.20 cm; super narrow was 0.015cm
-  double DCAz =0.2; //3.0;// cm // our standard is 0.15 cm;
+  double DCAxy=0.2;// cm // our standard is 0.20 cm; super narrow was 0.015cm
+  double DCAz =0.3;// cm // our standard is 0.15 cm;
   //-------Single track cuts-------------------------------------------------<
   //=======Double track cuts=================================================>
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
@@ -91,7 +91,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
-  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
+  double ktrng[cKt+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -445,8 +445,8 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 //////  	      cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 /////   	      anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 	      
-              cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
-//	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,0.5);
+//              cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,0.5);
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 

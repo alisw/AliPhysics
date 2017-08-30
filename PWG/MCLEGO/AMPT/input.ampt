@@ -1,0 +1,144 @@
+5023            ! EFRM (sqrt(S_NN) in GeV if FRAME is CMS)
+CMS             ! FRAME
+A               ! PROJ
+A               ! TARG
+208             ! IAP (projectile A number)
+82              ! IZP (projectile Z number)
+208             ! IAT (target A number)
+82              ! IZT (target Z number)
+1000000		! NEVNT (total number of events)
+7.3             ! BMIN (mininum impact parameter in fm) 
+8.9		! BMAX (maximum impact parameter in fm, also see below)
+4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
+1000		! NTMAX: number of timesteps (D=150), see below
+0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
+0.3		! PARJ(41): parameter a in Lund symmetric splitting function
+0.15    	! PARJ(42): parameter b in Lund symmetric splitting function
+1	      	! (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
+1.0	      	! PARJ(5) to control BMBbar vs BBbar in popcorn (D=1.0)
+1		! shadowing flag (Default=1,yes; 0,no)
+0		! quenching flag (D=0,no; 1,yes)
+2.0		! quenching parameter -dE/dx (GeV/fm) in case quenching flag=1
+2.0		! p0 cutoff in HIJING for minijet productions (D=2.0)
+2.265d0  	! parton screening mass in fm^(-1) (D=2.265d0)
+0		! IZPC: (D=0 forward-angle parton scatterings; 100,isotropic)
+0.33d0		! alpha in parton cascade (D=0.33d0), see parton screening mass
+1d6		! dpcoal in GeV
+1d6		! drcoal in fm
+11		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
+13150909	! random seed for HIJING
+8		! random seed for parton cascade
+1		! flag for K0s weak decays (D=0,no; 1,yes)
+1		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
+1		! flag for pi0 decays at end of hadron cascade (D=0,no; 1,yes)
+0		! optional OSCAR output (D=0,no; 1,yes; 2&3,more parton info)
+0		! flag for perturbative deuteron calculation (D=0,no; 1or2,yes)
+1		! integer factor for perturbative deuterons(>=1 & <=10000)
+1		! choice of cross section assumptions for deuteron reactions
+-7.		! Pt in GeV: generate events with >=1 minijet above this value
+1000		! maxmiss (D=1000): maximum # of tries to repeat a HIJING event
+3		! flag to turn off initial and final state radiation (D=3)
+1		! flag to turn off Kt kick (D=1)
+0		! flag to turn on quark pair embedding (D=0,no; 1,yes)
+7., 0.		! Initial Px and Py values (GeV) of the embedded quark (u or d)
+0., 0.		! Initial x & y values (fm) of the embedded back-to-back q/qbar
+1, 5., 0.       ! nsembd(D=0), psembd (in GeV),tmaxembd (in radian).
+0 		! Flag to enable users to modify shadowing (D=0,no; 1,yes)
+1.d0		! Factor used to modify nuclear shadowing
+1		! Flag for random orientation of reaction plane (D=0,no; 1,yes)
+
+%%%%%%%%%% Further explanations:
+BMAX:   the upper limit HIPR1(34)+HIPR1(35)=19.87fm (dAu), 25.60fm(AuAu).
+ISOFT:  1 Default, 
+        4 String Melting.
+PARJ(41) & (42): 2.2 & 0.5/GeV^2 used for heavy ion (Au+Au, Pb+Pb) collisions,
+        while the HIJING values (0.5 & 0.9/GeV^2) describe well 
+        Nch in pp collisions and are used for d-Au collisions.
+NTMAX:	number of time-steps for hadron cascade. 
+	Use a large value (e.g. 1000) for LHC studies or HBT studies at RHIC.
+	Using NTMAX=3 effectively turns off hadronic cascade.
+parton screening mass (in 1/fm): its square is inversely proportional to 
+	the parton cross section. Use D=2.265d0 for 3mb cross section 
+	when alpha in parton cascade is set to 0.33;
+	(note: 3.2264d0 for 3mb cross section when alpha is set to 0.47).
+	Using 1d4 effectively turns off parton cascade.
+ihjsed: if =11, take HIJING random seed at runtime so that 
+	every run may be automatically different (see file 'exec').
+iksdcy: flag for K0s weak decays for comparison with data.
+iphidcy: flag for phi meson decays at the end of hadron cascade for comparison 
+	with data; default is yes; use 0 to turn off these decays. 
+	Note: phi meson decay during hadron cascade is always enabled.
+ipi0dcy: flag for pi0 electromagnetic decays at the end of hadron cascade for 
+	comparison with data; set to 1 to turn on pi0 decays. 
+ioscar:	0 Dafault,
+	1 Write output in the OSCAR format,
+	2 Write out the complete parton information 
+		(ana/parton-initial-afterPropagation.dat)
+        	right after string melting (before parton cascade),
+	3 Write out several more files on parton information (see readme).
+idpert:	flag for perturbative deuteron and antideuteron calculations 
+	with results in ana/ampt_pert.dat:
+	0 No perturbative calculations,
+	1 Trigger a production of NPERTD perturbative deuterons 
+		in each NN collision,	
+	2 Trigger a production of NPERTD perturbative deuterons only in 
+		an NN collision where a conventional deuteron is produced.
+	Note: conventional deuteron calculations are always performed
+		with results in ana/ampt.dat.
+NPERTD:	number of perturbative deuterons produced in each triggered collision;
+	setting it to 0 turns off perturbative deuteron productions.
+idxsec: choose a cross section model for deuteron inelastic/elastic collisions:
+	1: same |matrix element|**2/s (after averaging over initial spins 
+		and isospins) for B+B -> deuteron+meson at the same sqrt(s);
+	2: same |matrix element|**2/s for B+B -> deuteron+meson 
+		at the same sqrt(s)-threshold;
+	3: same |matrix element|**2/s for deuteron+meson -> B+B 
+		at the same sqrt(s);
+ 	4: same |matrix element|**2/s for deuteron+meson -> B+B 
+		at the same sqrt(s)-threshold;
+	1 or 3 also chooses the same cross section for deuteron+meson or baryon
+		elastic collision at the same sqrt(s);
+	2 or 4 also chooses the same cross section for deuteron+meson or baryon
+		elastic collision at the same sqrt(s)-threshold.
+%%%%%%%%%% For jet studies:
+pttrig:	generate events with at least 1 initial minijet parton above this Pt 
+	value, otherwise repeat HIJING event until reaching maxmiss tries;
+	use a negative value to disable this requirement and get normal events.
+maxmiss: maximum number of tries for the repetition of a HIJING event to obtain
+	a minijet above the Pt value of pttrig;	increase maxmiss if some events
+	fail to generate at least 1 initial minijet parton above pttrig. 
+	it is safer to set a large value for high pttrig and/or large b value
+	and/or smaller colliding nuclei.
+IHPR2(2): flag to turn off initial and final state radiation: 
+	0 both radiation off, 1 only final off, 2 only initial off, 3 both on.
+IHPR2(5): flag to turn off Pt kick due to soft interactions: 0 off, 1 on.
+	Setting both IHPR2(2) and IHPR2(5) to zero makes it more likely to 
+	have two high-Pt minijet partons that are close to back-to-back.
+%%%%%%%%%% To embed a back-to-back light q/qbar jet pair 
+%%%%%%%%%%  and a given number of soft pions along each jet into each event:
+iembed: flag to turn on quark pair embedding: 
+        1: on with fixed position(xembd,pembd) and Pt(pxqembd,pyqembd);
+        2: on with fixed position(xembd,pembd) and random azimuthal angle
+         with Pt-magnitude given by sqrt(pxqembd^2+pyqembd^2); 
+        3: on with random position and fixed Pt(pxqembd,pyqembd);
+        4: on with random position and random random azimuthal angle
+         with Pt-magnitude given by sqrt(pxqembd^2+pyqembd^2); 
+         for iembed=3 or 4: need a position file "embed-jet-xy.txt";
+        Other integers: off.
+pxqembd, pyqembd: sqrt(pxqembd^2+pyqembd^2) > 70MeV/c is required;
+        the embedded quark and antiquark have pz=0.
+xembd, yembd: the embedded quark and antiquark jets have z=0 initially. Note: 
+        the x-axis is defined as the direction along the impact parameter.
+nsembd: number of soft pions to be embedded with each high-Pt parton
+        in the embedded jet pair.
+psembd: Momentum of each embedded soft pion in GeV.
+tmaxembd: maximum angle(rad) of embedded soft pions relative to high-Pt parton.
+%%%%%%%%%% User modification of nuclear shadowing:
+ishadow: set to 1 to enable users to adjust nuclear shadowing
+	provided the shadowing flag IHPR2(6) is turned on; default value is 0. 
+dshadow: valid when ishadow=1; this parameter modifies the HIJING shadowing
+	parameterization Ra(x,r)==1+fa(x,r) via Ra(x,r)==1+fa(x,r)*dshadow,  
+	so the value of 0.d0 turns off shadowing 
+	and the value of 1.d0 uses the default HIJING shadowing;  
+	currently limited to 0.d0<=dshadow<=1.d0 to make sure Ra(x,r)>0.
+iphirp: set to 1 to turn on random orientation of reaction plane (D=0)

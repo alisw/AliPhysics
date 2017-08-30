@@ -197,16 +197,30 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
 
   fCurrentJetInfoTruth = new AliJetInfoSummary*[fGenerated->GetJetDefinitions().size()];
   for (Int_t i = 0; i < fGenerated->GetJetDefinitions().size(); i++) {
-    fCurrentJetInfoTruth[i] = new AliJetInfoSummary();
-    TString bname = TString::Format("%s_truth", fGenerated->GetJetDefinitions()[i].GetName());
-    fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoSummary", &fCurrentJetInfoTruth[i]);
+    if (fGenerated->GetJetDefinitions()[i].GetRhoName().IsNull()) {
+      fCurrentJetInfoTruth[i] = new AliJetInfoSummary();
+      TString bname = TString::Format("%s_truth", fGenerated->GetJetDefinitions()[i].GetName());
+      fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoSummary", &fCurrentJetInfoTruth[i]);
+    }
+    else {
+      fCurrentJetInfoTruth[i] = new AliJetInfoPbPbSummary();
+      TString bname = TString::Format("%s_truth", fGenerated->GetJetDefinitions()[i].GetName());
+      fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary", &fCurrentJetInfoTruth[i]);
+    }
   }
 
   fCurrentJetInfoReco = new AliJetInfoSummary*[fRecontructed->GetJetDefinitions().size()];
   for (Int_t i = 0; i < fRecontructed->GetJetDefinitions().size(); i++) {
-    fCurrentJetInfoReco[i] = new AliJetInfoSummary();
-    TString bname = TString::Format("%s_reco", fRecontructed->GetJetDefinitions()[i].GetName());
-    fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoSummary", &fCurrentJetInfoReco[i]);
+    if (fGenerated->GetJetDefinitions()[i].GetRhoName().IsNull()) {
+      fCurrentJetInfoReco[i] = new AliJetInfoSummary();
+      TString bname = TString::Format("%s_reco", fRecontructed->GetJetDefinitions()[i].GetName());
+      fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoSummary", &fCurrentJetInfoReco[i]);
+    }
+    else {
+      fCurrentJetInfoReco[i] = new AliJetInfoPbPbSummary();
+      TString bname = TString::Format("%s_reco", fRecontructed->GetJetDefinitions()[i].GetName());
+      fTree->Branch(bname, "AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary", &fCurrentJetInfoReco[i]);
+    }
   }
 
   return fTree;

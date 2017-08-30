@@ -28,7 +28,7 @@
 #include <AliPIDResponse.h>
 #include <AliPID.h>
 #include <TLorentzVector.h>
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 class TF1;
 class TH2F;
@@ -91,8 +91,8 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliNuclexEventCuts  fEventCut;
-  TArrayD             fTOFfunctionPars;
+  AliEventCuts  fEventCut;
+  TArrayD       fTOFfunctionPars;
 
   UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis (set to 0 to skip the cut)
   bool                fPropagateTracks; /// Workaround for troublesome productions
@@ -180,6 +180,7 @@ private:
   // Data histograms
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH2F                 *fNtracks[2][2];          //!<! *(Data only)* Number of tracks with and without TOF matching for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
   TH3F                 *fTOFtemplates[5];        //!<! *(Data only)* TOF signal templates for pi/k/p/d/t

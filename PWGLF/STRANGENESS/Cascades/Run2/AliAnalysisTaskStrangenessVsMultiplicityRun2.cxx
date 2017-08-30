@@ -316,6 +316,10 @@ fTreeCascVarNHitsFMDC(-1.),
 fTreeCascVarCentrality(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
+//Kink tagging
+fTreeCascVarBachIsKink(kFALSE),
+fTreeCascVarPosIsKink(kFALSE),
+fTreeCascVarNegIsKink(kFALSE),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -516,6 +520,10 @@ fTreeCascVarNHitsFMDC(-1.),
 fTreeCascVarCentrality(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
+//Kink tagging
+fTreeCascVarBachIsKink(kFALSE),
+fTreeCascVarPosIsKink(kFALSE),
+fTreeCascVarNegIsKink(kFALSE),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -734,6 +742,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDCAPosToPrimVtx",&fTreeCascVarDCAPosToPrimVtx,"fTreeCascVarDCAPosToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarDCANegToPrimVtx",&fTreeCascVarDCANegToPrimVtx,"fTreeCascVarDCANegToPrimVtx/F");
         fTreeCascade->Branch("fTreeCascVarCascCosPointingAngle",&fTreeCascVarCascCosPointingAngle,"fTreeCascVarCascCosPointingAngle/F");
+        fTreeCascade->Branch("fTreeCascVarCascDCAtoPVxy",&fTreeCascVarCascDCAtoPVxy,"fTreeCascVarCascDCAtoPVxy/F");
+        fTreeCascade->Branch("fTreeCascVarCascDCAtoPVz",&fTreeCascVarCascDCAtoPVz,"fTreeCascVarCascDCAtoPVz/F");
+        
         fTreeCascade->Branch("fTreeCascVarCascRadius",&fTreeCascVarCascRadius,"fTreeCascVarCascRadius/F");
         fTreeCascade->Branch("fTreeCascVarV0Mass",&fTreeCascVarV0Mass,"fTreeCascVarV0Mass/F");
         fTreeCascade->Branch("fTreeCascVarV0MassLambda",&fTreeCascVarV0MassLambda,"fTreeCascVarV0MassLambda/F");
@@ -817,7 +828,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNHitsFMDA",&fTreeCascVarNHitsFMDA,"fTreeCascVarNHitsFMDA/F");
             fTreeCascade->Branch("fTreeCascVarNHitsFMDC",&fTreeCascVarNHitsFMDC,"fTreeCascVarNHitsFMDC/F");
         }
-
+        
+        //Kink tagging
+        fTreeCascade->Branch("fTreeCascVarBachIsKink",&fTreeCascVarBachIsKink,"fTreeCascVarBachIsKink/O");
+        fTreeCascade->Branch("fTreeCascVarPosIsKink",&fTreeCascVarPosIsKink,"fTreeCascVarPosIsKink/O");
+        fTreeCascade->Branch("fTreeCascVarNegIsKink",&fTreeCascVarNegIsKink,"fTreeCascVarNegIsKink/O");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1596,6 +1611,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarBachNSigmaPion  = -100;
         fTreeCascVarBachNSigmaKaon  = -100;
 
+        fTreeCascVarBachIsKink = kFALSE;
+        fTreeCascVarPosIsKink = kFALSE;
+        fTreeCascVarNegIsKink = kFALSE;
+        
         //fTreeCascVarBachTotMom = -1;
         //fTreeCascVarPosTotMom  = -1;
         //fTreeCascVarNegTotMom  = -1;
@@ -1668,6 +1687,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarPosEta = pTrackXi->Eta();
         fTreeCascVarNegEta = nTrackXi->Eta();
         fTreeCascVarBachEta = bachTrackXi->Eta();
+        
+        //GetKinkIndex condition
+        if( bachTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink = kTRUE;
+        if( pTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarPosIsKink = kTRUE;
+        if( nTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarNegIsKink = kTRUE;
 
         Double_t lBMom[3], lNMom[3], lPMom[3];
         xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
@@ -1976,6 +2000,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //lPhi      = xi->Phi()   *180.0/TMath::Pi();
         //lAlphaXi  = xi->AlphaXi();
         //lPtArmXi  = xi->PtArmXi();
+        
+        //----------------------------------------
+        // Calculate Cascade DCA to PV, please
+        //----------------------------------------
+        
+        Int_t lChargeCascade = fTreeCascVarCharge;
+        
+        //cascade properties to get started
+        Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
+        for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
+        
+        xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
+        xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+        
+        AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+        
+        Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
+                                                                       lBestPrimaryVtxPos[1],
+                                                                       lMagneticField) );
+        Float_t dzcascade[2];
+        hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+        Double_t lCascDCAtoPVz = dzcascade[1];
+        
+        //assign TTree values
+        fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
+        fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
 
         //----------------------------------------
         // Bump studies: perform propagation
@@ -3826,35 +3876,29 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetCosPA(AliESDtrack *lPos
 //Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
 {
     Float_t lCosPA = -1;
-    AliESDtrack* lNegClone = (AliESDtrack*) lNegTrack->Clone("lNegClone"); //need clone, in order not to change track parameters
-    AliESDtrack* lPosClone = (AliESDtrack*) lPosTrack->Clone("lPosClone"); //need clone, in order not to change track parameters
-
+    
     //Get Magnetic field and primary vertex
     Double_t b=lEvent->GetMagneticField();
     const AliESDVertex *vtxT3D=lEvent->GetPrimaryVertex();
     Double_t xPrimaryVertex=vtxT3D->GetX();
     Double_t yPrimaryVertex=vtxT3D->GetY();
     Double_t zPrimaryVertex=vtxT3D->GetZ();
-
-    //Get ExternalTrackParam
-    AliExternalTrackParam nt(*lNegClone), pt(*lPosClone);
-
+    
+    //Copy AliExternalParam for handling
+    AliExternalTrackParam nt(*lNegTrack), pt(*lPosTrack), *lNegClone=&nt, *lPosClone=&pt;
+    
     //Find DCA
     Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
-
+    
     //Propagate to it
     nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
-
+    
     //Create V0 object to do propagation
     AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
-
+    
     //Get CosPA
     lCosPA=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
-
-    //Cleanup
-    delete lNegClone;
-    delete lPosClone;
-
+    
     //Return value
     return lCosPA;
 }

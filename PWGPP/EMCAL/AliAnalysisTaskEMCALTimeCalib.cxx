@@ -83,6 +83,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
+  fMostEneCellOnly(kFALSE),
   fRawTimeNbins (0),
   fRawTimeMin   (0),
   fRawTimeMax   (0),
@@ -400,7 +401,18 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   }
 
   fhEventType = new TH1F("fhEventType","event type",10, 0.,10.);
-  fhEventType ->GetXaxis()->SetTitle("Type ");
+  //fhEventType ->GetXaxis()->SetTitle("Type ");
+  fhEventType->GetXaxis()->SetBinLabel(1 ,"1=No ESD");
+  fhEventType->GetXaxis()->SetBinLabel(2 ,"2=Pileup");
+  fhEventType->GetXaxis()->SetBinLabel(3 ,"3=No Trigger");
+  fhEventType->GetXaxis()->SetBinLabel(4 ,"4=Evt Type != 7");
+  fhEventType->GetXaxis()->SetBinLabel(5 ,"5=INT7,8");
+  fhEventType->GetXaxis()->SetBinLabel(6 ,"6=EMC7,8");
+  fhEventType->GetXaxis()->SetBinLabel(7 ,"7=L1 EMCal");
+  fhEventType->GetXaxis()->SetBinLabel(8 ,"8=DMC7,8");
+  fhEventType->GetXaxis()->SetBinLabel(9 ,"9=L1 DCal");
+
+  
   fhEventType ->GetYaxis()->SetTitle("Counts (a.u.)");
   if(fFillHeavyHisto){
     fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
@@ -683,6 +695,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   Bool_t bL0  = kFALSE;
   Bool_t bL1G = kFALSE;
   Bool_t bL1J = kFALSE;
+  Bool_t bDL0  = kFALSE;
+  Bool_t bDL1G = kFALSE;
+  Bool_t bDL1J = kFALSE;
   
   if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
@@ -697,26 +712,55 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
      triggerclasses.Contains("CEMC7") ||
      triggerclasses.Contains("CEMC8") ||
      triggerclasses.Contains("CEMC8-B-NOPF-CENTNOTRD")   )   bL0  = kTRUE;
+
+  if(triggerclasses.Contains("CDMC7-B-NOPF-CENTNOTRD") || 
+     triggerclasses.Contains("CDMC1-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC7") ||
+     triggerclasses.Contains("CDMC8") ||
+     triggerclasses.Contains("CDMC8-B-NOPF-CENTNOTRD")   )   bDL0  = kTRUE;
   
   if(triggerclasses.Contains("CEMC7EG1-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC7EG2-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC8EG1-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC8EGA") ||
      triggerclasses.Contains("CEMC7EGA") ||
+     triggerclasses.Contains("CEMC7EG1-B") ||
+     triggerclasses.Contains("CEMC7EG2-B") ||
      triggerclasses.Contains("CPBI2EGA")                 )   bL1G = kTRUE;
  
-  
+  if(triggerclasses.Contains("CDMC7DG1-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC7DG2-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC8DG1-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC8DGA") ||
+     triggerclasses.Contains("CDMC7DGA") ||
+     triggerclasses.Contains("CDMC7DG1-B") ||
+     triggerclasses.Contains("CDMC7DG2-B") ||
+     triggerclasses.Contains("CPBI2DGA")                 )   bDL1G = kTRUE;
+    
   if(triggerclasses.Contains("CEMC7EJ1-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC7EJ2-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC8EJ1-B-NOPF-CENTNOTRD") ||
      triggerclasses.Contains("CEMC7EJE") ||
      triggerclasses.Contains("CEMC8EJE") ||
+     triggerclasses.Contains("CEMC7EJ1-B") ||
+     triggerclasses.Contains("CEMC7EJ2-B") ||
      triggerclasses.Contains("CPBI2EJE")                 )   bL1J = kTRUE;
+
+  if(triggerclasses.Contains("CDMC7DJ1-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC7DJ2-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC8DJ1-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CDMC7DJE") ||
+     triggerclasses.Contains("CDMC8DJE") ||
+     triggerclasses.Contains("CDMC7DJ1-B") ||
+     triggerclasses.Contains("CDMC7DJ2-B") ||
+     triggerclasses.Contains("CPBI2DJE")                 )   bDL1J = kTRUE;
+    
+  if( bMB ){ fhEventType->Fill(4.5);}//INT7,8
+  if( bL0 ){ fhEventType->Fill(5.5);}//EMC7,EMC8
+  if( bL1G || bL1J ){ fhEventType->Fill(6.5);}//L1 EMCal
+  if( bDL0 ){ fhEventType->Fill(7.5);}//DMC7,DMC8
+  if( bDL1G || bDL1J ){ fhEventType->Fill(8.5);}//L1 DCal
   
-  if( bL1G || bL1J ||  bL0 ){ fhEventType->Fill(4.5);}
-  if( bMB ){ fhEventType->Fill(5.5);}
-
-
   //  if(bL1G || bL1J ||  bL0){
 
 // Prepare TOFT0 maker at the beginning of a run
@@ -775,7 +819,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   Float_t hkdtime=0.0;
   Float_t amp=0.0;
   Bool_t isHighGain=kTRUE;
-
+  Int_t mostEneId=-1;
+  Float_t mostEneEn=0.;
+  
   for (Int_t icl = 0; icl < nclus; icl++) {
     //ESD and AOD CaloCells carries the same information
     AliVCluster* clus = (AliVCluster*)caloClusters->At(icl);
@@ -784,9 +830,28 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
     //cout<<"nCells="<< clus->GetNCells();<<endl;
    
     UShort_t * index = clus->GetCellsAbsId() ;
+
+    // find index of the most energetic cell in cluster
+    mostEneEn=0.;
+    mostEneId=-1;
+    if(fMostEneCellOnly) { 
+      for(Int_t i = 0; i < clus->GetNCells() ; i++) {
+	absId      = index[i];
+	amp        = cells.GetCellAmplitude(absId) ;
+	if(amp > mostEneEn){
+	  mostEneEn = amp;
+	  mostEneId = absId;
+	}
+      }
+    }//works only for fMostEneCellOnly=kTRUE
     
     for(Int_t i = 0; i < clus->GetNCells() ; i++) {
       absId      = index[i]; // or clus->GetCellNumber(i) ;
+      if(fMostEneCellOnly && absId != mostEneId) {
+	//printf("tr.%s.cl.%d.cell.%d.rejected\n",triggerclasses.Data(),icl,i);
+	continue;
+      }
+      //printf("tr.%s.cl.%d.cell.%d.accepted\n",triggerclasses.Data(),icl,i);
       hkdtime    = cells.GetCellTime(absId) * 1.0e09; // to get ns
       amp        = cells.GetCellAmplitude(absId) ;
       isHighGain = cells.GetCellHighGain(absId);
@@ -1103,7 +1168,8 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
   fMaxTime=20.;
-
+  fMostEneCellOnly=kFALSE;
+  
   fBadChannelMapSet=kFALSE;
   fSetBadChannelMapSource=0;
   fBadChannelFileName="";

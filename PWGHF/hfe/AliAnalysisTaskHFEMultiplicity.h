@@ -5,6 +5,7 @@ class TH1F;
 class TH2F;
 class TLorentzVector;
 class THnSparse;
+class TRandom3;
 
 class AliHFEcontainer;
 class AliHFEcuts;
@@ -24,10 +25,20 @@ class AliESDtrack;
 class AliAODTrack;
 class AliMultSelection;
 
+
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+#include "TProfile.h"
+#include "AliAnalysisVertexingHF.h"
+#include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
+#include "AliVEvent.h"
 #include "AliSelectNonHFE.h"
+
+
 
 
 
@@ -38,7 +49,7 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   AliAnalysisTaskHFEMultiplicity();
   AliAnalysisTaskHFEMultiplicity(const char *name);
   virtual                 ~AliAnalysisTaskHFEMultiplicity();
-  
+  virtual void   	  Init();
   virtual void            UserCreateOutputObjects();
   virtual void            UserExec(Option_t* option);
   virtual void            Terminate(Option_t* option);
@@ -48,8 +59,9 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   
   Bool_t  		PassEventSelect(AliAODEvent *fAOD);
   Bool_t		Passtrackcuts(AliAODTrack *atrack);
+  void    		GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff );
+  void    		ClusterInfo(); 
   
-  Float_t 		fCentrOrMult;
   Bool_t  		GetTenderSwitch() {return fUseTender;};     
   void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
   void    		SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
@@ -63,8 +75,19 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   Bool_t                GetEMCalTriggerDG2() { return fDCalDG2; };
   void                  SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};  
+  void    		SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS);
 
- private:
+  void 			SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
+
+  void 			SetMultiProfileLHC16s(TProfile * hprof){
+        		fMultEstimatorAvg[0]=hprof;
+    			}
+  void 			SetMultiProfileLHC16r(TProfile * hprof){
+        		fMultEstimatorAvg[1]=hprof;
+    			}
+  
+private:
+  
   AliAODEvent*          fAOD;//! input event
   AliPIDResponse*       fpidResponse;//!pid response
   
@@ -73,7 +96,10 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   
   TClonesArray*         fTracks_tender;//Tender tracks     
   TClonesArray*         fCaloClusters_tender;//Tender cluster      
-  
+  AliAODMCParticle*	fMCparticle;
+  TClonesArray*	        fMCarray;//! MC array
+  TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
+
   Bool_t                fUseTender;// switch to add tender
   Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
@@ -81,10 +107,11 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   Bool_t                fEMCEG2;//EMcal Threshold EG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
+  Bool_t 		fRejectPUFromSPD;
   
   TList*                fOutputList;//! output list
+  TList*		fListProfiles; // list of profile histos for z-vtx correction
   TH1F*			fNevents;//! no of events
-  TH1F*			fHistCent;//! centrality
   TH1F*			fClusPhi;//! Cluster Phi
   TH1F*			fClusEta;//! Cluster Eta
   TH2F*			fClusEtaPhi;//! Cluster Eta Phi
@@ -101,25 +128,40 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   TH1F*			fTrkPt;//! track pt
   TH1F*			fTrketa;//! track eta
   TH1F*			fTrkphi;//! track phi
-  TH1F*			fClusMatchTrkPt;//! cluster matched track pt
-  TH1F*			fClusMatchTrketa;//! cluster matched track eta
-  TH1F*			fClusMatchTrkphi;//! cluster matched track phi
-  TH1F*			fMatchClusphi;//! matched cluster phi
-  TH1F*			fMatchCluseta;//! matched cluster eta
-  TH2F*			fMatchClusetaphi;//! matched cluster eta phi
-  TH1F*			fMatchClusEnergy;//! matched cluster phi
-  TH2F*			fEMCTrkMatch;//! Distance of EMC cluster to closest track in x and z
-	
+  TH1F*			fTrkMatchTrkPt;//!
+  TH1F*			fTrkMatchTrketa;//! cluster matched track eta
+  TH1F*			fTrkMatchTrkphi;//! cluster matched track phi
+  TH2F*			fTrkMatchClusetaphi;//! matched cluster eta phi
+  TH2F*			fEMCTrkMatchcluster;//!Distance of EMC cluster to closest track in x and z
+
+  TH1F*                fInvmassLS;//!
+  TH1F*                fInvmassULS;//!
+  TH2F*                fInvmassLSPt;//!
+  TH2F*                fInvmassULSPt;//!
+  TH1F*                fULSElecPt;//!
+  TH1F*                fLSElecPt;//!
+
+  Bool_t 		fReadMC;    //flag for access to MC
+  TProfile*		fMultEstimatorAvg[2];
+  Double_t 		fRefMult;
+  TRandom3*		gRandom;//!< random number generator
+ 
   THnSparse* 	        fSparseElectron; //! Electron information
+  THnSparse* 	        fSparseLSElectron; //! Electron information
+  THnSparse* 	        fSparseULSElectron; //! Electron information
+  Double_t*             fvaluePHElectron;//!
   Double_t*             fvalueElectron; //!
   THnSparse* 	        fSparseMulti; //! Multiplicity information
   Double_t*             fvalueMulti; //!
-  
-  
-  AliAnalysisTaskHFEMultiplicity(const AliAnalysisTaskHFEMultiplicity&); // not implemented
-  AliAnalysisTaskHFEMultiplicity& operator=(const AliAnalysisTaskHFEMultiplicity&); // not implemented
+
+ 
+
+  AliAnalysisTaskHFEMultiplicity(const AliAnalysisTaskHFEMultiplicity& ); // not implemented
+  AliAnalysisTaskHFEMultiplicity& operator=(const AliAnalysisTaskHFEMultiplicity& ); // not implemented
 
   ClassDef(AliAnalysisTaskHFEMultiplicity, 1);
 };
+
+
 
 #endif

@@ -461,10 +461,10 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
     vtx0->SetX(0.); vtx0->SetY(0.); vtx0->SetZ(0.);
   }
 
-  Double_t pxpypz[3];
+  // Double_t pxpypz[3];
   UChar_t maskMan;
-  Double_t xyzDca[2], cov[3];
-  Float_t b[2], covF[3];
+  // Double_t xyzDca[2], cov[3];
+  // Float_t b[2], covF[3];
   Int_t nmun=0, ncen=0;
   Bool_t pdca;
   // AOD tracks loop
@@ -611,15 +611,18 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
     if(!aodmc) continue;
 
-    //if(aodmc->GetMother() >= 0) continue;
+    if(aodmc->GetMother() >= 0) continue;
 
     TParticle *part = fUPCEvent->AddMCParticle();
     part->SetMomentum(aodmc->Px(), aodmc->Py(), aodmc->Pz(), aodmc->E());
     part->SetProductionVertex(aodmc->Xv(), aodmc->Yv(), aodmc->Zv(), aodmc->T());
-    part->SetFirstMother(aodmc->GetMother());
-    part->SetLastDaughter(aodmc->GetNDaughters());
     part->SetPdgCode(aodmc->GetPdgCode());
+    part->SetStatusCode(aodmc->GetStatus());
     part->SetUniqueID(imc);
+    part->SetFirstMother(aodmc->GetMother());
+    part->SetFirstDaughter(aodmc->GetFirstDaughter());
+    part->SetLastDaughter(aodmc->GetLastDaughter());
+ 
   }//loop over mc particles
 
 }//RunAODMC
@@ -651,13 +654,13 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   }
 
   // ESD central tracks
-  Double_t pxpypz[3];
-  Float_t b[2]; Float_t cov[3];
-  UChar_t maskMan;
-  UInt_t filterMap;
+  // Double_t pxpypz[3];
+  // Float_t b[2]; Float_t cov[3];
+  // UChar_t maskMan;
+  // UInt_t filterMap;
   Int_t nmun=0, ncen=0;
 
-  //ESD central tracks loop
+  /*/ESD central tracks loop
   for(Int_t itr=0; itr<esdEvent->GetNumberOfTracks(); itr++) {
     AliESDtrack *eTrack = esdEvent->GetTrack(itr);
     if( !eTrack ) continue;
@@ -748,6 +751,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
 
     ncen++;
   } //ESD central tracks loop
+  /*/
 
   // ESD muon tracks
   //muon tracks loop
@@ -778,7 +782,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   } //muon tracks loop
 
   //selection for at least one muon or central track
-  //if( nmun + ncen < 1 ) return kFALSE;
+  if( nmun + ncen < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;

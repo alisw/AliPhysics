@@ -112,6 +112,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutFracSharedITSCluster(kFALSE),
+  fMaxFracSharedITSCluster(FLT_MAX),
   fCutCrossedTPCRows(kFALSE),
   fMinNCrossedRows(0),
   fMinCrossedRowsOverFindableClusters(2.),
@@ -262,6 +264,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutFracSharedITSCluster(kFALSE),
+  fMaxFracSharedITSCluster(FLT_MAX),
   fCutCrossedTPCRows(kFALSE),
   fMinNCrossedRows(0),
   fMinCrossedRowsOverFindableClusters(2.),
@@ -415,6 +419,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
   fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
   fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
+  fCutFracSharedITSCluster(that.fCutFracSharedITSCluster),
+  fMaxFracSharedITSCluster(that.fMaxFracSharedITSCluster),
   fCutCrossedTPCRows(that.fCutCrossedTPCRows),
   fMinNCrossedRows(that.fMinNCrossedRows),
   fMinCrossedRowsOverFindableClusters(that.fMinCrossedRowsOverFindableClusters),
@@ -590,6 +596,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
   fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
   fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
+  fCutFracSharedITSCluster=that.fCutFracSharedITSCluster;
+  fMaxFracSharedITSCluster=that.fMaxFracSharedITSCluster;
   fCutCrossedTPCRows=that.fCutCrossedTPCRows;
   fMinNCrossedRows=that.fMinNCrossedRows;
   fMinCrossedRowsOverFindableClusters=that.fMinCrossedRowsOverFindableClusters;
@@ -1423,36 +1431,34 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   //check cuts for AOD
   Bool_t pass = passedFid;
 //  AliAODPid *pidObj = track->GetDetPid();
-
-  if (fCutNClustersTPC)
-  {
-    Int_t ntpccls = track->GetTPCNcls();
+  
+  // cut on # TPC clusters
+  Int_t ntpccls = track->GetTPCNcls();
+  if (fCutNClustersTPC) {
     if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
   }
-
-  if (fCutNClustersITS)
-  {
-    Int_t nitscls = track->GetITSNcls();
+  
+  // cut on # ITS clusters
+  Int_t nitscls = track->GetITSNcls();
+  if (fCutNClustersITS) {
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
   
-  if (fCutChi2PerClusterTPC)
-  {
-    Double_t chi2tpc = track->Chi2perNDF();
-    if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+  // cut on chi2 / # TPC clusters
+  Double_t chi2tpc = 0.;
+  if(ntpccls>0) {
+    chi2tpc = track->Chi2perNDF();
   }
+  if (fCutChi2PerClusterTPC && (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC)) pass=kFALSE;
   
-  if (fCutChi2PerClusterITS)
-  {
-    Int_t nitscls = track->GetITSNcls();
-    if(nitscls>0) {
-      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
-      if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
-    }
+  // cut on chi2 / # ITS clusters
+  Double_t chi2its = 0.;
+  if(nitscls>0) {
+    chi2its = track->GetITSchi2()/track->GetITSNcls();
   }
+  if (fCutChi2PerClusterITS && chi2its >= fMaxChi2PerClusterITS) pass=kFALSE;
   
-  if (fCutITSClusterGlobal)
-  {
+  if (fCutITSClusterGlobal) {
     Bool_t bSPDCl = kFALSE;
     for (Int_t i=0; i<2; i++) {
       if(track->HasPointOnITSLayer(i)) bSPDCl = kTRUE;
@@ -1464,32 +1470,39 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if(!temppass) pass=kFALSE;
   }
   
-  if (fCutFracSharedTPCCluster)
-  {
-    Int_t ntpccls = track->GetTPCncls();
-    if(ntpccls>0) {
-      Int_t ntpcclsS = track->GetTPCnclsS();
-      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
-      if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
-    }
+  // cut on fraction shared TPC clusters
+  Double_t fshtpccls = 0.;
+  if(ntpccls>0) {
+    Int_t ntpcclsS = track->GetTPCnclsS();
+    fshtpccls = 1.*ntpcclsS/ntpccls;
   }
+  if (fCutFracSharedTPCCluster && fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
   
-  if (fCutCrossedTPCRows)
-  {
+  // cut on fraction shared ITS clusters
+  Double_t fshitscls = 0.;
+  Int_t nshcl = 0;
+  if(nitscls>0) {
+    for (Int_t i=0; i<6; i++) {
+      if(track->HasSharedPointOnITSLayer(i)) nshcl++;
+    }
+    fshitscls = 1.*nshcl/nitscls;
+  }
+  if (fCutFracSharedITSCluster && fshitscls > fMaxFracSharedITSCluster) pass=kFALSE;
+  
+  // cut on number of crossed TPC rows
+  if (fCutCrossedTPCRows) {
     Int_t nCrossedRows = track->GetTPCNCrossedRows();
     if (nCrossedRows <= fMinNCrossedRows) pass=kFALSE;
     Float_t CrossedRowsOverFindableClusters = track->GetTPCFoundFraction();
     if (CrossedRowsOverFindableClusters < fMinCrossedRowsOverFindableClusters) pass=kFALSE;
   }
   
-  if (fCutGoldenChi2)
-  {
+  if (fCutGoldenChi2) {
     Double_t GoldenChi2 = track->GetChi2TPCConstrainedVsGlobal();
     if (GoldenChi2 >= fMaxGoldenChi2) pass=kFALSE;
   }
   
-  if (fRequireTOFSignal)
-  {
+  if (fRequireTOFSignal) {
     if(TMath::Abs(track->GetTOFsignalDz())>10.)  pass=kFALSE;
     if(track->GetTOFsignal() < 12000.)  pass=kFALSE;
     if(track->GetTOFsignal() > 25000.)  pass=kFALSE;
@@ -1589,22 +1602,17 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
-    QAbefore(18)->Fill(track->P(),track->Chi2perNDF());
-    if (pass) QAafter( 18)->Fill(track->P(),track->Chi2perNDF());
-    Int_t ntpccls = track->GetTPCncls();
     if(ntpccls>0) {
-      Int_t ntpcclsS = track->GetTPCnclsS();
-      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
-      QAbefore(19)->Fill(track->P(),fshtpccls);
-      if (pass) QAafter(19)->Fill(track->P(),fshtpccls);
+      QAbefore(18)->Fill(track->Pt(),chi2tpc);
+      if (pass) QAafter( 18)->Fill(track->Pt(),chi2tpc);
+      QAbefore(19)->Fill(track->Pt(),fshtpccls);
+      if (pass) QAafter(19)->Fill(track->Pt(),fshtpccls);
     }
-    QAbefore(20)->Fill(track->P(),ntpccls);
-    if (pass) QAafter(20)->Fill(track->P(),ntpccls);
-    Int_t nitscls = track->GetITSNcls();
     if(nitscls>0) {
-      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
-      QAbefore(21)->Fill(track->P(),chi2TIS);
-      if (pass) QAafter(21)->Fill(track->P(),chi2TIS);
+      QAbefore(20)->Fill(track->Pt(),chi2its);
+      if (pass) QAafter(20)->Fill(track->Pt(),chi2its);
+      QAbefore(21)->Fill(track->Pt(),fshitscls);
+      if (pass) QAafter(21)->Fill(track->Pt(),fshitscls);
     }
   }
 
@@ -2868,17 +2876,17 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   
-  before->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
-  after->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  before->Add(new TH2F("Chi2PerClusterTPC",";p_{t}[GeV/c];#chi^{2}/N_{cl} (TPC)",kNbinsP,binsP,50,0.,5.)); //18
+  after->Add(new TH2F("Chi2PerClusterTPC",";p_{t}[GeV/c];#chi^{2}/N_{cl} (TPC)",kNbinsP,binsP,50,0.,5.)); //18
   
-  before->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
-  after->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  before->Add(new TH2F("FractionSharedClusterTPC",";p_{t}[GeV/c];frac. shared cl (TPC)",kNbinsP,binsP,50,0.,1.)); //19
+  after->Add(new TH2F("FractionSharedClusterTPC",";p_{t}[GeV/c];frac. shared cl (TPC)",kNbinsP,binsP,50,0.,1.)); //19
   
-  before->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
-  after->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
+  before->Add(new TH2F("Chi2PerClusterITS",";p_{t}[GeV/c];#chi^{2}/N_{cl} (ITS)",kNbinsP,binsP,100,0.,50.)); //20
+  after->Add(new TH2F("Chi2PerClusterITS",";p_{t}[GeV/c];#chi^{2}/N_{cl} (ITS)",kNbinsP,binsP,100,0.,50.)); //20
   
-  before->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
-  after->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
+  before->Add(new TH2F("FractionSharedClusterITS",";p_{t}[GeV/c];frac. shared cl (ITS)",kNbinsP,binsP,50,0.,1.)); //21
+  after->Add(new TH2F("FractionSharedClusterITS",";p_{t}[GeV/c];frac. shared cl (ITS)",kNbinsP,binsP,50,0.,1.)); //21
 
   TH1::AddDirectory(adddirstatus);
 }

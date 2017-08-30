@@ -461,39 +461,73 @@ void AliFemtoModelCorrFctn::SetKaonPDG(Bool_t aSetKaonAna)
 
 double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
 {
-    AliFemtoParticle *first = (AliFemtoParticle*)pair->Track1();
-    AliFemtoParticle *second = (AliFemtoParticle*)pair->Track2();
+    AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
+    AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
     
-    if(!first || !second) return -1;
+    if(!first)
+    {
+        if(second) delete second;
+        return -1;
+    }
+    if(!second)
+    {
+        if(first) delete first;
+        return -1;
+    }
     
     AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
     AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
     
-    if(!info1 || !info2) return -1;
-    
+    if(!info1 || !info2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
     AliFemtoThreeVector* p1 = info1->GetMotherMomentum();
     AliFemtoThreeVector* p2 = info2->GetMotherMomentum();
     
-    if(!p1 || !p2) return -1;
-    
+    if(!p1 || !p2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
     double px = p1->x() + p2->x();
     double py = p1->y() + p2->y();
     double pT = sqrt(px*px + py*py);
+    
+    delete first;delete second;
+    
     return pT/2.;
 }
 
 int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
 {
-    AliFemtoParticle *first = (AliFemtoParticle*)pair->Track1();
-    AliFemtoParticle *second = (AliFemtoParticle*)pair->Track2();
+    AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
+    AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
     
-    if(!first || !second) return -1;
+    if(!first)
+    {
+        if(second) delete second;
+        return -1;
+    }
+    if(!second)
+    {
+        if(first) delete first;
+        return -1;
+    }
     
     AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
     AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
     
-    if(!info1 || !info2) return -1;
-    
+    if(!info1 || !info2)
+    {
+        if(first) delete first;
+        if(second) delete second;
+        return -1;
+    }
+        
     int pdg1 = TMath::Abs(info1->GetMotherPdgCode());
     int pdg2 = TMath::Abs(info2->GetMotherPdgCode());
     
@@ -503,6 +537,8 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
         pdg1 = pdg2;
         pdg2 = tmp;
     }
+    
+    delete first;delete second;
     
     if(pdg1 == 2212 && pdg2 == 2212) return 0; // pp
     if(pdg1 == 2212 && pdg2 == 3122) return 1; // pΛ

@@ -1654,8 +1654,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffFillAllPositionHistogram2();
   if(!kExotic)ana->SwitchOnStudyBadClusters();
   else        ana->SwitchOffStudyBadClusters();
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
   

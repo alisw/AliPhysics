@@ -168,6 +168,7 @@ class AliEmcalJet : public AliVParticle
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks)       const;
   Int_t             ContainsTrack(Int_t it)                                        const;
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks)                          const;
+  Bool_t            IsGhost()                                                      const { return fNn + fNch == 0; }
 
   // Fragmentation function
   Double_t          GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz)  const;

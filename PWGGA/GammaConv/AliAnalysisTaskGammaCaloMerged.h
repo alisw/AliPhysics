@@ -105,7 +105,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliVEvent*              fInputEvent;                                        // current event
     AliMCEvent*             fMCEvent;                                           // corresponding MC event
-    AliStack*               fMCStack;                                           // stack belonging to MC event
     TList**                 fCutFolder;                                         // Array of lists for containers belonging to cut
     TList**                 fESDList;                                           // Array of lists with histograms with reconstructed properties   
     TList**                 fTrueList;                                          // Array of lists with histograms with MC validated reconstructed properties
@@ -271,7 +270,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 24);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 25);
 };
 
 #endif

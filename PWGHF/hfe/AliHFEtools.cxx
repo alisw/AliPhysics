@@ -580,7 +580,7 @@ TList *AliHFEtools::GetHFEQAListGRID(const TString str,const TString dir){
 
    gROOT->cd();
    TKey *k;
-   TIter next(f->GetListOfKeys());
+   TIter next(d->GetListOfKeys());
    while ((k = dynamic_cast<TKey *>(next()))){
       TString s(k->GetName());
       if(s.Contains("QA")) break;

@@ -33,10 +33,13 @@ public:
   virtual ~AliDJetVReader();
 
   void SetPtBinEdgesForMassPlot(Double_t ptmin, Double_t ptmax)    { fpTmin                  = ptmin ; fpTmax                  = ptmax ; }
-  void SetZedges(Double_t zmin, Double_t zmax)                     { fzmin                   = zmin  ; fzmax                   = zmax  ; }
+  void SetMassRebin(UInt_t r)                                      { fMassRebin              = r > 0 ? r : 1; }
+
+  UInt_t GetMassRebin() const { return fMassRebin; }
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
+  void SetJetzBins(Int_t nbins=0, Double_t* zedges=0x0);
   void SetDmesonEfficiency(Double_t* effvalues=0x0);
 
   virtual Bool_t ExtractInputMassPlotEffScale() = 0;
@@ -44,23 +47,26 @@ public:
 
   TH1D* GetMassPlot()         { return fMassPlot         ; }
   TH2D* GetMassVsJetPtPlot()  { return fMassVsJetPtPlot  ; }
+  TH2D* GetMassVsJetzPlot()   { return fMassVsJetzPlot   ; }
 
 protected:
   Double_t           fpTmin                      ; ///< pT lower edge of mass plot to evaluate variations of yields
   Double_t           fpTmax                      ; ///< pT upper edge of mass plot to evaluate variations of yields
-  Double_t           fzmin                       ; ///< z minimum value to extract jet pT spectrum
-  Double_t           fzmax                       ; ///< z maximum value to extract jet pT spectrum
   Int_t              fnDbins                     ; ///< Number of D-meson pT bins (for eff scaling)
   Double_t          *fDbinpTedges                ; ///< D-meson pt bin edges values
-  Int_t              fnJetbins                   ; ///< Number of pT-bins to be used for spectrum
-  Double_t          *fJetbinpTedges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnJetPtbins                 ; ///< Number of jet pT bins to be used for spectrum
+  Double_t          *fJetPtBinEdges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnJetzbins                  ; ///< Number of jet z bins to be used for spectrum
+  Double_t          *fJetzBinEdges               ; ///< Jet z bin edges to be used for spectrum
   Double_t          *fDEffValues                 ; ///< D-meson efficiency values
+  UInt_t             fMassRebin                  ; ///< Rebin the mass histogram axis
 
   TH1D              *fMassPlot                   ; //!<!Mass spectra to be fitted
   TH2D              *fMassVsJetPtPlot            ; //!<!Mass vs jet pt (SB method)
+  TH2D              *fMassVsJetzPlot             ; //!<!Mass vs jet z (SB method)
 
 private:
-  ClassDef(AliDJetVReader,1);
+  ClassDef(AliDJetVReader,3);
 };
 
 #endif

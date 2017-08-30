@@ -246,7 +246,7 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 		}
 	}
    
-	if(fIsHeavyIon > 0 && !fEventCuts->IsCentralitySelected(fESDEvent)) return;
+    if(fIsHeavyIon > 0 && !fEventCuts->IsCentralitySelected(fESDEvent,fMCEvent)) return;
 	fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 	fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
@@ -284,22 +284,21 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 }
 
 // ///________________________________________________________________________
-// void AliAnalysisTaskMaterial::FillMCTree(Int_t stackPos){
-// 	AliStack *MCStack = fMCEvent->Stack();
-// 	TParticle* candidate = (TParticle *)MCStack->Particle(stackPos);
+// void AliAnalysisTaskMaterial::FillMCTree(Int_t eventPos){
+// 	TParticle* candidate = (TParticle *)fMCEvent->Particle(eventPos);
 // 	
-// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kFALSE)){
+// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,fMCEvent,kFALSE)){
 // 		fGammaMCPt = candidate->Pt();
 // 		fGammaMCTheta = candidate->Theta();
 // 		if (fTreeMaterialAllGamma){
 // 			fTreeMaterialAllGamma->Fill();
 // 		}	
 // 	}
-// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kTRUE)){
+// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,fMCEvent,kTRUE)){
 // 		fGammaMCConvPt = candidate->Pt();
 // 		fGammaMCConvTheta = candidate->Theta();
-// 		TParticle* daughter1 = (TParticle *)MCStack->Particle(candidate->GetFirstDaughter()); 
-// 		TParticle* daughter2 = (TParticle *)MCStack->Particle(candidate->GetLastDaughter()); 
+// 		TParticle* daughter1 = (TParticle *)fMCEvent->Particle(candidate->GetFirstDaughter());
+// 		TParticle* daughter2 = (TParticle *)fMCEvent->Particle(candidate->GetLastDaughter());
 // 		fMCConvCords(0) = (Float_t)daughter1->Vx();
 // 		fMCConvCords(1) = (Float_t)daughter1->Vy();
 // 		fMCConvCords(2) = (Float_t)daughter1->Vz();
@@ -320,17 +319,16 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 // ///________________________________________________________________________
 // void AliAnalysisTaskMaterial::ProcessMCPhotons(){
 // 	// Loop over all primary MC particle
-// 	AliStack *ffMCStack = fMCEvent->Stack();
-// 	for(Int_t i = 0; i < ffMCStack->GetNprimary(); i++) {
-// 		TParticle* particle = (TParticle *)ffMCStack->Particle(i);
+// 	for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
+// 		TParticle* particle = (TParticle *)fMCEvent->Particle(i);
 // 		if (!particle) continue;
 // 		Int_t isMCFromMBHeader = -1;
 // 		if(fConversionCuts->GetSignalRejection() != 0){
 // 			isMCFromMBHeader
-// 				= fConversionCuts->IsParticleFromBGEvent(i, ffMCStack, fESDEvent);
+// 				= fConversionCuts->IsParticleFromBGEvent(i, fMCEvent, fESDEvent);
 // 			if(isMCFromMBHeader == 0) continue;
 // 		}		
-// 		if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= ffMCStack->GetNprimary()){
+// 		if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= fMCEvent->GetNumberOfPrimaries()){
 // // 			cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
 // 			for (Int_t j = 0; j < 2 ; j++){
 //  				FillMCTree(particle->GetDaughter(j));
@@ -372,23 +370,21 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 		if(fMCEvent){
 			
 // 			cout << "generating MC stack"<< endl;
-			AliStack *fMCStack = fMCEvent->Stack();
-			if (!fMCStack) continue;
 			
 			const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 			Double_t mcProdVtxX 	= primVtxMC->GetX();
 			Double_t mcProdVtxY 	= primVtxMC->GetY();
 			Double_t mcProdVtxZ 	= primVtxMC->GetZ();
 
-			TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
-			TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
+            TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
+            TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
 // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
 		
-			if(fMCStack && fEventCuts->GetSignalRejection() != 0){
+            if(fMCEvent && fEventCuts->GetSignalRejection() != 0){
 				Int_t isPosFromMBHeader
-				= fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fESDEvent);
+                = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fESDEvent);
 				Int_t isNegFromMBHeader
-				= fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fESDEvent);
+                = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCEvent, fESDEvent);
 				if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
 			}
 				
@@ -428,14 +424,14 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 				if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
 // 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
 				Int_t pdgCode; 
-				if (gamma->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCStack)->GetPdgCode(); else continue;
+                if (gamma->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCEvent)->GetPdgCode(); else continue;
 // 				cout << "PDG code: " << pdgCode << endl;
 				if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
 					fKind = 2; // combinatorics from hadronic decays
 				else if ( !(pdgCodeNeg==pdgCodePos)){
-					TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
+                    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
 					Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
-					Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+                    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 					if(pdgCode == 111) 
 						fKind = 3; // pi0 Dalitz
 					else if (pdgCode == 221) 
@@ -463,11 +459,6 @@ Int_t AliAnalysisTaskMaterial::CountTracks09(){
 	if(fInputEvent->IsA()==AliESDEvent::Class()){
 	// Using standard function for setting Cuts
 		
-		AliStack *fMCStack = NULL;
-		if (fMCEvent){
-			fMCStack= fMCEvent->Stack();
-			if (!fMCStack) return 0;
-		}	
 				
 		Bool_t selectPrimaries=kTRUE;
 		AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
@@ -480,8 +471,8 @@ Int_t AliAnalysisTaskMaterial::CountTracks09(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -500,12 +491,6 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 	if(fInputEvent->IsA()==AliESDEvent::Class()){
 		// Using standard function for setting Cuts
 		
-		AliStack *fMCStack = NULL;
-		if (fMCEvent){
-			fMCStack= fMCEvent->Stack();
-			if (!fMCStack) return 0;
-		}	
-
 		AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 		EsdTrackCuts->SetMaxDCAToVertexZ(5);
 		EsdTrackCuts->SetEtaRange(0.9, 1.4);
@@ -516,8 +501,8 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -530,8 +515,8 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                    if(fEventCuts->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	

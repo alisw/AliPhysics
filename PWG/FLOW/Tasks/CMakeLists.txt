@@ -68,9 +68,10 @@ set(SRCS
   AliAnalysisTaskPIDconfig.cxx
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
-  AliAnalysisTaskVnZDC.cxx
   AliAnalysisTaskZDCGainEq.cxx
   AliAnalysisTaskZDCEP.cxx
+  AliAnalysisTaskPiKpK0Lamba.cxx
+  AliAnalysisTaskCmeEse.cxx
   )
 
 # Headers from sources

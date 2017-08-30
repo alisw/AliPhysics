@@ -145,7 +145,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliGammaConversionAODBGHandler**    fBGPi0Handler;          // BG handler for pi0's
     AliVEvent*                          fInputEvent;            // current event
     AliMCEvent*                         fMCEvent;               // corresponding MC event
-    AliStack*                           fMCStack;               // stack belonging to MC event
     TList**                             fCutFolder;             // Array of lists for containers belonging to cut
     TList**                             fESDList;               // Array of lists with histograms with reconstructed properties
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
@@ -297,8 +296,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedPz;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedE;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackPos;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackNeg;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventPos;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventNeg;                                        //[fNGammaCandidates]
     Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
     Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
@@ -321,7 +320,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 10);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 11);
 };
 
 #endif

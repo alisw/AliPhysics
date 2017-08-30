@@ -23,13 +23,19 @@ PWGPP_runMap="
 2014 200008 208364 NONE
 2015 244908 246994 pbpb
 2015 224956 244628 pp
-2016 249954 999999 pp
+2016 249954 264347 pp
+2016 265015 267166 ppb
+2017 270035 999999 pp
 "
 
 parseConfig()
 {
   # parse command line arguments, they have to be in the form
   #  option=value
+  #    --or--
+  #  -option value
+  #    --or--
+  #  --option value
   # they are then set in the environment
   # additionally another variable named: parseConfig__ORIGINAL__${option}
   # is set to have a fallback.
@@ -71,15 +77,29 @@ parseConfig()
   done
 
   #then, parse the options as they override the options from configFile
+  local var=""
+  local value=""
   for opt in "${args[@]}"; do
     [[ -n ${encodedSpaces} ]] && opt="$(decSpaces ${opt})"
     if [[ ! "${opt}" =~ .*=.* ]]; then
-      echo "badly formatted option ${var}, should be: option=value, stopping..."
-      return 1
+      if [[ "${opt}" =~ ^-.? && -z "$expectPosixOptionValue" ]]; then
+        var="${opt#--}"
+        var="${var#-}"
+        expectPosixOptionValue=1
+        continue
+      elif [[ -n "$expectPosixOptionValue" ]]; then
+        value="${opt}"
+        unset expectPosixOptionValue
+      else
+        continue;  # non option string should be allowed - e.g parsing parameters for alihadd
+        #echo "badly formatted option ${var}, should be: option=value (or -var value) stopping..."
+        #return 1
+      fi
+    else
+      var="${opt%%=*}"
+      value="${opt#*=}"
     fi
-    local var="${opt%%=*}"
-    local value="${opt#*=}"
-    #echo "${var}=${value}"
+    #echo "setting ${var}=${value}"
     export ${var}="${value}"
     [[ -n ${originalOptionPrefix} ]] && export ${originalOptionPrefix}${var}="${value}"
   done

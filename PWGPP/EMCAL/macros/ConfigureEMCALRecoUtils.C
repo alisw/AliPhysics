@@ -1,6 +1,6 @@
 ///
 /// \file ConfigureEMCALRecoUtils.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of AliEMCALRecoUtils.
 ///
 /// Example of configuration of AliEMCALRecoUtils. Called in different analysis configuration macros.

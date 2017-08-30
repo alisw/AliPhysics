@@ -255,7 +255,7 @@ Bool_t AliAnalysisTaskEMCALAlig::FillHistograms()
 void AliAnalysisTaskEMCALAlig::DoTrackLoop()
 {
     AliClusterContainer* clusCont = GetClusterContainer(0);
-    AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+  //AliVCaloCells *cells = InputEvent()->GetEMCALCells();
     
     if (!clusCont)
     {
@@ -319,7 +319,7 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
                             
                             if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                             
-                            Int_t nCells=cluster->GetNCells();
+                          //Int_t nCells=cluster->GetNCells();
                             Int_t iSupMod = -9;
                             Int_t ieta = -9;
                             Int_t iphi = -9;

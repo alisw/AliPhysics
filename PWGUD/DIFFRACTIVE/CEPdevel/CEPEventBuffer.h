@@ -136,40 +136,40 @@ class CEPEventBuffer : public TObject {
     // readout gap condition
     UInt_t  GetEventCondition() const { return fEventCondition; }
     
-    Bool_t isEventCut()   const { return fEventCondition & AliCEPBase::kBitEventCut; }
-    Bool_t isPhyssel()    const { return fEventCondition & AliCEPBase::kBitPhyssel;   }
-    Bool_t isPileup()     const { return fEventCondition & AliCEPBase::kBitPileup;    }
-    Bool_t isClusterCut() const { return fEventCondition & AliCEPBase::kBitClusterCut;}
-    Bool_t isDGTrigger()  const { return fEventCondition & AliCEPBase::kBitDGTrigger; }
+    Bool_t isEventCut()   const { return fEventCondition & AliCEPBase::kETEventCut; }
+    Bool_t isPhyssel()    const { return fEventCondition & AliCEPBase::kETPhyssel;   }
+    Bool_t isPileup()     const { return fEventCondition & AliCEPBase::kETPileup;    }
+    Bool_t isClusterCut() const { return fEventCondition & AliCEPBase::kETClusterCut;}
+    Bool_t isDGTrigger()  const { return fEventCondition & AliCEPBase::kETDGTrigger; }
 
-    Bool_t isMBOR() const { return fEventCondition & AliCEPBase::kBitMBOR; }
-    Bool_t isMBAND()const { return fEventCondition & AliCEPBase::kBitMBAND; }
+    Bool_t isMBOR() const { return fEventCondition & AliCEPBase::kETMBOR; }
+    Bool_t isMBAND()const { return fEventCondition & AliCEPBase::kETMBAND; }
     Bool_t isTPC()  const { return isTPCA() || isTPCC(); }
-    Bool_t isTPCA() const { return fEventCondition & AliCEPBase::kBitTPCA; }
-    Bool_t isTPCC() const { return fEventCondition & AliCEPBase::kBitTPCC; }
+    Bool_t isTPCA() const { return fEventCondition & AliCEPBase::kETTPCA; }
+    Bool_t isTPCC() const { return fEventCondition & AliCEPBase::kETTPCC; }
     Bool_t isSPD()  const { return isSPDA() || isSPDC(); }
-    Bool_t isSPDA() const { return fEventCondition & AliCEPBase::kBitSPDA; }
-    Bool_t isSPDC() const { return fEventCondition & AliCEPBase::kBitSPDC; }
+    Bool_t isSPDA() const { return fEventCondition & AliCEPBase::kETSPDA; }
+    Bool_t isSPDC() const { return fEventCondition & AliCEPBase::kETSPDC; }
     Bool_t isFMD()  const { return isFMDA() || isFMDC(); }
-    Bool_t isFMDA() const { return fEventCondition & AliCEPBase::kBitFMDA; }
-    Bool_t isFMDC() const { return fEventCondition & AliCEPBase::kBitFMDC; }
+    Bool_t isFMDA() const { return fEventCondition & AliCEPBase::kETFMDA; }
+    Bool_t isFMDC() const { return fEventCondition & AliCEPBase::kETFMDC; }
     Bool_t isV0()   const { return isV0A() || isV0C(); }
-    Bool_t isV0A()  const { return fEventCondition & AliCEPBase::kBitV0A;  }
-    Bool_t isV0C()  const { return fEventCondition & AliCEPBase::kBitV0C;  }
+    Bool_t isV0A()  const { return fEventCondition & AliCEPBase::kETV0A;  }
+    Bool_t isV0C()  const { return fEventCondition & AliCEPBase::kETV0C;  }
     Bool_t isAD()   const { return isADA() || isADC();  }
-    Bool_t isADA()  const { return fEventCondition & AliCEPBase::kBitADA;  }
-    Bool_t isADC()  const { return fEventCondition & AliCEPBase::kBitADC;  }
+    Bool_t isADA()  const { return fEventCondition & AliCEPBase::kETADA;  }
+    Bool_t isADC()  const { return fEventCondition & AliCEPBase::kETADC;  }
     Bool_t isZDC()  const { return isZDCA() || isZDCC(); }
-    Bool_t isZDCA() const { return fEventCondition & AliCEPBase::kBitZDCA; }
-    Bool_t isZDCC() const { return fEventCondition & AliCEPBase::kBitZDCC; }
+    Bool_t isZDCA() const { return fEventCondition & AliCEPBase::kETZDCA; }
+    Bool_t isZDCC() const { return fEventCondition & AliCEPBase::kETZDCC; }
     Bool_t isZDN()  const { return isZDNA() || isZDNC(); }
-    Bool_t isZDNA() const { return fEventCondition & AliCEPBase::kBitZDNA; }
-    Bool_t isZDNC() const { return fEventCondition & AliCEPBase::kBitZDNC; }
+    Bool_t isZDNA() const { return fEventCondition & AliCEPBase::kETZDNA; }
+    Bool_t isZDNC() const { return fEventCondition & AliCEPBase::kETZDNC; }
 
     CEPTrackBuffer* GetTrack(Int_t ind);
     Bool_t RemoveTrack(Int_t ind);
 
-  ClassDef(CEPEventBuffer, 3)     // CEP event buffer
+    ClassDef(CEPEventBuffer, 3)     // CEP event buffer
 
 };
 

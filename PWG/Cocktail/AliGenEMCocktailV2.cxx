@@ -101,9 +101,9 @@ void AliGenEMCocktailV2::SetHeaviestHadron(ParticleGenerator_t part)
 //_________________________________________________________________________
 TF1* AliGenEMCocktailV2::GetPtParametrization(Int_t np) {
 
-  if (np<18)
+  if (np<26)
     return fPtParametrization[np];
-  else if (np==18)
+  else if (np==26)
     return fParametrizationProton;
   else
     return NULL;
@@ -117,7 +117,7 @@ TH1D* AliGenEMCocktailV2::GetMtScalingFactors() {
 //_________________________________________________________________________
 TH2F* AliGenEMCocktailV2::GetPtYDistribution(Int_t np) {
 
-  if (np<18)
+  if (np<26)
     return fPtYDistribution[np];
   else
     return NULL;
@@ -129,7 +129,7 @@ void AliGenEMCocktailV2::GetPtRange(Double_t &ptMin, Double_t &ptMax) {
   ptMax = fPtMax;
 }
 
-//-------------------------------------------------------------------
+//_________________________________________________________________________
 Double_t AliGenEMCocktailV2::GetMaxPtStretchFactor(Int_t pdgCode) {
 
   Double_t massParticle = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
@@ -141,7 +141,7 @@ Double_t AliGenEMCocktailV2::GetMaxPtStretchFactor(Int_t pdgCode) {
   return factor;
 }
 
-//-------------------------------------------------------------------
+//_________________________________________________________________________
 Double_t AliGenEMCocktailV2::GetYWeight(Int_t np, TParticle* part) {
 
   if (!fUseYWeighting) return 1.;
@@ -351,7 +351,7 @@ void AliGenEMCocktailV2::CreateCocktail()
 #endif
   }
   
-  // sigma
+  // sigma0
   if(fSelectedParticles&kGenSigma0){
     Double_t maxPtStretchFactor = 1.;
     if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(3212);
@@ -569,11 +569,171 @@ void AliGenEMCocktailV2::CreateCocktail()
     fYieldArray[kK0star] = fPtK0star->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
 #endif
   }
+
+  // K+
+  if(fSelectedParticles&kGenKPl){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(321);
+
+    AliGenParam * genkKPl=0;
+    Char_t nameKPl[10];
+    snprintf(nameKPl, 10, "KPl");
+    genkKPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kKPl, "DUMMY");
+    genkKPl->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameKPl,genkKPl,maxPtStretchFactor);
+    TF1 *fPtKPl = genkKPl->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kKPl] = fPtKPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kKPl] = fPtKPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // K-
+  if(fSelectedParticles&kGenKMi){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(321);
+
+    AliGenParam * genkKMi=0;
+    Char_t nameKMi[10];
+    snprintf(nameKMi, 10, "KMi");
+    genkKMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kKMi, "DUMMY");
+    genkKMi->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameKMi,genkKMi,maxPtStretchFactor);
+    TF1 *fPtKMi = genkKMi->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kKMi] = fPtKMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kKMi] = fPtKMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // Omega+
+  if(fSelectedParticles&kGenOmegaPl){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(-3334);
+
+    AliGenParam * genkOmegaPl=0;
+    Char_t nameOmegaPl[10];
+    snprintf(nameOmegaPl, 10, "OmegaPl");
+    genkOmegaPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kOmegaPl, "DUMMY");
+    genkOmegaPl->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameOmegaPl,genkOmegaPl,maxPtStretchFactor);
+    TF1 *fPtOmegaPl = genkOmegaPl->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kOmegaPl] = fPtOmegaPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kOmegaPl] = fPtOmegaPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // Omega-
+  if(fSelectedParticles&kGenOmegaMi){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(3334);
+
+    AliGenParam * genkOmegaMi=0;
+    Char_t nameOmegaMi[10];
+    snprintf(nameOmegaMi, 10, "OmegaMi");
+    genkOmegaMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kOmegaMi, "DUMMY");
+    genkOmegaMi->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameOmegaMi,genkOmegaMi,maxPtStretchFactor);
+    TF1 *fPtOmegaMi = genkOmegaMi->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kOmegaMi] = fPtOmegaMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kOmegaMi] = fPtOmegaMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // Xi+
+  if(fSelectedParticles&kGenXiPl){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(-3312);
+
+    AliGenParam * genkXiPl=0;
+    Char_t nameXiPl[10];
+    snprintf(nameXiPl, 10, "XiPl");
+    genkXiPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kXiPl, "DUMMY");
+    genkXiPl->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameXiPl,genkXiPl,maxPtStretchFactor);
+    TF1 *fPtXiPl = genkXiPl->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kXiPl] = fPtXiPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kXiPl] = fPtXiPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // Xi-
+  if(fSelectedParticles&kGenXiMi){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(3312);
+
+    AliGenParam * genkXiMi=0;
+    Char_t nameXiMi[10];
+    snprintf(nameXiMi, 10, "XiMi");
+    genkXiMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kXiMi, "DUMMY");
+    genkXiMi->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameXiMi,genkXiMi,maxPtStretchFactor);
+    TF1 *fPtXiMi = genkXiMi->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kXiMi] = fPtXiMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kXiMi] = fPtXiMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
   
+  // Sigma+
+  if(fSelectedParticles&kGenSigmaPl){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(3224);
+
+    AliGenParam * genkSigmaPl=0;
+    Char_t nameSigmaPl[10];
+    snprintf(nameSigmaPl, 10, "SigmaPl");
+    genkSigmaPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kSigmaPl, "DUMMY");
+    genkSigmaPl->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameSigmaPl,genkSigmaPl,maxPtStretchFactor);
+    TF1 *fPtSigmaPl = genkSigmaPl->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kSigmaPl] = fPtSigmaPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kSigmaPl] = fPtSigmaPl->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
+  // Sigma-
+  if(fSelectedParticles&kGenSigmaMi){
+    Double_t maxPtStretchFactor = 1.;
+    if (fDynPtRange) maxPtStretchFactor = GetMaxPtStretchFactor(3114);
+
+    AliGenParam * genkSigmaMi=0;
+    Char_t nameSigmaMi[10];
+    snprintf(nameSigmaMi, 10, "SigmaMi");
+    genkSigmaMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kSigmaMi, "DUMMY");
+    genkSigmaMi->SetYRange(fYMin, fYMax);
+
+    AddSource2Generator(nameSigmaMi,genkSigmaMi,maxPtStretchFactor);
+    TF1 *fPtSigmaMi = genkSigmaMi->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kSigmaMi] = fPtSigmaMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,1.e-6);
+#else
+    fYieldArray[kSigmaMi] = fPtSigmaMi->Integral(fPtMin,maxPtStretchFactor*fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
   TParticlePDG *elPDG=TDatabasePDG::Instance()->GetParticle(11);
   TDatabasePDG::Instance()->AddParticle("ForcedConversionElecton-","ForcedConversionElecton-",elPDG->Mass(),true,0,elPDG->Charge(),elPDG->ParticleClass(),220011,0);
   TDatabasePDG::Instance()->AddParticle("ForcedConversionElecton+","ForcedConversionElecton+",elPDG->Mass(),true,0,-elPDG->Charge(),elPDG->ParticleClass(),-220011,0);
-  
+
   // direct gamma
   if(fDecayMode!=kGammaEM) return;
   
@@ -629,7 +789,7 @@ void AliGenEMCocktailV2::AddSource2Generator(Char_t* nameSource,
   genSource->SetForceGammaConversion(fForceConv);
   if (!TVirtualMC::GetMC()) genSource->SetDecayer(fDecayer);
   genSource->Init();
-		
+
   AddGenerator(genSource,nameSource,1.); // Adding Generator
 }
 
@@ -652,10 +812,10 @@ void AliGenEMCocktailV2::Init()
 Bool_t AliGenEMCocktailV2::SetPtParametrizations() {
 
   TF1* tempFct = NULL;
-  for(Int_t i=0; i<19; i++) {
+  for (Int_t i=0; i<27; i++) {
     tempFct = AliGenEMlibV2::GetPtParametrization(i);
     if (!tempFct) return kFALSE;
-    if (i<18)
+    if (i<26)
       fPtParametrization[i] = new TF1(*tempFct);
     else
       fParametrizationProton = new TF1(*tempFct);
@@ -674,7 +834,7 @@ void AliGenEMCocktailV2::SetMtScalingFactors() {
 Bool_t AliGenEMCocktailV2::SetPtYDistributions() {
 
   TH2F* tempPtY = NULL;
-  for(Int_t i=0; i<18; i++) {
+  for(Int_t i=0; i<26; i++) {
     tempPtY = AliGenEMlibV2::GetPtYDistribution(i);
     if (tempPtY)
       fPtYDistribution[i] = new TH2F(*tempPtY);
@@ -690,7 +850,7 @@ void AliGenEMCocktailV2::Generate()
 {
   // Generate event
   TIter next(fEntries);
-  AliGenCocktailEntry *entry = 0;
+  AliGenCocktailEntry* entry = 0;
   AliGenerator* gen = 0;
   
   if (fHeader) delete fHeader;
@@ -702,7 +862,7 @@ void AliGenEMCocktailV2::Generate()
   if(fVertexSmear == kPerEvent) Vertex();
   
   //Reseting stack
-  AliRunLoader * runloader = AliRunLoader::Instance();
+  AliRunLoader* runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->Clean();
@@ -841,6 +1001,38 @@ void AliGenEMCocktailV2::Generate()
       case 313:
         dNdy = fYieldArray[kK0star];
         yWeight = GetYWeight(kK0star, part);
+        break;
+      case 321:
+        dNdy = fYieldArray[kKPl];
+        yWeight = GetYWeight(kKPl, part);
+        break;
+      case -321:
+        dNdy = fYieldArray[kKMi];
+        yWeight = GetYWeight(kKMi, part);
+        break;
+      case -3334:
+        dNdy = fYieldArray[kOmegaPl];
+        yWeight = GetYWeight(kOmegaPl, part);
+        break;
+      case 3334:
+        dNdy = fYieldArray[kOmegaMi];
+        yWeight = GetYWeight(kOmegaMi, part);
+        break;
+      case -3312:
+        dNdy = fYieldArray[kXiPl];
+        yWeight = GetYWeight(kXiPl, part);
+        break;
+      case 3312:
+        dNdy = fYieldArray[kXiMi];
+        yWeight = GetYWeight(kXiMi, part);
+        break;
+      case 3224:
+        dNdy = fYieldArray[kSigmaPl];
+        yWeight = GetYWeight(kSigmaPl, part);
+        break;
+      case 3114:
+        dNdy = fYieldArray[kSigmaMi];
+        yWeight = GetYWeight(kSigmaMi, part);
         break;
       default:
         dNdy = 0.;

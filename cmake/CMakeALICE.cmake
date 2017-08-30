@@ -14,48 +14,47 @@
 macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
 
     # Creating the INCLUDE path for cint/cling
-    foreach( dir ${DINCDIRS})
+    foreach(dir ${DINCDIRS})
         set(INCLUDE_PATH -I${dir} ${INCLUDE_PATH})
     endforeach()
-    
+
     # Get the list of definitions from the directory to be sent to CINT
     get_directory_property(tmpdirdefs COMPILE_DEFINITIONS)
     foreach(dirdef ${tmpdirdefs})
         string(REPLACE "\"" "\\\"" dirdef_esc ${dirdef})
         set(GLOBALDEFINITIONS -D${dirdef_esc} ${GLOBALDEFINITIONS})
     endforeach()
-    
+
     # Custom definitions specific to library
     # Received as the forth optional argument
     separate_arguments(EXTRADEFINITIONS UNIX_COMMAND "${ARGV4}")
 
-    if (ROOT_VERSION_MAJOR LESS 6)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
-                       COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
-                       ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p 
-                       ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} 
-                       ${DHDRS} ${LDNAME}
-                       DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
-                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      )
-    else (ROOT_VERSION_MAJOR LESS 6)
+    if(ROOT_VERSION_MAJOR LESS 6)
+        # ROOT version < 6
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
+                           COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
+                           ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p
+                           ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH}
+                           ${DHDRS} ${LDNAME}
+                           DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
+                           WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    else()
+      # ROOT version >= 6
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm
-                       COMMAND
-                         LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
-                       ARGS
-                         -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
-                         -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap -rml lib${DNAME}
-                         ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
-                       DEPENDS
-                         ${DHDRS} ${LDNAME} ${ROOT_CINT}
-                       WORKING_DIRECTORY
-                         ${CMAKE_CURRENT_BINARY_DIR}
-                      )
-
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
-
-    endif (ROOT_VERSION_MAJOR LESS 6)
+                         COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
+                         ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+                              -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap
+                              -rml lib${DNAME}
+                              ${GLOBALDEFINITIONS}
+                              ${EXTRADEFINITIONS}
+                              ${INCLUDE_PATH}
+                              ${DHDRS}
+                              ${LDNAME}
+                         DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
+                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
+    endif()
 
 endmacro(generate_dictionary)
 
@@ -107,7 +106,7 @@ macro(generate_static_dependencies shared_list static_list)
     foreach(shared_lib ${shared_list})
         set(static_list_tmp ${static_list_tmp} "${shared_lib}-static")
     endforeach()
-    
+
     # create the variable with the name received by the macro
     set(${static_list} ${static_list_tmp})
     # set the scope to parent in order to be visible in the parent

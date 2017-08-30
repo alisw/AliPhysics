@@ -8,7 +8,7 @@
 #include "AliAnalysisTaskSE.h"
 #include <Rtypes.h>
 #include <TString.h>
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 class AliPIDResponse;
 class TH2F;
@@ -23,7 +23,7 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliNuclexEventCuts  fEventCut;
+  AliEventCuts  fEventCut;
 
   float fNsigmaITS;  ///< Number of sigma ITS
   float fNsigmaTPC;  ///< Number of sigma TPC

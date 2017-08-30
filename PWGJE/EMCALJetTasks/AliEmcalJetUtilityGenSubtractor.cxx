@@ -158,6 +158,15 @@ void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
    fjw.DoGenericSubtractionJet2subjettiness_kt();
    fjw.DoGenericSubtractionJet3subjettiness_kt();
    fjw.DoGenericSubtractionJetOpeningAngle_kt();
+   fjw.DoGenericSubtractionJet1subjettiness_ca();
+   fjw.DoGenericSubtractionJet2subjettiness_ca();
+   fjw.DoGenericSubtractionJetOpeningAngle_ca();
+   fjw.DoGenericSubtractionJet1subjettiness_akt02();
+   fjw.DoGenericSubtractionJet2subjettiness_akt02();
+   fjw.DoGenericSubtractionJetOpeningAngle_akt02();
+   //fjw.DoGenericSubtractionJet1subjettiness_casd();
+   //fjw.DoGenericSubtractionJet2subjettiness_casd();
+   //fjw.DoGenericSubtractionJetOpeningAngle_casd();
  }
 }
 
@@ -302,6 +311,84 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].first_order_subtracted());
       jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].second_order_subtracted());
     }
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinesscaInfo = fjw.GetGenSubtractorInfoJet1subjettiness_ca();
+    Int_t n1subjettiness_ca = (Int_t)jet1subjettinesscaInfo.size();
+    if(n1subjettiness_ca > ij && n1subjettiness_ca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative1subjettiness_ca(jet1subjettinesscaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative1subjettiness_ca(jet1subjettinesscaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted1subjettiness_ca(jet1subjettinesscaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted1subjettiness_ca(jet1subjettinesscaInfo[ij].second_order_subtracted());
+    }
+          
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinesscaInfo = fjw.GetGenSubtractorInfoJet2subjettiness_ca();
+    Int_t n2subjettiness_ca = (Int_t)jet2subjettinesscaInfo.size();
+    if(n2subjettiness_ca > ij && n2subjettiness_ca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative2subjettiness_ca(jet2subjettinesscaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative2subjettiness_ca(jet2subjettinesscaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted2subjettiness_ca(jet2subjettinesscaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted2subjettiness_ca(jet2subjettinesscaInfo[ij].second_order_subtracted());
+    }
+
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAnglecaInfo = fjw.GetGenSubtractorInfoJetOpeningAngle_ca();
+    Int_t nOpeningAngle_ca = (Int_t)jetOpeningAnglecaInfo.size();
+    if(nOpeningAngle_ca > ij && nOpeningAngle_ca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngle_ca(jetOpeningAnglecaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_ca(jetOpeningAnglecaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_ca(jetOpeningAnglecaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_ca(jetOpeningAnglecaInfo[ij].second_order_subtracted());
+    }
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinessakt02Info = fjw.GetGenSubtractorInfoJet1subjettiness_akt02();
+    Int_t n1subjettiness_akt02 = (Int_t)jet1subjettinessakt02Info.size();
+    if(n1subjettiness_akt02 > ij && n1subjettiness_akt02 > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative1subjettiness_akt02(jet1subjettinessakt02Info[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative1subjettiness_akt02(jet1subjettinessakt02Info[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted1subjettiness_akt02(jet1subjettinessakt02Info[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted1subjettiness_akt02(jet1subjettinessakt02Info[ij].second_order_subtracted());
+    }
+          
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinessakt02Info = fjw.GetGenSubtractorInfoJet2subjettiness_akt02();
+    Int_t n2subjettiness_akt02 = (Int_t)jet2subjettinessakt02Info.size();
+    if(n2subjettiness_akt02 > ij && n2subjettiness_akt02 > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative2subjettiness_akt02(jet2subjettinessakt02Info[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative2subjettiness_akt02(jet2subjettinessakt02Info[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted2subjettiness_akt02(jet2subjettinessakt02Info[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted2subjettiness_akt02(jet2subjettinessakt02Info[ij].second_order_subtracted());
+    }
+
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAngleakt02Info = fjw.GetGenSubtractorInfoJetOpeningAngle_akt02();
+    Int_t nOpeningAngle_akt02 = (Int_t)jetOpeningAngleakt02Info.size();
+    if(nOpeningAngle_akt02 > ij && nOpeningAngle_akt02 > 0) {
+      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].second_order_subtracted());
+    }
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinesscasdInfo = fjw.GetGenSubtractorInfoJet1subjettiness_casd();
+    Int_t n1subjettiness_casd = (Int_t)jet1subjettinesscasdInfo.size();
+    if(n1subjettiness_casd > ij && n1subjettiness_casd > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative1subjettiness_casd(jet1subjettinesscasdInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative1subjettiness_casd(jet1subjettinesscasdInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted1subjettiness_casd(jet1subjettinesscasdInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted1subjettiness_casd(jet1subjettinesscasdInfo[ij].second_order_subtracted());
+    }
+          
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinesscasdInfo = fjw.GetGenSubtractorInfoJet2subjettiness_casd();
+    Int_t n2subjettiness_casd = (Int_t)jet2subjettinesscasdInfo.size();
+    if(n2subjettiness_casd > ij && n2subjettiness_casd > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative2subjettiness_casd(jet2subjettinesscasdInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative2subjettiness_casd(jet2subjettinesscasdInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted2subjettiness_casd(jet2subjettinesscasdInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted2subjettiness_casd(jet2subjettinesscasdInfo[ij].second_order_subtracted());
+    }
+
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAnglecasdInfo = fjw.GetGenSubtractorInfoJetOpeningAngle_casd();
+    Int_t nOpeningAngle_casd = (Int_t)jetOpeningAnglecasdInfo.size();
+    if(nOpeningAngle_casd > ij && nOpeningAngle_casd > 0) {
+      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_order_subtracted());
+      }
   }
 
 #endif

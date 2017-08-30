@@ -54,6 +54,8 @@ public:
   void      SetSimpleEMCALFiducialCut(Float_t abseta, Float_t phimin, Float_t phimax) ;
   void      SetSimplePHOSFiducialCut (Float_t abseta, Float_t phimin, Float_t phimax) ;
   void      SetSimpleDCALFiducialCut (Float_t abseta, Float_t phimin, Float_t phimax) ;
+  void      SetDCALFiducialCut       (Float_t etaminFull , Float_t etamaxFull , Float_t phiminFull , Float_t phimaxFull ,
+                                      Float_t etaminThird, Float_t etamaxThird, Float_t phiminThird, Float_t phimaxThird);
   
   void      Print(const Option_t * opt)const;
   
@@ -159,7 +161,7 @@ private:
   AliFiducialCut & operator = (const AliFiducialCut & fc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliFiducialCut,2) ;
+  ClassDef(AliFiducialCut,3) ;
   /// \endcond
 
 } ;

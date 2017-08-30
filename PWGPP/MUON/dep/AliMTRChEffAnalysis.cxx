@@ -85,7 +85,7 @@ AliMTRChEffAnalysis::AliMTRChEffAnalysis ( const char *localFileList, const char
   fNamer(0x0)
 {
   /// Ctor.
-  SetOutList(localFileList,outputName);
+  InitFromLocal(localFileList,outputName);
 }
 
 //________________________________________________________________________
@@ -337,6 +337,17 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
   } // loop on merged efficiencies
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliMTRChEffAnalysis::Check () const
+{
+  /// Check initialization. Return 0 if everything is ok
+  if ( fRunMap.empty() ) {
+    AliError("The list of trigger efficiency object is not initialized. Please use either InitFromLocal, InitFromGrid or InitFromWeb");
+    return 1;
+  }
+  return 0;
 }
 
 //________________________________________________________________________
@@ -768,6 +779,8 @@ Bool_t AliMTRChEffAnalysis::CopyLocally ( const char* runList, const char* path,
 void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers, Double_t minEff, Double_t maxEff ) const
 {
   /// Draw trenidng
+  if ( Check() ) return;
+
   TString baseNames[3] = {"Chamber","RPC","Board"};
   TString base = baseNames[itype] + "Eff";
   if ( itype == AliTrigChEffOutput::kHboardEff ) {
@@ -784,6 +797,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
   Int_t height = 600;
   Int_t nDetEl = 4;
   Int_t nCh = 1;
+  Double_t legYmin = 0.65;
+  Double_t legYmax = 0.9;
   if ( itype != AliTrigChEffOutput::kHchamberEff ) {
     nColumns = 6;
     nRows = 3;
@@ -791,6 +806,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     height = 800;
     nDetEl = 18;
     nCh = 4;
+    legYmin = 0.15;
+    legYmax = 0.4;
   }
   TArrayI boards = BoardsInRPC(irpc);
   if ( itype == AliTrigChEffOutput::kHboardEff ) nDetEl = boards.GetSize();
@@ -800,10 +817,12 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     if ( itype != AliTrigChEffOutput::kHchamberEff ) canName += Form("Ch%i",11+ich);
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),25*ich,25*ich,width,height);
     can->Divide(nColumns,nRows,0,0);
-    //    can->SetTopMargin(0.03);
-    //    can->SetBottomMargin(0.1);
+    can->SetTopMargin(0.);
+    can->SetBottomMargin(0.);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( idetelem/nColumns == nRows - 1 ) gPad->SetBottomMargin(0.15);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -811,7 +830,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
       else if ( itype == AliTrigChEffOutput::kHboardEff ) detElemId = boards[idetelem];
 
       TString title = Form("%s %i",baseNames[itype].Data(),detElemId);
-      TLegend* leg = new TLegend(0.2,0.15,0.8,0.4);
+      TLegend* leg = new TLegend(0.2,legYmin,0.8,legYmax);
       leg->SetHeader(title.Data());
       for ( Int_t icount=0; icount<2; icount++ ) {
         TGraphAsymmErrors* gr = GetTrendEff(itype, icount, ich, detElemId);
@@ -820,6 +839,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
         gr->SetMarkerStyle(24+2*icount);
         gr->GetYaxis()->SetRangeUser(minEff,maxEff);
         gr->GetXaxis()->SetLabelSize(0.07);
+        gr->GetXaxis()->SetTitle("");
         //        gr->GetYaxis()->SetLabelSize(0.025*nRows);
         //        gr->GetXaxis()->SetLabelSize(0.025*nColumns);
         gr->SetTitle("");
@@ -890,6 +910,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
     can->Divide(nColumns,nRows,0,0);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -1004,6 +1025,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
       for ( Int_t ich=0; ich<4; ich++ ) {
         Int_t iplane = 4*icount+ich;
         can->cd(iplane+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetLogy();
         TLegend* leg = new TLegend(0.15,0.7,0.9,0.9);
@@ -1274,6 +1296,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
         trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
 
         can->cd(idetel+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetMargin(0.08,0.,0.08,0.);
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
@@ -1530,7 +1553,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
     graph->GetPoint(ipt,xpt,ypt);
     Double_t diff = ypt - func->Eval(xpt);
     Double_t err = ( diff > 0. ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
-    if ( err < 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
+    if ( err <= 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
     outliers->RemovePoint(ipt-nremoved);
     nremoved++;
 //    outliers->SetPoint(iopt,xpt,ypt);
@@ -1655,6 +1678,7 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
 TGraphAsymmErrors* AliMTRChEffAnalysis::GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const
 {
   /// Get trending histogram
+  if ( Check() ) return NULL;
   if ( icount == AliTrigChEffOutput::kAllTracks ) {
     AliWarning("Chose either bending plane, non-bending plane or both planes");
     return NULL;
@@ -1666,6 +1690,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetTrendEff ( Int_t itype, Int_t icount,
   histoNum->SetStats(kFALSE);
   // Solves crash when saving the canvas as a root file
   graph->SetHistogram(new TH1F(*static_cast<TH1F*>(histoNum)));
+  graph->GetHistogram()->SetDirectory(0);
   graph->GetYaxis()->SetTitle("Efficiency");
   graph->SetMarkerSize(0.5);
 //  for ( Int_t ibin=1; ibin<=histoNum->GetXaxis()->GetNbins(); ibin++ ) {
@@ -1707,6 +1732,61 @@ Bool_t AliMTRChEffAnalysis::HasMergedResults () const
     return kFALSE;
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromLocal ( const char *localFileList, const char *outputName )
+{
+  /// Initialize output list
+
+  AliInfo("Reading efficiency objects");
+
+  if ( ! fConditions ) SetDefaultEffConditions();
+
+  TString filename(localFileList);
+  gSystem->ExpandPathName(filename);
+  if ( gSystem->AccessPathName(filename.Data()) ) {
+    AliWarning(Form("Cannot find %s",filename.Data()));
+    return kFALSE;
+  }
+  if ( filename.EndsWith(".root") ) return AddToList(filename.Data(),outputName);
+
+  Bool_t isOk = kTRUE;
+  // std::vector<Int_t> orderedRuns;
+  std::map<int,std::string> tmpMap;
+  ifstream inFile(filename.Data());
+  TString currLine = "";
+  while ( ! inFile.eof() ) {
+    currLine.ReadLine(inFile);
+    if ( currLine.IsNull() ) continue;
+    if ( gSystem->AccessPathName(currLine.Data()) ) continue;
+    int currRun = AliAnalysisMuonUtility::GetRunNumber ( currLine );
+    tmpMap[currRun] = std::string(currLine.Data());
+    // orderedRuns.push_back(currRun);
+  }
+  inFile.close();
+
+  for ( auto it = tmpMap.begin(); it != tmpMap.end(); ++it ) {
+    if ( ! AddToList(it->second.c_str(), outputName) ) isOk = kFALSE;
+  }
+
+  return isOk;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromGrid ( const char *runList, const char *path, const char *pattern, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
+{
+  /// Search for results on grid
+  CopyLocally(runList,path,pattern,localFileList,outDir,directory);
+  return InitFromLocal(localFileList,outputName);
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromWeb ( const char *runList, const char *path, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
+{
+  /// Search for results on grid
+  CopyLocally(runList,path,"",localFileList,outDir,directory);
+  return InitFromLocal(localFileList,outputName);
 }
 
 //________________________________________________________________________
@@ -2075,53 +2155,6 @@ Bool_t AliMTRChEffAnalysis::SetEffConditions ( const char* physSel, const char* 
 }
 
 //________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetOutList ( const char *localFileList, const char *outputName )
-{
-  /// Initialize output list
-
-  AliInfo("Reading efficiency objects");
-
-  if ( ! fConditions ) SetDefaultEffConditions();
-
-  TString filename(localFileList);
-  gSystem->ExpandPathName(filename);
-  if ( gSystem->AccessPathName(filename.Data()) ) {
-    AliWarning(Form("Cannot find %s",filename.Data()));
-    return kFALSE;
-  }
-  if ( filename.EndsWith(".root") ) return AddToList(filename.Data(),outputName);
-
-  Bool_t isOk = kTRUE;
-  ifstream inFile(filename.Data());
-  TString currLine = "";
-  while ( ! inFile.eof() ) {
-    currLine.ReadLine(inFile);
-    if ( currLine.IsNull() ) continue;
-    if ( gSystem->AccessPathName(currLine.Data()) ) continue;
-    if ( ! AddToList(currLine.Data(), outputName) ) isOk = kFALSE;
-  }
-  inFile.close();
-
-  return isOk;
-}
-
-//________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetResultsFromGrid ( const char *runList, const char *path, const char *pattern, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
-{
-  /// Search for results on grid
-  CopyLocally(runList,path,pattern,localFileList,outDir,directory);
-  return SetOutList(localFileList,outputName);
-}
-
-//________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetResultsFromWeb ( const char *runList, const char *path, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
-{
-  /// Search for results on grid
-  CopyLocally(runList,path,"",localFileList,outDir,directory);
-  return SetOutList(localFileList,outputName);
-}
-
-//________________________________________________________________________
 Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t writeSystematics ) const
 {
   /// Create the OCDB objects
@@ -2192,6 +2225,36 @@ Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t wr
     delete effMap; // CAVEAT: effMap is owner of effHistos
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliMTRChEffAnalysis::ZoomPad()
+{
+  if ( gPad->GetEvent() != kButton1Double ) return;
+  TVirtualPad* pad = gPad;
+  Int_t px = pad->GetEventX();
+  Int_t py = pad->GetEventY();
+  TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
+  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
+    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
+    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
+    TString drawOpt = obj->GetOption();
+    if ( drawOpt.IsNull() ) {
+      if ( obj->InheritsFrom(TGraph::Class()) ) {
+        drawOpt = "p";
+        if ( iobj == 1 ) drawOpt.Append("a");
+        static_cast<TGraph*>(obj)->GetXaxis()->SetLabelSize();
+      }
+      else if ( obj->InheritsFrom(TH1::Class()) ) {
+        drawOpt = "e";
+        if ( iobj == 1 ) drawOpt.Append("same");
+        static_cast<TH1*>(obj)->GetXaxis()->SetLabelSize();
+      }
+    }
+    obj->Draw(drawOpt.Data());
+  }
+  can->Modified();
+  can->Update();
 }
 
 //___________________________________________________________________________

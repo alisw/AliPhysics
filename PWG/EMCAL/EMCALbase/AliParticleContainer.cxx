@@ -172,7 +172,7 @@ AliVParticle* AliParticleContainer::GetNextParticle()
  */
 Bool_t AliParticleContainer::GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
 {
-  if (part) {
+  if (part && part->Eta() < 1e6 && part->Eta() > -1e6) { // protection against FPE in sinh(eta)
     if (mass < 0) mass = part->M();
     mom.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), mass);
     return kTRUE;

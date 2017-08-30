@@ -27,12 +27,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnaCaloChannelAnalysis.cxx
     AliAnaCalorimeterQA.cxx
     AliAnaChargedParticles.cxx
     AliAnaClusterPileUp.cxx
@@ -52,6 +50,7 @@ set(SRCS
     AliAnaPi0EbE.cxx
     AliAnaPi0Flow.cxx
     AliAnaRandomTrigger.cxx
+    AliAnaClusterShapeCorrelStudies.cxx
    )
 
 # Headers from sources

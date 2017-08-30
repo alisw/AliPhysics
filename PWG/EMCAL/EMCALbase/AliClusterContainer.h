@@ -68,6 +68,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetMCLabelRange(Int_t min, Int_t max)        { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetExoticCut(Bool_t e)                       { fExoticCut       = e   ; }
   void                        SetIncludePHOS(Bool_t b)                     { fIncludePHOS = b       ; }
+  void                        SetIncludePHOSonly(Bool_t b)                 { fIncludePHOSonly = b   ; }
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
   void                        SetArray(const AliVEvent * event);
@@ -114,7 +115,8 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fExoticCut;                  ///< reject clusters marked as "exotic"
   Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; ///< cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
   Int_t            fDefaultClusterEnergy;       ///< default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
-  Bool_t           fIncludePHOS;                ///< whether or not to include PHOS clusters in addition to EMCal clusters
+  Bool_t           fIncludePHOS;                ///< flag to accept PHOS clusters in addition to EMCal clusters
+  Bool_t           fIncludePHOSonly;            ///< flag to accept only PHOS clusters (and reject EMCal clusters)
   Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
 
@@ -123,7 +125,7 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,8);
+  ClassDef(AliClusterContainer,9);
   /// \endcond
 };
 

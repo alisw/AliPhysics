@@ -1,20 +1,29 @@
 AliAnalysisTaskJetPP* AddTaskJetPP(
-   Bool_t	       ismc                    = kFALSE, //mc flag
-   const char*         hybridtracks            = "",     //name of hybrid track collection
-   const char*         mcparticless            = "",     //name of mc particle collection
-   const char*         jetfinderAkt            = "",     //name of antikt jet task
-   const char*         jetfinderKt             = "",     //name of kt jet task
-   const char*         jetfinderAktmc          = "",     //name of MC antikt jet task
-   const char*         jetfinderKtmc           = "",     //name of MC kt jet task
-   Double_t            jetRadius               = 0.4,    //radius of analyzed jets
+   Bool_t	      ismc                    = kFALSE,
+   const char*         hybridtracks            = "",
+   const char*         mcparticless            = "",
+   const char*         jetfinderAkt            = "",
+   const char*         jetfinderKt             = "",
+   const char*         jetfinderAktmc          = "",
+   const char*         jetfinderKtmc           = "",
+   //UInt_t              trigger                 = AliVEvent::kINT7,  //trigger
    UInt_t              trigger                 = AliVEvent::kINT7,  //trigger
-   const char*         containerSuffix         = "",     //tag to the name of container
-   const char*         centralityType          = "V0A",  //centrality
-   Double_t            trackEtaWindow          = 0.9,    //pseudorapidity range for tracks
-   Bool_t              useVertexCut            = kTRUE,  //vertex cut
-   Bool_t              usePileUpCut            = kTRUE   //discard pile up event
+   const char*         containerSuffix         = "",   //tag to the name of container
+   const char*         centralityType          = "V0A",   //centrality
+   Double_t            trackEtaWindow          = 0.9,   //pseudorapidity range for tracks
+   Bool_t              useVertexCut            = kTRUE,  // vertex cut
+   Bool_t              usePileUpCut            = kTRUE // discard pile up event
 ){
 
+   Double_t jetAKTRadius;
+   Double_t jetKTRadius;
+
+   TString jetFinderNameAKT = jetfinderAkt;
+   TString jetFinderNameKT = jetfinderKt;
+   for(int i=2;i<6;i++){
+      if(jetFinderNameAKT.Contains(Form("R0%d0",i))) jetAKTRadius = i*0.1;
+      if(jetFinderNameKT.Contains(Form("R0%d0",i)))  jetKTRadius = i*0.1;
+   }
    enum MyContainer {
       kContainerOne = 0,
       kContainerTwo   = 1,
@@ -23,8 +32,8 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    };
 
    //typeOfData   
-   Double_t jetEtaRange   = TMath::Abs(trackEtaWindow - jetRadius);  //fiducial cut on jet axis
-   Double_t jetEtaRangeKT = TMath::Abs(trackEtaWindow - jetRadius);  //fiducial cut on jet axis
+   Double_t jetEtaRange   = TMath::Abs(trackEtaWindow - jetAKTRadius);  //fiducial cut on jet axis
+   Double_t jetEtaRangeKT   = TMath::Abs(trackEtaWindow - jetKTRadius);  //fiducial cut on jet axis
 
    // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
@@ -57,15 +66,15 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
  
    TString myContName(""); //name of my container
-   myContName = Form("AnalysisR%02d_%s_%s", 
-      TMath::Nint(jetRadius*10), triggerName.Data(), containerNameSuffix.Data());
+   myContName = Form("AnalysisAKTR%02dKTR%02d_%s_%s", 
+      TMath::Nint(jetAKTRadius*10),TMath::Nint(jetKTRadius*10), triggerName.Data(), containerNameSuffix.Data());
 
    //_________________________________________________________
    //  JET FINDER TASKS
    enum AlgoType {kkt, kantikt};
    enum JetType  {kfulljets, kchargedjets, kneutraljets};
 
-   if(jetRadius < 0.1) return NULL;
+   if(jetAKTRadius < 0.1) return NULL;
  
 //__________________________________________________________________________________
    //MC Tagger match jets
@@ -74,7 +83,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    //cout<<"jetfinderAkt="  <<jetfinderAkt<<endl;
    if(ismc){
       //cout <<"jetfinderAktmc =" <<jetfinderAktmc<<endl;
-      tagr = AddTaskEmcalJetTagger(jetfinderAkt,jetfinderAktmc,jetRadius,
+      tagr = AddTaskEmcalJetTagger(jetfinderAkt,jetfinderAktmc,jetAKTRadius,
                                                                "","", //nrhoBase, nrhoTa
                                                                 hybridtracks, //ntracks
                                                                 "", //nclusters
@@ -91,8 +100,8 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
       tagr->SetDebugLevel(0);
       AliJetContainer *cont  = tagr->GetJetContainer(kContainerOne); //0
       AliJetContainer *cont2 = tagr->GetJetContainer(kContainerTwo);//1
-      if(!cont) cout <<"Neni cont1"<<endl;
-      if(!cont2) cout <<"Neni cont2"<<endl;
+      if(!cont) cout <<"AddTaskPP: Missing cont1"<<endl;
+      if(!cont2) cout <<"AddTaskPP: Missing cont2"<<endl;
       cont->SetMinPt(0.150);
       cont2->SetMinPt(0.150);
       cont->SetMaxTrackPt(1000);
@@ -107,7 +116,11 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    // #### DEFINE MY ANALYSIS TASK
 
    AliAnalysisTaskJetPP *task = new AliAnalysisTaskJetPP(
-                                             Form("MyJetTask_%s",triggerName.Data()));
+                                             Form("MyJetTask_%s",myContName.Data()));
+   if (ismc){
+      task->SetIsPythia(kTRUE);
+      task->SetMakeGeneralHistograms(kTRUE); //fill XSection and nTrials
+   }
 
    //_____________________________________________
    //TRACK CONTAINTERS
@@ -130,10 +143,10 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    //_____________________________________________
    //JET CONTAINERS
    AliJetContainer *jetContRecAKT = 0x0; //AKT jets with reconstructed tracks
-   AliJetContainer *jetContRecKT  = 0x0; //KT jets with reconstructed tracks
+   AliJetContainer *jetContRecKT  = 0x0;     //KT jets with reconstructed tracks
 
    //AKT jet containers settings
-   jetContRecAKT   = task->AddJetContainer(jetfinderAkt,"TPC",jetRadius);
+   jetContRecAKT   = task->AddJetContainer(jetfinderAkt,"TPC",jetAKTRadius);
    if(jetContRecAKT) {
       jetContRecAKT->ConnectParticleContainer(trackCont);
       //jetContRecAKT->SetPercAreaCut(0.6); // cut out all jets that have area less than 0.6*pi*R^2 (typically low momentum jets)
@@ -145,7 +158,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    }
 
    //KT jet containers settings
-   jetContRecKT = task->AddJetContainer(jetfinderKt,"TPC",jetRadius);
+   jetContRecKT = task->AddJetContainer(jetfinderKt,"TPC",jetKTRadius);
    if(jetContRecKT){
       jetContRecKT->ConnectParticleContainer(trackCont);
       //jetContRecKT->SetPercAreaCut(0.6);
@@ -153,7 +166,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
       jetContRecKT->SetMinTrackPt(0.);
       jetContRecKT->SetJetPtCut(0.);
       jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
-      jetContRecKT->SetJetEtaLimits(-jetEtaRange,jetEtaRange);  // RANGE   
+      jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
    }
 
    //_____________________________________________________________
@@ -163,7 +176,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
 
    //MC AKT jet containers settings
    if(ismc){
-      jetContTrue = task->AddJetContainer(jetfinderAktmc,"TPC",jetRadius);
+      jetContTrue = task->AddJetContainer(jetfinderAktmc,"TPC",jetAKTRadius);
       if(jetContTrue) {
          jetContTrue->ConnectParticleContainer(particleCont);
          //jetContTrue->SetPercAreaCut(0.6);//0.6
@@ -173,7 +186,7 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
       //MC KT jet containers settings
-      jetContTrueKT = task->AddJetContainer(jetfinderKtmc,"TPC",jetRadius);
+      jetContTrueKT = task->AddJetContainer(jetfinderKtmc,"TPC",jetKTRadius);
       if(jetContTrueKT) {
          jetContTrueKT->ConnectParticleContainer(particleCont);
          jetContTrueKT->SetMinPt(0.);
@@ -184,10 +197,10 @@ AliAnalysisTaskJetPP* AddTaskJetPP(
    }
 
  
-   // #### Task preferences
+   // #### PP Task preferences
    task->SetUsePileUpCut(usePileUpCut);
    task->SetUseDefaultVertexCut(useVertexCut);
-   task->SetAcceptanceWindows(trackEtaWindow, jetRadius);
+   task->SetAcceptanceWindows(trackEtaWindow, jetAKTRadius);
    task->SelectCollisionCandidates(trigger);
    task->SetCentralityType(centralityType); 
    task->SetMC(ismc);

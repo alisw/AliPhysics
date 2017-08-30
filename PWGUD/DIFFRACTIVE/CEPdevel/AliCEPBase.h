@@ -61,14 +61,14 @@ class AliCEPBase : public TObject {
     kTTFiredChips      = (1<< 9), // passed FiredChips test
 
     // type of vertex
-    kVtxUnknown = 0,
-    kVtxSPD,                // from ITS
-    kVtxTracks,             // from tracks
-    kVtxErrRes,             // z-resolution of SPD vertex is out-of-bounds
-    kVtxErrDif,             // difference in z between SPD and track vertex is
-                            //  out-of-bounds
-    kVtxErrZ,               // z-position of vertex is  out-of-bounds
-    kVtxAOD,                // On AOD only primary vertex is stored
+    kVtxUnknown         = 0,
+    kVtxSPD             = (1<< 0),  // from ITS
+    kVtxTracks          = (1<< 1),  // from tracks
+    kVtxErrRes          = (1<< 2),  // z-resolution of SPD vertex is out-of-bounds
+    kVtxErrDif          = (1<< 3),  // difference in z between SPD and track
+                                    // vertex is out-of-bounds
+    kVtxErrZ            = (1<< 4),  // z-position of vertex is out-of-bounds
+    kVtxAOD             = (1<< 5),  // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
 		// names for the bins are specified in AliCEPUtils.cxx
@@ -94,35 +94,38 @@ class AliCEPBase : public TObject {
 		kBinLastValue,
 
 		// definition of bits in AliAnalysisTaskCEP::fCurrentEventCondition
-		kBitBaseLine       = (1<< 0),
-    kBitEventCut       = (1<< 1),
-    kBitPhyssel        = (1<< 2),
-    kBitPileup         = (1<< 3),
-    kBitClusterCut     = (1<< 4),
-		kBitDGTrigger      = (1<< 5),
-    kBitVtx            = (1<< 6),
-		kBitMBOR           = (1<< 7),
-    kBitMBAND          = (1<< 8),
-		kBitSPDA           = (1<< 9),
-		kBitSPDC           = (1<<10),
-		kBitTPCA           = (1<<11),
-		kBitTPCC           = (1<<12),
-    kBitV0A            = (1<<13),
-		kBitV0C            = (1<<14),
-		kBitFMDA           = (1<<15),
-		kBitFMDC           = (1<<16),
-		kBitADA            = (1<<17),
-		kBitADC            = (1<<18), 
-		kBitZDCA           = (1<<19), 
-		kBitZDCC           = (1<<20), 
-		kBitZDNA           = (1<<21),
-		kBitZDNC           = (1<<22),
-    kBitSClusterCut    = (1<<23),
+		kETBaseLine       = (1<< 0),
+    kETEventCut       = (1<< 1),
+    kETPhyssel        = (1<< 2),
+    kETPileup         = (1<< 3),
+    kETClusterCut     = (1<< 4),
+		kETDGTrigger      = (1<< 5),
+    kETVtx            = (1<< 6),
+		kETMBOR           = (1<< 7),
+    kETMBAND          = (1<< 8),
+		kETSPDA           = (1<< 9),
+		kETSPDC           = (1<<10),
+		kETTPCA           = (1<<11),
+		kETTPCC           = (1<<12),
+    kETV0A            = (1<<13),
+		kETV0C            = (1<<14),
+		kETFMDA           = (1<<15),
+		kETFMDC           = (1<<16),
+		kETADA            = (1<<17),
+		kETADC            = (1<<18), 
+		kETZDCA           = (1<<19), 
+		kETZDCC           = (1<<20), 
+		kETZDNA           = (1<<21),
+		kETZDNC           = (1<<22),
+    kETSClusterCut    = (1<<23),
 
     // MC process types
     kProctypeUnknown = 0,
+    kProctypeMB,
     kProctypeND,
-    kProctypeSD,
+    kProctypeEL,
+    kProctypeSDA,
+    kProctypeSDB,
     kProctypeDD,
     kProctypeCD,
 
@@ -140,7 +143,8 @@ class AliCEPBase : public TObject {
     kBitTrackCutStudy         = (1<< 8), // track cut study
     kBitBBFlagStudy           = (1<< 9), // BBFlag study
     kBitV0Study               = (1<<10), // V0 study
-		kBitConfigurationVersion  = (1<<11)  // always set, last bit
+    kBitFMDStudy              = (1<<11), // FMD study
+		kBitConfigurationVersion  = (1<<12)  // always set, last bit
 	
   };
 

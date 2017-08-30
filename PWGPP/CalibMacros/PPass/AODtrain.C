@@ -222,8 +222,13 @@ void AddAnalysisTasks(const char *cdb_location, int collisionSystem=0){
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskCentralMult.C");
         AddTaskCentralMult(useMC, pwglfForwardSys, pwglfSNN, pwglfField);
    }
- 
-    
+
+   // PWGAgammaconv
+   if (iPWGGAgammaconv) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_ConversionAODProduction.C");
+      AliAnalysisTask *taskconv = AddTask_ConversionAODProduction(iCollision, kFALSE);
+      mgr->RegisterExtraFile("AliAODGammaConversion.root");
+   }
 
    if (iESDfilter) {
       //  ESD filter task configuration.
@@ -273,15 +278,7 @@ void AddAnalysisTasks(const char *cdb_location, int collisionSystem=0){
      TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), "file:ConfigVertexingHF.C");
      AddD2HTrain(kFALSE, 1,0,0,0,0,0,0,0,0,0,0);                                 
    }
-   
-    //PWGAgammaconv
-    if (iPWGGAgammaconv) {
-      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_ConversionAODProduction.C");
-      AliAnalysisTask *taskconv = AddTask_ConversionAODProduction(iCollision, kFALSE);
-      mgr->RegisterExtraFile("AliAODGammaConversion.root");
-   }   
-  
-   
+
    // ********** PWG4 wagons ******************************************************
    // Jet analysis
 

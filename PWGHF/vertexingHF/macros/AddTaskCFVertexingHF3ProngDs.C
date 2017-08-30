@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2, Bool_t useNtrkWeight=kFALSE, Bool_t isFineNtrkBin=kFALSE)
 //AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -166,6 +166,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
 	
+    Int_t nbinmultTmp=nbinmult;
+    if(isFineNtrkBin){
+        Int_t nbinLimmultFine=250;
+        const UInt_t nbinMultFine = nbinLimmultFine;
+        binLimmultFine = new Double_t[nbinMultFine+1];
+        for (Int_t ibin0 = 0 ; ibin0<=nbinMultFine; ibin0++){
+            binLimmultFine[ibin0] = ibin0;
+        }
+        nbinmultTmp=nbinLimmultFine;
+    }
+    const Int_t nbinmultTot=nbinmultTmp;
+
+    
 	//the sensitive variables, their indices
 	const UInt_t ipT = 0;
 	const UInt_t iy  = 1;
@@ -202,7 +215,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	iBin[ifake]=nbinfake;
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
-	iBin[imult]=nbinmult;
+	iBin[imult]=nbinmultTot;
 	
 	//arrays for lower bounds :
 	Double_t *binLimpT=new Double_t[iBin[ipT]+1];
@@ -378,8 +391,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		printf("normDecayLXY\n");
 		container -> SetBinLimits(inormDecayLXY,binLimnormDecayLXY);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imult,binLimmult);
-		
+        if(isFineNtrkBin) container -> SetBinLimits(imult,binLimmultFine);
+        else container -> SetBinLimits(imult,binLimmult);
+
 		container -> SetVarTitle(ipT,"pt");
 		container -> SetVarTitle(iy,"y");
 		container -> SetVarTitle(iphi, "phi");
@@ -434,7 +448,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		printf("fake\n");
 		container -> SetBinLimits(ifakeFast,binLimfake);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imultFast,binLimmult);
+        if(isFineNtrkBin) container -> SetBinLimits(imultFast,binLimmultFine);
+        else container -> SetBinLimits(imultFast,binLimmult);
 
 		container -> SetVarTitle(ipTFast,"pt");
 		container -> SetVarTitle(iyFast,"y");
@@ -561,7 +576,25 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 			task->GetWeightFunction()->Print();
 		}
 	}
-
+    
+    if(useNtrkWeight){
+        TH1F *hNtrkMC;
+        TH1F *hNtrkMeasured;
+        hNtrkMC = (TH1F*)fileCuts->Get("hNtrkMC");
+        hNtrkMeasured = (TH1F*)fileCuts->Get("hNtrkMeasured");
+        if(hNtrkMC) task->SetMCNchHisto(hNtrkMC);
+        else {
+            AliFatal("Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        if(hNtrkMeasured) task->SetMeasuredNchHisto(hNtrkMeasured);
+        else {
+            AliFatal("Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        task->SetUseNchTrackletsWeight(kTRUE);
+    }
+    
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());

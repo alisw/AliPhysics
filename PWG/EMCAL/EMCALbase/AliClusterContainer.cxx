@@ -42,6 +42,7 @@ AliClusterContainer::AliClusterContainer():
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1),
   fIncludePHOS(kFALSE),
+  fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0)
 {
@@ -64,6 +65,7 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1),
   fIncludePHOS(kFALSE),
+  fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0)
 {
@@ -328,7 +330,12 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
   }
   
   Bool_t bInAcceptance = clus->IsEMCAL();
-  if (fIncludePHOS) bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
+  if (fIncludePHOS) {
+    bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
+  }
+  if (fIncludePHOSonly) {
+    bInAcceptance = (clus->GetType() == AliVCluster::kPHOSNeutral);
+  }
   if (!bInAcceptance) {
       rejectionReason |= kIsEMCalCut;
       return kFALSE;
@@ -366,15 +373,17 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     }
   }
   
-  if (fIncludePHOS && clus->GetType() == AliVCluster::kPHOSNeutral) {
-    if (clus->GetNCells() < fPhosMinNcells) {
-      rejectionReason |= kExoticCut;
-      return kFALSE;
-    }
-    
-    if (clus->GetM02() < fPhosMinM02) {
-      rejectionReason |= kExoticCut;
-      return kFALSE;
+  if (fIncludePHOS || fIncludePHOSonly) {
+    if (clus->GetType() == AliVCluster::kPHOSNeutral) {
+      if (clus->GetNCells() < fPhosMinNcells) {
+        rejectionReason |= kExoticCut;
+        return kFALSE;
+      }
+      
+      if (clus->GetM02() < fPhosMinM02) {
+        rejectionReason |= kExoticCut;
+        return kFALSE;
+      }
     }
   }
   

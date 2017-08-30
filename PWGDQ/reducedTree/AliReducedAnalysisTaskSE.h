@@ -22,6 +22,13 @@
 class AliReducedAnalysisTaskSE : public TObject {
   
 public:
+   enum ETreeWritingOptions {
+      kBaseEventsWithBaseTracks=0,    // write basic event info and basic track info
+      kBaseEventsWithFullTracks,           // write basic event info and full track info
+      kFullEventsWithBaseTracks,           // write full event info and base track info
+      kFullEventsWithFullTracks              // write full event info and full track info
+   };
+   
   AliReducedAnalysisTaskSE();
   AliReducedAnalysisTaskSE(const Char_t* name, const Char_t* title);
   virtual ~AliReducedAnalysisTaskSE();
@@ -35,20 +42,24 @@ public:
   virtual void Finish();
   // add output objects;
   
+  void InitFilteredTree();
+  
   // setters
   void SetEvent(AliReducedBaseEvent* event) {fEvent = event;}
-  //void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}  
+  
+  void SetFilteredTreeWritingOption(Int_t option)         {fFilteredTreeWritingOption = option;}
+  void SetFilteredTreeActiveBranch(TString b)   {fActiveBranches+=b+";";}
+  void SetFilteredTreeInactiveBranch(TString b) {fInactiveBranches+=b+";";}
   
   // getters
-  //AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
-  virtual AliHistogramManager* GetHistogramManager() const = 0;  //{return 0x0;}
+  virtual AliHistogramManager* GetHistogramManager() const = 0;
   AliReducedBaseEvent* GetEvent() const {return fEvent;}
+  TTree* GetFilteredTree() {return fFilteredTree;}
+  Int_t GetFilteredTreeWritingOption() const {return fFilteredTreeWritingOption;}
   
 protected:
   AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& task);             
   AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& task);      
-  
-  //AliHistogramManager* fHistosManager;   // Histogram manager
   
   TString fName;             // name
   TString fTitle;                // title
@@ -56,7 +67,15 @@ protected:
   AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
   
-  ClassDef(AliReducedAnalysisTaskSE, 2)
+  TTree *fFilteredTree;                          //! tree to hold filtered reduced events
+  TString fActiveBranches;                   // list of active output tree branches 
+  TString fInactiveBranches;                // list of inactive output tree branches
+  AliReducedBaseEvent *fFilteredEvent;     // filtered reduced event
+  Int_t     fFilteredTreeWritingOption;     // one of the options described by ETreeWritingOptions
+  
+  ULong_t fEventCounter;   // event counter
+  
+  ClassDef(AliReducedAnalysisTaskSE, 3)
 };
 
 #endif

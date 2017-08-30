@@ -183,8 +183,8 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     Double_t                            *fUnsmearedPy;                        //[fnGammaCandidates]
     Double_t                            *fUnsmearedPz;                        //[fnGammaCandidates]
     Double_t                            *fUnsmearedE;                         //[fnGammaCandidates]
-    Int_t                               *fMCStackPos;                         //[fnGammaCandidates]
-    Int_t                               *fMCStackNeg;                         //[fnGammaCandidates]
+    Int_t                               *fMCEventPos;                         //[fnGammaCandidates]
+    Int_t                               *fMCEventNeg;                         //[fnGammaCandidates]
     Int_t                               *fESDArrayPos;                        //[fnGammaCandidates]
     Int_t                               *fESDArrayNeg;                        //[fnGammaCandidates]
     Int_t                               fnCuts;                               //
@@ -208,7 +208,6 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     Int_t                               fApplydPhidRCut;                      //
     Bool_t                              fPerformExtraStudies;                 //
     AliMCEvent*                         fMCEvent;                             //
-    AliStack*                           fMCStack;                             //
 
   private:
     Bool_t                              fDebug;                               //! enable debug mode
@@ -226,7 +225,7 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
     AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskGammaConvFlow, 12);
+  ClassDef(AliAnalysisTaskGammaConvFlow, 13);
 };
 
 #endif

@@ -37,7 +37,7 @@ class AliKFConversionMother : public AliKFParticle {
 
   void SetMCLabel(Int_t i){fMCLabel=i;}
 
-  Int_t GetMCLabel(){return fMCLabel;}
+  Int_t GetMCLabel() const {return fMCLabel;}
 
   ///Set track or MC labels
   void SetLabel1(Int_t label){fLabel[0] = label;}
@@ -46,8 +46,8 @@ class AliKFConversionMother : public AliKFParticle {
 
   Int_t GetGammaLabel(Int_t i) const {return fLabel[i];}
 
-  Double_t GetOpeningAngle(){return fOpeningAngle;}
-  Double_t GetAlpha(){return fAlpha;}
+  Double_t GetOpeningAngle() const {return fOpeningAngle;}
+  Double_t GetAlpha() const {return fAlpha;}
   Double_t GetRapidity();
 
   Double_t M(){return GetMass();}

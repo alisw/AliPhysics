@@ -1186,11 +1186,11 @@ void AliAODPidHF::SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetec
 
   axis = min->GetXaxis();
   histFunc = new HistFunc(min);
-  TF1 *minFunc = new TF1(Form("IdMin_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+  TF1 *minFunc = new TF1(Form("IdMin_%d_%d", spe, det), *histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
 
   axis = max->GetXaxis();
   histFunc = new HistFunc(max);
-  TF1 *maxFunc = new TF1(Form("IdMax_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+  TF1 *maxFunc = new TF1(Form("IdMax_%d_%d", spe, det), *histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
 
   SetIdBand(specie, detector, minFunc, maxFunc);
 }
@@ -1231,11 +1231,11 @@ void AliAODPidHF::SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDet
 
   axis = min->GetXaxis();
   histFunc = new HistFunc(min);
-  TF1 *minFunc = new TF1(Form("CompMin_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+  TF1 *minFunc = new TF1(Form("CompMin_%d_%d", spe, det), *histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
 
   axis = max->GetXaxis();
   histFunc = new HistFunc(max);
-  TF1 *maxFunc = new TF1(Form("CompMax_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+  TF1 *maxFunc = new TF1(Form("CompMax_%d_%d", spe, det), *histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
 
   SetCompBand(specie, detector, minFunc, maxFunc);
 }

@@ -1,0 +1,56 @@
+This is readme file to run PHOS photon/neutral meson analyses in Run2 by PWGGA/PHOSTasks/PHOS_Run2.
+
+1. create an array which contains PHOS clusters as AliCaloPhoton objects.
+arguments are following.
+AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
+    const char* name     = "PHOSObjectCreator",
+    const UInt_t trigger = AliVEvent::kINT7|AliVEvent::kPHI7,
+    const Bool_t usePHOSTender = kTRUE,
+    const Bool_t isMC = kFALSE,
+    const Double_t BunchSpace = 25,
+    const Double_t distanceBC = 0,
+    const TString period = "LHC15n"
+    )
+
+please select trigger which you want to analyze.
+In most cases, usePHOSTender = kTRUE, because calibration, track matching, evaluation of shower shape are done by AliPHOSTenderSupply.cxx/h.
+Otherwize, they are performed by PHOSObjectCreator.
+
+BunchSpace is used for setting TOF cut bit. TOF cut criterion = BunchSpace/2.
+distanceBC means distance to the closest bad channel.
+period is for non-linearity function in different period in MC.
+
+
+2. analyze the array created by PHOSObjectCreator for photon/neutral mesons
+
+AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
+    const char* name     = "Pi0EtaToGammaGamma",
+    const UInt_t trigger = AliVEvent::kINT7,
+    const TString CollisionSystem = "pp",
+    const Bool_t isMC = kFALSE,
+    const Int_t L1input = -1,
+    const Int_t L0input = -1,
+    const Bool_t useCoreE = kFALSE,
+    const Bool_t useCoreDisp = kFALSE,
+    const Double_t NsigmaCPV  = 2.5,
+    const Double_t NsigmaDisp = 2.5,
+    const Bool_t usePHOSTender = kTRUE,
+    const Double_t bs = 25.,//bunch space in ns.
+    const Double_t distBC = -1,//minimum distance to bad channel.
+    const Int_t pThardbin = -1
+    )
+
+please select trigger which you want to analyze.
+set collision system for centrality estimation.
+L1/L0input should be following
+const Int_t L1PHH = 7;
+const Int_t L1PHM = 6;
+const Int_t L1PHL = 5;
+const Int_t L0    = 9;
+Note that L1 has higher priority than L0.
+
+useCoreE = kTRUE for PbPb
+useCoreE = kFALSE for pp, pPb/Pbp
+bs and distBC will go to output list name.
+pThardbin is only jet-jet M.C.
+

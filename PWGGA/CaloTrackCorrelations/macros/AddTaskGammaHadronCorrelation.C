@@ -1359,8 +1359,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SwitchOffFillAllPositionHistogram();
   ana->SwitchOffFillAllPositionHistogram2();
   ana->SwitchOffStudyBadClusters() ;
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOffFillAllCellTimeHisto() ;
   
   ana->SwitchOnFillAllTrackMatchingHistogram();

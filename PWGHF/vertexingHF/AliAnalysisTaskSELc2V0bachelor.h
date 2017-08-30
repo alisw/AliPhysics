@@ -59,6 +59,9 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 			       TClonesArray *mcArray,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal);
  
+  void MakeSingleAnalysisForSystK0SP(AliAODEvent* aodEvent,TClonesArray *mcArray, 
+      AliRDHFCutsLctoV0 *cutsAnal);
+
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
@@ -101,6 +104,11 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   void ReconstructSecVtx(Bool_t dummy=kTRUE) {fReconstructSecVtx=dummy;}
   Bool_t GetReconstructSecVtx() const {return fReconstructSecVtx;}
+
+  void SetDoSingleAnalysisForSystK0SP(Int_t a) {fDoSingleAnalysisForSystK0SP=a;}
+  Int_t GetDoSingleAnalysisForSystK0SP() {return fDoSingleAnalysisForSystK0SP;}
+
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
  private:
   
@@ -149,6 +157,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter; /// AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 3
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
+  Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
   Bool_t fIsEventSelected;           /// flag for event selected
 
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
@@ -173,8 +182,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Bool_t fCheckOrigin;
   Bool_t fReconstructSecVtx;
 
+  Int_t fDoSingleAnalysisForSystK0SP; /// Analyze p,K,D for syst (0:off, 1:on, 2:only single ana)
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,10); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,12); /// class for Lc->p K0
   /// \endcond
 };
 

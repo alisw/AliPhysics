@@ -13,6 +13,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnMiniAnalysisTask *task,
    Bool_t                  isPP,
    Bool_t                  isMC,
+   Bool_t                  isGT,
    Float_t                 piPIDCut,
    Float_t                 pi_k0s_PIDCut,
    Int_t                   aodFilterBit,
@@ -21,6 +22,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Bool_t                  enableMonitor,
    TString                 monitorOpt,
    Float_t                 massTol,
+   Float_t                 MaxRap,
    Float_t                 massTolVeto, 
    Float_t                 pLife, 
    Float_t                 radiuslow,
@@ -32,13 +34,17 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair,
-   Bool_t                  ptDep
+   AliRsnCutSet           *PairCutsSame,
+   AliRsnCutSet           *PairCutsMix,
+   UInt_t                  triggerMask=AliVEvent::kINT7
 )
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
 
+   Int_t MultBins=aodFilterBit/100;
+   aodFilterBit=aodFilterBit%100;
+   
    
    /////////////////////////////////////////////////////
    // selections for the pion from the decay of KStarPlusMinus*
@@ -71,14 +77,10 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetRequireTPCRefit(); // Standard
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
-   //esdTrackCuts->SetMaxChi2PerClusterTPC(4.); //not standard Cut 
-
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
 
-   if(ptDep){
-     esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-   }else
-     esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
+
+   esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
   
 
 
@@ -89,13 +91,13 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
-   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not in the standard Cut 
+   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not a standard Cut but taken to choose only primary V0s 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
-   cutK0s->SetMaxRapidity(0.5);
+   cutK0s->SetMaxRapidity(MaxRap);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+   cutK0s->SetSwitch(Switch); // if 1 Competing V0 Rejection cut will be used   
    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
-   cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); 
    cutK0s->SetfLowRadius(radiuslow); 
    cutK0s->SetfHighRadius(radiushigh);
@@ -104,7 +106,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    if(enableSys)
      {
 
-       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+       if(Sys==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");}
+       else if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
        else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
        else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
        else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
@@ -177,6 +180,25 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
+   /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
+   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
+   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP,kFALSE);
+   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
+   /* cos(theta) J     */ Int_t ctjID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE);
+   /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
+   /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
+   /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
+
+   Double_t multbins[200];
+  int j,nmult=0;
+  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+  if(triggerMask==AliVEvent::kHighMultV0){multbins[nmult]=1.; nmult++;}
+  else for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -214,7 +236,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(i <= 1){
+       out->SetPairCuts(PairCutsSame);
+     }
+     else{
+       out->SetPairCuts(PairCutsMix);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -226,6 +253,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
    } 
    
    AddMonitorOutput_PionPt(cutSetPi->GetMonitorOutput());
@@ -264,7 +292,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -273,7 +301,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("AKStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
      // selection settings
@@ -282,7 +310,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      out->SetMotherPDG(-323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -291,7 +319,35 @@ Bool_t ConfigKStarPlusMinus5TeVpp
      
      if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
      else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isGT) out->AddAxis(sdpt,100,0.,10.);
+
+
+     AliRsnMiniOutput* outmf=task->CreateOutput(Form("kstarPM_MotherFine%s", suffix),"SPARSE","MOTHER");
+     outmf->SetDaughter(0, AliRsnDaughter::kKaon0);
+     outmf->SetDaughter(1, AliRsnDaughter::kPion);
+     outmf->SetMotherPDG(-323);
+     outmf->SetMotherMass(0.89166);
+     outmf->SetPairCuts(PairCutsMix);
+     outmf->AddAxis(imID, 90, 0.6, 1.5);
+     outmf->AddAxis(ptID, 300, 0.0, 30.0);
      
+     if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
+     else outmf->AddAxis(centID,161,-0.5,160.5);
+   
+     
+     //get phase space of the decay from mothers
+     AliRsnMiniOutput* outps=task->CreateOutput(Form("kstarPM_phaseSpace%s", suffix),"HIST","TRUE");
+     outps->SetDaughter(0, AliRsnDaughter::kKaon0);
+     outps->SetDaughter(1, AliRsnDaughter::kPion);
+     outps->SetCutID(0,iCutK0s);
+     outps->SetCutID(1,iCutPi);
+     outps->SetMotherPDG(-323);
+     outps->SetMotherMass(0.89166);
+     outps->SetPairCuts(PairCutsMix);
+     outps->AddAxis(fdpt,100,0.,10.);
+     outps->AddAxis(sdpt,100,0.,10.);
+     outps->AddAxis(ptID,200,0.,20.);
+     // upto here....
    }
    
    return kTRUE;

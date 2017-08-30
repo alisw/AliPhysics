@@ -57,7 +57,7 @@
 #include "AlidNdPtHelper.h"
 #include "AlidNdPtAnalysisPbPb.h"
 #include "AliMultSelection.h"
-
+#include "AliAnalysisUtils.h"
 using namespace std;
 
 ClassImp(AlidNdPtAnalysisPbPb)
@@ -734,9 +734,9 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 {
     //  init if not done already
     if (!fIsInit) { Init(); }
-    //
+    
+    
     // Process real and/or simulated events
-    //
     if(!esdEvent) {AliDebug(AliLog::kError, "esdEvent not available"); return;}
 
     // get selection cuts
@@ -753,36 +753,31 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     AliPhysicsSelection *physicsSelection = NULL;
     AliTriggerAnalysis* triggerAnalysis = NULL;
 
-    // 
+
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
     if (!inputHandler) {Printf("ERROR: Could not receive input handler"); return;}
 
     if(evtCuts->IsTriggerRequired()){
-        // always MB
-        isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
+      // always MB
+      isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
+      
+      physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+      if(!physicsSelection) return;
 
-        physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
-        if(!physicsSelection) return;
-
-        if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
-            // set trigger (V0AND)
-            triggerAnalysis = physicsSelection->GetTriggerAnalysis();
-            if(!triggerAnalysis) return;
-            isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
-        }
+      if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+	// set trigger (V0AND)
+        triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+        if(!triggerAnalysis) return;
+        isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+      }
     }
-
-
+    
     // centrality determination
     Float_t centralityF = -1.;
     AliMultSelection *MultSelection = (AliMultSelection*) esdEvent->FindListObject("MultSelection");
 
-    if ( MultSelection ){
-        centralityF = MultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),kFALSE);
-    }
+    if ( MultSelection ){centralityF = MultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),kFALSE);}
     else{Printf("ERROR: Could not receive mult selection"); AliInfo("Didn't find MultSelection!"); }
-
-
 
     // use MC information
     AliHeader* header = 0;
@@ -790,58 +785,52 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     AliStack* stack = 0;
     TArrayF vtxMC(3);
 
+    /// MC Event loop
     Int_t multMCTrueTracks = 0;
-    if(IsUseMCInfo())
-    {
-        //
-        if(!mcEvent) {AliDebug(AliLog::kError, "mcEvent not available"); return; }
-        // get MC event header
-        header = mcEvent->Header();
-        if (!header) {AliDebug(AliLog::kError, "Header not available"); return; }
-        // MC particle stack
-        stack = mcEvent->Stack();
-        if (!stack) { AliDebug(AliLog::kError, "Stack not available");  return; }
+    if(IsUseMCInfo()){
+       if(!mcEvent) {AliDebug(AliLog::kError, "mcEvent not available"); return; }
+       // get MC event header
+       header = mcEvent->Header();
+       if (!header) {AliDebug(AliLog::kError, "Header not available"); return; }
+       // MC particle stack
+       stack = mcEvent->Stack();
+       if (!stack) { AliDebug(AliLog::kError, "Stack not available");  return; }
+       // get MC vertex
+       genHeader = header->GenEventHeader();
+       if (!genHeader) {AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");  return; }
+       genHeader->PrimaryVertex(vtxMC);
 
-        // get MC vertex
-        genHeader = header->GenEventHeader();
-        if (!genHeader) {AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");  return; }
+       Double_t vMCEventHist1[4]={vtxMC[0],vtxMC[1],vtxMC[2],centralityF};
+       fMCEventHist1->Fill(vMCEventHist1);
 
-        genHeader->PrimaryVertex(vtxMC);
-
-        Double_t vMCEventHist1[4]={vtxMC[0],vtxMC[1],vtxMC[2],centralityF};
-        fMCEventHist1->Fill(vMCEventHist1);
-
-        // multipliticy of all MC primary tracks
-        // in Zv, pt and eta ranges)
-        multMCTrueTracks = AlidNdPtHelper::GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
-
-    } // end bUseMC
+       // multipliticy of all MC primary tracks
+       // in Zv, pt and eta ranges)
+       multMCTrueTracks = AlidNdPtHelper::GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
+    } // End MC Event loop
 
     // get reconstructed vertex  
     const AliESDVertex* vtxESD = 0; 
-    if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
-    }
-    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-        vtxESD = esdEvent->GetPrimaryVertexTracks();
-    }
-    else {
-        return;
-    }
-
+    if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {vtxESD = esdEvent->GetPrimaryVertexTPC();}
+    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {vtxESD = esdEvent->GetPrimaryVertexTracks();}
+    else {return;}
     if(!vtxESD) return;
 
+    // Check for event cuts
     Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+    
+    if(IsUseSPDClusterVsTrackletRejection()){
+      AliAnalysisUtils *utils = new AliAnalysisUtils();
+      if(utils->IsSPDClusterVsTrackletBG(esdEvent)){isEventOK=kFALSE;}
+    }
+    
 
     // vertex contributors
     Int_t multMBTracks = 0; 
-    if(GetAnalysisMode() == AlidNdPtHelper::kTPC || GetAnalysisMode() == AlidNdPtHelper::kTPCITS) 
-    {
-        if(vtxESD->GetStatus()) {
-            multMBTracks = vtxESD->GetNContributors();
-        }
-    } 
-    else { AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode())); return;}
+    if(GetAnalysisMode() == AlidNdPtHelper::kTPC || GetAnalysisMode() == AlidNdPtHelper::kTPCITS){
+      if(vtxESD->GetStatus()) {
+	multMBTracks = vtxESD->GetNContributors();
+      }
+    }else{ AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode())); return;}
 
     TObjArray *allChargedTracks=0;
     Int_t multAll=0, multRec=0;

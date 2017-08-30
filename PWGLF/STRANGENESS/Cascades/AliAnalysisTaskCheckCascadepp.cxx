@@ -57,7 +57,8 @@
 //               Feb 2015
 //               - Added the possibility to select events in the class kINT7 for the pp@13TeV analysis through "fkSwitchINT7"
 //               - Revision of the event selections for the pp@13TeV analysis
-//
+//               May 2017
+//               - 
 //             
 //
 //-----------------------------------------------------------------
@@ -139,6 +140,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fTrackQualityCutTPCrefit        (kTRUE),
     fTrackQualityCutnTPCcls         (kTRUE),
     fMinnTPCcls                     (0),
+    fMinTPCcrossrawoverfindable     (0),
     fVtxRangeMax                    (10),
     fVtxRangeMin                    (0),
     fMinPtCutOnDaughterTracks       (0),
@@ -242,6 +244,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fTrackQualityCutTPCrefit        (kTRUE),
     fTrackQualityCutnTPCcls         (kTRUE),
     fMinnTPCcls                     (0),
+    fMinTPCcrossrawoverfindable     (0),
     fVtxRangeMax                    (10),
     fVtxRangeMin                    (0),
     fMinPtCutOnDaughterTracks       (0),
@@ -726,19 +729,19 @@ void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
  TString sddstatus = "";
  if      (fCollidingSystem == 0 && fApplyEvSelSDDstatus && fwithSDD)  sddstatus = "_wSDDon";
  else if (fCollidingSystem == 0 && fApplyEvSelSDDstatus && !fwithSDD) sddstatus = "_wSDDoff";
- TString cfcontname_cascpidximinus = Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+ TString cfcontname_cascpidximinus = Form("fCFContCascadePIDXiMinus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
  cfcontname_cascpidximinus.Append(Form("%s",sddstatus.Data()));
  cfcontname_cascpidximinus.Append(Form("%s",fSuffix.Data()));
- TString cfcontname_cascpidxiplus = Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+ TString cfcontname_cascpidxiplus = Form("fCFContCascadePIDXiPlus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
  cfcontname_cascpidxiplus.Append(Form("%s",sddstatus.Data()));
  cfcontname_cascpidxiplus.Append(Form("%s",fSuffix.Data()));
- TString cfcontname_cascpidomegaminus = Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+ TString cfcontname_cascpidomegaminus = Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
  cfcontname_cascpidomegaminus.Append(Form("%s",sddstatus.Data()));
  cfcontname_cascpidomegaminus.Append(Form("%s",fSuffix.Data()));
- TString cfcontname_cascpidomegaplus = Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+ TString cfcontname_cascpidomegaplus = Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
  cfcontname_cascpidomegaplus.Append(Form("%s",sddstatus.Data()));
  cfcontname_cascpidomegaplus.Append(Form("%s",fSuffix.Data()));
- TString cfcontname_casccuts = Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
+ TString cfcontname_casccuts = Form("fCFContCascadeCuts_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fMinTPCcrossrawoverfindable,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks);
  cfcontname_casccuts.Append(Form("%s",sddstatus.Data()));
  cfcontname_casccuts.Append(Form("%s",fSuffix.Data()));
  // - CFContainer PID study Xi minus
@@ -1527,9 +1530,12 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
       Double_t lPosXi[3]                   = { -1000.0, -1000.0, -1000.0 };
       Double_t lXiRadius                   = -1000. ;
       // - 2nd part of initialisation : Nbr of clusters within TPC for the 3 daughter cascade tracks
-      UShort_t lPosTPCClusters             = -1; // For ESD only ...
-      UShort_t lNegTPCClusters             = -1; // For ESD only ...
-      UShort_t lBachTPCClusters            = -1; // For ESD only ...
+      Double_t lPosTPCClusters             = -1; // For ESD only ...
+      Double_t lNegTPCClusters             = -1; // For ESD only ...
+      Double_t lBachTPCClusters            = -1; // For ESD only ...
+      Double_t lPosTPCFindClusters         = -1; // For ESD only ...
+      Double_t lNegTPCFindClusters         = -1; // For ESD only ...
+      Double_t lBachTPCFindClusters        = -1; // For ESD only ...
       Double_t lInnerWallMomCascDghters[3] = {-100., -100., -100.};
       Double_t lTPCSignalCascDghters   [3] = {-100., -100., -100.};
       // - 3rd part of initialisation : about V0 part in cascades
@@ -1627,10 +1633,14 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
                continue;
           }
-          // - Get the TPCnumber of cluster for the daughters
-          lPosTPCClusters   = pTrackXi->GetTPCNcls();
-          lNegTPCClusters   = nTrackXi->GetTPCNcls();
-          lBachTPCClusters  = bachTrackXi->GetTPCNcls();
+          // - Get the number of TPC clusters for the daughters
+          lPosTPCClusters   = pTrackXi->GetTPCClusterInfo(2,1);             // Old for #TPCclusters: ->GetTPCNcls();
+          lNegTPCClusters   = nTrackXi->GetTPCClusterInfo(2,1);             // Old for #TPCclusters: ->GetTPCNcls();
+          lBachTPCClusters  = bachTrackXi->GetTPCClusterInfo(2,1);          // Old for #TPCclusters: ->GetTPCNcls();
+          // - Get the number TPC findable clusters for daughters
+          lPosTPCFindClusters   = pTrackXi->GetTPCNclsF();                  // New
+          lNegTPCFindClusters   = nTrackXi->GetTPCNclsF();                  // New
+          lBachTPCFindClusters  = bachTrackXi->GetTPCNclsF();               // New
 
           //-------------------------------------
           // - Rejection of a poor quality tracks
@@ -1648,6 +1658,11 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                 if (lPosTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Pos. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
                 if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
                 if (lBachTPCClusters < fMinnTPCcls) { AliWarning(Form("Pb / Bach.   track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                // - Poor quality related to clusters/findable
+                if( lPosTPCFindClusters <= 0 || lNegTPCFindClusters <= 0 || lBachTPCFindClusters ) { AliWarning("Pb / Number of findable cluster <= 0 ... continue!"); continue; }
+                if ((lPosTPCClusters/lPosTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Pos. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
+                if ((lNegTPCClusters/lNegTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Neg. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
+                if ((lBachTPCClusters/lBachTPCFindClusters)  < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / Bach. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
           }
 
           //-----------------------------------
@@ -1661,29 +1676,29 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
           if (nExtTrack) {
                 lInnerWallMomCascDghters[1] = nExtTrack->GetP() * nExtTrack->Charge();
                 lTPCSignalCascDghters   [1] = nTrackXi->GetTPCsignal();
-           }
-           if (bachExtTrack) {
+          }
+          if (bachExtTrack) {
                 lInnerWallMomCascDghters[2] = bachExtTrack->GetP() * bachExtTrack->Charge();
                 lTPCSignalCascDghters   [2] = bachTrackXi->GetTPCsignal();
-           }
-           etaPos  = pTrackXi->Eta();
-           etaNeg  = nTrackXi->Eta();
-           etaBach = bachTrackXi->Eta();
-           lInvMassLambdaAsCascDghter = xi->GetEffMass(); //This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
-           lDcaV0DaughtersXi 	      = xi->GetDcaV0Daughters(); 
-           lV0CosineOfPointingAngleXi = xi->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],
-                                                                       lBestPrimaryVtxPos[1],
-                                                                       lBestPrimaryVtxPos[2] );
-           lDcaV0ToPrimVertexXi = xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
-           lDcaBachToPrimVertexXi = TMath::Abs( bachTrackXi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); //Note: AliExternalTrackParam::GetD returns an algebraic value ...
-           xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] ); 
-           lV0RadiusXi = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0] + lPosV0Xi[1]*lPosV0Xi[1] );	
-           lDcaPosToPrimVertexXi = TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); 
-           lDcaNegToPrimVertexXi = TMath::Abs( nTrackXi	->GetD(	lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); 
+          }
+          etaPos  = pTrackXi->Eta();
+          etaNeg  = nTrackXi->Eta();
+          etaBach = bachTrackXi->Eta();
+          lInvMassLambdaAsCascDghter = xi->GetEffMass(); //This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
+          lDcaV0DaughtersXi 	      = xi->GetDcaV0Daughters(); 
+          lV0CosineOfPointingAngleXi = xi->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],
+                                                                      lBestPrimaryVtxPos[1],
+                                                                      lBestPrimaryVtxPos[2] );
+          lDcaV0ToPrimVertexXi = xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
+          lDcaBachToPrimVertexXi = TMath::Abs( bachTrackXi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); //Note: AliExternalTrackParam::GetD returns an algebraic value ...
+          xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] ); 
+          lV0RadiusXi = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0] + lPosV0Xi[1]*lPosV0Xi[1] );	
+          lDcaPosToPrimVertexXi = TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); 
+          lDcaNegToPrimVertexXi = TMath::Abs( nTrackXi	->GetD(	lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField ) ); 
 
-           //-----------------------------------------
-	   // - Extra-selection for cascade candidates
-           if (fExtraSelections) { //in AliCascadeVertexer
+          //-----------------------------------------
+          // - Extra-selection for cascade candidates
+          if (fExtraSelections) { //in AliCascadeVertexer
                 if (lDcaXiDaughters > 0.3) continue;                                              // in AliCascadeVertexer
                 if (lXiCosineOfPointingAngle < 0.999 ) continue;                                  // in AliCascadeVertexer
                 if (lDcaV0ToPrimVertexXi < 0.05) continue;                                        // in AliCascadeVertexer
@@ -1695,11 +1710,11 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                 if (lDcaNegToPrimVertexXi < 0.1) continue;                                        // in AliV0vertexer
                 if (lXiRadius < .9) continue;                                                     // in AliCascadeVertexer
                 if (lV0RadiusXi < 0.9) continue;                                                  // in AliV0vertexer
-           }
+          }
 
-           //---------------------------------------------------------------------------------------------------	
-           // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega-/+
-           if ( bachTrackXi->Charge() < 0 )	{
+          //---------------------------------------------------------------------------------------------------	
+          // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega-/+
+          if ( bachTrackXi->Charge() < 0 )	{
                 //Calculate the effective mass of the Xi- candidate: Xi- hyp. (pdg code 3312)
                 lV0quality = 0.;
                 xi->ChangeMassHypothesis(lV0quality , 3312); 	
@@ -1711,8 +1726,8 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                 //Back to "default" hyp. (Xi-)
                 lV0quality = 0.;
                 xi->ChangeMassHypothesis(lV0quality , 3312); 
-           } // end if negative bachelor
-           if ( bachTrackXi->Charge() >  0 ) {
+          } // end if negative bachelor
+          if ( bachTrackXi->Charge() >  0 ) {
                 //Calculate the effective mass of the Xi- candidate: Xi+ hyp. (pdg code -3312)
                 lV0quality = 0.;
                 xi->ChangeMassHypothesis(lV0quality , -3312); 	
@@ -1724,27 +1739,27 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                 //Back to "default" hyp. (Xi-)
                 lV0quality = 0.;
                 xi->ChangeMassHypothesis(lV0quality , -3312); 	
-           } // end if positive bachelor
+          } // end if positive bachelor
 
-           //--------------------------------
-           // - PID on the daughter tracks
-	   // - Combined PID ->  removed, add when will be used
+          //--------------------------------
+          // - PID on the daughter tracks
+          // - Combined PID ->  removed, add when will be used
 
-	   // - TPC PID : 3-sigma bands on Bethe-Bloch curve
-           //Bachelor
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
-           //Negative V0 daughter
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
-           //Positive V0 daughter
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
-           /*
-           const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXi    ->GetInnerParam();
-           const AliExternalTrackParam *nInnerWallTrackXi    = nTrackXi    ->GetInnerParam();
-           const AliExternalTrackParam *bachInnerWallTrackXi = bachTrackXi ->GetInnerParam();
-           if (pInnerWallTrackXi && nInnerWallTrackXi && bachInnerWallTrackXi ) { 
+          // - TPC PID : 3-sigma bands on Bethe-Bloch curve
+          //Bachelor
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
+          //Negative V0 daughter
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
+          //Positive V0 daughter
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
+          if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
+          /*
+          const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXi    ->GetInnerParam();
+          const AliExternalTrackParam *nInnerWallTrackXi    = nTrackXi    ->GetInnerParam();
+          const AliExternalTrackParam *bachInnerWallTrackXi = bachTrackXi ->GetInnerParam();
+          if (pInnerWallTrackXi && nInnerWallTrackXi && bachInnerWallTrackXi ) { 
                 Double_t pMomInnerWall    = pInnerWallTrackXi   ->GetP();
                 Double_t nMomInnerWall    = nInnerWallTrackXi   ->GetP();
                 Double_t bachMomInnerWall = bachInnerWallTrackXi->GetP();
@@ -1760,37 +1775,37 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                 if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 3 )                            lIsPosPionForTPC   = kTRUE;
                 if (pMomInnerWall < 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 5)     lIsPosProtonForTPC = kTRUE;
                 if (pMomInnerWall > 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 3)     lIsPosProtonForTPC = kTRUE;
-           }*/
+          }*/
 		
-           //---------------------------------
-           // - Extra info for QA (ESD)
-           // Miscellaneous pieces of info that may help regarding data quality assessment.
-           // Cascade transverse and total momentum
-           xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
-           lXiTransvMom	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY );
-           lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY + lXiMomZ*lXiMomZ );
-           // V0 total momentum
-           xi->GetNPxPyPz(lV0NMomX,lV0NMomY,lV0NMomZ);
-           xi->GetPPxPyPz(lV0PMomX,lV0PMomY,lV0PMomZ);
-           lV0TotMom = TMath::Sqrt(TMath::Power(lV0NMomX+lV0PMomX,2) + TMath::Power(lV0NMomY+lV0PMomY,2) + TMath::Power(lV0NMomZ+lV0PMomZ,2));
-           // Bachelor total momentum
-           xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
-           lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY );
-           lBachTotMom     = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY + lBachMomZ*lBachMomZ );
-           lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
-           lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
-           lChargeXi       = xi->Charge();
-           lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
-           lRapXi    = xi->RapXi();
-           lRapOmega = xi->RapOmega();
-           lEta      = xi->Eta();
-           lTheta    = xi->Theta()*180.0/TMath::Pi();
-           lPhi      = xi->Phi()*180.0/TMath::Pi();
-           lAlphaXi  = xi->AlphaXi();
-           lPtArmXi  = xi->PtArmXi();
-	   // Extra-cut = Anti-splitting cut for lambda daughters
-           Bool_t kAntiSplittingLambda = kFALSE;	
-           if (kAntiSplittingLambda) { // not used
+          //---------------------------------
+          // - Extra info for QA (ESD)
+          // Miscellaneous pieces of info that may help regarding data quality assessment.
+          // Cascade transverse and total momentum
+          xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+          lXiTransvMom	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY );
+          lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY + lXiMomZ*lXiMomZ );
+          // V0 total momentum
+          xi->GetNPxPyPz(lV0NMomX,lV0NMomY,lV0NMomZ);
+          xi->GetPPxPyPz(lV0PMomX,lV0PMomY,lV0PMomZ);
+          lV0TotMom = TMath::Sqrt(TMath::Power(lV0NMomX+lV0PMomX,2) + TMath::Power(lV0NMomY+lV0PMomY,2) + TMath::Power(lV0NMomZ+lV0PMomZ,2));
+          // Bachelor total momentum
+          xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
+          lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY );
+          lBachTotMom     = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY + lBachMomZ*lBachMomZ );
+          lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
+          lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
+          lChargeXi       = xi->Charge();
+          lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
+          lRapXi    = xi->RapXi();
+          lRapOmega = xi->RapOmega();
+          lEta      = xi->Eta();
+          lTheta    = xi->Theta()*180.0/TMath::Pi();
+          lPhi      = xi->Phi()*180.0/TMath::Pi();
+          lAlphaXi  = xi->AlphaXi();
+          lPtArmXi  = xi->PtArmXi();
+	  // Extra-cut = Anti-splitting cut for lambda daughters
+          Bool_t kAntiSplittingLambda = kFALSE;	
+          if (kAntiSplittingLambda) { // not used
                Double_t lNMomX = 0., lNMomY = 0., lNMomZ = 0.;
                Double_t lPMomX = 0., lPMomY = 0., lPMomZ = 0.;
                xi->GetPPxPyPz(lPMomX, lPMomY, lPMomZ); 
@@ -1800,142 +1815,148 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
 	       } else {                //Xi+ or Omega+
 	           if(TMath::Abs(lBachTransvMom - TMath::Sqrt( lPMomX*lPMomX + lPMomY*lPMomY ) ) < 0.075) continue;
 	       }
-           }
+          }
 
     } // end of ESD treatment
  
     else if (fAnalysisType == "AOD") {
 
-           // -------------------------------------
-           // - Load the cascades from the handler
-           const AliAODcascade *xi = lAODevent->GetCascade(iXi);
-           if (!xi) continue;
+          // -------------------------------------
+          // - Load the cascades from the handler
+          const AliAODcascade *xi = lAODevent->GetCascade(iXi);
+          if (!xi) continue;
 		
-           //----------------------------------------------------------------------------        
-           // - Assigning the necessary variables for specific AliESDcascade data members		
-           lEffMassXi        	   = xi->MassXi(); // default working hypothesis : cascade = Xi- decay
-           lDcaXiDaughters	   = xi->DcaXiDaughters();
-           lXiCosineOfPointingAngle = xi->CosPointingAngleXi( lBestPrimaryVtxPos[0], 
-		  					      lBestPrimaryVtxPos[1], 
-		 					      lBestPrimaryVtxPos[2] );
-           lPosXi[0] = xi->DecayVertexXiX();
-           lPosXi[1] = xi->DecayVertexXiY();
-           lPosXi[2] = xi->DecayVertexXiZ();
-           lXiRadius = TMath::Sqrt( lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1] );
+          //----------------------------------------------------------------------------        
+          // - Assigning the necessary variables for specific AliESDcascade data members		
+          lEffMassXi        	   = xi->MassXi(); // default working hypothesis : cascade = Xi- decay
+          lDcaXiDaughters	   = xi->DcaXiDaughters();
+          lXiCosineOfPointingAngle = xi->CosPointingAngleXi( lBestPrimaryVtxPos[0], 
+                                                             lBestPrimaryVtxPos[1], 
+		 					     lBestPrimaryVtxPos[2] );
+          lPosXi[0] = xi->DecayVertexXiX();
+          lPosXi[1] = xi->DecayVertexXiY();
+          lPosXi[2] = xi->DecayVertexXiZ();
+          lXiRadius = TMath::Sqrt( lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1] );
 
-           //-------------------------------------------------------------------------------------------------------------------------------
-           // - Around the tracks: Bach + V0 (ESD). Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
-           AliAODTrack *pTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
-           AliAODTrack *nTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
-           AliAODTrack *bachTrackXi = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );
-           if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
+          //-------------------------------------------------------------------------------------------------------------------------------
+          // - Around the tracks: Bach + V0 (ESD). Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
+          AliAODTrack *pTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
+          AliAODTrack *nTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
+          AliAODTrack *bachTrackXi = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );
+          if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
                 AliWarning("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...");
                 continue;
-           }
-           UInt_t lIdxPosXi  = (UInt_t) TMath::Abs( pTrackXi->GetID() );  
-           UInt_t lIdxNegXi  = (UInt_t) TMath::Abs( nTrackXi->GetID() );
-           UInt_t lBachIdx   = (UInt_t) TMath::Abs( bachTrackXi->GetID() );
+          }
+          UInt_t lIdxPosXi  = (UInt_t) TMath::Abs( pTrackXi->GetID() );  
+          UInt_t lIdxNegXi  = (UInt_t) TMath::Abs( nTrackXi->GetID() );
+          UInt_t lBachIdx   = (UInt_t) TMath::Abs( bachTrackXi->GetID() );
                                                 // Care track label can be negative in MC production (linked with the track quality)
                                                 // However = normally, not the case for track index ...
-           // - Rejection of a double use of a daughter track (nothing but just a crosscheck of what is done in the cascade vertexer)
-           if (lBachIdx == lIdxNegXi) { AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!"); continue; }
-           if (lBachIdx == lIdxPosXi) { AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue; }
-           // - Get the TPCnumber of cluster for the daughters
-           lPosTPCClusters   = pTrackXi->GetTPCNcls(); // FIXME: Is this ok? or something like in LambdaK0PbPb task AOD?
-           lNegTPCClusters   = nTrackXi->GetTPCNcls();
-           lBachTPCClusters  = bachTrackXi->GetTPCNcls();
+          // - Rejection of a double use of a daughter track (nothing but just a crosscheck of what is done in the cascade vertexer)
+          if (lBachIdx == lIdxNegXi) { AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!"); continue; }
+          if (lBachIdx == lIdxPosXi) { AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue; }
+          // - Get the TPCnumber of cluster for the daughters
+          lPosTPCClusters   = pTrackXi->GetTPCClusterInfo(2,1);             // Old for #TPCclusters: ->GetTPCNcls();
+          lNegTPCClusters   = nTrackXi->GetTPCClusterInfo(2,1);             // Old for #TPCclusters: ->GetTPCNcls();
+          lBachTPCClusters  = bachTrackXi->GetTPCClusterInfo(2,1);          // Old for #TPCclusters: ->GetTPCNcls();
+          // - Get the number TPC findable clusters for daughters
+          lPosTPCFindClusters   = pTrackXi->GetTPCNclsF();                  // New
+          lNegTPCFindClusters   = nTrackXi->GetTPCNclsF();                  // New
+          lBachTPCFindClusters  = bachTrackXi->GetTPCNclsF();               // New
 
-           //-------------------------------------
-           // - Rejection of a poor quality tracks
-           if (fTrackQualityCutTPCrefit) {
+          //-------------------------------------
+          // - Rejection of a poor quality tracks
+          if (fTrackQualityCutTPCrefit) {
                 // - Poor quality related to TPCrefit
-                if (!(pTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
-                if (!(nTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
+                if (!(pTrackXi->IsOn(AliAODTrack::kTPCrefit)))    { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
+                if (!(nTrackXi->IsOn(AliAODTrack::kTPCrefit)))    { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
                 if (!(bachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
-           }
-           if (fTrackQualityCutnTPCcls) {
+          }
+          if (fTrackQualityCutnTPCcls) {
                 // - Poor quality related to TPC clusters
-                if (lPosTPCClusters  < fMinnTPCcls) { //AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!");
-                    continue; }
-                if (lNegTPCClusters  < fMinnTPCcls) { //AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!");
-                    continue; }
-                if (lBachTPCClusters < fMinnTPCcls) { //AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!");
-                    continue; }
-           }
+                if (lPosTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Pos. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lBachTPCClusters < fMinnTPCcls) { AliWarning(Form("Pb / Bach. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                // - Poor quality related to clusters/findable
+                if( lPosTPCFindClusters <= 0 || lNegTPCFindClusters <= 0 || lBachTPCFindClusters ) { AliWarning("Pb / Number of findable cluster <= 0 ... continue!"); continue; }
+                if ((lPosTPCClusters/lPosTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Pos. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
+                if ((lNegTPCClusters/lNegTPCFindClusters)    < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / V0 Neg. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
+                if ((lBachTPCClusters/lBachTPCFindClusters)  < fMinTPCcrossrawoverfindable) { AliWarning(Form("Pb / Bach. track has ratio clusters/findable < %f ... continue!",fMinTPCcrossrawoverfindable)); continue; }
+          }
 
-           //---------------------------------------
-           // - Around the tracks: Bach + V0 (AOD). Necessary variables for AODcascade data members coming from the AODv0 part (inheritance)
-           etaPos  = pTrackXi->Eta();
-           etaNeg  = nTrackXi->Eta();
-           etaBach = bachTrackXi->Eta();
-           lChargeXi = xi->ChargeXi();
-           if ( lChargeXi < 0) lInvMassLambdaAsCascDghter = xi->MassLambda();
-           else 	       lInvMassLambdaAsCascDghter = xi->MassAntiLambda();
-           lDcaV0DaughtersXi  	  = xi->DcaV0Daughters(); 
-           lDcaV0ToPrimVertexXi   = xi->DcaV0ToPrimVertex();
-           lDcaBachToPrimVertexXi = xi->DcaBachToPrimVertex(); 
-           lPosV0Xi[0] = xi->DecayVertexV0X();
-           lPosV0Xi[1] = xi->DecayVertexV0Y();
-           lPosV0Xi[2] = xi->DecayVertexV0Z(); 
-           lV0RadiusXi = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0] + lPosV0Xi[1]*lPosV0Xi[1] );
-           lV0CosineOfPointingAngleXi = xi->CosPointingAngle( lBestPrimaryVtxPos ); 
-           lDcaPosToPrimVertexXi      = xi->DcaPosToPrimVertex(); 
-           lDcaNegToPrimVertexXi      = xi->DcaNegToPrimVertex(); 
+          //---------------------------------------
+          // - Around the tracks: Bach + V0 (AOD). Necessary variables for AODcascade data members coming from the AODv0 part (inheritance)
+          etaPos  = pTrackXi->Eta();
+          etaNeg  = nTrackXi->Eta();
+          etaBach = bachTrackXi->Eta();
+          lChargeXi = xi->ChargeXi();
+          if ( lChargeXi < 0) lInvMassLambdaAsCascDghter = xi->MassLambda();
+          else 	       lInvMassLambdaAsCascDghter = xi->MassAntiLambda();
+          lDcaV0DaughtersXi  	  = xi->DcaV0Daughters(); 
+          lDcaV0ToPrimVertexXi   = xi->DcaV0ToPrimVertex();
+          lDcaBachToPrimVertexXi = xi->DcaBachToPrimVertex(); 
+          lPosV0Xi[0] = xi->DecayVertexV0X();
+          lPosV0Xi[1] = xi->DecayVertexV0Y();
+          lPosV0Xi[2] = xi->DecayVertexV0Z(); 
+          lV0RadiusXi = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0] + lPosV0Xi[1]*lPosV0Xi[1] );
+          lV0CosineOfPointingAngleXi = xi->CosPointingAngle( lBestPrimaryVtxPos ); 
+          lDcaPosToPrimVertexXi      = xi->DcaPosToPrimVertex(); 
+          lDcaNegToPrimVertexXi      = xi->DcaNegToPrimVertex(); 
 
-           //----------------------------------------------------------------------------------------------------       
-           // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega -/+
-           if ( lChargeXi < 0 )	lInvMassXiMinus	   = xi->MassXi();
-           if ( lChargeXi > 0 )	lInvMassXiPlus 	   = xi->MassXi();
-           if ( lChargeXi < 0 )	lInvMassOmegaMinus = xi->MassOmega();
-           if ( lChargeXi > 0 )	lInvMassOmegaPlus  = xi->MassOmega();
+          //----------------------------------------------------------------------------------------------------       
+          // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega -/+
+          if ( lChargeXi < 0 )	lInvMassXiMinus	   = xi->MassXi();
+          if ( lChargeXi > 0 )	lInvMassXiPlus 	   = xi->MassXi();
+          if ( lChargeXi < 0 )	lInvMassOmegaMinus = xi->MassOmega();
+          if ( lChargeXi > 0 )	lInvMassOmegaPlus  = xi->MassOmega();
 
-           //--------------------------------
-           // - PID on the daughter tracks
-           // - Combined PID ->  removed, add when will be used
+          //--------------------------------
+          // - PID on the daughter tracks
+          // - Combined PID ->  removed, add when will be used
 
-           // - TPC PID : 3-sigma bands on Bethe-Bloch curve
-           //Bachelor
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
-           //Negative V0 daughter
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
-           //Positive V0 daughter
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
+          // - TPC PID : 3-sigma bands on Bethe-Bloch curve
+          //Bachelor
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
+          //Negative V0 daughter
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
+          //Positive V0 daughter
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
+          if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
 
-           //---------------------------------
-           // - Extra info for QA (AOD)
-           // Miscellaneous pieces of info that may help regarding data quality assessment.
-           // Cascade transverse and total momentum	
-           lXiMomX = xi->MomXiX();
-           lXiMomY = xi->MomXiY();
-           lXiMomZ = xi->MomXiZ();
-           lXiTransvMom = TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY );
-           lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY + lXiMomZ*lXiMomZ );
-           Double_t lV0MomX = xi->MomV0X();
-           Double_t lV0MomY = xi->MomV0Y();
-           Double_t lV0MomZ = xi->MomV0Z();
-           lV0TotMom = TMath::Sqrt(TMath::Power(lV0MomX,2)+TMath::Power(lV0MomY,2)+TMath::Power(lV0MomZ,2));
-           lBachMomX = xi->MomBachX();
-           lBachMomY = xi->MomBachY();
-           lBachMomZ = xi->MomBachZ();		
-           lBachTransvMom = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY );
-           lBachTotMom    = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY + lBachMomZ*lBachMomZ );
-           lV0NMomX = xi->MomNegX();
-           lV0NMomY = xi->MomNegY();
-           lV0PMomX = xi->MomPosX();
-           lV0PMomY = xi->MomPosY();
-           lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
-           lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
-           lV0toXiCosineOfPointingAngle = xi->CosPointingAngle( xi->GetDecayVertexXi() );
-           lRapXi    = xi->RapXi();
-           lRapOmega = xi->RapOmega();
-           lEta      = xi->Eta();	              	// Will not work ! need a method Pz(), Py() Px() 
-           lTheta    = xi->Theta() *180.0/TMath::Pi();  // in AODcascade.
-           lPhi      = xi->Phi()   *180.0/TMath::Pi();  // Here, we will get eta, theta, phi for the V0 ...
-           lAlphaXi  = xi->AlphaXi();
-           lPtArmXi  = xi->PtArmXi();
+          //---------------------------------
+          // - Extra info for QA (AOD)
+          // Miscellaneous pieces of info that may help regarding data quality assessment.
+          // Cascade transverse and total momentum	
+          lXiMomX = xi->MomXiX();
+          lXiMomY = xi->MomXiY();
+          lXiMomZ = xi->MomXiZ();
+          lXiTransvMom = TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY );
+          lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX + lXiMomY*lXiMomY + lXiMomZ*lXiMomZ );
+          Double_t lV0MomX = xi->MomV0X();
+          Double_t lV0MomY = xi->MomV0Y();
+          Double_t lV0MomZ = xi->MomV0Z();
+          lV0TotMom = TMath::Sqrt(TMath::Power(lV0MomX,2)+TMath::Power(lV0MomY,2)+TMath::Power(lV0MomZ,2));
+          lBachMomX = xi->MomBachX();
+          lBachMomY = xi->MomBachY();
+          lBachMomZ = xi->MomBachZ();		
+          lBachTransvMom = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY );
+          lBachTotMom    = TMath::Sqrt( lBachMomX*lBachMomX + lBachMomY*lBachMomY + lBachMomZ*lBachMomZ );
+          lV0NMomX = xi->MomNegX();
+          lV0NMomY = xi->MomNegY();
+          lV0PMomX = xi->MomPosX();
+          lV0PMomY = xi->MomPosY();
+          lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
+          lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
+          lV0toXiCosineOfPointingAngle = xi->CosPointingAngle( xi->GetDecayVertexXi() );
+          lRapXi    = xi->RapXi();
+          lRapOmega = xi->RapOmega();
+          lEta      = xi->Eta();	              	// Will not work ! need a method Pz(), Py() Px() 
+          lTheta    = xi->Theta() *180.0/TMath::Pi();  // in AODcascade.
+          lPhi      = xi->Phi()   *180.0/TMath::Pi();  // Here, we will get eta, theta, phi for the V0 ...
+          lAlphaXi  = xi->AlphaXi();
+          lPtArmXi  = xi->PtArmXi();
 
     } // end of AOD treatment
 

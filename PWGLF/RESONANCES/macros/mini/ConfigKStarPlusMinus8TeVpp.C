@@ -21,6 +21,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    Bool_t                  enableMonitor,
    TString                 monitorOpt,
    Float_t                 massTol,
+   Float_t                 MaxRap,
    Float_t                 massTolVeto, 
    Float_t                 pLife, 
    Float_t                 radiuslow,
@@ -32,13 +33,18 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair
+   AliRsnCutSet           *PairCutsSame,
+   AliRsnCutSet           *PairCutsMix,
+   Bool_t                  ptDep,
+   Double_t                pt1,
+   Double_t                pt2
 )
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
 
    
+     
    /////////////////////////////////////////////////////
    // selections for the pion from the decay of KStarPlusMinus*
    /////////////////////////////////////////////////////
@@ -75,35 +81,38 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
    
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4.);
+   if(ptDep){
+     esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
+   }else
+     esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
+  
 
-   esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); // 0.06 cm Standard   
-   //esdTrackCuts->SetMinDCAToVertexXY(0.06); // 0.06 cm Standard   
    
    //
    /////////////////////////////////////////////////
    // selections for K0s
    ////////////////////////////////////////////////   
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
-   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
-
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma //Standard
+   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
-   cutK0s->SetMaxRapidity(0.5); //Standrd
+   cutK0s->SetMaxRapidity(MaxRap); //Standrd
+   cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
    
-   //  cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
+   cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
    cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); //Standard 20cm
    cutK0s->SetfLowRadius(radiuslow); //Standard 0.5cm
    cutK0s->SetfHighRadius(radiushigh); //Standard 200cm
    
-   cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+   
    //
 
    if(enableSys){
 
+     if(Sys==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");}
      if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
      else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
      else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
@@ -119,10 +128,10 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      else if(Sys==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
      else if(Sys==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
      else if(Sys==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
-     else if(Sys==19){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
-     else if(Sys==20){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
-     else if(Sys==21){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
-     else if(Sys==22){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+     else if(Sys==18){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+     else if(Sys==19){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+     else if(Sys==20){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+     else if(Sys==21){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
      
 //K0S Systematic cuts............................
 
@@ -215,7 +224,12 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     if(i <= 1){
+       out->SetPairCuts(PairCutsSame);
+     }
+     else{
+       out->SetPairCuts(PairCutsMix);
+     }
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -266,7 +280,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -284,7 +298,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(-323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(cutsPair);
+     out->SetPairCuts(PairCutsMix);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
