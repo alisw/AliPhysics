@@ -277,15 +277,15 @@ void AliHFSystErr::Init(Int_t decay){
     if(fIsLowPtAnalysis) AliFatal("Not yet implemented");
     if (fCollisionType==0) {
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
-      else if(fRunNumber == 10){
+      else if(fRunNumber == 10 || fRunNumber==2010){
 	if(fIsPass4Analysis) InitDstartoD0pi2010ppPass4();
 	else InitDstartoD0pi2010pp();
-      } else if(fRunNumber == 12){
+      } else if(fRunNumber == 12 || fRunNumber==2012){
 	InitDstartoD0pi2012pp();
       } else AliFatal("Not yet implemented");
     }
     else if (fCollisionType==1) {
-      if (fRunNumber == 10){
+      if (fRunNumber == 10  || fRunNumber==2010){
 	if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
 	else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
 	else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
@@ -296,7 +296,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
 	else AliFatal("Not yet implemented");
       }
-      if (fRunNumber == 11){
+      if (fRunNumber == 11 || fRunNumber==2011){
 	if (fCentralityClass=="07half") InitDstartoD0pi2011PbPb07half();
 	else if (fCentralityClass=="010") InitDstartoD0pi2011PbPb010();
 	else if (fCentralityClass=="010" && fIsCentScan) InitDstartoD0pi2011PbPb010CentScan();
@@ -308,7 +308,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="3050") InitDstartoD0pi2011PbPb3050();
 	else AliFatal("Not yet implemented");
       }
-      else if (fRunNumber == 15){
+      else if (fRunNumber == 15 || fRunNumber==2015){
 	if (fCentralityClass=="010") InitDstartoD0pi2015PbPb010();
 	else if (fCentralityClass=="3050") InitDstartoD0pi2015PbPb3050();
 	else if (fCentralityClass=="6080") InitDstartoD0pi2015PbPb6080();
@@ -316,15 +316,15 @@ void AliHFSystErr::Init(Int_t decay){
       }
     }
     else if (fCollisionType==2) { 
-      if (fRunNumber == 16){
+      if (fRunNumber == 16 || fRunNumber==2016){
 	if (fCentralityClass=="0100")InitDstartoD0pi2016pPb0100();		
-	if (fCentralityClass=="010ZNA")InitDstartoD0pi2016pPb010ZNA();
-	if (fCentralityClass=="60100ZNA")InitDstartoD0pi2016pPb60100ZNA();
+	else if (fCentralityClass=="010ZNA")InitDstartoD0pi2016pPb010ZNA();
+	else if (fCentralityClass=="60100ZNA")InitDstartoD0pi2016pPb60100ZNA();
  	else AliFatal("Not yet implemented");
 	
 
       }
-      else if (fRunNumber == 13){
+      else if (fRunNumber == 13 || fRunNumber==2013){
 	
 	if (fCentralityClass=="020V0A") InitDstartoD0pi2013pPb020V0A();
       	if (fCentralityClass=="2040V0A") InitDstartoD0pi2013pPb2040V0A();
@@ -3683,7 +3683,7 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2016pPb010ZNA(){
-  // Dstar syst in pPb 2016 MB
+  // Dstar syst in pPb 2016 010ZNA
   // Responsible: C. Bedda
 
   AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016"); 
@@ -3721,11 +3721,13 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
   
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID for 2 sigma in TPC
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.02); // PID for 2 sigma in TPC
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //No systematic assigned final
+  fMCPtShape->SetBinContent(2,0.01);
+  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
+  for(Int_t i=24;i<=36;i++) fMCPtShape->SetBinContent(i,0.01); //Systematics on multiplicity weights (MC pt shape negligible)
 
 
   
@@ -3735,7 +3737,7 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2016pPb60100ZNA(){
-  // Dstar syst in pPb 2016 MB
+  // Dstar syst in pPb 2016 60100ZNA
   // Responsible: C. Bedda
 
   AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016"); 
@@ -3777,8 +3779,11 @@ fNorm = new TH1F("fNorm","fNorm",36,0,36);
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //No systematic assigned final
-
+ //Systematics on multiplicity weights (MC pt shape negligible)
+  fMCPtShape->SetBinContent(2,0.03);
+  fMCPtShape->SetBinContent(3,0.02);
+  for(Int_t i=4;i<=36;i++) fMCPtShape->SetBinContent(i,0.01); 
+  
 
   
   return;
