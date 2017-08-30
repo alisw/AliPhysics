@@ -115,6 +115,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoConvGammaEta;                         //!
     TH1F**                            fHistoConvGammaPhi;                         //!
     TH2F**                            fHistoConvGammaPsiPairPt;                   //!
+    TH2F**                            fHistoConvGammaRPt;                         //!
+    TH2F**                            fHistoConvGammaDcazPt;                      //!
     TTree**                           tESDConvGammaPtDcazCat;                     //!
     Float_t                           fPtGamma;                                   //!
     Float_t                           fDCAzPhoton;                                //!
@@ -307,7 +309,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 42);
+    ClassDef(AliAnalysisTaskGammaConvV1, 43);
 };
 
 #endif

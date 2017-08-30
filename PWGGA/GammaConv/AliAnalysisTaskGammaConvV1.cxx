@@ -111,6 +111,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
   fHistoConvGammaPsiPairPt(NULL),
+  fHistoConvGammaRPt(NULL),
+  fHistoConvGammaDcazPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
@@ -321,6 +323,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
   fHistoConvGammaPsiPairPt(NULL),
+  fHistoConvGammaRPt(NULL),
+  fHistoConvGammaDcazPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
@@ -652,6 +656,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoConvGammaR            = new TH1F*[fnCuts];
     fHistoConvGammaEta          = new TH1F*[fnCuts];
     fHistoConvGammaPhi          = new TH1F*[fnCuts];
+    fHistoConvGammaRPt          = new TH2F*[fnCuts];
+    fHistoConvGammaDcazPt       = new TH2F*[fnCuts];
   } 
   if (fDoPhotonQA == 2){
     fPhotonDCAList              = new TList*[fnCuts];
@@ -932,6 +938,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoConvGammaPhi[iCut]      = new TH1F("ESD_ConvGamma_Phi","ESD_ConvGamma_Phi",360,0,2*TMath::Pi());
       if(fDoCentralityFlat > 0) fHistoConvGammaPhi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoConvGammaPhi[iCut]);
+      fHistoConvGammaRPt[iCut]= new TH2F("ESD_ConvGamma_R_Pt","ESD_ConvGamma_R_Pt",800,0,200,250,0,25);
+      if(fDoCentralityFlat > 0) fHistoConvGammaRPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoConvGammaRPt[iCut]);
+      fHistoConvGammaDcazPt[iCut]= new TH2F("ESD_ConvGamma_Dcaz_Pt","ESD_ConvGamma_caz_Pt",200,-10,10,250,0,25);
+      if(fDoCentralityFlat > 0) fHistoConvGammaDcazPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoConvGammaDcazPt[iCut]);
     }
     
     if(fDoMesonAnalysis){
@@ -1906,11 +1918,15 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	    fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	    fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           } else { 
             fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(),fWeightJetJetMC);
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),fWeightJetJetMC);
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(),fWeightJetJetMC);
             fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(),fWeightJetJetMC);
+	    fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightJetJetMC);
+	    fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightJetJetMC);
           }
         }   
         if( fIsMC > 0 ){
@@ -1971,11 +1987,15 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
               fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	      fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	      fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             } else { 
               fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(),fWeightJetJetMC);
               fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),fWeightJetJetMC);
               fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(),fWeightJetJetMC);
               fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(),fWeightJetJetMC);
+	      fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightJetJetMC);
+	      fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightJetJetMC);
             }
           }
           if( fIsMC > 0 ){
@@ -2029,11 +2049,15 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	    fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+	    fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           } else { 
             fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(),fWeightJetJetMC);
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),fWeightJetJetMC);
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(),fWeightJetJetMC);
             fHistoConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(),fWeightJetJetMC);
+	    fHistoConvGammaRPt[fiCut]->Fill(PhotonCandidate->GetConversionRadius(),PhotonCandidate->Pt(), fWeightJetJetMC);
+	    fHistoConvGammaDcazPt[fiCut]->Fill(PhotonCandidate->GetDCAzToPrimVtx(),PhotonCandidate->Pt(), fWeightJetJetMC);	      
           }
         }
         if( fIsMC > 0 ){
