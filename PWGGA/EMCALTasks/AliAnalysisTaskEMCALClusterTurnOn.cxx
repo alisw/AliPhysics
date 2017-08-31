@@ -51,6 +51,8 @@
 #include "AliGenPythiaEventHeader.h"
 #include <AliEMCALTriggerPatchInfo.h>
 #include <AliTriggerClass.h>
+#include <TParameter.h>
+#include "AliOADBContainer.h"
 #include <AliCDBManager.h>
 #include <AliEmcalDownscaleFactorsOCDB.h>
 
@@ -122,6 +124,7 @@ fL1triggered(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
 fOutTHnS_Clust(0)
@@ -194,6 +197,7 @@ fL1triggered(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
 fOutTHnS_Clust(0)
@@ -587,6 +591,9 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
+
+    
+
 //    Double_t coiTOF = coi->GetTOF()*1e9;
 //    if(coiTOF< -30. || coiTOF > 30.){
 //      continue;
@@ -631,6 +638,8 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Bool_t FillEGAOver12 = kTRUE;
   Bool_t FillEGAOver14 = kTRUE;
 
+
+
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi) {
@@ -644,6 +653,26 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     Double_t coiTOF = coi->GetTOF()*1e9;
     Double_t coiM02 = coi->GetM02();
             
+    Bool_t isMasked = kFALSE;
+    if(fMaskFastOrCells){
+      AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+      badchannelDB.InitFromFile("MaskedFastors.root", "AliEmcalMaskedFastors");
+      TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+      if(badchannelmap && badchannelmap->GetEntries())
+        {
+        for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+          TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+          int maskedFastOr = channelID->GetVal();
+          geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
+          geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+          if(FastOrIndex==maskedFastOr) {
+            isMasked = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+    if(isMasked) continue;
 
     if(fQA) {
 
