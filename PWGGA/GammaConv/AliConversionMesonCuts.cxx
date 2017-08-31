@@ -1263,7 +1263,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
     fSelectionLow   = 0.1;
     fSelectionHigh  = 0.155;
     break;
-  
+  case 8:
+    fSelectionLow   = 0.125;
+    fSelectionHigh  = 0.145;
+    break;
+  case 9:
+    fSelectionLow   = 0.11;
+    fSelectionHigh  = 0.155;
+    break;
     
   default:
     cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
