@@ -1446,7 +1446,6 @@ void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
 
     lab = d->MatchToMC(431,arrayMC,3,pdgdaughters);
     if(lab>=0){ //signal
-      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
       Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
       AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
       pdgCode0=TMath::Abs(p->GetPdgCode());
