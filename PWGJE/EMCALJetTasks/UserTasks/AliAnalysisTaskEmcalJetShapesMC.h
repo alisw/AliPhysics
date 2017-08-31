@@ -125,7 +125,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetCoreFrac(AliEmcalJet *jet, Int_t jetContNb=0);
 
  
-  Double_t                           fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
+  Double_t                           FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
 
   
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
