@@ -206,7 +206,7 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     //    cout<<" tvdc "<<tvdctr<<endl;
     Double32_t diff;
     for (Int_t i=0; i<24; i++) {
-      if( time[i] > 0  && amp[i]>0.1 ){
+      if( time[i] > 0   ){
 	if (eq)	{
 	  fCFD[i]->Fill( time[i] );//////!!!!!
 	  fCFDvsTimestamp[i]->Fill(timestamp,time[i]);
