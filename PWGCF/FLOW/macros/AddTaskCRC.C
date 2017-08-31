@@ -171,9 +171,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (EvTrigger == "SemiCen")
     taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
   if (EvTrigger == "MB")
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    //taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE->SelectCollisionCandidates(0);
   if (EvTrigger == "MB" && sDataSet.Contains("2015"))
-    taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
+    //taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
+    taskFE->SelectCollisionCandidates(0);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
 
