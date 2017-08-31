@@ -30,6 +30,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
                                                                  const char*            trig                      = "INT7",
                                                                  const Bool_t           M02cut                    = kTRUE,
                                                                  const Bool_t           ThnSp                     = kTRUE,
+                                                                 TString                MaskedFastOrPath          = "",
                                                                  const Bool_t           onlyL1RecalcEvents        = kFALSE
                                                                  )
 {
@@ -95,6 +96,45 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   gROOT->LoadMacro(configFilePath.Data());
   printf("Path of config file: %s\n",configFilePath.Data());
   
+  
+  TString OADBFile("MaskedFastors.root");
+  Bool_t MaskFastors = kFALSE;
+
+  if(!MaskedFastOrPath.IsNull()){ 
+    MaskFastors = kTRUE;
+    if(MaskedFastOrPath.Contains("alien:///")){
+    	gSystem->Exec(Form("alien_cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+    else{
+    	gSystem->Exec(Form("cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+  }
+  
+//    if(!fOADBpath.IsNull()){
+//      cout << "Initializing masked fastors from OADB container " << fOADBpath.Data() << std::endl;
+//      if(fOADBpath.Contains("alien://") ) TGrid::Connect("alien://");
+//      AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+//      badchannelDB.InitFromFile(fOADBpath, "AliEmcalMaskedFastors");
+//      TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+//      if(!badchannelmap || !badchannelmap->GetEntries()) cout << "No entries in OADB" << endl;
+//      else {
+//        for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+//          TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+//          cout << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
+//          int maskedFastOr = channelID->GetVal();
+//          geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
+//          geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+//          if(FastOrIndex==maskedFastOr) {
+//            isMasked = kTRUE;
+//            break;
+//          }
+//        }
+//      }
+//    }
+//    else cout << "No OADB container!!!" << endl;
+//    if(isMasked) continue;
+
+
     // #### Task preferences
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
@@ -113,6 +153,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetPhiClBinning(PhiClBin);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
+  task->SetFastOrMasking(MaskFastors);
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
