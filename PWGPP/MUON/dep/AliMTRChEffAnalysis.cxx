@@ -417,7 +417,6 @@ Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effHistoLists, const
   Int_t ncolors = sizeof(colors)/sizeof(colors[0]);
 
   Int_t hTypes[2] = {AliTrigChEffOutput::kHboardEff,AliTrigChEffOutput::kHslatEff};
-  Int_t countTypes[3] = {AliTrigChEffOutput::kBendingEff,AliTrigChEffOutput::kNonBendingEff,AliTrigChEffOutput::kBothPlanesEff};
 
   TString currName = "";
   Int_t ican = 0;
@@ -2049,7 +2048,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
                 } // loop on runs
               } // loop on standard or systematic OCDB
             }
-            for ( Int_t imap=0; imap<readEffLists.size(); imap++ ) {
+            for ( UInt_t imap=0; imap<readEffLists.size(); imap++ ) {
               TList* readList = readEffLists[imap];
               for ( Int_t icount=0; icount<4; icount++ ) {
                 currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
