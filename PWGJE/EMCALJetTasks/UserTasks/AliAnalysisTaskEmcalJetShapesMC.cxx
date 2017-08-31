@@ -63,6 +63,8 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fSwitchKtNSub(0), 
   fSwitchMinNSub(0),
   fSwitchAktNSub(0),
+  fSwitchSDKtNSub(0), 
+  fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
@@ -108,6 +110,8 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fSwitchKtNSub(0), 
   fSwitchMinNSub(0),
   fSwitchAktNSub(0),
+  fSwitchSDKtNSub(0), 
+  fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
@@ -175,7 +179,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 48;
+  const Int_t nVar = 54;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -226,7 +230,13 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[44] = "SDGroomedFracForm"; 
   fShapesVarNames[45] = "SDGroomedNForm";
   fShapesVarNames[46] = "SDMassForm";
-  fShapesVarNames[47] = "weightPythia"; 
+  fShapesVarNames[47] = "weightPythia";
+  fShapesVarNames[48] = "SDNsubjet1kt";
+  fShapesVarNames[49] = "SDNsubjet2kt"; 
+  fShapesVarNames[50] = "SDNsubjet1Min"; 
+  fShapesVarNames[51] = "SDNsubjet2Min";
+  fShapesVarNames[52] = "SDDeltaRkt_Nsub";
+  fShapesVarNames[53] = "SDDeltaRMin_Nsub";
 
 
   
@@ -435,22 +445,36 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[5] = GetJetAngularity(jet1,0);
       //nsub1 and nsub2 for kT
       fShapesVar[6] = 0;
-      if(fSwitchKtNSub==1) fShapesVar[6]=fjNSubJettiness(jet1,0,1,0,1,0);
+      if(fSwitchKtNSub==1) fShapesVar[6]=FjNSubJettiness(jet1,0,1,0,1,0);
       fShapesVar[7] = 0;
-      if(fSwitchKtNSub==1) fShapesVar[7]=fjNSubJettiness(jet1,0,2,0,1,0);
+      if(fSwitchKtNSub==1) fShapesVar[7]=FjNSubJettiness(jet1,0,2,0,1,0);
    
       //nsub1 and nsub2 for min_axis
       fShapesVar[8] =0;
-      if(fSwitchMinNSub==1) fShapesVar[8]=fjNSubJettiness(jet1,0,1,10,1,0);
+      if(fSwitchMinNSub==1) fShapesVar[8]=FjNSubJettiness(jet1,0,1,10,1,0);
       fShapesVar[9] = 0;
-      if(fSwitchMinNSub==1) fShapesVar[9]=fjNSubJettiness(jet1,0,2,10,1,0);
+      if(fSwitchMinNSub==1) fShapesVar[9]=FjNSubJettiness(jet1,0,2,10,1,0);
       //nsub1 and nsub2 for akt
       fShapesVar[10] = 0;
-       if(fSwitchAktNSub==1) fShapesVar[10]=fjNSubJettiness(jet1,0,1,10,1,0);
+      if(fSwitchKtNSub==1) fShapesVar[10]=FjNSubJettiness(jet1,0,2,0,1,1);
       fShapesVar[11] =0;
-      if(fSwitchAktNSub==1) fShapesVar[11]=fjNSubJettiness(jet1,0,2,10,1,0);
-     
-    
+      if(fSwitchMinNSub==1) fShapesVar[11]=FjNSubJettiness(jet1,0,2,10,1,1);
+      //nsub1 and nsub2 for kt with SD with Beta = 0 and Zcut =0.1 
+      fShapesVar[48] =0;
+      if(fSwitchSDKtNSub==1) fShapesVar[48]=FjNSubJettiness(jet1,0,1,0,1,0,0,0.1,1);
+      fShapesVar[49] =0;
+      if(fSwitchSDKtNSub==1) fShapesVar[49]=FjNSubJettiness(jet1,0,2,0,1,0,0,0.1,1);
+      //nsub1 and nsub2 for min_axis with SD with Beta = 0 and Zcut =0.1 
+      fShapesVar[50] =0;
+      if(fSwitchSDMinNSub==1) fShapesVar[50]=FjNSubJettiness(jet1,0,1,10,1,0,0,0.1,1);
+      fShapesVar[51] =0;
+      if(fSwitchSDMinNSub==1) fShapesVar[51]=FjNSubJettiness(jet1,0,2,10,1,0,0,0.1,1);
+      //deltaR using axes from 2 subjettiness with kt and Min algorithms with soft drop
+      fShapesVar[52] =0;
+      if(fSwitchSDKtNSub==1) fShapesVar[52]=FjNSubJettiness(jet1,0,2,0,1,1,0,0.1,1);
+      fShapesVar[53] =0;
+      if(fSwitchSDMinNSub==1) fShapesVar[53]=FjNSubJettiness(jet1,0,2,10,1,1,0,0.1,1);
+
       //SoftDropParameters for different reclustering strategies and beta values 
       SoftDrop(jet1,jetCont,0.1,0,0);
       SoftDrop(jet1,jetCont,0.1,0,1);
@@ -963,7 +987,7 @@ void AliAnalysisTaskEmcalJetShapesMC::NTValues(AliEmcalJet *jet, Int_t jetContNb
   }
 }
 //_________________________________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option){
+Double_t AliAnalysisTaskEmcalJetShapesMC::FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD, Double_t ZCut, Int_t SoftDropOn){
   
   //WARNING!!! Only works for parent jets that are clustered with Anti-Kt! To change go to AliEmcalJetFinder.cxx and look at the Nsubjettiness() function
   
@@ -995,7 +1019,7 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_
     //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
     Double_t dVtx[3]={1,1,1};
     //Printf("JetFinder->Nsubjettiness =%f", JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option));
-    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,0.2,Beta,Option,0,0,0);
+    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,0.2,Beta,Option,0,Beta_SD,ZCut,SoftDropOn);
     
   }
   else return -2;

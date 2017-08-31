@@ -842,40 +842,40 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  ///////////So at the moment tree is only filled when we have matched....is this ok?
 	  if (fJetShapeSub==kConstSub) fShapesVar[0]=Jet1->Pt();
 	  else fShapesVar[0]=Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
-	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  fShapesVar[2]=FjNSubJettiness(Jet1,0,1,0,1,0);
+	  fShapesVar[4]=FjNSubJettiness(Jet1,0,2,0,1,0);
+	  fShapesVar[6]=FjNSubJettiness(Jet1,0,2,0,1,8);
+	  fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
-	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
-	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
+	  fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
+	  fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
+	  fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
 	  fShapesVar[18]=RelativePhiEventPlane(fEPV0,Jet1->Phi());
 	  //fShapesVar[20]=RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),Jet1->Phi());
-	  fShapesVar[20]=fjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
+	  fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  if (fFullTree){
-	    fShapesVar[22]=fjNSubJettiness(Jet1,0,2,0,1,2);
+	    fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
 	    Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_1");
 	    fShapesVar[24]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
 	  if (JetsMatched){ //even needed? Not now but might be if you want to fill trees when jets aren't matched too
 	    fShapesVar[1]=Jet4->Pt();
-	    fShapesVar[3]=fjNSubJettiness(Jet4,3,1,0,1,0);
-	    fShapesVar[5]=fjNSubJettiness(Jet4,3,2,0,1,0);
-	    fShapesVar[7]=fjNSubJettiness(Jet4,3,2,0,1,8);
-	    fShapesVar[9]=fjNSubJettiness(Jet4,3,2,0,1,1);
+	    fShapesVar[3]=FjNSubJettiness(Jet4,3,1,0,1,0);
+	    fShapesVar[5]=FjNSubJettiness(Jet4,3,2,0,1,0);
+	    fShapesVar[7]=FjNSubJettiness(Jet4,3,2,0,1,8);
+	    fShapesVar[9]=FjNSubJettiness(Jet4,3,2,0,1,1);
 	    //fShapesVar[11]=Jet4->GetNumberOfTracks();
-	    fShapesVar[11]=fjNSubJettiness(Jet4,3,2,0,1,9);
-	    fShapesVar[13]=fjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
-	    fShapesVar[15]=fjNSubJettiness(Jet4,3,2,0,1,5,fBeta_SD,fZCut);
+	    fShapesVar[11]=FjNSubJettiness(Jet4,3,2,0,1,9);
+	    fShapesVar[13]=FjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
+	    fShapesVar[15]=FjNSubJettiness(Jet4,3,2,0,1,5,fBeta_SD,fZCut);
 	    fShapesVar[17]=Jet4->GetLeadingTrack(JetCont4->GetParticleContainer()->GetArray())->Pt();
 	    fShapesVar[19]=RelativePhiEventPlane(fEPV0,Jet4->Phi());
 	    //fShapesVar[21]=RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),Jet4->Phi());
-	    fShapesVar[21]=fjNSubJettiness(Jet4,3,2,0,1,6,fBeta_SD,fZCut);
+	    fShapesVar[21]=FjNSubJettiness(Jet4,3,2,0,1,6,fBeta_SD,fZCut);
 	    if (fFullTree){
-	      fShapesVar[23]=fjNSubJettiness(Jet4,3,2,0,1,2);
+	      fShapesVar[23]=FjNSubJettiness(Jet4,3,2,0,1,2);
 	      Reclusterer4=Recluster(Jet4, 3, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_4");
 	      fShapesVar[25]=SubJetFraction(Jet4, Reclusterer4, 1, 0, kTRUE, kFALSE);
 	      fShapesVar[27]=SubJetFraction(Jet4, Reclusterer4, 2, 0, kTRUE, kFALSE);
@@ -992,39 +992,39 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  
 
 	  fShapesVar[0]=Jet1->Pt();
-	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
-	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  fShapesVar[2]=FjNSubJettiness(Jet1,0,1,0,1,0);
+	  fShapesVar[4]=FjNSubJettiness(Jet1,0,2,0,1,0);
+	  fShapesVar[6]=FjNSubJettiness(Jet1,0,2,0,1,8);
+	  fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
-	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
-	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
+	  fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
+	  fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
+	  fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
 	  fShapesVar[18]=-2; //event plane calculation only needed for PbPb recoils
-	  fShapesVar[20]=fjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
+	  fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_1");
 	  if (fFullTree){
-	    fShapesVar[22]=fjNSubJettiness(Jet1,0,2,0,1,2);
+	    fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
 	    fShapesVar[24]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
 	  if (JetsMatched){ //even needed? Not now but might be if you want to fill trees when jets aren't matched too
 	    fShapesVar[1]=Jet2->Pt();
-	    fShapesVar[3]=fjNSubJettiness(Jet2,1,1,0,1,0);
-	    fShapesVar[5]=fjNSubJettiness(Jet2,1,2,0,1,0);
-	    fShapesVar[7]=fjNSubJettiness(Jet2,1,2,0,1,8);
-	    fShapesVar[9]=fjNSubJettiness(Jet2,1,2,0,1,1);
+	    fShapesVar[3]=FjNSubJettiness(Jet2,1,1,0,1,0);
+	    fShapesVar[5]=FjNSubJettiness(Jet2,1,2,0,1,0);
+	    fShapesVar[7]=FjNSubJettiness(Jet2,1,2,0,1,8);
+	    fShapesVar[9]=FjNSubJettiness(Jet2,1,2,0,1,1);
 	    // fShapesVar[11]=Jet2->GetNumberOfTracks();
-	    fShapesVar[11]=fjNSubJettiness(Jet2,1,2,0,1,9);
-	    fShapesVar[13]=fjNSubJettiness(Jet2,1,2,0,1,3,fBeta_SD,fZCut);
-	    fShapesVar[15]=fjNSubJettiness(Jet2,1,2,0,1,5,fBeta_SD,fZCut);
+	    fShapesVar[11]=FjNSubJettiness(Jet2,1,2,0,1,9);
+	    fShapesVar[13]=FjNSubJettiness(Jet2,1,2,0,1,3,fBeta_SD,fZCut);
+	    fShapesVar[15]=FjNSubJettiness(Jet2,1,2,0,1,5,fBeta_SD,fZCut);
 	    fShapesVar[17]=Jet2->GetLeadingTrack(JetCont2->GetParticleContainer()->GetArray())->Pt();
 	    fShapesVar[19]=-2;
-	    fShapesVar[21]=fjNSubJettiness(Jet2,1,2,0,1,6,fBeta_SD,fZCut);
+	    fShapesVar[21]=FjNSubJettiness(Jet2,1,2,0,1,6,fBeta_SD,fZCut);
 	    Reclusterer2 = Recluster(Jet2, 1, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_2");
 	    if (fFullTree){
-	      fShapesVar[23]=fjNSubJettiness(Jet2,1,2,0,1,2);
+	      fShapesVar[23]=FjNSubJettiness(Jet2,1,2,0,1,2);
 	      fShapesVar[25]=SubJetFraction(Jet2, Reclusterer2, 1, 0, kTRUE, kFALSE);
 	      fShapesVar[27]=SubJetFraction(Jet2, Reclusterer2, 2, 0, kTRUE, kFALSE);
 	    } 
@@ -1132,20 +1132,20 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());	  
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fShapesVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fShapesVar[0]=Jet1->Pt();
-	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
-	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  fShapesVar[2]=FjNSubJettiness(Jet1,0,1,0,1,0);
+	  fShapesVar[4]=FjNSubJettiness(Jet1,0,2,0,1,0);
+	  fShapesVar[6]=FjNSubJettiness(Jet1,0,2,0,1,8);
+	  fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  //fShapesVar[10]=Jet1->GetNumberOfTracks();
-	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
-	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
+	  fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
+	  fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
+	  fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont->GetParticleContainer()->GetArray())->Pt();
 	  fShapesVar[18]=-2; //event plane calculation not needed for data
-	  fShapesVar[20]=fjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
+	  fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
 	  if (fFullTree){
-	    fShapesVar[22]=fjNSubJettiness(Jet1,0,2,0,1,2);
+	    fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
 	    fShapesVar[24]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
@@ -1239,93 +1239,93 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 
 	  Int_t FJ_Algorithm=9; //KT=0, CA=1, AKT_R02=2, WTA_KT=3, WTA_CA=4, OP_KT=5, OP_CA=6, OP_AKT_R02=7, OP_WTA_KT=8, OP_WTA_CA=9, MIN=10
 	  Double_t FJ_Beta=1.0;
-	  /*  fhSubJettiness1CheckRatio_FJ_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_CA->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,1,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,2,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,3,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,4,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,5,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,6,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,7,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,8,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,9,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1CheckRatio_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,1,10,FJ_Beta,0),fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_CA->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2CheckRatio_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  /*  fhSubJettiness1CheckRatio_FJ_KT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_CA->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,1,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_AKT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,2,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_WTA_KT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,3,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_WTA_CA->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,4,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_OP_KT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,5,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_OP_CA->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,6,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_OP_AKT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,7,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_OP_WTA_KT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,8,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_OP_WTA_CA->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,9,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1CheckRatio_FJ_MIN->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,1,10,FJ_Beta,0),FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_CA->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,1,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_AKT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,2,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,3,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,4,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_OP_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,5,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_OP_CA->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,6,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_OP_AKT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,7,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_OP_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,8,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_OP_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,9,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2CheckRatio_FJ_MIN->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-FjNSubJettiness(Jet1,0,2,10,FJ_Beta,0),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
 
-	  fhSubJettiness2to1CheckRatio_FJ_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,1,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_AKT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,2,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_WTA_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,3,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_WTA_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,4,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_OP_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,5,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_OP_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,6,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_OP_AKT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,7,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,8,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,9,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1CheckRatio_FJ_MIN->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,10,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_KT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_CA->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,1,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_AKT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,2,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_WTA_KT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,3,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_WTA_CA->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,4,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_KT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,5,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_CA->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,6,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_AKT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,7,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,8,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,9,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_MIN->Fill((FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(FjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,10,FJ_Beta,0)),FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
 
 
-	  fhSubJettiness1_FJ_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness1_FJ_CA->Fill(fjNSubJettiness(Jet1,0,1,1,FJ_Beta,0));
-	  fhSubJettiness1_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,1,2,FJ_Beta,0));
-	  fhSubJettiness1_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,1,3,FJ_Beta,0));
-	  fhSubJettiness1_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,1,4,FJ_Beta,0));
-	  fhSubJettiness1_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,1,5,FJ_Beta,0));
-	  fhSubJettiness1_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,1,6,FJ_Beta,0));
-	  fhSubJettiness1_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,1,7,FJ_Beta,0));
-	  fhSubJettiness1_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,1,8,FJ_Beta,0));
-	  fhSubJettiness1_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,1,9,FJ_Beta,0));
-	  fhSubJettiness1_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,1,10,FJ_Beta,0));
-	  fhSubJettiness2_FJ_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
-	  fhSubJettiness2_FJ_CA->Fill(fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0));
-	  fhSubJettiness2_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)); //because in this case we aren't garantueed to get 2 subjets
-	  fhSubJettiness2_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0));
-	  fhSubJettiness2_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0));
-	  fhSubJettiness2_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0));
-	  fhSubJettiness2_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0));
-	  fhSubJettiness2_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0));
-	  fhSubJettiness2_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
-	  fhSubJettiness2_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
-	  fhSubJettiness2_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
+	  fhSubJettiness1_FJ_KT->Fill(FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness1_FJ_CA->Fill(FjNSubJettiness(Jet1,0,1,1,FJ_Beta,0));
+	  fhSubJettiness1_FJ_AKT->Fill(FjNSubJettiness(Jet1,0,1,2,FJ_Beta,0));
+	  fhSubJettiness1_FJ_WTA_KT->Fill(FjNSubJettiness(Jet1,0,1,3,FJ_Beta,0));
+	  fhSubJettiness1_FJ_WTA_CA->Fill(FjNSubJettiness(Jet1,0,1,4,FJ_Beta,0));
+	  fhSubJettiness1_FJ_OP_KT->Fill(FjNSubJettiness(Jet1,0,1,5,FJ_Beta,0));
+	  fhSubJettiness1_FJ_OP_CA->Fill(FjNSubJettiness(Jet1,0,1,6,FJ_Beta,0));
+	  fhSubJettiness1_FJ_OP_AKT->Fill(FjNSubJettiness(Jet1,0,1,7,FJ_Beta,0));
+	  fhSubJettiness1_FJ_OP_WTA_KT->Fill(FjNSubJettiness(Jet1,0,1,8,FJ_Beta,0));
+	  fhSubJettiness1_FJ_OP_WTA_CA->Fill(FjNSubJettiness(Jet1,0,1,9,FJ_Beta,0));
+	  fhSubJettiness1_FJ_MIN->Fill(FjNSubJettiness(Jet1,0,1,10,FJ_Beta,0));
+	  fhSubJettiness2_FJ_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
+	  fhSubJettiness2_FJ_CA->Fill(FjNSubJettiness(Jet1,0,2,1,FJ_Beta,0));
+	  fhSubJettiness2_FJ_AKT->Fill(FjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)); //because in this case we aren't garantueed to get 2 subjets
+	  fhSubJettiness2_FJ_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,3,FJ_Beta,0));
+	  fhSubJettiness2_FJ_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,4,FJ_Beta,0));
+	  fhSubJettiness2_FJ_OP_KT->Fill(FjNSubJettiness(Jet1,0,2,5,FJ_Beta,0));
+	  fhSubJettiness2_FJ_OP_CA->Fill(FjNSubJettiness(Jet1,0,2,6,FJ_Beta,0));
+	  fhSubJettiness2_FJ_OP_AKT->Fill(FjNSubJettiness(Jet1,0,2,7,FJ_Beta,0));
+	  fhSubJettiness2_FJ_OP_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
+	  fhSubJettiness2_FJ_OP_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
+	  fhSubJettiness2_FJ_MIN->Fill(FjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
 
-	  fhSubJettiness2to1_FJ_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_CA->Fill(fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)); //because in this case we aren't garantueed to get 2 subjets
-	  fhSubJettiness2to1_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
-	  fhSubJettiness2to1_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_KT->Fill(FjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/FjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_CA->Fill(FjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,1,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_AKT->Fill(FjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)); //because in this case we aren't garantueed to get 2 subjets
+	  fhSubJettiness2to1_FJ_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,3,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,4,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_KT->Fill(FjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,5,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_CA->Fill(FjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,6,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_AKT->Fill(FjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,7,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_WTA_KT->Fill(FjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_WTA_CA->Fill(FjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_MIN->Fill(FjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/FjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
 	  */
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fShapesVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fShapesVar[0]=Jet1->Pt(); 
-	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
-	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  fShapesVar[2]=FjNSubJettiness(Jet1,0,1,0,1,0);
+	  fShapesVar[4]=FjNSubJettiness(Jet1,0,2,0,1,0);
+	  fShapesVar[6]=FjNSubJettiness(Jet1,0,2,0,1,8);
+	  fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
-	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
-	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
+	  fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
+	  fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
+	  fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont->GetParticleContainer()->GetArray())->Pt();
 	  fShapesVar[18]=-2;
-	  fShapesVar[20]=fjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
+	  fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
 	  if (fFullTree){
-	    fShapesVar[22]=fjNSubJettiness(Jet1,0,2,0,1,2);
+	    fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
 	    fShapesVar[24]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
@@ -1655,7 +1655,7 @@ Double_t AliAnalysisTaskSubJetFraction::NSubJettiness(AliEmcalJet *Jet, Int_t Je
 
 
 //______________________________________________________________________________________
-Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD, Double_t ZCut){
+Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD, Double_t ZCut){
 
   //WARNING!!! Only works for parent jets that are clustered with Anti-Kt! To change go to AliEmcalJetFinder.cxx and look at the Nsubjettiness() function
 
