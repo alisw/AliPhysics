@@ -41,6 +41,7 @@ class AliESDkink;
 class AliESDv0;
 class AliESDVZERO;
 class AliPIDResponse;
+class AliNanoAODTrack;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -283,6 +284,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
+  Bool_t PassesNanoAODcuts(const AliNanoAODTrack* track, Bool_t passFid);
   Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
   Bool_t PassesVZEROcuts(Int_t id);
