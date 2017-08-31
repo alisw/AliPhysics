@@ -638,7 +638,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Bool_t FillEGAOver12 = kTRUE;
   Bool_t FillEGAOver14 = kTRUE;
 
-  Bool_t isMasked = kFALSE;
 
 
   for (auto it : clusters->accepted()){
@@ -654,27 +653,25 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     Double_t coiTOF = coi->GetTOF()*1e9;
     Double_t coiM02 = coi->GetM02();
             
+    Bool_t isMasked = kFALSE;
     if(fMaskFastOrCells){
       AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
       badchannelDB.InitFromFile("MaskedFastors.root", "AliEmcalMaskedFastors");
       TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
-      if(!badchannelmap || !badchannelmap->GetEntries()) cout << "OADB not found || No entries in OADB" << endl;
-      else {
+      if(badchannelmap && badchannelmap->GetEntries())
+        {
         for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
           TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
-          cout << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
           int maskedFastOr = channelID->GetVal();
           geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
           geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
           if(FastOrIndex==maskedFastOr) {
-            cout << "rejected Cluster; FastOrIndex: " << FastOrIndex << endl;
             isMasked = kTRUE;
             break;
           }
         }
       }
     }
-    else cout << "No OADB container" << endl;
     if(isMasked) continue;
 
     if(fQA) {
