@@ -325,10 +325,10 @@ void  AliMC::AddParticles()
 
   //Resonances not in Generators
   // f0(980) assume 70 MeV as width (PDG: 40 to 100 MeV)
-  TVirtualMC::GetMC()->DefineParticle(9010221, "f0_980", kPTNeutron, 0.98 , 0.0, 9.403e-24,"Hadron", 7e-2, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(9010221, "f0_980", kPTNeutron, 0.98 , 0.0, 9.403e-24,"Hadron", 7e-2, 0, 1, 1, 0, 0, 1, 0, 0, kTRUE);
 
   // f2(1270) (PDG: width = 185 MeV)
-  TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 4, 1, 1, 0, 0, 1, 0, 0, kTRUE);
 
   // Xi_0(1820)
   TVirtualMC::GetMC()->DefineParticle( 123324,"Xi_0_1820",    kPTNeutron,1.8234,0.0,2.742550e-24,"Hadron",0.24, 3, -1, 0, 1,  1, 0, 0,  1, kTRUE);
@@ -893,8 +893,8 @@ void  AliMC::AddParticles()
 
   // Lambda1520/Lambda1520bar
 
-  TVirtualMC::GetMC()->DefineParticle(3124, "Lambda1520", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 3, 0, kTRUE);
-  TVirtualMC::GetMC()->DefineParticle(-3124, "Lambda1520bar", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 3, 0, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(3124, "Lambda1520", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 0, 1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-3124, "Lambda1520bar", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 0, -1, kTRUE);
 
   // Lambda1520 decay modes
 
