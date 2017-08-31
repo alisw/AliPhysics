@@ -184,7 +184,7 @@ void AliFITv7::CreateGeometry()
     gridpoints[i] = crad*TMath::Sin((1 - 1/(2*TMath::Abs(grdin[i])))*grdin[i]*btta);
   } 
 
-  vector<Double_t> xi,yi;
+  std::vector<Double_t> xi,yi;
     
   for(Int_t j = 5; j >= 0; j--){
       for(Int_t i = 0; i < 6; i++){

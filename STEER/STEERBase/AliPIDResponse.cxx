@@ -1955,7 +1955,7 @@ void AliPIDResponse::SetTRDCentralityMaps()
 
     if (fIsMC) fUseTRDCentralityCorrection = kFALSE;
     if (fUseTRDCentralityCorrection == kFALSE) {
-	AliInfo("Request to disable TRD eta correction -> Centrality correction has been disabled");
+	AliInfo("Request to disable TRD centrality correction -> Centrality correction has been disabled");
         return;
     }
     TH2D* centralityMap[1];
