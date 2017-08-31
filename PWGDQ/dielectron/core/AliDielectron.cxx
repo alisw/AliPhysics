@@ -140,6 +140,8 @@ AliDielectron::AliDielectron() :
   fRotateMM(kFALSE),
   fDebugTree(0x0),
   fMixing(0x0),
+  fEvtVsTrkHist(0x0),
+  fEvtVsTrkHistExists(kFALSE),
   fPreFilterEventPlane(kFALSE),
   fACremovalIsSetted(kFALSE),
   fLikeSignSubEvents(kFALSE),
@@ -215,6 +217,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fRotateMM(kFALSE),
   fDebugTree(0x0),
   fMixing(0x0),
+  fEvtVsTrkHist(0x0),
+  fEvtVsTrkHistExists(kFALSE),
   fPreFilterEventPlane(kFALSE),
   fACremovalIsSetted(kFALSE),
   fLikeSignSubEvents(kFALSE),
@@ -268,6 +272,7 @@ AliDielectron::~AliDielectron()
   if (fPairCandidates && fEventProcess) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
   if (fMixing) delete fMixing;
+  if (fEvtVsTrkHist) delete fEvtVsTrkHist;
   if (fSignalsMC) delete fSignalsMC;
   if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
@@ -336,8 +341,13 @@ void AliDielectron::Init()
 
   if(fHistos) {
     (*fUsedVars)|= (*fHistos->GetUsedVars());
-  }
 
+    // Initialisation of AliDielectronEvtVsTrkHist
+    if(fHistos->GetHistogramList()->FindObject("EvtVsTrk")){
+      fEvtVsTrkHist = new AliDielectronEvtVsTrkHist("EvtVsTrkHistos", "EvtVsTrkHistos");
+      fEvtVsTrkHist->SetHistogramList(fHistos);
+    }
+  }
 }
 
 //________________________________________________________________
@@ -385,7 +395,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     ev1->SetPeriodNumber(1);
   }
 
-  // set qn vector normalisation to var manager 
+  // set qn vector normalisation to var manager
   AliDielectronVarManager::SetQnVectorNormalisation(fQnVectorNorm);
 
   // set pid correction function to var manager
@@ -733,6 +743,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
     if (fHistos->GetHistogramList()->FindObject("Event")) {
       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
     }
+    if(fEvtVsTrkHist)  fEvtVsTrkHist->FillHistograms(ev);
   }
 
   //Fill track information, separately for the track array candidates
@@ -2196,4 +2207,10 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
     if (legClass) arrLegs.Clear();
   }
 
+}
+
+//______________________________________________
+void AliDielectron::FinishEvtVsTrkHistoClass()
+{
+  if(fEvtVsTrkHist) fEvtVsTrkHist->CalculateMatchingEfficiency();
 }
