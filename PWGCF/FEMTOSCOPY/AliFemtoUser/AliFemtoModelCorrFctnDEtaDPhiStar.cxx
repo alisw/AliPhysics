@@ -271,13 +271,13 @@ AliFemtoString
 AliFemtoModelCorrFctnDEtaDPhiStar::Report()
 {
   TString report;
-  report += TString::Format("Number of entries in weighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorWeighted->GetEntries());
-  report += TString::Format("Number of entries in unweighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorUnweighted->GetEntries());
-  report += TString::Format("Number of entries in denominator:\t%lu\n", fDPhiStarDEtaDenominator->GetEntries());
+  report += TString::Format("Number of entries in weighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorWeighted->GetEntries());
+  report += TString::Format("Number of entries in unweighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorUnweighted->GetEntries());
+  report += TString::Format("Number of entries in denominator:\t%0.2f\n", fDPhiStarDEtaDenominator->GetEntries());
 
-  report += TString::Format("Number of entries in ideal weighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorIdealWeighted->GetEntries());
-  report += TString::Format("Number of entries in ideal unweighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorIdealUnweighted->GetEntries());
-  report += TString::Format("Number of entries in denominator:\t%lu\n", fDPhiStarDEtaIdealDenominator->GetEntries());
+  report += TString::Format("Number of entries in ideal weighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorIdealWeighted->GetEntries());
+  report += TString::Format("Number of entries in ideal unweighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorIdealUnweighted->GetEntries());
+  report += TString::Format("Number of entries in denominator:\t%0.2f\n", fDPhiStarDEtaIdealDenominator->GetEntries());
 
   return AliFemtoString(report);
 }

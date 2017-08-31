@@ -40,8 +40,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
-  fPrefilterNegTracks(),
-  fEventCounter(0)
+  fPrefilterNegTracks()
 {
   //
   // default constructor
@@ -67,8 +66,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
-  fPrefilterNegTracks(),
-  fEventCounter(0)
+  fPrefilterNegTracks()
 {
   //
   // named constructor
@@ -147,7 +145,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsTrackSelected(AliReducedBaseTrack* track, Fl
 //___________________________________________________________________________
 Bool_t AliReducedAnalysisJpsi2ee::IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values/*=0x0*/) {
    //
-   // apply event cuts
+   // apply track prefilter cuts
    //
    if(fPreFilterTrackCuts.GetEntries()==0) return kTRUE;
    
@@ -163,7 +161,7 @@ Bool_t AliReducedAnalysisJpsi2ee::IsTrackPrefilterSelected(AliReducedBaseTrack* 
 //___________________________________________________________________________
 Bool_t AliReducedAnalysisJpsi2ee::IsPairSelected(Float_t* values) {
   //
-  // apply event cuts
+  // apply pair cuts
   //
   if(fPairCuts.GetEntries()==0) return kTRUE;
   // loop over all the cuts and make a logical and between all cuts in the list

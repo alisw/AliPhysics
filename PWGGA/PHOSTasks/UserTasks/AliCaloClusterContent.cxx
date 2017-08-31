@@ -11,26 +11,24 @@ ClassImp(AliCaloClusterContent)
 
 //________________________________________________________________________
 AliCaloClusterContent::AliCaloClusterContent():
-  fType(0),
-  fCellsAbsId(0),
-//  frelID(),
-  fLabel(0),
-  fNCells(0),
-  fNTracksMatched(0),
-  fIsFilled(0),
-  fIsExotic(0),
-  fIsEMCAL(0),
-  fIsPHOS(0),
-  fCoreEnergy(0),
-  fDispersion(0),
-  fDistanceToBadChannel(0),
-  fEmcCpvDistance(0),
-  fEnergy(0),
-  fM02(0),
-  fM20(0),
-  fTOF(0),
-  fTrackDx(0),
-  fTrackDz(0),
+  fType(-1),
+  fLabel(-1),
+  fNCells(-1),
+  fNTracksMatched(-1),
+  fIsFilled(-1),
+  fIsExotic(-1),
+  fIsEMCAL(-1),
+  fIsPHOS(-1),
+  fCoreEnergy(-1),
+  fDispersion(-1),
+  fDistanceToBadChannel(-1),
+  fEmcCpvDistance(-1),
+  fEnergy(-1),
+  fM02(-1),
+  fM20(-1),
+  fTOF(-1),
+  fTrackDx(-1),
+  fTrackDz(-1),
   fCellAbsID(0),
   fCellDetector(0),
   fCellMod(0),
@@ -39,40 +37,58 @@ AliCaloClusterContent::AliCaloClusterContent():
   fCellEnergy(0),
   fCellTime(0)
 {
-
+// allocate memory
+  fCellAbsID.reserve(30);
+  fCellMod.reserve(30);
+  fCellDetector.reserve(30);
+  fCellRelIDX.reserve(30);
+  fCellRelIDZ.reserve(30);
+  fCellEnergy.reserve(30);
+  fCellTime.reserve(30);
 }
 
 //________________________________________________________________________
 AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloCells* cells, const AliPHOSGeometry* fgeom):
-  fType(0),
-  fCellsAbsId(0),
-//  relID(),
-  fLabel(0),
-  fNCells(0),
-  fNTracksMatched(0),
-  fIsFilled(0),
-  fIsExotic(0),
-  fIsEMCAL(0),
-  fIsPHOS(0),
-  fCoreEnergy(0),
-  fDispersion(0),
-  fDistanceToBadChannel(0),
-  fEmcCpvDistance(0),
-  fEnergy(0),
-  fM02(0),
-  fM20(0),
-  fTOF(0),
-  fTrackDx(0),
-  fTrackDz(0),
+   fType(-1),
+  fLabel(-1),
+  fNCells(-1),
+  fNTracksMatched(-1),
+  fIsFilled(-1),
+  fIsExotic(-1),
+  fIsEMCAL(-1),
+  fIsPHOS(-1),
+  fCoreEnergy(-1),
+  fDispersion(-1),
+  fDistanceToBadChannel(-1),
+  fEmcCpvDistance(-1),
+  fEnergy(-1),
+  fM02(-1),
+  fM20(-1),
+  fTOF(-1),
+  fTrackDx(-1),
+  fTrackDz(-1),
   fCellAbsID(0),
   fCellDetector(0),
   fCellMod(0),
   fCellRelIDX(0),
   fCellRelIDZ(0),
   fCellEnergy(0),
-  tempVecSize(0),
   fCellTime(0)
 {
+
+  Int_t NCells = clust ->GetNCells();
+// allocate memory
+  fCellAbsID.reserve(2*NCells);
+  fCellMod.reserve(2*NCells);
+  fCellDetector.reserve(2*NCells);
+  fCellRelIDX.reserve(2*NCells);
+  fCellRelIDZ.reserve(2*NCells);
+  fCellEnergy.reserve(2*NCells);
+  fCellTime.reserve(2*NCells);
+
+  this->SetClusterAndCells(clust, cells, fgeom);
+
+/*
 // read out cluster information
   fType                 = clust ->GetType();
   fLabel                = clust ->GetLabel();
@@ -91,6 +107,17 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
   fTOF                  = clust ->GetTOF();
   fTrackDx              = clust ->GetTrackDx();
   fTrackDz              = clust ->GetTrackDz();
+
+// allocate memory
+  fCellAbsID.reserve(2*fNCells);
+  fCellMod.reserve(2*fNCells);
+  fCellDetector.reserve(2*fNCells);
+  fCellRelIDX.reserve(2*fNCells);
+  fCellRelIDZ.reserve(2*fNCells);
+  fCellEnergy.reserve(2*fNCells);
+  fCellTime.reserve(2*fNCells);
+
+
 
 
 // Loop over all cells of current cluster
@@ -118,6 +145,7 @@ AliCaloClusterContent::AliCaloClusterContent(const AliVCluster* clust, AliVCaloC
     }
 
   fIsFilled = kTRUE;
+  */
 }
 
 //________________________________________________________________________
@@ -210,10 +238,6 @@ void AliCaloClusterContent::Reset(){
   fCellRelIDZ.clear();
   fCellEnergy.clear();
   fCellTime.clear();
- /// fCellType.clear();
-
-  tempVecSize = 0;
-
 
 
   fIsFilled = kFALSE;

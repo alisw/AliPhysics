@@ -146,6 +146,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCASecondaryWeak{{nullptr}}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
+   ,fNtracks{{nullptr}}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    ,fTOFtemplates{nullptr}
@@ -245,10 +246,13 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fList->Add(fTPCcounts[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
+        fNtracks[iT][iC] = new TH2F(Form("f%cNtracks%s",letter[iC],tpctof[iT].data()),
+          ";Centrality (%);#it{p}_{T} (GeV/#it{c})",nCentBins,centBins,nPtBins,pTbins);
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it[c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
         fDCAz[iT][iC] = new TH3F(Form("f%cDCAz%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)",
             nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
+        fList->Add(fNtracks[iT][iC]);
         fList->Add(fDCAxy[iT][iC]);
         fList->Add(fDCAz[iT][iC]);
       }
@@ -378,6 +382,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
 
       for (int iR = iTof; iR >= 0; iR--) {
+        fNtracks[iR][iC]->Fill(centrality,pT);
         /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
         /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
         if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {

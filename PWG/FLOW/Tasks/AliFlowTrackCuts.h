@@ -418,13 +418,13 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fRequireTOFSignal;      //require TOF signal
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
-  Bool_t fCutChi2PerClusterITS;  //cut on chi2 per ITS cluster
-  Bool_t fCutITSClusterGlobal;   //cut on ITS clusters: either any hit on SPD or no hit on SPD and hit on first layer SDD (like global tracks)
-  Float_t fMaxChi2PerClusterITS; //max chi2 per ITS cluster
   Int_t fNClustersTPCMin;        //min tpc clusters  
   Bool_t fCutNClustersITS;       //cut on clusters?
   Int_t fNClustersITSMax;        //max tpc ncls
   Int_t fNClustersITSMin;        //min tpc clusters  
+  Bool_t fCutChi2PerClusterITS;  //cut on chi2 per ITS cluster
+  Bool_t fCutITSClusterGlobal;   //cut on ITS clusters: either any hit on SPD or no hit on SPD and hit on first layer SDD (like global tracks)
+  Float_t fMaxChi2PerClusterITS; //max chi2 per ITS cluster
   Bool_t fUseAODFilterBit;       //use AOD filter bit selection?
   UInt_t fAODFilterBit;          //AOD filter bit to select
   Bool_t fCutDCAToVertexXY;      //dca xy cut

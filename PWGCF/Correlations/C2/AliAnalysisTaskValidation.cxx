@@ -31,9 +31,10 @@ using std::endl;
 AliAnalysisTaskValidation::AliAnalysisTaskValidation()
   : AliAnalysisTaskSE(),
     fIsValidEvent(false),
-    fValidators(),
+    fEventValidators(),
     fOutputList(0),
-    fQADiscard_flow(0),
+    fQA_event_discard_flow(0),
+    fQA_track_discard_flow(0),
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -48,9 +49,10 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation()
 AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
-    fValidators(),
+    fEventValidators(),
     fOutputList(0),
-    fQADiscard_flow(0),
+    fQA_event_discard_flow(0),
+    fQA_track_discard_flow(0),
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -61,19 +63,25 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name)
     fFMDV0C_post(0)
 {
   // Apply all cuts by default
-  fValidators.push_back(EventValidation::kNoCut);
-  fValidators.push_back(EventValidation::kIsAODEvent);
-  fValidators.push_back(EventValidation::kPassesAliEventCuts);
-  fValidators.push_back(EventValidation::kHasFMD);
-  fValidators.push_back(EventValidation::kHasEntriesFMD);
-  fValidators.push_back(EventValidation::kHasEntriesV0);
-  fValidators.push_back(EventValidation::kHasValidVertex);
-  fValidators.push_back(EventValidation::kHasMultSelection);
-  // fValidators.push_back(EventValidation::kNotOutOfBunchPU);
-  fValidators.push_back(EventValidation::kNotMultiVertexPU);
-  fValidators.push_back(EventValidation::kNotSPDPU);
-  fValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
-  fValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
+  fEventValidators.push_back(EventValidation::kNoEventCut);
+  fEventValidators.push_back(EventValidation::kIsAODEvent);
+  fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+  fEventValidators.push_back(EventValidation::kHasFMD);
+  fEventValidators.push_back(EventValidation::kHasEntriesFMD);
+  fEventValidators.push_back(EventValidation::kHasEntriesV0);
+  fEventValidators.push_back(EventValidation::kHasValidVertex);
+  fEventValidators.push_back(EventValidation::kHasMultSelection);
+  // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
+  // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+  fEventValidators.push_back(EventValidation::kNotSPDPU);
+  fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
+  fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
+
+  // Default track cuts
+  fTrackValidators.push_back(TrackValidation::kNoTrackCut);
+  fTrackValidators.push_back(TrackValidation::kTPCOnly);
+  fTrackValidators.push_back(TrackValidation::kEtaCut);
+  fTrackValidators.push_back(TrackValidation::kPtCut);
 
   // Define output slot
   DefineOutput(1, TList::Class());
@@ -125,13 +133,17 @@ AliAnalysisDataContainer* AliAnalysisTaskValidation::GetExchangeContainter() {
 }
 
 void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
-  this->fQADiscard_flow = new TH1F("qa_discard_flow", "QA event discard flow",
-				   this->fValidators.size(), 0, this->fValidators.size());
-  TAxis *discardedEvtsAx = this->fQADiscard_flow->GetXaxis();
+  /// Event discard flow histogram
+  this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
+					  "QA event discard flow",
+					  this->fEventValidators.size(),
+					  0,
+					  this->fEventValidators.size());
+  TAxis *discardedEvtsAx = this->fQA_event_discard_flow->GetXaxis();
 
-  for (UInt_t idx = 0; idx < this->fValidators.size(); idx++) {
-    switch (this->fValidators[idx]) {
-    case EventValidation::kNoCut:
+  for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
+    switch (this->fEventValidators[idx]) {
+    case EventValidation::kNoEventCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
     case EventValidation::kIsAODEvent:
       discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
@@ -159,12 +171,34 @@ void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "SPD clstrs vs BG cut"); break;
     }
   }
-  outlist->Add(this->fQADiscard_flow);
+  outlist->Add(this->fQA_event_discard_flow);
+
+  /// Track discard flow
+  this->fQA_track_discard_flow = new TH1F("qa_tack_discard_flow",
+					  "QA track discard flow",
+					  this->fTrackValidators.size(),
+					  0,
+					  this->fTrackValidators.size());
+  TAxis *discardedTrksAx = this->fQA_track_discard_flow->GetXaxis();
+
+  for (UInt_t idx = 0; idx < this->fTrackValidators.size(); idx++) {
+    switch (this->fTrackValidators[idx]) {
+    case TrackValidation::kNoTrackCut:
+      discardedTrksAx->SetBinLabel(idx + 1, "No cuts"); break;
+    case TrackValidation::kTPCOnly:
+      discardedTrksAx->SetBinLabel(idx + 1, "!TPC-Only"); break;
+    case TrackValidation::kEtaCut:
+      discardedTrksAx->SetBinLabel(idx + 1, "!Eta cut"); break;
+    case TrackValidation::kPtCut:
+      discardedTrksAx->SetBinLabel(idx + 1, "!Pt cut"); break;
+    }
+  }
+  outlist->Add(this->fQA_track_discard_flow);  
 }
 
 void AliAnalysisTaskValidation::UserCreateOutputObjects() {
   // Stop right here if there are no Validators to work with
-  if (this->fValidators.size() == 0) {
+  if (this->fEventValidators.size() == 0) {
     AliFatal("No event validators specified!");
   }
 
@@ -208,9 +242,9 @@ void AliAnalysisTaskValidation::UserCreateOutputObjects() {
 void AliAnalysisTaskValidation::UserExec(Option_t *)
 {
   this->fIsValidEvent = true;
-  for (UInt_t idx = 0; idx < this->fValidators.size(); idx++) {
-    switch (this->fValidators[idx]) {
-    case EventValidation::kNoCut:
+  for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
+    switch (this->fEventValidators[idx]) {
+    case EventValidation::kNoEventCut:
       this->fIsValidEvent = this->NoCut(); break;
     case EventValidation::kIsAODEvent:
       this->fIsValidEvent = this->IsAODEvent(); break;
@@ -238,7 +272,7 @@ void AliAnalysisTaskValidation::UserExec(Option_t *)
       this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
     }
     if (this->fIsValidEvent) {
-      this->fQADiscard_flow->Fill(idx);
+      this->fQA_event_discard_flow->Fill(idx);
     } else {
       // Stop checking once this event has been flaged as invalid
       break;
@@ -409,16 +443,57 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetV0hits() const {
   return ret_vector;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetSPDtracklets() const {
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  AliAODTracklets* aodTracklets = aodEvent->GetTracklets();
+AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
+  auto in_tracks = this->GetAllCentralBarrelTracks();
+  Tracks out_tracks;
+  for (auto obj: *in_tracks) {
+    auto tr = static_cast<AliAODTrack*>(obj);
+    for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
+      auto track_valid = true;
+      switch (this->fTrackValidators[idx]) {
+      case TrackValidation::kNoTrackCut:
+	break;
+      case TrackValidation::kTPCOnly:
+	track_valid = tr->TestFilterBit(128); break;
+      case TrackValidation::kEtaCut:
+	track_valid = (TMath::Abs(tr->Eta()) > 0.8); break;
+      case TrackValidation::kPtCut:
+	track_valid = (tr->Pt() < 0.3); break;
+      }
+      if (track_valid) {
+	this->fQA_event_discard_flow->Fill(idx);
+      } else {
+	// Stop checking once this event has been flaged as invalid
+	break;
+      }
+    }
+    Double_t weight = 1.0;
+    out_tracks
+      .push_back(AliAnalysisTaskValidation::Track(tr->Eta(),
+						  AliAnalysisC2Utils::Wrap02pi(tr->Phi()),
+						  tr->Pt(),
+						  weight));
+  }
+  return out_tracks;
+}
 
-  const Double_t pt = 0;
+AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracklets() const {
+  const Double_t dummy_pt = 0;
   AliAnalysisTaskValidation::Tracks ret_vector;
-  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    auto eta = aodTracklets->GetEta(i);
-    auto phi = aodTracklets->GetPhi(i);
-    ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, 1));
+
+  // Using the aptly named parent class AliVMultiplicity
+  AliVMultiplicity* mult = this->fInputEvent->GetMultiplicity();
+  Int_t nTracklets = mult->GetNumberOfTracklets();
+  for (Int_t i=0; i < nTracklets; i++){
+    // Using a dphi cut in units of mrad; This cut is motivated in
+    // https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/lmilano/2017-Aug-11-analysis_note-note.pdf
+    auto dphi  = mult->GetDeltaPhi(i);
+    if (TMath::Abs(dphi) * 1000 > 5) {
+      continue;
+    }
+    auto phi   = mult->GetPhi(i);
+    auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
+    ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, dummy_pt, 1));
   }
   return ret_vector;
 }

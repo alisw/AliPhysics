@@ -46,9 +46,9 @@ ClassImp(AliV0ReaderStrange)
 AliV0ReaderStrange::AliV0ReaderStrange(const char *name) : AliAnalysisTaskSE(name),
   fEventCuts(NULL),
   fV0Cuts(NULL),
-  fVectorFoundGammas(0),
   fConversionGammas(NULL),
-  fEventIsSelected(kFALSE)
+  fEventIsSelected(kFALSE),
+  fVectorFoundGammas(0)
 {
   // Default constructor
 

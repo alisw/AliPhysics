@@ -39,8 +39,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
   void SetPeriod(Int_t period = 2015) {fPeriod = period;};
   void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
-  void SetParamsHe(Double_t params[6]) { for(Int_t i; i < 6; i++) fBetheParamsHe[i] = params[i];};
-  void SetParamsT(Double_t params[6]) { for(Int_t i; i < 6; i++) fBetheParamsT[i] = params[i];};
+  void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
+  void SetParamsT(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsT[i] = params[i];};
 
  private:
   AliESDInputHandler     *fInputHandler;        //!<! Input handler

@@ -46,22 +46,21 @@ AliV0CutsStrange::AliV0CutsStrange(const char *name,const char *title) :
   AliAnalysisCuts(name, title),
   fHistograms(NULL),
   fPIDResponse(NULL),
-  fIsQA(kFALSE),
   fV0ReaderStrangeName("V0ReaderStrange"),
   fCutString(NULL),
   fCutStringRead(""),
-  fPreSelCut(kFALSE),
+  fIsQA(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
   fUseOnFlyV0FinderSameSign(0),
-  fMinClsTPC(0.),
-  fMinClsTPCToF(0.),
   fUseCorrectedTPCClsInfo(kFALSE),
+  fMinClsTPCToF(0.),
+  fMinClsTPC(0.),
   fPIDTPCnSigmaProtonLow(0),
   fPIDTPCnSigmaProtonUp(0),
-  fPIDTPCnSigmaPionLow(0),
-  fPIDTPCnSigmaPionUp(0),
   fPIDTOFnSigmaProtonLow(0),
   fPIDTOFnSigmaProtonUp(0),
+  fPIDTPCnSigmaPionLow(0),
+  fPIDTPCnSigmaPionUp(0),
   fPIDTOFnSigmaPionLow(0),
   fPIDTOFnSigmaPionUp(0),
   fHistoCutIndex(NULL),
@@ -82,7 +81,8 @@ AliV0CutsStrange::AliV0CutsStrange(const char *name,const char *title) :
   fHistoTOFdEdxPionBefore(NULL),
   fHistoTOFdEdxSigmaPionBefore(NULL),
   fHistoTOFdEdxPionAfter(NULL),
-  fHistoTOFdEdxSigmaPionAfter(NULL)
+  fHistoTOFdEdxSigmaPionAfter(NULL),
+  fPreSelCut(kFALSE)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}

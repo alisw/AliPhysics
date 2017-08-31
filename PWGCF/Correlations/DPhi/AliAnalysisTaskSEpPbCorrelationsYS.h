@@ -229,6 +229,13 @@ private:
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_FMD_eta_phi;
 
+  TH2F*fFMDV0;
+  TH2F*fFMDV0_post;
+  TH2F*fFMDV0A;
+  TH2F*fFMDV0A_post;
+  TH2F*fFMDV0C;
+  TH2F*fFMDV0C_post;
+  
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
@@ -599,7 +606,7 @@ public:
     AliFatal("Not implemented");
     return 0;
   }
-  virtual Double_t Multiplicity() const { return fMultiplicity; }
+  virtual Double_t Multiplicity() const { return  fMultiplicity; }
   virtual Int_t GetLabel() const {
     AliFatal("Not implemented");
     return 0;

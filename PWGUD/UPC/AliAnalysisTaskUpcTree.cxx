@@ -79,6 +79,20 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fL1inputs(0),
   fRunNumber(0),
   fNofTracklets(0),
+  fV0AMult(),
+  fV0CMult(),
+  fV0ATime(),
+  fV0CTime(),
+  fBBFlag(),
+  fBGFlag(),
+  fBBAFlags(0),
+  fBBCFlags(0),
+  fBGAFlags(0),
+  fBGCFlags(0),
+  fBBTriggerV0A(),
+  fBGTriggerV0A(),
+  fBBTriggerV0C(),
+  fBGTriggerV0C(),
   fV0ADecision(),
   fV0CDecision(),
   fMTotV0A(0),
@@ -91,6 +105,8 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fMTotADC(0),
   fTriggerChargeADA(0),
   fTriggerChargeADC(0),
+  fZNATDC(),
+  fZNCTDC(),
   fZNAenergy(-1000),
   fZNCenergy(-1000),
   fZPAenergy(-1000),
@@ -101,8 +117,6 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fZNCtower0(-1000),
   fZPAtower0(-1000),
   fZPCtower0(-1000),
-  fZNATDC(),
-  fZNCTDC(),
   fVtxX(-1000),
   fVtxY(-1000),
   fVtxZ(-1000),
@@ -119,20 +133,6 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fOMU(),
   fFOmap(),
   fFiredChipMap(),
-  fBBFlag(),
-  fBGFlag(),
-  fBBAFlags(0),
-  fBBCFlags(0),
-  fBGAFlags(0),
-  fBGCFlags(0),
-  fV0AMult(),
-  fV0CMult(),
-  fV0ATime(),
-  fV0CTime(),
-  fBBTriggerV0A(),
-  fBGTriggerV0A(),
-  fBBTriggerV0C(),
-  fBGTriggerV0C(),
   fTriggerMask(),
   fPFBBFlagV0(),
   fPFBGFlagV0(),
@@ -292,7 +292,7 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   Int_t nPast   = 90;
   Int_t nFuture = 90;
   Int_t nTotal   = nPast+nFuture+1;
-  ULong64_t id = fInputEvent->GetHeader()->GetEventIdAsLong();
+  //  ULong64_t id = fInputEvent->GetHeader()->GetEventIdAsLong();
   if (fInputEvent->GetDataLayoutType()==AliVEvent::kESD) {
     fVBA.ResetAllBits();
     fVBC.ResetAllBits();
@@ -460,7 +460,7 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fTracks->Clear();
   fSATracks->Clear();
   AliPIDResponse* pid = fInputHandler->GetPIDResponse();
-  
+
   if (fTracklets){
     fTracklets->Clear();
     AliVMultiplicity* mult = fInputEvent->GetMultiplicity();
@@ -469,7 +469,7 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
       Float_t phi   = mult->GetPhi(i);
       Float_t eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
       Float_t dphi  = mult->GetDeltaPhi(i);
-      AliUpcParticle* tracklet = new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliUpcParticle(dphi,eta,phi,0,0,0);
+      new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliUpcParticle(dphi,eta,phi,0,0,0);
     }
   }
   if (fInputEvent->GetDataLayoutType()==AliVEvent::kAOD) {
@@ -582,9 +582,9 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
       for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
         AliESDtrack* track = (AliESDtrack*) fInputEvent->GetTrack(ipart);
         ULong_t status = track->GetStatus();
-        if (status & AliESDtrack::kITSin     == 0) continue;
-        if (status & AliESDtrack::kTPCin     != 0) continue;
-        if (status & AliESDtrack::kITSpureSA != 0) continue;
+        if ((status & AliESDtrack::kITSin)     == 0) continue;
+        if ((status & AliESDtrack::kTPCin)     != 0) continue;
+        if ((status & AliESDtrack::kITSpureSA) != 0) continue;
         UChar_t itsMap = track->GetITSClusterMap();
         if (!TESTBIT(itsMap,0) && !TESTBIT(itsMap,1)) continue;
         Float_t pt     = track->Pt();

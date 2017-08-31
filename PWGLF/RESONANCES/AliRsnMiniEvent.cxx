@@ -62,6 +62,38 @@ AliRsnMiniEvent &AliRsnMiniEvent::operator=(const AliRsnMiniEvent &copy)
 }
 
 //__________________________________________________________________________________________________
+void AliRsnMiniEvent::Clear(Option_t *)
+{
+//
+// Clears event
+//
+    fID = 0;
+    fVz = 0;
+    fMult = 0;
+    fRefMult = 0;
+    fTracklets = 0;
+    fAngle = 0;
+    fQnVector = 0;
+    fLeading = 0;
+    fRef = 0;
+    fRefMC = 0;
+
+    fParticles.Clear("C");
+}
+
+//__________________________________________________________________________________________________
+AliRsnMiniParticle *AliRsnMiniEvent::AddParticle()
+{
+//
+// Add a new particle to the list and returns a pointer to it,
+// in order to allow to se its parameters.
+//
+
+   Int_t n = fParticles.GetEntries();
+   return (AliRsnMiniParticle *)fParticles.ConstructedAt(n);
+}
+
+//__________________________________________________________________________________________________
 void AliRsnMiniEvent::AddParticle(AliRsnMiniParticle copy)
 {
 //

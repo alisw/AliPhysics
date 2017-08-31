@@ -129,8 +129,10 @@ private:
 	 int fEffMode;
 	 int fEffFilterBit;
 	 int fPcharge;
-	 float GlobTracks;
-	 float TPCTracks;
+	 unsigned int GlobTracks;
+	 unsigned int TPCTracks;
+	 unsigned int FB32Tracks;
+	 unsigned int FB32TOFTracks;
 	 double fEta_min;
 	 double fEta_max;
 	 double fPt_min;

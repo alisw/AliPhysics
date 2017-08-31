@@ -167,7 +167,7 @@ void AliAnalysisTaskKinksFilimon::UserCreateOutputObjects()
   fHistRPhiZTemplate = new THnSparseF("histRPhiZTemplate", "histRPhiZTemplate", 3, bins, xmin, xmax); // Temporary internal definition
   if(!fHistRPhiZTemplate) AliFatal("fHistRPhiZTemplate required");
 	
-	Float_t hLoPt = fHistPtYTemplate->GetXaxis()->GetXmin(), hHiPt = fHistPtYTemplate->GetXaxis()->GetXmax(), hLoY = fHistPtYTemplate->GetYaxis()->GetXmin(), hHiY = fHistPtYTemplate->GetYaxis()->GetXmax()/*, hLoEta = -1.5, hHiEta = 1.5*/;//, fLowX=0.6, fHighX=1.8;
+        Float_t hLoPt = fHistPtYTemplate->GetXaxis()->GetXmin(), hHiPt = fHistPtYTemplate->GetXaxis()->GetXmax()/*, hLoY = fHistPtYTemplate->GetYaxis()->GetXmin(), hHiY = fHistPtYTemplate->GetYaxis()->GetXmax()*//*, hLoEta = -1.5, hHiEta = 1.5*/;//, fLowX=0.6, fHighX=1.8;
 	Int_t nBinsPt = fHistPtYTemplate->GetNbinsX(), nBinsPtInvMassSlice = nBinsPt, nBinsY = fHistPtYTemplate->GetNbinsY();/*, nBinsEta = TMath::Nint(10*(hHiEta-hLoEta))*/
 	const Double_t* binsPtCArray = 0x0;
 	const Double_t* binsYCArray = 0x0;
@@ -769,7 +769,7 @@ Int_t AliAnalysisTaskKinksFilimon::KinkAnalysis(/*Option_t **/)
 	TLorentzVector mcTrackMomentum;
 	const Double_t resMCabsYmax = 1.5;
 	Double_t MCPt = -1, MCY = -1, MCEta = -1;
-	Bool_t isPrimary = kFALSE, isPhysicalPrimary = kFALSE;
+	Bool_t /*isPrimary = kFALSE,*/ isPhysicalPrimary = kFALSE;
 	AliVParticle* vMCParticle = 0x0;
  	for (Int_t iMCtrack = 0; iMCtrack < mcNtracks; ++iMCtrack) { //loop on all accepted MC tracks
 		if (mcEvent) {
@@ -1427,7 +1427,7 @@ Int_t AliAnalysisTaskKinksFilimon::EventSelection(AliVEvent* const inputEvent, A
 
 Int_t AliAnalysisTaskKinksFilimon::KinkResonanceAnalysis(const AliVEvent* const recEvent, const AliVParticle* const kinkMother, const TLorentzVector& mother4Momentum, const AliPID::EParticleType kinkMotherPID, const AliVEvent* const mixEvent, AliMCEvent* const mcEvent) const { // TODO: Unify ESD/AOD 
 		//const AliESDEvent* esdEvent = 0x0;
-		Double_t kinkMotherSign = 0;
+		//Double_t kinkMotherSign = 0;
 		//const AliAODEvent* aodEvent = 0x0;
 		Short_t kinkMotherCharge = kinkMother->Charge();
 #if 0

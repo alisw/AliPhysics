@@ -63,12 +63,14 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fSwitchKtNSub(0), 
   fSwitchMinNSub(0),
   fSwitchAktNSub(0),
+  fAdditionalTracks(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
+  fRandom(0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -106,12 +108,14 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fSwitchKtNSub(0), 
   fSwitchMinNSub(0),
   fSwitchAktNSub(0),
+  fAdditionalTracks(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
+  fRandom(0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -133,7 +137,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<33;i++){
+  for(Int_t i=0;i<48;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -152,6 +156,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
     fTreeObservableTagging = 0;
   }
 
+   if(fRandom)      delete fRandom;
 }
 
 //________________________________________________________________________
@@ -170,7 +175,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 38;
+  const Int_t nVar = 48;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -206,12 +211,22 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[29] = "SDGroomedFracBeta1"; 
   fShapesVarNames[30] = "SDGroomedNBeta1";
   fShapesVarNames[31] = "SDMassBeta1";
-   fShapesVarNames[32] = "SDSymmBeta2";
-   fShapesVarNames[33] = "SDDeltaRBeta2";
-  fShapesVarNames[34] = "SDGroomedFracBeta2"; 
-  fShapesVarNames[35] = "SDGroomedNBeta2";
-  fShapesVarNames[36] = "SDMassBeta2";
-  fShapesVarNames[37] = "weightPythia"; 
+   fShapesVarNames[32] = "SDSymmBeta15zcut05";
+   fShapesVarNames[33] = "SDDeltaRBeta15zcut05";
+  fShapesVarNames[34] = "SDGroomedFracBeta15zcut05"; 
+  fShapesVarNames[35] = "SDGroomedNBeta15zcut05";
+  fShapesVarNames[36] = "SDMassBeta15zcut05";
+ fShapesVarNames[37] = "SDSymmBetanegzcut025";
+  fShapesVarNames[38] = "SDDeltaRBetanegzcut025";
+  fShapesVarNames[39] = "SDGroomedFracBetanegzcut025"; 
+  fShapesVarNames[40] = "SDGroomedNBetanegzcut025";
+  fShapesVarNames[41] = "SDMassBetanegzcut025";
+ fShapesVarNames[42] = "SDSymmForm";
+  fShapesVarNames[43] = "SDDeltaRForm";
+  fShapesVarNames[44] = "SDGroomedFracForm"; 
+  fShapesVarNames[45] = "SDGroomedNForm";
+  fShapesVarNames[46] = "SDMassForm";
+  fShapesVarNames[47] = "weightPythia"; 
 
 
   
@@ -268,19 +283,20 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   
   //fOutput->Add(fTreeObservableTagging);
   
- 
+ fRandom = new TRandom3(0);
   PostData(1, fOutput); // Post data for ALL output slots > 0 here
   PostData(2, fTreeObservableTagging);
   
   delete [] fShapesVarNames;
 
-}
+   }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetShapesMC::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
+  // if (gRandom) delete gRandom;
+  //   gRandom = new TRandom3(0);
   return kTRUE;
 }
 
@@ -371,7 +387,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
         Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
         kWeight=partonsInfo->GetPythiaEventWeight();
         //Printf("kWeight=%f",  kWeight);
-        fShapesVar[32] = kWeight;
+        fShapesVar[47] = kWeight;
         
         Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
         fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
@@ -440,9 +456,9 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,0,1);
       SoftDrop(jet1,jetCont,0.1,0,2);
       SoftDrop(jet1,jetCont,0.1,1,0); 
-      SoftDrop(jet1,jetCont,0.1,2,0); 
-      
-          
+      SoftDrop(jet1,jetCont,0.5,1.5,0); 
+      SoftDrop(jet1,jetCont,0.25,-1,0); 
+      SoftDrop(jet1,jetCont,0.1,-2,0); 
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1099,7 +1115,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
- 
+  //cout<<"CALL TO SOFTDROP"<<endl;
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
   Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
   UShort_t FJNTracks=0,EmcalJetNTracks=0;
@@ -1120,6 +1136,59 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
       EmcalJetTrackPt[i]=fTrk->Pt();
       EmcalJetNTracks++;
     }
+
+  fRandom->SetSeed(0);
+  //here add N tracks with random phi and eta and theta according to bdmps distrib.
+  fastjet::PseudoJet MyJet(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+  
+  for(Int_t i=0;i<fAdditionalTracks;i++){
+    Double_t ppx,ppy,ppz,kTscale,pTscale,ppE;
+    Double_t lim2=2;
+    Double_t lim1=10;
+    Double_t xpower=-4;
+    Double_t xpowero=-2;
+    
+  
+    Double_t part1=0;
+    Double_t part2=0;
+    Double_t part1o=0;
+    Double_t part2o=0;
+
+    //coordinates in the reference frame of the jet
+     Double_t ppphi =2*TMath::Pi()*fRandom->Uniform();
+     //generation of kT according to 1/kT^4, with minimum QS=2 GeV					  
+     part1=(TMath::Power(lim1,xpower+1)-TMath::Power(lim2,xpower+1))*fRandom->Uniform();
+     part2=TMath::Power(lim2,xpower+1);
+     kTscale=TMath::Power(part1+part2,1/(xpower+1));
+
+
+
+     
+     //generation of w according to 1/w2, with minimum wc
+     //omega needs to be larger than kT so to have well defined angles
+     Double_t lim1o=10;
+     Double_t lim2o=kTscale; 
+     part1o=(TMath::Power(lim1o,xpowero+1)-TMath::Power(lim2o,xpowero+1))*fRandom->Uniform();
+     part2o=TMath::Power(lim2o,xpowero+1);
+     Double_t omega=TMath::Power(part1o+part2o,1/(xpowero+1));
+     
+     Double_t sinpptheta=kTscale/omega;
+     Double_t pptheta=TMath::ASin(sinpptheta);
+    
+     if(pptheta>0.4) continue;
+     fastjet::PseudoJet PseudoTracksCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+     //cout<<PseudoTracksCMS.px()<<" "<<PseudoTracksCMS.py()<<" "<<PseudoTracksCMS.perp()<<" "<<PseudoTracksCMS.e()<<endl;
+     //boost the particle to the lab frame
+     fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
+     //cout<<" "<<PseudoTracksLab.px()<<" "<<PseudoTracksLab.py()<<" "<<PseudoTracksLab.pz()<<" "<<PseudoTracksLab.e()<<" "<<PseudoTracksLab.perp()<<endl;
+     //cout<<" "<<fJet->Px()<<" "<<fJet->Py()<<" "<<fJet->Pz()<<" "<<fJet->E()<<" "<<fJet->Pt()<<endl;
+        
+     PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
+     fInputVectors.push_back(PseudoTracksLab);}
+
+
+  
+  
   fastjet::JetDefinition                *fJetDef;         
   fastjet::ClusterSequence              *fClustSeqSA;
   
@@ -1209,14 +1278,27 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[30]=NGroomedBranches;
   fShapesVar[31]=GroomedMass;
   }
-
-   if(beta==2){
+  //this one kills soft and large angle radiation
+  if((beta==1.5) && (zcut==0.5)){
   fShapesVar[32]=SymParam;
   fShapesVar[33]=DeltaR;
   fShapesVar[34]=GroomedPt;
   fShapesVar[35]=NGroomedBranches;
   fShapesVar[36]=GroomedMass; }
+   //this option favour democratic branches at large kt
+   if((beta==-1) && (zcut==0.25)){
+  fShapesVar[37]=SymParam;
+  fShapesVar[38]=DeltaR;
+  fShapesVar[39]=GroomedPt;
+  fShapesVar[40]=NGroomedBranches;
+  fShapesVar[41]=GroomedMass; }
 
+  if((beta==-2) && (zcut==0.1)){
+  fShapesVar[42]=SymParam;
+  fShapesVar[43]=DeltaR;
+  fShapesVar[44]=GroomedPt;
+  fShapesVar[45]=NGroomedBranches;
+  fShapesVar[46]=GroomedMass; }
   
   return;
 

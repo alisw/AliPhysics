@@ -56,7 +56,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   UInt_t ETmaskNDG, UInt_t ETpatternNDG,
   UInt_t TTmask, UInt_t TTpattern):
 	AliAnalysisTaskSE(name)
-	, fAnalysisStatus(state)
   , frnummin(rnummin)
   , frnummax(rnummax)
   , fnumTracksMax(numTracksMax)
@@ -68,14 +67,19 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
-  , fLHCPeriod(TString(""))
   , fRun(-1)
   , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
+  , fAnalysisStatus(state)
+  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -85,14 +89,17 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fEventCuts(0x0)
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , fCEPUtil(0x0)
+	, flQArnum(0x0) 
+	, flBBFlag(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
+	, flV0(0x0)
+	, flFMD(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
-  , fCEPUtil(0x0)
 {
 
 	// ensures that the histograms are all deleted on exit!
@@ -109,7 +116,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
 //------------------------------------------------------------------------------
 AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	AliAnalysisTaskSE()
-	, fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
   , frnummin(100000)
   , frnummax(300000)
   , fnumTracksMax(6)
@@ -121,13 +127,19 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
-  , fLHCPeriod(TString(""))
   , fRun(-1)
+  , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
+  , fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
+  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -137,7 +149,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fEventCuts(0x0)
 	, fTrackCuts(0x0)
   , fMartinSel(0x0)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , fCEPUtil(0x0)
   , flQArnum(0x0)
   , flBBFlag(0x0)
 	, flSPDpileup(0x0)
@@ -148,7 +160,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
-  , fCEPUtil(0x0)
 {
 
 }
@@ -534,7 +545,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // magnetic field strenght
   Double_t fMagField = fEvent->GetMagneticField();
   // number of tracks
-  Int_t fNumTracks = fEvent->GetNumberOfTracks();
+  // Int_t fNumTracks = fEvent->GetNumberOfTracks();
   // Number of V0s
   Int_t fNumV0s = fEvent->GetNumberOfV0s();
   
@@ -587,9 +598,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
      
   // EventCuts only works with run2 data
   // this is doing a lot more than the physics selection (by default uses kAny)
-  // run number > 225000
+  // run number > 256146 (LHC16j)
   Bool_t isEventCutsel = kFALSE;
-  if (fRun >= 225000 && fRun <= 260187) {
+  if (fRun >= 256146) {
     isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
@@ -609,15 +620,23 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
      
+  // count number of recorded triggers
+  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(1))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(2))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+  
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
   // the trigger needs to be replaied
   // different triggers are considered
-  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e]
+  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
   // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p]
-  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   Bool_t isReplay = fMCEvent
     || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
     || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
@@ -625,7 +644,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The following is needed to replay the DG trigger
   // The STG trigger in 2016 required two online tracklets without additional
   // topology.
-  TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  TBits foMap = mult->GetFastOrFiredChips();
   Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
     
   Bool_t isDGTrigger = kFALSE;
@@ -641,26 +661,23 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
     isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
     
-    // printf("DG trigger replaied: %i %i %i\n",
-    //  isSTGtriggerFired,!isV0Afired,!isV0Cfired);
+    // printf("DG trigger replaied: %i %i %i -> %i\n",
+    //   isSTGtriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
   
   } else {
   
     if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
       isDGTrigger = kTRUE;
       
-      fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-      ((TH1F*)flQArnum->At(1))->Fill(fRun);
-
       // past-future trigger protection
       if (flBBFlag)
         fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
   }
-  
+  if (isDGTrigger)
+    fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
   
   // number of tracklets
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
@@ -709,10 +726,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
 
-  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
-  if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
-  if (isADDG) ((TH1F*)flQArnum->At(5))->Fill(fRun);
-  if (isFMDDG)((TH1F*)flQArnum->At(6))->Fill(fRun);
+  if (isMBOR) ((TH1F*)flQArnum->At(4))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(6))->Fill(fRun);
+  if (isADDG) ((TH1F*)flQArnum->At(7))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(8))->Fill(fRun);
   
   
   // compre isSPD and isSTGtriggerFired
@@ -777,8 +794,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
     
   // use the AliCEPUtils::GetCEPTracks method
-  TArrayI *Pindices  = new TArrayI();
-  Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
+  // TArrayI *Pindices  = new TArrayI();
+  // Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
   // if (nMartinSel>0 || nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   // get the tracks which meet the TT conditions
@@ -901,14 +918,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if ( isToSave ) {
     
     // update fhStatsFlow
-    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+    ((TH1F*)flQArnum->At(5))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
     if (isToSaveDG) {
-      ((TH1F*)flQArnum->At(7))->Fill(fRun);
+      ((TH1F*)flQArnum->At(9))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinDG);
     }
     if (isToSaveNDG) {
-      ((TH1F*)flQArnum->At(8))->Fill(fRun);
+      ((TH1F*)flQArnum->At(10))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     }
     
@@ -954,7 +971,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       TParticle* prot1 = NULL;
       stack = fMCEvent->Stack();
       if (stack) {
-        Int_t nPrimaries = stack->GetNprimary();
+        // Int_t nPrimaries = stack->GetNprimary();
         //printf("number of tracks: primaries - %i, reconstructed - %i\n",
         //  nPrimaries,nTracks);
         prot1 = stack->Particle(0);
@@ -972,7 +989,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
     
-      // proper poiter into fTracks and fTrackStatus
+      // proper pointer into fTracks and fTrackStatus
       Int_t trkIndex = TTindices->At(ii);
       
       // the original track

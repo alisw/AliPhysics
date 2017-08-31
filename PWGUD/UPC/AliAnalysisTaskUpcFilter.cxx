@@ -461,10 +461,10 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
     vtx0->SetX(0.); vtx0->SetY(0.); vtx0->SetZ(0.);
   }
 
-  Double_t pxpypz[3];
+  // Double_t pxpypz[3];
   UChar_t maskMan;
-  Double_t xyzDca[2], cov[3];
-  Float_t b[2], covF[3];
+  // Double_t xyzDca[2], cov[3];
+  // Float_t b[2], covF[3];
   Int_t nmun=0, ncen=0;
   Bool_t pdca;
   // AOD tracks loop
@@ -654,10 +654,10 @@ Bool_t AliAnalysisTaskUpcFilter::RunESD()
   }
 
   // ESD central tracks
-  Double_t pxpypz[3];
-  Float_t b[2]; Float_t cov[3];
-  UChar_t maskMan;
-  UInt_t filterMap;
+  // Double_t pxpypz[3];
+  // Float_t b[2]; Float_t cov[3];
+  // UChar_t maskMan;
+  // UInt_t filterMap;
   Int_t nmun=0, ncen=0;
 
   /*/ESD central tracks loop

@@ -95,6 +95,8 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
     fTPCsharedCut = minTPCsharedCut;
   }
 
+  void  SetCutMultESDdif(Float_t cutMultESDdif){fCutMultESDdif = cutMultESDdif;}
+
   //==============MC analysis==============//
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
@@ -224,6 +226,9 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t    GetRefMultiOrCentrality(AliVEvent* event);
   Double_t    GetReferenceMultiplicityFromAOD(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
+  void        IsProperVertexPileUp(AliVEvent *event);
+
+
   //===============================correction
   Double_t    GetTrackbyTrackCorrectionMatrix(Double_t vEta, 
 					      Double_t vPhi, 
@@ -423,6 +428,16 @@ Bool_t fRapidityInsteadOfEta;
 // AliEventCuts:  
 
   AliEventCuts *fEventCuts; /// Event cuts
+
+   TF1*         fLowCut;             // cut low for centrality outliers
+   TF1*         fHighCut;      
+   TF1*         fMultTOFLowCut;      // cut low for TOF multiplicity outliers
+   TF1*         fMultTOFHighCut;     // cut high for TOF multiplicity outliers
+   TF1*         fMultCentLowCut;     // cut low for multiplicity centrality outliers
+
+   Float_t  fCutMultESDdif;
+
+
 
   AliAnalysisTaskPIDBF(const AliAnalysisTaskPIDBF&); // not implemented
   AliAnalysisTaskPIDBF& operator=(const AliAnalysisTaskPIDBF&); // not implemented

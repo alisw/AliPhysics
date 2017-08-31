@@ -61,6 +61,7 @@ const char* AliPrimaryPionCuts::fgkCutNames[AliPrimaryPionCuts::kNCuts] = {
 //________________________________________________________________________
 AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : AliAnalysisCuts(name,title),
 	fHistograms(NULL),
+    fDoLightOutput(kFALSE),
 	fPIDResponse(NULL),
 	fEsdTrackCuts(NULL),
 	fEtaCut(0.9),
@@ -176,80 +177,82 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *axisBeforedEdx = NULL;
 	TAxis *axisBeforeTOF  = NULL;
 	TAxis *axisBeforedEdxSignal = NULL;
+    if(!fDoLightOutput){
+      if(preCut){
+        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,150,0.05,20,400,-10,10);
+        fHistograms->Add(fHistITSdEdxbefore);
+        axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-	if(preCut){
-		fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,150,0.05,20,400,-10,10);
-		fHistograms->Add(fHistITSdEdxbefore);
-		axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
+        fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,150,0.05,20,400,-10,10);
+        fHistograms->Add(fHistTPCdEdxbefore);
+        axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
 
-		fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,150,0.05,20,400,-10,10);
-		fHistograms->Add(fHistTPCdEdxbefore);
-		axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
+        fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,150,0.05,20.0,800,0.0,200);
+        fHistograms->Add(fHistTPCdEdxSignalbefore);
+        axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
 
-		fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,150,0.05,20.0,800,0.0,200);
-		fHistograms->Add(fHistTPCdEdxSignalbefore);
-		axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,150,0.05,20,400,-6,10);
+        fHistograms->Add(fHistTOFbefore);
+        axisBeforeTOF = fHistTOFbefore->GetXaxis();
 
-		fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,150,0.05,20,400,-6,10);
-		fHistograms->Add(fHistTOFbefore);
-		axisBeforeTOF = fHistTOFbefore->GetXaxis();
-		
-		fHistTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
-		fHistograms->Add(fHistTrackDCAxyPtbefore); 	
-		
-		fHistTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
-		fHistograms->Add(fHistTrackDCAzPtbefore); 
-		
-		fHistTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
-		fHistograms->Add(fHistTrackNFindClsPtTPCbefore); 
-	}
+        fHistTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+        fHistograms->Add(fHistTrackDCAxyPtbefore);
 
-	fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,150,0.05,20,400, -10,10);
-	fHistograms->Add(fHistITSdEdxafter);
+        fHistTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+        fHistograms->Add(fHistTrackDCAzPtbefore);
 
-	fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,150,0.05,20,400, -10,10);
-	fHistograms->Add(fHistTPCdEdxafter);
+        fHistTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
+        fHistograms->Add(fHistTrackNFindClsPtTPCbefore);
+      }
 
-	fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,150,0.05,20.0,800,0.0,200);
-	fHistograms->Add(fHistTPCdEdxSignalafter);
+      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,150,0.05,20,400, -10,10);
+      fHistograms->Add(fHistITSdEdxafter);
 
-	fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,150,0.05,20,400,-6,10);
-	fHistograms->Add(fHistTOFafter);
-	
-	fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
-	fHistograms->Add(fHistTrackDCAxyPtafter); 
-	
-	fHistTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
-	fHistograms->Add(fHistTrackDCAzPtafter); 
-	
-	fHistTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
-	fHistograms->Add(fHistTrackNFindClsPtTPCafter); 
-	
-	TAxis *AxisAfter = fHistTPCdEdxafter->GetXaxis(); 
-	Int_t bins = AxisAfter->GetNbins();
-	Double_t from = AxisAfter->GetXmin();
-	Double_t to = AxisAfter->GetXmax();
-	Double_t *newBins = new Double_t[bins+1];
-	newBins[0] = from;
-	Double_t factor = TMath::Power(to/from, 1./bins);
-	for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
-	AxisAfter->Set(bins, newBins);
-	AxisAfter = fHistTOFafter->GetXaxis(); 
-	AxisAfter->Set(bins, newBins);
-	AxisAfter = fHistITSdEdxafter->GetXaxis();
-	AxisAfter->Set(bins,newBins); 
-	AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
-	AxisAfter->Set(bins,newBins);
-	
-	if(preCut){
-		axisBeforeITS->Set(bins, newBins);
-		axisBeforedEdx->Set(bins, newBins);
-		axisBeforedEdxSignal->Set(bins,newBins);
-		axisBeforeTOF->Set(bins, newBins);
-	
-	}
-	delete [] newBins;
-	
+      fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,150,0.05,20,400, -10,10);
+      fHistograms->Add(fHistTPCdEdxafter);
+
+      fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,150,0.05,20.0,800,0.0,200);
+      fHistograms->Add(fHistTPCdEdxSignalafter);
+
+      fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,150,0.05,20,400,-6,10);
+      fHistograms->Add(fHistTOFafter);
+
+      fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
+      fHistograms->Add(fHistTrackDCAxyPtafter);
+
+      fHistTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
+      fHistograms->Add(fHistTrackDCAzPtafter);
+
+      fHistTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
+      fHistograms->Add(fHistTrackNFindClsPtTPCafter);
+    }
+    if(!fDoLightOutput){
+      TAxis *AxisAfter = fHistTPCdEdxafter->GetXaxis();
+      Int_t bins = AxisAfter->GetNbins();
+      Double_t from = AxisAfter->GetXmin();
+      Double_t to = AxisAfter->GetXmax();
+      Double_t *newBins = new Double_t[bins+1];
+      newBins[0] = from;
+      Double_t factor = TMath::Power(to/from, 1./bins);
+      for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
+      AxisAfter->Set(bins, newBins);
+      AxisAfter = fHistTOFafter->GetXaxis();
+      AxisAfter->Set(bins, newBins);
+      AxisAfter = fHistITSdEdxafter->GetXaxis();
+      AxisAfter->Set(bins,newBins);
+      AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
+      AxisAfter->Set(bins,newBins);
+
+      if(preCut){
+        axisBeforeITS->Set(bins, newBins);
+        axisBeforedEdx->Set(bins, newBins);
+        axisBeforedEdxSignal->Set(bins,newBins);
+        axisBeforeTOF->Set(bins, newBins);
+
+      }
+
+      delete [] newBins;
+    }
 	// Event Cuts and Info
 }
 

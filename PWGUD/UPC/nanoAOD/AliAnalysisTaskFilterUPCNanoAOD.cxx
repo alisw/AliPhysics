@@ -93,11 +93,11 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(trigger.Contains("CTEST59-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
   if(trigger.Contains("CTEST60-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OM2
   if(trigger.Contains("CTEST61-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OMU
-  if(trigger.Contains("CCUP8-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  if(trigger.Contains("CCUP9-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP
-  if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0SH1
-  if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP 0OMU
-  if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP
+  if(trigger.Contains("CCUP8-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  if(trigger.Contains("CCUP9-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
+  if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SH1
+  if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; // *0UBA *0UBC 0STP 0OMU
+  if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; // *0UBA *0UBC 0STP
   /*/
   
   if(trigger.Contains("CCUP")) isTriggered = kTRUE; // UPC central barrel

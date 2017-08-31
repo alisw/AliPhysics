@@ -767,7 +767,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t statusTrack=track->GetStatus();
     if(statusTrack&AliESDtrack::kITSrefit) itsRefit=kTRUE; 
     UChar_t clumap=track->GetITSClusterMap();
-    Double_t chi2clus=track->GetTPCchi2()/track->GetTPCNcls();
+    Double_t chi2clus = track->GetTPCNcls() ? track->GetTPCchi2()/track->GetTPCNcls() : -999.;
     Double_t curvrelerr = TMath::Sqrt(track->GetSigma1Pt2())/track->OneOverPt();
     Bool_t spdAny=kFALSE;
     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) spdAny=kTRUE;
@@ -938,17 +938,18 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     bool isPion = pid[AliPID::kPion];
     bool isKaon = pid[AliPID::kKaon];
 
-    if (fReadMC) {
+    if (fReadMC && pttrack>0.) {
       fHistPtResidVsPtTPCselAll->Fill(ptgen,(pttrack-ptgen));
-      fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-1./ptgen));
+      fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
       if (itsRefit){
 	fHistPtResidVsPtTPCselITSrefAll->Fill(ptgen,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-1./ptgen));
+	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
       }
-      for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
+      for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
         if (pid[iS]) {
 	  Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
-	  Double_t oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-1./ptgen);
+	  Double_t oneOverPtDiff=0;
+	  if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
           if (pidtr == iS) {
             fHistPtResidVsPtTPCselGoodHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),ptDiff);
             fHistOneOverPtResidVsPtTPCselGoodHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),oneOverPtDiff);
