@@ -1768,18 +1768,12 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 
     TString lPathInput = CurrentFileName();
     
-    //Autodetecting event type
-    UInt_t lEventType = esd->GetEventType();
-    AliWarning(Form("Event type: %i",lEventType));
-    
-    //For now: very trivial way of storing event type
-    TString lHistTitle = Form("Event type: %i",lEventType);
-    
+   
 
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
     AliWarning("Autodetecting production name via LPM tag...");
-    TString lProductionName = GetPeriodNameByLPM();
+    TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
     if( lProductionName.EqualTo("") ){
 	AliWarning("LPM Tag didn't work, autodetecting via path..."); 
 	lProductionName = GetPeriodNameByPath( lPathInput );
@@ -1787,8 +1781,28 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 	   AliWarning("Autodetect via path seems to not have worked?"); 
 	}
     }
-
+    //Autodetecting event type
+    TString lEventType = GetPeriodNameByLPM("LPMInteractionType");
+    if( lEventType.EqualTo("") ){
+	AliWarning("LPM Tag didn't work for collision type, set from period name..."); 
+	if(lPeriodName.EqualTo("LHC13b") || lPeriodName.EqualTo("LHC13c") ||
+	   lPeriodName.EqualTo("LHC13d") || lPeriodName.EqualTo("LHC13e") ||	   
+	   lPeriodName.EqualTo("LHC13f") ||
+	   lPeriodName.EqualTo("LHC16q") || lPeriodName.EqualTo("LHC16r") ||
+	   lPeriodName.EqualTo("LHC16s") || lPeriodName.EqualTo("LHC16t")){
+	  lEventType="pA";
+	}else if(lPeriodName.EqualTo("LHC10h") || lPeriodName.EqualTo("LHC11h") ||
+		 lPeriodName.EqualTo("LHC15o")){
+	  lEventType="PbPb";
+	}else{
+	  lEventType="pp";
+	}
+    }
+    //For now: very trivial way of storing event type
+    TString lHistTitle = Form("Event type: %s",lEventType.Data());
+ 
     AliWarning("==================================================");
+    AliWarning(Form(" Event type: %s",lEventType.Data()));
     AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
     AliWarning(Form(" Production Name (by path)......: %s", lProductionName.Data()));
     AliWarning("==================================================");
@@ -2257,12 +2271,11 @@ Bool_t AliMultSelectionTask::HasGoodVertex2016(AliVEvent* event)
 }
 
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodNameByLPM() 
+TString AliMultSelectionTask::GetPeriodNameByLPM(TString lTag) 
 {
     //==================================
     // Setup initial Info
     Bool_t lLocated = kFALSE;
-    TString lTag = "LPMProductionTag";
     TString lProductionName = "";
 
     //==================================
