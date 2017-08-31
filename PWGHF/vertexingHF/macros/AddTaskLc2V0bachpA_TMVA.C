@@ -43,7 +43,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   //CREATE THE TASK
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2V0bachelorTMVA *task = new AliAnalysisTaskSELc2V0bachelorTMVA("AliAnalysisTaskSELc2V0bachelorTMVA", RDHFCutsLctoV0anal, onTheFly);
-  task->SetIspA(kTRUE);
+
   task->SetMC(theMCon);
   task->SetKeepingKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
@@ -55,66 +55,86 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   if (estimatorFilename.EqualTo("")) {//Warn if undefined
      printf("Warning: Estimator file not defined, correction of Ntrk will not be performed!\n");}
       else { //Load file if defined
-  TFile *fileEstimator = TFile::Open(estimatorFilename.Data());
-  if (!fileEstimator) {
-      AliFatal("File with multiplicity estimator not found! Please check the filepath and retry.\n");
-      return;
-  }
- task->SetReferenceMultiplicity(refMult);
- const Char_t* profilebasename="SPDmult10";
- 
- switch (system) {
-  case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013:   //LHC13b & LHC13c
-   const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
-   TProfile* multEstimatorAvg[2];
-   for (Int_t ip = 0; ip < 2; ip++) {
-      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
-      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvg[ip]) { // mult estimator not found
-         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
-         return;
-         }
-   }
-      task->SetMultVsZProfileLHC13b(multEstimatorAvg[0]);
-      task->SetMultVsZProfileLHC13c(multEstimatorAvg[1]);
-   break;
-
-  case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2016:  //LHC16q & LHC16t
-   const Char_t* periodNames[4] = {"LHC16qt1stBunch", "LHC16qt2ndBunch", "LHC16qt3rdBunch", "LHC16qt4thBunch"};
-   TProfile* multEstimatorAvg[4];
-   for (Int_t ip = 0; ip < 4; ip++) {
-      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
-      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvg[ip]) { // mult estimator not found
-         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
-         return;
-         }
-   }
-      task->SetMultVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
-      task->SetMultVsZProfileLHC16qt2ndBunch(multEstimatorAvg[1]);
-      task->SetMultVsZProfileLHC16qt3rdBunch(multEstimatorAvg[2]);
-      task->SetMultVsZProfileLHC16qt4thBunch(multEstimatorAvg[3]);
-   break;
-   case AliAnalysisTaskSELc2V0bachelorTMVA::kpp2016:  //LHC16j,k,l
-   const Char_t* periodNames[3] = {"LHC16j","LHC16k","LHC16l"};
-   TProfile* multEstimatorAvg[3];
-   for (Int_t ip = 0; ip < 3; ip++) {
-      cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
-      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvg[ip]) { // mult estimator not found
-         AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
-         return;
-         }
-   }
-      task->SetMultVsZProfileLHC16j(multEstimatorAvg[0]);
-      task->SetMultVsZProfileLHC16k(multEstimatorAvg[1]);
-      task->SetMultVsZProfileLHC16l(multEstimatorAvg[2]);
-     break; 
-  default: 
-   AliFatal("Multiplicity profiles specified but analysis mode incorrect. Please check collision system and retry.");
-   return;
-   }
- 
+           TFile *fileEstimator = TFile::Open(estimatorFilename.Data());
+           if (!fileEstimator) {
+               AliFatal("File with multiplicity estimator not found! Please check the filepath and retry.\n");
+               return;
+           }
+          task->SetReferenceMultiplicity(refMult);
+          const Char_t* profilebasename="SPDmult10";
+          
+          switch (system) {
+           case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2013:   //LHC13b & LHC13c
+            task->SetIspA(kTRUE);
+            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+            TProfile* multEstimatorAvg[2];
+            for (Int_t ip = 0; ip < 2; ip++) {
+               cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+               if (!multEstimatorAvg[ip]) { // mult estimator not found
+                  AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+                  return;
+                  }
+            }
+               task->SetMultVsZProfileLHC13b(multEstimatorAvg[0]);
+               task->SetMultVsZProfileLHC13c(multEstimatorAvg[1]);
+            break;
+         
+           case AliAnalysisTaskSELc2V0bachelorTMVA::kpPb2016:  //LHC16q & LHC16t
+            task->SetIspA(kTRUE);
+            const Char_t* periodNames[4] = {"LHC16q_265499to265525_265309to265387","LHC16q_265435","LHC16q_265388to265427","LHC16t_267163to267166"};
+            TProfile* multEstimatorAvg[4];
+            for (Int_t ip = 0; ip < 4; ip++) {
+               cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+               if (!multEstimatorAvg[ip]) { // mult estimator not found
+                  AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+                  return;
+                  }
+            }
+               task->SetMultVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
+               task->SetMultVsZProfileLHC16qt2ndBunch(multEstimatorAvg[1]);
+               task->SetMultVsZProfileLHC16qt3rdBunch(multEstimatorAvg[2]);
+               task->SetMultVsZProfileLHC16qt4thBunch(multEstimatorAvg[3]);
+            break;
+           case AliAnalysisTaskSELc2V0bachelorTMVA::kpp2016:  //LHC16j,k,l
+            task->SetIspA(kFALSE);
+            const Char_t* periodNames[3] = {"LHC16j","LHC16k","LHC16l"};
+            TProfile* multEstimatorAvg[3];
+            for (Int_t ip = 0; ip < 3; ip++) {
+               cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+               if (!multEstimatorAvg[ip]) { // mult estimator not found
+                  AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+                  return;
+                  }
+            }
+                task->SetMultVsZProfileLHC16j(multEstimatorAvg[0]);
+                task->SetMultVsZProfileLHC16k(multEstimatorAvg[1]);
+                task->SetMultVsZProfileLHC16l(multEstimatorAvg[2]);
+               break; 
+           case AliAnalysisTaskSELc2V0bachelorTMVA::kpp2010:  //LHC10bcde
+            task->SetIspA(kFALSE);
+            const Char_t* periodNames[4] = {"LHC10b","LHC10c","LHC10d","LHC10e"};
+            TProfile* multEstimatorAvg[4];
+            for (Int_t ip = 0; ip < 4; ip++) {
+               cout << "Trying to get " << Form("%s_%s",profilebasename,periodNames[ip]) << endl;
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+               if (!multEstimatorAvg[ip]) { // mult estimator not found
+                  AliFatal(Form("Multiplicity estimator for %s not found! Please check that your estimator file contains %s_%s",periodNames[ip],profilebasename,periodNames[ip]));
+                  return;
+                  }
+            }
+               task->SetMultVsZProfileLHC10b(multEstimatorAvg[0]);
+               task->SetMultVsZProfileLHC10c(multEstimatorAvg[1]);
+               task->SetMultVsZProfileLHC10d(multEstimatorAvg[2]);
+               task->SetMultVsZProfileLHC10e(multEstimatorAvg[3]);
+            break;
+           default: 
+            AliFatal("Multiplicity profiles specified but analysis mode incorrect. Please check collision system and retry.");
+            return;
+            }
+          
  }
 
   mgr->AddTask(task);

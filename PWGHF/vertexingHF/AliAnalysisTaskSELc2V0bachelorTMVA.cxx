@@ -485,6 +485,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
      case kpPb2013: period[0] = "LHC13b"; period[1] = "LHC13c"; break;
      case kpPb2016: period[0] = "LHC16qtbunch1"; period[1] = "LHC16qtbunch2"; period[2] = "LHC16qtbunch3"; period[3] = "LHC16qtbunch4"; nProfiles = 4; break;
      case kpp2016: period[0] = "LHC16j"; period[1] = "LHC16k"; period[2] = "LHC16l"; nProfiles = 3; break;
+     case kpp2010: period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e"; nProfiles = 4; break;
   }
 
 
@@ -1099,7 +1100,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
     array3Prong=(TClonesArray*)aodEvent->GetList()->FindObject("Charm3Prong");
   }
   
-  if (!fUseMCInfo && fIspA) {
+  if (!fUseMCInfo) {
     fAnalCuts->SetTriggerClass("");
     fAnalCuts->SetTriggerMask(fTriggerMask);
   }
@@ -2005,7 +2006,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
        }
       
        else { //remove MC-only variables from tree if data
-        
           fCandidateVariables[0] = invmassLc;
           fCandidateVariables[1] = invmassLc2Lpi;
           fCandidateVariables[2] = invmassK0s;
@@ -2973,6 +2973,14 @@ TProfile* AliAnalysisTaskSELc2V0bachelorTMVA::GetEstimatorHistogram(const AliVEv
          else if (runNo >= 256504 && runNo <= 258537) period = 1;
          else if (runNo >= 265388 && runNo <= 265427) period = 2;
          if (period < 0 || period > 2) {AliInfo(Form("Run number %d not found for LHC16 pp!",runNo)); return 0;}
+         break;
+      case kpp2010: // 0 = LHC10b, 1 = LHC10c, 2 = LHC10d, 3 = LHC10e
+         if (runNo > 114930 && runNo < 117223) period = 0;
+         if (runNo > 119158 && runNo < 120830) period = 1;
+         if (runNo > 122373 && runNo < 126438) period = 2;
+         if (runNo > 127711 && runNo < 130851) period = 3; 
+         if (period < 0 || period > 3) {AliInfo(Form("Run number %d not found for LHC10 pp!",runNo)); return 0;}
+         break;
       default:       //no valid switch
          return 0;
       break;
