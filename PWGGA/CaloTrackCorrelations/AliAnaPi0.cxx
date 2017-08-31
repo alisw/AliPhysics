@@ -2270,9 +2270,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
   if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
   {
-    TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
-    TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
-
     TString tagBkgNames[] = { 
       "Clean", "HijingBkg", "NotHijingBkg", "HijingAndOtherBkg",
       "Clean_HijingBkg", "Clean_NotHijingBkg", "Clean_HijingAndOtherBkg",
