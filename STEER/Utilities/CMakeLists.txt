@@ -13,6 +13,7 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+add_subdirectory (test)
 # Module
 set(MODULE Utilities)
 add_definitions(-D_MODULE_="${MODULE}")
