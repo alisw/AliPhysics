@@ -812,7 +812,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         Double_t EtaBins[] = {-0.8000,-0.7750,-0.7500,-0.7250,-0.7000,-0.6750,-0.6500,-0.6250,-0.6000,-0.5750,-0.5500,-0.5250,-0.5000,-0.4750,-0.4500,-0.4250,-0.4000,-0.3750,-0.3500,-0.3250,-0.3000,-0.2750,-0.2500,-0.2250,-0.2000,-0.1750,-0.1500,-0.1250,-0.1000,-0.0750,-0.0500,-0.0250,0.0000,0.0250,0.0500,0.0750,0.1000,0.1250,0.1500,0.1750,0.2000,0.2250,0.2500,0.2750,0.3000,0.3250,0.3500,0.3750,0.4000,0.4250,0.4500,0.4750,0.5000,0.5250,0.5500,0.5750,0.6000,0.6250,0.6500,0.6750,0.7000,0.7250,0.7500,0.7750,0.8000}; //16 bins
         Int_t NEtaBins = 64;
         
-        Double_t ZVtxBins[] = {-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10.01}; //9 bins
+        Double_t ZVtxBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10.01}; //9 bins
         Int_t nZvtxBinsMC = 9;
         
         Double_t pTBinsH[] = {0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.8,2.0,2.5,3,3.5,4,5,6}; //21 bins
@@ -2860,10 +2860,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_pa
             return 1.0;
         
         Int_t bin = fBkgPi0WeightToData->FindBin(pT);
-        if (TMath::IsNaN(1./fBkgPi0WeightToData->GetBinContent(bin)))
-            printf("==========ops, it is really happening, i am using a NaN as weight, ops, ops, ops, bin = %d",bin);
-        printf("Weight = %1.3f, bin = %d",1./fBkgPi0WeightToData->GetBinContent(bin),bin);
-
+        
         return 1./fBkgPi0WeightToData->GetBinContent(bin);
     }
     else if (TMath::Abs(pdg_particle) == 221)
