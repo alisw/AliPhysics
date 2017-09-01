@@ -2692,11 +2692,6 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                     if (!MCMother->IsPrimary() || MCMother->GetMother()>0)
                         return;
                     
-                    if (!MCMother->IsPrimary())
-                        printf("Strange selection");
-                    if (MCMother->GetMother()>0)
-                        printf("strange seleciton 2");
-                    
                     Double_t Weight = CalculateWeightRun2ToData(MotherPDGAfterReco,MCMother->Pt());
                     fElectronBKGNoEnhTotalNumber_WithW->Fill(track->Pt(), Weight);
                     
@@ -2717,11 +2712,6 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                         //Pi0/Eta should be primary and have no mother (same condition used to calculate the weight)
                         if (!MCGMother->IsPrimary() || MCGMother->GetMother()>0)
                             return;
-                        
-                        if (!MCGMother->IsPrimary())
-                            printf("Strange selection");
-                        if (MCGMother->GetMother()>0)
-                            printf("strange seleciton 2");
                         
                         if (GMotherPDGAfterReco ==111 || GMotherPDGAfterReco ==221)
                         {
