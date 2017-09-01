@@ -212,17 +212,18 @@ AliAnalysisPIDEvent::CheckLimits(Float_t value, Float_t *params, Float_t nSigma)
 //___________________________________________________________
 
 Bool_t
-AliAnalysisPIDEvent::AcceptEvent(Int_t type) const
+AliAnalysisPIDEvent::AcceptEvent(Bool_t CheckVertex, Int_t type) const
 {
   /*
    * accept event proton-proton
    */
 
   if (!fIsCollisionCandidate) return kFALSE;
-  if (!AcceptVertex()) return kFALSE;
   if (fCentralityQuality != 0) return kFALSE;
   if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
   if((fEventFlags&fgFlagToCheck)!=fgFlagToCheck) return kFALSE;
+  if(CheckVertex)
+    if(!AcceptVertex()) return kFALSE;
   if (type > 0) {
     if (fIsPileupFromSPD) return kFALSE;
     if (!(fIsEventSelected & AliVEvent::kMB)) return kFALSE;
