@@ -95,7 +95,7 @@
 #include "AliFlowCommonConstants.h"
 
 //NanoAODs
-// #include "AliNanoAODTrack.h"
+#include "AliNanoAODTrack.h"
 #include "AliNanoAODHeader.h"
 
 ClassImp(AliAnalysisTaskCRCZDC)
@@ -951,6 +951,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           if(fRunList[c]==RunNum) RunBin=bin;
           else bin++;
       }
+      
       if(RunBin==-1) return;
       if(fDataSet==kAny) RunBin=0;
 
@@ -960,7 +961,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       centrCL0 = nanoAodHeader->GetCentr("CL0");
 
   }
-
     //check event cuts
     if (InputEvent()) {
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
@@ -969,7 +969,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if(IsPileUp) return;
       }
     }
-
+      
     //first attach all possible information to the cuts
     fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
     fCutsPOI->SetEvent( InputEvent(), MCEvent() );
@@ -1034,10 +1034,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       period = aod->GetPeriodNumber();
       orbit24 = aod->GetOrbitNumber(); // wrapped down to 24 bits
     }else{
-      // AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
-      // SumV0 = nanoAodHeader->GetSumV0();
-      // period = nanoAodHeader->GetPeriod();
-      // orbit24 = nanoAodHeader->GetOrbit(); // wrapped down to 24 bits
+       AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+       SumV0 = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstV0"));
+       period = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstPeriod"));
+       orbit24 = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstOrbit")); // wrapped down to 24 bits
     }
     fFlowEvent->SetNITSCL1(SumV0);
 
@@ -1559,8 +1559,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           AliAODTracklets *trackl = aod->GetTracklets();
           nTracklets = trackl->GetNumberOfTracklets();
       }else{
-          // AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
-          // nTracklets = nanoAodHeader->GetNumberOfTracklets();
+           AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+           nTracklets = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstNTrackelets"));
       }
 
 
@@ -1723,14 +1723,27 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(RunNum>=245829) znaEnergy *= 8./7.;
       fFlowEvent->SetZNCQ0(towZNC[0]);
       fFlowEvent->SetZNAQ0(towZNA[0]);
-
-      Double_t energyZNC = ((AliVAODHeader*)aod->GetHeader())->GetZDCN1Energy();
-      Double_t energyZNA = ((AliVAODHeader*)aod->GetHeader())->GetZDCN2Energy();
+      
+      Double_t energyZNC =0;
+      Double_t energyZNA =0;
+      Double_t energyZPC =0;
+      Double_t energyZPA =0;
+      if(!head->InheritsFrom("AliNanoAODStorage")){
+          energyZNC = ((AliVAODHeader*)aod->GetHeader())->GetZDCN1Energy();
+          energyZNA = ((AliVAODHeader*)aod->GetHeader())->GetZDCN2Energy();
+          energyZPC = ((AliVAODHeader*)aod->GetHeader())->GetZDCP1Energy();
+          energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
+      }else{
+          AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+          energyZNC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNC"));
+          energyZNA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNA"));
+          energyZPC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPC"));
+          energyZPA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPA"));
+      }
+      
       fFlowEvent->SetZNCEnergy(energyZNC);
       fFlowEvent->SetZNAEnergy(energyZNA);
-
-      Double_t energyZPC = ((AliVAODHeader*)aod->GetHeader())->GetZDCP1Energy();
-      Double_t energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
+      
       fFlowEvent->SetZPCEnergy(energyZPC);
       fFlowEvent->SetZPAEnergy(energyZPA);
 
@@ -1917,10 +1930,11 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
 
     TObject *head =aod->GetHeader();
     if (head->InheritsFrom("AliNanoAODStorage")){
-
-        // AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
-        // if (nanohead->IsPileUp()==0) BisPileup=kFALSE;
-        // if (nanohead->IsPileUp()==1) BisPileup=kTRUE;
+        
+         AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
+         Int_t pileupIndex = nanohead->GetVarIndex("cstPileUp");
+         if (nanohead->GetVar(pileupIndex)==0) BisPileup=kFALSE;
+         if (nanohead->GetVar(pileupIndex)==1) BisPileup=kTRUE;
 
     } else {
 
