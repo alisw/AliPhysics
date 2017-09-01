@@ -265,7 +265,7 @@ AliAnaPi0::~AliAnaPi0()
 //______________________________
 void AliAnaPi0::InitParameters()
 {
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("CaloTrackParticle");
   
   AddToHistogramsName("AnaPi0_");
   
@@ -3850,7 +3850,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //---------------------------------
   for(Int_t i1 = 0; i1 < nPhot-last; i1++)
   {
-    AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+    AliCaloTrackParticle * p1 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i1)) ;
 
     // Select photons within a pT range
     if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
@@ -3935,8 +3935,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     for(Int_t i2 = first; i2 < nPhot2; i2++)
     {
-      //AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
-      AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (secondLoopInputData->At(i2)) ;
+      //AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i2)) ;
+      AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (secondLoopInputData->At(i2)) ;
       
       // Select photons within a pT range
       if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
@@ -4436,7 +4436,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //---------------------------------
       for(Int_t i1 = 0; i1 < nPhot; i1++)
       {
-        AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+        AliCaloTrackParticle * p1 = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i1)) ;
         
         // Select photons within a pT range
         if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
@@ -4453,7 +4453,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //---------------------------------
         for(Int_t i2 = 0; i2 < nPhot2; i2++)
         {
-          AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
+          AliCaloTrackParticle * p2 = (AliCaloTrackParticle*) (ev2->At(i2)) ;
           
           // Select photons within a pT range
           if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
@@ -4821,7 +4821,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 ///  * in the mixed buffer returns -2 if vertex NOK
 ///  * for normal events   returns 0 if vertex OK and -1 if vertex NOK
 //________________________________________________________________________
-Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
+Int_t AliAnaPi0::GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)
 {
   Int_t evtIndex = -1 ;
     
