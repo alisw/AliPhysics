@@ -30,7 +30,7 @@ class AliMCEvent;
 //--- ANALYSIS system ---
 class AliVEvent;
 class AliVTrack;
-class AliAODPWG4Particle;
+class AliCaloTrackParticle;
 class AliAODCaloCluster;
 class AliVCaloCells;
 class AliPHOSGeoUtils;
@@ -193,7 +193,7 @@ class AliCalorimeterUtils : public TObject {
   // Calorimeter indexes information
   //------------------------------
 
-  Int_t         GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent* inputEvent) const;
+  Int_t         GetModuleNumber(AliCaloTrackParticle * particle, AliVEvent* inputEvent) const;
   Int_t         GetModuleNumber(AliVCluster * cluster) const;
   Int_t         GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
   Int_t         GetModuleNumberCellIndexesAbsCaloMap(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU, 

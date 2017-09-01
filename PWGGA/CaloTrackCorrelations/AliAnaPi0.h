@@ -10,7 +10,7 @@
 ///
 /// Class to collect two-photon invariant mass distributions for
 /// extracting raw pi0 or eta yields.
-/// Input is produced by AliAnaPhoton (or any other analysis producing output AliAODPWG4Particles),
+/// Input is produced by AliAnaPhoton (or any other analysis producing output AliCaloTrackParticles),
 /// it will do nothing if executed alone.
 ///
 /// Original author: Dmitri Peressounko (RRC "KI").
@@ -34,7 +34,7 @@ class TObjString;
 #include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODEvent ;
 class AliESDEvent ;
-class AliAODPWG4Particle ;
+class AliCaloTrackParticle ;
 
 class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
@@ -62,7 +62,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // EVENT Bin Methods
   //-------------------------------
 
-  Int_t        GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;  
+  Int_t        GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)  ;  
 
   //-------------------------------
   // Opening angle pair selection

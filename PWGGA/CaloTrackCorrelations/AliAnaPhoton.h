@@ -11,7 +11,7 @@
 ///
 /// Class for the photon identification.
 /// Clusters from calorimeters are identified/selected as photons (candidates)
-/// and kept in AOD format (AliAODPWG4Particle). Few histograms produced.
+/// and kept in AOD format (AliCaloTrackParticle). Few histograms produced.
 /// Produces input for other analysis classes like AliAnaPi0,
 /// AliAnaParticleHadronCorrelation ...
 ///
