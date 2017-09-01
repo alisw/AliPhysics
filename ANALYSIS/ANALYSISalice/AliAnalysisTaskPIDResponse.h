@@ -64,6 +64,8 @@ public:
   void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
   void SetUserDataRecoPass(Int_t pass){fUserDataRecoPass=pass;};
 
+  void SetRandomSeed(const ULong_t randomSeed) { fRandomSeed = randomSeed; }
+  ULong_t GetRandomSeed() const { return fRandomSeed; }
 
 private:
   Bool_t fIsMC;                        // If we run on MC data
@@ -89,6 +91,7 @@ private:
   Bool_t fUseTRDCentralityCorrection;   // Use TRD centrality correction
 
   Int_t  fUserDataRecoPass;            // forced DATA reco pass
+  ULong_t fRandomSeed;                 /// random seed required for tune on data, 0: random, 1: off, otherwise use provided number
   
   //
   void SetRecoInfo();

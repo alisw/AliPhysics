@@ -26,6 +26,7 @@
 #include <AliESDpid.h>
 #include <AliProdInfo.h>
 #include <TPRegexp.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisTaskPIDResponse.h"
 
@@ -52,7 +53,8 @@ fUseTPCMultiplicityCorrection(kTRUE),
 fUseTRDEtaCorrection(kTRUE),
 fUseTRDClusterCorrection(kTRUE),
 fUseTRDCentralityCorrection(kTRUE),
-fUserDataRecoPass(-1)
+fUserDataRecoPass(-1),
+fRandomSeed(0)
 {
   //
   // Dummy constructor
@@ -80,7 +82,8 @@ fUseTPCMultiplicityCorrection(kTRUE),
 fUseTRDEtaCorrection(kTRUE),
 fUseTRDClusterCorrection(kTRUE),
 fUseTRDCentralityCorrection(kTRUE),
-fUserDataRecoPass(-1)
+fUserDataRecoPass(-1),
+fRandomSeed(0)
 {
   //
   // Default constructor
@@ -150,6 +153,12 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
       }
     }
     delete arr;
+  }
+
+  // initialize the random seed needed for tune on data
+  if (fRandomSeed != 1 && fIsTunedOnData) {
+    AliInfoF("Tune on data was requested. Initializing the random seed with %llu", fRandomSeed);
+    gRandom->SetSeed(fRandomSeed);
   }
 }
 
