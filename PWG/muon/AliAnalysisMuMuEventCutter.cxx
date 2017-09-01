@@ -216,7 +216,6 @@ Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedMSL(const AliInputEventHandl
   /// Whether or not the event is physics selected
   return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliVEvent::kMuonSingleLowPt7;
 }
-
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedVDM(const AliVEvent& event) const
 {
