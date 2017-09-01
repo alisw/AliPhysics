@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 26 March 2016
+              Anders Knospe - last modified on 31 August 2016
 
 *** Configuration script for phi analysis of 2015 pp 13-TeV data ***
 ****************************************************************************/
@@ -80,12 +80,14 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Double_t multbins[200];
   int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-  if(triggerMask==AliVEvent::kHighMultV0){multbins[nmult]=1.; nmult++;}
-  else for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  if(triggerMask==AliVEvent::kHighMultV0){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
