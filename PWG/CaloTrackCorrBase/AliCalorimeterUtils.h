@@ -147,7 +147,7 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOffBadChannelsRemoval()              { fRemoveBadChannels = kFALSE ; 
                                                              fEMCALRecoUtils->SwitchOffBadChannelsRemoval()           ; }
   
-  Bool_t        IsDistanceToBadChannelRecalculated() const { return  IsDistanceToBadChannelRecalculated()             ; }
+  Bool_t        IsDistanceToBadChannelRecalculated() const { return fEMCALRecoUtils->IsDistanceToBadChannelRecalculated(); }
   void          SwitchOnDistToBadChannelRecalculation ()   { fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation() ; }
   void          SwitchOffDistToBadChannelRecalculation()   { fEMCALRecoUtils->SwitchOffDistToBadChannelRecalculation(); }
   
