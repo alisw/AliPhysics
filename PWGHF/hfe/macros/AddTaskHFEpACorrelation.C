@@ -101,7 +101,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
         if (ElectronEffFile_f)
         {
             
-            TH2F* test = (TH2F*) ElectronEffFile_f->Get("EffE");
+            TH3F* test = (TH3F*) ElectronEffFile_f->Get("EffE");
             if (test)
                 task->SetEfficiencyElectron(test);
         }
