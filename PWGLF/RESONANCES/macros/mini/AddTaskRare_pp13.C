@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe: anders.knospe@cern.ch
-                  last modified on 26/8/2017
+                  last modified on 31/8/2017
   Macro to configure the resonance package for searches for rare resonances.
 
 ****************************************************************************/
@@ -120,9 +120,7 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
 
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=1.e-30; nmult++;
-  for(j=1;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
@@ -276,19 +274,17 @@ Bool_t Config_pikx(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------
@@ -459,19 +455,17 @@ Bool_t Config_pik0(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -593,19 +587,17 @@ Bool_t Config_kxkx(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------
@@ -777,19 +769,17 @@ Bool_t Config_kxk0(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -915,19 +905,17 @@ Bool_t Config_pkx(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------
@@ -1100,19 +1088,17 @@ Bool_t Config_pk0(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -1330,19 +1316,17 @@ Bool_t Config_Lambdapi(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -1561,19 +1545,17 @@ Bool_t Config_Lambdakx(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -1622,7 +1604,7 @@ Bool_t Config_Lambdakx(
     }
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,700,1.6,3.);
+    if(useIM[i]) out->AddAxis(imID,400,1.6,2.4);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
@@ -1816,19 +1798,17 @@ Bool_t Config_Lambdak0(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
@@ -1877,7 +1857,7 @@ Bool_t Config_Lambdak0(
     }
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,700,1.6,3.);
+    if(useIM[i]) out->AddAxis(imID,400,1.6,2.4);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
@@ -2047,19 +2027,17 @@ Bool_t Config_Lambdap(
   // multiplicity binning
   Double_t multbins[200];
   int j,nmult=0;
-  multbins[nmult]=0.; nmult++;
-  multbins[nmult]=0.0001; nmult++;
-  multbins[nmult]=0.0005; nmult++;
-  multbins[nmult]=0.001; nmult++;
-  multbins[nmult]=0.005; nmult++;
-  multbins[nmult]=0.01; nmult++;
-  multbins[nmult]=0.05; nmult++;
-  multbins[nmult]=0.1; nmult++;
-  multbins[nmult]=0.5; nmult++;
-  multbins[nmult]=1.; nmult++;
   if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
     for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
   }
 
   // -- Values ------------------------------------------------------------------------------------                                    
