@@ -109,7 +109,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   cutsPOI->SetPtRange(ptMin,ptMax);
   if(pdg_pid != 0) {
       cutsPOI->SetMCPID(pdg_pid);
-      cutsPOI->SetIgnoreSignInMCPID( Bool_t b=kTRUE ) {fIgnoreSignInMCPID=b;}
+      cutsPOI->SetIgnoreSignInMCPID(kTRUE);
   }
 
   // side A
