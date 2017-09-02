@@ -189,8 +189,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
     TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
     TH2F**                            fHistoTrueSecondaryMotherFromK0sInvMassPt;    //!
-    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0sWithPi0DaughterMCPt;             //!
+    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0lWithPi0DaughterMCPt;             //!
     TH2F**                            fHistoTrueSecondaryMotherFromEtaInvMassPt;    //!
     TH1F**                            fHistoTrueEtaWithPi0DaughterMCPt;             //!

@@ -760,7 +760,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     TParticle *positron = 0x0;
     TParticle *electron = 0x0;
 
-    Int_t labeljpsiChiC = -1;
+    //Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
       if(index < 0) continue;
@@ -769,7 +769,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
       switch( temp->GetPdgCode() ) {
       case 443:
         jpsi =  temp;
-        labeljpsiChiC = index;
+        //labeljpsiChiC = index;
         break;
       case 22:
         gamma    =  temp;

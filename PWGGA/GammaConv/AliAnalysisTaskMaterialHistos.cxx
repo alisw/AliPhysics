@@ -409,9 +409,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fCutFolder[iCut]->Add(fESDList[iCut]);
     
     Int_t nBinsR=400;
-    Int_t nBinsX=2000;
-    Int_t nBinsY=2000;
-    Int_t nBinsZ=500;
+//    Int_t nBinsX=2000;
+//    Int_t nBinsY=2000;
+//    Int_t nBinsZ=500;
     Int_t nBinsPhi=750;
     Int_t nBinsEta=2000;
     Int_t nBinsPt=400;
@@ -950,7 +950,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     
     
     AliVTrack * negTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
-    AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+    //AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
     
     
     Double_t asym=0.;
@@ -1023,7 +1023,6 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     fKind = 2; // combinatorics from hadronic decays
   else if ( !(pdgCodeNeg==pdgCodePos)){
     TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
-    Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
     Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(pdgCode == 111) 
       fKind = 3; // pi0 Dalitz
