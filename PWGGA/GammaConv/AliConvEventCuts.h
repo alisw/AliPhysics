@@ -577,8 +577,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
-      TString                     fNameHistoNotFlatCentrality;            ///<
       TString                     fPathWeightsFlatCent;                   ///<
+      TString                     fNameHistoNotFlatCentrality;            ///<
       Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
       Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
       Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram

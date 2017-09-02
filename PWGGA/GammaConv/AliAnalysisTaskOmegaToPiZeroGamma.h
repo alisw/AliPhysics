@@ -163,11 +163,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliCaloPhotonCuts*                  fCaloPhotonCuts;        // CaloPhotonCutObject
     TList*                              fNeutralPionCutArray;   // List with neutral pion cuts
     TList*                              fMesonCutArray;         // List with meson cuts
-    TF1*                                fmaxfit;                // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
-    Double_t                            flowerFactor;           // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
-    Double_t                            fupperFactor;           // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
-    Double_t                            fMinPi0Pt;              // Min Pi0 Pt cut in GeV
-    
+
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
     TH1F**                  fHistoConvGammaR;                   //! histogram conversion photon R
@@ -314,6 +310,11 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Int_t                   fReconMethod;                                       // switch for combining photons: PCM-cal,cal = 0; PCM-cal,PCM = 1; cal-cal,cal = 2;
                                                                                 // cal-cal,PCM = 3; PCM-PCM,cal = 4; PCM-PCM,PCM = 5
+    Double_t                flowerFactor;                                       // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
+    Double_t                fupperFactor;                                       // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
+    Double_t                fMinPi0Pt;                                          // Min Pi0 Pt cut in GeV
+    TF1*                    fmaxfit;                                            // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
+
     Bool_t                  fDoPiZeroGammaAngleCut;                             // flag for pi0-gamma angle cut
 
   private:

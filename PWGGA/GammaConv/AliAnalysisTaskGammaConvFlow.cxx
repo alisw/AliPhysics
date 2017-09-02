@@ -175,11 +175,12 @@ fMaxFilter(0.2),
 fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
-fFlowEvent(NULL),
-fMCEvent(NULL)
+fFlowEvent(NULL)
+
 {
   // DefineOutput(1, TList::Class());
   // DefineOutput(2, AliFlowEventSimple::Class());
@@ -296,11 +297,12 @@ fMaxFilter(0.2),
 fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(NULL),
-fMCEvent(NULL)
+fFlowEvent(NULL)
+
 
 {
   // Define output slots here
@@ -424,12 +426,12 @@ fMinFilter(0),
 fMaxFilter(0.2),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
 fFlowEvent(NULL),
-fIsMC(0),
-fMCEvent(NULL)
+fIsMC(0)
 
 {
   // Define output slots here

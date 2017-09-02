@@ -234,7 +234,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TF1*      fFMaxOpanCut;               ///<
     Bool_t    fMaxOpanPtDepCut;           ///<
     Int_t     fBackgroundHandler;         ///<
-    
+
     // Histograms
     TObjString* fCutString;                     ///< cut number used for analysis
     TString     fCutStringRead;

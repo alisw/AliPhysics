@@ -1558,7 +1558,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliMCEvent* mcEvent, 
 //_________________________________________________________________________________
 void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, Int_t np) {
 
-  Int_t kc, kfdp, nPart, firstChannel, lastChannel;
+  Int_t kc, nPart, firstChannel, lastChannel;
   Double_t BR, BRtot;
   std::vector<Int_t> pdgCodes;
 
