@@ -41,7 +41,7 @@ class AliAODPWG4Particle : public AliVParticle {
   AliAODPWG4Particle & operator=(const AliAODPWG4Particle& photon);
 
   // Main methods to recover kinematics or PID
-  TLorentzVector * Momentum() const                  { return fMomentum ; }
+  TLorentzVector * GetMomentum() const               { return fMomentum ; }
   virtual void     SetMomentum(TLorentzVector *lv)   { fMomentum = lv   ; }
   
   Bool_t IsPIDOK(Int_t ipid, Int_t pdgwanted)  const;
@@ -208,7 +208,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBtag;             ///< tag particle from B.
 
   /// \cond CLASSIMP
-  ClassDef(AliAODPWG4Particle, 8);
+  ClassDef(AliAODPWG4Particle, 9);
   /// \endcond
 
 };
