@@ -157,7 +157,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
 
   // initialize the random seed needed for tune on data
   if (fRandomSeed != 1 && fIsTunedOnData) {
-    AliInfoF("Tune on data was requested. Initializing the random seed with %llu", fRandomSeed);
+    AliInfoF("Tune on data was requested. Initializing the random seed with %lu", fRandomSeed);
     gRandom->SetSeed(fRandomSeed);
   }
 }
