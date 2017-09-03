@@ -379,7 +379,16 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     TH1F* hNormQ3 = new TH1F("hNormQ3","hNormQ3;|Q_{3}|;Entries",100,0.,1);
     fOutput->Add(hNormQ3);
   }
-
+  else if(fFlowMethod==kEvShape) {
+    //multiplicity used for q2 vs. centrality (TPC)
+    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
+    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
+    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
+    fOutput->Add(hMultVsCentFullTPC);
+    fOutput->Add(hMultVsCentPosTPC);
+    fOutput->Add(hMultVsCentNegTPC);
+  }
+  
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
@@ -738,51 +747,6 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
   }
 
-  //get q2 for event shape anaylsis
-  Double_t q2=-1;
-  Double_t q2PosTPC=-1;
-  Double_t q2NegTPC=-1;
-  Double_t q2FullTPC=-1;
-  //keep q2 vector and multiplicity for daughter removals (if activated)
-  Double_t qVecDefault[2] = {0.,0.};
-  Int_t multQvecDefault = 0;
-  if(fFlowMethod==kEvShape) {
-    if(fOnTheFlyTPCq2){
-      if(fRemoveDauFromq2 && fFractionOfTracksForTPCq2<1.) {
-        AliWarning("Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
-        fFractionOfTracksForTPCq2=1.1;
-      }
-      q2=ComputeTPCq2(aod,q2FullTPC,q2PosTPC,q2NegTPC,qVecDefault,multQvecDefault);
-    }else{
-      q2 = Getq2(qnlist,fq2Meth);
-      q2PosTPC = Getq2(qnlist,kq2PosTPC);
-      q2NegTPC = Getq2(qnlist,kq2NegTPC);
-      q2FullTPC = Getq2(qnlist,kq2TPC);
-    }
-    if(q2<0 || q2PosTPC<0 || q2NegTPC<0 || q2FullTPC<0) return;
-    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
-  }
-  if(fq2Smearing && fq2SmearingHisto) {
-    TAxis* ax=0x0;
-    if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
-    else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
-    Int_t bin = ax->FindBin(q2);
-    TH1F* hq2Slice = 0x0;
-    if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
-    else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
-    if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
-    delete hq2Slice;
-  }
-
-  AliEventplane *pl=aod->GetEventplane();
-  if(!pl){
-    Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
-    fhEventsInfo->Fill(11);
-    return;
-  }
-
   //determine centrality bin
   Float_t centr=fRDCuts->GetCentrality(aod);
   Float_t centrPerMil=centr*10.;
@@ -794,9 +758,61 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
   }
   if(icentr==-1) return;
-
+  
   fCentrBinName=Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
   Double_t eventplane=0;
+
+  //get q2 for event shape anaylsis
+  Double_t q2=-1;
+  Double_t q2PosTPC=-1;
+  Double_t q2NegTPC=-1;
+  Double_t q2FullTPC=-1;
+  //keep q2 vector and multiplicity for daughter removals (if activated)
+  Double_t qVecDefault[2] = {0.,0.};
+  Double_t multQvecDefault = 0;
+  Double_t multQvecTPC[3] = {0.,0.,0.}; //{full TPC, pos TPC, neg TPC}
+  if(fFlowMethod==kEvShape) {
+    if(fOnTheFlyTPCq2){
+      if(fRemoveDauFromq2 && fFractionOfTracksForTPCq2<1.) {
+        AliWarning("Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
+        fFractionOfTracksForTPCq2=1.1;
+      }
+      q2=ComputeTPCq2(aod,q2FullTPC,q2PosTPC,q2NegTPC,qVecDefault,multQvecDefault,multQvecTPC);
+    }else{
+      q2 = Getq2(qnlist,fq2Meth,multQvecDefault);
+      q2PosTPC = Getq2(qnlist,kq2PosTPC,multQvecTPC[1]);
+      q2NegTPC = Getq2(qnlist,kq2NegTPC,multQvecTPC[2]);
+      q2FullTPC = Getq2(qnlist,kq2TPC,multQvecTPC[0]);
+    }
+    if(q2<0 || q2PosTPC<0 || q2NegTPC<0 || q2FullTPC<0) return;
+    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
+  
+    if(fq2Smearing && fq2SmearingHisto) {
+      TAxis* ax=0x0;
+      if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
+      else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
+      Int_t bin = ax->FindBin(q2);
+      TH1F* hq2Slice = 0x0;
+      if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
+      else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
+      if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
+      delete hq2Slice;
+    }
+
+    //fill mult vs. centrality histo (EvShape)
+    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(multQvecTPC[0],centr);
+    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(multQvecTPC[1],centr);
+    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(multQvecTPC[2],centr);
+  }
+  
+  AliEventplane *pl=aod->GetEventplane();
+  if(!pl){
+    Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+    fhEventsInfo->Fill(11);
+    return;
+  }
 
   if(fReadMC){
     TRandom3 *g = new TRandom3(0);
@@ -2077,7 +2093,7 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFvn::GetQnVectorFromList(const
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth)
+Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth, Double_t &mult)
 {
   if(!qnlist) {return -1;}
 
@@ -2099,6 +2115,7 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth)
 
   if(!qnVect) {return -1;}
 
+  mult = qnVect->GetSumOfWeights();
   Double_t q2 = TMath::Sqrt(qnVect->Qx(2)*qnVect->Qx(2)+qnVect->Qy(2)*qnVect->Qy(2)); //qnVect->Length();
   return q2;
 }
@@ -2115,7 +2132,7 @@ void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString hist
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg, Double_t qVecDefault[2], Int_t &multQvecDefault) const {
+Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg, Double_t qVecDefault[2], Double_t &multQvecDefault, Double_t multQvecTPC[3]) const {
   /// Compute the q2 for ESE starting from TPC tracks
   /// Option to reject a fraction of tracks to emulate resolution effects
 
@@ -2129,9 +2146,9 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
   Double_t qVecPosEta[2]={0.,0.};
   Double_t qVecNegEta[2]={0.,0.};
   Double_t nHarmonic=2.;
-  Int_t multQvec=0;
-  Int_t multQvecPosEta=0;
-  Int_t multQvecNegEta=0;
+  multQvecTPC[0]=0; //full TPC
+  multQvecTPC[1]=0; //pos TPC
+  multQvecTPC[2]=0; //neg TPC
   for(Int_t it=0; it<nTracks; it++){
     AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
     if(!track) continue;
@@ -2145,43 +2162,45 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
       if(pseudoRand<fFractionOfTracksForTPCq2 && eta<fTPCEtaMax && eta>fTPCEtaMin){
 	qVec[0]+=qx;
 	qVec[1]+=qy;
-	multQvec++;
+	multQvecTPC[0]++;
       }
       if(eta>0){
 	qVecPosEta[0]+=qx;
 	qVecPosEta[1]+=qy;
-	multQvecPosEta++;
+	multQvecTPC[1]++;
       }else{
 	qVecNegEta[0]+=qx;
 	qVecNegEta[1]+=qy;
-	multQvecNegEta++;
+	multQvecTPC[2]++;
       }
     }
   }
 
+  
+  
   q2TPCfull = 0.;
-  if(multQvec>0) q2TPCfull = TMath::Sqrt(qVec[0]*qVec[0]+qVec[1]*qVec[1])/TMath::Sqrt(multQvec);
+  if(multQvecTPC[0]>0) q2TPCfull = TMath::Sqrt(qVec[0]*qVec[0]+qVec[1]*qVec[1])/TMath::Sqrt(multQvecTPC[0]);
   q2TPCpos = 0.;
-  if(multQvecPosEta>0) q2TPCpos = TMath::Sqrt(qVecPosEta[0]*qVecPosEta[0]+qVecPosEta[1]*qVecPosEta[1])/TMath::Sqrt(multQvecPosEta);
+  if(multQvecTPC[1]>0) q2TPCpos = TMath::Sqrt(qVecPosEta[0]*qVecPosEta[0]+qVecPosEta[1]*qVecPosEta[1])/TMath::Sqrt(multQvecTPC[1]);
   q2TPCneg = 0.;
-  if(multQvecNegEta>0) q2TPCneg = TMath::Sqrt(qVecNegEta[0]*qVecNegEta[0]+qVecNegEta[1]*qVecNegEta[1])/TMath::Sqrt(multQvecNegEta);
+  if(multQvecTPC[2]>0) q2TPCneg = TMath::Sqrt(qVecNegEta[0]*qVecNegEta[0]+qVecNegEta[1]*qVecNegEta[1])/TMath::Sqrt(multQvecTPC[2]);
 
   if(fq2Meth==kq2TPC) {
     qVecDefault[0] = qVec[0];
     qVecDefault[1] = qVec[1];
-    multQvecDefault = multQvec;
+    multQvecDefault = multQvecTPC[0];
     return q2TPCfull;
   }
   else if(fq2Meth==kq2PosTPC) {
     qVecDefault[0] = qVecPosEta[0];
     qVecDefault[1] = qVecPosEta[1];
-    multQvecDefault = multQvecPosEta;
+    multQvecDefault = multQvecTPC[1];
     return q2TPCpos;
   }
   else if(fq2Meth==kq2NegTPC) {
     qVecDefault[0] = qVecNegEta[0];
     qVecDefault[1] = qVecNegEta[1];
-    multQvecDefault = multQvecNegEta;
+    multQvecDefault = multQvecTPC[2];
     return q2TPCneg;
   }
   else return 0.;
