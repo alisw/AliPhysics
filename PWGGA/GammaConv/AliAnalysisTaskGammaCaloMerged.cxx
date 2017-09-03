@@ -501,7 +501,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     TString cutstringCaloMerged                   = ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetCutNumber();
     TString cutstringMeson                        = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 
-    Int_t nLMCut   = ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetMinNLMCut();
+    //Int_t nLMCut   = ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetMinNLMCut();
 
     fCutFolder[iCut]                              = new TList();
     fCutFolder[iCut]->SetName(Form("Cut Number %s_%s_%s_%s",cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
@@ -1702,8 +1702,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
     TrueClusterCandidate->PrintCaloMCFlags();
   }
 
-  Bool_t filled                     = kFALSE;
-
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
     Int_t clusterClass    = 0;
     Bool_t isPrimary      = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, TrueClusterCandidate->GetCaloPhotonMCLabel(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -1999,8 +1997,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     //TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCEvent);
     TrueClusterCandidate->PrintCaloMCFlags();
   }
-
-  Bool_t filled                     = kFALSE;
 
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
     Int_t clusterClass    = 0;

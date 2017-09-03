@@ -96,22 +96,21 @@ AliV0CutsStrange::AliV0CutsStrange(const AliV0CutsStrange &ref) :
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fPIDResponse(NULL),
-  fIsQA(kFALSE),
   fV0ReaderStrangeName("V0ReaderStrange"),
   fCutString(ref.fCutString),
   fCutStringRead(ref.fCutStringRead),
-  fPreSelCut(ref.fPreSelCut),
+  fIsQA(kFALSE),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
   fUseOnFlyV0FinderSameSign(ref.fUseOnFlyV0FinderSameSign),
-  fMinClsTPC(ref.fMinClsTPC),
-  fMinClsTPCToF(ref.fMinClsTPCToF),
   fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
+  fMinClsTPCToF(ref.fMinClsTPCToF),
+  fMinClsTPC(ref.fMinClsTPC),
   fPIDTPCnSigmaProtonLow(ref.fPIDTPCnSigmaProtonLow),
   fPIDTPCnSigmaProtonUp(ref.fPIDTPCnSigmaProtonUp),
-  fPIDTPCnSigmaPionLow(ref.fPIDTPCnSigmaPionLow),
-  fPIDTPCnSigmaPionUp(ref.fPIDTPCnSigmaPionUp),
   fPIDTOFnSigmaProtonLow(ref.fPIDTOFnSigmaProtonLow),
   fPIDTOFnSigmaProtonUp(ref.fPIDTOFnSigmaProtonUp),
+  fPIDTPCnSigmaPionLow(ref.fPIDTPCnSigmaPionLow),
+  fPIDTPCnSigmaPionUp(ref.fPIDTPCnSigmaPionUp),
   fPIDTOFnSigmaPionLow(ref.fPIDTOFnSigmaPionLow),
   fPIDTOFnSigmaPionUp(ref.fPIDTOFnSigmaPionUp),
   fHistoCutIndex(NULL),
@@ -132,7 +131,8 @@ AliV0CutsStrange::AliV0CutsStrange(const AliV0CutsStrange &ref) :
   fHistoTOFdEdxPionBefore(NULL),
   fHistoTOFdEdxSigmaPionBefore(NULL),
   fHistoTOFdEdxPionAfter(NULL),
-  fHistoTOFdEdxSigmaPionAfter(NULL)
+  fHistoTOFdEdxSigmaPionAfter(NULL),
+  fPreSelCut(ref.fPreSelCut)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){
