@@ -1022,7 +1022,6 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
   if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
     fKind = 2; // combinatorics from hadronic decays
   else if ( !(pdgCodeNeg==pdgCodePos)){
-    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
     Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(pdgCode == 111) 
       fKind = 3; // pi0 Dalitz

@@ -424,14 +424,14 @@ fMaxKappa(100),
 fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
+fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
 fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(NULL),
-fIsMC(0)
+fFlowEvent(NULL)
 
 {
   // Define output slots here
