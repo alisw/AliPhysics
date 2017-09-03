@@ -211,7 +211,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
     for(auto jet : datajets->accepted()) {
       double pt = jet->Pt(), pz = jet->Pz(), E = jet->E(), M = TMath::Sqrt(E*E - pt*pt - pz*pz);
       AliDebugStream(2) << "Next jet: pt:" << jet->Pt() << ", E: " << E << ", pz: " << pz << ", M(self): " << M << "M(fj)" << jet->M() << std::endl;
-      AliEmcalJet *associatedJet = jet->MatchedJet();
+      AliEmcalJet *associatedJet = jet->ClosestJet();
       if(mcjets) {
         if(!associatedJet) continue;
         try {
