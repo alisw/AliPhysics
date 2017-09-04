@@ -54,15 +54,15 @@ public:
 protected:
 
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
-                                 const char* centrality);
+                                 const char* centrality,Bool_t =kFALSE);
 
   virtual void FillHistosForPair(const char* eventSelection,const char* triggerClassName,
                                  const char* centrality,
                                  const char* pairCutName,
                                  const AliVParticle& part,
-                                 const AliVParticle& part2);
+                                 const AliVParticle& part2,
+                                 const Bool_t IsMixedHisto);
 
-  void FillHistosForEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
   void FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
 
 private:

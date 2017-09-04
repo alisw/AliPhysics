@@ -24,6 +24,15 @@ public:
   AliAnalysisMuMuFlowSP(TH2* AccEffHisto=0x0, Int_t systLevel=0);
   virtual ~AliAnalysisMuMuFlowSP();
 
+  Bool_t IsPtInRange(const AliVParticle& t1, const AliVParticle& t2,
+                           Double_t& ptmin, Double_t& ptmax) const;
+
+  void NameOfIsPtInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
+
+  Bool_t IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2,
+                             Double_t& yMin, Double_t& yMax) const;
+  void NameOfIsRapidityInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
+
   Bool_t ShouldCorrectDimuonForAccEff() { return (fAccEffHisto != 0x0); }
 
   void SetMuonWeight() { fWeightMuon=kTRUE; }
@@ -46,15 +55,14 @@ public:
 protected:
 
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
-                                 const char* centrality);
+                                 const char* centrality, Bool_t =kFALSE);
 
   virtual void FillHistosForPair(const char* eventSelection,const char* triggerClassName,
                                  const char* centrality,
                                  const char* pairCutName,
                                  const AliVParticle& part,
-                                 const AliVParticle& part2);
-
-  virtual void FillHistosForEvent(const char* eventSelection,const char* triggerClassName, const char* centrality);
+                                 const AliVParticle& part2,
+                                 const Bool_t IsMixedHisto);
 
   void FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
 
