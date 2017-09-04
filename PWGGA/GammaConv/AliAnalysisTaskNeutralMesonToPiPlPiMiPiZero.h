@@ -63,6 +63,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     void SetDoMesonQA(Int_t flag){ fDoMesonQA = flag; }
     void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
     void SetTolerance(Double_t tol){fTolerance=tol;}
+    void SetMixMode(Int_t mode){fMixMode = mode;}
 
   private:
 
@@ -129,6 +130,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TList*                            fGoodConvGammas;                                    // good conv gammas after selection
     TList*                            fClusterCandidates;                                 //! good calo gammas after selection
     TList*                            fNeutralPionCandidates;                             // good neutral pion candidates
+    TList*                            fNeutralPionSidebandCandidates;                     // good neutral pion candidates from sideband
     TList*                            fPosPionCandidates;                                 // good positive pion candidates
     TList*                            fNegPionCandidates;                                 // good negative pion candidates
     TList*                            fGoodVirtualParticles;                              // combination of pi+pi- candidates
@@ -179,6 +181,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassPt;            // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameSameDiff2BackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameDiff1SameBackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+    TH2F**                            fHistoMotherLikeSignBackInvMassPt;             // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi-pi0}
 
     // angle distributions
     TH2F**                            fHistoAngleOmegaPiPlPiMi;                           // angle between combined Pi+ and Pi- and omega
@@ -196,6 +199,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;      // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;       // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;       // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+    TH2F**                            fHistoMotherLikeSignBackInvMassSubPi0Pt;       // array of histos of pi+pi+pi0 likesign mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
 
     TH2F**                            fHistoMotherInvMassFixedPzPi0;                      // invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
     TH2F**                            fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt;  // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
@@ -205,6 +209,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt;   // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
     TH2F**                            fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt;   // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
+                                                                                          // its invMass matches the PDG value
+    TH2F**                            fHistoMotherLikeSignBackInvMassFixedPzPi0Pt;        // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi+pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
     // pure MC properties
     TH1F**                            fHistoMCAllGammaPt;                                 // array of histos of all produced gammas in the specified y range
@@ -288,11 +294,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
-  private:
+    Double_t                        fMixMode;                                             // Mode used for event mixing 0: normal 1: likesign 2: pi0 sideband
+private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 16);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 17);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

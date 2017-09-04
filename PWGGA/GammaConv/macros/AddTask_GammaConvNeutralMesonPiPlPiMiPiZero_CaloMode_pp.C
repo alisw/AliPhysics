@@ -69,9 +69,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     TString generatorName             = "HIJING",
     TString cutnumberAODBranch        = "000000006008400001001500000",
     Double_t tolerance                = -1,
-    TString periodNameV0Reader        = "",                                 // period Name for V0Reader
+    TString periodNameV0Reader        = "",                                // period Name for V0Reader
     Int_t   runLightOutput            = 0,                                 // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    TString additionalTrainConfig     = "0"                                 // additional counter for trainconfig, this has to be always the last parameter
+    Int_t   eventMixingMode           = 0,                                 // Mode for event mixing: 0: normal 1: likesign mixing
+    TString additionalTrainConfig     = "0"                                // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   //parse additionalTrainConfig flag
@@ -539,6 +540,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
   task->SetDoMesonQA(enableQAMesonTask );
+  task->SetMixMode(eventMixingMode);
+
 
   //connect containers
   AliAnalysisDataContainer *coutput =
