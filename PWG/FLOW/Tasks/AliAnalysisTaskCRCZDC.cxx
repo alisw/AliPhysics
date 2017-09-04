@@ -951,7 +951,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           if(fRunList[c]==RunNum) RunBin=bin;
           else bin++;
       }
-      
+
       if(RunBin==-1) return;
       if(fDataSet==kAny) RunBin=0;
 
@@ -969,7 +969,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if(IsPileUp) return;
       }
     }
-      
+
     //first attach all possible information to the cuts
     fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
     fCutsPOI->SetEvent( InputEvent(), MCEvent() );
@@ -1723,7 +1723,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(RunNum>=245829) znaEnergy *= 8./7.;
       fFlowEvent->SetZNCQ0(towZNC[0]);
       fFlowEvent->SetZNAQ0(towZNA[0]);
-      
+
       Double_t energyZNC =0;
       Double_t energyZNA =0;
       Double_t energyZPC =0;
@@ -1740,10 +1740,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           energyZPC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPC"));
           energyZPA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPA"));
       }
-      
+
       fFlowEvent->SetZNCEnergy(energyZNC);
       fFlowEvent->SetZNAEnergy(energyZNA);
-      
+
       fFlowEvent->SetZPCEnergy(energyZPC);
       fFlowEvent->SetZPAEnergy(energyZPA);
 
@@ -1930,7 +1930,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
 
     TObject *head =aod->GetHeader();
     if (head->InheritsFrom("AliNanoAODStorage")){
-        
+
          AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
          Int_t pileupIndex = nanohead->GetVarIndex("cstPileUp");
          if (nanohead->GetVar(pileupIndex)==0) BisPileup=kFALSE;
