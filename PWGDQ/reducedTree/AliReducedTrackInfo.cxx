@@ -63,6 +63,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fMCFreezeout(),
   fMCLabels(),
   fMCPdg(),
+  fHFProc(0),
   fMCGeneratorIndex(-1)
 
 {

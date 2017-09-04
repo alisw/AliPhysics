@@ -1,7 +1,7 @@
 /***************************************************************************
-              Anders Knospe - last modified on 26 March 2016
+              Anders Knospe - last modified on 31 August 2016
 
-//Lauches phi analysis with rsn mini package
+//Launches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
 
@@ -210,7 +210,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-  TH2F* hmc=new TH2F("MultiVsCent","", 110,0.,110., 400,0.5,400.5);
+  double ybins[500];
+  for(j=0;j<=401;j++) ybins[j]=j-0.5;
+
+  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 

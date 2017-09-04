@@ -180,6 +180,17 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoMotherSameSameDiff2BackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameDiff1SameBackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 
+    // angle distributions
+    TH2F**                            fHistoAngleOmegaPiPlPiMi;                           // angle between combined Pi+ and Pi- and omega
+    TH2F**                            fHistoAngleOmegaPiZero;                             // angle between Pi0 and omega
+    TH2F**                            fHistoAngleOmegaPiPl;                               // angle between Pi+ and omega
+    TH2F**                            fHistoAngleOmegaPiMi;                               // angle between Pi- and omega
+    TH2F**                            fHistoAnglePiPlPiMi;                                // angle between Pi+ and Pi-
+    TH2F**                            fHistoAnglePiZeroPiMi;                              // angle between Pi0 and Pi-
+    TH2F**                            fHistoAnglePiPlPiZero;                              // angle between Pi+ and Pi0
+    TH2F**                            fHistoAngleSum;                                     // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
+    TH2F**                            fHistoTrueAngleSum;
+
     TH2F**                            fHistoMotherInvMassSubPi0;                          // invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
     TH2F**                            fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;      // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;      // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
@@ -195,17 +206,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
                                                                                           // its invMass matches the PDG value
     TH2F**                            fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt;   // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
-    // angle distributions
-    TH2F**                            fHistoAngleOmegaPiPlPiMi;                           // angle between combined Pi+ and Pi- and omega
-    TH2F**                            fHistoAngleOmegaPiZero;                             // angle between Pi0 and omega
-    TH2F**                            fHistoAngleOmegaPiPl;                               // angle between Pi+ and omega
-    TH2F**                            fHistoAngleOmegaPiMi;                               // angle between Pi- and omega
-    TH2F**                            fHistoAnglePiPlPiMi;                                // angle between Pi+ and Pi-
-    TH2F**                            fHistoAnglePiZeroPiMi;                              // angle between Pi0 and Pi-
-    TH2F**                            fHistoAnglePiPlPiZero;                              // angle between Pi+ and Pi0
-    TH2F**                            fHistoAngleSum;                                     // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
-    TH2F**                            fHistoTrueAngleSum;
-
     // pure MC properties
     TH1F**                            fHistoMCAllGammaPt;                                 // array of histos of all produced gammas in the specified y range
     TH1F**                            fHistoMCConvGammaPt;                                // array of histos of all converted gammas in the specified y range
@@ -288,7 +288,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
-
   private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented

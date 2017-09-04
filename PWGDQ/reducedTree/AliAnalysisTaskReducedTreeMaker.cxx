@@ -62,6 +62,8 @@
 #include <AliMultSelection.h>
 #include <AliMultEstimator.h>
 #include <AliCentrality.h>
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
 #include "AliReducedEventInfo.h"
@@ -104,6 +106,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -162,6 +165,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
+  fFillHFInfo(kFALSE),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -481,6 +485,9 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      eventInfo->fMultiplicityEstimatorPercentiles[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
      eventInfo->fMultiplicityEstimatorPercentiles[8] = multSelection->GetMultiplicityPercentile("RefMult05");
      eventInfo->fMultiplicityEstimatorPercentiles[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+     eventInfo->fMultiplicityEstimatorPercentiles[10] = multSelection->GetMultiplicityPercentile("V0M");
+     eventInfo->fMultiplicityEstimatorPercentiles[11] = multSelection->GetMultiplicityPercentile("V0A");
+     eventInfo->fMultiplicityEstimatorPercentiles[12] = multSelection->GetMultiplicityPercentile("V0C");
      AliMultEstimator* estimator = 0x0;
      estimator = multSelection->GetEstimator("OnlineV0M"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
      estimator = multSelection->GetEstimator("OnlineV0A"); if(estimator) eventInfo->fMultiplicityEstimators[1] = estimator->GetValue();
@@ -491,7 +498,10 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      estimator = multSelection->GetEstimator("SPDClusters"); if(estimator) eventInfo->fMultiplicityEstimators[6] = estimator->GetValue();
      estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[7] = estimator->GetValue();
      estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[8] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
+     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();   
+     estimator = multSelection->GetEstimator("V0M"); if(estimator) eventInfo->fMultiplicityEstimators[10] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("V0A"); if(estimator) eventInfo->fMultiplicityEstimators[11] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("V0C"); if(estimator) eventInfo->fMultiplicityEstimators[12] = estimator->GetValue();  
   }
   
   if(eventVtx){
@@ -825,7 +835,8 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    AliDielectronMC* mcHandler = AliDielectronMC::Instance();
    
    Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
-   
+
+   if(fFillHFInfo) mcHandler->SetCheckHF(kTRUE);
    //cout << "Event+++++++++++++++++++++++++" << endl;
    
    for(Int_t i=0; i<nPrimary; ++i) {
@@ -890,6 +901,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
            }
         }
       }
+
+      if(fFillHFInfo)      trackInfo->fHFProc = mcHandler->GetHFProcess(particle->GetLabel());
+
       
       /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
         << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
@@ -1219,9 +1233,12 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
+
+       AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
        TClass* esdClass = esdTrack->Class();
-       if(esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal"))
-          trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       if( esdClass->GetMethodAny("GetChi2TPCConstrainedVsGlobal") && fld)
+         trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+//       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
        
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 

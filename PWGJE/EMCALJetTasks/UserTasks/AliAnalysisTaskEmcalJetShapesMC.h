@@ -21,6 +21,7 @@ class TTree;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
+class TRandom3;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJetFinder;
@@ -67,9 +68,12 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
+  void SetSwitchSDkT(Int_t c)                                 { fSwitchSDKtNSub   = c   ; }
+  void SetSwitchSDMin(Int_t c)                                { fSwitchSDMinNSub   = c   ; }
   void SetSwitchkT(Int_t c)                                 { fSwitchKtNSub   = c   ; }
   void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
+  void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;} 
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -91,6 +95,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   
   
  protected:
+   
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
@@ -120,7 +125,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetCoreFrac(AliEmcalJet *jet, Int_t jetContNb=0);
 
  
-  Double_t                           fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option);
+  Double_t                           FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
 
   
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
@@ -131,21 +136,25 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[38];              //     jet shapes used for the tagging
+  Float_t                             fShapesVar[54];              //     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
   Float_t                             fSubjetRadius;
   Int_t                               fSelectedShapes;                //chose set of shapes
   Int_t                               fSwitchKtNSub;
-   Int_t                              fSwitchMinNSub;
-    Int_t                             fSwitchAktNSub;
+  Int_t                               fSwitchMinNSub;
+  Int_t                               fSwitchAktNSub;
+  Int_t                               fSwitchSDKtNSub;
+  Int_t                               fSwitchSDMinNSub;
+  Int_t                               fAdditionalTracks;             //number of extra tracks to stress the grooming
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
   Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
   Float_t                             fHoleWidth;                       //width of the hole in radians 
+ TRandom3                             *fRandom;                     //! Random number generator
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value

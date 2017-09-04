@@ -169,21 +169,30 @@ public:
   //using AliVVtrack::GetXYZ;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
   
-  Bool_t GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const {AliFatal("Not implemented"); return 0;}
-  //   return GetCovMatrix(cv);}
+  Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const; 
+     
 
   // void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
+  Bool_t IsMuonTrack() const {
+  if (GetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack())==1) return kTRUE ; 
+  else return kFALSE;
+  } 
+
   Double_t XAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()); }
   Double_t YAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()); }
-  Double_t ZAtDCA() const { // FIXME: not sure about this one
-    if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY());
-    else return -999.; }
+  Double_t ZAtDCA() const { 
+    if (IsMuonTrack())  return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
+    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY());
+     else return -999.; }
+
   Bool_t   XYZAtDCA(Double_t x[3]) const { x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
   
-  Double_t DCA() const { // FIXME: not sure about this one
-    if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); // FIXME: Why does this return posX?
+  Double_t DCA() const { 
+    if (IsMuonTrack()) return TMath::Sqrt(XAtDCA()*XAtDCA() + YAtDCA()*YAtDCA());
+    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); // FIXME: Why does this return posX?
     else return -999.; }
+
   
   Double_t PxAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()); }
   Double_t PyAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()); }
@@ -201,7 +210,7 @@ public:
   // UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; } // 
   // UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
-  // Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
+   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()))) != 0);}
   // Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
   // void    SetFilterMap(UInt_t i){fFilterMap = i;}
   // UInt_t  GetFilterMap() const {return fFilterMap;}
@@ -223,6 +232,7 @@ public:
   void    SetTPCNCrossedRows(UInt_t n)     {fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows()] = n;}
 
   UShort_t GetTPCNclsF() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF());}
+  UShort_t GetTPCnclsS() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS());}
   UShort_t GetTPCNCrossedRows()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows());}
   Float_t  GetTPCFoundFraction() const { return GetTPCNCrossedRows()>0 ? float(GetTPCNcls())/GetTPCNCrossedRows() : 0;}
 

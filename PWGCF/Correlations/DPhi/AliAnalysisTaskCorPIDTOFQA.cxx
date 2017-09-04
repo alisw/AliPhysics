@@ -277,7 +277,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 	moving_marker = moving_marker + pt_binning[i] * 0.005;
     }
 
-    cout<<endl<<endl<<"moving_marker: "<<moving_marker<<endl<<endl;
+//    cout<<endl<<endl<<"moving_marker: "<<moving_marker<<endl<<endl;
 
 
 
@@ -620,8 +620,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     deut_per_event->Fill(deut_count);
 
 
-//    if(deut_count > 0  &&  trig_05_track_count > 0)
-    if(deut_count > 0)
+    if(deut_count > 0  &&  trig_05_track_count > 0)
+//    if(deut_count > 0)
     {
 	helperAOD = fAOD;
 	htree->Fill();

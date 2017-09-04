@@ -28,16 +28,18 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
                                       bool performSharedDaughterCut=kFALSE);
 
 AliFemtoEventAnalysis::AliFemtoEventAnalysis(double multMin, double multMax):
-fMultMin(multMin),
-fMultMax(multMax),
+  AliFemtoAnalysis(),
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(kFALSE),
+fPicoEvent(NULL),
 fMixingBuffer(NULL),
 fNumEventsToMix(0),
+fMultMin(multMin),
+fMultMax(multMax),
+fPerformSharedDaughterCut(kFALSE),
 fIdenticalParticles(false)
 {
   if(fIdenticalParticles) srand(std::time(0));
@@ -47,24 +49,24 @@ fIdenticalParticles(false)
 }
 //____________________________
 AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a):
-AliFemtoAnalysis(),
+AliFemtoAnalysis(a),
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
+fPicoEvent(NULL),
 fMixingBuffer(NULL),
 fNumEventsToMix(a.fNumEventsToMix),
+fMultMin(a.fMultMin),
+fMultMax(a.fMultMax),
+fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
 fIdenticalParticles(a.fIdenticalParticles)
 {
-  /// Copy constructor
+  // Copy constructor
   
   const char msg_template[] = " AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a) - %s",
   warn_template[] = " WARNING [AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a)] %s";
-  
-  fMultMin = a.fMultMin;
-  fMultMax = a.fMultMax;
   
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;

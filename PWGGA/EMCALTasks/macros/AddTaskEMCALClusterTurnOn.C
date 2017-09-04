@@ -30,6 +30,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
                                                                  const char*            trig                      = "INT7",
                                                                  const Bool_t           M02cut                    = kTRUE,
                                                                  const Bool_t           ThnSp                     = kTRUE,
+                                                                 TString                MaskedFastOrPath          = "",
                                                                  const Bool_t           onlyL1RecalcEvents        = kFALSE
                                                                  )
 {
@@ -95,6 +96,21 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   gROOT->LoadMacro(configFilePath.Data());
   printf("Path of config file: %s\n",configFilePath.Data());
   
+  
+  TString OADBFile("MaskedFastors.root");
+  Bool_t MaskFastors = kFALSE;
+
+  if(!MaskedFastOrPath.IsNull()){ 
+    MaskFastors = kTRUE;
+    if(MaskedFastOrPath.Contains("alien:///")){
+    	gSystem->Exec(Form("alien_cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+    else{
+    	gSystem->Exec(Form("cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+  }
+  
+
     // #### Task preferences
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
@@ -113,6 +129,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetPhiClBinning(PhiClBin);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
+  task->SetFastOrMasking(MaskFastors);
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;

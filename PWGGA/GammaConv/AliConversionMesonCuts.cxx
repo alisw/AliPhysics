@@ -124,9 +124,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
+  fBackgroundHandler(0),
   fCutString(NULL),
   fCutStringRead(""),
-  fBackgroundHandler(0),
   fHistoMesonCuts(NULL),
   fHistoMesonBGCuts(NULL),
   fHistoDCAGGMesonBefore(NULL),
@@ -196,13 +196,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
-  fBackgroundHandler(ref.fBackgroundHandler),
+  fMinOpanCutMeson(0),
   fFMinOpanCut(0),
   fMinOpanPtDepCut(kFALSE),
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
-  fMinOpanCutMeson(0),
+  fBackgroundHandler(ref.fBackgroundHandler),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -760,7 +760,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     TParticle *positron = 0x0;
     TParticle *electron = 0x0;
 
-    Int_t labeljpsiChiC = -1;
+    //Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
       if(index < 0) continue;
@@ -769,7 +769,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
       switch( temp->GetPdgCode() ) {
       case 443:
         jpsi =  temp;
-        labeljpsiChiC = index;
+        //labeljpsiChiC = index;
         break;
       case 22:
         gamma    =  temp;
@@ -1263,7 +1263,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
     fSelectionLow   = 0.1;
     fSelectionHigh  = 0.155;
     break;
-  
+  case 8:
+    fSelectionLow   = 0.125;
+    fSelectionHigh  = 0.145;
+    break;
+  case 9:
+    fSelectionLow   = 0.11;
+    fSelectionHigh  = 0.155;
+    break;
     
   default:
     cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;

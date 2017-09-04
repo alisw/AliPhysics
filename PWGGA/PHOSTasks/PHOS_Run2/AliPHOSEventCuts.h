@@ -1,15 +1,17 @@
 #ifndef AliPHOSEventCuts_cxx
 #define AliPHOSEventCuts_cxx
 
-// Author: Daiki Sekihata (Hiroshima University)
+//Author: Daiki Sekihata (Hiroshima University)
 //this analsyis class provides event selection.
 //e.g., reject pileup event, Incomplete event, |zvtx|>10cm.
 
 class TH2;
 class AliPHOSGeometry;
 class AliPHOSTriggerHelper;
+class AliPHOSClusterCuts;
 
 #include "AliPHOSTriggerHelper.h"
+#include "AliPHOSClusterCuts.h"
 #include "AliAnalysisCuts.h"
 
 class AliPHOSEventCuts : public AliAnalysisCuts {
@@ -27,6 +29,7 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     void SetMaxAbsZvtx(Double_t maxZ) {fMaxAbsZvtx = maxZ;}
     void SetRejectPileup(Bool_t reject) {fRejectPileup = reject;}
     void SetRejectDAQIncompleteEvent(Bool_t reject) {fRejectDAQIncomplete = reject;}
+    void SetClusterCuts(AliPHOSClusterCuts *cuts) {fPHOSClusterCuts = cuts;}
 
     void DoPHOSTriggerAnalysis(Bool_t flag, TObject *obj=0x0){
       fIsPHOSTriggerAnalysis = flag;
@@ -47,12 +50,13 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     AliPHOSTriggerHelper *fTriggerHelper;
     AliPHOSGeometry *fPHOSGeo;
     TH2I* fPHOSTRUBadMap[6];
+    AliPHOSClusterCuts *fPHOSClusterCuts;
 
   private:
     AliPHOSEventCuts(const AliPHOSEventCuts&);
     AliPHOSEventCuts& operator=(const AliPHOSEventCuts&);
 
-    ClassDef(AliPHOSEventCuts, 5); // example of analysis
+    ClassDef(AliPHOSEventCuts, 6);
 };
 
 #endif

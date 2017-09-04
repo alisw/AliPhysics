@@ -33,6 +33,8 @@ class CEPEventBuffer : public TObject {
     Bool_t fisPileup;
     Bool_t fisClusterCut;
     Bool_t fisDGTrigger;
+    Bool_t fisSTGTriggerFired;
+    Int_t  fnTOFmaxipads;
 
     // see AliCEPBase.h for the definition of fEventCondition
     UInt_t fEventCondition;
@@ -74,6 +76,8 @@ class CEPEventBuffer : public TObject {
     void SetMagnField(Double_t magnf)   { fMagnField = magnf; }
     void SetFiredTriggerClasses(TString ftc)   { fFiredTriggerClasses = ftc; }
     void SetPFFlags(AliVEvent *Event);
+    void SetisSTGTriggerFired(Bool_t stgtrig) { fisSTGTriggerFired = stgtrig; }
+    void SetnTOFmaxipads(Int_t nmaxipads) { fnTOFmaxipads = nmaxipads; }
 
     void SetEventCondition(UInt_t evcond) { fEventCondition = evcond; }
  
@@ -110,6 +114,8 @@ class CEPEventBuffer : public TObject {
     Bool_t* GetPFBGFlagV0() { return fPFBGFlagV0; }
     Bool_t* GetPFBBFlagAD() { return fPFBBFlagAD; }
     Bool_t* GetPFBGFlagAD() { return fPFBGFlagAD; }
+    Bool_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
+    Int_t   GetnTOFmaxipads() { return fnTOFmaxipads; }
 
     // different ways of retrieving number of tracks
     Int_t GetnTracksTotal()  const { return fnTracksTotal; }

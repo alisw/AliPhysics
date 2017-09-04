@@ -788,7 +788,6 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
   UInt_t kind = 9;
   TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
   TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
-  Int_t motherLabelPhoton; 
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0; 
   Int_t pdgCode = 0; 
@@ -820,10 +819,8 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
     if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
     if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
   }else{		
-    TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCEvent);
     pdgCodePos=posDaughter->GetPdgCode();
     pdgCodeNeg=negDaughter->GetPdgCode();
-    motherLabelPhoton= Photon->GetMother(0);
     Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode();
 

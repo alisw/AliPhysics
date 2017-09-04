@@ -89,6 +89,7 @@ public:
   void			   SetEtaClBinning(vector<Double_t> binedges)			   { fBinsClEta = binedges; }
   void			   SetPhiClBinning(vector<Double_t> binedges)			   { fBinsClPhi = binedges; }
   void                     SetM02cut (Bool_t M02)                                          { fM02cut = M02;}
+  void                     SetFastOrMasking(Bool_t mask)                                   { fMaskFastOrCells = mask; }
 
 protected:
   
@@ -116,7 +117,6 @@ protected:
   
     //    TList       *fOutputList; //!<! Output list
     //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
-  
   Float_t     fIsoConeRadius;                  // Radius for the Isolation Cont
   Double_t    fdetacut;                        // cut on deta between track and cluster
   Double_t    fdphicut;                        // cut on dphi between track and cluster
@@ -180,6 +180,7 @@ protected:
   
   TH2D        *hFastOrIndexLeadingCluster;
   Bool_t      fM02cut;
+  Bool_t      fMaskFastOrCells;
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented

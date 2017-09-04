@@ -8,8 +8,10 @@
 #include <AliAODEvent.h>
 #include <AliVCaloTrigger.h>
 #include <AliVCluster.h>
-#include <AliPHOSTriggerHelper.h>
 #include <AliCaloPhoton.h>
+
+#include "AliPHOSClusterCuts.h"
+#include "AliPHOSTriggerHelper.h"
 
 // Author: Daiki Sekihata (Hiroshima University)
 ClassImp(AliPHOSTriggerHelper)
@@ -63,7 +65,6 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
   if(fTriggerInputL1 > 0 && fTriggerInputL0 > 0){
     AliError("Both L1 and L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
   }
-  AliInfo(Form("Your choice L1:%d , L0:%d",fTriggerInputL1,fTriggerInputL0));
 
 }
 //________________________________________________________________________
@@ -78,8 +79,9 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event)
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
 {
+  AliInfo(Form("Your choice L1:%d , L0:%d",fTriggerInputL1,fTriggerInputL0));
 
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
@@ -133,8 +135,8 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event)
     multClust = array->GetEntriesFast();
   }
   else{
-    AliInfo("PHOSClusterArray is NOT found! clusters from AliVEvent will be used.");
-    multClust = fEvent->GetNumberOfCaloClusters();
+    AliInfo("PHOSClusterArray is NOT found!");
+    return kFALSE;
   }
   AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
 
@@ -179,17 +181,10 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event)
     if(trgmodule == 4) continue;
 
     for(Int_t i=0;i<multClust;i++){
-      if(array){
-        AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
-        clu1 = (AliVCluster*)ph->GetCluster();
-      }
-      else{
-        clu1 = (AliVCluster*)fEvent->GetCaloCluster(i);
-        if(clu1->GetType() != AliVCluster::kPHOSNeutral
-        || clu1->E() < 0.1
-//        || clu1->GetNCells() < 2
-          ) continue;
-      }
+      AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
+      clu1 = (AliVCluster*)ph->GetCluster();
+      if(!cuts->AcceptPhoton(ph)) continue;
+      if(!ph->IsTOFOK()) continue;
 
       Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
 
@@ -201,7 +196,6 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event)
       if(module == 4) continue;
 
       if(IsMatched(trgrelId,relId) && IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kTRUE;
-      //if(IsMatched(trgrelId,relId)) return kTRUE;
 
     }//end of fired trigger channel loop
 

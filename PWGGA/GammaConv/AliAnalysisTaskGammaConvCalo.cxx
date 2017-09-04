@@ -4712,7 +4712,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 
       for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-        for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           if(fMoveParticleAccordingToVertex == kTRUE){
             if (bgEventVertex){
@@ -4751,7 +4751,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
         }
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+          for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 
@@ -4849,7 +4849,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundRP(){
 
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-          for(Int_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
+          for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
 
             AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
 

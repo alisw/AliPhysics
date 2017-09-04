@@ -103,6 +103,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
   task->SetMCFlag(isMC);
   task->SetCoreEnergyFlag(useCoreE);
 
+  eventcuts->SetClusterCuts(clustercuts);//pass cluster cuts to event cut class for PHOS trigger analysis
   task->SetEventCuts(eventcuts);
   task->SetClusterCuts(clustercuts);
 

@@ -63,6 +63,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fUseCountedMult(kFALSE),
   //Event-Histograms
   fHistEvent(0),
+  fEventCount(0),
   fHistMultEvent(0),
   fHistMCGenEvent(0),
   fHistMCRecEvent(0),
@@ -149,6 +150,10 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList -> SetOwner();
 
+  Int_t binsEventCount[3]={2,2,2};
+  Double_t minEventCount[3]={0,0,0};
+  Double_t maxEventCount[3]={2,2,2};
+
   /// Standard track histogram pt:eta:zV:multcent
   Int_t nBinsTrack[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
   Double_t minTrack[4]={fBinsPt->GetAt(0),fBinsEta->GetAt(0),fBinsZv->GetAt(0),fBinsMultCent->GetAt(0)};
@@ -176,19 +181,19 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Double_t minMultEvent[3]={fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0)};
   Double_t maxMultEvent[3]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
-    
+
   /// Event multiplicity investigation histograms multcent:multacc
   Int_t nBinsMultEventCorrelation[2]={fBinsMultCent->GetSize()-1,fBinsMultCent->GetSize()-1};
   Double_t minMultEventCorrelation[2]={fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0)};
   Double_t maxMultEventCorrelation[2]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
-  
+
 
   /// Closure Test histogram (pt vs. Nch)
   Int_t nBinsMCMultPt[2]={fBinsMultCent->GetSize()-1,fBinsPt->GetSize()-1};
   Double_t minMCMultPt[2]={fBinsMultCent->GetAt(0),fBinsPt->GetAt(0)};
   Double_t maxMCMultPt[2]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1)};
-  
-  
+
+
   fHistTrack = new THnF("fHistTrack", "Histogram for Tracks",4,nBinsTrack,minTrack,maxTrack);
   fHistTrack -> SetBinEdges(0,fBinsPt->GetArray());
   fHistTrack -> SetBinEdges(1,fBinsEta->GetArray());
@@ -217,6 +222,13 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fHistEvent->GetAxis(1)->SetTitle("multiplicity (multCuts)");
   fHistEvent -> Sumw2();
 
+
+  fEventCount = new THnF("fEventCount","trig vs trig+vertex",3,binsEventCount,minEventCount,maxEventCount);
+  fEventCount->GetAxis(0)->SetTitle("trig");
+  fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->GetAxis(2)->SetTitle("selected");
+  fEventCount->Sumw2();
+
   fHistMultEvent = new THnF("fHistMultEvent", "Histogram for MultEvents",3,nBinsMultEvent,minMultEvent,maxMultEvent);
   fHistMultEvent -> SetBinEdges(0,fBinsMultCent->GetArray());
   fHistMultEvent -> SetBinEdges(1,fBinsMultCent->GetArray());
@@ -226,11 +238,11 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fHistMultEvent->GetAxis(2)->SetTitle("Corrected track multiplicity");
   fHistMultEvent -> Sumw2();
 
-// temporary histogram  
+// temporary histogram
   fHistV0Amp = new TH1D("V0Amp", "V0Amp",2000,0,200);
   fHistV0Amp -> Sumw2();
 
-  
+
   if(fIsMC){
 
     fHistMCGenPrimTrack = new THnF("fHistMCGenPrimTrack", "Histogram for generated MC Tracks",4,nBinsTrack,minTrack,maxTrack);
@@ -393,14 +405,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecINEL0Event->GetAxis(1)->SetTitle("true multiplicity (MC)");
     fHistMCRecINEL0Event->Sumw2();
 
-           
+
     fHistMCResponseMat = new THnF("fHistMCResponseMat","Histogram for MC Response Matrix N_{ch} vs. N_{acc}",2,nBinsMultEventCorrelation, minMultEventCorrelation, maxMultEventCorrelation);
     fHistMCResponseMat->SetBinEdges(0,fBinsMultCent->GetArray());
     fHistMCResponseMat->SetBinEdges(1,fBinsMultCent->GetArray());
     fHistMCResponseMat->GetAxis(0)->SetTitle("reconstructed track multiplicity N_{acc}");
     fHistMCResponseMat->GetAxis(1)->SetTitle("generated particle multiplicity N_{ch}");
     fHistMCResponseMat->Sumw2();
-    
+
     fHistMCMultPt = new THnF("fHistMCMultPt","Histogram for MC Closure test #it{p}_T vs. N_{acc}",2,nBinsMCMultPt, minMCMultPt, maxMCMultPt);
     fHistMCMultPt->SetBinEdges(0,fBinsMultCent->GetArray());
     fHistMCMultPt->SetBinEdges(1,fBinsPt->GetArray());
@@ -425,6 +437,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 
   fOutputList->Add(fHistTrack);
   fOutputList->Add(fHistEvent);
+  fOutputList->Add(fEventCount);
   fOutputList->Add(fHistMultEvent);
   fOutputList->Add(fHistTrackCharge);
 
@@ -453,8 +466,8 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCRecINEL0Event);
     fOutputList->Add(fHistMCResponseMat);
     fOutputList->Add(fHistMCMultPt);
-    
-    
+
+
     //     fOutputList->Add(fHistMCGenTrackINEL0);
   }
   PostData(1, fOutputList);
@@ -509,7 +522,15 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   AliVVZERO * vZeroHandler = fEvent->GetVZEROData();
   if (!vZeroHandler) {printf("ERROR: vZeroHandler not available\n"); return;}
   Double_t v0Mult = (Double_t) vZeroHandler->GetMTotV0A();
-  
+
+  Bool_t isTrigAndVertex = kFALSE;
+  if (fIs2013pA){	isTrigAndVertex = isEventTriggered && IsEventAccepted2013pA(fEvent) && IsEventAcceptedQuality(fEvent);	}
+  if (fIs2015data){	isTrigAndVertex = isEventTriggered && IsEventAccepted2015data(fEvent) && IsEventAcceptedQuality(fEvent);	}
+
+
+  Double_t vEventCount[3] = { static_cast<Double_t>((isEventTriggered && kTRUE)) , static_cast<Double_t>(isTrigAndVertex),  static_cast<Double_t>(isTrigAndVertex && (TMath::Abs(zVertEvent) < 10.))};
+  fEventCount->Fill(vEventCount);
+
   // take a look at the range of V0 amplitude
   fHistV0Amp->Fill(v0Mult);
 
@@ -584,7 +605,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     else multAccCorrTracks = multAccCorrTracks + 1;
 
   }
-  
+
   // from now on use actual multipicity in all histograms
   if (fUseCountedMult) {multEvent = multAccTracks; eventValues[1] = multAccTracks;}
 
@@ -635,7 +656,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       {
         Double_t mcPrimTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
-	
+
         multRecPart++;
 
         Double_t dTrackingEff = fFunTrkEff->Eval(mcParticle->Pt());
@@ -678,13 +699,13 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
 
       if(IsChargedPrimary(iParticle)){
-	
+
         multGenPart++;
 
       }
     }
 
-    
+
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
       TParticle *mcGenParticle = fMCStack->Particle(iParticle);
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
@@ -720,11 +741,11 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     Double_t responseMatrixTuple[2] = {multEvent, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
-    
-    
+
+
 
   }
-    
+
   PostData(1, fOutputList);
 }
 
@@ -736,11 +757,11 @@ void AlidNdPtUnifiedAnalysisTask::Terminate(Option_t *)
 
 Bool_t AlidNdPtUnifiedAnalysisTask::IsChargedPrimary(Int_t stackIndex){
   if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)){
-   
+
     // In case charged particles are defined as charged particles without the sigmas exclude them
     Int_t pID = IdentifyMCParticle(stackIndex);
     if(!fIncludeSigmas && (pID == kSigmaPlus || pID == kSigmaMinus)) return kFALSE;
-    
+
     return kTRUE;
   }
   return kFALSE;
@@ -874,6 +895,7 @@ Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
       return centralityF;
     }else{
       AliInfo("Didn't find MultSelection!");
+      return 999;
     }
   }
 }
@@ -886,8 +908,8 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsSelectedCentrality(){
     AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
 
     if (MultSelection){
-      centralityF = MultSelection->GetMultiplicityPercentile("V0M");	
-      if(centralityF >= fLowerCentralityBound  && centralityF <= fUpperCentralityBound) return kTRUE; 
+      centralityF = MultSelection->GetMultiplicityPercentile("V0M");
+      if(centralityF >= fLowerCentralityBound  && centralityF <= fUpperCentralityBound) return kTRUE;
     }
     else{Printf("ERROR: Could not receive mult selection"); AliInfo("Didn't find MultSelection!");}
 

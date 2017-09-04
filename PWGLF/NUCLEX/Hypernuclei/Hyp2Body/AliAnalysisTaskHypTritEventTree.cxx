@@ -264,9 +264,6 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     }
   }
   if (fPeriod == 2016) {
-    fEventCuts.SetManualMode();
-    fEventCuts.SetupRun2pp();
-
     if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;
