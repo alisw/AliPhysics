@@ -77,7 +77,7 @@ void Sort_RunNumbers(TString period="LHC15n",Int_t trainNo=603,TString runList="
 /// the bad map looks at a certain runNumber. If everything is committed
 /// correctly they should show the same
 ///________________________________________________________________________
-void Test_OADB(TString period="LHC15n",Int_t trainNo=603,Int_t version=5,TString runList="")
+void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="5",TString runList="")
 {
     gStyle->SetOptStat(0); //..Do not plot stat boxes
 	//......................................................
@@ -118,8 +118,8 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,Int_t version=5,TString
     Int_t nRuns=RunIdVec.size();
 	//......................................................
 	//..Get the OADB information
-	//TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL";
-	TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis";
+	TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL";
+	//TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis";
 
 	AliOADBContainer *cont=new AliOADBContainer("");
 	cont->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
@@ -127,8 +127,8 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,Int_t version=5,TString
 	//..Get the .root file with the original histogram to compare if they coincide
 	//TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/VersionINT7Glob",period.Data(),trainNo);
 	//TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version4ManMasked",period.Data(),trainNo);
-	TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version%i",period.Data(),trainNo,version);
-	TString rootFileName= Form("%s_INT7_Histograms_V%i.root",period.Data(),version);
+	TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version%s",period.Data(),trainNo,version.Data());
+	TString rootFileName= Form("%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
 	TFile* outputRoot   = TFile::Open(Form("%s/%s",path.Data(),rootFileName.Data()));
 
 	if(!outputRoot)cout<<"File "<<outputRoot->GetName()<<" does not exist"<<endl;
@@ -176,13 +176,22 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,Int_t version=5,TString
 	textA->SetNDC();
 
 	cout<<"Checking "<<nRuns<<" runs: "<<endl;
+	std::vector<Int_t> RunsWithoutMap;
+	std::vector<Int_t> RunsWithMap;
+
 	for(Int_t iRun = 0; iRun < nRuns; iRun++)
 	{
 		//cout<<"------ run "<<RunIdVec.at(iRun)<<endl;
 		if(iRun%5==0)cout<<"."<<flush;
 		if(iRun%20==0)cout<<"Run No."<<iRun<<endl;
 		TObjArray *recal=(TObjArray*)cont->GetObject(RunIdVec.at(iRun));
-		if(!recal)cout<<"Error - No bad map for run Number "<<RunIdVec.at(iRun)<<" online!!"<<endl;
+		if(!recal)
+		{
+			cout<<"Error - No bad map for run Number "<<RunIdVec.at(iRun)<<" online!!"<<endl;
+			RunsWithoutMap.push_back(RunIdVec.at(iRun));
+			continue;
+		}
+		RunsWithMap.push_back(RunIdVec.at(iRun));
 
 		plot2D_Bad_OADB ->Reset();
 		plot2D_Dead_OADB->Reset();
@@ -262,4 +271,8 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,Int_t version=5,TString
 		if(iRun==nRuns-1)C4   ->Print(Form("%s)",summaryPDF.Data()));
 		else             C4   ->Print(Form("%s",summaryPDF.Data()));
 	}//end of run loop
+	cout<<"==Total Summary=="<<endl;
+	cout<<"Runs with a bad map ("<<RunsWithMap.size()<<"):"<<endl;
+	//loop
+	cout<<"Runs without a bad map ("<<RunsWithoutMap.size()<<"):"<<endl;
 }
