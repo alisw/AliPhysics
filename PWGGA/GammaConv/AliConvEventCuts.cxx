@@ -2179,10 +2179,11 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 //________________________________________________________________________
 Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *event)
 {
+  if(fPastFutureRejectionLow==0 && fPastFutureRejectionHigh==0)
+    return kFALSE;
   TBits fIR1 =  event->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
   TBits fIR2 =  event->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information
   UShort_t bunchCrossings = event->GetBunchCrossNumber();
-
   if(fHistoPastFutureBits){
     for(Int_t i = 0; i<180;i++){
       if(fIR1.TestBitNumber(i))
