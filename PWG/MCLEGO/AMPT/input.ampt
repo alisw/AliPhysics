@@ -7,8 +7,8 @@ A               ! TARG
 208             ! IAT (target A number)
 82              ! IZT (target Z number)
 1000000		! NEVNT (total number of events)
-0.              ! BMIN (mininum impact parameter in fm) 
-3.77		! BMAX (maximum impact parameter in fm, also see below)
+5.37              ! BMIN (mininum impact parameter in fm) 
+7.44		! BMAX (maximum impact parameter in fm, also see below)
 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
 150		! NTMAX: number of timesteps (D=150), see below
 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
