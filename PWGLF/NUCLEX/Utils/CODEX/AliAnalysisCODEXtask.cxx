@@ -23,22 +23,23 @@ ClassImp(AliAnalysisCODEXtask);
 
 using namespace AliAnalysisCODEX;
 
-AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
-  :AliAnalysisTaskSE(name)
-  ,mMCtrue(false)
-  ,mCentralityMode(0)
-  ,Cuts()
-  ,mOutput(0x0)
-  ,mTree(0x0)
-  ,mPIDresponse(0x0)
-  ,mHeader()
-  ,mTracks()
-  ,mTimeChan(0x0)
-  ,mEventCuts(false)
-  ,mPtCut(0.1)
-  ,mPOI(255)
-  ,mNsigmaTPCselectionPOI(5.)
-  ,mToDiscard()
+AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
+  AliAnalysisTaskSE(name),
+  mMCtrue{false},
+  mCentralityMode{0},
+  Cuts{},
+  mEventCuts{},
+  mPtCut{0.1},
+  mPOI{255},
+  mNsigmaTPCselectionPOI{5.},
+  mSkipEmptyEvents{false},
+  mOutput{nullptr},
+  mTree{nullptr},
+  mPIDresponse{nullptr},
+  mHeader{},
+  mTracks{},
+  mTimeChan{nullptr},
+  mToDiscard{}
 {
   Cuts.SetMinNClustersTPC(60);
   Cuts.SetMaxChi2PerClusterTPC(6);
@@ -57,21 +58,9 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
 
 
 AliAnalysisCODEXtask::~AliAnalysisCODEXtask() {
-  if (mPIDresponse) {
-    delete mPIDresponse;
-    mPIDresponse = 0x0;
-  }
-
-  if (mTree) {
-    delete mTree;
-    mTree = 0x0;
-  }
-
-  if (mOutput){
-    delete mOutput;
-    mOutput = 0x0;
-  }
-
+  delete mPIDresponse;
+  delete mTree;
+  delete mOutput;
 }
 
 void AliAnalysisCODEXtask::UserCreateOutputObjects() {
@@ -156,7 +145,6 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kMCevent;
   }
 
-  bool first = true;
   mTracks.clear();
   Track t;
   for (int iEv = 0;iEv < event->GetNumberOfTracks(); ++iEv) {
@@ -330,7 +318,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       mTracks.push_back(t);
     }
   }
-  mTree->Fill();
+  if (!(mSkipEmptyEvents && mTracks.empty())) {
+    mTree->Fill();
+  }
   PostData(1,mTree);
 
   PostData(2,mOutput);
