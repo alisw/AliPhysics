@@ -212,8 +212,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1),
-  fMixMode(0)
+  fTolerance(-1)
 {
 
 }
@@ -377,8 +376,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1),
-  fMixMode(0)
+  fTolerance(-1)
 {
   DefineOutput(1, TList::Class());
 }
@@ -518,10 +516,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   fNeutralPionCandidates        = new TList();
   fNeutralPionCandidates->SetOwner(kTRUE);
 
-  if(fMixMode==2){
-      fNeutralPionSidebandCandidates        = new TList();
-      fNeutralPionSidebandCandidates->SetOwner(kTRUE);
-  }
+  fNeutralPionSidebandCandidates        = new TList();
+  fNeutralPionSidebandCandidates->SetOwner(kTRUE);
+
 
   fPosPionCandidates            = new TList();
   fPosPionCandidates->SetOwner(kTRUE);
@@ -577,31 +574,28 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
   fHistoMotherInvMassPt                   = new TH2F*[fnCuts];
   fHistoMotherInvMassPtRejectedKinematic  = new TH2F*[fnCuts];
-  if(fMixMode!=1){
-      fHistoMotherSameDiff1Diff2BackInvMassPt = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1Diff1BackInvMassPt = new TH2F*[fnCuts];
-      fHistoMotherSameSameDiff2BackInvMassPt  = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1SameBackInvMassPt  = new TH2F*[fnCuts];
-  }
-  if(fMixMode==1) fHistoMotherLikeSignBackInvMassPt       = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff2BackInvMassPt = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff1BackInvMassPt = new TH2F*[fnCuts];
+  fHistoMotherSameSameDiff2BackInvMassPt  = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1SameBackInvMassPt  = new TH2F*[fnCuts];
+
+  fHistoMotherLikeSignBackInvMassPt       = new TH2F*[fnCuts];
 
   fHistoMotherInvMassSubPi0                               = new TH2F*[fnCuts];
-  if(fMixMode!=1){
-      fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt = new TH2F*[fnCuts];
-      fHistoMotherSameSameDiff2BackInvMassSubPi0Pt  = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1SameBackInvMassSubPi0Pt  = new TH2F*[fnCuts];
-  }
-  if(fMixMode==1) fHistoMotherLikeSignBackInvMassSubPi0Pt       = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt = new TH2F*[fnCuts];
+  fHistoMotherSameSameDiff2BackInvMassSubPi0Pt  = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1SameBackInvMassSubPi0Pt  = new TH2F*[fnCuts];
+
+  fHistoMotherLikeSignBackInvMassSubPi0Pt       = new TH2F*[fnCuts];
 
   fHistoMotherInvMassFixedPzPi0                     = new TH2F*[fnCuts];
-  if(fMixMode!=1){
-      fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt = new TH2F*[fnCuts];
-      fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt  = new TH2F*[fnCuts];
-      fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt  = new TH2F*[fnCuts];
-  }
-  if(fMixMode==1) fHistoMotherLikeSignBackInvMassFixedPzPi0Pt       = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt = new TH2F*[fnCuts];
+  fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt  = new TH2F*[fnCuts];
+  fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt  = new TH2F*[fnCuts];
+
+  fHistoMotherLikeSignBackInvMassFixedPzPi0Pt       = new TH2F*[fnCuts];
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -708,63 +702,57 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
     fHistoMotherInvMassPtRejectedKinematic[iCut]  = new TH2F("ESD_Mother_InvMass_Pt_KinematicRejected","ESD_Mother_InvMass_Pt_KinematicRejected",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fESDList[iCut]->Add(fHistoMotherInvMassPtRejectedKinematic[iCut]);
-    if(fMixMode!=1){
-        fHistoMotherSameDiff1Diff2BackInvMassPt[iCut] = new TH2F("ESD_Background_1_InvMass_Pt","ESD_Background_1_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassPt[iCut]);
-        fHistoMotherSameDiff1Diff1BackInvMassPt[iCut] = new TH2F("ESD_Background_2_InvMass_Pt","ESD_Background_2_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassPt[iCut]);
-        fHistoMotherSameSameDiff2BackInvMassPt[iCut]  = new TH2F("ESD_Background_3_InvMass_Pt","ESD_Background_3_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassPt[iCut]);
-        fHistoMotherSameDiff1SameBackInvMassPt[iCut]  = new TH2F("ESD_Background_4_InvMass_Pt","ESD_Background_4_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassPt[iCut]);
-    }
 
-    if(fMixMode==1){
-        fHistoMotherLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_Pt","ESD_Background_LikeSign_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassPt[iCut]);
-    }
+    fHistoMotherSameDiff1Diff2BackInvMassPt[iCut] = new TH2F("ESD_Background_1_InvMass_Pt","ESD_Background_1_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1Diff1BackInvMassPt[iCut] = new TH2F("ESD_Background_2_InvMass_Pt","ESD_Background_2_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameSameDiff2BackInvMassPt[iCut]  = new TH2F("ESD_Background_3_InvMass_Pt","ESD_Background_3_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1SameBackInvMassPt[iCut]  = new TH2F("ESD_Background_4_InvMass_Pt","ESD_Background_4_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassPt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassPt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassPt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassPt[iCut]);
+
+    fHistoMotherLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_Pt","ESD_Background_LikeSign_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassPt[iCut]);
 
     fHistoMotherInvMassSubPi0[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_InvMass(NeutralPion)_Pt","ESD_Mother_InvMass_Sub_InvMass(NeutralPion)_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fESDList[iCut]->Add(fHistoMotherInvMassSubPi0[iCut]);
-    if(fMixMode!=1){
-        fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt[iCut]   = new TH2F("ESD_Background_1_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_1_InvMass_Sub_InvMass(NeutralPion)_Pt",
-                                                                         HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt[iCut]);
-        fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt[iCut]   = new TH2F("ESD_Background_2_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_2_InvMass_Sub_InvMass(NeutralPion)_Pt",
-                                                                         HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt[iCut]);
-        fHistoMotherSameSameDiff2BackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_3_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_3_InvMass_Sub_InvMass(NeutralPion)_Pt",
-                                                                         HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassSubPi0Pt[iCut]);
-        fHistoMotherSameDiff1SameBackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt",
-                                                                         HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassSubPi0Pt[iCut]);
-    }
 
-    if(fMixMode==1){
-        fHistoMotherLikeSignBackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_LikeSign_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_LikeSign_InvMass_Sub_InvMass(NeutralPion)_Pt",
-                                                                    HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassSubPi0Pt[iCut]);
-    }
+    fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt[iCut]   = new TH2F("ESD_Background_1_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_1_InvMass_Sub_InvMass(NeutralPion)_Pt",
+                                                                     HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt[iCut]   = new TH2F("ESD_Background_2_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_2_InvMass_Sub_InvMass(NeutralPion)_Pt",
+                                                                     HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameSameDiff2BackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_3_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_3_InvMass_Sub_InvMass(NeutralPion)_Pt",
+                                                                     HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1SameBackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt",
+                                                                     HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassSubPi0Pt[iCut]);
+
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassSubPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassSubPi0Pt[iCut]);
+
+    fHistoMotherLikeSignBackInvMassSubPi0Pt[iCut]    = new TH2F("ESD_Background_LikeSign_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_LikeSign_InvMass_Sub_InvMass(NeutralPion)_Pt",
+                                                                HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+
+    fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassSubPi0Pt[iCut]);
 
     fHistoMotherInvMassFixedPzPi0[iCut]                     = new TH2F("ESD_InvMass_Mother_FixedPz(NeutralPion)_Pt","ESD_Mother_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fESDList[iCut]->Add(fHistoMotherInvMassFixedPzPi0[iCut]);
 
-    if(fMixMode!=1){
-        fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[iCut] = new TH2F("ESD_Background_1_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_1_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[iCut]);
-        fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[iCut] = new TH2F("ESD_Background_2_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_2_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[iCut]);
-        fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_3_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_3_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[iCut]);
-        fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_4_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_4_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[iCut]);
-    }
+    fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[iCut] = new TH2F("ESD_Background_1_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_1_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[iCut] = new TH2F("ESD_Background_2_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_2_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_3_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_3_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_4_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_4_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
 
-    if(fMixMode==1){
-        fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_LikeSign_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[iCut]);
-    }
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[iCut]);
+    fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[iCut]);
+
+    fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_FixedPz(NeutralPion)_Pt","ESD_Background_LikeSign_InvMass_FixedPz(NeutralPion)_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[iCut]);
 
     if(!fDoLightOutput){
         fHistoAngleOmegaPiPlPiMi[iCut]      = new TH2F("ESD_Mother_AngleOmegaNegPionsPosPions_Pt","ESD_Mother_AngleOmegaNegPionsPosPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
@@ -1256,7 +1244,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
     fGoodConvGammas->Clear();
     fClusterCandidates->Clear();
     fNeutralPionCandidates->Clear();
-    if(fMixMode==2) fNeutralPionSidebandCandidates->Clear();
+    if(fNeutralPionSidebandCandidates) fNeutralPionSidebandCandidates->Clear();
     fPosPionCandidates->Clear();
     fNegPionCandidates->Clear();
     fGoodVirtualParticles->Clear(); // delete this cuts good gammas
@@ -1619,8 +1607,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
             fNeutralPionCandidates->Add(pi0cand);
 // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
           }else{
-              if(fMixMode==2){
-                  fNeutralPionSidebandCandidates->Add(pi0cand);
+              if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
+                  if (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh()){
+                      fNeutralPionSidebandCandidates->Add(pi0cand);
+                  }
               } else{
                   delete pi0cand;
                   pi0cand=0x0;
@@ -1672,8 +1662,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
             fNeutralPionCandidates->Add(pi0cand);
 // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
           }else{
-              if(fMixMode==2){
-                  fNeutralPionSidebandCandidates->Add(pi0cand);
+              if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
+                  if (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh()){
+                      fNeutralPionSidebandCandidates->Add(pi0cand);
+                  }
               }else {
                   delete pi0cand;
                   pi0cand=0x0;
@@ -1990,8 +1982,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMi
                 fNeutralPionCandidates->Add(pi0cand);
                 // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
             }else{
-                if(fMixMode==2){
-                    fNeutralPionSidebandCandidates->Add(pi0cand);
+                if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
+                    if (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh()){
+                        fNeutralPionSidebandCandidates->Add(pi0cand);
+                    }
                 }else{
                     delete pi0cand;
                     pi0cand=0x0;
@@ -2583,7 +2577,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 
   // Get N of Pi0 according to chosen mix mode
   Int_t NPi0Candidates = 0;
-  if(fMixMode==2){
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
       NPi0Candidates = fNeutralPionSidebandCandidates->GetEntries();
   }else{
       NPi0Candidates = fNeutralPionCandidates->GetEntries();
@@ -2591,7 +2585,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
   // Begin loop over all Pi0 candidates
   for(Int_t iCurrentPi0=0; iCurrentPi0<NPi0Candidates; iCurrentPi0++){
       AliAODConversionMother* EventPiZeroGoodMeson;
-      if(fMixMode==2){
+      if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
           EventPiZeroGoodMeson = (AliAODConversionMother*)(fNeutralPionSidebandCandidates->At(iCurrentPi0));
       }else{
           EventPiZeroGoodMeson = (AliAODConversionMother*)(fNeutralPionCandidates->At(iCurrentPi0));
@@ -2605,7 +2599,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
     }else if(fNeutralPionMode == 2 && EventPiZeroGoodMeson->Pt() < 1.5){
         continue;
     }
-if(fMixMode==0 || fMixMode==2){
+if(!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()){
     // Begin loop over BG events for Pi+
     for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
 
@@ -2863,7 +2857,7 @@ if(fMixMode==0 || fMixMode==2){
  /*
   * LikeSign Mixing
   */
- } else if(fMixMode ==1){
+ } else if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()){
      for(Int_t iCurrentPiPl=0; iCurrentPiPl<fPosPionCandidates->GetEntries(); iCurrentPiPl++){
 
          AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother*)(fPosPionCandidates->At(iCurrentPiPl));

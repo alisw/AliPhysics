@@ -71,7 +71,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
     Double_t tolerance                = -1,
     TString periodNameV0Reader        = "",                              // period Name for V0Reader
     Int_t   runLightOutput            = 0,                                 // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    Int_t   eventMixingMode           = 0,                                 // Mode for event mixing: 0: normal 1: likesign mixing
     TString additionalTrainConfig     = "0"                            // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -372,7 +371,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
   task->SetDoMesonQA(enableQAMesonTask);
-  task->SetMixMode(eventMixingMode);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
