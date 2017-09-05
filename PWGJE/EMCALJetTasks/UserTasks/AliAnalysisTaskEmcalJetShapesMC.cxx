@@ -38,6 +38,7 @@
 #include "AliParticleContainer.h"
 #include "AliEmcalPythiaInfo.h"
 #include "TRandom3.h"
+#include "TF1.h"
 #include "AliEmcalJetFinder.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskEmcalJetShapesMC.h"
@@ -73,6 +74,8 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fHolePos(0),
   fHoleWidth(0),
   fRandom(0),
+  fqhat(1),
+  fxlength(2),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -88,7 +91,9 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fhPt(0x0),
   fhPhi(0x0),
   fNbOfConstvspT(0x0),
-  fTreeObservableTagging(0x0)
+  fTreeObservableTagging(0x0),
+  fTf1Omega(0x0),
+  fTf1Kt(0x0)
 
 {
   for(Int_t i=0;i<33;i++){
@@ -120,6 +125,8 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fHolePos(0),
   fHoleWidth(0),
   fRandom(0),
+  fqhat(1),
+  fxlength(2),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -135,8 +142,9 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fhPt(0x0),
   fhPhi(0x0),
   fNbOfConstvspT(0x0),
-  fTreeObservableTagging(0x0)
-  
+  fTreeObservableTagging(0x0),
+  fTf1Omega(0x0),
+  fTf1Kt(0x0)
 {
   // Standard constructor.
   
@@ -161,6 +169,9 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   }
 
    if(fRandom)      delete fRandom;
+   if(fTf1Omega)    delete fTf1Omega;
+   if(fTf1Kt)        delete fTf1Kt;
+
 }
 
 //________________________________________________________________________
@@ -1163,50 +1174,39 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
   fRandom->SetSeed(0);
   //here add N tracks with random phi and eta and theta according to bdmps distrib.
-  fastjet::PseudoJet MyJet(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
-  
-  for(Int_t i=0;i<fAdditionalTracks;i++){
-    Double_t ppx,ppy,ppz,kTscale,pTscale,ppE;
-    Double_t lim2=2;
-    Double_t lim1=10;
-    Double_t xpower=-4;
-    Double_t xpowero=-2;
+
+   fastjet::PseudoJet MyJet(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+    Double_t omegac=0.5*fqhat*fxlength*fxlength/0.2;
+    Double_t thetac=TMath::Sqrt(12*0.2/(fqhat*TMath::Power(fxlength,3)));
+    Double_t xQs=TMath::Sqrt(fqhat*fxlength);				
+    cout<<"medium parameters "<<omegac<<" "<<thetac<<" "<<xQs<<endl;
+
+   for(Int_t i=0;i<fAdditionalTracks;i++){
+
+     Double_t ppx,ppy,ppz,kTscale,pTscale,ppE,lim2o,lim1o;
+    Double_t lim2=xQs;   
+    Double_t lim1=10000;
     
-  
-    Double_t part1=0;
-    Double_t part2=0;
-    Double_t part1o=0;
-    Double_t part2o=0;
-
-    //coordinates in the reference frame of the jet
-     Double_t ppphi =2*TMath::Pi()*fRandom->Uniform();
-     //generation of kT according to 1/kT^4, with minimum QS=2 GeV					  
-     part1=(TMath::Power(lim1,xpower+1)-TMath::Power(lim2,xpower+1))*fRandom->Uniform();
-     part2=TMath::Power(lim2,xpower+1);
-     kTscale=TMath::Power(part1+part2,1/(xpower+1));
-
-
-
-     
-     //generation of w according to 1/w2, with minimum wc
+    //generation of kT according to 1/kT^4, with minimum QS=2 GeV and maximum ~sqrt(ptjet*T)	
+     fTf1Kt= new TF1("fTf1Kt","1/(x*x*x*x)",lim2,lim1);
+     kTscale=fTf1Kt->GetRandom();
+     //generation within the jet cone
+    
+     //generation of w according to 1/w, with minimum wc
      //omega needs to be larger than kT so to have well defined angles
-     Double_t lim1o=10;
-     Double_t lim2o=kTscale; 
-     part1o=(TMath::Power(lim1o,xpowero+1)-TMath::Power(lim2o,xpowero+1))*fRandom->Uniform();
-     part2o=TMath::Power(lim2o,xpowero+1);
-     Double_t omega=TMath::Power(part1o+part2o,1/(xpowero+1));
+     lim2o=kTscale;
+     lim1o=kTscale/TMath::Sin(0.1);
+     fTf1Omega= new TF1("fTf1Omega","1/x",lim2o,lim1o);
+     Double_t omega=fTf1Omega->GetRandom();
      
      Double_t sinpptheta=kTscale/omega;
      Double_t pptheta=TMath::ASin(sinpptheta);
-    
-     if(pptheta>0.4) continue;
+     cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
+     if(pptheta>fJetRadius) continue;
+     
      fastjet::PseudoJet PseudoTracksCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
-     //cout<<PseudoTracksCMS.px()<<" "<<PseudoTracksCMS.py()<<" "<<PseudoTracksCMS.perp()<<" "<<PseudoTracksCMS.e()<<endl;
-     //boost the particle to the lab frame
+     //boost the particle in the rest frame of the jet to the lab frame
      fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
-     //cout<<" "<<PseudoTracksLab.px()<<" "<<PseudoTracksLab.py()<<" "<<PseudoTracksLab.pz()<<" "<<PseudoTracksLab.e()<<" "<<PseudoTracksLab.perp()<<endl;
-     //cout<<" "<<fJet->Px()<<" "<<fJet->Py()<<" "<<fJet->Pz()<<" "<<fJet->E()<<" "<<fJet->Pt()<<endl;
-        
      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
      fInputVectors.push_back(PseudoTracksLab);}
 
@@ -1230,8 +1230,8 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
   fOutputJets=fClustSeqSA->inclusive_jets(0);
- 
-
+  
+  cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
   std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
    fastjet::contrib::SoftDrop softdrop(beta, zcut);
   //fastjet::contrib::SoftDrop softdrop_antikt(beta,zcut);
