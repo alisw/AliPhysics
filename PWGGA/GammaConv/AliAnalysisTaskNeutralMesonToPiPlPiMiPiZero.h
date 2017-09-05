@@ -63,7 +63,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     void SetDoMesonQA(Int_t flag){ fDoMesonQA = flag; }
     void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
     void SetTolerance(Double_t tol){fTolerance=tol;}
-    void SetMixMode(Int_t mode){fMixMode = mode;}
 
   private:
 
@@ -294,12 +293,11 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
-    Double_t                        fMixMode;                                             // Mode used for event mixing 0: normal 1: likesign 2: pi0 sideband
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 17);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 18);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

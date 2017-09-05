@@ -125,6 +125,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundHandler(0),
+  fBackgroundUseSideband(kFALSE),
+  fBackgroundUseLikeSign(kFALSE),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -203,6 +207,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundHandler(ref.fBackgroundHandler),
+  fBackgroundUseSideband(kFALSE),
+  fBackgroundUseLikeSign(kFALSE),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -1967,6 +1975,30 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fdoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
+  case 10: // mixed event with likesign mixing
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kTRUE;
+    break;
+  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.180;
+      fSidebandMixingHigh         = 0.220;
+      break;
+  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.01;
+      fSidebandMixingHigh         = 0.05;
+      break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;
