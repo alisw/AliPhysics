@@ -170,6 +170,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalRun2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+    UserTasks/AliAnalysisTaskEmcalHfeTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskEmcalNeutralJets.cxx
