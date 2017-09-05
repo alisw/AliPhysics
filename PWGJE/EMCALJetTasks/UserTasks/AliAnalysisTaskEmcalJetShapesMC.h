@@ -22,6 +22,7 @@ class THnSparse;
 class TClonesArray;
 class TArrayI;
 class TRandom3;
+class TF1;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJetFinder;
@@ -83,6 +84,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
+  Float_t SetMediumParameters(Float_t t, Float_t c)         {fqhat=t; fxlength=c;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
@@ -155,7 +157,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
   Float_t                             fHoleWidth;                       //width of the hole in radians 
  TRandom3                             *fRandom;                     //! Random number generator
-  Bool_t                              fCentSelectOn;                // switch on/off centrality selection
+ Float_t                              fqhat;                        //qhat
+ Float_t                              fxlength;                     //medium length
+ Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
@@ -174,7 +178,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   TH2F                                *fNbOfConstvspT;//
 
   TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
-
+  TF1             *fTf1Omega;//!<! to generate omega according to BDMPS tail
+  TF1             *fTf1Kt; //!<!  to generate kT according to BDMS tail
  private:
   AliAnalysisTaskEmcalJetShapesMC(const AliAnalysisTaskEmcalJetShapesMC&);            // not implemented
   AliAnalysisTaskEmcalJetShapesMC &operator=(const AliAnalysisTaskEmcalJetShapesMC&); // not implemented
