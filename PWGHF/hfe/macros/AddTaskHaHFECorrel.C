@@ -1,5 +1,4 @@
-
-AliAnalysisTask *AddTaskHaHFECorrel(Bool_t UseTender, Double_t period, Double_t AssPtCut, Int_t ITSnCut, Int_t AssTPCnCut, Int_t TPCnCut, Int_t HTPCnCut, Bool_t AssITSrefitCut, Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Bool_t rejectKinkMother, Bool_t CorrHadron, Bool_t CorrLP, Bool_t OpeningAngleCut, Double_t InvmassCut, TString ID="ContName")
+AliAnalysisTask *AddTaskHaHFECorrel(Double_t period,Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, TString ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -20,9 +19,10 @@ AliAnalysisTask *AddTaskHaHFECorrel(Bool_t UseTender, Double_t period, Double_t 
     MCthere=kFALSE;
   }
 
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(UseTender, period, AssPtCut, ITSnCut, AssTPCnCut, TPCnCut, HTPCnCut, AssITSrefitCut, HITSrefitCut, HTPCrefitCut, SigmaITScut, SigmaTOFcut, SigmaTPCcut, rejectKinkMother, CorrHadron, CorrLP, OpeningAngleCut, InvmassCut);
+    ConfigHaHFECorrel(period, CorrHadron, CorrLP, IsMC, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
