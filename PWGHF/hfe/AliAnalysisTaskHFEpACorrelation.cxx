@@ -340,7 +340,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
 ,fEffElec(0)
-
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     //Named constructor
     // Define input and output slots here
@@ -585,6 +586,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
 ,fEffElec(0)
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -1226,6 +1229,16 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     
     const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
     fZvtx = trkVtx->GetZ();
+    
+    //test another Ztvx cuts. It is not possible to use Zvtx <-10 or Zvtx>10 (this cut is applied by the AliMultiSelectionTask)
+    
+    if (fZvtx < fVtxZMin || fZvtx > fVtxZMax)
+    {
+        fNevent2->Fill(10);
+        PostData(1, fOutputList);
+        return;
+        
+    }
     
     //Kinks
     

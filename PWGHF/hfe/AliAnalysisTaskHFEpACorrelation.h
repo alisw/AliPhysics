@@ -96,6 +96,12 @@ public:
     void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
     void SetpTBins(Int_t n, Float_t* array) { fpTBins.Set(n,array); };
     
+    void SetZVtxCut( Float_t VtxZMin, Float_t VtxZMax)
+    {
+        fVtxZMin = VtxZMin;
+        fVtxZMax= VtxZMax;
+    };
+    
     Double_t GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
 
     
@@ -217,6 +223,9 @@ private:
     TH1F					*fCentralityHist; //!
     TH1F					*fCentralityHistPass; //!
     Float_t					fZvtx;
+    Float_t					fVtxZMin;
+    Float_t                 fVtxZMax;
+
     Int_t					fEstimator;
     
     //New Hadron DCA cut and Efficiency dependence
