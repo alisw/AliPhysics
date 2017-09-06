@@ -10,7 +10,7 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_PHYSICS/PWGPP/macros/PlotESDtrackQA.C
+  cp $ALICE_PHYSICS/PWGPP/macros/PlotESDtrackQA.C .
   root -b -q -l "PlotESDtrackQA.C(\"$qaFile\",\"QA\",${runNumber})"
 }
 
