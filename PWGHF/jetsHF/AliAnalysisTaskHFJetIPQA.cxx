@@ -623,7 +623,7 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
             jetcongen = static_cast<AliJetContainer*>(fJetCollArray.At(1));
             if(!MatchJetsGeometricDefault()) AliInfo("Jet matching did not succeed!");
             jetcongen->ResetCurrentID();
-            while ((jetgen = jetcongen->GetNextJet()))
+            while ((jetgen = jetcongen->GetNextAcceptJet()))
                 {
                     if (!jetgen) continue;
                     Int_t jetflavour =0;
@@ -644,7 +644,7 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
     AliEmcalJet * jetmatched  = nullptr;
     jetconrec->ResetCurrentID();
     Double_t jetpt=0;
-    while ((jetrec = jetconrec->GetNextJet()))
+    while ((jetrec = jetconrec->GetNextAcceptJet()))
         {
             if(!jetrec) break;
             double val;
