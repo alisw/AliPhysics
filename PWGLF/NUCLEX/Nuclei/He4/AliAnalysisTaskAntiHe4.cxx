@@ -1054,11 +1054,11 @@ void AliAnalysisTaskAntiHe4::SetBBParameters(Int_t runNumber){
 
     if(runNumber > 244824){ //LHC RUN 2
         
-        fBBParametersLightParticles[0]   = 1.45802;
-        fBBParametersLightParticles[1]   = 27.4992;
-        fBBParametersLightParticles[2]   = 4.00313e-15;
-        fBBParametersLightParticles[3]   = 2.48485;
-        fBBParametersLightParticles[4]   = 8.31768;
+        fBBParametersLightParticles[0]   = 3.43419;
+        fBBParametersLightParticles[1]   = 11.7654;
+        fBBParametersLightParticles[2]   = -0.0179698;
+        fBBParametersLightParticles[3]   = 2.23013;
+        fBBParametersLightParticles[4]   = 1.69306;
         
         fBBParametersNuclei[0]  = 2.43644;
         fBBParametersNuclei[1]  = 19.6453;
