@@ -194,7 +194,9 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fMultTOFLowCut(0),
   fMultTOFHighCut(0),
   fMultCentLowCut(0),
-  fCutMultESDdif(0)
+  fCutMultESDdif(0),
+  fHistTOFPid(0),
+  fHistdEdxPid(0)  
  {
   // Constructor
   // Define input and output slots here
@@ -409,8 +411,20 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
 
 // Pt vs NSigma  plot for TPC, TOF and TPC+TOF : MCAODrec
 
+TString typeParticle;
+if(fParticleType_ == kPion_) typeParticle ="Pion";
+else if( fParticleType_ == kKaon_) typeParticle = "Kaon";
+else if( fParticleType_ == kProton_) typeParticle = "Proton";
+
 if(gAnalysisLevel == "MCAODrec" || gAnalysisLevel== "AOD"){
  if(fUsePID){
+
+  fHistTOFPid=new TH2F("fHistTOFPid",Form(" PID signal from TOF of particle %s",typeParticle.Data()),1000,-fPtMax,fPtMax,1000, 0., 1.2);
+  fHistdEdxPid=new TH2F("fHistdEdxPid",Form(" PID signal from TPC of particle %s",typeParticle.Data()),1000,-fPtMax,fPtMax, 1000, 0, 1000);
+
+ fHistListPIDQA->Add(fHistTOFPid);
+ fHistListPIDQA->Add(fHistdEdxPid);
+
 
   for(Int_t ipart=0;ipart<kProton_+1;ipart++){
     for(Int_t ipid=0;ipid<kTPCTOFpid_+1;ipid++){
@@ -1315,24 +1329,43 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
   Short_t vCharge;
   Double_t vEta;
-  Double_t vY;
   Double_t vPhi;
   Double_t vPt;
+  Double_t vY=-999;
 
+   
   Double_t MassPID = 0.0;
   Double_t MassPion   = 0.139570; // GeV/c2
   Double_t MassKaon   = 0.493677; // GeV/c2
   Double_t MassProton = 0.938272; // GeV/c2
 
-
-
+   if(fUsePID && fRapidityInsteadOfEta){
    if ( fParticleType_ == kPion_ )  MassPID = MassPion;
    else if( fParticleType_ == kKaon_ )  MassPID = MassKaon;
    else if( fParticleType_ == kProton_ )  MassPID = MassProton;
+  }
 
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
     // Loop over tracks in event
-    
+   
+
+// after PAG meeting on 31.08.2017 
+
+  std::map<int, int> labels;
+
+  // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
+  for (int i = 0; i < event->GetNumberOfTracks(); i++) {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(event->GetTrack(i));
+    if (!aodtrack->TestFilterBit(fnAODtrackCutBit)) {
+      // Skip TPC-only tracks
+      if (aodtrack->GetID() < 0) continue;
+      labels[aodtrack->GetID()] = i;
+    }
+  }
+
+// after PAG meeting on 31.08.2017 
+
+ 
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
       if (!aodTrack) {
@@ -1372,7 +1405,9 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
     if( vPt < fPtMin || vPt > fPtMax)      continue;
 
     if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-    
+    if (aodTrack->P() == 0.0) continue;
+  
+
     Double_t b[2] = {-99., -99.};
     Double_t bCov[3] = {-99., -99., -99.};
 
@@ -1461,26 +1496,46 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
 
-   vY = log( ( sqrt(MassPID*MassPID + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPID*MassPID + vPt*vPt) ); // convert eta to y
+//  if(fUsePID && fRapidityInsteadOfEta) vY = log( ( sqrt(MassPID*MassPID + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPID*MassPID + vPt*vPt) ); // convert eta to y
 
 //   vPionYReco = 0.5*log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
 
+//cout<< " vEta :" << vEta<<'\t'<<" vY :"<<vY<<endl;
 
 
-// ----------------------------------------------------------------------------Implementation of PID 
+// ON 4.09.2017 :  For TPC Only tracks we have to copy PID information from corresponding global tracks
+
+
+
+   AliVTrack *trackAli=(AliVTrack*)event->GetTrack(iTracks);
+
+
+    const Int_t pid_track_id = (fnAODtrackCutBit == (1 << 7))
+                             ? labels[-1 - trackAli->GetID()]
+                             : iTracks;
+    AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(event->GetTrack(pid_track_id));
+
+   
+  if(fUsePID && fRapidityInsteadOfEta) vY = log( ( sqrt(MassPID*MassPID + aodtrackpid->Pt()*aodtrackpid->Pt()*cosh(aodtrackpid->Eta())*cosh(aodtrackpid->Eta())) + aodtrackpid->Pt()*sinh(aodtrackpid->Eta()) ) / sqrt(MassPID*MassPID + aodtrackpid->Pt()*aodtrackpid->Pt()) ); // convert eta to y
+
+
+// ON 4.09.2017 :  For TPC Only tracks we have to copy PID information from corresponding global tracks
+
+
+
 
 if(fUsePID){
 
-Double_t betaPartilce= Beta(aodTrack);
-if(betaPartilce >1.0) continue;
+Double_t betaParticle= Beta(aodtrackpid);
+if(betaParticle >1.0) continue;
 
-Float_t MisMatchTOFProb = fPIDResponse->GetTOFMismatchProbability(aodTrack);
+Float_t MisMatchTOFProb = fPIDResponse->GetTOFMismatchProbability(aodtrackpid);
 
 if(fTOFMisMatch){
 if(MisMatchTOFProb > fMistMatchTOFProb) continue;
 }
 
-Int_t ParticleSpecies=GetSpecies(aodTrack);
+Int_t ParticleSpecies=GetSpecies(aodtrackpid);
 
 fPIDSpeciesHisto->Fill(ParticleSpecies);
 
@@ -1488,11 +1543,11 @@ if(fParticleType_ == kPion_){
 if(ParticleSpecies !=kPion_) continue;
 }
 
-if(fParticleType_ == kKaon_){
+else if(fParticleType_ == kKaon_){
 if(ParticleSpecies !=kKaon_) continue;
 }
 
-if(fParticleType_ == kProton_){
+else if(fParticleType_ == kProton_){
 if(ParticleSpecies !=kProton_) continue;
 }
 
@@ -1501,15 +1556,23 @@ if(vY <fEtaMin | vY > fEtaMax ) continue;
 fHistRapidity->Fill(vY,gCentrality);
 }
 
+IsTOF(aodtrackpid);
+if(fHasTOFPID && aodtrackpid->Pt() > fPtTOFMin) fHistTOFPid->Fill(aodtrackpid->P()*aodtrackpid->Charge(), betaParticle);
+fHistdEdxPid->Fill(aodtrackpid->P()*aodtrackpid->Charge(),aodtrackpid->GetTPCsignal());
+
 } // end of PID selection 
 
 // ----------------------------------------------------------------------------Implementation of PID 
 
+      vCharge = aodtrackpid->Charge();
+      vEta    = aodtrackpid->Eta();
+      vPhi    = aodtrackpid->Phi();// * TMath::RadToDeg();
+      vPt     = aodtrackpid->Pt();
 
       // fill QA histograms
-      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistClus->Fill(aodtrackpid->GetITSNcls(),aodtrackpid->GetTPCNcls());
       fHistDCA->Fill(DCAZ,dcaXY);
-      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistChi2->Fill(aodtrackpid->Chi2perNDF(),gCentrality);
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
       fHistEta1D->Fill(vEta);
@@ -1517,17 +1580,25 @@ fHistRapidity->Fill(vY,gCentrality);
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      if(fUsePID && fRapidityInsteadOfEta){
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vY,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vY,vPhi,gCentrality);
+      }
+
+      else {
+       if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
       else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+     }
       
       //=======================================correction
       Double_t correction=0.0;
-      if(!fRapidityInsteadOfEta) {
-      correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      if(fUsePID && fRapidityInsteadOfEta) {
+      correction = GetTrackbyTrackCorrectionMatrix(vY,vPhi, vPt, vCharge, gCentrality);  
 }
 
       else {
-       correction = GetTrackbyTrackCorrectionMatrix(vY, vPhi, vPt, vCharge, gCentrality);  
+       correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
       }
 
 
@@ -1923,6 +1994,8 @@ if(ID != kSpUndefined){
       if(idet==kTPC_D) h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
       if(idet==kTOF_D && fHasTOFPID)h->Fill(trk->P(),Beta(trk)*trk->Charge());
     }
+
+//cout<< " particle id :"<<ID<<endl;
 return ID;
 } // End of the code 
 
