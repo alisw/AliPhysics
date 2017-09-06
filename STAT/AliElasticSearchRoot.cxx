@@ -13,33 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/// ### Example usage (expecting acces to Elastic server with alice indexes)
-///  - see also $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c
-///  - to create indeces needed $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c:testExportBinary() can be used
-/// \code
-///  hostName="localhost:9200";            // local elastic
-///  // or remote ElastichostName="https://localhost:9206";    //  connect to remote via tunnel e.g ssh mivanov@lxplus.cern.ch -f -N -L 9206:es-alice.cern.ch:9203
-///  //
-///  AliElasticSearchRoot elastic(hostName,kFALSE,1);
-///  elastic.SetCertificate();           // default certification="--insecure --cacert CERNRootCertificationAuthority2.crt --netrc-file $HOME/.globus/.elastic/.netrc"
-///  elastic.ls();                       // list all indeces
-///  elastic.ls("alice");                // list incdeces containing alice
-///  elastic.ls(".alice_mc");             // list indeces containing alice_mc
-///  elastic.Print();
-///  // GetIndexLayeout
-///  elastic.GetIndexLayout("/alice/logbook_test0/")->Print();
-///  elastic.GetIndexLayout("/alice_mc/passguess/")->Print();
-///  // make a Tree like query
-///  TString select="";
-///  select=  elastic.select("/alice/qatpc_test0/","run:meanMIP:meanTPCncl","run>240000&&run<246844&&meanMIP>50",0,1000,"jqEQueryStat,jqEQueryHeader")
-///  select=  elastic.select("/alice/logbook_test0/","run:totalSubEvents:ctpDuration","run>140000",0,10000,"jqEQueryStat,jqEQueryHeader")
-///  select=  elastic.select("/alice_mc/passguess/","*","1",0,1000,"jqEQueryStat,jqEQueryHeader,jqEQueryArrayNamed");  // get list of all runs output in query.json
-///  //
-///  select=  elastic.select("/alice/qatpc_test0/","*","run>240000&&run<246844&&meanMIP>50",0,1000,0)
-///
-/// To do  - json- formatted cvs conversion to enable root like queries
-/// \endcode
-/// \author marian  Ivanov marian.ivanov@cern.ch
 
 #include <iostream>
 #include "TSystem.h"
@@ -105,6 +78,9 @@ void AliElasticSearchRoot::RegisterDefaultJQFilters(){
     fJQFilters["jqEQueryHeader"]="jq  -r '.hits|.hits|[.[]._source]|(map(keys) | add | unique) as $cols| $cols'";              // query layout - return array of variables
     fJQFilters["jqEQueryArrayNamed"]="jq  -r '.hits|.hits|[.[]._source][]'";            // query layout - return array of variables
     fJQFilters["jqEQueryArrayFlat"]="jq  -r '.hits|.hits|[.[]._source][][]'";           // query layout - return array of variables flat
+    //
+    fJQFilters["jqEQueryArrayIndexValue"]="jq  -r '.hits.hits|[.[]._source.%s]|(. | keys[]) as $i | $i, .[$i]"; // query return  element %s as index,value
+    fJQFilters["jqEQueryArrayValue"]="jq  -r '.hits.hits|.[]._source.%s]"; // query return  element %s as value
 }
 
 void AliElasticSearchRoot::SetCertificate(std::string certification){
@@ -281,7 +257,9 @@ TObjArray *  AliElasticSearchRoot::GetIndexLayout(const char *indexName){
             }
         }
     }
-
+    if (1/*isFlat*/) {
+        //TString result = gSystem->GetFromPipe(TString::Format("cat query.json | %s", filter.data()).Data());
+    }
   return result;
   
 }

@@ -3,30 +3,30 @@
 ///           - C++11 or better C++14 and ROOT6 needed (e.g https://github.com/QHedgeTech/cpp-elasticsearch/tree/master/src )
 ///  \author marian  Ivanov marian.ivanov@cern.ch
 
-///          In order to run the test Elastic server has to be running = default location hostName="localhost:9200"  - but it can pbe specified as test argument
-/////  to run tests one by one
-/////  \code
-//      .L $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c
-//    InitElastic();
-//    testGetIndexLayout();
-//    testSelect();
-///// \endcode
-//
-///// To run full test
-/////  \code
-// aliroot -b -q $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.c |tee AliElasticSearchRootTest.log
-//    Parse output
-//    cat AliElasticSearchRootTest.log | grep "I-AliElasticSearchRoot.*Key"
-//I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-Begin
-//I-AliElasticSearchRoot::ExportBinary: KeyValue-Begin
-//I-AliElasticSearchRoot::ExportBinary: KeyValue-End
-//I-AliElasticSearchRoot::GetIndexLayout: KeyValue-Begin
-//I-AliElasticSearchRoot::GetIndexLayout: KeyValue-End
-//I-AliElasticSearchRoot::select: KeyValue-Begin
-//I-AliElasticSearchRoot::select: KeyValue-End
-//I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-End
-///// \endcode
-
+/*!
+    In order to run the test Elastic server has to be running = default location hostName="localhost:9200"  - but it can be specified as test argument
+    to run tests one by one
+    \code
+      .L $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.C
+       InitElastic();
+       testGetIndexLayout();
+       testSelect();
+    \endcode
+     To run full test
+    \code
+    aliroot -b -q $AliRoot_SRC/STAT/Macros/AliElasticSearchRootTest.C |tee AliElasticSearchRootTest.log
+    Parse output
+        cat AliElasticSearchRootTest.log | grep "I-AliElasticSearchRoot.*Key"
+        I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-Begin
+        I-AliElasticSearchRoot::ExportBinary: KeyValue-Begin
+        I-AliElasticSearchRoot::ExportBinary: KeyValue-End
+        I-AliElasticSearchRoot::GetIndexLayout: KeyValue-Begin
+        I-AliElasticSearchRoot::GetIndexLayout: KeyValue-End
+        I-AliElasticSearchRoot::select: KeyValue-Begin
+        I-AliElasticSearchRoot::select: KeyValue-End
+        I-AliElasticSearchRoot::AliElasticSearchRootTest: KeyValue-End
+    \endcode
+*/
 
 
 
@@ -109,10 +109,17 @@ void testExportClass() {
     exportInfo+="run:";
     exportInfo+="grdcar_neg_ASidePhi.";
     Int_t entries = AliTreePlayer::selectWhatWhereOrderBy(tree,exportInfo.Data(),"1", "", 0,100000, "elastic","qatpc_testClass.json");
-     pelastic->ExportBinary("/alice/qatpc_testClass1/","qatpc_testClass.json","xxx");
+    pelastic->ExportBinary("/alice/qatpc_testClass1/","qatpc_testClass.json","xxx");
     ::Info("AliElasticSearchRoot::testExportClass","KeyValue-End");
 }
 
+void testExportClass() {
+    ::Info("AliElasticSearchRoot::testExportClass","KeyValue-Begin");
+    AliExternalInfo info;
+    TTree *tree = info.GetTree("QA.TPC","LHC15n","pass2","Logbook:QA.ITS:QA.TRD");
+    //
+
+}
 
 void testGetIndexLayout(){
     //
