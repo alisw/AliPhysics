@@ -251,10 +251,10 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[1] = "Pt_Truth";
     fJetInfoVarNames[2] = "SymParam";
     fJetInfoVarNames[3] = "SymParam_Truth";
-    fJetInfoVarNames[4] = "Masss";
+    fJetInfoVarNames[4] = "Mass";
     fJetInfoVarNames[5] = "Mass_Truth";
-    fJetInfoVarNames[6] = "Tau2";
-    fJetInfoVarNames[7] = "Tau2_Truth";
+    fJetInfoVarNames[6] = "SLSubJetMass";
+    fJetInfoVarNames[7] = "SLSubJetMass_Truth";
     fJetInfoVarNames[8] = "PTD";
     fJetInfoVarNames[9] = "PTD_Truth";
     fJetInfoVarNames[10] = "Angularity";
@@ -902,11 +902,11 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     if(jet_constituents.size() < j){
       if(!fTruthJet){
 	//if(j==1) fJetInfoVar[4]=-5;
-	if(j==2) fJetInfoVar[6]=-5;
+	//	if(j==2) fJetInfoVar[6]=-5;
       }
       else {
 	//if(j==1) fJetInfoVar[5]=-5;
-	if(j==2) fJetInfoVar[7]=-5;
+	//	if(j==2) fJetInfoVar[7]=-5;
       }
       continue;
     }
@@ -939,12 +939,12 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   }
     if(!fTruthJet){
       //fJetInfoVar[4]=NSubjettinessResult[1];
-      fJetInfoVar[6]=NSubjettinessResult[2];
+      //fJetInfoVar[6]=NSubjettinessResult[2];
       // fJetInfoVar[12]=DelR;
     }
     else {
       //fJetInfoVar[5]=NSubjettinessResult[1];
-      fJetInfoVar[7]=NSubjettinessResult[2];
+      //fJetInfoVar[7]=NSubjettinessResult[2];
       // fJetInfoVar[13]=DelR;
     }
 
@@ -989,6 +989,30 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   //fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
   //fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
+  std::vector<fastjet::PseudoJet> subjets;
+  if ( finaljet.has_pieces() ) {
+    subjets = finaljet.pieces();
+    fastjet::PseudoJet subjet1 = subjets[0];
+    fastjet::PseudoJet subjet2 = subjets[1];
+    if(!fTruthJet){
+      if(subjets[0].m() > subjets[1].m())  fJetInfoVar[6]=subjets[1].m();
+      else fJetInfoVar[6]= subjets[0].m();
+    }
+    else {
+      if(subjets[0].m() > subjets[1].m())  fJetInfoVar[7]=subjets[1].m();
+      else fJetInfoVar[7]= subjets[0].m();
+    }
+
+  }
+  else {
+    if(!fTruthJet){
+      fJetInfoVar[6]=0;
+    }
+    else {
+      fJetInfoVar[7]=0;
+    }
+  }
+    
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
