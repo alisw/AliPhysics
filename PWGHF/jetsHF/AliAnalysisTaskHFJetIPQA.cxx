@@ -209,6 +209,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   mc->PxPyPz(mcp);
   mcc=mc->Charge();
   AliExternalTrackParam mct(mcx,mcp,mccv,mcc);
+
   const Double_t *parammc=mct.GetParameter();
 //TODO:  const Double_t *covermc=mct.GetCovariance();
   AliVertex vtx(mcx,1.,1);
@@ -680,7 +681,11 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                     else if(jetflavour==2)FillHist("fh1dJetRecPtc",           jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==3)FillHist("fh1dJetRecPtb",           jetpt, this->fXsectionWeightingFactor );
                 }
-            if(!(fJetCutsHF->IsJetSelected(jetrec))) break;
+            fJetCutsHF->SetMaxEtaJet(0.5);
+            fJetCutsHF->SetMinPtJet(-1);
+            fJetCutsHF->SetMaxPtJet(1000);
+
+            if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
             FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), this->fXsectionWeightingFactor );
             FillHist("fh1dJetRecPtAccepted",jetpt, this->fXsectionWeightingFactor );
             if(fIsPythia){
