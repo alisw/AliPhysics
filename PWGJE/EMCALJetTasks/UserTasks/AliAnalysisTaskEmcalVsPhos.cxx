@@ -386,9 +386,9 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     if (fPlotCaloCentrality) {
       
       title[dim] = "#it{#rho}_{cell cone} (GeV)";
-      nbins[dim] = 80;
+      nbins[dim] = 100;
       min[dim] = 0.;
-      max[dim] = 240.;
+      max[dim] = 500.;
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
       
