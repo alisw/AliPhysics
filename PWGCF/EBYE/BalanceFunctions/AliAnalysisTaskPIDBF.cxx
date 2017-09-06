@@ -1356,7 +1356,6 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < event->GetNumberOfTracks(); i++) {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(event->GetTrack(i));
-    assert(aodtrack && "Not a standard AOD");
     if (!aodtrack->TestFilterBit(fnAODtrackCutBit)) {
       // Skip TPC-only tracks
       if (aodtrack->GetID() < 0) continue;
@@ -1515,7 +1514,6 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
                              ? labels[-1 - trackAli->GetID()]
                              : iTracks;
     AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(event->GetTrack(pid_track_id));
-    assert(aodtrackpid && "Not a standard AOD");
 
    
   if(fUsePID && fRapidityInsteadOfEta) vY = log( ( sqrt(MassPID*MassPID + aodtrackpid->Pt()*aodtrackpid->Pt()*cosh(aodtrackpid->Eta())*cosh(aodtrackpid->Eta())) + aodtrackpid->Pt()*sinh(aodtrackpid->Eta()) ) / sqrt(MassPID*MassPID + aodtrackpid->Pt()*aodtrackpid->Pt()) ); // convert eta to y
