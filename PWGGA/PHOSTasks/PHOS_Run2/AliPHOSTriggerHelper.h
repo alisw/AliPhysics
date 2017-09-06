@@ -16,12 +16,16 @@ class AliPHOSTriggerHelper : public TObject {
 
   public:
     AliPHOSTriggerHelper();
-    AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0);
+    AliPHOSTriggerHelper(TString trigger);
     virtual ~AliPHOSTriggerHelper();
 
     void SetPHOSTRUBadMap(Int_t mod, TH2I *h)
     {
-      if(fPHOSTRUBadMap[mod]) delete fPHOSTRUBadMap[mod];
+      fIsUserTRUBadMap = kTRUE;
+      if(fPHOSTRUBadMap[mod]){
+        delete fPHOSTRUBadMap[mod];
+        fPHOSTRUBadMap[mod] = 0x0;
+      }
       fPHOSTRUBadMap[mod] = new TH2I(*h);
     }
 
@@ -59,12 +63,14 @@ class AliPHOSTriggerHelper : public TObject {
     Int_t fTriggerInputL0;//0PH0 should be 9
     Bool_t fIsMC;
     AliVCaloTrigger* fCaloTrigger;
+    Bool_t fIsUserTRUBadMap;
+    Int_t fRunNumber;
 
   private:
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 6);
+    ClassDef(AliPHOSTriggerHelper, 9);
 
 };
 

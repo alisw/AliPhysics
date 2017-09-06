@@ -7,12 +7,12 @@
 
 class TH2;
 class AliPHOSGeometry;
-class AliPHOSTriggerHelper;
-class AliPHOSClusterCuts;
+//class AliPHOSTriggerHelper;
+//class AliPHOSClusterCuts;
 
-#include "AliPHOSTriggerHelper.h"
-#include "AliPHOSClusterCuts.h"
+//#include "AliPHOSTriggerHelper.h"
 #include "AliAnalysisCuts.h"
+//#include "AliPHOSClusterCuts.h"
 
 class AliPHOSEventCuts : public AliAnalysisCuts {
 
@@ -23,22 +23,14 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     virtual Bool_t IsSelected(TObject* obj) {return AcceptEvent((AliVEvent*)obj);}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
     Bool_t AcceptEvent(AliVEvent *event);
-    Bool_t IsPHOSTriggerAnalysis() {return fIsPHOSTriggerAnalysis;}
 
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
     void SetMaxAbsZvtx(Double_t maxZ) {fMaxAbsZvtx = maxZ;}
     void SetRejectPileup(Bool_t reject) {fRejectPileup = reject;}
     void SetRejectDAQIncompleteEvent(Bool_t reject) {fRejectDAQIncomplete = reject;}
-    void SetClusterCuts(AliPHOSClusterCuts *cuts) {fPHOSClusterCuts = cuts;}
 
-    void DoPHOSTriggerAnalysis(Bool_t flag, TObject *obj=0x0){
-      fIsPHOSTriggerAnalysis = flag;
-      if(flag) fTriggerHelper = (AliPHOSTriggerHelper*)obj;
-    }
 
     Bool_t IsMC() {return fIsMC;}
-
-    AliPHOSTriggerHelper *GetPHOSTriggerHelper() {return fTriggerHelper;}
 
   private:
     Bool_t fIsMC;
@@ -46,17 +38,13 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     Double_t fMaxAbsZvtx;
     Bool_t fRejectPileup;
     Bool_t fRejectDAQIncomplete;
-    Bool_t fIsPHOSTriggerAnalysis;
-    AliPHOSTriggerHelper *fTriggerHelper;
     AliPHOSGeometry *fPHOSGeo;
-    TH2I* fPHOSTRUBadMap[6];
-    AliPHOSClusterCuts *fPHOSClusterCuts;
 
   private:
     AliPHOSEventCuts(const AliPHOSEventCuts&);
     AliPHOSEventCuts& operator=(const AliPHOSEventCuts&);
 
-    ClassDef(AliPHOSEventCuts, 6);
+    ClassDef(AliPHOSEventCuts, 7);
 };
 
 #endif
