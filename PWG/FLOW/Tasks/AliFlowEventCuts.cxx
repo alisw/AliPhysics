@@ -340,7 +340,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     AliVAODHeader* header = (aodevent) ? static_cast<AliVAODHeader*>(aodevent->GetHeader()) : 0x0;
     
     //NanoAOD cuts
-    if(header && (header->InheritsFrom("AliNanoAODStorage"))&&(header->InheritsFrom("AliVAODHeader"))){
+    if(header && header->InheritsFrom("AliNanoAODStorage")){
         AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) header;
 
         if(fCheckPileUp){
