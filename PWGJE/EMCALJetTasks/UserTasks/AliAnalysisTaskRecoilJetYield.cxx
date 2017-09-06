@@ -995,11 +995,11 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     fastjet::PseudoJet subjet1 = subjets[0];
     fastjet::PseudoJet subjet2 = subjets[1];
     if(!fTruthJet){
-      if(subjets[0].m() > subjets[1].m())  fJetInfoVar[6]=subjets[1].m();
+      if(subjets[0].perp() > subjets[1].perp())  fJetInfoVar[6]=subjets[1].m();
       else fJetInfoVar[6]= subjets[0].m();
     }
     else {
-      if(subjets[0].m() > subjets[1].m())  fJetInfoVar[7]=subjets[1].m();
+      if(subjets[0].perp() > subjets[1].perp())  fJetInfoVar[7]=subjets[1].m();
       else fJetInfoVar[7]= subjets[0].m();
     }
 
