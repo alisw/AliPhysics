@@ -1149,6 +1149,10 @@ void AliCDBGrid::QueryValidFiles()
 
   TString pattern = "Run*";
   TString optionQuery = "-y";
+  if(fMaxDate) {
+    optionQuery = "";  // AliEn find's `-y` returns no guid in fields :-(
+    AliInfoF("Returning only latest versions as they were at %s UTC", TTimeStamp(fMaxDate).AsString("s"));
+  }
   if(fVersion >= 0) {
     pattern += Form("_v%d_s0", fVersion);
     optionQuery = "";
@@ -1212,14 +1216,43 @@ void AliCDBGrid::QueryValidFiles()
   TMap *map;
   while ((map = (TMap*)next())) {
     TObjString *entry;
-    if ((entry = (TObjString *) ((TMap *)map)->GetValue("lfn"))) {
+    if ((entry = (TObjString *)(map->GetValue("lfn")))) {
       TString& filename = entry->String();
       if(filename.IsNull()) continue;
       AliDebug(2,Form("Found valid file: %s", filename.Data()));
       AliCDBId *validFileId = new AliCDBId();
       Bool_t result = FilenameToId(filename, *validFileId);
       if(result) {
-        fValidFileIds.AddLast(validFileId);
+        if (fMaxDate) {
+          // Filter out files whose creation date is greater than fMaxDate.
+          // Reimplement the logic of selecting the latest version normally
+          // provided by AliEn find's `-y`.
+          TObjString *o_guid = (TObjString *)map->GetValue("guid");
+          if (!o_guid) AliFatal("guid not found in AliEn find query result!");
+          if ( GuidToCreationTimestamp(o_guid->String()) > fMaxDate ) {
+            AliDebugF(3, "Apply time filter: skip file %s", filename.Data());
+            delete validFileId;
+            validFileId = NULL;
+          }
+          else {
+            TIter iterIds(&fValidFileIds);
+            AliCDBId *curId;
+            while (( curId = (AliCDBId *)iterIds() )) {
+              if (curId->GetPath() == validFileId->GetPath()) {
+                if (curId->GetVersion() < validFileId->GetVersion()) {
+                  fValidFileIds.Remove(curId);  // remove older version first
+                  delete curId;
+                }
+                else {
+                  delete validFileId;  // version in list is more recent: skip
+                  validFileId = NULL;
+                }
+                break;
+              }
+            }
+          }
+        }
+        if (validFileId) fValidFileIds.AddLast(validFileId);
       }
       else {
         delete validFileId;
