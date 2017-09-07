@@ -2134,6 +2134,8 @@ void IsolQA(Int_t icalo)
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cCorrelation = new TCanvas(Form("%s_CorrelationHisto"                                  ,histoTag.Data()),
                                        Form("Trigger cluster - associated track correlation for %s",histoTag.Data()),
                                        1000,500);
@@ -2198,7 +2200,7 @@ void CorrelQA(Int_t icalo)
     hDeltaPhi[ibin]->SetYTitle("#it{N}_{pairs} / #it{N}_{trig} / ZYAM");
     hDeltaPhi[ibin]->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
     
-    l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
+    if(!addOkFlag) l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
   }
   
   hDeltaPhi[2]->SetMaximum(hDeltaPhi[2]->GetMaximum()*10);
@@ -2208,6 +2210,37 @@ void CorrelQA(Int_t icalo)
   hDeltaPhi[1]->Draw("Hsame");
   hDeltaPhi[3]->Draw("Hsame");
   hDeltaPhi[0]->Draw("Hsame");
+  
+  if(addOkFlag)
+  {
+    Bool_t okcheck = 0;
+    if ( nTrig < 1000 ) text[4]->Draw();
+    else
+    {
+      for(Int_t ibin = 0; ibin < nAssocBins; ibin++ )
+      {
+        if(!hDeltaPhi[ibin]) continue;
+        
+        Float_t intNear = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin(-0.4),hDeltaPhi[ibin]->FindBin(0.4));
+        Float_t intZyam = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin( 1.1),hDeltaPhi[ibin]->FindBin(1.9));
+        Float_t intAway = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin( 2.8),hDeltaPhi[ibin]->FindBin(3.6));
+            
+        if(intNear > intZyam && intAway > intZyam && intNear > intAway ) 
+        { 
+          l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
+        }
+        else 
+        {
+          //printf("bin %d, near %2.2e, zyam %2.2e, away %2.2e\n",ibin,intNear,intZyam,intAway);
+          l.AddEntry(hDeltaPhi[ibin],Form("#color[6]{%2.1f<#it{p}_{T,A}< %2.0f GeV/c, not ok?}",assocBins[ibin],assocBins[ibin+1]),"P");
+          okcheck=1;
+        }
+      }      
+    }
+    //printf("ok check %d\n",okcheck);
+    if ( !okcheck ) {text[ok]->Draw();}
+  }
+
   
   l.Draw("same");
   
@@ -2251,6 +2284,46 @@ void CorrelQA(Int_t icalo)
   
   l2.Draw("same");
 
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 1000 ) ok = 4;
+    else
+    {
+      //ok=3;
+      
+      Float_t minXE = 0.1;
+      Float_t maxXE = 0.5;
+      
+      for(Int_t ibin = 1; ibin < hXE->GetNbinsX(); ibin++)
+      {
+        if ( hXE->GetBinCenter(ibin) < minXE ) continue;
+        if ( hXE->GetBinCenter(ibin) > maxXE ) continue;
+        
+        if ( hXE->GetBinContent(ibin) < 1e-3 ) continue;
+        
+        if ( 
+            hXE  ->GetBinContent(ibin)*2 < hXE  ->GetBinContent(ibin+1) ||
+            //hXEUE->GetBinContent(ibin)*2 < hXEUE->GetBinContent(ibin+1) ||
+            hXE  ->GetBinContent(ibin)   < hXEUE->GetBinContent(ibin) 
+            )
+        {
+          ok=1;
+          
+          printf("ibin %d, XE bin %2.2f, XE: %2.1e (+1 bin) %2.1e; XEUE %2.1e (+1 bin) %2.1e;\n",
+                 ibin, hXE->GetBinCenter(ibin), 
+                 hXE->GetBinContent(ibin)*2, hXE->GetBinContent(ibin+1),
+                 hXEUE->GetBinContent(ibin)*2, hXEUE->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+
+  
   cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
