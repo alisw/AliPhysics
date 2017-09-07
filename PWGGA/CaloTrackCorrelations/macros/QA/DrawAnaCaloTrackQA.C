@@ -81,7 +81,7 @@ TFile  *fout = 0;         /// output file with plots or extracted histograms
 TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
 TString format = "eps";   /// plots format: eps, pdf, etc.
 Int_t   exportToFile = 0; /// option to what and if export to output file
-TLatex *text[4];          /// plot quality messages 
+TLatex *text[5];          /// plot quality messages 
 Double_t nEvents = 0.;    /// number of events analyzed
 Bool_t  addOkFlag = kTRUE;/// print message on plot with ok/not ok
 
@@ -168,7 +168,8 @@ void DrawAnaCaloTrackQA
     text[0] = new TLatex(0.35,0.4,"#color[3]{OK}");          MyLatexMakeUp(text[0],42,0.1,1);
     text[1] = new TLatex(0.30,0.4,"#color[2]{NOT OK}");      MyLatexMakeUp(text[1],42,0.1,2);
     text[2] = new TLatex(0.20,0.4,"#color[6]{Likely OK}");   MyLatexMakeUp(text[2],42,0.1,3);
-    text[3] = new TLatex(0.15,0.9,"#color[4]{Expert plot}"); MyLatexMakeUp(text[3],42,0.1,4);
+    text[3] = new TLatex(0.20,0.4,"#color[4]{Expert plot}"); MyLatexMakeUp(text[3],42,0.1,4);
+    text[4] = new TLatex(0.20,0.4,"#color[6]{Low stat}");    MyLatexMakeUp(text[4],42,0.1,3);
   }
   
   // Process each of the triggers
@@ -356,7 +357,7 @@ void CaloQA(Int_t icalo)
     
     ok=0;
     
-    if ( hClusterEnergy->GetEntries() < 100 ) ok = 1;
+    if ( hClusterEnergy->GetEntries() < 1000 ) ok = 4;
     else
     {
       for(Int_t ibin = 1; ibin < hClusterEnergy->GetNbinsX(); ibin++)
@@ -1013,7 +1014,7 @@ void TrackQA()
   {
     ok=0;
     
-    if      ( hPhi->GetEntries() < 1000    ) ok = 1;
+    if      ( hPhi->GetEntries() < 1000    ) ok = 4;
     else if ( !histoTag.Contains("default")) ok = 3;
     else
     {
@@ -1061,7 +1062,7 @@ void TrackQA()
   {
     ok=0;
     
-    if ( hTOF->GetEntries() < 1000 ) ok = 1;
+    if ( hTOF->GetEntries() < 1000 ) ok = 4;
     else
     {
       Float_t intBC0 = hTOF->Integral(hTOF->FindBin(0),hTOF->FindBin(25));
@@ -1103,7 +1104,7 @@ void TrackQA()
   {
     ok=0;
     
-    if ( hPt->GetEntries() < 1000 ) ok = 1;
+    if ( hPt->GetEntries() < 1000 ) ok = 4;
     else
     {
       for(Int_t ibin = 1; ibin < hPt->GetNbinsX(); ibin++)
@@ -1172,6 +1173,8 @@ void TrackQA()
 //_____________________________
 void Pi0QA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cpi0 = new TCanvas(Form("%s_InvariantMassHisto"          ,histoTag.Data()),
                                Form("Neutral mesons inv. mass for %s",histoTag.Data()),
                                1000,1000);
@@ -1207,6 +1210,9 @@ void Pi0QA(Int_t icalo)
   h2DMass->SetAxisRange(0.0,0.7,"Y");
   h2DMass->SetAxisRange(0,30,"X");
   h2DMass->Draw("colz");
+  
+  // ok message
+  if(addOkFlag) text[3]->Draw();
   
   // Pi0 Invariant mass projection, in PbPb 6 centrality bins from 0 to 50%, all in pp
   cpi0->cd(2);
@@ -1300,6 +1306,38 @@ void Pi0QA(Int_t icalo)
 
   hMassPi0[0]->Draw();
   
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hMassPi0[0]->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      Float_t intLowMass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.04),hMassPi0[0]->FindBin(0.08));
+      Float_t intPi0Mass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.10),hMassPi0[0]->FindBin(0.14));
+      Float_t intHigMass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.18),hMassPi0[0]->FindBin(0.22));
+      
+      Float_t ratL = 0;
+      if ( intPi0Mass > 0 ) ratL = intLowMass / intPi0Mass;
+      Float_t ratH = 0;
+      if ( intPi0Mass > 0 ) ratH = intHigMass / intPi0Mass;
+      //printf("ratio InvMass Low %f High %f\n",ratL, ratH);
+
+      // Just guessing
+      if     (ratL > 0.80 || ratH > 0.80 ) ok = 1;
+      else if(ratL > 0.25 || ratH > 0.25 ) ok = 2;
+      
+//      hMassPi0[0]->Fit("gaus","RL","",0.11,0.14);
+//      Float_t massFit = hMassPi0[0]->GetFunction("gaus")->GetParameter(1);
+//      printf("mass fit = %f\n",massFit);
+//      
+//      if(massFit < 0.12 || massFit > 0.16) ok = 1;
+    }
+    
+    text[ok]->Draw();
+  }
+  
   if(hMass[1]) // PbPb
   {
     hMassPi0[0]->SetMaximum(maxPi0*1.2);
@@ -1389,16 +1427,52 @@ void Pi0QA(Int_t icalo)
   hSM[first]->SetYTitle("Real / Mixed");
 
   hSM[first]->Draw("H");
+  
+  // ok message
+  Bool_t okSM[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Bool_t okcheck = 0;
+
+  if(addOkFlag)
+  {
+    if ( hMassPi0[0]->GetEntries() < 1000 ) text[4]->Draw();
+    else
+    {
+      for(Int_t ism = first+1; ism < 20; ism++)
+      {
+        if(!hSM[ism]) continue;
+        
+        Float_t intLowMass = hSM[ism]->Integral(hSM[ism]->FindBin(0.04),hSM[ism]->FindBin(0.08));
+        Float_t intPi0Mass = hSM[ism]->Integral(hSM[ism]->FindBin(0.10),hSM[ism]->FindBin(0.14));
+        Float_t intHigMass = hSM[ism]->Integral(hSM[ism]->FindBin(0.18),hSM[ism]->FindBin(0.22));
+        
+        Float_t ratL = 0;
+        if ( intPi0Mass > 0 ) ratL = intLowMass / intPi0Mass;
+        Float_t ratH = 0;
+        if ( intPi0Mass > 0 ) ratH = intHigMass / intPi0Mass;
+        //printf("ratio InvMass Low %f High %f, ism %d\n",ratL, ratH,ism);
+        
+        // Just guessing
+        if     (ratL > 0.80 || ratH > 0.80 ) { okSM[ism] = 1; okcheck=1;}
+        else if(ratL > 0.2  || ratH > 0.2  ) { okSM[ism] = 2; okcheck=1;}
+      }      
+    }
+    //printf("ok check %d\n",okcheck);
+    if ( !okcheck ) {text[ok]->Draw();}
+  }
+  
   TLegend lsm(0.12,0.5,0.35,0.85);
   lsm.SetTextSize(0.04);
-  lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
-  
+  if(  addOkFlag && okcheck && okSM[ism]) lsm.AddEntry(hSM[first],Form("#color[6]{Mod %d; not ok?}",first),"P");
+  else                                    lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
+
   for(Int_t ism = first+1; ism < 20; ism++)
   {
     if(!hSM[ism]) continue;
     
     hSM[ism]->Draw("Hsame");
-    lsm.AddEntry(hSM[ism],Form("Mod %d",ism),"P");
+    
+    if( addOkFlag && okcheck && okSM[ism]) lsm.AddEntry(hSM[ism],Form("#color[6]{Mod %d; not ok?}",ism),"P");
+    else                                   lsm.AddEntry(hSM[ism],Form("Mod %d",ism),"P");
   }
   
   lsm.SetBorderSize(0);
@@ -1422,6 +1496,38 @@ void Pi0QA(Int_t icalo)
 
   hMassEta[0]->Draw("H");
   
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hMassEta[0]->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      Float_t intLowMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.40),hMassEta[0]->FindBin(0.47));
+      Float_t intEtaMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.48),hMassEta[0]->FindBin(0.55));
+      Float_t intHigMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.60),hMassEta[0]->FindBin(0.67));
+      
+      Float_t ratL = 0;
+      if ( intEtaMass > 0 ) ratL = intLowMass / intEtaMass;
+      Float_t ratH = 0;
+      if ( intEtaMass > 0 ) ratH = intHigMass / intEtaMass;
+      //printf("ratio InvMass Low %f High %f\n",ratL, ratH);
+      
+      // Just guessing
+      if     (ratL > 1.50 || ratH > 1.50 ) ok = 1;
+      else if(ratL > 1.10 || ratH > 1.10 ) ok = 2;
+      
+//      hMassEta[0]->Fit("gaus","RL","",0.48,0.55);
+//      Float_t massFit = hMassEta[0]->GetFunction("gaus")->GetParameter(1);
+//      printf("mass fit = %f\n",massFit);
+//      
+//      if(massFit < 0.48 || massFit > 0.55) ok = 1;
+    }
+    
+    text[ok]->Draw();
+  }
+
   if(hMass[1]) // PbPb
   {
     hMassEta[0]->SetMaximum(maxEta*1.2);
