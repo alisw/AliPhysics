@@ -5,6 +5,8 @@
 #include "AliFemtoAnalysisPionPion.h"
 
 #include "AliFemtoCutMonitorPionPion.h"
+#include "AliFemtoConfigObject.h"
+
 
 #include "AliESDtrack.h"
 
@@ -619,6 +621,11 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     delete setting_list;
     output->Add(new TObjString(settings));
   }
+  auto obj = AliFemtoConfigObject::Parse(std::string(
+    TString::Format("{AliFemtoAnalysisPionPion: { "
+                        "mc_analysis: %d, pion_1_type: %d}"
+                    "}", fMCAnalysis, fPionType_1)));
+  output->Add(new AliFemtoConfigObject(std::move(obj)));
   return outputlist;
 }
 

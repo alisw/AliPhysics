@@ -122,6 +122,9 @@
 #pragma link C++ class AliFemtoModelWeightGeneratorBasicLednicky+;
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiRM;
 
+#pragma link C++ class AliFemtoConfigObject-;
+#pragma link C++ class AliFemtoConfigObject::Painter;
+
 #pragma link C++ class AliFemtoAnalysisLambdaKaon+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::AnalysisParams+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::EventCutParams+;
