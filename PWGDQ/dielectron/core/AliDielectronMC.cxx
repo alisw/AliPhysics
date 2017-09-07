@@ -1654,6 +1654,8 @@ Int_t AliDielectronMC::IsJpsiPrimary(const AliDielectronPair * pair)
  //         "2" for background
  if(!HaveSameMother(pair)) return 2;
  AliVParticle *mcDaughter1=GetMCTrackFromMCEvent((pair->GetFirstDaughterP())->GetLabel());
+ AliVParticle *mcDaughter2=GetMCTrackFromMCEvent((pair->GetSecondDaughterP())->GetLabel());
+ if (!mcDaughter1 || !mcDaughter2) return 2;
  Int_t labelMother=-1;
 
   if (mcDaughter1->IsA()==AliMCParticle::Class()){
