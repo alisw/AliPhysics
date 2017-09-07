@@ -1050,8 +1050,8 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
     }
   }
 
-  for (auto cont_it : fParticleCollArray) cont_it.second->NextEvent();
-  for (auto cont_it : fClusterCollArray) cont_it.second->NextEvent();
+  for (auto cont_it : fParticleCollArray) cont_it.second->NextEvent(InputEvent());
+  for (auto cont_it : fClusterCollArray) cont_it.second->NextEvent(InputEvent());
 
   return kTRUE;
 }

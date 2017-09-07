@@ -149,8 +149,10 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
  * selection of all bit and store the pointers to
  * selected tracks in a separate array.
  */
-void AliTrackContainer::NextEvent()
+void AliTrackContainer::NextEvent(const AliVEvent * event)
 {
+  AliParticleContainer::NextEvent(event);
+
   fTrackTypes.Reset(kUndefined);
   if (fEmcalTrackSelection) {
     fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);

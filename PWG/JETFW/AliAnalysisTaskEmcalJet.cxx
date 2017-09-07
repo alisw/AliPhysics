@@ -239,7 +239,7 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent(InputEvent());
 
   return kTRUE;
 }
