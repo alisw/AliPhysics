@@ -1179,7 +1179,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
     Double_t omegac=0.5*fqhat*fxlength*fxlength/0.2;
     Double_t thetac=TMath::Sqrt(12*0.2/(fqhat*TMath::Power(fxlength,3)));
     Double_t xQs=TMath::Sqrt(fqhat*fxlength);				
-    cout<<"medium parameters "<<omegac<<" "<<thetac<<" "<<xQs<<endl;
+    //cout<<"medium parameters "<<omegac<<" "<<thetac<<" "<<xQs<<endl;
 
    for(Int_t i=0;i<fAdditionalTracks;i++){
 
@@ -1201,7 +1201,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
      
      Double_t sinpptheta=kTscale/omega;
      Double_t pptheta=TMath::ASin(sinpptheta);
-     cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
+     //cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
      if(pptheta>fJetRadius) continue;
      
      fastjet::PseudoJet PseudoTracksCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
@@ -1231,7 +1231,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fOutputJets.clear();
   fOutputJets=fClustSeqSA->inclusive_jets(0);
   
-  cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
+  //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
   std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
    fastjet::contrib::SoftDrop softdrop(beta, zcut);
   //fastjet::contrib::SoftDrop softdrop_antikt(beta,zcut);
