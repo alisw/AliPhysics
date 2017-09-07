@@ -2095,14 +2095,17 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliAODTrack * track, 
     if (PDGCodeMother==22) {
       fillSparse[1]=PtGrandMother;
       fillSparse[2]=PDGCodeGrandMother;
+      fillSparse[3]=PDGCodeGGMother;
     }
     else {
       fillSparse[1]=PtMother;
       fillSparse[2]=PDGCodeMother;
+      fillSparse[3]=PDGCodeGrandMother;
     }
+    fTagMotherPt->Fill(fillSparse);
   }
 
-  fTagMotherPt->Fill(fillSparse);
+
 
 
 }
