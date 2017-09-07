@@ -949,6 +949,8 @@ void CaloQA(Int_t icalo)
 //______________________________________
 void TrackQA()
 {
+  Int_t ok = 0;
+  
   TCanvas * ctrack = new TCanvas(Form("%s_TrackHisto"       ,histoTag.Data()),
                                  Form("Hybrid tracks for %s",histoTag.Data()),
                                  1000,1000);
@@ -966,6 +968,9 @@ void TrackQA()
   hTrackEtaPhi->SetTitleOffset(1.5,"Z");
 
   hTrackEtaPhi ->Draw("colz");
+  
+  // ok message
+  if(addOkFlag) text[3]->Draw();
   
   ctrack->cd(2);
   //gPad->SetLogy();
@@ -1002,6 +1007,45 @@ void TrackQA()
   l.SetFillColor(0);
   l.Draw();
   
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if      ( hPhi->GetEntries() < 1000    ) ok = 1;
+    else if ( !histoTag.Contains("default")) ok = 3;
+    else
+    {
+      hPhi->Fit("pol0","QRL","",0, 7);
+      Float_t fitParam = hPhi->GetFunction("pol0")->GetParameter(0);
+      //printf("fit param %f\n",fitParam);
+      for(Int_t ibin = 1; ibin < hPhi->GetNbinsX(); ibin++)
+      {      
+        if(fitParam < 100)
+        {
+          ok=1;
+          break;
+        }
+        
+        if ( hPhi->GetBinContent(ibin) < 100 ) continue;
+        
+        Float_t ratToFit = hPhi->GetBinContent(ibin)/fitParam;
+        //printf("\t bin %d, rat to fit %2.2f\n",ibin,ratToFit);
+        if ( ratToFit < 0.85 || ratToFit > 1.15 ) // Just guessing, not sure it is ok.
+        {
+          ok=1;
+          //printf("ibin %d, ratio %f\n",ibin, ratToFit);
+          break;
+        }
+        else if ( (ratToFit < 0.98 && ratToFit >= 0.85) || (ratToFit <= 1.15 && ratToFit > 1.02) )
+        {
+          ok=2;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+  
   ctrack->cd(3);
   gPad->SetLogy();
   
@@ -1010,6 +1054,29 @@ void TrackQA()
   hTOF->SetTitleOffset(1.5,"Y");
 
   hTOF->Draw("");
+  
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hTOF->GetEntries() < 1000 ) ok = 1;
+    else
+    {
+      Float_t intBC0 = hTOF->Integral(hTOF->FindBin(0),hTOF->FindBin(25));
+      Float_t intAll = hTOF->Integral();
+      
+      Float_t rat = 0;
+      if ( intAll > 0 ) rat = intBC0 / intAll;
+      //printf("ratio TOF %f\n",rat);
+      
+      // Just guessing
+      if     (rat < 0.7) ok = 1;
+      else if(rat < 0.9) ok = 2;
+    }
+    
+    text[ok]->Draw();
+  }
   
   ctrack->cd(4);
   gPad->SetLogy();
@@ -1029,6 +1096,31 @@ void TrackQA()
   hPt     ->Draw("");
   hPtSPD  ->Draw("same");
   hPtNoSPD->Draw("same");
+  
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hPt->GetEntries() < 1000 ) ok = 1;
+    else
+    {
+      for(Int_t ibin = 1; ibin < hPt->GetNbinsX(); ibin++)
+      {      
+        if ( hPt->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hPt->GetBinContent(ibin)*1.4 < hPt->GetBinContent(ibin+1) )
+        {
+          ok=1;
+          //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    
+    text[ok]->Draw();
+  }
+
   
 //  ctrack->cd(3);
 //  gPad->SetLogz();
