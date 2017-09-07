@@ -1462,8 +1462,8 @@ void Pi0QA(Int_t icalo)
   
   TLegend lsm(0.12,0.5,0.35,0.85);
   lsm.SetTextSize(0.04);
-  if(  addOkFlag && okcheck && okSM[ism]) lsm.AddEntry(hSM[first],Form("#color[6]{Mod %d; not ok?}",first),"P");
-  else                                    lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
+  if(  addOkFlag && okcheck && okSM[first]) lsm.AddEntry(hSM[first],Form("#color[6]{Mod %d; not ok?}",first),"P");
+  else                                      lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
 
   for(Int_t ism = first+1; ism < 20; ism++)
   {
@@ -1608,6 +1608,8 @@ void Pi0QA(Int_t icalo)
 //__________________________________________________
 void IsolQA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cIsolation = new TCanvas(Form("%s_IsolationHisto"    ,histoTag.Data()),
                                      Form("Isolation cone for %s",histoTag.Data()),
                                      1000,1000);
@@ -1629,10 +1631,11 @@ void IsolQA(Int_t icalo)
   if ( nTrig <=0 ) return ;
     
   //
-  // Pt in cone
+  // Candidates Pt 
   //
   cIsolation->cd(1);
   gPad->SetLogy();
+  gPad->SetLogx();
 
   hIsolated   ->Sumw2();
   hNotIsolated->Sumw2();
@@ -1646,10 +1649,12 @@ void IsolQA(Int_t icalo)
   hNotIsolated->SetTitle("(non) isolated cluster spectra, #it{R}=0.4, #Sigma #it{p}_{T}<2 GeV/#it{c}");
   hNotIsolated->SetYTitle("Entries");
   
+  hNotIsolated->SetAxisRange(5,100,"X");
+  
   hNotIsolated->Draw();  
   hIsolated   ->Draw("same");
   
-  TLegend lI(0.4,0.7,0.88,0.88);
+  TLegend lI(0.5,0.7,0.88,0.88);
   lI.SetTextSize(0.04);
   lI.SetBorderSize(0);
   lI.SetFillColor(0);
@@ -1657,6 +1662,41 @@ void IsolQA(Int_t icalo)
   lI.AddEntry(hNotIsolated,"NOT Isolated candidates","P");
   lI.Draw("same");
   
+  // ok message
+  if(addOkFlag)
+  {
+    Float_t minClusterE = 5;
+    if      ( histoTag.Contains("L2") ) minClusterE = 10;
+    else if ( histoTag.Contains("L1") ) minClusterE = 14;
+    
+    ok=0;
+    
+    if ( hNotIsolated->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      for(Int_t ibin = 1; ibin < hNotIsolated->GetNbinsX(); ibin++)
+      {
+        if ( hNotIsolated->GetBinCenter(ibin) < minClusterE ) continue;
+        
+        if ( hNotIsolated->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hNotIsolated->GetBinContent(ibin)*1.4 < hNotIsolated->GetBinContent(ibin+1) ||
+             hIsolated   ->GetBinContent(ibin)*1.4 < hIsolated   ->GetBinContent(ibin+1) ||
+             hNotIsolated->GetBinContent(ibin)     < hIsolated   ->GetBinContent(ibin) 
+           )
+        {
+          ok=1;
+//          printf("ibin %d, E %2.2f, Iso: %2.1f (+1 bin) %2.1f; Not Iso %2.1f (+1 bin) %2.1f; \n",
+//                 ibin, hIsolated->GetBinCenter(ibin), 
+//                 hIsolated->GetBinContent(ibin), hIsolated->GetBinContent(ibin+1),
+//                 hNotIsolated->GetBinContent(ibin), hNotIsolated->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+
   //
   // Pt in cone
   //
@@ -1743,6 +1783,7 @@ void IsolQA(Int_t icalo)
   if(max < hPtInEtaBandCluster->GetMaximum()) max = hPtInEtaBandCluster->GetMaximum();
   if(max < hPtInEtaBandTrack  ->GetMaximum()) max = hPtInEtaBandTrack  ->GetMaximum();
   hPtInCone->SetMaximum(max*2);
+  hPtInCone->SetMinimum(1e-4);
   
   hPtInCone          ->Draw("");
   hPtInConeCluster   ->Draw("same");
@@ -1760,11 +1801,49 @@ void IsolQA(Int_t icalo)
 
   l.Draw("same");
 
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok=3;
+      
+//      Float_t minPt = 0.5;
+//
+//      for(Int_t ibin = 1; ibin < hPtInCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hPtInCone->GetBinCenter(ibin) < minPt ) continue;
+//
+//        if ( hPtInCone->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hPtInCone          ->GetBinContent(ibin)*2 < hPtInCone          ->GetBinContent(ibin+1) ||
+//            hPtInConeCluster   ->GetBinContent(ibin)   > hPtInConeTrack     ->GetBinContent(ibin) 
+//           )
+//        {
+//          ok=1;
+//          
+////          printf("ibin %d, E %2.2f, ClTr: %2.1e (+1 bin) %2.1e; Cl %2.1e (+1 bin) %2.1e; Tr %2.1e (+1 bin) %2.1e;\n",
+////                 ibin, hPtInCone->GetBinCenter(ibin), 
+////                 hPtInCone->GetBinContent(ibin)*2, hPtInCone->GetBinContent(ibin+1),
+////                 hPtInConeCluster->GetBinContent(ibin)*2, hPtInConeCluster->GetBinContent(ibin+1),
+////                 hPtInConeTrack  ->GetBinContent(ibin)*2, hPtInConeTrack  ->GetBinContent(ibin+1));
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+
   //
   // Sum Pt in cone
   //
   cIsolation->cd(3);
   gPad->SetLogy();
+  gPad->SetLogx();
   
   TLegend l2(0.55,0.55,0.88,0.88);
   l2.SetTextSize(0.04);
@@ -1899,6 +1978,44 @@ void IsolQA(Int_t icalo)
   
   l2.Draw("same");
   
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok=3;
+//      Float_t minPt = 3;
+//      Float_t maxPt = 30;
+//
+//      for(Int_t ibin = 1; ibin < hSumPtCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hSumPtCone->GetBinCenter(ibin) < minPt ) continue;
+//        if ( hSumPtCone->GetBinCenter(ibin) > maxPt ) continue;
+//
+//        if ( hSumPtCone->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hSumPtCone          ->GetBinContent(ibin)*2  < hSumPtCone          ->GetBinContent(ibin+1) ||
+//            hSumPtConeCluster   ->GetBinContent(ibin)    > hSumPtConeTrack     ->GetBinContent(ibin) 
+//            )
+//        {
+//          ok=1;
+////          printf("ibin %d, E %2.2f, ClTr: %2.1e (+1 bin) %2.1e; Cl %2.1e (+1 bin) %2.1e; Tr %2.1e (+1 bin) %2.1e;\n",
+////                 ibin, hSumPtCone->GetBinCenter(ibin), 
+////                 hSumPtCone->GetBinContent(ibin)*2, hSumPtCone->GetBinContent(ibin+1),
+////                 hSumPtConeCluster->GetBinContent(ibin)*2, hSumPtConeCluster->GetBinContent(ibin+1),
+////                 hSumPtConeTrack  ->GetBinContent(ibin)*2, hSumPtConeTrack  ->GetBinContent(ibin+1));
+//
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+  
   //
   // Sum Pt in cone, UE subtracted
   //
@@ -1924,6 +2041,40 @@ void IsolQA(Int_t icalo)
 
   l3.Draw("same");
 
+  
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok = 3;
+//      Float_t minPt = 3;
+//      Float_t maxPt = 30;
+//      
+//      for(Int_t ibin = 1; ibin < hSumPtCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hSumPtConeSub->GetBinCenter(ibin) < minPt ) continue;
+//        if ( hSumPtConeSub->GetBinCenter(ibin) > maxPt ) continue;
+//        
+//        if ( hSumPtConeSub->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hSumPtConeSub       ->GetBinContent(ibin)*2 < hSumPtConeSub       ->GetBinContent(ibin+1) //||
+//            //hSumPtConeSubCluster->GetBinContent(ibin)   > hSumPtConeSubTrack  ->GetBinContent(ibin) 
+//           )
+//        {
+//          ok=1;
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+
+  
   cIsolation->Print(Form("%s_IsolationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
