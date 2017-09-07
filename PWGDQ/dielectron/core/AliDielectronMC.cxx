@@ -205,7 +205,10 @@ Bool_t AliDielectronMC::ConnectMCEvent()
 
     if (!UpdateStack()) return kFALSE;
 
-    if(fCheckHF) LoadHFPairs(); // So far only compatible with ESD
+    if (fCheckHF){
+      fhfproc.clear();
+      fCheckHF=LoadHFPairs(); // So far only compatible with ESD
+    }
   }
   else if(fAnaType == kAOD)
   {
@@ -1722,13 +1725,183 @@ Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY,
 //____________________________________________________________
 Bool_t AliDielectronMC::LoadHFPairs()
 {
-  // To be implemented  
+  
+  //
+  // Look for all correlated c/cbar and b/bbar pairs  
+  // Attributing for each quark a HF Creation Process ID
+  //
+  
+  Int_t quark[2][2]={{0}};
+  Int_t quarktmp[2][2]={{0}};
+  Int_t mesontmp[2][2]={{0}};
+  
+  //Loop over the MC event to tag all correlated c/cbar and b/bbar quarks 
+  for(Int_t i=0;i<fMCEvent->GetNumberOfTracks();i++){
+    AliMCParticle *HFquark = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(i));
+    Int_t pdg_part = fMCEvent->GetTrack(i)->PdgCode();
+    Int_t pdg_parta = TMath::Abs(pdg_part);
+
+    if(pdg_parta==4 || pdg_parta==5){
+      //The quark is requested to create a B or D meson -> Must have a daughter 
+      if(!(HFquark->GetFirstDaughter()>-1)){
+	//childless quark to be linked!
+	if(pdg_part==4) quarktmp[0][0]=i;
+	else if(pdg_part==-4) quarktmp[0][1]=i;
+	else if(pdg_part==5) quarktmp[1][0]=i;
+	else if(pdg_part==-5) quarktmp[1][1]=i;
+	continue;
+      }
+      
+      //Check if the quark is the one leading to the meson
+      Bool_t isHFprim(kTRUE);
+      for(Int_t idau=HFquark->GetFirstDaughter();idau<=HFquark->GetLastDaughter();idau++){
+	if(fMCEvent->GetTrack(idau)->PdgCode()==pdg_part){
+	  isHFprim=kFALSE;
+	  break;
+	} 
+      }
+      if(!isHFprim) continue;
+      
+      //quark is selected, saving its label
+      if(pdg_part==4){
+	if(quark[0][0]>0) return kFALSE;
+	quark[0][0]=i;
+      }
+      else if(pdg_part==-4){
+	if(quark[0][1]>0) return kFALSE;
+	quark[0][1]=i;
+      }
+      else if(pdg_part==5){
+	if(quark[1][0]>0) return kFALSE;
+	quark[1][0]=i;
+      }
+      else if(pdg_part==-5){
+	if(quark[1][1]>0) return kFALSE;
+	quark[1][1]=i;
+      }
+    } //End looking at quarks
+    
+    //Look for Motherless mesons or meson's mother is u/d
+    else if(pdg_parta==411 || pdg_parta==421 || pdg_parta==431 || pdg_parta==511 || pdg_parta==521 || pdg_parta==531 || pdg_parta==541 || pdg_parta==4122){
+      //Access the oldest ancestor that could be link to a corresponding quark
+      AliMCParticle *mother, *daughter;
+      Bool_t Osci(kFALSE);
+      if(HFquark->GetMother()>-1){
+	mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(HFquark->GetMother()));
+	if(TMath::Abs(mother->PdgCode())<6)daughter=HFquark;
+	else daughter=mother;
+	
+	if((pdg_parta== 411 || pdg_parta== 421 || pdg_parta== 431 || pdg_parta== 4122) && IsaBmeson(mother->PdgCode())) Osci=kTRUE;
+	while (!(TMath::Abs(mother->PdgCode())<6 && TMath::Abs(mother->PdgCode())>0) && mother->GetMother()>-1){
+	  daughter = mother;
+	  mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mother->GetMother()));
+	  if((pdg_parta== 411 || pdg_parta== 421 || pdg_parta== 431 || pdg_parta== 4122) && IsaBmeson(mother->PdgCode())) Osci=kTRUE;
+	}
+      }
+      else daughter = HFquark;
+      mother=daughter;
+      
+      //Get Original mother in History
+      Int_t pdg_moma(0);
+      if(mother->GetMother()>-1) pdg_moma=TMath::Abs(fMCEvent->GetTrack(mother->GetMother())->PdgCode());
+      if(TMath::Abs(pdg_moma)>6 && mother->GetMother()>-1) continue;
+
+      if((pdg_part== 411 || pdg_part== 421 || pdg_part== 431 || pdg_part== 4122) && !Osci){
+	if(mesontmp[0][0]>0 && mesontmp[0][0]!=mother->GetLabel()) return kFALSE;
+	else mesontmp[0][0]=mother->GetLabel();//c meson type
+      }
+      else if((pdg_part== -411 || pdg_part== -421 || pdg_part== -431 || pdg_part== -4122) && !Osci){
+	if(mesontmp[0][1]>0 && mesontmp[0][1]!=mother->GetLabel()) return kFALSE;
+	else mesontmp[0][1]=mother->GetLabel();//cbar meson type
+      }
+      else if(pdg_part== -511 || pdg_part== -521 || pdg_part== -531 || pdg_part== -541 || ((pdg_part== 411 || pdg_part== 421 || pdg_part== 431 || pdg_part== 4122) && Osci)){
+	if(mesontmp[1][0]>0 && mesontmp[1][0]!=mother->GetLabel()) return kFALSE;
+	else mesontmp[1][0]=mother->GetLabel();//b meson type
+      }
+      else if(pdg_part== 511 || pdg_part== 521 || pdg_part== 531 || pdg_part== 541 || ((pdg_part== -411 || pdg_part== -421 || pdg_part== -431 || pdg_part== -4122) && Osci)){
+	if(mesontmp[1][1]>0 && mesontmp[1][1]!=mother->GetLabel()) return kFALSE;
+	else mesontmp[1][1]=mother->GetLabel();//bbar meson type
+      } 
+    }//End checking motherless mesons
+  }//End Loop on the Stack
+
+  //Linking childless quarks with corresponding motherless mesons
+  if(quarktmp[0][0]>0 && mesontmp[0][0]>0){
+    quark[0][0]=mesontmp[0][0];
+  }
+  if(quarktmp[0][1]>0 && mesontmp[0][1]>0){
+    quark[0][1]=mesontmp[0][1];
+  }
+  if(quarktmp[1][0]>0 && mesontmp[1][0]>0){
+    quark[1][0]=mesontmp[1][0];
+  }
+  if(quarktmp[1][1]>0 && mesontmp[1][1]>0){
+    quark[1][1]=mesontmp[1][1];
+  }
+  
+  //Pairing the quarks and attribute them a process number: c/cbar(1) and b/bar(2)  
+  if(quark[0][0]>0 && quark[0][1]>0){
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[0][0],1));
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[0][1],1));
+  }
+  if(quark[1][0]>0 && quark[1][1]>0){
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[1][0],2));
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[1][1],2));
+  }
+
   return kTRUE;					   
 }
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetHFProcess(const Int_t label)
 {
-  // To be implemented  
+  //
+  // return Heavy Flavour process number of the particle
+  //
+  if(!fCheckHF) return -1; //More than one pair of each -> Undeterminated (so far)
+  if(fhfproc.size()==0) return 0; //No HF pairs in the event
+
+  Int_t mother_label;
+  AliMCParticle *part = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+  if(part->GetMother()==-1) return 0;
+
+  // Looking back in the history if an ancestor is coming from an HF process
+  AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(part->GetMother()));
+  mother_label=mother->GetLabel();
+  for(std::map<Int_t,Int_t>::iterator it = fhfproc.begin(); it != fhfproc.end(); ++it){
+    if(mother_label==it->first) return it->second;
+  }  
+  
+  while (!(TMath::Abs(mother->PdgCode())==4 || TMath::Abs(mother->PdgCode())==5) && mother->GetMother()>-1){
+    mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mother->GetMother()));
+    mother_label=mother->GetLabel();
+    for(std::map<Int_t,Int_t>::iterator it = fhfproc.begin(); it != fhfproc.end(); ++it){
+      if(mother_label==it->first) return it->second;
+    }
+  }
+    
   return 0;
 }
+
+
+Int_t AliDielectronMC::IsaBmeson(Int_t pdg) const{
+  Int_t Bmesonspdg[]={511,521,10511,10521,513,523,10513,20513,20523,515,525,531,10531,533,10533,20533,535,541,10541,543,10543,20543,545};
+  Int_t size=sizeof(Bmesonspdg)/sizeof(*Bmesonspdg);
+  for(Int_t i=0;i<size;i++){
+    if(TMath::Abs(pdg==Bmesonspdg[i])) return kTRUE;
+  }
+  return kFALSE;
+}
+
+/*
+411:D+:c 
+421:D0:c
+431:D+s:c
+4122:Lambda+c:c
+
+511:B0:bbar
+521:B+:bbar
+531:B0s:bbar
+541:B+c:bbar
+
+*/
