@@ -195,6 +195,30 @@ public:
         fLambdaMassSigma[2] = 1.52661e-03;
         fLambdaMassSigma[3] =-2.58251e+00;
     }
+
+    
+		void SetSibCutDcaV0ToPrimVertex( Float_t lSibCutDcaV0ToPrimVertex ){
+			fSibCutDcaV0ToPrimVertex = lSibCutDcaV0ToPrimVertex;
+		}
+		void SetSibCutDcaV0Daughters( Float_t lSibCutDcaV0Daughters ){
+			fSibCutDcaV0Daughters = lSibCutDcaV0Daughters;
+		}
+		void SetSibCutV0CosineOfPointingAngle( Float_t lSibCutV0CosineOfPointingAngle ){
+			fSibCutV0CosineOfPointingAngle = lSibCutV0CosineOfPointingAngle;
+		}
+		void SetSibCutV0Radius( Float_t lSibCutV0Radius ){
+			fSibCutV0Radius = lSibCutV0Radius;
+		}
+		void SetSibCutDcaPosToPrimVertex( Float_t lSibCutDcaPosToPrimVertex ){
+			fSibCutDcaPosToPrimVertex = lSibCutDcaPosToPrimVertex;
+		}
+		void SetSibCutDcaNegToPrimVertex( Float_t lSibCutDcaNegToPrimVertex ){
+			fSibCutDcaNegToPrimVertex = lSibCutDcaNegToPrimVertex;
+		}
+		void SetSibCutInvMassK0s( Float_t lSibCutInvMassK0s ){
+			fSibCutInvMassK0s = lSibCutInvMassK0s;
+		}
+
     //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
@@ -292,6 +316,14 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
     
+		//Cuts for Sibling Tagging
+    Float_t fSibCutDcaV0ToPrimVertex      ;
+    Float_t fSibCutDcaV0Daughters         ;
+    Float_t fSibCutV0CosineOfPointingAngle;
+    Float_t fSibCutV0Radius             ;
+    Float_t fSibCutDcaPosToPrimVertex   ;
+    Float_t fSibCutDcaNegToPrimVertex   ;
+    Float_t fSibCutInvMassK0s           ;
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
