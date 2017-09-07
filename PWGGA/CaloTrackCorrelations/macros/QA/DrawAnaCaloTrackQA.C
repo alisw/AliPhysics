@@ -6,7 +6,8 @@
 /// to QA data productions at 0th order
 /// Analysis performed with the wagon
 /// AddTaskPi0IMGammaCorrQA.C
-/// It generates 8 plots, each containing 2 to 4 pads
+/// It generates 8 plots, each containing 2 to 4 pads, 
+/// see the comments on the methods below to know what is plotted.
 ///
 /// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
@@ -21,6 +22,15 @@
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 /// A plot will be produced for each of the triggers, if they existed in the data.
+///
+/// If requested, a guiding message on the quality of the plot for non experts can be asked. 
+/// The checks done are very basic and only very strange behavior is spotted.
+/// The current possible messages are: 
+/// * OK: plot is good
+/// * NOT OK: plot is not good, there is a problem
+/// * Likely OK: there is a problem, but maybe not important or it is known
+/// * Expert plot: No need to look at
+/// * Low stat: Plot might be good but statistic is low to discriminate
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
@@ -348,6 +358,7 @@ void CaloQA(Int_t icalo)
   l.Draw();
 
   // ok message
+  // check for sudden spikes in the spectrum, due to bad channels
   if(addOkFlag)
   {
     Float_t minClusterE = 1;
@@ -427,7 +438,9 @@ void CaloQA(Int_t icalo)
   l2.SetFillColor(0);
   l2.Draw();
   
-  // ok message, very loose
+  // ok message
+  // Check that the ratio neutral clusters over input cluster and neutral and photonic over input
+  // is what is expected. Currently mild guesses
   if(addOkFlag)
   {
     ok=0;
@@ -537,6 +550,8 @@ void CaloQA(Int_t icalo)
     l3.Draw();
     
     // ok message
+    // check that the residuals maxima are displaced from 0 within reasonable limits.
+    // quite open.
     if(addOkFlag)
     {
       ok=0;
@@ -607,6 +622,7 @@ void CaloQA(Int_t icalo)
     hCellActivity->Draw("colz");
     
     // ok message
+    // Check that the dead regions of the EMCal are not a too large fraction
     if(addOkFlag)
     {
       //Float_t meanCellHits = 0;
@@ -678,6 +694,7 @@ void CaloQA(Int_t icalo)
     hCellActivityE->Draw("colz");
     
     // ok message
+    // Check that the dead regions of the EMCal are not a too large fraction
     if(addOkFlag)
     {
       //Float_t meanCellHits = 0;
@@ -753,6 +770,7 @@ void CaloQA(Int_t icalo)
   hClusterActivity->Draw("colz");
 
   // ok message
+  // Check that the dead regions of the EMCal are not a too large fraction
   if(addOkFlag)
   {
     //Float_t meanCellHits = 0;
@@ -815,6 +833,7 @@ void CaloQA(Int_t icalo)
   hClusterActivity2->Draw("colz");
 
   // ok message
+  // Check that the dead regions of the EMCal are not a too large fraction
   if(addOkFlag)
   {
     //Float_t meanCellHits = 0;
@@ -1010,6 +1029,8 @@ void TrackQA()
   l.Draw();
   
   // ok message
+  // check that the tracks phi distribution is uniform (only for Min Bias) within a window.
+  // quite open
   if(addOkFlag)
   {
     ok=0;
@@ -1058,6 +1079,7 @@ void TrackQA()
   hTOF->Draw("");
   
   // ok message
+  // check that most of the tracks have TOF at BC0
   if(addOkFlag)
   {
     ok=0;
@@ -1100,6 +1122,7 @@ void TrackQA()
   hPtNoSPD->Draw("same");
   
   // ok message
+  // check for sudden spikes in the spectrum
   if(addOkFlag)
   {
     ok=0;
@@ -1307,6 +1330,8 @@ void Pi0QA(Int_t icalo)
   hMassPi0[0]->Draw();
   
   // ok message
+  // Check that at low or high mass with respect the pi0 peak there is not 
+  // too much activity with respect the peak, sign of bad channels
   if(addOkFlag)
   {
     ok=0;
@@ -1429,6 +1454,8 @@ void Pi0QA(Int_t icalo)
   hSM[first]->Draw("H");
   
   // ok message
+  // Check per SM that at low or high mass with respect the pi0 peak there is not 
+  // too much activity with respect the peak, sign of bad channels
   Bool_t okSM[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   Bool_t okcheck = 0;
 
@@ -1497,6 +1524,8 @@ void Pi0QA(Int_t icalo)
   hMassEta[0]->Draw("H");
   
   // ok message
+  // Check that at low or high mass with respect the eta peak there is not 
+  // too much activity with respect the peak, sign of bad channels
   if(addOkFlag)
   {
     ok=0;
@@ -1663,6 +1692,8 @@ void IsolQA(Int_t icalo)
   lI.Draw("same");
   
   // ok message
+  // Check for spikes on the candidate cluster (not) isolated spectrum, sign of bad channels.
+  // Also the isolated spectrum yield should be lower than the non isolated.
   if(addOkFlag)
   {
     Float_t minClusterE = 5;
@@ -2211,6 +2242,9 @@ void CorrelQA(Int_t icalo)
   hDeltaPhi[3]->Draw("Hsame");
   hDeltaPhi[0]->Draw("Hsame");
   
+  // ok message
+  // Check that in the near region there is more yield than in the away region and more than in the zyam region
+  // per each of the associated pT bins
   if(addOkFlag)
   {
     Bool_t okcheck = 0;
@@ -2285,6 +2319,7 @@ void CorrelQA(Int_t icalo)
   l2.Draw("same");
 
   // ok message
+  // Check that there are no spikes and that the UE yield is lower than the correlated yield.
   if(addOkFlag)
   {
     ok=0;
@@ -2461,6 +2496,8 @@ void MCQA(Int_t icalo)
   lG.SetFillColor(0);
   lG.Draw();
 
+  if(addOkFlag) text[3]->Draw();
+
   cmc->cd(2);
   gPad->SetLogy();
   TH1F* hRatPho    = (TH1F*) hClusterPho   ->Clone(Form("%s_hGenRecoRatPho"   ,histoTag.Data()));
@@ -2496,6 +2533,8 @@ void MCQA(Int_t icalo)
   l2.SetBorderSize(0);
   l2.SetFillColor(0);
   l2.Draw();
+
+  if(addOkFlag) text[3]->Draw();
 
   cmc->cd(3);
   //gPad->SetLogy();
@@ -2547,6 +2586,8 @@ void MCQA(Int_t icalo)
   hPrimEtaPhi->SetMarkerStyle(22);
   hPrimEtaPhi->Draw("same");
 
+  if(addOkFlag) text[3]->Draw();
+  
   cmc->cd(4);
   //gPad->SetLogy();
   
@@ -2595,6 +2636,8 @@ void MCQA(Int_t icalo)
   hPrimEtaEtaP->SetMarkerColor(2);
   hPrimEtaEtaP->SetMarkerStyle(22);
   hPrimEtaEtaP->Draw("same");
+  
+  if(addOkFlag) text[3]->Draw();
   
   cmc->Print(Form("%s_MCHisto.%s",histoTag.Data(),format.Data()));
   
