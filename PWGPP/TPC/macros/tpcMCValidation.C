@@ -165,7 +165,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   treeMC->SetAlias("tagID","run");
   treeMC->SetAlias("defaultcut","run==TPC.Anchor.run");
 
-  if(trendingDraw->InitSummaryTrending(statusString,0.015,"1")) return kTRUE;
+  if(trendingDraw->InitSummaryTrending(statusString,0.015,"defaultcut")) return kTRUE;
   else return kFALSE;
 }
 
