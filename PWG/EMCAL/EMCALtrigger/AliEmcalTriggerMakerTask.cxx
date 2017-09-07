@@ -90,8 +90,8 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  const std::array<const TString, 3>  kTriggerTypeNames = {"EJE", "EGA", "EL0"},
-                                      kPatchTypes = {"Online", "Offline", "Recalc"};
+  const std::array<const TString, 3>  kTriggerTypeNames = {{"EJE", "EGA", "EL0"}},
+                                      kPatchTypes = {{"Online", "Offline", "Recalc"}};
 
   if(fDoQA) AliInfoStream() << "Trigger maker - QA requested" << std::endl;
   else AliInfoStream() << "Trigger maker - no QA requested" << std::endl;

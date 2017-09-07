@@ -118,7 +118,6 @@ public:
   virtual void InitializeArraysForCRC2();
   virtual void InitializeArraysForFlowEbE();
   virtual void InitializeArraysForFlowQC();
-  virtual void InitializeArraysForFlowQCHighOrders();
   virtual void InitializeArraysForFlowGF();
   virtual void InitializeArraysForFlowSPZDC();
   virtual void InitializeArraysForFlowSPVZ();
@@ -152,7 +151,6 @@ public:
   virtual void BookEverythingForCRC2();
   virtual void BookEverythingForFlowEbE();
   virtual void BookEverythingForFlowQC();
-  virtual void BookEverythingForFlowQCHighOrders();
   virtual void BookEverythingForFlowGF();
   virtual void BookEverythingForFlowSPZDC();
   virtual void BookEverythingForFlowSPVZ();
@@ -238,7 +236,6 @@ public:
   virtual void CalculateCMEZDC();
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
-  virtual void CalculateFlowQCHighOrders();
   virtual void CalculateFlowGF();
   virtual void CalculateFlowSCZDC();
   virtual void CalculateFlowSPZDC(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm, Double_t dPhi, Double_t dEta, Double_t dPt, Double_t wPhiEta, Double_t dCharge, Int_t dCnt);
@@ -295,7 +292,6 @@ public:
   virtual void FinalizeCMEZDC();
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
-  virtual void FinalizeFlowQCHighOrders();
   virtual void FinalizeFlowGF();
   virtual void FinalizeFlowSPZDC();
   virtual void FinalizeFlowSPVZ();
@@ -324,7 +320,6 @@ public:
   virtual void GetPointersForQVec();
   virtual void GetPointersForCME();
   virtual void GetPointersForFlowQC();
-  virtual void GetPointersForFlowQCHighOrders();
   virtual void GetPointersForFlowGF();
   virtual void GetPointersForFlowSPZDC();
   virtual void GetPointersForFlowSPVZ();
@@ -958,8 +953,6 @@ public:
   TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   void SetFlowQCCorProPhi(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorProPhi[c][eg][h] = TP;};
   TProfile* GetFlowQCCorProPhi(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorProPhi[c][eg][h];};
-  void SetFlowQCIntCorProVtx(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCorProVtx[r][c][eg][h] = TP;};
-  TProfile* GetFlowQCIntCorProVtx(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProVtx[r][c][eg][h];};
 
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
@@ -1010,15 +1003,8 @@ public:
   TH1D* GetFlowSCCovHist(Int_t const c, Int_t const eg) const {return this->fFlowSCCovHist[c][eg];};
   void SetFlowSCCrossProdPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdPro[c][eg][k] = TP;};
   TProfile* GetFlowSCCrossProdPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdPro[c][eg][k];};
-
-  // Flow QC high orders
-  void SetFlowQCHOList(TList* const TL) {this->fFlowQCHOList = TL;};
-  void SetFlowQCIntCorHOPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOPro[c][eg] = TP;};
-  TProfile* GetFlowQCIntCorHOPro(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOPro[c][eg];};
-  void SetFlowQCIntCorHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntCorHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOHist[c][eg];};
-  void SetFlowQCIntQCHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntQCHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntQCHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntQCHOHist[c][eg];};
+  void SetFlowSCCrossProdProMult(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdProMult[c][eg][k] = TP;};
+  TProfile* GetFlowSCCrossProdProMult(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdProMult[c][eg][k];};
 
   // Flow Generic Framework
   void SetFlowGFList(TList* const TL) {this->fFlowGFList = TL;};
@@ -1545,6 +1531,7 @@ private:
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
+  TH2F *fPtWeightsCent; //!
   TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
   TH3D *fPhiEtaRbRWeights; //!
   TH3D *fPhiEtaRbRWeightsCh[2]; //!
@@ -1604,6 +1591,7 @@ private:
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
   TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep
   TH3D* fCRCQVecPhiHistRefMul[fCRCMaxnCen]; //!
+  TH3D* fCRCQVecPhiHistVtxAll[fCRCMaxnCen]; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1833,7 +1821,6 @@ private:
   TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
   const static Int_t fZDCPtDiffNBins = 3;
-  TH3D* fCRCQVecPhiHistChPt[2][fZDCPtDiffNBins]; //! phi ditribution POIs bins ch and pT
 
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1896,9 +1883,13 @@ private:
   // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCnVtx = 6;
-  const static Int_t fkFlowQCnHarVtx = 3;
-  TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
+  const static Int_t fkFlowQCRbRnHist = 2;
+  const static Int_t fkFlowQCRbRnHist2 = 3;
+  const static Int_t fkFlowQCRbRnHar = 2;
+  const static Int_t fkFlowQCRbRnVar = 3;
+  const static Int_t fkFlowQCRbRnVar2 = 2;
+  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+  TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1936,19 +1927,9 @@ private:
   TH2D *fFlowQCSpectraPubBin; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
-  TH2F *fFlowQCMetricCent; //!
-
-  // flow QC high order
-  TList *fFlowQCHOList;    //! QC high order List
-  const static Int_t fFlowNHarmHighOrd = 2;
-  const static Int_t fFlowQCHONHist = 4;
-  const static Int_t fFlowQCHOCenBin = 100;
-  TProfile *fFlowQCIntCorHOPro[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntCorHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntQCHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
 
   // flow Generic Framework
-  TList *fFlowGFList;    //! QC high order List
+  TList *fFlowGFList;    //! QC with Generic Framework List
   const static Int_t fkFlowGFNHarm = 4;
   const static Int_t fkFlowGFNOrde = 4;
   const static Int_t fFlowGFCenBin = 100;
@@ -1956,7 +1937,8 @@ private:
   TH1D *fFlowGFIntCorHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCumHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntFinalHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
-  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  const static Int_t fkFlowGFNExtra = 5;
+  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNExtra]; //!
   TProfile *fFlowGFIntCovPro[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCovHist[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
 
@@ -1969,12 +1951,13 @@ private:
   const static Int_t fSCv2vsZNPtBins = 3;
   const static Int_t fSCv2vsZNHarm = 2;
   const static Int_t fkSCNHist = 6;
-  const static Int_t fkFlowSCNvar = 4;
+  const static Int_t fkFlowSCNvar = 6;
   TProfile *fFlowSCProdPro[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCProdHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCFinalHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TH1D *fFlowSCCovHist[fSCv2vsZNHarm][fkSCNHist]; //!
   TProfile *fFlowSCCrossProdPro[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
+  TProfile *fFlowSCCrossProdProMult[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
 
   // Flow SP VZ
   const static Int_t fkFlowSPVZnHist = 4;
@@ -2005,6 +1988,7 @@ private:
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
   TH3D *fVtxHist[3]; //! primary vertex
+  TH3F* fTwoTrackDistancePt[2]; //!
   TH2D *fRefMulRecHist; //!
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
@@ -2050,6 +2034,8 @@ private:
   Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
+  Double_t fZPCen; // total energy from ZPC-C
+  Double_t fZPAen; // total energy from ZPC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
   TH2F* fZDCESEMultWeightsHist[5]; //! ZDC-ESE mult weights
   TH2F* fZDCESESpecWeightsHist[5]; //! ZDC-ESE mult weights
@@ -2066,8 +2052,9 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
+  Bool_t fbFlagIsBadRunForC34;
 
-  ClassDef(AliFlowAnalysisCRC,65);
+  ClassDef(AliFlowAnalysisCRC,71);
 
 };
 

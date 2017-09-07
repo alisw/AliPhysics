@@ -38,6 +38,7 @@ set(SRCS
       AliAnalysisTaskReducedTreeMaker.cxx
       AliHistogramManager.cxx
       AliMixingHandler.cxx
+      AliReducedAnalysisFilterTrees.cxx
       AliReducedAnalysisJpsi2ee.cxx
       AliReducedAnalysisJpsi2eeMult.cxx
       AliReducedAnalysisTaskSE.cxx

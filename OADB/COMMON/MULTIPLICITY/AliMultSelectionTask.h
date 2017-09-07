@@ -76,14 +76,15 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodNameByLPM(); //try userInfo first
+    TString GetPeriodNameByLPM(TString lTag); //try userInfo first
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
-    Bool_t IsHijing() const;
-    Bool_t IsDPMJet() const; 
+    Bool_t IsHijing()  const;
+    Bool_t IsDPMJet()  const;
+    Bool_t IsEPOSLHC() const;
  
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     

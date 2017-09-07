@@ -15,12 +15,17 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskValidation();
   AliAnalysisTaskValidation(const char *name);
+
+  /// Set up this task. This function acts as the AddTask macro
+  static AliAnalysisTaskValidation* ConnectTask(const char *suffix);
+  /// The Exchange container which is to be accessed by other classes
+  AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliAnalysisTaskValidation() {};
 
   // Enums describing each event validator. These can be pushed into
-  // fValidators by the user when configuring their task
+  // fEventValidators by the user when configuring their task
   enum EventValidation {
-      kNoCut,
+      kNoEventCut,
       kIsAODEvent,
       kHasFMD,
       kHasEntriesFMD,
@@ -32,7 +37,16 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
       kNotOutOfBunchPU,
       kNotMultiVertexPU,
       kNotSPDPU,
-      kNotSPDClusterVsTrackletBG,
+      kNotSPDClusterVsTrackletBG
+  };
+
+  // Enums describing each event validator. These can be pushed into
+  // fEventValidators by the user when configuring their task
+  enum TrackValidation {
+    kNoTrackCut,
+    kTPCOnly,
+    kEtaCut,
+    kPtCut
   };
 
   // A simple struct that combines track/tracklet/hit information such that it can be
@@ -61,17 +75,24 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   AliAnalysisTaskValidation::Tracks GetV0hits() const;
 
   // Get SPD tracklets. Note that tracklets have no pt resolution; pt is set to 0!
-  AliAnalysisTaskValidation::Tracks GetSPDtracklets() const;
+  AliAnalysisTaskValidation::Tracks GetTracklets() const;
 
   // Get SPD clusters. Note that closters have no pt resolution; pt is set to 0!
   AliAnalysisTaskValidation::Tracks GetSPDclusters() const;
+
+  // Get central barrel tracks
+  AliAnalysisTaskValidation::Tracks GetTracks();
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
   Bool_t fIsValidEvent;
   /// Vector with all the event validators as enums. Can be set by the
   /// user when setting up the task
-  std::vector<AliAnalysisTaskValidation::EventValidation> fValidators;
+  std::vector<AliAnalysisTaskValidation::EventValidation> fEventValidators;
+
+  /// Vector with all the _track_ validators as enums. Can be set by the
+  /// user when setting up the task
+  std::vector<AliAnalysisTaskValidation::TrackValidation> fTrackValidators;
 
   void UserCreateOutputObjects();
   TList *fOutputList;  //!
@@ -80,7 +101,11 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
 
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
-  TH1F *fQADiscard_flow;
+  /// Histogram showing why an even got discarded to be read from left to right
+  TH1F *fQA_event_discard_flow;
+
+  /// Histogram showing why a _Track_ was discarded to be read from left to right
+  TH1F *fQA_track_discard_flow;
 
   // A class applying the recommended event cuts
   AliEventCuts fEventCuts;

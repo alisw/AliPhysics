@@ -31,6 +31,7 @@
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TH3F.h>
+#include <TRandom3.h>
 
 #include "AliLog.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -62,6 +63,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(0),
   fCandidateName(""),
@@ -82,6 +85,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fMCHeader(0),
+  fRan(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -135,6 +139,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(candtype),
   fCandidateName(""),
@@ -155,6 +161,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fMCHeader(0),
+  fRan(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -463,6 +470,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     AddObjectToEvent(fCombinedDmesonsBkg);
     if(fUseMCInfo) AddObjectToEvent(fMCCombinedDmesons);
   }
+  
+  fRan  = new TRandom3(0);
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -1473,7 +1482,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
           bool isInj = IsMCTrackInjected(mcpart, fMCHeader, fMCarray);
           if(!isInj) continue;
         }
+      
+        
         if (allMCDaughters.Remove(mcpart) == 0) {
+            if(fUseRejTracks){
+              if(fRan->Rndm() < fTrackIneff) continue;
+            }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));

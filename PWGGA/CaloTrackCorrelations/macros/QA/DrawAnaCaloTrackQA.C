@@ -49,6 +49,7 @@
 #include <TLine.h>
 #include <TF1.h>
 #include <TMath.h>
+#include <TLatex.h>
 
 #endif
 
@@ -62,6 +63,7 @@ void CorrelQA  (Int_t icalo);
 void MCQA      (Int_t icalo);
 void ScaleAxis (TAxis *a, Double_t scale);
 void ScaleXaxis(TH1   *h, Double_t scale);
+void MyLatexMakeUp(TLatex *currentLatex, Int_t textfont, Double_t textsize, Int_t textcolor);
 
 TObject * GetHisto  (TString histoName);
 void      SaveHisto (TObject* histo, Bool_t tag = kTRUE);
@@ -79,6 +81,9 @@ TFile  *fout = 0;         /// output file with plots or extracted histograms
 TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
 TString format = "eps";   /// plots format: eps, pdf, etc.
 Int_t   exportToFile = 0; /// option to what and if export to output file
+TLatex *text[4];          /// plot quality messages 
+Double_t nEvents = 0.;    /// number of events analyzed
+Bool_t  addOkFlag = kTRUE;/// print message on plot with ok/not ok
 
 /// pre-defined colors list 
 Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
@@ -100,6 +105,7 @@ Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,
 /// \param fileName: File name
 /// \param exportTo: 0 - do not export; 1 - export generated plots to file; 2 - export extracted lists to file
 /// \param fileFormat: define the type of figures: eps, pdf, etc.
+/// \param okFlag: add to the figures ok/not ok info.
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA
 (
@@ -107,14 +113,16 @@ void DrawAnaCaloTrackQA
  TString fileName     = "AnalysisResults.root",
  Int_t   exportTo     = 1,
  TString fileFormat   = "eps",
- TString outFileName  = "CaloTrackCorrQA_output"
+ TString outFileName  = "CaloTrackCorrQA_output",
+ Bool_t  okFlag       = kTRUE
 )
 {
   format       = fileFormat;
   exportToFile = exportTo;
+  addOkFlag    = okFlag;
   
-  printf("Open <%s>; Get Trigger List : <%s>; Export option <%d>; format %s; outputFileName %s.root\n",
-         fileName.Data(),listName.Data(),exportToFile, format.Data(),outFileName.Data());
+  printf("Open <%s>; Get Trigger List : <%s>; Export option <%d>; format %s; outputFileName %s.root, ok flag %d\n",
+         fileName.Data(),listName.Data(),exportToFile, format.Data(),outFileName.Data(),addOkFlag);
  
   // Get file and list container, global variables
   //
@@ -152,6 +160,16 @@ void DrawAnaCaloTrackQA
     cdd->ls();
   }
   //---------------
+  
+  // Initialize OK messages
+  //
+  if(addOkFlag)
+  {
+    text[0] = new TLatex(0.35,0.4,"#color[3]{OK}");          MyLatexMakeUp(text[0],42,0.1,1);
+    text[1] = new TLatex(0.30,0.4,"#color[2]{NOT OK}");      MyLatexMakeUp(text[1],42,0.1,2);
+    text[2] = new TLatex(0.20,0.4,"#color[6]{Likely OK}");   MyLatexMakeUp(text[2],42,0.1,3);
+    text[3] = new TLatex(0.15,0.9,"#color[4]{Expert plot}"); MyLatexMakeUp(text[3],42,0.1,4);
+  }
   
   // Process each of the triggers
   //
@@ -202,6 +220,19 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     if ( !ok ) return;
   }
 
+  // Check the number of events, if no trigger, skip plots
+  //
+  nEvents = ((TH1D*) GetHisto("hNEvents"))->GetBinContent(1);
+  printf("\t \t n Events %2.3e\n",nEvents);
+  
+  if( nEvents < 1 )
+  {
+    printf("Skip list %s, no events\n",trigName.Data());
+    return;
+  }
+  
+  // Style options
+  //
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(000000);
@@ -210,6 +241,8 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
   //gStyle->SetPadLeftMargin(0.15);
   gStyle->SetTitleFontSize(0.05);
 
+  // Calorimeter, DCal or EMCal, to be checked, depends on trigger
+  //
   Int_t nCalo = 2;
   Int_t calo  = 0;
   if     (trigName.Contains("EMCAL")) { calo = 0 ; nCalo = 1 ; }
@@ -218,6 +251,10 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
   TString caloString [] = {"EMCAL","DCAL"}; 
   
   histoTag = trigName;
+  
+  ////////////
+  // Plotting
+  ////////////
   
   // Plot basic Track QA
   TrackQA();
@@ -258,6 +295,8 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
+  Int_t ok = 0;
+
   //-----------------------------
   // Cluster spectra and track match residuals
   //
@@ -287,7 +326,6 @@ void CaloQA(Int_t icalo)
   l.SetBorderSize(0);
   l.SetFillColor(0);
 
-  
   TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
   TH1F* hCellAmplitude  = 0;
   if(h2CellAmplitude)
@@ -308,6 +346,35 @@ void CaloQA(Int_t icalo)
   
   l.Draw();
 
+  // ok message
+  if(addOkFlag)
+  {
+    Float_t minClusterE = 1;
+    if      ( histoTag.Contains("L0") ) minClusterE =  4;
+    else if ( histoTag.Contains("L2") ) minClusterE = 10;
+    else if ( histoTag.Contains("L1") ) minClusterE = 14;
+    
+    ok=0;
+    
+    if ( hClusterEnergy->GetEntries() < 100 ) ok = 1;
+    
+    for(Int_t ibin = 1; ibin < hClusterEnergy->GetNbinsX(); ibin++)
+    {
+      if ( hClusterEnergy->GetBinCenter(ibin) < minClusterE ) continue;
+      
+      if ( hClusterEnergy->GetBinContent(ibin) < 100 ) continue;
+      
+      if ( hClusterEnergy->GetBinContent(ibin)*1.4 < hClusterEnergy->GetBinContent(ibin+1) )
+      {
+        ok=2;
+        //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
+        break;
+      }
+    }
+    
+    text[ok]->Draw();
+  }
+  
   ccalo->cd(2);
   //gPad->SetLogy();
   gPad->SetLogx();
@@ -358,6 +425,35 @@ void CaloQA(Int_t icalo)
   l2.SetFillColor(0);
   l2.Draw();
   
+  // ok message, very loose
+  if(addOkFlag)
+  {
+    ok=0;
+    for(Int_t ibin = 1; ibin < hTM->GetNbinsX(); ibin++)
+    {
+      if(hTM->GetBinCenter(ibin) < 0.5) continue;
+      if(hTM->GetBinCenter(ibin) > 20 ) break;
+      
+      Float_t conTM = hTM  ->GetBinContent(ibin);
+      Float_t conSh = hShSh->GetBinContent(ibin); 
+      Float_t errTM = hTM  ->GetBinError(ibin);
+      Float_t errSh = hShSh->GetBinError(ibin);
+      
+      if(errTM > conTM || errSh > conSh) continue;
+      
+      //printf("bin %d, center %2.2f, cont TM %f, Sh %f\n",ibin,hTM->GetBinCenter(ibin),conTM,conTM);
+      
+      if(conTM > 0.999 || conSh > 0.999 || conTM < 0.5 || conSh < 0.2)
+      {
+        ok=1;
+        //printf("bin %d, center %2.2f, cont TM %f, Sh %f\n",ibin,hTM->GetBinCenter(ibin),conTM,conTM);
+        break;
+      }
+    }
+    
+    text[ok]->Draw();
+  }
+  
   // Plot track-matching residuals
   TH1F* hTrackMatchResEtaNeg;
   TH1F* hTrackMatchResEtaPos;
@@ -382,6 +478,8 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPhi->SetYTitle("#Delta #varphi");
     hTrackMatchResEtaPhi->SetZTitle("Entries");
     hTrackMatchResEtaPhi->Draw("colz");
+    
+    if(addOkFlag) text[3]->Draw();
     
     ccalo->cd(4);
     //gPad->SetLogy();
@@ -435,6 +533,28 @@ void CaloQA(Int_t icalo)
     l3.SetBorderSize(0);
     l3.SetFillColor(0);
     l3.Draw();
+    
+    // ok message
+    if(addOkFlag)
+    {
+      ok=0;
+      
+      if ( hTrackMatchResPhiPos->GetEntries() < 10 || hTrackMatchResPhiNeg->GetEntries() < 10 ||
+          hTrackMatchResEtaPos->GetEntries() < 10 || hTrackMatchResEtaNeg->GetEntries() < 10   ) ok = 1;
+      
+      //    printf("Mean (%2.2f, %2.2f, %2.2f, %2.2f), RMS (%2.2f, %2.2f, %2.2f, %2.2f)\n",
+      //           hTrackMatchResPhiPos->GetMean()*1000, hTrackMatchResEtaPos->GetMean()*1000,
+      //           hTrackMatchResPhiNeg->GetMean()*1000, hTrackMatchResEtaNeg->GetMean()*1000,
+      //           hTrackMatchResPhiPos->GetRMS ()*1000, hTrackMatchResEtaPos->GetRMS ()*1000,
+      //           hTrackMatchResPhiNeg->GetRMS ()*1000, hTrackMatchResEtaNeg->GetRMS ()*1000
+      //           );
+      
+      // just a guess, not based on anything
+      if( hTrackMatchResPhiPos->GetMean()*1000 < -2 || hTrackMatchResEtaPos->GetMean()*1000 < -2 ||
+         hTrackMatchResPhiNeg->GetMean()*1000 >  2 || hTrackMatchResEtaNeg->GetMean()*1000 >  2) ok = 2;
+      
+      text[ok]->Draw();
+    }
   }
   
   ccalo->Print(Form("%s_CaloHisto_ClusterSpectraAndTrackResiduals.%s",histoTag.Data(),format.Data()));
@@ -483,7 +603,59 @@ void CaloQA(Int_t icalo)
     hCellActivity->SetZTitle("Entries");
     hCellActivity->SetTitleOffset(1.5,"Z");
     hCellActivity->Draw("colz");
+    
+    // ok message
+    if(addOkFlag)
+    {
+      //Float_t meanCellHits = 0;
+      Int_t   nHitCell    = 0;
+      //Int_t   nHotCell    = 0;
+      //Int_t   nColdCell   = 0;
+      ok=0;
+      for(Int_t ibin = 2; ibin < hCellActivity->GetNbinsX(); ibin++)
+      {
+        for(Int_t jbin = 2; jbin < hCellActivity->GetNbinsY(); jbin++)
+        {
+          if(histoTag.Contains("default"))
+          {
+            if ( icalo == 0 && jbin > 129 ) continue ; // EMC
+            if ( icalo == 1 && jbin < 130 ) continue ; // DMC
+          }
+          
+          //meanCellHits += hCellActivity->GetBinContent(ibin,jbin);
+          if ( hCellActivity->GetBinContent(ibin,jbin) > 2 ) nHitCell++;
+        }
+      }
+      
+      //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+      
+      Float_t totalCells = 10*24*48+2*8*48; // EMC
+      if(icalo==1) totalCells = 6*24*32+2*8*48; // DMC
+      
+      Float_t active = nHitCell / totalCells ;
+      
+      if      ( active > 0.90) ok = 0;
+      else if ( active > 0.7 ) ok = 2;
+      else                     ok = 1;
+      
+      text[ok]->Draw();
+      
+      //    for(Int_t ibin = 1; ibin < hCellActivity->GetNbinsX(); ibin++)
+      //    {
+      //      for(Int_t jbin = 1; jbin < hCellActivity->GetNbinsY(); jbin++)
+      //      {
+      //        if(icalo == 0 && (jbin >  127)) continue ; // EMC
+      //        if(icalo == 1 && (jbin <= 127)) continue ; // DMC
+      //        
+      //        if ( hCellActivity->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+      //        if ( hCellActivity->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+      //      }
+      //    }
+      //
+      //    printf("cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+    }
   }
+  
   ccalo2->cd(2);
   
   TH2F* hCellActivityE = (TH2F*) GetHisto("QA_Cell_hGridCellsE");
@@ -502,7 +674,67 @@ void CaloQA(Int_t icalo)
     hCellActivityE->SetTitleOffset(1.5,"Z");
     
     hCellActivityE->Draw("colz");
+    
+    // ok message
+    if(addOkFlag)
+    {
+      //Float_t meanCellHits = 0;
+      Int_t   nHitCell    = 0;
+      //Int_t   nHotCell    = 0;
+      //Int_t   nColdCell   = 0;
+      ok=0;
+      for(Int_t ibin = 2; ibin < hCellActivityE->GetNbinsX(); ibin++)
+      {
+        //printf("col %d ",ibin);
+        for(Int_t jbin = 2; jbin < hCellActivityE->GetNbinsY(); jbin++)
+        {
+          if(histoTag.Contains("default"))
+          {
+            if ( icalo == 0 && jbin > 129 ) continue ; // EMC
+            if ( icalo == 1 && jbin < 130 ) continue ; // DMC
+          }
+          
+          //meanCellHits += hCellActivityE->GetBinContent(ibin,jbin);
+          if ( hCellActivityE->GetBinContent(ibin,jbin) > 0 ) 
+          {
+            //printf("1");
+            nHitCell++;
+          } 
+          //else printf("0");
+        }
+        //printf("\n");
+      }
+      
+      //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+      
+      Float_t totalCells = 10*24*48+2*8*48; // EMC
+      if(icalo==1) totalCells = 6*24*32+2*8*48; // DMC
+      
+      Float_t active = nHitCell / totalCells ;
+      
+      if      ( active > 0.90) ok = 0;
+      else if ( active > 0.7 ) ok = 2;
+      else                     ok = 1;
+      
+      text[ok]->Draw();
+      //printf("cell hits %d, total %2.0f, active %2.2f\n",nHitCell,totalCells,active);
+
+      //    for(Int_t ibin = 1; ibin < hCellActivityE->GetNbinsX(); ibin++)
+      //    {
+      //      for(Int_t jbin = 1; jbin < hCellActivityE->GetNbinsY(); jbin++)
+      //      {
+      //        if(icalo == 0 && (jbin >  127)) continue ; // EMC
+      //        if(icalo == 1 && (jbin <= 127)) continue ; // DMC
+      //        
+      //        if ( hCellActivityE->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+      //        if ( hCellActivityE->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+      //      }
+      //    }
+      //    
+      //    printf("cellE hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+    }
   }
+  
   ccalo2->cd(3);
   gPad->SetLogz();
   
@@ -518,6 +750,53 @@ void CaloQA(Int_t icalo)
   
   hClusterActivity->Draw("colz");
 
+  // ok message
+  if(addOkFlag)
+  {
+    //Float_t meanCellHits = 0;
+    Int_t   nHitCell    = 0;
+    //Int_t   nHotCell    = 0;
+    //Int_t   nColdCell   = 0;
+    ok=0;
+    for(Int_t ibin = 1; ibin < hClusterActivity->GetNbinsX(); ibin++)
+    {
+      for(Int_t jbin = 1; jbin < hClusterActivity->GetNbinsY(); jbin++)
+      {
+        //meanCellHits += hClusterActivity->GetBinContent(ibin,jbin);
+        if ( hClusterActivity->GetBinContent(ibin,jbin) > 2 ) nHitCell++;
+      }
+    }
+    
+    //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+    
+    Float_t totalCells = 10*24*48+2*8*48  -48*12-10*24-4*8; // EMC minus close to border
+    if(icalo==1) totalCells = 6*24*32+2*8*48  -32*8-48*4-6*24-8*2; // DMC minus close to border
+    
+    Float_t active = nHitCell / totalCells ;
+    
+    if      ( active > 0.90) ok = 0;
+    else if ( active > 0.7 ) ok = 2;
+    else                     ok = 1;
+    
+    if(ok==1 && nEvents < 1000000) ok = 2;
+    
+    text[ok]->Draw();
+    //printf("cellE hits %d, total %2.0f, active %2.2f\n",nHitCell,totalCells,active);
+
+    //printf("cluster cell hits %d, total %d, active %2.2f\n",nHitCell,totalCells,active);
+
+    //  for(Int_t ibin = 1; ibin < hClusterActivity->GetNbinsX(); ibin++)
+    //  {
+    //    for(Int_t jbin = 1; jbin < hClusterActivity->GetNbinsY(); jbin++)
+    //    {
+    //      if ( hClusterActivity->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+    //      if ( hClusterActivity->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+    //    }
+    //  }
+    //  
+    //  printf("cluster cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+  }
+  
   ccalo2->cd(4);
   gPad->SetLogz();
   
@@ -533,6 +812,51 @@ void CaloQA(Int_t icalo)
   
   hClusterActivity2->Draw("colz");
 
+  // ok message
+  if(addOkFlag)
+  {
+    //Float_t meanCellHits = 0;
+    Int_t nHitCell    = 0;
+    //Int_t nHotCell    = 0;
+    //Int_t nColdCell   = 0;
+    ok=0;
+    for(Int_t ibin = 1; ibin < hClusterActivity2->GetNbinsX(); ibin++)
+    {
+      for(Int_t jbin = 1; jbin < hClusterActivity2->GetNbinsY(); jbin++)
+      {
+        //meanCellHits += hClusterActivity2->GetBinContent(ibin,jbin);
+        if ( hClusterActivity2->GetBinContent(ibin,jbin) > 0 ) nHitCell++;
+      }
+    }
+    
+    //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+        
+    Float_t totalCells = 10*24*48+2*8*48  -48*12-10*24-4*8; // EMC minus close to border
+    if(icalo==1) totalCells = 6*24*32+2*8*48  -32*8-48*4-6*24-8*2; // DMC minus close to border
+    
+    Float_t active = nHitCell / totalCells ;
+    
+    if      ( active > 0.80) ok = 0;
+    else if ( active > 0.50) ok = 2;
+    else                     ok = 1;  
+    
+    if(ok==1 && nEvents < 1000000) ok = 2;
+    
+    text[ok]->Draw();
+    //printf("cluster2 cell hits %d, total %d, active %2.2f\n",nHitCell,totalCells,active);
+    
+//    for(Int_t ibin = 1; ibin < hClusterActivity2->GetNbinsX(); ibin++)
+//    {
+//      for(Int_t jbin = 1; jbin < hClusterActivity2->GetNbinsY(); jbin++)
+//      {
+//        if ( hClusterActivity2->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+//        if ( hClusterActivity2->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+//      }
+//    }
+//    
+//    printf("cluster2 cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+  }
+  
   ccalo2->Print(Form("%s_CaloHisto_CellClusterHit.%s",histoTag.Data(),format.Data()));
 
   // cleanup or save
@@ -561,7 +885,9 @@ void CaloQA(Int_t icalo)
   hClusterTime->SetZTitle("Entries");
   hClusterTime->SetTitleOffset(1.5,"Z");
   hClusterTime->Draw("colz");
-  
+
+  if(addOkFlag) text[3]->Draw();
+
   ccalo3->cd(2);
   
   gPad->SetLogz();
@@ -574,7 +900,8 @@ void CaloQA(Int_t icalo)
   hClusterL0->SetTitleOffset(1.5,"Z");
   
   hClusterL0->Draw("colz");
-
+  if(addOkFlag) text[3]->Draw();
+  
   ccalo3->cd(3);
   
   gPad->SetLogz();
@@ -587,6 +914,7 @@ void CaloQA(Int_t icalo)
   hClusterNCell->SetTitleOffset(1.5,"Z");
 
   hClusterNCell->Draw("colz");
+  if(addOkFlag) text[3]->Draw();
  
   ccalo3->cd(4);
   
@@ -601,7 +929,8 @@ void CaloQA(Int_t icalo)
   hClusterECell->SetTitleOffset(1.5,"Z");
 
   hClusterECell->Draw("colz");
-  
+  if(addOkFlag) text[3]->Draw();
+
   ccalo3->Print(Form("%s_CaloHisto_TimeShapeNCells.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -1993,4 +2322,15 @@ void ScaleXaxis(TH1 *h, Double_t scale)
 }
 
 
+///
+/// Latex settings
+//___________________________________________________
+void MyLatexMakeUp(TLatex *currentLatex, Int_t textfont, Double_t textsize, Int_t textcolor)
+{
+  currentLatex->SetNDC();
+  currentLatex->SetTextFont(textfont);
+  currentLatex->SetTextSize(textsize);
+  currentLatex->SetTextColor(textcolor);
+  return;
+}
 

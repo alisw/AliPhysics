@@ -33,6 +33,8 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t b
     name="PbPbData666";//special cuts nano AOD filtering
   else if(cutDefinition==667)
     name="PbPbData667";//special cuts nano AOD filtering
+  else if(cutDefinition==668)
+    name="PbPbData668";//special cuts nano AOD filtering
   
   AliDielectron *die =
     new AliDielectron(Form("%s",name.Data()),
@@ -145,6 +147,12 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
     // tighter cuts than used for nano AOD filtering (only for AODs)
     if(!bESDANA){      
       SetupAODtrackCutsTight(die);
+    }
+  }
+  else if( cutDefinition == 668 ){
+    // another set of tight cuts (only for AODs)
+    if(!bESDANA){      
+      SetupAODtrackCutsTight2(die);
     }
   }
   else{
@@ -522,6 +530,92 @@ void SetupAODtrackCutsTight(AliDielectron *die)
 }
 
 //______________________________________________________________________________________
+void SetupAODtrackCutsTight2(AliDielectron *die)
+{
+  //
+  // Setup the track cuts
+  // - these are similar cuts used for nano AOD creation LHC15o (ConfigLMEE_nano_PbPb2015.C), but tighter
+  //
+
+  Bool_t hasMC=die->GetHasMC();
+
+  // Quality cuts
+  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv FILTER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  // AOD track filter (needs to be first cut to speed up)
+  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
+  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  
+  // specific cuts
+  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  trkCuts->SetRequireITSRefit(kTRUE);
+  trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
+
+  // standard cuts
+  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+  varCuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
+  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
+  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
+  
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+
+  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
+  // TPC
+  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
+  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+  // ITS
+  pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-3.,3.);
+  // TOF
+  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.);
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *pidCutsMC = new AliDielectronVarCuts("PIDCutsMC","PIDCutsMC");
+  pidCutsMC->SetCutType(AliDielectronVarCuts::kAny);
+  pidCutsMC->SetCutOnMCtruth(kTRUE);
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, -11., -11.);
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +11., +11.);
+
+  // activate the cut sets (order might be CPU timewise important)
+  if(hasMC) {
+    // cuts->AddCut(pidCutsMC); // commnted out for the moment
+    // die->GetTrackFilter().AddCuts(pidCutsMC);
+    cuts->AddCut(trkFilter);
+    die->GetTrackFilter().AddCuts(trkFilter);
+    cuts->AddCut(varCuts);
+    die->GetTrackFilter().AddCuts(varCuts);
+    cuts->AddCut(trkCuts);
+    die->GetTrackFilter().AddCuts(trkCuts);
+    cuts->AddCut(pidCuts);
+    die->GetTrackFilter().AddCuts(pidCuts);
+  }
+  else {
+    cuts->AddCut(trkFilter);
+    die->GetTrackFilter().AddCuts(trkFilter);
+    cuts->AddCut(varCuts);
+    die->GetTrackFilter().AddCuts(varCuts);
+    cuts->AddCut(trkCuts);
+    die->GetTrackFilter().AddCuts(trkCuts);
+    cuts->AddCut(pidCuts);
+    die->GetTrackFilter().AddCuts(pidCuts);
+  }
+  cuts->Print();
+  //die->GetTrackFilter().AddCuts(cuts); // done now separately
+
+}
+
+//______________________________________________________________________________________
 void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 {
   
@@ -689,4 +783,6 @@ const AliDielectronEventCuts *GetEventCuts(){
 
   return eventCuts;
 }
+
+
 

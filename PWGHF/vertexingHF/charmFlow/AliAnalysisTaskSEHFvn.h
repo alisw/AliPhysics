@@ -7,7 +7,7 @@
 //*************************************************************************
 // AliAnalysisTaskSEHFvn gives the needed tools for the D
 // mesons vn analysis
-// Authors: Chiara Bianchin, Robert Grajcarek, Giacomo Ortona, 
+// Authors: Chiara Bianchin, Robert Grajcarek, Giacomo Ortona,
 //          Carlos Perez Lara, Francesco Prino, Anastasia Barbano,
 //          Fabrizio Grosa, Andrea Festanti
 //
@@ -29,19 +29,19 @@ class TVector2;
 
 class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
 {
-    
+
  public:
-    
+
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
   enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // q2 for Event Shape to be calculated in the task
   enum EventPlaneDet{kNone=-1,kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
   //  enum SubEvents{kFullTPC,kPosTPC,kNegTPC,kSingleV0Side}; //Sub-events for V0 EP
-    
+
   AliAnalysisTaskSEHFvn();
   AliAnalysisTaskSEHFvn(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel);
-    
+
   virtual ~AliAnalysisTaskSEHFvn();
 
   void SetEventPlaneDetector(Int_t det){
@@ -79,9 +79,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Bool_t removeDau=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
+    fRemoveDauFromq2=removeDau;
   }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
@@ -102,20 +103,24 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     if(limit<1) fScalProdLimit=limit;
     else fScalProdLimit=1;
   }
-  
+  void SetOnTheFlyTPCEtaLimits(Double_t etamin, Double_t etamax) {
+    fTPCEtaMin=etamin;
+    fTPCEtaMax=etamax;
+  }
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-    
+
  private:
-    
+
   AliAnalysisTaskSEHFvn(const AliAnalysisTaskSEHFvn &source);
   AliAnalysisTaskSEHFvn& operator=(const AliAnalysisTaskSEHFvn& source);
-    
+
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
-    
+
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
@@ -125,10 +130,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
-  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg) const;
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg, Double_t qVecDefault[2], Double_t &multQvecDefault, Double_t multQvecTPC[3]) const;
   void CreateSparseForEvShapeAnalysis();
-  Double_t Getq2(TList* qnlist, Int_t q2meth);
-  
+  Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
+
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
@@ -171,10 +176,13 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
   Double_t fScalProdLimit;      // max value for the scalar product histograms
-  
+  Bool_t fRemoveDauFromq2;      // flag to activate removal of daughter tracks from q2 computation
+  Double_t fTPCEtaMin;          // min eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
+  Double_t fTPCEtaMax;          // max eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
+
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
-    
-  ClassDef(AliAnalysisTaskSEHFvn,4); // AliAnalysisTaskSE for the HF v2 analysis
+
+  ClassDef(AliAnalysisTaskSEHFvn,5); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

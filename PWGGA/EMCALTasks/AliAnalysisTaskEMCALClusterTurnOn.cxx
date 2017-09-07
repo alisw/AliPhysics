@@ -51,6 +51,8 @@
 #include "AliGenPythiaEventHeader.h"
 #include <AliEMCALTriggerPatchInfo.h>
 #include <AliTriggerClass.h>
+#include <TParameter.h>
+#include "AliOADBContainer.h"
 #include <AliCDBManager.h>
 #include <AliEmcalDownscaleFactorsOCDB.h>
 
@@ -67,7 +69,6 @@ using std::endl;
 AliAnalysisTaskEMCALClusterTurnOn::AliAnalysisTaskEMCALClusterTurnOn() :
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALClusterTurnOn",kTRUE),
   //fParticleCollArray(),
-fAOD(0),
 fAODEvent(0x0),
 fVevent(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -79,6 +80,7 @@ fM02mincut(0.1),
 fM02maxcut(0.3),
 fQA(0),
 fThn(0),
+fRecalc(0),
 fNDimensions(0),
 fClusDimensions(0),
 fIsNLMCut(kFALSE),
@@ -86,7 +88,6 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
-fTest1(0),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -111,20 +112,21 @@ fDTBC(0),
 fPtaftDTBC(0),
 fPtaftFC(0),
 fTriggerbit(0), 
-fADCvsEonline(0),
 hL0Amplitude(0),
-hPatchADC(0),
 hmaxADC(0),
+hADCpos0(0),
 hmaxL0ADC(0),
+hL1PatchPosition(0),
+hFastOrPatchE(0),
 fL0triggered(0),
 fEventsover10(0),
 fL1triggered(0),
-fADCvsEall(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
-hFastOrIndex(0),
+hFastOrIndexLeadingCluster(0),
 fOutTHnS_Clust(0)
 {
 
@@ -134,13 +136,13 @@ fOutTHnS_Clust(0)
     // for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
 AliAnalysisTaskEMCALClusterTurnOn::AliAnalysisTaskEMCALClusterTurnOn(const char *name, Bool_t histo) :
 AliAnalysisTaskEmcal(name, histo),
   //fParticleCollArray(),
-fAOD(0),
 fAODEvent(0x0),
 fVevent(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -151,6 +153,7 @@ fM02mincut(0.1),
 fM02maxcut(0.3),
 fQA(0),
 fThn(0),
+fRecalc(0),
 fNDimensions(0),
 fClusDimensions(0),
 fIsNLMCut(kFALSE),
@@ -158,7 +161,6 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
-fTest1(0),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -183,20 +185,21 @@ fDTBC(0),
 fPtaftDTBC(0),
 fPtaftFC(0),
 fTriggerbit(0), 
-fADCvsEonline(0),
 hL0Amplitude(0),
-hPatchADC(0),
 hmaxADC(0),
+hADCpos0(0),
 hmaxL0ADC(0),
+hL1PatchPosition(0),
+hFastOrPatchE(0),
 fL0triggered(0),
 fEventsover10(0),
 fL1triggered(0),
-fADCvsEall(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
-hFastOrIndex(0),
+hFastOrIndexLeadingCluster(0),
 fOutTHnS_Clust(0)
 {
 
@@ -206,6 +209,7 @@ fOutTHnS_Clust(0)
     //    for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   
   SetMakeGeneralHistograms(kTRUE);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
   //________________________________________________________________________
@@ -236,13 +240,10 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   if(fThn){
 
     Int_t binPT = fBinsPt.size()-1;
-    Int_t binPTCl = fBinsPtCl.size()-1;
     Int_t binRejection = fBinsRejection.size()-1;
     Int_t binEnergy = fBinsEnergy.size()-1;
     Int_t binetacell = fBinsEta.size()-1;
     Int_t binphicell = fBinsPhi.size()-1;
-    Int_t binetacl = fBinsClEta.size()-1;
-    Int_t binphicl = fBinsClPhi.size()-1;
     
     
     Int_t bins[] = {binPT, binRejection, binEnergy, binetacell, binphicell};
@@ -264,6 +265,9 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     fOutput->Add(fOutputTHnS);
     
     
+//    Int_t binPTCl = fBinsPtCl.size()-1;
+//    Int_t binetacl = fBinsClEta.size()-1;
+//    Int_t binphicl = fBinsClPhi.size()-1;
 //    Int_t binsCluster[] = {binPTCl, binRejection ,binetacl,binphicl};
 //    
 //    fClusDimensions = sizeof(binsCluster)/sizeof(Int_t);
@@ -277,10 +281,6 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
 //    fOutTHnS_Clust->Sumw2();
 //    fOutput->Add(fOutTHnS_Clust);
             
-
-    hFastOrIndex = new TH2D("hFastOrIndex","FastOR index vs E_{Clus}; FastOR; #it{E}_{T} (GeV)",3101,-0.5,3100.5,70,0.,70.);
-    hFastOrIndex->Sumw2();
-    fOutput->Add(hFastOrIndex);
   }
         
     //Common histograms QA initialization
@@ -347,26 +347,34 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   fEvents = new TH1D("hEvents_NC","Events",100,0.,100.);
   fEvents->Sumw2();
   fOutput->Add(fEvents);
+
+  hFastOrIndexLeadingCluster = new TH2D("hFastOrIndexLeadingCluster","FastOR index vs E_{Clus} for leading cluster; FastOR; #it{E}_{T} (GeV)",3101,-0.5,3100.5,70,0.,70.);
+  hFastOrIndexLeadingCluster->Sumw2();
+  fOutput->Add(hFastOrIndexLeadingCluster);
  
 //  fTriggerbit = new TH2D("hTriggerbit","Events per Trigger Bit; trigger bit; max #it{E}_{T,Clus} (GeV); Events", 3,-0.5,2.5,100,0.,100.);
 //  fTriggerbit->Sumw2();
 //  fOutput->Add(fTriggerbit);
 
-//  fADCvsEonline = new TH2D("hADCvsEonline","online ADC vs Patch Energy; ADC; E",400,0.,400.,200,0.,100.);
-//  fADCvsEonline->Sumw2();
-//  fOutput->Add(fADCvsEonline);
-
-  hPatchADC = new TH1D("hPatchADC","L1 ADC per patch distribution; ADC", 500,0.,500.);
-  hPatchADC->Sumw2();
-  fOutput->Add(hPatchADC); 
-
   hmaxADC = new TH2D("hmaxPatchADC_E_L1","L1 max ADC vs patch energy distribution; ADC; E (GeV)", 1000,0.,2000.,100,0.,100.);
   hmaxADC->Sumw2();
   fOutput->Add(hmaxADC); 
 
-  hmaxL0ADC = new TH2D("hmaxPatchADC_E_L0","L0 max ADC vs patch energy distribution; ADC; E (GeV)", 10000,100000.,400000.,80,0.,80.);
+  hADCpos0 = new TH2D("hADCpos0","ADC vs E_{patch} for patches with EtaGeo = PhiGeo = 0",1000,0.,2000.,80,0.,80.);
+  hADCpos0->Sumw2();
+  fOutput->Add(hADCpos0);
+
+  hmaxL0ADC = new TH2D("hmaxPatchADC_E_L0","L0 max ADC vs patch energy distribution; ADC; E (GeV)", 6000,100000.,400000.,60,0.,60.);
   hmaxL0ADC->Sumw2();
   fOutput->Add(hmaxL0ADC); 
+
+  hL1PatchPosition = new TH2D("hL1PatchPosition","Location of L1 Patch over threshold;#eta;#phi",48,-0.674,0.674,60, 1.4, 3.14);
+  hL1PatchPosition->Sumw2();
+  fOutput->Add(hL1PatchPosition);
+
+  hFastOrPatchE = new TH2D("hFastOrPatchE","FastOR # vs patch energy;FastOR;#it{E}_{patch} (GeV)",3001, -0.5,3000.5,120,0.,60.);
+  hFastOrPatchE->Sumw2();
+  fOutput->Add(hFastOrPatchE);
 
   hL0Amplitude = new TH1D("hL0Amplitude","L0 Amplitudes for L0time = 8|9; Amplitude",5001,24999.5,30000.5);
   hL0Amplitude->Sumw2();
@@ -376,19 +384,22 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   fL0triggered->Sumw2();
   fOutput->Add(fL0triggered);
 
-  fEventsover10 = new TH1D("hEventsover10", "Events with E_cluster > 10",100,0.,100.);
+  fEventsover10 = new TH2D("hEventsover10", "Events with E_{cluster} > threshold ",10,0.5,10.5,5,0.5,5.5);
   fEventsover10->Sumw2();
+  fEventsover10->GetXaxis()->SetBinLabel(1,"> 10 GeV");
+  fEventsover10->GetXaxis()->SetBinLabel(2,"> 12 GeV");
+  fEventsover10->GetXaxis()->SetBinLabel(3,"> 14 GeV");
+  fEventsover10->GetYaxis()->SetBinLabel(1,"all");
+  fEventsover10->GetYaxis()->SetBinLabel(2,"L0");
+  fEventsover10->GetYaxis()->SetBinLabel(3,"L0 recalc");
+  fEventsover10->GetYaxis()->SetBinLabel(4,"L1 recalc");
   fOutput->Add(fEventsover10);
 
   fL1triggered = new TH1D("hL1triggered","leading Cluster of L1 triggered Events;#it{E}_{T} (GeV);counts",200,0.,100.);
   fL1triggered->Sumw2();
   fOutput->Add(fL1triggered);
 
-  fADCvsEall = new TH2D("hADCvsEall","ADC vs Patch Energy; ADC; E",400,0.,400.,200,0.,100.);
-  fADCvsEall->Sumw2();
-  fOutput->Add(fADCvsEall);
-
-  fPt_trig = new TH2D("hPt_trig",";#it{E}_{T} (GeV);trigger class;Rejection",100,0.,100.,1,0.,1.);
+  fPt_trig = new TH2D("hPt_trig","leading cluster energy vs trigger classes;#it{E}_{T} (GeV);trigger class;Rejection",100,0.,100.,1,0.,1.);
   #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fPt_trig->SetBit(TH1::kCanRebin);
   #else
@@ -396,7 +407,7 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
   #endif
   fOutput->Add(fPt_trig);
   
-  fEtaPhiClus = new TH2D ("hEtaPhiClusActivity","Events with E_{max Patch} < 8.5 GeV; #eta; #phi",250,-0.8,0.8, 250, 1.2, 3.4);
+  fEtaPhiClus = new TH2D ("hEtaPhiClusActivity","Events with E_{max Patch} < 8.4 GeV; #eta; #phi",250,-0.8,0.8, 250, 1.2, 3.4);
     //  fEtaPhiClus->Sumw2();
   fOutput->Add(fEtaPhiClus);
     
@@ -492,24 +503,16 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   
   
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
   
     //  Printf("Vertex Z coordinate for M2: %f", fVertex[2]);
     //  Printf("Vertex Z coordinate for NF: %lf", fVertex[2]);
   
   if (fVertex[2]>10. || fVertex[2]<-10.) return kFALSE;
-    //  AliError(Form("La task tourne bien"));
   
   AliClusterContainer* clusters = GetClusterContainer(0);
-    ////Printf("Inside Run Method, Number of clusters for this event: %d",clusters->GetNAcceptedClusters());
-  Int_t nbTracksEvent;
-  nbTracksEvent =InputEvent()->GetNumberOfTracks();
   
-
-    // Fill events number histogram
-  fEvents->Fill(0);
-
   
-//  TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(fVevent->FindListObject("EmcalTriggers")); 
   TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers")); 
   Bool_t isL1 = kFALSE;
   Bool_t isL0recalc = kFALSE;
@@ -523,28 +526,43 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       AliEMCALTriggerPatchInfo *pti = static_cast<AliEMCALTriggerPatchInfo*>(triPatchInfo->At(ip));
       if(!pti) continue;
       if(!pti->IsEMCal()) continue;
-      fADCvsEall->Fill(pti->GetADCAmp(),pti->GetPatchE());
       if(pti->IsLevel0Recalc() && maxL0ADC < pti->GetADCAmp()){
         maxL0ADC = pti->GetADCAmp();
         E_of_maxL0 = pti->GetPatchE();
       }
       if(pti->IsLevel0Recalc() && pti->GetADCAmp() > 106) isL0recalc = kTRUE;
       if(!pti->IsRecalcGamma()) continue;
-      hPatchADC->Fill(pti->GetADCAmp());
       if(maxADC<pti->GetADCAmp()){
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
       }
       if(pti->GetADCAmp() > 130){  
         isL1 = kTRUE;
+        if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
+         hADCpos0->Fill(pti->GetADCAmp(),pti->GetPatchE());
+         continue;
+        }
+        hL1PatchPosition->Fill(pti->GetEtaGeo(), pti->GetPhiGeo());
+        Int_t AbsCellID = -1;
+        Int_t fastor = -1;
+        geom->GetAbsCellIdFromEtaPhi(pti->GetEtaGeo(), pti->GetPhiGeo(),AbsCellID);
+        if(AbsCellID > -1){
+          geom->GetFastORIndexFromCellIndex(AbsCellID,fastor);
+          hFastOrPatchE->Fill(fastor,pti->GetPatchE());
+        }
 //        break;
       }
     }
   }                      
-  else printf("TClonesArray 2 not found!!!!");
+
+  if(fRecalc && !isL1) return kFALSE;
+
   hmaxADC->Fill(maxADC,E_of_maxADC);
   hmaxL0ADC->Fill(maxL0ADC,E_of_maxL0);
-  cout << "MaxADCL0: " << maxL0ADC << " E_L0: " << E_of_maxL0 << endl;
+
+    // Fill events number histogram
+  fEvents->Fill(0);
+
 
   fAODEvent = dynamic_cast<AliAODEvent*> (InputEvent());  
   Int_t L0times[30], ntimes;
@@ -552,21 +570,19 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   AliAODCaloTrigger* AODtrigger   =fAODEvent->GetCaloTrigger("EMCAL");
   AODtrigger->Reset();
   while(AODtrigger->Next()){ 
-    Int_t TriggerBits;
     AODtrigger->GetNL0Times(ntimes);
     AODtrigger->GetL0Times(L0times);
     Float_t Ampli;
     AODtrigger->GetAmplitude(Ampli);
     for(Int_t i = 0; i<ntimes; i++){
-      if((L0times[i]==8 || L0times[i] == 9) && Ampli > 28710.){
-        AODtrigger->Print();
+      if((L0times[i]==8 || L0times[i] == 9) && Ampli > 28700.){
         isL0 = kTRUE;
         hL0Amplitude->Fill(Ampli);
 //        break;
       }
     }
   }
-  TLorentzVector veclclus;
+  TLorentzVector veclclus, dummy;
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi) {
@@ -575,41 +591,54 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
-    Double_t coiTOF = coi->GetTOF()*1e9;
-    if(coiTOF< -30. || coiTOF > 30.){
-      continue;
-    } 
-    if(E_of_maxADC<8.5) fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
-    if(vecCOI.E()>veclclus.E()) veclclus = vecCOI;
+
+    
+
+//    Double_t coiTOF = coi->GetTOF()*1e9;
+//    if(coiTOF< -30. || coiTOF > 30.){
+//      continue;
+//    } 
+    if(E_of_maxADC<8.4) fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
+    if(vecCOI.Pt()>veclclus.Pt()) veclclus = vecCOI;
   }
-  if(veclclus.E() > 10.) fEventsover10->Fill(0);
-    if(isL0){
-      if(veclclus.E() > 10.) fEventsover10->Fill(2);
-      fL0triggered->Fill(veclclus.E());
-//      fL0triggered->Fill(vecCOI.Pt());
+  Int_t cellID = -1;
+  Int_t FastOrIndex = -1;
+  if(veclclus != dummy){
+    geom->GetAbsCellIdFromEtaPhi(veclclus.Eta(),veclclus.Phi(),cellID);
+    if(cellID >= 0 ){
+      geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+      hFastOrIndexLeadingCluster->Fill(FastOrIndex,veclclus.Pt());
     }
-    if(isL0recalc){
-      if(veclclus.E() > 10.) fEventsover10->Fill(3);
-    }
-    if(isL1){
-      if(veclclus.E() > 10.) fEventsover10->Fill(8);
-      fL1triggered->Fill(veclclus.E());
-    }
-  
+  }
   
     //Fill Vertex Z histogram
   if(fQA) fVz->Fill(fVertex[2]);
   
     // delete output USEFUL LATER FOR CONTAINER CREATION !!
     //fOutClusters->Delete();
-  Int_t index=0;
   
+  TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
+  TIter next(triggerClasses);
+  TObjString* triggerClass = 0;
+  while ((triggerClass = static_cast<TObjString*>(next())) != NULL) fPt_trig->Fill(veclclus.Pt(),triggerClass->GetString(),1);
+
+  Bool_t FillMinBiOver10 = kTRUE;
+  Bool_t FillMinBiOver12 = kTRUE;
+  Bool_t FillMinBiOver14 = kTRUE;
   
-      //get the entries of the Cluster Container
-      //whatever is a RETURN in LCAnalysis here is a CONTINUE,
-      //since there are more than 1 Cluster per Event
-    
-      //    Printf("Starting loop on clusters in RUN method");
+  Bool_t FillEMC1Over10 = kTRUE;
+  Bool_t FillEMC1Over12 = kTRUE;
+  Bool_t FillEMC1Over14 = kTRUE;
+  
+  Bool_t FillEMC2Over10 = kTRUE;
+  Bool_t FillEMC2Over12 = kTRUE;
+  Bool_t FillEMC2Over14 = kTRUE;
+  
+  Bool_t FillEGAOver10 = kTRUE;
+  Bool_t FillEGAOver12 = kTRUE;
+  Bool_t FillEGAOver14 = kTRUE;
+
+
 
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
@@ -619,19 +648,33 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
       //
     
-    index=coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
     Double_t coiTOF = coi->GetTOF()*1e9;
     Double_t coiM02 = coi->GetM02();
             
-    TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
-    TIter next(triggerClasses);
-    TObjString* triggerClass = 0;
-
+    Bool_t isMasked = kFALSE;
+    if(fMaskFastOrCells){
+      AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+      badchannelDB.InitFromFile("MaskedFastors.root", "AliEmcalMaskedFastors");
+      TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+      if(badchannelmap && badchannelmap->GetEntries())
+        {
+        for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+          TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+          int maskedFastOr = channelID->GetVal();
+          geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
+          geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+          if(FastOrIndex==maskedFastOr) {
+            isMasked = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+    if(isMasked) continue;
 
     if(fQA) {
-      fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
 
       fPT->Fill(vecCOI.Pt());
     }
@@ -641,7 +684,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(fQA) fClusTime->Fill(checktof);
     
     if(coiTOF< -30. || coiTOF > 30.){
-      FillTHnSparse(coi,vecCOI, 1.5);
+      FillTHnSparse(geom,coi,vecCOI, 1.5);
       continue;
     } 
     if(fQA) {
@@ -650,7 +693,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
     
     if((coi->GetNCells() < 2)){
-      FillTHnSparse(coi,vecCOI, 2.5);
+      FillTHnSparse(geom,coi,vecCOI, 2.5);
       continue;
     }
     if(fQA) fPtaftCell->Fill(vecCOI.Pt());
@@ -668,7 +711,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       
       if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
         if(nlm > fNLMCut || nlm < fNLMmin ){
-          FillTHnSparse(coi,vecCOI, 3.5);
+          FillTHnSparse(geom,coi,vecCOI, 3.5);
           continue;
         }
     }
@@ -681,7 +724,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
     
     if((coi->GetDistanceToBadChannel() < 2)){
-      FillTHnSparse(coi,vecCOI, 4.5);
+      FillTHnSparse(geom,coi,vecCOI, 4.5);
       continue;
     }
     
@@ -689,12 +732,72 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     if(fM02cut){
       if(coiM02 < 0.1) continue;
     }
-    while (triggerClass = static_cast<TObjString*>(next())) fPt_trig->Fill(vecCOI.E(),triggerClass->GetString(),1);
+
+
+////////////////////////////////////////////////
+    if(vecCOI.Pt() > 10. && FillMinBiOver10){
+      fEventsover10->Fill(1,1);
+      FillMinBiOver10 = kFALSE;
+    }
+    if(vecCOI.Pt() > 12. && FillMinBiOver12){
+      fEventsover10->Fill(2,1);
+      FillMinBiOver12 = kFALSE;
+    }
+    if(vecCOI.Pt() > 14. && FillMinBiOver14){
+      fEventsover10->Fill(3,1);
+      FillMinBiOver14 = kFALSE;
+    }
+    if(isL0){
+      if(vecCOI.Pt() > 10. && FillEMC1Over10){
+        fEventsover10->Fill(1,2);
+        FillEMC1Over10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEMC1Over12){
+        fEventsover10->Fill(2,2);
+        FillEMC1Over12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEMC1Over14){
+        fEventsover10->Fill(3,2);
+        FillEMC1Over14 = kFALSE;
+      }
+      fL0triggered->Fill(vecCOI.Pt());
+    }
+    if(isL0recalc){
+      if(vecCOI.Pt() > 10. && FillEMC2Over10){
+        fEventsover10->Fill(1,3);
+        FillEMC2Over10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEMC2Over12){
+        fEventsover10->Fill(2,3);
+        FillEMC2Over12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEMC2Over14){
+        fEventsover10->Fill(3,3);
+        FillEMC2Over14 = kFALSE;
+      }
+    }
+    if(isL1){
+      if(vecCOI.Pt() > 10. && FillEGAOver10){
+        fEventsover10->Fill(1,4);
+        FillEGAOver10 = kFALSE;
+      }
+      if(vecCOI.Pt() > 12. && FillEGAOver12){
+        fEventsover10->Fill(2,4);
+        FillEGAOver12 = kFALSE;
+      }
+      if(vecCOI.Pt() > 14. && FillEGAOver14){
+        fEventsover10->Fill(3,4);
+        FillEGAOver14 = kFALSE;
+      }
+      fL1triggered->Fill(vecCOI.Pt());
+    }
+////////////////////////////////////////////////  
+
     
     if(fTMClusterRejected)
     {
       if(ClustTrackMatching(coi)){
-        FillTHnSparse(coi,vecCOI, 5.5);
+        FillTHnSparse(geom,coi,vecCOI, 5.5);
         continue;
       }
     }
@@ -703,14 +806,14 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
       fNLM->Fill(nlm,coi->E());
     
     if(!CheckBoundaries(vecCOI)){
-      FillTHnSparse(coi,vecCOI, 6.5);
+      FillTHnSparse(geom,coi,vecCOI, 6.5);
       continue;
     }
     
     if(fQA){
       fPtaftFC->Fill(vecCOI.Pt());
     }
-    FillTHnSparse(coi,vecCOI, 7.5);
+    FillTHnSparse(geom,coi,vecCOI, 7.5);
   
     if(vecCOI.Pt()<5.) continue;
     
@@ -720,19 +823,18 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
 }
 
   //____________________________________________________________________
-void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliVCluster *coi,TLorentzVector vecCOI, Double_t RejectedAt){
+void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, AliVCluster *coi,TLorentzVector vecCOI, Double_t RejectedAt){
 
   if(fThn){
     const Int_t ndims =   fNDimensions;
     const Int_t ndimsClus = fClusDimensions;
     Double_t outputValues[ndims];
-    Double_t outputValues_clus[ndimsClus];
-    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
     Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
     Int_t c_eta = 0;
     Int_t c_phi = 0;
-//    outputValues[0] = coi->E();
-//    outputValues[1] = RejectedAt;
+    outputValues[0] = coi->E();
+    outputValues[1] = RejectedAt;
+//    Double_t outputValues_clus[ndimsClus];
 //    outputValues_clus[0] = vecCOI.Et();
 //    outputValues_clus[1] = RejectedAt;
 //    outputValues_clus[2] = vecCOI.Eta();
@@ -744,13 +846,10 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliVCluster *coi,TLorentz
     Int_t cellnumber = coi->GetNCells();
     Int_t IDs[cellnumber];
     Float_t energy = 0;
-    Int_t FastOrIndex = 0;
     for (Int_t cellcounter = 0; cellcounter<cellnumber; cellcounter++)
     {
       IDs[cellcounter] = coi->GetCellsAbsId()[cellcounter];        
       Int_t cellID = IDs[cellcounter];
-      geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
-      hFastOrIndex->Fill(FastOrIndex,vecCOI.Et());
       geom->GetCellIndex(IDs[cellcounter],nSupMod, nModule, nIphi, nIeta);
       geom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       c_eta = 0; 
@@ -778,7 +877,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::ClustTrackMatching(AliVCluster *clust)
   Int_t nbMObj = clust -> GetNTracksMatched();
   if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
   
-  Double_t distCT=0.;
   
   if (nbMObj == 0) return kFALSE;
   
@@ -814,7 +912,6 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::ClustTrackMatching(AliVCluster *clust)
     deta=veta-ceta;
     dphi=TVector2::Phi_mpi_pi(vphi-cphi);
       //    printf("distant deta %.3f and dphi %.3f from the cluster",deta, dphi);
-    distCT=TMath::Sqrt(deta*deta+dphi*dphi);
     
     if(TMath::Abs(dphi)<fdphicut && TMath::Abs(deta)<fdetacut){
       return kTRUE;
@@ -900,14 +997,12 @@ Int_t AliAnalysisTaskEMCALClusterTurnOn::GetNLM(AliVCluster* coi, AliVCaloCells*
               //printf("\t \t indexN %d not local max\n",iDigitN);
               // but may be digit too is not local max ?
             if(en1 < en2 + locMaxCutEDiff) {
-                //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
               absIdList[iDigit] = -1 ;
             }
           }
           else
           {
             absIdList[iDigit] = -1 ;
-              //printf("\t \t index %d not local max\n",iDigitN);
               // but may be digitN too is not local max ?
             if(en1 > en2 - locMaxCutEDiff)
             {
@@ -1001,13 +1096,10 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::AreNeighbours(Int_t absId1, Int_t absI
 void AliAnalysisTaskEMCALClusterTurnOn::RecalAmpCell(Float_t & amp, Int_t id) const
 {
   Int_t iSupMod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
-  Float_t ampold=amp;
   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
   fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
   
   amp *= fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-    // if(ampold!=amp)
-    //  Printf("Inside cell id %d\t\tOld Amp %.4f and recalculated amplitude: %.4f",id, ampold, amp);
   
 }
 

@@ -45,8 +45,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fNEmcalClusters(0),
   fHistMatchEtaAll(0),
   fHistMatchPhiAll(0),
-  fMCGenerToAcceptForTrack(1),
-  fNMCGenerToAccept(0)
+  fNMCGenerToAccept(0),
+  fMCGenerToAcceptForTrack(1)
 {
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {

@@ -70,6 +70,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalDijetImbalance+;
+#pragma link C++ class AliAnalysisTaskEmcalVsPhos+;
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
@@ -93,6 +94,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerMatcher+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
+#pragma link C++ class AliAnalysisTaskEmcalHfeTagging+;
 #pragma link C++ class AliAnalysisTaskEmcalRun2QA+;
 #pragma link C++ class AliAnalysisTaskFakeJets+;
 #pragma link C++ class AliAnalysisTaskEmcalMissingEnergy+;

@@ -94,6 +94,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
   void                        AddJetToTree(AliEmcalJet* jet);
   // ##################
+  void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
   // ##################
@@ -358,8 +359,8 @@ class AliBasicJet
     Long64_t                  EventID() { return fEventID; }
     Short_t                   Centrality() { return fCentrality; }
     Double_t                  EventPtHard() { return fEventPtHard; }
-    Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
-    Int_t                     GetNumbersOfSecVertices() { return fSecondaryVertices.size(); }
+    Int_t                     GetNumbersOfConstituents() { return (Int_t)fConstituents.size(); }
+    Int_t                     GetNumbersOfSecVertices() { return (Int_t)fSecondaryVertices.size(); }
     void                      SetTruePt(Double_t val)  {fTruepT = val;}
 
     // Basic constituent functions

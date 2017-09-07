@@ -40,7 +40,7 @@ Float_t AliAnalysisPIDEvent::fgTimeZeroSpread = 196.7;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_AND_sigma = 3.87264325235363032e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_A_sigma = 8.27180042372880706e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_C_sigma = 9.73209262235003933e+01;
-Int_t AliAnalysisPIDEvent::fgFlagToCheck = 63;
+Int_t AliAnalysisPIDEvent::fgFlagToCheck = 29;
 
 //___________________________________________________________
 
@@ -212,17 +212,18 @@ AliAnalysisPIDEvent::CheckLimits(Float_t value, Float_t *params, Float_t nSigma)
 //___________________________________________________________
 
 Bool_t
-AliAnalysisPIDEvent::AcceptEvent(Int_t type) const
+AliAnalysisPIDEvent::AcceptEvent(Bool_t CheckVertex, Int_t type) const
 {
   /*
    * accept event proton-proton
    */
 
   if (!fIsCollisionCandidate) return kFALSE;
-  if (!AcceptVertex()) return kFALSE;
   if (fCentralityQuality != 0) return kFALSE;
   if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
   if((fEventFlags&fgFlagToCheck)!=fgFlagToCheck) return kFALSE;
+  if(CheckVertex)
+    if(!AcceptVertex()) return kFALSE;
   if (type > 0) {
     if (fIsPileupFromSPD) return kFALSE;
     if (!(fIsEventSelected & AliVEvent::kMB)) return kFALSE;
@@ -506,7 +507,7 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 
 //___________________________________________________________
 void AliAnalysisPIDEvent::SetCheckFlag(Int_t newval) {
-  if(newval>63||newval<0) {
+  if(newval>kAll||newval<0) {
     printf("Flag value %i not defined!\n",newval);
     return;
   };

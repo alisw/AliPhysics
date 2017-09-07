@@ -4541,7 +4541,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
   //----------------------------------------------------
-  // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
+  // Fill AOD with PHOS/EMCAL AliCaloTrackParticle objects
   //----------------------------------------------------
   // Loop on clusters
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
@@ -4611,7 +4611,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //----------------------------
     // Create AOD for analysis
     //----------------------------
-    AliAODPWG4Particle aodph = AliAODPWG4Particle(fMomentum);
+    AliCaloTrackParticle aodph = AliCaloTrackParticle(fMomentum);
     
     //...............................................
     // Set the indeces of the original caloclusters (MC, ID), and calorimeter
@@ -4801,7 +4801,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* ph =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
     
     AliDebug(2,Form("PDG %d, MC TAG %d, Calorimeter <%d>",ph->GetIdentifiedParticleType(),ph->GetTag(), ph->GetDetectorTag())) ;

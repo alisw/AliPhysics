@@ -98,6 +98,10 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
     }
+    void SetDoImprovedDCACascDauPropagation( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedDCACascDauPropagation = lOpt;
+    }
     void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkIfImprovedPerformInitialLinearPropag = lOpt;
@@ -126,6 +130,12 @@ public:
     }
     void SetSaveGoodTracks ( Bool_t lOpt = kTRUE) {
         fkSaveGoodTracks = lOpt;
+    }
+    void SetSandboxV0 ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0 = lOpt;
+    }
+    void SetSandboxCascade ( Bool_t lOpt = kTRUE) {
+        fkSandboxCascade = lOpt;
     }
 
 //---------------------------------------------------------------------------------------
@@ -307,6 +317,7 @@ private:
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkDoImprovedDCAV0DauPropagation;
+    Bool_t fkDoImprovedDCACascDauPropagation;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
     Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
@@ -329,6 +340,10 @@ private:
     
     //Save only decent tracks
     Bool_t fkSaveGoodTracks;
+    
+    //Sandbox mode
+    Bool_t fkSandboxV0;
+    Bool_t fkSandboxCascade;
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
@@ -371,6 +386,9 @@ private:
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
+    
+    Bool_t fTreeVariableGoodV0;
+    Float_t fTreeVariableCentrality;
     Float_t fTreeVariablePosLength;
     Float_t fTreeVariableNegLength;
     Float_t fTreeVariablePosCrossedRows;
@@ -405,6 +423,19 @@ private:
     Float_t fTreeVariableNegAlpha;
     Float_t fTreeVariableNegSigmaY2;
     Float_t fTreeVariableNegSigmaZ2;
+    
+    //Sandbox mode
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    
+    Float_t fTreeVariablePosOriginalX;
+    Float_t fTreeVariableNegOriginalX;
+    
+    Float_t fTreeVariablePVx;
+    Float_t fTreeVariablePVy;
+    Float_t fTreeVariablePVz;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -447,8 +478,8 @@ private:
     Float_t fTreeCascVarInvMassLambda;
     Float_t fTreeCascVarInvMassAntiLambda;
     
-    Float_t fTreeCascVarDCACascDaughtersClassical;
-    Bool_t fTreeCascVarCascPropagationClassical;
+    Float_t fTreeCascVarDCACascDaughters;
+    Bool_t fTreeCascVarCascPropagation;
     
     Float_t fTreeCascVarDecayX;
     Float_t fTreeCascVarDecayY;
@@ -463,22 +494,6 @@ private:
     Float_t fTreeCascVarInvMassOmegaMinus;
     Float_t fTreeCascVarInvMassOmegaPlus;
     
-    Int_t fTreeCascVarCascPropagationImprovedIterations;
-    Int_t fTreeCascVarCascPropagationImprovedStatus;
-    Float_t fTreeCascVarDCACascDaughtersImproved;
-    
-    Float_t fTreeCascVarImprovedDecayX;
-    Float_t fTreeCascVarImprovedDecayY;
-    Float_t fTreeCascVarImprovedDecayZ;
-    Float_t fTreeCascVarImprovedCascCosPointingAngle;
-    Float_t fTreeCascVarImprovedCascDCAxyToPV;
-    Float_t fTreeCascVarImprovedCascDCAzToPV;
-    
-    Float_t fTreeCascVarImprovedInvMassXiMinus;
-    Float_t fTreeCascVarImprovedInvMassXiPlus;
-    Float_t fTreeCascVarImprovedInvMassOmegaMinus;
-    Float_t fTreeCascVarImprovedInvMassOmegaPlus;
-    
     Int_t fTreeCascVarPIDPositive;
     Int_t fTreeCascVarPIDNegative;
     Int_t fTreeCascVarPIDBachelor;
@@ -492,10 +507,6 @@ private:
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;
     Float_t fTreeCascVarBachDistanceToTrueDecayPt;
     Float_t fTreeCascVarV0DistanceToTrueDecayPt;
-    
-    //DCA propagation control distances
-    Float_t fTreeCascVarBachPropagationParameterClassical;
-    Float_t fTreeCascVarBachPropagationParameterImproved;
     
     Float_t fTreeCascVarNegPx; //!
     Float_t fTreeCascVarNegPy; //!
@@ -516,7 +527,25 @@ private:
     Float_t fTreeCascVarBachPxMC; //!
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
-
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Save full info for full re-vertex offline replay ('sandbox mode')
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    AliExternalTrackParam *fTreeCascVarBachTrack;
+    AliExternalTrackParam *fTreeCascVarPosTrack;
+    AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    Float_t fTreeCascVarMagneticField;
+    
+    Float_t fTreeCascVarBachOriginalX;
+    Float_t fTreeCascVarPosOriginalX;
+    Float_t fTreeCascVarNegOriginalX;
+    
+    Float_t fTreeCascVarPVx;
+    Float_t fTreeCascVarPVy;
+    Float_t fTreeCascVarPVz;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================

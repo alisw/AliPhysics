@@ -44,18 +44,26 @@ public:
   // kLanGaus : Landau-Gauss Bayessian approach
   // in addition, statistic pid analysis available setting fFillIntDistHist
   enum EPID_Type       {kNSigCut, kMeanCut, kLanGaus};
-  enum EPileup_Type    {kNoPileup, kPileupSPD, kPileupMV};
+  enum EPileup_Type    {
+		kNoPileup,
+		kPileupSPD,
+		kPileupInMultBins,
+		kPileupMV
+	};
   enum EEvtCut_Type {
-    kIsReadable = 1,
+    kIsReadable=1,
+		kIsSDDIn,
+		kPassMultSel,
     kIsNotIncDAQ,
     kPassTrig,
-    kIsNotPileup,
-		kCorrelation,
+		kPassINELgtZERO,
+		kCorrelations,
+		kPassSPDclsVsTCut,
+    kIsPileupSPD,
+		kIsPileupSPDinMultBins,
+		kIsPileupMV,
     kHasRecVtx,
     kHasGoodVtxZ,
-    kIsSDDIn,
-		kPassSPDclsVsTCut,
-		kPassMultSel,
     kNEvtCuts
   };// event selection criteria
   enum ETrkCut_Type {
@@ -88,15 +96,32 @@ public:
   virtual void   Terminate(Option_t*);
 
   //Setters for event selection settings
-  void SetITSPidParams(AliITSPidParams* pidParams)     { fITSPidParams = pidParams; }
   void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;   }
-  void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
-  {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
   void SetMaxVtxZCut               (Double_t vz = 10)  { fMaxVtxZCut   = vz;   }
+	void SetChkIsEventINELgtZERO (Bool_t chk=kTRUE)      { fChkIsEventINELgtZERO = chk; }
   void SetDoCheckSDDIn          (Bool_t flag = kTRUE)  { fChkIsSDDIn   = flag; }
   void SetDoRejIncDAQ           (Bool_t flag = kTRUE)  { fRejIncDAQ    = flag; }
   void SetDoSPDclsVsTrackletsCut(Bool_t flag = kTRUE)  { fDoSPDCvsTCut = flag; }
+	void SetUseSelectVertex2015pp (Bool_t flag = kTRUE)  { fUseSelectVertex2015pp = flag; }
+	void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
+  {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
   void SetUseExtEventCuts       (Bool_t flag = kTRUE)  { fExtEventCuts = flag; }
+  //Setters for mult sel.
+	void SetMultMethod(unsigned int meth=0) {fMultMethod = meth;}
+	void SetMultEvSel(Bool_t flag=kFALSE){ fMultEvSel = flag;}
+  void SetMultEstimator(TString centEst = "V0M") {fMultEstimator = centEst;}
+  void SetMultiplicityCut(Float_t low, Float_t up)
+  {
+    if ((up > low) && (!(low < 0.)) && (!(up > 100.))) {
+      fLowMult = low; fUpMult = up;
+    }
+  }
+  //Setters for pileup settings
+	void SetPileupSelection(unsigned long plp=1ULL) { fPlpType = plp; }
+  void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8)
+	{ fMinPlpContribSPD = cont; fMinPlpZdistSPD = distance; }
+  void SetMVPileUpSelection(Int_t cont = 5, Float_t chi2 = 5, Float_t wgthZdiff = 15., Bool_t chkDiffBC = kFALSE)
+	{ fMinPlpContribMV = cont; fMaxPlpChi2MV = chi2; fMinWDistMV = wgthZdiff; fCheckPlpFromDifferentBCMV = chkDiffBC; }
 
   //Setters for track cut settings
   void SetMinSPDPoints   (Int_t     np =   1) { fMinSPDPts       =  np; }
@@ -111,26 +136,13 @@ public:
 
   void SetDCACuts(Double_t nsxy = 7., Double_t nsz = 7.) { fNSigmaDCAxy = nsxy; fNSigmaDCAz  = nsz; }
 
-  //Setters for mult sel.
-	void SetMultMethod(unsigned int meth=0) {fMultMethod = meth;}
-  void SetMultEstimator(TString centEst = "V0M") {fMultEstimator = centEst;}
-  void SetMultiplicityCut(Float_t low, Float_t up)
-  {
-    if ((up > low) && (!(low < 0.)) && (!(up > 100.))) {
-      fLowMult = low; fUpMult = up;
-    }
-  }
-
   //Setters for global settings
   void SetPidTech(Int_t tech) {fPidMethod = static_cast<EPID_Type>(tech);}
   void SetUseDefaultPriors(Bool_t flag = kTRUE) { fUseDefaultPriors = flag; }
+	void SetITSPidParams(AliITSPidParams* pidParams)     { fITSPidParams = pidParams; }
   void SetIsMC            (Bool_t flag = kTRUE) { fIsMC       = flag; }
   void SetFillNtuple      (Bool_t flag = kTRUE) { fFillNtuple = flag;}
   void SetFillIntDistHist () { fFillIntDistHist = kTRUE; }
-
-  //Setters for pileup settings
-  void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8);
-  void SetMVPileUpSelection(Int_t cont = 5, Float_t chi2 = 5, Float_t wgthZdiff = 15., Bool_t chkDiffBC = kFALSE);
 
 	AliEventCuts* GetAliEventCuts() { return &fEventCuts; }
 
@@ -149,12 +161,11 @@ public:
 
 protected:
   Bool_t   IsEventAccepted(EEvtCut_Type& evtSel);
-	Bool_t 	 CheckExtraEvtSelStep(EEvtCut_Type& evtSel);
   Bool_t   IsMultSelected();
-  Bool_t   IsPileUp();
+  UInt_t   IsPileup();
   Bool_t   IsGoodVtxZ();
   Bool_t   IsGoodSPDvtxRes(const AliESDVertex* spdVtx);
-  Bool_t   IsVtxReconstructed();
+  Bool_t   SelectVertex2015pp();
 
   Bool_t   IsRapIn(Double_t y) { return (y > fMinRapCut && y < fMaxRapCut) ? kTRUE : kFALSE;}
   Bool_t   DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt) const;
@@ -286,13 +297,32 @@ private:
   //evt sel.
   UInt_t   fTriggerSel;
   Double_t fMaxVtxZCut;
-  Bool_t   fChkIsSDDIn;    // flag for counrint ev. in p-p 2.76
-  Bool_t   fRejIncDAQ;     // flag for reject events with incomplete DAQ
-  Bool_t   fDoSPDCvsTCut;  // flag for check compatibility between SPD clusters and tracklets
-  Bool_t   fChkVtxSPDRes;  // enable check on spd vtx resolution
-  Bool_t   fChkVtxZSep;    // enable check on proximity of the z coordinate between both vertexer
-  Bool_t   fReqBothVtx;    // ask for both trk and SPD vertex
-  Bool_t   fExtEventCuts;  // enable use of AliEventCuts for event selection
+	Bool_t   fChkIsEventINELgtZERO;   // flag for select INEL>0 events
+  Bool_t   fChkIsSDDIn;             // flag for counrint ev. in p-p 2.76
+  Bool_t   fRejIncDAQ;              // flag for reject events with incomplete DAQ
+  Bool_t   fDoSPDCvsTCut;           // flag for check compatibility between SPD clusters and tracklets
+	Bool_t   fUseSelectVertex2015pp;  // flag to select vertex based on criteria for 2015 pp data
+  Bool_t   fChkVtxSPDRes;           // enable check on spd vtx resolution
+  Bool_t   fChkVtxZSep;             // enable check on proximity of the z coordinate between both vertexer
+  Bool_t   fReqBothVtx;             // ask for both trk and SPD vertex
+  Bool_t   fExtEventCuts;           // enable use of AliEventCuts for event selection
+  //mult sel.
+  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD 	
+  TString      fMultEstimator; // centrality/multiplicity framework estimator name
+	Bool_t       fMultEvSel;
+  Float_t      fLowMult;       // low Centrality cut
+  Float_t      fUpMult;        // up  Centrality cut
+  Float_t      fEvtMult;       // event multiplicity -0.5 by default
+  //Pileup selection setting
+  unsigned long  fPlpType;
+	//PileupSPD settings
+  Int_t    fMinPlpContribSPD; //minimum contributors to the pilup vertices, SPD
+  Float_t  fMinPlpZdistSPD;   //minimum distance for the SPD pileup vertex
+  //PileupMV settings
+  Int_t    fMinPlpContribMV; //minimum contributors to the pilup vertices, multi-vertex
+  Float_t  fMaxPlpChi2MV;    //minimum value of Chi2perNDF of the pileup vertex, multi-vertex
+  Float_t  fMinWDistMV;      //minimum of the sqrt of weighted distance between the primary and the pilup vertex, multi-vertex
+  Bool_t   fCheckPlpFromDifferentBCMV; //pileup from different BC (Bunch Crossings)
 
   //trk sel.
   Int_t    fMinSPDPts;       // minimum number of SPD Points
@@ -307,13 +337,6 @@ private:
   Double_t fNSigmaDCAxy;     // DCA cut in bend. plane
   Double_t fNSigmaDCAz;      // DCA cut along z
 
-  //mult sel.
-  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD 	
-  TString      fMultEstimator; // centrality/multiplicity framework estimator name
-  Float_t      fLowMult;       // low Centrality cut
-  Float_t      fUpMult;        // up  Centrality cut
-  Float_t      fEvtMult;       // event multiplicity -0.5 by default
-
   //Global setting
   Int_t  fYear;           // FIXME Year (2009, 2010)
   EPID_Type fPidMethod;   // track-by-track pid approach
@@ -322,17 +345,6 @@ private:
   Bool_t fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
   Bool_t fFillNtuple;       // flag to fill ntuples
   Bool_t fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
-
-  //Pileup selection setting
-  EPileup_Type  fPlpType;
-
-  Int_t    fMinPlpContribMV; //minimum contributors to the pilup vertices, multi-vertex
-  Float_t  fMaxPlpChi2MV;    //minimum value of Chi2perNDF of the pileup vertex, multi-vertex
-  Float_t  fMinWDistMV;      //minimum of the sqrt of weighted distance between the primary and the pilup vertex, multi-vertex
-  Bool_t   fCheckPlpFromDifferentBCMV; //pileup from different BC (Bunch Crossings)
-
-  Int_t    fMinPlpContribSPD; //minimum contributors to the pilup vertices, SPD
-  Float_t  fMinPlpZdistSPD;   //minimum distance for the SPD pileup vertex
 
   //smearing
   TRandom3* fRandGener; // generator for smearing

@@ -96,11 +96,16 @@ public:
     void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
     void SetpTBins(Int_t n, Float_t* array) { fpTBins.Set(n,array); };
     
+    Double_t GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
+
+    
     void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
     void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
     void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
     
     void SetEfficiencyHadron(TH3F *hMap){if(fEffHadron) delete fEffHadron;fEffHadron = (TH3F*)hMap->Clone();}
+    void SetEfficiencyElectron(TH3F *ElectMap){fEffElec = (TH3F*)ElectMap->Clone("fEffElec");}
+
     
     void SetBackgroundPi0Weight(TH1F *hBkgPi0W) {if(fBkgPi0Weight) delete fBkgPi0Weight; fBkgPi0Weight = (TH1F*) hBkgPi0W->Clone("fBkgPi0Weight");}
     void SetBackgroundEtaWeight(TH1F *hBkgEtaW) {if(fBkgEtaWeight) delete fBkgEtaWeight; fBkgEtaWeight = (TH1F*) hBkgEtaW->Clone("fBkgEtaWeight");}
@@ -219,6 +224,7 @@ private:
     
     //Efficiency Maps
     TH3F                    *fEffHadron;
+    TH3F                    *fEffElec;
     
     //Histograms
     TH1F				*fNevent; //!
@@ -389,12 +395,12 @@ private:
     
     //Generated pT,eta,zvtx distributions
     TH1F                *fNoEtaCutElectronGeneratedSignalPtEtaZvtx; //!
-    TH1F                *fEtaCutElectronGeneratedSignalPtEtaZvtx;//!
+    TH3F                *fEtaCutElectronGeneratedSignalPtEtaZvtx;//!
     TH1F                *fEtaCutElectronInclusiveRecoPtEtaZvtx; //!
     TH1F                *fEtaCutElectronBKNoTag; //!
     TH1F                *fEtaCutElectronBKWithLabelULS; //!
     TH1F                *fEtaCutElectronBKWithLabelLS; //!
-    TH1F                *fEtaCutElectronRecoHFEMC; //!
+    TH3F                *fEtaCutElectronRecoHFEMC; //!
     TH1F                *fEtaCutElectronRecoOtherMC; //!
     TH1F                *fMissIDElectronsReco; //!
     TH3F                *fHadronsReco; //!

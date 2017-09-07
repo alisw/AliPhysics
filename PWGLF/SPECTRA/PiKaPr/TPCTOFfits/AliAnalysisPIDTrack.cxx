@@ -75,6 +75,7 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   fTPCNcls(0),
   fTPCNclsF(0),
   fTPCNcr(0.),
+  fChi2TPCConstrainedVsGlobal(-10),
   fTOFIndex(0),
   fTOFTime(0.),
   fTOFExpTime(),
@@ -157,7 +158,8 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   fTPCdEdxN(source.fTPCdEdxN),
   fTPCNcls(source.fTPCNcls),
   fTPCNclsF(source.fTPCNclsF),
-  fTPCNcr(source.fTPCNcr),  
+  fTPCNcr(source.fTPCNcr),
+  fChi2TPCConstrainedVsGlobal(source.fChi2TPCConstrainedVsGlobal),
   fTOFIndex(source.fTOFIndex),
   fTOFTime(source.fTOFTime),
   fTOFExpTime(),
@@ -231,6 +233,7 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   fTPCNcls = source.fTPCNcls;
   fTPCNclsF = source.fTPCNclsF;
   fTPCNcr = source.fTPCNcr;
+  fChi2TPCConstrainedVsGlobal = source.fChi2TPCConstrainedVsGlobal;
   fTOFIndex = source.fTOFIndex;
   fTOFTime = source.fTOFTime;
   for (Int_t i = 0; i < 5; i++) fTOFExpTime[i] = source.fTOFExpTime[i];
@@ -303,6 +306,7 @@ AliAnalysisPIDTrack::Reset()
   fTPCNcls = 0;
   fTPCNclsF = 0;
   fTPCNcr = 0.;
+  fChi2TPCConstrainedVsGlobal=-10;
   fTOFIndex = 0;
   fTOFTime = 0.;
   for (Int_t i = 0; i < 5; i++) fTOFExpTime[i] = 0.;

@@ -1,16 +1,5 @@
 #ifndef __CINT__
-#include "TMath.h"
-#include "AliCDBManager.h"
-#include "AliTriggerScalers.h"
-#include "AliTriggerRunScalers.h"
-#include "AliTimeStamp.h"
-#include "AliTriggerScalersRecord.h"
-#include "AliTriggerConfiguration.h"
-#include "AliLHCData.h"
-#include "AliTriggerClass.h"
-#include "AliTriggerBCMask.h"
-#include "AliCDBPath.h"
-#include "AliCDBEntry.h"
+#include "Includes.h"
 #endif
 
 UInt_t dif(UInt_t stop, UInt_t start){

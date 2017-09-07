@@ -334,9 +334,10 @@ Bool_t AliAnalysisTaskTPCTOFPID::SelectVertex2015pp(AliESDEvent *esd,  Bool_t *S
     }
   }
 
+  //Not needed here, done separately
   //Cut on the vertex z position
-  const AliESDVertex * vertex = esd->GetPrimaryVertex();
-  if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
+  //const AliESDVertex * vertex = esd->GetPrimaryVertex();
+  //if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
   return kTRUE;
 };
 
@@ -659,6 +660,15 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     
     /* update and add analysis track */
     fAnalysisTrack->Update(track, fMCEvent,fPIDResponse, trflag);
+    const AliESDVertex *vtx = fESDEvent->GetPrimaryVertexTracks();
+    if(!vtx || !vtx->GetStatus())
+      vtx = fESDEvent->GetPrimaryVertexSPD();
+    if(vtx)
+      if(vtx->GetStatus()) {
+	Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
+	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
+      } else
+	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(-8);
     if(track->IsEMCAL()) {
       AliVCluster *lvcl = fESDEvent->GetCaloCluster(track->GetEMCALcluster());
       if(lvcl)

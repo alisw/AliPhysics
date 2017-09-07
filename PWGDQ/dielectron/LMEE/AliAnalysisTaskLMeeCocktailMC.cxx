@@ -49,17 +49,19 @@ ClassImp(AliAnalysisTaskLMeeCocktailMC)
 
 //________________________________________________________________________
 AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskSE(),
-  fOutputContainer(NULL),
+  fArr(0x0),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fOutputContainer(NULL),
+  fParticleList(NULL),
+  fParticleListNames(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
   fhwMultmT(NULL),
   fhwMultpT2(NULL),
   fhwMultmT2(NULL),
-  fArr(0x0),
   fmee(NULL),
   fmee_wmult(NULL),
   fmee_orig(NULL),
@@ -118,8 +120,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileNameW(0),
   fFileW(0),
   teeTTree(NULL),
-  fParticleList(NULL),
-  fParticleListNames(NULL),
   fIsMC(1),
   fMaxY(2),
   fMinPt(2),
@@ -132,17 +132,19 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
 //________________________________________________________________________
 AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   AliAnalysisTaskSE(name),
-  fOutputContainer(NULL),
+  fArr(0x0),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fOutputContainer(NULL),
+  fParticleList(NULL),
+  fParticleListNames(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
   fhwMultmT(NULL),
   fhwMultpT2(NULL),
   fhwMultmT2(NULL),
-  fArr(0x0),
   fmee(NULL),
   fmee_wmult(NULL),
   fmee_orig(NULL),
@@ -201,8 +203,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileNameW(0),
   fFileW(0),
   teeTTree(NULL),
-  fParticleList(NULL),
-  fParticleListNames(NULL),
   fIsMC(1),
   fMaxY(2),
   fMinPt(2),
@@ -525,7 +525,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
 
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
     if (yPre == 0.) continue;
-    Double_t y = 0.5*TMath::Log(yPre); 
+    //Double_t y = 0.5*TMath::Log(yPre); 
     //if (fabs(y) > fMaxY) continue; // this cut done later in acceptance cuts
     
     // We have an electron with a mother. Check mother that mother is primary and number of daughters

@@ -59,9 +59,8 @@ void anaQA(Int_t mode=mLocal)
   // Look at the method below, 
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
-  LoadLibraries(mode) ;
-  //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-
+  LoadLibraries() ;
+  
   //-------------------------------------------------------------------------------------------------
   // Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
@@ -131,7 +130,7 @@ void anaQA(Int_t mode=mLocal)
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
-    //Counting events tasks
+    // Counting events tasks
     if(!kMC)
     {
       AliAnalysisTaskCounter * counterMB = new AliAnalysisTaskCounter("CounterMB");
@@ -200,7 +199,7 @@ void anaQA(Int_t mode=mLocal)
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
 
-cout <<" Analysis ended sucessfully "<< endl ;
+    cout <<" Analysis ended sucessfully "<< endl ;
 
   }
   else cout << "Chain was not produced ! "<<endl;
@@ -209,102 +208,15 @@ cout <<" Analysis ended sucessfully "<< endl ;
 
 //_____________________________
 /// Load analysis libraries.
+/// Not needed, only if use par files.
 //_____________________________
-void  LoadLibraries(const anaModes mode)
-{
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libXMLIO");
-  gSystem->Load("libMatrix");
-  gSystem->Load("libPhysics");
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
-  //----------------------------------------------------------
-  if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
-    //--------------------------------------------------------
-    // If you want to use already compiled libraries 
-    // in the aliroot distribution
-    //--------------------------------------------------------
- 
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libProof");
-    gSystem->Load("libOADB");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libESDfilter");
+void  LoadLibraries()
+{    
+//    gSystem->Load("libPWGCaloTrackCorrBase");
+//    gSystem->Load("libPWGGACaloTrackCorrelations");
 
-    gSystem->Load("libPHOSUtils");
-    gSystem->Load("libEMCALUtils");
-    
-    gSystem->Load("libTender");
-    gSystem->Load("libTenderSupplies");
-    
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGTools");
-    
-    gSystem->Load("libPWGCaloTrackCorrBase");
-    gSystem->Load("libPWGGACaloTrackCorrelations");
-
- 
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-//     SetupPar("STEERBase");
-//     SetupPar("ESD");
-//     SetupPar("AOD");
-//     SetupPar("ANALYSIS");
-//     SetupPar("ANALYSISalice");
-//     //If your analysis needs PHOS geometry uncomment following lines
-//     SetupPar("PHOSUtils");
-//     SetupPar("EMCALUtils");
-//
-//     SetupPar("PWGCaloTrackCorrBase");
-//     SetupPar("PWGGACaloTrackCorrelations");
-  }
-
-  //---------------------------------------------------------
-  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
-  //---------------------------------------------------------
-  else if (mode==mPROOF)
-  {
-    //
-    // Connect to proof
-    // Put appropriate username here
-    // TProof::Reset("proof://mgheata@lxb6046.cern.ch"); 
-    TProof::Open("proof://mgheata@lxb6046.cern.ch");
-    
-    //    gProof->ClearPackages();
-    //    gProof->ClearPackage("ESD");
-    //    gProof->ClearPackage("AOD");
-    //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4PartCorrBase");
-    //    gProof->ClearPackage("PWG4PartCorrDep");
-    
-    // Enable the STEERBase Package
-    gProof->UploadPackage("STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // Enable the ESD Package
-    gProof->UploadPackage("ESD.par");
-    gProof->EnablePackage("ESD");
-    // Enable the AOD Package
-    gProof->UploadPackage("AOD.par");
-    gProof->EnablePackage("AOD");
-    // Enable the Analysis Package
-    gProof->UploadPackage("ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-	// Enable the PHOS geometry Package
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
-    // Enable PartCorr analysis
-    gProof->UploadPackage("PWG4PartCorrBase.par");
-    gProof->EnablePackage("PWG4PartCorrBase");
-	gProof->UploadPackage("PWG4PartCorrDep.par");
-    gProof->EnablePackage("PWG4PartCorrDep");    
-    gProof->ShowEnabledPackages();
-  }
+//    SetupPar("PWGCaloTrackCorrBase");
+//    SetupPar("PWGGACaloTrackCorrelations");
 }
 
 //_________________________________

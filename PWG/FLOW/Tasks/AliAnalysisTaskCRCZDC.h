@@ -292,9 +292,6 @@ private:
   TH2F *fhZNvsZP;		//! ZNC+ZNA vs ZPC+ZPA;
   TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
   TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
-  TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
-  TH2F *fhZDCvsNclu1;		//! ZDC vs N_cluster layer 1;
-  TH2F *fhDebunch;		//! Debunch;
   TH3D *fhZNCenDis[2];		//! ZN centroid vs centrality
   //
   TH1F *fhAsymm;		//! ZN asymmetry
@@ -303,12 +300,20 @@ private:
   //
   TH2F *fhZNCvscentrality;	//! ZNC vs. centrality
   TH2F *fhZNAvscentrality;	//! ZNA vs. centrality
-  //
+  TH2F *fhZPCvscentrality;	//! ZNC vs. centrality
+  TH2F *fhZPAvscentrality;	//! ZNA vs. centrality
 
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
+
+  TH3D *fQATrackTPCNcls; //!
+  TH3D *fQATrackITSNcls; //!
+  TH3D *fQATrackTPCchi2; //!
+  TH3D *fQATrackITSchi2; //!
+  TH3D *fQATrackTPCScls; //!
+  TH3D *fQATrackITSScls; //!
 
   const static Int_t fCRCMaxnRun = 211;
 
@@ -382,7 +387,7 @@ private:
   TH2D* fEbEQIm[fKNFBs][4]; //!
   TH2D* fEbEQMu[fKNFBs][4]; //!
 
-  ClassDef(AliAnalysisTaskCRCZDC,10);
+  ClassDef(AliAnalysisTaskCRCZDC,11);
 
 };
 

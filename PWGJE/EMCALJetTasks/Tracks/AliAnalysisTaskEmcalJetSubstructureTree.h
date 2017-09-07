@@ -71,6 +71,7 @@ struct AliSoftDropParameters {
   Double_t fMg;             ///< Groomed jet mass
   Double_t fRg;             ///< Groomed jet radius
   Double_t fPtg;            ///< Groomed jet pt
+  Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
 };
 
@@ -120,31 +121,48 @@ public:
     kTWeight = 1,
     kTPtJetRec = 2,
     kTPtJetSim = 3,
-    kTAreaRec = 4,
-    kTAreaSim = 5,
-    kTNEFRec = 6,
-    kTNEFSim = 7,
-    kTMassRec = 8,
-    kTMassSim = 9,
-    kTZgMeasured = 10,
-    kTZgTrue = 11,
-    kTRgMeasured = 12,
-    kTRgTrue = 13,
-    kTMgMeasured = 14,
-    kTMgTrue = 15,
-    kTPtgMeasured = 16,
-    kTPtgTrue = 17,
-    kTOneNSubjettinessMeasured = 18,
-    kTOneNSubjettinessTrue = 19,
-    kTTwoNSubjettinessMeasured = 20,
-    kTTwoNSubjettinessTrue = 21,
-    kTNCharged = 22,
-    kTNNeutral = 23,
-    kTNConstTrue = 24,
-    kTNDroppedMeasured = 25,
-    kTNDroppedTrue = 26,
-    kTNVar = 27
+    kTEJetRec = 4,
+    kTEJetSim = 5,
+    kTRhoPtRec = 6,
+    kTRhoPtSim = 7,
+    kTRhoMassRec = 8,
+    kTRhoMassSim = 9,
+    kTAreaRec = 10,
+    kTAreaSim = 11,
+    kTNEFRec = 12,
+    kTNEFSim = 13,
+    kTMassRec = 14,
+    kTMassSim = 15,
+    kTZgMeasured = 16,
+    kTZgTrue = 17,
+    kTRgMeasured = 18,
+    kTRgTrue = 19,
+    kTMgMeasured = 20,
+    kTMgTrue = 21,
+    kTPtgMeasured = 22,
+    kTPtgTrue = 23,
+    kTMugMeasured = 24,
+    kTMugTrue = 25,
+    kTOneNSubjettinessMeasured = 26,
+    kTOneNSubjettinessTrue = 27,
+    kTTwoNSubjettinessMeasured = 28,
+    kTTwoNSubjettinessTrue = 29,
+    kTAngularityMeasured = 30,
+    kTAngularityTrue = 31,
+    kTPtDMeasured = 32,
+    kTPtDTrue = 33,
+    kTNCharged = 34,
+    kTNNeutral = 35,
+    kTNConstTrue = 36,
+    kTNDroppedMeasured = 37,
+    kTNDroppedTrue = 38,
+    kTNVar = 39
   };
+  enum JetType_t{
+    kFull = 0,
+    kCharged = 1
+  };
+
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
 	virtual ~AliAnalysisTaskEmcalJetSubstructureTree();
@@ -158,7 +176,7 @@ public:
 	  fReclusterizer = reclusterizer;
 	}
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
@@ -170,7 +188,11 @@ protected:
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
 
-	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness);
+	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+
+	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
+
+	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
@@ -181,8 +203,7 @@ private:
 	Reclusterizer_t              fReclusterizer;              ///< Reclusterizer method
 
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
-	TString                      fTriggerSelectionString;     ///< Trigger selection string
-
+  TString                      fTriggerSelectionString;     ///< Trigger selection string
 
 	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);

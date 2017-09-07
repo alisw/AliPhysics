@@ -66,6 +66,14 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
     }
+    void SetDoImprovedDCACascDauPropagation( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoImprovedDCACascDauPropagation = lOpt;
+    }
+    void SetDoPureGeometricMinimization( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoPureGeometricMinimization = lOpt;
+    }
     void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkIfImprovedPerformInitialLinearPropag = lOpt;
@@ -211,7 +219,8 @@ private:
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkDoImprovedCascadePosition;
     Bool_t fkDoImprovedDCAV0DauPropagation;
-    Bool_t fkDoImprovedDCAV0DauPropagationGoodInitialGuess;
+    Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkDoPureGeometricMinimization;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
     Double_t fkIfImprovedExtraPrecisionFactor;
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts

@@ -73,8 +73,10 @@ runLevelQA()
 {
   #full path of QAresults.root is provided
   local qaFile=$1
-  local isMC=$(GetMUvar "isMC")
-  local MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
+  local isMC
+  isMC=$(GetMUvar "isMC")
+  local MUenablePhysSel
+  MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
 
   # This is used only to extract the muon information
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/MakeTrend.C
@@ -89,7 +91,7 @@ EOF
 periodLevelQA()
 {
   #path of the merged period trending.root is provided
-  local trendingFile=$1
+  # local trendingFile=$1
 
   local fileList="trendList.txt"
   local tmpFileList="tmp${fileList}"
@@ -110,13 +112,15 @@ periodLevelQA()
     done
   fi
 
-  local excludeRuns=$(GetMUvar "excludeRuns")
+  local excludeRuns
+  excludeRuns=$(GetMUvar "excludeRuns")
   for irun in $excludeRuns; do
     sed -n -i'' '/'"$irun"'/!p' $fileList
   done
 
   #if run list is provided, filter the output limiting to this list
-  local runList=$(GetMUvar "runList")
+  local runList
+  runList=$(GetMUvar "runList")
   if [ "$runList" != "" ]; then
     tmpFileList="tmp${fileList}"
     mv ${fileList} ${tmpFileList}
@@ -131,7 +135,8 @@ periodLevelQA()
   fi
 
   #if trigger list is provided, filter the tracking output accordngly
-  local triggerList=$(GetMUvar "triggerList")
+  local triggerList
+  triggerList=$(GetMUvar "triggerList")
 
   # First run tracker (it merges the QAresults and we need it for
   # scaler trending in trigger
@@ -144,7 +149,8 @@ periodLevelQA()
     fi
   done
 
-  local MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
+  local MUenablePhysSel
+  MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
 
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/PlotMuonQA.C
 aliroot -b <<EOF
@@ -158,7 +164,8 @@ EOF
   fi
 
   # Then run trigger
-  local MUcheckTrigScalers=$(GetMUvar "MUcheckTrigScalers")
+  local MUcheckTrigScalers
+  MUcheckTrigScalers=$(GetMUvar "MUcheckTrigScalers")
 
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/trigEffQA.C
   aliroot -b <<EOF

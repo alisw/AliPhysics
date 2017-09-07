@@ -84,6 +84,23 @@ AliReducedBaseEvent::~AliReducedBaseEvent()
   //
 }
 
+//____________________________________________________________________________
+void AliReducedBaseEvent::CopyEventHeader(const AliReducedBaseEvent* other) {
+   //
+   // assignment operator overloading
+   // NOTE: the fTracks and fCandidates arrays are not copied
+   //
+   ClearEvent();
+   fEventTag = other->fEventTag;
+   fRunNo = other->fRunNo;
+   for(Int_t i=0; i<3; ++i) fVtx[i] = other->fVtx[i];
+   fNVtxContributors = other->fNVtxContributors;
+   for(Int_t i=0; i<7; ++i) fCentrality[i] = other->fCentrality[i];
+   fCentQuality = other->fCentQuality;
+   fNtracks[0] = other->fNtracks[0]; 
+   fNV0candidates[0] = other->fNV0candidates[0];
+}
+
 //_____________________________________________________________________________
 void AliReducedBaseEvent::ClearEvent() {
   //
@@ -94,9 +111,9 @@ void AliReducedBaseEvent::ClearEvent() {
   fEventTag = 0;
   fRunNo = 0;
   fCentQuality = 0;
-  for(Int_t i=0;i<7;++i) fCentrality[i] = -1.0;
+  for(Int_t i=0;i<7;++i) fCentrality[i] = -9999.0;
   fNtracks[0] = 0; fNtracks[1] = 0;
   fNV0candidates[0] = 0; fNV0candidates[1] = 0;
-  for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.;}
+  for(Int_t i=0; i<3; ++i) {fVtx[i]=-9999.;}
   fNVtxContributors = 0;
 }

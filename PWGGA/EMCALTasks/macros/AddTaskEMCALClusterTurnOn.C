@@ -27,9 +27,11 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
                                                                  const Bool_t           isQA                      = kFALSE,
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            minNLM                    = 1,
-                                                                 const Int_t            trig                      = 0,
+                                                                 const char*            trig                      = "INT7",
                                                                  const Bool_t           M02cut                    = kTRUE,
-                                                                 const Bool_t           ThnSp                     = kTRUE
+                                                                 const Bool_t           ThnSp                     = kTRUE,
+                                                                 TString                MaskedFastOrPath          = "",
+                                                                 const Bool_t           onlyL1RecalcEvents        = kFALSE
                                                                  )
 {
   
@@ -45,9 +47,9 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   
   printf("Creating container names for cluster analysis\n");
   TString myContName("");
-    myContName = Form("Analysis_Neutrals");
+    myContName = Form("NeutralCluster");
   
-  myContName.Append(Form("_Trigger%d_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_M02cut_%s", trig, bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, M02cut ? "On":"Off" ));
+  myContName.Append(Form("_Trigger_%s_L1recalc_%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_M02cut_%s", trig,onlyL1RecalcEvents ? "Yes" : "No", bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, M02cut ? "On":"Off" ));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALClusterTurnOn* task = new AliAnalysisTaskEMCALClusterTurnOn("Analysis",bHisto);
@@ -94,12 +96,28 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   gROOT->LoadMacro(configFilePath.Data());
   printf("Path of config file: %s\n",configFilePath.Data());
   
+  
+  TString OADBFile("MaskedFastors.root");
+  Bool_t MaskFastors = kFALSE;
+
+  if(!MaskedFastOrPath.IsNull()){ 
+    MaskFastors = kTRUE;
+    if(MaskedFastOrPath.Contains("alien:///")){
+    	gSystem->Exec(Form("alien_cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+    else{
+    	gSystem->Exec(Form("cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    }
+  }
+  
+
     // #### Task preferences
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
   task->SetQA(isQA);
   task->SetThn(ThnSp);
+  task->SetOnlyRecalc(onlyL1RecalcEvents);
   task->SetNLMCut(bNLMCut,NLMCut,minNLM);
   task->SetPtBinning(ptBin);
   task->SetPtClBinning(ptClBin);
@@ -111,7 +129,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetPhiClBinning(PhiClBin);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
-  task->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  task->SetFastOrMasking(MaskFastors);
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
@@ -140,7 +158,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   manager->AddTask(task);
   
   
-  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:TriggerQA",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);

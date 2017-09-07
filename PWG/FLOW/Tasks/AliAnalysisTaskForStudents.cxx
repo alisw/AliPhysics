@@ -560,7 +560,7 @@ void AliAnalysisTaskForStudents::BookFinalResultsHistograms()
  fhf->SetTitle(" ");
  fhf->SetMarkerColor(4);
  fhf->SetLineColor(1);
- fhf->SetLineWidth(1.8);
+ fhf->SetLineWidth(2);
  fhf->SetMarkerSize(1.3);
  fhf->SetMarkerStyle(8);
  fhf->SetStats(0);
