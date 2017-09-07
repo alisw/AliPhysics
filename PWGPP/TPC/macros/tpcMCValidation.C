@@ -120,7 +120,6 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   trendingDraw->SetDefaultStyle();
   
   treeMC = pinfo->GetTree("QA.TPC",mcPeriod,mcPass,"QA.TPC;QA.TRD;QA.TOF;QA.ITS");
-//    treeMC = pinfo->GetTree("QA.ITS", anchorPeriod, anchorPass, "Logbook");
   
   TTree * treeAnchorTPC;
   if(pinfo->GetTree("QA.TPC",anchorPeriod,anchorPass,"Logbook;QA.EVS")!=0) treeAnchorTPC=pinfo->GetTree("QA.TPC",anchorPeriod,anchorPass,"Logbook;QA.EVS");
@@ -139,9 +138,6 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   TTree * treeAnchorITS0;
   if(pinfo->GetTree("QA.ITS",anchorPeriod,anchorPass,"Logbook")!=0){ 
       treeAnchorITS0 = pinfo->GetTree("QA.ITS",anchorPeriod,anchorPass,"Logbook");
-//      treeAnchorITS0 =pinfo->GetTree("QA.TPC",mcPeriod,mcPass,"QA.TPC;QA.TRD;QA.TOF;QA.ITS");
-//  treeAnchorITS0->SetBranchStatus("*",0);
-//  treeAnchorITS0->SetBranchStatus("Eff*",1);
 
   }
   else{
@@ -152,8 +148,6 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   treeMC->AddFriend(treeAnchorTPC,"TPC.Anchor");
   treeMC->AddFriend(treeAnchorTRD0,"TRD.Anchor");
   treeMC->AddFriend(treeAnchorITS0,"ITS.Anchor");
-  ::Info("here","%d < %d",treeMC->GetEntries(),treeAnchorITS0->GetEntries());
-//  treeMC->Scan("ITS.Anchor.EffoneSPDPt02");
   makeTPCMCAlarms(treeMC,doCheck,verbose);
   TString sStatusbarVars ("ncl;dcarResol;itsEffStatus;");
   TString sStatusbarNames("#(cl);dcar;itsEffStatus;");
@@ -170,6 +164,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   trendingDraw->SetTree(treeMC);
   treeMC->SetAlias("tagID","run");
   treeMC->SetAlias("defaultcut","run==TPC.Anchor.run");
+
   if(trendingDraw->InitSummaryTrending(statusString,0.015,"1")) return kTRUE;
   else return kFALSE;
 }
@@ -1064,16 +1059,17 @@ void MakeReport(const char* mcrddir){
       /****** electron and MIPs separation ******/
     
     
-//    { // Runs
-//    trendingDraw->fWorkingCanvas->Clear(); 
-//    TLegend *legend = new TLegend(cRange[0],cRange[1],cRange[2],cRange[3],"Run Numbers MC/Anchor"); legend->SetBorderSize(0);
-//    treeMC->Draw("run");
-//    treeMC->SetFillStyle(3001);
-//    treeMC->SetFillColor(kBlue);
-//    treeMC->Draw("TPC.Anchor.run","","same");
-//    legend->Draw();
-////   
-//    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/run_numbers.png");  
-//    }  
+    { // Runs
+    trendingDraw->fWorkingCanvas->Clear(); 
+    Int_t nrun =treeMC->Draw("TPC.Anchor.run","TPC.Anchor.run==QA.TPC.run","");
+    
+    TLegend *legend;
+    if(nrun )legend = new TLegend(cRange[0],cRange[1],cRange[2],cRange[3],"Run Numbers MC/Anchor");
+    else legend = new TLegend(cRange[0],cRange[1],cRange[2],cRange[3],"No run numbers were matching for MC and RD!!");
+    
+    legend->SetBorderSize(0);
+    legend->Draw();
+    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/run_numbers.png");  
+    }  
 
 }
