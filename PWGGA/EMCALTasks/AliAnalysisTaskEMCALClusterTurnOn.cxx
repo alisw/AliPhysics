@@ -671,11 +671,14 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
           }
         }
       }
+      else Printf("Could not open MaskedFastors.root");
     }
-    if(isMasked) continue;
+
+    if(isMasked){
+      continue;
+    }
 
     if(fQA) {
-
       fPT->Fill(vecCOI.Pt());
     }
     fE->Fill(vecCOI.E());
@@ -827,7 +830,7 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
 
   if(fThn){
     const Int_t ndims =   fNDimensions;
-    const Int_t ndimsClus = fClusDimensions;
+//    const Int_t ndimsClus = fClusDimensions;
     Double_t outputValues[ndims];
     Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
     Int_t c_eta = 0;
@@ -849,7 +852,6 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
     for (Int_t cellcounter = 0; cellcounter<cellnumber; cellcounter++)
     {
       IDs[cellcounter] = coi->GetCellsAbsId()[cellcounter];        
-      Int_t cellID = IDs[cellcounter];
       geom->GetCellIndex(IDs[cellcounter],nSupMod, nModule, nIphi, nIeta);
       geom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       c_eta = 0; 
