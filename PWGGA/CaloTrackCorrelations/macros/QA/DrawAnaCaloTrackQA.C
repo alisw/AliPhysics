@@ -357,21 +357,22 @@ void CaloQA(Int_t icalo)
     ok=0;
     
     if ( hClusterEnergy->GetEntries() < 100 ) ok = 1;
-    
-    for(Int_t ibin = 1; ibin < hClusterEnergy->GetNbinsX(); ibin++)
+    else
     {
-      if ( hClusterEnergy->GetBinCenter(ibin) < minClusterE ) continue;
-      
-      if ( hClusterEnergy->GetBinContent(ibin) < 100 ) continue;
-      
-      if ( hClusterEnergy->GetBinContent(ibin)*1.4 < hClusterEnergy->GetBinContent(ibin+1) )
+      for(Int_t ibin = 1; ibin < hClusterEnergy->GetNbinsX(); ibin++)
       {
-        ok=2;
-        //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
-        break;
+        if ( hClusterEnergy->GetBinCenter(ibin) < minClusterE ) continue;
+        
+        if ( hClusterEnergy->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hClusterEnergy->GetBinContent(ibin)*1.4 < hClusterEnergy->GetBinContent(ibin+1) )
+        {
+          ok=2;
+          //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
+          break;
+        }
       }
     }
-    
     text[ok]->Draw();
   }
   
@@ -540,7 +541,7 @@ void CaloQA(Int_t icalo)
       ok=0;
       
       if ( hTrackMatchResPhiPos->GetEntries() < 10 || hTrackMatchResPhiNeg->GetEntries() < 10 ||
-          hTrackMatchResEtaPos->GetEntries() < 10 || hTrackMatchResEtaNeg->GetEntries() < 10   ) ok = 1;
+           hTrackMatchResEtaPos->GetEntries() < 10 || hTrackMatchResEtaNeg->GetEntries() < 10   ) ok = 1;
       
       //    printf("Mean (%2.2f, %2.2f, %2.2f, %2.2f), RMS (%2.2f, %2.2f, %2.2f, %2.2f)\n",
       //           hTrackMatchResPhiPos->GetMean()*1000, hTrackMatchResEtaPos->GetMean()*1000,
@@ -551,7 +552,7 @@ void CaloQA(Int_t icalo)
       
       // just a guess, not based on anything
       if( hTrackMatchResPhiPos->GetMean()*1000 < -2 || hTrackMatchResEtaPos->GetMean()*1000 < -2 ||
-         hTrackMatchResPhiNeg->GetMean()*1000 >  2 || hTrackMatchResEtaNeg->GetMean()*1000 >  2) ok = 2;
+          hTrackMatchResPhiNeg->GetMean()*1000 >  2 || hTrackMatchResEtaNeg->GetMean()*1000 >  2) ok = 2;
       
       text[ok]->Draw();
     }
