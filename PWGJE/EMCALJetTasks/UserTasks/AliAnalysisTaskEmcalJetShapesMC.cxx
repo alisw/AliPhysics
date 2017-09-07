@@ -1210,7 +1210,8 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
      fInputVectors.push_back(PseudoTracksLab);}
 
-
+   PseudoTracksCMS.clear();
+   PseudoTracksLab.clear();
   
   
   fastjet::JetDefinition                *fJetDef;         
