@@ -858,6 +858,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         if(AODfilterBit==768 && Label.Contains("TOF")) PhiEtaWeightsFileName += "15oHI_FB768_TOF_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768 && sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_PosCh_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768 && sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_NegCh_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("NTPCCl")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_NTPCCl_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("ShClITS")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_ShClITS_CenPhiEtaWeights_VtxRbR.root";
       }
     }
     if(sDataSet=="2015pidfix") {

@@ -1319,7 +1319,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliMCEvent *mcEvent, TPa
 //_________________________________________________________________________________
 void AliAnalysisTaskGammaCocktailMC::FillPythiaBranchingRatio(TH1F* histo, Int_t np) {
 
-  Int_t kc, kfdp, nPart, firstChannel, lastChannel;
+  Int_t kc, nPart, firstChannel, lastChannel;
   Double_t BR, BRtot;
   std::vector<Int_t> pdgCodes;
 

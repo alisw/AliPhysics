@@ -27,7 +27,7 @@
 #include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliAODCaloCluster.h"
@@ -1171,7 +1171,7 @@ Float_t AliCalorimeterUtils::GetMCECellClusFracCorrection(Float_t eCell, Float_t
 //_____________________________________________________________________________________________________
 /// Get the EMCAL/PHOS module number that corresponds to this particle.
 //_____________________________________________________________________________________________________
-Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent * inputEvent) const
+Int_t AliCalorimeterUtils::GetModuleNumber(AliCaloTrackParticle * particle, AliVEvent * inputEvent) const
 {	
   Int_t absId = -1;
   

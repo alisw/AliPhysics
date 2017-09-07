@@ -42,6 +42,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     double          mPtCut;                 /// Minimum pt stored in the output trees
     unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
     double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+    bool            mSkipEmptyEvents;       /// If true events without any tracks are not stored in the output tree
 
     void Discard(const TString discard) { mToDiscard = discard;};
 

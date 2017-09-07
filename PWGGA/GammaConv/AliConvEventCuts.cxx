@@ -2179,10 +2179,11 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 //________________________________________________________________________
 Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *event)
 {
+  if(fPastFutureRejectionLow==0 && fPastFutureRejectionHigh==0)
+    return kFALSE;
   TBits fIR1 =  event->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
   TBits fIR2 =  event->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information
   UShort_t bunchCrossings = event->GetBunchCrossNumber();
-
   if(fHistoPastFutureBits){
     for(Int_t i = 0; i<180;i++){
       if(fIR1.TestBitNumber(i))
@@ -2376,11 +2377,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                            70, 85, 99, 115, 132,
                                           150, 169, 190, 212, 235,
                                           1000000};
-          Double_t weightsBins[20]     = {  0.957702, 0.41837, 0.406279, 0.266936, 0.135179,
-                                         6.4687e-02, 2.27254e-02, 8.30769e-03, 3.56008e-03, 1.22934e-03,
-                                         4.91352e-04, 1.77601e-04, 8.79608e-05, 4.13652e-05, 2.02997e-05,
-                                         1.03682e-06, 5.64732e-06, 2.96158e-06, 1.5999e-06, 2.08374e-06};
-
+          Double_t weightsBins[20]     = {16.0869, 4.61169, 2.14976, 0.782544, 0.264854,
+					  9.7619E-02, 2.92747E-02, 9.89515E-03, 4.05152E-03, 1.35393E-03,
+					  5.29864E-04, 1.88317E-04, 9.23E-05, 4.29E-05, 2.09E-05,
+					  1.06E-05, 5.76E-06, 3.00E-06, 1.62E-06, 2.10E-06 };
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
@@ -2525,11 +2525,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                            70, 85, 99, 115, 132,
                                           150, 169, 190, 212, 235,
                                           1000000};
-          Double_t weightsBins[20]     = {  0.957702, 0.41837, 0.406279, 0.266936, 0.135179,
-                                         6.4687e-02, 2.27254e-02, 8.30769e-03, 3.56008e-03, 1.22934e-03,
-                                         4.91352e-04, 1.77601e-04, 8.79608e-05, 4.13652e-05, 2.02997e-05,
-                                         1.03682e-06, 5.64732e-06, 2.96158e-06, 1.5999e-06, 2.08374e-06};
-
+          Double_t weightsBins[20]     = {16.0869, 4.61169, 2.14976, 0.782544, 0.264854,
+					  9.7619E-02, 2.92747E-02, 9.89515E-03, 4.05152E-03, 1.35393E-03,
+					  5.29864E-04, 1.88317E-04, 9.23E-05, 4.29E-05, 2.09E-05,
+					  1.06E-05, 5.76E-06, 3.00E-06, 1.62E-06, 2.10E-06 };
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
@@ -3750,18 +3749,18 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   if (kCaseGen == 0) return 1;
 
   Double_t mesonPt = 0;
-  Double_t mesonMass = 0;
+  //Double_t mesonMass = 0;
   Int_t PDGCode = 0;
   if(!event || event->IsA()==AliESDEvent::Class()){
     mesonPt = ((TParticle*)mcEvent->Particle(index))->Pt();
-    mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
+    //mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
     PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
   } else if(event->IsA()==AliAODEvent::Class()){
     TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if (AODMCTrackArray){
       AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
       mesonPt = aodMCParticle->Pt();
-      mesonMass = aodMCParticle->GetCalcMass();
+      //mesonMass = aodMCParticle->GetCalcMass();
       PDGCode = aodMCParticle->GetPdgCode();
     } else {
       return 1;
@@ -4235,38 +4234,38 @@ Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliM
   if (particle != NULL && mcEvent != NULL){
     Int_t pdgSecondary      = 0;
     if (!isConversion){
-      Bool_t hasMother        = kFALSE;
-      Bool_t hasGrandMother   = kFALSE;
+      //Bool_t hasMother        = kFALSE;
+      //Bool_t hasGrandMother   = kFALSE;
       Long_t motherID         = particle->GetMother(0);
       Long_t grandMotherID    = -1;
       // is the photon a direct photons, without a mother?
       if (motherID > -1){
-        hasMother             = kTRUE;
+        //hasMother             = kTRUE;
         grandMotherID         = mcEvent->Particle(motherID)->GetMother(0);
         // is the meson a primary?
         if (grandMotherID > -1){
-          hasGrandMother      = kTRUE;
+          //hasGrandMother      = kTRUE;
           pdgSecondary        = mcEvent->Particle(grandMotherID)->GetPdgCode();
         }
       }
     } else {
-      Bool_t hasMother            = kFALSE;
-      Bool_t hasGrandMother       = kFALSE;
-      Bool_t hasGreatGrandMother  = kFALSE;
+      //Bool_t hasMother            = kFALSE;
+      //Bool_t hasGrandMother       = kFALSE;
+      //Bool_t hasGreatGrandMother  = kFALSE;
       Long_t motherID             = particle->GetMother(0);
       Long_t grandMotherID        = -1;
       Long_t greatGrandMotherID   = -1;
       // is the electron a direct electron, without a mother?
       if (motherID > -1){
-        hasMother                 = kTRUE;
+        //hasMother                 = kTRUE;
         grandMotherID             = mcEvent->Particle(motherID)->GetMother(0);
         // is the photon a direct photons, without a mother?
         if (grandMotherID > -1){
-          hasGrandMother          = kTRUE;
+          //hasGrandMother          = kTRUE;
           greatGrandMotherID      = mcEvent->Particle(grandMotherID)->GetMother(0);
           // is the meson a primary?
           if (greatGrandMotherID > -1){
-            hasGreatGrandMother   = kTRUE;
+            //hasGreatGrandMother   = kTRUE;
             pdgSecondary          = mcEvent->Particle(greatGrandMotherID)->GetPdgCode();
           }
         }
@@ -4298,38 +4297,38 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
   if (particle != NULL && aodmcArray != NULL){
     Int_t pdgSecondary      = 0;
     if (!isConversion){
-      Bool_t hasMother        = kFALSE;
-      Bool_t hasGrandMother   = kFALSE;
+      //Bool_t hasMother        = kFALSE;
+      //Bool_t hasGrandMother   = kFALSE;
       Long_t motherID         = particle->GetMother();
       Long_t grandMotherID    = -1;
       // is the photon a direct photons, without a mother?
       if (motherID > -1){
-        hasMother             = kTRUE;
+        //hasMother             = kTRUE;
         grandMotherID         = ((AliAODMCParticle*)aodmcArray->At(motherID))->GetMother();
         // is the meson a primary?
         if (grandMotherID > -1){
-          hasGrandMother      = kTRUE;
+          //hasGrandMother      = kTRUE;
           pdgSecondary        = ((AliAODMCParticle*)aodmcArray->At(grandMotherID))->GetPdgCode();
         }
       }
     } else {
-      Bool_t hasMother            = kFALSE;
-      Bool_t hasGrandMother       = kFALSE;
-      Bool_t hasGreatGrandMother  = kFALSE;
+      //Bool_t hasMother            = kFALSE;
+      //Bool_t hasGrandMother       = kFALSE;
+      //Bool_t hasGreatGrandMother  = kFALSE;
       Long_t motherID             = particle->GetMother();
       Long_t grandMotherID        = -1;
       Long_t greatGrandMotherID   = -1;
       // is the electron a direct electron, without a mother?
       if (motherID > -1){
-        hasMother                 = kTRUE;
+        //hasMother                 = kTRUE;
         grandMotherID             = ((AliAODMCParticle*)aodmcArray->At(motherID))->GetMother();
         // is the photon a direct photons, without a mother?
         if (grandMotherID > -1){
-          hasGrandMother          = kTRUE;
+          //hasGrandMother          = kTRUE;
           greatGrandMotherID      = ((AliAODMCParticle*)aodmcArray->At(grandMotherID))->GetMother();
           // is the meson a primary?
           if (greatGrandMotherID > -1){
-            hasGreatGrandMother   = kTRUE;
+            //hasGreatGrandMother   = kTRUE;
             pdgSecondary          = ((AliAODMCParticle*)aodmcArray->At(greatGrandMotherID))->GetPdgCode();
           }
         }

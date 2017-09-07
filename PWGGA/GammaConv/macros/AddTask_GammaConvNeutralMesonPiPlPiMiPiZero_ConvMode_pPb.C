@@ -217,7 +217,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   task->SetV0ReaderName(V0ReaderName);
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
-
   CutHandlerNeutralConv cuts;
 
   Bool_t doEtaShiftIndCuts = kFALSE;

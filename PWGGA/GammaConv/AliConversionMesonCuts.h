@@ -179,6 +179,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
+    Bool_t    UseLikeSignMixing() {return fBackgroundUseLikeSign;}
+    Bool_t    UseSidebandMixing() {return fBackgroundUseSideband;}
+    Double_t GetSidebandMixingLow() const {return fSidebandMixingLow;}
+    Double_t GetSidebandMixingHigh() const {return fSidebandMixingHigh;}
     
   protected:
     TList*    fHistograms;				 ///< List of QA histograms
@@ -234,7 +238,11 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TF1*      fFMaxOpanCut;               ///<
     Bool_t    fMaxOpanPtDepCut;           ///<
     Int_t     fBackgroundHandler;         ///<
-    
+    Bool_t    fBackgroundUseSideband;     ///<
+    Bool_t    fBackgroundUseLikeSign;     ///<
+    Double_t  fSidebandMixingLow;     ///<
+    Double_t  fSidebandMixingHigh;     ///<
+
     // Histograms
     TObjString* fCutString;                     ///< cut number used for analysis
     TString     fCutStringRead;
@@ -252,7 +260,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,19)
+    ClassDef(AliConversionMesonCuts,20)
     /// \endcond
 };
 

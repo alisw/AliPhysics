@@ -125,7 +125,7 @@ AliAnaPi0Flow::~AliAnaPi0Flow()
 //
 void AliAnaPi0Flow::InitParameters()
 {
-  SetInputAODName("AliAODPWG4Particle");  
+  SetInputAODName("AliCaloTrackParticle");  
   AddToHistogramsName("AnaPi0Flow_");
 
   fFlatContainer = new AliOADBContainer("phosFlat");
@@ -334,7 +334,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
   }
 
   for (Int_t i = 0; i < naod; ++i) {
-    AliAODPWG4Particle* c = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i));
+    AliCaloTrackParticle* c = (AliCaloTrackParticle*) (GetInputAODBranch()->At(i));
 
     Double_t E = c->E();
     Double_t eta = c->Eta();

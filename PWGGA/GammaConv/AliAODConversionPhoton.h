@@ -94,16 +94,15 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     
     Float_t fDCArPrimVtx;
     Float_t fDCAzPrimVtx;
+    Float_t fInvMassPair;
     Bool_t fCaloPhoton;
     Long_t fCaloClusterRef;
     Int_t fNCaloPhotonMCLabels;
-    Float_t fInvMassPair;
     Int_t fNCaloPhotonMotherMCLabels;
     Int_t fCaloPhotonMCFlags;
     Long_t fCaloPhotonMCLabels[50];
     Long_t fCaloPhotonMotherMCLabels[20];
-      
-	
+
     ClassDef(AliAODConversionPhoton,5)
 };
 

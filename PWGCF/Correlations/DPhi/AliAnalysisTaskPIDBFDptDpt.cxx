@@ -1080,7 +1080,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
   name = "m8"; _m8      = createHisto1D(name,name,_nBins_M8, _min_M8, _max_M8, _title_m8, _title_counts);
   name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
   name = "psi_EventPlane"; _psi_EventPlane = createHisto1F(name,name, 360, 0.0, 6.4, "#psi","counts");
-
+  name = "V0MvsTracksTPCout_after";   _fhV0MvsTracksTPCout_after = createHisto2F(name,name,200,0,20000,400,0,40000, "# tracks with kTPCout on", "V0 multiplicity","counts"); //V0 multiplicity vs tracks with kTPCout on after cut
+	
   // histos for tracks:
   if ( _singlesOnly )
     {
@@ -1117,7 +1118,6 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "beta_p_AliHelperPID_no_Undefined";   _beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p_POI_AliHelperPID";   _inverse_beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
       name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-      name = "V0MvsTracksTPCout_after";   _fhV0MvsTracksTPCout_after = createHisto2F(name,name,200,0,20000,400,0,40000, "# tracks with kTPCout on", "V0 multiplicity","counts"); //V0 multiplicity vs tracks with kTPCout on after cut
       //name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
       //name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
       name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );

@@ -31,6 +31,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliVAODHeader.h"
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h" // available from November 2015
@@ -336,10 +337,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     
     Int_t multTPC = 0;
     Int_t multGlobal = 0;
-    TObject* header = aodevent->GetHeader();
+    AliVAODHeader* header = (aodevent) ? static_cast<AliVAODHeader*>(aodevent->GetHeader()) : 0x0;
     
     //NanoAOD cuts
-    if((header->InheritsFrom("AliNanoAODStorage"))&&(header->InheritsFrom("AliVAODHeader"))){
+    if(header && header->InheritsFrom("AliNanoAODStorage")){
         AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) header;
 
         if(fCheckPileUp){

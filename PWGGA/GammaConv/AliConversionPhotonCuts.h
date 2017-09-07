@@ -343,8 +343,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fITSPIDnSigmaAboveElectronLine;       ///< sigma cut RRnewTOF
     Double_t          fITSPIDnSigmaBelowElectronLine;       ///< sigma cut RRnewTOF
     Double_t          fMaxPtPIDITS;                         ///< max pt for ITS PID
-    Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
+    Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
     Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
     Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
@@ -352,7 +352,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         ///< maximum Kappa cut
     Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
-    Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
@@ -381,6 +380,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
+    Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;      
 
   private:

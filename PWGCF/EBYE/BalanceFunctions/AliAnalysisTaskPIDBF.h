@@ -281,6 +281,8 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
+  TH2F *fHistTOFPid;
+  TH2F *fHistdEdxPid;
 
 
   TH2F *fHistMixEvents; //number of events that is mixed with in the current pool

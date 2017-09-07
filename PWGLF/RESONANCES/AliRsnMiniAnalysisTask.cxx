@@ -101,8 +101,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(kFALSE),
-   fRsnTreeFile(0)
+   fRsnTreeInFile(kFALSE)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -110,7 +109,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
+AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bool_t saveRsnTreeInFile) :
    AliAnalysisTaskSE(name),
    fUseMC(useMC),
    fEvNum(0),
@@ -159,8 +158,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(kFALSE),
-   fRsnTreeFile(0)
+   fRsnTreeInFile(saveRsnTreeInFile)
 {
 //
 // Default constructor.
@@ -170,6 +168,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
 //
 
    DefineOutput(1, TList::Class());
+   if (fRsnTreeInFile) DefineOutput(2, TTree::Class());
 }
 
 //__________________________________________________________________________________________________
@@ -222,8 +221,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
-   fRsnTreeInFile(copy.fRsnTreeInFile),
-   fRsnTreeFile(copy.fRsnTreeFile)
+   fRsnTreeInFile(copy.fRsnTreeInFile)
 {
 //
 // Copy constructor.
@@ -288,7 +286,6 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    fRsnTreeInFile = copy.fRsnTreeInFile;
-   fRsnTreeFile = copy.fRsnTreeFile;
 
    return (*this);
 }
@@ -410,9 +407,8 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 
    // create temporary tree for filtered events
    if (fMiniEvent) SafeDelete(fMiniEvent);
-   if (fRsnTreeInFile)
-      fRsnTreeFile = TFile::Open(TString::Format("RsnTree%s.root", GetName()).Data(), "RECREATE");
-   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
+   if (fRsnTreeInFile) OpenFile(2);
+   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");  
    fMiniEvent = new AliRsnMiniEvent();
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
    
@@ -430,6 +426,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 
    // post data for ALL output slots >0 here, to get at least an empty histogram
    PostData(1, fOutput);
+   if (fRsnTreeInFile) PostData(2, fEvBuffer);
 }
 
 //__________________________________________________________________________________________________
@@ -443,11 +440,11 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 //
    // increment event counter
    fEvNum++;
-
+   
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
-   
+
    // setup PID response
    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
    AliInputEventHandler *inputHandler = (AliInputEventHandler *)man->GetInputEventHandler();
@@ -478,6 +475,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 
    // post data for computed stuff
    PostData(1, fOutput);
+   if (fRsnTreeInFile) PostData(2, fEvBuffer);
 }
 
 //__________________________________________________________________________________________________
@@ -644,8 +642,6 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
    timer.Stop(); timer.Print(); fflush(stdout);
 
-   if (fRsnTreeFile)
-      SafeDelete(fRsnTreeFile);
    /*
    OLD
    ifill = 0;
@@ -681,6 +677,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
 
    // post computed data
    PostData(1, fOutput);
+   if (fRsnTreeInFile) PostData(2, fEvBuffer);
 }
 
 //__________________________________________________________________________________________________

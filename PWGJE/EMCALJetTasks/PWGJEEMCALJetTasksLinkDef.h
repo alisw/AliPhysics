@@ -94,6 +94,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerMatcher+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
+#pragma link C++ class AliAnalysisTaskEmcalHfeTagging+;
 #pragma link C++ class AliAnalysisTaskEmcalRun2QA+;
 #pragma link C++ class AliAnalysisTaskFakeJets+;
 #pragma link C++ class AliAnalysisTaskEmcalMissingEnergy+;

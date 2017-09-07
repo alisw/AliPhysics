@@ -1883,9 +1883,13 @@ private:
   // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCRbRnHist = 3;
-  const static Int_t fkFlowQCRbRnHar = 3;
-  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnHist]; //!
+  const static Int_t fkFlowQCRbRnHist = 2;
+  const static Int_t fkFlowQCRbRnHist2 = 3;
+  const static Int_t fkFlowQCRbRnHar = 2;
+  const static Int_t fkFlowQCRbRnVar = 3;
+  const static Int_t fkFlowQCRbRnVar2 = 2;
+  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+  TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1984,6 +1988,7 @@ private:
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
   TH3D *fVtxHist[3]; //! primary vertex
+  TH3F* fTwoTrackDistancePt[2]; //!
   TH2D *fRefMulRecHist; //!
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
@@ -2047,8 +2052,9 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
+  Bool_t fbFlagIsBadRunForC34;
 
-  ClassDef(AliFlowAnalysisCRC,69);
+  ClassDef(AliFlowAnalysisCRC,71);
 
 };
 

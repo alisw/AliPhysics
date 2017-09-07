@@ -1626,8 +1626,8 @@ Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair) const
   const AliVParticle * daughter2 = pair->GetSecondDaughterP();
   if (!daughter1 || !daughter2) return 0;
 
-  AliVParticle *mcDaughter1=GetMCTrackFromMCEvent(daughter1->GetLabel());
-  AliVParticle *mcDaughter2=GetMCTrackFromMCEvent(daughter2->GetLabel());
+  AliVParticle *mcDaughter1=GetMCTrackFromMCEvent(TMath::Abs(daughter1->GetLabel()));
+  AliVParticle *mcDaughter2=GetMCTrackFromMCEvent(TMath::Abs(daughter2->GetLabel()));
   if (!mcDaughter1 || !mcDaughter2) return 0;
 
   Int_t labelMother1=-1;

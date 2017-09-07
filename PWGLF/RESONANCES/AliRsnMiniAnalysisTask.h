@@ -36,7 +36,7 @@ class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 public:
 
    AliRsnMiniAnalysisTask();
-   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE);
+   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE,Bool_t saveRsnTreeInFile=kFALSE);
    AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy);
    AliRsnMiniAnalysisTask &operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
@@ -157,9 +157,8 @@ private:
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
    Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
-   TFile               *fRsnTreeFile;    // pointer to file where rsn tree will be saved
 
-   ClassDef(AliRsnMiniAnalysisTask, 14);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 15);   // AliRsnMiniAnalysisTask
 };
 
 
