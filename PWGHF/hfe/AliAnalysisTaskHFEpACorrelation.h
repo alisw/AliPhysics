@@ -492,7 +492,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 7); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 8); 								// example of analysis
     //______________________________________________________________________
 };
 
