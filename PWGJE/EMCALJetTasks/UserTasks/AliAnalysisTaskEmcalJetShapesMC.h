@@ -178,8 +178,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   TH2F                                *fNbOfConstvspT;//
 
   TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
-  TF1             *fTf1Omega;//!<! to generate omega according to BDMPS tail
-  TF1             *fTf1Kt; //!<!  to generate kT according to BDMS tail
+  TF1             *fTf1Omega;//! to generate omega according to BDMPS tail
+  TF1             *fTf1Kt; //!  to generate kT according to BDMS tail
  private:
   AliAnalysisTaskEmcalJetShapesMC(const AliAnalysisTaskEmcalJetShapesMC&);            // not implemented
   AliAnalysisTaskEmcalJetShapesMC &operator=(const AliAnalysisTaskEmcalJetShapesMC&); // not implemented
