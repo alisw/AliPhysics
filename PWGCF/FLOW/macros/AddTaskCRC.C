@@ -25,7 +25,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bRequireITSRefit=kFALSE,
-                             Bool_t bCorrectPhiTracklets=kFALSE,
+                             Bool_t bStoreExtraHistoForSubSampling=kFALSE,
                              Double_t DeltaEta=0.4,
                              Bool_t bRecZDCVtxRbR=kFALSE,
                              TString PtWeightsFileName="",
@@ -108,6 +108,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bUseCRCRecenter=kFALSE;
   Float_t ZDCGainAlpha=0.395;
   Int_t CRC2nEtaBins=5;
+  Bool_t bCorrectPhiTracklets=kFALSE;
 
   // define CRC suffix
   TString CRCsuffix = ":CRC";
@@ -547,6 +548,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetMaxDevZN(MaxDevZN);
   taskQC->SetZDCGainAlpha(ZDCGainAlpha);
   taskQC->SetTestSin(bTestSin);
+  taskQC->StoreExtraHistoForSubSampling(bStoreExtraHistoForSubSampling);
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
