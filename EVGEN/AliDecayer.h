@@ -20,7 +20,8 @@ typedef enum
     kAll, kNoDecayHeavy, kHardMuons, kBJpsi,  kBJpsiUndecayed,
     kWToMuon,kWToCharm, kWToCharmToMuon, kZDiMuon, kZDiElectron, kNeutralPion, kAllMuonic,
     kChiToJpsiGammaToMuonMuon, kChiToJpsiGammaToElectronElectron, kNoDecayBeauty, kPsiPrimeJpsiDiElectron,
-  kElectronEM, kGammaEM, kDiElectronEM, kBeautyUpgrade,kHadronicDWithV0,kHadronicDWithout4BodiesWithV0,kAllEM
+  kElectronEM, kGammaEM, kDiElectronEM, kBeautyUpgrade,kHadronicDWithV0,kHadronicDWithout4BodiesWithV0,kAllEM,
+    kLcpKpi, kLcpK0S
 } Decay_t;
 #endif
 

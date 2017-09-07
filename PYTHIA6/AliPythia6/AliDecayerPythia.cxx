@@ -556,7 +556,24 @@ void AliDecayerPythia::ForceDecay()
         break;
     case kBeautyUpgrade:
         ForceBeautyUpgrade();
-      break;
+        break;
+    case kLcpKpi:
+        products1[0] = 2212; // proton
+        products1[1] = -321; // K-
+        products1[2] = 211;  // pi+
+        mult1[0] = 1;
+        mult1[1] = 1;
+        mult1[2] = 1;
+        ForceParticleDecay(4122,products1,mult1,3);
+        break;
+     case kLcpK0S:
+        products[0] = 2122;
+        products[1] = -311;
+        mult[0] = 1;
+        mult[1] = 1;
+        ForceParticleDecay(4122,products,mult,2);
+        break;
+
     }
 }
 

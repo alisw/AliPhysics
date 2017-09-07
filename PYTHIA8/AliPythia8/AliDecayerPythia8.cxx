@@ -624,6 +624,11 @@ void AliDecayerPythia8::ForceDecay()
     case kAllEM:
     case kDiElectronEM:
 	break;
+    case kLcpKpi:
+      fPythia8->ReadString("4122:onIfMatch = 2212 321 211"); // Lc -> p K pi
+      break;
+    case kLcpK0S:
+      fPythia8->ReadString("4122:onIfMatch = 2212 311");  // Lc -> p K0S
     }
 }
 
