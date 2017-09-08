@@ -1816,6 +1816,8 @@ void AliAnalysisTaskPiKpK0Lamba::Analyze(AliAODEvent* aod, Float_t vtxZ)
             continue;
         }
 
+        Int_t statfly = v0->GetOnFlyStatus();
+        if (statfly == 1) continue;
 
         if (fEtaRange == 0){
             if (v0->Eta() >= 0)
