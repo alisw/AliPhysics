@@ -152,7 +152,7 @@ private:
 
   //MC - Heavy Flavour related methods
   Bool_t LoadHFPairs();
-  Int_t  IsaBmeson(Int_t pdg) const;
+  Int_t  IsaBhadron(Int_t pdg) const;
   
   ClassDef(AliDielectronMC, 1)
 };
