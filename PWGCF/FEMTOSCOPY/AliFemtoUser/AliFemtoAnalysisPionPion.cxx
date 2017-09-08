@@ -5,8 +5,6 @@
 #include "AliFemtoAnalysisPionPion.h"
 
 #include "AliFemtoCutMonitorPionPion.h"
-#include "AliFemtoConfigObject.h"
-
 
 #include "AliESDtrack.h"
 
@@ -211,6 +209,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   , fGroupOutputObjects(params.group_output_objects)
   , fOutputSettings(params.output_settings)
   , fMCAnalysis(params.is_mc_analysis)
+  , fConfiguration()
 {
   SetVerboseMode(params.verbose);
   SetEnablePairMonitors(params.enable_pair_monitors);
@@ -234,6 +233,51 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   if (fPairCut == nullptr) {
     SetPairCut(BuildPairCut(cut_params));
   }
+
+  fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
+    type: 'AliFemtoAnalysisPionPion',
+    is_mc: %d,
+    event: {
+      multiplicity: %f:%f,
+      centrality: %f:%f,
+      zVertex: %f:%f,
+      trigger: %d,
+    },
+    track: {
+      pt: %f:%f,
+      eta: %f:%f,
+      DCA: %f:%f,
+      nSigma: %f:%f,
+      impact_xy: %f,
+      impact_z: %f,
+      min_tpc_ncls: %d,
+    },
+    pair: {
+      max_share_quality: %f,
+      max_share_fraction: %f,
+      delta_eta_min: %f,
+      delta_phi_min: %f,
+      phi_star_radius: %f,
+      tpc_only: %d,
+    },
+  })#",
+    fMCAnalysis,
+    cut_params.event_MultMin, cut_params.event_MultMax,
+    cut_params.event_CentralityMin, cut_params.event_CentralityMax,
+    cut_params.event_VertexZMin, cut_params.event_VertexZMax,
+    cut_params.event_TriggerSelection,
+
+    cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
+    cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
+    cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
+    cut_params.pion_1_NSigmaMin, cut_params.pion_1_NSigmaMax,
+    cut_params.pion_1_max_impact_xy, cut_params.pion_1_max_impact_z,
+    cut_params.pion_1_min_tpc_ncls,
+
+    cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
+    cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
+    cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
+  ).Data());
 }
 
 
@@ -621,11 +665,8 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     delete setting_list;
     output->Add(new TObjString(settings));
   }
-  auto obj = AliFemtoConfigObject::Parse(std::string(
-    TString::Format("{AliFemtoAnalysisPionPion: { "
-                        "mc_analysis: %d, pion_1_type: %d}"
-                    "}", fMCAnalysis, fPionType_1)));
-  output->Add(new AliFemtoConfigObject(std::move(obj)));
+
+  output->Add(new AliFemtoConfigObject(fConfiguration));
   return outputlist;
 }
 
