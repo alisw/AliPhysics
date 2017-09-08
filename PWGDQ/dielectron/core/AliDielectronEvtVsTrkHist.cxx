@@ -4,7 +4,7 @@
  * @Email:  pdillens@cern.ch
  * @Filename: AliDielectronEvtVsTrkHist.cxx
  * @Last modified by:   pascaldillenseger
- * @Last modified time: 2017-08-31, 13:52:53
+ * @Last modified time: 2017-09-07, 16:25:17
  */
 
 
@@ -39,12 +39,12 @@ fSameEvent(kFALSE),
 fNObjs(-1),
 fNHistos(0),
 fNSparses(0),
+fNtracksITS(0),
+fNtracksTPC(0),
 fHistoList(0x0),
 fSparseObjs{0x0},
 fMatchEffITS(0x0),
-fMatchEffTPC(0x0),
-fNtracksITS(0),
-fNtracksTPC(0)
+fMatchEffTPC(0x0)
 {
   // Default named constructor
 }
@@ -94,11 +94,15 @@ void AliDielectronEvtVsTrkHist::FillHistograms(const AliVEvent *ev)
     if(fIsAODEvent){
     // Fill information for AODs
       AliAODEvent *event = (AliAODEvent*) ev;
-      AliAODHeader *header = (AliAODHeader*) ev->GetHeader();
+      AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+
       fSameEvent = fEventNumber == header->GetEventNumberESDFile() ? kTRUE : kFALSE;
+
+      if(fSameEvent)  return;
+
       fEventNumber = header->GetEventNumberESDFile();
-      Int_t nTracks = ev->GetNumberOfTracks();
-      ADEVTH::SetEventplaneAngles(ev);
+      Int_t nTracks = event->GetNumberOfTracks();
+      ADEVTH::SetEventplaneAngles(event);
 
 
     //Needed Vars for matching eff
@@ -107,11 +111,11 @@ void AliDielectronEvtVsTrkHist::FillHistograms(const AliVEvent *ev)
       Double_t *bin = new Double_t[nDimMatchEff];
       for (Int_t iDim = 0; iDim < nDimMatchEff; iDim++) {
         if(!fSparseIsTrackVar[ADEVTH::kSparseMatchEffITSTPC][iDim]){
-          bin[iDim] = ADEVTH::GetVarValueEvent(ev, fSparseVars[ADEVTH::kSparseMatchEffITSTPC][iDim]);
+          bin[iDim] = ADEVTH::GetVarValueEvent(event, fSparseVars[ADEVTH::kSparseMatchEffITSTPC][iDim]);
         }
       }
     for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-      AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
+      AliVTrack *track        = static_cast<AliVTrack*>(event->GetTrack(iTrack));
       if (!track) continue;
 
 
@@ -277,7 +281,7 @@ void AliDielectronEvtVsTrkHist::SetSparseVars(Int_t nSparse, Int_t nAxis, Int_t 
 //______________________________________________
 void AliDielectronEvtVsTrkHist::SetEventplaneAngles(const AliVEvent *ev)
 {
-  TString epDetector[2] = {"TPC","V0C"};
+  TString epDetector[2] = {"TPC","VZEROC"};
   fEventPlaneAngle[0] = -999.;
   fEventPlaneAngle[1] = -999.;
 
@@ -290,7 +294,7 @@ void AliDielectronEvtVsTrkHist::SetEventplaneAngles(const AliVEvent *ev)
       TList *qnlist = flowQnVectorMgr->GetQnVectorList();
       if(qnlist != NULL){
         for (Int_t i = 0; i < 2; i++) {
-          const AliQnCorrectionsQnVector *qVecQnFramework = AliDielectronQnEPcorrection::GetQnVectorFromList( qnlist, epDetector[i].Data(), "latest", "latest" );
+          AliQnCorrectionsQnVector *qVecQnFramework = AliDielectronQnEPcorrection::GetQnVectorFromList( qnlist, epDetector[i].Data(), "latest", "latest" );
           if(qVecQnFramework != NULL){
             TVector2 qVector( qVecQnFramework->Qx(2), qVecQnFramework->Qy(2) );
             fEventPlaneAngle[i] = TVector2::Phi_mpi_pi(qVector.Phi())/2;
@@ -361,10 +365,8 @@ void AliDielectronEvtVsTrkHist::CalculateMatchingEfficiency()
   Double_t matchEff;
   Double_t matchEffErr;
   Int_t matchEffDim = -1;
-  Int_t lastBin = 0;
 
   Double_t nCountsITS;
-  Double_t nTracksTotal = 0.;
   Double_t nCountsTPC;
 
   const Int_t nDimMatchEff = fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->GetNdimensions();
