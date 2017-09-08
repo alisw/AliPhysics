@@ -60,8 +60,8 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
 //  }
 
   if(configBasePath.IsNull()){ //Check if a specific config should be used and copy appropriate file
-	configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
-  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+    Printf("File for THnSparse Binning needed!");
+    return NULL;
   }
   else if(configBasePath.Contains("alien:///")){
   	gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
@@ -101,6 +101,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   Bool_t MaskFastors = kFALSE;
 
   if(!MaskedFastOrPath.IsNull()){ 
+    Printf("Trying to copy MaskedFastors.root");
     MaskFastors = kTRUE;
     if(MaskedFastOrPath.Contains("alien:///")){
     	gSystem->Exec(Form("alien_cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
@@ -108,6 +109,8 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
     else{
     	gSystem->Exec(Form("cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
     }
+    if(TFile::Open("MaskFastors.root","READ") != NULL) Printf("Copy succesful");
+    else Printf("Copy failed!!!");
   }
   
 

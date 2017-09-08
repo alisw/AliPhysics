@@ -148,7 +148,6 @@ protected:
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
   TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
-  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
   TH1D        *fPT;                             //!<! Pt distribution
   TH1D        *fE;                              //!<! E distribution
   TH2D        *fNLM;                            //!<! NLM distribution
@@ -163,24 +162,25 @@ protected:
   TH1D        *fDTBC;                           //!<! DTBC distribution after TM
   TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
   TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
-  TH1D        *fClusTime;                       //!<! Time distribution for clusters
   TH2D        *fTriggerbit;                     //!<! fired Trigger Bits 
+  TH1D        *hL0Amplitude;
+  TH2D        *hmaxADC;
+  TH2D        *hADCpos0;
   TH2D        *hmaxL0ADC;
+  TH2D        *hL1PatchPosition;
+  TH2D        *hFastOrPatchE;
   TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
   TH2D        *fEventsover10;                   
   TH1D        *fL1triggered;                    //!<! max cluster energy of L1 triggered events
-  TH2D        *hADCpos0;
-  TH2D        *hmaxADC;
-  TH2D        *hL1PatchPosition;
-  TH2D        *hFastOrPatchE;
-  TH1D        *hL0Amplitude;
-  
-  THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
-  THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
-  
-  TH2D        *hFastOrIndexLeadingCluster;
+  TH1D        *fClusTime;                       //!<! Time distribution for clusters
+  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
   Bool_t      fM02cut;
   Bool_t      fMaskFastOrCells;
+  
+  THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
+  TH2D        *hFastOrIndexLeadingCluster;
+  THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
+  
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented
