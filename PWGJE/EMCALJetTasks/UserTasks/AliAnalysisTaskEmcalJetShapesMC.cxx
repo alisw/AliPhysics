@@ -1147,35 +1147,33 @@ void AliAnalysisTaskEmcalJetShapesMC::Terminate(Option_t *)
 void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, int ReclusterAlgo){
  
   std::vector<fastjet::PseudoJet>        fInputVectors;
+  fInputVectors.clear();
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
-  
+  fastjet::PseudoJet  PseudoTracks;
+  fastjet::PseudoJet MyJet;
+  fastjet::PseudoJet PseudoTracksCMS;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   //cout<<"CALL TO SOFTDROP"<<endl;
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
-  Double_t FJTrackEta[9999],FJTrackPhi[9999],FJTrackPt[9999],EmcalJetTrackEta[9999],EmcalJetTrackPhi[9999],EmcalJetTrackPt[9999];
-  UShort_t FJNTracks=0,EmcalJetNTracks=0;
-  
-  if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+
+   if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
       if (!fTrk) continue; 
       JetInvMass += fTrk->M();
       
-      fastjet::PseudoJet PseudoTracks(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       TrackMom += TMath::Sqrt(TMath::Power(fTrk->Px(),2)+TMath::Power(fTrk->Py(),2)+TMath::Power(fTrk->Pz(),2));
       TrackEnergy += fTrk->E();
       PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
       PseudJetInvMass += PseudoTracks.m();
       fInputVectors.push_back(PseudoTracks);
-      EmcalJetTrackEta[i]=fTrk->Eta();
-      EmcalJetTrackPhi[i]=fTrk->Phi();
-      EmcalJetTrackPt[i]=fTrk->Pt();
-      EmcalJetNTracks++;
+     
     }
 
-  fRandom->SetSeed(0);
+   //fRandom->SetSeed(0);
   //here add N tracks with random phi and eta and theta according to bdmps distrib.
 
-   fastjet::PseudoJet MyJet(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+    MyJet.reset(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
     Double_t omegac=0.5*fqhat*fxlength*fxlength/0.2;
     Double_t thetac=TMath::Sqrt(12*0.2/(fqhat*TMath::Power(fxlength,3)));
     Double_t xQs=TMath::Sqrt(fqhat*fxlength);				
@@ -1204,14 +1202,15 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
      //cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
      if(pptheta>fJetRadius) continue;
      
-     fastjet::PseudoJet PseudoTracksCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+     PseudoTracksCMS.reset(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
      //boost the particle in the rest frame of the jet to the lab frame
      fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
-     fInputVectors.push_back(PseudoTracksLab);}
+     fInputVectors.push_back(PseudoTracksLab);
+    
+   }
 
-   PseudoTracksCMS.clear();
-   PseudoTracksLab.clear();
+  
   
   
   fastjet::JetDefinition                *fJetDef;         
@@ -1233,40 +1232,19 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fOutputJets=fClustSeqSA->inclusive_jets(0);
   
   //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
-  std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
-   fastjet::contrib::SoftDrop softdrop(beta, zcut);
-  //fastjet::contrib::SoftDrop softdrop_antikt(beta,zcut);
+  
+  fastjet::contrib::SoftDrop softdrop(beta, zcut);
+ 
   softdrop.set_verbose_structure(kTRUE);
-  //fastjet::JetDefinition jet_def_akt(fastjet::antikt_algorithm, 0.4);
-  // fastjet::contrib::Recluster *antiKT_Recluster(jet_def_akt);
+ 
   fastjet::contrib::Recluster *recluster;
   if(ReclusterAlgo == 1) recluster = new fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
   if(ReclusterAlgo == 2) recluster = new fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
   if(ReclusterAlgo == 0) recluster = new fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);  
   softdrop.set_reclustering(true,recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
-  // fastjet::PseudoJet finaljet_antikt = softdrop_antikt(fOutputJets[0]);
-  //cout<< finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
-  //cout<< finaljet_antikt.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
-
-
-  //AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
-  //std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
-  //Double_t FastjetTrackDelR,EmcalTrackDelR;
-  //for(Int_t i=0;i<fJet->GetNumberOfConstituents();i++){
-  //  if(i<=finaljet.constituents().size()){
-  //    FastjetTrackDelR = TMath::Sqrt(TMath::Power(fSDTracks[i].eta()-JetEta,2)+TMath::Power(fSDTracks[i].phi()-JetPhi,2));
-  //    FJTrackEta[i]=fSDTracks[i].eta();
-  //    FJTrackPhi[i]=fSDTracks[i].phi();
-  //    FJTrackPt[i]=fSDTracks[i].perp();
-  //    FJNTracks++;
-  //  }
-  // AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-  // EmcalTrackDelR = TMath::Sqrt(TMath::Power(fTrk->Eta()-JetEta,2)+TMath::Power(fTrk->Phi()-JetPhi,2));       
-  //}
-  Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
-  //Int_t nConstituents(fClustSeqSA->constituents(finaljet).size());
-  //jet->SetNumberOfTracks(nConstituents);
+   Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
+ 
   Double_t SymParam, Mu, DeltaR, GroomedPt,GroomedMass;
   Int_t NGroomedBranches;
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
@@ -1324,7 +1302,17 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[44]=GroomedPt;
   fShapesVar[45]=NGroomedBranches;
   fShapesVar[46]=GroomedMass; }
-  
+
+
+
+   if(fClustSeqSA) { delete fClustSeqSA; fClustSeqSA = NULL; } 
+   if(recluster) { delete recluster; recluster = NULL; } 
+   if(fJetDef){  delete fJetDef; fJetDef = NULL;}
+   if(fTf1Kt){ delete fTf1Kt;}
+   if(fTf1Omega){ delete fTf1Omega;}
+ 
+
+
   return;
 
   
