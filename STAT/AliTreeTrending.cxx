@@ -120,8 +120,20 @@ void AliTreeTrending::AddUserDescription(TNamed * description){
   fUserDescription->AddLast(description);
 }
 
+/// Intialize drawing for <detector> QA
 
-Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float_t descriptionSize){
+///  \param statusDescription       - contains statusbar-vars,-names and -criteria
+///  \param descriptionSize         - Text size of description
+///  \param cutString               - string "selection"
+
+/// Example usage 
+/// \code
+/// Example usage of the AliTreeTrending::InitSummaryTrending
+/// trendingDraw->InitSummaryTrending(statusString,0.015,"defaultcut")
+/// here "defaultcut" refers to an alias set like this:   treeMC->SetAlias("defaultcut","run==TPC.Anchor.run");
+/// \endcode  
+
+Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float_t descriptionSize, TString cutString){
   //
   // Init drawing for the <detector> QA
   // Detector specific qaConfig() has to be called before invoking this function
@@ -181,10 +193,17 @@ Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float
   int igr=0;
   for (Int_t vari=oaStatusbarVars->GetEntriesFast()-1; vari>=0; vari--){ // invert the order of the status graphs
     TString sVar = Form("%s:tagID", oaStatusbarVars->At(vari)->GetName()); //e.g. -> dcar:run
-    fStatusGraph->Add( TStatToolkit::MakeStatusMultGr(fTree, sVar.Data(),  "", sCriteria.Data(), igr) );
-    TString sYtitle = oaStatusbarNames->At(vari)->GetName(); // set better name for y axis of statuspad
-    ((TMultiGraph*) fStatusGraph->At(igr))->SetTitle(sYtitle.Data());
-    igr++;
+    TMultiGraph* multGr = TStatToolkit::MakeStatusMultGr(fTree, sVar.Data(),  cutString, sCriteria.Data(), igr);
+    if(multGr){
+        fStatusGraph->Add(multGr);
+        TString sYtitle = oaStatusbarNames->At(vari)->GetName(); // set better name for y axis of statuspad
+        ((TMultiGraph*) fStatusGraph->At(igr))->SetTitle(sYtitle.Data());
+        igr++;
+    }
+    else{
+        AliError("TStatToolkit::MakeStatusMultGr() returned with error -> next");
+        continue;
+    }
   }
   return kTRUE;
 }
