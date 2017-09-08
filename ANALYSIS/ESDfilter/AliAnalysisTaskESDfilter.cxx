@@ -1968,12 +1968,13 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
   // Add primary vertex. The primary tracks will be defined
   // after the loops on the composite objects (V0, cascades, kinks)
   const AliESDVertex *vtx = esd.GetPrimaryVertex();
-  
+  char vType = AliAODVertex::kPrimary;
+  if (!vtx->GetStatus()) vType = AliAODVertex::kPrimaryInvalid;
+  else if (vtx == esd.GetPrimaryVertexTPC()) vType = AliAODVertex::kPrimaryTPC;
   vtx->GetXYZ(pos); // position
   vtx->GetCovMatrix(covVtx); //covariance matrix
-  
   fPrimaryVertex = new(Vertices()[fNumberOfVertices++])
-  AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
+  AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, vType);
   fPrimaryVertex->SetName(vtx->GetName());
   fPrimaryVertex->SetTitle(vtx->GetTitle());
   fPrimaryVertex->SetBC(vtx->GetBC());
