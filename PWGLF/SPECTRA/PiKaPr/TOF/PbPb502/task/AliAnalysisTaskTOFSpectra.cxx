@@ -643,13 +643,11 @@ void AliAnalysisTaskTOFSpectra::Init()
   }
 #endif
 
-  for (Int_t charge = 0; charge < 2; charge++) {            //Charge loop Positive/Negative
-    for (Int_t species = 0; species < 3; species++) {       //Species loop
-      for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) {     //Pt loop
-        for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-          hDCAxy[charge][species][ptbin][mult] = 0x0;
-          hDCAxyGoldenChi2[charge][species][ptbin][mult] = 0x0;
-        }
+  for (Int_t charge = 0; charge < 2; charge++) {        //Charge loop Positive/Negative
+    for (Int_t species = 0; species < 3; species++) {   //Species loop
+      for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
+        hDCAxy[charge][species][ptbin] = 0x0;
+        hDCAxyGoldenChi2[charge][species][ptbin] = 0x0;
         hDCAxyPrimMC[charge][species][ptbin] = 0x0;
         hDCAxySecStMC[charge][species][ptbin] = 0x0;
         hDCAxySecMatMC[charge][species][ptbin] = 0x0;
@@ -1185,18 +1183,16 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         //*****
         //Info from the DCAxy
         //*****
-        for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-          for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
-            hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
-            hDCAxy[charge][species][ptbin][mult]->Sumw2();
-            fListHist->AddLast(hDCAxy[charge][species][ptbin][mult]);
+        for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
+          hDCAxy[charge][species][ptbin] = new TH2F(Form("hDCAxy%s%s_pt%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange, fMultiplicityBin.GetSize(), 0, fMultiplicityBin.GetSize());
+          hDCAxy[charge][species][ptbin]->Sumw2();
+          fListHist->AddLast(hDCAxy[charge][species][ptbin]);
 
-            if (!fBuilDCAchi2)
-              continue;
-            hDCAxyGoldenChi2[charge][species][ptbin][mult] = new TH1F(Form("hDCAxyGoldenChi2%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
-            hDCAxyGoldenChi2[charge][species][ptbin][mult]->Sumw2();
-            fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin][mult]);
-          }
+          if (!fBuilDCAchi2)
+            continue;
+          hDCAxyGoldenChi2[charge][species][ptbin] = new TH2F(Form("hDCAxyGoldenChi2%s%s_pt%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange, fMultiplicityBin.GetSize(), 0, fMultiplicityBin.GetSize());
+          hDCAxyGoldenChi2[charge][species][ptbin]->Sumw2();
+          fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin]);
         }
       }
     }
@@ -1899,20 +1895,23 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       //DCA information
       //
       for (Int_t species = 0; species < 3; species++) { //Combined information of the TOF and TPC signal to identify a pure sample
-        if (fCombinedSigma[species] > 2.)
+
+        if (fCombinedSigma[species] > 2.) // PID cut
           continue;
-        if (TMath::Abs(fRapidity[species]) >= fRapidityCut)
-          continue; //Rapidity cut
+        //
+        if (TMath::Abs(fRapidity[species]) >= fRapidityCut) // Rapidity cut
+          continue;
 
         //Pure sample selected via TOF and TPC 2 sigma cut
-        hDCAxy[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        hDCAxy[fSign][species][fBinPtIndex]->Fill(fDCAXY, 0.5 + fEvtMultBin);
 
         //
         //DCA - with golden chi2 cut
         //
         if (!fBuilDCAchi2 || !fPassGoldenChi2)
           continue;
-        hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        //
+        hDCAxyGoldenChi2[fSign][species][fBinPtIndex]->Fill(fDCAXY, 0.5 + fEvtMultBin);
       }
 
       if (fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut) { //MC info If the track is a Pion or a Kaon or a Proton
