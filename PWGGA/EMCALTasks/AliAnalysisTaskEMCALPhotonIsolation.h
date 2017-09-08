@@ -343,6 +343,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3D   *fphietaPhotons;                      //!<!
   TH3D   *fphietaOthers;                       //!<!
   TH3D   *fphietaOthersBis;                    //!<!
+  TH2F   *fSPDclustVsSPDtracklets;             //!<!
   // TH1    *fPDGM02;                             //!<! check for zeroM02 clusters
   // TH2    *fEtrueEclustM02;                     //!<! check for zeroM02 clusters
   // TH2    *fDphiDetaM02;                        //!<! check for zeroM02 clusters
