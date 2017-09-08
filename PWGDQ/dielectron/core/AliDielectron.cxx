@@ -423,6 +423,8 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   // set event
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::SetEvent(ev1);
+  if(fEvtVsTrkHist)  fEvtVsTrkHist->FillHistograms(ev1);
+
   if (fMixing){
     //set mixing bin to event data
     Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
@@ -743,7 +745,6 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
     if (fHistos->GetHistogramList()->FindObject("Event")) {
       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
     }
-    if(fEvtVsTrkHist)  fEvtVsTrkHist->FillHistograms(ev);
   }
 
   //Fill track information, separately for the track array candidates
