@@ -281,6 +281,10 @@ public:
   ///
   virtual void Paint(Option_t *opt=nullptr);
 
+  /// Double clicking on object in TBrowser simply draws the object
+  /// to the current pad
+  virtual void Browse(TBrowser *) { Draw(); }
+
 
 protected:
 

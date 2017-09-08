@@ -336,8 +336,7 @@ AliFemtoConfigObject::Painter::Painter(AliFemtoConfigObject &data):
 fData(&data)
 , fTitle(0.3, 0.9, "[-] AliFemtoConfigObject")
 {
-  std::cout << "[AliFemtoConfigObjectPainter::AliFemtoConfigObjectPainter]\n";
-
+  // std::cout << "[AliFemtoConfigObjectPainter::AliFemtoConfigObjectPainter]\n";
 }
 
 void
@@ -426,8 +425,8 @@ AliFemtoConfigObject::Parse(const std::string &src)
 
 
 #define INT_PATTERN "\\-?\\d+"
-#define FLT_PATTERN "\\-?\\d+\\.\\d*|\\-?\\.\\d+|\\-?\\d+\\.?\\d*[eE][+\\-]?\\d+|NaN|nan"
-#define NUM_PATTERN "(?:\\-?\\d+\\.\\d*|\\-?\\.\\d+|\\-?\\d+\\.?\\d*[eE][+\\-]?\\d+|\\-?\\d+|NaN|nan)"
+#define FLT_PATTERN "\\-?(?:inf|nan|(?:\\d+\\.\\d*|\\.\\d+)(?:e[+\\-]?\\d+)?|\\d+e[+\\-]?\\d+)"
+#define NUM_PATTERN "(?:" FLT_PATTERN "|" INT_PATTERN ")"
 #define STR_PATTERN "'[^']*'"
 #define RANGE_PATTERN "(" NUM_PATTERN "):(" NUM_PATTERN ")"
 // numbers separated by colons
@@ -482,12 +481,12 @@ static const std::regex
 
 #else
 static const std::regex
-    NUM_RX("^" NUM_PATTERN),
+    NUM_RX("^" NUM_PATTERN, std::regex_constants::icase),
     INT_RX("^" INT_PATTERN),
-    FLT_RX("^(" FLT_PATTERN ")"),
+    FLT_RX("^(" FLT_PATTERN ")", std::regex_constants::icase),
     STR_RX("^" STR_PATTERN),
     ID_RX("^" IDENT_PATTERN),
-    KEY_RX("^" KEY_PATTERN ),
+    KEY_RX("^" KEY_PATTERN),
     RANGE_RX("^(?:" RANGE_PATTERN ")"),
     RANGELIST_RX("^" RANGELIST_PATTERN),
     LBRK_RX("^" LBRK_PAT),
@@ -500,8 +499,6 @@ static const std::regex
     COMMA_RX("^" COMMA_PAT);
 #endif
 
-
-
 std::vector<std::string>
 parse_map_key_unchecked(const StringIter_t& it, const StringIter_t stop)
 {
@@ -510,7 +507,6 @@ parse_map_key_unchecked(const StringIter_t& it, const StringIter_t stop)
   StringIter_t ptr = it;
   while (std::regex_search(ptr, stop, match, ID_RX)) {
     result.emplace_back(match[0].first, match[0].second);
-    // std::cout << result.size() << " " << result.back() << " " << "\n";
     ptr = match[0].second + 1;
 
     if (match[0].second == stop) {
@@ -715,6 +711,29 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
   // std::runtime_error(std::string("Unknown character '") + *it + "'");
 }
 
+namespace std {
+  template<>
+  struct hash<AliFemtoConfigObject> {
+    using Range_t = AliFemtoConfigObject::RangeValue_t;
+
+    ULong_t operator()(Range_t const& pair) const {
+      return std::hash<Range_t::first_type>{}(pair.first)
+             ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
+    }
+
+
+    ULong_t operator()(AliFemtoConfigObject::RangeListValue_t const& list) const {
+      using Item_t = AliFemtoConfigObject::RangeListValue_t::value_type;
+
+      return std::accumulate(
+        list.cbegin(), list.cend(), 0,
+        [&] (ULong_t a, const Item_t &pair) { return a ^ (operator()(pair) << 1);
+      });
+    }
+
+  };
+}
+
 
 ULong_t
 AliFemtoConfigObject::Hash() const
@@ -727,26 +746,22 @@ AliFemtoConfigObject::Hash() const
     case kINT: return result ^ std::hash<IntValue_t>{}(fValueInt);
     case kFLOAT: return result ^ std::hash<FloatValue_t>{}(fValueFloat);
     case kSTRING: return result ^ std::hash<StringValue_t>{}(fValueString);
-    case kRANGE:
-      return result ^ std::hash<RangeValue_t::first_type>{}(fValueRange.first)
-                    ^ std::hash<RangeValue_t::second_type>{}(fValueRange.second);
-    case kRANGELIST:
-      return std::accumulate(
-        fValueRangeList.cbegin(), fValueRangeList.cend(), result, // starting point
-        [] (ULong_t hash, const RangeListValue_t::value_type &pair) {
-          return hash ^ std::hash<RangeValue_t::first_type>{}(pair.first); });
+    case kRANGE: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRange);
+    case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
 
     case kARRAY:
       return std::accumulate(
         fValueArray.cbegin(), fValueArray.cend(), result,
         [] (ULong_t hash, const AliFemtoConfigObject &obj) {
-          return hash ^ obj.Hash(); });
+          return hash ^ (obj.Hash() << 1); });
 
     case kMAP:
       return std::accumulate(
         fValueMap.cbegin(), fValueMap.cend(), result,
         [] (ULong_t hash, const MapValue_t::value_type &pair) {
-          return hash ^ std::hash<Key_t>{}(pair.first) ^ pair.second.Hash(); });
+          return hash
+                 ^ (std::hash<Key_t>{}(pair.first) << 1)
+                 ^ (pair.second.Hash() << 2); });
   }
 
   return 0;
