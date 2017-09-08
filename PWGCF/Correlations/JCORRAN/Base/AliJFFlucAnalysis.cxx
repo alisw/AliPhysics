@@ -214,7 +214,8 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	// Create histograms
 	// Called once
 	// need to fill to book a histo
-	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
+	//fHMG = new AliJHistManager("AliJFFlucHistManager","test");
+	fHMG = new AliJHistManager("AliJFFlucHistManager","jfluc");
 	// set AliJBin here //
 	fBin_Subset .Set("Sub","Sub","Sub:%d", AliJBin::kSingle).SetBin(2);
 	fBin_h .Set("NH","NH","NH:%d", AliJBin::kSingle).SetBin(kNH);
