@@ -84,7 +84,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
-  Float_t SetMediumParameters(Float_t t, Float_t c)         {fqhat=t; fxlength=c;}
+  void SetMediumParameters(Float_t t, Float_t c)            {fqhat=t; fxlength=c;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
