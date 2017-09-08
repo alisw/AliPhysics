@@ -115,7 +115,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   void                               NTValues(AliEmcalJet *jet, Int_t jetContNb, Float_t* nTFractions);
-  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Int_t ReclusterAlgo);
+  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, Double_t zcut, Double_t beta, Int_t ReclusterAlgo);
   AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 
   //Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);

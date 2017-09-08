@@ -492,8 +492,9 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,0,2);
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
-      SoftDrop(jet1,jetCont,0.25,-1,0); 
-      SoftDrop(jet1,jetCont,0.1,-2,0); 
+      SoftDrop(jet1,jetCont,0.25,-1.0,0); 
+      SoftDrop(jet1,jetCont,0.1,-2.0,0);
+      
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1144,7 +1145,7 @@ void AliAnalysisTaskEmcalJetShapesMC::Terminate(Option_t *)
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, int ReclusterAlgo){
+void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, Double_t zcut, Double_t beta, Int_t ReclusterAlgo){
  
   std::vector<fastjet::PseudoJet>        fInputVectors;
   fInputVectors.clear();
