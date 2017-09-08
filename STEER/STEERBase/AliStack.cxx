@@ -42,7 +42,7 @@
 ClassImp(AliStack)
 
 
-TParticle AliStack::fgDummyParticle(21,999,-1,-1,-1,-1,1,1,999,999,0,0,0,0);
+TParticle* AliStack::fgDummyParticle = 0;
 const Char_t* AliStack::fgkEmbedPathsKey = "embeddingBKGPaths";
 
 //_______________________________________________________________________
@@ -682,7 +682,8 @@ TParticle* AliStack::Particle(Int_t i, Bool_t useInEmbedding)
   // Return particle with specified ID
   if (GetMCEmbeddingFlag() && !useInEmbedding) {
     AliError("Method should not be called by user in embedding mode, returning dummy particle");
-    return (TParticle*)&fgDummyParticle;
+    if (!fgDummyParticle) fgDummyParticle = new TParticle(21,999,-1,-1,-1,-1,1,1,999,999,0,0,0,0);
+    return fgDummyParticle;
   }
   
   if(!fParticleMap.At(i)) {
@@ -716,7 +717,8 @@ TParticle* AliStack::ParticleFromTreeK(Int_t id, Bool_t useInEmbedding) const
 //
   if (GetMCEmbeddingFlag() && !useInEmbedding) {
     AliError("Method should not be called by user in embedding mode, returning dummy particle");
-    return (TParticle*)&fgDummyParticle;
+    if (!fgDummyParticle) fgDummyParticle = new TParticle(21,999,-1,-1,-1,-1,1,1,999,999,0,0,0,0);
+    return (TParticle*)fgDummyParticle;
   }
   Int_t entry;
   if ((entry = TreeKEntry(id,useInEmbedding)) < 0) return 0;
