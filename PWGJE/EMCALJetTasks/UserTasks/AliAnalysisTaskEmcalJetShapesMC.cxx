@@ -492,8 +492,8 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,0,2);
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
-      SoftDrop(jet1,jetCont,0.25,-1,0); 
-      SoftDrop(jet1,jetCont,0.1,-2,0);
+      SoftDrop(jet1,jetCont,0.25,-1.0,0); 
+      SoftDrop(jet1,jetCont,0.1,-2.0,0);
       
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
