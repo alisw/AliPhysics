@@ -446,7 +446,8 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
 	fRunTable->SetRunNumber( frunNumber );
 
-	if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
+	int fperiod = fRunTable->GetRunNumberToPeriod(frunNumber);
+	if(fperiod == AliJRunTable::kLHC15o){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
 		double covTrc[6],covSPD[6];
@@ -471,8 +472,8 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			return kFALSE;
 	}
 
-	unsigned int multTPC = 0;//Float_t multTPC(0.);
-	unsigned int multGlob = 0;//Float_t multGlob(0.);
+	TPCTracks = 0;
+	GlobTracks = 0;
 	Int_t nTracks = event->GetNumberOfTracks();
 	for(int it = 0; it < nTracks; it++){
 		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
@@ -481,7 +482,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			continue;
 		if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2) )
 			continue;
-		multTPC++;
+		TPCTracks++;
 	}
 
 	for(int it = 0; it < nTracks; it++){
@@ -496,25 +497,36 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			continue;
 		if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) )
 			continue;
-		multGlob++;
+		GlobTracks++;
 	}
-	TPCTracks = multTPC;
-	GlobTracks = multGlob;
-	if(fCutOutliers == kTRUE && !(multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)))
-		return kFALSE;
 
-	unsigned int multTrk = 0;
-	unsigned int multTrkTOF = 0;
+	FB32Tracks = 0;
+	FB32TOFTracks = 0;
 	for (int it = 0; it < nTracks; it++){
 		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
 		if (!trackAOD || !trackAOD->TestFilterBit(32))
 			continue;
-		multTrk++;
+		FB32Tracks++;
 		if (TMath::Abs(trackAOD->GetTOFsignalDz()) <= 10 && trackAOD->GetTOFsignal() >= 12000 && trackAOD->GetTOFsignal() <= 25000)
-			multTrkTOF++;
+			FB32TOFTracks++;
 	}
-	FB32Tracks = multTrk;
-	FB32TOFTracks = multTrkTOF;
+
+	if(fCutOutliers == kTRUE){
+		if(fperiod == AliJRunTable::kLHC15o){
+			double tfb32 = (double)FB32Tracks;
+			double tfb32tof = (double)FB32TOFTracks;
+			double mu32tof = -1.0178+tfb32*(0.333132+tfb32*(9.10282e-05-1.61861e-08*tfb32));
+			double sigma32tof = 1.47848+tfb32*(0.0385923+tfb32*(-5.06153e-05+tfb32*(4.37641e-08+tfb32*(-1.69082e-11+tfb32*2.35085e-15))));
+			double nsigma[] = {4.0,4.0};
+			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
+				return kFALSE;
+
+		}else{
+			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
+				return kFALSE;
+		}
+			
+	}
 
 	return kTRUE;
 }
