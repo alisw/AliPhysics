@@ -62,6 +62,7 @@ public:
   
   // General functions
   static Bool_t SetPtParametrizations(TString fileName, TString dirName);
+  static Bool_t SetFlowParametrizations(TString fileName, TString dirName) ;
   static void   SetMtScalingFactors(TString fileName, TString dirName);
   static Bool_t SetPtYDistributions(TString fileName, TString dirName);
   static TF1*   GetPtParametrization(Int_t np);
@@ -79,6 +80,7 @@ public:
   static Double_t YFlat(Double_t y);
   static TF1*     MtScal(Int_t np, TString name, Bool_t isMeson);
   static Double_t V2Param(const Double_t *px, const Double_t *param);
+  static Double_t EtScalingV2(Double_t ptPart, Int_t iPart, Int_t iRef) ;
   static Double_t V2Flat(const Double_t *px, const Double_t *param);
   static Double_t KEtScal(Double_t pt, Int_t np, Int_t nq=2);
   static Double_t GetTAA(Int_t cent);
@@ -269,6 +271,8 @@ private:
   static TF1*     fPtParametrizationProton;   // pt paramtrization
   static TH1D*    fMtFactorHisto;             // mt scaling factors
   static TH2F*    fPtYDistribution[26];       // pt-y distributions
+  static TF1*     fV2Parametrization[27];     // pt paramtrizations
+  static Int_t    fV2RefParameterization[27]; // ID of a hadron used for parameterization of V2 for Et scaling
 
   ClassDef(AliGenEMlibV2,7);
 };
