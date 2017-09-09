@@ -16,6 +16,7 @@
 
 // #include <TIter.h>
 #include <TList.h>
+#include <TBuffer.h>
 
 /// \cond CLASSIMP
 ClassImp(AliFemtoConfigObject);
