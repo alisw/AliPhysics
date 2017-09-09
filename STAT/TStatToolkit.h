@@ -2,13 +2,12 @@
 #define TSTATTOOLKIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+/* $Id$ */
 
 /// \ingroup STAT
-/// \file TStatToolkit.h
-/// \class TStatToolkit
+/// \namespace TStatToolkit
 /// \brief Summary of statistics functions
-/// \author Marian  Ivanov marian.ivanov@cern.ch
-
+/// \authors Marian  Ivanov marian.ivanov@cern.ch, Jens Wiechula, Ruben Shahoian,  Sebastian Lehner ...
 
 #include "TMath.h"
 #include "Riostream.h"
@@ -32,7 +31,7 @@
 #include "TFitResultPtr.h"
 #include "TFitResult.h"
 //
-// includes neccessary for test functions
+// includes necessary for test functions
 //
 #include "TSystem.h"
 #include "TRandom.h"
@@ -50,8 +49,7 @@
 //#include "TGraph.h"
 class THashList;
 
-namespace TStatToolkit
-{
+namespace TStatToolkit {
   enum TStatType {kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS}; 
   enum ENormType {kL1, kL2, kLp, kMax, kHamming, kNNormType };   // http://en.wikipedia.org/w/index.php?title=Norm_(mathematics)&oldid=655824636
   //
