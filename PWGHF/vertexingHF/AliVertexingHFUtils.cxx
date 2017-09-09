@@ -2102,10 +2102,10 @@ Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label,
 }
 //________________________________________________________________________
 Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod,
-                                        Double_t etaMin, Double_t etaMax,
-                                        Double_t ptMin, Double_t ptMax,
-                                        Int_t filtbit1, Int_t filtbit2,
-                                        Int_t minMult){
+                                            Double_t etaMin, Double_t etaMax,
+                                            Double_t ptMin, Double_t ptMax,
+                                            Int_t filtbit1, Int_t filtbit2,
+                                            Int_t minMult){
   /// compute sphericity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -2159,84 +2159,84 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod,
 
 //________________________________________________________________________
 void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
-                                        Double_t &spherocity, Double_t &phiRef,
-                                        Double_t etaMin, Double_t etaMax,
-                                        Double_t ptMin, Double_t ptMax,
-                                        Int_t filtbit1, Int_t filtbit2,
-                                        Int_t minMult, Double_t phiStepSizeDeg,
-                                        Int_t nTrksToSkip, Int_t* idToSkip
-                                        ){
-    /// compute spherocity
-    
-    Int_t nTracks=aod->GetNumberOfTracks();
-    Int_t nSelTracks=0;
-    
-    Double_t* ptArr=new Double_t[nTracks];
-    Double_t* phiArr=new Double_t[nTracks];
-    Double_t sumpt=0.;
-    
-    for(Int_t it=0; it<nTracks; it++) {
-        AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
-        if(!tr) continue;
-        Float_t eta = tr->Eta();
-        Float_t pt  = tr->Pt();
-        Float_t phi  = tr->Phi();
-        if(eta<etaMin || eta>etaMax) continue;
-        if(pt<ptMin || pt>ptMax) continue;
-        if(nTrksToSkip>0 && idToSkip){
-            Int_t trid = (Int_t)tr->GetID();
-            Bool_t keep=kTRUE;
-            for(Int_t jt=0; jt<nTrksToSkip; jt++){
-                if(trid==idToSkip[jt]) keep=kFALSE;
-            }
-            if(!keep) continue;
-        }
-        Bool_t fb1 = tr->TestFilterBit(filtbit1);
-        Bool_t fb2 = tr->TestFilterBit(filtbit2);
-        Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
-        if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
-        if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
-        if( !(fb1 || fb2) ) continue;
-        ptArr[nSelTracks]=pt;
-        phiArr[nSelTracks]=phi;
-        nSelTracks++;
-        sumpt+=pt;
+                                            Double_t &spherocity, Double_t &phiRef,
+                                            Double_t etaMin, Double_t etaMax,
+                                            Double_t ptMin, Double_t ptMax,
+                                            Int_t filtbit1, Int_t filtbit2,
+                                            Int_t minMult, Double_t phiStepSizeDeg,
+                                            Int_t nTrksToSkip, Int_t* idToSkip
+                                            ){
+  /// compute spherocity
+
+  Int_t nTracks=aod->GetNumberOfTracks();
+  Int_t nSelTracks=0;
+
+  Double_t* ptArr=new Double_t[nTracks];
+  Double_t* phiArr=new Double_t[nTracks];
+  Double_t sumpt=0.;
+
+  for(Int_t it=0; it<nTracks; it++) {
+    AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+    if(!tr) continue;
+    Float_t eta = tr->Eta();
+    Float_t pt  = tr->Pt();
+    Float_t phi  = tr->Phi();
+    if(eta<etaMin || eta>etaMax) continue;
+    if(pt<ptMin || pt>ptMax) continue;    
+    if(nTrksToSkip>0 && idToSkip){ 
+      Int_t trid = (Int_t)tr->GetID();
+      Bool_t keep=kTRUE;
+      for(Int_t jt=0; jt<nTrksToSkip; jt++){ 
+	if(trid==idToSkip[jt]) keep=kFALSE;
+      }
+      if(!keep) continue;
     }
-    
-    if(nSelTracks<minMult){spherocity = -0.5; return;}
-    
-    //Getting thrust
-    spherocity=2.;
-    for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
-        Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
-        Double_t nx=TMath::Cos(phistep);
-        Double_t ny=TMath::Sin(phistep);
-        Double_t numer=0.;
-        for(Int_t j=0; j<nSelTracks; ++j){
-            Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
-            Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
-            numer+=TMath::Abs(ny*pxA - nx*pyA);
-        }
-        Double_t pFull=numer*numer/(sumpt*sumpt);
-        if(pFull<spherocity) {
-            spherocity=pFull; // minimization;
-            phiRef=phistep;
-        }
+    Bool_t fb1 = tr->TestFilterBit(filtbit1);
+    Bool_t fb2 = tr->TestFilterBit(filtbit2);
+    Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
+    if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
+    if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
+    if( !(fb1 || fb2) ) continue;    
+    ptArr[nSelTracks]=pt;
+    phiArr[nSelTracks]=phi;
+    nSelTracks++;
+    sumpt+=pt;
+  }
+
+  if(nSelTracks<minMult){spherocity = -0.5; return;}
+
+  //Getting thrust
+  spherocity=2.;
+  for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
+    Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
+    Double_t nx=TMath::Cos(phistep);
+    Double_t ny=TMath::Sin(phistep);
+    Double_t numer=0.;
+    for(Int_t j=0; j<nSelTracks; ++j){
+      Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
+      Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+      numer+=TMath::Abs(ny*pxA - nx*pyA);  
     }
-    
-    delete [] ptArr;
-    delete [] phiArr;
-    
-    spherocity*=(TMath::Pi()*TMath::Pi()/4.);
-    return;
-    
+    Double_t pFull=numer*numer/(sumpt*sumpt);
+    if(pFull<spherocity){
+        spherocity=pFull; // minimization;
+        phiRef=phistep;
+    }
+  }
+
+  delete [] ptArr;
+  delete [] phiArr;
+
+  spherocity*=(TMath::Pi()*TMath::Pi()/4.);
+  return;
+
 }
 //________________________________________________________________________
 void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
-                                                 Double_t &spherocity, Double_t &phiRef,
-                                                 Double_t etaMin, Double_t etaMax,
-                                                 Double_t ptMin, Double_t ptMax,
-                                                 Int_t minMult, Double_t phiStepSizeDeg){
+                                                     Double_t &spherocity, Double_t &phiRef,
+                                                     Double_t etaMin, Double_t etaMax,
+                                                     Double_t ptMin, Double_t ptMax,
+                                                     Int_t minMult, Double_t phiStepSizeDeg){
 
   /// compute generated spherocity
 
@@ -2281,7 +2281,7 @@ void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
       numer+=TMath::Abs(ny*pxA - nx*pyA);  
     }
     Double_t pFull=numer*numer/(sumpt*sumpt);
-    if(pFull<spherocity) {
+    if(pFull<spherocity){
         spherocity=pFull; // minimization;
         phiRef=phistep;
     }
