@@ -12,6 +12,7 @@
 #include <iostream>
 #include <exception>
 #include <functional>
+#include <numeric>
 
 // #include <TIter.h>
 #include <TList.h>
