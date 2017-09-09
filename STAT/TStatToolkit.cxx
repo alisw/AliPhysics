@@ -13,13 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-----------------------------------------------------------------------------
+/// \namespace TStatToolkit
+/// \authors Marian Ivanov, Jens Wiechula, Ruben Shahoian,  Sebastian Lehner ...
+/// Subset of  mathematical functions not included in the TMath
+//-----------------------------------------------------------------------------
 
-///////////////////////////////////////////////////////////////////////////
-/// \file TStatToolkit.cxx
-/// \class TStatToolkit
-/// \brief Summary of statistics functions
-/// Subset of  matheamtical functions  not included in the TMath
-//
 //
 /////////////////////////////////////////////////////////////////////////
 #include "TStopwatch.h"
@@ -33,9 +32,7 @@ using std::cerr;
 using std::endl;
 
 //_____________________________________________________________________________
-void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
-                           , Double_t &sigma, Int_t hh)
-{
+void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh) {
   //
   // Robust estimator in 1D case MI version - (faster than ROOT version)
   //
@@ -91,8 +88,7 @@ void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
 
 
 
-void TStatToolkit::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh,  Float_t externalfactor)
-{
+void TStatToolkit::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh,  Float_t externalfactor) {
   // Modified version of ROOT robust EvaluateUni
   // robust estimator in 1D case MI version
   // added external factor to include precision of external measurement
