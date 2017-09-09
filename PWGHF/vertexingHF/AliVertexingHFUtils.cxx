@@ -2157,13 +2157,14 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
 }
 
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, 
-					    Double_t etaMin, Double_t etaMax, 
-					    Double_t ptMin, Double_t ptMax,
-					    Int_t filtbit1, Int_t filtbit2, 
-					    Int_t minMult, Double_t phiStepSizeDeg,
-					    Int_t nTrksToSkip, Int_t* idToSkip
-					    ){
+void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, 
+					Double_t &spherocity, Double_t &phiRef,
+					Double_t etaMin, Double_t etaMax, 
+					Double_t ptMin, Double_t ptMax,
+					Int_t filtbit1, Int_t filtbit2, 
+					Int_t minMult, Double_t phiStepSizeDeg,
+					Int_t nTrksToSkip, Int_t* idToSkip
+					){
   /// compute spherocity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -2201,10 +2202,10 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     sumpt+=pt;
   }
 
-  if(nSelTracks<minMult) return -0.5;
+  if(nSelTracks<minMult){spherocity = -0.5; return;}
 
   //Getting thrust
-  Double_t spherocity=2.;
+  spherocity=2.;
   for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
     Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
     Double_t nx=TMath::Cos(phistep);
@@ -2216,21 +2217,25 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
       numer+=TMath::Abs(ny*pxA - nx*pyA);  
     }
     Double_t pFull=numer*numer/(sumpt*sumpt);
-    if(pFull<spherocity) spherocity=pFull; // minimization;
+    if(pFull<spherocity){
+        spherocity=pFull; // minimization;
+        phiRef=phistep;
+    }
   }
 
   delete [] ptArr;
   delete [] phiArr;
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
-  return spherocity;
+  return;
 
 }
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC, 
-						     Double_t etaMin, Double_t etaMax, 
-						     Double_t ptMin, Double_t ptMax,
-						     Int_t minMult, Double_t phiStepSizeDeg){
+void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC, 
+						 Double_t &spherocity, Double_t &phiRef,
+						 Double_t etaMin, Double_t etaMax, 
+						 Double_t ptMin, Double_t ptMax,
+						 Int_t minMult, Double_t phiStepSizeDeg){
 
   /// compute generated spherocity
 
@@ -2260,10 +2265,10 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     sumpt+=pt;
   }
 
-  if(nSelParticles<minMult) return -0.5;
+  if(nSelParticles<minMult){spherocity = -0.5; return;}
 
   //Getting thrust
-  Double_t spherocity=2.;
+  spherocity=2.;
   for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
     Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
     Double_t nx=TMath::Cos(phistep);
@@ -2275,14 +2280,17 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
       numer+=TMath::Abs(ny*pxA - nx*pyA);  
     }
     Double_t pFull=numer*numer/(sumpt*sumpt);
-    if(pFull<spherocity) spherocity=pFull; // minimization;
+    if(pFull<spherocity){
+        spherocity=pFull; // minimization;
+        phiRef=phistep;
+    }
   }
 
   delete [] ptArr;
   delete [] phiArr;
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
-  return spherocity;
+  return;
 
 }
 
