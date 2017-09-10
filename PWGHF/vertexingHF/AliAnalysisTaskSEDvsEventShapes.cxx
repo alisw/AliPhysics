@@ -426,13 +426,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistNtrVsSo = new TH2F(histoNtrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsSo = new TH2F(histoNtrCorrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
     
-    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5, 200, 0.0, 6.28,nMultBins,firstMultBin,lastMultBin);
-    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5,  200, 0.0, 6.28,nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5, 200, 0., 2*TMath::Pi(),nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5,  200, 0., 2*TMath::Pi(),nMultBins,firstMultBin,lastMultBin);
     
     fHistTrueSovsMeasSo = new TH3F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     fHistTrueSovsMeasSoEvWithCand = new TH3F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     
-    fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0.0, 6.28);
+    fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0., 2*TMath::Pi());
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
