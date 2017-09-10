@@ -29,6 +29,8 @@
 //    L2CA       L2 triggers after all vetos 
 //    LMCB       LM triggers before any vetos 
 //    LMCA       LM triggers after all vetos 
+//    These are 32 bits as CTP counters are 32 bits
+//    AliTriggerScalersESD are same class but with 64 bits counters which can be created from these ones by correcting for overflow.
 //
 //////////////////////////////////////////////////////////////////////////////
 
