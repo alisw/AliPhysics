@@ -316,6 +316,9 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
     
+    //if true, save sandbox mode info (beware large files!)
+    Bool_t fkSandboxMode; 
+    
 		//Cuts for Sibling Tagging
     Float_t fSibCutDcaV0ToPrimVertex      ;
     Float_t fSibCutDcaV0Daughters         ;
@@ -705,6 +708,15 @@ private:
     
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Save full info for full re-vertex offline replay ('sandbox mode')
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    AliExternalTrackParam *fTreeCascVarBachTrack;
+    AliExternalTrackParam *fTreeCascVarPosTrack;
+    AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    Float_t fTreeCascVarMagneticField;
     
     //===========================================================================================
     //   Histograms
