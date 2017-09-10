@@ -426,13 +426,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistNtrVsSo = new TH2F(histoNtrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsSo = new TH2F(histoNtrCorrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
     
-    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5, 200, -1.0, 7.28,nMultBins,firstMultBin,lastMultBin);
-    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5,  200, -1.0, 7.28,nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5, 200, 0.0, 6.28,nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5,  200, 0.0, 6.28,nMultBins,firstMultBin,lastMultBin);
     
     fHistTrueSovsMeasSo = new TH3F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     fHistTrueSovsMeasSoEvWithCand = new TH3F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     
-    fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 1400, -7.0, 7.0);
+    fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0.0, 6.28);
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
@@ -1186,6 +1186,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 }
                 
                 Double_t deltaPhiRef = (phiRef-phiCand);
+                if(deltaPhiRef<0) deltaPhiRef+=2*TMath::Pi();
+                if(deltaPhiRef>2*TMath::Pi()) deltaPhiRef-=2*TMath::Pi();
                 if(phiRef>=0 && phiCand>=0) fHistSpheroAxisDeltaPhi->Fill(ptCand, invMass, deltaPhiRef);
                 
                 if(fRecomputeSpherocity){
