@@ -239,17 +239,29 @@ Bool_t Config_pikx(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
+  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsK%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsK/100)%100);
+  Int_t CutTypeK=(TrackCutsK/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
 
   AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
-  AliRsnCutSetDaughterParticle* cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
-  AliRsnCutSetDaughterParticle* cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,nsigmaKTPC,nsigmaKTOF);
+
+  AliRsnCutSetDaughterParticle* cutSetPi=0;
+  if(!CutTypePi) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+  else if(CutTypePi==1) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kPion,nsigmaPiTPC,-1.);
+  else if(CutTypePi==2) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPiTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
+  if(!cutSetPi){cerr<<"Error in AddTaskRare_pp13::Config_pikx(): missing cutSetPi"<<endl; return kFALSE;}
+
+  AliRsnCutSetDaughterParticle* cutSetK=0;
+  if(!CutTypeK) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,nsigmaKTPC,nsigmaKTOF);
+  else if(CutTypeK==1) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kKaon,nsigmaKTPC,-1.);
+  else if(CutTypeK==2) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaKTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kKaon,-1.,nsigmaKTOF);
+  if(!cutSetK){cerr<<"Error in AddTaskRare_pp13::Config_pikx(): missing cutSetK"<<endl; return kFALSE;}
 
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
@@ -323,7 +335,7 @@ Bool_t Config_pikx(
     out->SetPairCuts(cutsPair);
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,1370,0.63,2.);
+    if(useIM[i]) out->AddAxis(imID,137,0.63,2.);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
@@ -870,17 +882,29 @@ Bool_t Config_pkx(
   if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
   Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
   Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
+  Int_t CutTypeP=(TrackCutsP/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsK%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsK/100)%100);
+  Int_t CutTypeK=(TrackCutsK/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
 
   AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
-  AliRsnCutSetDaughterParticle* cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,nsigmaPTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,AliPID::kProton,nsigmaPTPC);
-  AliRsnCutSetDaughterParticle* cutSetK=new AliRsnCutSetDaughterParticle(Form("cutKaon_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,AliPID::kKaon,nsigmaKTPC);
+
+  AliRsnCutSetDaughterParticle* cutSetP=0;
+  if(!CutTypeP) cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,nsigmaPTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,AliPID::kProton,nsigmaPTPC);
+  else if(CutTypeP==1) cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kProton,nsigmaPTPC,-1.);
+  else if(CutTypeP==2) cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kProton,-1.,nsigmaPTOF);
+  if(!cutSetP){cerr<<"Error in AddTaskRare_pp13::Config_pkx(): missing cutSetP"<<endl; return kFALSE;}
+
+  AliRsnCutSetDaughterParticle* cutSetK=0;
+  if(!CutTypeK) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutKaon_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,AliPID::kKaon,nsigmaKTPC);
+  else if(CutTypeK==1) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaKTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kKaon,nsigmaKTPC,-1.);
+  else if(CutTypeK==2) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaKTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kKaon,-1.,nsigmaKTOF);
+  if(!cutSetK){cerr<<"Error in AddTaskRare_pp13::Config_pkx(): missing cutSetK"<<endl; return kFALSE;}
 
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutP=task->AddTrackCuts(cutSetP);
@@ -954,7 +978,7 @@ Bool_t Config_pkx(
     out->SetPairCuts(cutsPair);
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,800,1.4,3.);
+    if(useIM[i]) out->AddAxis(imID,160,1.4,3.);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
