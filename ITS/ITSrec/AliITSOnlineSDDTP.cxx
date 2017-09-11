@@ -157,6 +157,29 @@ void AliITSOnlineSDDTP::ValidateAnodes(){
   }
 }
 
+//______________________________________________________________________
+Int_t AliITSOnlineSDDTP::GetNumberOfGoodAnodes() const {
+  // return the number of good anodes in the module
+  Int_t cnt=0;
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(fGoodAnode[ian]) cnt++;
+  }
+  return cnt;
+}
+//______________________________________________________________________
+Float_t AliITSOnlineSDDTP::GetMeanBaseline() const {
+  // compute mean baseline
+  Float_t sum=0;
+  Float_t cnt=0;
+  Float_t meanb=0;
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(!fGoodAnode[ian]) continue;
+    sum+=GetAnodeBaseline(ian);
+    cnt+=1.;
+  }
+  if(cnt>0) meanb=sum/cnt;
+  return meanb;
+}
 
 //______________________________________________________________________
 void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms) const {

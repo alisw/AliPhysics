@@ -48,6 +48,9 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
     else return 0;
   }
   void StatGain(Float_t &mean, Float_t  &rms) const;
+  Float_t GetMeanBaseline() const;
+  Int_t GetNumberOfGoodAnodes() const;
+
   void WriteToASCII();
   Bool_t WriteToROOT(TFile *fil);
 
