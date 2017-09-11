@@ -47,7 +47,7 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
   AliAnalysisTaskMultiDielectron(),
   fPtFunc(0x0),
   fPtExpr("exp(-x/3.)"),
-  fRndmPtMin(0.2),
+  fRndmPtMin(0.075),
   fRndmPtMax(10.),
   fRndmEtaMax(0.9),
   fNTestpartPerEle(200),
@@ -63,7 +63,7 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection(const char *name)
   AliAnalysisTaskMultiDielectron(name),
   fPtFunc(0x0),
   fPtExpr("exp(-x/3.)"),
-  fRndmPtMin(0.2),
+  fRndmPtMin(0.075),
   fRndmPtMax(10.),
   fRndmEtaMax(0.9),
   fNTestpartPerEle(200),
@@ -590,7 +590,7 @@ void AliAnalysisTaskRandomRejection::InitTestparticles(Int_t nNeededTestPart)
   if (!fPtFunc) fPtFunc = new TF1("fPtFunc", fPtExpr.Data(), fRndmPtMin, fRndmPtMax);
   if (!fPtFunc) {
     AliFatal(Form("could not create function for random pt-distribution with expression: \"%s\", range: %f - %f GeV/c. Using default...", fPtExpr.Data(), fRndmPtMin, fRndmPtMax));
-    fPtFunc = new TF1("fPtFunc", "exp(-x/3.)", 0.2, 10.);
+    fPtFunc = new TF1("fPtFunc", "exp(-x/3.)", 0.075, 10.);
   }
   AliInfo(Form("function used for random pt-distribution:  %s, %s, %f - %f GeV/c", fPtFunc->GetName(), fPtFunc->GetTitle(), fPtFunc->GetXmin(), fPtFunc->GetXmax()));
   
