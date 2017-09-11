@@ -226,10 +226,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->Add(fLSdcaBelow);
     
     //Electron THnSparse
-    Int_t bins1[6]=  {280,  160, 200, 200,  200,    2}; // IsDCal;pT;nSigma;eop;m20;m02;DCA;IsPhotonic
-    Double_t xmin1[6]={ 2,   -8,   0,   0, -0.2, -0.5};
-    Double_t xmax1[6]={30,    8,   2,   2,  0.2,  1.5};
-    fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;m20;DCA;IsDCal;",6,bins1,xmin1,xmax1);
+    Int_t bins1[5]=  {280,  160, 100, 100,  200}; // pT;nSigma;eop;m20;DCA
+    Double_t xmin1[5]={ 2,   -8,   0,   0, -0.2};
+    Double_t xmax1[5]={30,    8,   2,   1,  0.2};
+    fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;m20;DCA;",5,bins1,xmin1,xmax1);
     fOutputList->Add(fElectronSprs);
     
     //add the list to our output file
@@ -474,6 +474,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fvalueElectron[2] = EovP;
             fvalueElectron[3] = M20;
             fvalueElectron[4] = d0z0[0]*track->Charge()*MagSign;
+            /*
             fvalueElectron[5] = -999;
             if (fClsTypeEMC){
                 fvalueElectron[5] = 0; //0=EMCal, 1=DCal
@@ -482,7 +483,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fvalueElectron[5] = 1; //0=EMCal, 1=DCal
             }
             fElectronSprs->Fill(fvalueElectron);
-            
+            */
         }
         
     }
