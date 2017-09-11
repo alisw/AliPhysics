@@ -26,6 +26,7 @@
 #include "TTreeFormula.h"
 #include "TLegend.h"
 #include "TPRegexp.h"
+#include "AliDrawStyle.h"
 
 using std::cout;
 using std::cerr;
@@ -1283,17 +1284,19 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   }
   TObjArray*exprVarArray = TString(exprVars->At(0)->GetName()).Tokenize(";");
   TObjArray*exprVarErrArray=(exprVars->GetEntries()>2)?  TString(exprVars->At(2)->GetName()).Tokenize(";"):0;
-  TObjArray*exprColors= TString(colors).Tokenize(";");
-  TObjArray*exprMarkers= TString(markers).Tokenize(";");
+  // TObjArray*exprColors= TString(colors).Tokenize(";");
+  // TObjArray*exprMarkers= TString(markers).Tokenize(";");
+  //
+  //Int markerStyle=AliDrawStyle::GetMarkerStyles(markers);
   Int_t notOK=exprVarArray->GetEntries()<1;
-  notOK+=2*(exprVarArray->GetEntriesFast()>exprColors->GetEntriesFast());
-  notOK+=4*(exprVarArray->GetEntriesFast()>exprMarkers->GetEntriesFast());
+  //notOK+=2*(exprVarArray->GetEntriesFast()>exprColors->GetEntriesFast());
+  //notOK+=4*(exprVarArray->GetEntriesFast()>exprMarkers->GetEntriesFast());
   if (exprVarErrArray) notOK+=8*(exprVarArray->GetEntriesFast()!=exprVarErrArray->GetEntriesFast());
   if (notOK>0){
     ::Error("MakeMultGraph","Not compatible arrays of variables:color:markers Problem %d", notOK);
     exprVarArray->Print();
-    exprColors->Print();
-    exprMarkers->Print();
+    //exprColors->Print();
+    //exprMarkers->Print();
     if (exprVarErrArray) exprVarErrArray->Print();
     delete  exprVars;
     return 0;
@@ -1305,8 +1308,8 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   TVectorF vecMean(ngraphs);
   Bool_t flag = kFALSE;
   for (Int_t igraph=0; igraph<ngraphs; igraph++){
-    Int_t color=TString(exprColors->At(igraph)->GetName()).Atoi();
-    Int_t marker=TString(exprMarkers->At(igraph)->GetName()).Atoi();
+    Int_t color=AliDrawStyle::GetMarkerColor(colors,igraph);   //TString(exprColors->At(igraph)->GetName()).Atoi();
+    Int_t marker=AliDrawStyle::GetMarkerStyle(markers, igraph);  // TString(exprMarkers->At(igraph)->GetName()).Atoi();
     TGraph * gr = 0;
     if (drawSparse){
       if (exprVarErrArray==NULL){
@@ -1341,8 +1344,8 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
             ::Error("MakeMultGraph","Not valid sub-expression %s - return",exprVarArray->At(igraph)->GetName());
             delete exprVarArray;
             delete exprVarErrArray;
-            delete exprColors;
-            delete exprMarkers;
+            //delete exprColors;
+            //delete exprMarkers;
             return 0;  
             }
       else{ 
@@ -1380,8 +1383,8 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
     ::Error("Test::","Number of graphs 0 -return 0");  
     delete exprVarArray;
     delete exprVarErrArray;
-    delete exprColors;
-    delete exprMarkers;
+    //delete exprColors;
+    //delete exprMarkers;
     return 0;  
   }
   Double_t rmsGraphs = TMath::RMS(ngraphs,  vecMean.GetMatrixArray());
@@ -1401,8 +1404,8 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   
   delete exprVarArray;
   delete exprVarErrArray;
-  delete exprColors;
-  delete exprMarkers;
+  //delete exprColors;
+  //delete exprMarkers;
   return multiGraph;
 }
 
