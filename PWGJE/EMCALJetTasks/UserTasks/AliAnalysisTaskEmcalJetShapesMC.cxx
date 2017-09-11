@@ -492,8 +492,8 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,0,2);
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
-      SoftDrop(jet1,jetCont,0.25,-1.0,0); 
-      SoftDrop(jet1,jetCont,0.1,-2.0,0);
+      SoftDrop(jet1,jetCont,0.005,-1.0,0); 
+      SoftDrop(jet1,jetCont,0.005,-2.0,0);
       
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
@@ -1290,14 +1290,14 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fShapesVar[35]=NGroomedBranches;
   fShapesVar[36]=GroomedMass; }
    //this option favour democratic branches at large kt
-   if((beta==-1) && (zcut==0.25)){
+   if((beta==-1) && (zcut==0.005)){
   fShapesVar[37]=SymParam;
   fShapesVar[38]=DeltaR;
   fShapesVar[39]=GroomedPt;
   fShapesVar[40]=NGroomedBranches;
   fShapesVar[41]=GroomedMass; }
 
-  if((beta==-2) && (zcut==0.1)){
+  if((beta==-2) && (zcut==0.005)){
   fShapesVar[42]=SymParam;
   fShapesVar[43]=DeltaR;
   fShapesVar[44]=GroomedPt;
