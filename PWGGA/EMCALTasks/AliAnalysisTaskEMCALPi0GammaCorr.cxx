@@ -78,6 +78,7 @@ h_ClusterTrack_Mixed(0),
 h_Pi0(0),
 h_Pi0Track(0),
 h_Pi0Track_Mixed(0),
+h_nEvents(0),
 fPeriod("")
 {
     InitArrays();
@@ -112,6 +113,7 @@ h_ClusterTrack_Mixed(0),
 h_Pi0(0),
 h_Pi0Track(0),
 h_Pi0Track_Mixed(0),
+h_nEvents(0),
 fPeriod("")
 {
 	InitArrays();
@@ -250,9 +252,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_RunNumber = -0.5;
     double max_RunNumber = 19.5;
     
-    int nbins_BCID     = 3600;
-    double min_BCID    = -0.5;
-    double max_BCID    = 3599.5;
+    //int nbins_BCID     = 3600;
+    //double min_BCID    = -0.5;
+    //double max_BCID    = 3599.5;
 
     int nbins_IsoE  = 30;
     double min_IsoE = -5.0;
@@ -436,15 +438,10 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     h_Truth->Sumw2();
     fOutput->Add(h_Truth);
 
-  
-
+    h_nEvents = new TH1F("h_nEvents", "Number of triggers",  2,  0,  1);  
+    fOutput->Add(h_nEvents);
 
     PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
-
-
-
-
-
 }
 
 
@@ -519,9 +516,14 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
     bool PassedMinBiasTrigger = kFALSE;
     if(Trigger.Contains("EG1") ||Trigger.Contains("EG2") || Trigger.Contains("DG1") || Trigger.Contains("DG2")) PassedGammaTrigger = kTRUE;
     if(Trigger.Contains("INT7")) PassedMinBiasTrigger = kTRUE;
+   
     if(!PassedGammaTrigger && !PassedMinBiasTrigger && !fIsMC) return kFALSE; //if not MC and does not trigger data, remove
 
     bool isSelected = AliAnalysisTaskEmcal::IsEventSelected();
+    if(isSelected){
+        if(PassedGammaTrigger) h_nEvents->Fill(0);
+        if(PassedMinBiasTrigger) h_nEvents->Fill(0.9);
+    }
     //return kTRUE;
 
 
@@ -744,9 +746,7 @@ Float_t AliAnalysisTaskEMCALPi0GammaCorr::ClustTrackMatching(AliVCluster *clust,
 
 
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
-{
-
-     
+{   
 	//..This function is called in AliAnalysisTaskEmcal::UserExec.
 	// 1. First get an event pool corresponding in mult (cent) and
 	//    zvertex to the current event. Once initialized, the pool
@@ -769,7 +769,11 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     
     if(Trigger.Contains("EG1") ||Trigger.Contains("EG2") || Trigger.Contains("DG1") || Trigger.Contains("DG2")) PassedGammaTrigger = kTRUE;
     if(Trigger.Contains("INT7")) PassedMinBiasTrigger = kTRUE;
-    
+ 
+
+
+
+   
     double zVertex = fVertex[2];
 
     //AliParticleContainer* tracks = GetParticleContainer(0); //trying trackcontainer above instead 
@@ -807,13 +811,10 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 TObjArray* AliAnalysisTaskEMCALPi0GammaCorr::CloneToCreateTObjArray(AliParticleContainer* tracks)
 {
   
-   //..clones a track list
    if(!tracks)                            return 0;
-   //if(tracks->GetNAcceptedParticles()==0) return 0; 
    TObjArray* tracksClone = new TObjArray;
    tracksClone->SetOwner(kTRUE);
-   int NoOfTracksInEvent =tracks->GetNParticles();
-  
+     
    for(auto track : tracks->accepted()){
        tracksClone->Add(new AliPicoTrack(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0, 0, 0, 0));
    }
@@ -826,9 +827,6 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
    
     AliClusterContainer* clusters  = GetClusterContainer(0);  
     if (!clusters) return 0;
-    int NoOfClustersInEvent =clusters->GetNClusters();
-    double EffWeight_Gamma;
-    double EffWeight_Hadron;
     double Weight=1.0;    
     Weight=InputWeight; //..for mixed events normalize per events in pool
     
@@ -906,12 +904,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::GetIsolation_Truth(AliVCluster* cluster, 
   Int_t label = TMath::Abs(cluster->GetLabel());
   AliAODMCParticle* true_photon = mcContainer ? mcContainer->GetMCParticleWithLabel(label) : 0x0;   
   if(!true_photon) AliError(Form("Could not retrieve true_photon !"));
-  //std::cout << " Reco pT " << reco_photon.Pt() << " " << label << std::endl;
-  //std::cout << " PDG CODE " << true_photon->PdgCode() << " NAME " << TDatabasePDG::Instance()->GetParticle(true_photon->PdgCode())->GetName() << "  CHARGE " << 
-  //true_photon->Charge() << " GenIndex " << true_photon->GetGeneratorIndex() <<  " PT " << true_photon->Pt() << std::endl;
-
   //Loop over final-state particles and sum their 
-
   for (auto track: mcContainer->accepted()){
     double trackphi = TVector2::Phi_mpi_pi(track->Phi());
     double dphi     = TVector2::Phi_mpi_pi(true_photon->Phi()- trackphi);
@@ -1169,10 +1162,8 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     pi0 = ph_lead + ph_sub;
    
     //////////////////Selection/////////////////////////////////////////
-    if( pi0.Pt() < 5.0) return;
+    if( pi0.Pt() < 6.0) return;
     if( pi0.M()  > 0.3) return;
-
-    //std::cout << " Preselectin pions " << pi0.Pt() << " " << pi0.M() <<  std::endl;
     ////////////////////////////////////////////////////////////////////
     double asym = std::abs(ph_lead.Pt()-ph_sub.Pt())/(ph_lead.Pt()+ph_sub.Pt());
     double openingAngle = 1000.0*std::abs(TVector2::Phi_mpi_pi(ph_lead.Phi()-ph_sub.Phi())); // in mrads
@@ -1220,8 +1211,6 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsRealPion(AliVCluster* cluster_1, AliV
  
   AliAODMCParticle* true_mother = mcContainer ? mcContainer->GetMCParticleWithLabel(motherlabel) : 0x0;
   if(true_mother->PdgCode()!=111) return kFALSE; 
-
-  // std::cout << " true mother " << true_mother->PdgCode() << " pT " << true_mother->Pt() << std::endl;
  
   truepT = true_mother->Pt();
   return kTRUE;
@@ -1236,14 +1225,12 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     clusters->GetMomentum(ph, cluster);
     if(ph.Pt() < 5.0) return;
 
-
     Double_t detamin = 0.0; 
     Double_t dphimin = 0.0; 
 
     Double_t dRmin = ClustTrackMatching(cluster, detamin, dphimin);
     Double_t disToBad = std::min( static_cast<double>(cluster->GetDistanceToBadChannel()), 5.0);
    
-
     Double_t disToBorder = std::min(static_cast<double>(GetMaxDistanceFromBorder(cluster)), 5.0);
     Double_t exoticity = GetExoticity(cluster);
     Double_t time = cluster->GetTOF()*1000000000; //in ns
@@ -1251,7 +1238,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     if (time>40) time = +40;
 
     Double_t RunNumber = static_cast<double>(FormatRunNumber(fInputEvent->GetRunNumber()));
-    Double_t BCID      = static_cast<double>(fInputEvent->GetBunchCrossNumber());
+    //Double_t BCID      = static_cast<double>(fInputEvent->GetBunchCrossNumber());
 
 
     double defValue = -4.9;    
@@ -1315,8 +1302,6 @@ TObjArray* AliAnalysisTaskEMCALPi0GammaCorr::CloneClustersTObjArray(AliClusterCo
 	if(clusters->GetNClusters()==0) return 0;
 	TObjArray* clustersCloneI = new TObjArray;
 	clustersCloneI->SetOwner(kTRUE);
-	int NoOfClustersInEvent =clusters->GetNClusters();
-	
         for(auto cluster: clusters->accepted()){
             clustersCloneI->Add((AliVCluster*)cluster);
 	}
@@ -1369,8 +1354,6 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FinalClusterCuts(AliVCluster* cluster)
   Double_t time = cluster->GetTOF()*1000000000; //in ns
   if(!fIsMC && std::abs(time)>30) return kFALSE;
 
-
-   
   return kTRUE;
 }
 
