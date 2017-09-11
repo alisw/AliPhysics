@@ -225,6 +225,7 @@ fphietaPhotons(0),
 fphietaOthers(0),
 fphietaOthersBis(0),
 fSPDclustVsSPDtracklets(0),
+fnPUevents(0),
 f2012EGA(0)
   // tracks(0),
   // clusters(0)
@@ -413,6 +414,7 @@ fphietaPhotons(0),
 fphietaOthers(0),
 fphietaOthersBis(0),
 fSPDclustVsSPDtracklets(0),
+fnPUevents(0),
 f2012EGA(0)
   // tracks(0),
   // clusters(0)
@@ -923,6 +925,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
   fSPDclustVsSPDtracklets->Sumw2();
   fOutput->Add(fSPDclustVsSPDtracklets);
+  
+  fnPUevents = new TH1F("hnPUevents","Number of pileUp events rejected", 2,0.,1.);
+  fnPUevents->Sumw2();
+  fOutput->Add(fnPUevents);
   
   fClusEvsClusT = new TH2D("fClustTimeVSClustEn", "Distribution of cluster Time as a function of the cluster Energy", 70, 0., 70., 120, -40., 80.);
   fClusEvsClusT->SetXTitle("E_{T,clus} (GeV/c)    ");
