@@ -120,8 +120,11 @@ ClassImp(AliAnalysisTaskCheckCascadepp)
 AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp() 
   : AliAnalysisTaskSE(), 
     fAnalysisType                   ("ESD"),
+    fESDtrackCuts                   (0),
+    fUtils                          (0),   
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
+    fPIDResponse                    (0),
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelDAQincomplete        (kTRUE), 
     fApplyEvSelSPDclustervstracklet (kTRUE),
@@ -131,9 +134,6 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fApplyEvSelSPDvtxres            (kTRUE),
     fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
-    fESDtrackCuts                   (0), 
-    fUtils                          (0),
-    fPIDResponse                    (0),
     fRerunV0CascVertexers           (kFALSE),
     fwithSDD                        (kFALSE),
     fExtraSelections                (kFALSE),
@@ -224,8 +224,11 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
 AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name) 
   : AliAnalysisTaskSE(name), 
     fAnalysisType                   ("ESD"),
+    fESDtrackCuts                   (0),
+    fUtils                          (0),
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
+    fPIDResponse                    (0),
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelDAQincomplete        (kTRUE),
     fApplyEvSelSPDclustervstracklet (kTRUE),
@@ -235,9 +238,6 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fApplyEvSelSPDvtxres            (kTRUE),
     fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
-    fESDtrackCuts                   (0),
-    fUtils                          (0),
-    fPIDResponse                    (0),
     fRerunV0CascVertexers           (kFALSE),
     fwithSDD                        (kFALSE),
     fExtraSelections                (kFALSE),
@@ -252,7 +252,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fSPDPileUpminContributors       (3),
     fTPCPIDsigma                    (4),
     fSuffix                         (""),
-   
+
     // - Plots initialisation
     fListHistCascade(0),
       // Cascades multiplicity plots
