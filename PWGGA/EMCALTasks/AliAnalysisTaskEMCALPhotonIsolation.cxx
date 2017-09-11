@@ -1228,10 +1228,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
   
-  fSPDclustVsSPDtracklets->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
+  fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
   
-  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.))
+  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
+    fnPUevents->Fill(0);
     return kFALSE;
+  }
   
   AliClusterContainer* clusters = GetClusterContainer(0);
   Int_t nbTracksEvent;
