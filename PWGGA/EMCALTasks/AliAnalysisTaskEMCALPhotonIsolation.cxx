@@ -104,6 +104,7 @@ fTest2(0),
 fMCtruth(0),
 fPeriod(""),
 fFiducialCut(0.4),
+fConeAreaPerEvent(kFALSE),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -293,6 +294,7 @@ fTest2(0),
 fMCtruth(0),
 fPeriod(""),
 fFiducialCut(0.4),
+fConeAreaPerEvent(kFALSE),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -2369,7 +2371,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
 
-  if(fWho == 2 && fFiducialCut < 0.4){
+  if(fWho == 2 && fConeAreaPerEvent){
     ComputeConeArea(c, isoConeArea);
     fTestEnergyConeNorm->Fill(c.Pt(), sumEnergyConeClus/isoConeArea, sumpTConeCharged/isoConeArea);
   }

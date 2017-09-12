@@ -116,6 +116,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
   void                     SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
   void                     SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
+  void                     SetComputeConeAreaPerEvent(Bool_t eventCone)                    { fConeAreaPerEvent = eventCone; }
   void                     Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
  protected:
   
@@ -213,6 +214,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
   TString     fPeriod;                         // String containing the LHC period
   Float_t     fFiducialCut;                    // Variable fiducial cut from the border of the EMCal/TPC acceptance
+  Bool_t      fConeAreaPerEvent;               // Enable/disable the event-by-event cone area computation
   Bool_t      f2012EGA;                        // Analyze only Events with EGA recalc patches above threshold
   
   // Initialization for TTree variables
