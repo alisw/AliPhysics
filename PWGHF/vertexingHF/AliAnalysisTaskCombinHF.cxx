@@ -38,6 +38,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliAODRecoDecayHF3Prong.h"
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisTaskCombinHF.h"
 
@@ -85,6 +86,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
   fPhiMassCut(99999.),
+  fCutCos3PiKPhiRFrame(-1.1),
+  fCutCosPiDsLabFrame(1.1),
   fPidHF(new AliAODPidHF()),
   fAnalysisCuts(0x0),
   fMinMass(1.720),
@@ -175,6 +178,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
   fPhiMassCut(99999.),
+  fCutCos3PiKPhiRFrame(-1),
+  fCutCosPiDsLabFrame(1.1),
   fPidHF(new AliAODPidHF()),
   fAnalysisCuts(analysiscuts),
   fMinMass(1.720),
@@ -751,6 +756,12 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	    Double_t massKK=ComputeInvMassKK(trK,trPi2);
 	    Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
 	    if(TMath::Abs(deltaMass)>fPhiMassCut) continue;
+	    tmpRD3->SetPxPyPzProngs(3,px,py,pz);
+	    Double_t cos1=((AliAODRecoDecayHF3Prong*)tmpRD3)->CosPiKPhiRFrameKpiK();
+	    Double_t kincutPiKPhi=TMath::Abs(cos1*cos1*cos1);
+	    if(kincutPiKPhi<fCutCos3PiKPhiRFrame) continue;
+	    Double_t cosPiDsLabFrame=((AliAODRecoDecayHF3Prong*)tmpRD3)->CosPiDsLabFrameKpiK();
+	    if(cosPiDsLabFrame>fCutCosPiDsLabFrame) continue;
 	  }
 	  Bool_t isThreeLS=kFALSE;
 	  if(chargePi1==chargeK && chargePi2==chargeK){
