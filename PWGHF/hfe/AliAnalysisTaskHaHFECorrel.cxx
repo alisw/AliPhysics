@@ -183,6 +183,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fTagEffIncl(0)
 ,fTagEffLS(0)
 ,fTagEffULS(0)
+,fCorrectPiontoData()
+,fCorrectEtatoData()
 ,fElecTrigger(0)
 ,fInclElecPhi(0)
 ,fULSElecPhi(0)
@@ -321,6 +323,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fTagEffIncl(0)
 ,fTagEffLS(0)
 ,fTagEffULS(0)
+,fCorrectPiontoData()
+,fCorrectEtatoData()
 ,fElecTrigger(0)
 ,fInclElecPhi(0)
 ,fULSElecPhi(0)
@@ -977,6 +981,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
     fMCPi0Prod = new THnSparseF("fMCPi0Prod", "fMCPi0Prod: pt eta pdgmother", 4, Pi0EtaBins, Pi0EtaXmin, Pi0EtaXmax);
     BinLogX(fMCPi0Prod->GetAxis(0));
+    fMCPi0Prod->Sumw2();
     fOutputList->Add(fMCPi0Prod);
 
     fMCEtaProd = new THnSparseF("fMCEtaProd", "fMCEtaProd: pt eta pdgmother", 4, Pi0EtaBins, Pi0EtaXmin, Pi0EtaXmax);
@@ -1593,7 +1598,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateWithHadrons(AliAODTrack* track, const 
     if (FillHadron) fElecHaHa->Fill(fillSparse);
     if (FillLP)     fElecLPHa->Fill(fillSparse);
   }
-  if (Trigger==kFALSE) cout << "NoPartner found bei tracks " << ntracks <<  endl;
+  //  if (Trigger==kFALSE) cout << "NoPartner found bei tracks " << ntracks <<  endl;
   if (FillHadron && Trigger) fHadNonElecTrigger->Fill(ptH);
   if (FillLP && Trigger)     fLPNonElecTrigger->Fill(ptH);
 }
@@ -2046,7 +2051,8 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliAODTrack * track, 
   Int_t PDGCodeGGMother=0;
   Double_t PtMother=0; 
   Double_t PtGrandMother=0;
-  
+
+  // get ancestors (eta-pi0-e, eta-gamma-e, pi0-gamma-e, eta-e, pi0-e, ...) - remember pt of pi0/Eta for correction
   if (MCParticle->GetMother()>=0) {
     AliAODMCParticle* MCParticleMother = (AliAODMCParticle*) fMC->GetTrack(MCParticle->GetMother());
     PDGCodeMother = abs(MCParticleMother->GetPdgCode());
@@ -2060,6 +2066,7 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliAODTrack * track, 
 	PDGCodeGGMother=abs(MCParticleGGMother->GetPdgCode());
       }
       else{
+	//	cout << "No Mother? " << MCParticleGrandMother->GetMother() << endl;
 	PDGCodeGGMother=-1;
       }
     }
@@ -2074,35 +2081,60 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliAODTrack * track, 
     PDGCodeGGMother=-1;
   } 
   
+  // controll plot for MC vs Rec pt;
   fCheckMCPtvsRecPt->Fill(MCParticle->Pt(), track->Pt());
 
+
   Double_t fillSparse[5]={-999,-999,-999, -999, -999};
-  fillSparse[0]=track->Pt();
+  fillSparse[0]=track->Pt(); // sparse will be filled with rec pt, but corrected with MC pt
   fillSparse[1]=PDGCode;
   fillSparse[2]=PDGCodeMother;
   fillSparse[3]=PDGCodeGrandMother; 
   fillSparse[4]=PDGCodeGGMother;
   
  
+  Double_t PtMotherWeight=1.; 
+  
+    if (PDGCode==11) {
+      if (PDGCodeMother==22) {
+	if (PDGCodeGrandMother == 221) {
+	  PtMotherWeight=fCorrectEtatoData.GetBinContent(fCorrectEtatoData.FindBin(PtGrandMother));
+	}
+	else if (PDGCodeGrandMother == 111) {
+	  PtMotherWeight=fCorrectPiontoData.GetBinContent(fCorrectPiontoData.FindBin(PtGrandMother));
+	}
+      }
+      else  {
+	if (PDGCodeMother == 221) {
+	  PtMotherWeight=fCorrectEtatoData.GetBinContent(fCorrectEtatoData.FindBin(PtMother));
+	}
+	else if (PDGCodeMother == 111) {
+	  PtMotherWeight=fCorrectPiontoData.GetBinContent(fCorrectPiontoData.FindBin(PtMother));
+	}
+      }
+    }
+    // cout << "Final " << PtMotherWeight << endl;
 
-  fTagEffIncl->Fill(fillSparse);
-  //  cout << "ULSP " << ULSPartner << endl;
-  if (LSPartner>0)  fTagEffLS->Fill(fillSparse, LSPartner);
-  if (ULSPartner>0)  fTagEffULS->Fill(fillSparse, ULSPartner);
+  // real tag corr sparse
+  fTagEffIncl->Fill(fillSparse, PtMotherWeight);
+  if (LSPartner>0)  fTagEffLS->Fill(fillSparse, LSPartner*PtMotherWeight);
+  if (ULSPartner>0)  fTagEffULS->Fill(fillSparse, ULSPartner*PtMotherWeight);
 
 
+  // extra sparse to control pt mother, pt electron, ratio of primary to secondary
   if (PDGCode==11) {
     if (PDGCodeMother==22) {
       fillSparse[1]=PtGrandMother;
       fillSparse[2]=PDGCodeGrandMother;
+      fillSparse[3]=PDGCodeGGMother;
     }
     else {
       fillSparse[1]=PtMother;
       fillSparse[2]=PDGCodeMother;
+      fillSparse[3]=PDGCodeGrandMother;
     }
+    fTagMotherPt->Fill(fillSparse, PtMotherWeight);
   }
-
-  fTagMotherPt->Fill(fillSparse);
 
 
 }

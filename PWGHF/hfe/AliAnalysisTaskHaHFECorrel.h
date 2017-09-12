@@ -129,7 +129,12 @@ public:
     
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
- 
+
+
+    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
+    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
+
+
 
  private:
     
@@ -253,7 +258,8 @@ public:
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
-
+    TH1F                  fCorrectPiontoData;      
+    TH1F                  fCorrectEtatoData;       
 
     // HFE HFE
     TH1F                  *fElecTrigger;            //! trigger electron vs pt
