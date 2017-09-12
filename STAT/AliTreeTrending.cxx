@@ -14,9 +14,15 @@
  **************************************************************************/
 
 
-/*
- .L $ALICE_ROOT/../src/STAT/AliTreeTrending.cxx+
 
+///\ingroup STAT
+///\class AliTreeTrending
+///\brief AliTreeTrending class for the visualization of the QA trending/alarms
+///\author Marian Ivanov
+/*!
+ Generalization of the original TPC QA trending visualization code
+ Example usage in the $AliPhysics_SRC/PWGPP/QA
+ Related JIRA task - https://alice.its.cern.ch/jira/browse/ATO-361
 */
 
 #include "TStatToolkit.h"

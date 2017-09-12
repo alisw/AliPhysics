@@ -15,15 +15,15 @@
 
 
 ///  ### AliDrawStyle - Class to access drawing styles
-///  * Several drawing styles can be regeistered and used in the same moment
-///    * Styles are identified using strings as identifiets
+///  * Several drawing styles can be registered and used in the same moment
+///    * Styles are identified using strings as identifiers
 ///      * TStyle
 ///      * MarkerStyle[]  AliDrawStyle::GetMarkerStyle(const char *style, Int_t index);
 ///      * MarkerColors[] AliDrawStyle::GetMarkerColor(const char *style, Int_t index);
 ///      * FillColors[]   AliDrawStyle::GetFillColor(const char *style, Int_t index);
 ///  * Default styles are created  AliDrawStyle::SetDefaults()
 ///    * default style is based on the fig template -  https://twiki.cern.ch/twiki/pub/ALICE/ALICERecommendationsResultPresentationText/figTemplate.C
-///    * users should be able to regiester their oun styles (e.g in macros)
+///    * users should be able to register their own styles (e.g in macros)
 ///  * Usage (work in progress)
 ///    * performance reports -  with styles as a parameter
 ///    * QA reports
@@ -31,26 +31,26 @@
 /// \author marian  Ivanov marian.ivanov@cern.ch
 ///
 ///  ## Example usage
-///
-///  \code
-///  AliDrawStyle::SetDefaults()
-///  // Style example
-///  //
-///  AliDrawStyle::PrintStyles(0,TPRegexp("."));
-///  AliDrawStyle::ApplyStyle("figTemplate");
-///  gPad->UseCurrentStyle();  // force current style for current data    
-///  //
-///  // Standard ALICE latex symbols
-///  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
-///  AliDrawStyle::GetLatexAlice("qpt")
-///  AliDrawStyle::AddLatexSymbol("dphi", "#Delta#it#phi (unit)")
-///  AliDrawStyle::GetLatexAlice("dphi")
-///  //
-///  // Standard ALICE marker/colors arrays
-///  AliDrawStyle::GetMarkerStyle("figTemplate",0)
-///  AliDrawStyle::GetMarkerColor("figTemplate",0)
-///  \endcode
-
+/*!
+\code
+  AliDrawStyle::SetDefaults()
+  // Style example
+  //
+  AliDrawStyle::PrintStyles(0,TPRegexp("."));
+  AliDrawStyle::ApplyStyle("figTemplate");
+  gPad->UseCurrentStyle();  // force current style for current data
+  //
+  // Standard ALICE latex symbols
+  AliDrawStyle::PrintLatexSymbols(0,TPRegexp("."))
+  AliDrawStyle::GetLatexAlice("qpt")
+  AliDrawStyle::AddLatexSymbol("dphi", "#Delta#it#phi (unit)")
+  AliDrawStyle::GetLatexAlice("dphi")
+  //
+  // Standard ALICE marker/colors arrays
+  AliDrawStyle::GetMarkerStyle("figTemplate",0)
+  AliDrawStyle::GetMarkerColor("figTemplate",0)
+\endcode
+*/
 
 
 #include "AliDrawStyle.h"
@@ -61,6 +61,8 @@
 #include "TMath.h"
 #include <iostream>
 //
+TString AliDrawStyle::fDefaultTStyleID;                            ///< ID of the default TStyle
+TString AliDrawStyle::fDefaultArrayStyleID;                        ///< ID of the default array styles
 std::map<TString, TString>  AliDrawStyle::fLatexAlice;
 std::map<TString, TStyle*>  AliDrawStyle::fStyleAlice;
 std::map<TString, std::vector<int> > AliDrawStyle::fMarkerStyles;  // PLEASE LEAVE THE UNAESTHETIC SPACE
@@ -75,6 +77,13 @@ void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultMarkers();
 }
 
+/// set AliDrawStyle::SetDefaultStyles
+/// \param tstyleName  - default style to be used class function in case of empty style selection
+/// \param arrayName   - default style to be used class function in case of empty array style selection
+void AliDrawStyle::SetDefaultStyles(const char * tstyleName, const char* arrayName){
+  fDefaultTStyleID=tstyleName;
+  fDefaultArrayStyleID=arrayName;
+}
 
 TStyle* RegisterDefaultStyleFigTemplate(Bool_t grayScale);
 
@@ -86,37 +95,119 @@ TString AliDrawStyle::GetLatexAlice(const char * symbol){
   return  fLatexAlice[symbol];
 }
 
+
+/// Get integer from string at index
+/// \param format    -  array string
+/// \param index     -  element index
+/// \param separator -  array separator
+/// TODO: using TString - to be replaced by faster variant with rough pointers
+/// Example usage:
+/*!
+\code
+   AliDrawStyle::GetIntegerAt("1:4:8",1,":"); // return 4
+   AliDrawStyle::GetIntegerAt("1;4;8",2,";"); // return  8
+\endcode
+ */
+Int_t AliDrawStyle::GetIntegerAt(const char * format, Int_t index, const char * separator ){
+  if (format==NULL) return -1;
+  if (index<0) return -1;
+  index++;
+  TString sformat(format);
+  TString token(format);
+  Int_t position=0;
+  Int_t counter=0;
+  while (counter<index){
+    if (sformat.Tokenize(token,position,separator)) {
+      counter++;
+    }else{
+      break;
+    }
+  }
+  if (counter==index) return token.Atoi();
+  return -1;
+}
+
+/// Get integer from string
+/// \param format    -  array string
+/// \param index     -  element index
+/// \param separator -  array separator
+/// TODO: using TString - to be replaced by faster variant with rough pointers
+/// Example usage:
+/*!
+\code
+   AliDrawStyle::GetFloatAt("1.1:4.1:8.1",1,":"); // return 4.1
+   AliDrawStyle::GetFloatAt("1.1;4.1;8.1",2,";"); // return  8.1
+\endcode
+*/
+Float_t AliDrawStyle::GetFloatAt(const char * format, Int_t index, const char * separator ){
+  if (format==NULL) return -1;
+  if (index<0) return -1;
+  index++;
+  TString sformat(format);
+  TString token(format);
+  Int_t position=0;
+  Int_t counter=0;
+  while (counter<index){
+    if (sformat.Tokenize(token,position,separator)) {
+      counter++;
+    }else{
+      break;
+    }
+  }
+  if (counter==index) return token.Atof();
+  return -1;
+}
+
+
+// GetMarkerStyle associated to the style.
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return marker style for given stylename, index
 Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
-
+  if (AliDrawStyle::fMarkerStyles[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
   return  AliDrawStyle::fMarkerStyles[style][index];
 }
 
+/// GetMarkerColor associated to the style.
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return marker color for given stylename, index
 Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
+  if (AliDrawStyle::fMarkerColors[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
   return  AliDrawStyle::fMarkerColors[style][index];
 }
+/// GetMarkerSize associated to the style.
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return marker color for given stylename, index
 Float_t AliDrawStyle::GetMarkerSize(const char *style, Int_t index){
+  if (AliDrawStyle::fMarkerSize[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
   return  AliDrawStyle::fMarkerSize[style][index];
 }
-
+/// GetFillColor associated to the style.
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return fill color for given stylename, index
 Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
+  if (AliDrawStyle::fFillColors[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
   return  AliDrawStyle::fFillColors[style][index];
 }
+/// GetLineWidth associated to the style.
 /// \param  style - name of style used
 /// \param index  - marker index
 /// \return fill color for given stylename, index
 Float_t AliDrawStyle::GetLineWidth(const char *style, Int_t index){
+  if (AliDrawStyle::fLineWidth[style].size() <= index) {
+    return GetFloatAt(style,index);
+  }
   return  AliDrawStyle::fLineWidth[style][index];
 }
 
