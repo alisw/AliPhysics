@@ -461,6 +461,26 @@ AliFemtoConfigObject::Parse(const std::string &src)
 #define COMMA_PAT "\\s*" "," "\\s*"
 #define COLON_PAT "\\s*" ":" "\\s*"
 
+#if !defined(__clang__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9
+static const std::regex
+    NUM_RX(""),
+    INT_RX(""),
+    FLT_RX(""),
+    STR_RX(""),
+    ID_RX(""),
+    KEY_RX(""),
+    RANGE_RX(""),
+    RANGELIST_RX(""),
+    LBRK_RX(""),
+    RBRK_RX(""),
+    LSQRBRK_RX(""),
+    RSQRBRK_RX(""),
+    LPAREN_RX(""),
+    RPAREN_RX(""),
+    COLON_RX(""),
+    COMMA_RX("");
+
+#else
 static const std::regex
     NUM_RX("^" NUM_PATTERN),
     INT_RX("^" INT_PATTERN),
@@ -478,7 +498,7 @@ static const std::regex
     RPAREN_RX("^" RPRN_PAT),
     COLON_RX("^" COLON_PAT),
     COMMA_RX("^" COMMA_PAT);
-
+#endif
 
 
 
