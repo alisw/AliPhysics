@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   }
 
 
-  Int_t maxNEvents=15; // maximum number of events to be analyzed
+  Int_t maxNEvents=35; // maximum number of events to be analyzed
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
@@ -96,7 +96,9 @@ int main(int argc, char **argv) {
   Bool_t isFilled[kTotDDL*kModPerDDL*kSides];
   Bool_t writtenoutput=kFALSE;
   Char_t hisnam[20];
+  Bool_t ddlActive[kTotDDL];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    ddlActive[iddl]=kFALSE;
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
@@ -203,6 +205,7 @@ int main(int argc, char **argv) {
 	  if(s->IsCompletedModule()) continue;
 	  if(s->IsCompletedDDL()) continue;
 	  if(iDDL>=0 && iDDL<kTotDDL){ 
+	    ddlActive[iDDL]=kTRUE;
 	    Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s->GetChannel(); 
 	    histo[index]->Fill(s->GetCoord2(),s->GetCoord1(),s->GetSignal());
 	    isFilled[index]=1;
@@ -253,7 +256,10 @@ int main(int argc, char **argv) {
 	  sprintf(command,"tar -rf SDDbase_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
 	}else{
-	  printf("EMPTY DATA from DDL %d Carlos %d Side %d -> output file not saved\n",iddl,imod,isid);
+	  if(ddlActive[iddl]){
+	    Int_t goodAn=tpan[index]->GetNumberOfGoodAnodes();
+	    if(goodAn>0) printf("EMPTY DATA from DDL %d Carlos %d Side %d which had %d good anodes in pedestal -> output file not saved\n",iddl,imod,isid,goodAn);
+	  }
 	}
       }
     }  
