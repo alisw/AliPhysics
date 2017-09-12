@@ -922,6 +922,9 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
   // *********************************************************************************************************
+  
+  } else if (trainConfig == 500){ // EMCAL clusters 
+    cuts.AddCut("00010113","1111100017032220000","01631031000000d0"); // 1000ns timing cut, no NL INT7
   } else if (trainConfig == 501){ // EMCAL clusters
     cuts.AddCut("00010113","1111100017032220000","01631031000000d0"); // 1000ns timing cut, no NL INT7
     cuts.AddCut("00052113","1111100017032220000","01631031000000d0"); // 1000ns timing cut, no NL EMC7
@@ -1047,6 +1050,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00062313","2444400013013300000","0163803100000010"); // pastfuture -100ns/175ns
     cuts.AddCut("00062413","2444400013013300000","0163803100000010"); // pastfuture -250ns/325ns
     cuts.AddCut("00062513","2444400013013300000","0163803100000010"); // pastfuture -1000ns/1075ns
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
