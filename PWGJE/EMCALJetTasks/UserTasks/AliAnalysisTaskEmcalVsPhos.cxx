@@ -72,6 +72,8 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fPlotFineGrainedEtaPhi(kFALSE),
   fPlotEvenOddEta(kFALSE),
   fPlotCellSMDensity(kFALSE),
+  fExcludeRejectedCells(kFALSE),
+  fPlotFineGrainedCentrality(kFALSE),
   fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
@@ -107,6 +109,8 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fPlotFineGrainedEtaPhi(kFALSE),
   fPlotEvenOddEta(kFALSE),
   fPlotCellSMDensity(kFALSE),
+  fExcludeRejectedCells(kFALSE),
+  fPlotFineGrainedCentrality(kFALSE),
   fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
@@ -269,10 +273,18 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     
     if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
       title[dim] = "Centrality %";
-      nbins[dim] = fNCentHistBins;
-      binEdges[dim] = fCentHistBins;
-      min[dim] = fCentHistBins[0];
-      max[dim] = fCentHistBins[fNCentHistBins];
+      if (fPlotFineGrainedCentrality) {
+        nbins[dim] = 18;
+        min[dim] = 0;
+        max[dim] = 90;
+        binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      }
+      else {
+        nbins[dim] = fNCentHistBins;
+        binEdges[dim] = fCentHistBins;
+        min[dim] = fCentHistBins[0];
+        max[dim] = fCentHistBins[fNCentHistBins];
+      }
       dim++;
     }
     
@@ -388,7 +400,7 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       title[dim] = "#it{#rho}_{cell cone} (GeV)";
       nbins[dim] = 100;
       min[dim] = 0.;
-      max[dim] = 500.;
+      max[dim] = 1000.;
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
       
@@ -399,19 +411,21 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
       
-      title[dim] = "#it{E}_{cell SM} (GeV)";
-      nbins[dim] = fNPtHistBins;
-      binEdges[dim] = fPtHistBins;
-      min[dim] = fPtHistBins[0];
-      max[dim] = fPtHistBins[fNPtHistBins];
-      dim++;
-      
-      title[dim] = "Ncells SM";
-      nbins[dim] = 100;
-      min[dim] = -0.5;
-      max[dim] = 999.5;
-      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-      dim++;
+      if (fPlotCellSMDensity) {
+        title[dim] = "#it{E}_{cell SM} (GeV)";
+        nbins[dim] = fNPtHistBins;
+        binEdges[dim] = fPtHistBins;
+        min[dim] = fPtHistBins[0];
+        max[dim] = fPtHistBins[fNPtHistBins];
+        dim++;
+        
+        title[dim] = "Ncells SM";
+        nbins[dim] = 100;
+        min[dim] = -0.5;
+        max[dim] = 999.5;
+        binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+        dim++;
+      }
       
     }
     
@@ -1371,7 +1385,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeClusterEnergy(Double_t etaRef, Doubl
 }
 
 /**
- * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters.
+ * Compute the cell energy within a cone centered at the jet axis, excluding cells from rejected clusters if requested.
  * Optionally, can instead return the number of cells.
  */
 Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells)
@@ -1399,8 +1413,10 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
 
     if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
 
-      if (IsCellRejected(absId, kEMCal)) {
-        continue;
+      if (fExcludeRejectedCells) {
+        if (IsCellRejected(absId, kEMCal)) {
+          continue;
+        }
       }
 
       energy += fCaloCells->GetCellAmplitude(absId);
@@ -1426,8 +1442,10 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
     
     if (GetDeltaR(eta, phi, etaRef, phiRef) < R) {
 
-      if (IsCellRejected(absId, kPHOS)) {
-        continue;
+      if (fExcludeRejectedCells) {
+        if (IsCellRejected(absId, kPHOS)) {
+          continue;
+        }
       }
 
       energy += phosCaloCells->GetCellAmplitude(absId);
@@ -1466,8 +1484,10 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, B
       
       if (cellSM == sm) {
         
-        if (IsCellRejected(absId, kEMCal)) {
-          continue;
+        if (fExcludeRejectedCells) {
+          if (IsCellRejected(absId, kEMCal)) {
+            continue;
+          }
         }
         
         energy += fCaloCells->GetCellAmplitude(absId);
@@ -1490,10 +1510,12 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, B
     
       if (cellSM == sm) {
         
-        if (IsCellRejected(absId, kPHOS)) {
-          continue;
+        if (fExcludeRejectedCells) {
+          if (IsCellRejected(absId, kPHOS)) {
+            continue;
+          }
         }
-          
+        
         energy += phosCaloCells->GetCellAmplitude(absId);
         nCells += 1.;
         
