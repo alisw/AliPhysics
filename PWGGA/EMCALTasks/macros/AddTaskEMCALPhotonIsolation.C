@@ -218,7 +218,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetNcontributorsToPileUp(NContrToPileUp);
   task->SetLightenOutput(lightOutput);
   task->SetFiducialCut(iFiducialCut);
-  Bool_t coneAreaPerEvent = kFALSE; // TEMPORARY PLACEMENT (to be a task parameter in the future)
+  Bool_t coneAreaPerEvent = kTRUE; // TEMPORARY PLACEMENT (to be a task parameter in the future)
   task->SetComputeConeAreaPerEvent(coneAreaPerEvent);
   task->Set2012L1Analysis(is2012_EGA);
 
