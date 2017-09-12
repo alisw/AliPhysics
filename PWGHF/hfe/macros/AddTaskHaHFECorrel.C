@@ -27,7 +27,24 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period,Bool_t CorrHadron, Bool_t Co
     Error("AddTaskHaHFECorrel", "No task found.");
   }
   taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
-    
+  
+  if (IsMC) {
+    TH1::AddDirectory(kFALSE);
+    printf("Loading Pi0EtaCorrectionFiles\n");
+    TString CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeights.root";
+    TFile *CorrectPi0Eta = TFile::Open(CorrectPi0EtaFile.Data());
+    if (CorrectPi0Eta) {    
+      TH1F * Pi0W = (TH1F*)CorrectPi0Eta->Get("Pi0Weights");
+      TH1F * EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeights");
+      if (Pi0W) taskMB->SetPi0WeightToData(*Pi0W);
+      else printf("Could not load Pi0Weights\n");
+      if (EtaW)  taskMB->SetEtaWeightToData(*EtaW);
+      else printf("Could not load EtaWeights\n");
+    }
+    else printf("Could not open Pi0Eta correction file \n");
+    TH1::AddDirectory(kTRUE);
+  }
+
   mgr->AddTask(taskMB);
 
   TString containerName1 = mgr->GetCommonFileName();
