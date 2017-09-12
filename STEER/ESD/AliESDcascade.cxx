@@ -16,18 +16,20 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//               Implementation of the cascade vertex class
+//             Implementation of the cascade vertex class
 //              This is part of the Event Summary Data 
 //              which contains the result of the reconstruction
 //              and is the main set of classes for analaysis
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //     Modified by: Antonin Maire,IPHC, Antonin.Maire@ires.in2p3.fr
-//            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
+//             and Boris Hippolyte,IPHC, hippolyt@in2p3.fr
+//          and David Chinellato, UNICAMP, daviddc@ifi.unicamp.br
 //-------------------------------------------------------------------------
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
 #include <TVector3.h>
+#include <TMatrixD.h>
 
 #include "AliESDcascade.h"
 #include "AliLog.h"
@@ -154,6 +156,179 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 
 }
 
+static Bool_t GetWeight(TMatrixD &w, const AliExternalTrackParam &t) {
+  //
+  // Returns the global weight matrix w = Transpose[G2P]*Inverse[Cpar]*G2P ,
+  // where the matrix Cpar is the transverse part of the t covariance
+  // in "parallel" system (i.e. the system with X axis parallel to momentum).
+  // The matrix G2P performs the transformation global -> "parallel".
+  //
+  Double_t phi=t.GetAlpha() + TMath::ASin(t.GetSnp());
+  Double_t sp=TMath::Sin(phi);
+  Double_t cp=TMath::Cos(phi);
+  
+  Double_t tgl=t.GetTgl();
+  Double_t cl=1/TMath::Sqrt(1.+ tgl*tgl);
+  Double_t sl=tgl*cl;
+  
+  TMatrixD g2p(3,3); //global --> parallel
+  g2p(0,0)= cp*cl; g2p(0,1)= sp*cl; g2p(0,2)=sl;
+  g2p(1,0)=-sp;    g2p(1,1)= cp;    g2p(1,2)=0.;
+  g2p(2,0)=-sl*cp; g2p(2,1)=-sl*sp; g2p(2,2)=cl;
+  
+  Double_t alpha=t.GetAlpha();
+  Double_t c=TMath::Cos(alpha), s=TMath::Sin(alpha);
+  TMatrixD l2g(3,3); //local --> global
+  l2g(0,0)= c; l2g(0,1)=-s; l2g(0,2)= 0;
+  l2g(1,0)= s; l2g(1,1)= c; l2g(1,2)= 0;
+  l2g(2,0)= 0; l2g(2,1)= 0; l2g(2,2)= 1;
+  
+  Double_t sy2=t.GetSigmaY2(), syz=t.GetSigmaZY(), sz2=t.GetSigmaZ2();
+  TMatrixD cvl(3,3); //local covariance
+  cvl(0,0)=0; cvl(0,1)=0;   cvl(0,2)=0;
+  cvl(1,0)=0; cvl(1,1)=sy2; cvl(1,2)=syz;
+  cvl(2,0)=0; cvl(2,1)=syz; cvl(2,2)=sz2;
+  
+  TMatrixD l2p(g2p, TMatrixD::kMult, l2g);
+  TMatrixD cvp(3,3); //parallel covariance
+  cvp=l2p*cvl*TMatrixD(TMatrixD::kTransposed,l2p);
+  
+  Double_t det=cvp(1,1)*cvp(2,2) - cvp(1,2)*cvp(2,1);
+  if (TMath::Abs(det)<kAlmost0) return kFALSE;
+  
+  const Double_t m=100*100; //A large uncertainty in the momentum direction
+  const Double_t eps=1/m;
+  TMatrixD u(3,3);  //Inverse of the transverse part of the parallel covariance
+  u(0,0)=eps; u(0,1)=0;              u(0,2)=0;
+  u(1,0)=0;   u(1,1)= cvp(2,2)/det;  u(1,2)=-cvp(2,1)/det;
+  u(2,0)=0;   u(2,1)=-cvp(1,2)/det;  u(2,2)= cvp(1,1)/det;
+  
+  w=TMatrixD(TMatrixD::kTransposed,g2p)*u*g2p;
+  
+  return kTRUE;
+}
+
+Int_t AliESDcascade::RefitCascade(AliExternalTrackParam *bachelor)
+{
+  //--------------------------------------------------------------------
+  // Refit cascade decay vertex
+  //--------------------------------------------------------------------
+  //
+  // CAUTION: Requires AliESDv0::Refit() to have been called, since
+  // covariance matrix of the v0 decay vertex will be used!
+  //
+  // CAUTION: Requires a bachelor track already located at the
+  // expected point of closest approach to the V0!
+  //
+  // Mathematical procedure for vertex position recalculation:
+  //
+  // r = [(C1^-1) + (C2^-1)]^-1 * [ (C1^-1)*r1 + (C2^-1)*r2 ]
+  //
+  //    r:  uncertainty-aware vertex position
+  //    r1: V0 position of DCA (note: NOT DECAY POSITION)
+  //    r2: bachelor position of DCA
+  //    C1: covariance matrix of V0 decay position
+  //    C2: covariance matrix of bachelor position
+  //     (here, "^-1" means matrix inversion!)
+  //
+  // N.B.: This procedure approximates the V0 uncertainty at the point
+  // of DCA to the bachelor to be approximately the same as the
+  // one measured at the V0 decay vertex. This is reasonable at low
+  // pT but may not be ideal at high pT, where, however, resolution
+  // is typically much better.
+  //
+  // In addition to repositioning the cascade at a better decay
+  // position, this procedure also fills out the cascade chi2 value
+  // and the cascade decay position covariance matrix, which may then
+  // be used.
+  //
+  // Note about arguments: the negative and positive tracks of the V0
+  // are contained as data members of the cascade class, but the
+  // bachelor track isn't, which makes it necessary to pass a pointer
+  // to that...
+  //
+  //--------------------------------------------------------------------
+  
+  //____________________________________________________________
+  //Step 1: Acquire positions r1, r2
+  
+  //Bachelor position: r2
+  Double_t r2[3];
+  bachelor->GetXYZ(r2);
+
+  //WARNING: V0 has to be back-propagated!
+  //V0 characteristics
+  //Position
+  Double_t xv,yv,zv;
+  xv = fPos[0]; yv = fPos[1]; zv = fPos[2];
+  
+  //Momentum
+  Double_t pxv,pyv,pzv;
+  pxv = fNmom[0]+fPmom[0];
+  pyv = fNmom[1]+fPmom[1];
+  pzv = fNmom[2]+fPmom[2];
+
+  Double_t a2=((r2[0]-xv)*pxv+(r2[1]-yv)*pyv+(r2[2]-zv)*pzv)/(pxv*pxv+pyv*pyv+pzv*pzv);
+  
+  //V0 position: r1
+  Double_t r1[3];
+  r1[0]=xv+a2*pxv;
+  r1[1]=yv+a2*pyv;
+  r1[2]=zv+a2*pzv;
+  
+  //____________________________________________________________
+  //Step 2: Acquire cov matrices C1, C2
+  TMatrixD C1(3,3); //V0 cov mat
+  C1(0,0) = fPosCov[0]; C1(0,1) = fPosCov[1]; C1(0,2) = fPosCov[3];
+  C1(1,0) = fPosCov[1]; C1(1,1) = fPosCov[2]; C1(1,2) = fPosCov[4];
+  C1(2,0) = fPosCov[3]; C1(2,1) = fPosCov[4]; C1(2,2) = fPosCov[5];
+  
+  C1.Invert();
+  if( !C1.IsValid() ) return kFALSE;
+  
+  TMatrixD C2(3,3); //bach cov mat
+  AliExternalTrackParam lBach(*bachelor);
+  if( !GetWeight(C2,lBach) ) return kFALSE;
+  
+  //____________________________________________________________
+  //Step 3: Calculate covariance of cascade vertex position
+  TMatrixD lPosCovXi(C1); lPosCovXi+=C2;
+  lPosCovXi.Invert();
+  if (!lPosCovXi.IsValid()) return kFALSE;
+  
+  //Covariance of the V0 vertex
+  fPosCovXi[0]=lPosCovXi(0,0);
+  fPosCovXi[1]=lPosCovXi(1,0); fPosCovXi[2]=lPosCovXi(1,1);
+  fPosCovXi[3]=lPosCovXi(2,0); fPosCovXi[4]=lPosCovXi(2,1); fPosCovXi[5]=lPosCovXi(2,2);
+  
+  //____________________________________________________________
+  //Step 4: Calculate cascade vertex position
+  Double_t lVec[3]; //helper vector
+  
+  lVec[0]  = C1(0,0)*r1[0] + C1(0,1)*r1[1] + C1(0,2)*r1[2];
+  lVec[1]  = C1(1,0)*r1[0] + C1(1,1)*r1[1] + C1(1,2)*r1[2];
+  lVec[2]  = C1(2,0)*r1[0] + C1(2,1)*r1[1] + C1(2,2)*r1[2];
+  
+  lVec[0] += C2(0,0)*r2[0] + C2(0,1)*r2[1] + C2(0,2)*r2[2];
+  lVec[1] += C2(1,0)*r2[0] + C2(1,1)*r2[1] + C2(1,2)*r2[2];
+  lVec[2] += C2(2,0)*r2[0] + C2(2,1)*r2[1] + C2(2,2)*r2[2];
+  
+  fPosXi[0] = lPosCovXi(0,0)*lVec[0] + lPosCovXi(0,1)*lVec[1] + lPosCovXi(0,2)*lVec[2];
+  fPosXi[1] = lPosCovXi(1,0)*lVec[0] + lPosCovXi(1,1)*lVec[1] + lPosCovXi(1,2)*lVec[2];
+  fPosXi[2] = lPosCovXi(2,0)*lVec[0] + lPosCovXi(2,1)*lVec[1] + lPosCovXi(2,2)*lVec[2];
+  
+  //____________________________________________________________
+  //Step 5: Calculate cascade chi2
+  fChi2Xi = 0.0;
+  Double_t res1[3]={r1[0]-fPosXi[0],r1[1]-fPosXi[1],r1[2]-fPosXi[2]};
+  Double_t res2[3]={r2[0]-fPosXi[0],r2[1]-fPosXi[1],r2[2]-fPosXi[2]};
+  for (Int_t i=0; i<3; i++)
+    for (Int_t j=0; j<3; j++)
+      fChi2Xi += res1[i]*res1[j]*C1(i,j) + res2[i]*res2[j]*C2(i,j);
+  
+  return kTRUE; //done and OK!
+}
+
 AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas)
 {
   //--------------------------------------------------------------------
@@ -164,7 +339,7 @@ AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas)
   AliESDv0::operator=(cas);
 
   fEffMassXi = cas.fEffMassXi;
-  fChi2Xi    = cas.fChi2Xi;
+  fChi2Xi  = cas.fChi2Xi;
   fDcaXiDaughters = cas.fDcaXiDaughters;
   fPdgCodeXi      = cas.fPdgCodeXi;
   fBachIdx        = cas.fBachIdx;
