@@ -1,5 +1,5 @@
 AliAnalysisTaskCheckVertexAOD *AddTaskCheckVertexAOD(TString suffix="",
-						     Int_t maxMult=500.,
+						     Double_t maxMult=500.,
 						     Int_t mask=AliVEvent::kAnyINT,
 						     Bool_t readMC=kFALSE)
 {
