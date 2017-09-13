@@ -20,6 +20,7 @@ using std::vector;
 #include <AliInputEventHandler.h>
 #include <AliMCEventHandler.h>
 #include <AliMultSelection.h>
+#include <AliMultSelectionTask.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
 #include <AliVVZERO.h>
@@ -59,6 +60,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
   fMultSelectionEvCuts{false},
+  fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
@@ -203,8 +205,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if ((!fUseEstimatorsCorrelationCut || fMC ||
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality
-        && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
-  } else fFlag |= BIT(kMultiplicity);
+        && fCentPercentiles[0] <= fMaxCentrality) {
+          fFlag |= BIT(kMultiplicity);
+    }
+  } else
+    fFlag |= BIT(kMultiplicity);
+
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+  }
 
   if (fUseVariablesCorrelationCuts && !fMC) {
     ComputeTrackMultiplicity(ev);
@@ -294,7 +303,8 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Vertex position",
     "Vertex quality",
     "Pile-up",
-    "Centrality selection",
+    "Multiplicity selection",
+    "INEL > 0",
     "Correlations",
     "All cuts"
   };
@@ -522,6 +532,7 @@ void AliEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
+    fSelectInelGt0 = true;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;
